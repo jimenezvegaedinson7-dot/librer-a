@@ -1,11 +1,11 @@
 # Configuración de despliegue en Render
-# Conecta este repositorio en https://dashboard.render.com y selecciona "Web Service"
+# Conecta este repositorio en https://dashboard.render.com y selecciona "New > Blueprint"
 
 services:
   # Backend API (Node.js/Express)
   - type: web
     name: libreria-api
-    env: node
+    runtime: node
     region: oregon
     plan: free
     buildCommand: cd backend && npm ci
@@ -14,8 +14,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: NODE_VERSION
         value: 20
       - key: JWT_SECRET
@@ -26,7 +24,11 @@ services:
         value: https://libreria-frontend.onrender.com
       - key: TRUST_PROXY
         value: "1"
-      # PayU Sandbox (ya configurado en .env.example, agregar en dashboard)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: libreria-db
+          property: connectionString
+      # PayU Sandbox (prompt en dashboard de Render)
       - key: PAYU_ACCOUNT_ID
         sync: false
       - key: PAYU_MERCHANT_ID
@@ -37,10 +39,10 @@ services:
         sync: false
       - key: PAYU_PUBLIC_KEY
         sync: false
-      - key: PAYU_TEST
-        value: "true"
       - key: PAYU_NOTIFICATION_URL
         sync: false
+      - key: PAYU_TEST
+        value: "true"
       # Email (configurar en dashboard)
       - key: EMAIL_HOST
         sync: false
@@ -55,9 +57,10 @@ services:
       - key: EMAIL_FROM
         sync: false
 
-  # Base de datos PostgreSQL
-  - type: pserv
-    name: libreria-db
-    region: oregon
+# Render Postgres (lista separada, NO va en services)
+databases:
+  - name: libreria-db
     plan: free
-    runtime: postgresql
+    region: oregon
+    postgresMajorVersion: "16"
+    ipAllowList: []
