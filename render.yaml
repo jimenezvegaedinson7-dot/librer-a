@@ -62,5 +62,4 @@ services:
     name: libreria-db
     region: oregon
     plan: free
-    version: "16"
     ipAllowList: []
