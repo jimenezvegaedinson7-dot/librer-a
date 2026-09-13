@@ -62,5 +62,5 @@ services:
     name: libreria-db
     region: oregon
     plan: free
-    postgresMajorVersion: 16
+    version: "16"
     ipAllowList: []
