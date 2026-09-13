@@ -1,0 +1,66 @@
+# Configuración de despliegue en Render
+# Conecta este repositorio en https://dashboard.render.com y selecciona "Web Service"
+
+services:
+  # Backend API (Node.js/Express)
+  - type: web
+    name: libreria-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm ci
+    startCommand: cd backend && node server.js
+    healthCheckPath: /api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: NODE_VERSION
+        value: 20
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TWO_FACTOR_ENCRYPTION_KEY
+        generateValue: true
+      - key: FRONTEND_ORIGINS
+        value: https://libreria-frontend.onrender.com
+      - key: TRUST_PROXY
+        value: "1"
+      # PayU Sandbox (ya configurado en .env.example, agregar en dashboard)
+      - key: PAYU_ACCOUNT_ID
+        sync: false
+      - key: PAYU_MERCHANT_ID
+        sync: false
+      - key: PAYU_API_LOGIN
+        sync: false
+      - key: PAYU_API_KEY
+        sync: false
+      - key: PAYU_PUBLIC_KEY
+        sync: false
+      - key: PAYU_TEST
+        value: "true"
+      - key: PAYU_NOTIFICATION_URL
+        sync: false
+      # Email (configurar en dashboard)
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        sync: false
+      - key: EMAIL_SECURE
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+    # Base de datos PostgreSQL (se crea automáticamente)
+    # La URL se inyecta automáticamente como DATABASE_URL
+
+  # Base de datos PostgreSQL
+  - type: pserv
+    name: libreria-db
+    region: oregon
+    plan: free
+    postgresMajorVersion: 16
+    ipAllowList: []

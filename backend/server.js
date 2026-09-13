@@ -1,0 +1,328 @@
+require('dotenv').config();
+
+// ===============================
+// VALIDAR CLAVE DE CIFRADO 2FA
+// (fail-secure: no arrancar sin ella)
+// ===============================
+const clave2FA =
+    process.env.TWO_FACTOR_ENCRYPTION_KEY;
+
+if (
+    !clave2FA ||
+    String(clave2FA).length < 16
+) {
+    throw new Error(
+        'TWO_FACTOR_ENCRYPTION_KEY debe existir y tener al menos 16 caracteres'
+    );
+}
+
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const path = require('path');
+
+const pool = require('./src/config/database');
+const manejarErrores = require('./src/middlewares/error.middleware');
+const { baseLimiter } = require('./src/middlewares/rateLimit');
+const verificarToken = require('./src/middlewares/auth.middleware');
+const verificarRol = require('./src/middlewares/rol.middleware');
+const { iniciarJobs } = require('./src/jobs/limpieza');
+
+// ===============================
+// IMPORTAR RUTAS
+// ===============================
+const libroRoutes = require('./src/routes/libro.routes');
+const autorRoutes = require('./src/routes/autor.routes');
+const categoriaRoutes = require('./src/routes/categoria.routes');
+const inventarioRoutes = require('./src/routes/inventario.routes');
+const reservaRoutes = require('./src/routes/reserva.routes');
+const ventaRoutes = require('./src/routes/venta.routes');
+const authRoutes = require('./src/routes/auth.routes');
+const historialRoutes = require('./src/routes/historial.routes');
+const reporteRoutes = require('./src/routes/reporte.routes');
+const usuarioRoutes = require('./src/routes/usuario.routes');
+const pagoRoutes = require('./src/routes/pago.routes');
+const ubicacionRoutes = require('./src/routes/ubicacion.routes');
+const agenciaRoutes = require('./src/routes/agencia.routes');
+const empresaRoutes = require('./src/routes/empresa.routes');
+const comprobanteRoutes = require('./src/routes/comprobante.routes');
+const clienteRoutes = require('./src/routes/cliente.routes');
+
+// ===============================
+// CONFIGURACIÓN DE EXPRESS
+// ===============================
+const app = express();
+
+// ===============================
+// TRUST PROXY
+// ===============================
+// Solo confiar en el primer hop cuando el despliegue realmente
+// usa un reverse proxy que sobrescribe X-Forwarded-For.
+// ===============================
+app.set(
+    'trust proxy',
+    ['1', 'true'].includes(
+        String(process.env.TRUST_PROXY || '').toLowerCase()
+    )
+        ? 1
+        : false
+);
+
+// ===============================
+// SEGURIDAD (helmet)
+// - Sin CSP para no interferir con el panel (imágenes servidas
+//   desde el backend en otro puerto).
+// - crossOriginResourcePolicy: 'cross-origin' permite que el panel
+//   (React en :5173) cargue portadas desde /uploads.
+// - helmet elimina el header X-Powered-By de Express.
+// ===============================
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: {
+        policy: 'cross-origin'
+    }
+}));
+
+const PORT = process.env.PORT || 3000;
+
+// ===============================
+// MIDDLEWARE
+// ===============================
+const origenesPermitidos = process.env.FRONTEND_ORIGINS
+    ? process.env.FRONTEND_ORIGINS.split(',').map(o => o.trim())
+    : ['http://localhost:5173'];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || origenesPermitidos.includes(origin)) {
+            return callback(null, true);
+        }
+
+        return callback(
+            new Error('Origen no permitido por CORS'),
+            false
+        );
+    }
+}));
+
+app.use(express.json({ limit: '1mb' }));
+
+// ===============================
+// RATE LIMITING GLOBAL
+// ===============================
+app.use(baseLimiter);
+
+// ===============================
+// ARCHIVOS ESTÁTICOS - PORTADAS
+// ===============================
+app.use(
+    '/uploads',
+    express.static(
+        path.join(__dirname, 'uploads')
+    )
+);
+
+// ===============================
+// RUTA PRINCIPAL
+// ===============================
+app.get('/', (req, res) => {
+    res.json({
+        mensaje: 'Servidor de Librería funcionando'
+    });
+});
+
+// ===============================
+// API PRINCIPAL
+// ===============================
+app.get('/api', (req, res) => {
+    res.json({
+        mensaje: 'API de Librería funcionando correctamente'
+    });
+});
+
+// ===============================
+// PRUEBA DE CONEXIÓN MYSQL
+// (SOLO ADMIN: requiere JWT + rol administrador)
+// ===============================
+app.get(
+    '/api/test-db',
+    verificarToken,
+    verificarRol('administrador'),
+    async (req, res) => {
+        try {
+            const [rows] = await pool.query(
+                'SELECT 1 AS resultado'
+            );
+
+            res.json({
+                mensaje: 'Conexión con MySQL exitosa',
+                resultado: rows[0].resultado
+            });
+
+        } catch (error) {
+            console.error(
+                'Error de MySQL:',
+                error
+            );
+
+            res.status(500).json({
+                mensaje: 'Error al conectar con MySQL'
+            });
+        }
+    }
+);
+
+// ===============================
+// API DE LIBROS
+// ===============================
+app.use(
+    '/api/libros',
+    libroRoutes
+);
+
+// ===============================
+// API DE AUTORES
+// ===============================
+app.use(
+    '/api/autores',
+    autorRoutes
+);
+
+// ===============================
+// API DE CATEGORÍAS
+// ===============================
+app.use(
+    '/api/categorias',
+    categoriaRoutes
+);
+
+// ===============================
+// API DE INVENTARIO
+// ===============================
+app.use(
+    '/api/inventario',
+    inventarioRoutes
+);
+
+// ===============================
+// API DE RESERVAS
+// ===============================
+app.use(
+    '/api/reservas',
+    reservaRoutes
+);
+
+// ===============================
+// API DE VENTAS
+// ===============================
+app.use(
+    '/api/ventas',
+    ventaRoutes
+);
+
+// ===============================
+// API DE AUTENTICACIÓN
+// ===============================
+app.use(
+    '/api/auth',
+    authRoutes
+);
+
+// ===============================
+// API DE HISTORIAL
+// ===============================
+app.use(
+    '/api/historial',
+    historialRoutes
+);
+
+// ===============================
+// API DE REPORTES
+// ===============================
+app.use(
+    '/api/reportes',
+    reporteRoutes
+);
+
+// ===============================
+// API DE USUARIOS
+// ===============================
+app.use(
+    '/api/usuarios',
+    usuarioRoutes
+);
+
+// ===============================
+// API DE PAGOS (Mercado Pago)
+// ===============================
+app.use(
+    '/api/pagos',
+    pagoRoutes
+);
+
+// ===============================
+// API DE UBICACIONES (LIMA)
+// ===============================
+app.use(
+    '/api/ubicaciones',
+    ubicacionRoutes
+);
+
+// ===============================
+// API DE AGENCIAS COURIER
+// ===============================
+app.use(
+    '/api/agencias',
+    agenciaRoutes
+);
+
+// ===============================
+// API DE EMPRESA (EMISOR)
+// ===============================
+app.use(
+    '/api/empresa',
+    empresaRoutes
+);
+
+// ===============================
+// API DE COMPROBANTES DE PAGO
+// ===============================
+app.use(
+    '/api/comprobantes',
+    comprobanteRoutes
+);
+
+app.use(
+    '/api/clientes',
+    clienteRoutes
+);
+
+// ===============================
+// RUTA NO ENCONTRADA
+// ===============================
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        mensaje: 'Ruta no encontrada'
+    });
+});
+
+// ===============================
+// MIDDLEWARE GLOBAL DE ERRORES
+// (después del 404)
+// ===============================
+app.use(manejarErrores);
+
+// ===============================
+// JOBS DE LIMPIEZA
+// ===============================
+iniciarJobs();
+
+// ===============================
+// INICIAR SERVIDOR
+// ===============================
+app.listen(PORT, () => {
+    console.log(
+        `Servidor ejecutándose en http://localhost:${PORT}`
+    );
+});
