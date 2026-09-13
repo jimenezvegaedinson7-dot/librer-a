@@ -60,3 +60,4 @@ services:
     name: libreria-db
     region: oregon
     plan: free
+    runtime: postgresql
