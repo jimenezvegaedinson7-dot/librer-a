@@ -54,12 +54,9 @@ services:
         sync: false
       - key: EMAIL_FROM
         sync: false
-    # Base de datos PostgreSQL (se crea automáticamente)
-    # La URL se inyecta automáticamente como DATABASE_URL
 
   # Base de datos PostgreSQL
   - type: pserv
     name: libreria-db
     region: oregon
     plan: free
-    ipAllowList: []
