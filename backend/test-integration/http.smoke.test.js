@@ -20,8 +20,9 @@ test('smoke HTTP de rutas públicas y administrativas', async () => {
                 (nombre, apellido, email, password, rol, estado)
             VALUES
                 ('Smoke', 'CI', ?, 'no-login', 'administrador', 1)
+            RETURNING id_usuario
         `, [email]);
-        idUsuario = resultado.insertId;
+        idUsuario = resultado[0]?.id_usuario;
 
         const token = jwt.sign(
             { id_usuario: idUsuario },
@@ -80,6 +81,8 @@ test('smoke HTTP de rutas públicas y administrativas', async () => {
             /idempotencia_clave es obligatoria/i
         );
 
+        // PayU firma con MD5; sin PAYU_API_KEY configurado
+        // la verificación falla en modo fail-closed (401).
         const webhook = await fetch(
             `${baseUrl}/api/pagos/webhook`,
             {
@@ -88,17 +91,12 @@ test('smoke HTTP de rutas públicas y administrativas', async () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    type: 'payment',
-                    data: { id: 'smoke' }
+                    referenceCode: 'smoke',
+                    state: 'APPROVED'
                 })
             }
         );
-        assert.equal(
-            webhook.status,
-            process.env.MERCADOPAGO_WEBHOOK_SECRET
-                ? 401
-                : 503
-        );
+        assert.equal(webhook.status, 401);
     } finally {
         if (idUsuario) {
             await pool.query(

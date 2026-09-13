@@ -42,11 +42,12 @@ const obtenerEmpresa = async () => {
 
     // ========================================
     // CREAR FILA POR DEFECTO (id=1, ruc='')
-    // INSERT IGNORE: idempotente ante concurrencia.
+    // ON CONFLICT DO NOTHING: idempotente ante concurrencia.
     // ========================================
     await pool.query(`
-        INSERT IGNORE INTO empresa (id, ruc)
+        INSERT INTO empresa (id, ruc)
         VALUES (1, '')
+        ON CONFLICT (id) DO NOTHING
     `);
 
     const [creada] = await pool.query(`

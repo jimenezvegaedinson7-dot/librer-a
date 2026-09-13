@@ -5,8 +5,8 @@ const agenciaModel = require('../models/agencia.model');
 const pool = require('../config/database');
 const { validarId } = require('../utils/validaciones');
 const { VENTA, permitirTransicion } = require('../utils/transiciones');
-const mercadopagoService = require('../services/mercadopago.service');
-const { extraerEstadoOrdenMP } = require('../utils/mpStatus');
+const payuService = require('../services/payu.service');
+const { extraerEstadoOrdenPayu } = require('../utils/payuStatus');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR LA VENTA
@@ -640,29 +640,29 @@ const obtenerPagoVenta = async (req, res) => {
             });
         }
 
-        let ordenMp = null;
+        let ordenPayu = null;
 
-        if (datosPago.mp_preference_id) {
+        if (datosPago.payu_order_id) {
             const resultadoOrden =
-                await mercadopagoService.obtenerOrdenDiagnostico(
-                    datosPago.mp_preference_id
+                await payuService.obtenerOrdenDiagnostico(
+                    datosPago.payu_order_id
                 );
 
             if (
                 resultadoOrden &&
                 !resultadoOrden.errorFetch
             ) {
-                ordenMp = resultadoOrden;
+                ordenPayu = resultadoOrden;
             }
         }
 
-        const estadoMp = ordenMp
-            ? extraerEstadoOrdenMP(ordenMp)
+        const estadoPayu = ordenPayu
+            ? extraerEstadoOrdenPayu(ordenPayu)
             : null;
 
         const tienePago =
-            datosPago.mp_payment_id ||
-            datosPago.mp_payment_status ||
+            datosPago.payu_payment_id ||
+            datosPago.payu_payment_status ||
             datosPago.external_reference;
 
         return res.json({
@@ -671,25 +671,25 @@ const obtenerPagoVenta = async (req, res) => {
                 id_venta: datosPago.id_venta,
                 external_reference:
                     datosPago.external_reference,
-                mp_preference_id:
-                    datosPago.mp_preference_id,
+                payu_order_id:
+                    datosPago.payu_order_id,
                 order_id:
-                    datosPago.mp_preference_id,
+                    datosPago.payu_order_id,
                 checkout_url:
-                    ordenMp?.checkout_url ||
-                    ordenMp?.init_point ||
+                    ordenPayu?.checkout_url ||
+                    ordenPayu?.init_point ||
                     null,
-                mp_payment_id:
-                    datosPago.mp_payment_id,
-                mp_payment_status:
-                    datosPago.mp_payment_status,
+                payu_payment_id:
+                    datosPago.payu_payment_id,
+                payu_payment_status:
+                    datosPago.payu_payment_status,
                 metodo_pago:
                     tienePago
-                        ? 'mercadopago'
+                        ? 'payu'
                         : null,
                 estado_pago:
-                    estadoMp?.status ||
-                    datosPago.mp_payment_status,
+                    estadoPayu?.status ||
+                    datosPago.payu_payment_status,
                 fecha_pago: null,
                 estado: datosPago.estado,
                 estado_venta:

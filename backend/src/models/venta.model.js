@@ -1,6 +1,6 @@
 const pool = require('../config/database');
 const { VENTA, permitirTransicion } = require('../utils/transiciones');
-const { consultarEstadoOrdenMP } = require('../utils/mpStatus');
+const { consultarEstadoOrdenPayu } = require('../utils/payuStatus');
 const { registrarMovimiento } = require('./inventario.model');
 
 // ========================================
@@ -28,10 +28,10 @@ const obtenerTodos = async () => {
             a.nombre AS agencia,
             v.correo_compra,
             v.external_reference,
-            v.mp_preference_id,
-            v.mp_payment_id,
-            v.mp_payment_status,
-            v.mp_payer_email,
+            v.payu_order_id,
+            v.payu_payment_id,
+            v.payu_payment_status,
+            v.payu_payer_email,
             EXISTS (
                 SELECT 1
                 FROM comprobantes cc
@@ -77,10 +77,10 @@ const obtenerPorId = async (id) => {
             a.nombre AS agencia,
             v.correo_compra,
             v.external_reference,
-            v.mp_preference_id,
-            v.mp_payment_id,
-            v.mp_payment_status,
-            v.mp_payer_email,
+            v.payu_order_id,
+            v.payu_payment_id,
+            v.payu_payment_status,
+            v.payu_payer_email,
             EXISTS (
                 SELECT 1
                 FROM comprobantes cc
@@ -150,10 +150,10 @@ const obtenerPorUsuario = async (id_usuario) => {
             a.nombre AS agencia,
             v.correo_compra,
             v.external_reference,
-            v.mp_preference_id,
-            v.mp_payment_id,
-            v.mp_payment_status,
-            v.mp_payer_email,
+            v.payu_order_id,
+            v.payu_payment_id,
+            v.payu_payment_status,
+            v.payu_payer_email,
             EXISTS (
                 SELECT 1
                 FROM comprobantes cc
@@ -296,7 +296,7 @@ const crear = async (venta) => {
             referencia,
             correo_compra,
             external_reference,
-            mp_preference_id,
+            payu_order_id,
             idempotencia_clave,
             id_distrito,
             id_agencia,
@@ -479,7 +479,7 @@ const crear = async (venta) => {
                     referencia,
                     correo_compra,
                     external_reference,
-                    mp_preference_id,
+                    payu_order_id,
                     idempotencia_clave,
                     id_distrito,
                     id_agencia,
@@ -495,7 +495,7 @@ const crear = async (venta) => {
                 referencia || null,
                 correo_compra || null,
                 external_reference || null,
-                mp_preference_id || null,
+                payu_order_id || null,
                 idempotencia_clave || null,
                 id_distrito || null,
                 id_agencia || null,
@@ -586,7 +586,7 @@ const buscarPorReferenciaExterna = async (externalReference) => {
             v.estado,
             v.total,
             v.costo_envio,
-            v.mp_payment_status,
+            v.payu_payment_status,
             v.correo_compra
         FROM ventas v
         WHERE v.external_reference = ?
@@ -596,7 +596,7 @@ const buscarPorReferenciaExterna = async (externalReference) => {
     return rows[0] || null;
 };
 
-const buscarPorPreferenciaMp = async (preferenceId) => {
+const buscarPorPayuOrderId = async (preferenceId) => {
     const [rows] = await pool.query(`
         SELECT
             v.id_venta,
@@ -605,10 +605,10 @@ const buscarPorPreferenciaMp = async (preferenceId) => {
             v.total,
             v.costo_envio,
             v.external_reference,
-            v.mp_payment_status,
+            v.payu_payment_status,
             v.correo_compra
         FROM ventas v
-        WHERE v.mp_preference_id = ?
+        WHERE v.payu_order_id = ?
         LIMIT 1
     `, [preferenceId]);
 
@@ -620,24 +620,24 @@ const buscarPorPreferenciaMp = async (preferenceId) => {
 // ========================================
 const actualizarDatosPago = async ({
     external_reference,
-    mp_preference_id,
-    mp_payment_id,
-    mp_payment_status,
-    mp_payer_email
+    payu_order_id,
+    payu_payment_id,
+    payu_payment_status,
+    payu_payer_email
 }) => {
     const [resultado] = await pool.query(`
         UPDATE ventas
         SET
-            mp_preference_id = COALESCE(?, mp_preference_id),
-            mp_payment_id = COALESCE(?, mp_payment_id),
-            mp_payment_status = COALESCE(?, mp_payment_status),
-            mp_payer_email = COALESCE(?, mp_payer_email)
+            payu_order_id = COALESCE(?, payu_order_id),
+            payu_payment_id = COALESCE(?, payu_payment_id),
+            payu_payment_status = COALESCE(?, payu_payment_status),
+            payu_payer_email = COALESCE(?, payu_payer_email)
         WHERE external_reference = ?
     `, [
-        mp_preference_id ?? null,
-        mp_payment_id ?? null,
-        mp_payment_status ?? null,
-        mp_payer_email ?? null,
+        payu_order_id ?? null,
+        payu_payment_id ?? null,
+        payu_payment_status ?? null,
+        payu_payer_email ?? null,
         external_reference
     ]);
 
@@ -791,10 +791,10 @@ const obtenerDatosPago = async (id) => {
             id_usuario,
             fecha_venta,
             external_reference,
-            mp_preference_id,
-            mp_payment_id,
-            mp_payment_status,
-            mp_payer_email,
+            payu_order_id,
+            payu_payment_id,
+            payu_payment_status,
+            payu_payer_email,
             estado
         FROM ventas
         WHERE id_venta = ?
@@ -899,10 +899,10 @@ const listarPagosAdmin = async ({
             v.id_venta,
             v.id_usuario,
             v.external_reference,
-            v.mp_preference_id,
-            v.mp_payment_id,
-            v.mp_payment_status,
-            v.mp_payer_email,
+            v.payu_order_id,
+            v.payu_payment_id,
+            v.payu_payment_status,
+            v.payu_payer_email,
             v.total,
             v.costo_envio,
             v.estado,
@@ -922,11 +922,11 @@ const listarPagosAdmin = async ({
     return {
         pagos: rows.map((row) => ({
             id_venta: row.id_venta,
-            id_pago: row.mp_payment_id,
+            id_pago: row.payu_payment_id,
             external_reference:
                 row.external_reference,
-            mp_preference_id:
-                row.mp_preference_id,
+            payu_order_id:
+                row.payu_order_id,
             metodo_pago:
                 row.external_reference
                     ? 'mercadopago'
@@ -934,7 +934,7 @@ const listarPagosAdmin = async ({
             estado_venta:
                 row.estado,
             estado_pago:
-                row.mp_payment_status,
+                row.payu_payment_status,
             monto_total:
                 Number(row.total),
             tipo_entrega:
@@ -968,8 +968,8 @@ const listarPagosAdmin = async ({
 // Reglas:
 //   - Ventas SIN external_reference (mostrador/pendiente) → cancelar
 //     y devolver stock directamente.
-//   - Ventas CON external_reference/mp_preference_id → se consulta
-//     Mercado Pago:
+//   - Ventas CON external_reference/payu_order_id → se consulta
+//     PayU:
 //       * pagado  → NO se cancela (el pago sí ocurrió) y no se
 //                   devuelve stock.
 //       * error   → API caída: no se cancela (evita liberar stock
@@ -993,12 +993,12 @@ const cancelarOrdenesAbandonadas = async (minutos = 30) => {
             SELECT
                 id_venta,
                 external_reference,
-                mp_preference_id
+                payu_order_id
             FROM ventas
             WHERE
                 estado = 'pendiente'
                 AND id_venta > ?
-                AND fecha_venta < NOW() - INTERVAL ? MINUTE
+                AND fecha_venta < NOW() - (? * INTERVAL '1 MINUTE')
             ORDER BY id_venta ASC
             LIMIT ?
         `, [desdeId, minutos, TAMANO_LOTE]);
@@ -1012,7 +1012,7 @@ const cancelarOrdenesAbandonadas = async (minutos = 30) => {
 
             try {
                 // ========================================
-                // VENTA MOSTRADOR / PENDIENTE (sin MP)
+                // VENTA MOSTRADOR / PENDIENTE (sin PS)
                 // ========================================
                 if (
                     !venta.external_reference
@@ -1026,41 +1026,41 @@ const cancelarOrdenesAbandonadas = async (minutos = 30) => {
                 }
 
                 // ========================================
-                // VENTA CON ORDEN MP: CONSULTAR ESTADO REAL
+                // VENTA CON ORDEN PAYU: CONSULTAR ESTADO REAL
                 // ========================================
-                const estadoMp =
-                    await consultarEstadoOrdenMP({
+                const estadoPayu =
+                    await consultarEstadoOrdenPayu({
                         externalReference:
                             venta.external_reference ||
                             null,
                         orderId:
-                            venta.mp_preference_id ||
+                            venta.payu_order_id ||
                             null
                     });
 
                 // API caída: no cancelar para no liberar
                 // stock de una compra posiblemente pagada.
-                if (estadoMp.error) {
+                if (estadoPayu.error) {
                     console.error(
-                        `[venta] No se pudo consultar MP para la venta ${venta.id_venta}: ${estadoMp.mensaje}`
+                        `[venta] No se pudo consultar PayU para la venta ${venta.id_venta}: ${estadoPayu.mensaje}`
                     );
                     continue;
                 }
 
-                // Pago REALMENTE ocurrido en MP: no cancelar.
-                if (estadoMp.pagado) {
+                // Pago REALMENTE ocurrido en PayU: no cancelar.
+                if (estadoPayu.pagado) {
                     console.log(
-                        `[venta] Orden MP pagada detectada, no se cancela id=${venta.id_venta} (${estadoMp.status || 'aprobado'})`
+                        `[venta] Orden PayU pagada detectada, no se cancela id=${venta.id_venta} (${estadoPayu.status || 'aprobado'})`
                     );
                     conPagoPendienteEnMP++;
                     continue;
                 }
 
                 // Un pago pendiente/en proceso puede confirmarse después.
-                // No se devuelve stock mientras MP lo siga procesando.
-                if (estadoMp.pendiente) {
+                // No se devuelve stock mientras PayU lo siga procesando.
+                if (estadoPayu.pendiente) {
                     console.log(
-                        `[venta] Orden MP aún en proceso, no se cancela id=${venta.id_venta} (${estadoMp.status})`
+                        `[venta] Orden PayU aún en proceso, no se cancela id=${venta.id_venta} (${estadoPayu.status})`
                     );
                     conPagoPendienteEnMP++;
                     continue;
@@ -1100,7 +1100,7 @@ module.exports = {
     obtenerPorId,
     obtenerPorUsuario,
     buscarPorReferenciaExterna,
-    buscarPorPreferenciaMp,
+    buscarPorPayuOrderId,
     crear,
     actualizarDatosPago,
     actualizarEstado,

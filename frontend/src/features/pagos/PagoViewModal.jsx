@@ -132,13 +132,13 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
                     </div>
                 </Ficha>
 
-                <Ficha icono={<FaBarcode />} etiqueta="Referencia externa / preferencia MP">
+                <Ficha icono={<FaBarcode />} etiqueta="Referencia externa / orden PayU">
                     <div className="space-y-2">
                         <p className="break-all text-sm" title={pago.external_reference}>
                             {pago.external_reference || 'Sin referencia'}
                         </p>
-                        <p className="break-all text-xs font-normal text-slate-600" title={pago.mp_preference_id}>
-                            {pago.mp_preference_id || 'Sin preferencia MP'}
+                        <p className="break-all text-xs font-normal text-slate-600" title={pago.payu_order_id}>
+                            {pago.payu_order_id || 'Sin orden PayU'}
                         </p>
                     </div>
                 </Ficha>

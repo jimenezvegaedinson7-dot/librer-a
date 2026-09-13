@@ -85,7 +85,7 @@ class Venta {
       agencia: JsonUtils.asString(json['agencia']),
       correoCompra: JsonUtils.asString(json['correo_compra']),
       orderId:
-          JsonUtils.asString(json['mp_preference_id']) ??
+          JsonUtils.asString(json['payu_order_id']) ??
           JsonUtils.asString(json['order_id']),
       detalle: rawDetalle is List
           ? rawDetalle

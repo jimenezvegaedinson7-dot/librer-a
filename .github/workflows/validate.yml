@@ -9,21 +9,23 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     services:
-      mysql:
-        image: mysql:8.4
+      postgres:
+        image: postgres:16
         env:
-          MYSQL_ROOT_PASSWORD: root
+          POSTGRES_PASSWORD: root
+          POSTGRES_USER: root
+          POSTGRES_DB: libreria_db
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-cmd="pg_isready -U root -d libreria_db"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
     env:
       PORT: 3000
       DB_HOST: 127.0.0.1
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_USER: root
       DB_PASSWORD: root
       DB_NAME: libreria_db
@@ -42,7 +44,7 @@ jobs:
         working-directory: backend
         run: npm ci
       - name: Crear base de datos
-        run: mysql --protocol=tcp -h 127.0.0.1 -uroot -proot < backend/database/schema.sql
+        run: PGPASSWORD=root psql -h 127.0.0.1 -U root -d libreria_db -f backend/database/schema.sql
       - name: Pruebas unitarias
         working-directory: backend
         run: npm test

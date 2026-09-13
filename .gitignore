@@ -64,5 +64,7 @@ libreria_app/pubspec.lock
 
 # Backups
 backups/
-*.sql
 *.dump
+
+# No ignorar el schema de la base de datos
+!backend/database/schema.sql

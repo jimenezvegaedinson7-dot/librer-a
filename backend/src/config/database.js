@@ -33,14 +33,78 @@ function convertPlaceholders(sql, params = []) {
 }
 
 /**
+ * Para INSERT sin RETURNING, PostgreSQL necesita RETURNING para devolver
+ * la fila insertada (mysql2 devuelve insertId automáticamente).
+ */
+const prepararSql = (sql, params) => {
+    const { text, values } = convertPlaceholders(sql, params);
+    const esInsert = /^\s*INSERT\b/i.test(text);
+    const tieneReturning = /\bRETURNING\b/i.test(text);
+    const textoFinal = (esInsert && !tieneReturning)
+        ? `${text} RETURNING *`
+        : text;
+    return { text: textoFinal, values };
+};
+
+/**
+ * Primera columna candidata a ser la llave primaria de una fila.
+ */
+const primeraClaveId = (fila) => {
+    const claves = Object.keys(fila);
+    return (
+        claves.find((k) => k === 'id' || k.endsWith('_id')) ||
+        claves[0]
+    );
+};
+
+/**
+ * Construye el arreglo [rows, fields] compatible con mysql2 y
+ * adjunta sobre `rows` las propiedades insertId / affectedRows / changedRows.
+ */
+const construirResultado = (ejecucion) => {
+    const filas = ejecucion.rows || [];
+
+    if (Array.isArray(filas)) {
+        const primera = filas[0] || null;
+        const claveId = primera
+            ? primeraClaveId(primera)
+            : null;
+        const valorId = primera && claveId
+            ? firstNullableN(primera[claveId])
+            : null;
+
+        filas.insertId =
+            valorId !== null && valorId !== undefined
+                ? Number(valorId) || 0
+                : 0;
+        filas.affectedRows = ejecucion.rowCount ?? 0;
+        filas.changedRows = filas.affectedRows;
+    }
+
+    const fields = ejecucion.fields
+        ? ejecucion.fields.map((f) => ({
+            name: f.name,
+            type: f.dataTypeID
+        }))
+        : [];
+
+    return [filas, fields];
+};
+
+const firstNullableN = (valor) => {
+    if (valor === null || valor === undefined) {
+        return null;
+    }
+    return Number(valor);
+};
+
+/**
  * Wrapper que devuelve [rows, fields] compatible con mysql2
  */
 const mysql2CompatibleQuery = async (sql, params) => {
-    const { text, values } = convertPlaceholders(sql, params);
-    const result = await pool.query(text, values);
-    // mysql2 devuelve [rows, fields] donde fields contiene metadatos de columnas
-    const fields = result.fields ? result.fields.map(f => ({ name: f.name, type: f.dataTypeID })) : [];
-    return [result.rows, fields];
+    const { text, values } = prepararSql(sql, params);
+    const resultado = await pool.query(text, values);
+    return construirResultado(resultado);
 };
 
 /**
@@ -48,18 +112,17 @@ const mysql2CompatibleQuery = async (sql, params) => {
  */
 const getConnection = async () => {
     const client = await pool.connect();
-    
+
     const originalQuery = client.query.bind(client);
     client.query = async (sql, params) => {
-        const { text, values } = convertPlaceholders(sql, params);
-        const result = await originalQuery(text, values);
-        const fields = result.fields ? result.fields.map(f => ({ name: f.name, type: f.dataTypeID })) : [];
-        return [result.rows, fields];
+        const { text, values } = prepararSql(sql, params);
+        const resultado = await originalQuery(text, values);
+        return construirResultado(resultado);
     };
-    
+
     // También mantener el método original para casos que lo necesiten
     client.pgQuery = originalQuery;
-    
+
     return client;
 };
 

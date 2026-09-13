@@ -299,7 +299,7 @@ export default function PagosPage() {
                 { titulo: 'Estado pago', exportar: (f) => f.estado_pago || '' },
                 { titulo: 'Fecha', exportar: (f) => f.fecha_creacion || '' },
                 { titulo: 'Referencia', exportar: (f) => f.external_reference || '' },
-                { titulo: 'Preferencia MP', exportar: (f) => f.mp_preference_id || '' },
+                { titulo: 'Orden PayU', exportar: (f) => f.payu_order_id || '' },
             ],
             filas: pagosOrdenados,
         });

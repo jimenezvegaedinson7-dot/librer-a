@@ -444,7 +444,7 @@ const cancelarVencidas = async () => {
         WHERE
             estado IN ('pendiente', 'confirmada')
             AND fecha_vencimiento IS NOT NULL
-            AND fecha_vencimiento < CURDATE()
+            AND fecha_vencimiento < CURRENT_DATE
     `);
 
     let canceladas = 0;

@@ -146,10 +146,10 @@ const obtenerStockBajo = async () => {
 const obtenerVentasPorMes = async () => {
     const [rows] = await pool.query(`
         SELECT
-            YEAR(fecha_venta) AS anio,
-            MONTH(fecha_venta) AS mes_numero,
+            EXTRACT(YEAR FROM fecha_venta) AS anio,
+            EXTRACT(MONTH FROM fecha_venta) AS mes_numero,
 
-            CASE MONTH(fecha_venta)
+            CASE EXTRACT(MONTH FROM fecha_venta)
                 WHEN 1 THEN 'Ene'
                 WHEN 2 THEN 'Feb'
                 WHEN 3 THEN 'Mar'
@@ -181,12 +181,12 @@ const obtenerVentasPorMes = async () => {
         WHERE estado = 'pagada'
 
         GROUP BY
-            YEAR(fecha_venta),
-            MONTH(fecha_venta)
+            EXTRACT(YEAR FROM fecha_venta),
+            EXTRACT(MONTH FROM fecha_venta)
 
         ORDER BY
-            YEAR(fecha_venta) DESC,
-            MONTH(fecha_venta) DESC
+            EXTRACT(YEAR FROM fecha_venta) DESC,
+            EXTRACT(MONTH FROM fecha_venta) DESC
 
         LIMIT 12
     `);
@@ -202,11 +202,11 @@ const obtenerVentasPorDia = async () => {
         SELECT
             DATE(fecha_venta) AS fecha,
 
-            DAY(fecha_venta) AS dia,
+            EXTRACT(DAY FROM fecha_venta) AS dia,
 
-            MONTH(fecha_venta) AS mes_numero,
+            EXTRACT(MONTH FROM fecha_venta) AS mes_numero,
 
-            YEAR(fecha_venta) AS anio,
+            EXTRACT(YEAR FROM fecha_venta) AS anio,
 
             COUNT(*) AS cantidad_ventas,
 
@@ -231,9 +231,9 @@ const obtenerVentasPorDia = async () => {
 
         GROUP BY
             DATE(fecha_venta),
-            DAY(fecha_venta),
-            MONTH(fecha_venta),
-            YEAR(fecha_venta)
+            EXTRACT(DAY FROM fecha_venta),
+            EXTRACT(MONTH FROM fecha_venta),
+            EXTRACT(YEAR FROM fecha_venta)
 
         ORDER BY
             DATE(fecha_venta) DESC
@@ -290,7 +290,7 @@ const obtenerIndicadoresVentas = async () => {
 
         WHERE
             estado = 'pagada'
-            AND DATE(fecha_venta) = CURDATE()
+            AND DATE(fecha_venta) = CURRENT_DATE
     `);
 
     const [[mesActual]] = await pool.query(`
@@ -306,16 +306,16 @@ const obtenerIndicadoresVentas = async () => {
 
         WHERE
             estado = 'pagada'
-            AND YEAR(fecha_venta) = YEAR(CURDATE())
-            AND MONTH(fecha_venta) = MONTH(CURDATE())
+            AND EXTRACT(YEAR FROM fecha_venta) = EXTRACT(YEAR FROM CURRENT_DATE)
+            AND EXTRACT(MONTH FROM fecha_venta) = EXTRACT(MONTH FROM CURRENT_DATE)
     `);
 
     const [[mejorMes]] = await pool.query(`
         SELECT
-            YEAR(fecha_venta) AS anio,
-            MONTH(fecha_venta) AS mes_numero,
+            EXTRACT(YEAR FROM fecha_venta) AS anio,
+            EXTRACT(MONTH FROM fecha_venta) AS mes_numero,
 
-            CASE MONTH(fecha_venta)
+            CASE EXTRACT(MONTH FROM fecha_venta)
                 WHEN 1 THEN 'Enero'
                 WHEN 2 THEN 'Febrero'
                 WHEN 3 THEN 'Marzo'
@@ -342,8 +342,8 @@ const obtenerIndicadoresVentas = async () => {
         WHERE estado = 'pagada'
 
         GROUP BY
-            YEAR(fecha_venta),
-            MONTH(fecha_venta)
+            EXTRACT(YEAR FROM fecha_venta),
+            EXTRACT(MONTH FROM fecha_venta)
 
         ORDER BY
             total_vendido DESC,
