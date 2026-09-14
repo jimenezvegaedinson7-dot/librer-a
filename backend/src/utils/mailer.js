@@ -10,12 +10,12 @@
 
 const nodemailer = require('nodemailer');
 
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = Number(process.env.SMTP_PORT || 465);
-const SMTP_SECURE = String(process.env.SMTP_SECURE || 'true') === 'true';
-const SMTP_USER = process.env.SMTP_USER;
-const SMTP_PASS = process.env.SMTP_PASS;
-const MAIL_FROM = process.env.MAIL_FROM || SMTP_USER;
+const SMTP_HOST = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
+const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 465);
+const SMTP_SECURE = String(process.env.SMTP_SECURE || process.env.EMAIL_SECURE || 'true') === 'true';
+const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
+const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+const MAIL_FROM = process.env.MAIL_FROM || process.env.EMAIL_FROM || SMTP_USER;
 
 // ¿Está configurado el SMTP? Si no, el sistema funciona en "modo consola".
 const smtpConfigurado =
