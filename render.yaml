@@ -21,7 +21,7 @@ services:
       - key: TWO_FACTOR_ENCRYPTION_KEY
         generateValue: true
       - key: FRONTEND_ORIGINS
-        value: https://libreria-frontend.onrender.com
+        value: https://libreria-frontend.onrender.com,https://libreria-peach.vercel.app
       - key: TRUST_PROXY
         value: "1"
       - key: DATABASE_URL
