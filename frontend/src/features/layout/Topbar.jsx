@@ -297,13 +297,6 @@ export default function Topbar({ onAbrirMenu }) {
                             </button>
                             {menuAbierto && (
                                 <div className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
-                                    <div className="flex items-center gap-3 border-b border-slate-100 px-3 py-3">
-                                        <Avatar foto={foto} inicial={inicial} className="h-10 w-10" />
-                                        <div className="min-w-0">
-                                            <p className="truncate text-sm font-bold text-slate-800">{nombre}</p>
-                                            <p className="truncate text-xs text-slate-600">{usuario?.email || 'Correo no registrado'}</p>
-                                        </div>
-                                    </div>
                                     <button
                                         type="button"
                                         onClick={() => {
