@@ -113,29 +113,26 @@ const mysql2CompatibleQuery = async (sql, params) => {
 const getConnection = async () => {
     const client = await pool.connect();
 
-    const originalQuery = client.query.bind(client);
-    client.query = async (sql, params) => {
+    const wrappedQuery = async (sql, params) => {
         const { text, values } = prepararSql(sql, params);
-        const resultado = await originalQuery(text, values);
+        const resultado = await client.query(text, values);
         return construirResultado(resultado);
     };
 
-    // API transaccional compatible con mysql2: node-postgres no trae
-    // estos métodos, se emulan con sentencias SQL en la misma conexión.
-    client.beginTransaction = async () => {
-        await originalQuery('BEGIN');
+    return {
+        query: wrappedQuery,
+        beginTransaction: async () => {
+            await client.query('BEGIN');
+        },
+        commit: async () => {
+            await client.query('COMMIT');
+        },
+        rollback: async () => {
+            await client.query('ROLLBACK');
+        },
+        release: () => client.release(),
+        pgQuery: client.query.bind(client),
     };
-    client.commit = async () => {
-        await originalQuery('COMMIT');
-    };
-    client.rollback = async () => {
-        await originalQuery('ROLLBACK');
-    };
-
-    // También mantener el método original para casos que lo necesiten
-    client.pgQuery = originalQuery;
-
-    return client;
 };
 
 // Exportar objeto compatible con mysql2 pool
