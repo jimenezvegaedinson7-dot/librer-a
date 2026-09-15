@@ -9,6 +9,10 @@
 // ============================================================
 
 const nodemailer = require('nodemailer');
+const net = require('net');
+const { resolve4 } = require('dns').promises;
+
+let smtpResolver = null;
 
 const SMTP_HOST = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
 const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 465);
@@ -23,7 +27,28 @@ const smtpConfigurado =
 
 let transporter = null;
 
-function obtenerTransporter() {
+// Resuelve (una sola vez) la dirección IPv4 del host: Gmail publica A + AAAA
+// y Render no tiene ruta IPv6, por lo que si nodemailer sortea una AAAA la
+// conexión muere con ENETUNREACH. Conectar a la IP IPv4 literal desactiva el
+// sorteo de nodemailer (net.isIP) y garantiza el envío.
+async function hostIpv4() {
+    if (smtpResolver !== null) return smtpResolver;
+    if (!SMTP_HOST || net.isIP(SMTP_HOST)) {
+        smtpResolver = SMTP_HOST;
+        return smtpResolver;
+    }
+    try {
+        const direcciones = await resolve4(SMTP_HOST);
+        smtpResolver = direcciones[0];
+        if (!smtpResolver) throw new Error('sin registros A');
+    } catch (error) {
+        console.error(`[MAIL] No se pudo resolver IPv4 de ${SMTP_HOST}: ${error.message} (se usara el hostname)`);
+        smtpResolver = SMTP_HOST;
+    }
+    return smtpResolver;
+}
+
+async function obtenerTransporter() {
     if (!smtpConfigurado) return null;
     if (!transporter) {
         // Por defecto se validan los certificados TLS. En entornos de desarrollo
@@ -34,12 +59,13 @@ function obtenerTransporter() {
             String(process.env.SMTP_REJECT_UNAUTHORIZED || 'true').trim().toLowerCase() === 'true';
 
         transporter = nodemailer.createTransport({
-            host: SMTP_HOST,
+            host: await hostIpv4(),
             port: SMTP_PORT,
             secure: SMTP_SECURE,
+            // el hostname real se conserva para SNI y validación del certificado
+            servername: SMTP_HOST,
             // Gmail publica AAAA + A: en instancias (Render) sin IPv6, la
-            // conexión a la dirección IPv6 muere con ENETUNREACH. Forzamos
-            // la familia IPv4 para garantizar el envío.
+            // conexión a una dirección IPv6 muere con ENETUNREACH.
             family: 4,
             auth: {
                 user: SMTP_USER,
@@ -47,6 +73,7 @@ function obtenerTransporter() {
             },
             tls: {
                 rejectUnauthorized: rechazarNoAutorizado,
+                servername: SMTP_HOST,
             },
             connectionTimeout: 15000,
             greetingTimeout: 15000,
@@ -84,7 +111,7 @@ async function enviarCorreo({
         // Transporter nuevo en cada intento para no reutilizar un socket dañado.
         transporter = null;
 
-        const intentoRemitente = obtenerTransporter();
+        const intentoRemitente = await obtenerTransporter();
         if (!intentoRemitente) {
             return { enviado: false, consola: true };
         }
