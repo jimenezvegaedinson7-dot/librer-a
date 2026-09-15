@@ -1,18 +1,22 @@
 // ============================================================
-// UTILIDAD DE CORREO (nodemailer + SMTP Gmail)
+// UTILIDAD DE CORREO (Resend HTTP como canal principal + SMTP fallback)
 // ============================================================
 // Envía correos transaccionales como el código de verificación
-// de email en el registro. La configuración se lee del .env.
-// En desarrollo, si no hay credenciales, registra en consola solo
-// destinatario y asunto (NUNCA el código OTP ni el cuerpo) para
-// permitir probar el flujo sin enviarlo de verdad.
+// de email en el registro.
+//
+// Canal principal: Resend (API REST por HTTPS/puerto 443). Render
+// bloquea el tráfico SMTP saliente (25/465/587) en instancias donde
+// no hay ruta, por lo que Gmail SMTP da timeout. Resend sale por 443.
+//
+// Si no hay RESEND_API_KEY, se intenta SMTP (nodemailer) y, si tampoco
+// hay credenciales SMTP, se registra en consola solo destinatario y
+// asunto (NUNCA el código OTP ni el cuerpo) para probar el flujo local.
 // ============================================================
 
 const nodemailer = require('nodemailer');
-const net = require('net');
 const { resolve4 } = require('dns').promises;
 
-let smtpResolver = null;
+const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.EMAIL_RESEND_API_KEY;
 
 const SMTP_HOST = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
 const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 587);
@@ -20,20 +24,56 @@ const SMTP_SECURE = String(process.env.SMTP_SECURE || process.env.EMAIL_SECURE |
 const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
 const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
 const MAIL_FROM = process.env.MAIL_FROM || process.env.EMAIL_FROM || SMTP_USER;
+const MAIL_FROM_NAME = 'Librería';
 
-// ¿Está configurado el SMTP? Si no, el sistema funciona en "modo consola".
-const smtpConfigurado =
-    SMTP_HOST && SMTP_USER && SMTP_PASS;
+// ¿Está configurado algún canal? Si no, el sistema funciona en "modo consola".
+const resendConfigurado = Boolean(RESEND_API_KEY);
+const smtpConfigurado = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
 
 let transporter = null;
 
-// Resuelve (una sola vez) la dirección IPv4 del host: Gmail publica A + AAAA
-// y Render no tiene ruta IPv6, por lo que si nodemailer sortea una AAAA la
-// conexión muere con ENETUNREACH. Conectar a la IP IPv4 literal desactiva el
-// sorteo de nodemailer (net.isIP) y garantiza el envío.
+const resendHeaders = RESEND_API_KEY
+    ? {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+      }
+    : null;
+
+// Dirección visible del remitente. Sin dominio verificado, Resend solo
+// acepta "onboarding@resend.dev" (entrega únicamente al correo dueño de
+// la cuenta). Con dominio verificado, usar algo como no-reply@misdominio.com
+// vía RESEND_FROM.
+const RESEND_FROM =
+    process.env.RESEND_FROM || 'onboarding@resend.dev';
+
+async function enviarPorResend({ destinatario, asunto, html, texto }) {
+    const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: resendHeaders,
+        body: JSON.stringify({
+            from: `${MAIL_FROM_NAME} <${RESEND_FROM}>`,
+            to: [destinatario],
+            subject: asunto,
+            text: texto || undefined,
+            html,
+        }),
+    });
+    const cuerpo = await res.json().catch(() => null);
+    if (!res.ok) {
+        throw new Error(
+            `Resend HTTP ${res.status}: ${(cuerpo && (cuerpo.message || cuerpo.error)) || JSON.stringify(cuerpo)}`
+        );
+    }
+    return cuerpo;
+}
+
+// Resuelve (una sola vez) la dirección IPv4 del host SMTP. Gmail publica
+// A + AAAA y Render no tiene ruta IPv6; conectar a la IP IPv4 literal
+// desactiva el sorteo A/AAAA de nodemailer y evita ENETUNREACH.
+let smtpResolver = null;
 async function hostIpv4() {
     if (smtpResolver !== null) return smtpResolver;
-    if (!SMTP_HOST || net.isIP(SMTP_HOST)) {
+    if (!SMTP_HOST || require('net').isIP(SMTP_HOST)) {
         smtpResolver = SMTP_HOST;
         return smtpResolver;
     }
@@ -51,10 +91,6 @@ async function hostIpv4() {
 async function obtenerTransporter() {
     if (!smtpConfigurado) return null;
     if (!transporter) {
-        // Por defecto se validan los certificados TLS. En entornos de desarrollo
-        // con proxies/antivirus que inyectan certificados autofirmados (p. ej.
-        // "self-signed certificate in certificate chain") se puede desactivar
-        // la validación con SMTP_REJECT_UNAUTHORIZED=false.
         const rechazarNoAutorizado =
             String(process.env.SMTP_REJECT_UNAUTHORIZED || 'true').trim().toLowerCase() === 'true';
 
@@ -63,10 +99,7 @@ async function obtenerTransporter() {
             port: SMTP_PORT,
             secure: SMTP_SECURE,
             requireTLS: !SMTP_SECURE,
-            // el hostname real se conserva para SNI y validación del certificado
             servername: SMTP_HOST,
-            // Gmail publica AAAA + A: en instancias (Render) sin IPv6, la
-            // conexión a una dirección IPv6 muere con ENETUNREACH.
             family: 4,
             auth: {
                 user: SMTP_USER,
@@ -94,50 +127,62 @@ async function enviarCorreo({
     html,
     texto = null,
 }) {
-    // Modo consola: no hay SMTP configurado.
-    if (!smtpConfigurado) {
+    // Modo consola: no hay ningún canal configurado.
+    if (!resendConfigurado && !smtpConfigurado) {
         console.log(
-            `[MAIL·CONSOLA] to=${destinatario} subject=${asunto} ok=false (sin SMTP configurado)`
+            `[MAIL·CONSOLA] to=${destinatario} subject=${asunto} ok=false (sin canal configurado)`
         );
         return { enviado: false, consola: true };
     }
 
-    // Reintentos: la conexión TLS hacia el SMTP es intermitente, así que se
-    // intenta hasta 3 veces con backoff antes de caer al modo consola. El envío
-    // es fire-and-forget en el llamador, por lo que esto no bloquea la respuesta.
-    const MAX_INTENTOS = 3;
     let ultimoError = null;
 
-    for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
-        // Transporter nuevo en cada intento para no reutilizar un socket dañado.
-        transporter = null;
-
-        const intentoRemitente = await obtenerTransporter();
-        if (!intentoRemitente) {
-            return { enviado: false, consola: true };
-        }
-
+    // Canal 1: Resend (HTTPS). Robusto, 1 solo intento con timeout amable.
+    if (resendConfigurado) {
         try {
-            await intentoRemitente.sendMail({
-                from: `"Librería" <${MAIL_FROM}>`,
-                to: destinatario,
-                subject: asunto,
-                text: texto,
-                html,
-            });
-            return { enviado: true, consola: false };
+            const control = setTimeout(() => { throw new Error('Resend timeout'); }, 20000);
+            const res = await enviarPorResend({ destinatario, asunto, html, texto }).finally(() => clearTimeout(control));
+            if (res && res.id) {
+                return { enviado: true, consola: false, canal: 'resend' };
+            }
+            throw new Error('Resend no devolvio id');
         } catch (error) {
             ultimoError = error.message;
-            console.error(`[MAIL] Intento ${intento}/${MAX_INTENTOS} falló: ${error.message}`);
-            if (intento < MAX_INTENTOS) {
-                await new Promise((r) => setTimeout(r, 1500 * intento));
+            console.error(`[MAIL] Resend falló: ${error.message}`);
+        }
+    }
+
+    // Canal 2: SMTP. Hasta 3 intentos con backoff.
+    if (smtpConfigurado) {
+        const MAX_INTENTOS = 3;
+        for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
+            // Transporter nuevo en cada intento para no reutilizar un socket dañado.
+            transporter = null;
+
+            const intentoRemitente = await obtenerTransporter();
+            if (!intentoRemitente) break;
+
+            try {
+                await intentoRemitente.sendMail({
+                    from: `"${MAIL_FROM_NAME}" <${MAIL_FROM}>`,
+                    to: destinatario,
+                    subject: asunto,
+                    text: texto,
+                    html,
+                });
+                return { enviado: true, consola: false, canal: 'smtp' };
+            } catch (error) {
+                ultimoError = error.message;
+                console.error(`[MAIL] SMTP Intento ${intento}/${MAX_INTENTOS} falló: ${error.message}`);
+                if (intento < MAX_INTENTOS) {
+                    await new Promise((r) => setTimeout(r, 1500 * intento));
+                }
             }
         }
     }
 
-    // Si falla el envío real tras los reintentos, registramos solo
-    // destinatario/asunto y el error (sin imprimir el cuerpo ni el
-    // código OTP para no exponer secretos en logs).
+    // Si fallan los canales reales, registramos solo destinatario/asunto y
+    // el error (sin imprimir el cuerpo ni el código OTP).
     console.log(
         `[MAIL·FALLBACK] to=${destinatario} subject=${asunto} ok=false error=${ultimoError || '(desconocido)'}`
     );
@@ -182,4 +227,5 @@ module.exports = {
     enviarCorreo,
     enviarCodigoVerificacion,
     smtpConfigurado,
+    resendConfigurado,
 };
