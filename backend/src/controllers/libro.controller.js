@@ -696,6 +696,28 @@ const eliminarLibro = async (req, res) => {
         }
 
         // ========================================
+        // ELIMINAR PORTADA DE CLOUDINARY
+        // (best-effort)
+        // ========================================
+        if (libroExistente.portada) {
+            const publicId =
+                publicIdDesdeUrl(
+                    libroExistente.portada
+                );
+
+            if (publicId) {
+                try {
+                    await eliminarImagen(publicId);
+                } catch (errorPortada) {
+                    console.error(
+                        'No se pudo eliminar la portada de Cloudinary:',
+                        errorPortada.message
+                    );
+                }
+            }
+        }
+
+        // ========================================
         // HISTORIAL
         // ========================================
         await registrarHistorial({
