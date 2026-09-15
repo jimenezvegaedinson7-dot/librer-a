@@ -120,6 +120,18 @@ const getConnection = async () => {
         return construirResultado(resultado);
     };
 
+    // API transaccional compatible con mysql2: node-postgres no trae
+    // estos métodos, se emulan con sentencias SQL en la misma conexión.
+    client.beginTransaction = async () => {
+        await originalQuery('BEGIN');
+    };
+    client.commit = async () => {
+        await originalQuery('COMMIT');
+    };
+    client.rollback = async () => {
+        await originalQuery('ROLLBACK');
+    };
+
     // También mantener el método original para casos que lo necesiten
     client.pgQuery = originalQuery;
 
