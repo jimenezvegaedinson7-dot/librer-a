@@ -37,6 +37,10 @@ function obtenerTransporter() {
             host: SMTP_HOST,
             port: SMTP_PORT,
             secure: SMTP_SECURE,
+            // Gmail publica AAAA + A: en instancias (Render) sin IPv6, la
+            // conexión a la dirección IPv6 muere con ENETUNREACH. Forzamos
+            // la familia IPv4 para garantizar el envío.
+            family: 4,
             auth: {
                 user: SMTP_USER,
                 pass: SMTP_PASS,
