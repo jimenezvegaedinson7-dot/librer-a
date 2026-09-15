@@ -3,6 +3,10 @@ const path = require('path');
 const fs = require('fs');
 
 const { detectarImagen } = require('../utils/fileType');
+const {
+    subirImagen,
+    configurado: cloudinaryConfigurado
+} = require('../utils/cloudinary');
 
 const carpetaPortadas = path.join(
     __dirname,
@@ -14,24 +18,6 @@ if (!fs.existsSync(carpetaPortadas)) {
         recursive: true
     });
 }
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, carpetaPortadas);
-    },
-
-    filename: (req, file, cb) => {
-        const extension =
-            path.extname(file.originalname);
-
-        const nombreArchivo =
-            `portada-${Date.now()}-${Math.round(
-                Math.random() * 1E9
-            )}${extension}`;
-
-        cb(null, nombreArchivo);
-    }
-});
 
 const fileFilter = (req, file, cb) => {
     const tiposPermitidos = [
@@ -52,8 +38,14 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
+// ========================================
+// SE USA MEMORIA: la imagen se sube a
+// Cloudinary (o se escribe en disco si no
+// hay credenciales). Nada queda en el
+// disco efímero de Render en producción.
+// ========================================
 const uploadBase = multer({
-    storage,
+    storage: multer.memoryStorage(),
     fileFilter,
     limits: {
         fileSize: 5 * 1024 * 1024
@@ -62,102 +54,83 @@ const uploadBase = multer({
 
 // ========================================
 // VALIDAR CONTENIDO REAL DE LA IMAGEN
-// y renombrar con la extensión DETECTADA
+// y subirla (Cloudinary o fallback local)
 // ========================================
-const validarYRenombrar = (
+const validarYSubir = async (
     req,
     res,
     next
 ) => {
-    if (!req.file) {
-        return next();
-    }
-
-    let buffer = null;
-
     try {
-        buffer =
-            fs.readFileSync(req.file.path);
-    } catch (error) {
-        return res.status(400).json({
-            success: false,
-            mensaje:
-                'El archivo no es una imagen válida'
-        });
-    }
-
-    const detectado =
-        detectarImagen(buffer);
-
-    if (!detectado) {
-        try {
-            if (
-                req.file.path &&
-                fs.existsSync(req.file.path)
-            ) {
-                fs.unlinkSync(req.file.path);
-            }
-        } catch (error) {
-            // ignorar error al limpiar
+        if (!req.file) {
+            return next();
         }
 
-        return res.status(400).json({
-            success: false,
-            mensaje:
-                'Solo se permiten imágenes JPG, PNG o WEBP'
-        });
-    }
+        const detectado =
+            detectarImagen(req.file.buffer);
 
-    // ========================================
-    // USAR LA EXTENSIÓN DETECTADA
-    // ========================================
-    const extensionActual =
-        path.extname(req.file.filename);
+        if (!detectado) {
+            return res.status(400).json({
+                success: false,
+                mensaje:
+                    'Solo se permiten imágenes JPG, PNG o WEBP'
+            });
+        }
 
-    if (
-        extensionActual !==
-        detectado.extension
-    ) {
-        const nombreBase =
-            path.basename(
-                req.file.filename,
-                extensionActual
-            );
+        if (cloudinaryConfigurado) {
+            const resultado =
+                await subirImagen(
+                    req.file.buffer,
+                    {
+                        carpeta:
+                            'libreria/portadas'
+                    }
+                );
 
-        const nombreArchivo =
-            `${nombreBase}${detectado.extension}`;
+            req.file.cloudinaryUrl =
+                resultado.url;
+            req.file.publicId =
+                resultado.publicId;
+            req.file.extension =
+                detectado.extension;
+        } else {
+            // Fallback local para desarrollo
+            const nombreArchivo =
+                `portada-${Date.now()}-${Math.round(
+                    Math.random() * 1E9
+                )}${detectado.extension}`;
 
-        const rutaNueva = path.join(
-            path.dirname(req.file.path),
-            nombreArchivo
-        );
-
-        try {
-            fs.renameSync(
-                req.file.path,
-                rutaNueva
+            fs.writeFileSync(
+                path.join(
+                    carpetaPortadas,
+                    nombreArchivo
+                ),
+                req.file.buffer
             );
 
             req.file.filename =
                 nombreArchivo;
             req.file.path =
-                rutaNueva;
-        } catch (error) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'El archivo no es una imagen válida'
-            });
+                path.join(
+                    carpetaPortadas,
+                    nombreArchivo
+                );
         }
-    }
 
-    return next();
+        return next();
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            mensaje:
+                'No se pudo procesar la imagen'
+        });
+    }
 };
 
 const upload = {
     single: (nombreCampo) => [
         uploadBase.single(nombreCampo),
-        validarYRenombrar
+        validarYSubir
     ]
 };
 

@@ -3,64 +3,25 @@ const path = require('path');
 const fs = require('fs');
 
 const { detectarImagen } = require('../utils/fileType');
+const {
+    subirImagen,
+    configurado: cloudinaryConfigurado
+} = require('../utils/cloudinary');
 
 // ========================================
 // CARPETA DE FOTOS DE PERFIL
+// (solo usada como fallback en desarrollo)
 // ========================================
 const carpetaPerfiles = path.join(
     __dirname,
     '../../uploads/perfiles'
 );
 
-// ========================================
-// CREAR CARPETA SI NO EXISTE
-// ========================================
 if (!fs.existsSync(carpetaPerfiles)) {
     fs.mkdirSync(carpetaPerfiles, {
         recursive: true
     });
 }
-
-// ========================================
-// CONFIGURACIÓN DE ALMACENAMIENTO
-// ========================================
-const storage = multer.diskStorage({
-
-    destination: (
-        req,
-        file,
-        cb
-    ) => {
-        cb(
-            null,
-            carpetaPerfiles
-        );
-    },
-
-    filename: (
-        req,
-        file,
-        cb
-    ) => {
-        const extension =
-            path.extname(
-                file.originalname
-            ).toLowerCase();
-
-        const idUsuario =
-            req.usuario?.id_usuario ||
-            'usuario';
-
-        const nombreArchivo =
-            `perfil-${idUsuario}-${Date.now()}${extension}`;
-
-        cb(
-            null,
-            nombreArchivo
-        );
-    }
-
-});
 
 // ========================================
 // FILTRAR ARCHIVOS
@@ -98,123 +59,99 @@ const fileFilter = (
 };
 
 // ========================================
-// CONFIGURAR MULTER
+// CONFIGURAR MULTER (MEMORIA)
 // ========================================
 const uploadBase = multer({
-
-    storage,
-
+    storage: multer.memoryStorage(),
     fileFilter,
-
     limits: {
         fileSize:
             5 * 1024 * 1024
     }
-
 });
 
 // ========================================
 // VALIDAR CONTENIDO REAL DE LA IMAGEN
-// y renombrar con la extensión DETECTADA
+// y subirla (Cloudinary o fallback local)
 // ========================================
-const validarYRenombrar = (
+const validarYSubir = async (
     req,
     res,
     next
 ) => {
-    if (!req.file) {
-        return next();
-    }
-
-    let buffer = null;
-
     try {
-        buffer =
-            fs.readFileSync(req.file.path);
-    } catch (error) {
-        return res.status(400).json({
-            success: false,
-            mensaje:
-                'El archivo no es una imagen válida'
-        });
-    }
-
-    const detectado =
-        detectarImagen(buffer);
-
-    if (!detectado) {
-        try {
-            if (
-                req.file.path &&
-                fs.existsSync(req.file.path)
-            ) {
-                fs.unlinkSync(req.file.path);
-            }
-        } catch (error) {
-            // ignorar error al limpiar
+        if (!req.file) {
+            return next();
         }
 
-        return res.status(400).json({
-            success: false,
-            mensaje:
-                'Solo se permiten imágenes JPG, PNG o WEBP'
-        });
-    }
+        const detectado =
+            detectarImagen(req.file.buffer);
 
-    // ========================================
-    // USAR LA EXTENSIÓN DETECTADA
-    // ========================================
-    const extensionActual =
-        path.extname(req.file.filename);
+        if (!detectado) {
+            return res.status(400).json({
+                success: false,
+                mensaje:
+                    'Solo se permiten imágenes JPG, PNG o WEBP'
+            });
+        }
 
-    if (
-        extensionActual !==
-        detectado.extension
-    ) {
-        const nombreBase =
-            path.basename(
-                req.file.filename,
-                extensionActual
-            );
+        if (cloudinaryConfigurado) {
+            const resultado =
+                await subirImagen(
+                    req.file.buffer,
+                    {
+                        carpeta:
+                            'libreria/perfiles'
+                    }
+                );
 
-        const nombreArchivo =
-            `${nombreBase}${detectado.extension}`;
+            req.file.cloudinaryUrl =
+                resultado.url;
+            req.file.publicId =
+                resultado.publicId;
+            req.file.extension =
+                detectado.extension;
+        } else {
+            // Fallback local para desarrollo
+            const idUsuario =
+                req.usuario?.id_usuario ||
+                'usuario';
 
-        const rutaNueva = path.join(
-            path.dirname(req.file.path),
-            nombreArchivo
-        );
+            const nombreArchivo =
+                `perfil-${idUsuario}-${Date.now()}${detectado.extension}`;
 
-        try {
-            fs.renameSync(
-                req.file.path,
-                rutaNueva
+            fs.writeFileSync(
+                path.join(
+                    carpetaPerfiles,
+                    nombreArchivo
+                ),
+                req.file.buffer
             );
 
             req.file.filename =
                 nombreArchivo;
             req.file.path =
-                rutaNueva;
-        } catch (error) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'El archivo no es una imagen válida'
-            });
+                path.join(
+                    carpetaPerfiles,
+                    nombreArchivo
+                );
         }
-    }
 
-    return next();
+        return next();
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            mensaje:
+                'No se pudo procesar la imagen'
+        });
+    }
 };
 
 const uploadPerfil = {
     single: (nombreCampo) => [
         uploadBase.single(nombreCampo),
-        validarYRenombrar
+        validarYSubir
     ]
 };
 
-// ========================================
-// EXPORTAR
-// ========================================
 module.exports = uploadPerfil;

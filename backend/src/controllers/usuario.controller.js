@@ -13,6 +13,10 @@ const {
 const {
     validarPassword
 } = require('./auth.controller');
+const {
+    eliminarImagen,
+    publicIdDesdeUrl
+} = require('../utils/cloudinary');
 
 // ========================================
 // ESTADO 2FA DEL USUARIO
@@ -404,8 +408,19 @@ const subirFotoPerfil = async (req, res) => {
             );
 
         if (!usuario) {
-            // eliminar archivo recién subido
-            if (
+            // limpiar archivo recién subido
+            if (req.file?.cloudinaryUrl) {
+                try {
+                    await eliminarImagen(
+                        publicIdDesdeUrl(req.file.cloudinaryUrl)
+                    );
+                } catch (errorEliminar) {
+                    console.error(
+                        'No se pudo eliminar la foto en Cloudinary:',
+                        errorEliminar.message
+                    );
+                }
+            } else if (
                 req.file?.path &&
                 fs.existsSync(req.file.path)
             ) {
@@ -423,6 +438,7 @@ const subirFotoPerfil = async (req, res) => {
         // NUEVA RUTA
         // ========================================
         const nuevaFoto =
+            req.file.cloudinaryUrl ||
             `/uploads/perfiles/${req.file.filename}`;
 
         // ========================================
@@ -441,24 +457,33 @@ const subirFotoPerfil = async (req, res) => {
             usuario.foto_perfil !== nuevaFoto
         ) {
             try {
-                const rutaAnterior =
-                    path.join(
-                        __dirname,
-                        '../..',
-                        usuario.foto_perfil.replace(
-                            /^\/+/,
-                            ''
-                        )
+                const publicIdAnterior =
+                    publicIdDesdeUrl(
+                        usuario.foto_perfil
                     );
 
-                if (
-                    fs.existsSync(
-                        rutaAnterior
-                    )
-                ) {
-                    fs.unlinkSync(
-                        rutaAnterior
-                    );
+                if (publicIdAnterior) {
+                    await eliminarImagen(publicIdAnterior);
+                } else {
+                    const rutaAnterior =
+                        path.join(
+                            __dirname,
+                            '../..',
+                            usuario.foto_perfil.replace(
+                                /^\/+/,
+                                ''
+                            )
+                        );
+
+                    if (
+                        fs.existsSync(
+                            rutaAnterior
+                        )
+                    ) {
+                        fs.unlinkSync(
+                            rutaAnterior
+                        );
+                    }
                 }
 
             } catch (errorEliminar) {
@@ -503,7 +528,11 @@ const subirFotoPerfil = async (req, res) => {
         // SI FALLA, BORRAR ARCHIVO NUEVO
         // ========================================
         try {
-            if (
+            if (req.file?.cloudinaryUrl) {
+                await eliminarImagen(
+                    publicIdDesdeUrl(req.file.cloudinaryUrl)
+                );
+            } else if (
                 req.file?.path &&
                 fs.existsSync(req.file.path)
             ) {

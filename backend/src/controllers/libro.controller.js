@@ -5,6 +5,10 @@ const inventarioModel = require('../models/inventario.model');
 const historialModel = require('../models/historial.model');
 const usuarioModel = require('../models/usuario.model');
 const { validarId } = require('../utils/validaciones');
+const {
+    eliminarImagen,
+    publicIdDesdeUrl
+} = require('../utils/cloudinary');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR LIBROS
@@ -163,6 +167,7 @@ const crearLibro = async (req, res) => {
 
         if (req.file) {
             portada =
+                req.file.cloudinaryUrl ||
                 `/uploads/portadas/${req.file.filename}`;
         }
 
@@ -370,7 +375,25 @@ const actualizarLibro = async (req, res) => {
             libroExistente.portada || null;
 
         if (req.file) {
+            // Eliminar portada anterior si estaba en Cloudinary
+            const publicIdAnterior =
+                publicIdDesdeUrl(
+                    libroExistente.portada
+                );
+
+            if (publicIdAnterior) {
+                try {
+                    await eliminarImagen(publicIdAnterior);
+                } catch (errorEliminar) {
+                    console.error(
+                        'No se pudo eliminar la portada anterior:',
+                        errorEliminar.message
+                    );
+                }
+            }
+
             portada =
+                req.file.cloudinaryUrl ||
                 `/uploads/portadas/${req.file.filename}`;
         }
 
