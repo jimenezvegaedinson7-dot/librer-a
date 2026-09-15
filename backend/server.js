@@ -173,6 +173,36 @@ app.get(
 );
 
 // ===============================
+// DIAGNÓSTICO TEMPORAL DE EGRESS (quitar tras resolver el SMTP)
+// ===============================
+app.get(
+    '/api/debug-egress',
+    async (req, res) => {
+        const net = require('net');
+        const { resolve4 } = require('dns').promises;
+        const info = {};
+        try {
+            info.ipv4 = await resolve4('smtp.gmail.com');
+        } catch (e) { info.dnsError = e.message; }
+        for (const puerto of [465, 587, 25]) {
+            const host = (info.ipv4 && info.ipv4[0]) || 'smtp.gmail.com';
+            info['tcp:' + puerto] = await new Promise(r => {
+                const s = net.connect({ host, port: puerto });
+                s.setTimeout(8000, () => { s.destroy(); r('timeout'); });
+                s.on('connect', () => { s.destroy(); r('ok'); });
+                s.on('error', e => { s.destroy(); r(e.code || e.message); });
+            });
+        }
+        try {
+            const t0 = Date.now();
+            const f = await fetch('https://api.ipify.org?format=json');
+            info.https443 = (await f.text()).slice(0, 60) + ' ms=' + (Date.now() - t0);
+        } catch (e) { info.https443 = 'error: ' + e.message; }
+        res.json(info);
+    }
+);
+
+// ===============================
 // API DE LIBROS
 // ===============================
 app.use(
