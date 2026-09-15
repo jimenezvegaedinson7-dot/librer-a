@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 
+const pool = require('../config/database');
 const libroModel = require('../models/libro.model');
 const inventarioModel = require('../models/inventario.model');
 const historialModel = require('../models/historial.model');
@@ -626,10 +627,65 @@ const eliminarLibro = async (req, res) => {
         }
 
         // ========================================
-        // ELIMINAR
+        // VERIFICAR REFERENCIAS (VENTAS / RESERVAS)
         // ========================================
-        const filasAfectadas =
-            await libroModel.eliminar(idLibro);
+        const [refVentas] = await pool.query(
+            'SELECT COUNT(*) AS total FROM detalle_venta WHERE id_libro = ?',
+            [idLibro]
+        );
+        const [refReservas] = await pool.query(
+            'SELECT COUNT(*) AS total FROM reservas WHERE id_libro = ?',
+            [idLibro]
+        );
+
+        if (
+            Number(refVentas[0]?.total || 0) > 0 ||
+            Number(refReservas[0]?.total || 0) > 0
+        ) {
+            return res.status(409).json({
+                success: false,
+                mensaje:
+                    'No se puede eliminar este libro porque tiene ventas o reservas relacionadas. Puedes cambiarlo a estado Inactivo.'
+            });
+        }
+
+        // ========================================
+        // ELIMINAR (libro + inventario/kardex asociados)
+        // ========================================
+        const conexion =
+            await pool.getConnection();
+
+        let filasAfectadas = 0;
+
+        try {
+            await conexion.beginTransaction();
+
+            await inventarioModel.eliminarMovimientosPorLibro(
+                idLibro,
+                conexion
+            );
+
+            await inventarioModel.eliminarPorLibro(
+                idLibro,
+                conexion
+            );
+
+            const [resultado] =
+                await conexion.query(
+                    'DELETE FROM libros WHERE id_libro = ?',
+                    [idLibro]
+                );
+
+            filasAfectadas =
+                resultado.affectedRows;
+
+            await conexion.commit();
+        } catch (errorEliminar) {
+            await conexion.rollback();
+            throw errorEliminar;
+        } finally {
+            conexion.release();
+        }
 
         if (filasAfectadas === 0) {
             return res.status(404).json({
@@ -669,7 +725,8 @@ const eliminarLibro = async (req, res) => {
             error.code ===
                 'ER_ROW_IS_REFERENCED_2' ||
             error.code ===
-                'ER_ROW_IS_REFERENCED'
+                'ER_ROW_IS_REFERENCED' ||
+            error.code === '23503'
         ) {
             return res.status(409).json({
                 success: false,

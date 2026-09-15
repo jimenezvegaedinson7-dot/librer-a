@@ -346,6 +346,37 @@ const listarMovimientos = async ({
 };
 
 // ========================================
+// ELIMINAR INVENTARIO Y KARDEX DE UN LIBRO
+// ========================================
+// Se usan al eliminar un libro para no dejar
+// registros huérfanos ni romper la FK.
+// Aceptan una conexión opcional (transacción).
+// ========================================
+const eliminarPorLibro = async (
+    idLibro,
+    connection = pool
+) => {
+    const [resultado] = await connection.query(`
+        DELETE FROM inventario
+        WHERE id_libro = ?
+    `, [idLibro]);
+
+    return resultado.affectedRows;
+};
+
+const eliminarMovimientosPorLibro = async (
+    idLibro,
+    connection = pool
+) => {
+    const [resultado] = await connection.query(`
+        DELETE FROM movimientos_inventario
+        WHERE id_libro = ?
+    `, [idLibro]);
+
+    return resultado.affectedRows;
+};
+
+// ========================================
 // EXPORTAR MODELO
 // ========================================
 module.exports = {
@@ -356,5 +387,7 @@ module.exports = {
     actualizarStock,
     actualizar,
     obtenerStockBajo,
-    listarMovimientos
+    listarMovimientos,
+    eliminarPorLibro,
+    eliminarMovimientosPorLibro
 };
