@@ -16,6 +16,9 @@
 const nodemailer = require('nodemailer');
 const { resolve4 } = require('dns').promises;
 
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || 'jimenezvegaedinson7@gmail.com';
+
 const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.EMAIL_RESEND_API_KEY;
 
 const SMTP_HOST = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
@@ -28,6 +31,7 @@ const MAIL_FROM_NAME = 'Librería';
 
 // ¿Está configurado algún canal? Si no, el sistema funciona en "modo consola".
 const resendConfigurado = Boolean(RESEND_API_KEY);
+const brevoConfigurado = Boolean(BREVO_API_KEY);
 const smtpConfigurado = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
 
 let transporter = null;
@@ -38,6 +42,34 @@ const resendHeaders = RESEND_API_KEY
           'Content-Type': 'application/json',
       }
     : null;
+
+const brevoHeaders = BREVO_API_KEY
+    ? {
+          'api-key': BREVO_API_KEY,
+          'Content-Type': 'application/json',
+      }
+    : null;
+
+async function enviarPorBrevo({ destinatario, asunto, html, texto }) {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: brevoHeaders,
+        body: JSON.stringify({
+            sender: { name: MAIL_FROM_NAME, email: BREVO_SENDER_EMAIL },
+            to: [{ email: destinatario }],
+            subject: asunto,
+            textContent: texto || undefined,
+            htmlContent: html,
+        }),
+    });
+    const cuerpo = await res.json().catch(() => null);
+    if (![200, 201].includes(res.status)) {
+        throw new Error(
+            `Brevo HTTP ${res.status}: ${(cuerpo && cuerpo.message) || JSON.stringify(cuerpo)}`
+        );
+    }
+    return cuerpo;
+}
 
 // Dirección visible del remitente. Sin dominio verificado, Resend solo
 // acepta "onboarding@resend.dev" (entrega únicamente al correo dueño de
@@ -128,7 +160,7 @@ async function enviarCorreo({
     texto = null,
 }) {
     // Modo consola: no hay ningún canal configurado.
-    if (!resendConfigurado && !smtpConfigurado) {
+    if (!brevoConfigurado && !resendConfigurado && !smtpConfigurado) {
         console.log(
             `[MAIL·CONSOLA] to=${destinatario} subject=${asunto} ok=false (sin canal configurado)`
         );
@@ -137,7 +169,23 @@ async function enviarCorreo({
 
     let ultimoError = null;
 
-    // Canal 1: Resend (HTTPS). Robusto, 1 solo intento con timeout amable.
+    // Canal 1: Brevo (HTTPS). Permite enviar a cualquier destinatario con un
+    // remitente verificado (correo, sin necesidad de dominio).
+    if (brevoConfigurado) {
+        try {
+            const control = setTimeout(() => { throw new Error('Brevo timeout'); }, 20000);
+            const res = await enviarPorBrevo({ destinatario, asunto, html, texto }).finally(() => clearTimeout(control));
+            if (res && (res.messageId || res.id)) {
+                return { enviado: true, consola: false, canal: 'brevo' };
+            }
+            throw new Error('Brevo no devolvio messageId');
+        } catch (error) {
+            ultimoError = error.message;
+            console.error(`[MAIL] Brevo falló: ${error.message}`);
+        }
+    }
+
+    // Canal 2: Resend (HTTPS).
     if (resendConfigurado) {
         try {
             const control = setTimeout(() => { throw new Error('Resend timeout'); }, 20000);
@@ -228,4 +276,5 @@ module.exports = {
     enviarCodigoVerificacion,
     smtpConfigurado,
     resendConfigurado,
+    brevoConfigurado,
 };
