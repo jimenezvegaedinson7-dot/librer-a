@@ -15,8 +15,8 @@ const { resolve4 } = require('dns').promises;
 let smtpResolver = null;
 
 const SMTP_HOST = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
-const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 465);
-const SMTP_SECURE = String(process.env.SMTP_SECURE || process.env.EMAIL_SECURE || 'true') === 'true';
+const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 587);
+const SMTP_SECURE = String(process.env.SMTP_SECURE || process.env.EMAIL_SECURE || 'false') === 'true';
 const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
 const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
 const MAIL_FROM = process.env.MAIL_FROM || process.env.EMAIL_FROM || SMTP_USER;
@@ -62,6 +62,7 @@ async function obtenerTransporter() {
             host: await hostIpv4(),
             port: SMTP_PORT,
             secure: SMTP_SECURE,
+            requireTLS: !SMTP_SECURE,
             // el hostname real se conserva para SNI y validación del certificado
             servername: SMTP_HOST,
             // Gmail publica AAAA + A: en instancias (Render) sin IPv6, la
