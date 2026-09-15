@@ -59,6 +59,9 @@ export function FormularioAlta({
         try {
             setGuardando(true);
             const respuesta = await guardar(formulario);
+            // El botón deja de cargar apenas el servidor confirma el guardado;
+            // el refresco de la lista ocurre en segundo plano (onRegistrado).
+            setGuardando(false);
             restablecer();
             setMensaje(respuesta?.mensaje || mensajeExito || 'Registro correcto');
             if (onRegistrado) await onRegistrado();

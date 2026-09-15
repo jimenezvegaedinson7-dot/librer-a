@@ -6,6 +6,9 @@ import { construirUrlArchivo } from '../utils/url';
 
 const client = axios.create({
     baseURL: env.apiUrl,
+    // Timeout generoso para arranques en frío de Render free, pero finito:
+    // evita que el spinner se quede cargando para siempre.
+    timeout: 120000,
 });
 
 client.interceptors.request.use(
