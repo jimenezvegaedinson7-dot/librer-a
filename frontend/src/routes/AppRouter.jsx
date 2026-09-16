@@ -1,5 +1,20 @@
 import { lazy, Suspense } from 'react';
 
+const lazyConReintento = (importador) =>
+    lazy(() => {
+        let reintentos = 0;
+        const intentar = () =>
+            importador().catch((error) => {
+                if (reintentos < 2) {
+                    reintentos += 1;
+                    return new Promise((r) => setTimeout(r, 800)).then(intentar);
+                }
+                window.location.reload();
+                throw error;
+            });
+        return intentar();
+    });
+
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 
 import { AuthProvider } from '../features/auth/AuthContext';
@@ -8,23 +23,23 @@ import AdminLayout from '../features/layout/AdminLayout';
 import RutaProtegida from './RutaProtegida';
 import { CargandoPantalla } from '../components/ui/Spinner';
 
-const LoginPage = lazy(() => import('../features/auth/LoginPage'));
-const VerificarEmailPage = lazy(() => import('../features/auth/VerificarEmailPage'));
-const DashboardPage = lazy(() => import('../features/dashboard/DashboardPage'));
-const LibrosPage = lazy(() => import('../features/libros/LibrosPage'));
-const AutoresPage = lazy(() => import('../features/autores/AutoresPage'));
-const CategoriasPage = lazy(() => import('../features/categorias/CategoriasPage'));
-const InventarioPage = lazy(() => import('../features/inventario/InventarioPage'));
-const ReservasPage = lazy(() => import('../features/reservas/ReservasPage'));
-const VentasPage = lazy(() => import('../features/ventas/VentasPage'));
-const ComprobantesPage = lazy(() => import('../features/comprobantes/ComprobantesPage'));
-const PagosPage = lazy(() => import('../features/pagos/PagosPage'));
-const UsuariosPage = lazy(() => import('../features/usuarios/UsuariosPage'));
-const ClientesPage = lazy(() => import('../features/clientes/ClientesPage'));
-const AgenciasPage = lazy(() => import('../features/agencias/AgenciasPage'));
-const HistorialPage = lazy(() => import('../features/historial/HistorialPage'));
-const ReportesPage = lazy(() => import('../features/reportes/ReportesPage'));
-const EmpresaPage = lazy(() => import('../features/configuracion/EmpresaPage'));
+const LoginPage = lazyConReintento(() => import('../features/auth/LoginPage'));
+const VerificarEmailPage = lazyConReintento(() => import('../features/auth/VerificarEmailPage'));
+const DashboardPage = lazyConReintento(() => import('../features/dashboard/DashboardPage'));
+const LibrosPage = lazyConReintento(() => import('../features/libros/LibrosPage'));
+const AutoresPage = lazyConReintento(() => import('../features/autores/AutoresPage'));
+const CategoriasPage = lazyConReintento(() => import('../features/categorias/CategoriasPage'));
+const InventarioPage = lazyConReintento(() => import('../features/inventario/InventarioPage'));
+const ReservasPage = lazyConReintento(() => import('../features/reservas/ReservasPage'));
+const VentasPage = lazyConReintento(() => import('../features/ventas/VentasPage'));
+const ComprobantesPage = lazyConReintento(() => import('../features/comprobantes/ComprobantesPage'));
+const PagosPage = lazyConReintento(() => import('../features/pagos/PagosPage'));
+const UsuariosPage = lazyConReintento(() => import('../features/usuarios/UsuariosPage'));
+const ClientesPage = lazyConReintento(() => import('../features/clientes/ClientesPage'));
+const AgenciasPage = lazyConReintento(() => import('../features/agencias/AgenciasPage'));
+const HistorialPage = lazyConReintento(() => import('../features/historial/HistorialPage'));
+const ReportesPage = lazyConReintento(() => import('../features/reportes/ReportesPage'));
+const EmpresaPage = lazyConReintento(() => import('../features/configuracion/EmpresaPage'));
 
 const cargar = (elemento) => <Suspense fallback={<CargandoPantalla />}>{elemento}</Suspense>;
 
