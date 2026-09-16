@@ -1,8 +1,8 @@
 export function EmptyState({ titulo, descripcion, acciones = null, icono = null }) {
     return (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-gradient-to-b from-white to-slate-50/60 px-6 py-12 text-center">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
             {icono && (
-                <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 text-xl text-slate-400">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-lg text-slate-400">
                     {icono}
                 </div>
             )}

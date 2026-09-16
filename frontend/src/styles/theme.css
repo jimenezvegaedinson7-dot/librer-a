@@ -17,14 +17,9 @@
     --color-primary-800: #3730a3;
     --color-primary-900: #312e81;
 
-    --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
-    --shadow-lift: 0 10px 24px -8px rgb(15 23 42 / 0.14), 0 2px 6px -2px rgb(15 23 42 / 0.05);
-    --shadow-float: 0 18px 40px -12px rgb(15 23 42 / 0.22), 0 4px 12px -4px rgb(15 23 42 / 0.1);
-
-    --radius-md: 0.625rem;
-    --radius-lg: 0.875rem;
-    --radius-xl: 1rem;
-    --radius-2xl: 1.25rem;
+    --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.05);
+    --shadow-lift: 0 6px 16px -4px rgb(15 23 42 / 0.1), 0 2px 6px -2px rgb(15 23 42 / 0.04);
+    --shadow-float: 0 10px 24px -8px rgb(15 23 42 / 0.14), 0 3px 8px -3px rgb(15 23 42 / 0.05);
 }
 
 @layer base {
@@ -48,28 +43,19 @@
 
 @layer components {
     .card {
-        border-radius: var(--radius-2xl);
+        border-radius: 0.75rem;
         border: 1px solid var(--color-slate-200, #e2e8f0);
         background-color: #fff;
         box-shadow: var(--shadow-card);
     }
 
-    .card-glass {
-        border-radius: var(--radius-xl);
-        border: 1px solid rgb(255 255 255 / 0.55);
-        background-color: rgb(255 255 255 / 0.7);
-        box-shadow: var(--shadow-card);
-        backdrop-filter: blur(8px);
-    }
-
     .card-hover {
-        transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
     .card-hover:hover {
         border-color: var(--color-slate-300, #cbd5e1);
         box-shadow: var(--shadow-lift);
-        transform: translateY(-2px);
     }
 
     .card-header {
@@ -77,44 +63,43 @@
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        padding: 1.1rem 1.25rem;
+        padding: 1rem 1.25rem;
         border-bottom: 1px solid var(--color-slate-100, #f1f5f9);
-        background: linear-gradient(to bottom, #fff, var(--color-slate-50, #f8fafc));
+        background-color: #fff;
     }
 
     .card-title {
         font-size: 0.9375rem;
         font-weight: 700;
-        letter-spacing: -0.01em;
         color: var(--color-slate-900, #0f172a);
     }
 
     .card-subtitle {
         margin-top: 0.15rem;
         font-size: 0.75rem;
-        line-height: 1.4;
+        line-height: 1.45;
         color: var(--color-slate-500, #64748b);
     }
 
     .field-label {
         display: block;
-        margin-bottom: 0.4rem;
-        font-size: 0.8125rem;
+        margin-bottom: 0.375rem;
+        font-size: 0.75rem;
         font-weight: 600;
-        color: var(--color-slate-700, #334155);
+        letter-spacing: 0.01em;
+        color: var(--color-slate-600, #475569);
     }
 
     .field {
         display: block;
         width: 100%;
-        height: 2.75rem;
-        border-radius: var(--radius-lg);
+        height: 2.5rem;
+        border-radius: 0.5rem;
         border: 1px solid var(--color-slate-300, #cbd5e1);
         background-color: #fff;
-        padding: 0.5rem 0.875rem;
+        padding: 0.5rem 0.75rem;
         font-size: 0.875rem;
         color: var(--color-slate-800, #1e293b);
-        box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.03);
         transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
     }
 
@@ -122,15 +107,11 @@
         color: var(--color-slate-400, #94a3b8);
     }
 
-    .field:hover:not(:disabled):not(:focus) {
-        border-color: var(--color-slate-400, #94a3b8);
-    }
-
     .field:focus {
         outline: none;
         border-color: var(--color-primary-500);
         background-color: #fff;
-        box-shadow: 0 0 0 4px rgb(99 102 241 / 0.12);
+        box-shadow: 0 0 0 3px rgb(99 102 241 / 0.12);
     }
 
     .field:disabled {
@@ -143,20 +124,20 @@
         display: flex;
         align-items: flex-start;
         gap: 0.375rem;
-        margin-top: 0.4rem;
+        margin-top: 0.375rem;
         font-size: 0.75rem;
         color: var(--color-red-600, #dc2626);
     }
 
     .field-hint {
-        margin-top: 0.4rem;
+        margin-top: 0.375rem;
         font-size: 0.75rem;
         color: var(--color-slate-400, #94a3b8);
     }
 }
 
-/* Animaciones utilitarias (CSS puro, seguro con Tailwind v4) */
-@keyframes aparecer-overlay {
+/* Animaciones de aparición (solo opacidad, sobrias y formales) */
+@keyframes aparecer {
     from {
         opacity: 0;
     }
@@ -165,38 +146,10 @@
     }
 }
 
-@keyframes aparecer-modal {
-    from {
-        opacity: 0;
-        transform: translateY(10px) scale(0.975);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes aparecer-suave {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-modal {
-    animation: aparecer-modal 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
+.animate-suave,
+.animate-modal,
 .animate-solapa {
-    animation: aparecer-overlay 0.18s ease-out both;
-}
-
-.animate-suave {
-    animation: aparecer-suave 0.25s ease-out both;
+    animation: aparecer 0.18s ease-out both;
 }
 
 ::-webkit-scrollbar {

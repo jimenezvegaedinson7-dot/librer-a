@@ -33,14 +33,14 @@ export function DataTable({
     };
 
     return (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-card">
+        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
             <table className="min-w-full border-collapse">
                 <thead>
                     <tr className="bg-slate-50/80">
                         {columnas.map((col, i) => (
                             <th
                                 key={i}
-                                className={`border-b border-slate-200 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 ${
+                                className={`border-b border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 ${
                                     col.alineacion === 'centro' ? 'text-center' : 'text-left'
                                 }`}
                             >
@@ -48,7 +48,7 @@ export function DataTable({
                             </th>
                         ))}
                         {acciones && (
-                            <th className="border-b border-slate-200 px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                            <th className="border-b border-slate-200 px-4 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">
                                 Acciones
                             </th>
                         )}
@@ -67,13 +67,13 @@ export function DataTable({
                                 key={keyExtractor ? keyExtractor(fila) : fila?.id}
                                 onClick={filaClickable ? () => onFilaClick(fila) : undefined}
                                 className={`border-b border-slate-100/80 transition last:border-0 ${
-                                    filaClickable ? 'cursor-pointer hover:bg-primary-50/50' : 'hover:bg-slate-50/70'
-                                }`}
+                                    filaClickable ? 'cursor-pointer' : ''
+                                } hover:bg-slate-50/70`}
                             >
                                 {columnas.map((col, i) => (
                                     <td
                                         key={i}
-                                        className={`px-4 py-3 text-sm ${
+                                        className={`px-4 py-2.5 text-sm ${
                                             col.alineacion === 'centro' ? 'text-center' : 'text-left'
                                         }`}
                                     >
@@ -81,7 +81,7 @@ export function DataTable({
                                     </td>
                                 ))}
                                 {acciones && (
-                                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                                    <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
                                         <div className="flex items-center justify-center gap-1.5">{acciones(fila)}</div>
                                     </td>
                                 )}

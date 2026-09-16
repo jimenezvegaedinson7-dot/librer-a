@@ -1,9 +1,9 @@
 export function PageHeader({ titulo, descripcion, acciones = null, icono = null }) {
     return (
-        <div className="animate-suave flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
                 {icono && (
-                    <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-base text-white shadow-md shadow-primary-600/25 sm:flex">
+                    <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-primary-600 shadow-sm sm:flex">
                         {icono}
                     </span>
                 )}

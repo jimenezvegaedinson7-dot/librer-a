@@ -58,7 +58,7 @@ export function Alert({
     return (
         <div
             role="alert"
-            className={`flex items-start gap-3 rounded-xl border border-l-4 px-4 py-3 text-sm shadow-sm ${contenedor} ${className}`}
+            className={`flex items-start gap-3 rounded-lg border border-l-4 px-3.5 py-3 text-sm shadow-sm ${contenedor} ${className}`}
         >
             <span className={`mt-0.5 shrink-0 text-base ${iconoClase}`}>
                 <Icono />
