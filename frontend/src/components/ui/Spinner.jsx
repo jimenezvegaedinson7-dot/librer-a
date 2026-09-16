@@ -1,19 +1,25 @@
-export function Spinner({ tamano = 'md', className = '' }) {
-    const dimensiones = tamano === 'sm' ? 'h-4 w-4 border-2' : tamano === 'lg' ? 'h-10 w-10 border-4' : 'h-6 w-6 border-2';
-    return (
-        <span
-            role="status"
-            aria-label="Cargando"
-            className={`inline-block animate-spin rounded-full border-current border-t-transparent ${dimensiones} ${className}`}
-        />
-    );
-}
+import { cn } from '@/lib/utils';
 
-export function CargandoPantalla({ texto = 'Cargando...' }) {
+export function Spinner({
+    size = 24,
+    className,
+    ...props
+}) {
     return (
-        <div className="flex flex-col items-center justify-center gap-3 py-10 text-slate-500">
-            <Spinner tamano="lg" className="text-primary-600" />
-            <p className="text-xs">{texto}</p>
-        </div>
+        <svg
+            className={cn(
+                'size-full rounded-full border-2 border-border-primary-300 border-t-primary-600 animate-spin',
+                size > 24 && `size-${size}`
+            )}
+            viewBox="0 0 24 24"
+            {...props}
+        >
+            <path
+                className="size-full rotate-90"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 15l2-2m0 0l-2-2m2 2l2-2m2 2l2-2m-2 2l-2-2"
+            />
+        </svg>
     );
 }

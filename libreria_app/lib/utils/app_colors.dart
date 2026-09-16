@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Paleta de colores centralizada de la aplicación.
 ///
-/// Identidad visual editorial: marfil, verde biblioteca y dorado sobrio.
+/// Identidad visual editorial: marfil, burdeos institucional y dorado sobrio.
 class AppColors {
   AppColors._();
 
@@ -20,11 +20,11 @@ class AppColors {
   // Color principal y secundario
   // ---------------------------------------------------------------------------
 
-  static const Color primary = Color(0xFF173F35);
+  static const Color primary = Color(0xFF8C2028);
 
-  static const Color primaryDark = Color(0xFF0D2B24);
+  static const Color primaryDark = Color(0xFF5C1218);
 
-  static const Color primaryContainer = Color(0xFFE1E9E2);
+  static const Color primaryContainer = Color(0xFFF3DCDC);
 
   static const Color secondary = Color(0xFFB58A3A);
 
@@ -40,8 +40,8 @@ class AppColors {
   // Estados semánticos
   // ---------------------------------------------------------------------------
 
-  /// Color de éxito.
-  static const Color success = Color(0xFF356B50);
+  /// Color de éxito (azul acero formal).
+  static const Color success = Color(0xFF2E5E8E);
 
   /// Color de advertencia.
   static const Color warning = Color(0xFFB46D25);
@@ -84,7 +84,7 @@ ColorScheme appColorSchemeLight() {
     primary: AppColors.primary,
     onPrimary: Colors.white,
     secondary: AppColors.secondary,
-    onSecondary: AppColors.primaryDark,
+    onSecondary: Color(0xFF4D3814),
     tertiary: AppColors.tertiary,
     onTertiary: Colors.white,
     primaryContainer: AppColors.primaryContainer,

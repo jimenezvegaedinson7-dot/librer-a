@@ -1,20 +1,16 @@
-@import "tailwindcss";
-
 /* ============================================================
    THEME / DESIGN TOKENS
    Fuente única de verdad para colores, tipografía, sombras y
    radios. El resto de la app solo usa estas variables.
    ============================================================ */
-@theme {
-    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-        Roboto, "Helvetica Neue", Arial, sans-serif;
 
-    /* Primaria (índigo → violeta) */
+/* Colores corporativos principales */
+:root {
     --color-primary-50: #eef2ff;
     --color-primary-100: #e0e7ff;
     --color-primary-200: #c7d2fe;
     --color-primary-300: #a5b4fc;
-    --color-primary-400: #818cf8;
+    --color-primary-400: 818cf8;
     --color-primary-500: #6366f1;
     --color-primary-600: #4f46e5;
     --color-primary-700: #4338ca;
@@ -22,28 +18,60 @@
     --color-primary-900: #312e81;
     --color-primary-950: #1e1b4b;
 
-    /* Fondo base de la app */
-    --color-surface: #f3f4f8;
+    /* Fondo base - gris muy suave para reducir fatiga visual */
+    --color-surface: #f8fafc;
+    --color-surface-dark: #f1f5f9;
 
-    /* Sombras con profundidad sutil */
-    --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
-    --shadow-card-hover: 0 10px 24px -6px rgb(15 23 42 / 0.12), 0 4px 8px -4px rgb(15 23 42 / 0.06);
-    --shadow-popover: 0 16px 40px -8px rgb(15 23 42 / 0.2), 0 4px 12px rgb(15 23 42 / 0.08);
+    /* Bordes y separadores sutiles */
+    --color-border: #e2e8f0;
+    --color-border-soft: #cbd5e1;
+
+    /* Estados */
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+    --color-info: #3b82f6;
+
+    /* Texto */
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #64748b;
+    --color-text-muted: #94a3b8;
+
+    /* Sombras con profundidad sutil y profesional */
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.03);
+    --shadow-sm: 0 1px 3px 1px rgb(0 0 0 / 0.05), 0 2px 2px -1px rgb(0 0 0 / 0.02);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -3px rgb(0 0 0 / 0.05);
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.02), 0 1px 3px rgb(0 0 0 / 0.03);
+    --shadow-card-hover: 0 10px 25px -5px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+    --shadow-nav: 0 1px 2px rgb(0 0 0 / 0.02), 0 2px 4px -1px rgb(0 0 0 / 0.03);
+
+    /* Radio de bordes consistente */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 9999px;
 }
 
 /* ============================================================
    BASE
    ============================================================ */
 html {
-    font-family: var(--font-sans);
-    scroll-behavior: smooth;
+    font-family: "Inter", "ui-sans-serif", system-ui, -apple-system, "Segoe UI",
+        Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    box-sizing: border-box;
 }
+
+*, *::before, *::after { box-sizing: inherit; }
 
 body {
     background-color: var(--color-surface);
-    color: #0f172a;
+    color: var(--color-text-primary);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
 }
 
 ::selection {
@@ -54,50 +82,330 @@ body {
 /* Scrollbars finos y discretos */
 * {
     scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
+    scrollbar-color: var(--color-border) transparent;
 }
+
 *::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
+
 *::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 9999px;
+    background-color: var(--color-border-soft);
+    border-radius: var(--radius-full);
 }
+
 *::-webkit-scrollbar-thumb:hover {
     background-color: #94a3b8;
 }
 
 /* ============================================================
-   COMPONENTES REUTILIZABLES
+   CAPAS DE COMPONENTES
    ============================================================ */
 @layer components {
-    .card {
-        @apply rounded-xl border border-slate-200 bg-white shadow-card;
-    }
-    .card-hover {
-        @apply transition duration-200 hover:shadow-card-hover;
-    }
-    .card-header {
-        @apply flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-200 px-4 py-3;
-    }
-    .card-title {
-        @apply text-sm font-semibold tracking-tight text-slate-900;
-    }
-    .card-subtitle {
-        @apply mt-0.5 text-xs leading-relaxed text-slate-500;
+
+    /* ============================================================
+       BOTONES
+       ============================================================ */
+    .btn {
+        @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500/40 disabled:opacity-60 disabled:cursor-not-pressed;
+        box-shadow: var(--shadow-sm);
     }
 
+    .btn-primary {
+        @apply btn bg-primary-600 text-white hover:bg-primary-500 hover:shadow-primary-600/25 active:scale-[0.99] focus-visible:bg-primary-500 focus-visible:text-white;
+    }
+
+    .btn-secondary {
+        @apply btn bg-white text-primary-600 border border-primary-300 hover:bg-primary-50 hover:text-primary-700 focus-visible:bg-primary-100 focus-visible:text-primary-800;
+    }
+
+    .btn-outline {
+        @apply btn border-2 border-primary-400 text-primary-600 hover:bg-primary-50 hover:text-primary-700 focus-visible:bg-primary-100 focus-visible:text-primary-800;
+    }
+
+    .btn-danger {
+        @apply btn bg-red-100 text-red-600 hover:bg-red-200 focus-visible:bg-red-200 hover:text-red-700;
+    }
+
+    .btn-ghost {
+        @apply btn bg-transparent text-primary-500 hover:bg-primary-50 hover:text-primary-700 focus-visible:bg-primary-100 focus-visible:text-primary-800;
+    }
+
+    /* Tamaños consistentes */
+    .btn-sm { @apply px-3 py-1.5 text-sm; }
+    .btn-md { @apply px-4 py-2.5 text-sm; }
+    .btn-lg { @apply px-6 py-3 text-base; }
+
+    /* ============================================================
+       CAMPOS DE ENTRADA
+       ============================================================ */
     .field {
-        @apply h-10 w-full rounded-lg border border-slate-400 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400;
+        @apply block w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 focus-visible:ring-2 focus-visible:ring-primary-500/40 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground;
+        box-shadow: var(--shadow-xs);
+        height: 48px;
     }
+
     .field-label {
-        @apply mb-1 block text-xs font-medium text-slate-600;
+        @apply block text-sm font-medium text-muted-foreground mb-1;
     }
-    .field-error {
-        @apply mt-1 flex items-start gap-1 text-xs font-medium text-red-600;
-    }
+
     .field-hint {
-        @apply mt-1 text-xs text-slate-400;
+        @apply mt-1 text-xs text-muted-foreground;
     }
+
+    .field-error {
+        @apply mt-1 text-xs text-error font-medium;
+    }
+
+    /* Inputs más limpios dentro de .field */
+    .field input,
+    .field select,
+    .field textarea {
+        @apply rounded-none outline-none bg-none w-full h-full py-0 px-0 text-sm font-medium text-foreground placeholder:subtle;
+        background: transparent;
+        border: none;
+        font: inherit;
+    }
+
+    .field input::placeholder,
+    .field select::placeholder,
+    .field textarea::placeholder {
+        @apply text-muted-foreground/50;
+    }
+
+    /* Estado focus más sutil */
+    .field:focus-within {
+        @apply ring-2 ring-primary-500/15;
+    }
+
+    /* ============================================================
+       BADGES
+       ============================================================ */
+    .badge {
+        @apply inline-flex items-center rounded-full text-xs font-medium gap-1.5 px-2.5 py-0.5 align-baseline;
+    }
+
+    .badge-primary {
+        @apply badge bg-primary-100 text-primary-600;
+    }
+
+    .badge-success {
+        @apply bg-success-100 text-success-800;
+    }
+
+    .badge-warning {
+        @apply bg-warning-100 text-warning-800;
+    }
+
+    .badge-error {
+        @apply bg-error-100 text-error-800;
+    }
+
+    .badge-soft {
+        @apply bg-border text-primary-500/20;
+    }
+
+    /* ============================================================
+       TARJETAS
+       ============================================================ */
+    .card {
+        @apply rounded-lg border border-border bg-card shadow-sm;
+    }
+
+    .card-header {
+        @apply flex flex-wrap items-center justify-between gap-2.5 border-b border-border px-4 py-3;
+    }
+
+    .card-title {
+        @apply text-sm font-medium text-foreground;
+    }
+
+    .card-subtitle {
+        @apply mt-0.5 text-xs text-muted-foreground leading-relaxed;
+    }
+
+    /* ============================================================
+       MODALES
+       ============================================================ */
+    .modal-overlay {
+        @apply fixed inset-0 bg-black/30 backdrop-blur-sm z-50;
+    }
+
+    .modal-content {
+        @apply relative w-full max-w-lg rounded-lg border border-border bg-card shadow-lg transform overflow-hidden opacity-0 transition-all duration-200 ease-out [&_.from-open]:opacity-100 [&_.to-closed]:opacity-0 [&_.from-open]:zoom-in [&_.to-closed]:zoom-out [&_.from-open]:slide-in-from-top-0 [&_.to-closed]:slide-out-to-top;
+    }
+
+    .modal-header {
+        @apply px-5 py-4 border-b border-border flex items-center justify-between gap-2;
+    }
+
+    .modal-title {
+        @apply text-lg font-medium text-foreground;
+    }
+
+    .modal-close {
+        @apply rounded-lg p-1 hover:bg-border hover:text-foreground transition-colors;
+    }
+
+    .modal-body {
+        @apply px-5 py-4;
+    }
+
+    .modal-footer {
+        @apply px-5 py-3 border-t border-border flex items-center justify-end gap-2;
+    }
+
+    /* ============================================================
+       TABLES
+       ============================================================ */
+    .table {
+        @apply w-full rounded-lg border-border text-sm;
+    }
+
+    .table th {
+        @apply border-border border-b px-4 py-2 text-left text-muted-foreground font-medium text-xs uppercase tracking-wider;
+    }
+
+    .table td {
+        @apply border-border border-t px-4 py-3 align-middle;
+    }
+
+    .table tr {
+        @apply transition-colors hover:bg-surface-dark;
+    }
+
+    .table tr td:first-child {
+        @apply font-medium;
+    }
+
+    .table-responsive {
+        @apply overflow-x-auto;
+    }
+
+    /* ============================================================
+       BUSCADORES / FILTROS
+       ============================================================ */
+    .search-wrapper {
+        @apply relative w-full rounded-lg border border-border bg-card px-3 py-2.5;
+    }
+
+    .search-wrapper input {
+        @apply w-full rounded-none outline-none px-0 py-0 text-sm text-foreground placeholder-subtle;
+        background: transparent;
+        border: none;
+    }
+
+    .search-wrapper svg,
+    .search-wrapper i {
+        @apply absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm;
+    }
+
+    .select-wrapper {
+        @apply relative w-full rounded-lg border border-border bg-card px-3 py-2.5;
+    }
+
+    .select-wrapper select {
+        @apply rounded-none outline-none w-full py-1.5 px-0 text-sm text-foreground placeholder-subtle bg-none cursor-pointer appearance-none;
+        background: transparent;
+        border: none;
+        font: inherit;
+    }
+
+    .select-wrapper::after {
+        @apply absolute right-3 top-1/2 -translate-y-1/2 content-['▾'] text-xs text-muted-foreground pointer-events-none;
+    }
+
+    /* ============================================================
+       ESTADOS VACÍOS
+       ============================================================ */
+    .empty-state {
+        @apply flex flex-col items-center justify-center py-12 text-muted-foreground;
+    }
+
+    .empty-state-icon {
+        @apply w-12 h-12 mb-3 text-border opacity-50;
+    }
+
+    .empty-state-title {
+        @apply text-lg font-medium text-foreground mb-1;
+    }
+
+    .empty-state-description {
+        @apply text-base text-muted-foreground/60 mb-6;
+    }
+
+    .empty-state-action {
+        @apply inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-medium text-primary hover:bg-primary-50 transition-colors;
+    }
+
+    /* ============================================================
+       LOADING / SPINNERS
+       ============================================================ */
+    .skeleton {
+        @apply rounded-shimmer bg-surface/25;
+    }
+
+    .spinner {
+        @apply size-4 rounded-full border-2 border-border-primary-300 border-t-primary-600 animate-spin;
+    }
+
+    /* ============================================================
+       NAVBAR / TOPBAR CONTEXT
+       ============================================================ */
+    .nav-link {
+        @apply relative group py-2 px-3 text-sm font-medium text-secondary hover:text-primary transition-colors rounded-md group-hover:bg-surface-dark;
+    }
+
+    .nav-link.active {
+        @apply bg-primary-50 text-primary-700;
+    }
+
+    .nav-link.active::after {
+        @apply absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-3 bg-primary-500 rounded-full content-[''];
+    }
+
+    /* ============================================================
+       RESPONSIVE BASE
+       ============================================================ */
+    @media (max-width: 1024px) {
+        .sidebar-hidden { display: none; }
+    }
+
+    @media (max-width: 640px) {
+        .mobile-full-width { width: 100%; }
+    }
+}
+
+/* ============================================================
+   UTILIDADES ADICIONALES
+   ============================================================ */
+ .focus-visible {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500/40;
+}
+
+.border-border { border-color: var(--color-border); }
+.bg-card { background-color: var(--color-surface-dark); }
+.bg-background { background-color: var(--color-surface); }
+.text-foreground { color: var(--color-text-primary); }
+.text-muted-foreground { color: var(--color-text-secondary); }
+.text-error { color: var(--color-error); }
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.rounded-sm { border-radius: var(--radius-sm); }
+.rounded-md { border-radius: var(--radius-md); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-full { border-radius: var(--radius-full); }
+
+/* Efecto shimmer para skeletons */
+@keyframes shimmer {
+    0% { background-position: -468px center; }
+    100% { background-position: 468px center; }
+}
+
+.background-shimmer {
+    background: linear-gradient(90deg, transparent, var(--color-surface/15), transparent);
+    background-size: 468px 100%;
+    animation: shimmer 2s infinite;
 }
