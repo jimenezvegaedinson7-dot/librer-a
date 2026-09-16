@@ -31,27 +31,28 @@ export function Modal({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-                className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px]"
+                className="animate-solapa absolute inset-0 bg-slate-950/50 backdrop-blur-sm"
                 onClick={onCerrar}
                 aria-hidden="true"
             />
             <div
                 role="dialog"
                 aria-modal="true"
-                className={`relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl bg-white shadow-2xl ${
+                className={`animate-modal relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-float ${
                     grande ? 'max-w-3xl' : 'max-w-lg'
                 }`}
             >
-                <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-3">
-                    <div>
-                        <h2 className="text-sm font-semibold text-slate-900">{titulo}</h2>
-                        {subtitulo && <p className="mt-0.5 text-xs text-slate-600">{subtitulo}</p>}
+                <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
+                    <div className="min-w-0">
+                        <h2 className="text-base font-bold text-slate-900">{titulo}</h2>
+                        {subtitulo && <p className="mt-0.5 text-xs text-slate-500">{subtitulo}</p>}
                     </div>
                     <Button
                         variante="ghost"
                         tamano="sm"
                         onClick={onCerrar}
                         aria-label="Cerrar"
+                        className="!h-8 !w-8 !p-0 rounded-lg"
                     >
                         <FaXmark />
                     </Button>
@@ -60,7 +61,7 @@ export function Modal({
                 <div className="overflow-y-auto p-5">{children}</div>
 
                 {footer && (
-                    <div className="flex items-center justify-end gap-3 border-t border-slate-200 bg-slate-50 px-5 py-3">
+                    <div className="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50/80 px-5 py-3.5">
                         {footer}
                     </div>
                 )}

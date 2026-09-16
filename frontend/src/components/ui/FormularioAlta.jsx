@@ -115,7 +115,7 @@ export function FormularioAlta({
                 <form onSubmit={enviar} className="space-y-3" noValidate>
                     {renderCampos({ formulario, manejarCambio, errores })}
 
-                    <div className="flex items-center justify-end gap-3 border-t border-slate-200/70 pt-5">
+                    <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
                         <Button variante="secondary" type="button" onClick={limpiar} disabled={guardando}>
                             <FaRotateLeft /> Limpiar
                         </Button>

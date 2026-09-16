@@ -25,13 +25,16 @@ export default function AdminLayout() {
                 />
             )}
 
-            <div className="min-h-screen lg:ml-60">
+            <div className="min-h-screen lg:ml-64">
                 <Topbar onAbrirMenu={abrirSidebar} />
-                <main className="relative px-4 py-4 sm:px-5 sm:py-4 lg:px-6 lg:py-5">
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary-50/60 to-transparent" />
+                <main className="relative px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-6">
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-primary-100/40 via-primary-50/20 to-transparent" />
+                    <div className="pointer-events-none absolute -left-32 top-24 h-72 w-72 rounded-full bg-primary-200/20 blur-3xl" />
                     <div className="relative">
                         <Breadcrumbs />
-                        <Outlet />
+                        <div className="pt-1">
+                            <Outlet />
+                        </div>
                     </div>
                 </main>
             </div>

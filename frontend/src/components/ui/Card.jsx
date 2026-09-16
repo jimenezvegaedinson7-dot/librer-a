@@ -1,6 +1,6 @@
 export function Card({ children, className = '', hover = false }) {
     return (
-        <section className={`card ${hover ? 'card-hover' : ''} ${className}`}>
+        <section className={`card overflow-hidden ${hover ? 'card-hover' : ''} ${className}`}>
             {children}
         </section>
     );
@@ -11,7 +11,7 @@ export function CardHeader({ titulo, subtitulo, acciones = null, icono = null })
         <div className="card-header">
             <div className="flex items-center gap-3">
                 {icono && (
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-sm text-white shadow-md shadow-primary-600/25">
                         {icono}
                     </span>
                 )}

@@ -36,13 +36,13 @@ const operacionEstilo = (item) => {
     return { icono: <FaBell />, clase: 'bg-slate-100 text-slate-600' };
 };
 
-function Avatar({ foto, inicial, className = 'h-8 w-8' }) {
+function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
     return (
-        <div className={`overflow-hidden rounded-full bg-slate-200 ring-1 ring-slate-300 ${className}`}>
+        <div className={`relative shrink-0 overflow-hidden rounded-full bg-slate-200 ring-2 ring-white shadow-md ${className}`}>
             {foto ? (
                 <img src={foto} alt="Foto del administrador" className="h-full w-full object-cover" />
             ) : (
-                <div className="flex h-full w-full items-center justify-center bg-slate-900 text-sm font-bold text-white">
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary-600 to-primary-800 text-sm font-bold text-white">
                     {inicial}
                 </div>
             )}
@@ -145,21 +145,21 @@ export default function Topbar({ onAbrirMenu }) {
 
     return (
         <>
-            <header className="sticky top-0 z-30 flex h-14 w-full items-center border-b border-slate-200 bg-white/95 px-3 backdrop-blur sm:px-4 lg:px-6">
+            <header className="sticky top-0 z-30 flex h-16 w-full items-center border-b border-slate-200 bg-white/90 px-3 backdrop-blur-md sm:px-4 lg:px-6">
                 <div className="flex w-full items-center justify-between gap-3">
                     <button
                         type="button"
                         onClick={onAbrirMenu}
                         aria-label="Abrir menú"
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 lg:hidden"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 active:scale-95 lg:hidden"
                     >
                         <FaBars />
                     </button>
 
                     {/* BUSCADOR */}
                     <div ref={buscadorRef} className="relative hidden w-full max-w-sm sm:block">
-                        <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus-within:border-primary-400">
-                            <FaMagnifyingGlass className="text-slate-400" />
+                        <div className="group flex items-center gap-2.5 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-2 shadow-sm transition focus-within:border-primary-400 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary-500/10">
+                            <FaMagnifyingGlass className="text-slate-400 transition group-focus-within:text-primary-500" />
                             <input
                                 type="text"
                                 value={busqueda}
@@ -171,14 +171,18 @@ export default function Topbar({ onAbrirMenu }) {
                                 placeholder="Buscar módulo..."
                                 className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
                             />
-                            {busqueda && (
+                            {busqueda ? (
                                 <button type="button" onClick={() => setBusqueda('')} aria-label="Limpiar">
-                                    <FaXmark className="text-slate-400" />
+                                    <FaXmark className="text-slate-400 transition hover:text-slate-600" />
                                 </button>
+                            ) : (
+                                <kbd className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
+                                    ⌘K
+                                </kbd>
                             )}
                         </div>
                         {buscadorAbierto && busqueda && (
-                            <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
+                            <div className="animate-suave absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-float">
                                 {resultadosBusqueda.length === 0 ? (
                                     <div className="p-5 text-center text-sm text-slate-600">Sin resultados</div>
                                 ) : (
@@ -189,14 +193,14 @@ export default function Topbar({ onAbrirMenu }) {
                                                 key={modulo.ruta}
                                                 type="button"
                                                 onClick={() => navegarModulo(modulo.ruta)}
-                                                className="flex w-full items-center gap-3 border-b border-slate-100 px-3 py-2.5 text-left last:border-0 hover:bg-slate-50"
+                                                className="flex w-full items-center gap-3 border-b border-slate-100 px-3 py-2.5 text-left transition last:border-0 hover:bg-primary-50/60"
                                             >
-                                                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                                                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-50 text-sm text-primary-600">
                                                     <Icono />
                                                 </span>
                                                 <span>
                                                     <span className="block text-sm font-bold text-slate-700">{modulo.nombre}</span>
-                                                    <span className="block text-xs text-slate-600">{modulo.descripcion}</span>
+                                                    <span className="block text-xs text-slate-500">{modulo.descripcion}</span>
                                                 </span>
                                             </button>
                                         );
@@ -206,33 +210,37 @@ export default function Topbar({ onAbrirMenu }) {
                         )}
                     </div>
 
-                    <div className="ml-auto flex items-center gap-2">
+                    <div className="ml-auto flex items-center gap-1.5">
                         {/* NOTIFICACIONES */}
                         <div ref={notifRef} className="relative">
                             <button
                                 type="button"
                                 onClick={abrirNotificaciones}
                                 aria-label="Notificaciones"
-                                className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100"
+                                className={`relative flex h-10 w-10 items-center justify-center rounded-xl border transition active:scale-95 ${
+                                    notificacionesAbiertas
+                                        ? 'border-primary-200 bg-primary-50 text-primary-600'
+                                        : 'border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-700'
+                                }`}
                             >
                                 <FaBell />
                                 {cantidadNuevas > 0 && (
-                                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[8px] font-bold text-white">
+                                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[8px] font-bold text-white shadow-sm">
                                         {cantidadNuevas > 99 ? '99+' : cantidadNuevas}
                                     </span>
                                 )}
                             </button>
                             {notificacionesAbiertas && (
-                                <div className="fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[360px]">
-                                    <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+                                <div className="animate-suave fixed left-3 right-3 top-20 z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-float sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px]">
+                                    <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white px-4 py-3.5">
                                         <div>
                                             <h3 className="text-sm font-bold text-slate-800">Notificaciones</h3>
-                                            <p className="text-xs text-slate-600">Actividades recientes</p>
+                                            <p className="text-xs text-slate-500">Actividades recientes</p>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => cargarNotificaciones()}
-                                            className="text-xs font-semibold text-slate-600"
+                                            className="rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
                                         >
                                             Actualizar
                                         </button>
@@ -246,8 +254,11 @@ export default function Topbar({ onAbrirMenu }) {
                                             notificaciones.map((item) => {
                                                 const op = operacionEstilo(item);
                                                 return (
-                                                    <div key={item.id_historial} className="flex gap-3 border-b border-slate-100 px-4 py-3 last:border-0">
-                                                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${op.clase}`}>
+                                                    <div
+                                                        key={item.id_historial}
+                                                        className="flex gap-3 border-b border-slate-100 px-4 py-3 transition last:border-0 hover:bg-slate-50/80"
+                                                    >
+                                                        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${op.clase}`}>
                                                             {op.icono}
                                                         </span>
                                                         <div className="min-w-0 flex-1">
@@ -255,9 +266,9 @@ export default function Topbar({ onAbrirMenu }) {
                                                                 <p className="truncate text-sm font-bold capitalize text-slate-700">
                                                                     {item.modulo || 'Sistema'}
                                                                 </p>
-                                                                <span className="text-xs text-slate-400">{formatearFecha(item.fecha_registro)}</span>
+                                                                <span className="whitespace-nowrap text-xs text-slate-400">{formatearFecha(item.fecha_registro)}</span>
                                                             </div>
-                                                            <p className="mt-1 text-sm text-slate-600">{item.descripcion}</p>
+                                                            <p className="mt-1 text-sm leading-snug text-slate-500">{item.descripcion}</p>
                                                         </div>
                                                     </div>
                                                 );
@@ -270,7 +281,7 @@ export default function Topbar({ onAbrirMenu }) {
                                             setNotificacionesAbiertas(false);
                                             navigate('/historial');
                                         }}
-                                        className="w-full border-t border-slate-200 bg-slate-50 py-2.5 text-sm font-semibold text-slate-700"
+                                        className="w-full border-t border-slate-200 bg-slate-50 py-3 text-sm font-semibold text-primary-700 transition hover:bg-primary-50"
                                     >
                                         Ver historial completo
                                     </button>
@@ -286,26 +297,27 @@ export default function Topbar({ onAbrirMenu }) {
                                     setMenuAbierto(!menuAbierto);
                                     setNotificacionesAbiertas(false);
                                 }}
-                                className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100"
+                                className="flex items-center gap-2 rounded-xl py-1.5 pl-1.5 pr-2 transition hover:bg-slate-100"
                             >
                                 <Avatar foto={foto} inicial={inicial} />
                                 <div className="hidden max-w-[170px] text-left md:block">
                                     <p className="truncate text-sm font-bold text-slate-800">{nombre}</p>
-                                    <p className="truncate text-xs text-slate-600">{usuario?.email || 'Administrador'}</p>
+                                    <p className="truncate text-xs text-slate-500">{usuario?.email || 'Administrador'}</p>
                                 </div>
-                                <FaChevronDown className={`hidden text-xs text-slate-400 sm:block ${menuAbierto ? 'rotate-180' : ''}`} />
+                                <FaChevronDown className={`hidden text-xs text-slate-400 transition-transform sm:block ${menuAbierto ? 'rotate-180' : ''}`} />
                             </button>
                             {menuAbierto && (
-                                <div className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
+                                <div className="animate-suave absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-float">
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setPerfilAbierto(true);
                                             setMenuAbierto(false);
                                         }}
-                                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-600 hover:bg-slate-50"
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-800"
                                     >
-                                        <FaUser /> Datos del administrador
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600"><FaUser /></span>
+                                        Datos del administrador
                                     </button>
                                     <button
                                         type="button"
@@ -313,16 +325,18 @@ export default function Topbar({ onAbrirMenu }) {
                                             setConfigAbierta(true);
                                             setMenuAbierto(false);
                                         }}
-                                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-600 hover:bg-slate-50"
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-800"
                                     >
-                                        <FaGear /> Configuración
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600"><FaGear /></span>
+                                        Configuración
                                     </button>
                                     <button
                                         type="button"
                                         onClick={salir}
-                                        className="flex w-full items-center gap-2.5 border-t border-slate-100 px-3 py-2.5 text-left text-sm font-semibold text-red-600 hover:bg-red-50"
+                                        className="flex w-full items-center gap-2.5 rounded-xl border-t border-slate-100 px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
                                     >
-                                        <FaRightFromBracket /> Cerrar sesión
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 text-red-600"><FaRightFromBracket /></span>
+                                        Cerrar sesión
                                     </button>
                                 </div>
                             )}

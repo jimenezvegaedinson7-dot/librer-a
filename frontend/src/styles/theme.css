@@ -1,15 +1,11 @@
 @import "tailwindcss";
 
-/* ============================================================
-   THEME / DESIGN TOKENS
-   Fuente única de verdad para colores, tipografía, sombras y
-   radios. El resto de la app solo usa estas variables.
-   ============================================================ */
 @theme {
-    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-        Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-    /* Primaria (índigo → violeta) */
+    --color-surface: #eef1f6;
+    --color-surface-50: #f6f8fb;
+
     --color-primary-50: #eef2ff;
     --color-primary-100: #e0e7ff;
     --color-primary-200: #c7d2fe;
@@ -20,84 +16,205 @@
     --color-primary-700: #4338ca;
     --color-primary-800: #3730a3;
     --color-primary-900: #312e81;
-    --color-primary-950: #1e1b4b;
 
-    /* Fondo base de la app */
-    --color-surface: #f3f4f8;
+    --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+    --shadow-lift: 0 10px 24px -8px rgb(15 23 42 / 0.14), 0 2px 6px -2px rgb(15 23 42 / 0.05);
+    --shadow-float: 0 18px 40px -12px rgb(15 23 42 / 0.22), 0 4px 12px -4px rgb(15 23 42 / 0.1);
 
-    /* Sombras con profundidad sutil */
-    --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
-    --shadow-card-hover: 0 10px 24px -6px rgb(15 23 42 / 0.12), 0 4px 8px -4px rgb(15 23 42 / 0.06);
-    --shadow-popover: 0 16px 40px -8px rgb(15 23 42 / 0.2), 0 4px 12px rgb(15 23 42 / 0.08);
-}
-
-/* ============================================================
-   BASE
-   ============================================================ */
-html {
-    font-family: var(--font-sans);
-    scroll-behavior: smooth;
+    --radius-md: 0.625rem;
+    --radius-lg: 0.875rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.25rem;
 }
 
-body {
-    background-color: var(--color-surface);
-    color: #0f172a;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        background-color: var(--color-surface);
+        color: var(--color-slate-800, #1e293b);
+        font-family: var(--font-sans);
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+        background-color: var(--color-primary-100);
+        color: var(--color-primary-900);
+    }
 }
 
-::selection {
-    background-color: var(--color-primary-100);
-    color: var(--color-primary-900);
-}
-
-/* Scrollbars finos y discretos */
-* {
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e1 transparent;
-}
-*::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-*::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 9999px;
-}
-*::-webkit-scrollbar-thumb:hover {
-    background-color: #94a3b8;
-}
-
-/* ============================================================
-   COMPONENTES REUTILIZABLES
-   ============================================================ */
 @layer components {
     .card {
-        @apply rounded-xl border border-slate-200 bg-white shadow-card;
+        border-radius: var(--radius-2xl);
+        border: 1px solid var(--color-slate-200, #e2e8f0);
+        background-color: #fff;
+        box-shadow: var(--shadow-card);
     }
+
+    .card-glass {
+        border-radius: var(--radius-xl);
+        border: 1px solid rgb(255 255 255 / 0.55);
+        background-color: rgb(255 255 255 / 0.7);
+        box-shadow: var(--shadow-card);
+        backdrop-filter: blur(8px);
+    }
+
     .card-hover {
-        @apply transition duration-200 hover:shadow-card-hover;
+        transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
     }
+
+    .card-hover:hover {
+        border-color: var(--color-slate-300, #cbd5e1);
+        box-shadow: var(--shadow-lift);
+        transform: translateY(-2px);
+    }
+
     .card-header {
-        @apply flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-200 px-4 py-3;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.1rem 1.25rem;
+        border-bottom: 1px solid var(--color-slate-100, #f1f5f9);
+        background: linear-gradient(to bottom, #fff, var(--color-slate-50, #f8fafc));
     }
+
     .card-title {
-        @apply text-sm font-semibold tracking-tight text-slate-900;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--color-slate-900, #0f172a);
     }
+
     .card-subtitle {
-        @apply mt-0.5 text-xs leading-relaxed text-slate-500;
+        margin-top: 0.15rem;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        color: var(--color-slate-500, #64748b);
+    }
+
+    .field-label {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--color-slate-700, #334155);
     }
 
     .field {
-        @apply h-10 w-full rounded-lg border border-slate-400 bg-white px-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400;
+        display: block;
+        width: 100%;
+        height: 2.75rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--color-slate-300, #cbd5e1);
+        background-color: #fff;
+        padding: 0.5rem 0.875rem;
+        font-size: 0.875rem;
+        color: var(--color-slate-800, #1e293b);
+        box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.03);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
     }
-    .field-label {
-        @apply mb-1 block text-xs font-medium text-slate-600;
+
+    .field::placeholder {
+        color: var(--color-slate-400, #94a3b8);
     }
+
+    .field:hover:not(:disabled):not(:focus) {
+        border-color: var(--color-slate-400, #94a3b8);
+    }
+
+    .field:focus {
+        outline: none;
+        border-color: var(--color-primary-500);
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgb(99 102 241 / 0.12);
+    }
+
+    .field:disabled {
+        background-color: var(--color-slate-100, #f1f5f9);
+        color: var(--color-slate-500, #64748b);
+        cursor: not-allowed;
+    }
+
     .field-error {
-        @apply mt-1 flex items-start gap-1 text-xs font-medium text-red-600;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.375rem;
+        margin-top: 0.4rem;
+        font-size: 0.75rem;
+        color: var(--color-red-600, #dc2626);
     }
+
     .field-hint {
-        @apply mt-1 text-xs text-slate-400;
+        margin-top: 0.4rem;
+        font-size: 0.75rem;
+        color: var(--color-slate-400, #94a3b8);
     }
+}
+
+/* Animaciones utilitarias (CSS puro, seguro con Tailwind v4) */
+@keyframes aparecer-overlay {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes aparecer-modal {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.975);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes aparecer-suave {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-modal {
+    animation: aparecer-modal 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-solapa {
+    animation: aparecer-overlay 0.18s ease-out both;
+}
+
+.animate-suave {
+    animation: aparecer-suave 0.25s ease-out both;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: rgb(148 163 184 / 0.45);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(148 163 184 / 0.7);
 }

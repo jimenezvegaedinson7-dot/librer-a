@@ -7,11 +7,21 @@ const estilos = {
     info: 'bg-sky-50 text-sky-700 ring-sky-600/20',
 };
 
-export function Badge({ children, color = 'neutral', className = '' }) {
+const puntos = {
+    primary: 'bg-primary-500',
+    success: 'bg-emerald-500',
+    warning: 'bg-amber-500',
+    danger: 'bg-red-500',
+    neutral: 'bg-slate-500',
+    info: 'bg-sky-500',
+};
+
+export function Badge({ children, color = 'neutral', className = '', punto = true }) {
     return (
         <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${estilos[color]} ${className}`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${estilos[color]} ${className}`}
         >
+            {punto && <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${puntos[color]}`} />}
             {children}
         </span>
     );
