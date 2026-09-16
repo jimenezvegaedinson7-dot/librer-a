@@ -1,15 +1,109 @@
-const { cliente, PAYU_API_BASE } = require('../config/payu');
+const {
+    cliente,
+    PAYU_API_BASE,
+    PAYU_CHECKOUT_BASE,
+    PUBLIC_BASE_URL
+} = require('../config/payu');
 const crypto = require('crypto');
 
+// ========================================
+// GENERAR FIRMA DEL WEBCHECKOUT (Payment Form)
+// MD5(apiKey~merchantId~referenceCode~amount~currency)
+// El `amount` del formulario va en céntimos (ej. 2500 = S/25.00).
+// ========================================
+const generarFirmaCheckout = ({
+    referenceCode,
+    amountCents
+}) => {
+    return crypto
+        .createHash('md5')
+        .update(`${cliente.apiKey}~${cliente.merchantId}~${referenceCode}~${amountCents}~PEN`)
+        .digest('hex');
+};
+
+// ========================================
+// CONSTRUIR CAMPOS DEL FORMULARIO WebCheckout
+// Devuelve { action, campos }. El HTML del form lo renderiza el
+// controlador en GET /api/pagos/checkout/:externalReference.
+// ========================================
+const construirFormularioCheckout = ({
+    externalReference,
+    total,
+    buyerEmail
+}) => {
+    if (!cliente) {
+        const error = new Error(
+            'PayU no está configurado en el servidor'
+        );
+        error.disableRealPayment = true;
+        throw error;
+    }
+
+    if (
+        !buyerEmail ||
+        typeof buyerEmail !== 'string' ||
+        !buyerEmail.includes('@')
+    ) {
+        const error = new Error(
+            'El email del comprador no es válido: es requerido para el pago'
+        );
+        error.paymentValidation = true;
+        throw error;
+    }
+
+    const cantidadCents = Math.round(
+        Number(total) * 100
+    );
+
+    if (!Number.isFinite(cantidadCents) || cantidadCents <= 0) {
+        const error = new Error(
+            'El total de la venta no es válido'
+        );
+        error.paymentValidation = true;
+        throw error;
+    }
+
+    const amount = String(cantidadCents);
+
+    const campos = {
+        merchantId: String(cliente.merchantId),
+        accountId: String(cliente.accountId),
+        description: String(externalReference),
+        referenceCode: String(externalReference),
+        amount,
+        tax: '0',
+        taxReturnBase: '0',
+        currency: 'PEN',
+        signature: generarFirmaCheckout({
+            referenceCode: String(externalReference),
+            amountCents: amount
+        }),
+        test: cliente.test ? '1' : '0',
+        buyerEmail,
+        responseUrl: `${PUBLIC_BASE_URL}/api/pagos/respuesta/${encodeURIComponent(String(externalReference))}`,
+        confirmationUrl:
+            process.env.PAYU_NOTIFICATION_URL ||
+            `${PUBLIC_BASE_URL}/api/pagos/webhook`
+    };
+
+    return {
+        action: PAYU_CHECKOUT_BASE,
+        campos
+    };
+};
+
+// ========================================
+// CREAR ORDEN DE PAGO (WebCheckout)
+// Ya NO se llama a la Payments API (su sandbox de Perú no devuelve
+// paymentUrl sin tarjeta). El checkout_url apunta a una página propia
+// del backend que auto-envía el formulario firmado al gateway de PayU.
+// El id de orden de PayU se desconoce hasta el pago; se obtiene en el
+// webhook vía reference_pol.
+// ========================================
 const crearOrden = async ({
     externalReference,
     items,
     payerEmail,
-    notificationUrl,
-    successUrl,
-    failureUrl,
-    pendingUrl,
-    shipping,
     idempotencyKey
 }) => {
     if (!payerEmail || typeof payerEmail !== 'string' || !payerEmail.includes('@')) {
@@ -36,17 +130,6 @@ const crearOrden = async ({
         }))
     ];
 
-    if (
-        shipping &&
-        Number(shipping.price) > 0
-    ) {
-        itemsOrden.push({
-            description: shipping.title,
-            value: Math.round(Number(shipping.price) * 100),
-            quantity: 1
-        });
-    }
-
     const total = itemsOrden
         .reduce(
             (sum, item) =>
@@ -56,122 +139,150 @@ const crearOrden = async ({
             0
         );
 
-    const referenceCode = externalReference;
-    const signature = crypto
-        .createHash('md5')
-        .update(`${cliente.apiKey}~${cliente.merchantId}~${referenceCode}~${total}~PEN`)
-        .digest('hex');
+    console.log('[PAYU CREATE] (WebCheckout)');
+    console.log(`  external_reference: ${externalReference}`);
+    console.log(`  amount: ${total / 100}`);
+    console.log(`  idempotency_key: ${idempotencyKey || '(sin clave)'}`);
+
+    return {
+        // El id local por ahora es la referencia externa; el id real de
+        // PayU (reference_pol) llega con el webhook.
+        id: null,
+        checkout_url: `${PUBLIC_BASE_URL}/api/pagos/checkout/${encodeURIComponent(externalReference)}`,
+        status: 'PENDING',
+        total_amount: total / 100,
+        transactionResponse: null
+    };
+};
+
+// ========================================
+// CONSULTAR REPORTS API (POST JSON)
+// La Reports API requiere POST; GET devuelve 405.
+// ========================================
+const consultarReporte = async (command, details) => {
+    if (!cliente) {
+        return null;
+    }
 
     const body = {
-        language: 'es',
-        command: 'SUBMIT_TRANSACTION',
+        test: cliente.test,
+        language: 'en',
+        command,
         merchant: {
             apiLogin: cliente.apiLogin,
             apiKey: cliente.apiKey
         },
-        transaction: {
-            order: {
-                accountId: cliente.accountId,
-                referenceCode,
-                description: referenceCode,
-                language: 'es',
-                signature,
-                notifyUrl: notificationUrl,
-                additionalValues: {
-                    TX_VALUE: {
-                        value: total / 100,
-                        currency: 'PEN'
-                    },
-                    TX_TAX: {
-                        value: 0,
-                        currency: 'PEN'
-                    },
-                    TX_TAX_RETURN_BASE: {
-                        value: 0,
-                        currency: 'PEN'
-                    }
-                },
-                buyer: {
-                    emailAddress: payerEmail,
-                    fullName: payerEmail.split('@')[0]
-                },
-                shipping: shipping ? {
-                    address: shipping.title,
-                    city: 'Lima',
-                    country: 'PE',
-                    phone: '',
-                    name: shipping.title
-                } : undefined
-            },
-            creditCard: null,
-            extraParameters: {},
-            payer: {
-                emailAddress: payerEmail,
-                fullName: payerEmail.split('@')[0]
-            },
-            test: cliente.test
-        }
+        details
     };
 
-    const headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-    };
-
-    const response = await fetch(`${PAYU_API_BASE}/payments-api/4.0/service.cgi`, {
+    const response = await fetch(`${PAYU_API_BASE}/reports-api/4.0/service.cgi`, {
         method: 'POST',
-        headers,
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
         body: JSON.stringify(body)
     });
 
     if (!response.ok) {
-        const errorData = await response.json();
-        const error = new Error(
-            errorData?.transactionResponse?.responseMessage ||
-            errorData?.message ||
-            'Error al crear la orden en PayU'
-        );
-        error.paymentValidation = response.status === 400;
-        throw error;
+        return null;
     }
 
-    const resultado = await response.json();
+    return response.json();
+};
 
-    console.log('[PAYU CREATE]');
-    console.log(`  order_id: ${resultado?.transactionResponse?.orderId}`);
-    console.log(`  status: ${resultado?.transactionResponse?.state}`);
-    console.log(`  payment_url: ${resultado?.transactionResponse?.paymentUrl}`);
-    console.log(`  external_reference: ${externalReference}`);
-    console.log(`  amount: ${total / 100}`);
+// ========================================
+// NORMALIZAR UNA ORDEN DEL REPORTS API
+// Deja el estado en formato que consume extraerEstadoOrdenPayu.
+// ========================================
+const normalizarOrdenReports = (payload = {}) => {
+    const tx = payload.transactions?.[0]?.transactionResponse || {};
+    const txId = payload.transactions?.[0]?.id || null;
+    const txValue = Number(
+        payload?.additionalValues?.TX_VALUE?.value ?? 0
+    );
 
     return {
-        id: resultado?.transactionResponse?.orderId,
-        checkout_url: resultado?.transactionResponse?.paymentUrl,
-        status: resultado?.transactionResponse?.state,
-        total_amount: total / 100,
-        transactionResponse: resultado?.transactionResponse
+        id: payload.id ?? null,
+        status: payload.status ?? tx.state ?? null,
+        referenceCode: payload.referenceCode ?? null,
+        external_reference: payload.referenceCode ?? null,
+        transactionResponse: {
+            state: payload.status ?? tx.state ?? null,
+            transactionId: txId,
+            referenceCode: payload.referenceCode ?? null,
+            pendingReason: tx.pendingReason || null,
+            responseMessage: tx.responseMessage || null,
+            value: txValue * 100,
+            buyer: null
+        }
     };
 };
 
+// ========================================
+// OBTENER ORDEN POR ID DE PAYU (ORDER_DETAIL)
+// ========================================
 const obtenerOrden = async (orderId) => {
     if (!cliente) {
         return null;
     }
 
-    const queryUrl = `${PAYU_API_BASE}/reports-api/4.0/service.cgi?apiLogin=${cliente.apiLogin}&apiKey=${cliente.apiKey}&command=ORDER_DETAIL&orderId=${orderId}&test=${cliente.test}`;
-
-    const response = await fetch(queryUrl, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
+    const consulta = await consultarReporte('ORDER_DETAIL', {
+        orderId: Number(orderId)
     });
 
-    if (!response.ok) {
+    const payload = consulta?.result?.payload;
+
+    if (!payload) {
         return null;
     }
 
-    return await response.json();
+    return normalizarOrdenReports(payload);
 };
 
+// ========================================
+// OBTENER ORDEN POR REFERENCIA EXTERNA
+// (ORDER_DETAIL_BY_REFERENCE_CODE)
+// ========================================
+const obtenerOrdenPorReferencia = async (referenceCode) => {
+    if (!cliente) {
+        return null;
+    }
+
+    const consulta = await consultarReporte('ORDER_DETAIL_BY_REFERENCE_CODE', {
+        referenceCode: String(referenceCode)
+    });
+
+    const payload = consulta?.result?.payload;
+    const orden = Array.isArray(payload)
+        ? payload[0]
+        : payload;
+
+    if (!orden) {
+        return null;
+    }
+
+    return normalizarOrdenReports(orden);
+};
+
+// ========================================
+// OBTENER PAGO POR ID DE TRANSACCIÓN
+// ========================================
+const obtenerPago = async (paymentId) => {
+    if (!cliente) {
+        return null;
+    }
+
+    const consulta = await consultarReporte('TRANSACTION_RESPONSE_DETAIL', {
+        transactionId: Number(paymentId)
+    });
+
+    return consulta?.result?.payload ?? null;
+};
+
+// ========================================
+// DIAGNÓSTICO (nunca lanza; devuelve { errorFetch })
+// ========================================
 const obtenerOrdenDiagnostico = async (orderId) => {
     try {
         const orden = await obtenerOrden(orderId);
@@ -189,28 +300,12 @@ const obtenerOrdenDiagnostico = async (orderId) => {
     }
 };
 
-const obtenerPago = async (paymentId) => {
-    if (!cliente) {
-        return null;
-    }
-
-    const queryUrl = `${PAYU_API_BASE}/reports-api/4.0/service.cgi?apiLogin=${cliente.apiLogin}&apiKey=${cliente.apiKey}&command=TRANSACTION_DETAIL&transactionId=${paymentId}&test=${cliente.test}`;
-
-    const response = await fetch(queryUrl, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-    });
-
-    if (!response.ok) {
-        return null;
-    }
-
-    return await response.json();
-};
-
 module.exports = {
     crearOrden,
+    construirFormularioCheckout,
+    consultarReporte,
     obtenerOrden,
+    obtenerOrdenPorReferencia,
     obtenerOrdenDiagnostico,
     obtenerPago
 };

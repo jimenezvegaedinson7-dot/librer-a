@@ -586,6 +586,9 @@ const buscarPorReferenciaExterna = async (externalReference) => {
             v.estado,
             v.total,
             v.costo_envio,
+            v.external_reference,
+            v.payu_order_id,
+            v.payu_payment_id,
             v.payu_payment_status,
             v.correo_compra
         FROM ventas v
@@ -605,6 +608,8 @@ const buscarPorPayuOrderId = async (preferenceId) => {
             v.total,
             v.costo_envio,
             v.external_reference,
+            v.payu_order_id,
+            v.payu_payment_id,
             v.payu_payment_status,
             v.correo_compra
         FROM ventas v

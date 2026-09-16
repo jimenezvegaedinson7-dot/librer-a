@@ -9,11 +9,138 @@ const {
     extraerEstadoOrdenPayu,
     montoPagoCoincide
 } = require('../utils/payuStatus');
+const { PUBLIC_BASE_URL } = require('../config/payu');
+
+// ========================================
+// URL DE LA PÁGINA DE CHECKOUT PROPIA (auto-submit del form PayU)
+// ========================================
+const construirCheckoutUrl = (externalReference) =>
+    externalReference
+        ? `${PUBLIC_BASE_URL}/api/pagos/checkout/${encodeURIComponent(externalReference)}`
+        : null;
+
+const escapeHtml = (valor) =>
+    String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+// ========================================
+// PÁGINA DE CHECKOUT (PÚBLICA, auto-submit del form WebCheckout)
+// Se abre en el navegador vía launchUrl y reenvía el formulario
+// firmado al gateway de PayU.
+// ========================================
+const renderCheckoutPage = async (req, res) => {
+    try {
+        const externalReference = String(
+            req.params.externalReference || ''
+        ).trim();
+
+        if (!externalReference) {
+            return res.status(400).send(
+                'Parámetro inválido.'
+            );
+        }
+
+        const venta =
+            await ventaModel.buscarPorReferenciaExterna(
+                externalReference
+            );
+
+        if (!venta) {
+            return res.status(404).send(
+                'Orden no encontrada.'
+            );
+        }
+
+        if (venta.estado !== 'pendiente') {
+            return res
+                .status(200)
+                .type('html')
+                .send(`<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Orden procesada</title></head>
+<body style="font-family:sans-serif;text-align:center;margin-top:80px;color:#333">
+  <h2>Tu orden ya fue procesada</h2>
+  <p>Estado actual: <strong>${escapeHtml(venta.estado)}</strong>.</p>
+  <p>Puedes cerrar esta página y revisar tu pedido en la aplicación.</p>
+</body>
+</html>`);
+        }
+
+        const formulario =
+            payuService.construirFormularioCheckout({
+                externalReference,
+                total: venta.total,
+                buyerEmail:
+                    venta.correo_compra || ''
+            });
+
+        const inputs = Object.entries(
+            formulario.campos
+        ).map(([nombre, valor]) =>
+            `  <input type="hidden" name="${escapeHtml(nombre)}" value="${escapeHtml(valor)}">`
+        ).join('\n');
+
+        return res
+            .status(200)
+            .type('html')
+            .send(`<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Procesando el pago...</title>
+</head>
+<body onload="document.getElementById('payu-form').submit()" style="font-family:sans-serif;text-align:center;margin-top:80px;color:#333">
+  <p>Conectando con la pasarela de pago... Si la página no avanza, presiona el botón.</p>
+  <form id="payu-form" method="post" action="${escapeHtml(formulario.action)}">
+${inputs}
+    <noscript>
+      <button type="submit">Continuar al pago</button>
+    </noscript>
+  </form>
+</body>
+</html>`);
+
+    } catch (error) {
+        console.error(
+            'Error al renderizar el checkout:',
+            error.message
+        );
+        return res.status(500).send(
+            'No se pudo preparar el pago.'
+        );
+    }
+};
+
+// ========================================
+// PÁGINA DE RETORNO (PÚBLICA, responseUrl del WebCheckout)
+// ========================================
+const renderRespuestaPage = async (req, res) => {
+    const externalReference = String(
+        req.params.externalReference || ''
+    ).trim();
+
+    return res
+        .status(200)
+        .type('html')
+        .send(`<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Pago procesado</title></head>
+<body style="font-family:sans-serif;text-align:center;margin-top:80px;color:#333">
+  <h2>Gracias por tu compra</h2>
+  <p>Tu pago (referencia ${escapeHtml(externalReference)}) está siendo confirmado.</p>
+  <p>Puedes cerrar esta página y volver a la aplicación para verificar el estado de tu pedido.</p>
+</body>
+</html>`);
+};
 
 // ========================================
 // DEDUPLICACIÓN DE EVENTOS DE WEBHOOK (memoria)
 // Evita reprocesar el mismo evento de PayU
-// (órdenes duplicadas). Clave: "payu:referenceCode:estado".
+// (órdenes duplicadas). Clave: "payu:reference_sale:state_pol:transaction_id".
 // TTL 5 minutos; los eventos viejos se limpian en cada evento.
 // ========================================
 const eventosWebhookProcesados = new Map();
@@ -40,45 +167,45 @@ const ListaTipoEntrega = [
 ];
 
 const construirRespuestaOrdenExistente = async (venta) => {
-    let orden = null;
-
-    if (venta.payu_order_id) {
-        const resultado =
-            await payuService.obtenerOrdenDiagnostico(
-                venta.payu_order_id
-            );
-
-        if (resultado && !resultado.errorFetch) {
-            orden = resultado;
-        }
-    }
-
-    const estadoPayu = orden
-        ? extraerEstadoOrdenPayu(orden)
-        : null;
+    // Con WebCheckout el checkout_url apunta a la página propia que
+    // auto-envía el form a PayU; sólo se reenvía mientras la venta
+    // siga pendiente.
     const checkoutUrl =
-        orden?.transactionResponse?.paymentUrl ||
-        orden?.paymentUrl ||
-        null;
+        venta.estado === 'pendiente'
+            ? construirCheckoutUrl(
+                venta.external_reference
+            )
+            : null;
+
+    const estadoDesdeVenta =
+        venta.estado === 'pagada'
+            ? 'APPROVED'
+            : venta.estado === 'cancelada'
+                ? 'DECLINED'
+                : 'PENDING';
+
+    const status =
+        venta.payu_payment_status ||
+        estadoDesdeVenta;
 
     return {
         success: true,
         ya_existia: true,
         venta,
-        preferencia: venta.payu_order_id
+        preferencia: venta.external_reference
             ? {
-                id: venta.payu_order_id,
+                id: venta.external_reference,
                 checkout_url: checkoutUrl
             }
             : null,
         data: {
             id_venta: venta.id_venta,
-            order_id: venta.payu_order_id || null,
+            order_id:
+                venta.external_reference ||
+                venta.payu_order_id ||
+                null,
             checkout_url: checkoutUrl,
-            status:
-                estadoPayu?.status ||
-                venta.payu_payment_status ||
-                venta.estado,
+            status,
             total: Number(venta.total || 0),
             costo_envio: Number(
                 venta.costo_envio || 0
@@ -483,16 +610,6 @@ const crearOrden = async (req, res) => {
                 items: orderItems,
                 payerEmail:
                     req.usuario.email,
-                notificationUrl:
-                    process.env
-                        .PAYU_NOTIFICATION_URL ||
-                    undefined,
-                shipping: shippingTitulo
-                    ? {
-                        title: shippingTitulo,
-                        price: costoEnvio
-                    }
-                    : null,
                 idempotencyKey:
                     hashIdempotencia
             });
@@ -582,7 +699,7 @@ const crearOrden = async (req, res) => {
             data: {
                 id_venta:
                     ventaCreada.id_venta,
-                order_id: resultado.id,
+                order_id: externalReference,
                 checkout_url:
                     resultado.checkout_url,
                 status: resultado.status,
@@ -665,99 +782,39 @@ const obtenerOrden = async (req, res) => {
             });
         }
 
-        const ordenResultado =
-            await payuService.obtenerOrdenDiagnostico(
+        // ========================================
+        // BUSCAR LA VENTA (por referencia externa o id de PayU)
+        // Con WebCheckout el cliente usa la referencia externa como
+        // order_id; el id numérico de PayU llega vía webhook.
+        // ========================================
+        let ventaPago =
+            await ventaModel.buscarPorReferenciaExterna(
                 orderId
             );
 
-        if (ordenResultado?.errorFetch) {
-            return res.status(502).json({
-                success: false,
-                mensaje:
-                    'No se pudo consultar la orden de pago'
-            });
+        if (!ventaPago && /^\d+$/.test(orderId)) {
+            ventaPago =
+                await ventaModel.buscarPorPayuOrderId(
+                    orderId
+                );
         }
 
-        const orden = ordenResultado;
-
-        if (!orden || !orden.id) {
+        if (!ventaPago) {
             return res.status(404).json({
                 success: false,
-                mensaje:
-                    'Orden no encontrada en PayU'
+                mensaje: 'Orden no encontrada'
             });
         }
-
-        // ========================================
-        // [LOG TEMPORAL] STATUS de la orden consultada
-        // ========================================
-        const estadoPayu =
-            extraerEstadoOrdenPayu(orden);
-        const statusDetail =
-            orden.transactionResponse?.pendingReason ||
-            orden.transactionResponse?.responseMessage ||
-            null;
-        const paymentStatus =
-            estadoPayu.paymentStatus;
-        const paymentStatusDetail =
-            estadoPayu.paymentStatusDetail;
-
-        console.log('[PAYU STATUS]');
-        console.log(`  order_id: ${orden.id}`);
-        console.log(`  status: ${estadoPayu.status}`);
-        console.log(`  status_detail: ${statusDetail}`);
-        console.log(`  payment_status: ${paymentStatus}`);
-        console.log(`  payment_status_detail: ${paymentStatusDetail}`);
-        console.log(`  error: ${(orden.error && JSON.stringify(orden.error)) || '(sin error en la orden)'}`);
-        console.log(`  cause: ${(orden.cause && JSON.stringify(orden.cause)) || '(sin cause en la orden)'}`);
 
         // ========================================
         // VERIFICAR PROPIEDAD DE LA VENTA (IDOR)
         // ========================================
-        const externalReference =
-            orden.external_reference ||
-            null;
-
-        let ventaPago = null;
         const esAdmin =
             String(
                 req.usuario?.rol || ''
-            ).toLowerCase() ===
-            'administrador';
-
-        if (externalReference) {
-            ventaPago =
-                await ventaModel
-                    .buscarPorReferenciaExterna(
-                        externalReference
-                    );
-
-            if (ventaPago) {
-                if (
-                    Number(ventaPago.id_usuario) !==
-                        Number(
-                            req.usuario?.id_usuario
-                        ) &&
-                    !esAdmin
-                ) {
-                    return res.status(403).json({
-                        success: false,
-                        mensaje:
-                            'No tienes permisos para consultar esta orden'
-                    });
-                }
-            }
-        }
-
-        if (!ventaPago) {
-            ventaPago =
-                await ventaModel.buscarPorPayuOrderId(
-                    orden.id
-                );
-        }
+            ).toLowerCase() === 'administrador';
 
         if (
-            ventaPago &&
             Number(ventaPago.id_usuario) !==
                 Number(req.usuario?.id_usuario) &&
             !esAdmin
@@ -769,23 +826,82 @@ const obtenerOrden = async (req, res) => {
             });
         }
 
-        if (!ventaPago && !esAdmin) {
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Orden no encontrada'
-            });
+        // ========================================
+        // ESTADO BASE DESDE LA VENTA
+        // ========================================
+        let statusPayu =
+            ventaPago.payu_payment_status ||
+            (ventaPago.estado === 'pagada'
+                ? 'APPROVED'
+                : ventaPago.estado === 'cancelada'
+                    ? 'DECLINED'
+                    : 'PENDING');
+        let statusDetail = null;
+        let paymentId =
+            ventaPago.payu_payment_id || null;
+        let amount = Number(ventaPago.total);
+
+        // ========================================
+        // REFRESCAR ESTADO REAL EN PAYU (best-effort)
+        // Solo si el webhook ya dejó un order id de PayU.
+        // ========================================
+        if (ventaPago.payu_order_id) {
+            const resultado =
+                await payuService.obtenerOrdenDiagnostico(
+                    ventaPago.payu_order_id
+                );
+
+            if (resultado && !resultado.errorFetch) {
+                const estadoPayu =
+                    extraerEstadoOrdenPayu(
+                        resultado
+                    );
+
+                statusPayu =
+                    estadoPayu.status || statusPayu;
+                statusDetail =
+                    estadoPayu.paymentStatusDetail ||
+                    null;
+                paymentId =
+                    estadoPayu.paymentId || paymentId;
+                amount =
+                    estadoPayu.amount || amount;
+
+                // Sincronizar la venta si el pago ya ocurrió en PayU
+                // aunque el webhook aún no haya llegado.
+                if (
+                    estadoPayu.pagado ||
+                    estadoPayu.cancelado
+                ) {
+                    await aplicarEstadoPagoAVenta({
+                        externalReference:
+                            ventaPago.external_reference,
+                        payuOrderId:
+                            ventaPago.payu_order_id,
+                        payuPaymentId: paymentId,
+                        payuPaymentStatus: statusPayu,
+                        payuPayerEmail: null,
+                        estadoVenta:
+                            estadoVentaDesdePayu(
+                                statusPayu
+                            )
+                    });
+                }
+            }
         }
 
-        if (ventaPago && estadoPayu.pagado) {
+        // ========================================
+        // VALIDAR MONTO SI EL PAGO YA SUCEDIÓ
+        // ========================================
+        if (statusPayu === 'APPROVED') {
             if (
                 !montoPagoCoincide(
-                    estadoPayu.amount,
+                    amount,
                     ventaPago.total
                 )
             ) {
                 console.error(
-                    `[pago] Monto de orden ${orden.id} (${estadoPayu.amount}) difiere de venta ${ventaPago.id_venta} (${ventaPago.total})`
+                    `[pago] Monto (${amount}) difiere de venta ${ventaPago.id_venta} (${ventaPago.total})`
                 );
 
                 return res.status(409).json({
@@ -796,53 +912,33 @@ const obtenerOrden = async (req, res) => {
             }
         }
 
-        // ========================================
-        // REFRESCAR VENTA SI EL PAGO YA SUCEDIÓ
-        // (aunque el webhook aún no haya llegado)
-        // Solo para el dueño de la venta o admin.
-        // ========================================
-        if (ventaPago) {
-            await aplicarEstadoPagoAVenta({
-                externalReference:
-                    externalReference ||
-                    ventaPago.external_reference,
-                payuOrderId: orden.id,
-                payuPaymentId:
-                    estadoPayu.paymentId,
-                payuPaymentStatus:
-                    estadoPayu.status,
-                payuPayerEmail:
-                    orden.transactionResponse?.buyer?.email ||
-                    null,
-                estadoVenta:
-                    estadoVentaDesdePayu(
-                        estadoPayu.status
-                    )
-            });
-        }
+        console.log('[PAYU STATUS]');
+        console.log(`  order_id: ${orderId}`);
+        console.log(`  status: ${statusPayu}`);
+        console.log(`  status_detail: ${statusDetail}`);
+        console.log(`  external_reference: ${ventaPago.external_reference}`);
 
         // ========================================
         // EXPONER SOLO CAMPOS NECESARIOS PARA EL CLIENTE
         // ========================================
-        const respuesta = {
+        return res.json({
             success: true,
             data: {
-                id: orden.id,
-                status: estadoPayu.status,
-                order_status:
-                    estadoPayu.orderStatus,
+                id: orderId,
+                order_id:
+                    ventaPago.external_reference ||
+                    orderId,
+                status: statusPayu,
+                order_status: statusPayu,
                 status_detail: statusDetail,
                 external_reference:
-                    orden.transactionResponse?.referenceCode ||
-                    orden.external_reference,
-                payment_status: paymentStatus,
-                payment_status_detail: paymentStatusDetail,
-                total_amount:
-                    orden.transactionResponse?.value ? orden.transactionResponse.value / 100 : undefined
+                    ventaPago.external_reference,
+                payment_status: statusPayu,
+                payment_status_detail: statusDetail,
+                payment_id: paymentId,
+                total_amount: amount
             }
-        };
-
-        return res.json(respuesta);
+        });
 
     } catch (error) {
         console.error(
@@ -911,7 +1007,7 @@ const aplicarEstadoPagoAVenta = async ({
     ) {
         if (
             estadoVenta === 'cancelada' &&
-            actualizarEstadoMp
+            true
         ) {
             console.error(
                 `[webhook] ALERTA: Pago de venta ${venta.id_venta} cambió a ${payuPaymentStatus}; requiere revisión manual`
@@ -961,7 +1057,8 @@ const aplicarEstadoPagoAVenta = async ({
 // ========================================
 const estadoVentaDesdePayu = (statusMp) => {
     const pagados = [
-        'APPROVED'
+        'APPROVED',
+        'CAPTURED'
     ];
     const cancelados = [
         'DECLINED',
@@ -983,12 +1080,32 @@ const estadoVentaDesdePayu = (statusMp) => {
 };
 
 // ========================================
-// VERIFICAR FIRMA DEL WEBHOOK (PAYU)
+// REDONDEAR VALOR COMO PAYU LO FIRMA EN EL WEBHOOK
+// El valor se redondea: si el segundo decimal es 0 se deja 1 decimal;
+// si no, 2. Ej: 25.00 -> "25.0"; 25.50 -> "25.5"; 25.55 -> "25.55".
+// ========================================
+const redondearValorWebhook = (valor) => {
+    const numero = Number(valor);
+
+    if (!Number.isFinite(numero)) {
+        return null;
+    }
+
+    const conDos = numero.toFixed(2);
+
+    return conDos.endsWith('0')
+        ? numero.toFixed(1)
+        : conDos;
+};
+
+// ========================================
+// VERIFICAR FIRMA DEL WEBHOOK (PAYU WebCheckout / Confirmation URL)
 // ========================================
 // FAIL-CLOSED: si PAYU_API_KEY no está configurado,
 // la verificación FALLA (devuelve false). webhookPago no procesa
-// ningún evento sin secret (responde 503 para permitir reintentos).
-// PayU firma con MD5: apiKey~merchantId~referenceCode~amount~currency~state
+// ningún evento sin secret (responde 401 para permitir reintentos).
+// Firma WebCheckout: MD5(apiKey~merchant_id~reference_sale~new_value~currency~state_pol)
+// new_value = valor redondeado (redondearValorWebhook).
 // ========================================
 const verificarFirmaWebhook = (req) => {
     const apiKey = process.env.PAYU_API_KEY;
@@ -1001,33 +1118,62 @@ const verificarFirmaWebhook = (req) => {
     }
 
     const body = req.body;
-    
-    // PayU envía los datos en el body
-    const referenceCode = body?.referenceCode;
-    const amount = body?.amount;
-    const currency = body?.currency;
-    const state = body?.state;
-    const receivedSignature = body?.signature;
 
-    if (!referenceCode || !amount || !currency || !state || !receivedSignature) {
+    const referenceSale = body?.reference_sale;
+    const value = body?.value;
+    const currency = body?.currency;
+    const statePol = body?.state_pol;
+    const receivedSignature = body?.sign;
+
+    if (
+        !referenceSale ||
+        value == null ||
+        !currency ||
+        statePol == null ||
+        !receivedSignature
+    ) {
         return false;
     }
 
-    // PayU firma: apiKey~merchantId~referenceCode~amount~currency~state
-    const merchantId = process.env.PAYU_MERCHANT_ID;
-    const expectedSignature = crypto
-        .createHash('md5')
-        .update(`${apiKey}~${merchantId}~${referenceCode}~${amount}~${currency}~${state}`)
-        .digest('hex');
+    // Se prueban varias representaciones del valor: el redondeado según la
+    // regla de PayU ("25.0"), el valor tal como se recibió ("25.00") y el
+    // número puro ("25"). Todas se generan del mismo payload firmado, así que
+    // aceptar cualquiera no debilita la verificación.
+    const candidatosValor = new Set([
+        redondearValorWebhook(value),
+        String(value ?? '').trim(),
+        String(Number(value))
+    ].filter((v) => v !== null && v !== '' && v !== 'NaN'));
 
-    return crypto.timingSafeEqual(
-        Buffer.from(expectedSignature),
-        Buffer.from(receivedSignature)
+    if (candidatosValor.size === 0) {
+        return false;
+    }
+
+    const merchantId = process.env.PAYU_MERCHANT_ID;
+    const firmaRecibida = String(receivedSignature).trim();
+
+    const expectedSignatures =
+        [...candidatosValor].map((valor) =>
+            crypto
+                .createHash('md5')
+                .update(`${apiKey}~${merchantId}~${referenceSale}~${valor}~${currency}~${statePol}`)
+                .digest('hex')
+        );
+
+    return expectedSignatures.some((firma) =>
+        firma.length === firmaRecibida.length &&
+        crypto.timingSafeEqual(
+            Buffer.from(firma),
+            Buffer.from(firmaRecibida)
+        )
     );
 };
 
 // ========================================
-// WEBHOOK DE PAYU
+// WEBHOOK DE PAYU (Confirmation URL de WebCheckout)
+// PayU envía application/x-www-form-urlencoded con:
+// merchant_id, reference_sale, value, currency, state_pol, sign,
+// transaction_id, reference_pol, email_buyer.
 // ========================================
 const webhookPago = async (req, res) => {
     let claveEvento = null;
@@ -1035,9 +1181,8 @@ const webhookPago = async (req, res) => {
     try {
         // ========================================
         // VERIFICAR FIRMA (obligatoria, fail-closed)
-        // PayU firma con MD5: apiKey~merchantId~referenceCode~amount~currency~state.
-        // Si PAYU_API_KEY no está configurado, la verificación falla y se
-        // responde 401 para que PayU pueda reintentarlo.
+        // Si PAYU_API_KEY no está configurado, la verificación falla y
+        // se responde 401 para que PayU pueda reintentarlo.
         // ========================================
         if (!verificarFirmaWebhook(req)) {
             return res.status(401).json({
@@ -1046,21 +1191,32 @@ const webhookPago = async (req, res) => {
             });
         }
 
+        const body = req.body;
+
+        const referenceSale = String(
+            body?.reference_sale || ''
+        ).trim();
+        const value = body?.value;
+        const currency = body?.currency;
+        const statePol = String(
+            body?.state_pol ?? ''
+        ).trim();
+        const transactionId = body?.transaction_id;
+        const referencePol = body?.reference_pol;
+        const emailBuyer = body?.email_buyer || null;
+
         // ========================================
         // [LOG TEMPORAL] WEBHOOK RECIBIDO
         // ========================================
         console.log('[PAYU WEBHOOK]');
-        console.log(`  referenceCode: ${req.body?.referenceCode}`);
-        console.log(`  state: ${req.body?.state}`);
-        console.log(`  amount: ${req.body?.amount}`);
+        console.log(`  reference_sale: ${referenceSale}`);
+        console.log(`  state_pol: ${statePol}`);
+        console.log(`  value: ${value}`);
+        console.log(`  currency: ${currency}`);
 
-        const referenceCode = req.body?.referenceCode;
-        const state = req.body?.state;
-        const amount = req.body?.amount;
-
-        if (!referenceCode || !state) {
+        if (!referenceSale || statePol === '') {
             console.log(
-                '[webhook] Evento sin referenceCode o state, ignorado.'
+                '[webhook] Evento sin reference_sale o state_pol, ignorado.'
             );
             return res.status(200).json({
                 success: true,
@@ -1068,17 +1224,11 @@ const webhookPago = async (req, res) => {
             });
         }
 
-        const eventId = referenceCode;
-
         // ========================================
         // DEDUPLICACIÓN: si el evento ya se procesó en los
         // últimos 5 minutos, se responde 200 sin reprocesar.
         // ========================================
-        const requestId =
-            req.headers['x-request-id'];
-        claveEvento = requestId
-            ? `payu:${eventId}:${requestId}`
-            : `payu:${eventId}:${state}`;
+        claveEvento = `payu:${referenceSale}:${statePol}:${transactionId || '?'}`;
 
         if (
             eventoWebhookYaProcesado(
@@ -1100,118 +1250,60 @@ const webhookPago = async (req, res) => {
         );
 
         // ========================================
-        // CONSULTAR ESTADO REAL EN PAYU
+        // MAPEAR state_pol (confirmation) A ESTADO PAYU
+        // 4=aprobado, 5=expirado, 6=rechazado, 7=pendiente, 104=error
         // ========================================
-        let datos = null;
+        const mapaStatePol = {
+            '4': 'APPROVED',
+            '5': 'EXPIRED',
+            '6': 'DECLINED',
+            '7': 'PENDING',
+            '104': 'ERROR'
+        };
 
-        const resultado =
-            await payuService.obtenerOrdenDiagnostico(
-                eventId
-            );
-        if (resultado?.errorFetch) {
-            eventosWebhookProcesados.delete(
-                claveEvento
-            );
-            console.log('[PAYU STATUS] (error desde webhook)');
-            console.log(`  order_id: ${eventId}`);
-            console.log(`  error: ${resultado.errorFetch.mensaje}`);
-            console.log(`  cause: ${resultado.errorFetch.causa ? JSON.stringify(resultado.errorFetch.causa) : '(sin cause)'}`);
-            return res.status(503).json({
-                success: false,
-                mensaje:
-                    'No se pudo consultar PayU'
-            });
-        }
-        datos = resultado;
-
-        if (!datos) {
-            eventosWebhookProcesados.delete(
-                claveEvento
-            );
-            console.log(
-                `[webhook] No se pudo obtener datos para ${eventId}`
-            );
-            return res.status(503).json({
-                success: false,
-                mensaje:
-                    'No se pudo consultar PayU'
-            });
-        }
-
-        const estadoPayu =
-            extraerEstadoOrdenPayu(datos);
         const statusPayu =
-            estadoPayu.status ||
-            'desconocido';
-
-        const statusDetail =
-            estadoPayu.paymentStatusDetail ||
-            datos.transactionResponse?.pendingReason ||
-            null;
-
-        const paymentStatus =
-            estadoPayu.paymentStatus;
-
-        const paymentStatusDetail =
-            estadoPayu.paymentStatusDetail;
-
-        const externalReference =
-            datos.transactionResponse?.referenceCode ||
-            referenceCode ||
-            null;
+            mapaStatePol[statePol] || 'UNKNOWN';
+        const estadoVenta =
+            estadoVentaDesdePayu(statusPayu);
 
         // ========================================
-        // [LOG TEMPORAL] STATUS — MUESTRA CAUSA REAL SI HAY RECHAZO
+        // VENTA ASOCIADA (referencia externa)
         // ========================================
-        console.log('[PAYU STATUS]');
-        console.log(`  order_id: ${datos.id || eventId}`);
-        console.log(`  status: ${statusPayu}`);
-        console.log(`  status_detail: ${statusDetail}`);
-        console.log(`  payment_status: ${paymentStatus}`);
-        console.log(`  payment_status_detail: ${paymentStatusDetail}`);
-        console.log(`  error: ${(datos.error && JSON.stringify(datos.error)) || '(sin error)'}`);
-        console.log(`  cause: ${(datos.cause && JSON.stringify(datos.cause)) || '(sin cause)'}`);
-        console.log(`  external_reference: ${externalReference || 'desconocida'}`);
+        const ventaDelPago =
+            await ventaModel.buscarPorReferenciaExterna(
+                referenceSale
+            );
+
+        if (!ventaDelPago) {
+            eventosWebhookProcesados.delete(
+                claveEvento
+            );
+            console.warn(
+                `[webhook] Evento ${referenceSale} sin venta local (state=${statusPayu}). No se confirma nada.`
+            );
+            return res.status(503).json({
+                success: false,
+                mensaje:
+                    'La venta aún no está disponible'
+            });
+        }
 
         // ========================================
-        // VALIDACIONES PARA PAGOS APROBADOS
-        // El monto del pago debe coincidir con venta.total
-        //    (tolerancia ±0.02); si difiere, NO se confirma.
+        // VALIDAR MONTO PARA ESTADOS APROBADOS
+        // (tolerancia ±0.02); si difiere, NO se confirma.
         // ========================================
-        if (
-            estadoPayu.pagado
-        ) {
-            const ventaDelPago =
-                externalReference
-                    ? await ventaModel
-                        .buscarPorReferenciaExterna(
-                            externalReference
-                        )
-                    : null;
-
-            if (!ventaDelPago) {
-                eventosWebhookProcesados.delete(
-                    claveEvento
-                );
-                console.warn(
-                    `[webhook] Pago ${eventId} aprobado sin venta local (external_reference=${externalReference || 'desconocida'}). No se confirma nada.`
-                );
-                return res.status(503).json({
-                    success: false,
-                    mensaje:
-                        'La venta aún no está disponible'
-                });
-            }
-
-            // Validar monto contra venta.total
+        if (statusPayu === 'APPROVED') {
             if (
                 !montoPagoCoincide(
-                    estadoPayu.amount,
+                    Number(value),
                     ventaDelPago.total
                 )
             ) {
+                eventosWebhookProcesados.delete(
+                    claveEvento
+                );
                 console.error(
-                    `[webhook] ALERTA: Monto del pago ${eventId} (${estadoPayu.amount}) difiere del total de la venta ${ventaDelPago.id_venta} (${ventaDelPago.total}). Pago NO confirmado.`
+                    `[webhook] ALERTA: Monto del pago ${referenceSale} (${value}) difiere del total de la venta ${ventaDelPago.id_venta} (${ventaDelPago.total}). Pago NO confirmado.`
                 );
                 return res.status(200).json({
                     success: true,
@@ -1225,15 +1317,18 @@ const webhookPago = async (req, res) => {
         // ========================================
         const procesado =
             await aplicarEstadoPagoAVenta({
-                externalReference,
-                payuOrderId: datos.id || eventId,
-                payuPaymentId: estadoPayu.paymentId,
-                payuPaymentStatus: statusPayu,
-                payuPayerEmail:
-                    datos.transactionResponse?.buyer?.email ||
+                externalReference: referenceSale,
+                payuOrderId:
+                    referencePol ||
+                    ventaDelPago.payu_order_id ||
                     null,
-                estadoVenta:
-                    estadoVentaDesdePayu(statusPayu)
+                payuPaymentId:
+                    transactionId ||
+                    ventaDelPago.payu_payment_id ||
+                    null,
+                payuPaymentStatus: statusPayu,
+                payuPayerEmail: emailBuyer,
+                estadoVenta
             });
 
         if (!procesado) {
@@ -1252,7 +1347,7 @@ const webhookPago = async (req, res) => {
         // LOG NO SENSIBLE
         // ========================================
         console.log(
-            `[webhook] type=payu id=${eventId} status=${statusPayu} reference=${externalReference || 'desconocida'} venta=${procesado ? 'actualizada' : 'no_encontrada'}`
+            `[webhook] type=payu reference=${referenceSale} estado=${statusPayu} transaction=${transactionId || '?'} venta=${ventaDelPago.id_venta} actualizada`
         );
 
         return res.status(200).json({
@@ -1335,5 +1430,7 @@ module.exports = {
     crearOrden,
     obtenerOrden,
     webhookPago,
+    renderCheckoutPage,
+    renderRespuestaPage,
     listarPagosAdmin
 };

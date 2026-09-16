@@ -6,6 +6,8 @@ const {
     crearOrden,
     obtenerOrden,
     webhookPago,
+    renderCheckoutPage,
+    renderRespuestaPage,
     listarPagosAdmin
 } = require('../controllers/pago.controller');
 
@@ -16,12 +18,29 @@ const verificarRol = require('../middlewares/rol.middleware');
 const { webhookLimit } = require('../middlewares/rateLimit');
 
 // ========================================
-// WEBHOOK DE MERCADO PAGO (PÚBLICO, CON RATE LIMIT)
+// PÁGINAS PÚBLICAS DEL CHECKOUT (se abren en el navegador)
+// GET /checkout/:externalReference -> auto-envía el form WebCheckout a PayU
+// GET /respuesta/:externalReference -> página de retorno (responseUrl)
+// ========================================
+router.get(
+    '/checkout/:externalReference',
+    renderCheckoutPage
+);
+
+router.get(
+    '/respuesta/:externalReference',
+    renderRespuestaPage
+);
+
+// ========================================
+// WEBHOOK DE PAYU (PÚBLICO, CON RATE LIMIT)
+// PayU envía el confirmation URL como application/x-www-form-urlencoded.
 // ========================================
 router.post(
     '/webhook',
     webhookLimit,
-    express.json({ type: '*/*' }),
+    express.urlencoded({ extended: false }),
+    express.json(),
     webhookPago
 );
 

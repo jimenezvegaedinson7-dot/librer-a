@@ -39,6 +39,9 @@ services:
         sync: false
       - key: PAYU_NOTIFICATION_URL
         sync: false
+      # URL pública del backend (construye el checkout propio + responseUrl)
+      - key: PUBLIC_BASE_URL
+        value: https://libreria-api-v9h0.onrender.com
       - key: PAYU_TEST
         value: "true"
       # Email (configurar en dashboard)

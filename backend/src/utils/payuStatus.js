@@ -15,10 +15,12 @@
 // si no, intenta localizar pagos por external_reference.
 // ========================================
 
-const { cliente, PAYU_API_BASE } = require('../config/payu');
+const { cliente } = require('../config/payu');
+const { consultarReporte } = require('../services/payu.service');
 
 const ESTADOS_PAGADOS = [
-    'APPROVED'
+    'APPROVED',
+    'CAPTURED'
 ];
 
 const ESTADOS_CANCELADOS = [
@@ -124,36 +126,36 @@ const consultarEstadoOrdenPayu = async ({
         }
 
         let status = null;
-        let orden = null;
 
         // 1) POR ID DE ORDEN (payu_order_id)
         if (orderId) {
-            const queryUrl = `${PAYU_API_BASE}/reports-api/4.0/service.cgi?apiLogin=${cliente.apiLogin}&apiKey=${cliente.apiKey}&command=ORDER_DETAIL&orderId=${orderId}&test=${cliente.test}`;
+            const consulta =
+                await consultarReporte('ORDER_DETAIL', {
+                    orderId: Number(orderId)
+                });
 
-            const response = await fetch(queryUrl, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json' }
-            });
-
-            if (response.ok) {
-                orden = await response.json();
-                const transactionResponse = orden?.transactionResponse || orden;
-                status = transactionResponse?.state;
-            }
+            status =
+                consulta?.result?.payload?.status ?? null;
         } else if (externalReference) {
-            // 2) POR REFERENCIA EXTERNA (búsqueda de transacciones)
-            const queryUrl = `${PAYU_API_BASE}/reports-api/4.0/service.cgi?apiLogin=${cliente.apiLogin}&apiKey=${cliente.apiKey}&command=GET_TRANSACTIONS&referenceCode=${encodeURIComponent(String(externalReference))}&test=${cliente.test}`;
+            // 2) POR REFERENCIA EXTERNA (ORDER_DETAIL_BY_REFERENCE_CODE)
+            const consulta =
+                await consultarReporte(
+                    'ORDER_DETAIL_BY_REFERENCE_CODE',
+                    {
+                        referenceCode: String(
+                            externalReference
+                        )
+                    }
+                );
 
-            const response = await fetch(queryUrl, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json' }
-            });
+            const payload =
+                consulta?.result?.payload;
+            const orden =
+                Array.isArray(payload)
+                    ? payload[0]
+                    : payload;
 
-            if (response.ok) {
-                const data = await response.json();
-                const transactionResponse = data?.transactionResponse || data;
-                status = transactionResponse?.state;
-            }
+            status = orden?.status ?? null;
         }
 
         if (!status) {

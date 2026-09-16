@@ -5,8 +5,7 @@ const agenciaModel = require('../models/agencia.model');
 const pool = require('../config/database');
 const { validarId } = require('../utils/validaciones');
 const { VENTA, permitirTransicion } = require('../utils/transiciones');
-const payuService = require('../services/payu.service');
-const { extraerEstadoOrdenPayu } = require('../utils/payuStatus');
+const { PUBLIC_BASE_URL } = require('../config/payu');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR LA VENTA
@@ -640,25 +639,23 @@ const obtenerPagoVenta = async (req, res) => {
             });
         }
 
-        let ordenPayu = null;
+        const estadoPagoMap = {
+            pagada: 'APPROVED',
+            cancelada: 'DECLINED'
+        };
 
-        if (datosPago.payu_order_id) {
-            const resultadoOrden =
-                await payuService.obtenerOrdenDiagnostico(
-                    datosPago.payu_order_id
-                );
+        const estadoPago =
+            datosPago.payu_payment_status ||
+            estadoPagoMap[datosPago.estado] ||
+            null;
 
-            if (
-                resultadoOrden &&
-                !resultadoOrden.errorFetch
-            ) {
-                ordenPayu = resultadoOrden;
-            }
-        }
-
-        const estadoPayu = ordenPayu
-            ? extraerEstadoOrdenPayu(ordenPayu)
-            : null;
+        // Con WebCheckout el checkout_url apunta a la página propia que
+        // auto-envía el form a PayU; sólo se ofrece mientras esté pendiente.
+        const checkoutUrl =
+            datosPago.estado === 'pendiente' &&
+            datosPago.external_reference
+                ? `${PUBLIC_BASE_URL}/api/pagos/checkout/${encodeURIComponent(datosPago.external_reference)}`
+                : null;
 
         const tienePago =
             datosPago.payu_payment_id ||
@@ -674,11 +671,9 @@ const obtenerPagoVenta = async (req, res) => {
                 payu_order_id:
                     datosPago.payu_order_id,
                 order_id:
+                    datosPago.external_reference ||
                     datosPago.payu_order_id,
-                checkout_url:
-                    ordenPayu?.checkout_url ||
-                    ordenPayu?.init_point ||
-                    null,
+                checkout_url: checkoutUrl,
                 payu_payment_id:
                     datosPago.payu_payment_id,
                 payu_payment_status:
@@ -687,9 +682,7 @@ const obtenerPagoVenta = async (req, res) => {
                     tienePago
                         ? 'payu'
                         : null,
-                estado_pago:
-                    estadoPayu?.status ||
-                    datosPago.payu_payment_status,
+                estado_pago: estadoPago,
                 fecha_pago: null,
                 estado: datosPago.estado,
                 estado_venta:
