@@ -89,14 +89,14 @@ class _Placeholder extends StatelessWidget {
       height: height,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.paper,
+        color: AppColors.primaryContainer,
         borderRadius: BorderRadius.circular(size * 0.16),
         border: Border.all(color: AppColors.gold.withValues(alpha: 0.5)),
       ),
       child: Icon(
         Icons.menu_book_rounded,
         size: size * 0.55,
-        color: AppColors.textPrimary,
+        color: AppColors.primary,
       ),
     );
   }

@@ -69,4 +69,3 @@ backups/
 
 # No ignorar el schema de la base de datos
 !backend/database/schema.sql
-.vercel

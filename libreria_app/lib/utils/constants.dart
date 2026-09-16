@@ -31,16 +31,7 @@ class Constants {
   /// Dirección del host para desarrollo local (Windows, Web, Mac).
   static const String _localHost = 'localhost';
 
-  /// Dominio del backend en producción (Render).
-  static const String _produccionHost = 'libreria-api-v9h0.onrender.com';
-
-  /// SELECTOR DE ENTORNO:
-  ///
-  /// - `true`  → PRODUCCIÓN (usa el backend desplegado en Render).
-  /// - `false` → DESARROLLO (usa el backend local).
-  static const bool _usarApiProduccion = true;
-
-  /// SELECTOR DE DISPOSITIVO (solo Android en DESARROLLO):
+  /// SELECTOR DE DISPOSITIVO (solo Android):
   ///
   /// - `false` → EMULADOR (usa 10.0.2.2).
   /// - `true`  → CELULAR físico (usa 192.168.1.31).
@@ -48,27 +39,23 @@ class Constants {
 
   /// Host de la API.
   ///
-  /// - PRODUCCIÓN: [_produccionHost].
-  /// - DESARROLLO: Android usa [_androidHost] (EMULADOR) o [_celularHost]
-  ///   (CELULAR) según [_usarCelularFisico]; Windows/Web/Mac usan localhost.
+  /// - Android usa [_androidHost] (EMULADOR) o [_celularHost] (CELULAR),
+  ///   según [_usarCelularFisico].
+  /// - Windows/Web/Mac usan localhost.
+  ///
+  /// Al llevar el proyecto a una Mac para compilar con Xcode, ajusta aquí el
+  /// host (IP del equipo o dominio de producción) y el resto de la app seguirá
+  /// funcionando sin cambios.
   static String get host {
-    if (!_usarApiProduccion) {
-      if (!kIsWeb && Platform.isAndroid) {
-        return _usarCelularFisico ? _celularHost : _androidHost;
-      }
-      return _localHost;
+    if (!kIsWeb && Platform.isAndroid) {
+      return _usarCelularFisico ? _celularHost : _androidHost;
     }
-    return _produccionHost;
+    return _localHost;
   }
 
   /// Dirección base del servidor (sin `/api`), usada para servir archivos
   /// estáticos como imágenes.
-  static String get serverBaseUrl {
-    if (_usarApiProduccion) {
-      return 'https://$_produccionHost';
-    }
-    return 'http://$host:$_serverPort';
-  }
+  static String get serverBaseUrl => 'http://$host:$_serverPort';
 
   /// Dirección base de la API (con `/api`).
   static String get apiBaseUrl => '$serverBaseUrl$_apiVersionPath';
