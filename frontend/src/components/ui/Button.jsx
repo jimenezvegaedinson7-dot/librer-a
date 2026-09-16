@@ -1,65 +1,49 @@
-import { cn } from '@/lib/utils';
+import { Spinner } from './Spinner';
 
-export default function Button({
+const variantes = {
+    primary:
+        'bg-primary-600 text-white shadow-sm shadow-primary-600/20 hover:bg-primary-700 focus-visible:ring-primary-300 active:bg-primary-800',
+    secondary:
+        'border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:ring-slate-200 active:bg-slate-100',
+    ghost: 'text-slate-600 hover:bg-slate-100 focus-visible:ring-slate-200',
+    danger:
+        'bg-red-600 text-white shadow-sm shadow-red-600/20 hover:bg-red-700 focus-visible:ring-red-300 active:bg-red-800',
+    'danger-outline':
+        'border border-red-200 bg-white text-red-600 hover:bg-red-50 focus-visible:ring-red-200 active:bg-red-100',
+};
+
+const tamanos = {
+    sm: 'h-8 px-3 text-xs gap-1.5',
+    md: 'h-9 px-3.5 text-sm gap-2',
+    lg: 'h-10 px-4 text-sm gap-2',
+};
+
+export function Button({
     children,
-    variant = 'primary',
-    size = 'md',
-    asChild = false,
-    className,
+    variante = 'primary',
+    tamano = 'md',
+    cargando = false,
+    icono = null,
+    className = '',
+    disabled = false,
+    bloque = false,
     type = 'button',
-    disabled,
-    loading,
     ...props
 }) {
-    const CompoundComponent = asChild ? Slot : 'button';
+    const clases = [
+        'inline-flex items-center justify-center rounded-lg font-semibold transition focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60',
+        variantes[variante],
+        tamanos[tamano],
+        bloque ? 'w-full' : '',
+        className,
+    ]
+        .filter(Boolean)
+        .join(' ');
 
     return (
-        <CompoundComponent
-            type={type}
-            disabled={disabled}
-            loading={loading}
-            className={cn(
-                // Base styles
-                'inline-flex items-center justify-rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500/40',
-                // Variants
-                variant === 'primary' &&
-                    'bg-primary-600 text-white hover:bg-primary-500 hover:shadow-primary-600/25 active:scale-[0.99] focus-visible:bg-primary-500 focus-visible:text-white',
-                variant === 'secondary' &&
-                    'bg-white text-primary-600 border border-primary-300 hover:bg-primary-50 hover:text-primary-700 focus-visible:bg-primary-100 focus-visible:text-primary-800',
-                variant === 'outline' &&
-                    'border-2 border-primary-400 text-primary-600 hover:bg-primary-50 hover:text-primary-700 focus-visible:bg-primary-100 focus-visible:text-primary-800',
-                variant === 'danger' &&
-                    'bg-red-100 text-red-600 hover:bg-red-200 focus-visible:bg-red-200 hover:text-red-700',
-                variant === 'ghost' &&
-                    'bg-transparent text-primary-500 hover:bg-primary-50 hover:text-primary-700 focus-visible:bg-primary-100 focus-visible:text-primary-800',
-                // Sizes
-                size === 'sm' && 'px-3 py-1.5 text-sm',
-                size === 'md' && 'px-4 py-2.5 text-sm',
-                size === 'lg' && 'px-6 py-3 text-base',
-                // Additional classes
-                className
-            )}
-        >
-            {loading ? (
-                <>
-                    <svg
-                        className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white"
-                        viewBox="0 0 24 24"
-                        strokeWidth={2}
-                        stroke="currentColor"
-                        fill="none"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 15l2-2m0 0l-2-2m2 2l2-2m2 2l2-2m-2 2l-2-2"
-                        />
-                    </svg>
-                    {children === undefined ? 'Cargando...' : children}
-                </>
-            ) : (
-                children
-            )}
-        </CompoundComponent>
+        <button type={type} className={clases} disabled={disabled || cargando} {...props}>
+            {cargando ? <Spinner tamano="sm" /> : icono}
+            {children}
+        </button>
     );
 }

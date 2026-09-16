@@ -1,40 +1,42 @@
-import { cn } from '@/lib/utils';
+import { FaCircleQuestion } from 'react-icons/fa6';
+
+import { Modal } from './Modal';
+import { Button } from './Button';
 
 export function ConfirmarAccion({
-    titulo = 'Confirmar acción',
-    descripcion,
-    onConfirm,
-    onCancel,
-    confirmText = 'Confirmar',
-    cancelText = 'Cancelar',
-    variant = 'destructive',
-    ...props
+    abierto,
+    titulo,
+    mensaje,
+    advertencia = null,
+    icono = null,
+    textoConfirmar = 'Confirmar',
+    variante = 'primary',
+    onCerrar,
+    onConfirmar,
+    cargando = false,
 }) {
+    if (!abierto) return null;
+
     return (
-        <div className="space-y-4">
-            <p className="text-sm text-secondary">{descripcion}</p>
-
-            <div className="flex gap-3">
-                <button
-                    onClick={onCancel}
-                    className={cn(
-                        'flex-1 rounded-lg px-4 py-2 text-sm font-medium text-secondary hover:text-primary hover:bg-primary-50 transition-colors'
-                    )}
-                >
-                    {cancelText}
-                </button>
-
-                <button
-                    onClick={onConfirm}
-                    className={cn(
-                        'flex-1 rounded-lg px-4 py-2 text-sm font-medium',
-                        variant === 'destructive' && 'bg-red-100 text-red-600 hover:bg-red-200',
-                        variant === 'primary' && 'bg-primary-600 text-white hover:bg-primary-500'
-                    )}
-                >
-                    {confirmText}
-                </button>
+        <Modal abierto={abierto} titulo={titulo || 'Confirmar acción'} onCerrar={onCerrar}>
+            <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-100 text-primary-700">
+                    {icono || <FaCircleQuestion />}
+                </div>
+                <div>
+                    <p className="text-sm leading-6 text-slate-700">{mensaje}</p>
+                    {advertencia && <p className="mt-2 text-xs leading-5 text-slate-600">{advertencia}</p>}
+                </div>
             </div>
-        </div>
+
+            <div className="mt-5 flex justify-end gap-3 border-t border-slate-100 pt-4">
+                <Button variante="secondary" onClick={onCerrar} disabled={cargando}>
+                    Cancelar
+                </Button>
+                <Button variante={variante} onClick={onConfirmar} cargando={cargando} disabled={cargando}>
+                    {cargando ? 'Procesando...' : textoConfirmar}
+                </Button>
+            </div>
+        </Modal>
     );
 }

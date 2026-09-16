@@ -1,132 +1,86 @@
-import { cn } from '@/lib/utils';
+import { FaCircleExclamation } from 'react-icons/fa6';
 
-export function Form({ children, className, ...props }) {
-    return (
-        <form
-            className={cn(
-                'space-y-4',
-                'rounded-lg border-border bg-background p-6 shadow-sm',
-                className
-            )}
-            {...props}
-        >
-            {children}
-        </form>
-    };
+function idDeLabel(label) {
+    if (!label) return undefined;
+    const base = String(label)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    return base ? `campo-${base}` : undefined;
 }
 
-export function FormField({
-    label,
-    children,
-    className,
-    ...props
-}) {
+function Etiqueta({ label, requerido, htmlFor }) {
+    if (!label) return null;
     return (
-        <div className={cn('space-y-1.5', className)}>
-            <label className="block text-sm font-medium text-foreground mb-1">
-                {label}
-            </label>
+        <label htmlFor={htmlFor} className="field-label">
+            {label}
+            {requerido && <span className="ml-0.5 text-red-500">*</span>}
+        </label>
+    );
+}
+
+function MensajeError({ error }) {
+    if (!error) return null;
+    return (
+        <p className="field-error">
+            <FaCircleExclamation className="mt-px shrink-0" />
+            <span>{error}</span>
+        </p>
+    );
+}
+
+export function Input({ label, error, requerido = false, icono = null, className = '', ...props }) {
+    const id = props.id || idDeLabel(label);
+    return (
+        <div>
+            <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <div className="relative">
-                {children}
-                {props.error && (
-                    <p className="mt-1 text-xs text-error font-medium">
-                        {props.error}
-                    </p>
+                {icono && (
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        {icono}
+                    </span>
                 )}
+                <input
+                    id={id}
+                    className={`field ${icono ? 'pl-9' : ''} ${error ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10' : ''} ${className}`}
+                    {...props}
+                />
             </div>
-        </div>
-    };
-}
-
-export function FormInput({
-    type = 'text',
-    placeholder,
-    value,
-    onChange,
-    error,
-    icon,
-    ...props
-}) {
-    return (
-        <div className="relative">
-            {icon && (
-                <svg
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
-                    aria-hidden="true"
-                    focusable="false"
-                >
-                    <use href={`#icon-${icon}`} />
-                </svg>
-            )}
-            <input
-                type={type}
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-                className="block w-full rounded-none outline-none bg-none py-1.5 px-2.5 text-sm font-medium text-foreground placeholder-subtle transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
-                {...props}
-            />
+            <MensajeError error={error} />
         </div>
     );
 }
 
-export function FormSelect({
-    placeholder,
-    value,
-    onChange,
-    options,
-    error,
-    ...props
-}) {
+export function Select({ label, error, requerido = false, children, className = '', ...props }) {
+    const id = props.id || idDeLabel(label);
     return (
-        <div className="relative">
+        <div>
+            <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <select
-                value={value}
-                onChange={onChange}
-                className="rounded-none outline-none bg-none w-full py-1.5 px-0 text-sm font-medium text-foreground placeholder-subtle cursor-pointer appearance-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
+                id={id}
+                className={`field ${error ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10' : ''} ${className}`}
                 {...props}
             >
-                <option value="" disabled>
-                    {placeholder || 'Selecciona una opción'}
-                </option>
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
+                {children}
             </select>
-            {error && (
-                <p className="mt-1 text-xs text-error font-medium">
-                    {error}
-                </p>
-            )}
+            <MensajeError error={error} />
         </div>
     );
 }
 
-export function FormTextarea({
-    rows = 3,
-    placeholder,
-    value,
-    onChange,
-    error,
-    ...props
-}) {
+export function Textarea({ label, error, requerido = false, className = '', ...props }) {
+    const id = props.id || idDeLabel(label);
     return (
-        <div className="relative">
+        <div>
+            <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <textarea
-                rows={rows}
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-                className="rounded-none outline-none bg-none w-full py-1.5 px-2.5 text-sm font-medium text-foreground placeholder-subtle resize-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
+                id={id}
+                className={`field resize-none ${error ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10' : ''} ${className}`}
                 {...props}
             />
-            {error && (
-                <p className="mt-1 text-xs text-error font-medium">
-                    {error}
-                </p>
-            )}
+            <MensajeError error={error} />
         </div>
     );
 }

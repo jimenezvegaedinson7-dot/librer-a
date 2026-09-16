@@ -1,20 +1,18 @@
-import { cn } from '@/lib/utils';
-
-export function PageHeader({
-    title,
-    subtitle,
-    className,
-    ...props
-}) {
+export function PageHeader({ titulo, descripcion, acciones = null, icono = null }) {
     return (
-        <header className={cn(
-            'mb-6',
-            className
-        )}>
-            <h1 className="text-2xl font-bold text-foreground mb-1">{title}</h1>
-            {subtitle && (
-                <p className="text-sm text-muted-foreground">{subtitle}</p>
-            )}
-        </header>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+                {icono && (
+                    <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm text-primary-600 shadow-sm sm:flex">
+                        {icono}
+                    </span>
+                )}
+                <div>
+                    <h1 className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">{titulo}</h1>
+                    {descripcion && <p className="mt-0.5 text-xs text-slate-600">{descripcion}</p>}
+                </div>
+            </div>
+            {acciones && <div className="flex flex-wrap items-center gap-2">{acciones}</div>}
+        </div>
     );
 }

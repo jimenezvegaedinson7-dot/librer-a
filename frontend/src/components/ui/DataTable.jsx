@@ -1,73 +1,95 @@
-import { cn } from '@/lib/utils';
+import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa6';
 
 export function DataTable({
-    columns,
-    data,
-    loading,
-    error,
-    noResultsText = 'No hay datos',
-    ...props
+    columnas,
+    filas = [],
+    keyExtractor,
+    acciones,
+    vacio = 'Sin registros',
+    orden = null,
+    onOrdenar = null,
+    onFilaClick = null,
 }) {
-    if (loading) {
-        return (
-            <div className="min-h-[200px] grid place-items-center text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mr-2" aria-hidden="true" />
-                Cargando...
-            </div>
-        );
-    }
+    const filaClickable = typeof onFilaClick === 'function';
+    const renderEncabezado = (col) => {
+        if (!col.ordenable || !onOrdenar || !col.campo) return col.titulo;
 
-    if (error) {
-        return (
-            <div className="min-h-[200px] flex items-center justify-center text-error">
-                Error al cargar los datos
-            </div>
-        );
-    }
+        const activo = orden?.campo === col.campo;
+        const Icono = activo ? (orden.direccion === 'asc' ? FaSortUp : FaSortDown) : FaSort;
 
-    if (!data || data.length === 0) {
         return (
-            <div className="min-h-[200px] text-center text-muted-foreground py-8">
-                <EmptyState>
-                    <EmptyState.Icon />
-                    <EmptyState.Title>{noResultsText}</EmptyState.Title>
-                    <EmptyState.Description>
-                        No hay registros para mostrar
-                    </EmptyState.Description>
-                </EmptyState>
-            </div>
+            <button
+                type="button"
+                onClick={() => onOrdenar(col.campo)}
+                title={`Ordenar por ${col.titulo}`}
+                className={`inline-flex items-center gap-1.5 uppercase tracking-wider transition ${
+                    activo ? 'text-primary-700' : 'text-slate-700 hover:text-primary-600'
+                }`}
+            >
+                {col.titulo}
+                <Icono className={`text-xs ${activo ? '' : 'text-slate-300'}`} />
+            </button>
         );
-    }
+    };
 
     return (
-        <div {...props}>
-            <div className="overflow-x-auto rounded-lg border-border bg-card shadow-sm">
-                <table className="min-w-full table">
-                    <thead>
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table className="min-w-full border-collapse">
+                <thead className="bg-slate-50/80">
+                    <tr>
+                        {columnas.map((col, i) => (
+                            <th
+                                key={i}
+                                className={`border-b border-slate-200 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-700 ${
+                                    col.alineacion === 'centro' ? 'text-center' : 'text-left'
+                                }`}
+                            >
+                                {renderEncabezado(col)}
+                            </th>
+                        ))}
+                        {acciones && (
+                            <th className="border-b border-slate-200 px-4 py-2.5 text-center text-xs font-bold uppercase tracking-wider text-slate-700">
+                                Acciones
+                            </th>
+                        )}
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                    {filas.length === 0 ? (
                         <tr>
-                            {columns.map((column) => (
-                                <th key={column.id} className="border-border p-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                    {column.header}
-                                </th>
-                            ))}
+                            <td colSpan={columnas.length + (acciones ? 1 : 0)} className="px-4 py-8 text-center text-sm text-slate-600">
+                                {vacio}
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((row) => (
-                            <tr key={row.id} className="hover:bg-surface-dark transition-colors">
-                                {columns.map((column) => (
+                    ) : (
+                        filas.map((fila) => (
+                            <tr
+                                key={keyExtractor ? keyExtractor(fila) : fila?.id}
+                                onClick={filaClickable ? () => onFilaClick(fila) : undefined}
+                                className={`border-b border-slate-100/80 transition last:border-0 hover:bg-slate-50/60 ${
+                                    filaClickable ? 'cursor-pointer' : ''
+                                }`}
+                            >
+                                {columnas.map((col, i) => (
                                     <td
-                                        key={column.id}
-                                        className="border-border p-3 align-middle font-medium text-sm"
+                                        key={i}
+                                        className={`px-4 py-2.5 text-sm ${
+                                            col.alineacion === 'centro' ? 'text-center' : 'text-left'
+                                        }`}
                                     >
-                                        {column.accessor ? column.accessor(row) : row[column.id]}
+                                        {col.render ? col.render(fila) : String(fila?.[col.campo] ?? '')}
                                     </td>
                                 ))}
+                                {acciones && (
+                                    <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
+                                        <div className="flex items-center justify-center gap-1">{acciones(fila)}</div>
+                                    </td>
+                                )}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        ))
+                    )}
+                </tbody>
+            </table>
         </div>
     );
 }

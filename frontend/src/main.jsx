@@ -1,10 +1,15 @@
-import { createRoot } from 'react-dom';
-import { AppRouter } from './routes';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './styles/theme.css';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 
-const appRoot = document.getElementById('app');
+import './index.css';
 
-createRoot(appRoot).render(
-    <AppRouter />
+import AppRouter from './routes/AppRouter';
+import ErrorBoundary from './components/ui/ErrorBoundary';
+
+createRoot(document.getElementById('root')).render(
+    <StrictMode>
+        <ErrorBoundary>
+            <AppRouter />
+        </ErrorBoundary>
+    </StrictMode>,
 );
