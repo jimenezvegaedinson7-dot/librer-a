@@ -52,7 +52,11 @@ const prepararSql = (sql, params) => {
 const primeraClaveId = (fila) => {
     const claves = Object.keys(fila);
     return (
-        claves.find((k) => k === 'id' || k.endsWith('_id')) ||
+        claves.find((k) =>
+            k === 'id' ||
+            k.endsWith('_id') ||
+            k.startsWith('id_')
+        ) ||
         claves[0]
     );
 };

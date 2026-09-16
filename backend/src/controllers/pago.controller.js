@@ -526,22 +526,27 @@ const crearOrden = async (req, res) => {
             if (
                 inventario.length === 0
             ) {
-                return res.status(400).json({
-                    success: false,
-                    mensaje:
-                        `El libro "${libro.titulo}" no tiene inventario`
-                });
-            }
+                const stockLibro =
+                    Number(libro.stock || 0);
 
-            const stockActual =
-                Number(inventario[0].stock);
+                if (stockLibro < cantidad) {
+                    return res.status(400).json({
+                        success: false,
+                        mensaje:
+                            `Stock insuficiente para "${libro.titulo}". Disponible: ${stockLibro}`
+                    });
+                }
+            } else {
+                const stockActual =
+                    Number(inventario[0].stock);
 
-            if (stockActual < cantidad) {
-                return res.status(400).json({
-                    success: false,
-                    mensaje:
-                        `Stock insuficiente para "${libro.titulo}". Disponible: ${stockActual}`
-                });
+                if (stockActual < cantidad) {
+                    return res.status(400).json({
+                        success: false,
+                        mensaje:
+                            `Stock insuficiente para "${libro.titulo}". Disponible: ${stockActual}`
+                    });
+                }
             }
 
             const subtotal =
