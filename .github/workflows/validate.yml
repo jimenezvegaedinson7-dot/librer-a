@@ -95,14 +95,14 @@ jobs:
           channel: stable
           cache: true
       - name: Instalar dependencias Flutter
-        working-directory: libreria_app
+        working-directory: flutter_app
         run: flutter pub get
       - name: Analizar Flutter
-        working-directory: libreria_app
+        working-directory: flutter_app
         run: flutter analyze --no-fatal-infos
       - name: Probar Flutter
-        working-directory: libreria_app
+        working-directory: flutter_app
         run: flutter test
       - name: Construir APK debug
-        working-directory: libreria_app
+        working-directory: flutter_app
         run: flutter build apk --debug
