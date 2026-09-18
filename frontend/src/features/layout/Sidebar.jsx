@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { NavLink } from 'react-router-dom';
 
 import { FaBookOpen, FaXmark } from 'react-icons/fa6';
@@ -17,9 +18,18 @@ function Sidebar({ abierto = false, onCerrar }) {
             }`}
         >
             {/* LOGO */}
-            <div className="relative flex items-center justify-center pb-4 pt-1">
-                <div className="flex h-24 w-24 items-center justify-center">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="relative mb-5 flex items-center gap-3 border-b border-slate-800 px-2 pb-5"
+            >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] p-1.5">
                     <img src={logoLibreria} alt="Logo Librería" className="h-full w-full object-contain" />
+                </div>
+                <div className="min-w-0">
+                    <p className="truncate text-sm font-extrabold tracking-tight text-white">Librería del Saber</p>
+                    <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Administración</p>
                 </div>
                 <button
                     type="button"
@@ -29,7 +39,7 @@ function Sidebar({ abierto = false, onCerrar }) {
                 >
                     <FaXmark />
                 </button>
-            </div>
+            </motion.div>
 
             <div className="mb-2 px-2.5">
                 <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">
@@ -44,17 +54,24 @@ function Sidebar({ abierto = false, onCerrar }) {
                         to={ruta}
                         onClick={cerrarEnMovil}
                         className={({ isActive }) =>
-                            `admin-nav-item group flex items-center gap-3 rounded-lg px-2.5 py-1.5 text-[13px] font-semibold transition ${
+                            `admin-nav-item group relative flex items-center gap-3 overflow-hidden rounded-xl px-2.5 py-1.5 text-[13px] font-bold transition ${
                                 isActive
-                                    ? 'bg-primary-600 text-white shadow-sm'
+                                    ? 'sidebar-nav-active text-white shadow-sm'
                                     : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
                             }`
                         }
                     >
                         {({ isActive }) => (
                             <>
+                                {isActive && (
+                                    <motion.span
+                                        layoutId="navegacion-activa"
+                                        className="absolute inset-0 rounded-xl bg-primary-600"
+                                        transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                                    />
+                                )}
                                 <span
-                                    className={`admin-nav-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm transition ${
+                                    className={`admin-nav-icon relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm transition ${
                                         isActive
                                             ? 'bg-white/15'
                                             : 'bg-white/[0.04] text-slate-400 group-hover:text-white'
@@ -62,8 +79,8 @@ function Sidebar({ abierto = false, onCerrar }) {
                                 >
                                     <Icono />
                                 </span>
-                                <span className="flex-1 truncate">{nombre}</span>
-                                {isActive && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-white" />}
+                                <span className="relative z-10 flex-1 truncate">{nombre}</span>
+                                {isActive && <span className="relative z-10 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />}
                             </>
                         )}
                     </NavLink>

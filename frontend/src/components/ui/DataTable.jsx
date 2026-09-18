@@ -1,4 +1,5 @@
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa6';
+import { motion, useReducedMotion } from 'motion/react';
 
 export function DataTable({
     columnas,
@@ -10,6 +11,7 @@ export function DataTable({
     onOrdenar = null,
     onFilaClick = null,
 }) {
+    const reducirMovimiento = useReducedMotion();
     const filaClickable = typeof onFilaClick === 'function';
     const renderEncabezado = (col) => {
         if (!col.ordenable || !onOrdenar || !col.campo) return col.titulo;
@@ -33,7 +35,12 @@ export function DataTable({
     };
 
     return (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <motion.div
+            initial={reducirMovimiento ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.28, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
+            className="data-table-shell overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm"
+        >
             <table className="min-w-full border-collapse">
                 <thead>
                     <tr className="bg-slate-50/80">
@@ -90,6 +97,6 @@ export function DataTable({
                     )}
                 </tbody>
             </table>
-        </div>
+        </motion.div>
     );
 }

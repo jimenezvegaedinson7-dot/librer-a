@@ -80,7 +80,7 @@ export function FormularioAlta({
     };
 
     return (
-        <Card>
+        <Card className="admin-form-card">
             <CardHeader
                 titulo={titulo}
                 subtitulo={subtitulo}
@@ -112,10 +112,10 @@ export function FormularioAlta({
                     </div>
                 )}
 
-                <form onSubmit={enviar} className="space-y-3" noValidate>
+                <form onSubmit={enviar} className="formal-form space-y-4" noValidate>
                     {renderCampos({ formulario, manejarCambio, errores })}
 
-                    <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
+                    <div className="form-actions flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
                         <Button variante="secondary" type="button" onClick={limpiar} disabled={guardando}>
                             <FaRotateLeft /> Limpiar
                         </Button>

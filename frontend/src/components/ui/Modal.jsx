@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { FaXmark } from 'react-icons/fa6';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
 import { Button } from './Button';
 
@@ -13,6 +14,8 @@ export function Modal({
     grande = false,
     footer = null,
 }) {
+    const reducirMovimiento = useReducedMotion();
+
     useEffect(() => {
         if (!abierto) return undefined;
         const manejarTecla = (e) => {
@@ -26,46 +29,56 @@ export function Modal({
         };
     }, [abierto, onCerrar]);
 
-    if (!abierto) return null;
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div
-                className="animate-solapa absolute inset-0 bg-slate-950/50 backdrop-blur-[1px]"
-                onClick={onCerrar}
-                aria-hidden="true"
-            />
-            <div
-                role="dialog"
-                aria-modal="true"
-                className={`animate-modal relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl ${
-                    grande ? 'max-w-3xl' : 'max-w-lg'
-                }`}
-            >
-                <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-3">
-                    <div className="min-w-0">
-                        <h2 className="text-sm font-bold text-slate-900">{titulo}</h2>
-                        {subtitulo && <p className="mt-0.5 text-xs text-slate-500">{subtitulo}</p>}
-                    </div>
-                    <Button
-                        variante="ghost"
-                        tamano="sm"
+        <AnimatePresence>
+            {abierto && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: reducirMovimiento ? 0 : 0.18 }}
+                        className="absolute inset-0 bg-slate-950/55 backdrop-blur-[2px]"
                         onClick={onCerrar}
-                        aria-label="Cerrar"
-                        className="!h-8 !w-8 !p-0"
+                        aria-hidden="true"
+                    />
+                    <motion.div
+                        initial={reducirMovimiento ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.985 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={reducirMovimiento ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.99 }}
+                        transition={{ duration: reducirMovimiento ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
+                        role="dialog"
+                        aria-modal="true"
+                        className={`modal-panel relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl ${
+                            grande ? 'max-w-3xl' : 'max-w-lg'
+                        }`}
                     >
-                        <FaXmark />
-                    </Button>
+                        <div className="modal-header flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+                            <div className="min-w-0 border-l-[3px] border-primary-600 pl-3">
+                                <h2 className="text-base font-extrabold tracking-tight text-slate-900">{titulo}</h2>
+                                {subtitulo && <p className="mt-0.5 text-xs font-medium text-slate-500">{subtitulo}</p>}
+                            </div>
+                            <Button
+                                variante="ghost"
+                                tamano="sm"
+                                onClick={onCerrar}
+                                aria-label="Cerrar"
+                                className="!h-9 !w-9 !p-0"
+                            >
+                                <FaXmark />
+                            </Button>
+                        </div>
+
+                        <div className="modal-body overflow-y-auto p-5 sm:p-6">{children}</div>
+
+                        {footer && (
+                            <div className="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50 px-5 py-3.5">
+                                {footer}
+                            </div>
+                        )}
+                    </motion.div>
                 </div>
-
-                <div className="overflow-y-auto p-5">{children}</div>
-
-                {footer && (
-                    <div className="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50 px-5 py-3">
-                        {footer}
-                    </div>
-                )}
-            </div>
-        </div>
+            )}
+        </AnimatePresence>
     );
 }

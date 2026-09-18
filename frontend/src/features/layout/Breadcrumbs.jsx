@@ -20,7 +20,7 @@ export default function Breadcrumbs() {
     }, [modulo]);
 
     return (
-        <nav aria-label="Ruta de navegación" className="mb-4 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+        <nav aria-label="Ruta de navegación" className="admin-breadcrumbs mb-5 flex items-center gap-1.5 text-xs font-bold text-slate-500">
             <Link to="/dashboard" className="transition hover:text-primary-600 hover:underline">
                 Panel
             </Link>

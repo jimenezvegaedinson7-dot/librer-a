@@ -47,11 +47,64 @@
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+.admin-main {
+    min-height: calc(100vh - 4rem);
+    background-image:
+        radial-gradient(circle at 100% 0%, rgb(99 102 241 / 0.045), transparent 28rem),
+        linear-gradient(rgb(255 255 255 / 0.22) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(255 255 255 / 0.22) 1px, transparent 1px);
+    background-size: auto, 32px 32px, 32px 32px;
+}
+
+.admin-sidebar {
+    box-shadow: 12px 0 36px -24px rgb(15 23 42 / 0.5);
+}
+
+.admin-topbar {
+    box-shadow: 0 1px 0 rgb(15 23 42 / 0.02), 0 8px 24px -24px rgb(15 23 42 / 0.45);
+}
+
+.admin-breadcrumbs {
+    width: fit-content;
+    border-radius: 9999px;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    background-color: rgb(255 255 255 / 0.72);
+    padding: 0.4rem 0.75rem;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.035);
+}
+
+.page-header {
+    min-height: 4.5rem;
+    border-bottom: 1px solid var(--color-slate-200, #e2e8f0);
+    padding-bottom: 1rem;
+}
+
+.page-header-icon,
+.card-header-icon {
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.45), 0 4px 12px -8px rgb(15 23 42 / 0.3);
+}
+
 .admin-shell[data-theme="dark"] {
     --color-surface: #080808;
     --color-surface-50: #111111;
     color: #f4f4f5;
     color-scheme: dark;
+}
+
+.admin-shell[data-theme="dark"] .admin-main {
+    background-image:
+        radial-gradient(circle at 100% 0%, rgb(255 255 255 / 0.055), transparent 28rem),
+        linear-gradient(rgb(255 255 255 / 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(255 255 255 / 0.018) 1px, transparent 1px);
+}
+
+.admin-shell[data-theme="dark"] .admin-breadcrumbs {
+    border-color: #2b2b2b;
+    background-color: rgb(17 17 17 / 0.82);
+}
+
+.admin-shell[data-theme="dark"] .page-header {
+    border-color: #2b2b2b;
 }
 
 .admin-shell[data-theme="dark"] .admin-topbar,
@@ -117,6 +170,14 @@
     color: #fafafa;
 }
 
+.admin-shell[data-theme="dark"] .form-field-group:focus-within .field-label {
+    color: #ffffff;
+}
+
+.admin-shell[data-theme="dark"] .field-label::before {
+    background-color: #f4f4f5;
+}
+
 .admin-shell[data-theme="dark"] .field::placeholder {
     color: #71717a;
 }
@@ -163,6 +224,33 @@
     color: #f4f4f5;
 }
 
+.admin-shell[data-theme="dark"] .border-primary-600 {
+    border-color: #f4f4f5;
+}
+
+.admin-shell[data-theme="dark"] .detail-tile,
+.admin-shell[data-theme="dark"] .pagination-bar {
+    border-color: #2b2b2b;
+    background-color: #171717;
+}
+
+.admin-shell[data-theme="dark"] .modal-panel {
+    border-color: #343434;
+    box-shadow: 0 28px 80px -24px rgb(0 0 0 / 0.95);
+}
+
+.admin-shell[data-theme="dark"] .sidebar-nav-active {
+    color: #090909;
+}
+
+.admin-shell[data-theme="dark"] .sidebar-nav-active [class~="bg-white/15"] {
+    background-color: rgb(9 9 9 / 0.1);
+}
+
+.admin-shell[data-theme="dark"] .sidebar-nav-active > .bg-white {
+    background-color: #090909;
+}
+
 .admin-shell[data-theme="dark"] [class~="hover:bg-slate-50"]:hover,
 .admin-shell[data-theme="dark"] [class~="hover:bg-slate-100"]:hover,
 .admin-shell[data-theme="dark"] [class~="hover:bg-slate-50/70"]:hover {
@@ -197,7 +285,7 @@
 
 @layer components {
     .card {
-        border-radius: 0.75rem;
+        border-radius: 0.875rem;
         border: 1px solid var(--color-slate-200, #e2e8f0);
         background-color: #fff;
         box-shadow: var(--shadow-card);
@@ -218,14 +306,15 @@
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        padding: 1rem 1.25rem;
+        padding: 1.1rem 1.25rem;
         border-bottom: 1px solid var(--color-slate-100, #f1f5f9);
         background-color: #fff;
     }
 
     .card-title {
-        font-size: 0.9375rem;
-        font-weight: 700;
+        font-size: 0.95rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
         color: var(--color-slate-900, #0f172a);
     }
 
@@ -237,25 +326,46 @@
     }
 
     .field-label {
-        display: block;
-        margin-bottom: 0.375rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        color: var(--color-slate-600, #475569);
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-bottom: 0.45rem;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.055em;
+        text-transform: uppercase;
+        color: var(--color-slate-700, #334155);
+        transition: color 0.18s ease;
+    }
+
+    .field-label::before {
+        width: 3px;
+        height: 0.85rem;
+        flex: 0 0 auto;
+        border-radius: 9999px;
+        background-color: var(--color-primary-600);
+        content: "";
     }
 
     .field {
         display: block;
         width: 100%;
-        height: 2.5rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--color-slate-300, #cbd5e1);
+        height: 2.75rem;
+        border-radius: 0.625rem;
+        border: 1.5px solid var(--color-slate-300, #cbd5e1);
         background-color: #fff;
-        padding: 0.5rem 0.75rem;
+        padding: 0.6rem 0.8rem;
         font-size: 0.875rem;
+        font-weight: 600;
         color: var(--color-slate-800, #1e293b);
-        transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        box-shadow: inset 0 1px 1px rgb(15 23 42 / 0.025);
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+    }
+
+    textarea.field {
+        min-height: 7rem;
+        height: auto;
+        line-height: 1.55;
     }
 
     .field::placeholder {
@@ -266,7 +376,7 @@
         outline: none;
         border-color: var(--color-primary-500);
         background-color: #fff;
-        box-shadow: 0 0 0 3px rgb(99 102 241 / 0.12);
+        box-shadow: 0 0 0 3px rgb(99 102 241 / 0.12), inset 0 1px 1px rgb(15 23 42 / 0.025);
     }
 
     .field:disabled {
@@ -289,6 +399,87 @@
         font-size: 0.75rem;
         color: var(--color-slate-400, #94a3b8);
     }
+
+    .form-field-group {
+        position: relative;
+    }
+
+    .form-field-group:focus-within .field-label {
+        color: var(--color-primary-700);
+    }
+
+    .formal-form,
+    .modal-body form {
+        border-radius: 0.75rem;
+    }
+
+    .form-actions {
+        margin-top: 1.35rem;
+        background-color: var(--color-slate-50, #f8fafc);
+        margin-inline: -1.25rem;
+        margin-bottom: -1.25rem;
+        padding: 1rem 1.25rem;
+        border-radius: 0 0 0.875rem 0.875rem;
+    }
+}
+
+.admin-shell form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.admin-shell form select,
+.admin-shell form textarea {
+    font-family: var(--font-sans);
+    font-weight: 600;
+}
+
+.admin-shell input[type="number"],
+.admin-shell table,
+.admin-shell [class*="tabular-nums"] {
+    font-variant-numeric: tabular-nums;
+}
+
+.admin-shell table th {
+    font-weight: 800;
+}
+
+.admin-shell table td {
+    font-weight: 500;
+}
+
+.data-table-shell {
+    box-shadow: 0 8px 24px -20px rgb(15 23 42 / 0.35);
+}
+
+.data-table-shell thead th {
+    border-bottom-width: 2px;
+}
+
+.data-table-shell tbody tr {
+    transition: background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.data-table-shell tbody tr:hover {
+    box-shadow: inset 3px 0 0 var(--color-primary-500);
+}
+
+.detail-tile {
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.detail-tile:hover {
+    border-color: var(--color-slate-300, #cbd5e1);
+    box-shadow: 0 6px 18px -14px rgb(15 23 42 / 0.3);
+}
+
+.modal-header {
+    background-color: rgb(248 250 252 / 0.72);
+}
+
+.modal-body {
+    scrollbar-gutter: stable;
+}
+
+.admin-shell[data-theme="dark"] .modal-header,
+.admin-shell[data-theme="dark"] .form-actions {
+    background-color: #171717;
 }
 
 @keyframes aparecer {
@@ -299,6 +490,15 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes aparecer-pagina {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 }
 
@@ -325,7 +525,7 @@
 }
 
 .page-enter {
-    animation: aparecer 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: aparecer-pagina 0.28s ease-out both;
 }
 
 .animate-suave {

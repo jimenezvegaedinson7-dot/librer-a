@@ -1,4 +1,5 @@
 import { FaCircleExclamation } from 'react-icons/fa6';
+import { motion, useReducedMotion } from 'motion/react';
 
 function idDeLabel(label) {
     if (!label) return undefined;
@@ -21,6 +22,21 @@ function Etiqueta({ label, requerido, htmlFor }) {
     );
 }
 
+function CampoAnimado({ children }) {
+    const reducirMovimiento = useReducedMotion();
+
+    return (
+        <motion.div
+            initial={reducirMovimiento ? false : { opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="form-field-group"
+        >
+            {children}
+        </motion.div>
+    );
+}
+
 function MensajeError({ error }) {
     if (!error) return null;
     return (
@@ -34,7 +50,7 @@ function MensajeError({ error }) {
 export function Input({ label, error, requerido = false, icono = null, className = '', ...props }) {
     const id = props.id || idDeLabel(label);
     return (
-        <div>
+        <CampoAnimado>
             <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <div className="relative">
                 {icono && (
@@ -49,14 +65,14 @@ export function Input({ label, error, requerido = false, icono = null, className
                 />
             </div>
             <MensajeError error={error} />
-        </div>
+        </CampoAnimado>
     );
 }
 
 export function Select({ label, error, requerido = false, children, className = '', ...props }) {
     const id = props.id || idDeLabel(label);
     return (
-        <div>
+        <CampoAnimado>
             <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <select
                 id={id}
@@ -66,14 +82,14 @@ export function Select({ label, error, requerido = false, children, className = 
                 {children}
             </select>
             <MensajeError error={error} />
-        </div>
+        </CampoAnimado>
     );
 }
 
 export function Textarea({ label, error, requerido = false, className = '', ...props }) {
     const id = props.id || idDeLabel(label);
     return (
-        <div>
+        <CampoAnimado>
             <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <textarea
                 id={id}
@@ -81,6 +97,6 @@ export function Textarea({ label, error, requerido = false, className = '', ...p
                 {...props}
             />
             <MensajeError error={error} />
-        </div>
+        </CampoAnimado>
     );
 }

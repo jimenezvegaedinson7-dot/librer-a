@@ -167,7 +167,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
 
     return (
         <>
-            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b border-slate-200 bg-white px-3 sm:px-4 lg:px-6">
+            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b border-slate-200 bg-white/95 px-3 backdrop-blur-xl sm:px-4 lg:px-6">
                 <div className="flex w-full items-center justify-between gap-3">
                     <button
                         type="button"
