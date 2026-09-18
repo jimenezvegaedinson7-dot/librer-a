@@ -12,7 +12,7 @@ function Sidebar({ abierto = false, onCerrar }) {
 
     return (
         <aside
-            className={`fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-950 px-3 py-5 text-white shadow-2xl transition-transform duration-300 ease-in-out lg:translate-x-0 lg:shadow-none ${
+            className={`admin-sidebar fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-950 px-3 py-5 text-white shadow-2xl transition-transform duration-300 ease-in-out lg:translate-x-0 lg:shadow-none ${
                 abierto ? 'translate-x-0' : '-translate-x-full'
             }`}
         >
@@ -44,7 +44,7 @@ function Sidebar({ abierto = false, onCerrar }) {
                         to={ruta}
                         onClick={cerrarEnMovil}
                         className={({ isActive }) =>
-                            `group flex items-center gap-3 rounded-lg px-2.5 py-1.5 text-[13px] font-semibold transition ${
+                            `admin-nav-item group flex items-center gap-3 rounded-lg px-2.5 py-1.5 text-[13px] font-semibold transition ${
                                 isActive
                                     ? 'bg-primary-600 text-white shadow-sm'
                                     : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
@@ -54,7 +54,7 @@ function Sidebar({ abierto = false, onCerrar }) {
                         {({ isActive }) => (
                             <>
                                 <span
-                                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm transition ${
+                                    className={`admin-nav-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm transition ${
                                         isActive
                                             ? 'bg-white/15'
                                             : 'bg-white/[0.04] text-slate-400 group-hover:text-white'

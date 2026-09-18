@@ -9,8 +9,10 @@ import {
     FaCirclePlus,
     FaGear,
     FaMagnifyingGlass,
+    FaMoon,
     FaPenToSquare,
     FaRightFromBracket,
+    FaSun,
     FaTrash,
     FaUser,
     FaXmark,
@@ -50,7 +52,7 @@ function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
     );
 }
 
-export default function Topbar({ onAbrirMenu }) {
+export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
     const navigate = useNavigate();
     const { usuario, cerrarSesion } = useAuth();
 
@@ -67,6 +69,7 @@ export default function Topbar({ onAbrirMenu }) {
     const [configAbierta, setConfigAbierta] = useState(false);
 
     const buscadorRef = useRef(null);
+    const buscadorInputRef = useRef(null);
     const notifRef = useRef(null);
     const menuRef = useRef(null);
 
@@ -122,6 +125,25 @@ export default function Topbar({ onAbrirMenu }) {
         return () => document.removeEventListener('mousedown', cerrarPaneles);
     }, []);
 
+    useEffect(() => {
+        const manejarAtajo = (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+                event.preventDefault();
+                setBuscadorAbierto(true);
+                requestAnimationFrame(() => buscadorInputRef.current?.focus());
+            }
+
+            if (event.key === 'Escape' && document.activeElement === buscadorInputRef.current) {
+                setBusqueda('');
+                setBuscadorAbierto(false);
+                buscadorInputRef.current?.blur();
+            }
+        };
+
+        window.addEventListener('keydown', manejarAtajo);
+        return () => window.removeEventListener('keydown', manejarAtajo);
+    }, []);
+
     const abrirNotificaciones = async () => {
         const abrir = !notificacionesAbiertas;
         setNotificacionesAbiertas(abrir);
@@ -145,7 +167,7 @@ export default function Topbar({ onAbrirMenu }) {
 
     return (
         <>
-            <header className="sticky top-0 z-30 flex h-16 w-full items-center border-b border-slate-200 bg-white px-3 sm:px-4 lg:px-6">
+            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b border-slate-200 bg-white px-3 sm:px-4 lg:px-6">
                 <div className="flex w-full items-center justify-between gap-3">
                     <button
                         type="button"
@@ -161,6 +183,7 @@ export default function Topbar({ onAbrirMenu }) {
                         <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 transition focus-within:border-primary-400 focus-within:bg-white">
                             <FaMagnifyingGlass className="text-slate-400" />
                             <input
+                                ref={buscadorInputRef}
                                 type="text"
                                 value={busqueda}
                                 onFocus={() => setBuscadorAbierto(true)}
@@ -171,6 +194,11 @@ export default function Topbar({ onAbrirMenu }) {
                                 placeholder="Buscar módulo..."
                                 className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
                             />
+                            {!busqueda && (
+                                <kbd className="hidden shrink-0 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-slate-400 shadow-sm lg:inline-flex">
+                                    Ctrl K
+                                </kbd>
+                            )}
                             {busqueda && (
                                 <button type="button" onClick={() => setBusqueda('')} aria-label="Limpiar">
                                     <FaXmark className="text-slate-400" />
@@ -207,6 +235,19 @@ export default function Topbar({ onAbrirMenu }) {
                     </div>
 
                     <div className="ml-auto flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={onCambiarTema}
+                            aria-label={tema === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+                            aria-pressed={tema === 'dark'}
+                            title={tema === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+                            className="theme-toggle flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm"
+                        >
+                            <span key={tema} className="theme-icon">
+                                {tema === 'dark' ? <FaSun /> : <FaMoon />}
+                            </span>
+                        </button>
+
                         {/* NOTIFICACIONES */}
                         <div ref={notifRef} className="relative">
                             <button

@@ -41,6 +41,160 @@
     }
 }
 
+.admin-shell {
+    color: var(--color-slate-800, #1e293b);
+    color-scheme: light;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.admin-shell[data-theme="dark"] {
+    --color-surface: #080808;
+    --color-surface-50: #111111;
+    color: #f4f4f5;
+    color-scheme: dark;
+}
+
+.admin-shell[data-theme="dark"] .admin-topbar,
+.admin-shell[data-theme="dark"] .card,
+.admin-shell[data-theme="dark"] .card-header,
+.admin-shell[data-theme="dark"] .bg-white {
+    background-color: #111111;
+}
+
+.admin-shell[data-theme="dark"] .card,
+.admin-shell[data-theme="dark"] .card-header {
+    border-color: #2b2b2b;
+}
+
+.admin-shell[data-theme="dark"] .card-hover:hover {
+    border-color: #525252;
+    box-shadow: 0 14px 30px -16px rgb(0 0 0 / 0.85);
+}
+
+.admin-shell[data-theme="dark"] .bg-slate-50,
+.admin-shell[data-theme="dark"] [class~="bg-slate-50/80"],
+.admin-shell[data-theme="dark"] [class~="bg-slate-50/70"] {
+    background-color: #171717;
+}
+
+.admin-shell[data-theme="dark"] .bg-slate-100 {
+    background-color: #202020;
+}
+
+.admin-shell[data-theme="dark"] .bg-slate-200,
+.admin-shell[data-theme="dark"] .bg-slate-300 {
+    background-color: #303030;
+}
+
+.admin-shell[data-theme="dark"] .text-slate-900,
+.admin-shell[data-theme="dark"] .text-slate-800 {
+    color: #fafafa;
+}
+
+.admin-shell[data-theme="dark"] .text-slate-700,
+.admin-shell[data-theme="dark"] .text-slate-600 {
+    color: #e4e4e7;
+}
+
+.admin-shell[data-theme="dark"] .text-slate-500 {
+    color: #a1a1aa;
+}
+
+.admin-shell[data-theme="dark"] .text-slate-400 {
+    color: #8f8f98;
+}
+
+.admin-shell[data-theme="dark"] .border-slate-100,
+.admin-shell[data-theme="dark"] .border-slate-200,
+.admin-shell[data-theme="dark"] .border-slate-300,
+.admin-shell[data-theme="dark"] [class~="border-slate-100/80"] {
+    border-color: #2b2b2b;
+}
+
+.admin-shell[data-theme="dark"] .field {
+    border-color: #343434;
+    background-color: #151515;
+    color: #fafafa;
+}
+
+.admin-shell[data-theme="dark"] .field::placeholder {
+    color: #71717a;
+}
+
+.admin-shell[data-theme="dark"] .field:focus {
+    border-color: #a1a1aa;
+    background-color: #191919;
+    box-shadow: 0 0 0 3px rgb(255 255 255 / 0.09);
+}
+
+.admin-shell[data-theme="dark"] .field:disabled {
+    background-color: #202020;
+    color: #a1a1aa;
+}
+
+.admin-shell[data-theme="dark"] .card-title,
+.admin-shell[data-theme="dark"] .field-label {
+    color: #f4f4f5;
+}
+
+.admin-shell[data-theme="dark"] .card-subtitle,
+.admin-shell[data-theme="dark"] .field-hint {
+    color: #a1a1aa;
+}
+
+.admin-shell[data-theme="dark"] .bg-primary-50,
+.admin-shell[data-theme="dark"] .bg-primary-100 {
+    background-color: #242424;
+}
+
+.admin-shell[data-theme="dark"] .bg-primary-600 {
+    background-color: #f4f4f5;
+    color: #090909;
+}
+
+.admin-shell[data-theme="dark"] .bg-primary-600 .text-white,
+.admin-shell[data-theme="dark"] .bg-primary-600.text-white {
+    color: #090909;
+}
+
+.admin-shell[data-theme="dark"] .text-primary-400,
+.admin-shell[data-theme="dark"] .text-primary-600,
+.admin-shell[data-theme="dark"] .text-primary-700 {
+    color: #f4f4f5;
+}
+
+.admin-shell[data-theme="dark"] [class~="hover:bg-slate-50"]:hover,
+.admin-shell[data-theme="dark"] [class~="hover:bg-slate-100"]:hover,
+.admin-shell[data-theme="dark"] [class~="hover:bg-slate-50/70"]:hover {
+    background-color: #222222;
+}
+
+.admin-shell[data-theme="dark"] [class~="hover:text-slate-800"]:hover,
+.admin-shell[data-theme="dark"] [class~="hover:text-primary-600"]:hover {
+    color: #ffffff;
+}
+
+.admin-shell[data-theme="dark"] [class~="hover:bg-primary-700"]:hover {
+    background-color: #dedede;
+}
+
+.admin-shell[data-theme="dark"] [class~="active:bg-primary-800"]:active {
+    background-color: #c8c8c8;
+}
+
+.admin-shell[data-theme="dark"] [class~="focus-within:bg-white"]:focus-within {
+    background-color: #111111;
+}
+
+.admin-shell[data-theme="dark"] [class~="focus-within:border-primary-400"]:focus-within {
+    border-color: #71717a;
+}
+
+.admin-shell[data-theme="dark"] ::selection {
+    background-color: #fafafa;
+    color: #090909;
+}
+
 @layer components {
     .card {
         border-radius: 0.75rem;
@@ -50,10 +204,11 @@
     }
 
     .card-hover {
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .card-hover:hover {
+        transform: translateY(-2px);
         border-color: var(--color-slate-300, #cbd5e1);
         box-shadow: var(--shadow-lift);
     }
@@ -136,20 +291,92 @@
     }
 }
 
-/* Animaciones de aparición (solo opacidad, sobrias y formales) */
 @keyframes aparecer {
     from {
         opacity: 0;
+        transform: translateY(6px);
     }
     to {
         opacity: 1;
+        transform: translateY(0);
     }
 }
 
-.animate-suave,
-.animate-modal,
+@keyframes abrir-modal {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes revelar-tema {
+    from {
+        opacity: 0;
+        transform: rotate(-35deg) scale(0.65);
+    }
+    to {
+        opacity: 1;
+        transform: rotate(0) scale(1);
+    }
+}
+
+.page-enter {
+    animation: aparecer 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-suave {
+    animation: aparecer 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transform-origin: top right;
+}
+
+.animate-modal {
+    animation: abrir-modal 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .animate-solapa {
     animation: aparecer 0.18s ease-out both;
+}
+
+.theme-toggle {
+    transition: transform 0.2s ease, color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-toggle:hover {
+    transform: translateY(-1px);
+}
+
+.theme-toggle:active {
+    transform: scale(0.94);
+}
+
+.theme-icon {
+    display: flex;
+    animation: revelar-tema 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.admin-nav-item:hover .admin-nav-icon {
+    transform: translateX(2px) scale(1.04);
+}
+
+.admin-shell button:focus-visible,
+.admin-shell a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-shell *,
+    .admin-shell *::before,
+    .admin-shell *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 ::-webkit-scrollbar {
