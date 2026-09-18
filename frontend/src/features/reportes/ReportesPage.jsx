@@ -49,27 +49,27 @@ import {
 function EncabezadoSeccion({ icono, titulo, descripcion }) {
     return (
         <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-50/50 px-4 py-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-xs text-emerald-700">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center text-xs text-primary-700">
                 {icono}
             </div>
             <div>
-                <h2 className="text-sm font-bold text-slate-900">{titulo}</h2>
-                <p className="mt-0.5 text-[11px] text-slate-600">{descripcion}</p>
+                <h2 className="text-sm font-semibold text-slate-900">{titulo}</h2>
+                <p className="mt-0.5 text-xs text-slate-600">{descripcion}</p>
             </div>
         </div>
     );
 }
 
-function TarjetaResumen({ icono, titulo, valor, detalle, clase }) {
+function TarjetaResumen({ icono, titulo, valor, detalle }) {
     return (
-        <div className={`rounded-xl border p-3 transition duration-200 hover:-translate-y-0.5 hover:shadow-sm ${clase}`}>
+        <div className="rounded-md border border-slate-200 bg-white p-3">
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <p className="truncate text-[11px] font-semibold opacity-80">{titulo}</p>
-                    <p className="mt-1 text-lg font-bold leading-tight">{valor}</p>
-                    {detalle && <p className="mt-1 text-[10px] font-medium opacity-70">{detalle}</p>}
+                    <p className="truncate text-xs font-medium text-slate-500">{titulo}</p>
+                    <p className="mt-1 text-lg font-semibold leading-tight text-slate-900">{valor}</p>
+                    {detalle && <p className="mt-1 text-xs text-slate-500">{detalle}</p>}
                 </div>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/70 text-xs">{icono}</div>
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center border-l border-slate-200 pl-3 text-xs text-primary-700">{icono}</div>
             </div>
         </div>
     );
@@ -77,12 +77,12 @@ function TarjetaResumen({ icono, titulo, valor, detalle, clase }) {
 
 function Destacado({ icono, titulo, principal, detalle }) {
     return (
-        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-sm text-amber-700">{icono}</div>
+        <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center text-sm text-primary-700">{icono}</div>
             <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{titulo}</p>
-                <p className="mt-0.5 text-sm font-bold text-slate-800">{principal}</p>
-                <p className="mt-0.5 text-[11px] text-slate-600">{detalle}</p>
+                <p className="text-xs font-medium text-slate-500">{titulo}</p>
+                <p className="mt-0.5 text-sm font-semibold text-slate-800">{principal}</p>
+                <p className="mt-0.5 text-xs text-slate-600">{detalle}</p>
             </div>
         </div>
     );

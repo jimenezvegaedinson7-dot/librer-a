@@ -86,26 +86,20 @@ export default function VerificarEmailPage() {
     };
 
     return (
-        <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-8">
+        <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 px-4 py-8">
             <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${fondoLogin})` }} />
-            <div className="absolute inset-0 bg-slate-950/40" />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/20 to-slate-950/50" />
-            <div className="pointer-events-none absolute left-1/2 top-0 h-72 w-[700px] -translate-x-1/2 rounded-full bg-white/5 blur-3xl" />
+            <div className="absolute inset-0 bg-slate-950/45" />
 
             <div className="relative z-10 w-full max-w-md">
-                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-primary-400/30 bg-primary-400/10 text-primary-300 shadow-lg shadow-primary-500/10 backdrop-blur-md">
-                    <FaEnvelopeCircleCheck />
-                </div>
-
-                <div className="mx-auto overflow-hidden rounded-[28px] border border-white/20 bg-slate-950/20 p-6 shadow-2xl shadow-black/30 backdrop-blur-md sm:p-8">
-                    <div className="mb-4 flex justify-center">
-                        <img src={logoLibreria} alt="Logo Librería" className="h-20 w-20 object-contain drop-shadow-xl" />
+                <div className="mx-auto overflow-hidden rounded-xl border border-slate-200 bg-white p-7 shadow-xl sm:p-9">
+                    <div className="mb-6 flex justify-center border-b border-slate-200 pb-6">
+                        <img src={logoLibreria} alt="Logo Librería" className="h-20 w-auto object-contain" />
                     </div>
 
                     <div className="mb-6 text-center">
-                        <p className="text-sm font-bold text-primary-300">Verificación de cuenta</p>
-                        <h2 className="mt-1 text-3xl font-bold tracking-tight text-white">Verifica tu correo</h2>
-                        <p className="mt-2 text-xs leading-5 text-slate-300">
+                        <div className="mb-3 flex justify-center text-xl text-primary-700"><FaEnvelopeCircleCheck /></div>
+                        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Verifica tu correo</h2>
+                        <p className="mt-2 text-sm leading-5 text-slate-500">
                             Ingresa el código de 6 dígitos que enviamos a tu correo para activar tu cuenta.
                         </p>
                     </div>
@@ -115,18 +109,17 @@ export default function VerificarEmailPage() {
 
                     <form onSubmit={enviar} className="mt-5 space-y-5">
                         <Input
-                            label={<span className="text-white">Correo electrónico</span>}
+                            label="Correo electrónico"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="admin@libreria.com"
                             required
                             icono={<FaEnvelopeCircleCheck />}
-                            className="!border-white/30 !bg-white/10 !text-white !placeholder:text-slate-400"
                         />
 
                         <Input
-                            label={<span className="text-white">Código de verificación</span>}
+                            label="Código de verificación"
                             type="text"
                             inputMode="numeric"
                             maxLength="6"
@@ -135,7 +128,7 @@ export default function VerificarEmailPage() {
                             placeholder="000000"
                             required
                             icono={<FaKey />}
-                            className="!border-white/30 !bg-white/10 !text-center !text-2xl !font-bold !tracking-[0.35em] !text-white !placeholder:text-slate-400"
+                            className="!text-center !text-2xl !font-semibold !tracking-[0.35em]"
                         />
 
                         <Button type="submit" cargando={cargando} className="mt-2 w-full">
@@ -147,7 +140,7 @@ export default function VerificarEmailPage() {
                         type="button"
                         onClick={reenviar}
                         disabled={reenviando || segundos > 0 || cargando}
-                        className="mt-4 w-full text-center text-xs text-slate-300 transition hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                        className="mt-4 w-full text-center text-xs text-slate-500 transition-colors hover:text-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {reenviando
                             ? 'Reenviando...'
@@ -159,14 +152,14 @@ export default function VerificarEmailPage() {
                     <button
                         type="button"
                         onClick={volverAlLogin}
-                        className="mt-2 flex w-full items-center justify-center gap-1 text-center text-xs text-slate-300 transition hover:text-white"
+                        className="mt-2 flex w-full items-center justify-center gap-1 text-center text-xs text-slate-500 transition-colors hover:text-primary-700"
                     >
                         <FaArrowLeft className="text-[10px]" /> Volver al inicio de sesión
                     </button>
 
-                    <div className="mt-7 flex items-center justify-center gap-2 border-t border-white/10 pt-5">
-                        <FaEnvelopeCircleCheck className="text-[10px] text-primary-300" />
-                        <p className="text-[10px] font-medium text-slate-300">La cuenta debe verificarse para poder ingresar</p>
+                    <div className="mt-7 flex items-center justify-center gap-2 border-t border-slate-200 pt-5">
+                        <FaEnvelopeCircleCheck className="text-[10px] text-primary-700" />
+                        <p className="text-xs text-slate-500">La cuenta debe verificarse para poder ingresar</p>
                     </div>
                 </div>
             </div>

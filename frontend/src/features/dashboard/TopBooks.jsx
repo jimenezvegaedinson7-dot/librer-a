@@ -12,18 +12,18 @@ function TopBooks({
             : [];
 
     return (
-        <section className="overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
 
-            <div className="flex items-center justify-between border-b border-slate-300 bg-slate-50/50 px-4 py-3">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
 
                 <div className="flex items-center gap-2.5">
 
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-sm text-amber-700">
+                    <div className="flex h-8 w-8 items-center justify-center text-sm text-primary-700">
                         <FaRankingStar />
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold text-slate-900">
+                        <h3 className="text-sm font-semibold text-slate-900">
                             Libros más vendidos
                         </h3>
 
@@ -34,7 +34,7 @@ function TopBooks({
 
                 </div>
 
-                <span className="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                <span className="text-xs text-slate-500">
                     Top {lista.length}
                 </span>
 
@@ -76,15 +76,7 @@ function TopBooks({
                             >
 
                                 <div
-                                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                                        index === 0
-                                            ? 'bg-amber-100 text-amber-700'
-                                            : index === 1
-                                                ? 'bg-slate-200 text-slate-700'
-                                                : index === 2
-                                                    ? 'bg-orange-100 text-orange-700'
-                                                    : 'bg-slate-100 text-slate-500'
-                                    }`}
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center border-r border-slate-200 text-xs font-semibold text-slate-500"
                                 >
                                     {index + 1}
                                 </div>
@@ -106,7 +98,7 @@ function TopBooks({
 
                                 <div className="text-right">
 
-                                    <p className="text-xs font-bold text-emerald-700">
+                                    <p className="text-xs font-semibold text-slate-800">
                                         S/ {Number(
                                             libro.total_generado || 0
                                         ).toFixed(2)}

@@ -86,7 +86,7 @@ export function FormularioAlta({
                 subtitulo={subtitulo}
                 icono={icono}
                 acciones={
-                    <span className="rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
+                    <span className="text-xs font-medium text-slate-500">
                         {etiquetaAlta}
                     </span>
                 }

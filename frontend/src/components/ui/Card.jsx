@@ -1,16 +1,8 @@
-import { motion, useReducedMotion } from 'motion/react';
-
 export function Card({ children, className = '', hover = false }) {
-    const reducirMovimiento = useReducedMotion();
-
     return (
-        <motion.section
-            whileHover={hover && !reducirMovimiento ? { y: -2 } : undefined}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
-            className={`card ${hover ? 'card-hover' : ''} ${className}`}
-        >
+        <section className={`card ${hover ? 'card-hover' : ''} ${className}`}>
             {children}
-        </motion.section>
+        </section>
     );
 }
 
@@ -19,7 +11,7 @@ export function CardHeader({ titulo, subtitulo, acciones = null, icono = null })
         <div className="card-header">
             <div className="flex items-center gap-3">
                 {icono && (
-                    <span className="card-header-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-700">
+                    <span className="card-header-icon flex h-8 w-8 shrink-0 items-center justify-center text-primary-700">
                         {icono}
                     </span>
                 )}

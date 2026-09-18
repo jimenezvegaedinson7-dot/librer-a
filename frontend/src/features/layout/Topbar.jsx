@@ -167,20 +167,20 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
 
     return (
         <>
-            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b border-slate-200 bg-white/95 px-3 backdrop-blur-xl sm:px-4 lg:px-6">
+            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b border-slate-200 bg-white px-3 sm:px-4 lg:px-6">
                 <div className="flex w-full items-center justify-between gap-3">
                     <button
                         type="button"
                         onClick={onAbrirMenu}
                         aria-label="Abrir menú"
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 lg:hidden"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 lg:hidden"
                     >
                         <FaBars />
                     </button>
 
                     {/* BUSCADOR */}
                     <div ref={buscadorRef} className="relative hidden w-full max-w-sm sm:block">
-                        <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 transition focus-within:border-primary-400 focus-within:bg-white">
+                        <div className="flex items-center gap-2.5 rounded-md border border-slate-300 bg-white px-3 py-2 transition-colors focus-within:border-primary-600">
                             <FaMagnifyingGlass className="text-slate-400" />
                             <input
                                 ref={buscadorInputRef}
@@ -195,7 +195,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                 className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
                             />
                             {!busqueda && (
-                                <kbd className="hidden shrink-0 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-slate-400 shadow-sm lg:inline-flex">
+                                <kbd className="hidden shrink-0 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 lg:inline-flex">
                                     Ctrl K
                                 </kbd>
                             )}
@@ -206,7 +206,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                             )}
                         </div>
                         {buscadorAbierto && busqueda && (
-                            <div className="animate-suave absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                            <div className="animate-suave absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
                                 {resultadosBusqueda.length === 0 ? (
                                     <div className="p-5 text-center text-sm text-slate-600">Sin resultados</div>
                                 ) : (
@@ -219,11 +219,11 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                                 onClick={() => navegarModulo(modulo.ruta)}
                                                 className="flex w-full items-center gap-3 border-b border-slate-100 px-3 py-2.5 text-left transition last:border-0 hover:bg-slate-50"
                                             >
-                                                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                                                <span className="flex h-8 w-8 items-center justify-center text-primary-700">
                                                     <Icono />
                                                 </span>
                                                 <span>
-                                                    <span className="block text-sm font-bold text-slate-700">{modulo.nombre}</span>
+                                                    <span className="block text-sm font-semibold text-slate-700">{modulo.nombre}</span>
                                                     <span className="block text-xs text-slate-600">{modulo.descripcion}</span>
                                                 </span>
                                             </button>
@@ -241,7 +241,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                             aria-label={tema === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
                             aria-pressed={tema === 'dark'}
                             title={tema === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-                            className="theme-toggle flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm"
+                            className="theme-toggle flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600"
                         >
                             <span key={tema} className="theme-icon">
                                 {tema === 'dark' ? <FaSun /> : <FaMoon />}
@@ -254,7 +254,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                 type="button"
                                 onClick={abrirNotificaciones}
                                 aria-label="Notificaciones"
-                                className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100"
+                                className="relative flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100"
                             >
                                 <FaBell />
                                 {cantidadNuevas > 0 && (
@@ -264,10 +264,10 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                 )}
                             </button>
                             {notificacionesAbiertas && (
-                                <div className="animate-suave fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px]">
+                                <div className="animate-suave fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px]">
                                     <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
                                         <div>
-                                            <h3 className="text-sm font-bold text-slate-800">Notificaciones</h3>
+                                            <h3 className="text-sm font-semibold text-slate-800">Notificaciones</h3>
                                             <p className="text-xs text-slate-500">Actividades recientes</p>
                                         </div>
                                         <button
@@ -296,7 +296,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                                         </span>
                                                         <div className="min-w-0 flex-1">
                                                             <div className="flex justify-between gap-2">
-                                                                <p className="truncate text-sm font-bold capitalize text-slate-700">
+                                                                <p className="truncate text-sm font-semibold capitalize text-slate-700">
                                                                     {item.modulo || 'Sistema'}
                                                                 </p>
                                                                 <span className="whitespace-nowrap text-xs text-slate-400">{formatearFecha(item.fecha_registro)}</span>
@@ -330,17 +330,17 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                     setMenuAbierto(!menuAbierto);
                                     setNotificacionesAbiertas(false);
                                 }}
-                                className="flex items-center gap-2 rounded-lg py-1.5 pl-1 pr-2 transition hover:bg-slate-100"
+                                className="flex items-center gap-2 rounded-md py-1.5 pl-1 pr-2 transition-colors hover:bg-slate-100"
                             >
                                 <Avatar foto={foto} inicial={inicial} />
                                 <div className="hidden max-w-[170px] text-left md:block">
-                                    <p className="truncate text-sm font-bold text-slate-800">{nombre}</p>
+                                    <p className="truncate text-sm font-semibold text-slate-800">{nombre}</p>
                                     <p className="truncate text-xs text-slate-500">{usuario?.email || 'Administrador'}</p>
                                 </div>
                                 <FaChevronDown className={`hidden text-xs text-slate-400 transition-transform sm:block ${menuAbierto ? 'rotate-180' : ''}`} />
                             </button>
                             {menuAbierto && (
-                                <div className="animate-suave absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                                <div className="animate-suave absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
                                     <button
                                         type="button"
                                         onClick={() => {

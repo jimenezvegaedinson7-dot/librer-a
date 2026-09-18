@@ -1,10 +1,17 @@
-import { motion } from 'motion/react';
 import { NavLink } from 'react-router-dom';
 
-import { FaBookOpen, FaXmark } from 'react-icons/fa6';
+import { FaXmark } from 'react-icons/fa6';
 
 import logoLibreria from '../../assets/logo-lbl.png';
 import { navPrincipal } from './navConfig';
+
+const secciones = navPrincipal.reduce((grupos, item) => {
+    const nombre = item.seccion || 'General';
+    const grupo = grupos.find((actual) => actual.nombre === nombre);
+    if (grupo) grupo.items.push(item);
+    else grupos.push({ nombre, items: [item] });
+    return grupos;
+}, []);
 
 function Sidebar({ abierto = false, onCerrar }) {
     const cerrarEnMovil = () => {
@@ -13,91 +20,58 @@ function Sidebar({ abierto = false, onCerrar }) {
 
     return (
         <aside
-            className={`admin-sidebar fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-950 px-3 py-5 text-white shadow-2xl transition-transform duration-300 ease-in-out lg:translate-x-0 lg:shadow-none ${
+            className={`admin-sidebar fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-950 px-3 py-4 text-white transition-transform duration-200 ease-in-out lg:translate-x-0 ${
                 abierto ? 'translate-x-0' : '-translate-x-full'
             }`}
         >
-            {/* LOGO */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="relative mb-5 flex items-center gap-3 border-b border-slate-800 px-2 pb-5"
-            >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] p-1.5">
+            <div className="relative mb-3 flex items-center gap-3 border-b border-slate-800 px-2 pb-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center p-1">
                     <img src={logoLibreria} alt="Logo Librería" className="h-full w-full object-contain" />
                 </div>
                 <div className="min-w-0">
-                    <p className="truncate text-sm font-extrabold tracking-tight text-white">Librería del Saber</p>
-                    <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Administración</p>
+                    <p className="truncate text-sm font-semibold text-white">Librería del Saber</p>
+                    <p className="mt-0.5 text-xs text-slate-400">Panel administrativo</p>
                 </div>
                 <button
                     type="button"
                     onClick={onCerrar}
                     aria-label="Cerrar menú"
-                    className="absolute right-0 top-0 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/10 hover:text-white lg:hidden"
+                    className="absolute right-0 top-0 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white/10 hover:text-white lg:hidden"
                 >
                     <FaXmark />
                 </button>
-            </motion.div>
-
-            <div className="mb-2 px-2.5">
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                    Menú principal
-                </p>
             </div>
 
-            <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pb-2 pr-1 [scrollbar-width:thin] [scrollbar-color:#475569_transparent]">
-                {navPrincipal.map(({ nombre, ruta, icono: Icono }) => (
-                    <NavLink
-                        key={ruta}
-                        to={ruta}
-                        onClick={cerrarEnMovil}
-                        className={({ isActive }) =>
-                            `admin-nav-item group relative flex items-center gap-3 overflow-hidden rounded-xl px-2.5 py-1.5 text-[13px] font-bold transition ${
-                                isActive
-                                    ? 'sidebar-nav-active text-white shadow-sm'
-                                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
-                            }`
-                        }
-                    >
-                        {({ isActive }) => (
-                            <>
-                                {isActive && (
-                                    <motion.span
-                                        layoutId="navegacion-activa"
-                                        className="absolute inset-0 rounded-xl bg-primary-600"
-                                        transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-                                    />
-                                )}
-                                <span
-                                    className={`admin-nav-icon relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm transition ${
-                                        isActive
-                                            ? 'bg-white/15'
-                                            : 'bg-white/[0.04] text-slate-400 group-hover:text-white'
-                                    }`}
+            <nav className="min-h-0 flex-1 overflow-y-auto pb-2 pr-1 [scrollbar-width:thin] [scrollbar-color:#475569_transparent]">
+                {secciones.map((seccion) => (
+                    <div key={seccion.nombre} className="mb-3 last:mb-0">
+                        <p className="mb-1 px-2.5 text-[11px] font-medium uppercase tracking-[0.08em] text-slate-500">
+                            {seccion.nombre}
+                        </p>
+                        <div className="space-y-0.5">
+                            {seccion.items.map(({ nombre, ruta, icono: Icono }) => (
+                                <NavLink
+                                    key={ruta}
+                                    to={ruta}
+                                    onClick={cerrarEnMovil}
+                                    className={({ isActive }) =>
+                                        `admin-nav-item flex items-center gap-3 rounded-md border-l-2 px-3 py-2 text-sm transition-colors ${
+                                            isActive
+                                                ? 'sidebar-nav-active border-primary-400 bg-white/10 font-semibold text-white'
+                                                : 'border-transparent font-medium text-slate-300 hover:bg-white/[0.05] hover:text-white'
+                                        }`
+                                    }
                                 >
-                                    <Icono />
-                                </span>
-                                <span className="relative z-10 flex-1 truncate">{nombre}</span>
-                                {isActive && <span className="relative z-10 h-1.5 w-1.5 shrink-0 rounded-full bg-white" />}
-                            </>
-                        )}
-                    </NavLink>
+                                    <Icono className="admin-nav-icon w-4 shrink-0 text-sm text-slate-400" />
+                                    <span className="truncate">{nombre}</span>
+                                </NavLink>
+                            ))}
+                        </div>
+                    </div>
                 ))}
             </nav>
 
-            <div className="mt-2 rounded-lg border border-slate-800 bg-white/[0.03] px-3 py-2.5">
-                <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-primary-400">
-                        <FaBookOpen />
-                    </span>
-                    <div className="min-w-0">
-                        <p className="truncate text-xs font-semibold text-slate-200">Librería del Saber</p>
-                        <p className="text-[10px] text-slate-500">Panel de administración</p>
-                    </div>
-                </div>
-            </div>
+            <p className="mt-2 border-t border-slate-800 px-2 pt-3 text-xs text-slate-500">Sistema de gestión</p>
         </aside>
     );
 }

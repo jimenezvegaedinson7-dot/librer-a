@@ -104,7 +104,7 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
 
 function Contador({ total, administradores, clientes, activos, inactivos }) {
     return (
-        <div className="flex flex-wrap gap-2">
+        <div className="summary-strip flex flex-wrap gap-2">
             <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
                 Total: <span className="font-bold text-slate-900">{total}</span>
             </span>

@@ -1,5 +1,4 @@
 import { FaCircleExclamation } from 'react-icons/fa6';
-import { motion, useReducedMotion } from 'motion/react';
 
 function idDeLabel(label) {
     if (!label) return undefined;
@@ -23,18 +22,7 @@ function Etiqueta({ label, requerido, htmlFor }) {
 }
 
 function CampoAnimado({ children }) {
-    const reducirMovimiento = useReducedMotion();
-
-    return (
-        <motion.div
-            initial={reducirMovimiento ? false : { opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="form-field-group"
-        >
-            {children}
-        </motion.div>
-    );
+    return <div className="form-field-group">{children}</div>;
 }
 
 function MensajeError({ error }) {

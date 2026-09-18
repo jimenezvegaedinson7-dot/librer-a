@@ -112,34 +112,32 @@ export default function LoginPage() {
     };
 
     return (
-        <main className="relative min-h-screen bg-[#f4f4f4]">
+        <main className="relative min-h-screen bg-slate-100">
             <div
                 className="fixed inset-0 bg-cover bg-center bg-no-repeat"
                 style={{ backgroundImage: `url(${fondoLogin})` }}
             />
-            <div className="fixed inset-0 bg-slate-900/15" />
+            <div className="fixed inset-0 bg-slate-950/45" />
 
             <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8">
-                <section className="min-w-0 w-full max-w-[480px]">
-                    <div className="min-w-0 rounded-[28px] border border-white/40 bg-white/30 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.25)] backdrop-blur-2xl sm:p-10">
-                        
-                        {/* LOGO */}
-                        <div className="mb-6 flex justify-center">
+                <section className="w-full min-w-0 max-w-[440px]">
+                    <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-7 shadow-xl sm:p-9">
+                        <div className="mb-6 flex justify-center border-b border-slate-200 pb-6">
                             <img
                                 src={logoLibreria}
                                 alt="Logo Librería"
-                                className="h-28 w-auto object-contain sm:h-36"
+                                className="h-20 w-auto object-contain sm:h-24"
                             />
                         </div>
 
                         {!twoFactorToken ? (
                             <>
                                 <div className="mb-6 text-center">
-                                    <h1 className="text-4xl font-bold text-[#c79a2b]">
+                                    <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
                                         Iniciar sesión
                                     </h1>
-                                    <p className="mt-2 text-sm text-slate-700">
-                                        Accede al panel administrativo
+                                    <p className="mt-2 text-sm text-slate-500">
+                                        Ingresa tus credenciales de administración
                                     </p>
                                 </div>
 
@@ -154,8 +152,8 @@ export default function LoginPage() {
                                         <label className="mb-2 block text-sm font-semibold text-slate-900">
                                             Correo electrónico
                                         </label>
-                                        <div className="flex h-[54px] min-w-0 items-center overflow-hidden rounded-xl border border-white/50 bg-white/40 transition focus-within:border-[#c79a2b] focus-within:ring-2 focus-within:ring-[#f3dfad]">
-                                            <span className="flex h-full w-12 shrink-0 items-center justify-center border-r border-white/40 text-slate-500">
+                                        <div className="flex h-12 min-w-0 items-center overflow-hidden rounded-md border border-slate-300 bg-white transition focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-100">
+                                            <span className="flex h-full w-11 shrink-0 items-center justify-center border-r border-slate-200 text-slate-500">
                                                 <FaEnvelope />
                                             </span>
                                             <input
@@ -174,8 +172,8 @@ export default function LoginPage() {
                                         <label className="mb-2 block text-sm font-semibold text-slate-900">
                                             Contraseña
                                         </label>
-                                        <div className="flex h-[54px] min-w-0 items-center overflow-hidden rounded-xl border border-white/50 bg-white/40 transition focus-within:border-[#c79a2b] focus-within:ring-2 focus-within:ring-[#f3dfad]">
-                                            <span className="flex h-full w-12 shrink-0 items-center justify-center border-r border-white/40 text-slate-500">
+                                        <div className="flex h-12 min-w-0 items-center overflow-hidden rounded-md border border-slate-300 bg-white transition focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-100">
+                                            <span className="flex h-full w-11 shrink-0 items-center justify-center border-r border-slate-200 text-slate-500">
                                                 <FaLock />
                                             </span>
                                             <input
@@ -200,7 +198,7 @@ export default function LoginPage() {
                                     <button
                                         type="submit"
                                         disabled={cargando}
-                                        className="flex h-[54px] w-full items-center justify-center gap-3 rounded-xl bg-[#c79a2b] text-sm font-bold text-white shadow-md transition hover:bg-[#b88a1c] disabled:opacity-60"
+                                        className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-primary-800 bg-primary-700 text-sm font-semibold text-white transition-colors hover:bg-primary-800 disabled:opacity-60"
                                     >
                                         {cargando ? (
                                             <>
@@ -219,13 +217,13 @@ export default function LoginPage() {
                         ) : (
                             <>
                                 <div className="mb-6 text-center">
-                                    <div className="mb-4 flex justify-center text-2xl text-[#c79a2b]">
+                                    <div className="mb-4 flex justify-center text-2xl text-primary-700">
                                         <FaQrcode />
                                     </div>
-                                    <h1 className="text-3xl font-bold text-[#c79a2b]">
+                                    <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
                                         Código de verificación
                                     </h1>
-                                    <p className="mt-2 text-sm text-slate-700">
+                                    <p className="mt-2 text-sm text-slate-500">
                                         Ingresa el código de 6 dígitos
                                     </p>
                                 </div>
@@ -241,8 +239,8 @@ export default function LoginPage() {
                                         <label className="mb-2 block text-center text-sm font-semibold text-slate-900">
                                             Código OTP
                                         </label>
-                                        <div className="flex h-[60px] min-w-0 items-center rounded-xl border border-white/50 bg-white/40 px-4 transition focus-within:border-[#c79a2b] focus-within:ring-2 focus-within:ring-[#f3dfad]">
-                                            <FaKey className="shrink-0 text-[#c79a2b]" />
+                                        <div className="flex h-14 min-w-0 items-center rounded-md border border-slate-300 bg-white px-4 transition focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-100">
+                                            <FaKey className="shrink-0 text-primary-700" />
                                             <input
                                                 type="text"
                                                 inputMode="numeric"
@@ -260,7 +258,7 @@ export default function LoginPage() {
                                     <button
                                         type="submit"
                                         disabled={verificando}
-                                        className="flex h-[54px] w-full items-center justify-center gap-3 rounded-xl bg-[#c79a2b] text-sm font-bold text-white shadow-md transition hover:bg-[#b88a1c] disabled:opacity-60"
+                                        className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-primary-800 bg-primary-700 text-sm font-semibold text-white transition-colors hover:bg-primary-800 disabled:opacity-60"
                                     >
                                         {verificando ? (
                                             <>
@@ -278,7 +276,7 @@ export default function LoginPage() {
                                     <button
                                         type="button"
                                         onClick={volverAlLogin}
-                                        className="w-full text-center text-sm font-medium text-slate-700 transition hover:text-[#c79a2b]"
+                                        className="w-full text-center text-sm font-medium text-slate-600 transition-colors hover:text-primary-700"
                                     >
                                         ← Volver al inicio de sesión
                                     </button>

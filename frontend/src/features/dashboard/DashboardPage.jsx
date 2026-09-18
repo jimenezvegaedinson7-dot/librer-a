@@ -92,8 +92,8 @@ export default function DashboardPage() {
     if (!resumen) return null;
 
     return (
-<div className="space-y-6">
-            <PageHeader titulo="Dashboard" descripcion="Resumen general de la librería" />
+        <div className="space-y-4">
+            <PageHeader titulo="Resumen" descripcion="Indicadores generales y actividad reciente de la librería" />
 
             <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard titulo="Total de libros" valor={resumen.total_libros} icono={<FaBook />} color="primary" />
@@ -106,12 +106,12 @@ export default function DashboardPage() {
                 <StatCard titulo="Ventas pagadas" valor={resumen.total_ventas} icono={<FaCircleCheck />} color="info" />
             </section>
 
-            <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.05fr_1fr]">
+            <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.05fr_1fr]">
                 <RecentBooks libros={libros} />
                 <SalesChart ventasPorMes={ventasPorMes} />
             </section>
 
-            <section className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                 <StatusDonut titulo="Ventas por estado" subtitulo="Distribución real de las ventas" datos={ventasPorEstado} tipo="ventas" />
                 <StatusDonut titulo="Reservas por estado" subtitulo="Distribución real de las reservas" datos={reservasPorEstado} tipo="reservas" />
             </section>

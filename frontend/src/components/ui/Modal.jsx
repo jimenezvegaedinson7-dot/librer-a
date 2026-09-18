@@ -49,13 +49,13 @@ export function Modal({
                         transition={{ duration: reducirMovimiento ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
                         role="dialog"
                         aria-modal="true"
-                        className={`modal-panel relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl ${
+                        className={`modal-panel relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-2xl ${
                             grande ? 'max-w-3xl' : 'max-w-lg'
                         }`}
                     >
                         <div className="modal-header flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
-                            <div className="min-w-0 border-l-[3px] border-primary-600 pl-3">
-                                <h2 className="text-base font-extrabold tracking-tight text-slate-900">{titulo}</h2>
+                            <div className="min-w-0">
+                                <h2 className="text-base font-semibold text-slate-900">{titulo}</h2>
                                 {subtitulo && <p className="mt-0.5 text-xs font-medium text-slate-500">{subtitulo}</p>}
                             </div>
                             <Button

@@ -85,22 +85,22 @@ function SalesChart({
     };
 
     return (
-        <section className="overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
 
             {/* ========================================
                 CABECERA
             ======================================== */}
-            <div className="flex flex-col gap-2 border-b border-slate-300 bg-slate-50/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 
                 <div className="flex items-center gap-2.5">
 
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-sm text-emerald-700">
+                    <div className="flex h-8 w-8 items-center justify-center text-sm text-primary-700">
                         <FaChartColumn />
                     </div>
 
                     <div>
 
-                        <h3 className="text-sm font-bold text-slate-900">
+                        <h3 className="text-sm font-semibold text-slate-900">
                             Ventas por mes
                         </h3>
 
@@ -112,7 +112,7 @@ function SalesChart({
 
                 </div>
 
-                <span className="w-fit rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                <span className="w-fit text-xs text-slate-500">
                     {datos.length}{' '}
                     {datos.length === 1
                         ? 'mes'
@@ -126,25 +126,25 @@ function SalesChart({
             ======================================== */}
             <div className="grid grid-cols-2 gap-2 border-b border-slate-200 px-4 py-3">
 
-                <div className="rounded-lg bg-slate-50 px-3 py-2">
+                <div className="px-3 py-2">
 
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                    <p className="text-xs font-medium text-slate-500">
                         Total período
                     </p>
 
-                    <p className="mt-1 text-base font-bold text-slate-800">
+                    <p className="mt-1 text-base font-semibold text-slate-800">
                         S/ {totalPeriodo.toFixed(2)}
                     </p>
 
                 </div>
 
-                <div className="rounded-lg bg-emerald-50 px-3 py-2">
+                <div className="border-l border-slate-200 px-3 py-2">
 
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-500">
+                    <p className="text-xs font-medium text-slate-500">
                         Mejor mes
                     </p>
 
-                    <p className="mt-1 text-base font-bold text-emerald-700">
+                    <p className="mt-1 text-base font-semibold text-slate-800">
                         {mejorMes
                             ? `${mejorMes.mes} ${mejorMes.anio}`
                             : 'Sin datos'}
@@ -216,7 +216,7 @@ function SalesChart({
                                             </div>
 
                                             <div
-                                                className={`w-full max-w-7 rounded-t-md transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-md ${
+                                                className={`w-full max-w-7 rounded-t-sm ${
                                                     index ===
                                                     datos.length - 1
                                                         ? 'bg-emerald-600'

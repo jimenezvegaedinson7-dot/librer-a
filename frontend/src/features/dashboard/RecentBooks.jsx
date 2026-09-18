@@ -42,21 +42,21 @@ function RecentBooks({
     const librosRecientes = libros.slice(0, 5);
 
     return (
-        <section className="overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
 
             {/* ========================================
                 CABECERA
             ======================================== */}
-            <div className="flex flex-col gap-2 border-b border-slate-300 bg-slate-50/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 
                 <div className="flex items-center gap-2.5">
 
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-sm text-emerald-700">
+                    <div className="flex h-8 w-8 items-center justify-center text-sm text-primary-700">
                         <FaBookOpen />
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-bold text-slate-900">
+                        <h3 className="text-sm font-semibold text-slate-900">
                             Últimos libros agregados
                         </h3>
 
@@ -67,7 +67,7 @@ function RecentBooks({
 
                 </div>
 
-                <span className="w-fit rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                <span className="w-fit text-xs text-slate-500">
                     {librosRecientes.length}{' '}
                     {librosRecientes.length === 1
                         ? 'libro'
@@ -110,21 +110,21 @@ function RecentBooks({
                             ======================================== */}
                             <thead>
 
-                                <tr className="border-b-2 border-slate-300 bg-slate-50">
+                                <tr className="border-b border-slate-200 bg-slate-50">
 
-                                    <th className="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wide text-slate-700">
+                                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600">
                                         Título
                                     </th>
 
-                                    <th className="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wide text-slate-700">
+                                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600">
                                         Autor
                                     </th>
 
-                                    <th className="px-3 py-2 text-left text-[11px] font-bold uppercase tracking-wide text-slate-700">
+                                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600">
                                         Categoría
                                     </th>
 
-                                    <th className="px-3 py-2 text-center text-[11px] font-bold uppercase tracking-wide text-slate-700">
+                                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-600">
                                         Stock
                                     </th>
 
@@ -144,7 +144,7 @@ function RecentBooks({
                                     return (
                                         <tr
                                             key={libro.id_libro}
-                                            className="transition duration-200 hover:bg-emerald-50/40"
+                                            className="transition-colors hover:bg-slate-50"
                                         >
 
                                             {/* TÍTULO */}
@@ -208,7 +208,7 @@ function RecentBooks({
                             onClick={() =>
                                 navigate('/libros')
                             }
-                            className="group inline-flex items-center gap-1.5 rounded-lg border border-emerald-600 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition duration-200 hover:bg-emerald-600 hover:text-white"
+                            className="group inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-primary-700 hover:text-primary-700"
                         >
                             Ver todos
 

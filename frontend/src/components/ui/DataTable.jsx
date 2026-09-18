@@ -1,5 +1,4 @@
 import { FaSort, FaSortDown, FaSortUp } from 'react-icons/fa6';
-import { motion, useReducedMotion } from 'motion/react';
 
 export function DataTable({
     columnas,
@@ -11,7 +10,6 @@ export function DataTable({
     onOrdenar = null,
     onFilaClick = null,
 }) {
-    const reducirMovimiento = useReducedMotion();
     const filaClickable = typeof onFilaClick === 'function';
     const renderEncabezado = (col) => {
         if (!col.ordenable || !onOrdenar || !col.campo) return col.titulo;
@@ -24,7 +22,7 @@ export function DataTable({
                 type="button"
                 onClick={() => onOrdenar(col.campo)}
                 title={`Ordenar por ${col.titulo}`}
-                className={`inline-flex items-center gap-1.5 uppercase tracking-wider transition ${
+                className={`inline-flex items-center gap-1.5 transition-colors ${
                     activo ? 'text-primary-700' : 'text-slate-500 hover:text-primary-600'
                 }`}
             >
@@ -35,19 +33,14 @@ export function DataTable({
     };
 
     return (
-        <motion.div
-            initial={reducirMovimiento ? false : { opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.28, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
-            className="data-table-shell overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm"
-        >
+        <div className="data-table-shell overflow-x-auto bg-white">
             <table className="min-w-full border-collapse">
                 <thead>
                     <tr className="bg-slate-50/80">
                         {columnas.map((col, i) => (
                             <th
                                 key={i}
-                                className={`border-b border-slate-200 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 ${
+                                className={`border-b border-slate-200 px-4 py-3 text-xs font-semibold text-slate-600 ${
                                     col.alineacion === 'centro' ? 'text-center' : 'text-left'
                                 }`}
                             >
@@ -55,7 +48,7 @@ export function DataTable({
                             </th>
                         ))}
                         {acciones && (
-                            <th className="border-b border-slate-200 px-4 py-2.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                            <th className="border-b border-slate-200 px-4 py-3 text-center text-xs font-semibold text-slate-600">
                                 Acciones
                             </th>
                         )}
@@ -97,6 +90,6 @@ export function DataTable({
                     )}
                 </tbody>
             </table>
-        </motion.div>
+        </div>
     );
 }

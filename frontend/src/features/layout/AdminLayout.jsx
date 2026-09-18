@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
@@ -18,8 +17,6 @@ function obtenerTemaInicial() {
 export default function AdminLayout() {
     const [sidebarAbierto, setSidebarAbierto] = useState(false);
     const [tema, setTema] = useState(obtenerTemaInicial);
-    const { pathname } = useLocation();
-    const reducirMovimiento = useReducedMotion();
 
     const abrirSidebar = () => setSidebarAbierto(true);
     const cerrarSidebar = () => setSidebarAbierto(false);
@@ -47,18 +44,9 @@ export default function AdminLayout() {
                 <main className="admin-main px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
                     <div className="mx-auto w-full max-w-[1600px]">
                         <Breadcrumbs />
-                        <AnimatePresence mode="wait" initial={false}>
-                            <motion.div
-                                key={pathname}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: reducirMovimiento ? 0 : 0.2, ease: 'easeOut' }}
-                                className="pt-1"
-                            >
-                                <Outlet />
-                            </motion.div>
-                        </AnimatePresence>
+                        <div className="pt-1">
+                            <Outlet />
+                        </div>
                     </div>
                 </main>
             </div>

@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-sans: "Segoe UI", ui-sans-serif, system-ui, -apple-system, Roboto, sans-serif;
 
-    --color-surface: #eef2ef;
-    --color-surface-50: #f8faf9;
+    --color-surface: #f3f5f4;
+    --color-surface-50: #fafbfa;
 
     --color-primary-50: #edf7f1;
     --color-primary-100: #d7eee0;
@@ -17,8 +17,8 @@
     --color-primary-800: #124730;
     --color-primary-900: #0f3a28;
 
-    --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.05);
-    --shadow-lift: 0 6px 16px -4px rgb(15 23 42 / 0.1), 0 2px 6px -2px rgb(15 23 42 / 0.04);
+    --shadow-card: 0 1px 2px rgb(15 23 42 / 0.035);
+    --shadow-lift: 0 2px 5px rgb(15 23 42 / 0.06);
     --shadow-float: 0 10px 24px -8px rgb(15 23 42 / 0.14), 0 3px 8px -3px rgb(15 23 42 / 0.05);
 }
 
@@ -44,44 +44,35 @@
 .admin-shell {
     color: var(--color-slate-800, #1e293b);
     color-scheme: light;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .admin-main {
     min-height: calc(100vh - 4rem);
-    background-image:
-        radial-gradient(circle at 100% 0%, rgb(23 111 69 / 0.065), transparent 28rem),
-        linear-gradient(rgb(255 255 255 / 0.22) 1px, transparent 1px),
-        linear-gradient(90deg, rgb(255 255 255 / 0.22) 1px, transparent 1px);
-    background-size: auto, 32px 32px, 32px 32px;
+    background-color: var(--color-surface);
 }
 
 .admin-sidebar {
-    box-shadow: 12px 0 36px -24px rgb(15 23 42 / 0.5);
+    box-shadow: none;
 }
 
 .admin-topbar {
-    box-shadow: 0 1px 0 rgb(15 23 42 / 0.02), 0 8px 24px -24px rgb(15 23 42 / 0.45);
+    box-shadow: none;
 }
 
 .admin-breadcrumbs {
     width: fit-content;
-    border-radius: 9999px;
-    border: 1px solid var(--color-slate-200, #e2e8f0);
-    background-color: rgb(255 255 255 / 0.72);
-    padding: 0.4rem 0.75rem;
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.035);
 }
 
 .page-header {
-    min-height: 4.5rem;
+    min-height: 4rem;
     border-bottom: 1px solid var(--color-slate-200, #e2e8f0);
-    padding-bottom: 1rem;
+    padding-bottom: 1.25rem;
 }
 
 .page-header-icon,
 .card-header-icon {
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.45), 0 4px 12px -8px rgb(15 23 42 / 0.3);
+    box-shadow: none;
 }
 
 .admin-shell[data-theme="dark"] {
@@ -92,15 +83,11 @@
 }
 
 .admin-shell[data-theme="dark"] .admin-main {
-    background-image:
-        radial-gradient(circle at 100% 0%, rgb(255 255 255 / 0.055), transparent 28rem),
-        linear-gradient(rgb(255 255 255 / 0.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgb(255 255 255 / 0.018) 1px, transparent 1px);
+    background-color: var(--color-surface);
 }
 
 .admin-shell[data-theme="dark"] .admin-breadcrumbs {
-    border-color: #2b2b2b;
-    background-color: rgb(17 17 17 / 0.82);
+    background-color: transparent;
 }
 
 .admin-shell[data-theme="dark"] .page-header {
@@ -121,7 +108,7 @@
 
 .admin-shell[data-theme="dark"] .card-hover:hover {
     border-color: #525252;
-    box-shadow: 0 14px 30px -16px rgb(0 0 0 / 0.85);
+    box-shadow: none;
 }
 
 .admin-shell[data-theme="dark"] .bg-slate-50,
@@ -171,26 +158,20 @@
 }
 
 .admin-shell[data-theme="dark"] .form-field-group {
-    border-color: #52525b;
-    background-color: #171717;
+    background-color: transparent;
 }
 
 .admin-shell[data-theme="dark"] .form-field-group:hover {
-    border-color: #71717a;
+    background-color: transparent;
 }
 
 .admin-shell[data-theme="dark"] .form-field-group:focus-within {
-    border-color: #f4f4f5;
-    background-color: #111111;
-    box-shadow: 0 0 0 2px rgb(255 255 255 / 0.12);
+    background-color: transparent;
+    box-shadow: none;
 }
 
 .admin-shell[data-theme="dark"] .form-field-group:focus-within .field-label {
     color: #ffffff;
-}
-
-.admin-shell[data-theme="dark"] .field-label::before {
-    background-color: #f4f4f5;
 }
 
 .admin-shell[data-theme="dark"] .field::placeholder {
@@ -268,15 +249,7 @@
 }
 
 .admin-shell[data-theme="dark"] .sidebar-nav-active {
-    color: #090909;
-}
-
-.admin-shell[data-theme="dark"] .sidebar-nav-active [class~="bg-white/15"] {
-    background-color: rgb(9 9 9 / 0.1);
-}
-
-.admin-shell[data-theme="dark"] .sidebar-nav-active > .bg-white {
-    background-color: #090909;
+    color: #ffffff;
 }
 
 .admin-shell[data-theme="dark"] [class~="hover:bg-slate-50"]:hover,
@@ -313,20 +286,18 @@
 
 @layer components {
     .card {
-        border-radius: 0.875rem;
-        border: 1.5px solid var(--color-slate-300, #cbd5e1);
+        border-radius: 0.5rem;
+        border: 1px solid var(--color-slate-200, #e2e8f0);
         background-color: #fff;
         box-shadow: var(--shadow-card);
     }
 
     .card-hover {
-        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        transition: border-color 0.15s ease;
     }
 
     .card-hover:hover {
-        transform: translateY(-2px);
         border-color: var(--color-slate-300, #cbd5e1);
-        box-shadow: var(--shadow-lift);
     }
 
     .card-header {
@@ -334,45 +305,41 @@
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
-        padding: 1.1rem 1.25rem;
-        border-bottom: 1px solid var(--color-slate-100, #f1f5f9);
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--color-slate-200, #e2e8f0);
         background-color: #fff;
     }
 
     .card-title {
         font-size: 0.95rem;
-        font-weight: 800;
-        letter-spacing: -0.01em;
+        font-weight: 600;
         color: var(--color-slate-900, #0f172a);
     }
 
     .card-subtitle {
         margin-top: 0.15rem;
-        font-size: 0.75rem;
+        font-size: 0.8125rem;
         line-height: 1.45;
         color: var(--color-slate-500, #64748b);
+    }
+
+    .card-header > span {
+        border: 0;
+        border-radius: 0;
+        background-color: transparent;
+        padding: 0;
+        color: var(--color-slate-500, #64748b);
+        font-weight: 500;
     }
 
     .field-label {
         display: flex;
         align-items: center;
-        gap: 0.45rem;
-        margin-bottom: 0.45rem;
-        font-size: 0.72rem;
-        font-weight: 800;
-        letter-spacing: 0.055em;
-        text-transform: uppercase;
+        gap: 0.35rem;
+        margin-bottom: 0.4rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
         color: var(--color-slate-800, #1e293b);
-        transition: color 0.18s ease;
-    }
-
-    .field-label::before {
-        width: 4px;
-        height: 0.95rem;
-        flex: 0 0 auto;
-        border-radius: 9999px;
-        background-color: var(--color-primary-600);
-        content: "";
     }
 
     .field {
@@ -380,14 +347,14 @@
         width: 100%;
         height: 2.75rem;
         border-radius: 0.375rem;
-        border: 2px solid var(--color-slate-500, #64748b) !important;
+        border: 1px solid var(--color-slate-300, #cbd5e1) !important;
         background-color: #fff;
         padding: 0.6rem 0.8rem;
         font-size: 0.875rem;
-        font-weight: 600;
+        font-weight: 400;
         color: var(--color-slate-800, #1e293b);
-        box-shadow: inset 0 1px 2px rgb(15 23 42 / 0.04);
-        transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        box-shadow: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
     textarea.field {
@@ -398,7 +365,7 @@
 
     .field::placeholder {
         color: var(--color-slate-400, #94a3b8);
-        font-weight: 500;
+        font-weight: 400;
     }
 
     .field:hover {
@@ -409,7 +376,7 @@
         outline: none;
         border-color: var(--color-primary-600) !important;
         background-color: #fff;
-        box-shadow: 0 0 0 3px rgb(23 111 69 / 0.18), inset 0 1px 1px rgb(15 23 42 / 0.025);
+        box-shadow: 0 0 0 2px rgb(23 111 69 / 0.14);
     }
 
     .field[aria-invalid="true"],
@@ -445,39 +412,17 @@
 
     .form-field-group {
         position: relative;
-        border: 1px solid var(--color-slate-300, #cbd5e1);
-        border-radius: 0.5rem;
-        background-color: var(--color-slate-50, #f8fafc);
-        padding: 0.75rem;
-        transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    .form-field-group:hover {
-        border-color: var(--color-slate-500, #64748b);
-    }
-
-    .form-field-group:focus-within {
-        border-color: var(--color-primary-600);
-        background-color: #ffffff;
-        box-shadow: 0 0 0 2px rgb(23 111 69 / 0.1);
-    }
-
-    .form-field-group:focus-within .field-label {
-        color: var(--color-primary-700);
     }
 
     .formal-form,
     .modal-body form {
-        border-radius: 0.75rem;
+        border-radius: 0.5rem;
     }
 
     .form-actions {
         margin-top: 1.35rem;
-        background-color: var(--color-slate-50, #f8fafc);
-        margin-inline: -1.25rem;
-        margin-bottom: -1.25rem;
-        padding: 1rem 1.25rem;
-        border-radius: 0 0 0.875rem 0.875rem;
+        background-color: transparent;
+        padding-top: 1rem;
     }
 }
 
@@ -485,7 +430,7 @@
 .admin-shell form select,
 .admin-shell form textarea {
     font-family: var(--font-sans);
-    font-weight: 600;
+    font-weight: 400;
 }
 
 .admin-shell input[type="number"],
@@ -495,55 +440,79 @@
 }
 
 .admin-shell table th {
-    font-weight: 800;
+    font-weight: 600;
 }
 
 .admin-shell table td {
-    font-weight: 500;
+    font-weight: 400;
+}
+
+.summary-strip > span {
+    border-color: var(--color-slate-200, #e2e8f0) !important;
+    border-radius: 0.375rem !important;
+    background-color: #fff !important;
+    color: var(--color-slate-600, #475569) !important;
+    padding: 0.5rem 0.75rem !important;
+}
+
+.summary-strip > span > span {
+    color: var(--color-slate-900, #0f172a) !important;
+    font-weight: 600 !important;
+}
+
+.admin-shell[data-theme="dark"] .summary-strip > span {
+    border-color: #2b2b2b !important;
+    background-color: #111111 !important;
+    color: #a1a1aa !important;
+}
+
+.admin-shell[data-theme="dark"] .summary-strip > span > span {
+    color: #fafafa !important;
 }
 
 .data-table-shell {
-    border-color: var(--color-slate-400, #94a3b8);
-    box-shadow: 0 8px 24px -20px rgb(15 23 42 / 0.35);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .admin-form-card {
-    border: 2px solid var(--color-slate-400, #94a3b8);
+    border: 1px solid var(--color-slate-200, #e2e8f0);
 }
 
 .card:has(form),
 .modal-panel:has(form) {
-    border-width: 2px;
-    border-color: var(--color-slate-400, #94a3b8);
+    border-width: 1px;
+    border-color: var(--color-slate-200, #e2e8f0);
 }
 
 .admin-form-card > .card-header {
-    border-bottom: 2px solid var(--color-slate-400, #94a3b8);
-    background-color: var(--color-primary-50);
+    border-bottom: 1px solid var(--color-slate-200, #e2e8f0);
+    background-color: var(--color-slate-50, #f8fafc);
 }
 
 .card:has(form) > .card-header {
-    border-bottom-width: 2px;
-    border-bottom-color: var(--color-slate-400, #94a3b8);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--color-slate-200, #e2e8f0);
 }
 
 .data-table-shell thead tr {
-    background-color: var(--color-primary-800) !important;
+    background-color: var(--color-slate-50, #f8fafc) !important;
 }
 
 .data-table-shell thead th {
-    border-bottom-width: 2px;
-    border-color: var(--color-primary-900);
-    color: #ffffff !important;
+    border-bottom-width: 1px;
+    border-color: var(--color-slate-200, #e2e8f0);
+    color: var(--color-slate-600, #475569) !important;
 }
 
 .data-table-shell thead th button,
 .data-table-shell thead th svg {
-    color: #ffffff !important;
+    color: inherit !important;
 }
 
 .data-table-shell tbody td {
-    border-right: 1px solid var(--color-slate-200, #e2e8f0);
+    border-right: 0;
 }
 
 .data-table-shell tbody td:last-child {
@@ -551,20 +520,20 @@
 }
 
 .data-table-shell tbody tr {
-    transition: background-color 0.16s ease, box-shadow 0.16s ease;
+    transition: background-color 0.15s ease;
 }
 
 .data-table-shell tbody tr:hover {
-    box-shadow: inset 3px 0 0 var(--color-primary-500);
+    box-shadow: none;
 }
 
 .detail-tile {
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    transition: border-color 0.15s ease;
 }
 
 .detail-tile:hover {
     border-color: var(--color-slate-300, #cbd5e1);
-    box-shadow: 0 6px 18px -14px rgb(15 23 42 / 0.3);
+    box-shadow: none;
 }
 
 .modal-header {
@@ -591,73 +560,29 @@
     }
 }
 
-@keyframes aparecer-pagina {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes abrir-modal {
-    from {
-        opacity: 0;
-        transform: translateY(10px) scale(0.985);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes revelar-tema {
-    from {
-        opacity: 0;
-        transform: rotate(-35deg) scale(0.65);
-    }
-    to {
-        opacity: 1;
-        transform: rotate(0) scale(1);
-    }
-}
-
-.page-enter {
-    animation: aparecer-pagina 0.28s ease-out both;
-}
-
 .animate-suave {
-    animation: aparecer 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: aparecer 0.15s ease-out both;
     transform-origin: top right;
 }
 
-.animate-modal {
-    animation: abrir-modal 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
 .animate-solapa {
-    animation: aparecer 0.18s ease-out both;
+    animation: aparecer 0.15s ease-out both;
 }
 
 .theme-toggle {
-    transition: transform 0.2s ease, color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .theme-toggle:hover {
-    transform: translateY(-1px);
+    background-color: var(--color-slate-50, #f8fafc);
 }
 
 .theme-toggle:active {
-    transform: scale(0.94);
+    background-color: var(--color-slate-100, #f1f5f9);
 }
 
 .theme-icon {
     display: flex;
-    animation: revelar-tema 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.admin-nav-item:hover .admin-nav-icon {
-    transform: translateX(2px) scale(1.04);
 }
 
 .admin-shell button:focus-visible,

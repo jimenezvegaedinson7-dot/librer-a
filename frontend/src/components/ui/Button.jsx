@@ -2,9 +2,9 @@ import { Spinner } from './Spinner';
 
 const variantes = {
     primary:
-        'bg-primary-600 text-white shadow-sm hover:-translate-y-px hover:bg-primary-700 hover:shadow-md focus-visible:ring-primary-300 active:translate-y-0 active:bg-primary-800',
+        'border border-primary-700 bg-primary-700 text-white hover:bg-primary-800 focus-visible:ring-primary-300 active:bg-primary-900',
     secondary:
-        'border border-slate-300 bg-white text-slate-700 shadow-sm hover:-translate-y-px hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-slate-200 active:translate-y-0 active:bg-slate-100',
+        'border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-slate-200 active:bg-slate-100',
     ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-800 focus-visible:ring-slate-200',
     danger:
         'bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-300 active:bg-red-800',
@@ -31,7 +31,7 @@ export function Button({
     ...props
 }) {
     const clases = [
-        'inline-flex items-center justify-center font-bold tracking-[0.01em] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0',
+        'inline-flex items-center justify-center font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60',
         variantes[variante],
         tamanos[tamano],
         bloque ? 'w-full' : '',
