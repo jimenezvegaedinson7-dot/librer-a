@@ -285,11 +285,11 @@ export default function VentaForm({ onVentaCreada }) {
             <CardHeader
                 titulo="Registrar venta"
                 subtitulo="Agrega los libros que formarán parte de la venta."
-                acciones={<span className="rounded-full bg-emerald-100 px-4 py-1 text-xs font-semibold text-emerald-700">Nueva venta</span>}
+                acciones={<span className="text-xs font-medium text-slate-500">Nueva venta</span>}
             />
             <CardBody>
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                    <div className="flex h-10 w-10 items-center justify-center text-primary-700">
                         <FaCartPlus />
                     </div>
                 </div>
@@ -513,9 +513,9 @@ export default function VentaForm({ onVentaCreada }) {
                                 {costoEnvio > 0 ? formatearMoneda(costoEnvio) : 'Gratis'}
                             </span>
                         </div>
-                        <div className="flex items-center justify-between border-t border-emerald-200 pt-2">
-                            <span className="text-sm font-bold text-emerald-700">Total</span>
-                            <span className="text-xl font-bold text-emerald-800">{formatearMoneda(totalGeneral)}</span>
+                        <div className="flex items-center justify-between border-t border-slate-300 pt-2">
+                            <span className="text-sm font-semibold text-slate-700">Total</span>
+                            <span className="text-xl font-semibold text-slate-900">{formatearMoneda(totalGeneral)}</span>
                         </div>
                     </div>
                 </div>

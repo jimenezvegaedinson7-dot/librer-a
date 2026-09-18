@@ -266,7 +266,7 @@ export default function HistorialPage() {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <Contador titulo="Total de registros" valor={totalRegistros} clase="border-slate-300 bg-white text-slate-800" />
-                <Contador titulo="Registros creados" valor={totalCreaciones} clase="border-emerald-200 bg-emerald-50 text-emerald-700" />
+                <Contador titulo="Registros creados" valor={totalCreaciones} clase="border-slate-200 bg-white text-slate-700" />
                 <Contador titulo="Registros actualizados" valor={totalActualizaciones} clase="border-amber-200 bg-amber-50 text-amber-700" />
                 <Contador titulo="Registros eliminados" valor={totalEliminaciones} clase="border-red-200 bg-red-50 text-red-700" />
             </div>

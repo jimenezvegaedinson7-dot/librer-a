@@ -3,19 +3,19 @@
 @theme {
     --font-sans: "Segoe UI", ui-sans-serif, system-ui, -apple-system, Roboto, sans-serif;
 
-    --color-surface: #f3f5f4;
-    --color-surface-50: #fafbfa;
+    --color-surface: #f4f5f7;
+    --color-surface-50: #fafafa;
 
-    --color-primary-50: #edf7f1;
-    --color-primary-100: #d7eee0;
-    --color-primary-200: #b2ddc4;
-    --color-primary-300: #7ec49c;
-    --color-primary-400: #46a873;
-    --color-primary-500: #238a57;
-    --color-primary-600: #176f45;
-    --color-primary-700: #14593a;
-    --color-primary-800: #124730;
-    --color-primary-900: #0f3a28;
+    --color-primary-50: #f3f6f9;
+    --color-primary-100: #e5ebf1;
+    --color-primary-200: #cbd7e3;
+    --color-primary-300: #a8b9ca;
+    --color-primary-400: #7f96ad;
+    --color-primary-500: #5d7791;
+    --color-primary-600: #405d79;
+    --color-primary-700: #30485f;
+    --color-primary-800: #23384d;
+    --color-primary-900: #17293b;
 
     --shadow-card: 0 1px 2px rgb(15 23 42 / 0.035);
     --shadow-lift: 0 2px 5px rgb(15 23 42 / 0.06);
@@ -376,7 +376,7 @@
         outline: none;
         border-color: var(--color-primary-600) !important;
         background-color: #fff;
-        box-shadow: 0 0 0 2px rgb(23 111 69 / 0.14);
+        box-shadow: 0 0 0 2px rgb(48 72 95 / 0.14);
     }
 
     .field[aria-invalid="true"],

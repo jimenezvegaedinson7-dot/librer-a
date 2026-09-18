@@ -31,8 +31,8 @@ const operacionEstilo = (item) => {
     const descripcion = String(item.descripcion || '').toLowerCase();
     if (descripcion.includes('cancelad')) return { icono: <FaXmark />, clase: 'bg-red-100 text-red-600' };
     if (descripcion.includes('pagada') || descripcion.includes('completada') || descripcion.includes('confirmada'))
-        return { icono: <FaCirclePlus />, clase: 'bg-emerald-100 text-emerald-600' };
-    if (tipo === 'CREAR') return { icono: <FaCirclePlus />, clase: 'bg-emerald-100 text-emerald-600' };
+        return { icono: <FaCirclePlus />, clase: 'bg-primary-100 text-primary-700' };
+    if (tipo === 'CREAR') return { icono: <FaCirclePlus />, clase: 'bg-primary-100 text-primary-700' };
     if (tipo === 'ACTUALIZAR') return { icono: <FaPenToSquare />, clase: 'bg-amber-100 text-amber-600' };
     if (tipo === 'ELIMINAR') return { icono: <FaTrash />, clase: 'bg-red-100 text-red-600' };
     return { icono: <FaBell />, clase: 'bg-slate-100 text-slate-600' };

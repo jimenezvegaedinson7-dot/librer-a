@@ -87,11 +87,11 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
                         <FaMoneyBillWave /> Monto total
                     </div>
-                    <p className="mt-2 text-2xl font-bold text-emerald-800">{formatearMoneda(pago.monto_total)}</p>
+                    <p className="mt-2 text-2xl font-semibold text-slate-900">{formatearMoneda(pago.monto_total)}</p>
                 </div>
 
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">

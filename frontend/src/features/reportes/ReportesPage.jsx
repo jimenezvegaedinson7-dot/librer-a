@@ -256,7 +256,7 @@ export default function ReportesPage() {
                                     titulo="Venta más alta"
                                     valor={formatearMoneda(indicadores.venta_mayor)}
                                     detalle="Mayor venta pagada"
-                                    clase="border-emerald-200 bg-emerald-50 text-emerald-700"
+                                    clase="border-slate-200 bg-white text-slate-700"
                                 />
                             </div>
 
@@ -315,7 +315,7 @@ export default function ReportesPage() {
                                                         className="group relative flex h-full min-w-[48px] flex-1 items-end justify-center"
                                                     >
                                                         <div
-                                                            className="relative w-8 rounded-t-md bg-emerald-500 transition-all duration-300 hover:bg-emerald-600"
+                                                            className="relative w-8 rounded-t-md bg-primary-500 transition-all duration-300 hover:bg-primary-600"
                                                             style={{ height: `${porcentaje}%` }}
                                                         >
                                                             <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block">
@@ -346,7 +346,7 @@ export default function ReportesPage() {
                                                     <tr key={`tabla-${item.anio}-${item.mes_numero}`} className="transition hover:bg-slate-50">
                                                         <td className="px-3 py-2.5 text-xs font-semibold text-slate-700">{item.mes} {item.anio}</td>
                                                         <td className="px-3 py-2.5 text-center text-xs font-semibold text-slate-700">{item.cantidad_ventas}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs font-bold text-emerald-700">{formatearMoneda(item.total_vendido)}</td>
+                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-slate-800">{formatearMoneda(item.total_vendido)}</td>
                                                         <td className="px-3 py-2.5 text-right text-xs text-slate-700">{formatearMoneda(item.promedio_venta)}</td>
                                                     </tr>
                                                 ))}
@@ -410,7 +410,7 @@ export default function ReportesPage() {
                                                     <tr key={`dia-${String(item.fecha)}`} className="hover:bg-slate-50">
                                                         <td className="px-3 py-2.5 text-xs font-semibold text-slate-700">{formatearFechaReportes(item.fecha)}</td>
                                                         <td className="px-3 py-2.5 text-center text-xs font-semibold text-slate-700">{item.cantidad_ventas}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs font-bold text-emerald-700">{formatearMoneda(item.total_vendido)}</td>
+                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-slate-800">{formatearMoneda(item.total_vendido)}</td>
                                                         <td className="px-3 py-2.5 text-right text-xs text-slate-700">{formatearMoneda(item.promedio_venta)}</td>
                                                         <td className="px-3 py-2.5 text-right text-xs font-semibold text-slate-700">{formatearMoneda(item.venta_mayor)}</td>
                                                     </tr>
@@ -436,8 +436,8 @@ export default function ReportesPage() {
                                 <TarjetaResumen icono={<FaUserPen />} titulo="Autores" valor={resumen.total_autores || 0} clase="border-violet-200 bg-violet-50 text-violet-700" />
                                 <TarjetaResumen icono={<FaTags />} titulo="Categorías" valor={resumen.total_categorias || 0} clase="border-indigo-200 bg-indigo-50 text-indigo-700" />
                                 <TarjetaResumen icono={<FaUsers />} titulo="Usuarios" valor={resumen.total_usuarios || 0} clase="border-cyan-200 bg-cyan-50 text-cyan-700" />
-                                <TarjetaResumen icono={<FaCartShopping />} titulo="Ventas pagadas" valor={resumen.total_ventas || 0} clase="border-emerald-200 bg-emerald-50 text-emerald-700" />
-                                <TarjetaResumen icono={<FaMoneyBillWave />} titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} clase="border-emerald-200 bg-emerald-50 text-emerald-700" />
+                                <TarjetaResumen icono={<FaCartShopping />} titulo="Ventas pagadas" valor={resumen.total_ventas || 0} />
+                                <TarjetaResumen icono={<FaMoneyBillWave />} titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} />
                                 <TarjetaResumen icono={<FaCalendarCheck />} titulo="Reservas" valor={resumen.total_reservas || 0} clase="border-amber-200 bg-amber-50 text-amber-700" />
                                 <TarjetaResumen icono={<FaTriangleExclamation />} titulo="Stock bajo" valor={resumen.libros_stock_bajo || 0} clase="border-red-200 bg-red-50 text-red-700" />
                             </div>
@@ -522,7 +522,7 @@ export default function ReportesPage() {
                                                     <td className="px-3 py-2.5 text-center text-xs font-semibold text-slate-700">#{index + 1}</td>
                                                     <td className="px-3 py-2.5 text-xs font-semibold text-slate-800">{libro.titulo}</td>
                                                     <td className="px-3 py-2.5 text-center">
-                                                        <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
+                                                        <span className="inline-flex rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
                                                             {libro.cantidad_vendida}
                                                         </span>
                                                     </td>

@@ -86,13 +86,13 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
             )}
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
                         <FaMoneyBillWave /> Total
                     </div>
-                    <p className="mt-2 text-2xl font-bold text-emerald-800">{formatearMoneda(venta.total)}</p>
+                    <p className="mt-2 text-2xl font-semibold text-slate-900">{formatearMoneda(venta.total)}</p>
                     {Number(venta.costo_envio || 0) > 0 && (
-                        <p className="mt-1 text-xs text-emerald-700">
+                        <p className="mt-1 text-xs text-slate-500">
                             Incluye envío: {formatearMoneda(venta.costo_envio)}
                         </p>
                     )}

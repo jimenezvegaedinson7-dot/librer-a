@@ -37,11 +37,11 @@ export default function ClienteViewModal({ cliente, abierto, onCerrar }) {
                     <p className="mt-2 text-2xl font-bold text-sky-800">{Number(cliente.numero_compras || 0)}</p>
                 </div>
 
-                <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
                         <FaMoneyBillWave /> Total gastado
                     </div>
-                    <p className="mt-2 text-2xl font-bold text-emerald-800">{formatearMoneda(Number(cliente.total_gastado || 0))}</p>
+                    <p className="mt-2 text-2xl font-semibold text-slate-900">{formatearMoneda(Number(cliente.total_gastado || 0))}</p>
                 </div>
             </div>
 

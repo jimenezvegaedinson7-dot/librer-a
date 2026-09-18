@@ -219,8 +219,8 @@ function SalesChart({
                                                 className={`w-full max-w-7 rounded-t-sm ${
                                                     index ===
                                                     datos.length - 1
-                                                        ? 'bg-emerald-600'
-                                                        : 'bg-emerald-400'
+                                                        ? 'bg-primary-700'
+                                                        : 'bg-primary-400'
                                                 }`}
                                                 style={{
                                                     height:
@@ -274,7 +274,7 @@ function SalesChart({
 
                     <div className="flex items-center gap-2">
 
-                        <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        <span className="h-2 w-2 rounded-full bg-primary-500" />
 
                         <span className="text-[11px] text-slate-600">
                             Total vendido por mes
