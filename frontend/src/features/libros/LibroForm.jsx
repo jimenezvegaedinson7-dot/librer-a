@@ -171,12 +171,6 @@ export default function LibroForm({ onLibroCreado }) {
                 )}
 
                 <form onSubmit={guardarLibro} className="space-y-4" noValidate>
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-700">
-                            <FaBookOpen />
-                        </div>
-                    </div>
-
                     {cargandoCatalogo ? (
                         <p className="text-sm text-slate-600">Cargando autores y categorías...</p>
                     ) : (
