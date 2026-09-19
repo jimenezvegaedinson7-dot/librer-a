@@ -25,7 +25,7 @@ function Sidebar({ abierto = false, onCerrar }) {
             }`}
         >
             <div className="relative mb-3 flex items-center gap-3 border-b border-slate-800 px-2 pb-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center p-1">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center">
                     <img src={logoLibreria} alt="Logo Librería" className="h-full w-full object-contain" />
                 </div>
                 <div className="min-w-0">
