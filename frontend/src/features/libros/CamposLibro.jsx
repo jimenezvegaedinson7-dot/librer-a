@@ -1,8 +1,9 @@
 import { FaImage, FaXmark } from 'react-icons/fa6';
 
 import { Input, Select, Textarea } from '../../components/ui/Form';
+import { Spinner } from '../../components/ui/Spinner';
 
-export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQuitar, inputRef }) {
+export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQuitar, inputRef, cargando = false }) {
     return (
         <div>
             <label className="field-label">Portada</label>
@@ -21,6 +22,12 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                             <span className="mt-2 text-xs">Sin portada</span>
                         </div>
                     )}
+                    {cargando && imagen && (
+                        <div className="upload-overlay absolute inset-0 flex flex-col items-center justify-center gap-2" role="status">
+                            <Spinner className="text-amber-700" />
+                            <span className="text-xs font-semibold text-slate-800">Subiendo portada...</span>
+                        </div>
+                    )}
                 </div>
 
                 <div>
@@ -32,6 +39,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                             type="file"
                             accept="image/jpeg,image/png,image/webp"
                             onChange={onCambiar}
+                            disabled={cargando}
                             className="hidden"
                         />
                     </label>
@@ -48,6 +56,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                             >
                                 <FaXmark /> Cancelar cambio
                             </button>
+                            {cargando && <div className="upload-progress mt-3" aria-hidden="true"><span /></div>}
                         </div>
                     )}
                 </div>

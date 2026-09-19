@@ -2,9 +2,9 @@ import { Spinner } from './Spinner';
 
 const variantes = {
     primary:
-        'border border-primary-700 bg-primary-700 text-white hover:bg-primary-800 focus-visible:ring-primary-300 active:bg-primary-900',
+        'admin-primary-button border border-primary-700 bg-primary-700 text-white hover:bg-primary-800 focus-visible:ring-primary-300 active:bg-primary-900',
     secondary:
-        'border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-slate-200 active:bg-slate-100',
+        'admin-secondary-button border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-slate-200 active:bg-slate-100',
     ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-800 focus-visible:ring-slate-200',
     danger:
         'bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-300 active:bg-red-800',
@@ -31,9 +31,10 @@ export function Button({
     ...props
 }) {
     const clases = [
-        'inline-flex items-center justify-center font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60',
+        'relative inline-flex items-center justify-center overflow-hidden font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60',
         variantes[variante],
         tamanos[tamano],
+        cargando ? 'button-loading' : '',
         bloque ? 'w-full' : '',
         className,
     ]
@@ -41,7 +42,7 @@ export function Button({
         .join(' ');
 
     return (
-        <button type={type} className={clases} disabled={disabled || cargando} {...props}>
+        <button type={type} className={clases} disabled={disabled || cargando} aria-busy={cargando} {...props}>
             {cargando ? <Spinner tamano="sm" /> : icono}
             {children}
         </button>

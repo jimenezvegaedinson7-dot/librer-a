@@ -197,6 +197,7 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
                     onCambiar={manejarImagen}
                     onQuitar={cancelarNuevaImagen}
                     inputRef={inputArchivoRef}
+                    cargando={guardando}
                 />
 
                 <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">

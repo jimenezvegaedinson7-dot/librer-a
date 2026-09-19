@@ -333,10 +333,11 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                                     </Button>
                                     {fotoSeleccionada && (
                                         <Button variante="primary" cargando={subiendoFoto} onClick={subirFoto}>
-                                            Guardar foto
+                                            {subiendoFoto ? 'Subiendo foto...' : 'Guardar foto'}
                                         </Button>
                                     )}
                                 </div>
+                                {subiendoFoto && <div className="upload-progress mt-3" role="progressbar" aria-label="Subiendo foto"><span /></div>}
                                 <p className="mt-2 text-xs text-slate-600">JPG, PNG o WEBP. Máximo 5 MB.</p>
                             </div>
                         </div>

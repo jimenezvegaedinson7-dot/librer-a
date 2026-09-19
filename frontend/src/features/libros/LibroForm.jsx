@@ -196,6 +196,7 @@ export default function LibroForm({ onLibroCreado }) {
                                 onCambiar={manejarImagen}
                                 onQuitar={quitarImagen}
                                 inputRef={inputArchivoRef}
+                                cargando={guardando}
                             />
                         </>
                     )}
