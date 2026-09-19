@@ -6,16 +6,16 @@
     --color-surface: #f4f5f7;
     --color-surface-50: #fafafa;
 
-    --color-primary-50: #f3f6f9;
-    --color-primary-100: #e5ebf1;
-    --color-primary-200: #cbd7e3;
-    --color-primary-300: #a8b9ca;
-    --color-primary-400: #7f96ad;
-    --color-primary-500: #5d7791;
-    --color-primary-600: #405d79;
-    --color-primary-700: #30485f;
-    --color-primary-800: #23384d;
-    --color-primary-900: #17293b;
+    --color-primary-50: #f7f7f7;
+    --color-primary-100: #eeeeef;
+    --color-primary-200: #d9dadd;
+    --color-primary-300: #b9bbc1;
+    --color-primary-400: #93969e;
+    --color-primary-500: #747780;
+    --color-primary-600: #5b5e66;
+    --color-primary-700: #44474e;
+    --color-primary-800: #303238;
+    --color-primary-900: #202227;
 
     --shadow-card: 0 1px 2px rgb(15 23 42 / 0.035);
     --shadow-lift: 0 2px 5px rgb(15 23 42 / 0.06);
@@ -376,7 +376,7 @@
         outline: none;
         border-color: var(--color-primary-600) !important;
         background-color: #fff;
-        box-shadow: 0 0 0 2px rgb(48 72 95 / 0.14);
+        box-shadow: 0 0 0 2px rgb(68 71 78 / 0.14);
     }
 
     .field[aria-invalid="true"],
