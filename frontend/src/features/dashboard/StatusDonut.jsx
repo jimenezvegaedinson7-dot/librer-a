@@ -74,7 +74,7 @@ function StatusDonut({
             : 'conic-gradient(#e2e8f0 0% 100%)';
 
     return (
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
+        <section className="dashboard-panel rounded-lg border border-slate-200 bg-white p-4">
 
             <div className="mb-3">
 

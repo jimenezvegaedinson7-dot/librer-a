@@ -42,7 +42,7 @@ function RecentBooks({
     const librosRecientes = libros.slice(0, 5);
 
     return (
-        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <section className="dashboard-panel overflow-hidden rounded-lg border border-slate-200 bg-white">
 
             {/* ========================================
                 CABECERA

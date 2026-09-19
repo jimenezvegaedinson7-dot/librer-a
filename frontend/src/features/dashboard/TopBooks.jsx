@@ -12,7 +12,7 @@ function TopBooks({
             : [];
 
     return (
-        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <section className="dashboard-panel h-full overflow-hidden rounded-lg border border-slate-200 bg-white">
 
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
 

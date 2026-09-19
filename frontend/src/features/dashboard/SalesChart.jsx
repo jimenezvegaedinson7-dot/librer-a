@@ -85,7 +85,7 @@ function SalesChart({
     };
 
     return (
-        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <section className="dashboard-panel h-full overflow-hidden rounded-lg border border-slate-200 bg-white">
 
             {/* ========================================
                 CABECERA

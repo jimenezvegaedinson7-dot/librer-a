@@ -92,31 +92,74 @@ export default function DashboardPage() {
     if (!resumen) return null;
 
     return (
-        <div className="space-y-4">
+        <div className="dashboard-page space-y-6">
             <PageHeader titulo="Resumen" descripcion="Indicadores generales y actividad reciente de la librería" />
 
-            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <StatCard titulo="Total de libros" valor={resumen.total_libros} icono={<FaBook />} color="primary" />
-                <StatCard titulo="Autores" valor={resumen.total_autores} icono={<FaUserPen />} color="info" />
-                <StatCard titulo="Categorías" valor={resumen.total_categorias} icono={<FaTags />} color="warning" />
-                <StatCard titulo="Reservas" valor={resumen.total_reservas} icono={<FaCalendarCheck />} color="success" />
-                <StatCard titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} icono={<FaMoneyBillTrendUp />} color="success" />
-                <StatCard titulo="Usuarios" valor={resumen.total_usuarios} icono={<FaUsers />} color="primary" />
-                <StatCard titulo="Stock bajo" valor={resumen.libros_stock_bajo} icono={<FaTriangleExclamation />} color="danger" />
-                <StatCard titulo="Ventas pagadas" valor={resumen.total_ventas} icono={<FaCircleCheck />} color="info" />
+            <section aria-labelledby="metricas-principales">
+                <div className="dashboard-section-heading">
+                    <div>
+                        <h2 id="metricas-principales">Métricas principales</h2>
+                        <p>Rendimiento comercial y alertas operativas</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <StatCard titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} icono={<FaMoneyBillTrendUp />} color="success" />
+                    <StatCard titulo="Ventas pagadas" valor={resumen.total_ventas} icono={<FaCircleCheck />} color="info" />
+                    <StatCard titulo="Reservas" valor={resumen.total_reservas} icono={<FaCalendarCheck />} color="success" />
+                    <StatCard titulo="Stock bajo" valor={resumen.libros_stock_bajo} icono={<FaTriangleExclamation />} color="danger" />
+                </div>
             </section>
 
-            <section className="grid grid-cols-1 gap-4 xl:grid-cols-[1.05fr_1fr]">
+            <section aria-labelledby="catalogo-equipo">
+                <div className="dashboard-section-heading">
+                    <div>
+                        <h2 id="catalogo-equipo">Catálogo y equipo</h2>
+                        <p>Vista general de los recursos registrados</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    <StatCard titulo="Total de libros" valor={resumen.total_libros} icono={<FaBook />} color="primary" />
+                    <StatCard titulo="Autores" valor={resumen.total_autores} icono={<FaUserPen />} color="info" />
+                    <StatCard titulo="Categorías" valor={resumen.total_categorias} icono={<FaTags />} color="warning" />
+                    <StatCard titulo="Usuarios" valor={resumen.total_usuarios} icono={<FaUsers />} color="primary" />
+                </div>
+            </section>
+
+            <section aria-labelledby="rendimiento" className="space-y-3">
+                <div className="dashboard-section-heading">
+                    <div>
+                        <h2 id="rendimiento">Rendimiento</h2>
+                        <p>Evolución de ventas y productos destacados</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
+                    <SalesChart ventasPorMes={ventasPorMes} />
+                    <TopBooks libros={librosMasVendidos} />
+                </div>
+            </section>
+
+            <section aria-labelledby="estados-operativos" className="space-y-3">
+                <div className="dashboard-section-heading">
+                    <div>
+                        <h2 id="estados-operativos">Estados operativos</h2>
+                        <p>Distribución de ventas y reservas</p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                    <StatusDonut titulo="Ventas por estado" subtitulo="Distribución real de las ventas" datos={ventasPorEstado} tipo="ventas" />
+                    <StatusDonut titulo="Reservas por estado" subtitulo="Distribución real de las reservas" datos={reservasPorEstado} tipo="reservas" />
+                </div>
+            </section>
+
+            <section aria-labelledby="actividad-reciente" className="space-y-3">
+                <div className="dashboard-section-heading">
+                    <div>
+                        <h2 id="actividad-reciente">Actividad reciente</h2>
+                        <p>Últimas incorporaciones al catálogo</p>
+                    </div>
+                </div>
                 <RecentBooks libros={libros} />
-                <SalesChart ventasPorMes={ventasPorMes} />
             </section>
-
-            <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                <StatusDonut titulo="Ventas por estado" subtitulo="Distribución real de las ventas" datos={ventasPorEstado} tipo="ventas" />
-                <StatusDonut titulo="Reservas por estado" subtitulo="Distribución real de las reservas" datos={reservasPorEstado} tipo="reservas" />
-            </section>
-
-            <TopBooks libros={librosMasVendidos} />
         </div>
     );
 }
