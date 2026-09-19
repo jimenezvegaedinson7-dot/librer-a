@@ -5,7 +5,11 @@ const crypto = require('crypto');
 const usuarioModel = require('../models/usuario.model');
 const { esEmailValido } = require('../utils/validaciones');
 const { datosPublicos } = require('./auth2fa.controller');
-const { enviarCodigoVerificacion, smtpConfigurado } = require('../utils/mailer');
+const {
+    enviarCodigoVerificacion,
+    enviarCodigoReseteo,
+    smtpConfigurado
+} = require('../utils/mailer');
 
 // ========================================
 // GENERAR CÓDIGO DE VERIFICACIÓN DE 6 DÍGITOS
@@ -317,6 +321,191 @@ const reenviarCodigo = async (req, res) => {
 };
 
 // ========================================
+// SOLICITAR CÓDIGO PARA RESTABLECER CONTRASEÑA
+// ========================================
+// Envía un código de 6 dígitos al correo del usuario. No requiere JWT.
+// Respuesta genérica intencional (no revela si el correo existe) para
+// evitar enumeración de cuentas.
+// ========================================
+const solicitarReseteo = async (req, res) => {
+    try {
+
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'El correo es obligatorio'
+            });
+        }
+
+        const emailNormalizado = String(email).trim().toLowerCase();
+
+        const usuario =
+            await usuarioModel.buscarPorEmail(emailNormalizado);
+
+        // Respuesta genérica: tanto si el correo no existe como si la cuenta
+        // no está verificada, no generamos código ni filtramos la existencia.
+        const respuestaGenerica = {
+            success: true,
+            mensaje: 'Si el correo está registrado, recibirás un código para restablecer tu contraseña.'
+        };
+
+        if (!usuario || !usuario.email_verified_at) {
+            return res.json(respuestaGenerica);
+        }
+
+        const codigo = generarCodigoVerificacion();
+        const codigoHash = await bcrypt.hash(codigo, 10);
+        const expira = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+
+        // Reutiliza las columnas del código de verificación: una cuenta ya
+        // verificada ya no usa ese campo, por lo que no hay conflicto.
+        await usuarioModel.guardarCodigoVerificacion(
+            usuario.id_usuario,
+            codigoHash,
+            expira
+        );
+
+        // Enviar el código por correo (fire-and-forget, no bloquear la respuesta)
+        enviarCodigoReseteo({
+            destinatario: emailNormalizado,
+            codigo,
+            nombre: usuario.nombre || ''
+        }).catch(errorCorreo => {
+            console.error('No se pudo enviar el código de reseteo:', errorCorreo.message);
+        });
+
+        return res.json(respuestaGenerica);
+
+    } catch (error) {
+
+        console.error('Error al solicitar reseteo:', error);
+
+        res.status(500).json({
+            success: false,
+            mensaje: 'Error al solicitar el restablecimiento'
+        });
+    }
+};
+
+// ========================================
+// RESTABLECER CONTRASEÑA (validar código + nueva clave)
+// ========================================
+// Valida el código de 6 dígitos enviado por correo y actualiza la
+// contraseña. No requiere JWT: la posesión del código recibido en el
+// correo del usuario es la prueba de control de la cuenta.
+// ========================================
+const reestablecerContrasena = async (req, res) => {
+    try {
+
+        const {
+            email,
+            codigo,
+            password
+        } = req.body;
+
+        if (!email || !codigo || !password) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'Email, código y nueva contraseña son obligatorios'
+            });
+        }
+
+        // Validar primero la política de contraseñas para dar errores claros.
+        const resultadoPassword =
+            validarPassword(password);
+
+        if (resultadoPassword !== true) {
+            return res.status(400).json({
+                success: false,
+                mensaje: resultadoPassword
+            });
+        }
+
+        const emailNormalizado = String(email).trim().toLowerCase();
+
+        if (!/^\d{6}$/.test(String(codigo))) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'El código debe tener 6 dígitos'
+            });
+        }
+
+        const usuario =
+            await usuarioModel.buscarPorEmail(emailNormalizado);
+
+        if (!usuario) {
+            return res.status(404).json({
+                success: false,
+                mensaje: 'No se encontró un usuario con ese correo'
+            });
+        }
+
+        if (!usuario.email_verified_at) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'La cuenta no está verificada. Verifica tu correo primero.'
+            });
+        }
+
+        // Debe existir un código pendiente
+        if (!usuario.email_verification_code || !usuario.email_verification_expires) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'No hay un código pendiente. Solicita uno nuevo.'
+            });
+        }
+
+        // Verificar expiración
+        const expira = new Date(usuario.email_verification_expires);
+        if (expira < new Date()) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'El código ha expirado. Solicita uno nuevo.'
+            });
+        }
+
+        // Comparar el código (hash)
+        const codigoCorrecto =
+            await bcrypt.compare(String(codigo), usuario.email_verification_code);
+
+        if (!codigoCorrecto) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'El código es incorrecto'
+            });
+        }
+
+        // Actualizar contraseña y limpiar el código usado.
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        await usuarioModel.actualizarPassword(
+            usuario.id_usuario,
+            passwordHash
+        );
+
+        await usuarioModel.limpiarCodigoVerificacion(
+            usuario.id_usuario
+        );
+
+        res.json({
+            success: true,
+            mensaje: 'Contraseña actualizada correctamente. Ya puedes iniciar sesión.'
+        });
+
+    } catch (error) {
+
+        console.error('Error al restablecer contraseña:', error);
+
+        res.status(500).json({
+            success: false,
+            mensaje: 'Error al restablecer la contraseña'
+        });
+    }
+};
+
+// ========================================
 // LOGIN
 // ========================================
 const login = async (req, res) => {
@@ -438,5 +627,7 @@ module.exports = {
     login,
     verificarEmail,
     reenviarCodigo,
+    solicitarReseteo,
+    reestablecerContrasena,
     validarPassword
 };

@@ -117,4 +117,16 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(Constants.prefUserKey);
   }
+
+  /// Guarda el id del tema de colores del perfil (preferencia, NO sensible).
+  Future<void> guardarTemaPerfil(String temaId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(Constants.prefTemaPerfilKey, temaId);
+  }
+
+  /// Obtiene el id del tema de colores del perfil o null si no se configuró.
+  Future<String?> obtenerTemaPerfil() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(Constants.prefTemaPerfilKey);
+  }
 }

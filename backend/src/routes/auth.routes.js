@@ -30,6 +30,16 @@ router.post('/verificar-email', verificacionLimiter, authController.verificarEma
 router.post('/reenviar-codigo', verificacionLimiter, authController.reenviarCodigo);
 
 // ========================================
+// RESTABLECER CONTRASEÑA (olvidé mi contraseña) - NO requiere JWT
+// ========================================
+
+// Solicitar código de reseteo (se envía por correo)
+router.post('/solicitar-reseteo', verificacionLimiter, authController.solicitarReseteo);
+
+// Validar código y establecer nueva contraseña
+router.post('/reestablecer-contrasena', verificacionLimiter, authController.reestablecerContrasena);
+
+// ========================================
 // VERIFICAR LOGIN CON OTP (2FA)
 // Requiere two_factor_token temporal
 // ========================================

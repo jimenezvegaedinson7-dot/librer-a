@@ -118,8 +118,7 @@ class ApiService {
   /// Últimos `checkout_url` conocidos por venta (id_venta -> URL).
   ///
   /// Permite reabrir el checkout desde "Mis compras" cuando el usuario cierra
-  /// el navegador sin pagar, incluso si la respuesta solo trae la preferencia
-  /// (mp_preference_id) sin URL.
+  /// el navegador sin pagar, incluso si la respuesta no incluye la URL.
   final Map<int, String> _checkoutUrls = {};
 
   /// Devuelve el último checkout URL registrado para una venta, o null.
@@ -546,11 +545,61 @@ class ApiService {
     }
   }
 
+  /// Obtiene la lista de deseos del cliente contra `GET /favoritos`.
+  Future<List<Libro>> obtenerFavoritos() async {
+    try {
+      final response = await _dio.get<dynamic>(Constants.favoritosPath);
+      final raw = response.data;
+      final list = _extractList(raw);
+      return list
+          .map((e) => Libro.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } on DioException catch (e) {
+      throw _toApiException(e);
+    }
+  }
+
+  /// Consulta si un libro está en favoritos contra `GET /favoritos/:id`.
+  Future<bool> esFavorito(int idLibro) async {
+    try {
+      final response =
+          await _dio.get<dynamic>('${Constants.favoritosPath}/$idLibro');
+      final data = response.data;
+      if (data is Map && data['data'] is Map) {
+        final inner = Map<String, dynamic>.from(data['data'] as Map);
+        return inner['es_favorito'] == true;
+      }
+      return false;
+    } on DioException catch (e) {
+      throw _toApiException(e);
+    }
+  }
+
+  /// Agrega un libro a favoritos contra `POST /favoritos/:id`.
+  Future<void> agregarFavorito(int idLibro) async {
+    try {
+      await _dio.post<dynamic>('${Constants.favoritosPath}/$idLibro');
+    } on DioException catch (e) {
+      throw _toApiException(e);
+    }
+  }
+
+  /// Quita un libro de favoritos contra `DELETE /favoritos/:id`.
+  ///
+  /// Es idempotente: quitar un libro que no era favorito no es un error.
+  Future<void> quitarFavorito(int idLibro) async {
+    try {
+      await _dio.delete<dynamic>('${Constants.favoritosPath}/$idLibro');
+    } on DioException catch (e) {
+      throw _toApiException(e);
+    }
+  }
+
   /// Crea una orden de pago contra `POST /pagos/crear-orden`.
   ///
   /// [detalles] es una lista de `{id_libro, cantidad}`. El backend calcula el
   /// total con los precios reales de la base de datos y crea la orden en
-  /// Mercado Pago (API de Orders). Devuelve un [OrdenPago] con el
+  /// PayU (WebCheckout). Devuelve un [OrdenPago] con el
   /// [OrdenPago.checkoutUrl] para redirigir al checkout.
   ///
   /// [tipoEntrega] puede ser `domicilio` (con [idDistrito] y [direccion]) o
@@ -621,8 +670,8 @@ class ApiService {
           _checkoutUrls[idVenta] = url;
         }
 
-        // Respuestas `ya_existia` solo traen `preferencia` (mp_preference_id),
-        // sin URL. Si ya conocíamos la URL de esta venta, la reutilizamos.
+        // Respuestas `ya_existia` pueden venir sin `checkout_url`.
+        // Si ya conocíamos la URL de esta venta, la reutilizamos.
         if (idVenta != null && (url == null || url.isEmpty)) {
           final urlPrevia = _checkoutUrls[idVenta];
           if (urlPrevia != null && urlPrevia.isNotEmpty) {
@@ -640,7 +689,7 @@ class ApiService {
 
   /// Consulta el estado de una orden contra `GET /pagos/:orderId`.
   ///
-  /// Consulta el estado real de la orden directamente en Mercado Pago.
+  /// Consulta el estado real de la orden directamente en PayU.
   Future<EstadoOrden> obtenerOrdenPago(String orderId) async {
     try {
       final response = await _dio.get<dynamic>(
@@ -783,6 +832,43 @@ class ApiService {
       await _dio.post<dynamic>(
         Constants.reenviarCodigoPath,
         data: {'email': email},
+      );
+    } on DioException catch (e) {
+      throw _toApiException(e);
+    }
+  }
+
+  /// Solicita un código para restablecer la contraseña contra
+  /// `POST /auth/solicitar-reseteo`.
+  ///
+  /// El backend siempre responde con el mismo mensaje genérico (no revela si
+  /// el correo existe). El código llega por email y hay que validarlo después
+  /// con [reestablecerContrasena]. No requiere sesión activa.
+  Future<void> solicitarReseteo({required String email}) async {
+    try {
+      await _dio.post<dynamic>(
+        Constants.solicitarReseteoPath,
+        data: {'email': email},
+      );
+    } on DioException catch (e) {
+      throw _toApiException(e);
+    }
+  }
+
+  /// Restablece la contraseña contra `POST /auth/reestablecer-contrasena`.
+  ///
+  /// Valida el [codigo] de 6 dígitos recibido por email y establece la nueva
+  /// [password]. Al terminar se puede iniciar sesión con la nueva clave.
+  /// No requiere sesión activa.
+  Future<void> reestablecerContrasena({
+    required String email,
+    required String codigo,
+    required String password,
+  }) async {
+    try {
+      await _dio.post<dynamic>(
+        Constants.reestablecerContrasenaPath,
+        data: {'email': email, 'codigo': codigo, 'password': password},
       );
     } on DioException catch (e) {
       throw _toApiException(e);

@@ -34,24 +34,22 @@ class _LibroCardState extends State<LibroCard> {
         transform: Matrix4.translationValues(0, _hovered ? -3 : 0, 0),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: _hovered ? AppColors.gold : AppColors.divider,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.divider),
           boxShadow: [
             BoxShadow(
               color: AppColors.primaryDark.withValues(
-                alpha: _hovered ? 0.14 : 0.07,
+                alpha: _hovered ? 0.12 : 0.05,
               ),
-              blurRadius: _hovered ? 18 : 10,
-              offset: Offset(0, _hovered ? 8 : 4),
+              blurRadius: _hovered ? 18 : 8,
+              offset: Offset(0, _hovered ? 8 : 2),
             ),
           ],
         ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
             onTap:
                 widget.onTap ??
                 () {
@@ -71,16 +69,15 @@ class _LibroCardState extends State<LibroCard> {
                     decoration: const BoxDecoration(
                       color: AppColors.paper,
                       borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(13),
+                        top: Radius.circular(11),
                       ),
                     ),
                     child: BookCover(
                       url: Constants.buildPortadaUrl(libro.portada),
-                      borderRadius: 6,
+                      borderRadius: 4,
                     ),
                   ),
                 ),
-                Container(height: 3, color: AppColors.gold),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 11, 12, 12),
                   child: _BookInfo(libro: libro),
@@ -114,7 +111,7 @@ class _BookInfo extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: textTheme.labelSmall?.copyWith(
-              color: AppColors.price,
+              color: AppColors.secondary,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.1,
               fontSize: 9,
@@ -128,10 +125,8 @@ class _BookInfo extends StatelessWidget {
               : 'Sin título',
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: textTheme.titleSmall?.copyWith(
-            fontFamily: 'serif',
-            fontWeight: FontWeight.w700,
-            height: 1.12,
+          style: textTheme.titleMedium?.copyWith(
+            height: 1.15,
             color: AppColors.textPrimary,
           ),
         ),
@@ -148,8 +143,7 @@ class _BookInfo extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        const Divider(height: 1),
-        const SizedBox(height: 9),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
@@ -157,9 +151,8 @@ class _BookInfo extends StatelessWidget {
                 'S/ ${Formats.precio(libro.precio)}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: textTheme.titleSmall?.copyWith(
+                style: textTheme.labelLarge?.copyWith(
                   color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
@@ -180,7 +173,7 @@ class _Availability extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final disponible = libro.esActivo && libro.hayStock;
-    final color = disponible ? AppColors.success : AppColors.error;
+    final color = disponible ? AppColors.tertiary : AppColors.error;
 
     return Semantics(
       label: disponible ? '${libro.stock} disponibles' : 'Agotado',

@@ -271,9 +271,256 @@ async function enviarCodigoVerificacion({ destinatario, codigo, nombre }) {
     return enviarCorreo({ destinatario, asunto, html, texto });
 }
 
+// ============================================================
+// CORREO DE CÓDIGO PARA RESTABLECER CONTRASEÑA
+// ============================================================
+async function enviarCodigoReseteo({ destinatario, codigo, nombre }) {
+    const asunto = 'Restablece tu contraseña en Librería';
+    const texto =
+        `Hola ${nombre},\n\n` +
+        `Recibimos una solicitud para restablecer tu contraseña.\n\n` +
+        `Tu código de verificación es:\n\n` +
+        `${codigo}\n\n` +
+        `Ingresa este código en la aplicación para crear una nueva contraseña. ` +
+        `El código es válido por 10 minutos.\n\n` +
+        `Si no solicitaste este cambio, ignora este correo y tu contraseña seguirá igual.\n`;
+
+    const html =
+        `<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">` +
+        `<div style="background:#4f46e5;color:#fff;padding:20px;text-align:center">` +
+        `<h1 style="margin:0;font-size:20px">Librería</h1>` +
+        `<p style="margin:4px 0 0;font-size:13px;opacity:.9">Restablecer contraseña</p>` +
+        `</div>` +
+        `<div style="padding:28px;color:#1e293b;font-size:15px">` +
+        `<p>Hola <strong>${nombre}</strong>,</p>` +
+        `<p>Recibimos una solicitud para restablecer tu contraseña. Ingresa el siguiente código en la aplicación:</p>` +
+        `<div style="margin:22px 0;text-align:center">` +
+        `<span style="display:inline-block;padding:14px 28px;background:#eef2ff;color:#4338ca;font-size:28px;font-weight:bold;letter-spacing:8px;border-radius:10px">${codigo}</span>` +
+        `</div>` +
+        `<p style="color:#64748b;font-size:13px">El código es válido por <strong>10 minutos</strong>.</p>` +
+        `<p style="color:#64748b;font-size:13px">Si no solicitaste este cambio, ignora este correo y tu contraseña seguirá igual.</p>` +
+        `</div>` +
+        `</div>`;
+
+    return enviarCorreo({ destinatario, asunto, html, texto });
+}
+
+// ============================================================
+// ESCAPAR HTML (para títulos, nombres, etc. en correos transaccionales)
+// ============================================================
+const htmlEscape = (valor) =>
+    String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+// ============================================================
+// PLANTILLA BASE DE CORREO
+// ============================================================
+const plantillaBase = ({
+    tituloCabecera,
+    asunto,
+    cuerpoHtml
+}) => {
+    const html =
+        `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">` +
+        `<div style="background:#4f46e5;color:#fff;padding:20px;text-align:center">` +
+        `<h1 style="margin:0;font-size:20px">Librería</h1>` +
+        `<p style="margin:4px 0 0;font-size:13px;opacity:.9">${htmlEscape(tituloCabecera)}</p>` +
+        `</div>` +
+        `<div style="padding:28px;color:#1e293b;font-size:15px">` +
+        cuerpoHtml +
+        `</div>` +
+        `</div>`;
+
+    return { asunto, html };
+};
+
+const etiquetaTipoEntrega = (tipoEntrega) => {
+    if (tipoEntrega === 'domicilio') return 'Envío a domicilio';
+    if (tipoEntrega === 'agencia') return 'Envío por agencia';
+    return 'Recojo en tienda';
+};
+
+const money = (valor) =>
+    `S/ ${Number(valor || 0).toFixed(2)}`;
+
+// ============================================================
+// CORREO: PEDIDO CREADO (pendiente de pago)
+// ============================================================
+async function enviarCorreoOrdenCreada({
+    destinatario,
+    nombre,
+    idVenta,
+    items,
+    total,
+    costoEnvio,
+    tipoEntrega
+}) {
+    const filas = (items || [])
+        .map((item) => {
+            const subtotal = Number(
+                Number(item.unit_price) * Number(item.quantity)
+            ).toFixed(2);
+
+            return (
+                `<tr>` +
+                `<td style="padding:8px 0;border-bottom:1px solid #eef2f7;color:#1e293b">` +
+                `${htmlEscape(item.title)} <span style="color:#64748b">× ${htmlEscape(item.quantity)}</span>` +
+                `</td>` +
+                `<td style="padding:8px 0;border-bottom:1px solid #eef2f7;text-align:right;color:#1e293b">` +
+                `${money(subtotal)}` +
+                `</td>` +
+                `</tr>`
+            );
+        })
+        .join('');
+
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
+        `<p>Recibimos tu pedido <strong>#${htmlEscape(idVenta)}</strong> en Librería. ` +
+        `Tu pedido está <strong>pendiente de pago</strong>; completa el pago en la pasarela para confirmarlo.</p>` +
+        `<table style="width:100%;border-collapse:collapse;margin:18px 0">` +
+        filas +
+        `<tr>` +
+        `<td style="padding:8px 0;color:#64748b">Costo de envío</td>` +
+        `<td style="padding:8px 0;text-align:right;color:#1e293b">${money(costoEnvio)}</td>` +
+        `</tr>` +
+        `<tr>` +
+        `<td style="padding:8px 0;font-weight:bold;color:#17181c">Total</td>` +
+        `<td style="padding:8px 0;text-align:right;font-weight:bold;color:#17181c">${money(total)}</td>` +
+        `</tr>` +
+        `</table>` +
+        `<p style="color:#64748b;font-size:13px">Entrega: <strong>${htmlEscape(etiquetaTipoEntrega(tipoEntrega))}</strong>.</p>` +
+        `<p style="color:#64748b;font-size:13px">Si no realizaste este pedido, ignora este correo.</p>`;
+
+    const { asunto, html } = plantillaBase({
+        tituloCabecera: 'Confirmación de pedido',
+        cuerpoHtml
+    });
+
+    return enviarCorreo({ destinatario, asunto, html });
+}
+
+// ============================================================
+// CORREO: PAGO CONFIRMADO
+// ============================================================
+async function enviarCorreoPagoConfirmado({
+    destinatario,
+    nombre,
+    idVenta,
+    total,
+    externalReference
+}) {
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
+        `<p>¡Tu pago fue <strong>aprobado</strong>! Ya estamos preparando tu pedido <strong>#${htmlEscape(idVenta)}</strong>.</p>` +
+        `<div style="margin:22px 0;text-align:center">` +
+        `<span style="display:inline-block;padding:14px 28px;background:#ecfdf5;color:#047857;font-size:22px;font-weight:bold;border-radius:10px">${money(total)}</span>` +
+        `</div>` +
+        `<p style="color:#64748b;font-size:13px">Referencia del pago: <strong>${htmlEscape(externalReference || '—')}</strong>.</p>` +
+        `<p style="color:#64748b;font-size:13px">Puedes revisar el estado de tu pedido en la aplicación en «Mis compras».</p>`;
+
+    const { asunto, html } = plantillaBase({
+        tituloCabecera: 'Pago confirmado',
+        cuerpoHtml
+    });
+
+    return enviarCorreo({ destinatario, asunto, html });
+}
+
+// ============================================================
+// CORREO: PAGO RECHAZADO
+// ============================================================
+async function enviarCorreoPagoRechazado({
+    destinatario,
+    nombre,
+    idVenta,
+    total,
+    estado
+}) {
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
+        `<p>El pago de tu pedido <strong>#${htmlEscape(idVenta)}</strong> no pudo completarse (${htmlEscape(estado || 'rechazado')}).</p>` +
+        `<p>No se realizó ningún cargo. El pedido queda <strong>cancelado</strong> y puedes volver a intentarlo cuando quieras.</p>` +
+        `<p style="color:#64748b;font-size:13px">Monto del pedido: <strong>${money(total)}</strong>.</p>` +
+        `<p style="color:#64748b;font-size:13px">Si tienes dudas, escríbenos respondiendo este correo.</p>`;
+
+    const { asunto, html } = plantillaBase({
+        tituloCabecera: 'Pago no procesado',
+        cuerpoHtml
+    });
+
+    return enviarCorreo({ destinatario, asunto, html });
+}
+
+// ============================================================
+// CORREO: PEDIDO ENTREGADO
+// ============================================================
+async function enviarCorreoPedidoEntregado({
+    destinatario,
+    nombre,
+    idVenta,
+    tipoEntrega
+}) {
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
+        `<p>Tu pedido <strong>#${htmlEscape(idVenta)}</strong> fue <strong>entregado</strong>. ¡Gracias por tu compra!</p>` +
+        `<div style="margin:22px 0;text-align:center">` +
+        `<span style="display:inline-block;padding:14px 28px;background:#ecfdf5;color:#047857;font-size:18px;font-weight:bold;border-radius:10px">✓ Pedido entregado</span>` +
+        `</div>` +
+        `<p style="color:#64748b;font-size:13px">Entrega: <strong>${htmlEscape(etiquetaTipoEntrega(tipoEntrega))}</strong>.</p>` +
+        `<p style="color:#64748b;font-size:13px">Si compraste como invitado o tienes dudas, responde este correo y te ayudamos.</p>`;
+
+    const { asunto, html } = plantillaBase({
+        tituloCabecera: 'Pedido entregado',
+        cuerpoHtml
+    });
+
+    return enviarCorreo({ destinatario, asunto, html });
+}
+
+// ============================================================
+// CORREO: RESERVA CREADA
+// ============================================================
+async function enviarCorreoReservaCreada({
+    destinatario,
+    nombre,
+    idReserva,
+    titulo,
+    cantidad,
+    fechaVencimiento
+}) {
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
+        `<p>Tu reserva <strong>#${htmlEscape(idReserva)}</strong> fue confirmada:</p>` +
+        `<div style="margin:18px 0;padding:16px;background:#f8fafc;border-radius:10px;text-align:center">` +
+        `<p style="margin:0;font-size:17px;font-weight:bold;color:#17181c">${htmlEscape(titulo || 'Libro')}</p>` +
+        `<p style="margin:6px 0 0;color:#64748b;font-size:13px">Cantidad reservada: <strong>${htmlEscape(cantidad)}</strong></p>` +
+        `</div>` +
+        `<p style="color:#64748b;font-size:13px">La reserva vence el <strong>${htmlEscape(fechaVencimiento || '—')}</strong>. ` +
+        `Pasa a recoger el libro antes de esa fecha.</p>` +
+        `<p style="color:#64748b;font-size:13px">Si no realizaste esta reserva, ignora este correo.</p>`;
+
+    const { asunto, html } = plantillaBase({
+        tituloCabecera: 'Reserva confirmada',
+        cuerpoHtml
+    });
+
+    return enviarCorreo({ destinatario, asunto, html });
+}
+
 module.exports = {
     enviarCorreo,
     enviarCodigoVerificacion,
+    enviarCodigoReseteo,
+    enviarCorreoOrdenCreada,
+    enviarCorreoPagoConfirmado,
+    enviarCorreoPagoRechazado,
+    enviarCorreoReservaCreada,
+    enviarCorreoPedidoEntregado,
     smtpConfigurado,
     resendConfigurado,
     brevoConfigurado,

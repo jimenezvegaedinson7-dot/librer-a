@@ -14,7 +14,7 @@ class BookCover extends StatelessWidget {
   const BookCover({
     super.key,
     required this.url,
-    this.borderRadius = 8,
+    this.borderRadius = 4,
     this.fit = BoxFit.contain,
   });
 
@@ -26,10 +26,9 @@ class BookCover extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.paper,
         borderRadius: radius,
-        border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: AppColors.primaryDark.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 5),
           ),
@@ -51,6 +50,7 @@ class BookCover extends StatelessWidget {
                   height: double.infinity,
                   fit: fit,
                   alignment: Alignment.center,
+                  webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
                   errorBuilder: (_, _, _) {
                     return const _CoverPlaceholder(loading: false);
                   },
@@ -81,7 +81,7 @@ class _CoverPlaceholder extends StatelessWidget {
       decoration: const BoxDecoration(color: AppColors.surfaceElevated),
       alignment: Alignment.center,
       child: loading
-          ? const SizedBox(
+          ? SizedBox(
               width: 22,
               height: 22,
               child: CircularProgressIndicator(
@@ -89,7 +89,7 @@ class _CoverPlaceholder extends StatelessWidget {
                 color: AppColors.primary,
               ),
             )
-          : const Icon(
+          : Icon(
               Icons.auto_stories_rounded,
               size: 40,
               color: AppColors.primary,

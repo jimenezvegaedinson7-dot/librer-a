@@ -7,16 +7,28 @@ import '../models/usuario.dart';
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
 import '../services/storage_service.dart';
+import '../services/tema_controller.dart';
 import '../utils/app_colors.dart';
 import '../utils/avatar_generator.dart';
 import '../utils/constants.dart';
+import '../utils/perfil_temas.dart';
 import '../widgets/app_page_header.dart';
 import 'login_screen.dart';
+import 'mis_compras_screen.dart';
 import 'reservas_screen.dart';
+import 'favoritos_screen.dart';
 import 'security/cambiar_password_screen.dart';
 import 'security/editar_perfil_screen.dart';
 import 'security/two_factor_disable_screen.dart';
 import 'security/two_factor_setup_screen.dart';
+import 'legal/politica_privacidad_screen.dart';
+import 'legal/terminos_condiciones_screen.dart';
+
+const _profileInk = Color(0xFF202124);
+const _profileMuted = Color(0xFF6B7280);
+const _profileBorder = Color(0xFFD9DCE1);
+const _profileSurface = Color(0xFFFFFFFF);
+const _profileSoft = Color(0xFFF3F4F6);
 
 /// Pantalla de perfil del cliente.
 ///
@@ -35,12 +47,186 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Usuario? _usuario;
   bool _twoFactorEnabled = false;
   bool _refreshing = false;
+  String _temaId = perfilTemaDefaultId;
+  int _paginaColores = 0;
+  final PageController _coloresController = PageController();
+
+  PerfilTema get _tema => perfilTemaPorId(_temaId);
 
   @override
   void initState() {
     super.initState();
+    _temaId = TemaController.instance.id;
+    TemaController.instance.addListener(_syncTema);
     _cargarLocal();
     _refrescarPerfil();
+  }
+
+  @override
+  void dispose() {
+    TemaController.instance.removeListener(_syncTema);
+    _coloresController.dispose();
+    super.dispose();
+  }
+
+  /// Mantiene el tema local sincronizado con el controlador global.
+  void _syncTema() {
+    if (mounted && _temaId != TemaController.instance.id) {
+      setState(() => _temaId = TemaController.instance.id);
+    }
+  }
+
+  /// Aplica un tema a toda la app a través del controlador global.
+  Future<void> _aplicarTema(String id) async {
+    await TemaController.instance.aplicar(id);
+    if (mounted) setState(() => _temaId = id);
+  }
+
+  /// Abre el selector para combinar dos colores y crear un degradado propio.
+  Future<void> _personalizarColores() async {
+    final resultado = await showModalBottomSheet<(Color, Color)>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: _profileSurface,
+      isScrollControlled: true,
+      builder: (sheetContext) => _CustomThemeSheet(
+        inicioInicial: _tema.inicio,
+        finInicial: _tema.fin,
+      ),
+    );
+    if (resultado == null || !mounted) return;
+    final id = perfilTemaIdPersonalizado(resultado.$1, fin: resultado.$2);
+    await _aplicarTema(id);
+  }
+
+  /// Carrusel de colores que solo avanza al deslizar (sin auto-reproducción)
+  /// o con las flechas e indicadores clicables.
+  Widget _buildCarruselColores() {
+    const porPagina = 4;
+    final opciones = <Widget>[
+      for (final opcion in perfilTemas)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5),
+          child: _TemaSwatch(
+            tema: opcion,
+            seleccionado: _temaId == opcion.id,
+            onTap: () => _aplicarTema(opcion.id),
+          ),
+        ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5),
+        child: _TemaSwatch(
+          tema: _temaId.startsWith('custom_') ? _tema : null,
+          seleccionado: _temaId.startsWith('custom_'),
+          onTap: _personalizarColores,
+        ),
+      ),
+    ];
+    final paginas = (opciones.length / porPagina).ceil();
+
+    return _profileCard(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                SizedBox(
+                  width: 40,
+                  height: 46,
+                  child: Center(
+                    child: IconButton(
+                      tooltip: 'Colores anteriores',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: _paginaColores > 0
+                          ? () => _irAPagina(_paginaColores - 1)
+                          : null,
+                      icon: const Icon(Icons.chevron_left_rounded, size: 26),
+                      color: AppColors.textSecondary,
+                      disabledColor: AppColors.divider,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: SizedBox(
+                    height: 46,
+                    child: PageView.builder(
+                      controller: _coloresController,
+                      // Solo avanza si el usuario desliza, usa la rueda del
+                      // ratón o pulsa flechas/indicadores.
+                      physics: const PageScrollPhysics(),
+                      itemCount: paginas,
+                      onPageChanged: (pagina) =>
+                          setState(() => _paginaColores = pagina),
+                      itemBuilder: (context, pagina) {
+                        final inicio = pagina * porPagina;
+                        final fin = (inicio + porPagina) < opciones.length
+                            ? inicio + porPagina
+                            : opciones.length;
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            for (var i = inicio; i < fin; i++) opciones[i],
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 40,
+                  height: 46,
+                  child: Center(
+                    child: IconButton(
+                      tooltip: 'Más colores',
+                      visualDensity: VisualDensity.compact,
+                      onPressed: _paginaColores < paginas - 1
+                          ? () => _irAPagina(_paginaColores + 1)
+                          : null,
+                      icon: const Icon(Icons.chevron_right_rounded, size: 26),
+                      color: AppColors.textSecondary,
+                      disabledColor: AppColors.divider,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            if (paginas > 1)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var p = 0; p < paginas; p++)
+                    GestureDetector(
+                      onTap: () => _irAPagina(p),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: p == _paginaColores ? 16 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: p == _paginaColores
+                              ? AppColors.primary
+                              : AppColors.divider,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Anima el carrusel hasta la página [pagina].
+  void _irAPagina(int pagina) {
+    _coloresController.animateToPage(
+      pagina,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   Future<void> _cargarLocal() async {
@@ -143,9 +329,37 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
+  Future<void> _misCompras() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const MisComprasScreen()),
+    );
+  }
+
   Future<void> _misReservas() async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(builder: (_) => const ReservasScreen()),
+    );
+  }
+
+  Future<void> _misFavoritos() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const FavoritosScreen()),
+    );
+  }
+
+  Future<void> _terminos() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => const TerminosCondicionesScreen(),
+      ),
+    );
+  }
+
+  Future<void> _privacidad() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => const PoliticaPrivacidadScreen(),
+      ),
     );
   }
 
@@ -154,6 +368,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor: _profileSurface,
       builder: (sheetContext) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -170,7 +385,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               Text(
                 'Elige un avatar o usa una foto propia.',
                 style: Theme.of(sheetContext).textTheme.bodyMedium
-                    ?.copyWith(color: AppColors.textSecondary),
+                    ?.copyWith(color: _profileMuted),
               ),
               const SizedBox(height: 16),
               _SheetOption(
@@ -209,6 +424,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final seleccionado = await showModalBottomSheet<AvatarPreset>(
       context: context,
       showDragHandle: true,
+      backgroundColor: _profileSurface,
       builder: (sheetContext) => SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -225,7 +441,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               Text(
                 'Se generará una imagen con el avatar elegido.',
                 style: Theme.of(sheetContext).textTheme.bodyMedium
-                    ?.copyWith(color: AppColors.textSecondary),
+                    ?.copyWith(color: _profileMuted),
               ),
               const SizedBox(height: 16),
               GridView.count(
@@ -387,21 +603,29 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final usuario = _usuario;
+    final tema = _tema;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          onRefresh: _refrescarPerfil,
-          child: ListView(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _PerfilFondoPainter(tema: _tema, sutil: true),
+            ),
+          ),
+          SafeArea(
+            bottom: false,
+            child: RefreshIndicator(
+              color: _profileInk,
+              backgroundColor: _profileSurface,
+              onRefresh: _refrescarPerfil,
+              child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(20),
             children: [
               AppPageHeader(
-                eyebrow: 'Cuenta personal',
                 title: 'Mi perfil',
-                subtitle: 'Datos, seguridad y preferencias de tu cuenta.',
+                titleColor: _profileInk,
                 trailing: _refreshing
                     ? const SizedBox(
                         width: 22,
@@ -412,98 +636,72 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ),
               const SizedBox(height: 24),
 
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primaryDark.withValues(alpha: 0.18),
-                      blurRadius: 18,
-                      offset: const Offset(0, 7),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: _cambiarFoto,
-                      child: SizedBox(
-                        width: 92,
-                        height: 92,
-                        child: Stack(
-                          children: [
-                            Center(child: _Avatar(usuario: usuario)),
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: AppColors.gold,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: AppColors.primary,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.photo_camera_rounded,
-                                  size: 15,
-                                  color: AppColors.primaryDark,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              Column(
+                children: [
+                  GestureDetector(
+                    onTap: _cambiarFoto,
+                    child: SizedBox(
+                      width: 96,
+                      height: 96,
+                      child: Stack(
                         children: [
-                          Text(
-                            usuario?.nombreCompleto ?? 'Cliente',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: textTheme.titleLarge?.copyWith(
-                              color: Colors.white,
+                          Center(
+                            child: _Avatar(
+                              usuario: usuario,
+                              anillo: tema.inicio,
                             ),
                           ),
-                          if (usuario?.email != null) ...[
-                            const SizedBox(height: 5),
-                            Text(
-                              usuario!.email!,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: textTheme.bodySmall?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.72),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: 30,
+                              height: 30,
+                              decoration: BoxDecoration(
+                                color: _profileSoft,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: _profileSurface,
+                                  width: 2,
+                                ),
                               ),
-                            ),
-                          ],
-                          const SizedBox(height: 10),
-                          Text(
-                            'Toca la foto para actualizarla',
-                            style: textTheme.labelSmall?.copyWith(
-                              color: AppColors.gold,
-                              fontWeight: FontWeight.w700,
+                              child: const Icon(
+                                Icons.photo_camera_rounded,
+                                size: 15,
+                                color: _profileInk,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    usuario?.nombreCompleto ?? 'Cliente',
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.titleLarge?.copyWith(
+                      color: _profileInk,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Toca la foto para actualizarla',
+                    textAlign: TextAlign.center,
+                    style: textTheme.labelSmall?.copyWith(
+                      color: _profileMuted,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 32),
 
               // Datos
-              Card(
-                color: AppColors.surface,
+              _profileCard(
                 child: Column(
                   children: [
                     _row(
@@ -532,11 +730,17 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
               const SizedBox(height: 32),
 
+              // Personalización de colores
+              _sectionTitle(textTheme, 'Personaliza tus colores'),
+              const SizedBox(height: 8),
+              _buildCarruselColores(),
+
+              const SizedBox(height: 32),
+
               // Acciones del perfil
               _sectionTitle(textTheme, 'Cuenta'),
               const SizedBox(height: 8),
-              Card(
-                color: AppColors.surface,
+              _profileCard(
                 child: Column(
                   children: [
                     _actionTile(
@@ -555,9 +759,23 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     _divider(),
                     _actionTile(
                       context,
+                      icon: Icons.receipt_long_outlined,
+                      label: 'Mis compras',
+                      onTap: _misCompras,
+                    ),
+                    _divider(),
+                    _actionTile(
+                      context,
                       icon: Icons.event_note_outlined,
                       label: 'Mis reservas',
                       onTap: _misReservas,
+                    ),
+                    _divider(),
+                    _actionTile(
+                      context,
+                      icon: Icons.favorite_border_rounded,
+                      label: 'Mis favoritos',
+                      onTap: _misFavoritos,
                     ),
                     _divider(),
                     _actionTile(
@@ -571,7 +789,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       trailing: _twoFactorEnabled
                           ? const Icon(
                               Icons.check_circle_rounded,
-                              color: AppColors.success,
+                              color: _profileInk,
                               size: 20,
                             )
                           : null,
@@ -585,22 +803,47 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
               const SizedBox(height: 32),
 
+              // Legal
+              _sectionTitle(textTheme, 'Legal'),
+              const SizedBox(height: 8),
+              _profileCard(
+                child: Column(
+                  children: [
+                    _actionTile(
+                      context,
+                      icon: Icons.description_outlined,
+                      label: 'Términos y Condiciones',
+                      onTap: _terminos,
+                    ),
+                    _divider(),
+                    _actionTile(
+                      context,
+                      icon: Icons.privacy_tip_outlined,
+                      label: 'Política de Privacidad',
+                      onTap: _privacidad,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
               // Cerrar sesión
               SizedBox(
                 height: 54,
                 child: OutlinedButton.icon(
                   onPressed: _confirmarCierre,
-                  icon: Icon(Icons.logout_rounded, color: AppColors.error),
+                  icon: const Icon(Icons.logout_rounded, color: _profileInk),
                   label: Text(
                     'Cerrar sesión',
                     style: textTheme.titleMedium?.copyWith(
-                      color: AppColors.error,
+                      color: _profileInk,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error),
+                    foregroundColor: _profileInk,
+                    side: const BorderSide(color: _profileBorder),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -611,6 +854,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
           ),
         ),
       ),
+        ],
+      ),
     );
   }
 
@@ -619,7 +864,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
       title,
       style: textTheme.titleMedium?.copyWith(
         fontWeight: FontWeight.w600,
-        color: AppColors.textSecondary,
+        color: _profileInk,
       ),
     );
   }
@@ -632,10 +877,26 @@ class _PerfilScreenState extends State<PerfilScreen> {
     Widget? trailing,
   }) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
-      title: Text(label),
-      trailing: trailing ?? const Icon(Icons.chevron_right_rounded),
+      leading: Icon(icon, color: _profileMuted),
+      title: Text(label, style: const TextStyle(color: _profileInk)),
+      trailing:
+          trailing ??
+          const Icon(Icons.chevron_right_rounded, color: _profileMuted),
       onTap: onTap,
+    );
+  }
+
+  Widget _profileCard({required Widget child}) {
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: _profileSurface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: const BorderSide(color: _profileBorder),
+      ),
+      child: child,
     );
   }
 
@@ -654,23 +915,24 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   Widget _row(BuildContext context, IconData icon, String label, String value) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary),
+      leading: Icon(icon, color: _profileMuted),
       title: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall
-            ?.copyWith(color: AppColors.textSecondary),
+            ?.copyWith(color: _profileMuted),
       ),
       subtitle: Text(
         value,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: Theme.of(context).textTheme.bodyMedium
-            ?.copyWith(fontWeight: FontWeight.w500),
+            ?.copyWith(fontWeight: FontWeight.w600, color: _profileInk),
       ),
     );
   }
 
-  Widget _divider() => const Divider(height: 1, indent: 56);
+  Widget _divider() =>
+      const Divider(height: 1, indent: 56, color: _profileBorder);
 }
 
 /// Opción del selector de foto con icono, etiqueta y altura táctil cómoda.
@@ -690,11 +952,8 @@ class _SheetOption extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: AppColors.divider),
-        ),
+        color: _profileSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -707,10 +966,10 @@ class _SheetOption extends StatelessWidget {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
+                    color: _profileSoft,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 19, color: AppColors.primaryDark),
+                  child: Icon(icon, size: 19, color: _profileInk),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -725,7 +984,7 @@ class _SheetOption extends StatelessWidget {
                 Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
-                  color: AppColors.textTertiary,
+                  color: _profileMuted,
                 ),
                 const SizedBox(width: 14),
               ],
@@ -775,7 +1034,9 @@ class _AvatarPresetCircle extends StatelessWidget {
 /// Avatar circular con la foto del usuario si existe, o las iniciales.
 class _Avatar extends StatelessWidget {
   final Usuario? usuario;
-  const _Avatar({this.usuario});
+  final Color? anillo;
+
+  const _Avatar({this.usuario, this.anillo});
 
   @override
   Widget build(BuildContext context) {
@@ -784,34 +1045,56 @@ class _Avatar extends StatelessWidget {
         ? ''
         : Constants.buildPerfilUrl(foto);
 
-    if (url.isEmpty) {
-      return _Iniciales(usuario: usuario);
-    }
-    return ClipOval(
-      child: SizedBox(
-        width: 82,
-        height: 82,
-        child: Image.network(
-          url,
-          key: ValueKey<String>(url),
-          fit: BoxFit.cover,
-          width: 82,
-          height: 82,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return _Iniciales(usuario: usuario);
-          },
-          errorBuilder: (context, error, stackTrace) =>
-              _Iniciales(usuario: usuario),
-        ),
+    final Widget circulo = url.isEmpty
+        ? _Iniciales(usuario: usuario, accent: anillo)
+        : ClipOval(
+            child: SizedBox(
+              width: 82,
+              height: 82,
+              child: Image.network(
+                url,
+                key: ValueKey<String>(url),
+                fit: BoxFit.cover,
+                width: 82,
+                height: 82,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return _Iniciales(usuario: usuario, accent: anillo);
+                },
+                errorBuilder: (context, error, stackTrace) =>
+                    _Iniciales(usuario: usuario, accent: anillo),
+              ),
+            ),
+          );
+
+    final ring = anillo;
+    if (ring == null) return circulo;
+
+    return Container(
+      width: 88,
+      height: 88,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: ring,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.14),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
+      child: circulo,
     );
   }
 }
 
 class _Iniciales extends StatelessWidget {
   final Usuario? usuario;
-  const _Iniciales({this.usuario});
+  final Color? accent;
+
+  const _Iniciales({this.usuario, this.accent});
 
   String _iniciales() {
     final nombre = usuario?.nombre ?? '';
@@ -826,14 +1109,345 @@ class _Iniciales extends StatelessWidget {
   Widget build(BuildContext context) {
     return CircleAvatar(
       radius: 41,
-      backgroundColor: AppColors.primaryContainer,
+      backgroundColor: accent == null
+          ? _profileSoft
+          : Color.alphaBlend(
+              accent!.withValues(alpha: 0.16),
+              _profileSoft,
+            ),
       child: Text(
         _iniciales(),
-        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-          color: AppColors.primaryDark,
-          fontWeight: FontWeight.bold,
+        style: Theme.of(context).textTheme.headlineMedium
+            ?.copyWith(color: _profileInk, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+/// Colores disponibles para combinar en el selector personalizado.
+List<Color> _coloresPersonalizables() {
+  final colores = <Color>{
+    const Color(0xFF17181C),
+    const Color(0xFF6B7280),
+    const Color(0xFFFFFFFF),
+  };
+  for (final tema in perfilTemas) {
+    colores.add(tema.inicio);
+    colores.add(tema.fin);
+  }
+  return colores.toList();
+}
+
+/// Muestra circular del tema de perfil (color sólido o degradado).
+class _TemaSwatch extends StatelessWidget {
+  final PerfilTema? tema;
+  final bool seleccionado;
+  final VoidCallback onTap;
+
+  /// Si [tema] es null se muestra la muestra de "personalizado".
+  const _TemaSwatch({
+    this.tema,
+    required this.seleccionado,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final esPersonalizado = tema == null;
+    final colorCheck = tema?.textColor ?? const Color(0xFF202227);
+
+    return InkWell(
+      onTap: onTap,
+      customBorder: const CircleBorder(),
+      child: Container(
+        width: 42,
+        height: 42,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: tema?.gradiente,
+          color: esPersonalizado ? const Color(0xFFF3F4F6) : null,
+          border: Border.all(
+            color: seleccionado
+                ? const Color(0xFF202227)
+                : const Color(0xFFD9DCE1),
+            width: seleccionado ? 3 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: seleccionado
+            ? Icon(Icons.check_rounded, size: 18, color: colorCheck)
+            : esPersonalizado
+            ? const Icon(
+                Icons.add_rounded,
+                size: 18,
+                color: Color(0xFF6B7280),
+              )
+            : null,
+      ),
+    );
+  }
+}
+
+/// Hoja inferior para combinar dos colores y crear un degradado propio.
+class _CustomThemeSheet extends StatefulWidget {
+  final Color inicioInicial;
+  final Color finInicial;
+
+  const _CustomThemeSheet({
+    required this.inicioInicial,
+    required this.finInicial,
+  });
+
+  @override
+  State<_CustomThemeSheet> createState() => _CustomThemeSheetState();
+}
+
+class _CustomThemeSheetState extends State<_CustomThemeSheet> {
+  late Color _inicio;
+  late Color _fin;
+
+  @override
+  void initState() {
+    super.initState();
+    _inicio = widget.inicioInicial;
+    _fin = widget.finInicial;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Combina tus colores',
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: _profileInk,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Elige dos colores y crea tu degradado personalizado.',
+              style: textTheme.bodyMedium?.copyWith(color: _profileMuted),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [_inicio, _fin],
+                ),
+                border: Border.all(color: _profileBorder),
+              ),
+              child: Text(
+                'Vista previa',
+                style: textTheme.titleMedium?.copyWith(
+                  color: _textoLegible(_inicio, _fin),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Color inicial',
+              style: textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: _profileInk,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _ColorPalette(
+              seleccionado: _inicio,
+              onSeleccionar: (color) => setState(() => _inicio = color),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              'Color final',
+              style: textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: _profileInk,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _ColorPalette(
+              seleccionado: _fin,
+              onSeleccionar: (color) => setState(() => _fin = color),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: FilledButton(
+                onPressed: () => Navigator.of(context).pop((_inicio, _fin)),
+                child: const Text('Aplicar'),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+/// Paleta de colores para elegir en el combinador personalizado.
+class _ColorPalette extends StatelessWidget {
+  final Color seleccionado;
+  final ValueChanged<Color> onSeleccionar;
+
+  const _ColorPalette({
+    required this.seleccionado,
+    required this.onSeleccionar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: [
+        for (final color in _coloresPersonalizables())
+          InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => onSeleccionar(color),
+            child: Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color,
+                border: Border.all(
+                  color: color == seleccionado
+                      ? const Color(0xFF202227)
+                      : const Color(0xFFD9DCE1),
+                  width: color == seleccionado ? 3 : 1,
+                ),
+              ),
+              child: color == seleccionado
+                  ? Icon(
+                      Icons.check_rounded,
+                      size: 16,
+                      color: _textoLegible(color, color),
+                    )
+                  : null,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Texto legible (oscuro o blanco) sobre la mezcla de dos colores.
+Color _textoLegible(Color a, Color b) {
+  final luminancia = (a.computeLuminance() + b.computeLuminance()) / 2;
+  return luminancia > 0.5 ? const Color(0xFF17181C) : Colors.white;
+}
+
+/// Fondo decorativo del perfil.
+///
+/// En modo normal ([sutil] = false) decora el banner: resplandor suave del
+/// acento, anillos concéntricos y puntos luminosos. En modo [sutil] decora
+/// toda la pantalla detrás del contenido con un tinte muy ligero del tema para
+/// no restar legibilidad a las tarjetas.
+class _PerfilFondoPainter extends CustomPainter {
+  final PerfilTema tema;
+  final bool sutil;
+
+  const _PerfilFondoPainter({required this.tema, this.sutil = false});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final peso = sutil ? 0.20 : 1.0;
+
+    if (sutil) {
+      // Fondo base muy claro con un leve tinte del acento del tema.
+      final base = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color.alphaBlend(
+            tema.colorAcento.withValues(alpha: 0.10),
+            const Color(0xFFF8F8FA),
+          ),
+          const Color(0xFFF3F4F6),
+        ],
+      ).createShader(Offset.zero & size);
+      canvas.drawRect(Offset.zero & size, Paint()..shader = base);
+    }
+
+    // Resplandor suave del acento en la esquina superior derecha.
+    final centro = Offset(size.width * 0.95, size.height * 0.12);
+    final glow = RadialGradient(
+      colors: [
+        tema.colorAcento.withValues(alpha: (0.55 * peso).clamp(0.0, 1.0)),
+        tema.colorAcento.withValues(alpha: 0.0),
+      ],
+    ).createShader(Rect.fromCircle(center: centro, radius: size.width * 0.7));
+    canvas.drawRect(Offset.zero & size, Paint()..shader = glow);
+
+    // Resplandor complementario inferior con el color principal.
+    final centro2 = Offset(size.width * 0.04, size.height * 1.02);
+    final glow2 = RadialGradient(
+      colors: [
+        Colors.white.withValues(alpha: (0.26 * peso).clamp(0.0, 1.0)),
+        Colors.white.withValues(alpha: 0.0),
+      ],
+    ).createShader(Rect.fromCircle(center: centro2, radius: size.width * 0.6));
+    canvas.drawRect(Offset.zero & size, Paint()..shader = glow2);
+
+    // Anillos concéntricos decorativos en la parte inferior izquierda.
+    final anillos = Offset(size.width * 0.08, size.height * 0.94);
+    canvas.drawCircle(
+      anillos,
+      size.width * 0.34,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6
+        ..color = Colors.white.withValues(alpha: (0.42 * peso).clamp(0.0, 1.0)),
+    );
+    canvas.drawCircle(
+      anillos,
+      size.width * 0.25,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0
+        ..color = Colors.white.withValues(alpha: (0.22 * peso).clamp(0.0, 1.0)),
+    );
+
+    // Puntos luminosos dispersos.
+    final puntos = [
+      Offset(size.width * 0.06, size.height * 0.14),
+      Offset(size.width * 0.12, size.height * 0.26),
+      Offset(size.width * 0.90, size.height * 0.88),
+    ];
+    for (final punto in puntos) {
+      canvas.drawCircle(
+        punto,
+        2.2,
+        Paint()..color = Colors.white.withValues(alpha: (0.45 * peso).clamp(0.0, 1.0)),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PerfilFondoPainter oldDelegate) =>
+      oldDelegate.tema.id != tema.id || oldDelegate.sutil != sutil;
 }

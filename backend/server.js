@@ -41,6 +41,7 @@ const authRoutes = require('./src/routes/auth.routes');
 const historialRoutes = require('./src/routes/historial.routes');
 const reporteRoutes = require('./src/routes/reporte.routes');
 const usuarioRoutes = require('./src/routes/usuario.routes');
+const favoritoRoutes = require('./src/routes/favorito.routes');
 const pagoRoutes = require('./src/routes/pago.routes');
 const ubicacionRoutes = require('./src/routes/ubicacion.routes');
 const agenciaRoutes = require('./src/routes/agencia.routes');
@@ -325,6 +326,14 @@ app.use(
 app.use(
     '/api/clientes',
     clienteRoutes
+);
+
+// ===============================
+// API DE FAVORITOS (LISTA DE DESEOS)
+// ===============================
+app.use(
+    '/api/favoritos',
+    favoritoRoutes
 );
 
 // ===============================

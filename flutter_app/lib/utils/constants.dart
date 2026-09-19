@@ -79,6 +79,8 @@ class Constants {
   static const String registroPath = '/auth/registro';
   static const String verificarEmailPath = '/auth/verificar-email';
   static const String reenviarCodigoPath = '/auth/reenviar-codigo';
+  static const String solicitarReseteoPath = '/auth/solicitar-reseteo';
+  static const String reestablecerContrasenaPath = '/auth/reestablecer-contrasena';
   static const String librosPath = '/libros';
   static const String perfilPath = '/usuarios/perfil';
 
@@ -103,12 +105,17 @@ class Constants {
   static const String reservasPath = '/reservas';
 
   // ---------------------------------------------------------------------------
+  // Rutas de favoritos / lista de deseos (solo cliente)
+  // ---------------------------------------------------------------------------
+  static const String favoritosPath = '/favoritos';
+
+  // ---------------------------------------------------------------------------
   // Rutas de ventas / compras (solo cliente)
   // ---------------------------------------------------------------------------
   static const String ventasPath = '/ventas';
 
   // ---------------------------------------------------------------------------
-  // Rutas de pagos (Mercado Pago - Orders API)
+  // Rutas de pagos (PayU - WebCheckout)
   // ---------------------------------------------------------------------------
   static const String pagosPath = '/pagos';
 
@@ -174,6 +181,9 @@ class Constants {
 
   /// Clave del usuario (JSON, NO sensible) en shared_preferences.
   static const String prefUserKey = 'auth_user';
+
+  /// Clave del tema de colores personalizado del perfil.
+  static const String prefTemaPerfilKey = 'perfil_tema';
 
   // ---------------------------------------------------------------------------
   // Marca / logo

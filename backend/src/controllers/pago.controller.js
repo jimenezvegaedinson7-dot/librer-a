@@ -1,5 +1,6 @@
 const payuService = require('../services/payu.service');
 const ventaModel = require('../models/venta.model');
+const usuarioModel = require('../models/usuario.model');
 const ubicacionModel = require('../models/ubicacion.model');
 const agenciaModel = require('../models/agencia.model');
 const pool = require('../config/database');
@@ -9,7 +10,76 @@ const {
     extraerEstadoOrdenPayu,
     montoPagoCoincide
 } = require('../utils/payuStatus');
+const {
+    enviarCorreoOrdenCreada,
+    enviarCorreoPagoConfirmado,
+    enviarCorreoPagoRechazado
+} = require('../utils/mailer');
 const { PUBLIC_BASE_URL } = require('../config/payu');
+
+// ========================================
+// CORREOS TRANSACCIONALES (fire-and-forget)
+// Nunca bloquean ni rompen el flujo principal: cualquier error de
+// envío solo se registra en consola.
+// ========================================
+const notificarOrdenCreada = async ({
+    idUsuario,
+    correoCompra,
+    idVenta,
+    items,
+    total,
+    costoEnvio,
+    tipoEntrega
+}) => {
+    if (!correoCompra) return;
+
+    const usuario =
+        await usuarioModel.buscarPorId(idUsuario);
+
+    await enviarCorreoOrdenCreada({
+        destinatario: correoCompra,
+        nombre: usuario?.nombre || '',
+        idVenta,
+        items,
+        total,
+        costoEnvio,
+        tipoEntrega
+    });
+};
+
+const notificarPagoConfirmado = async (venta) => {
+    const destinatario = venta.correo_compra;
+
+    if (!destinatario) return;
+
+    const usuario =
+        await usuarioModel.buscarPorId(venta.id_usuario);
+
+    await enviarCorreoPagoConfirmado({
+        destinatario,
+        nombre: usuario?.nombre || '',
+        idVenta: venta.id_venta,
+        total: venta.total,
+        externalReference: venta.external_reference
+    });
+};
+
+const notificarPagoRechazado = async (venta, estadoPayu) => {
+    const destinatario = venta.correo_compra;
+
+    if (!destinatario) return;
+
+    const usuario =
+        await usuarioModel.buscarPorId(venta.id_usuario);
+
+    await enviarCorreoPagoRechazado({
+        destinatario,
+        nombre: usuario?.nombre || '',
+        idVenta: venta.id_venta,
+        total: venta.total,
+        estado: estadoPayu || venta.payu_payment_status || 'rechazado'
+    });
+};
 
 // ========================================
 // URL DE LA PÁGINA DE CHECKOUT PROPIA (auto-submit del form PayU)
@@ -696,6 +766,21 @@ const crearOrden = async (req, res) => {
             throw errorVenta;
         }
 
+        // ========================================
+        // CORREO DE PEDIDO CREADO (fire-and-forget)
+        // ========================================
+        notificarOrdenCreada({
+            idUsuario: req.usuario.id_usuario,
+            correoCompra: correo_compra || req.usuario.email,
+            idVenta: ventaCreada.id_venta,
+            items: orderItems,
+            total,
+            costoEnvio,
+            tipoEntrega
+        }).catch(errorCorreo => {
+            console.error('No se pudo enviar el correo de orden creada:', errorCorreo.message);
+        });
+
         return res.status(201).json({
             success: true,
             ya_existia: false,
@@ -1051,6 +1136,32 @@ const aplicarEstadoPagoAVenta = async ({
             console.log(
                 `[webhook] No se actualizó estado de venta ${venta.id_venta}: ${error.message}`
             );
+        }
+
+        // ========================================
+        // CORREOS TRANSACCIONALES (fire-and-forget)
+        // Solo se envían cuando el estado realmente cambió
+        // (evita duplicados entre webhook y consulta de orden).
+        // ========================================
+        if (estadoVenta === 'pagada') {
+            notificarPagoConfirmado(venta).catch(
+                errorCorreo => {
+                    console.error(
+                        'No se pudo enviar el correo de pago confirmado:',
+                        errorCorreo.message
+                    );
+                }
+            );
+        } else if (estadoVenta === 'cancelada') {
+            notificarPagoRechazado(
+                venta,
+                payuPaymentStatus
+            ).catch(errorCorreo => {
+                console.error(
+                    'No se pudo enviar el correo de pago rechazado:',
+                    errorCorreo.message
+                );
+            });
         }
     }
 

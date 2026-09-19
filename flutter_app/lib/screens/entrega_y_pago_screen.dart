@@ -18,8 +18,8 @@ enum _TipoEntrega { domicilio, agencia, tienda }
 /// Se abre desde "Mi carrito" al presionar "Realizar pedido". Permite elegir
 /// el tipo de entrega (a domicilio, agencia o recoger en tienda), ingresar los
 /// datos de envío cuando corresponde y revisar el resumen (subtotal, envío,
-/// total). Al confirmar con [COMPRAR Y PAGAR] se crea una orden en Mercado
-/// Pago (API de Orders) y se abre el checkout con el navegador, reutilizando
+/// total). Al confirmar con [COMPRAR Y PAGAR] se crea la orden en PayU
+/// (WebCheckout) y se abre el checkout con el navegador, reutilizando
 /// la MISMA lógica existente ([ApiService.crearOrdenPago] +
 /// [launchUrl]) sin modificar la integración de pagos ni el backend.
 class EntregaYPagoScreen extends StatefulWidget {
@@ -109,7 +109,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     }
   }
 
-  /// Crea la orden en Mercado Pago y abre el checkout en el navegador.
+  /// Crea la orden en PayU (WebCheckout) y abre el checkout en el navegador.
   ///
   /// Reutiliza la lógica existente: el carrito SOLO se limpia cuando el pago
   /// se confirma (ver [_verificarPago]). Si el usuario vuelve sin pagar, el
@@ -133,7 +133,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     try {
       final esDomicilio = _tipoEntrega == _TipoEntrega.domicilio;
 
-      // Crea la orden de pago en Mercado Pago (backend calcula el total con
+      // Crea la orden de pago en PayU (backend calcula el total con
       // los precios reales de la BD).
       final orden = await ApiService.instance.crearOrdenPago(
         detalles: detalles,
@@ -149,7 +149,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
 
       final url = orden.checkoutUrl;
       if (url != null && url.isNotEmpty) {
-        // Abrir el checkout de Mercado Pago. La limpieza del carrito solo
+        // Abrir el checkout de PayU. La limpieza del carrito solo
         // ocurre cuando el pago se confirma, no al abrir el checkout.
         await _abrirCheckout(url);
         if (!mounted) return;
@@ -315,19 +315,13 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                 children: [
-                  const AppPageHeader(
-                    eyebrow: 'Último paso',
-                    title: 'Entrega y pago',
-                    subtitle:
-                        'Define cómo recibirás tu pedido y revisa el total.',
-                  ),
+                  const AppPageHeader(title: 'Entrega y pago'),
                   const SizedBox(height: 22),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.divider),
                     ),
                     child: _buildSeccionEntrega(context),
                   ),
@@ -487,7 +481,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,10 +519,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.divider)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x160D2B24),
+            color: Color(0x1617181C),
             blurRadius: 16,
             offset: Offset(0, -4),
           ),
@@ -541,7 +533,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
             width: double.infinity,
             height: 54,
             child: _procesando
-                ? const Center(
+                ? Center(
                     child: SizedBox(
                       width: 24,
                       height: 24,
@@ -558,7 +550,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Serás redirigido a Mercado Pago para completar tu pago.',
+            'Serás redirigido a PayU para completar tu pago de forma segura.',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall
                 ?.copyWith(color: AppColors.textTertiary),
@@ -595,9 +587,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                 Text(
                   _total != null
                       ? 'Tu orden por S/ ${Formats.precio(_total!)} quedó creada. '
-                            'Ahora solo falta pagarla en Mercado Pago para confirmarla.'
+                            'Ahora solo falta pagarla en PayU para confirmarla.'
                       : 'Tu orden quedó creada. Ahora solo falta pagarla '
-                            'en Mercado Pago para confirmarla.',
+                            'en PayU para confirmarla.',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium
                       ?.copyWith(color: AppColors.textSecondary, height: 1.4),
@@ -614,7 +606,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                   width: double.infinity,
                   height: 54,
                   child: _procesando
-                      ? const Center(
+                      ? Center(
                           child: SizedBox(
                             width: 24,
                             height: 24,
@@ -632,7 +624,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: _reabrirCheckout,
-                  child: const Text('Volver a abrir Mercado Pago'),
+                  child: const Text('Reabrir pago en PayU'),
                 ),
                 const SizedBox(height: 8),
                 TextButton(

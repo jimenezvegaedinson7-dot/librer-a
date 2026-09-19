@@ -2,15 +2,22 @@ import 'package:flutter/material.dart';
 
 import '../models/libro.dart';
 import '../services/api_service.dart';
+import '../services/carrito_service.dart';
 import '../utils/app_colors.dart';
+import '../utils/constants.dart';
+import '../utils/formats.dart';
 import '../widgets/app_page_header.dart';
+import '../widgets/book_cover.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
-import '../widgets/libro_list_card.dart';
 import '../widgets/loading_view.dart';
+import 'carrito_screen.dart';
+import 'detalle_libro_screen.dart';
 
 enum _Orden { tituloAZ, tituloZA, precioMenor, precioMayor }
 
+/// Pantalla "Catálogo": buscador, chips de categoría y grilla en dos columnas
+/// estilo Stitch (portadas con lomo, badges de stock y botón de carrito).
 class LibrosScreen extends StatefulWidget {
   const LibrosScreen({super.key});
 
@@ -181,54 +188,6 @@ class _LibrosScreenState extends State<LibrosScreen> {
     return filtrados;
   }
 
-  Future<void> _seleccionarCategoria() async {
-    final resultado = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) {
-        return SafeArea(
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: Text(
-                  'Categorías',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-
-              ListTile(
-                title: const Text('Todas'),
-                trailing: _categoria == null
-                    ? const Icon(Icons.check_rounded)
-                    : null,
-                onTap: () => Navigator.pop(context, ''),
-              ),
-
-              for (final categoria in _categorias)
-                ListTile(
-                  title: Text(categoria),
-                  trailing: _categoria == categoria
-                      ? const Icon(Icons.check_rounded)
-                      : null,
-                  onTap: () => Navigator.pop(context, categoria),
-                ),
-            ],
-          ),
-        );
-      },
-    );
-
-    if (resultado == null || !mounted) {
-      return;
-    }
-
-    setState(() {
-      _categoria = resultado.isEmpty ? null : resultado;
-    });
-  }
-
   Future<void> _seleccionarDisponibilidad() async {
     final resultado = await showModalBottomSheet<String>(
       context: context,
@@ -384,38 +343,17 @@ class _LibrosScreenState extends State<LibrosScreen> {
                   ),
                 )
               else ...[
+                if (_categorias.length > 1)
+                  SliverToBoxAdapter(child: _buildChips()),
+
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 14),
-                    child: Text.rich(
-                      TextSpan(
-                        children: [
-                          const TextSpan(text: 'Encontramos '),
-                          TextSpan(
-                            text: '${filtrados.length}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          TextSpan(
-                            text: filtrados.length == 1 ? ' libro' : ' libros',
-                          ),
-                        ],
-                      ),
-                      style: Theme.of(context).textTheme.bodyMedium
-                          ?.copyWith(color: AppColors.textSecondary),
-                    ),
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                    child: _buildSortBar(filtrados.length),
                   ),
                 ),
 
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList.separated(
-                    itemCount: filtrados.length,
-                    itemBuilder: (context, index) {
-                      return LibroListCard(libro: filtrados[index]);
-                    },
-                    separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  ),
-                ),
+                _buildGrid(filtrados),
 
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
@@ -432,13 +370,9 @@ class _LibrosScreenState extends State<LibrosScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppPageHeader(
-            eyebrow: 'Colección',
-            title: 'Catálogo',
-            subtitle: 'Explora títulos, autores y categorías disponibles.',
-          ),
+          const AppPageHeader(title: 'Catálogo'),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: 18),
 
           TextField(
             controller: _searchController,
@@ -449,7 +383,7 @@ class _LibrosScreenState extends State<LibrosScreen> {
             },
             textInputAction: TextInputAction.search,
             decoration: InputDecoration(
-              hintText: 'Buscar por título o autor...',
+              hintText: 'Título, autor o ISBN...',
               prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
@@ -462,84 +396,419 @@ class _LibrosScreenState extends State<LibrosScreen> {
                       },
                       icon: const Icon(Icons.close_rounded),
                     )
-                  : null,
+                  : Icon(Icons.tune_rounded, color: AppColors.gold),
               filled: true,
             ),
           ),
+        ],
+      ),
+    );
+  }
 
-          const SizedBox(height: 18),
-
-          Row(
-            children: [
-              Expanded(
-                child: _SmallFilterButton(
-                  label: _categoria == null ? 'Categoría' : _categoria!,
-                  onTap: _seleccionarCategoria,
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              Expanded(
-                child: _SmallFilterButton(
-                  label: _disponible == null
-                      ? 'Estado'
-                      : _disponible!
-                      ? 'Disponible'
-                      : 'Agotado',
-                  onTap: _seleccionarDisponibilidad,
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              Expanded(
-                child: _SmallFilterButton(
-                  label: 'Ordenar',
-                  onTap: _seleccionarOrden,
-                ),
+  Widget _buildChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.divider),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _CategorySegment(
+              label: 'Todos',
+              seleccionado: _categoria == null,
+              onTap: () => setState(() => _categoria = null),
+            ),
+            for (final categoria in _categorias) ...[
+              const _SegmentDivider(),
+              _CategorySegment(
+                label: categoria,
+                seleccionado: _categoria == categoria,
+                onTap: () => setState(() => _categoria = categoria),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortBar(int total) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '$total ',
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+                TextSpan(
+                  text: total == 1
+                      ? 'título disponible'
+                      : 'títulos disponibles',
+                ),
+              ],
+            ),
+            style: Theme.of(context).textTheme.bodyMedium
+                ?.copyWith(color: AppColors.textSecondary),
           ),
+        ),
+        const SizedBox(width: 10),
+
+        _SmallFilterButton(
+          icon: Icons.swap_vert_rounded,
+          label: 'Ordenar',
+          onTap: _seleccionarOrden,
+        ),
+        const SizedBox(width: 8),
+
+        _SmallFilterButton(
+          icon: Icons.tune_rounded,
+          label: _disponible == null
+              ? 'Estado'
+              : _disponible!
+              ? 'Disponible'
+              : 'Agotado',
+          onTap: _seleccionarDisponibilidad,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGrid(List<Libro> libros) {
+    final width = MediaQuery.of(context).size.width;
+    final columns = width >= 1000
+        ? 4
+        : width >= 700
+        ? 3
+        : 2;
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      sliver: SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: columns,
+          mainAxisSpacing: 20,
+          crossAxisSpacing: 12,
+          childAspectRatio: width >= 700 ? 0.54 : 0.45,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          childCount: libros.length,
+          (context, index) => _LibroGridCard(libro: libros[index]),
+        ),
+      ),
+    );
+  }
+}
+
+/// Segmento de la barra horizontal continua de categorías: el activo se
+/// rellena de grafito y el resto queda transparente sobre la barra blanca.
+class _CategorySegment extends StatelessWidget {
+  final String label;
+  final bool seleccionado;
+  final VoidCallback onTap;
+
+  const _CategorySegment({
+    required this.label,
+    required this.seleccionado,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color: seleccionado ? AppColors.primary : Colors.transparent,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: seleccionado ? Colors.white : AppColors.textSecondary,
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Separador vertical fino entre segmentos de la barra de categorías.
+class _SegmentDivider extends StatelessWidget {
+  const _SegmentDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(width: 1, height: 22, color: AppColors.divider);
+  }
+}
+
+/// Botón compacto de la barra de ordenamiento (estilo Stitch).
+class _SmallFilterButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _SmallFilterButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.textSecondary,
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        side: const BorderSide(color: AppColors.divider),
+        backgroundColor: AppColors.surface,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 17, color: AppColors.gold),
+          const SizedBox(width: 5),
+          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
         ],
       ),
     );
   }
 }
 
-class _SmallFilterButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
+/// Tarjeta vertical de la grilla del catálogo: portada con lomo, badge de
+/// stock, título en serif, autor, precio y botón de carrito.
+class _LibroGridCard extends StatelessWidget {
+  final Libro libro;
 
-  const _SmallFilterButton({required this.label, required this.onTap});
+  const _LibroGridCard({required this.libro});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: colorScheme.onSurface,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        side: BorderSide(color: colorScheme.outlineVariant),
-        backgroundColor: colorScheme.surface,
+    final textTheme = Theme.of(context).textTheme;
+    final disponible = libro.esActivo && libro.hayStock;
+    final stock = libro.stock ?? 0;
+    final categoria = (libro.categoria ?? '').trim();
+
+    return Material(
+      color: AppColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => DetalleLibroScreen(libro: libro),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  BookCover(
+                    url: Constants.buildPortadaUrl(libro.portada),
+                    borderRadius: 0,
+                    fit: BoxFit.contain,
+                  ),
+
+                  // Efecto de lomo / plegado lateral del libro físico.
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: SizedBox(
+                      width: 8,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.centerLeft,
+                            colors: [
+                              Color(0x4D17181C),
+                              Color(0x1A17181C),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _StockBadge(disponible: disponible, stock: stock),
+
+                  const SizedBox(height: 7),
+
+                  Text(
+                    libro.titulo?.trim().isNotEmpty == true
+                        ? libro.titulo!
+                        : 'Sin título',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.titleSmall?.copyWith(
+                      height: 1.2,
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+
+                  const SizedBox(height: 2),
+
+                  Text(
+                    (libro.autor ?? '').trim().isNotEmpty
+                        ? libro.autor!
+                        : 'Autor no registrado',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                    ),
+                  ),
+
+                  if (categoria.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      categoria,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: AppColors.gold,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 9,
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 10),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'S/ ${Formats.precio(libro.precio)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.labelLarge?.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+
+                      _AddButton(libro: libro, disponible: disponible),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Flexible(
-            child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
-          ),
+    );
+  }
+}
 
-          const SizedBox(width: 5),
+class _StockBadge extends StatelessWidget {
+  final bool disponible;
+  final int stock;
 
-          Icon(
-            Icons.keyboard_arrow_down_rounded,
+  const _StockBadge({required this.disponible, required this.stock});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = disponible ? AppColors.success : AppColors.error;
+    final label = disponible
+        ? (stock == 1 ? '1 disponible' : '$stock disponibles')
+        : 'Sin existencias';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: color, fontWeight: FontWeight.w700, fontSize: 9),
+      ),
+    );
+  }
+}
+
+class _AddButton extends StatelessWidget {
+  final Libro libro;
+  final bool disponible;
+
+  const _AddButton({required this.libro, required this.disponible});
+
+  @override
+  Widget build(BuildContext context) {
+    final onTap = disponible && libro.idLibro != null
+        ? () {
+            CarritoService.instance.agregar(libro);
+
+            final messenger = ScaffoldMessenger.of(context);
+            messenger.hideCurrentSnackBar();
+            messenger.showSnackBar(
+              SnackBar(
+                content: Text('${libro.titulo} se agregó al carrito'),
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 2),
+                action: SnackBarAction(
+                  label: 'Ver carrito',
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(builder: (_) => CarritoScreen()),
+                    );
+                  },
+                ),
+              ),
+            );
+          }
+        : null;
+
+    return Material(
+      color: disponible ? AppColors.primary : AppColors.surfaceElevated,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: InkWell(
+        customBorder: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        onTap: onTap,
+        child: SizedBox(
+          width: 38,
+          height: 38,
+          child: Icon(
+            Icons.add_shopping_cart_rounded,
             size: 19,
-            color: colorScheme.onSurfaceVariant,
+            color: disponible ? Colors.white : AppColors.textTertiary,
           ),
-        ],
+        ),
       ),
     );
   }

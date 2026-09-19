@@ -6,6 +6,7 @@ const pool = require('../config/database');
 const { validarId } = require('../utils/validaciones');
 const { VENTA, permitirTransicion } = require('../utils/transiciones');
 const { PUBLIC_BASE_URL } = require('../config/payu');
+const { enviarCorreoPedidoEntregado } = require('../utils/mailer');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR LA VENTA
@@ -30,6 +31,31 @@ const registrarHistorial = async ({
             error.message
         );
     }
+};
+
+// ========================================
+// NOTIFICAR ENTREGA SIN AFECTAR LA VENTA
+// (fire-and-forget: un fallo de correo no
+// debe romper el cambio de estado)
+// ========================================
+const notificarPedidoEntregado = async (ventaActual) => {
+    const destinatario =
+        ventaActual.correo_compra ||
+        ventaActual.correo_usuario;
+
+    if (!destinatario) return;
+
+    const nombre = [
+        ventaActual.nombre_usuario,
+        ventaActual.apellido_usuario
+    ].filter(Boolean).join(' ').trim();
+
+    await enviarCorreoPedidoEntregado({
+        destinatario,
+        nombre: nombre || 'cliente',
+        idVenta: ventaActual.id_venta,
+        tipoEntrega: ventaActual.tipo_entrega
+    });
 };
 
 // ========================================
@@ -567,6 +593,21 @@ const actualizarEstadoVenta = async (req, res) => {
             descripcion:
                 `Venta #${idVenta} actualizada de "${estadoActual}" a "${estado}"`
         });
+
+        // ========================================
+        // NOTIFICAR ENTREGA AL CLIENTE
+        // (solo cuando realmente pasa a "entregada")
+        // ========================================
+        if (estado === 'entregada') {
+            notificarPedidoEntregado(
+                ventaActual
+            ).catch((error) => {
+                console.error(
+                    'Error al notificar pedido entregado:',
+                    error.message
+                );
+            });
+        }
 
         return res.json({
             success: true,

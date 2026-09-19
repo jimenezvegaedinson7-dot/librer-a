@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/carrito_service.dart';
+import '../utils/app_colors.dart';
 
 /// Badge Material 3 que muestra la cantidad total de ejemplares en el carrito.
 ///
@@ -24,6 +25,8 @@ class CarritoBadge extends StatelessWidget {
         final total = CarritoService.instance.totalUnidades;
         return Badge(
           isLabelVisible: total > 0,
+          backgroundColor: AppColors.tertiary,
+          textColor: AppColors.surface,
           label: Text(total > 99 ? '99+' : '$total'),
           child: child,
         );

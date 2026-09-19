@@ -71,11 +71,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
                     if (widget.embedded) ...[
                       const Padding(
                         padding: EdgeInsets.only(left: 4, bottom: 18),
-                        child: AppPageHeader(
-                          eyebrow: 'Pedido',
-                          title: 'Mi carrito',
-                          subtitle: 'Revisa tu selección antes de continuar.',
-                        ),
+                        child: AppPageHeader(title: 'Mi carrito'),
                       ),
                     ],
                     if (items.isEmpty && guardados.isNotEmpty) ...[
@@ -83,12 +79,20 @@ class _CarritoScreenState extends State<CarritoScreen> {
                       const SizedBox(height: 16),
                     ],
                     if (items.isNotEmpty) ...[
+                      if (!widget.embedded)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 18),
+                          child: _StepperBanner(pasoActual: 1),
+                        ),
                       _SectionTitle(title: 'Mis libros', count: items.length),
                       const SizedBox(height: 12),
                       for (final item in items) ...[
                         _CarritoItemCard(item: item),
                         const SizedBox(height: 12),
                       ],
+                      const SizedBox(height: 4),
+                      const _ResumenCard(),
+                      const SizedBox(height: 12),
                     ],
                     if (guardados.isNotEmpty) ...[
                       if (items.isNotEmpty) const SizedBox(height: 8),
@@ -125,57 +129,74 @@ class _CarritoScreenState extends State<CarritoScreen> {
   /// Barra inferior fija con el subtotal y el botón "Realizar pedido".
   Widget _buildBarraPagar(BuildContext context) {
     final subtotal = CarritoService.instance.total;
+    final unidades = CarritoService.instance.totalUnidades;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.divider)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x160D2B24),
+            color: Color(0x1617181C),
             blurRadius: 16,
             offset: Offset(0, -4),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Subtotal',
-                  style: Theme.of(context).textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w600),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Total',
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
                 ),
+                Text(
+                  'S/ ${Formats.precio(subtotal)}',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              unidades == 1
+                  ? '$unidades unidad en tu carrito'
+                  : '$unidades unidades en tu carrito',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: AppColors.textTertiary),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: FilledButton(
+                onPressed: _irAPago,
+                child: const Text('Continuar con la compra'),
               ),
-              Text(
-                'S/ ${Formats.precio(subtotal)}',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
+            ),
+            if (!widget.embedded) ...[
+              const SizedBox(height: 4),
+              TextButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.gold,
+                  visualDensity: VisualDensity.compact,
                 ),
+                child: const Text('Seguir explorando'),
               ),
             ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'El envío y la entrega se definen en el siguiente paso.',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(color: AppColors.textTertiary),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: FilledButton(
-              onPressed: _irAPago,
-              child: const Text('Continuar con la compra'),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -198,7 +219,6 @@ class _CarritoItemCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -346,7 +366,6 @@ class _GuardadoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.divider),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -601,6 +620,181 @@ class _EstadoBadge extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: estado ? AppColors.success : AppColors.error,
         ),
+      ),
+    );
+  }
+}
+
+/// Indicador de pasos del flujo de compra (Carrito · Entrega · Pago),
+/// alineado con el diseño de Stitch para "Carrito".
+class _StepperBanner extends StatelessWidget {
+  final int pasoActual;
+
+  const _StepperBanner({required this.pasoActual});
+
+  @override
+  Widget build(BuildContext context) {
+    const pasos = ['Carrito', 'Entrega', 'Pago'];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        children: [
+          for (var i = 0; i < pasos.length; i++) ...[
+            if (i > 0)
+              Expanded(
+                child: Container(
+                  height: 2,
+                  margin: const EdgeInsets.only(bottom: 18),
+                  color: i <= pasoActual - 1
+                      ? AppColors.gold
+                      : AppColors.divider,
+                ),
+              ),
+            _StepDot(
+              numero: i + 1,
+              label: pasos[i],
+              completado: i + 1 <= pasoActual,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StepDot extends StatelessWidget {
+  final int numero;
+  final String label;
+  final bool completado;
+
+  const _StepDot({
+    required this.numero,
+    required this.label,
+    required this.completado,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: completado ? AppColors.primary : AppColors.surface,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: completado ? AppColors.primary : AppColors.divider,
+              width: 2,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: completado
+              ? Text(
+                  '$numero',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                )
+              : Text(
+                  '$numero',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: completado ? AppColors.textPrimary : AppColors.textSecondary,
+            fontWeight: completado ? FontWeight.w800 : FontWeight.w600,
+            fontSize: 10,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Tarjeta de resumen del pedido (subtotal y total), estilo Stitch.
+class _ResumenCard extends StatelessWidget {
+  const _ResumenCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final subtotal = CarritoService.instance.total;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Resumen del pedido',
+            style: textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Subtotal',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              Text(
+                'S/ ${Formats.precio(subtotal)}',
+                style: textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 26, color: AppColors.divider),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Total',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Text(
+                'S/ ${Formats.precio(subtotal)}',
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'El envío y la entrega se definen en el siguiente paso.',
+            style: textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
+          ),
+        ],
       ),
     );
   }

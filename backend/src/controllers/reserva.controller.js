@@ -2,6 +2,7 @@ const reservaModel = require('../models/reserva.model');
 const historialModel = require('../models/historial.model');
 const { validarId, esCantidadPositiva, esNumeroNoNegativo } = require('../utils/validaciones');
 const { RESERVA, permitirTransicion } = require('../utils/transiciones');
+const { enviarCorreoReservaCreada } = require('../utils/mailer');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR RESERVAS
@@ -259,6 +260,31 @@ const crearReserva = async (req, res) => {
             descripcion:
                 `Reserva #${id} creada para el libro ${idLibroNum} con cantidad ${Number(cantidad)}`
         });
+
+        // ========================================
+        // CORREO DE RESERVA CREADA (fire-and-forget)
+        // ========================================
+        (async () => {
+            try {
+                const reserva = await reservaModel.obtenerPorId(id);
+
+                if (reserva && req.usuario.email) {
+                    await enviarCorreoReservaCreada({
+                        destinatario: req.usuario.email,
+                        nombre: reserva.nombre_usuario || '',
+                        idReserva: id,
+                        titulo: reserva.titulo || '',
+                        cantidad: reserva.cantidad,
+                        fechaVencimiento: reserva.fecha_vencimiento
+                    });
+                }
+            } catch (errorCorreo) {
+                console.error(
+                    'No se pudo enviar el correo de reserva:',
+                    errorCorreo.message
+                );
+            }
+        })();
 
         return res.status(201).json({
             success: true,

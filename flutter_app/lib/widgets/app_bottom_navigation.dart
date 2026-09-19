@@ -4,9 +4,15 @@ import '../utils/app_colors.dart';
 import 'carrito_badge.dart';
 
 /// Índices de las pestañas de la navegación principal.
-enum AppTab { inicio, libros, carrito, misCompras, perfil }
+///
+/// Coincide con la barra inferior aprobada en Stitch:
+/// Inicio · Catálogo · Carrito · Reservas · Perfil.
+enum AppTab { inicio, libros, carrito, reservas, perfil }
 
 /// Navegación principal con identidad editorial de la librería.
+///
+/// Barra inferior blanca con sombra superior, indicador dorado sobre la
+/// pestaña activa y badge granate en Carrito (según los diseños de Stitch).
 class AppBottomNavigation extends StatelessWidget {
   final AppTab currentTab;
   final ValueChanged<AppTab> onTabSelected;
@@ -17,72 +23,106 @@ class AppBottomNavigation extends StatelessWidget {
     required this.onTabSelected,
   });
 
-  int get _index {
-    switch (currentTab) {
-      case AppTab.inicio:
-        return 0;
-      case AppTab.libros:
-        return 1;
-      case AppTab.carrito:
-        return 2;
-      case AppTab.misCompras:
-        return 3;
-      case AppTab.perfil:
-        return 4;
-    }
-  }
-
-  AppTab _tabFromIndex(int index) {
-    switch (index) {
-      case 0:
-        return AppTab.inicio;
-      case 1:
-        return AppTab.libros;
-      case 2:
-        return AppTab.carrito;
-      case 3:
-        return AppTab.misCompras;
-      default:
-        return AppTab.perfil;
-    }
-  }
+  static const List<({AppTab tab, IconData icon, String label})> _tabs = [
+    (tab: AppTab.inicio, icon: Icons.home_outlined, label: 'Inicio'),
+    (tab: AppTab.libros, icon: Icons.library_books_outlined, label: 'Catálogo'),
+    (tab: AppTab.carrito, icon: Icons.shopping_cart_outlined, label: 'Carrito'),
+    (
+      tab: AppTab.reservas,
+      icon: Icons.bookmark_outline_rounded,
+      label: 'Reservas',
+    ),
+    (tab: AppTab.perfil, icon: Icons.person_outline_rounded, label: 'Perfil'),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.divider)),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryDark.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
-      child: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (index) => onTabSelected(_tabFromIndex(index)),
-        destinations: [
-          const NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Inicio',
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            children: [
+              for (final t in _tabs)
+                Expanded(
+                  child: _NavItem(
+                    icon: t.icon,
+                    label: t.label,
+                    selected: currentTab == t.tab,
+                    carrito: t.tab == AppTab.carrito,
+                    onTap: () => onTabSelected(t.tab),
+                  ),
+                ),
+            ],
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book_rounded),
-            label: 'Catálogo',
-          ),
-          NavigationDestination(
-            icon: const CarritoBadge(child: Icon(Icons.shopping_bag_outlined)),
-            selectedIcon: const CarritoBadge(
-              child: Icon(Icons.shopping_bag_rounded),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final bool carrito;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.carrito,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? AppColors.primary : AppColors.textSecondary;
+
+    return InkWell(
+      onTap: onTap,
+      customBorder: const RoundedRectangleBorder(),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Indicador dorado superior sobre la pestaña activa.
+          Container(
+            width: 20,
+            height: 3,
+            margin: const EdgeInsets.only(bottom: 4),
+            decoration: BoxDecoration(
+              color: selected ? AppColors.gold : Colors.transparent,
+              borderRadius: BorderRadius.circular(999),
             ),
-            label: 'Carrito',
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long_rounded),
-            label: 'Compras',
+          SizedBox(
+            width: 28,
+            height: 24,
+            child: carrito
+                ? CarritoBadge(child: Icon(icon, size: 22, color: color))
+                : Icon(icon, size: 22, color: color),
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Perfil',
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+              fontSize: 10,
+              letterSpacing: 0.2,
+            ),
           ),
         ],
       ),

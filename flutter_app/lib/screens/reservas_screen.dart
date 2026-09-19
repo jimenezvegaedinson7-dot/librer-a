@@ -8,6 +8,7 @@ import '../widgets/app_page_header.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/loading_view.dart';
+import 'mis_compras_screen.dart';
 
 /// Pantalla de reservas del cliente.
 ///
@@ -57,6 +58,12 @@ class _ReservasScreenState extends State<ReservasScreen> {
   bool _puedeCancelar(Reserva reserva) {
     final estado = reserva.estado?.toLowerCase().trim();
     return estado == 'pendiente' || estado == 'confirmada';
+  }
+
+  void _irACompras() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const MisComprasScreen()));
   }
 
   /// Confirma la cancelación con un diálogo y llama a
@@ -122,12 +129,20 @@ class _ReservasScreenState extends State<ReservasScreen> {
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
-                child: const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 20, 20, 10),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
                   child: AppPageHeader(
-                    eyebrow: 'Lecturas apartadas',
                     title: 'Mis reservas',
-                    subtitle: 'Controla la vigencia y estado de cada título.',
+                    trailing: IconButton(
+                      tooltip: 'Mis compras',
+                      onPressed: _irACompras,
+                      icon: const Icon(Icons.receipt_long_outlined),
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.surface,
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.divider),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -205,7 +220,6 @@ class _ReservaCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.divider),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryDark.withValues(alpha: 0.05),
@@ -344,7 +358,7 @@ class _ReservaCard extends StatelessWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.bodyMedium
-              ?.copyWith(fontWeight: FontWeight.w500),
+              ?.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );

@@ -2,17 +2,13 @@
 class Formats {
   Formats._();
 
-  /// Formatea un precio de forma legible.
+  /// Formatea un precio de forma formal: siempre con dos decimales.
   ///
-  /// - `45`    -> `45`
+  /// - `45`    -> `45.00`
   /// - `45.9`  -> `45.90`
-  /// - `null`  -> `0`
+  /// - `null`  -> `0.00`
   static String precio(double? precio) {
-    final value = precio ?? 0;
-    if (value == value.roundToDouble()) {
-      return value.toStringAsFixed(0);
-    }
-    return value.toStringAsFixed(2);
+    return (precio ?? 0).toStringAsFixed(2);
   }
 
   /// Texto legible de stock para mostrar en tarjetas/detalle.

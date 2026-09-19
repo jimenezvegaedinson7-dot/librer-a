@@ -23,7 +23,7 @@ class LibroListCard extends StatelessWidget {
     return Material(
       color: AppColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         side: const BorderSide(color: AppColors.divider),
       ),
       clipBehavior: Clip.antiAlias,
@@ -45,7 +45,7 @@ class LibroListCard extends StatelessWidget {
                 height: 132,
                 child: BookCover(
                   url: Constants.buildPortadaUrl(libro.portada),
-                  borderRadius: 6,
+                  borderRadius: 4,
                 ),
               ),
               const SizedBox(width: 15),
@@ -61,7 +61,7 @@ class LibroListCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: textTheme.labelSmall?.copyWith(
-                            color: AppColors.price,
+                            color: AppColors.secondary,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 1.1,
                             fontSize: 9,
@@ -76,9 +76,7 @@ class LibroListCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: textTheme.titleMedium?.copyWith(
-                          fontFamily: 'serif',
-                          fontWeight: FontWeight.w700,
-                          height: 1.12,
+                          height: 1.15,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -100,9 +98,8 @@ class LibroListCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               'S/ ${Formats.precio(libro.precio)}',
-                              style: textTheme.titleMedium?.copyWith(
+                              style: textTheme.labelLarge?.copyWith(
                                 color: AppColors.primary,
-                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ),

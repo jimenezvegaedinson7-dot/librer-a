@@ -94,7 +94,7 @@ class _Placeholder extends StatelessWidget {
         border: Border.all(color: AppColors.gold.withValues(alpha: 0.5)),
       ),
       child: Icon(
-        Icons.menu_book_rounded,
+        Icons.library_books_rounded,
         size: size * 0.55,
         color: AppColors.primary,
       ),

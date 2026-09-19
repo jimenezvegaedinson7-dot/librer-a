@@ -16,7 +16,7 @@ class LoadingView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
+            SizedBox(
               width: 32,
               height: 32,
               child: CircularProgressIndicator(

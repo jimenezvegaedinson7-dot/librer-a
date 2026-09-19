@@ -28,8 +28,7 @@ class EmptyView extends StatelessWidget {
               height: 78,
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.divider),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, size: 36, color: AppColors.primary),
             ),
@@ -37,9 +36,7 @@ class EmptyView extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontFamily: 'serif',
-                fontWeight: FontWeight.w700,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: AppColors.textPrimary,
               ),
             ),

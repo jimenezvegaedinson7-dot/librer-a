@@ -74,11 +74,7 @@ class MisComprasScreenState extends State<MisComprasScreen> {
               SliverToBoxAdapter(
                 child: const Padding(
                   padding: EdgeInsets.fromLTRB(20, 20, 20, 14),
-                  child: AppPageHeader(
-                    eyebrow: 'Historial',
-                    title: 'Mis compras',
-                    subtitle: 'Consulta pagos, entregas y detalle de pedidos.',
-                  ),
+                  child: AppPageHeader(title: 'Mis compras'),
                 ),
               ),
               _buildBody(),
@@ -141,7 +137,7 @@ class _VentaTile extends StatelessWidget {
     );
   }
 
-  /// Reabre el checkout de Mercado Pago de una venta pendiente en el
+  /// Reabre el checkout de PayU de una venta pendiente en el
   /// navegador. Si no hay una URL registrada en memoria (p. ej. la app se
   /// reinició antes de pagar), se muestra un aviso.
   Future<void> _continuarPago(BuildContext context) async {
@@ -263,7 +259,6 @@ class _VentaTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.divider),
           boxShadow: [
             BoxShadow(
               color: AppColors.primaryDark.withValues(alpha: 0.05),
@@ -326,7 +321,7 @@ class _VentaTile extends StatelessWidget {
                 const Text('Total: ', style: TextStyle(fontSize: 15)),
                 Text(
                   'S/ ${Formats.precio(venta.total)}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
                     color: AppColors.primary,
@@ -410,7 +405,12 @@ class _DetalleVentaSheet extends StatelessWidget {
                 _EstadoChip(venta: venta),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: _SeguimientoPedido(estado: venta.estado),
+            ),
+            const SizedBox(height: 14),
             if (!tieneDetalle)
               Container(
                 width: double.infinity,
@@ -526,6 +526,116 @@ class _FilaDetalle extends StatelessWidget {
                   color: AppColors.primary,
                 )
               : textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
+}
+
+/// Línea de seguimiento del pedido: muestra las etapas
+/// "Pedido realizado → Pago confirmado → Entregado" según el estado actual.
+class _SeguimientoPedido extends StatelessWidget {
+  final String? estado;
+
+  const _SeguimientoPedido({required this.estado});
+
+  @override
+  Widget build(BuildContext context) {
+    final raw = (estado ?? '').toLowerCase().trim();
+
+    if (raw == 'cancelada') {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.error.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.cancel_outlined, color: AppColors.error, size: 20),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Este pedido fue cancelado.',
+                style: TextStyle(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final completado = raw == 'entregada' || raw == 'pagada';
+    final pasos = <(String, bool)>[
+      ('Pedido realizado', raw == 'pendiente' || completado),
+      ('Pago confirmado', raw == 'pagada' || raw == 'entregada'),
+      ('Entregado', raw == 'entregada'),
+    ];
+
+    return Row(
+      children: [
+        for (var i = 0; i < pasos.length; i++) ...[
+          if (i > 0)
+            Expanded(
+              child: Container(
+                height: 2,
+                margin: const EdgeInsets.only(bottom: 24),
+                color:
+                    pasos[i].$2 ? AppColors.success : AppColors.divider,
+              ),
+            ),
+          _Paso(etiqueta: pasos[i].$1, activo: pasos[i].$2),
+        ],
+      ],
+    );
+  }
+}
+
+/// Círculo + etiqueta de una etapa del seguimiento.
+class _Paso extends StatelessWidget {
+  final String etiqueta;
+  final bool activo;
+
+  const _Paso({required this.etiqueta, required this.activo});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = activo ? AppColors.success : AppColors.textTertiary;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: activo ? AppColors.success : AppColors.surface,
+            border: Border.all(color: color, width: 2),
+          ),
+          child: activo
+              ? const Icon(Icons.check_rounded, size: 15, color: Colors.white)
+              : null,
+        ),
+        const SizedBox(height: 6),
+        SizedBox(
+          width: 86,
+          child: Text(
+            etiqueta,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10.5,
+              height: 1.2,
+              fontWeight: activo ? FontWeight.w700 : FontWeight.w500,
+              color: activo ? AppColors.success : AppColors.textSecondary,
+            ),
+          ),
         ),
       ],
     );

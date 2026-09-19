@@ -6,6 +6,9 @@ import '../services/carrito_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/error_banner.dart';
 import 'home_screen.dart';
+import 'legal/politica_privacidad_screen.dart';
+import 'legal/terminos_condiciones_screen.dart';
+import 'recuperar_contrasena_screen.dart';
 import 'registro_screen.dart';
 import 'security/two_factor_verify_screen.dart';
 
@@ -18,12 +21,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const _background = Color(0xFFF5F1E8);
-  static const _surface = Color(0xFFFFFCF7);
-  static const _ink = Color(0xFF25211C);
-  static const _muted = Color(0xFF746D63);
-  static const _gold = Color(0xFFA8792C);
-  static const _border = Color(0xFFD8CDBB);
+  static const _background = Color(0xFFF4F5F7);
+  static const _surface = Color(0xFFFFFFFF);
+  static const _ink = Color(0xFF17181C);
+  static const _muted = Color(0xFF5B5E66);
+  static const _gold = Color(0xFFD3A331);
+  static const _border = Color(0xFFDEE1E6);
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -101,6 +104,26 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _openRecuperar() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => const RecuperarContrasenaScreen(),
+      ),
+    );
+  }
+
+  Future<void> _openTerminos() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const TerminosCondicionesScreen()),
+    );
+  }
+
+  Future<void> _openPrivacidad() async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(builder: (_) => const PoliticaPrivacidadScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -136,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: textTheme.headlineLarge?.copyWith(
                               color: _ink,
                               fontSize: 36,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w800,
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -170,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             'Correo electrónico',
                             style: textTheme.titleSmall?.copyWith(
                               color: _ink,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -206,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             'Contraseña',
                             style: textTheme.titleSmall?.copyWith(
                               color: _ink,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -245,6 +268,29 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                           ),
 
+                          const SizedBox(height: 6),
+                          Align(
+                            alignment: Alignment.center,
+                            child: TextButton(
+                              onPressed: _loading ? null : _openRecuperar,
+                              style: TextButton.styleFrom(
+                                foregroundColor: _gold,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                minimumSize: const Size(0, 36),
+                                tapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                textStyle: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              child: const Text('¿Olvidaste tu contraseña?'),
+                            ),
+                          ),
+
                           if (_errorMessage != null) ...[
                             const SizedBox(height: 16),
                             ErrorBanner(message: _errorMessage!),
@@ -269,7 +315,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                       textStyle: const TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.w800,
                                         letterSpacing: 0.2,
                                       ),
                                     ),
@@ -292,10 +338,68 @@ class _LoginScreenState extends State<LoginScreen> {
                                   foregroundColor: _gold,
                                   padding: const EdgeInsets.only(left: 6),
                                   textStyle: const TextStyle(
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
                                 child: const Text('Crear cuenta'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            runSpacing: 2,
+                            children: [
+                              Text(
+                                'Al continuar aceptas los ',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: _muted,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _loading ? null : _openTerminos,
+                                style: TextButton.styleFrom(
+                                  foregroundColor: _gold,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 2,
+                                  ),
+                                  minimumSize: const Size(0, 32),
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  textStyle: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                child: const Text('Términos y Condiciones'),
+                              ),
+                              Text(
+                                ' y la ',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: _muted,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _loading ? null : _openPrivacidad,
+                                style: TextButton.styleFrom(
+                                  foregroundColor: _gold,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 2,
+                                  ),
+                                  minimumSize: const Size(0, 32),
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  textStyle: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                child: const Text('Política de Privacidad'),
+                              ),
+                              Text(
+                                '.',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: _muted,
+                                ),
                               ),
                             ],
                           ),
@@ -337,11 +441,11 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFA43E36)),
+        borderSide: const BorderSide(color: Color(0xFFB3261E)),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFA43E36), width: 1.6),
+        borderSide: const BorderSide(color: Color(0xFFB3261E), width: 1.6),
       ),
     );
   }
