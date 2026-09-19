@@ -188,8 +188,8 @@ export default function ComprobantesPage() {
                         <span className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-700">
                             Facturas: <span className="font-bold text-indigo-800">{resumen.facturas}</span>
                         </span>
-                        <span className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
-                            Ingresos: <span className="font-bold text-emerald-800">{formatearMoneda(resumen.ingresos)}</span>
+                        <span className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600">
+                            Ingresos: <span className="font-semibold text-slate-900">{formatearMoneda(resumen.ingresos)}</span>
                         </span>
                     </div>
                 }

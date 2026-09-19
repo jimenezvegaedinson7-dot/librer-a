@@ -66,8 +66,8 @@ function Contador({ total, totalComprado, conCompras }) {
             <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
                 Total: <span className="font-bold text-slate-900">{total}</span>
             </span>
-            <span className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
-                Total comprado: <span className="font-bold text-emerald-800">{formatearMoneda(totalComprado)}</span>
+            <span className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600">
+                Total comprado: <span className="font-semibold text-slate-900">{formatearMoneda(totalComprado)}</span>
             </span>
             <span className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm text-sky-700">
                 Con compras: <span className="font-bold text-sky-800">{conCompras}</span>

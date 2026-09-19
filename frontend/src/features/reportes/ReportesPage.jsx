@@ -235,28 +235,24 @@ export default function ReportesPage() {
                                     titulo="Ventas de hoy"
                                     valor={indicadores.ventas_hoy || 0}
                                     detalle={formatearMoneda(indicadores.vendido_hoy)}
-                                    clase="border-sky-200 bg-sky-50 text-sky-700"
                                 />
                                 <TarjetaResumen
                                     icono={<FaCalendarDays />}
                                     titulo="Ventas del mes"
                                     valor={indicadores.ventas_mes_actual || 0}
                                     detalle={formatearMoneda(indicadores.vendido_mes_actual)}
-                                    clase="border-indigo-200 bg-indigo-50 text-indigo-700"
                                 />
                                 <TarjetaResumen
                                     icono={<FaReceipt />}
                                     titulo="Ticket promedio"
                                     valor={formatearMoneda(indicadores.ticket_promedio)}
                                     detalle="Promedio por venta pagada"
-                                    clase="border-violet-200 bg-violet-50 text-violet-700"
                                 />
                                 <TarjetaResumen
                                     icono={<FaMoneyBillWave />}
                                     titulo="Venta más alta"
                                     valor={formatearMoneda(indicadores.venta_mayor)}
                                     detalle="Mayor venta pagada"
-                                    clase="border-slate-200 bg-white text-slate-700"
                                 />
                             </div>
 
@@ -432,14 +428,14 @@ export default function ReportesPage() {
                             />
 
                             <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-                                <TarjetaResumen icono={<FaBook />} titulo="Libros" valor={resumen.total_libros || 0} clase="border-sky-200 bg-sky-50 text-sky-700" />
-                                <TarjetaResumen icono={<FaUserPen />} titulo="Autores" valor={resumen.total_autores || 0} clase="border-violet-200 bg-violet-50 text-violet-700" />
-                                <TarjetaResumen icono={<FaTags />} titulo="Categorías" valor={resumen.total_categorias || 0} clase="border-indigo-200 bg-indigo-50 text-indigo-700" />
-                                <TarjetaResumen icono={<FaUsers />} titulo="Usuarios" valor={resumen.total_usuarios || 0} clase="border-cyan-200 bg-cyan-50 text-cyan-700" />
+                                <TarjetaResumen icono={<FaBook />} titulo="Libros" valor={resumen.total_libros || 0} />
+                                <TarjetaResumen icono={<FaUserPen />} titulo="Autores" valor={resumen.total_autores || 0} />
+                                <TarjetaResumen icono={<FaTags />} titulo="Categorías" valor={resumen.total_categorias || 0} />
+                                <TarjetaResumen icono={<FaUsers />} titulo="Usuarios" valor={resumen.total_usuarios || 0} />
                                 <TarjetaResumen icono={<FaCartShopping />} titulo="Ventas pagadas" valor={resumen.total_ventas || 0} />
                                 <TarjetaResumen icono={<FaMoneyBillWave />} titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} />
-                                <TarjetaResumen icono={<FaCalendarCheck />} titulo="Reservas" valor={resumen.total_reservas || 0} clase="border-amber-200 bg-amber-50 text-amber-700" />
-                                <TarjetaResumen icono={<FaTriangleExclamation />} titulo="Stock bajo" valor={resumen.libros_stock_bajo || 0} clase="border-red-200 bg-red-50 text-red-700" />
+                                <TarjetaResumen icono={<FaCalendarCheck />} titulo="Reservas" valor={resumen.total_reservas || 0} />
+                                <TarjetaResumen icono={<FaTriangleExclamation />} titulo="Stock bajo" valor={resumen.libros_stock_bajo || 0} />
                             </div>
                         </CardBody>
                     </Card>
