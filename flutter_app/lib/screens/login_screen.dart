@@ -331,29 +331,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 18),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '¿Aún no tienes una cuenta?',
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: _muted,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: _loading ? null : _openRegistro,
-                                style: TextButton.styleFrom(
-                                  foregroundColor: _gold,
-                                  padding: const EdgeInsets.only(left: 6),
-                                  textStyle: const TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                child: const Text('Crear cuenta'),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     ),

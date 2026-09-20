@@ -182,7 +182,7 @@ class _ReservasScreenState extends State<ReservasScreen> {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       sliver: SliverList.separated(
         itemCount: _reservas.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        separatorBuilder: (_, _) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
           final reserva = _reservas[index];
           return _ReservaCard(
@@ -216,15 +216,15 @@ class _ReservaCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryDark.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -238,31 +238,31 @@ class _ReservaCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   reserva.titulo ?? 'Libro',
-                  style: textTheme.titleMedium?.copyWith(
+                  style: textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     height: 1.2,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               _EstadoBadge(estado: reserva.estado),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 8),
 
-          // Número de reserva y fecha en una línea destacada.
+          // Numero de reserva y fecha.
           Row(
             children: [
               Icon(
                 Icons.event_available_rounded,
-                size: 18,
+                size: 14,
                 color: colorScheme.primary,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   'Reserva N° ${reserva.idReserva?.toString() ?? '—'}',
-                  style: textTheme.bodyMedium?.copyWith(
+                  style: textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: colorScheme.onSurface,
                   ),
@@ -272,16 +272,17 @@ class _ReservaCard extends StatelessWidget {
                 Formats.fecha(reserva.fechaReserva),
                 style: textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
+                  fontSize: 11,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           const Divider(height: 1),
 
           // Detalle de la reserva (cantidad + vencimiento).
           Padding(
-            padding: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.only(top: 8),
             child: Row(
               children: [
                 Expanded(
@@ -292,7 +293,7 @@ class _ReservaCard extends StatelessWidget {
                     '${reserva.cantidad?.toString() ?? '—'} ${(reserva.cantidad ?? 1) == 1 ? 'unidad' : 'unidades'}',
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _row(
                     context,
@@ -307,27 +308,27 @@ class _ReservaCard extends StatelessWidget {
 
           // Cancelar la reserva (solo pendiente o confirmada).
           if (onCancelar != null) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
-              height: 44,
+              height: 36,
               child: cancelando
                   ? const Center(
                       child: SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 18,
+                        height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     )
                   : OutlinedButton.icon(
                       onPressed: onCancelar,
-                      icon: const Icon(Icons.cancel_outlined, size: 18),
-                      label: const Text('Cancelar reserva'),
+                      icon: const Icon(Icons.cancel_outlined, size: 16),
+                      label: const Text('Cancelar reserva', style: TextStyle(fontSize: 13)),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.error,
                         side: const BorderSide(color: AppColors.error),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
@@ -345,19 +346,19 @@ class _ReservaCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(icon, size: 16, color: onSurfaceVariant),
-            const SizedBox(width: 6),
+            Icon(icon, size: 13, color: onSurfaceVariant),
+            const SizedBox(width: 4),
             Text(
               label,
               style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(color: onSurfaceVariant),
+                  ?.copyWith(color: onSurfaceVariant, fontSize: 11),
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         Text(
           value,
-          style: Theme.of(context).textTheme.bodyMedium
+          style: Theme.of(context).textTheme.bodySmall
               ?.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
