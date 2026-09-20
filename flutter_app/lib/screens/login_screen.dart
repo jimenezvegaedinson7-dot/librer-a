@@ -6,8 +6,6 @@ import '../services/carrito_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/error_banner.dart';
 import 'home_screen.dart';
-import 'legal/politica_privacidad_screen.dart';
-import 'legal/terminos_condiciones_screen.dart';
 import 'recuperar_contrasena_screen.dart';
 import 'registro_screen.dart';
 import 'security/two_factor_verify_screen.dart';
@@ -109,18 +107,6 @@ class _LoginScreenState extends State<LoginScreen> {
       MaterialPageRoute<void>(
         builder: (_) => const RecuperarContrasenaScreen(),
       ),
-    );
-  }
-
-  Future<void> _openTerminos() async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(builder: (_) => const TerminosCondicionesScreen()),
-    );
-  }
-
-  Future<void> _openPrivacidad() async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(builder: (_) => const PoliticaPrivacidadScreen()),
     );
   }
 
@@ -345,61 +331,26 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 14),
-                          Wrap(
-                            alignment: WrapAlignment.center,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            runSpacing: 2,
+                          const SizedBox(height: 18),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Al continuar aceptas los ',
-                                style: textTheme.bodySmall?.copyWith(
+                                '¿Aún no tienes una cuenta?',
+                                style: textTheme.bodyMedium?.copyWith(
                                   color: _muted,
                                 ),
                               ),
                               TextButton(
-                                onPressed: _loading ? null : _openTerminos,
+                                onPressed: _loading ? null : _openRegistro,
                                 style: TextButton.styleFrom(
                                   foregroundColor: _gold,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                  ),
-                                  minimumSize: const Size(0, 32),
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
+                                  padding: const EdgeInsets.only(left: 6),
                                   textStyle: const TextStyle(
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                child: const Text('Términos y Condiciones'),
-                              ),
-                              Text(
-                                ' y la ',
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: _muted,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: _loading ? null : _openPrivacidad,
-                                style: TextButton.styleFrom(
-                                  foregroundColor: _gold,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 2,
-                                  ),
-                                  minimumSize: const Size(0, 32),
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  textStyle: const TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                child: const Text('Política de Privacidad'),
-                              ),
-                              Text(
-                                '.',
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: _muted,
-                                ),
+                                child: const Text('Crear cuenta'),
                               ),
                             ],
                           ),
