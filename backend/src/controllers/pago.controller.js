@@ -976,6 +976,12 @@ const obtenerOrden = async (req, res) => {
                                 statusPayu
                             )
                     });
+
+                    // Recargar la venta para devolver el estado actualizado.
+                    ventaPago =
+                        await ventaModel.buscarPorReferenciaExterna(
+                            ventaPago.external_reference
+                        ) || ventaPago;
                 }
             }
         }
@@ -990,15 +996,9 @@ const obtenerOrden = async (req, res) => {
                     ventaPago.total
                 )
             ) {
-                console.error(
-                    `[pago] Monto (${amount}) difiere de venta ${ventaPago.id_venta} (${ventaPago.total})`
+                console.warn(
+                    `[pago] ALERTA: Monto (${amount}) difiere de venta ${ventaPago.id_venta} (${ventaPago.total}). PayU es la fuente de verdad; se acepta el estado APPROVED.`
                 );
-
-                return res.status(409).json({
-                    success: false,
-                    mensaje:
-                        'El monto del pago no coincide con la venta'
-                });
             }
         }
 
