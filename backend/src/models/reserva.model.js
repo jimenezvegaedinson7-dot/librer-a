@@ -208,6 +208,7 @@ const obtenerPorUsuario = async (id_usuario) => {
             r.id_usuario,
             r.id_libro,
             l.titulo,
+            l.portada,
             r.cantidad,
             r.fecha_reserva,
             r.fecha_vencimiento,

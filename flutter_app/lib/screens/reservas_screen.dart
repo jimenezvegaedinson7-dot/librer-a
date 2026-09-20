@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../models/reserva.dart';
 import '../services/api_service.dart';
 import '../utils/app_colors.dart';
+import '../utils/constants.dart';
 import '../utils/formats.dart';
 import '../widgets/app_page_header.dart';
+import '../widgets/book_cover.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/loading_view.dart';
@@ -231,10 +233,24 @@ class _ReservaCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabecera: libro + badge de estado.
+          // Cabecera: portada + titulo + badge de estado.
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (reserva.portada != null && reserva.portada!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: SizedBox(
+                      width: 44,
+                      height: 62,
+                      child: BookCover(
+                        url: Constants.buildPortadaUrl(reserva.portada),
+                      ),
+                    ),
+                  ),
+                ),
               Expanded(
                 child: Text(
                   reserva.titulo ?? 'Libro',

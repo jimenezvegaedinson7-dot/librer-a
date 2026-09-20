@@ -9,6 +9,7 @@ class Reserva {
   final int? idReserva;
   final String? titulo;
   final int? idLibro;
+  final String? portada;
   final int? cantidad;
   final String? fechaReserva;
   final String? fechaVencimiento;
@@ -18,6 +19,7 @@ class Reserva {
     this.idReserva,
     this.titulo,
     this.idLibro,
+    this.portada,
     this.cantidad,
     this.fechaReserva,
     this.fechaVencimiento,
@@ -29,6 +31,7 @@ class Reserva {
       idReserva: JsonUtils.asInt(json['id_reserva']),
       titulo: JsonUtils.asString(json['titulo']),
       idLibro: JsonUtils.asInt(json['id_libro']),
+      portada: JsonUtils.asString(json['portada']),
       cantidad: JsonUtils.asInt(json['cantidad']),
       fechaReserva: JsonUtils.asString(json['fecha_reserva']),
       fechaVencimiento: JsonUtils.asString(json['fecha_vencimiento']),
