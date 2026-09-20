@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/error_banner.dart';
+import 'legal/terminos_condiciones_screen.dart';
 import 'verificacion_email_screen.dart';
 
 /// Pantalla de registro de clientes con diseño inspirado en iOS.
@@ -28,6 +29,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _loading = false;
+  bool _aceptaTerminos = false;
   String? _errorMessage;
 
   @override
@@ -45,6 +47,11 @@ class _RegistroScreenState extends State<RegistroScreen> {
     setState(() => _errorMessage = null);
 
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (!_aceptaTerminos) {
+      setState(() => _errorMessage = 'Debes aceptar los Términos y Condiciones para registrarte.');
       return;
     }
 
@@ -281,6 +288,48 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         },
                       ),
 
+                      // Términos y condiciones
+                      const SizedBox(height: 20),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Checkbox(
+                            value: _aceptaTerminos,
+                            onChanged: (v) => setState(() => _aceptaTerminos = v ?? false),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const TerminosCondicionesScreen(),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: RichText(
+                                  text: TextSpan(
+                                    text: 'He leído y acepto los ',
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                    children: [
+                                      TextSpan(
+                                        text: 'Términos y Condiciones',
+                                        style: TextStyle(
+                                          color: colorScheme.primary,
+                                          fontWeight: FontWeight.w600,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
                       // Mensaje de error
                       if (_errorMessage != null) ...[
                         const SizedBox(height: 16),
@@ -295,7 +344,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         child: _loading
                             ? const Center(child: CircularProgressIndicator())
                             : FilledButton(
-                                onPressed: _registrar,
+                                onPressed: _aceptaTerminos ? _registrar : null,
                                 style: FilledButton.styleFrom(
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
@@ -304,7 +353,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
                                 child: Text(
                                   'Crear cuenta',
                                   style: textTheme.titleMedium?.copyWith(
-                                    color: colorScheme.onPrimary,
+                                    color: _aceptaTerminos
+                                        ? colorScheme.onPrimary
+                                        : colorScheme.onSurface.withValues(alpha: 0.38),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
