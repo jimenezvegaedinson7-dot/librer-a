@@ -37,7 +37,8 @@ class Constants {
   /// SELECTOR DE ENTORNO:
   ///
   /// - `true`  → PRODUCCIÓN (usa el backend desplegado en Render).
-  /// - `false` → DESARROLLO (usa el backend local).
+  /// - `false` → DESARROLLO (usa el backend local en localhost:3000).
+  /// La app web en localhost:8080 también utiliza esta API de producción.
   static const bool _usarApiProduccion = true;
 
   /// SELECTOR DE DISPOSITIVO (solo Android en DESARROLLO):

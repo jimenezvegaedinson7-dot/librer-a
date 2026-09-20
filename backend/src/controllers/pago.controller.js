@@ -1312,7 +1312,11 @@ const webhookPago = async (req, res) => {
         const referenceSale = String(
             body?.reference_sale || ''
         ).trim();
-        const value = body?.value;
+        // PayU envía el monto en la unidad más pequeña (centavos para PEN,
+        // cents para USD). Se normaliza dividiendo por 100 para comparar
+        // con el total almacenado en soles.
+        const rawValue = Number(body?.value);
+        const value = Number.isFinite(rawValue) ? rawValue / 100 : rawValue;
         const currency = body?.currency;
         const statePol = String(
             body?.state_pol ?? ''

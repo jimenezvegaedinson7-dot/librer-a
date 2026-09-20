@@ -176,11 +176,12 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       setState(() => _procesando = false);
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.message)));
-    } catch (_) {
+    } catch (e, s) {
+      debugPrint('ERROR compra: $e\n$s');
       if (!mounted) return;
       setState(() => _procesando = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo completar la compra.')),
+        SnackBar(content: Text('No se pudo completar la compra: $e')),
       );
     }
   }

@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -11,6 +10,7 @@ import '../models/ubicacion.dart';
 import '../models/usuario.dart';
 import '../models/venta.dart';
 import '../utils/constants.dart';
+import '../utils/idempotencia.dart';
 import '../utils/json_utils.dart';
 import 'navigation.dart';
 import 'storage_service.dart';
@@ -165,7 +165,7 @@ class ApiService {
 
   /// Genera una clave de idempotencia única para el intento de checkout.
   String _generarIdempotencia() {
-    return '${DateTime.now().millisecondsSinceEpoch}-${Random().nextInt(1 << 32)}';
+    return generarClaveIdempotencia();
   }
 
   /// Convierte un [DioException] en una [ApiException] con mensaje claro.
