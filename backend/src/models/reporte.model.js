@@ -63,6 +63,7 @@ const obtenerLibrosMasVendidos = async () => {
         SELECT
             l.id_libro,
             l.titulo,
+            l.portada,
             SUM(d.cantidad) AS cantidad_vendida,
             COALESCE(SUM(d.subtotal), 0) AS total_generado
         FROM detalle_venta d
