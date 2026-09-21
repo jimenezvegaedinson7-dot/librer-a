@@ -1,79 +1,79 @@
-@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@200..800&family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
     --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-    --font-serif: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
-    --font-title: "Playfair Display", Georgia, serif;
+    --font-serif: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-title: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
     --color-surface: #fef8f4;
     --color-surface-50: #ffffff;
 
-    --color-primary-50: #faf6f2;
-    --color-primary-100: #f5ede5;
-    --color-primary-200: #e6ddd3;
-    --color-primary-300: #d3c3be;
-    --color-primary-400: #827470;
-    --color-primary-500: #504440;
-    --color-primary-600: #41271d;
-    --color-primary-700: #2c1810;
-    --color-primary-800: #1f110b;
-    --color-primary-900: #090100;
+    --color-primary-50: #f8fafc;
+    --color-primary-100: #f1f5f9;
+    --color-primary-200: #e2e8f0;
+    --color-primary-300: #cbd5e1;
+    --color-primary-400: #94a3b8;
+    --color-primary-500: #64748b;
+    --color-primary-600: #475569;
+    --color-primary-700: #334155;
+    --color-primary-800: #1e293b;
+    --color-primary-900: #0f172a;
 
-    --color-mahogany-50: #faf6f2;
-    --color-mahogany-100: #f0e4d8;
-    --color-mahogany-200: #e3bfb2;
-    --color-mahogany-300: #c9a08e;
-    --color-mahogany-400: #a07a68;
-    --color-mahogany-500: #74584e;
-    --color-mahogany-600: #5a4137;
-    --color-mahogany-700: #2c1810;
-    --color-mahogany-800: #1f110b;
-    --color-mahogany-900: #090100;
+    --color-mahogany-50: #f8fafc;
+    --color-mahogany-100: #f1f5f9;
+    --color-mahogany-200: #e2e8f0;
+    --color-mahogany-300: #cbd5e1;
+    --color-mahogany-400: #94a3b8;
+    --color-mahogany-500: #64748b;
+    --color-mahogany-600: #475569;
+    --color-mahogany-700: #334155;
+    --color-mahogany-800: #1e293b;
+    --color-mahogany-900: #0f172a;
 
-    --color-gold-50: #fffbeb;
-    --color-gold-100: #fef3c7;
-    --color-gold-200: #fde68a;
-    --color-gold-300: #fcd34d;
-    --color-gold-400: #d4af37;
-    --color-gold-500: #c5a059;
-    --color-gold-600: #b98218;
-    --color-gold-700: #96630e;
-    --color-gold-800: #856a18;
-    --color-gold-900: #574500;
+    --color-gold-50: #f8fafc;
+    --color-gold-100: #f1f5f9;
+    --color-gold-200: #e2e8f0;
+    --color-gold-300: #cbd5e1;
+    --color-gold-400: #3b82f6;
+    --color-gold-500: #2563eb;
+    --color-gold-600: #1d4ed8;
+    --color-gold-700: #1e40af;
+    --color-gold-800: #1e3a8a;
+    --color-gold-900: #172554;
 
-    --color-crimson-50: #fef2f0;
-    --color-crimson-100: #fde0db;
-    --color-crimson-200: #ffb4a6;
-    --color-crimson-300: #e8877a;
-    --color-crimson-400: #c96a57;
-    --color-crimson-500: #8b3a2b;
-    --color-crimson-600: #7b2e20;
-    --color-crimson-700: #5c1a12;
-    --color-crimson-800: #410400;
-    --color-crimson-900: #3f0300;
+    --color-crimson-50: #fef2f2;
+    --color-crimson-100: #fee2e2;
+    --color-crimson-200: #fecaca;
+    --color-crimson-300: #fca5a5;
+    --color-crimson-400: #f87171;
+    --color-crimson-500: #ef4444;
+    --color-crimson-600: #dc2626;
+    --color-crimson-700: #b91c1c;
+    --color-crimson-800: #991b1b;
+    --color-crimson-900: #7f1d1d;
 
     --color-parchment-50: #ffffff;
-    --color-parchment-100: #fef8f4;
-    --color-parchment-200: #faf6f2;
-    --color-parchment-300: #f5efeb;
-    --color-parchment-400: #f3ede9;
-    --color-parchment-500: #ede7e3;
-    --color-parchment-600: #e7e1dd;
-    --color-parchment-700: #dfd9d5;
-    --color-parchment-800: #d3c3be;
-    --color-parchment-900: #827470;
+    --color-parchment-100: #f8fafc;
+    --color-parchment-200: #f1f5f9;
+    --color-parchment-300: #e2e8f0;
+    --color-parchment-400: #cbd5e1;
+    --color-parchment-500: #94a3b8;
+    --color-parchment-600: #64748b;
+    --color-parchment-700: #475569;
+    --color-parchment-800: #334155;
+    --color-parchment-900: #1e293b;
 
-    --color-success: #235e38;
-    --color-success-bg: rgba(44, 100, 60, 0.1);
-    --color-warning: #856a18;
-    --color-warning-bg: rgba(212, 175, 55, 0.15);
-    --color-danger: #8b3a2b;
-    --color-danger-bg: rgba(139, 58, 43, 0.12);
+    --color-success: #16a34a;
+    --color-success-bg: rgba(22, 163, 74, 0.1);
+    --color-warning: #d97706;
+    --color-warning-bg: rgba(217, 119, 6, 0.1);
+    --color-danger: #dc2626;
+    --color-danger-bg: rgba(220, 38, 38, 0.1);
 
-    --shadow-card: 0 1px 3px rgb(44 24 16 / 0.04), 0 1px 2px rgb(44 24 16 / 0.03);
-    --shadow-lift: 0 4px 12px -4px rgb(44 24 16 / 0.08);
-    --shadow-float: 0 12px 24px -8px rgb(44 24 16 / 0.12), 0 4px 8px -4px rgb(44 24 16 / 0.04);
+    --shadow-card: 0 1px 3px rgb(0 0 0 / 0.04), 0 1px 2px rgb(0 0 0 / 0.02);
+    --shadow-lift: 0 4px 12px -4px rgb(0 0 0 / 0.08);
+    --shadow-float: 0 12px 24px -8px rgb(0 0 0 / 0.12), 0 4px 8px -4px rgb(0 0 0 / 0.04);
 }
 
 @layer base {
@@ -889,7 +889,7 @@
     }
 
     .card-title {
-        font-family: var(--font-title);
+        font-family: var(--font-sans);
         font-size: 1rem;
         font-weight: 600;
         color: #0f172a;
@@ -1136,7 +1136,7 @@
 }
 
 .dashboard-section-heading h2 {
-    font-family: var(--font-title);
+    font-family: var(--font-sans);
     font-size: 0.875rem;
     font-weight: 600;
     letter-spacing: 0.03em;
@@ -1415,16 +1415,16 @@
    ======================================== */
 
 .font-title {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
 body {
     font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-    color: #312724;
+    color: #334155;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3 {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 }

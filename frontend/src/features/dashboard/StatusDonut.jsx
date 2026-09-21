@@ -53,8 +53,8 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
         >
 
             <div className="mb-4">
-                <h3 className="text-[16px] font-semibold tracking-[-0.01em] text-[#10213f]">{titulo}</h3>
-                <p className="mt-1 text-[12px] font-normal text-[#66738c]">{subtitulo}</p>
+                <h3 className="text-[16px] font-semibold tracking-[-0.01em] text-[#0f172a]">{titulo}</h3>
+                <p className="mt-1 text-[12px] font-normal text-[#94a3b8]">{subtitulo}</p>
             </div>
 
             <div className="flex flex-col items-center gap-5 sm:flex-row">
@@ -65,15 +65,15 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
                     style={{ background: fondo }}
                 >
                     <div className="absolute inset-5 flex flex-col items-center justify-center rounded-full bg-white shadow-sm">
-                        <span className="text-[26px] font-bold tracking-[-0.02em] text-[#10213f]">{total}</span>
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[#7b879d]">total</span>
+                        <span className="text-[26px] font-bold tracking-[-0.02em] text-[#0f172a]">{total}</span>
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[#94a3b8]">total</span>
                     </div>
                 </div>
 
                 {/* leyenda */}
                 <div className="w-full space-y-2">
                     {lista.length === 0 ? (
-                        <p className="text-[12px] text-[#7b879d]">No hay datos disponibles.</p>
+                        <p className="text-[12px] text-[#94a3b8]">No hay datos disponibles.</p>
                     ) : (
                         lista.map((item) => {
                             const cantidad = Number(item.cantidad || 0);
@@ -96,13 +96,13 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
                                             className="h-3 w-3 rounded-full ring-2 ring-white"
                                             style={{ backgroundColor: obtenerColor(item.estado) }}
                                         />
-                                        <span className="text-[12px] font-semibold capitalize text-[#10213f]">
+                                        <span className="text-[12px] font-semibold capitalize text-[#0f172a]">
                                             {item.estado}
                                         </span>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[14px] font-bold text-[#10213f]">{cantidad}</p>
-                                        <p className="text-[10px] font-medium text-[#7b879d]">{porcentaje}%</p>
+                                        <p className="text-[14px] font-bold text-[#0f172a]">{cantidad}</p>
+                                        <p className="text-[10px] font-medium text-[#94a3b8]">{porcentaje}%</p>
                                     </div>
                                 </div>
                             );

@@ -9,7 +9,7 @@ function PortadaLibro({ portada, titulo }) {
     if (!url || error) {
         return (
             <div className="flex h-full w-full items-center justify-center bg-[#f1f5fb]">
-                <FaBookOpen className="text-[10px] text-[#7b879d]" />
+                <FaBookOpen className="text-[10px] text-[#94a3b8]" />
             </div>
         );
     }
@@ -90,10 +90,10 @@ function TopBooks({ libros = [] }) {
                     >
                         <FaBookOpen />
                     </div>
-                    <p className="text-[14px] font-semibold text-[#10213f]">
+                    <p className="text-[14px] font-semibold text-[#0f172a]">
                         No hay ventas pagadas
                     </p>
-                    <p className="mt-1 text-[12px] text-[#7b879d]">
+                    <p className="mt-1 text-[12px] text-[#94a3b8]">
                         Los libros más vendidos aparecerán aquí.
                     </p>
                 </div>
@@ -129,7 +129,7 @@ function TopBooks({ libros = [] }) {
                                             <div className="h-9 w-7 shrink-0 overflow-hidden rounded-md bg-[#F1F5F9] shadow-sm">
                                                 <PortadaLibro portada={libro.portada} titulo={libro.titulo} />
                                             </div>
-                                            <span className="truncate text-[14px] font-medium text-[#1E293B]">
+                                            <span className="truncate text-[14px] font-medium text-[#0f172a]">
                                                 {libro.titulo || 'Sin título'}
                                             </span>
                                         </div>
@@ -137,10 +137,10 @@ function TopBooks({ libros = [] }) {
                                     <td className="px-6 py-4 text-[14px] text-[#64748B] align-middle">
                                         {libro.categoria || '—'}
                                     </td>
-                                    <td className="px-6 py-4 text-center text-[14px] font-semibold text-[#1E293B] align-middle">
+                                    <td className="px-6 py-4 text-center text-[14px] font-semibold text-[#0f172a] align-middle">
                                         {Number(libro.cantidad_vendida || 0)}
                                     </td>
-                                    <td className="px-6 py-4 text-right text-[14px] font-semibold text-[#1E293B] align-middle">
+                                    <td className="px-6 py-4 text-right text-[14px] font-semibold text-[#0f172a] align-middle">
                                         S/ {Number(libro.total_generado || 0).toFixed(2)}
                                     </td>
                                     </tr>

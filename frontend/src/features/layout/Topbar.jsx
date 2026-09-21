@@ -210,7 +210,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                         type="button"
                         onClick={manejarHamburguesa}
                         aria-label="Alternar menú"
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#e5eaf2] bg-white text-[#66738c] transition-colors hover:bg-[#f5f7fb] hover:text-[#10213f]"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#e5eaf2] bg-white text-[#94a3b8] transition-colors hover:bg-[#f5f7fb] hover:text-[#0f172a]"
                     >
                         <FaBars className="text-sm" />
                     </button>
@@ -218,7 +218,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                     {/* Buscador */}
                     <div ref={buscadorRef} className="relative hidden w-full max-w-md sm:block">
                         <div className="flex items-center gap-2.5 rounded-xl border border-[#e5eaf2] bg-[#f8fafd] px-3.5 py-2 transition-all focus-within:border-[#0877e8] focus-within:bg-white focus-within:shadow-sm">
-                            <FaMagnifyingGlass className="text-sm text-[#7b879d]" />
+                            <FaMagnifyingGlass className="text-sm text-[#94a3b8]" />
                             <input
                                 ref={buscadorInputRef}
                                 type="text"
@@ -229,16 +229,16 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                                     setBuscadorAbierto(true);
                                 }}
                                 placeholder="Buscar módulo..."
-                                className="w-full bg-transparent text-sm text-[#10213f] outline-none placeholder:text-[#7b879d]"
+                                className="w-full bg-transparent text-sm text-[#0f172a] outline-none placeholder:text-[#94a3b8]"
                             />
                             {!busqueda && (
-                                <kbd className="hidden shrink-0 rounded-md border border-[#e5eaf2] bg-[#f1f5fb] px-1.5 py-0.5 text-[10px] font-medium text-[#7b879d] lg:inline-flex">
+                                <kbd className="hidden shrink-0 rounded-md border border-[#e5eaf2] bg-[#f1f5fb] px-1.5 py-0.5 text-[10px] font-medium text-[#94a3b8] lg:inline-flex">
                                     Ctrl K
                                 </kbd>
                             )}
                             {busqueda && (
                                 <button type="button" onClick={() => setBusqueda('')} aria-label="Limpiar" className="shrink-0">
-                                    <FaXmark className="text-sm text-[#7b879d]" />
+                                    <FaXmark className="text-sm text-[#94a3b8]" />
                                 </button>
                             )}
                         </div>
@@ -246,7 +246,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                         {buscadorAbierto && busqueda && (
                             <div className="animate-suave absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-[#e5eaf2] bg-white shadow-lg">
                                 {resultadosBusqueda.length === 0 ? (
-                                    <div className="p-5 text-center text-sm text-[#7b879d]">Sin resultados</div>
+                                    <div className="p-5 text-center text-sm text-[#94a3b8]">Sin resultados</div>
                                 ) : (
                                     resultadosBusqueda.map((modulo) => {
                                         const Icono = modulo.icono;
@@ -261,8 +261,8 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                                                     <Icono className="text-sm" />
                                                 </span>
                                                 <span className="min-w-0">
-                                                    <span className="block text-sm font-semibold text-[#10213f]">{modulo.nombre}</span>
-                                                    <span className="block text-xs text-[#7b879d]">{modulo.descripcion}</span>
+                                                    <span className="block text-sm font-semibold text-[#0f172a]">{modulo.nombre}</span>
+                                                    <span className="block text-xs text-[#94a3b8]">{modulo.descripcion}</span>
                                                 </span>
                                             </button>
                                         );
@@ -282,7 +282,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                             aria-label={tema === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
                             aria-pressed={tema === 'dark'}
                             title={tema === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5eaf2] bg-white text-[#66738c] transition-all hover:border-[#d0d7e3] hover:text-[#10213f]"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5eaf2] bg-white text-[#94a3b8] transition-all hover:border-[#d0d7e3] hover:text-[#0f172a]"
                         >
                             <span key={tema} className="theme-icon">
                                 {tema === 'dark' ? <FaSun className="text-sm" /> : <FaMoon className="text-sm" />}
@@ -295,7 +295,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                                 type="button"
                                 onClick={abrirNotificaciones}
                                 aria-label="Notificaciones"
-                                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5eaf2] bg-white text-[#66738c] transition-all hover:border-[#d0d7e3] hover:text-[#10213f]"
+                                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5eaf2] bg-white text-[#94a3b8] transition-all hover:border-[#d0d7e3] hover:text-[#0f172a]"
                             >
                                 <FaBell className="text-sm" />
                                 {cantidadNuevas > 0 && (
@@ -427,17 +427,17 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                             >
                                 <Avatar foto={foto} inicial={inicial} />
                                 <div className="hidden max-w-[170px] text-left md:block">
-                                    <p className="truncate text-sm font-semibold text-[#10213f]">{nombre}</p>
-                                    <p className="truncate text-[11px] text-[#7b879d]">{usuario?.email || 'Administrador'}</p>
+                                    <p className="truncate text-sm font-semibold text-[#0f172a]">{nombre}</p>
+                                    <p className="truncate text-[11px] text-[#94a3b8]">{usuario?.email || 'Administrador'}</p>
                                 </div>
-                                <FaChevronDown className={`hidden text-[10px] text-[#7b879d] transition-transform sm:block ${menuAbierto ? 'rotate-180' : ''}`} />
+                                <FaChevronDown className={`hidden text-[10px] text-[#94a3b8] transition-transform sm:block ${menuAbierto ? 'rotate-180' : ''}`} />
                             </button>
 
                             {menuAbierto && (
                                 <div className="animate-suave absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-[#e5eaf2] bg-white shadow-xl">
                                     <div className="border-b border-[#f1f5fb] px-4 py-3">
-                                        <p className="text-sm font-semibold text-[#10213f]">{nombre}</p>
-                                        <p className="text-[11px] text-[#7b879d]">{usuario?.email || 'Administrador'}</p>
+                                        <p className="text-sm font-semibold text-[#0f172a]">{nombre}</p>
+                                        <p className="text-[11px] text-[#94a3b8]">{usuario?.email || 'Administrador'}</p>
                                     </div>
                                     <div className="py-1.5">
                                         <button
@@ -446,7 +446,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                                                 setPerfilAbierto(true);
                                                 setMenuAbierto(false);
                                             }}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#55637b] transition hover:bg-[#f8fafd] hover:text-[#10213f]"
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#64748b] transition hover:bg-[#f8fafd] hover:text-[#0f172a]"
                                         >
                                             <FaUser className="text-sm" /> Datos del administrador
                                         </button>
@@ -456,7 +456,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                                                 setConfigAbierta(true);
                                                 setMenuAbierto(false);
                                             }}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#55637b] transition hover:bg-[#f8fafd] hover:text-[#10213f]"
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#64748b] transition hover:bg-[#f8fafd] hover:text-[#0f172a]"
                                         >
                                             <FaGear className="text-sm" /> Configuración
                                         </button>

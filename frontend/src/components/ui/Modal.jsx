@@ -55,7 +55,7 @@ export function Modal({
                     >
                         <div className="modal-header flex items-center justify-between gap-3 border-b border-primary-100 px-5 py-4">
                             <div className="min-w-0">
-                                <h2 className="font-serif text-base font-semibold text-mahogany-700">{titulo}</h2>
+                                <h2 className="font-sans text-base font-semibold text-[#0f172a]">{titulo}</h2>
                                 {subtitulo && <p className="mt-0.5 text-xs text-primary-400">{subtitulo}</p>}
                             </div>
                             <Button

@@ -133,10 +133,10 @@ export default function LoginPage() {
                         {!twoFactorToken ? (
                             <>
                                 <div className="mb-6 text-center">
-                                    <h1 className="font-serif text-2xl font-semibold tracking-tight text-mahogany-700">
+                                    <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#0f172a]">
                                         Iniciar sesión
                                     </h1>
-                                    <p className="mt-2 text-sm text-primary-400">
+                                    <p className="mt-2 text-sm text-[#64748b]">
                                         Ingresa tus credenciales de administración
                                     </p>
                                 </div>
@@ -217,13 +217,13 @@ export default function LoginPage() {
                         ) : (
                             <>
                                 <div className="mb-6 text-center">
-                                    <div className="mb-4 flex justify-center text-2xl text-mahogany-600">
+                                    <div className="mb-4 flex justify-center text-2xl text-[#475569]">
                                         <FaQrcode />
                                     </div>
-                                    <h1 className="font-serif text-2xl font-semibold tracking-tight text-mahogany-700">
+                                    <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#0f172a]">
                                         Código de verificación
                                     </h1>
-                                    <p className="mt-2 text-sm text-primary-400">
+                                    <p className="mt-2 text-sm text-[#64748b]">
                                         Ingresa el código de 6 dígitos
                                     </p>
                                 </div>

@@ -88,7 +88,7 @@ function RecentBooks({ libros = [] }) {
                                         }`}
                                     >
                                         <td className="px-6 py-4 align-middle">
-                                            <span className="text-[14px] font-medium text-[#1E293B]">
+                                            <span className="text-[14px] font-medium text-[#0f172a]">
                                                 {libro.titulo || 'Sin título'}
                                             </span>
                                         </td>
