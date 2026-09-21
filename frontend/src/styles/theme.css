@@ -874,3 +874,25 @@
 .scrollbar-dark::-webkit-scrollbar-thumb:hover {
     background-color: rgba(214,176,140,0.35);
 }
+
+.scrollbar-light {
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E1 transparent;
+}
+
+.scrollbar-light::-webkit-scrollbar {
+    width: 5px;
+}
+
+.scrollbar-light::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: #CBD5E1;
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb:hover {
+    background-color: #94A3B8;
+}
