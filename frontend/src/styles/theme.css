@@ -235,6 +235,28 @@
     border-color: #475569 !important;
     background-color: #0f172a;
     color: #e2e8f0;
+    color-scheme: dark;
+}
+
+.admin-shell[data-theme="dark"] select.field {
+    color: #e2e8f0;
+    background-color: #0f172a;
+    color-scheme: dark;
+}
+
+.admin-shell[data-theme="dark"] select.field option {
+    background-color: #1e293b;
+    color: #e2e8f0;
+}
+
+.admin-shell[data-theme="dark"] textarea.field {
+    color: #e2e8f0;
+    background-color: #0f172a;
+}
+
+.admin-shell[data-theme="dark"] input.field {
+    color: #e2e8f0;
+    background-color: #0f172a;
 }
 
 .admin-shell[data-theme="dark"] .form-field-group {
@@ -656,6 +678,110 @@
 
 .admin-shell[data-theme="dark"] [class*="ring-white"] {
     --tw-ring-color: #334155 !important;
+}
+
+/* ── Tailwind token dark overrides ── */
+
+.admin-shell[data-theme="dark"] .text-mahogany-600,
+.admin-shell[data-theme="dark"] .text-mahogany-700,
+.admin-shell[data-theme="dark"] .text-mahogany-800 {
+    color: #e2e8f0 !important;
+}
+
+.admin-shell[data-theme="dark"] .bg-mahogany-200,
+.admin-shell[data-theme="dark"] .bg-mahogany-50,
+.admin-shell[data-theme="dark"] .bg-mahogany-700 {
+    background-color: #334155 !important;
+}
+
+.admin-shell[data-theme="dark"] .text-parchment-100,
+.admin-shell[data-theme="dark"] .text-parchment-200 {
+    color: #e2e8f0 !important;
+}
+
+.admin-shell[data-theme="dark"] .bg-parchment-50,
+.admin-shell[data-theme="dark"] .bg-parchment-100,
+.admin-shell[data-theme="dark"] .bg-parchment-200,
+.admin-shell[data-theme="dark"] .bg-parchment-300 {
+    background-color: #1e293b !important;
+}
+
+.admin-shell[data-theme="dark"] .text-primary-300,
+.admin-shell[data-theme="dark"] .text-primary-400,
+.admin-shell[data-theme="dark"] .text-primary-500 {
+    color: #94a3b8 !important;
+}
+
+.admin-shell[data-theme="dark"] .border-primary-200,
+.admin-shell[data-theme="dark"] .border-primary-300 {
+    border-color: #334155 !important;
+}
+
+.admin-shell[data-theme="dark"] .bg-primary-50 {
+    background-color: #1e3a5f !important;
+}
+
+.admin-shell[data-theme="dark"] .ring-primary-200 {
+    --tw-ring-color: #334155 !important;
+}
+
+.admin-shell[data-theme="dark"] .ring-gold-100 {
+    --tw-ring-color: #334155 !important;
+}
+
+.admin-shell[data-theme="dark"] .text-crimson-500,
+.admin-shell[data-theme="dark"] .text-crimson-600 {
+    color: #fb7185 !important;
+}
+
+.admin-shell[data-theme="dark"] .bg-crimson-50 {
+    background-color: #451a1a !important;
+}
+
+.admin-shell[data-theme="dark"] .border-crimson-200,
+.admin-shell[data-theme="dark"] .border-crimson-400 {
+    border-color: #7f1d1d !important;
+}
+
+.admin-shell[data-theme="dark"] .text-success,
+.admin-shell[data-theme="dark"] .text-emerald-700 {
+    color: #34d399 !important;
+}
+
+.admin-shell[data-theme="dark"] .bg-success-bg,
+.admin-shell[data-theme="dark"] .bg-emerald-50 {
+    background-color: #022c22 !important;
+}
+
+.admin-shell[data-theme="dark"] .border-success {
+    border-color: #065f46 !important;
+}
+
+.admin-shell[data-theme="dark"] .text-warning,
+.admin-shell[data-theme="dark"] .text-amber-700 {
+    color: #fbbf24 !important;
+}
+
+.admin-shell[data-theme="dark"] .bg-warning-bg,
+.admin-shell[data-theme="dark"] .bg-amber-50 {
+    background-color: #451a03 !important;
+}
+
+.admin-shell[data-theme="dark"] .text-sky-700,
+.admin-shell[data-theme="dark"] .text-sky-800 {
+    color: #38bdf8 !important;
+}
+
+.admin-shell[data-theme="dark"] .bg-sky-50 {
+    background-color: #082f49 !important;
+}
+
+.admin-shell[data-theme="dark"] .border-sky-200 {
+    border-color: #0e7490 !important;
+}
+
+.admin-shell[data-theme="dark"] .bg-mahogany-900\/40 {
+    background-color: rgba(15, 23, 42, 0.6) !important;
 }
 
 /* ── Ficha dark overrides ── */
