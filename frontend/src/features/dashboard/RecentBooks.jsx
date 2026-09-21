@@ -24,7 +24,7 @@ function RecentBooks({ libros = [] }) {
         <section
             className="
                 overflow-hidden
-                rounded-[7px]
+                rounded-[8px]
                 border
                 border-[#e6ebf3]
                 bg-white
@@ -48,15 +48,15 @@ function RecentBooks({ libros = [] }) {
                     <div>
                         <h3
                             className="
-                                text-[14px]
+                                text-[16px]
                                 font-semibold
                                 leading-tight
-                                text-[#071a3d]
+                                text-[#10213f]
                             "
                         >
                             Últimos libros agregados
                         </h3>
-                        <p className="mt-0.5 text-[11px] text-[#8490aa]">
+                        <p className="mt-0.5 text-[11px] text-[#7b879d]">
                             Libros registrados recientemente
                         </p>
                     </div>
@@ -91,10 +91,10 @@ function RecentBooks({ libros = [] }) {
                     >
                         <FaBookOpen />
                     </div>
-                    <p className="text-[14px] font-semibold text-[#071a3d]">
+                    <p className="text-[14px] font-semibold text-[#10213f]">
                         No hay libros registrados
                     </p>
-                    <p className="mt-1 text-[12px] text-[#8490aa]">
+                    <p className="mt-1 text-[12px] text-[#7b879d]">
                         Los últimos libros agregados aparecerán aquí.
                     </p>
                 </div>
@@ -104,19 +104,19 @@ function RecentBooks({ libros = [] }) {
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr className="bg-[#f1f5fb]">
-                                    <th className="px-3 py-2 text-left text-[10px] font-semibold text-[#64728d]">
+                                    <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
                                         #
                                     </th>
-                                    <th className="px-3 py-2 text-left text-[10px] font-semibold text-[#64728d]">
+                                    <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
                                         Libro
                                     </th>
-                                    <th className="px-3 py-2 text-left text-[10px] font-semibold text-[#64728d]">
+                                    <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
                                         Autor
                                     </th>
-                                    <th className="px-3 py-2 text-left text-[10px] font-semibold text-[#64728d]">
+                                    <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
                                         Categoría
                                     </th>
-                                    <th className="px-3 py-2 text-center text-[10px] font-semibold text-[#64728d]">
+                                    <th className="px-3 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
                                         Stock
                                     </th>
                                 </tr>
@@ -130,21 +130,21 @@ function RecentBooks({ libros = [] }) {
                                             key={libro.id_libro}
                                             className="transition-colors hover:bg-[#f8fafd]"
                                         >
-                                            <td className="px-3 py-2 text-[11px] text-[#8490aa] align-middle">
+                                            <td className="px-3 py-2.5 text-[11px] font-medium text-[#7b879d] align-middle">
                                                 {index + 1}
                                             </td>
-                                            <td className="px-3 py-2 align-middle">
-                                                <span className="truncate text-[11px] font-medium text-[#172b4d]">
+                                            <td className="px-3 py-2.5 align-middle">
+                                                <span className="truncate text-[11px] font-semibold text-[#10213f]">
                                                     {libro.titulo || 'Sin título'}
                                                 </span>
                                             </td>
-                                            <td className="px-3 py-2 text-[11px] text-[#253858] align-middle">
+                                            <td className="px-3 py-2.5 text-[11px] font-medium text-[#34445f] align-middle">
                                                 {libro.autor || 'Sin autor'}
                                             </td>
-                                            <td className="px-3 py-2 text-[11px] text-[#253858] align-middle">
+                                            <td className="px-3 py-2.5 text-[11px] font-medium text-[#34445f] align-middle">
                                                 {libro.categoria || 'Sin categoría'}
                                             </td>
-                                            <td className="px-3 py-2 text-center align-middle">
+                                            <td className="px-3 py-2.5 text-center align-middle">
                                                 <span
                                                     className={`
                                                         inline-flex
@@ -152,7 +152,7 @@ function RecentBooks({ libros = [] }) {
                                                         px-2
                                                         py-0.5
                                                         text-[10px]
-                                                        font-medium
+                                                        font-semibold
                                                         ${stock.clase}
                                                     `}
                                                 >

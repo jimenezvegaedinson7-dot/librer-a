@@ -45,22 +45,21 @@ function SalesChart({ ventasPorMes = [] }) {
             <div className="flex items-start justify-between px-6 pt-6">
                 <div>
                     <div className="flex items-center gap-2">
-                        <FaChartColumn className="text-[16px] text-[#0069e6]" />
+                        <FaChartColumn className="text-[16px] text-[#0877e8]" />
 
                         <h3
                             className="
-                                text-[17px]
+                                text-[16px]
                                 font-semibold
-                                uppercase
                                 tracking-[-0.01em]
-                                text-[#071a3d]
+                                text-[#10213f]
                             "
                         >
                             Ventas por mes
                         </h3>
                     </div>
 
-                    <p className="mt-2 text-[14px] text-[#7b86a4]">
+                    <p className="mt-1.5 text-[12px] font-normal text-[#66738c]">
                         Ingresos de ventas pagadas por cada mes.
                     </p>
                 </div>
@@ -75,7 +74,7 @@ function SalesChart({ ventasPorMes = [] }) {
                         bg-white
                         text-[18px]
                         font-bold
-                        text-[#071a3d]
+                        text-[#10213f]
                         transition
                         hover:bg-[#f5f7fb]
                     "
@@ -94,8 +93,8 @@ function SalesChart({ ventasPorMes = [] }) {
                             text-[26px]
                             font-semibold
                             leading-none
-                            tracking-tight
-                            text-[#071a3d]
+                            tracking-[-0.02em]
+                            text-[#10213f]
                         "
                     >
                         S/ {totalPeriodo.toFixed(2)}
@@ -104,7 +103,7 @@ function SalesChart({ ventasPorMes = [] }) {
                     <div className="mt-2 flex items-center gap-2">
                         <span className="h-2.5 w-2.5 rounded-full bg-[#0877e8]" />
 
-                        <span className="text-[14px] text-[#071a3d]">
+                        <span className="text-[12px] font-medium text-[#66738c]">
                             Total vendido
                         </span>
                     </div>
@@ -117,8 +116,8 @@ function SalesChart({ ventasPorMes = [] }) {
                             text-[26px]
                             font-semibold
                             leading-none
-                            tracking-tight
-                            text-[#071a3d]
+                            tracking-[-0.02em]
+                            text-[#10213f]
                         "
                     >
                         {mejorMes
@@ -127,9 +126,9 @@ function SalesChart({ ventasPorMes = [] }) {
                     </p>
 
                     <div className="mt-2 flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-[#f6345e]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#f43f5e]" />
 
-                        <span className="text-[14px] text-[#071a3d]">
+                        <span className="text-[12px] font-medium text-[#66738c]">
                             Mejor mes
                         </span>
                     </div>
@@ -142,17 +141,17 @@ function SalesChart({ ventasPorMes = [] }) {
                             text-[26px]
                             font-semibold
                             leading-none
-                            tracking-tight
-                            text-[#071a3d]
+                            tracking-[-0.02em]
+                            text-[#10213f]
                         "
                     >
                         {datos.length}
                     </p>
 
                     <div className="mt-2 flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-[#f9ab00]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#f97316]" />
 
-                        <span className="text-[14px] text-[#071a3d]">
+                        <span className="text-[12px] font-medium text-[#66738c]">
                             {datos.length === 1 ? 'Mes' : 'Meses'}
                         </span>
                     </div>
@@ -185,11 +184,11 @@ function SalesChart({ ventasPorMes = [] }) {
                                 <FaChartColumn />
                             </div>
 
-                            <p className="text-[15px] font-semibold text-[#071a3d]">
+                            <p className="text-[14px] font-semibold text-[#10213f]">
                                 No hay ventas pagadas
                             </p>
 
-                            <p className="mt-1 text-[13px] text-[#8993ad]">
+                            <p className="mt-1 text-[12px] text-[#7b879d]">
                                 Cuando se registren ventas, aparecerán aquí.
                             </p>
                         </div>
@@ -206,23 +205,23 @@ function SalesChart({ ventasPorMes = [] }) {
 
                         {/* números eje Y decorativos */}
                         <div className="absolute bottom-8 left-0 top-0 flex w-9 flex-col justify-between pb-0 text-right">
-                            <span className="text-[11px] text-[#8490ad]">
+                            <span className="text-[10px] font-medium text-[#7b879d]">
                                 {mayorMonto.toFixed(0)}
                             </span>
 
-                            <span className="text-[11px] text-[#8490ad]">
+                            <span className="text-[10px] font-medium text-[#7b879d]">
                                 {(mayorMonto * 0.75).toFixed(0)}
                             </span>
 
-                            <span className="text-[11px] text-[#8490ad]">
+                            <span className="text-[10px] font-medium text-[#7b879d]">
                                 {(mayorMonto * 0.5).toFixed(0)}
                             </span>
 
-                            <span className="text-[11px] text-[#8490ad]">
+                            <span className="text-[10px] font-medium text-[#7b879d]">
                                 {(mayorMonto * 0.25).toFixed(0)}
                             </span>
 
-                            <span className="text-[11px] text-[#8490ad]">
+                            <span className="text-[10px] font-medium text-[#7b879d]">
                                 0
                             </span>
                         </div>
@@ -277,7 +276,7 @@ function SalesChart({ ventasPorMes = [] }) {
                                                 className="
                                                     whitespace-nowrap
                                                     rounded-[4px]
-                                                    bg-[#071a3d]
+                                                    bg-[#10213f]
                                                     px-3 py-1.5
                                                     text-[11px]
                                                     font-medium
@@ -297,7 +296,7 @@ function SalesChart({ ventasPorMes = [] }) {
                                                     border-t-[4px]
                                                     border-l-transparent
                                                     border-r-transparent
-                                                    border-t-[#071a3d]
+                                                    border-t-[#10213f]
                                                 "
                                             />
                                         </div>
@@ -313,7 +312,7 @@ function SalesChart({ ventasPorMes = [] }) {
 
                                                 ${
                                                     esUltimo
-                                                        ? 'bg-[#f6345e]'
+                                                        ? 'bg-[#f43f5e]'
                                                         : 'bg-[#0877e8]'
                                                 }
                                             `}
@@ -344,9 +343,9 @@ function SalesChart({ ventasPorMes = [] }) {
                                     <p
                                         className="
                                             truncate
-                                            text-[12px]
-                                            font-normal
-                                            text-[#7a86a3]
+                                            text-[11px]
+                                            font-medium
+                                            text-[#7b879d]
                                         "
                                     >
                                         {item.mes}

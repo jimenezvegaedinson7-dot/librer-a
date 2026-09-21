@@ -93,10 +93,10 @@ export default function DashboardPage() {
 
             {/* ENCABEZADO */}
             <header className="space-y-1">
-                <h1 className="text-2xl font-bold tracking-tight text-[#071a3d]">
+                <h1 className="text-[26px] font-semibold leading-tight tracking-[-0.02em] text-[#10213f]">
                     Resumen
                 </h1>
-                <p className="text-sm text-[#7b86a4]">
+                <p className="mt-1 text-[14px] font-normal leading-relaxed text-[#66738c]">
                     Indicadores generales y actividad reciente de la librería
                 </p>
             </header>
@@ -114,43 +114,43 @@ export default function DashboardPage() {
             {/* CATÁLOGO Y EQUIPO — tarjetas blancas limpias */}
             <section aria-labelledby="catalogo-equipo">
                 <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e7eaf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
+                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e6ebf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#edf5ff] text-[16px] text-[#0877e8]">
                             <FaBook />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[12px] font-semibold uppercase tracking-normal text-[#7b86a4]">Libros</p>
-                            <p className="mt-1 text-[22px] font-bold leading-none tracking-tight text-[#071a3d]">{resumen.total_libros}</p>
+                            <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#67738d]">Libros</p>
+                            <p className="mt-1 text-[26px] font-semibold leading-none tracking-[-0.02em] text-[#10213f]">{resumen.total_libros}</p>
                         </div>
                     </article>
 
-                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e7eaf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
+                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e6ebf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#edf5ff] text-[16px] text-[#0877e8]">
                             <FaUserPen />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[12px] font-semibold uppercase tracking-normal text-[#7b86a4]">Autores</p>
-                            <p className="mt-1 text-[22px] font-bold leading-none tracking-tight text-[#071a3d]">{resumen.total_autores}</p>
+                            <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#67738d]">Autores</p>
+                            <p className="mt-1 text-[26px] font-semibold leading-none tracking-[-0.02em] text-[#10213f]">{resumen.total_autores}</p>
                         </div>
                     </article>
 
-                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e7eaf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
+                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e6ebf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#edf5ff] text-[16px] text-[#0877e8]">
                             <FaTags />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[12px] font-semibold uppercase tracking-normal text-[#7b86a4]">Categorías</p>
-                            <p className="mt-1 text-[22px] font-bold leading-none tracking-tight text-[#071a3d]">{resumen.total_categorias}</p>
+                            <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#67738d]">Categorías</p>
+                            <p className="mt-1 text-[26px] font-semibold leading-none tracking-[-0.02em] text-[#10213f]">{resumen.total_categorias}</p>
                         </div>
                     </article>
 
-                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e7eaf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
+                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e6ebf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#edf5ff] text-[16px] text-[#0877e8]">
                             <FaUsers />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[12px] font-semibold uppercase tracking-normal text-[#7b86a4]">Usuarios</p>
-                            <p className="mt-1 text-[22px] font-bold leading-none tracking-tight text-[#071a3d]">{resumen.total_usuarios}</p>
+                            <p className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#67738d]">Usuarios</p>
+                            <p className="mt-1 text-[26px] font-semibold leading-none tracking-[-0.02em] text-[#10213f]">{resumen.total_usuarios}</p>
                         </div>
                     </article>
                 </div>
