@@ -18,13 +18,13 @@ export default function ClienteViewModal({ cliente, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha icono={<FaUser />} etiqueta="Cliente">
+                <Ficha color="sky" icono={<FaUser />} etiqueta="Cliente">
                     <span className="text-sm">#{cliente.id_usuario}</span>
                 </Ficha>
-                <Ficha icono={<FaEnvelope />} etiqueta="Correo electrónico">
+                <Ficha color="sky" icono={<FaEnvelope />} etiqueta="Correo electrónico">
                     <span className="break-all text-sm">{cliente.email || 'Sin correo'}</span>
                 </Ficha>
-                <Ficha icono={<FaCalendarDays />} etiqueta="Última compra">
+                <Ficha color="sky" icono={<FaCalendarDays />} etiqueta="Última compra">
                     <span className="text-sm">{formatearFecha(cliente.ultima_compra, { soloDia: true }) || 'Sin compras'}</span>
                 </Ficha>
             </div>

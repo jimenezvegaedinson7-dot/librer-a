@@ -108,9 +108,9 @@ function formatearFecha(fecha) {
 
 function Contador({ titulo, valor, clase }) {
     return (
-        <span className={`rounded-xl border px-4 py-3 ${clase}`}>
+        <span className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-4 py-2.5 text-sm font-medium text-[#2563eb] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <span className="block text-xs font-semibold opacity-80">{titulo}</span>
-            <span className="mt-0.5 block text-xl font-bold">{valor}</span>
+            <span className="mt-0.5 block text-xl font-bold text-[#2563eb]">{valor}</span>
         </span>
     );
 }

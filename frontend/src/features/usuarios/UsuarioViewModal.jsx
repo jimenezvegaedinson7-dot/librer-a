@@ -24,28 +24,28 @@ export default function UsuarioViewModal({ usuario, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha icono={<FaIdBadge />} etiqueta="ID de usuario">
+                <Ficha color="slate" icono={<FaIdBadge />} etiqueta="ID de usuario">
                     #{usuario.id_usuario}
                 </Ficha>
-                <Ficha icono={<FaEnvelope />} etiqueta="Correo electrónico">
+                <Ficha color="slate" icono={<FaEnvelope />} etiqueta="Correo electrónico">
                     {usuario.email || 'Sin correo'}
                 </Ficha>
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha icono={<FaPhone />} etiqueta="Teléfono">
+                <Ficha color="slate" icono={<FaPhone />} etiqueta="Teléfono">
                     {usuario.telefono || 'Sin teléfono'}
                 </Ficha>
-                <Ficha icono={<FaCalendarDays />} etiqueta="Fecha de registro">
+                <Ficha color="slate" icono={<FaCalendarDays />} etiqueta="Fecha de registro">
                     <span className="text-sm">{formatearFecha(usuario.fecha_registro) || 'Sin fecha'}</span>
                 </Ficha>
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha icono={<FaUser />} etiqueta="Rol">
+                <Ficha color="slate" icono={<FaUser />} etiqueta="Rol">
                     {rolBadge(usuario.rol)}
                 </Ficha>
-                <Ficha icono={<FaUser />} etiqueta="Estado">
+                <Ficha color="slate" icono={<FaUser />} etiqueta="Estado">
                     <EstadoActivo activo={usuario.estado} />
                 </Ficha>
             </div>

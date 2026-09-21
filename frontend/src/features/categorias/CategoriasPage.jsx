@@ -46,14 +46,14 @@ function accionesCategoria(fila, { onVer, onEditar, onEliminar }) {
 function Contador({ total, activas, inactivas }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-mahogany-700">{total}</span>
+            <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Total: <span className="font-bold text-[#0f172a]">{total}</span>
             </span>
-            <span className="rounded-xl border border-success/20 bg-success-bg px-4 py-2 text-sm text-success">
-                Activas: <span className="font-bold text-success">{activas}</span>
+            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Activas: <span className="font-bold text-[#15803d]">{activas}</span>
             </span>
-            <span className="rounded-xl border border-primary-200 bg-parchment-300 px-4 py-2 text-sm text-primary-500">
-                Inactivas: <span className="font-bold text-mahogany-700">{inactivas}</span>
+            <span className="rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-2.5 text-sm font-medium text-[#e11d48] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Inactivas: <span className="font-bold text-[#e11d48]">{inactivas}</span>
             </span>
         </div>
     );

@@ -179,17 +179,17 @@ export default function ComprobantesPage() {
                 icono={<FaReceipt />}
                 acciones={
                     <div className="summary-strip flex flex-wrap gap-2">
-                        <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
-                            Total: <span className="font-bold text-mahogany-700">{total}</span>
+                        <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                            Total: <span className="font-bold text-[#0f172a]">{total}</span>
                         </span>
-                        <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
-                            Boletas: <span className="font-bold text-mahogany-700">{resumen.boletas}</span>
+                        <span className="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2.5 text-sm font-medium text-[#475569] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                            Boletas: <span className="font-bold text-[#1e293b]">{resumen.boletas}</span>
                         </span>
-                        <span className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-700">
-                            Facturas: <span className="font-bold text-indigo-800">{resumen.facturas}</span>
+                        <span className="rounded-xl border border-[#c7d2fe] bg-[#eef2ff] px-4 py-2.5 text-sm font-medium text-[#4f46e5] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                            Facturas: <span className="font-bold text-[#4f46e5]">{resumen.facturas}</span>
                         </span>
-                        <span className="rounded-md border border-primary-200 bg-white px-4 py-2 text-sm text-primary-500">
-                            Ingresos: <span className="font-semibold text-mahogany-700">{formatearMoneda(resumen.ingresos)}</span>
+                        <span className="rounded-xl border border-[#bbf7d0] bg-[#ecfdf5] px-4 py-2.5 text-sm font-medium text-[#059669] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                            Ingresos: <span className="font-bold text-[#059669]">{formatearMoneda(resumen.ingresos)}</span>
                         </span>
                     </div>
                 }

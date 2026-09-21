@@ -20,10 +20,10 @@ export default function InventarioViewModal({ inventario, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Ficha icono={<FaBoxesStacked />} etiqueta="Stock">{stock}</Ficha>
-                <Ficha icono={<FaBoxesStacked />} etiqueta="Stock mínimo">{stockMinimo}</Ficha>
-                <Ficha icono={<FaLocationDot />} etiqueta="Ubicación">{inventario.ubicacion || 'No registrada'}</Ficha>
-                <Ficha icono={<FaClockRotateLeft />} etiqueta="Última actualización">
+                <Ficha color="emerald" icono={<FaBoxesStacked />} etiqueta="Stock">{stock}</Ficha>
+                <Ficha color="emerald" icono={<FaBoxesStacked />} etiqueta="Stock mínimo">{stockMinimo}</Ficha>
+                <Ficha color="emerald" icono={<FaLocationDot />} etiqueta="Ubicación">{inventario.ubicacion || 'No registrada'}</Ficha>
+                <Ficha color="emerald" icono={<FaClockRotateLeft />} etiqueta="Última actualización">
                     {formatearFecha(inventario.ultima_actualizacion) || 'Sin registro'}
                 </Ficha>
             </div>

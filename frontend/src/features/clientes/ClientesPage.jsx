@@ -63,14 +63,14 @@ function accionesCliente(fila, { onVer }) {
 function Contador({ total, totalComprado, conCompras }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-mahogany-700">{total}</span>
+            <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Total: <span className="font-bold text-[#0f172a]">{total}</span>
             </span>
-            <span className="rounded-md border border-primary-200 bg-white px-4 py-2 text-sm text-primary-500">
-                Total comprado: <span className="font-semibold text-mahogany-700">{formatearMoneda(totalComprado)}</span>
+            <span className="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2.5 text-sm font-medium text-[#475569] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Total comprado: <span className="font-bold text-[#1e293b]">{formatearMoneda(totalComprado)}</span>
             </span>
-            <span className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm text-sky-700">
-                Con compras: <span className="font-bold text-sky-800">{conCompras}</span>
+            <span className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-4 py-2.5 text-sm font-medium text-[#2563eb] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Con compras: <span className="font-bold text-[#2563eb]">{conCompras}</span>
             </span>
         </div>
     );

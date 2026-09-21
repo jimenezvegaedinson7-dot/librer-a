@@ -47,19 +47,19 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha icono={<FaUser />} etiqueta="Usuario">
+                <Ficha color="violet" icono={<FaUser />} etiqueta="Usuario">
                     {venta.nombre_usuario} {venta.apellido_usuario}
                 </Ficha>
-                <Ficha icono={<FaCalendarDays />} etiqueta="Fecha de venta">
+                <Ficha color="violet" icono={<FaCalendarDays />} etiqueta="Fecha de venta">
                     <span className="text-sm">{formatearFecha(venta.fecha_venta) || 'Sin fecha'}</span>
                 </Ficha>
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha icono={iconoEntrega(venta)} etiqueta="Tipo de entrega">
+                <Ficha color="violet" icono={iconoEntrega(venta)} etiqueta="Tipo de entrega">
                     {entrega}
                 </Ficha>
-                <Ficha icono={<FaEnvelope />} etiqueta="Correo de la compra">
+                <Ficha color="violet" icono={<FaEnvelope />} etiqueta="Correo de la compra">
                     {venta.correo_compra || venta.correo_usuario || 'Sin correo'}
                 </Ficha>
             </div>

@@ -69,19 +69,19 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha icono={<FaUser />} etiqueta="Cliente">
+                <Ficha color="amber" icono={<FaUser />} etiqueta="Cliente">
                     {cliente.nombre_completo || 'Sin nombre'}
                 </Ficha>
-                <Ficha icono={<FaEnvelope />} etiqueta="Correo">
+                <Ficha color="amber" icono={<FaEnvelope />} etiqueta="Correo">
                     {cliente.email || 'Sin correo'}
                 </Ficha>
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha icono={<FaTruckFast />} etiqueta="Tipo de entrega">
+                <Ficha color="amber" icono={<FaTruckFast />} etiqueta="Tipo de entrega">
                     {entregaBadge(pago.tipo_entrega)}
                 </Ficha>
-                <Ficha icono={<FaCreditCard />} etiqueta="Método de pago">
+                <Ficha color="amber" icono={<FaCreditCard />} etiqueta="Método de pago">
                     {pago.metodo_pago || 'Sin método'}
                 </Ficha>
             </div>
@@ -123,7 +123,7 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha icono={<FaIdBadge />} etiqueta="Referencias de la venta">
+                <Ficha color="amber" icono={<FaIdBadge />} etiqueta="Referencias de la venta">
                     <div className="space-y-2">
                         <p className="text-sm">Venta #{pago.id_venta}</p>
                         <p className="text-xs font-normal text-primary-500">
@@ -132,7 +132,7 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
                     </div>
                 </Ficha>
 
-                <Ficha icono={<FaBarcode />} etiqueta="Referencia externa / orden PayU">
+                <Ficha color="amber" icono={<FaBarcode />} etiqueta="Referencia externa / orden PayU">
                     <div className="space-y-2">
                         <p className="break-all text-sm" title={pago.external_reference}>
                             {pago.external_reference || 'Sin referencia'}

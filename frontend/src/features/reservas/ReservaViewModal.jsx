@@ -61,19 +61,19 @@ export default function ReservaViewModal({ reserva, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Ficha icono={<FaUser />} etiqueta="Usuario">
+                <Ficha color="amber" icono={<FaUser />} etiqueta="Usuario">
                     {reserva.nombre_usuario} {reserva.apellido_usuario}
                 </Ficha>
-                <Ficha icono={<FaBook />} etiqueta="Libro">
+                <Ficha color="amber" icono={<FaBook />} etiqueta="Libro">
                     {reserva.titulo}
                 </Ficha>
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Ficha etiqueta="Cantidad">
+                <Ficha color="amber" etiqueta="Cantidad">
                     <span className="text-2xl font-bold">{reserva.cantidad}</span>
                 </Ficha>
-                <Ficha icono={estado.icono} etiqueta="Estado">
+                <Ficha color="amber" icono={estado.icono} etiqueta="Estado">
                     <Badge color={estado.color}>{estado.texto}</Badge>
                 </Ficha>
             </div>

@@ -105,20 +105,20 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
 function Contador({ total, administradores, clientes, activos, inactivos }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-mahogany-700">{total}</span>
+            <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Total: <span className="font-bold text-[#0f172a]">{total}</span>
             </span>
-            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
-                Administradores: <span className="font-bold text-mahogany-700">{administradores}</span>
+            <span className="rounded-xl border border-[#c7d2fe] bg-[#eef2ff] px-4 py-2.5 text-sm font-medium text-[#4f46e5] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Administradores: <span className="font-bold text-[#4f46e5]">{administradores}</span>
             </span>
-            <span className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm text-sky-700">
-                Clientes: <span className="font-bold text-sky-800">{clientes}</span>
+            <span className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-4 py-2.5 text-sm font-medium text-[#2563eb] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Clientes: <span className="font-bold text-[#2563eb]">{clientes}</span>
             </span>
-            <span className="rounded-xl border border-success/20 bg-success-bg px-4 py-2 text-sm text-success">
-                Activos: <span className="font-bold text-success">{activos}</span>
+            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Activos: <span className="font-bold text-[#15803d]">{activos}</span>
             </span>
-            <span className="rounded-xl border border-primary-200 bg-parchment-300 px-4 py-2 text-sm text-primary-500">
-                Inactivos: <span className="font-bold text-mahogany-700">{inactivos}</span>
+            <span className="rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-2.5 text-sm font-medium text-[#e11d48] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Inactivos: <span className="font-bold text-[#e11d48]">{inactivos}</span>
             </span>
         </div>
     );

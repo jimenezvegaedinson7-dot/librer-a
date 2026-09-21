@@ -20,8 +20,8 @@ export default function AutorViewModal({ autor, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Ficha icono={<FaFlag />} etiqueta="Nacionalidad">{autor.nacionalidad || 'No registrada'}</Ficha>
-                <Ficha icono={activo ? <FaUser className="text-success" /> : <FaUser />} etiqueta="Estado">
+                <Ficha color="rose" icono={<FaFlag />} etiqueta="Nacionalidad">{autor.nacionalidad || 'No registrada'}</Ficha>
+                <Ficha color="rose" icono={activo ? <FaUser className="text-success" /> : <FaUser />} etiqueta="Estado">
                     <Badge color={activo ? 'success' : 'neutral'}>{activo ? 'Activo' : 'Inactivo'}</Badge>
                 </Ficha>
             </div>

@@ -6,12 +6,23 @@ export function Card({ children, className = '', hover = false }) {
     );
 }
 
-export function CardHeader({ titulo, subtitulo, acciones = null, icono = null }) {
+const iconColores = {
+    blue: 'bg-[#dbeafe] text-[#2563eb]',
+    rose: 'bg-[#ffe4e6] text-[#e11d48]',
+    emerald: 'bg-[#d1fae5] text-[#059669]',
+    amber: 'bg-[#fef3c7] text-[#d97706]',
+    violet: 'bg-[#ede9fe] text-[#7c3aed]',
+    sky: 'bg-[#e0f2fe] text-[#0284c7]',
+    slate: 'bg-[#f1f5f9] text-[#475569]',
+};
+
+export function CardHeader({ titulo, subtitulo, acciones = null, icono = null, color = 'slate' }) {
+    const ic = iconColores[color] || iconColores.slate;
     return (
         <div className="card-header">
             <div className="flex items-center gap-3">
                 {icono && (
-                    <span className="card-header-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-mahogany-50 text-mahogany-600">
+                    <span className={`card-header-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${ic}`}>
                         {icono}
                     </span>
                 )}

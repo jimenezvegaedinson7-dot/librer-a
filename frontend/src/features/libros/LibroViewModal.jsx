@@ -54,12 +54,12 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                     </div>
 
                     <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <Ficha icono={<FaUser size={16} />} etiqueta="Autor">{libro.autor || 'No registrado'}</Ficha>
-                        <Ficha icono={<FaTag size={16} />} etiqueta="Categoría">{libro.categoria || 'No registrada'}</Ficha>
-                        <Ficha icono={<FaMoneyBillWave size={16} />} etiqueta="Precio">
+                        <Ficha color="blue" icono={<FaUser size={16} />} etiqueta="Autor">{libro.autor || 'No registrado'}</Ficha>
+                        <Ficha color="blue" icono={<FaTag size={16} />} etiqueta="Categoría">{libro.categoria || 'No registrada'}</Ficha>
+                        <Ficha color="blue" icono={<FaMoneyBillWave size={16} />} etiqueta="Precio">
                             <span className="text-lg font-bold">{formatearMoneda(libro.precio)}</span>
                         </Ficha>
-                        <Ficha icono={<FaBoxesStacked size={16} />} etiqueta="Stock">
+                        <Ficha color="blue" icono={<FaBoxesStacked size={16} />} etiqueta="Stock">
                             <div className="flex items-center gap-2">
                                 <span className="text-lg font-bold">{Number(libro.stock || 0)}</span>
                                 <span className="text-sm font-medium text-primary-500">

@@ -159,20 +159,20 @@ function accionesPago(fila, { onVer }) {
 function Contador({ total, pagados, pendientes, cancelados, ingresos }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-mahogany-700">{total}</span>
+            <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Total: <span className="font-bold text-[#0f172a]">{total}</span>
             </span>
-            <span className="rounded-xl border border-success/20 bg-success-bg px-4 py-2 text-sm text-success">
-                Pagados: <span className="font-bold text-success">{pagados}</span>
+            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Pagadas: <span className="font-bold text-[#15803d]">{pagados}</span>
             </span>
-            <span className="rounded-xl border border-warning/20 bg-warning-bg px-4 py-2 text-sm text-warning">
-                Pendientes: <span className="font-bold text-warning">{pendientes}</span>
+            <span className="rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2.5 text-sm font-medium text-[#d97706] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Pendientes: <span className="font-bold text-[#d97706]">{pendientes}</span>
             </span>
-            <span className="rounded-xl border border-crimson-200 bg-crimson-50 px-4 py-2 text-sm text-crimson-500">
-                Cancelados: <span className="font-bold text-crimson-500">{cancelados}</span>
+            <span className="rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-2.5 text-sm font-medium text-[#e11d48] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Cancelados: <span className="font-bold text-[#e11d48]">{cancelados}</span>
             </span>
-            <span className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm text-sky-700">
-                Ingresos: <span className="font-bold text-sky-800">{formatearMoneda(ingresos)}</span>
+            <span className="rounded-xl border border-[#bbf7d0] bg-[#ecfdf5] px-4 py-2.5 text-sm font-medium text-[#059669] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Ingresos: <span className="font-bold text-[#059669]">{formatearMoneda(ingresos)}</span>
             </span>
         </div>
     );
