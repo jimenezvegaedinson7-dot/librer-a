@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 
-import { FaXmark } from 'react-icons/fa6';
+import { X } from 'lucide-react';
 
 import logoLibreria from '../../assets/logo-lbl.png';
 import { navPrincipal } from './navConfig';
@@ -24,7 +24,8 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 admin-sidebar
                 fixed left-0 top-0 z-50
                 flex h-screen flex-col
-                bg-mahogany-700 text-parchment-100
+                border-r border-[#E2E8F0]
+                bg-white text-[#334155]
                 transition-all duration-300 ease-in-out
                 lg:translate-x-0
                 ${abierto ? 'translate-x-0' : '-translate-x-full'}
@@ -33,36 +34,36 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
         >
 
             {/* Logo */}
-            <div className="relative flex items-center border-b border-mahogany-600/50 px-4 py-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/10 p-1.5">
+            <div className="relative flex items-center border-b border-[#E2E8F0] px-4 py-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#EFF6FF] p-1.5">
                     <img src={logoLibreria} alt="Logo" className="h-full w-full object-contain" />
                 </div>
                 {!colapsado && (
                     <div className="ml-3 min-w-0">
-                        <p className="truncate text-sm font-bold tracking-tight text-parchment-100">Librería del Saber</p>
-                        <p className="mt-0.5 text-[10px] font-medium text-mahogany-300">Panel administrativo</p>
+                        <p className="truncate text-[16px] font-bold tracking-tight text-[#0F172A]">Librería del Saber</p>
+                        <p className="mt-0.5 text-[12px] text-[#94A3B8]">Panel administrativo</p>
                     </div>
                 )}
                 <button
                     type="button"
                     onClick={onCerrar}
                     aria-label="Cerrar menú"
-                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-lg text-mahogany-300 transition-colors hover:bg-white/10 hover:text-parchment-100 lg:hidden"
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-lg text-[#94A3B8] transition-colors hover:bg-[#F1F5F9] hover:text-[#334155] lg:hidden"
                 >
-                    <FaXmark className="text-sm" />
+                    <X className="h-4 w-4" />
                 </button>
             </div>
 
             {/* Navegación */}
-            <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-4 pt-3 [scrollbar-width:thin] [scrollbar-color:#5a4137_transparent]">
+            <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-4 pt-3 [scrollbar-width:thin] [scrollbar-color:#CBD5E1_transparent]">
                 {secciones.map((seccion) => (
                     <div key={seccion.nombre} className="mb-3 last:mb-0">
                         {!colapsado && (
-                            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-mahogany-400">
+                            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#94A3B8]">
                                 {seccion.nombre}
                             </p>
                         )}
-                        {colapsado && <div className="mb-2 border-b border-mahogany-600/30 mx-2" />}
+                        {colapsado && <div className="mb-2 border-b border-[#E2E8F0] mx-2" />}
                         <div className={colapsado ? 'space-y-1' : 'space-y-0.5'}>
                             {seccion.items.map(({ nombre, ruta, icono: Icono }) => (
                                 <NavLink
@@ -71,20 +72,38 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                     onClick={cerrarEnMovil}
                                     title={colapsado ? nombre : undefined}
                                     className={({ isActive }) =>
-                                        `flex items-center rounded-lg transition-all duration-150 ${
+                                        `group relative flex items-center rounded-lg transition-all duration-150 ${
                                             colapsado
                                                 ? 'justify-center px-0 py-2.5'
                                                 : 'gap-3 px-3 py-2.5'
                                         } ${
                                             isActive
-                                                ? 'sidebar-nav-active bg-white/10 font-semibold text-parchment-100 shadow-sm shadow-black/10'
-                                                : 'text-mahogany-200 hover:bg-white/[0.06] hover:text-parchment-100'
+                                                ? 'sidebar-nav-active bg-[#EFF6FF] text-[#2563EB]'
+                                                : 'text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]'
                                         }`
                                     }
                                 >
-                                    <Icono className={`shrink-0 text-sm opacity-70 ${colapsado ? 'text-base' : 'w-4'}`} />
-                                    {!colapsado && (
-                                        <span className="truncate text-[13px] font-medium">{nombre}</span>
+                                    {({ isActive }) => (
+                                        <>
+                                            {isActive && !colapsado && (
+                                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-[#2563EB]" />
+                                            )}
+                                            <Icono
+                                                strokeWidth={1.8}
+                                                className={`shrink-0 transition-colors duration-150 ${
+                                                    colapsado ? 'h-5 w-5' : 'h-[18px] w-[18px]'
+                                                } ${
+                                                    isActive
+                                                        ? 'text-[#2563EB]'
+                                                        : 'text-[#64748B] group-hover:text-[#2563EB]'
+                                                }`}
+                                            />
+                                            {!colapsado && (
+                                                <span className={`truncate text-[14px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
+                                                    {nombre}
+                                                </span>
+                                            )}
+                                        </>
                                     )}
                                 </NavLink>
                             ))}
@@ -94,13 +113,13 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
             </nav>
 
             {/* Footer */}
-            <div className={`border-t border-mahogany-600/50 ${colapsado ? 'px-2 py-3' : 'px-5 py-3'}`}>
+            <div className={`border-t border-[#E2E8F0] bg-white ${colapsado ? 'px-2 py-3' : 'px-5 py-3'}`}>
                 {!colapsado && (
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-mahogany-400">Sistema de gestión</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#94A3B8]">Sistema de gestión</p>
                 )}
                 {colapsado && (
                     <div className="flex justify-center">
-                        <div className="h-1.5 w-1.5 rounded-full bg-mahogany-400" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-[#CBD5E1]" />
                     </div>
                 )}
             </div>
