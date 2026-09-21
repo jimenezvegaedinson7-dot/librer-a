@@ -201,7 +201,7 @@ const generarComprobante = async ({
     const tipoDocumentoCliente =
         normalizarTipoDocumentoCliente(
             tipoComprobante,
-            cliente_tipo_documento || venta.cliente_tipo_documento
+            cliente_tipo_documento || venta.cliente_tipo_documento || null
         );
 
     const dniRucCliente = dniRucFinal;
@@ -256,16 +256,14 @@ const generarComprobante = async ({
             ? String(cliente_email).trim()
             : (venta.correo_compra || venta.correo_usuario || null);
 
-    // Si el admin no envía DNI/RUC, usar el de la venta (Flutter checkout)
-    const dniRucFromRequest =
-        cliente_dni_ruc !== undefined &&
-        cliente_dni_ruc !== null &&
-        String(cliente_dni_ruc).trim() !== ''
-            ? String(cliente_dni_ruc).trim()
-            : '';
-
+    // Default: DNI/RUC de la venta (Flutter checkout).
+    // Solo se sobreescribe si el admin envia un valor diferente.
     const dniRucFinal =
-        dniRucFromRequest || venta.cliente_documento || '';
+        (cliente_dni_ruc !== undefined &&
+         cliente_dni_ruc !== null &&
+         String(cliente_dni_ruc).trim() !== ''
+            ? String(cliente_dni_ruc).trim()
+            : null) || venta.cliente_documento || '';
 
     // ========================================
     // IMPORTES REALES DE LA VENTA
