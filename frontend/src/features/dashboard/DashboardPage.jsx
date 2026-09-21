@@ -89,49 +89,75 @@ export default function DashboardPage() {
     if (!resumen) return null;
 
     return (
-        <div className="dashboard-page space-y-8">
+        <div className="dashboard-page space-y-6">
 
             {/* ENCABEZADO */}
             <header className="space-y-1">
-                <h1 className="text-2xl font-bold tracking-tight text-mahogany-800">
+                <h1 className="text-2xl font-bold tracking-tight text-[#071a3d]">
                     Resumen
                 </h1>
-                <p className="text-sm text-primary-500">
+                <p className="text-sm text-[#7b86a4]">
                     Indicadores generales y actividad reciente de la librería
                 </p>
             </header>
 
-            {/* MÉTRICAS PRINCIPALES — tarjetas grandes */}
+            {/* MÉTRICAS PRINCIPALES — tarjetas coloreadas */}
             <section aria-labelledby="metricas-principales">
-                <h2 id="metricas-principales" className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary-400">
-                    Métricas principales
-                </h2>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <StatCard titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} icono={<FaMoneyBillTrendUp />} color="success" />
-                    <StatCard titulo="Ventas pagadas" valor={resumen.total_ventas} icono={<FaCircleCheck />} color="info" />
-                    <StatCard titulo="Reservas" valor={resumen.total_reservas} icono={<FaCalendarCheck />} color="warning" />
-                    <StatCard titulo="Stock bajo" valor={resumen.libros_stock_bajo} icono={<FaTriangleExclamation />} color="danger" />
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+                    <StatCard titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} icono={<FaMoneyBillTrendUp />} color="primary" />
+                    <StatCard titulo="Ventas pagadas" valor={resumen.total_ventas} icono={<FaCircleCheck />} color="danger" />
+                    <StatCard titulo="Reservas" valor={resumen.total_reservas} icono={<FaCalendarCheck />} color="success" />
+                    <StatCard titulo="Stock bajo" valor={resumen.libros_stock_bajo} icono={<FaTriangleExclamation />} color="warning" />
                 </div>
             </section>
 
-            {/* CATÁLOGO Y EQUIPO — tarjetas más compactas */}
+            {/* CATÁLOGO Y EQUIPO — tarjetas blancas limpias */}
             <section aria-labelledby="catalogo-equipo">
-                <h2 id="catalogo-equipo" className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary-400">
-                    Catálogo y equipo
-                </h2>
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                    <StatCard titulo="Libros" valor={resumen.total_libros} icono={<FaBook />} color="primary" />
-                    <StatCard titulo="Autores" valor={resumen.total_autores} icono={<FaUserPen />} color="info" />
-                    <StatCard titulo="Categorías" valor={resumen.total_categorias} icono={<FaTags />} color="warning" />
-                    <StatCard titulo="Usuarios" valor={resumen.total_usuarios} icono={<FaUsers />} color="primary" />
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e7eaf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#edf5ff] text-[16px] text-[#0877e8]">
+                            <FaBook />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[12px] font-semibold uppercase tracking-normal text-[#7b86a4]">Libros</p>
+                            <p className="mt-1 text-[22px] font-bold leading-none tracking-tight text-[#071a3d]">{resumen.total_libros}</p>
+                        </div>
+                    </article>
+
+                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e7eaf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#edf5ff] text-[16px] text-[#0877e8]">
+                            <FaUserPen />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[12px] font-semibold uppercase tracking-normal text-[#7b86a4]">Autores</p>
+                            <p className="mt-1 text-[22px] font-bold leading-none tracking-tight text-[#071a3d]">{resumen.total_autores}</p>
+                        </div>
+                    </article>
+
+                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e7eaf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#edf5ff] text-[16px] text-[#0877e8]">
+                            <FaTags />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[12px] font-semibold uppercase tracking-normal text-[#7b86a4]">Categorías</p>
+                            <p className="mt-1 text-[22px] font-bold leading-none tracking-tight text-[#071a3d]">{resumen.total_categorias}</p>
+                        </div>
+                    </article>
+
+                    <article className="flex min-h-[110px] items-center gap-4 rounded-[8px] border border-[#e7eaf3] bg-white px-5 py-5 shadow-[0_2px_8px_rgba(30,64,175,0.05)]">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#edf5ff] text-[16px] text-[#0877e8]">
+                            <FaUsers />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[12px] font-semibold uppercase tracking-normal text-[#7b86a4]">Usuarios</p>
+                            <p className="mt-1 text-[22px] font-bold leading-none tracking-tight text-[#071a3d]">{resumen.total_usuarios}</p>
+                        </div>
+                    </article>
                 </div>
             </section>
 
             {/* RENDIMIENTO — gráfico + top libros */}
             <section aria-labelledby="rendimiento">
-                <h2 id="rendimiento" className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary-400">
-                    Rendimiento
-                </h2>
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
                     <SalesChart ventasPorMes={ventasPorMes} />
                     <TopBooks libros={librosMasVendidos} />
@@ -140,9 +166,6 @@ export default function DashboardPage() {
 
             {/* ESTADOS OPERATIVOS — donuts */}
             <section aria-labelledby="estados-operativos">
-                <h2 id="estados-operativos" className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary-400">
-                    Estados operativos
-                </h2>
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                     <StatusDonut titulo="Ventas por estado" subtitulo="Distribución real de las ventas" datos={ventasPorEstado} tipo="ventas" />
                     <StatusDonut titulo="Reservas por estado" subtitulo="Distribución real de las reservas" datos={reservasPorEstado} tipo="reservas" />
@@ -151,9 +174,6 @@ export default function DashboardPage() {
 
             {/* ACTIVIDAD RECIENTE */}
             <section aria-labelledby="actividad-reciente">
-                <h2 id="actividad-reciente" className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary-400">
-                    Actividad reciente
-                </h2>
                 <RecentBooks libros={libros} />
             </section>
 
