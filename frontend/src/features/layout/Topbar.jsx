@@ -387,7 +387,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                                                                 </span>
                                                             </div>
                                                             <p className="mt-1.5 text-[13px] leading-relaxed text-[#64748B]">
-                                                                {item.descripcion}
+                                                                {item.descripcion?.replace(/#/g, '')}
                                                             </p>
                                                         </div>
                                                         <FaChevronRight className="mt-2.5 h-3.5 w-3.5 shrink-0 text-[#CBD5E1] opacity-0 transition-all duration-150 group-hover:opacity-100 group-hover:text-[#64748B]" />
