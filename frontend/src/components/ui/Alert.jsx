@@ -4,24 +4,24 @@ import { FaCircleCheck, FaCircleExclamation, FaCircleInfo, FaTriangleExclamation
 
 const configuracion = {
     success: {
-        contenedor: 'border-success/20 border-l-4 border-l-success bg-success-bg text-success',
+        contenedor: 'border-emerald-200 border-l-4 border-l-emerald-500 bg-emerald-50 text-emerald-700',
         Icono: FaCircleCheck,
-        iconoClase: 'text-success',
+        iconoClase: 'text-emerald-500',
     },
     error: {
-        contenedor: 'border-crimson-200 border-l-4 border-l-crimson-500 bg-crimson-50 text-crimson-500',
+        contenedor: 'border-crimson-200 border-l-4 border-l-crimson-500 bg-crimson-50 text-crimson-600',
         Icono: FaCircleExclamation,
         iconoClase: 'text-crimson-500',
     },
     warning: {
-        contenedor: 'border-warning/20 border-l-4 border-l-warning bg-warning-bg text-warning',
+        contenedor: 'border-amber-200 border-l-4 border-l-amber-500 bg-amber-50 text-amber-700',
         Icono: FaTriangleExclamation,
-        iconoClase: 'text-warning',
+        iconoClase: 'text-amber-500',
     },
     info: {
-        contenedor: 'border-gold-200 border-l-4 border-l-gold-500 bg-gold-100 text-gold-700',
+        contenedor: 'border-sky-200 border-l-4 border-l-sky-500 bg-sky-50 text-sky-700',
         Icono: FaCircleInfo,
-        iconoClase: 'text-gold-600',
+        iconoClase: 'text-sky-500',
     },
 };
 
@@ -58,7 +58,7 @@ export function Alert({
     return (
         <div
             role="alert"
-            className={`flex items-start gap-3 rounded-lg border border-l-4 px-3.5 py-3 text-sm shadow-sm ${contenedor} ${className}`}
+            className={`flex items-start gap-3 rounded-xl border border-l-4 px-4 py-3 text-sm shadow-sm ${contenedor} ${className}`}
         >
             <span className={`mt-0.5 shrink-0 text-base ${iconoClase}`}>
                 <Icono />
@@ -75,7 +75,7 @@ export function Alert({
                         onCerrar?.();
                     }}
                     aria-label="Cerrar aviso"
-                    className="shrink-0 rounded-md p-1 opacity-60 transition hover:bg-white/60 hover:opacity-100"
+                    className="shrink-0 rounded-lg p-1 opacity-60 transition hover:bg-white/60 hover:opacity-100"
                 >
                     <FaXmark />
                 </button>

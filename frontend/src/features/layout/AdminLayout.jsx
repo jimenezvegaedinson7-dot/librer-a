@@ -35,13 +35,13 @@ export default function AdminLayout() {
                     type="button"
                     onClick={cerrarSidebar}
                     aria-label="Cerrar menú"
-                    className="animate-solapa fixed inset-0 z-40 bg-mahogany-900/50 backdrop-blur-[1px] lg:hidden"
+                    className="animate-solapa fixed inset-0 z-40 bg-mahogany-900/40 backdrop-blur-sm lg:hidden"
                 />
             )}
 
             <div className="min-h-screen lg:ml-64">
                 <Topbar onAbrirMenu={abrirSidebar} tema={tema} onCambiarTema={cambiarTema} />
-                <main className="admin-main px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-7">
+                <main className="admin-main px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-6">
                     <div className="mx-auto w-full max-w-[1600px]">
                         <Breadcrumbs />
                         <div className="pt-1">

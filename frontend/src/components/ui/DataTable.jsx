@@ -33,14 +33,14 @@ export function DataTable({
     };
 
     return (
-        <div className="data-table-shell overflow-x-auto bg-parchment-50">
+        <div className="data-table-shell overflow-x-auto">
             <table className="min-w-full border-collapse">
                 <thead>
-                    <tr className="bg-parchment-200">
+                    <tr className="bg-parchment-100">
                         {columnas.map((col, i) => (
                             <th
                                 key={i}
-                                className={`border-b border-primary-200 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-primary-400 ${
+                                className={`border-b border-primary-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-primary-400 ${
                                     col.alineacion === 'centro' ? 'text-center' : 'text-left'
                                 }`}
                             >
@@ -48,13 +48,13 @@ export function DataTable({
                             </th>
                         ))}
                         {acciones && (
-                            <th className="border-b border-primary-200 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-primary-400">
+                            <th className="border-b border-primary-100 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-primary-400">
                                 Acciones
                             </th>
                         )}
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-primary-200">
+                <tbody className="divide-y divide-primary-100">
                     {filas.length === 0 ? (
                         <tr>
                             <td colSpan={columnas.length + (acciones ? 1 : 0)} className="px-4 py-12 text-center text-sm text-primary-400">
@@ -66,14 +66,14 @@ export function DataTable({
                             <tr
                                 key={keyExtractor ? keyExtractor(fila) : fila?.id}
                                 onClick={filaClickable ? () => onFilaClick(fila) : undefined}
-                                className={`border-b border-primary-200/80 transition last:border-0 ${
+                                className={`transition last:border-0 ${
                                     filaClickable ? 'cursor-pointer' : ''
-                                } hover:bg-parchment-200/70`}
+                                } hover:bg-parchment-100/60`}
                             >
                                 {columnas.map((col, i) => (
                                     <td
                                         key={i}
-                                        className={`px-4 py-2.5 text-sm ${
+                                        className={`px-4 py-3 text-sm ${
                                             col.alineacion === 'centro' ? 'text-center' : 'text-left'
                                         }`}
                                     >
@@ -81,7 +81,7 @@ export function DataTable({
                                     </td>
                                 ))}
                                 {acciones && (
-                                    <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
+                                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                                         <div className="flex items-center justify-center gap-1.5">{acciones(fila)}</div>
                                     </td>
                                 )}

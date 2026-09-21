@@ -11,7 +11,7 @@ export function CardHeader({ titulo, subtitulo, acciones = null, icono = null })
         <div className="card-header">
             <div className="flex items-center gap-3">
                 {icono && (
-                    <span className="card-header-icon flex h-8 w-8 shrink-0 items-center justify-center text-primary-700">
+                    <span className="card-header-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-mahogany-50 text-mahogany-600">
                         {icono}
                     </span>
                 )}

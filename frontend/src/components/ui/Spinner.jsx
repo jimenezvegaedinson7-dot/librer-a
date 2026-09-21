@@ -1,5 +1,5 @@
 export function Spinner({ tamano = 'md', className = '' }) {
-    const dimensiones = tamano === 'sm' ? 'h-4 w-4 border-2' : tamano === 'lg' ? 'h-10 w-10 border-4' : 'h-6 w-6 border-2';
+    const dimensiones = tamano === 'sm' ? 'h-4 w-4 border-2' : tamano === 'lg' ? 'h-10 w-10 border-3' : 'h-6 w-6 border-2';
     return (
         <span
             role="status"
@@ -11,9 +11,9 @@ export function Spinner({ tamano = 'md', className = '' }) {
 
 export function CargandoPantalla({ texto = 'Cargando...' }) {
     return (
-        <div className="flex flex-col items-center justify-center gap-3 py-10 text-primary-400">
-            <Spinner tamano="lg" className="text-mahogany-600" />
-            <p className="text-xs">{texto}</p>
+        <div className="flex flex-col items-center justify-center gap-3 py-12 text-primary-400">
+            <Spinner tamano="lg" className="text-mahogany-500" />
+            <p className="text-xs font-medium">{texto}</p>
         </div>
     );
 }

@@ -38,32 +38,32 @@ export function Modal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: reducirMovimiento ? 0 : 0.18 }}
-                        className="absolute inset-0 bg-mahogany-900/55 backdrop-blur-[2px]"
+                        className="absolute inset-0 bg-mahogany-900/40 backdrop-blur-sm"
                         onClick={onCerrar}
                         aria-hidden="true"
                     />
                     <motion.div
-                        initial={reducirMovimiento ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.985 }}
+                        initial={reducirMovimiento ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={reducirMovimiento ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.99 }}
-                        transition={{ duration: reducirMovimiento ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: reducirMovimiento ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
                         role="dialog"
                         aria-modal="true"
-                        className={`modal-panel relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-lg border border-primary-200 bg-parchment-50 shadow-2xl ${
+                        className={`modal-panel relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-primary-100 bg-parchment-50 shadow-2xl ${
                             grande ? 'max-w-3xl' : 'max-w-lg'
                         }`}
                     >
-                        <div className="modal-header flex items-center justify-between gap-3 border-b border-primary-200 px-5 py-4">
+                        <div className="modal-header flex items-center justify-between gap-3 border-b border-primary-100 px-5 py-4">
                             <div className="min-w-0">
                                 <h2 className="font-serif text-base font-semibold text-mahogany-700">{titulo}</h2>
-                                {subtitulo && <p className="mt-0.5 text-xs font-medium text-primary-400">{subtitulo}</p>}
+                                {subtitulo && <p className="mt-0.5 text-xs text-primary-400">{subtitulo}</p>}
                             </div>
                             <Button
                                 variante="ghost"
                                 tamano="sm"
                                 onClick={onCerrar}
                                 aria-label="Cerrar"
-                                className="!h-9 !w-9 !p-0"
+                                className="!h-8 !w-8 !p-0"
                             >
                                 <FaXmark />
                             </Button>
@@ -72,7 +72,7 @@ export function Modal({
                         <div className="modal-body overflow-y-auto p-5 sm:p-6">{children}</div>
 
                         {footer && (
-                            <div className="flex items-center justify-end gap-3 border-t border-primary-200 bg-parchment-200 px-5 py-3.5">
+                            <div className="flex items-center justify-end gap-3 border-t border-primary-100 bg-parchment-100 px-5 py-3.5">
                                 {footer}
                             </div>
                         )}

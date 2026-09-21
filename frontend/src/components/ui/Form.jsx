@@ -29,7 +29,7 @@ function MensajeError({ error }) {
     if (!error) return null;
     return (
         <p className="field-error">
-            <FaCircleExclamation className="mt-px shrink-0" />
+            <FaCircleExclamation className="mt-px shrink-0 text-xs" />
             <span>{error}</span>
         </p>
     );
@@ -42,7 +42,7 @@ export function Input({ label, error, requerido = false, icono = null, className
             <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <div className="relative">
                 {icono && (
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-primary-400">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-primary-300">
                         {icono}
                     </span>
                 )}

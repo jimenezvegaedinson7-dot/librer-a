@@ -19,7 +19,7 @@ export function Pagination({ pagina, totalPaginas, onCambiarPagina }) {
     const paginas = paginasVisibles(pagina, totalPaginas);
 
     return (
-        <div className="pagination-bar flex flex-col gap-2.5 border-t border-primary-200 bg-parchment-200/50 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="pagination-bar flex flex-col gap-2.5 border-t border-primary-100 bg-parchment-100/50 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-primary-400">
                 Página <span className="font-bold text-mahogany-700">{pagina}</span> de{' '}
                 <span className="font-bold text-mahogany-700">{totalPaginas}</span>
