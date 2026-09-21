@@ -376,7 +376,6 @@ const generarComprobante = async ({
                 SELECT MAX(numero) AS maximo
                 FROM comprobantes
                 WHERE serie = ?
-                FOR UPDATE
             `, [serie]);
 
         const numero =
