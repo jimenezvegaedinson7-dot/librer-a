@@ -55,18 +55,20 @@ const normalizarTipoDocumentoCliente = (
     tipoComprobante,
     cliente_tipo_documento
 ) => {
-    if (tipoComprobante !== 'factura') {
-        return null;
-    }
-
     const tipo =
         typeof cliente_tipo_documento === 'string'
             ? cliente_tipo_documento.trim().toUpperCase()
             : '';
 
+    if (tipoComprobante === 'factura') {
+        return DOCUMENTOS_VALIDOS.includes(tipo)
+            ? tipo
+            : 'RUC';
+    }
+
     return DOCUMENTOS_VALIDOS.includes(tipo)
         ? tipo
-        : 'RUC';
+        : null;
 };
 
 // ========================================
@@ -205,7 +207,9 @@ const generarComprobante = async ({
     const dniRucCliente =
         tipoComprobante === 'factura'
             ? String(cliente_dni_ruc).trim()
-            : ''
+            : (cliente_dni_ruc
+                ? String(cliente_dni_ruc).trim()
+                : '')
 
     // ========================================
     // LEER VENTA (cabecera + detalles)
