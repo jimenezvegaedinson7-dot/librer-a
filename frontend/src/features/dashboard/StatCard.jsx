@@ -37,8 +37,8 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion 
     return (
         <article
             className={`
-                group relative min-h-[155px] overflow-hidden rounded-[8px]
-                px-5 py-5 text-white
+                group relative min-h-[135px] overflow-hidden rounded-[8px]
+                px-5 py-4 text-white
                 shadow-[0_5px_15px_rgba(30,64,175,0.12)]
                 transition-all duration-300
                 hover:-translate-y-0.5
@@ -49,10 +49,10 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion 
             <div className="relative z-10">
                 <div className="flex items-start justify-between">
                     <div className="min-w-0 flex-1">
-                        <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/90">
+                        <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-white/90">
                             {titulo}
                         </p>
-                        <p className="mt-4 text-[28px] font-bold leading-none tracking-[-0.02em] text-white">
+                        <p className="mt-3 text-[27px] font-bold leading-none tracking-[-0.02em] text-white">
                             {valor}
                         </p>
                         {descripcion && (
@@ -61,8 +61,8 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion 
                             </p>
                         )}
                     </div>
-                    <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${c.iconBg} backdrop-blur-sm`}>
-                        <span className={`text-lg ${c.iconText}`}>
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${c.iconBg} backdrop-blur-sm`}>
+                        <span className={`text-base ${c.iconText}`}>
                             {icono}
                         </span>
                     </div>
@@ -70,7 +70,7 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion 
             </div>
 
             {/* Mini gráfica decorativa estilo Valex */}
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[48px] opacity-70">
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[40px] opacity-70">
                 <svg viewBox="0 0 400 55" preserveAspectRatio="none" className="h-full w-full">
                     <path
                         d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25"
