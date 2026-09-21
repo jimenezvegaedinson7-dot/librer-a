@@ -4,17 +4,24 @@ function SalesChart({ ventasPorMes = [] }) {
     const datos = Array.isArray(ventasPorMes) ? ventasPorMes : [];
 
     const totalPeriodo = datos.reduce(
-        (acc, item) => acc + Number(item.total_vendido || 0), 0
+        (acc, item) => acc + Number(item.total_vendido || 0),
+        0
     );
 
     const mayorMonto = datos.reduce(
-        (mayor, item) => Math.max(mayor, Number(item.total_vendido || 0)), 0
+        (mayor, item) => Math.max(mayor, Number(item.total_vendido || 0)),
+        0
     );
 
     const mejorMes = datos.reduce((mejor, item) => {
-        if (!mejor || Number(item.total_vendido || 0) > Number(mejor.total_vendido || 0)) {
+        if (
+            !mejor ||
+            Number(item.total_vendido || 0) >
+                Number(mejor.total_vendido || 0)
+        ) {
             return item;
         }
+
         return mejor;
     }, null);
 
@@ -24,106 +31,331 @@ function SalesChart({ ventasPorMes = [] }) {
     };
 
     return (
-        <section className="overflow-hidden rounded-2xl border border-primary-200/60 bg-white shadow-sm">
+        <section
+            className="
+                overflow-hidden
+                rounded-[8px]
+                border border-[#e7eaf3]
+                bg-white
+                shadow-[0_2px_8px_rgba(30,64,175,0.06)]
+            "
+        >
 
-            {/* cabecera */}
-            <div className="flex items-center justify-between border-b border-primary-100 px-5 py-4">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-mahogany-50 text-mahogany-600">
-                        <FaChartColumn />
-                    </div>
-                    <div>
-                        <h3 className="text-sm font-semibold text-mahogany-800">Ventas por mes</h3>
-                        <p className="text-[11px] text-primary-400">Ingresos de ventas pagadas</p>
-                    </div>
-                </div>
-                <span className="rounded-full bg-primary-50 px-3 py-1 text-[10px] font-medium text-primary-500">
-                    {datos.length} {datos.length === 1 ? 'mes' : 'meses'}
-                </span>
-            </div>
+            {/* CABECERA */}
+            <div className="flex items-start justify-between px-6 pt-6">
+                <div>
+                    <div className="flex items-center gap-2">
+                        <FaChartColumn className="text-[16px] text-[#0069e6]" />
 
-            {/* resumen */}
-            <div className="grid grid-cols-2 divide-x divide-primary-100 border-b border-primary-100">
-                <div className="px-5 py-3.5">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-primary-400">Total período</p>
-                    <p className="mt-1 text-lg font-bold text-mahogany-800">S/ {totalPeriodo.toFixed(2)}</p>
-                </div>
-                <div className="px-5 py-3.5">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-primary-400">Mejor mes</p>
-                    <p className="mt-1 text-lg font-bold text-mahogany-800">
-                        {mejorMes ? `${mejorMes.mes} ${mejorMes.anio}` : '—'}
+                        <h3
+                            className="
+                                text-[17px]
+                                font-semibold
+                                uppercase
+                                tracking-[-0.01em]
+                                text-[#071a3d]
+                            "
+                        >
+                            Ventas por mes
+                        </h3>
+                    </div>
+
+                    <p className="mt-2 text-[14px] text-[#7b86a4]">
+                        Ingresos de ventas pagadas por cada mes.
                     </p>
                 </div>
+
+                <button
+                    type="button"
+                    className="
+                        flex h-9 w-9
+                        items-center justify-center
+                        rounded-full
+                        border border-[#edf0f6]
+                        bg-white
+                        text-[18px]
+                        font-bold
+                        text-[#071a3d]
+                        transition
+                        hover:bg-[#f5f7fb]
+                    "
+                >
+                    ···
+                </button>
             </div>
 
-            {/* gráfico */}
-            <div className="p-5">
+            {/* RESUMEN */}
+            <div className="flex flex-wrap items-end gap-x-14 gap-y-5 px-9 pt-8">
+
+                {/* Total periodo */}
+                <div>
+                    <p
+                        className="
+                            text-[26px]
+                            font-semibold
+                            leading-none
+                            tracking-tight
+                            text-[#071a3d]
+                        "
+                    >
+                        S/ {totalPeriodo.toFixed(2)}
+                    </p>
+
+                    <div className="mt-2 flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#0877e8]" />
+
+                        <span className="text-[14px] text-[#071a3d]">
+                            Total vendido
+                        </span>
+                    </div>
+                </div>
+
+                {/* mejor mes */}
+                <div>
+                    <p
+                        className="
+                            text-[26px]
+                            font-semibold
+                            leading-none
+                            tracking-tight
+                            text-[#071a3d]
+                        "
+                    >
+                        {mejorMes
+                            ? `${mejorMes.mes} ${mejorMes.anio}`
+                            : '—'}
+                    </p>
+
+                    <div className="mt-2 flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#f6345e]" />
+
+                        <span className="text-[14px] text-[#071a3d]">
+                            Mejor mes
+                        </span>
+                    </div>
+                </div>
+
+                {/* meses registrados */}
+                <div>
+                    <p
+                        className="
+                            text-[26px]
+                            font-semibold
+                            leading-none
+                            tracking-tight
+                            text-[#071a3d]
+                        "
+                    >
+                        {datos.length}
+                    </p>
+
+                    <div className="mt-2 flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#f9ab00]" />
+
+                        <span className="text-[14px] text-[#071a3d]">
+                            {datos.length === 1 ? 'Mes' : 'Meses'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* GRÁFICO */}
+            <div className="px-6 pb-6 pt-8">
+
                 {datos.length === 0 ? (
-                    <div className="flex h-48 items-center justify-center text-center">
+                    <div
+                        className="
+                            flex h-[270px]
+                            items-center justify-center
+                            border-t border-[#edf0f6]
+                            text-center
+                        "
+                    >
                         <div>
-                            <p className="text-sm font-semibold text-mahogany-700">No hay ventas pagadas</p>
-                            <p className="mt-1 text-xs text-primary-400">Cuando se registren ventas, aparecerán aquí.</p>
+                            <div
+                                className="
+                                    mx-auto mb-3
+                                    flex h-11 w-11
+                                    items-center justify-center
+                                    rounded-full
+                                    bg-[#edf5ff]
+                                    text-[#0877e8]
+                                "
+                            >
+                                <FaChartColumn />
+                            </div>
+
+                            <p className="text-[15px] font-semibold text-[#071a3d]">
+                                No hay ventas pagadas
+                            </p>
+
+                            <p className="mt-1 text-[13px] text-[#8993ad]">
+                                Cuando se registren ventas, aparecerán aquí.
+                            </p>
                         </div>
                     </div>
                 ) : (
-                    <div className="relative h-52">
-                        {/* líneas guía */}
-                        <div className="absolute inset-x-0 top-0 h-px bg-primary-100" />
-                        <div className="absolute inset-x-0 top-1/3 h-px bg-primary-100" />
-                        <div className="absolute inset-x-0 top-2/3 h-px bg-primary-100" />
-                        <div className="absolute inset-x-0 bottom-7 h-px bg-primary-100" />
+                    <div className="relative h-[280px]">
 
-                        {/* barras */}
-                        <div className="absolute inset-x-0 bottom-7 top-0 flex items-end justify-around gap-1.5 px-1">
+                        {/* líneas horizontales estilo Valex */}
+                        <div className="absolute inset-x-10 top-0 border-t border-[#e7eaf1]" />
+                        <div className="absolute inset-x-10 top-1/4 border-t border-[#e7eaf1]" />
+                        <div className="absolute inset-x-10 top-2/4 border-t border-[#e7eaf1]" />
+                        <div className="absolute inset-x-10 top-3/4 border-t border-[#e7eaf1]" />
+                        <div className="absolute inset-x-10 bottom-8 border-t border-[#e7eaf1]" />
+
+                        {/* números eje Y decorativos */}
+                        <div className="absolute bottom-8 left-0 top-0 flex w-9 flex-col justify-between pb-0 text-right">
+                            <span className="text-[11px] text-[#8490ad]">
+                                {mayorMonto.toFixed(0)}
+                            </span>
+
+                            <span className="text-[11px] text-[#8490ad]">
+                                {(mayorMonto * 0.75).toFixed(0)}
+                            </span>
+
+                            <span className="text-[11px] text-[#8490ad]">
+                                {(mayorMonto * 0.5).toFixed(0)}
+                            </span>
+
+                            <span className="text-[11px] text-[#8490ad]">
+                                {(mayorMonto * 0.25).toFixed(0)}
+                            </span>
+
+                            <span className="text-[11px] text-[#8490ad]">
+                                0
+                            </span>
+                        </div>
+
+                        {/* BARRAS */}
+                        <div
+                            className="
+                                absolute
+                                bottom-8 left-11 right-3 top-0
+                                flex items-end
+                                justify-around
+                                gap-3
+                            "
+                        >
                             {datos.map((item, index) => {
-                                const monto = Number(item.total_vendido || 0);
-                                const esUltimo = index === datos.length - 1;
+                                const monto = Number(
+                                    item.total_vendido || 0
+                                );
+
+                                const esUltimo =
+                                    index === datos.length - 1;
 
                                 return (
                                     <div
                                         key={`${item.anio}-${item.mes_numero}`}
-                                        className="group flex h-full flex-1 flex-col items-center justify-end"
+                                        className="
+                                            group relative
+                                            flex h-full flex-1
+                                            items-end justify-center
+                                        "
                                     >
-                                        <div className="mb-1.5 opacity-0 transition duration-200 group-hover:opacity-100">
-                                            <span className="whitespace-nowrap rounded-lg bg-mahogany-800 px-2.5 py-1 text-[9px] font-semibold text-white shadow-lg">
-                                                S/ {monto.toFixed(2)}
-                                            </span>
-                                        </div>
+
+                                        {/* tooltip */}
                                         <div
-                                            className={`w-full max-w-8 rounded-t-sm transition-all duration-500 ${
-                                                esUltimo
-                                                    ? 'bg-mahogany-600'
-                                                    : 'bg-primary-200 hover:bg-primary-300'
-                                            }`}
-                                            style={{ height: `${obtenerAltura(monto)}%` }}
+                                            className="
+                                                pointer-events-none
+                                                absolute z-20
+                                                mb-2
+                                                -translate-y-full
+                                                opacity-0
+                                                transition-all
+                                                duration-200
+                                                group-hover:opacity-100
+                                            "
+                                            style={{
+                                                bottom: `${obtenerAltura(
+                                                    monto
+                                                )}%`,
+                                            }}
+                                        >
+                                            <div
+                                                className="
+                                                    whitespace-nowrap
+                                                    rounded-[4px]
+                                                    bg-[#071a3d]
+                                                    px-3 py-1.5
+                                                    text-[11px]
+                                                    font-medium
+                                                    text-white
+                                                    shadow-lg
+                                                "
+                                            >
+                                                S/ {monto.toFixed(2)}
+                                            </div>
+
+                                            <div
+                                                className="
+                                                    mx-auto
+                                                    h-0 w-0
+                                                    border-l-[4px]
+                                                    border-r-[4px]
+                                                    border-t-[4px]
+                                                    border-l-transparent
+                                                    border-r-transparent
+                                                    border-t-[#071a3d]
+                                                "
+                                            />
+                                        </div>
+
+                                        {/* barra */}
+                                        <div
+                                            className={`
+                                                w-full
+                                                max-w-[12px]
+                                                transition-all
+                                                duration-500
+                                                group-hover:opacity-80
+
+                                                ${
+                                                    esUltimo
+                                                        ? 'bg-[#f6345e]'
+                                                        : 'bg-[#0877e8]'
+                                                }
+                                            `}
+                                            style={{
+                                                height: `${obtenerAltura(
+                                                    monto
+                                                )}%`,
+                                            }}
                                         />
                                     </div>
                                 );
                             })}
                         </div>
 
-                        {/* meses */}
-                        <div className="absolute bottom-0 left-0 right-0 flex justify-around px-1">
+                        {/* MESES */}
+                        <div
+                            className="
+                                absolute
+                                bottom-0 left-11 right-3
+                                flex justify-around
+                            "
+                        >
                             {datos.map((item) => (
-                                <div key={`mes-${item.anio}-${item.mes_numero}`} className="text-center">
-                                    <p className="text-[10px] font-semibold text-primary-500">{item.mes}</p>
-                                    <p className="text-[9px] text-primary-300">{item.anio}</p>
+                                <div
+                                    key={`mes-${item.anio}-${item.mes_numero}`}
+                                    className="min-w-0 flex-1 text-center"
+                                >
+                                    <p
+                                        className="
+                                            truncate
+                                            text-[12px]
+                                            font-normal
+                                            text-[#7a86a3]
+                                        "
+                                    >
+                                        {item.mes}
+                                    </p>
                                 </div>
                             ))}
                         </div>
                     </div>
                 )}
-
-                {/* leyenda */}
-                <div className="mt-4 flex items-center justify-between border-t border-primary-100 pt-3">
-                    <div className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-mahogany-500" />
-                        <span className="text-[10px] text-primary-400">Total vendido por mes</span>
-                    </div>
-                    {datos.length > 0 && (
-                        <span className="text-[10px] font-medium text-primary-300">Solo ventas pagadas</span>
-                    )}
-                </div>
             </div>
         </section>
     );
