@@ -548,9 +548,26 @@ const actualizarEstadoVenta = async (req, res) => {
         }
 
         // ========================================
-        // TRANSICIONES PERMITIDAS
-        // (fuente única: utils/transiciones)
+        // BLOQUEAR TRANSICION PENDIENTE -> PAGADA
+        // Solo el webhook de PayU puede confirmar pago
         // ========================================
+        if (estadoActual === 'pendiente' && estado === 'pagada') {
+            return res.status(403).json({
+                success: false,
+                mensaje: 'No se puede marcar una venta como pagada manualmente. Solo el sistema de pago (PayU) puede confirmar el pago.'
+            });
+        }
+
+        // ========================================
+        // BLOQUEAR CANCELACION DE VENTA PAGADA
+        // Requiere gestion de reembolso primero
+        // ========================================
+        if (estadoActual === 'pagada' && estado === 'cancelada') {
+            return res.status(403).json({
+                success: false,
+                mensaje: 'No se puede cancelar una venta ya pagada. Se requiere gestionar el reembolso a traves de PayU primero.'
+            });
+        }
         const puedeCambiar =
             permitirTransicion(
                 VENTA,

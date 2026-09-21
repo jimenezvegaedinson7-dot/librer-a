@@ -18,13 +18,11 @@ function obtenerEstadosDisponibles(estadoActual) {
     switch (estadoActual) {
         case 'pendiente':
             return [
-                { valor: 'pagada', texto: 'Pagada' },
                 { valor: 'cancelada', texto: 'Cancelada' },
             ];
         case 'pagada':
             return [
                 { valor: 'entregada', texto: 'Entregada' },
-                { valor: 'cancelada', texto: 'Cancelada' },
             ];
         case 'entregada':
             return [];
