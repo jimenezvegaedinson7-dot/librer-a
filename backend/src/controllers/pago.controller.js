@@ -362,7 +362,9 @@ const crearOrden = async (req, res) => {
                     payu_payment_id,
                     payu_payment_status,
                     payu_payer_email,
-                    correo_compra
+                    correo_compra,
+                    cliente_documento,
+                    cliente_tipo_documento
                 FROM ventas
                 WHERE idempotencia_clave = ?
                 AND id_usuario = ?
@@ -751,7 +753,9 @@ const crearOrden = async (req, res) => {
                         payu_payment_id,
                         payu_payment_status,
                         payu_payer_email,
-                        correo_compra
+                        correo_compra,
+                        cliente_documento,
+                        cliente_tipo_documento
                     FROM ventas
                     WHERE idempotencia_clave = ?
                     AND id_usuario = ?

@@ -158,6 +158,8 @@ const obtenerPorUsuario = async (id_usuario) => {
             v.payu_payment_id,
             v.payu_payment_status,
             v.payu_payer_email,
+            v.cliente_documento,
+            v.cliente_tipo_documento,
             EXISTS (
                 SELECT 1
                 FROM comprobantes cc
@@ -600,7 +602,9 @@ const buscarPorReferenciaExterna = async (externalReference) => {
             v.payu_order_id,
             v.payu_payment_id,
             v.payu_payment_status,
-            v.correo_compra
+            v.correo_compra,
+            v.cliente_documento,
+            v.cliente_tipo_documento
         FROM ventas v
         WHERE v.external_reference = ?
         LIMIT 1
@@ -621,7 +625,9 @@ const buscarPorPayuOrderId = async (preferenceId) => {
             v.payu_order_id,
             v.payu_payment_id,
             v.payu_payment_status,
-            v.correo_compra
+            v.correo_compra,
+            v.cliente_documento,
+            v.cliente_tipo_documento
         FROM ventas v
         WHERE v.payu_order_id = ?
         LIMIT 1
@@ -810,6 +816,8 @@ const obtenerDatosPago = async (id) => {
             payu_payment_id,
             payu_payment_status,
             payu_payer_email,
+            cliente_documento,
+            cliente_tipo_documento,
             estado
         FROM ventas
         WHERE id_venta = ?
@@ -873,10 +881,12 @@ const listarPagosAdmin = async ({
             u.nombre LIKE ? OR
             u.apellido LIKE ? OR
             u.email LIKE ? OR
-            v.external_reference LIKE ?
+            v.external_reference LIKE ? OR
+            v.cliente_documento LIKE ?
         )`);
 
         valores.push(
+            busqueda,
             busqueda,
             busqueda,
             busqueda,
@@ -923,6 +933,8 @@ const listarPagosAdmin = async ({
             v.estado,
             v.tipo_entrega,
             v.fecha_venta,
+            v.cliente_documento,
+            v.cliente_tipo_documento,
             u.nombre AS nombre_usuario,
             u.apellido AS apellido_usuario,
             u.email AS correo_usuario
@@ -962,7 +974,11 @@ const listarPagosAdmin = async ({
                 nombre_completo:
                     `${row.nombre_usuario || ''} ${row.apellido_usuario || ''}`.trim(),
                 email:
-                    row.correo_usuario
+                    row.correo_usuario,
+                cliente_documento:
+                    row.cliente_documento || null,
+                cliente_tipo_documento:
+                    row.cliente_tipo_documento || null
             }
         })),
         total,

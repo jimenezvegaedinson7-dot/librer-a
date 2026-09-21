@@ -50,6 +50,8 @@ class Venta {
   final String? agencia;
   final String? correoCompra;
   final String? orderId;
+  final String? clienteDocumento;
+  final String? clienteTipoDocumento;
   final List<VentaItem> detalle;
 
   const Venta({
@@ -66,6 +68,8 @@ class Venta {
     this.agencia,
     this.correoCompra,
     this.orderId,
+    this.clienteDocumento,
+    this.clienteTipoDocumento,
     this.detalle = const [],
   });
 
@@ -87,6 +91,8 @@ class Venta {
       orderId:
           JsonUtils.asString(json['payu_order_id']) ??
           JsonUtils.asString(json['order_id']),
+      clienteDocumento: JsonUtils.asString(json['cliente_documento']),
+      clienteTipoDocumento: JsonUtils.asString(json['cliente_tipo_documento']),
       detalle: rawDetalle is List
           ? rawDetalle
                 .whereType<Map>()
