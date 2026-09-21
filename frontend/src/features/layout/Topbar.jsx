@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
+    FaArrowRight,
     FaBars,
     FaBell,
     FaChevronDown,
@@ -13,6 +14,7 @@ import {
     FaMoon,
     FaPenToSquare,
     FaRightFromBracket,
+    FaRotate,
     FaSun,
     FaTrash,
     FaUser,
@@ -30,13 +32,13 @@ import { navPrincipal } from './navConfig';
 const operacionConfig = (item) => {
     const tipo = String(item.tipo_operacion || '').toUpperCase();
     const descripcion = String(item.descripcion || '').toLowerCase();
-    if (descripcion.includes('cancelad')) return { icono: <FaXmark />, color: '#dc2626', bg: '#fef2f2', label: 'Cancelada' };
+    if (descripcion.includes('cancelad')) return { icono: <FaXmark />, color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: '#f87171', label: 'Cancelada' };
     if (descripcion.includes('pagada') || descripcion.includes('completada') || descripcion.includes('confirmada'))
-        return { icono: <FaCirclePlus />, color: '#059669', bg: '#ecfdf5', label: 'Completada' };
-    if (tipo === 'CREAR') return { icono: <FaCirclePlus />, color: '#059669', bg: '#ecfdf5', label: 'Crear' };
-    if (tipo === 'ACTUALIZAR') return { icono: <FaPenToSquare />, color: '#d97706', bg: '#fffbeb', label: 'Actualizar' };
-    if (tipo === 'ELIMINAR') return { icono: <FaTrash />, color: '#dc2626', bg: '#fef2f2', label: 'Eliminar' };
-    return { icono: <FaBell />, color: '#6b7280', bg: '#f3f4f6', label: 'Actividad' };
+        return { icono: <FaCirclePlus />, color: '#6cbf7b', bg: 'rgba(108,191,123,0.12)', border: '#6cbf7b', label: 'Completada' };
+    if (tipo === 'CREAR') return { icono: <FaCirclePlus />, color: '#b98a4a', bg: 'rgba(185,138,74,0.12)', border: '#b98a4a', label: 'Crear' };
+    if (tipo === 'ACTUALIZAR') return { icono: <FaPenToSquare />, color: '#d6b08c', bg: 'rgba(214,176,140,0.10)', border: '#d6b08c', label: 'Actualizar' };
+    if (tipo === 'ELIMINAR') return { icono: <FaTrash />, color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: '#f87171', label: 'Eliminar' };
+    return { icono: <FaBell />, color: '#c9b8ae', bg: 'rgba(201,184,174,0.10)', border: '#c9b8ae', label: 'Actividad' };
 };
 
 function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
@@ -281,50 +283,64 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                             </button>
 
                             {notificacionesAbiertas && (
-                                <div className="animate-suave fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-xl border border-[#e5eaf2] bg-white shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[400px]">
+                                <div className="animate-suave fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#1F1612] shadow-2xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[420px]">
 
                                     {/* Header */}
-                                    <div className="flex items-center justify-between border-b border-[#f1f5fb] px-5 py-4">
-                                        <div>
-                                            <h3 className="text-[14px] font-semibold text-[#10213f]">Notificaciones</h3>
-                                            <p className="mt-0.5 text-[11px] text-[#7b879d]">Actividades recientes del sistema</p>
+                                    <div className="border-b border-white/[0.06] px-6 py-5">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3.5">
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#D6B08C]/15">
+                                                    <FaBell className="text-[15px] text-[#D6B08C]" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-[#F5EFE9]">
+                                                        Notificaciones
+                                                    </h3>
+                                                    <p className="mt-0.5 text-[11px] text-[#8A7968]">
+                                                        Actividades recientes del sistema
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => cargarNotificaciones()}
+                                                className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 text-[11px] font-medium text-[#C9B8AE] transition-all hover:border-[#D6B08C]/30 hover:bg-[#D6B08C]/10 hover:text-[#D6B08C]"
+                                            >
+                                                <FaRotate className="text-[10px]" />
+                                                Actualizar
+                                            </button>
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => cargarNotificaciones()}
-                                            className="rounded-lg px-3 py-1.5 text-[11px] font-semibold text-[#0877e8] transition-colors hover:bg-[#edf5ff]"
-                                        >
-                                            Actualizar
-                                        </button>
                                     </div>
 
                                     {/* Lista */}
-                                    <div className="max-h-[400px] overflow-y-auto">
+                                    <div className="max-h-[420px] overflow-y-auto scrollbar-dark">
                                         {cargandoNotif && notificaciones.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center py-10 text-center">
-                                                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f5fb]">
-                                                    <FaBell className="text-sm text-[#7b879d]" />
+                                            <div className="flex flex-col items-center justify-center py-14 text-center">
+                                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D6B08C]/10">
+                                                    <FaBell className="text-[18px] text-[#D6B08C]/50" />
                                                 </div>
-                                                <p className="text-[13px] font-medium text-[#10213f]">Cargando...</p>
+                                                <p className="text-[13px] font-medium text-[#F5EFE9]/60">Cargando...</p>
                                             </div>
                                         ) : notificaciones.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center py-10 text-center">
-                                                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#edf5ff]">
-                                                    <FaBell className="text-sm text-[#0877e8]" />
+                                            <div className="flex flex-col items-center justify-center py-14 text-center">
+                                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D6B08C]/10">
+                                                    <FaBell className="text-[18px] text-[#D6B08C]/40" />
                                                 </div>
-                                                <p className="text-[13px] font-semibold text-[#10213f]">Sin notificaciones</p>
-                                                <p className="mt-0.5 text-[11px] text-[#7b879d]">No hay actividad reciente</p>
+                                                <p className="text-[13px] font-semibold text-[#F5EFE9]/70">Sin notificaciones</p>
+                                                <p className="mt-1 text-[11px] text-[#8A7968]">No hay actividad reciente</p>
                                             </div>
                                         ) : (
-                                            notificaciones.slice(0, 15).map((item) => {
+                                            notificaciones.slice(0, 15).map((item, index) => {
                                                 const op = operacionConfig(item);
                                                 return (
                                                     <div
                                                         key={item.id_historial}
-                                                        className="flex gap-3 border-b border-[#f1f5fb] px-5 py-3.5 last:border-0 transition-colors hover:bg-[#f8fafd]"
+                                                        className={`group flex gap-3.5 px-6 py-4 transition-all duration-200 hover:bg-white/[0.03] ${
+                                                            index < 14 ? 'border-b border-white/[0.04]' : ''
+                                                        }`}
                                                     >
                                                         <div
-                                                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[12px]"
+                                                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[13px]"
                                                             style={{ backgroundColor: op.bg, color: op.color }}
                                                         >
                                                             {op.icono}
@@ -332,21 +348,24 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                                                         <div className="min-w-0 flex-1">
                                                             <div className="flex items-center justify-between gap-2">
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="text-[12px] font-semibold capitalize text-[#10213f]">
+                                                                    <span className="text-[12px] font-semibold capitalize text-[#F5EFE9]">
                                                                         {item.modulo || 'Sistema'}
                                                                     </span>
                                                                     <span
-                                                                        className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                                                                        className="rounded-md px-1.5 py-px text-[9px] font-bold uppercase tracking-wider"
                                                                         style={{ backgroundColor: op.bg, color: op.color }}
                                                                     >
                                                                         {op.label}
                                                                     </span>
                                                                 </div>
-                                                                <span className="whitespace-nowrap text-[10px] text-[#7b879d]">
-                                                                    {formatearFecha(item.fecha_registro)}
-                                                                </span>
+                                                                <FaArrowRight className="text-[9px] text-[#8A7968]/0 transition-all group-hover:text-[#D6B08C]/40 group-hover:translate-x-0.5" />
                                                             </div>
-                                                            <p className="mt-1 text-[11px] leading-snug text-[#55637b]">{item.descripcion}</p>
+                                                            <p className="mt-1.5 text-[11px] leading-relaxed text-[#C9B8AE]/80">
+                                                                {item.descripcion}
+                                                            </p>
+                                                            <p className="mt-1.5 text-[10px] text-[#8A7968]">
+                                                                {formatearFecha(item.fecha_registro)}
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 );
@@ -355,17 +374,20 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                                     </div>
 
                                     {/* Footer */}
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setNotificacionesAbiertas(false);
-                                            navigate('/historial');
-                                        }}
-                                        className="flex w-full items-center justify-center gap-2 border-t border-[#f1f5fb] bg-[#f8fafd] py-3 text-[12px] font-semibold text-[#10213f] transition-colors hover:bg-[#f1f5fb]"
-                                    >
-                                        <FaClockRotateLeft className="text-[11px] text-[#7b879d]" />
-                                        Ver historial completo
-                                    </button>
+                                    <div className="border-t border-white/[0.06]">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setNotificacionesAbiertas(false);
+                                                navigate('/historial');
+                                            }}
+                                            className="group flex w-full items-center justify-center gap-2.5 bg-[#2A1D18] py-3.5 text-[12px] font-semibold text-[#D6B08C] transition-all hover:bg-[#332419]"
+                                        >
+                                            <FaClockRotateLeft className="text-[11px] text-[#D6B08C]/60 transition-colors group-hover:text-[#D6B08C]" />
+                                            Ver historial completo
+                                            <FaArrowRight className="text-[9px] opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
