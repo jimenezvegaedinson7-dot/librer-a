@@ -1,187 +1,101 @@
-function StatusDonut({
-    titulo,
-    subtitulo,
-    datos = [],
-    tipo = 'ventas'
-}) {
-    const lista =
-        Array.isArray(datos)
-            ? datos
-            : [];
+function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
+    const lista = Array.isArray(datos) ? datos : [];
 
-    const total =
-        lista.reduce(
-            (acumulado, item) =>
-                acumulado +
-                Number(item.cantidad || 0),
-            0
-        );
+    const total = lista.reduce(
+        (acc, item) => acc + Number(item.cantidad || 0), 0
+    );
 
     const obtenerColor = (estado) => {
         const coloresVentas = {
-            pagada: '#10b981',
-            pendiente: '#f59e0b',
-            cancelada: '#ef4444'
+            pagada: '#059669',
+            pendiente: '#d97706',
+            cancelada: '#dc2626',
         };
 
         const coloresReservas = {
-            completada: '#10b981',
-            confirmada: '#38bdf8',
-            pendiente: '#f59e0b',
-            cancelada: '#ef4444'
+            completada: '#059669',
+            confirmada: '#0284c7',
+            pendiente: '#d97706',
+            cancelada: '#dc2626',
         };
 
-        const colores =
-            tipo === 'reservas'
-                ? coloresReservas
-                : coloresVentas;
-
-        return (
-            colores[
-                String(estado).toLowerCase()
-            ] || '#94a3b8'
-        );
+        const colores = tipo === 'reservas' ? coloresReservas : coloresVentas;
+        return colores[String(estado).toLowerCase()] || '#94a3b8';
     };
 
     const segmentos = [];
-
     let acumulado = 0;
 
     lista.forEach((item) => {
-        const cantidad =
-            Number(item.cantidad || 0);
-
-        const porcentaje =
-            total > 0
-                ? (cantidad / total) * 100
-                : 0;
-
+        const cantidad = Number(item.cantidad || 0);
+        const porcentaje = total > 0 ? (cantidad / total) * 100 : 0;
         const inicio = acumulado;
         const fin = acumulado + porcentaje;
 
-        segmentos.push(
-            `${obtenerColor(
-                item.estado
-            )} ${inicio}% ${fin}%`
-        );
-
+        segmentos.push(`${obtenerColor(item.estado)} ${inicio}% ${fin}%`);
         acumulado = fin;
     });
 
-    const fondo =
-        total > 0
-            ? `conic-gradient(${segmentos.join(', ')})`
-            : 'conic-gradient(#e2e8f0 0% 100%)';
+    const fondo = total > 0
+        ? `conic-gradient(${segmentos.join(', ')})`
+        : 'conic-gradient #e2e8f0 0% 100%)';
 
     return (
-        <section className="dashboard-panel rounded-lg border border-primary-200 bg-white p-4">
+        <section className="overflow-hidden rounded-2xl border border-primary-200/60 bg-white p-5 shadow-sm">
 
-            <div className="mb-3">
-
-                <h3 className="text-sm font-semibold text-mahogany-700">
-                    {titulo}
-                </h3>
-
-                <p className="mt-0.5 text-xs text-primary-500">
-                    {subtitulo}
-                </p>
-
+            <div className="mb-4">
+                <h3 className="text-sm font-semibold text-mahogany-800">{titulo}</h3>
+                <p className="mt-0.5 text-[11px] text-primary-400">{subtitulo}</p>
             </div>
 
-            <div className="flex flex-col items-center gap-4 sm:flex-row">
+            <div className="flex flex-col items-center gap-5 sm:flex-row">
 
-                {/* CÍRCULO */}
+                {/* dona */}
                 <div
-                    className="relative h-32 w-32 shrink-0 rounded-full"
-                    style={{
-                        background: fondo
-                    }}
+                    className="relative h-36 w-36 shrink-0 rounded-full shadow-inner"
+                    style={{ background: fondo }}
                 >
-
-                    <div className="absolute inset-[18px] flex flex-col items-center justify-center rounded-full bg-white">
-
-                        <span className="text-xl font-bold text-mahogany-700">
-                            {total}
-                        </span>
-
-                        <span className="text-[10px] font-medium text-primary-400">
-                            total
-                        </span>
-
+                    <div className="absolute inset-5 flex flex-col items-center justify-center rounded-full bg-white shadow-sm">
+                        <span className="text-2xl font-bold text-mahogany-800">{total}</span>
+                        <span className="text-[10px] font-medium text-primary-400">total</span>
                     </div>
-
                 </div>
 
-                {/* LEYENDA */}
+                {/* leyenda */}
                 <div className="w-full space-y-2">
-
                     {lista.length === 0 ? (
-
-                        <p className="text-xs text-primary-500">
-                            No hay datos disponibles.
-                        </p>
-
+                        <p className="text-xs text-primary-400">No hay datos disponibles.</p>
                     ) : (
-
                         lista.map((item) => {
-                            const cantidad =
-                                Number(item.cantidad || 0);
-
-                            const porcentaje =
-                                total > 0
-                                    ? (
-                                        cantidad /
-                                        total *
-                                        100
-                                    ).toFixed(1)
-                                    : '0.0';
+                            const cantidad = Number(item.cantidad || 0);
+                            const porcentaje = total > 0
+                                ? ((cantidad / total) * 100).toFixed(1)
+                                : '0.0';
 
                             return (
                                 <div
                                     key={item.estado}
-                                    className="flex items-center justify-between gap-3 border-b border-primary-200 px-1 py-2 last:border-0"
+                                    className="flex items-center justify-between gap-3 rounded-xl border border-primary-100/60 px-3.5 py-2.5 transition-colors hover:bg-parchment-200/40"
                                 >
-
-                                    <div className="flex items-center gap-2">
-
+                                    <div className="flex items-center gap-2.5">
                                         <span
-                                            className="h-2.5 w-2.5 rounded-full"
-                                            style={{
-                                                backgroundColor:
-                                                    obtenerColor(
-                                                        item.estado
-                                                    )
-                                            }}
+                                            className="h-3 w-3 rounded-full ring-2 ring-white"
+                                            style={{ backgroundColor: obtenerColor(item.estado) }}
                                         />
-
-                                        <span className="text-xs font-semibold capitalize text-mahogany-700">
+                                        <span className="text-sm font-semibold capitalize text-mahogany-700">
                                             {item.estado}
                                         </span>
-
                                     </div>
-
                                     <div className="text-right">
-
-                                        <p className="text-xs font-semibold text-mahogany-700">
-                                            {cantidad}
-                                        </p>
-
-                                        <p className="text-[10px] text-primary-400">
-                                            {porcentaje}%
-                                        </p>
-
+                                        <p className="text-sm font-bold text-mahogany-800">{cantidad}</p>
+                                        <p className="text-[10px] text-primary-300">{porcentaje}%</p>
                                     </div>
-
                                 </div>
                             );
                         })
-
                     )}
-
                 </div>
-
             </div>
-
         </section>
     );
 }
