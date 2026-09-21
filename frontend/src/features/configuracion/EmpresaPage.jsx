@@ -214,16 +214,6 @@ export default function EmpresaPage() {
                                     <option value="CE">Carné de extranjería</option>
                                 </Select>
 
-                                <Input
-                                    label="Documento de identidad"
-                                    name="documento_identidad"
-                                    value={formulario.documento_identidad}
-                                    onChange={manejarCambio}
-                                    error={errores?.documento_identidad}
-                                    placeholder="Documento de identidad del representante"
-                                    required
-                                />
-
                                 <Textarea
                                     label="Dirección"
                                     name="direccion"
@@ -231,6 +221,16 @@ export default function EmpresaPage() {
                                     onChange={manejarCambio}
                                     placeholder="Dirección fiscal de la empresa"
                                     rows="2"
+                                />
+
+                                <Input
+                                    label="Número de documento"
+                                    name="documento_identidad"
+                                    value={formulario.documento_identidad}
+                                    onChange={manejarCambio}
+                                    error={errores?.documento_identidad}
+                                    placeholder="Documento de identidad del representante"
+                                    required
                                 />
 
                                 <div className="md:col-span-2">
