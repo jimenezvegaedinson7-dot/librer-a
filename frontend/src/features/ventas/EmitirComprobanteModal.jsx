@@ -186,6 +186,10 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                                     <p className="text-sm text-mahogany-700">{empresa.direccion}</p>
                                 </div>
                             )}
+                            <div>
+                                <p className="text-[10px] font-bold uppercase tracking-wide text-primary-400">IGV</p>
+                                <p className="text-sm text-mahogany-700">{Number(empresa.aplica_igv) === 1 ? 'Si aplica (18%)' : 'No aplica (exonerado)'}</p>
+                            </div>
                         </div>
                     ) : (
                         <Alert tipo="warning">

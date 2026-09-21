@@ -237,7 +237,7 @@ export default function EmpresaPage() {
                                     <Interruptor
                                         activo={formulario.aplica_igv}
                                         onChange={(activo) => setFormulario((actual) => ({ ...actual, aplica_igv: activo }))}
-                                        descripcion="Marca esta opción si los comprobantes deben calcular IGV (18%)"
+                                        descripcion="Activar solo si la empresa es contribuyente del IGV. Las facturas calcularan IGV (18%) sobre el total. Las boletas nunca incluyen IGV."
                                     />
                                 </div>
                             </div>
