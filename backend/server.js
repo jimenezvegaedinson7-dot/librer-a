@@ -385,6 +385,21 @@ iniciarJobs();
 })();
 
 // ===============================
+// MIGRACIÓN: cliente_documento en ventas
+// ===============================
+(async () => {
+    try {
+        await pool.query(`
+            ALTER TABLE ventas ADD COLUMN IF NOT EXISTS cliente_documento VARCHAR(20) NULL;
+            ALTER TABLE ventas ADD COLUMN IF NOT EXISTS cliente_tipo_documento VARCHAR(10) NULL;
+        `);
+        console.log('[migracion] Columnas cliente_documento y cliente_tipo_documento verificadas en ventas.');
+    } catch (e) {
+        console.error('[migracion] Error al migrar ventas:', e.message);
+    }
+})();
+
+// ===============================
 // INICIAR SERVIDOR
 // ===============================
 app.listen(PORT, () => {
