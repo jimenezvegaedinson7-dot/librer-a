@@ -90,10 +90,10 @@ function SalesChart({ ventasPorMes = [] }) {
                                             </span>
                                         </div>
                                         <div
-                                            className={`w-full max-w-8 rounded-t-md transition-all duration-500 ${
+                                            className={`w-full max-w-8 rounded-t-sm transition-all duration-500 ${
                                                 esUltimo
-                                                    ? 'bg-gradient-to-t from-mahogany-600 to-mahogany-500 shadow-sm shadow-mahogany-200'
-                                                    : 'bg-gradient-to-t from-primary-300 to-primary-200 hover:from-primary-400 hover:to-primary-300'
+                                                    ? 'bg-mahogany-600'
+                                                    : 'bg-primary-200 hover:bg-primary-300'
                                             }`}
                                             style={{ height: `${obtenerAltura(monto)}%` }}
                                         />
