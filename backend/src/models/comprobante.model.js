@@ -204,8 +204,6 @@ const generarComprobante = async ({
             cliente_tipo_documento || venta.cliente_tipo_documento || null
         );
 
-    const dniRucCliente = dniRucFinal;
-
     // ========================================
     // LEER VENTA (cabecera + detalles)
     // ========================================
@@ -419,7 +417,7 @@ const generarComprobante = async ({
                 empresa.razon_social || null,
                 clienteNombre,
                 clienteEmail,
-                dniRucCliente,
+                dniRucFinal,
                 tipoDocumentoCliente,
                 subtotalVenta,
                 costoEnvio,
