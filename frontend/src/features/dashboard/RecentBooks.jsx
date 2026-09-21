@@ -105,9 +105,6 @@ function RecentBooks({ libros = [] }) {
                             <thead>
                                 <tr className="bg-[#f1f5fb]">
                                     <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
-                                        #
-                                    </th>
-                                    <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
                                         Libro
                                     </th>
                                     <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
@@ -122,7 +119,7 @@ function RecentBooks({ libros = [] }) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#edf0f5]">
-                                {librosRecientes.map((libro, index) => {
+                                {librosRecientes.map((libro) => {
                                     const stock = obtenerStock(libro.stock);
 
                                     return (
@@ -130,9 +127,6 @@ function RecentBooks({ libros = [] }) {
                                             key={libro.id_libro}
                                             className="transition-colors hover:bg-[#f8fafd]"
                                         >
-                                            <td className="px-3 py-2.5 text-[11px] font-medium text-[#7b879d] align-middle">
-                                                {index + 1}
-                                            </td>
                                             <td className="px-3 py-2.5 align-middle">
                                                 <span className="truncate text-[11px] font-semibold text-[#10213f]">
                                                     {libro.titulo || 'Sin título'}

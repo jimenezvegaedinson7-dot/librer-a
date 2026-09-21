@@ -103,9 +103,6 @@ function TopBooks({ libros = [] }) {
                             <thead>
                                 <tr className="bg-[#f1f5fb]">
                                     <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
-                                        #
-                                    </th>
-                                    <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
                                         Libro
                                     </th>
                                     <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.04em] text-[#55637b]">
@@ -120,14 +117,11 @@ function TopBooks({ libros = [] }) {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#edf0f5]">
-                                {lista.map((libro, index) => (
+                                {lista.map((libro) => (
                                     <tr
                                         key={libro.id_libro}
                                         className="transition-colors hover:bg-[#f8fafd]"
                                     >
-                                        <td className="px-3 py-2.5 text-[11px] font-medium text-[#7b879d] align-middle">
-                                            {index + 1}
-                                        </td>
                                         <td className="px-3 py-2.5 align-middle">
                                             <div className="flex items-center gap-2">
                                                 <div className="h-8 w-6 shrink-0 overflow-hidden rounded-[2px] bg-[#f1f5fb] shadow-sm">
