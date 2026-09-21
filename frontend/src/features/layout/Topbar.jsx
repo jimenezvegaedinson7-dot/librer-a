@@ -7,6 +7,7 @@ import {
     FaBell,
     FaChevronDown,
     FaCirclePlus,
+    FaClockRotateLeft,
     FaGear,
     FaMagnifyingGlass,
     FaMoon,
@@ -26,16 +27,16 @@ import { useAuth } from '../auth/AuthContext';
 import PerfilAdministrador from './PerfilAdministrador';
 import { navPrincipal } from './navConfig';
 
-const operacionEstilo = (item) => {
+const operacionConfig = (item) => {
     const tipo = String(item.tipo_operacion || '').toUpperCase();
     const descripcion = String(item.descripcion || '').toLowerCase();
-    if (descripcion.includes('cancelad')) return { icono: <FaXmark />, clase: 'bg-crimson-100 text-crimson-500' };
+    if (descripcion.includes('cancelad')) return { icono: <FaXmark />, color: '#dc2626', bg: '#fef2f2', label: 'Cancelada' };
     if (descripcion.includes('pagada') || descripcion.includes('completada') || descripcion.includes('confirmada'))
-        return { icono: <FaCirclePlus />, clase: 'bg-mahogany-100 text-mahogany-600' };
-    if (tipo === 'CREAR') return { icono: <FaCirclePlus />, clase: 'bg-mahogany-100 text-mahogany-600' };
-    if (tipo === 'ACTUALIZAR') return { icono: <FaPenToSquare />, clase: 'bg-gold-100 text-gold-700' };
-    if (tipo === 'ELIMINAR') return { icono: <FaTrash />, clase: 'bg-crimson-100 text-crimson-500' };
-    return { icono: <FaBell />, clase: 'bg-parchment-300 text-primary-400' };
+        return { icono: <FaCirclePlus />, color: '#059669', bg: '#ecfdf5', label: 'Completada' };
+    if (tipo === 'CREAR') return { icono: <FaCirclePlus />, color: '#059669', bg: '#ecfdf5', label: 'Crear' };
+    if (tipo === 'ACTUALIZAR') return { icono: <FaPenToSquare />, color: '#d97706', bg: '#fffbeb', label: 'Actualizar' };
+    if (tipo === 'ELIMINAR') return { icono: <FaTrash />, color: '#dc2626', bg: '#fef2f2', label: 'Eliminar' };
+    return { icono: <FaBell />, color: '#6b7280', bg: '#f3f4f6', label: 'Actividad' };
 };
 
 function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
@@ -52,7 +53,7 @@ function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
     );
 }
 
-export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
+export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTema }) {
     const navigate = useNavigate();
     const { usuario, cerrarSesion } = useAuth();
 
@@ -154,6 +155,15 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
         setCantidadNuevas(0);
     };
 
+    const manejarHamburguesa = () => {
+        const esDesktop = window.innerWidth >= 1024;
+        if (esDesktop) {
+            onToggleSidebar?.();
+        } else {
+            onAbrirMenu?.();
+        }
+    };
+
     const salir = () => {
         cerrarSesion();
         navigate('/', { replace: true });
@@ -167,23 +177,23 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
 
     return (
         <>
-            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b border-primary-100 bg-parchment-100/80 px-3 sm:px-4 lg:px-6">
+            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b border-[#e5eaf2] bg-white/80 backdrop-blur-md px-3 sm:px-4 lg:px-6">
                 <div className="flex w-full items-center justify-between gap-4">
 
-                    {/* Hamburger mobile */}
+                    {/* Hamburger — visible en mobile Y desktop */}
                     <button
                         type="button"
-                        onClick={onAbrirMenu}
-                        aria-label="Abrir menú"
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary-200 bg-white text-primary-400 transition-colors hover:bg-parchment-200 lg:hidden"
+                        onClick={manejarHamburguesa}
+                        aria-label="Alternar menú"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#e5eaf2] bg-white text-[#66738c] transition-colors hover:bg-[#f5f7fb] hover:text-[#10213f]"
                     >
                         <FaBars className="text-sm" />
                     </button>
 
                     {/* Buscador */}
                     <div ref={buscadorRef} className="relative hidden w-full max-w-md sm:block">
-                        <div className="flex items-center gap-2.5 rounded-xl border border-primary-100 bg-white/70 px-3.5 py-2 transition-all focus-within:border-gold-400 focus-within:bg-white focus-within:shadow-sm">
-                            <FaMagnifyingGlass className="text-sm text-primary-300" />
+                        <div className="flex items-center gap-2.5 rounded-xl border border-[#e5eaf2] bg-[#f8fafd] px-3.5 py-2 transition-all focus-within:border-[#0877e8] focus-within:bg-white focus-within:shadow-sm">
+                            <FaMagnifyingGlass className="text-sm text-[#7b879d]" />
                             <input
                                 ref={buscadorInputRef}
                                 type="text"
@@ -194,24 +204,24 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                     setBuscadorAbierto(true);
                                 }}
                                 placeholder="Buscar módulo..."
-                                className="w-full bg-transparent text-sm text-mahogany-700 outline-none placeholder:text-primary-300"
+                                className="w-full bg-transparent text-sm text-[#10213f] outline-none placeholder:text-[#7b879d]"
                             />
                             {!busqueda && (
-                                <kbd className="hidden shrink-0 rounded-md border border-primary-200 bg-parchment-100 px-1.5 py-0.5 text-[10px] font-medium text-primary-400 lg:inline-flex">
+                                <kbd className="hidden shrink-0 rounded-md border border-[#e5eaf2] bg-[#f1f5fb] px-1.5 py-0.5 text-[10px] font-medium text-[#7b879d] lg:inline-flex">
                                     Ctrl K
                                 </kbd>
                             )}
                             {busqueda && (
                                 <button type="button" onClick={() => setBusqueda('')} aria-label="Limpiar" className="shrink-0">
-                                    <FaXmark className="text-sm text-primary-400" />
+                                    <FaXmark className="text-sm text-[#7b879d]" />
                                 </button>
                             )}
                         </div>
 
                         {buscadorAbierto && busqueda && (
-                            <div className="animate-suave absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-primary-100 bg-white shadow-lg">
+                            <div className="animate-suave absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-[#e5eaf2] bg-white shadow-lg">
                                 {resultadosBusqueda.length === 0 ? (
-                                    <div className="p-5 text-center text-sm text-primary-400">Sin resultados</div>
+                                    <div className="p-5 text-center text-sm text-[#7b879d]">Sin resultados</div>
                                 ) : (
                                     resultadosBusqueda.map((modulo) => {
                                         const Icono = modulo.icono;
@@ -220,14 +230,14 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                                 key={modulo.ruta}
                                                 type="button"
                                                 onClick={() => navegarModulo(modulo.ruta)}
-                                                className="flex w-full items-center gap-3 border-b border-primary-100 px-4 py-3 text-left transition last:border-0 hover:bg-parchment-100"
+                                                className="flex w-full items-center gap-3 border-b border-[#f1f5fb] px-4 py-3 text-left transition last:border-0 hover:bg-[#f8fafd]"
                                             >
-                                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-mahogany-50 text-mahogany-600">
+                                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#edf5ff] text-[#0877e8]">
                                                     <Icono className="text-sm" />
                                                 </span>
                                                 <span className="min-w-0">
-                                                    <span className="block text-sm font-semibold text-mahogany-700">{modulo.nombre}</span>
-                                                    <span className="block text-xs text-primary-400">{modulo.descripcion}</span>
+                                                    <span className="block text-sm font-semibold text-[#10213f]">{modulo.nombre}</span>
+                                                    <span className="block text-xs text-[#7b879d]">{modulo.descripcion}</span>
                                                 </span>
                                             </button>
                                         );
@@ -247,7 +257,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                             aria-label={tema === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
                             aria-pressed={tema === 'dark'}
                             title={tema === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-                            className="theme-toggle flex h-9 w-9 items-center justify-center rounded-lg border border-primary-100 bg-white text-primary-400 transition-all hover:border-primary-200 hover:text-mahogany-600"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5eaf2] bg-white text-[#66738c] transition-all hover:border-[#d0d7e3] hover:text-[#10213f]"
                         >
                             <span key={tema} className="theme-icon">
                                 {tema === 'dark' ? <FaSun className="text-sm" /> : <FaMoon className="text-sm" />}
@@ -260,69 +270,100 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                 type="button"
                                 onClick={abrirNotificaciones}
                                 aria-label="Notificaciones"
-                                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-primary-100 bg-white text-primary-400 transition-all hover:border-primary-200 hover:text-mahogany-600"
+                                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5eaf2] bg-white text-[#66738c] transition-all hover:border-[#d0d7e3] hover:text-[#10213f]"
                             >
                                 <FaBell className="text-sm" />
                                 {cantidadNuevas > 0 && (
-                                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-crimson-500 px-1 text-[8px] font-bold text-white shadow-sm">
+                                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f43f5e] px-1 text-[8px] font-bold text-white shadow-sm">
                                         {cantidadNuevas > 99 ? '99+' : cantidadNuevas}
                                     </span>
                                 )}
                             </button>
 
                             {notificacionesAbiertas && (
-                                <div className="animate-suave fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-xl border border-primary-100 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px]">
-                                    <div className="flex items-center justify-between border-b border-primary-100 px-4 py-3">
+                                <div className="animate-suave fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-xl border border-[#e5eaf2] bg-white shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[400px]">
+
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between border-b border-[#f1f5fb] px-5 py-4">
                                         <div>
-                                            <h3 className="text-sm font-semibold text-mahogany-700">Notificaciones</h3>
-                                            <p className="text-[11px] text-primary-400">Actividades recientes</p>
+                                            <h3 className="text-[14px] font-semibold text-[#10213f]">Notificaciones</h3>
+                                            <p className="mt-0.5 text-[11px] text-[#7b879d]">Actividades recientes del sistema</p>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => cargarNotificaciones()}
-                                            className="rounded-lg px-2.5 py-1 text-xs font-semibold text-mahogany-600 transition-colors hover:bg-mahogany-50"
+                                            className="rounded-lg px-3 py-1.5 text-[11px] font-semibold text-[#0877e8] transition-colors hover:bg-[#edf5ff]"
                                         >
                                             Actualizar
                                         </button>
                                     </div>
-                                    <div className="max-h-[380px] overflow-y-auto">
+
+                                    {/* Lista */}
+                                    <div className="max-h-[400px] overflow-y-auto">
                                         {cargandoNotif && notificaciones.length === 0 ? (
-                                            <div className="p-6 text-center text-sm text-primary-400">Cargando...</div>
+                                            <div className="flex flex-col items-center justify-center py-10 text-center">
+                                                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f5fb]">
+                                                    <FaBell className="text-sm text-[#7b879d]" />
+                                                </div>
+                                                <p className="text-[13px] font-medium text-[#10213f]">Cargando...</p>
+                                            </div>
                                         ) : notificaciones.length === 0 ? (
-                                            <div className="p-6 text-center text-sm text-primary-400">Sin notificaciones</div>
+                                            <div className="flex flex-col items-center justify-center py-10 text-center">
+                                                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#edf5ff]">
+                                                    <FaBell className="text-sm text-[#0877e8]" />
+                                                </div>
+                                                <p className="text-[13px] font-semibold text-[#10213f]">Sin notificaciones</p>
+                                                <p className="mt-0.5 text-[11px] text-[#7b879d]">No hay actividad reciente</p>
+                                            </div>
                                         ) : (
-                                            notificaciones.map((item) => {
-                                                const op = operacionEstilo(item);
+                                            notificaciones.slice(0, 15).map((item) => {
+                                                const op = operacionConfig(item);
                                                 return (
                                                     <div
                                                         key={item.id_historial}
-                                                        className="flex gap-3 border-b border-primary-100 px-4 py-3 last:border-0"
+                                                        className="flex gap-3 border-b border-[#f1f5fb] px-5 py-3.5 last:border-0 transition-colors hover:bg-[#f8fafd]"
                                                     >
-                                                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm ${op.clase}`}>
+                                                        <div
+                                                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[12px]"
+                                                            style={{ backgroundColor: op.bg, color: op.color }}
+                                                        >
                                                             {op.icono}
-                                                        </span>
+                                                        </div>
                                                         <div className="min-w-0 flex-1">
-                                                            <div className="flex justify-between gap-2">
-                                                                <p className="truncate text-sm font-semibold capitalize text-mahogany-700">
-                                                                    {item.modulo || 'Sistema'}
-                                                                </p>
-                                                                <span className="whitespace-nowrap text-[11px] text-primary-300">{formatearFecha(item.fecha_registro)}</span>
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[12px] font-semibold capitalize text-[#10213f]">
+                                                                        {item.modulo || 'Sistema'}
+                                                                    </span>
+                                                                    <span
+                                                                        className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                                                                        style={{ backgroundColor: op.bg, color: op.color }}
+                                                                    >
+                                                                        {op.label}
+                                                                    </span>
+                                                                </div>
+                                                                <span className="whitespace-nowrap text-[10px] text-[#7b879d]">
+                                                                    {formatearFecha(item.fecha_registro)}
+                                                                </span>
                                                             </div>
-                                                            <p className="mt-0.5 text-xs leading-snug text-primary-400">{item.descripcion}</p>
+                                                            <p className="mt-1 text-[11px] leading-snug text-[#55637b]">{item.descripcion}</p>
                                                         </div>
                                                     </div>
                                                 );
                                             })
                                         )}
                                     </div>
+
+                                    {/* Footer */}
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setNotificacionesAbiertas(false);
                                             navigate('/historial');
                                         }}
-                                        className="w-full border-t border-primary-100 bg-parchment-100 py-2.5 text-xs font-semibold text-mahogany-700 transition-colors hover:bg-parchment-200"
+                                        className="flex w-full items-center justify-center gap-2 border-t border-[#f1f5fb] bg-[#f8fafd] py-3 text-[12px] font-semibold text-[#10213f] transition-colors hover:bg-[#f1f5fb]"
                                     >
+                                        <FaClockRotateLeft className="text-[11px] text-[#7b879d]" />
                                         Ver historial completo
                                     </button>
                                 </div>
@@ -337,21 +378,21 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                     setMenuAbierto(!menuAbierto);
                                     setNotificacionesAbiertas(false);
                                 }}
-                                className="flex items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-parchment-200/60"
+                                className="flex items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-[#f5f7fb]"
                             >
                                 <Avatar foto={foto} inicial={inicial} />
                                 <div className="hidden max-w-[170px] text-left md:block">
-                                    <p className="truncate text-sm font-semibold text-mahogany-700">{nombre}</p>
-                                    <p className="truncate text-[11px] text-primary-400">{usuario?.email || 'Administrador'}</p>
+                                    <p className="truncate text-sm font-semibold text-[#10213f]">{nombre}</p>
+                                    <p className="truncate text-[11px] text-[#7b879d]">{usuario?.email || 'Administrador'}</p>
                                 </div>
-                                <FaChevronDown className={`hidden text-[10px] text-primary-400 transition-transform sm:block ${menuAbierto ? 'rotate-180' : ''}`} />
+                                <FaChevronDown className={`hidden text-[10px] text-[#7b879d] transition-transform sm:block ${menuAbierto ? 'rotate-180' : ''}`} />
                             </button>
 
                             {menuAbierto && (
-                                <div className="animate-suave absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-primary-100 bg-white shadow-lg">
-                                    <div className="border-b border-primary-100 px-4 py-3">
-                                        <p className="text-sm font-semibold text-mahogany-700">{nombre}</p>
-                                        <p className="text-[11px] text-primary-400">{usuario?.email || 'Administrador'}</p>
+                                <div className="animate-suave absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-[#e5eaf2] bg-white shadow-xl">
+                                    <div className="border-b border-[#f1f5fb] px-4 py-3">
+                                        <p className="text-sm font-semibold text-[#10213f]">{nombre}</p>
+                                        <p className="text-[11px] text-[#7b879d]">{usuario?.email || 'Administrador'}</p>
                                     </div>
                                     <div className="py-1.5">
                                         <button
@@ -360,7 +401,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                                 setPerfilAbierto(true);
                                                 setMenuAbierto(false);
                                             }}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-primary-500 transition hover:bg-parchment-100 hover:text-mahogany-700"
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#55637b] transition hover:bg-[#f8fafd] hover:text-[#10213f]"
                                         >
                                             <FaUser className="text-sm" /> Datos del administrador
                                         </button>
@@ -370,16 +411,16 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                                 setConfigAbierta(true);
                                                 setMenuAbierto(false);
                                             }}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-primary-500 transition hover:bg-parchment-100 hover:text-mahogany-700"
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#55637b] transition hover:bg-[#f8fafd] hover:text-[#10213f]"
                                         >
                                             <FaGear className="text-sm" /> Configuración
                                         </button>
                                     </div>
-                                    <div className="border-t border-primary-100 py-1.5">
+                                    <div className="border-t border-[#f1f5fb] py-1.5">
                                         <button
                                             type="button"
                                             onClick={salir}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-semibold text-crimson-500 transition hover:bg-crimson-50"
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-semibold text-[#f43f5e] transition hover:bg-[#fef2f2]"
                                         >
                                             <FaRightFromBracket className="text-sm" /> Cerrar sesión
                                         </button>
