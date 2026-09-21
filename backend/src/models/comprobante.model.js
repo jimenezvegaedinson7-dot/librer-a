@@ -201,15 +201,10 @@ const generarComprobante = async ({
     const tipoDocumentoCliente =
         normalizarTipoDocumentoCliente(
             tipoComprobante,
-            cliente_tipo_documento
+            cliente_tipo_documento || venta.cliente_tipo_documento
         );
 
-    const dniRucCliente =
-        tipoComprobante === 'factura'
-            ? String(cliente_dni_ruc).trim()
-            : (cliente_dni_ruc
-                ? String(cliente_dni_ruc).trim()
-                : '')
+    const dniRucCliente = dniRucFinal;
 
     // ========================================
     // LEER VENTA (cabecera + detalles)
@@ -243,12 +238,8 @@ const generarComprobante = async ({
 
     // ========================================
     // CLIENTE (usuarios vía JOIN de la venta)
-    // cliente_dni_ruc se deja vacío (no editable).
-    // cliente_nombre / cliente_email son OPcionales:
-    //   si llegan -> se usan en el snapshot (identidad del
-    //   comprador digitada por el admin al emitir).
-    //   si no llegan -> email = venta.correo_compra ||
-    //   usuario.email; nombre = usuario.nombre/apellido.
+    // Si el admin no envía el DNI/RUC, se toma de la venta
+    // (guardado automáticamente desde Flutter al momento de la compra).
     // ========================================
     const clienteNombre =
         cliente_nombre !== undefined &&
@@ -264,6 +255,17 @@ const generarComprobante = async ({
         String(cliente_email).trim() !== ''
             ? String(cliente_email).trim()
             : (venta.correo_compra || venta.correo_usuario || null);
+
+    // Si el admin no envía DNI/RUC, usar el de la venta (Flutter checkout)
+    const dniRucFromRequest =
+        cliente_dni_ruc !== undefined &&
+        cliente_dni_ruc !== null &&
+        String(cliente_dni_ruc).trim() !== ''
+            ? String(cliente_dni_ruc).trim()
+            : '';
+
+    const dniRucFinal =
+        dniRucFromRequest || venta.cliente_documento || '';
 
     // ========================================
     // IMPORTES REALES DE LA VENTA
