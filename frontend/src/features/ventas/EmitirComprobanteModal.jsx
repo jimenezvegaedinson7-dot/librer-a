@@ -48,10 +48,10 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
 
             if (tipoInicial === 'factura') {
                 setTipoDocumento('RUC');
-                setDocumento('');
+                setDocumento(venta.cliente_documento || '');
             } else {
-                setTipoDocumento('DNI');
-                setDocumento('');
+                setTipoDocumento(venta.cliente_tipo_documento || 'DNI');
+                setDocumento(venta.cliente_documento || '');
             }
         } else {
             setClienteNombre('');
@@ -74,10 +74,14 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
         setErrorNombre('');
         if (nuevoTipo === 'factura') {
             setTipoDocumento('RUC');
-            setDocumento('');
+            if (!venta?.cliente_documento) {
+                setDocumento('');
+            }
         } else {
-            setTipoDocumento('DNI');
-            setDocumento('');
+            setTipoDocumento(venta?.cliente_tipo_documento || 'DNI');
+            if (!venta?.cliente_documento) {
+                setDocumento('');
+            }
         }
     };
 

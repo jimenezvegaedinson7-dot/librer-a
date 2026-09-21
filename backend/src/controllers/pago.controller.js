@@ -299,7 +299,9 @@ const crearOrden = async (req, res) => {
             correo_compra,
             id_distrito,
             id_agencia,
-            idempotencia_clave
+            idempotencia_clave,
+            cliente_documento,
+            cliente_tipo_documento
         } = req.body;
 
         // ========================================
@@ -725,6 +727,10 @@ const crearOrden = async (req, res) => {
                 idempotencia_clave:
                     idempotenciaClave,
                 costo_envio: costoEnvio,
+                cliente_documento:
+                    cliente_documento || null,
+                cliente_tipo_documento:
+                    cliente_tipo_documento || null,
                 estado: 'pendiente'
             });
         } catch (errorVenta) {

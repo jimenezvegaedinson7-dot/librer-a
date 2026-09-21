@@ -31,7 +31,9 @@ class EntregaYPagoScreen extends StatefulWidget {
 
 class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   final _direccionController = TextEditingController();
+  final _documentoController = TextEditingController();
   _TipoEntrega _tipoEntrega = _TipoEntrega.domicilio;
+  String _tipoDocumento = 'DNI';
   bool _procesando = false;
   bool _cargandoUbicaciones = false;
   bool _exito = false;
@@ -55,6 +57,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   @override
   void dispose() {
     _direccionController.dispose();
+    _documentoController.dispose();
     super.dispose();
   }
 
@@ -145,6 +148,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         direccion: esDomicilio ? _direccionController.text.trim() : null,
         idDistrito: esDomicilio ? _idDistrito : null,
         idAgencia: _tipoEntrega == _TipoEntrega.agencia ? _idAgencia : null,
+        clienteTipoDocumento: _tipoDocumento,
+        clienteDocumento: _documentoController.text.trim(),
       );
 
       final url = orden.checkoutUrl;
@@ -187,6 +192,21 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   }
 
   String? _validarEntrega() {
+    // Validar documento
+    final doc = _documentoController.text.trim();
+    if (doc.isEmpty) {
+      return 'Ingresa tu número de documento.';
+    }
+    if (_tipoDocumento == 'DNI' && !RegExp(r'^\d{8}$').hasMatch(doc)) {
+      return 'El DNI debe tener exactamente 8 dígitos.';
+    }
+    if (_tipoDocumento == 'RUC' && !RegExp(r'^\d{11}$').hasMatch(doc)) {
+      return 'El RUC debe tener exactamente 11 dígitos.';
+    }
+    if (_tipoDocumento == 'CE' && doc.length < 8) {
+      return 'El carné de extranjería debe tener al menos 8 caracteres.';
+    }
+
     switch (_tipoEntrega) {
       case _TipoEntrega.domicilio:
         if (_idDistrito == null) {
@@ -325,6 +345,15 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: _buildSeccionEntrega(context),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: _buildSeccionDocumento(context),
                   ),
                   const SizedBox(height: 20),
                   _buildResumen(context),
@@ -469,6 +498,51 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                 setState(() => _idAgencia = valor);
               }
             },
+    );
+  }
+
+  Widget _buildSeccionDocumento(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(
+          icon: Icons.badge_outlined,
+          title: 'Documento de identidad',
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          initialValue: _tipoDocumento,
+          decoration: const InputDecoration(labelText: 'Tipo de documento'),
+          items: const [
+            DropdownMenuItem(value: 'DNI', child: Text('DNI')),
+            DropdownMenuItem(value: 'RUC', child: Text('RUC')),
+            DropdownMenuItem(value: 'CE', child: Text('Carné de extranjería')),
+          ],
+          onChanged: (valor) {
+            if (valor != null) {
+              setState(() {
+                _tipoDocumento = valor;
+                _documentoController.clear();
+              });
+            }
+          },
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _documentoController,
+          keyboardType: TextInputType.number,
+          maxLength: _tipoDocumento == 'RUC' ? 11 : _tipoDocumento == 'DNI' ? 8 : 20,
+          decoration: InputDecoration(
+            labelText: 'Número de documento',
+            hintText: _tipoDocumento == 'DNI'
+                ? 'Ej. 12345678'
+                : _tipoDocumento == 'RUC'
+                ? 'Ej. 20123456789'
+                : 'Ej. 12345678',
+            counterText: '',
+          ),
+        ),
+      ],
     );
   }
 

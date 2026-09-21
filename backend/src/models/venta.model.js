@@ -32,6 +32,8 @@ const obtenerTodos = async () => {
             v.payu_payment_id,
             v.payu_payment_status,
             v.payu_payer_email,
+            v.cliente_documento,
+            v.cliente_tipo_documento,
             EXISTS (
                 SELECT 1
                 FROM comprobantes cc
@@ -81,6 +83,8 @@ const obtenerPorId = async (id) => {
             v.payu_payment_id,
             v.payu_payment_status,
             v.payu_payer_email,
+            v.cliente_documento,
+            v.cliente_tipo_documento,
             EXISTS (
                 SELECT 1
                 FROM comprobantes cc
@@ -301,6 +305,8 @@ const crear = async (venta) => {
             id_distrito,
             id_agencia,
             costo_envio,
+            cliente_documento,
+            cliente_tipo_documento,
             estado = 'pendiente'
         } = venta;
 
@@ -483,9 +489,11 @@ const crear = async (venta) => {
                     idempotencia_clave,
                     id_distrito,
                     id_agencia,
-                    costo_envio
+                    costo_envio,
+                    cliente_documento,
+                    cliente_tipo_documento
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 id_usuario,
                 total,
@@ -499,7 +507,9 @@ const crear = async (venta) => {
                 idempotencia_clave || null,
                 id_distrito || null,
                 id_agencia || null,
-                costo_envio || 0
+                costo_envio || 0,
+                cliente_documento || null,
+                cliente_tipo_documento || null
             ]);
 
         const idVenta =

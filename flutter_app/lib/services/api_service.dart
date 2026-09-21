@@ -615,6 +615,8 @@ class ApiService {
     String? direccion,
     int? idDistrito,
     int? idAgencia,
+    String? clienteTipoDocumento,
+    String? clienteDocumento,
   }) async {
     try {
       final fingerprint = [
@@ -625,6 +627,7 @@ class ApiService {
         direccion?.trim() ?? '',
         idDistrito?.toString() ?? '',
         idAgencia?.toString() ?? '',
+        clienteDocumento ?? '',
       ].join('|');
 
       if (_idempotenciaClave == null ||
@@ -646,6 +649,10 @@ class ApiService {
             'direccion': direccion.trim(),
           'id_distrito': ?idDistrito,
           'id_agencia': ?idAgencia,
+          if (clienteTipoDocumento != null && clienteTipoDocumento.isNotEmpty)
+            'cliente_tipo_documento': clienteTipoDocumento,
+          if (clienteDocumento != null && clienteDocumento.trim().isNotEmpty)
+            'cliente_documento': clienteDocumento.trim(),
         },
       );
 

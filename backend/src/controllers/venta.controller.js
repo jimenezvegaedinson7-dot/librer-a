@@ -214,6 +214,8 @@ const crearVenta = async (req, res) => {
         const id_agencia = req.body.id_agencia;
         const direccion = req.body.direccion;
         const referencia = req.body.referencia;
+        const cliente_documento = req.body.cliente_documento;
+        const cliente_tipo_documento = req.body.cliente_tipo_documento;
 
         // ========================================
         // NORMALIZAR TIPO DE ENTREGA
@@ -383,6 +385,8 @@ const crearVenta = async (req, res) => {
                         : null,
                 correo_compra,
                 costo_envio: costoEnvio,
+                cliente_documento: cliente_documento || null,
+                cliente_tipo_documento: cliente_tipo_documento || null,
                 estado: 'pendiente'
             });
 
