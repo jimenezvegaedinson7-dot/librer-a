@@ -93,10 +93,10 @@ export default function DashboardPage() {
 
             {/* ENCABEZADO */}
             <header className="space-y-1">
-                <h1 className="text-[26px] font-semibold leading-tight tracking-[-0.02em] text-[#10213f]">
+                <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.01em] text-[#2D1B16]">
                     Resumen
                 </h1>
-                <p className="mt-1 text-[14px] font-normal leading-relaxed text-[#66738c]">
+                <p className="mt-1 text-[14px] font-normal leading-relaxed text-[#64748B]">
                     Indicadores generales y actividad reciente de la librería
                 </p>
             </header>
@@ -123,8 +123,8 @@ export default function DashboardPage() {
                                     <FaBook />
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[#66738c]">Libros</p>
-                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#10213f]">{resumen.total_libros}</p>
+                                    <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[#64748B]">Libros</p>
+                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#1F2937]">{resumen.total_libros}</p>
                                 </div>
                             </div>
                         </div>
@@ -143,8 +143,8 @@ export default function DashboardPage() {
                                     <FaUserPen />
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[#66738c]">Autores</p>
-                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#10213f]">{resumen.total_autores}</p>
+                                    <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[#64748B]">Autores</p>
+                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#1F2937]">{resumen.total_autores}</p>
                                 </div>
                             </div>
                         </div>
@@ -163,8 +163,8 @@ export default function DashboardPage() {
                                     <FaTags />
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[#66738c]">Categorías</p>
-                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#10213f]">{resumen.total_categorias}</p>
+                                    <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[#64748B]">Categorías</p>
+                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#1F2937]">{resumen.total_categorias}</p>
                                 </div>
                             </div>
                         </div>
@@ -183,8 +183,8 @@ export default function DashboardPage() {
                                     <FaUsers />
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[#66738c]">Usuarios</p>
-                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#10213f]">{resumen.total_usuarios}</p>
+                                    <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[#64748B]">Usuarios</p>
+                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#1F2937]">{resumen.total_usuarios}</p>
                                 </div>
                             </div>
                         </div>

@@ -49,10 +49,10 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion 
             <div className="relative z-10">
                 <div className="flex items-start justify-between">
                     <div className="min-w-0 flex-1">
-                        <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-white/90">
+                        <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/90">
                             {titulo}
                         </p>
-                        <p className="mt-3 text-[27px] font-bold leading-none tracking-[-0.02em] text-white">
+                        <p className="mt-3 text-[27px] font-semibold leading-none tracking-[-0.02em] text-white">
                             {valor}
                         </p>
                         {descripcion && (
