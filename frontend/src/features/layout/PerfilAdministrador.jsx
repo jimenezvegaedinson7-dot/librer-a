@@ -31,11 +31,11 @@ import { Input } from '../../components/ui/Form';
 
 function Avatar({ foto, inicial, className = 'h-10 w-10' }) {
     return (
-        <div className={`overflow-hidden rounded-full bg-slate-200 ring-1 ring-slate-300 ${className}`}>
+        <div className={`overflow-hidden rounded-full bg-mahogany-200 ring-1 ring-mahogany-300 ${className}`}>
             {foto ? (
                 <img src={foto} alt="Foto del administrador" className="h-full w-full object-cover" />
             ) : (
-                <div className="flex h-full w-full items-center justify-center bg-slate-900 text-sm font-bold text-white">
+                <div className="flex h-full w-full items-center justify-center bg-mahogany-700 text-sm font-bold text-parchment-100">
                     {inicial}
                 </div>
             )}
@@ -45,13 +45,13 @@ function Avatar({ foto, inicial, className = 'h-10 w-10' }) {
 
 function Dato({ icono, etiqueta, valor }) {
     return (
-        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-600 shadow-sm">
+        <div className="flex items-center gap-3 rounded-xl border border-primary-200 bg-parchment-200 px-3 py-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-parchment-50 text-mahogany-600 shadow-sm">
                 {icono}
             </div>
             <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{etiqueta}</p>
-                <p className="truncate text-xs font-semibold text-slate-700">{valor}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-primary-400">{etiqueta}</p>
+                <p className="truncate text-xs font-semibold text-mahogany-700">{valor}</p>
             </div>
         </div>
     );
@@ -60,16 +60,16 @@ function Dato({ icono, etiqueta, valor }) {
 function CampoPassword({ label, name, value, mostrar, onMostrar, onChange }) {
     return (
         <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>
-            <div className="flex items-center rounded-lg border border-slate-400 px-3 focus-within:ring-2 focus-within:ring-primary-100">
+            <label className="mb-1.5 block text-sm font-medium text-mahogany-700">{label}</label>
+            <div className="flex items-center rounded-lg border border-primary-200 px-3 focus-within:ring-2 focus-within:ring-gold-100">
                 <input
                     type={mostrar ? 'text' : 'password'}
                     name={name}
                     value={value}
                     onChange={onChange}
-                    className="w-full py-2.5 text-sm text-slate-700 outline-none"
+                    className="w-full py-2.5 text-sm text-mahogany-700 outline-none"
                 />
-                <button type="button" onClick={onMostrar} className="text-slate-400">
+                <button type="button" onClick={onMostrar} className="text-primary-400">
                     {mostrar ? <FaEyeSlash /> : <FaEye />}
                 </button>
             </div>
@@ -312,8 +312,8 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                 <div className="space-y-6">
                     {/* FOTO */}
                     <section>
-                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600">Foto de perfil</h3>
-                        <div className="flex flex-col items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row">
+                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-primary-400">Foto de perfil</h3>
+                        <div className="flex flex-col items-center gap-4 rounded-xl border border-primary-200 bg-parchment-200 p-4 sm:flex-row">
                             <Avatar foto={previewFoto || foto} inicial={inicial} className="h-20 w-20" />
                             <div className="flex-1">
                                 <input
@@ -338,14 +338,14 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                                     )}
                                 </div>
                                 {subiendoFoto && <div className="upload-progress mt-3" role="progressbar" aria-label="Subiendo foto"><span /></div>}
-                                <p className="mt-2 text-xs text-slate-600">JPG, PNG o WEBP. Máximo 5 MB.</p>
+                                <p className="mt-2 text-xs text-primary-400">JPG, PNG o WEBP. Máximo 5 MB.</p>
                             </div>
                         </div>
                     </section>
 
                     {/* DATOS PERSONALES */}
                     <section>
-                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600">Información personal</h3>
+                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-primary-400">Información personal</h3>
                         <form onSubmit={guardarPerfil} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <Input label="Nombre" name="nombre" value={formularioPerfil.nombre} onChange={(e) => cambioCampo(e, setFormularioPerfil)} />
                             <Input label="Apellido" name="apellido" value={formularioPerfil.apellido} onChange={(e) => cambioCampo(e, setFormularioPerfil)} />
@@ -360,8 +360,8 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                     </section>
 
                     {/* SEGURIDAD */}
-                    <section className="border-t border-slate-200 pt-5">
-                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-600">Seguridad</h3>
+                    <section className="border-t border-primary-200 pt-5">
+                        <h3 className="mb-3 text-xs font-bold uppercase tracking-wide text-primary-400">Seguridad</h3>
                         <form onSubmit={guardarPassword} className="space-y-4">
                             <CampoPassword
                                 label="Contraseña actual"
@@ -398,15 +398,15 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                     </section>
 
                     {/* DOBLE FACTOR */}
-                    <section className="border-t border-slate-200 pt-5">
+                    <section className="border-t border-primary-200 pt-5">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                            <h3 className="text-xs font-bold uppercase tracking-wide text-slate-600">Doble factor de autenticación</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-wide text-primary-400">Doble factor de autenticación</h3>
                             {estado2FA ? (
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-success-bg px-2.5 py-1 text-[11px] font-semibold text-success ring-1 ring-success/20">
                                     <FaCircleCheck /> Activado
                                 </span>
                             ) : (
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500 ring-1 ring-slate-200">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-parchment-300 px-2.5 py-1 text-[11px] font-semibold text-primary-400 ring-1 ring-primary-200">
                                     <FaCircleXmark /> Desactivado
                                 </span>
                             )}
@@ -420,21 +420,21 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
 
                         {setupInfo && !estado2FA && (
                             <div className="space-y-4">
-                                <div className="flex flex-col items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row">
+                                <div className="flex flex-col items-center gap-4 rounded-xl border border-primary-200 bg-parchment-200 p-4 sm:flex-row">
                                     {setupInfo.qr && (
                                         <img
                                             src={setupInfo.qr}
                                             alt="Código QR del doble factor"
-                                            className="h-44 w-44 rounded-lg border border-slate-200 bg-white p-1"
+                                            className="h-44 w-44 rounded-lg border border-primary-200 bg-parchment-50 p-1"
                                         />
                                     )}
-                                    <div className="flex-1 space-y-2 text-sm text-slate-600">
-                                        <p className="text-xs text-slate-600">
+                                    <div className="flex-1 space-y-2 text-sm text-primary-500">
+                                        <p className="text-xs text-primary-400">
                                             Escanea el código QR con tu app de autenticación (Google Authenticator, Authy, etc.). Si no puedes escanearlo, ingresa el código secreto manualmente.
                                         </p>
-                                        <div className="rounded-lg border border-dashed border-slate-400 bg-white px-3 py-2">
-                                            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Código secreto</p>
-                                            <p className="font-mono text-sm font-semibold tracking-wider text-slate-700">{setupInfo.secret}</p>
+                                        <div className="rounded-lg border border-dashed border-primary-300 bg-parchment-50 px-3 py-2">
+                                            <p className="text-[10px] font-semibold uppercase tracking-wide text-primary-400">Código secreto</p>
+                                            <p className="font-mono text-sm font-semibold tracking-wider text-mahogany-700">{setupInfo.secret}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -465,7 +465,7 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
 
                         {estado2FA && (
                             <div className="space-y-3">
-                                <p className="text-sm text-slate-600">
+                                <p className="text-sm text-primary-400">
                                     La verificación en dos pasos está activa. Cada inicio de sesión requerirá un código de tu app de autenticación.
                                 </p>
                                 {!mostrarFormDesactivar ? (
@@ -473,19 +473,19 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                                         Desactivar doble factor
                                     </Button>
                                 ) : (
-                                    <form onSubmit={enviarDesactivacion2FA} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                    <form onSubmit={enviarDesactivacion2FA} className="space-y-3 rounded-xl border border-primary-200 bg-parchment-200 p-4">
                                         <div>
-                                            <label className="mb-1.5 block text-sm font-medium text-slate-700">Contraseña actual</label>
-                                            <div className="flex items-center rounded-lg border border-slate-400 px-3 focus-within:ring-2 focus-within:ring-primary-100">
+                                            <label className="mb-1.5 block text-sm font-medium text-mahogany-700">Contraseña actual</label>
+                                            <div className="flex items-center rounded-lg border border-primary-200 px-3 focus-within:ring-2 focus-within:ring-gold-100">
                                                 <input
                                                     type={mostrarPwdDesactivar ? 'text' : 'password'}
                                                     value={passwordDesactivar}
                                                     onChange={(e) => setPasswordDesactivar(e.target.value)}
                                                     required
                                                     autoComplete="current-password"
-                                                    className="w-full py-2.5 text-sm text-slate-700 outline-none"
+                                                    className="w-full py-2.5 text-sm text-mahogany-700 outline-none"
                                                 />
-                                                <button type="button" onClick={() => setMostrarPwdDesactivar((v) => !v)} className="text-slate-400">
+                                                <button type="button" onClick={() => setMostrarPwdDesactivar((v) => !v)} className="text-primary-400">
                                                     {mostrarPwdDesactivar ? <FaEyeSlash /> : <FaEye />}
                                                 </button>
                                             </div>

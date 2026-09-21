@@ -112,17 +112,17 @@ export default function LoginPage() {
     };
 
     return (
-        <main className="relative min-h-screen bg-slate-100">
+        <main className="relative min-h-screen bg-parchment-300">
             <div
                 className="fixed inset-0 bg-cover bg-center bg-no-repeat"
                 style={{ backgroundImage: `url(${fondoLogin})` }}
             />
-            <div className="fixed inset-0 bg-slate-950/45" />
+            <div className="fixed inset-0 bg-mahogany-900/45" />
 
             <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8">
                 <section className="w-full min-w-0 max-w-[440px]">
-                    <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-7 shadow-xl sm:p-9">
-                        <div className="mb-6 flex justify-center border-b border-slate-200 pb-6">
+                    <div className="min-w-0 rounded-lg border border-primary-200 bg-parchment-50 p-7 shadow-xl sm:p-9">
+                        <div className="mb-6 flex justify-center border-b border-primary-200 pb-6">
                             <img
                                 src={logoLibreria}
                                 alt="Logo Librería"
@@ -133,10 +133,10 @@ export default function LoginPage() {
                         {!twoFactorToken ? (
                             <>
                                 <div className="mb-6 text-center">
-                                    <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+                                    <h1 className="font-serif text-2xl font-semibold tracking-tight text-mahogany-700">
                                         Iniciar sesión
                                     </h1>
-                                    <p className="mt-2 text-sm text-slate-500">
+                                    <p className="mt-2 text-sm text-primary-400">
                                         Ingresa tus credenciales de administración
                                     </p>
                                 </div>
@@ -149,11 +149,11 @@ export default function LoginPage() {
 
                                 <form onSubmit={enviar} className="min-w-0 space-y-5">
                                     <div>
-                                        <label className="mb-2 block text-sm font-semibold text-slate-900">
+                                        <label className="mb-2 block text-sm font-semibold text-mahogany-700">
                                             Correo electrónico
                                         </label>
-                                        <div className="flex h-12 min-w-0 items-center overflow-hidden rounded-md border border-slate-300 bg-white transition focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-100">
-                                            <span className="flex h-full w-11 shrink-0 items-center justify-center border-r border-slate-200 text-slate-500">
+                                        <div className="flex h-12 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
+                                            <span className="flex h-full w-11 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
                                                 <FaEnvelope />
                                             </span>
                                             <input
@@ -163,17 +163,17 @@ export default function LoginPage() {
                                                 placeholder="admin@libreria.com"
                                                 autoComplete="email"
                                                 required
-                                                className="h-full min-w-0 flex-1 bg-transparent px-4 text-sm text-slate-900 outline-none placeholder:text-slate-500"
+                                                className="h-full min-w-0 flex-1 bg-transparent px-4 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="mb-2 block text-sm font-semibold text-slate-900">
+                                        <label className="mb-2 block text-sm font-semibold text-mahogany-700">
                                             Contraseña
                                         </label>
-                                        <div className="flex h-12 min-w-0 items-center overflow-hidden rounded-md border border-slate-300 bg-white transition focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-100">
-                                            <span className="flex h-full w-11 shrink-0 items-center justify-center border-r border-slate-200 text-slate-500">
+                                        <div className="flex h-12 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
+                                            <span className="flex h-full w-11 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
                                                 <FaLock />
                                             </span>
                                             <input
@@ -183,12 +183,12 @@ export default function LoginPage() {
                                                 placeholder="Ingresa tu contraseña"
                                                 autoComplete="current-password"
                                                 required
-                                                className="h-full min-w-0 flex-1 bg-transparent px-4 text-sm text-slate-900 outline-none placeholder:text-slate-500"
+                                                className="h-full min-w-0 flex-1 bg-transparent px-4 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => setMostrarPassword((v) => !v)}
-                                                className="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                                                className="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-primary-400 transition hover:bg-parchment-200 hover:text-mahogany-700"
                                             >
                                                 {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
                                             </button>
@@ -198,7 +198,7 @@ export default function LoginPage() {
                                     <button
                                         type="submit"
                                         disabled={cargando}
-                                        className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-primary-800 bg-primary-700 text-sm font-semibold text-white transition-colors hover:bg-primary-800 disabled:opacity-60"
+                                        className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-mahogany-700 bg-mahogany-700 text-sm font-semibold text-parchment-100 transition-colors hover:bg-mahogany-600 disabled:opacity-60"
                                     >
                                         {cargando ? (
                                             <>
@@ -217,13 +217,13 @@ export default function LoginPage() {
                         ) : (
                             <>
                                 <div className="mb-6 text-center">
-                                    <div className="mb-4 flex justify-center text-2xl text-primary-700">
+                                    <div className="mb-4 flex justify-center text-2xl text-mahogany-600">
                                         <FaQrcode />
                                     </div>
-                                    <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+                                    <h1 className="font-serif text-2xl font-semibold tracking-tight text-mahogany-700">
                                         Código de verificación
                                     </h1>
-                                    <p className="mt-2 text-sm text-slate-500">
+                                    <p className="mt-2 text-sm text-primary-400">
                                         Ingresa el código de 6 dígitos
                                     </p>
                                 </div>
@@ -236,11 +236,11 @@ export default function LoginPage() {
 
                                 <form onSubmit={enviarCodigo} className="min-w-0 space-y-5">
                                     <div>
-                                        <label className="mb-2 block text-center text-sm font-semibold text-slate-900">
+                                        <label className="mb-2 block text-center text-sm font-semibold text-mahogany-700">
                                             Código OTP
                                         </label>
-                                        <div className="flex h-14 min-w-0 items-center rounded-md border border-slate-300 bg-white px-4 transition focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-100">
-                                            <FaKey className="shrink-0 text-primary-700" />
+                                        <div className="flex h-14 min-w-0 items-center rounded-md border border-primary-200 bg-parchment-50 px-4 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
+                                            <FaKey className="shrink-0 text-mahogany-600" />
                                             <input
                                                 type="text"
                                                 inputMode="numeric"
@@ -250,7 +250,7 @@ export default function LoginPage() {
                                                 placeholder="000000"
                                                 autoComplete="one-time-code"
                                                 required
-                                                className="min-w-0 flex-1 bg-transparent text-center text-2xl font-bold tracking-[.5em] text-slate-900 outline-none placeholder:text-slate-300"
+                                                className="min-w-0 flex-1 bg-transparent text-center text-2xl font-bold tracking-[.5em] text-mahogany-700 outline-none placeholder:text-primary-200"
                                             />
                                         </div>
                                     </div>
@@ -258,7 +258,7 @@ export default function LoginPage() {
                                     <button
                                         type="submit"
                                         disabled={verificando}
-                                        className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-primary-800 bg-primary-700 text-sm font-semibold text-white transition-colors hover:bg-primary-800 disabled:opacity-60"
+                                        className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-mahogany-700 bg-mahogany-700 text-sm font-semibold text-parchment-100 transition-colors hover:bg-mahogany-600 disabled:opacity-60"
                                     >
                                         {verificando ? (
                                             <>
@@ -276,7 +276,7 @@ export default function LoginPage() {
                                     <button
                                         type="button"
                                         onClick={volverAlLogin}
-                                        className="w-full text-center text-sm font-medium text-slate-600 transition-colors hover:text-primary-700"
+                                        className="w-full text-center text-sm font-medium text-primary-400 transition-colors hover:text-mahogany-600"
                                     >
                                         ← Volver al inicio de sesión
                                     </button>

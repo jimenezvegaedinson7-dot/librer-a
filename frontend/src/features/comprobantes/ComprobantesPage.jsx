@@ -43,29 +43,29 @@ const columnasComprobantes = [
     {
         titulo: 'Serie-Número',
         render: (fila) => (
-            <span className="font-mono text-xs font-bold tracking-wide text-slate-800">{formatearSerieNumero(fila)}</span>
+            <span className="font-mono text-xs font-bold tracking-wide text-mahogany-700">{formatearSerieNumero(fila)}</span>
         ),
     },
     { titulo: 'Tipo', alineacion: 'centro', render: (fila) => badgeTipo(fila.tipo) },
     {
         titulo: 'Cliente',
         render: (fila) => (
-            <p className="text-sm text-slate-700">
-                <span className="font-semibold text-slate-800">{fila.cliente_nombre || 'Sin nombre'}</span>
-                {fila.cliente_dni_ruc && <span className="block text-xs text-slate-500">{fila.cliente_dni_ruc}</span>}
+            <p className="text-sm text-mahogany-700">
+                <span className="font-semibold text-mahogany-700">{fila.cliente_nombre || 'Sin nombre'}</span>
+                {fila.cliente_dni_ruc && <span className="block text-xs text-primary-400">{fila.cliente_dni_ruc}</span>}
             </p>
         ),
     },
     {
         titulo: 'Total',
         alineacion: 'centro',
-        render: (fila) => <span className="font-bold text-slate-800">{formatearMoneda(fila.total)}</span>,
+        render: (fila) => <span className="font-bold text-mahogany-700">{formatearMoneda(fila.total)}</span>,
     },
     {
         titulo: 'Fecha',
         alineacion: 'centro',
         render: (fila) => (
-            <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_emision) || 'Sin fecha'}</span>
+            <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.fecha_emision) || 'Sin fecha'}</span>
         ),
     },
 ];
@@ -179,17 +179,17 @@ export default function ComprobantesPage() {
                 icono={<FaReceipt />}
                 acciones={
                     <div className="summary-strip flex flex-wrap gap-2">
-                        <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
-                            Total: <span className="font-bold text-slate-900">{total}</span>
+                        <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
+                            Total: <span className="font-bold text-mahogany-700">{total}</span>
                         </span>
-                        <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
-                            Boletas: <span className="font-bold text-slate-900">{resumen.boletas}</span>
+                        <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
+                            Boletas: <span className="font-bold text-mahogany-700">{resumen.boletas}</span>
                         </span>
                         <span className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-700">
                             Facturas: <span className="font-bold text-indigo-800">{resumen.facturas}</span>
                         </span>
-                        <span className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600">
-                            Ingresos: <span className="font-semibold text-slate-900">{formatearMoneda(resumen.ingresos)}</span>
+                        <span className="rounded-md border border-primary-200 bg-white px-4 py-2 text-sm text-primary-500">
+                            Ingresos: <span className="font-semibold text-mahogany-700">{formatearMoneda(resumen.ingresos)}</span>
                         </span>
                     </div>
                 }
@@ -217,7 +217,7 @@ export default function ComprobantesPage() {
                                     <button
                                         type="button"
                                         onClick={() => aplicarBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 transition hover:text-slate-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -277,7 +277,7 @@ export default function ComprobantesPage() {
                         subtitulo="Boletas y facturas generadas"
                         acciones={
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-mahogany-700">
                                     {total} {total === 1 ? 'comprobante' : 'comprobantes'} · {formatearMoneda(resumen.ingresos)}
                                 </span>
                             </div>

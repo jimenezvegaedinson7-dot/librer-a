@@ -20,7 +20,7 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-[180px_1fr]">
                 <div>
                     <p className="field-label">Portada</p>
-                    <div className="flex h-[250px] w-full items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                    <div className="flex h-[250px] w-full items-center justify-center overflow-hidden rounded-xl border border-primary-200 bg-parchment-200">
                         {urlPortada ? (
                             <img
                                 src={urlPortada}
@@ -35,7 +35,7 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                         ) : null}
                         <div
                             style={urlPortada ? { display: 'none' } : {}}
-                            className="flex h-full w-full flex-col items-center justify-center text-slate-400"
+                            className="flex h-full w-full flex-col items-center justify-center text-primary-400"
                         >
                             <FaImage size={38} />
                             <span className="mt-2 text-xs font-medium">
@@ -46,10 +46,10 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                 </div>
 
                 <div>
-                    <div className="border-b border-slate-200 pb-4">
-                        <h3 className="text-2xl font-bold text-slate-900">{libro.titulo}</h3>
-                        <p className="mt-2 text-sm text-slate-600">
-                            ISBN: <span className="font-medium text-slate-700">{libro.isbn || 'No registrado'}</span>
+                    <div className="border-b border-primary-200 pb-4">
+                        <h3 className="text-2xl font-bold text-mahogany-700">{libro.titulo}</h3>
+                        <p className="mt-2 text-sm text-primary-500">
+                            ISBN: <span className="font-medium text-mahogany-700">{libro.isbn || 'No registrado'}</span>
                         </p>
                     </div>
 
@@ -62,7 +62,7 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                         <Ficha icono={<FaBoxesStacked size={16} />} etiqueta="Stock">
                             <div className="flex items-center gap-2">
                                 <span className="text-lg font-bold">{Number(libro.stock || 0)}</span>
-                                <span className="text-sm font-medium text-slate-600">
+                                <span className="text-sm font-medium text-primary-500">
                                     {Number(libro.stock) === 1 ? 'unidad' : 'unidades'}
                                 </span>
                                 <span className="ml-auto"><StockBadge stock={libro.stock} /></span>
@@ -71,22 +71,22 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                     </div>
 
                     <div className="mt-5">
-                        <h4 className="mb-2 text-sm font-bold text-slate-700">Descripción</h4>
-                        <div className="min-h-[80px] rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <p className="text-sm leading-6 text-slate-600">
+                        <h4 className="mb-2 text-sm font-bold text-mahogany-700">Descripción</h4>
+                        <div className="min-h-[80px] rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
+                            <p className="text-sm leading-6 text-primary-500">
                                 {libro.descripcion || 'No se registró una descripción para este libro.'}
                             </p>
                         </div>
                     </div>
 
                     <div className="mt-5 flex items-center gap-3">
-                        <span className="text-sm font-semibold text-slate-700">Estado:</span>
+                        <span className="text-sm font-semibold text-mahogany-700">Estado:</span>
                         <Badge color={activo ? 'success' : 'danger'}>{activo ? 'Activo' : 'Inactivo'}</Badge>
                     </div>
                 </div>
             </div>
 
-            <div className="mt-6 flex justify-end border-t border-slate-100 pt-5">
+            <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
                 <Button onClick={onCerrar}>Cerrar</Button>
             </div>
         </Modal>

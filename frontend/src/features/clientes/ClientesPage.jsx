@@ -25,27 +25,27 @@ const columnasClientes = [
     {
         titulo: 'Cliente',
         render: (fila) => (
-            <p className="text-sm text-slate-700">
-                <span className="font-semibold text-slate-800">{fila.nombre_completo || 'Sin nombre'}</span>
-                <span className="block text-xs text-slate-500">{fila.email || 'Sin correo'}</span>
+            <p className="text-sm text-mahogany-700">
+                <span className="font-semibold text-mahogany-700">{fila.nombre_completo || 'Sin nombre'}</span>
+                <span className="block text-xs text-primary-400">{fila.email || 'Sin correo'}</span>
             </p>
         ),
     },
     {
         titulo: 'Nº compras',
         alineacion: 'centro',
-        render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.numero_compras || 0)}</span>,
+        render: (fila) => <span className="font-semibold text-mahogany-700">{Number(fila.numero_compras || 0)}</span>,
     },
     {
         titulo: 'Total gastado',
         alineacion: 'centro',
-        render: (fila) => <span className="font-bold text-slate-800">{formatearMoneda(Number(fila.total_gastado || 0))}</span>,
+        render: (fila) => <span className="font-bold text-mahogany-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>,
     },
     {
         titulo: 'Última compra',
         alineacion: 'centro',
         render: (fila) => (
-            <span className="text-xs font-medium text-slate-700">
+            <span className="text-xs font-medium text-mahogany-700">
                 {formatearFecha(fila.ultima_compra, { soloDia: true }) || 'Sin compras'}
             </span>
         ),
@@ -63,11 +63,11 @@ function accionesCliente(fila, { onVer }) {
 function Contador({ total, totalComprado, conCompras }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-slate-900">{total}</span>
+            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
+                Total: <span className="font-bold text-mahogany-700">{total}</span>
             </span>
-            <span className="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600">
-                Total comprado: <span className="font-semibold text-slate-900">{formatearMoneda(totalComprado)}</span>
+            <span className="rounded-md border border-primary-200 bg-white px-4 py-2 text-sm text-primary-500">
+                Total comprado: <span className="font-semibold text-mahogany-700">{formatearMoneda(totalComprado)}</span>
             </span>
             <span className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm text-sky-700">
                 Con compras: <span className="font-bold text-sky-800">{conCompras}</span>
@@ -181,7 +181,7 @@ export default function ClientesPage() {
                                     <button
                                         type="button"
                                         onClick={() => aplicarBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 transition hover:text-slate-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -236,7 +236,7 @@ export default function ClientesPage() {
                         subtitulo="Detalle de clientes y su actividad de compras"
                         acciones={
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-mahogany-700">
                                     {total} {total === 1 ? 'cliente' : 'clientes'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>

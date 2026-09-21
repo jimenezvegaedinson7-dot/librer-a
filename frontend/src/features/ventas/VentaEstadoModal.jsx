@@ -45,12 +45,12 @@ export default function VentaEstadoModal({ venta, abierto, onCerrar, onActualiza
             estadoActual={venta?.estado}
             contexto={
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warning-bg text-warning">
                         <FaArrowsRotate />
                     </div>
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Total de la venta</p>
-                        <p className="mt-2 text-xl font-bold text-slate-900">{formatearMoneda(venta?.total)}</p>
+                    <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
+                        <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Total de la venta</p>
+                        <p className="mt-2 text-xl font-bold text-mahogany-700">{formatearMoneda(venta?.total)}</p>
                     </div>
                 </div>
             }
@@ -59,9 +59,9 @@ export default function VentaEstadoModal({ venta, abierto, onCerrar, onActualiza
             mensajeSinOpciones="Esta venta ya está cerrada y no admite más cambios."
             aviso={(estado) =>
                 estado === 'cancelada' && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-                        <p className="text-sm font-semibold text-red-700">Cancelación de venta</p>
-                        <p className="mt-1 text-xs leading-5 text-red-600">
+                    <div className="rounded-lg border border-crimson-200 bg-crimson-50 px-4 py-3">
+                        <p className="text-sm font-semibold text-crimson-500">Cancelación de venta</p>
+                        <p className="mt-1 text-xs leading-5 text-crimson-500">
                             Al cancelar la venta, el stock de los libros será devuelto automáticamente al inventario.
                         </p>
                     </div>

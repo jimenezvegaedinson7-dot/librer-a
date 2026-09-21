@@ -144,7 +144,7 @@ export default function LibroForm({ onLibroCreado }) {
                 subtitulo="Complete la información del nuevo libro"
                 icono={<FaBookOpen />}
                 acciones={
-                    <span className="rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
+                    <span className="rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-semibold text-mahogany-600">
                         Nuevo registro
                     </span>
                 }
@@ -172,7 +172,7 @@ export default function LibroForm({ onLibroCreado }) {
 
                 <form onSubmit={guardarLibro} className="space-y-4" noValidate>
                     {cargandoCatalogo ? (
-                        <p className="text-sm text-slate-600">Cargando autores y categorías...</p>
+                        <p className="text-sm text-primary-500">Cargando autores y categorías...</p>
                     ) : (
                         <>
                             <CamposLibro
@@ -195,7 +195,7 @@ export default function LibroForm({ onLibroCreado }) {
                         </>
                     )}
 
-                    <div className="flex items-center justify-end gap-3 border-t border-slate-200/70 pt-4">
+                    <div className="flex items-center justify-end gap-3 border-t border-primary-200/70 pt-4">
                         <Button variante="secondary" type="button" onClick={limpiarFormulario} disabled={guardando}>
                             <FaRotateLeft /> Limpiar
                         </Button>

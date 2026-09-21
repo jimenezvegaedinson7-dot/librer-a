@@ -4,24 +4,24 @@ import { FaCircleCheck, FaCircleExclamation, FaCircleInfo, FaTriangleExclamation
 
 const configuracion = {
     success: {
-        contenedor: 'border-emerald-200 border-l-4 border-l-emerald-500 bg-emerald-50/70 text-emerald-800',
+        contenedor: 'border-success/20 border-l-4 border-l-success bg-success-bg text-success',
         Icono: FaCircleCheck,
-        iconoClase: 'text-emerald-600',
+        iconoClase: 'text-success',
     },
     error: {
-        contenedor: 'border-red-200 border-l-4 border-l-red-500 bg-red-50/70 text-red-800',
+        contenedor: 'border-crimson-200 border-l-4 border-l-crimson-500 bg-crimson-50 text-crimson-500',
         Icono: FaCircleExclamation,
-        iconoClase: 'text-red-600',
+        iconoClase: 'text-crimson-500',
     },
     warning: {
-        contenedor: 'border-amber-200 border-l-4 border-l-amber-500 bg-amber-50/70 text-amber-800',
+        contenedor: 'border-warning/20 border-l-4 border-l-warning bg-warning-bg text-warning',
         Icono: FaTriangleExclamation,
-        iconoClase: 'text-amber-600',
+        iconoClase: 'text-warning',
     },
     info: {
-        contenedor: 'border-primary-100 border-l-4 border-l-primary-500 bg-primary-50/70 text-primary-800',
+        contenedor: 'border-gold-200 border-l-4 border-l-gold-500 bg-gold-100 text-gold-700',
         Icono: FaCircleInfo,
-        iconoClase: 'text-primary-600',
+        iconoClase: 'text-gold-600',
     },
 };
 

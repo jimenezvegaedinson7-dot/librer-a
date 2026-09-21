@@ -11,10 +11,10 @@ export default function ClienteViewModal({ cliente, abierto, onCerrar }) {
 
     return (
         <Modal abierto={abierto} titulo="Detalle del cliente" subtitulo="Información del cliente y su actividad de compras" onCerrar={onCerrar}>
-            <div className="border-b border-slate-100 pb-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Cliente</p>
-                <h3 className="mt-2 text-2xl font-bold text-slate-900">{cliente.nombre_completo || 'Sin nombre'}</h3>
-                <p className="mt-1 text-sm text-slate-600">{cliente.email || 'Sin correo'}</p>
+            <div className="border-b border-primary-200 pb-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Cliente</p>
+                <h3 className="mt-2 text-2xl font-bold text-mahogany-700">{cliente.nombre_completo || 'Sin nombre'}</h3>
+                <p className="mt-1 text-sm text-primary-500">{cliente.email || 'Sin correo'}</p>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -37,15 +37,15 @@ export default function ClienteViewModal({ cliente, abierto, onCerrar }) {
                     <p className="mt-2 text-2xl font-bold text-sky-800">{Number(cliente.numero_compras || 0)}</p>
                 </div>
 
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+                <div className="rounded-lg border border-primary-200 bg-parchment-200 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                         <FaMoneyBillWave /> Total gastado
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-slate-900">{formatearMoneda(Number(cliente.total_gastado || 0))}</p>
+                    <p className="mt-2 text-2xl font-semibold text-mahogany-700">{formatearMoneda(Number(cliente.total_gastado || 0))}</p>
                 </div>
             </div>
 
-            <div className="mt-6 flex justify-end border-t border-slate-100 pt-5">
+            <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
                 <Button onClick={onCerrar}>Cerrar</Button>
             </div>
         </Modal>

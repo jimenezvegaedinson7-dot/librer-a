@@ -91,7 +91,7 @@ export default function ReservaForm({ onReservaCreada }) {
                             value={formulario.fecha_vencimiento}
                             onChange={manejarCambio}
                         />
-                        <p className="mt-2 text-xs text-slate-600">
+                        <p className="mt-2 text-xs text-primary-500">
                             Puedes dejar este campo vacío si todavía no se ha definido una fecha límite.
                         </p>
                     </div>

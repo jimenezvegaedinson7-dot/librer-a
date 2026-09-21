@@ -9,7 +9,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
             <label className="field-label">Portada</label>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-[150px_1fr]">
-                <div className="relative flex h-52 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                <div className="relative flex h-52 items-center justify-center overflow-hidden rounded-xl border border-primary-200 bg-parchment-200">
                     {preview || portadaActual ? (
                         <img
                             src={preview || portadaActual}
@@ -17,7 +17,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                             className="h-full w-full object-cover"
                         />
                     ) : (
-                        <div className="flex flex-col items-center text-slate-400">
+                        <div className="flex flex-col items-center text-primary-400">
                             <FaImage size={32} />
                             <span className="mt-2 text-xs">Sin portada</span>
                         </div>
@@ -25,13 +25,13 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                     {cargando && imagen && (
                         <div className="upload-overlay absolute inset-0 flex flex-col items-center justify-center gap-2" role="status">
                             <Spinner className="text-amber-700" />
-                            <span className="text-xs font-semibold text-slate-800">Subiendo portada...</span>
+                            <span className="text-xs font-semibold text-mahogany-700">Subiendo portada...</span>
                         </div>
                     )}
                 </div>
 
                 <div>
-                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-400 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600 transition hover:border-primary-500 hover:bg-primary-50 hover:text-primary-700">
+                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-primary-300 bg-parchment-200 px-4 py-3 text-sm font-semibold text-primary-500 transition hover:border-primary-500 hover:bg-primary-50 hover:text-primary-700">
                         <FaImage />
                         {imagen ? 'Seleccionar otra imagen' : 'Seleccionar imagen'}
                         <input
@@ -43,16 +43,16 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                             className="hidden"
                         />
                     </label>
-                    <p className="mt-1.5 text-xs text-slate-500">JPG, PNG o WEBP. Máximo 5 MB.</p>
+                    <p className="mt-1.5 text-xs text-primary-400">JPG, PNG o WEBP. Máximo 5 MB.</p>
 
                     {imagen && (
-                        <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                            <p className="text-sm font-semibold text-slate-700">Nueva portada seleccionada</p>
-                            <p className="mt-1 truncate text-xs text-slate-600">{imagen.name}</p>
+                        <div className="mt-3 rounded-lg border border-primary-200 bg-parchment-200 p-3">
+                            <p className="text-sm font-semibold text-mahogany-700">Nueva portada seleccionada</p>
+                            <p className="mt-1 truncate text-xs text-primary-500">{imagen.name}</p>
                             <button
                                 type="button"
                                 onClick={onQuitar}
-                                className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700"
+                                className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-crimson-500 hover:text-crimson-500"
                             >
                                 <FaXmark /> Cancelar cambio
                             </button>

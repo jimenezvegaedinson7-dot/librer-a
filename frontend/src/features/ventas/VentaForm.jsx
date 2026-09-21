@@ -49,7 +49,7 @@ const clasesOpcion = (activa) =>
         'flex flex-col items-start gap-1 rounded-xl border-2 px-4 py-3 text-left transition',
         activa
             ? 'border-primary-600 bg-primary-50 shadow-sm'
-            : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50',
+            : 'border-primary-200 bg-white hover:border-primary-300 hover:bg-parchment-200',
     ].join(' ');
 
 export default function VentaForm({ onVentaCreada }) {
@@ -285,16 +285,16 @@ export default function VentaForm({ onVentaCreada }) {
             <CardHeader
                 titulo="Registrar venta"
                 subtitulo="Agrega los libros que formarán parte de la venta."
-                acciones={<span className="text-xs font-medium text-slate-500">Nueva venta</span>}
+                acciones={<span className="text-xs font-medium text-primary-400">Nueva venta</span>}
             />
             <CardBody>
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center text-primary-700">
+                    <div className="flex h-10 w-10 items-center justify-center text-mahogany-600">
                         <FaCartPlus />
                     </div>
                 </div>
 
-                <div className="mt-5 rounded-xl border-2 border-slate-300 bg-slate-50 p-5">
+                <div className="mt-5 rounded-xl border-2 border-primary-200 bg-parchment-200 p-5">
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_180px_auto]">
                         <Select label="Libro" value={idLibro} onChange={(e) => setIdLibro(e.target.value)} disabled={cargandoLibros}>
                             <option value="">{cargandoLibros ? 'Cargando libros...' : 'Seleccione un libro'}</option>
@@ -323,8 +323,8 @@ export default function VentaForm({ onVentaCreada }) {
                     </div>
                 </div>
 
-                <div className="mt-5 rounded-xl border-2 border-slate-300 bg-slate-50 p-4">
-                    <p className="mb-2 text-sm font-bold text-slate-800">Datos del comprador (opcional)</p>
+                <div className="mt-5 rounded-xl border-2 border-primary-200 bg-parchment-200 p-4">
+                    <p className="mb-2 text-sm font-bold text-mahogany-700">Datos del comprador (opcional)</p>
                     <Input
                         label="Correo del comprador"
                         type="email"
@@ -340,7 +340,7 @@ export default function VentaForm({ onVentaCreada }) {
                 </div>
 
                 <div className="mt-5">
-                    <p className="mb-2 text-sm font-bold text-slate-800">Tipo de entrega</p>
+                    <p className="mb-2 text-sm font-bold text-mahogany-700">Tipo de entrega</p>
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                         {OPCIONES_ENTREGA.map((opcion) => (
                             <button
@@ -353,20 +353,20 @@ export default function VentaForm({ onVentaCreada }) {
                                 className={clasesOpcion(tipoEntrega === opcion.valor)}
                                 disabled={guardando}
                             >
-                                <span className={`text-lg ${tipoEntrega === opcion.valor ? 'text-primary-700' : 'text-slate-500'}`}>
+                                <span className={`text-lg ${tipoEntrega === opcion.valor ? 'text-mahogany-600' : 'text-primary-400'}`}>
                                     {opcion.icono}
                                 </span>
-                                <span className={`text-sm font-bold ${tipoEntrega === opcion.valor ? 'text-primary-800' : 'text-slate-800'}`}>
+                                <span className={`text-sm font-bold ${tipoEntrega === opcion.valor ? 'text-mahogany-700' : 'text-mahogany-700'}`}>
                                     {opcion.titulo}
                                 </span>
-                                <span className="text-xs text-slate-500">{opcion.descripcion}</span>
+                                <span className="text-xs text-primary-400">{opcion.descripcion}</span>
                             </button>
                         ))}
                     </div>
                 </div>
 
                 {tipoEntrega === 'domicilio' && (
-                    <div className="mt-5 grid grid-cols-1 gap-4 rounded-xl border-2 border-slate-300 bg-slate-50 p-4 lg:grid-cols-2">
+                    <div className="mt-5 grid grid-cols-1 gap-4 rounded-xl border-2 border-primary-200 bg-parchment-200 p-4 lg:grid-cols-2">
                         <Select
                             label="Distrito de entrega"
                             value={idDistrito}
@@ -413,7 +413,7 @@ export default function VentaForm({ onVentaCreada }) {
                 )}
 
                 {tipoEntrega === 'agencia' && (
-                    <div className="mt-5 rounded-xl border-2 border-slate-300 bg-slate-50 p-4">
+                    <div className="mt-5 rounded-xl border-2 border-primary-200 bg-parchment-200 p-4">
                         <Select
                             label="Agencia de envío"
                             value={idAgencia}
@@ -449,37 +449,37 @@ export default function VentaForm({ onVentaCreada }) {
                     </div>
                 )}
 
-                <div className="mt-6 overflow-hidden rounded-xl border-2 border-slate-300">
-                    <div className="border-b-2 border-slate-300 bg-slate-100 px-5 py-4">
-                        <h3 className="font-bold text-slate-800">Detalle de venta</h3>
+                <div className="mt-6 overflow-hidden rounded-xl border-2 border-primary-200">
+                    <div className="border-b-2 border-primary-200 bg-parchment-300 px-5 py-4">
+                        <h3 className="font-bold text-mahogany-700">Detalle de venta</h3>
                     </div>
 
                     {detalles.length === 0 ? (
                         <div className="px-5 py-10 text-center">
-                            <p className="text-sm font-medium text-slate-600">Todavía no has agregado libros.</p>
-                            <p className="mt-1 text-xs text-slate-500">Selecciona un libro y presiona Agregar.</p>
+                            <p className="text-sm font-medium text-primary-500">Todavía no has agregado libros.</p>
+                            <p className="mt-1 text-xs text-primary-400">Selecciona un libro y presiona Agregar.</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="min-w-full">
-                                <thead className="bg-slate-50">
-                                    <tr className="border-b-2 border-slate-400">
-                                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-700">Libro</th>
-                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Precio</th>
-                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Stock disp.</th>
-                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Cantidad</th>
-                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Subtotal</th>
-                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Acción</th>
+                                <thead className="bg-parchment-200">
+                                    <tr className="border-b-2 border-primary-300">
+                                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-mahogany-700">Libro</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Precio</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Stock disp.</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Cantidad</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Subtotal</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Acción</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-300">
+                                <tbody className="divide-y divide-primary-200">
                                     {detalles.map((detalle) => (
-                                        <tr key={detalle.id_libro} className="transition hover:bg-slate-50">
-                                            <td className="px-4 py-4 text-sm font-semibold text-slate-800">{detalle.titulo}</td>
-                                            <td className="px-4 py-4 text-center text-sm text-slate-700">{formatearMoneda(detalle.precio)}</td>
-                                            <td className="px-4 py-4 text-center text-sm text-slate-600">{Number(detalle.stock || 0)}</td>
-                                            <td className="px-4 py-4 text-center text-sm font-semibold text-slate-700">{detalle.cantidad}</td>
-                                            <td className="px-4 py-4 text-center text-sm font-bold text-slate-900">
+                                        <tr key={detalle.id_libro} className="transition hover:bg-parchment-200">
+                                            <td className="px-4 py-4 text-sm font-semibold text-mahogany-700">{detalle.titulo}</td>
+                                            <td className="px-4 py-4 text-center text-sm text-mahogany-700">{formatearMoneda(detalle.precio)}</td>
+                                            <td className="px-4 py-4 text-center text-sm text-primary-500">{Number(detalle.stock || 0)}</td>
+                                            <td className="px-4 py-4 text-center text-sm font-semibold text-mahogany-700">{detalle.cantidad}</td>
+                                            <td className="px-4 py-4 text-center text-sm font-bold text-mahogany-700">
                                                 {formatearMoneda(Number(detalle.precio) * Number(detalle.cantidad))}
                                             </td>
                                             <td className="px-4 py-4 text-center">
@@ -487,7 +487,7 @@ export default function VentaForm({ onVentaCreada }) {
                                                     type="button"
                                                     onClick={() => eliminarDetalle(detalle.id_libro)}
                                                     disabled={guardando}
-                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-300 bg-red-50 text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-crimson-300 bg-crimson-50 text-crimson-500 transition hover:bg-crimson-100 disabled:cursor-not-allowed disabled:opacity-50"
                                                     title="Eliminar libro"
                                                 >
                                                     <FaTrash />
@@ -502,25 +502,25 @@ export default function VentaForm({ onVentaCreada }) {
                 </div>
 
                 <div className="mt-5 flex justify-end">
-                    <div className="min-w-72 rounded-xl border-2 border-slate-200 bg-slate-50 px-5 py-4">
-                        <div className="flex items-center justify-between border-b border-slate-200 pb-2 text-sm">
-                            <span className="text-slate-600">Subtotal</span>
-                            <span className="font-semibold text-slate-800">{formatearMoneda(subtotal)}</span>
+                    <div className="min-w-72 rounded-xl border-2 border-primary-200 bg-parchment-200 px-5 py-4">
+                        <div className="flex items-center justify-between border-b border-primary-200 pb-2 text-sm">
+                            <span className="text-primary-500">Subtotal</span>
+                            <span className="font-semibold text-mahogany-700">{formatearMoneda(subtotal)}</span>
                         </div>
                         <div className="flex items-center justify-between py-2 text-sm">
-                            <span className="text-slate-600">Envío</span>
-                            <span className="font-semibold text-slate-800">
+                            <span className="text-primary-500">Envío</span>
+                            <span className="font-semibold text-mahogany-700">
                                 {costoEnvio > 0 ? formatearMoneda(costoEnvio) : 'Gratis'}
                             </span>
                         </div>
-                        <div className="flex items-center justify-between border-t border-slate-300 pt-2">
-                            <span className="text-sm font-semibold text-slate-700">Total</span>
-                            <span className="text-xl font-semibold text-slate-900">{formatearMoneda(totalGeneral)}</span>
+                        <div className="flex items-center justify-between border-t border-primary-200 pt-2">
+                            <span className="text-sm font-semibold text-mahogany-700">Total</span>
+                            <span className="text-xl font-semibold text-mahogany-700">{formatearMoneda(totalGeneral)}</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+                <div className="mt-6 flex flex-col-reverse gap-3 border-t border-primary-200 pt-5 sm:flex-row sm:justify-end">
                     <Button variante="secondary" onClick={limpiar} disabled={guardando}>
                         <FaRotateLeft /> Limpiar
                     </Button>

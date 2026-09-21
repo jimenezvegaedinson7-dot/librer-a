@@ -36,12 +36,12 @@ function EstadoStock({ stock, stockMinimo }) {
 }
 
 const columnasInventario = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_inventario}</span> },
-    { titulo: 'Libro', render: (fila) => <span className="font-semibold text-slate-800">{fila.titulo}</span> },
+    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-mahogany-700">{fila.id_inventario}</span> },
+    { titulo: 'Libro', render: (fila) => <span className="font-semibold text-mahogany-700">{fila.titulo}</span> },
     { titulo: 'Stock', alineacion: 'centro', render: (fila) => <EstadoStock stock={fila.stock} stockMinimo={fila.stock_minimo} /> },
-    { titulo: 'Stock mínimo', alineacion: 'centro', render: (fila) => <span className="font-medium text-slate-700">{Number(fila.stock_minimo)}</span> },
-    { titulo: 'Ubicación', render: (fila) => <span className="text-slate-700">{fila.ubicacion || 'No registrada'}</span> },
-    { titulo: 'Última actualización', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.ultima_actualizacion) || 'Sin registro'}</span> },
+    { titulo: 'Stock mínimo', alineacion: 'centro', render: (fila) => <span className="font-medium text-mahogany-700">{Number(fila.stock_minimo)}</span> },
+    { titulo: 'Ubicación', render: (fila) => <span className="text-mahogany-700">{fila.ubicacion || 'No registrada'}</span> },
+    { titulo: 'Última actualización', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.ultima_actualizacion) || 'Sin registro'}</span> },
 ];
 
 function accionesInventario(fila, { onVer, onEditar }) {
@@ -56,17 +56,17 @@ function accionesInventario(fila, { onVer, onEditar }) {
 function Contador({ total, disponibles, stockBajo, sinStock }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-slate-900">{total}</span>
+            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
+                Total: <span className="font-bold text-mahogany-700">{total}</span>
             </span>
-            <span className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
-                Disponibles: <span className="font-bold text-emerald-800">{disponibles}</span>
+            <span className="rounded-xl border border-success/20 bg-success-bg px-4 py-2 text-sm text-success">
+                Disponibles: <span className="font-bold text-success">{disponibles}</span>
             </span>
-            <span className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-                Stock bajo: <span className="font-bold text-amber-800">{stockBajo}</span>
+            <span className="rounded-xl border border-warning/20 bg-warning-bg px-4 py-2 text-sm text-warning">
+                Stock bajo: <span className="font-bold text-warning">{stockBajo}</span>
             </span>
-            <span className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-                Sin stock: <span className="font-bold text-red-800">{sinStock}</span>
+            <span className="rounded-xl border border-crimson-200 bg-crimson-50 px-4 py-2 text-sm text-crimson-500">
+                Sin stock: <span className="font-bold text-crimson-500">{sinStock}</span>
             </span>
         </div>
     );
@@ -224,7 +224,7 @@ acciones={
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 transition hover:text-slate-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -280,7 +280,7 @@ acciones={
                         titulo="Inventario registrado"
                         subtitulo="Estado actual del stock de los libros"
                         acciones={
-                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                            <span className="rounded-full bg-success-bg px-3 py-1 text-xs font-bold text-success">
                                 {inventarioFiltrado.length} {inventarioFiltrado.length === 1 ? 'registro' : 'registros'}
                             </span>
                         }

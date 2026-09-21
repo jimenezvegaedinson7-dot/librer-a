@@ -29,11 +29,11 @@ import LibroDeleteModal from './LibroDeleteModal';
 const POR_PAGINA = 10;
 
 const columnasLibros = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_libro}</span> },
-    { titulo: 'Título', render: (fila) => <span className="font-semibold text-slate-800">{fila.titulo}</span> },
-    { titulo: 'Autor', render: (fila) => <span className="text-slate-700">{fila.autor}</span> },
-    { titulo: 'Categoría', render: (fila) => <span className="text-slate-700">{fila.categoria}</span> },
-    { titulo: 'Precio', alineacion: 'centro', render: (fila) => <span className="font-semibold text-slate-800">{formatearMoneda(fila.precio)}</span> },
+    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-mahogany-700">{fila.id_libro}</span> },
+    { titulo: 'Título', render: (fila) => <span className="font-semibold text-mahogany-700">{fila.titulo}</span> },
+    { titulo: 'Autor', render: (fila) => <span className="text-mahogany-700">{fila.autor}</span> },
+    { titulo: 'Categoría', render: (fila) => <span className="text-mahogany-700">{fila.categoria}</span> },
+    { titulo: 'Precio', alineacion: 'centro', render: (fila) => <span className="font-semibold text-mahogany-700">{formatearMoneda(fila.precio)}</span> },
     { titulo: 'Stock', alineacion: 'centro', render: (fila) => <StockBadge stock={fila.stock} /> },
     { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
 ];
@@ -51,14 +51,14 @@ function accionesLibro(fila, { onVer, onEditar, onEliminar }) {
 function Contador({ total, activos, inactivos }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-slate-900">{total}</span>
+            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
+                Total: <span className="font-bold text-mahogany-700">{total}</span>
             </span>
-            <span className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
-                Activos: <span className="font-bold text-emerald-800">{activos}</span>
+            <span className="rounded-xl border border-success/20 bg-success-bg px-4 py-2 text-sm text-success">
+                Activos: <span className="font-bold text-success">{activos}</span>
             </span>
-            <span className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm text-slate-600">
-                Inactivos: <span className="font-bold text-slate-800">{inactivos}</span>
+            <span className="rounded-xl border border-primary-200 bg-parchment-300 px-4 py-2 text-sm text-primary-500">
+                Inactivos: <span className="font-bold text-mahogany-700">{inactivos}</span>
             </span>
         </div>
     );
@@ -251,7 +251,7 @@ export default function LibrosPage() {
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 transition hover:text-slate-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -316,7 +316,7 @@ export default function LibrosPage() {
                     pagina={paginaActivos}
                     totalPaginas={totalActivos}
                     onCambiarPagina={setPaginaActivos}
-                    color="bg-emerald-100 text-emerald-700"
+                    color="bg-success-bg text-success"
                     onVer={verLibro}
                     onEditar={editarLibro}
                     onEliminar={(l) => setLibroEliminar(l)}
@@ -332,7 +332,7 @@ export default function LibrosPage() {
                     pagina={paginaInactivos}
                     totalPaginas={totalInactivos}
                     onCambiarPagina={setPaginaInactivos}
-                    color="bg-slate-200 text-slate-700"
+                    color="bg-parchment-400 text-mahogany-700"
                     onVer={verLibro}
                     onEditar={editarLibro}
                     onEliminar={(l) => setLibroEliminar(l)}

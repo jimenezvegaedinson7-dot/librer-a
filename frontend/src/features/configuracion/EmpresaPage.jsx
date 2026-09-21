@@ -44,8 +44,8 @@ function SkeletonFormulario() {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2" role="status" aria-label="Cargando datos de la empresa">
                     {Array.from({ length: 6 }).map((_, i) => (
                         <div key={i} className={i === 5 ? 'md:col-span-2' : ''}>
-                            <div className="mb-1.5 h-2.5 w-28 animate-pulse rounded bg-slate-200" />
-                            <div className="h-10 animate-pulse rounded-lg bg-slate-100" />
+                            <div className="mb-1.5 h-2.5 w-28 animate-pulse rounded bg-parchment-400" />
+                            <div className="h-10 animate-pulse rounded-lg bg-parchment-300" />
                         </div>
                     ))}
                 </div>
@@ -56,10 +56,10 @@ function SkeletonFormulario() {
 
 function Interruptor({ activo, onChange, descripcion }) {
     return (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
             <div>
-                <p className="text-sm font-semibold text-slate-800">Aplicar IGV (18%)</p>
-                {descripcion && <p className="mt-0.5 text-xs text-slate-600">{descripcion}</p>}
+                <p className="text-sm font-semibold text-mahogany-700">Aplicar IGV (18%)</p>
+                {descripcion && <p className="mt-0.5 text-xs text-primary-500">{descripcion}</p>}
             </div>
             <button
                 type="button"
@@ -67,7 +67,7 @@ function Interruptor({ activo, onChange, descripcion }) {
                 aria-checked={activo}
                 onClick={() => onChange(!activo)}
                 className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${
-                    activo ? 'bg-primary-600' : 'bg-slate-300'
+                    activo ? 'bg-primary-600' : 'bg-parchment-400'
                 }`}
             >
                 <span
@@ -242,7 +242,7 @@ export default function EmpresaPage() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-end gap-3 border-t border-slate-200/70 pt-5">
+                            <div className="flex items-center justify-end gap-3 border-t border-primary-200/70 pt-5">
                                 <Button type="submit" cargando={guardando} disabled={guardando}>
                                     <FaFloppyDisk /> {guardando ? 'Guardando...' : 'Guardar cambios'}
                                 </Button>

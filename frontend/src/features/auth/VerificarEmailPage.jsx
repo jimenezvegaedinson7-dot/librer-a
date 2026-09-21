@@ -86,20 +86,20 @@ export default function VerificarEmailPage() {
     };
 
     return (
-        <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 px-4 py-8">
+        <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-parchment-300 px-4 py-8">
             <div className="absolute inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${fondoLogin})` }} />
-            <div className="absolute inset-0 bg-slate-950/45" />
+            <div className="absolute inset-0 bg-mahogany-900/45" />
 
             <div className="relative z-10 w-full max-w-md">
-                <div className="mx-auto overflow-hidden rounded-xl border border-slate-200 bg-white p-7 shadow-xl sm:p-9">
-                    <div className="mb-6 flex justify-center border-b border-slate-200 pb-6">
+                <div className="mx-auto overflow-hidden rounded-xl border border-primary-200 bg-white p-7 shadow-xl sm:p-9">
+                    <div className="mb-6 flex justify-center border-b border-primary-200 pb-6">
                         <img src={logoLibreria} alt="Logo Librería" className="h-20 w-auto object-contain" />
                     </div>
 
                     <div className="mb-6 text-center">
-                        <div className="mb-3 flex justify-center text-xl text-primary-700"><FaEnvelopeCircleCheck /></div>
-                        <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Verifica tu correo</h2>
-                        <p className="mt-2 text-sm leading-5 text-slate-500">
+                        <div className="mb-3 flex justify-center text-xl text-mahogany-600"><FaEnvelopeCircleCheck /></div>
+                        <h2 className="text-2xl font-semibold tracking-tight text-mahogany-700">Verifica tu correo</h2>
+                        <p className="mt-2 text-sm leading-5 text-primary-400">
                             Ingresa el código de 6 dígitos que enviamos a tu correo para activar tu cuenta.
                         </p>
                     </div>
@@ -140,7 +140,7 @@ export default function VerificarEmailPage() {
                         type="button"
                         onClick={reenviar}
                         disabled={reenviando || segundos > 0 || cargando}
-                        className="mt-4 w-full text-center text-xs text-slate-500 transition-colors hover:text-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="mt-4 w-full text-center text-xs text-primary-400 transition-colors hover:text-mahogany-600 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {reenviando
                             ? 'Reenviando...'
@@ -152,14 +152,14 @@ export default function VerificarEmailPage() {
                     <button
                         type="button"
                         onClick={volverAlLogin}
-                        className="mt-2 flex w-full items-center justify-center gap-1 text-center text-xs text-slate-500 transition-colors hover:text-primary-700"
+                        className="mt-2 flex w-full items-center justify-center gap-1 text-center text-xs text-primary-400 transition-colors hover:text-mahogany-600"
                     >
                         <FaArrowLeft className="text-[10px]" /> Volver al inicio de sesión
                     </button>
 
-                    <div className="mt-7 flex items-center justify-center gap-2 border-t border-slate-200 pt-5">
-                        <FaEnvelopeCircleCheck className="text-[10px] text-primary-700" />
-                        <p className="text-xs text-slate-500">La cuenta debe verificarse para poder ingresar</p>
+                    <div className="mt-7 flex items-center justify-center gap-2 border-t border-primary-200 pt-5">
+                        <FaEnvelopeCircleCheck className="text-[10px] text-mahogany-600" />
+                        <p className="text-xs text-primary-400">La cuenta debe verificarse para poder ingresar</p>
                     </div>
                 </div>
             </div>

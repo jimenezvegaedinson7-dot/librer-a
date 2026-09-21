@@ -88,9 +88,9 @@ export default function InventarioEditModal({ inventario, abierto, onCerrar, onA
 
     return (
         <Modal abierto={abierto} titulo="Editar inventario" subtitulo="Actualiza stock, stock mínimo y ubicación" onCerrar={onCerrar}>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Libro</p>
-                <p className="mt-1 font-bold text-slate-800">{inventario.titulo}</p>
+            <div className="rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Libro</p>
+                <p className="mt-1 font-bold text-mahogany-700">{inventario.titulo}</p>
             </div>
 
             {error && <div className="mt-5"><Alert tipo="error">{error}</Alert></div>}
@@ -109,7 +109,7 @@ export default function InventarioEditModal({ inventario, abierto, onCerrar, onA
                     placeholder="Ej. Estante A - Nivel 2"
                 />
 
-                <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+                <div className="flex flex-col-reverse gap-3 border-t border-primary-200 pt-5 sm:flex-row sm:justify-end">
                     <Button variante="secondary" type="button" onClick={restablecerFormulario} disabled={guardando}>
                         <FaRotateLeft /> Restablecer
                     </Button>

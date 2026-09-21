@@ -41,9 +41,9 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
 
     return (
         <Modal abierto={abierto} titulo="Detalle de la venta" subtitulo="Información completa de la venta" onCerrar={onCerrar} grande>
-            <div className="border-b border-slate-100 pb-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Venta</p>
-                <h3 className="mt-2 text-2xl font-bold text-slate-900">Venta #{venta.id_venta}</h3>
+            <div className="border-b border-primary-200 pb-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Venta</p>
+                <h3 className="mt-2 text-2xl font-bold text-mahogany-700">Venta #{venta.id_venta}</h3>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -77,8 +77,8 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
             )}
 
             {venta.tipo_entrega === 'agencia' && (
-                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-amber-700">
+                <div className="mt-4 rounded-xl border border-warning/20 bg-warning-bg p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-warning">
                         <FaTruckFast /> Envío a agencia
                     </div>
                     <p className="mt-2 text-sm font-semibold text-amber-900">{venta.agencia || 'Sin agencia seleccionada'}</p>
@@ -86,20 +86,20 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
             )}
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+                <div className="rounded-lg border border-primary-200 bg-parchment-200 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                         <FaMoneyBillWave /> Total
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-slate-900">{formatearMoneda(venta.total)}</p>
+                    <p className="mt-2 text-2xl font-semibold text-mahogany-700">{formatearMoneda(venta.total)}</p>
                     {Number(venta.costo_envio || 0) > 0 && (
-                        <p className="mt-1 text-xs text-slate-500">
+                        <p className="mt-1 text-xs text-primary-400">
                             Incluye envío: {formatearMoneda(venta.costo_envio)}
                         </p>
                     )}
                 </div>
 
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+                <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                         Estado
                     </div>
                     <div className="mt-3">
@@ -108,41 +108,41 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                 </div>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-xl border-2 border-slate-300">
-                <div className="flex items-center gap-2 border-b-2 border-slate-300 bg-slate-100 px-5 py-4">
-                    <FaBook className="text-slate-600" />
-                    <h3 className="font-bold text-slate-800">Libros vendidos</h3>
+            <div className="mt-6 overflow-hidden rounded-xl border-2 border-primary-200">
+                <div className="flex items-center gap-2 border-b-2 border-primary-200 bg-parchment-300 px-5 py-4">
+                    <FaBook className="text-primary-500" />
+                    <h3 className="font-bold text-mahogany-700">Libros vendidos</h3>
                 </div>
 
                 {Array.isArray(venta.detalles) && venta.detalles.length > 0 ? (
                     <div className="overflow-x-auto">
                         <table className="min-w-full">
-                            <thead className="bg-slate-50">
-                                <tr className="border-b-2 border-slate-400">
-                                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-700">Libro</th>
-                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Precio</th>
-                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Cantidad</th>
-                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Subtotal</th>
+                            <thead className="bg-parchment-200">
+                                <tr className="border-b-2 border-primary-300">
+                                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-mahogany-700">Libro</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Precio</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Cantidad</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Subtotal</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-300">
+                            <tbody className="divide-y divide-primary-200">
                                 {venta.detalles.map((detalle) => (
-                                    <tr key={detalle.id_detalle} className="hover:bg-slate-50">
-                                        <td className="px-4 py-4 text-sm font-semibold text-slate-800">{detalle.titulo}</td>
-                                        <td className="px-4 py-4 text-center text-sm text-slate-700">{formatearMoneda(detalle.precio_unitario)}</td>
-                                        <td className="px-4 py-4 text-center text-sm font-semibold text-slate-700">{detalle.cantidad}</td>
-                                        <td className="px-4 py-4 text-center text-sm font-bold text-slate-900">{formatearMoneda(detalle.subtotal)}</td>
+                                    <tr key={detalle.id_detalle} className="hover:bg-parchment-200">
+                                        <td className="px-4 py-4 text-sm font-semibold text-mahogany-700">{detalle.titulo}</td>
+                                        <td className="px-4 py-4 text-center text-sm text-mahogany-700">{formatearMoneda(detalle.precio_unitario)}</td>
+                                        <td className="px-4 py-4 text-center text-sm font-semibold text-mahogany-700">{detalle.cantidad}</td>
+                                        <td className="px-4 py-4 text-center text-sm font-bold text-mahogany-700">{formatearMoneda(detalle.subtotal)}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
                 ) : (
-                    <div className="px-5 py-8 text-center text-sm text-slate-600">No hay detalles registrados para esta venta.</div>
+                    <div className="px-5 py-8 text-center text-sm text-primary-500">No hay detalles registrados para esta venta.</div>
                 )}
             </div>
 
-            <div className="mt-6 flex justify-end border-t border-slate-100 pt-5">
+            <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
                 <Button onClick={onCerrar}>Cerrar</Button>
             </div>
         </Modal>

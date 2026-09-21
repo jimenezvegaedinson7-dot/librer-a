@@ -27,9 +27,9 @@ import CategoriaEditModal from './CategoriaEditModal';
 const POR_PAGINA = 10;
 
 const columnasCategorias = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_categoria}</span> },
-    { titulo: 'Nombre', render: (fila) => <span className="font-semibold text-slate-800">{fila.nombre}</span> },
-    { titulo: 'Descripción', render: (fila) => <span className="text-slate-700">{fila.descripcion || 'Sin descripción'}</span> },
+    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-mahogany-700">{fila.id_categoria}</span> },
+    { titulo: 'Nombre', render: (fila) => <span className="font-semibold text-mahogany-700">{fila.nombre}</span> },
+    { titulo: 'Descripción', render: (fila) => <span className="text-mahogany-700">{fila.descripcion || 'Sin descripción'}</span> },
     { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
 ];
 
@@ -46,14 +46,14 @@ function accionesCategoria(fila, { onVer, onEditar, onEliminar }) {
 function Contador({ total, activas, inactivas }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-slate-900">{total}</span>
+            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
+                Total: <span className="font-bold text-mahogany-700">{total}</span>
             </span>
-            <span className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
-                Activas: <span className="font-bold text-emerald-800">{activas}</span>
+            <span className="rounded-xl border border-success/20 bg-success-bg px-4 py-2 text-sm text-success">
+                Activas: <span className="font-bold text-success">{activas}</span>
             </span>
-            <span className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm text-slate-600">
-                Inactivas: <span className="font-bold text-slate-800">{inactivas}</span>
+            <span className="rounded-xl border border-primary-200 bg-parchment-300 px-4 py-2 text-sm text-primary-500">
+                Inactivas: <span className="font-bold text-mahogany-700">{inactivas}</span>
             </span>
         </div>
     );
@@ -213,7 +213,7 @@ export default function CategoriaPage() {
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 hover:text-slate-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 hover:text-mahogany-700"
                                     >
                                         <FaXmark />
                                     </button>
@@ -256,7 +256,7 @@ export default function CategoriaPage() {
                     pagina={paginaActivas}
                     totalPaginas={totalActivas}
                     onCambiarPagina={setPaginaActivas}
-                    color="bg-emerald-100 text-emerald-700"
+                    color="bg-success-bg text-success"
                     onVer={verCategoria}
                     onEditar={editarCategoria}
                     onEliminar={setCategoriaEliminar}
@@ -272,7 +272,7 @@ export default function CategoriaPage() {
                     pagina={paginaInactivas}
                     totalPaginas={totalInactivas}
                     onCambiarPagina={setPaginaInactivas}
-                    color="bg-slate-200 text-slate-700"
+                    color="bg-parchment-400 text-mahogany-700"
                     onVer={verCategoria}
                     onEditar={editarCategoria}
                     onEliminar={setCategoriaEliminar}

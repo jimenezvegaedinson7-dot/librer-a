@@ -48,13 +48,13 @@ import {
 
 function EncabezadoSeccion({ icono, titulo, descripcion }) {
     return (
-        <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-50/50 px-4 py-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center text-xs text-primary-700">
+        <div className="flex items-center gap-3 border-b border-primary-200 bg-parchment-200/50 px-4 py-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center text-xs text-mahogany-600">
                 {icono}
             </div>
             <div>
-                <h2 className="text-sm font-semibold text-slate-900">{titulo}</h2>
-                <p className="mt-0.5 text-xs text-slate-600">{descripcion}</p>
+                <h2 className="text-sm font-semibold text-mahogany-700">{titulo}</h2>
+                <p className="mt-0.5 text-xs text-primary-500">{descripcion}</p>
             </div>
         </div>
     );
@@ -62,14 +62,14 @@ function EncabezadoSeccion({ icono, titulo, descripcion }) {
 
 function TarjetaResumen({ icono, titulo, valor, detalle }) {
     return (
-        <div className="rounded-md border border-slate-200 bg-white p-3">
+        <div className="rounded-md border border-primary-200 bg-white p-3">
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <p className="truncate text-xs font-medium text-slate-500">{titulo}</p>
-                    <p className="mt-1 text-lg font-semibold leading-tight text-slate-900">{valor}</p>
-                    {detalle && <p className="mt-1 text-xs text-slate-500">{detalle}</p>}
+                    <p className="truncate text-xs font-medium text-primary-400">{titulo}</p>
+                    <p className="mt-1 text-lg font-semibold leading-tight text-mahogany-700">{valor}</p>
+                    {detalle && <p className="mt-1 text-xs text-primary-400">{detalle}</p>}
                 </div>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center border-l border-slate-200 pl-3 text-xs text-primary-700">{icono}</div>
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center border-l border-primary-200 pl-3 text-xs text-mahogany-600">{icono}</div>
             </div>
         </div>
     );
@@ -77,12 +77,12 @@ function TarjetaResumen({ icono, titulo, valor, detalle }) {
 
 function Destacado({ icono, titulo, principal, detalle }) {
     return (
-        <div className="flex items-center gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center text-sm text-primary-700">{icono}</div>
+        <div className="flex items-center gap-3 rounded-md border border-primary-200 bg-parchment-200 p-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center text-sm text-mahogany-600">{icono}</div>
             <div className="min-w-0">
-                <p className="text-xs font-medium text-slate-500">{titulo}</p>
-                <p className="mt-0.5 text-sm font-semibold text-slate-800">{principal}</p>
-                <p className="mt-0.5 text-xs text-slate-600">{detalle}</p>
+                <p className="text-xs font-medium text-primary-400">{titulo}</p>
+                <p className="mt-0.5 text-sm font-semibold text-mahogany-700">{principal}</p>
+                <p className="mt-0.5 text-xs text-primary-500">{detalle}</p>
             </div>
         </div>
     );
@@ -91,13 +91,13 @@ function Destacado({ icono, titulo, principal, detalle }) {
 function obtenerColorVenta(estado) {
     switch (estado) {
         case 'pagada':
-            return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            return 'bg-success-bg text-success border-success/20';
         case 'pendiente':
-            return 'bg-amber-100 text-amber-700 border-amber-200';
+            return 'bg-warning-bg text-warning border-warning/20';
         case 'cancelada':
-            return 'bg-red-100 text-red-700 border-red-200';
+            return 'bg-crimson-100 text-crimson-500 border-crimson-200';
         default:
-            return 'bg-slate-100 text-slate-700 border-slate-200';
+            return 'bg-parchment-300 text-mahogany-700 border-primary-200';
     }
 }
 
@@ -106,13 +106,13 @@ function obtenerColorReserva(estado) {
         case 'confirmada':
             return 'bg-sky-100 text-sky-700 border-sky-200';
         case 'pendiente':
-            return 'bg-amber-100 text-amber-700 border-amber-200';
+            return 'bg-warning-bg text-warning border-warning/20';
         case 'cancelada':
-            return 'bg-red-100 text-red-700 border-red-200';
+            return 'bg-crimson-100 text-crimson-500 border-crimson-200';
         case 'completada':
-            return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            return 'bg-success-bg text-success border-success/20';
         default:
-            return 'bg-slate-100 text-slate-700 border-slate-200';
+            return 'bg-parchment-300 text-mahogany-700 border-primary-200';
     }
 }
 
@@ -256,7 +256,7 @@ export default function ReportesPage() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 gap-3 border-t border-slate-200 p-4 lg:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-3 border-t border-primary-200 p-4 lg:grid-cols-2">
                                 <Destacado
                                     icono={<FaTrophy />}
                                     titulo="Mejor mes registrado"
@@ -301,8 +301,8 @@ export default function ReportesPage() {
                                 <EmptyState titulo="Sin ventas por mes" descripcion="Todavía no existen ventas pagadas para mostrar." />
                             ) : (
                                 <div className="p-4">
-                                    <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-                                        <div className="flex h-52 items-end gap-2 overflow-x-auto border-b border-slate-300 pb-7">
+                                    <div className="rounded-xl border border-primary-200 bg-parchment-200/60 p-4">
+                                        <div className="flex h-52 items-end gap-2 overflow-x-auto border-b border-primary-200 pb-7">
                                             {ventasPorMes.map((item) => {
                                                 const porcentaje = Math.max(5, (Number(item.total_vendido || 0) / maximoMensual) * 100);
                                                 return (
@@ -314,11 +314,11 @@ export default function ReportesPage() {
                                                             className="relative w-8 rounded-t-md bg-primary-500 transition-all duration-300 hover:bg-primary-600"
                                                             style={{ height: `${porcentaje}%` }}
                                                         >
-                                                            <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block">
+                                                            <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-mahogany-700 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block">
                                                                 {formatearMoneda(item.total_vendido)}
                                                             </div>
                                                         </div>
-                                                        <div className="absolute -bottom-6 whitespace-nowrap text-[10px] font-semibold text-slate-600">
+                                                        <div className="absolute -bottom-6 whitespace-nowrap text-[10px] font-semibold text-primary-500">
                                                             {item.mes} {String(item.anio).slice(-2)}
                                                         </div>
                                                     </div>
@@ -330,20 +330,20 @@ export default function ReportesPage() {
                                     <div className="mt-4 overflow-x-auto">
                                         <table className="min-w-full text-sm">
                                             <thead>
-                                                <tr className="border-b-2 border-slate-300 bg-slate-50">
-                                                    <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide text-slate-700">Período</th>
-                                                    <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wide text-slate-700">Ventas</th>
-                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-slate-700">Total vendido</th>
-                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-slate-700">Promedio</th>
+                                                <tr className="border-b-2 border-primary-200 bg-parchment-200">
+                                                    <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Período</th>
+                                                    <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Ventas</th>
+                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Total vendido</th>
+                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Promedio</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-slate-200">
+                                            <tbody className="divide-y divide-primary-200">
                                                 {[...ventasPorMes].reverse().map((item) => (
-                                                    <tr key={`tabla-${item.anio}-${item.mes_numero}`} className="transition hover:bg-slate-50">
-                                                        <td className="px-3 py-2.5 text-xs font-semibold text-slate-700">{item.mes} {item.anio}</td>
-                                                        <td className="px-3 py-2.5 text-center text-xs font-semibold text-slate-700">{item.cantidad_ventas}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-slate-800">{formatearMoneda(item.total_vendido)}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs text-slate-700">{formatearMoneda(item.promedio_venta)}</td>
+                                                    <tr key={`tabla-${item.anio}-${item.mes_numero}`} className="transition hover:bg-parchment-200">
+                                                        <td className="px-3 py-2.5 text-xs font-semibold text-mahogany-700">{item.mes} {item.anio}</td>
+                                                        <td className="px-3 py-2.5 text-center text-xs font-semibold text-mahogany-700">{item.cantidad_ventas}</td>
+                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-mahogany-700">{formatearMoneda(item.total_vendido)}</td>
+                                                        <td className="px-3 py-2.5 text-right text-xs text-mahogany-700">{formatearMoneda(item.promedio_venta)}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -366,8 +366,8 @@ export default function ReportesPage() {
                                 <EmptyState titulo="Sin ventas diarias" descripcion="No existen ventas diarias para mostrar." />
                             ) : (
                                 <div className="p-4">
-                                    <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-                                        <div className="flex h-44 items-end gap-1.5 overflow-x-auto border-b border-slate-300 pb-7">
+                                    <div className="rounded-xl border border-primary-200 bg-parchment-200/60 p-4">
+                                        <div className="flex h-44 items-end gap-1.5 overflow-x-auto border-b border-primary-200 pb-7">
                                             {ventasPorDia.map((item) => {
                                                 const porcentaje = Math.max(5, (Number(item.total_vendido || 0) / maximoDiario) * 100);
                                                 return (
@@ -379,36 +379,36 @@ export default function ReportesPage() {
                                                             className="relative w-5 rounded-t bg-sky-500 transition hover:bg-sky-600"
                                                             style={{ height: `${porcentaje}%` }}
                                                         >
-                                                            <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block">
+                                                            <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-mahogany-700 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block">
                                                                 {formatearMoneda(item.total_vendido)}
                                                             </div>
                                                         </div>
-                                                        <span className="absolute -bottom-6 text-[9px] font-semibold text-slate-600">{item.dia}</span>
+                                                        <span className="absolute -bottom-6 text-[9px] font-semibold text-primary-500">{item.dia}</span>
                                                     </div>
                                                 );
                                             })}
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 max-h-80 overflow-auto rounded-lg border border-slate-200">
+                                    <div className="mt-4 max-h-80 overflow-auto rounded-lg border border-primary-200">
                                         <table className="min-w-full">
-                                            <thead className="sticky top-0 z-10 bg-slate-50">
-                                                <tr className="border-b-2 border-slate-300">
-                                                    <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-700">Fecha</th>
-                                                    <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-700">Ventas</th>
-                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase text-slate-700">Total</th>
-                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase text-slate-700">Promedio</th>
-                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase text-slate-700">Venta mayor</th>
+                                            <thead className="sticky top-0 z-10 bg-parchment-200">
+                                                <tr className="border-b-2 border-primary-200">
+                                                    <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-mahogany-700">Fecha</th>
+                                                    <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-mahogany-700">Ventas</th>
+                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase text-mahogany-700">Total</th>
+                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase text-mahogany-700">Promedio</th>
+                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase text-mahogany-700">Venta mayor</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-slate-200 bg-white">
+                                            <tbody className="divide-y divide-primary-200 bg-white">
                                                 {[...ventasPorDia].reverse().map((item) => (
-                                                    <tr key={`dia-${String(item.fecha)}`} className="hover:bg-slate-50">
-                                                        <td className="px-3 py-2.5 text-xs font-semibold text-slate-700">{formatearFechaReportes(item.fecha)}</td>
-                                                        <td className="px-3 py-2.5 text-center text-xs font-semibold text-slate-700">{item.cantidad_ventas}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-slate-800">{formatearMoneda(item.total_vendido)}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs text-slate-700">{formatearMoneda(item.promedio_venta)}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-slate-700">{formatearMoneda(item.venta_mayor)}</td>
+                                                    <tr key={`dia-${String(item.fecha)}`} className="hover:bg-parchment-200">
+                                                        <td className="px-3 py-2.5 text-xs font-semibold text-mahogany-700">{formatearFechaReportes(item.fecha)}</td>
+                                                        <td className="px-3 py-2.5 text-center text-xs font-semibold text-mahogany-700">{item.cantidad_ventas}</td>
+                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-mahogany-700">{formatearMoneda(item.total_vendido)}</td>
+                                                        <td className="px-3 py-2.5 text-right text-xs text-mahogany-700">{formatearMoneda(item.promedio_venta)}</td>
+                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-mahogany-700">{formatearMoneda(item.venta_mayor)}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -448,20 +448,20 @@ export default function ReportesPage() {
                                 {ventasPorEstado.length === 0 ? (
                                     <EmptyState titulo="Sin ventas" descripcion="No hay ventas registradas." />
                                 ) : (
-                                    <div className="divide-y divide-slate-200">
+                                    <div className="divide-y divide-primary-200">
                                         {ventasPorEstado.map((venta) => (
                                             <div key={venta.estado} className="flex items-center justify-between gap-4 px-4 py-3">
                                                 <div>
                                                     <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold capitalize ${obtenerColorVenta(venta.estado)}`}>
                                                         {venta.estado}
                                                     </span>
-                                                    <p className="mt-1.5 text-[11px] text-slate-600">
-                                                        Total acumulado: <span className="font-semibold text-slate-700">{formatearMoneda(venta.total)}</span>
+                                                    <p className="mt-1.5 text-[11px] text-primary-500">
+                                                        Total acumulado: <span className="font-semibold text-mahogany-700">{formatearMoneda(venta.total)}</span>
                                                     </p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-lg font-bold text-slate-900">{venta.cantidad}</p>
-                                                    <p className="text-[11px] text-slate-600">ventas</p>
+                                                    <p className="text-lg font-bold text-mahogany-700">{venta.cantidad}</p>
+                                                    <p className="text-[11px] text-primary-500">ventas</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -477,15 +477,15 @@ export default function ReportesPage() {
                                 {reservasPorEstado.length === 0 ? (
                                     <EmptyState titulo="Sin reservas" descripcion="No hay reservas registradas." />
                                 ) : (
-                                    <div className="divide-y divide-slate-200">
+                                    <div className="divide-y divide-primary-200">
                                         {reservasPorEstado.map((reserva) => (
                                             <div key={reserva.estado} className="flex items-center justify-between gap-4 px-4 py-3">
                                                 <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold capitalize ${obtenerColorReserva(reserva.estado)}`}>
                                                     {reserva.estado}
                                                 </span>
                                                 <div className="text-right">
-                                                    <p className="text-lg font-bold text-slate-900">{reserva.cantidad}</p>
-                                                    <p className="text-[11px] text-slate-600">reservas</p>
+                                                    <p className="text-lg font-bold text-mahogany-700">{reserva.cantidad}</p>
+                                                    <p className="text-[11px] text-primary-500">reservas</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -505,24 +505,24 @@ export default function ReportesPage() {
                                 <div className="overflow-x-auto p-4">
                                     <table className="min-w-full">
                                         <thead>
-                                            <tr className="border-b-2 border-slate-300 bg-slate-50">
-                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wide text-slate-700">Posición</th>
-                                                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide text-slate-700">Libro</th>
-                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wide text-slate-700">Unidades</th>
-                                                <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-slate-700">Total generado</th>
+                                            <tr className="border-b-2 border-primary-200 bg-parchment-200">
+                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Posición</th>
+                                                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Libro</th>
+                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Unidades</th>
+                                                <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Total generado</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-200">
+                                        <tbody className="divide-y divide-primary-200">
                                             {librosMasVendidos.map((libro, index) => (
-                                                <tr key={libro.id_libro} className="transition hover:bg-slate-50">
-                                                    <td className="px-3 py-2.5 text-center text-xs font-semibold text-slate-700">#{index + 1}</td>
-                                                    <td className="px-3 py-2.5 text-xs font-semibold text-slate-800">{libro.titulo}</td>
+                                                <tr key={libro.id_libro} className="transition hover:bg-parchment-200">
+                                                    <td className="px-3 py-2.5 text-center text-xs font-semibold text-mahogany-700">#{index + 1}</td>
+                                                    <td className="px-3 py-2.5 text-xs font-semibold text-mahogany-700">{libro.titulo}</td>
                                                     <td className="px-3 py-2.5 text-center">
-                                                        <span className="inline-flex rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                                                        <span className="inline-flex rounded-md bg-parchment-300 px-2.5 py-1 text-[11px] font-semibold text-mahogany-700">
                                                             {libro.cantidad_vendida}
                                                         </span>
                                                     </td>
-                                                    <td className="px-3 py-2.5 text-right text-xs font-bold text-slate-800">{formatearMoneda(libro.total_generado)}</td>
+                                                    <td className="px-3 py-2.5 text-right text-xs font-bold text-mahogany-700">{formatearMoneda(libro.total_generado)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -534,17 +534,17 @@ export default function ReportesPage() {
 
                     <Card>
                         <CardBody className="p-0">
-                            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50/50 px-4 py-3">
+                            <div className="flex items-center justify-between border-b border-primary-200 bg-parchment-200/50 px-4 py-3">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 text-xs text-red-700">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-crimson-100 text-xs text-crimson-500">
                                         <FaTriangleExclamation />
                                     </div>
                                     <div>
-                                        <h2 className="text-sm font-bold text-slate-900">Libros con stock bajo</h2>
-                                        <p className="mt-0.5 text-[11px] text-slate-600">Stock menor o igual al mínimo configurado</p>
+                                        <h2 className="text-sm font-bold text-mahogany-700">Libros con stock bajo</h2>
+                                        <p className="mt-0.5 text-[11px] text-primary-500">Stock menor o igual al mínimo configurado</p>
                                     </div>
                                 </div>
-                                <span className="rounded-full border border-red-200 bg-red-100 px-2.5 py-1 text-[11px] font-bold text-red-700">
+                                <span className="rounded-full border border-crimson-200 bg-crimson-100 px-2.5 py-1 text-[11px] font-bold text-crimson-500">
                                     {stockBajo.length}
                                 </span>
                             </div>
@@ -555,28 +555,28 @@ export default function ReportesPage() {
                                 <div className="overflow-x-auto p-4">
                                     <table className="min-w-full">
                                         <thead>
-                                            <tr className="border-b-2 border-slate-300 bg-slate-50">
-                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-700">ID</th>
-                                                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-700">Libro</th>
-                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-700">Stock</th>
-                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-slate-700">Mínimo</th>
-                                                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-slate-700">Ubicación</th>
+                                            <tr className="border-b-2 border-primary-200 bg-parchment-200">
+                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-mahogany-700">ID</th>
+                                                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-mahogany-700">Libro</th>
+                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-mahogany-700">Stock</th>
+                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-mahogany-700">Mínimo</th>
+                                                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-mahogany-700">Ubicación</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-200">
+                                        <tbody className="divide-y divide-primary-200">
                                             {stockBajo.map((item) => {
                                                 const sinStock = Number(item.stock) <= 0;
                                                 return (
-                                                    <tr key={item.id_inventario} className="hover:bg-slate-50">
-                                                        <td className="px-3 py-2.5 text-center text-xs text-slate-700">{item.id_inventario}</td>
-                                                        <td className="px-3 py-2.5 text-xs font-semibold text-slate-800">{item.titulo}</td>
+                                                    <tr key={item.id_inventario} className="hover:bg-parchment-200">
+                                                        <td className="px-3 py-2.5 text-center text-xs text-mahogany-700">{item.id_inventario}</td>
+                                                        <td className="px-3 py-2.5 text-xs font-semibold text-mahogany-700">{item.titulo}</td>
                                                         <td className="px-3 py-2.5 text-center">
-                                                            <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${sinStock ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                            <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${sinStock ? 'bg-crimson-100 text-crimson-500' : 'bg-warning-bg text-warning'}`}>
                                                                 {sinStock ? 'Sin stock' : item.stock}
                                                             </span>
                                                         </td>
-                                                        <td className="px-3 py-2.5 text-center text-xs font-semibold text-slate-700">{item.stock_minimo}</td>
-                                                        <td className="px-3 py-2.5 text-xs text-slate-700">{item.ubicacion || 'No registrada'}</td>
+                                                        <td className="px-3 py-2.5 text-center text-xs font-semibold text-mahogany-700">{item.stock_minimo}</td>
+                                                        <td className="px-3 py-2.5 text-xs text-mahogany-700">{item.ubicacion || 'No registrada'}</td>
                                                     </tr>
                                                 );
                                             })}

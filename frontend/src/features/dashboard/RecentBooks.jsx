@@ -19,20 +19,20 @@ function RecentBooks({
         if (cantidad <= 0) {
             return {
                 texto: 'Sin stock',
-                clase: 'bg-red-100 text-red-700'
+                clase: 'bg-crimson-100 text-crimson-500'
             };
         }
 
         if (cantidad <= 5) {
             return {
                 texto: `${cantidad} disponibles`,
-                clase: 'bg-amber-100 text-amber-700'
+                clase: 'bg-warning-bg text-warning'
             };
         }
 
         return {
             texto: `${cantidad} disponibles`,
-            clase: 'bg-emerald-100 text-emerald-700'
+            clase: 'bg-success-bg text-success'
         };
     };
 
@@ -42,32 +42,32 @@ function RecentBooks({
     const librosRecientes = libros.slice(0, 5);
 
     return (
-        <section className="dashboard-panel overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <section className="dashboard-panel overflow-hidden rounded-lg border border-primary-200 bg-white">
 
             {/* ========================================
                 CABECERA
             ======================================== */}
-            <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 border-b border-primary-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 
                 <div className="flex items-center gap-2.5">
 
-                    <div className="flex h-8 w-8 items-center justify-center text-sm text-primary-700">
+                    <div className="flex h-8 w-8 items-center justify-center text-sm text-mahogany-600">
                         <FaBookOpen />
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-semibold text-slate-900">
+                        <h3 className="text-sm font-semibold text-mahogany-700">
                             Últimos libros agregados
                         </h3>
 
-                        <p className="mt-0.5 text-xs text-slate-600">
+                        <p className="mt-0.5 text-xs text-primary-500">
                             Libros registrados recientemente
                         </p>
                     </div>
 
                 </div>
 
-                <span className="w-fit text-xs text-slate-500">
+                <span className="w-fit text-xs text-primary-400">
                     {librosRecientes.length}{' '}
                     {librosRecientes.length === 1
                         ? 'libro'
@@ -85,15 +85,15 @@ function RecentBooks({
 
                     <div className="flex flex-col items-center justify-center py-7 text-center">
 
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-400">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-parchment-300 text-sm text-primary-400">
                             <FaBookOpen />
                         </div>
 
-                        <p className="mt-2 text-xs font-semibold text-slate-700">
+                        <p className="mt-2 text-xs font-semibold text-mahogany-700">
                             No hay libros registrados
                         </p>
 
-                        <p className="mt-1 text-[11px] text-slate-600">
+                        <p className="mt-1 text-[11px] text-primary-500">
                             Los últimos libros agregados aparecerán aquí.
                         </p>
 
@@ -110,21 +110,21 @@ function RecentBooks({
                             ======================================== */}
                             <thead>
 
-                                <tr className="border-b border-slate-200 bg-slate-50">
+                                <tr className="border-b border-primary-200 bg-parchment-200">
 
-                                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600">
+                                    <th className="px-3 py-2 text-left text-xs font-semibold text-primary-500">
                                         Título
                                     </th>
 
-                                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600">
+                                    <th className="px-3 py-2 text-left text-xs font-semibold text-primary-500">
                                         Autor
                                     </th>
 
-                                    <th className="px-3 py-2 text-left text-xs font-semibold text-slate-600">
+                                    <th className="px-3 py-2 text-left text-xs font-semibold text-primary-500">
                                         Categoría
                                     </th>
 
-                                    <th className="px-3 py-2 text-center text-xs font-semibold text-slate-600">
+                                    <th className="px-3 py-2 text-center text-xs font-semibold text-primary-500">
                                         Stock
                                     </th>
 
@@ -135,7 +135,7 @@ function RecentBooks({
                             {/* ========================================
                                 CUERPO TABLA
                             ======================================== */}
-                            <tbody className="divide-y divide-slate-200">
+                            <tbody className="divide-y divide-primary-200">
 
                                 {librosRecientes.map((libro) => {
                                     const stock =
@@ -144,13 +144,13 @@ function RecentBooks({
                                     return (
                                         <tr
                                             key={libro.id_libro}
-                                            className="transition-colors hover:bg-slate-50"
+                                            className="transition-colors hover:bg-parchment-200"
                                         >
 
                                             {/* TÍTULO */}
                                             <td className="px-3 py-2.5">
 
-                                                <p className="max-w-xs truncate text-xs font-semibold text-slate-800">
+                                                <p className="max-w-xs truncate text-xs font-semibold text-mahogany-700">
                                                     {libro.titulo ||
                                                         'Sin título'}
                                                 </p>
@@ -158,7 +158,7 @@ function RecentBooks({
                                             </td>
 
                                             {/* AUTOR */}
-                                            <td className="px-3 py-2.5 text-xs font-medium text-slate-700">
+                                            <td className="px-3 py-2.5 text-xs font-medium text-mahogany-700">
                                                 {libro.autor ||
                                                     'Sin autor'}
                                             </td>
@@ -166,7 +166,7 @@ function RecentBooks({
                                             {/* CATEGORÍA */}
                                             <td className="px-3 py-2.5">
 
-                                                <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700">
+                                                <span className="inline-flex rounded-full bg-parchment-300 px-2.5 py-1 text-[11px] font-semibold text-mahogany-700">
                                                     {libro.categoria ||
                                                         'Sin categoría'}
                                                 </span>
@@ -208,7 +208,7 @@ function RecentBooks({
                             onClick={() =>
                                 navigate('/libros')
                             }
-                            className="group inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-primary-700 hover:text-primary-700"
+                            className="group inline-flex items-center gap-1.5 rounded-md border border-primary-200 bg-white px-3 py-1.5 text-xs font-semibold text-mahogany-700 transition-colors hover:border-primary-700 hover:text-mahogany-600"
                         >
                             Ver todos
 

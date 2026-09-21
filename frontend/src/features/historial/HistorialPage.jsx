@@ -121,11 +121,11 @@ function FilaHistorial({ item }) {
     const fecha = formatearFecha(item.fecha_registro);
 
     return (
-        <tr className="border-b border-slate-100 transition last:border-0 hover:bg-slate-50">
-            <td className="px-4 py-4 text-center text-sm font-medium text-slate-700">{item.id_historial}</td>
+        <tr className="border-b border-primary-200 transition last:border-0 hover:bg-parchment-200">
+            <td className="px-4 py-4 text-center text-sm font-medium text-mahogany-700">{item.id_historial}</td>
             <td className="px-4 py-4">
-                <p className="text-sm font-semibold text-slate-800">{usuario || 'Sistema'}</p>
-                {item.id_usuario && <p className="mt-0.5 text-xs text-slate-600">Usuario #{item.id_usuario}</p>}
+                <p className="text-sm font-semibold text-mahogany-700">{usuario || 'Sistema'}</p>
+                {item.id_usuario && <p className="mt-0.5 text-xs text-primary-500">Usuario #{item.id_usuario}</p>}
             </td>
             <td className="px-4 py-4 text-center">
                 <Badge color={COLORS[operacion.color]} className="gap-1.5 py-1">
@@ -137,11 +137,11 @@ function FilaHistorial({ item }) {
                 <Badge color="neutral">{formatearModulo(item.modulo)}</Badge>
             </td>
             <td className="max-w-xl px-4 py-4">
-                <p className="text-sm leading-6 text-slate-700">{item.descripcion || 'Sin descripción'}</p>
+                <p className="text-sm leading-6 text-mahogany-700">{item.descripcion || 'Sin descripción'}</p>
             </td>
             <td className="whitespace-nowrap px-4 py-4 text-center">
-                <p className="text-xs font-semibold text-slate-700">{fecha.fecha}</p>
-                {fecha.hora && <p className="mt-1 text-xs text-slate-600">{fecha.hora}</p>}
+                <p className="text-xs font-semibold text-mahogany-700">{fecha.fecha}</p>
+                {fecha.hora && <p className="mt-1 text-xs text-primary-500">{fecha.hora}</p>}
             </td>
         </tr>
     );
@@ -149,19 +149,19 @@ function FilaHistorial({ item }) {
 
 function TablaHistorial({ registros }) {
     return (
-        <div className="overflow-x-auto rounded-xl border border-slate-200">
+        <div className="overflow-x-auto rounded-xl border border-primary-200">
             <table className="min-w-full border-collapse bg-white">
-                <thead className="bg-slate-50">
-                    <tr className="border-b border-slate-200">
-                        <th className="border-r border-slate-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">ID</th>
-                        <th className="border-r border-slate-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-700">Usuario</th>
-                        <th className="border-r border-slate-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Acción realizada</th>
-                        <th className="border-r border-slate-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Módulo</th>
-                        <th className="border-r border-slate-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-700">Detalle de la operación</th>
-                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Fecha y hora</th>
+                <thead className="bg-parchment-200">
+                    <tr className="border-b border-primary-200">
+                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">ID</th>
+                        <th className="border-r border-primary-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-mahogany-700">Usuario</th>
+                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Acción realizada</th>
+                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Módulo</th>
+                        <th className="border-r border-primary-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-mahogany-700">Detalle de la operación</th>
+                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Fecha y hora</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-primary-200">
                     {registros.map((item) => (
                         <FilaHistorial key={item.id_historial} item={item} />
                     ))}
@@ -265,10 +265,10 @@ export default function HistorialPage() {
             />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Contador titulo="Total de registros" valor={totalRegistros} clase="border-slate-300 bg-white text-slate-800" />
-                <Contador titulo="Registros creados" valor={totalCreaciones} clase="border-slate-200 bg-white text-slate-700" />
-                <Contador titulo="Registros actualizados" valor={totalActualizaciones} clase="border-amber-200 bg-amber-50 text-amber-700" />
-                <Contador titulo="Registros eliminados" valor={totalEliminaciones} clase="border-red-200 bg-red-50 text-red-700" />
+                <Contador titulo="Total de registros" valor={totalRegistros} clase="border-primary-200 bg-white text-mahogany-700" />
+                <Contador titulo="Registros creados" valor={totalCreaciones} clase="border-primary-200 bg-white text-mahogany-700" />
+                <Contador titulo="Registros actualizados" valor={totalActualizaciones} clase="border-warning/20 bg-warning-bg text-warning" />
+                <Contador titulo="Registros eliminados" valor={totalEliminaciones} clase="border-crimson-200 bg-crimson-50 text-crimson-500" />
             </div>
 
             <Card>
@@ -335,7 +335,7 @@ export default function HistorialPage() {
                         titulo="Historial de operaciones"
                         subtitulo="Registro cronológico de las actividades realizadas"
                         acciones={
-                            <span className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                            <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-semibold text-mahogany-700">
                                 {historialFiltrado.length} {historialFiltrado.length === 1 ? 'registro' : 'registros'}
                             </span>
                         }

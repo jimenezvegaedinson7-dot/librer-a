@@ -79,7 +79,7 @@ export function EstadoModal({
                     ) : (
                         <div>
                             <label className="field-label">Nuevo estado</label>
-                            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                            <div className="rounded-lg border border-primary-200 bg-parchment-200 px-4 py-3 text-sm text-primary-400">
                                 {mensajeSinOpciones || 'Ya no admite más cambios.'}
                             </div>
                         </div>
@@ -90,7 +90,7 @@ export function EstadoModal({
 
                 {error && <Alert tipo="error">{error}</Alert>}
 
-                <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+                <div className="flex flex-col-reverse gap-3 border-t border-primary-200 pt-5 sm:flex-row sm:justify-end">
                     <Button variante="secondary" type="button" onClick={onCerrar} disabled={guardando}>
                         Cancelar
                     </Button>

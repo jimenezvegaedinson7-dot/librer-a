@@ -19,10 +19,10 @@ export function Pagination({ pagina, totalPaginas, onCambiarPagina }) {
     const paginas = paginasVisibles(pagina, totalPaginas);
 
     return (
-        <div className="pagination-bar flex flex-col gap-2.5 border-t border-slate-100 bg-slate-50/50 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-slate-500">
-                Página <span className="font-bold text-slate-700">{pagina}</span> de{' '}
-                <span className="font-bold text-slate-700">{totalPaginas}</span>
+        <div className="pagination-bar flex flex-col gap-2.5 border-t border-primary-200 bg-parchment-200/50 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-primary-400">
+                Página <span className="font-bold text-mahogany-700">{pagina}</span> de{' '}
+                <span className="font-bold text-mahogany-700">{totalPaginas}</span>
             </p>
 
             <div className="flex flex-wrap items-center gap-1.5">
@@ -37,7 +37,7 @@ export function Pagination({ pagina, totalPaginas, onCambiarPagina }) {
 
                 {paginas.map((numero, i) =>
                     numero === '...' ? (
-                        <span key={`dots-${i}`} className="px-1.5 text-xs text-slate-400">...</span>
+                        <span key={`dots-${i}`} className="px-1.5 text-xs text-primary-300">...</span>
                     ) : (
                         <Button
                             key={numero}

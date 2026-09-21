@@ -18,9 +18,9 @@ export default function UsuarioViewModal({ usuario, abierto, onCerrar }) {
 
     return (
         <Modal abierto={abierto} titulo="Detalle del usuario" subtitulo="Información del usuario registrado" onCerrar={onCerrar}>
-            <div className="border-b border-slate-100 pb-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Usuario</p>
-                <h3 className="mt-2 text-2xl font-bold text-slate-900">{`${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() || 'Sin nombre'}</h3>
+            <div className="border-b border-primary-200 pb-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Usuario</p>
+                <h3 className="mt-2 text-2xl font-bold text-mahogany-700">{`${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() || 'Sin nombre'}</h3>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -58,15 +58,15 @@ export default function UsuarioViewModal({ usuario, abierto, onCerrar }) {
                     <p className="mt-2 text-2xl font-bold text-sky-800">{Number(usuario.total_compras || 0)}</p>
                 </div>
 
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-600">
+                <div className="rounded-lg border border-primary-200 bg-parchment-200 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                         <FaMoneyBillWave /> Total gastado
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-slate-900">{formatearMoneda(Number(usuario.total_gastado || 0))}</p>
+                    <p className="mt-2 text-2xl font-semibold text-mahogany-700">{formatearMoneda(Number(usuario.total_gastado || 0))}</p>
                 </div>
             </div>
 
-            <div className="mt-6 flex justify-end border-t border-slate-100 pt-5">
+            <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
                 <Button onClick={onCerrar}>Cerrar</Button>
             </div>
         </Modal>

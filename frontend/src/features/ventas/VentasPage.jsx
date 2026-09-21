@@ -48,20 +48,20 @@ function valorOrdenVenta(venta, campo) {
 }
 
 const columnasVentas = [
-    { titulo: 'ID', alineacion: 'centro', ordenable: true, campo: 'id_venta', render: (fila) => <span className="font-semibold text-slate-700">{fila.id_venta}</span> },
+    { titulo: 'ID', alineacion: 'centro', ordenable: true, campo: 'id_venta', render: (fila) => <span className="font-semibold text-mahogany-700">{fila.id_venta}</span> },
     {
         titulo: 'Usuario',
         ordenable: true,
         campo: 'usuario',
         render: (fila) => (
-            <p className="text-sm text-slate-700">
-                <span className="font-semibold text-slate-800">{`${fila.nombre_usuario || ''} ${fila.apellido_usuario || ''}`.trim() || 'Usuario no disponible'}</span>
-                <span className="block text-xs text-slate-500">{fila.correo_compra || fila.correo_usuario || ''}</span>
+            <p className="text-sm text-mahogany-700">
+                <span className="font-semibold text-mahogany-700">{`${fila.nombre_usuario || ''} ${fila.apellido_usuario || ''}`.trim() || 'Usuario no disponible'}</span>
+                <span className="block text-xs text-primary-400">{fila.correo_compra || fila.correo_usuario || ''}</span>
             </p>
         ),
     },
-    { titulo: 'Fecha', alineacion: 'centro', ordenable: true, campo: 'fecha_venta', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_venta) || 'Sin fecha'}</span> },
-    { titulo: 'Total', alineacion: 'centro', ordenable: true, campo: 'total', render: (fila) => <span className="font-bold text-slate-800">{formatearMoneda(Number(fila.total || 0))}</span> },
+    { titulo: 'Fecha', alineacion: 'centro', ordenable: true, campo: 'fecha_venta', render: (fila) => <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.fecha_venta) || 'Sin fecha'}</span> },
+    { titulo: 'Total', alineacion: 'centro', ordenable: true, campo: 'total', render: (fila) => <span className="font-bold text-mahogany-700">{formatearMoneda(Number(fila.total || 0))}</span> },
     {
         titulo: 'Estado',
         alineacion: 'centro',
@@ -130,20 +130,20 @@ function accionesVenta(fila, { onVer, onCambiarEstado, onEmitirComprobante }) {
 function Contador({ total, pendientes, pagadas, entregadas, canceladas, ingresos }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-slate-900">{total}</span>
+            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
+                Total: <span className="font-bold text-mahogany-700">{total}</span>
             </span>
-            <span className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-                Pendientes: <span className="font-bold text-amber-800">{pendientes}</span>
+            <span className="rounded-xl border border-warning/20 bg-warning-bg px-4 py-2 text-sm text-warning">
+                Pendientes: <span className="font-bold text-warning">{pendientes}</span>
             </span>
-            <span className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
-                Pagadas: <span className="font-bold text-emerald-800">{pagadas}</span>
+            <span className="rounded-xl border border-success/20 bg-success-bg px-4 py-2 text-sm text-success">
+                Pagadas: <span className="font-bold text-success">{pagadas}</span>
             </span>
             <span className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm text-sky-700">
                 Entregadas: <span className="font-bold text-sky-800">{entregadas}</span>
             </span>
-<span className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-                Canceladas: <span className="font-bold text-red-800">{canceladas}</span>
+<span className="rounded-xl border border-crimson-200 bg-crimson-50 px-4 py-2 text-sm text-crimson-500">
+                Canceladas: <span className="font-bold text-crimson-500">{canceladas}</span>
             </span>
             <span className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm text-sky-700">
                 Ingresos: <span className="font-bold text-sky-800">{formatearMoneda(ingresos)}</span>
@@ -359,7 +359,7 @@ const ventaActualizada = async (mensaje) => {
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 transition hover:text-slate-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -422,7 +422,7 @@ const ventaActualizada = async (mensaje) => {
                         subtitulo="Historial de ventas realizadas"
                         acciones={
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-mahogany-700">
                                     {ventasFiltradas.length} {ventasFiltradas.length === 1 ? 'venta' : 'ventas'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>

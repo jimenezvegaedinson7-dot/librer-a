@@ -85,26 +85,26 @@ function SalesChart({
     };
 
     return (
-        <section className="dashboard-panel h-full overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <section className="dashboard-panel h-full overflow-hidden rounded-lg border border-primary-200 bg-white">
 
             {/* ========================================
                 CABECERA
             ======================================== */}
-            <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 border-b border-primary-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
 
                 <div className="flex items-center gap-2.5">
 
-                    <div className="flex h-8 w-8 items-center justify-center text-sm text-primary-700">
+                    <div className="flex h-8 w-8 items-center justify-center text-sm text-mahogany-600">
                         <FaChartColumn />
                     </div>
 
                     <div>
 
-                        <h3 className="text-sm font-semibold text-slate-900">
+                        <h3 className="text-sm font-semibold text-mahogany-700">
                             Ventas por mes
                         </h3>
 
-                        <p className="mt-0.5 text-xs text-slate-600">
+                        <p className="mt-0.5 text-xs text-primary-500">
                             Ingresos reales de ventas pagadas
                         </p>
 
@@ -112,7 +112,7 @@ function SalesChart({
 
                 </div>
 
-                <span className="w-fit text-xs text-slate-500">
+                <span className="w-fit text-xs text-primary-400">
                     {datos.length}{' '}
                     {datos.length === 1
                         ? 'mes'
@@ -124,27 +124,27 @@ function SalesChart({
             {/* ========================================
                 RESUMEN
             ======================================== */}
-            <div className="grid grid-cols-2 gap-2 border-b border-slate-200 px-4 py-3">
+            <div className="grid grid-cols-2 gap-2 border-b border-primary-200 px-4 py-3">
 
                 <div className="px-3 py-2">
 
-                    <p className="text-xs font-medium text-slate-500">
+                    <p className="text-xs font-medium text-primary-400">
                         Total período
                     </p>
 
-                    <p className="mt-1 text-base font-semibold text-slate-800">
+                    <p className="mt-1 text-base font-semibold text-mahogany-700">
                         S/ {totalPeriodo.toFixed(2)}
                     </p>
 
                 </div>
 
-                <div className="border-l border-slate-200 px-3 py-2">
+                <div className="border-l border-primary-200 px-3 py-2">
 
-                    <p className="text-xs font-medium text-slate-500">
+                    <p className="text-xs font-medium text-primary-400">
                         Mejor mes
                     </p>
 
-                    <p className="mt-1 text-base font-semibold text-slate-800">
+                    <p className="mt-1 text-base font-semibold text-mahogany-700">
                         {mejorMes
                             ? `${mejorMes.mes} ${mejorMes.anio}`
                             : 'Sin datos'}
@@ -165,11 +165,11 @@ function SalesChart({
 
                         <div>
 
-                            <p className="text-sm font-semibold text-slate-700">
+                            <p className="text-sm font-semibold text-mahogany-700">
                                 No hay ventas pagadas
                             </p>
 
-                            <p className="mt-1 text-xs text-slate-600">
+                            <p className="mt-1 text-xs text-primary-500">
                                 Cuando se registren ventas, aparecerán aquí.
                             </p>
 
@@ -182,10 +182,10 @@ function SalesChart({
                     <div className="relative h-52">
 
                         {/* LÍNEAS */}
-                        <div className="absolute inset-x-0 top-0 h-px bg-slate-200" />
-                        <div className="absolute inset-x-0 top-1/3 h-px bg-slate-200" />
-                        <div className="absolute inset-x-0 top-2/3 h-px bg-slate-200" />
-                        <div className="absolute inset-x-0 bottom-7 h-px bg-slate-300" />
+                        <div className="absolute inset-x-0 top-0 h-px bg-parchment-400" />
+                        <div className="absolute inset-x-0 top-1/3 h-px bg-parchment-400" />
+                        <div className="absolute inset-x-0 top-2/3 h-px bg-parchment-400" />
+                        <div className="absolute inset-x-0 bottom-7 h-px bg-parchment-400" />
 
                         {/* BARRAS */}
                         <div className="absolute inset-x-0 bottom-7 top-0 flex items-end justify-around gap-2 px-2">
@@ -209,7 +209,7 @@ function SalesChart({
 
                                             <div className="mb-1 opacity-0 transition duration-200 group-hover:opacity-100">
 
-                                                <span className="whitespace-nowrap rounded-md bg-slate-800 px-2 py-1 text-[9px] font-semibold text-white shadow-sm">
+                                                <span className="whitespace-nowrap rounded-md bg-mahogany-700 px-2 py-1 text-[9px] font-semibold text-white shadow-sm">
                                                     S/ {monto.toFixed(2)}
                                                 </span>
 
@@ -249,11 +249,11 @@ function SalesChart({
                                         className="text-center"
                                     >
 
-                                        <p className="text-[10px] font-semibold text-slate-600">
+                                        <p className="text-[10px] font-semibold text-primary-500">
                                             {item.mes}
                                         </p>
 
-                                        <p className="text-[9px] text-slate-500">
+                                        <p className="text-[9px] text-primary-400">
                                             {item.anio}
                                         </p>
 
@@ -270,20 +270,20 @@ function SalesChart({
                 {/* ========================================
                     LEYENDA
                 ======================================== */}
-                <div className="mt-3 flex flex-col gap-2 border-t border-slate-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-3 flex flex-col gap-2 border-t border-primary-200 pt-3 sm:flex-row sm:items-center sm:justify-between">
 
                     <div className="flex items-center gap-2">
 
                         <span className="h-2 w-2 rounded-full bg-primary-500" />
 
-                        <span className="text-[11px] text-slate-600">
+                        <span className="text-[11px] text-primary-500">
                             Total vendido por mes
                         </span>
 
                     </div>
 
                     {datos.length > 0 && (
-                        <span className="text-[11px] font-medium text-slate-500">
+                        <span className="text-[11px] font-medium text-primary-400">
                             Solo ventas pagadas
                         </span>
                     )}

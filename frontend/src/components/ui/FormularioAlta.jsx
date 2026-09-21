@@ -86,7 +86,7 @@ export function FormularioAlta({
                 subtitulo={subtitulo}
                 icono={icono}
                 acciones={
-                    <span className="text-xs font-medium text-slate-500">
+                    <span className="text-xs font-medium text-primary-400">
                         {etiquetaAlta}
                     </span>
                 }
@@ -115,7 +115,7 @@ export function FormularioAlta({
                 <form onSubmit={enviar} className="formal-form space-y-4" noValidate>
                     {renderCampos({ formulario, manejarCambio, errores })}
 
-                    <div className="form-actions flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
+                    <div className="form-actions flex items-center justify-end gap-3 border-t border-primary-200 pt-5">
                         <Button variante="secondary" type="button" onClick={limpiar} disabled={guardando}>
                             <FaRotateLeft /> Limpiar
                         </Button>

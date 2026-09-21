@@ -131,7 +131,7 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                 </Select>
 
                 {tipo === 'factura' && (
-                    <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="space-y-4 rounded-xl border border-primary-200 bg-parchment-200 p-4">
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <Select
                                 label="Tipo de documento"

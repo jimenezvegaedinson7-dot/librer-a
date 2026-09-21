@@ -42,13 +42,13 @@ function rolBadge(rol) {
 }
 
 const columnasUsuarios = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_usuario}</span> },
+    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-mahogany-700">{fila.id_usuario}</span> },
     {
         titulo: 'Usuario',
         render: (fila) => (
             <p className="text-sm">
-                <span className="font-semibold text-slate-800">{`${fila.nombre || ''} ${fila.apellido || ''}`.trim() || 'Sin nombre'}</span>
-                <span className="block text-xs text-slate-500">{fila.email || 'Sin correo'}</span>
+                <span className="font-semibold text-mahogany-700">{`${fila.nombre || ''} ${fila.apellido || ''}`.trim() || 'Sin nombre'}</span>
+                <span className="block text-xs text-primary-400">{fila.email || 'Sin correo'}</span>
             </p>
         ),
     },
@@ -57,17 +57,17 @@ const columnasUsuarios = [
     {
         titulo: 'Registro',
         alineacion: 'centro',
-        render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_registro, { soloDia: true }) || 'Sin fecha'}</span>,
+        render: (fila) => <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.fecha_registro, { soloDia: true }) || 'Sin fecha'}</span>,
     },
     {
         titulo: 'Compras',
         alineacion: 'centro',
-        render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.total_compras || 0)}</span>,
+        render: (fila) => <span className="font-semibold text-mahogany-700">{Number(fila.total_compras || 0)}</span>,
     },
     {
         titulo: 'Total gastado',
         alineacion: 'centro',
-        render: (fila) => <span className="font-bold text-slate-800">{formatearMoneda(Number(fila.total_gastado || 0))}</span>,
+        render: (fila) => <span className="font-bold text-mahogany-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>,
     },
 ];
 
@@ -93,7 +93,7 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
                 onChange={(e) => !esPropio && onCambiarRol(fila, e.target.value)}
                 disabled={esPropio}
                 title={esPropio ? 'No puedes cambiar tu propio rol' : 'Cambiar rol'}
-                className="h-8 rounded-lg border border-slate-300 bg-white px-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
+                className="h-8 rounded-lg border border-primary-200 bg-white px-2 text-xs font-semibold text-mahogany-700 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-parchment-200 disabled:text-primary-400"
             >
                 <option value="cliente">Cliente</option>
                 <option value="administrador">Admin</option>
@@ -105,20 +105,20 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
 function Contador({ total, administradores, clientes, activos, inactivos }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-slate-900">{total}</span>
+            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
+                Total: <span className="font-bold text-mahogany-700">{total}</span>
             </span>
-            <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
-                Administradores: <span className="font-bold text-slate-900">{administradores}</span>
+            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
+                Administradores: <span className="font-bold text-mahogany-700">{administradores}</span>
             </span>
             <span className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm text-sky-700">
                 Clientes: <span className="font-bold text-sky-800">{clientes}</span>
             </span>
-            <span className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
-                Activos: <span className="font-bold text-emerald-800">{activos}</span>
+            <span className="rounded-xl border border-success/20 bg-success-bg px-4 py-2 text-sm text-success">
+                Activos: <span className="font-bold text-success">{activos}</span>
             </span>
-            <span className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm text-slate-600">
-                Inactivos: <span className="font-bold text-slate-800">{inactivos}</span>
+            <span className="rounded-xl border border-primary-200 bg-parchment-300 px-4 py-2 text-sm text-primary-500">
+                Inactivos: <span className="font-bold text-mahogany-700">{inactivos}</span>
             </span>
         </div>
     );
@@ -304,7 +304,7 @@ export default function UsuariosPage() {
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 transition hover:text-slate-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -364,7 +364,7 @@ export default function UsuariosPage() {
                         subtitulo="Usuarios registrados y su actividad de compras"
                         acciones={
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-mahogany-700">
                                     {usuariosFiltrados.length} {usuariosFiltrados.length === 1 ? 'usuario' : 'usuarios'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>

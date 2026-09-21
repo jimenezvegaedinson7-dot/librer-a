@@ -35,25 +35,25 @@ function formatearFecha(fecha) {
 function obtenerEstado(estado) {
     switch (estado) {
         case 'pendiente':
-            return { texto: 'Pendiente', clases: 'bg-amber-100 text-amber-700' };
+            return { texto: 'Pendiente', clases: 'bg-warning-bg text-warning' };
         case 'confirmada':
             return { texto: 'Confirmada', clases: 'bg-sky-100 text-sky-700' };
         case 'cancelada':
-            return { texto: 'Cancelada', clases: 'bg-red-100 text-red-700' };
+            return { texto: 'Cancelada', clases: 'bg-crimson-100 text-crimson-500' };
         case 'completada':
-            return { texto: 'Completada', clases: 'bg-emerald-100 text-emerald-700' };
+            return { texto: 'Completada', clases: 'bg-success-bg text-success' };
         default:
-            return { texto: estado || 'Sin estado', clases: 'bg-slate-200 text-slate-700' };
+            return { texto: estado || 'Sin estado', clases: 'bg-parchment-400 text-mahogany-700' };
     }
 }
 
 const columnasReservas = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_reserva}</span> },
-    { titulo: 'Usuario', render: (fila) => <span className="font-semibold text-slate-800">{fila.nombre_usuario} {fila.apellido_usuario}</span> },
-    { titulo: 'Libro', render: (fila) => <span className="font-semibold text-slate-800">{fila.titulo}</span> },
-    { titulo: 'Cantidad', alineacion: 'centro', render: (fila) => <span className="font-bold text-slate-700">{fila.cantidad}</span> },
-    { titulo: 'Fecha reserva', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_reserva)}</span> },
-    { titulo: 'Vencimiento', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_vencimiento)}</span> },
+    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-mahogany-700">{fila.id_reserva}</span> },
+    { titulo: 'Usuario', render: (fila) => <span className="font-semibold text-mahogany-700">{fila.nombre_usuario} {fila.apellido_usuario}</span> },
+    { titulo: 'Libro', render: (fila) => <span className="font-semibold text-mahogany-700">{fila.titulo}</span> },
+    { titulo: 'Cantidad', alineacion: 'centro', render: (fila) => <span className="font-bold text-mahogany-700">{fila.cantidad}</span> },
+    { titulo: 'Fecha reserva', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.fecha_reserva)}</span> },
+    { titulo: 'Vencimiento', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.fecha_vencimiento)}</span> },
     {
         titulo: 'Estado',
         alineacion: 'centro',
@@ -67,20 +67,20 @@ const columnasReservas = [
 function Contador({ total, pendientes, confirmadas, canceladas, completadas }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
-                Total: <span className="font-bold text-slate-900">{total}</span>
+            <span className="rounded-xl border border-primary-200 bg-white px-4 py-2 text-sm">
+                Total: <span className="font-bold text-mahogany-700">{total}</span>
             </span>
-            <span className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-                Pendientes: <span className="font-bold text-amber-800">{pendientes}</span>
+            <span className="rounded-xl border border-warning/20 bg-warning-bg px-4 py-2 text-sm text-warning">
+                Pendientes: <span className="font-bold text-warning">{pendientes}</span>
             </span>
             <span className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm text-sky-700">
                 Confirmadas: <span className="font-bold text-sky-800">{confirmadas}</span>
             </span>
-            <span className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-                Canceladas: <span className="font-bold text-red-800">{canceladas}</span>
+            <span className="rounded-xl border border-crimson-200 bg-crimson-50 px-4 py-2 text-sm text-crimson-500">
+                Canceladas: <span className="font-bold text-crimson-500">{canceladas}</span>
             </span>
-            <span className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700">
-                Completadas: <span className="font-bold text-emerald-800">{completadas}</span>
+            <span className="rounded-xl border border-success/20 bg-success-bg px-4 py-2 text-sm text-success">
+                Completadas: <span className="font-bold text-success">{completadas}</span>
             </span>
         </div>
     );
@@ -215,7 +215,7 @@ export default function ReservasPage() {
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 hover:text-slate-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 hover:text-mahogany-700"
                                     >
                                         <FaXmark />
                                     </button>
@@ -271,7 +271,7 @@ export default function ReservasPage() {
                         titulo="Reservas registradas"
                         subtitulo="Estado actual de las reservas del sistema"
                         acciones={
-                            <span className="rounded-full px-3 py-1 text-xs font-bold bg-slate-100 text-slate-700">
+                            <span className="rounded-full px-3 py-1 text-xs font-bold bg-parchment-300 text-mahogany-700">
                                 {reservasFiltradas.length} {reservasFiltradas.length === 1 ? 'reserva' : 'reservas'}
                             </span>
                         }

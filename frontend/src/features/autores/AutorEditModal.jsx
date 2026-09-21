@@ -108,7 +108,7 @@ export default function AutorEditModal({ autor, abierto, onCerrar, onActualizado
 
                 <Textarea label="Biografía" name="biografia" value={formulario.biografia} onChange={manejarCambio} rows="4" />
 
-                <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+                <div className="flex flex-col-reverse gap-3 border-t border-primary-200 pt-5 sm:flex-row sm:justify-end">
                     <Button variante="secondary" type="button" onClick={restablecerFormulario} disabled={guardando}>
                         <FaRotateLeft /> Restablecer
                     </Button>

@@ -2,14 +2,14 @@ import { Spinner } from './Spinner';
 
 const variantes = {
     primary:
-        'admin-primary-button border border-primary-700 bg-primary-700 text-white hover:bg-primary-800 focus-visible:ring-primary-300 active:bg-primary-900',
+        'admin-primary-button border border-mahogany-700 bg-mahogany-700 text-parchment-100 hover:bg-mahogany-600 focus-visible:ring-gold-300 active:bg-mahogany-800',
     secondary:
-        'admin-secondary-button border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 focus-visible:ring-slate-200 active:bg-slate-100',
-    ghost: 'text-slate-600 hover:bg-slate-100 hover:text-slate-800 focus-visible:ring-slate-200',
+        'admin-secondary-button border border-primary-200 bg-parchment-50 text-primary-500 hover:border-gold-500 hover:bg-parchment-100 focus-visible:ring-parchment-300 active:bg-parchment-200',
+    ghost: 'text-primary-500 hover:bg-parchment-300 hover:text-mahogany-700 focus-visible:ring-parchment-300',
     danger:
-        'bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-300 active:bg-red-800',
+        'bg-crimson-500 text-parchment-100 shadow-sm hover:bg-crimson-600 focus-visible:ring-crimson-200 active:bg-crimson-700',
     'danger-outline':
-        'border border-red-200 bg-white text-red-600 hover:bg-red-50 focus-visible:ring-red-200 active:bg-red-100',
+        'border border-crimson-200 bg-parchment-50 text-crimson-500 hover:bg-crimson-50 focus-visible:ring-crimson-200 active:bg-crimson-100',
 };
 
 const tamanos = {

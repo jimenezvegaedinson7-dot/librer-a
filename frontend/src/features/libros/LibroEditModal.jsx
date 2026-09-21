@@ -178,11 +178,11 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
                                 type="number"
                                 value={formulario.stock}
                                 disabled
-                                className="field cursor-not-allowed pr-10 font-semibold text-slate-600"
+                                className="field cursor-not-allowed pr-10 font-semibold text-primary-500"
                             />
-                            <FaLock className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400" />
+                            <FaLock className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-primary-400" />
                         </div>
-                        <p className="mt-1 text-[11px] text-slate-500">Se gestiona desde Inventario.</p>
+                        <p className="mt-1 text-[11px] text-primary-400">Se gestiona desde Inventario.</p>
                     </div>
                     <Select label="Estado" name="estado" value={formulario.estado} onChange={manejarCambio}>
                         <option value="1">Activo</option>
@@ -200,7 +200,7 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
                     cargando={guardando}
                 />
 
-                <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+                <div className="flex flex-col-reverse gap-3 border-t border-primary-200 pt-5 sm:flex-row sm:justify-end">
                     <Button variante="secondary" type="button" onClick={restablecerFormulario} disabled={guardando}>
                         <FaRotateLeft /> Restablecer
                     </Button>

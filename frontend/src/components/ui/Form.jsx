@@ -16,7 +16,7 @@ function Etiqueta({ label, requerido, htmlFor }) {
     return (
         <label htmlFor={htmlFor} className="field-label">
             {label}
-            {requerido && <span className="ml-0.5 text-red-500">*</span>}
+            {requerido && <span className="ml-0.5 text-crimson-500">*</span>}
         </label>
     );
 }
@@ -42,13 +42,13 @@ export function Input({ label, error, requerido = false, icono = null, className
             <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <div className="relative">
                 {icono && (
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-primary-400">
                         {icono}
                     </span>
                 )}
                 <input
                     id={id}
-                    className={`field ${icono ? 'pl-9' : ''} ${error ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10' : ''} ${className}`}
+                    className={`field ${icono ? 'pl-9' : ''} ${error ? 'border-crimson-400 focus:border-crimson-500 focus:ring-crimson-500/10' : ''} ${className}`}
                     {...props}
                 />
             </div>
@@ -64,7 +64,7 @@ export function Select({ label, error, requerido = false, children, className = 
             <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <select
                 id={id}
-                className={`field ${error ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10' : ''} ${className}`}
+                className={`field ${error ? 'border-crimson-400 focus:border-crimson-500 focus:ring-crimson-500/10' : ''} ${className}`}
                 {...props}
             >
                 {children}
@@ -81,7 +81,7 @@ export function Textarea({ label, error, requerido = false, className = '', ...p
             <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <textarea
                 id={id}
-                className={`field resize-none ${error ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10' : ''} ${className}`}
+                className={`field resize-none ${error ? 'border-crimson-400 focus:border-crimson-500 focus:ring-crimson-500/10' : ''} ${className}`}
                 {...props}
             />
             <MensajeError error={error} />

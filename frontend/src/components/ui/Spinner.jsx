@@ -11,8 +11,8 @@ export function Spinner({ tamano = 'md', className = '' }) {
 
 export function CargandoPantalla({ texto = 'Cargando...' }) {
     return (
-        <div className="flex flex-col items-center justify-center gap-3 py-10 text-slate-500">
-            <Spinner tamano="lg" className="text-primary-600" />
+        <div className="flex flex-col items-center justify-center gap-3 py-10 text-primary-400">
+            <Spinner tamano="lg" className="text-mahogany-600" />
             <p className="text-xs">{texto}</p>
         </div>
     );

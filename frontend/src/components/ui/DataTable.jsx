@@ -23,24 +23,24 @@ export function DataTable({
                 onClick={() => onOrdenar(col.campo)}
                 title={`Ordenar por ${col.titulo}`}
                 className={`inline-flex items-center gap-1.5 transition-colors ${
-                    activo ? 'text-primary-700' : 'text-slate-500 hover:text-primary-600'
+                    activo ? 'text-mahogany-600' : 'text-primary-400 hover:text-mahogany-600'
                 }`}
             >
                 {col.titulo}
-                <Icono className={`text-xs ${activo ? '' : 'text-slate-300'}`} />
+                <Icono className={`text-xs ${activo ? '' : 'text-primary-300'}`} />
             </button>
         );
     };
 
     return (
-        <div className="data-table-shell overflow-x-auto bg-white">
+        <div className="data-table-shell overflow-x-auto bg-parchment-50">
             <table className="min-w-full border-collapse">
                 <thead>
-                    <tr className="bg-slate-50/80">
+                    <tr className="bg-parchment-200">
                         {columnas.map((col, i) => (
                             <th
                                 key={i}
-                                className={`border-b border-slate-200 px-4 py-3 text-xs font-semibold text-slate-600 ${
+                                className={`border-b border-primary-200 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-primary-400 ${
                                     col.alineacion === 'centro' ? 'text-center' : 'text-left'
                                 }`}
                             >
@@ -48,16 +48,16 @@ export function DataTable({
                             </th>
                         ))}
                         {acciones && (
-                            <th className="border-b border-slate-200 px-4 py-3 text-center text-xs font-semibold text-slate-600">
+                            <th className="border-b border-primary-200 px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-primary-400">
                                 Acciones
                             </th>
                         )}
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-primary-200">
                     {filas.length === 0 ? (
                         <tr>
-                            <td colSpan={columnas.length + (acciones ? 1 : 0)} className="px-4 py-12 text-center text-sm text-slate-500">
+                            <td colSpan={columnas.length + (acciones ? 1 : 0)} className="px-4 py-12 text-center text-sm text-primary-400">
                                 {vacio}
                             </td>
                         </tr>
@@ -66,9 +66,9 @@ export function DataTable({
                             <tr
                                 key={keyExtractor ? keyExtractor(fila) : fila?.id}
                                 onClick={filaClickable ? () => onFilaClick(fila) : undefined}
-                                className={`border-b border-slate-100/80 transition last:border-0 ${
+                                className={`border-b border-primary-200/80 transition last:border-0 ${
                                     filaClickable ? 'cursor-pointer' : ''
-                                } hover:bg-slate-50/70`}
+                                } hover:bg-parchment-200/70`}
                             >
                                 {columnas.map((col, i) => (
                                     <td

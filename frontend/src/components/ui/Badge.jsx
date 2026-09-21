@@ -1,19 +1,19 @@
 const estilos = {
-    primary: 'bg-primary-50 text-primary-700 ring-primary-600/20',
-    success: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-    warning: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-    danger: 'bg-red-50 text-red-700 ring-red-600/20',
-    neutral: 'bg-slate-100 text-slate-700 ring-slate-500/20',
-    info: 'bg-sky-50 text-sky-700 ring-sky-600/20',
+    primary: 'bg-mahogany-100 text-mahogany-600 ring-mahogany-400/20',
+    success: 'bg-success-bg text-success ring-success/20',
+    warning: 'bg-warning-bg text-warning ring-warning/20',
+    danger: 'bg-danger-bg text-danger ring-danger/20',
+    neutral: 'bg-parchment-300 text-primary-500 ring-primary-400/20',
+    info: 'bg-gold-100 text-gold-700 ring-gold-500/20',
 };
 
 const puntos = {
-    primary: 'bg-primary-500',
-    success: 'bg-emerald-500',
-    warning: 'bg-amber-500',
-    danger: 'bg-red-500',
-    neutral: 'bg-slate-500',
-    info: 'bg-sky-500',
+    primary: 'bg-mahogany-500',
+    success: 'bg-success',
+    warning: 'bg-warning',
+    danger: 'bg-danger',
+    neutral: 'bg-primary-400',
+    info: 'bg-gold-500',
 };
 
 export function Badge({ children, color = 'neutral', className = '', punto = true }) {

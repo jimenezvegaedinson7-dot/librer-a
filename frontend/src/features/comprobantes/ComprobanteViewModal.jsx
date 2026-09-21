@@ -50,10 +50,10 @@ function formatearSerieNumero(comprobante) {
 function FilaTotal({ etiqueta, valor, resaltado = false }) {
     return (
         <div className="flex w-full max-w-xs items-center justify-between text-sm">
-            <span className={`${resaltado ? 'font-extrabold uppercase tracking-wide' : 'text-slate-600'} text-slate-800`}>
+            <span className={`${resaltado ? 'font-extrabold uppercase tracking-wide' : 'text-primary-500'} text-mahogany-700`}>
                 {etiqueta}
             </span>
-            <span className={`${resaltado ? 'text-lg font-extrabold' : 'font-semibold'} text-slate-900`}>{valor}</span>
+            <span className={`${resaltado ? 'text-lg font-extrabold' : 'font-semibold'} text-mahogany-700`}>{valor}</span>
         </div>
     );
 }
@@ -153,72 +153,72 @@ export default function ComprobanteViewModal({
             {!cargando && error && <Alert tipo="error">{error}</Alert>}
 
             {!cargando && !error && detalle && (
-                <div className="print-area overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm">
+                <div className="print-area overflow-hidden rounded-xl border border-primary-200 bg-white shadow-sm">
                     {/* ENCABEZADO DEL EMISOR */}
-                    <div className="flex flex-col gap-4 border-b-2 border-slate-800 bg-slate-50/60 p-5 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex flex-col gap-4 border-b-2 border-mahogany-700 bg-parchment-200/60 p-5 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                                RUC: <span className="font-extrabold text-slate-800">{emisorRuc || '—'}</span>
+                            <p className="text-xs font-bold uppercase tracking-wide text-primary-400">
+                                RUC: <span className="font-extrabold text-mahogany-700">{emisorRuc || '—'}</span>
                             </p>
-                            <h3 className="mt-1 text-lg font-extrabold text-slate-900">{emisorRazonSocial}</h3>
-                            {emisorNombreComercial && <p className="text-sm text-slate-600">{emisorNombreComercial}</p>}
-                            {emisorDireccion && <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-500">{emisorDireccion}</p>}
+                            <h3 className="mt-1 text-lg font-extrabold text-mahogany-700">{emisorRazonSocial}</h3>
+                            {emisorNombreComercial && <p className="text-sm text-primary-500">{emisorNombreComercial}</p>}
+                            {emisorDireccion && <p className="mt-1 max-w-sm text-xs leading-relaxed text-primary-400">{emisorDireccion}</p>}
                         </div>
-                        <div className="shrink-0 rounded-lg bg-slate-900 px-4 py-3 text-right text-white">
+                        <div className="shrink-0 rounded-lg bg-mahogany-700 px-4 py-3 text-right text-white">
                             <p className="text-[11px] font-bold uppercase tracking-[0.18em]">{tipoComprobante}</p>
                             <p className="mt-1 font-mono text-sm font-bold tracking-wider">{formatearSerieNumero(detalle)}</p>
                         </div>
                     </div>
 
                     {/* DATOS DEL CLIENTE Y FECHA */}
-                    <div className="grid grid-cols-1 gap-4 border-b border-slate-200 p-5 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 border-b border-primary-200 p-5 sm:grid-cols-2">
                         <div>
-                            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Cliente</p>
-                            <p className="mt-1 text-sm font-bold text-slate-800">{detalle.cliente_nombre || '—'}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-primary-400">Cliente</p>
+                            <p className="mt-1 text-sm font-bold text-mahogany-700">{detalle.cliente_nombre || '—'}</p>
                             {detalle.cliente_dni_ruc && (
-                                <p className="mt-0.5 text-xs text-slate-600">DNI/RUC: {detalle.cliente_dni_ruc}</p>
+                                <p className="mt-0.5 text-xs text-primary-500">DNI/RUC: {detalle.cliente_dni_ruc}</p>
                             )}
                         </div>
                         <div className="sm:text-right">
-                            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Fecha de emisión</p>
-                            <p className="mt-1 text-sm font-semibold text-slate-800">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-primary-400">Fecha de emisión</p>
+                            <p className="mt-1 text-sm font-semibold text-mahogany-700">
                                 {formatearFecha(detalle.fecha_emision) || '—'}
                             </p>
                         </div>
                     </div>
 
                     {/* DETALLE */}
-                    <div className="overflow-x-auto border-b border-slate-200">
+                    <div className="overflow-x-auto border-b border-primary-200">
                         <table className="min-w-full">
-                            <thead className="bg-slate-100">
-                                <tr className="border-b border-slate-300">
-                                    <th className="w-16 px-4 py-2.5 text-center text-[10px] font-bold uppercase tracking-wide text-slate-600">
+                            <thead className="bg-parchment-300">
+                                <tr className="border-b border-primary-200">
+                                    <th className="w-16 px-4 py-2.5 text-center text-[10px] font-bold uppercase tracking-wide text-primary-500">
                                         Cant.
                                     </th>
-                                    <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide text-slate-600">
+                                    <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide text-primary-500">
                                         Descripción
                                     </th>
-                                    <th className="px-4 py-2.5 text-right text-[10px] font-bold uppercase tracking-wide text-slate-600">
+                                    <th className="px-4 py-2.5 text-right text-[10px] font-bold uppercase tracking-wide text-primary-500">
                                         P. Unit.
                                     </th>
-                                    <th className="px-4 py-2.5 text-right text-[10px] font-bold uppercase tracking-wide text-slate-600">
+                                    <th className="px-4 py-2.5 text-right text-[10px] font-bold uppercase tracking-wide text-primary-500">
                                         Subtotal
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200">
+                            <tbody className="divide-y divide-primary-200">
                                 {Array.isArray(detalle.detalle) && detalle.detalle.length > 0 ? (
                                     detalle.detalle.map((item, i) => (
                                         <tr key={item.id_libro ?? i}>
-                                            <td className="px-4 py-3 text-center text-sm font-semibold text-slate-700">{item.cantidad}</td>
-                                            <td className="px-4 py-3 text-sm font-medium text-slate-800">{item.titulo || 'Sin título'}</td>
-                                            <td className="px-4 py-3 text-right text-sm text-slate-700">{formatearMoneda(item.precio_unitario)}</td>
-                                            <td className="px-4 py-3 text-right text-sm font-bold text-slate-900">{formatearMoneda(item.subtotal)}</td>
+                                            <td className="px-4 py-3 text-center text-sm font-semibold text-mahogany-700">{item.cantidad}</td>
+                                            <td className="px-4 py-3 text-sm font-medium text-mahogany-700">{item.titulo || 'Sin título'}</td>
+                                            <td className="px-4 py-3 text-right text-sm text-mahogany-700">{formatearMoneda(item.precio_unitario)}</td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold text-mahogany-700">{formatearMoneda(item.subtotal)}</td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={4} className="px-4 py-6 text-center text-sm text-slate-500">
+                                        <td colSpan={4} className="px-4 py-6 text-center text-sm text-primary-400">
                                             Sin detalle registrado.
                                         </td>
                                     </tr>
@@ -228,15 +228,15 @@ export default function ComprobanteViewModal({
                     </div>
 
                     {/* TOTALES */}
-                    <div className="flex flex-col items-end gap-1.5 bg-slate-50/60 p-5">
+                    <div className="flex flex-col items-end gap-1.5 bg-parchment-200/60 p-5">
                         <FilaTotal etiqueta="Subtotal" valor={formatearMoneda(detalle.subtotal)} />
                         {Number(detalle.costo_envio) > 0 && (
                             <FilaTotal etiqueta="Costo de envío" valor={formatearMoneda(detalle.costo_envio)} />
                         )}
                         {mostrarIgv && <FilaTotal etiqueta="IGV incluido (18%)" valor={formatearMoneda(detalle.igv)} />}
-                        <div className="mt-2 flex w-full max-w-xs items-center justify-between border-t-2 border-slate-800 pt-2">
-                            <span className="text-sm font-extrabold uppercase tracking-wide text-slate-900">TOTAL</span>
-                            <span className="text-lg font-extrabold text-slate-900">{formatearMoneda(detalle.total)}</span>
+                        <div className="mt-2 flex w-full max-w-xs items-center justify-between border-t-2 border-mahogany-700 pt-2">
+                            <span className="text-sm font-extrabold uppercase tracking-wide text-mahogany-700">TOTAL</span>
+                            <span className="text-lg font-extrabold text-mahogany-700">{formatearMoneda(detalle.total)}</span>
                         </div>
                     </div>
                 </div>
@@ -244,8 +244,8 @@ export default function ComprobanteViewModal({
 
             {!cargando && !error && !detalle && (
                 <div className="flex flex-col items-center gap-2 py-10 text-center">
-                    <FaReceipt className="text-3xl text-slate-300" />
-                    <p className="text-sm text-slate-600">No hay información del comprobante.</p>
+                    <FaReceipt className="text-3xl text-primary-300" />
+                    <p className="text-sm text-primary-500">No hay información del comprobante.</p>
                 </div>
             )}
         </Modal>

@@ -56,19 +56,19 @@ export default function LibroDeleteModal({ libro, abierto, eliminando, onCerrar,
                     className="pr-24"
                 />
                 <div className="mt-1 flex items-center justify-between">
-                    <p className="text-xs text-slate-600">Por seguridad, confirma tu contraseña antes de continuar.</p>
+                    <p className="text-xs text-primary-500">Por seguridad, confirma tu contraseña antes de continuar.</p>
                     <button
                         type="button"
                         onClick={() => setMostrarPassword((a) => !a)}
                         disabled={eliminando}
-                        className="text-xs font-semibold text-slate-600 transition hover:text-slate-800 disabled:opacity-50"
+                        className="text-xs font-semibold text-primary-500 transition hover:text-mahogany-700 disabled:opacity-50"
                     >
                         {mostrarPassword ? 'Ocultar' : 'Mostrar'}
                     </button>
                 </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-5">
+            <div className="mt-6 flex justify-end gap-3 border-t border-primary-200 pt-5">
                 <Button variante="secondary" onClick={onCerrar} disabled={eliminando}>
                     Cancelar
                 </Button>

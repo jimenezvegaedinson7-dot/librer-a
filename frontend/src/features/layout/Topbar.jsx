@@ -29,22 +29,22 @@ import { navPrincipal } from './navConfig';
 const operacionEstilo = (item) => {
     const tipo = String(item.tipo_operacion || '').toUpperCase();
     const descripcion = String(item.descripcion || '').toLowerCase();
-    if (descripcion.includes('cancelad')) return { icono: <FaXmark />, clase: 'bg-red-100 text-red-600' };
+    if (descripcion.includes('cancelad')) return { icono: <FaXmark />, clase: 'bg-crimson-100 text-crimson-500' };
     if (descripcion.includes('pagada') || descripcion.includes('completada') || descripcion.includes('confirmada'))
-        return { icono: <FaCirclePlus />, clase: 'bg-primary-100 text-primary-700' };
-    if (tipo === 'CREAR') return { icono: <FaCirclePlus />, clase: 'bg-primary-100 text-primary-700' };
-    if (tipo === 'ACTUALIZAR') return { icono: <FaPenToSquare />, clase: 'bg-amber-100 text-amber-600' };
-    if (tipo === 'ELIMINAR') return { icono: <FaTrash />, clase: 'bg-red-100 text-red-600' };
-    return { icono: <FaBell />, clase: 'bg-slate-100 text-slate-600' };
+        return { icono: <FaCirclePlus />, clase: 'bg-mahogany-100 text-mahogany-600' };
+    if (tipo === 'CREAR') return { icono: <FaCirclePlus />, clase: 'bg-mahogany-100 text-mahogany-600' };
+    if (tipo === 'ACTUALIZAR') return { icono: <FaPenToSquare />, clase: 'bg-gold-100 text-gold-700' };
+    if (tipo === 'ELIMINAR') return { icono: <FaTrash />, clase: 'bg-crimson-100 text-crimson-500' };
+    return { icono: <FaBell />, clase: 'bg-parchment-300 text-primary-400' };
 };
 
 function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
     return (
-        <div className={`overflow-hidden rounded-full bg-slate-200 ring-1 ring-slate-300 ${className}`}>
+        <div className={`overflow-hidden rounded-full bg-mahogany-200 ring-1 ring-mahogany-300 ${className}`}>
             {foto ? (
                 <img src={foto} alt="Foto del administrador" className="h-full w-full object-cover" />
             ) : (
-                <div className="flex h-full w-full items-center justify-center bg-slate-800 text-sm font-semibold text-white">
+                <div className="flex h-full w-full items-center justify-center bg-mahogany-700 text-sm font-semibold text-parchment-100">
                     {inicial}
                 </div>
             )}
@@ -167,21 +167,21 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
 
     return (
         <>
-            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b border-slate-200 bg-white px-3 sm:px-4 lg:px-6">
+            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b border-primary-200 bg-parchment-100 px-3 sm:px-4 lg:px-6">
                 <div className="flex w-full items-center justify-between gap-3">
                     <button
                         type="button"
                         onClick={onAbrirMenu}
                         aria-label="Abrir menú"
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 lg:hidden"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-primary-200 bg-parchment-50 text-primary-400 transition-colors hover:bg-parchment-200 lg:hidden"
                     >
                         <FaBars />
                     </button>
 
                     {/* BUSCADOR */}
                     <div ref={buscadorRef} className="relative hidden w-full max-w-sm sm:block">
-                        <div className="flex items-center gap-2.5 rounded-md border border-slate-300 bg-white px-3 py-2 transition-colors focus-within:border-primary-600">
-                            <FaMagnifyingGlass className="text-slate-400" />
+                        <div className="flex items-center gap-2.5 rounded-md border border-primary-200 bg-parchment-50 px-3 py-2 transition-colors focus-within:border-gold-400">
+                            <FaMagnifyingGlass className="text-primary-400" />
                             <input
                                 ref={buscadorInputRef}
                                 type="text"
@@ -192,23 +192,23 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                     setBuscadorAbierto(true);
                                 }}
                                 placeholder="Buscar módulo..."
-                                className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+                                className="w-full bg-transparent text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
                             />
                             {!busqueda && (
-                                <kbd className="hidden shrink-0 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 lg:inline-flex">
+                                <kbd className="hidden shrink-0 rounded border border-primary-200 bg-parchment-200 px-1.5 py-0.5 text-[10px] font-medium text-primary-400 lg:inline-flex">
                                     Ctrl K
                                 </kbd>
                             )}
                             {busqueda && (
                                 <button type="button" onClick={() => setBusqueda('')} aria-label="Limpiar">
-                                    <FaXmark className="text-slate-400" />
+                                    <FaXmark className="text-primary-400" />
                                 </button>
                             )}
                         </div>
                         {buscadorAbierto && busqueda && (
-                            <div className="animate-suave absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
+                            <div className="animate-suave absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-primary-200 bg-parchment-50 shadow-lg">
                                 {resultadosBusqueda.length === 0 ? (
-                                    <div className="p-5 text-center text-sm text-slate-600">Sin resultados</div>
+                                    <div className="p-5 text-center text-sm text-primary-400">Sin resultados</div>
                                 ) : (
                                     resultadosBusqueda.map((modulo) => {
                                         const Icono = modulo.icono;
@@ -217,14 +217,14 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                                 key={modulo.ruta}
                                                 type="button"
                                                 onClick={() => navegarModulo(modulo.ruta)}
-                                                className="flex w-full items-center gap-3 border-b border-slate-100 px-3 py-2.5 text-left transition last:border-0 hover:bg-slate-50"
+                                                className="flex w-full items-center gap-3 border-b border-primary-200 px-3 py-2.5 text-left transition last:border-0 hover:bg-parchment-200"
                                             >
-                                                <span className="flex h-8 w-8 items-center justify-center text-primary-700">
+                                                <span className="flex h-8 w-8 items-center justify-center text-mahogany-600">
                                                     <Icono />
                                                 </span>
                                                 <span>
-                                                    <span className="block text-sm font-semibold text-slate-700">{modulo.nombre}</span>
-                                                    <span className="block text-xs text-slate-600">{modulo.descripcion}</span>
+                                                    <span className="block text-sm font-semibold text-mahogany-700">{modulo.nombre}</span>
+                                                    <span className="block text-xs text-primary-400">{modulo.descripcion}</span>
                                                 </span>
                                             </button>
                                         );
@@ -241,7 +241,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                             aria-label={tema === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
                             aria-pressed={tema === 'dark'}
                             title={tema === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-                            className="theme-toggle flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600"
+                            className="theme-toggle flex h-9 w-9 items-center justify-center rounded-md border border-primary-200 bg-parchment-50 text-primary-400"
                         >
                             <span key={tema} className="theme-icon">
                                 {tema === 'dark' ? <FaSun /> : <FaMoon />}
@@ -254,7 +254,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                 type="button"
                                 onClick={abrirNotificaciones}
                                 aria-label="Notificaciones"
-                                className="relative flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100"
+                                className="relative flex h-9 w-9 items-center justify-center rounded-md text-primary-400 transition-colors hover:bg-parchment-300"
                             >
                                 <FaBell />
                                 {cantidadNuevas > 0 && (
@@ -264,44 +264,44 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                 )}
                             </button>
                             {notificacionesAbiertas && (
-                                <div className="animate-suave fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px]">
-                                    <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+                                <div className="animate-suave fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-lg border border-primary-200 bg-parchment-50 shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px]">
+                                    <div className="flex items-center justify-between border-b border-primary-200 px-4 py-3">
                                         <div>
-                                            <h3 className="text-sm font-semibold text-slate-800">Notificaciones</h3>
-                                            <p className="text-xs text-slate-500">Actividades recientes</p>
+                                            <h3 className="text-sm font-semibold text-mahogany-700">Notificaciones</h3>
+                                            <p className="text-xs text-primary-400">Actividades recientes</p>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => cargarNotificaciones()}
-                                            className="text-xs font-semibold text-slate-600"
+                                            className="text-xs font-semibold text-mahogany-600"
                                         >
                                             Actualizar
                                         </button>
                                     </div>
                                     <div className="max-h-[380px] overflow-y-auto">
                                         {cargandoNotif && notificaciones.length === 0 ? (
-                                            <div className="p-6 text-center text-sm text-slate-500">Cargando...</div>
+                                            <div className="p-6 text-center text-sm text-primary-400">Cargando...</div>
                                         ) : notificaciones.length === 0 ? (
-                                            <div className="p-6 text-center text-sm text-slate-600">Sin notificaciones</div>
+                                            <div className="p-6 text-center text-sm text-primary-400">Sin notificaciones</div>
                                         ) : (
                                             notificaciones.map((item) => {
                                                 const op = operacionEstilo(item);
                                                 return (
                                                     <div
                                                         key={item.id_historial}
-                                                        className="flex gap-3 border-b border-slate-100 px-4 py-3 last:border-0"
+                                                        className="flex gap-3 border-b border-primary-200 px-4 py-3 last:border-0"
                                                     >
                                                         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${op.clase}`}>
                                                             {op.icono}
                                                         </span>
                                                         <div className="min-w-0 flex-1">
                                                             <div className="flex justify-between gap-2">
-                                                                <p className="truncate text-sm font-semibold capitalize text-slate-700">
+                                                                <p className="truncate text-sm font-semibold capitalize text-mahogany-700">
                                                                     {item.modulo || 'Sistema'}
                                                                 </p>
-                                                                <span className="whitespace-nowrap text-xs text-slate-400">{formatearFecha(item.fecha_registro)}</span>
+                                                                <span className="whitespace-nowrap text-xs text-primary-400">{formatearFecha(item.fecha_registro)}</span>
                                                             </div>
-                                                            <p className="mt-1 text-sm leading-snug text-slate-500">{item.descripcion}</p>
+                                                            <p className="mt-1 text-sm leading-snug text-primary-400">{item.descripcion}</p>
                                                         </div>
                                                     </div>
                                                 );
@@ -314,7 +314,7 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                             setNotificacionesAbiertas(false);
                                             navigate('/historial');
                                         }}
-                                        className="w-full border-t border-slate-200 bg-slate-50 py-3 text-sm font-semibold text-slate-700"
+                                        className="w-full border-t border-primary-200 bg-parchment-200 py-3 text-sm font-semibold text-mahogany-700"
                                     >
                                         Ver historial completo
                                     </button>
@@ -330,24 +330,24 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                     setMenuAbierto(!menuAbierto);
                                     setNotificacionesAbiertas(false);
                                 }}
-                                className="flex items-center gap-2 rounded-md py-1.5 pl-1 pr-2 transition-colors hover:bg-slate-100"
+                                className="flex items-center gap-2 rounded-md py-1.5 pl-1 pr-2 transition-colors hover:bg-parchment-300"
                             >
                                 <Avatar foto={foto} inicial={inicial} />
                                 <div className="hidden max-w-[170px] text-left md:block">
-                                    <p className="truncate text-sm font-semibold text-slate-800">{nombre}</p>
-                                    <p className="truncate text-xs text-slate-500">{usuario?.email || 'Administrador'}</p>
+                                    <p className="truncate text-sm font-semibold text-mahogany-700">{nombre}</p>
+                                    <p className="truncate text-xs text-primary-400">{usuario?.email || 'Administrador'}</p>
                                 </div>
-                                <FaChevronDown className={`hidden text-xs text-slate-400 transition-transform sm:block ${menuAbierto ? 'rotate-180' : ''}`} />
+                                <FaChevronDown className={`hidden text-xs text-primary-400 transition-transform sm:block ${menuAbierto ? 'rotate-180' : ''}`} />
                             </button>
                             {menuAbierto && (
-                                <div className="animate-suave absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
+                                <div className="animate-suave absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-lg border border-primary-200 bg-parchment-50 shadow-lg">
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setPerfilAbierto(true);
                                             setMenuAbierto(false);
                                         }}
-                                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-800"
+                                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm text-primary-500 transition hover:bg-parchment-200 hover:text-mahogany-700"
                                     >
                                         <FaUser /> Datos del administrador
                                     </button>
@@ -357,14 +357,14 @@ export default function Topbar({ onAbrirMenu, tema, onCambiarTema }) {
                                             setConfigAbierta(true);
                                             setMenuAbierto(false);
                                         }}
-                                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm text-slate-600 transition hover:bg-slate-50 hover:text-slate-800"
+                                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-sm text-primary-500 transition hover:bg-parchment-200 hover:text-mahogany-700"
                                     >
                                         <FaGear /> Configuración
                                     </button>
                                     <button
                                         type="button"
                                         onClick={salir}
-                                        className="flex w-full items-center gap-2.5 border-t border-slate-100 px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                                        className="flex w-full items-center gap-2.5 border-t border-primary-200 px-3 py-2.5 text-left text-sm font-semibold text-crimson-500 transition hover:bg-crimson-50"
                                     >
                                         <FaRightFromBracket /> Cerrar sesión
                                     </button>

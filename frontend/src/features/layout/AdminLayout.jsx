@@ -35,7 +35,7 @@ export default function AdminLayout() {
                     type="button"
                     onClick={cerrarSidebar}
                     aria-label="Cerrar menú"
-                    className="animate-solapa fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-[1px] lg:hidden"
+                    className="animate-solapa fixed inset-0 z-40 bg-mahogany-900/50 backdrop-blur-[1px] lg:hidden"
                 />
             )}
 

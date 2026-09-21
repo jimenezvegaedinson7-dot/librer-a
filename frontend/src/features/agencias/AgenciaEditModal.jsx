@@ -107,7 +107,7 @@ export default function AgenciaEditModal({ agencia, abierto, onCerrar, onActuali
 
                 <Textarea label="Descripción" name="descripcion" value={formulario.descripcion} onChange={manejarCambio} rows="3" />
 
-                <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+                <div className="flex flex-col-reverse gap-3 border-t border-primary-200 pt-5 sm:flex-row sm:justify-end">
                     <Button variante="secondary" type="button" onClick={restablecerFormulario} disabled={guardando}>
                         <FaRotateLeft /> Restablecer
                     </Button>
