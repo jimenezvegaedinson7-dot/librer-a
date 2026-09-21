@@ -443,8 +443,11 @@ const generarComprobante = async ({
         // DOBLE EMISIÓN (carrera): el UNIQUE
         // uq_comprobante_venta (id_venta)
         // captura la duplicidad -> 409.
+        // PostgreSQL: code 23505 = unique_violation
+        // MySQL: errno 1062 = ER_DUP_ENTRY
         // ========================================
         if (
+            error?.code === '23505' ||
             error?.errno === 1062 ||
             error?.code === 'ER_DUP_ENTRY'
         ) {
@@ -510,7 +513,7 @@ const listarComprobantes = async ({
 
         condiciones.push(`(
             c.serie LIKE ? OR
-            CAST(c.numero AS CHAR) LIKE ? OR
+            CAST(c.numero AS TEXT) LIKE ? OR
             c.cliente_nombre LIKE ?
         )`);
 

@@ -268,8 +268,13 @@ const cambiarEstadoVenta = async (venta) => {
         }
     };
 
-    const abrirEmitirComprobante = (venta, tipo) => {
-        setComprobanteModal({ venta, tipo });
+    const abrirEmitirComprobante = async (venta, tipo) => {
+        try {
+            const ventaCompleta = await obtenerVenta(venta.id_venta);
+            setComprobanteModal({ venta: ventaCompleta || venta, tipo });
+        } catch {
+            setComprobanteModal({ venta, tipo });
+        }
     };
 
     const manejarComprobanteEmitido = (comprobante) => {
