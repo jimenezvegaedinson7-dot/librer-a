@@ -10,7 +10,7 @@ export async function listarVentas() {
 
 export async function obtenerVenta(id) {
     const res = await client.get(`/ventas/${id}`);
-    return res?.data ?? null;
+    return res?.venta ?? res?.data ?? null;
 }
 
 export async function crearVenta(payload) {

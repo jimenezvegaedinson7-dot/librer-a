@@ -13,13 +13,14 @@ import { useToast } from '../../components/providers/ToastProvider';
 import { emitirComprobante } from '../comprobantes/comprobantesService';
 import { obtenerEmpresa } from '../configuracion/empresaService';
 
-const TIPOS_DOCUMENTO = ['RUC', 'DNI', 'CE'];
+const TIPOS_DOCUMENTO_BOLETA = ['DNI', 'CE', 'PASAPORTE'];
+const TIPOS_DOCUMENTO_FACTURA = ['RUC'];
 
 export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', abierto, onCerrar, onEmitido }) {
     const { exito, error: mostrarError } = useToast();
 
     const [tipo, setTipo] = useState(tipoInicial);
-    const [tipoDocumento, setTipoDocumento] = useState('RUC');
+    const [tipoDocumento, setTipoDocumento] = useState('DNI');
     const [documento, setDocumento] = useState('');
     const [errorDocumento, setErrorDocumento] = useState('');
     const [clienteNombre, setClienteNombre] = useState('');
@@ -35,8 +36,6 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
         if (!abierto) return undefined;
 
         setTipo(tipoInicial);
-        setTipoDocumento('RUC');
-        setDocumento('');
         setErrorDocumento('');
         setErrorNombre('');
         setErrorEmail('');
@@ -46,9 +45,18 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
             const nombreCompleto = [venta.nombre_usuario, venta.apellido_usuario].filter(Boolean).join(' ').trim();
             setClienteNombre(nombreCompleto);
             setClienteEmail(venta.correo_compra || venta.correo_usuario || '');
+
+            if (tipoInicial === 'factura') {
+                setTipoDocumento('RUC');
+                setDocumento('');
+            } else {
+                setTipoDocumento('DNI');
+                setDocumento('');
+            }
         } else {
             setClienteNombre('');
             setClienteEmail('');
+            setDocumento('');
         }
 
         setCargandoEmpresa(true);
@@ -59,6 +67,19 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
 
         return undefined;
     }, [abierto, tipoInicial, venta]);
+
+    const cambiarTipo = (nuevoTipo) => {
+        setTipo(nuevoTipo);
+        setErrorDocumento('');
+        setErrorNombre('');
+        if (nuevoTipo === 'factura') {
+            setTipoDocumento('RUC');
+            setDocumento('');
+        } else {
+            setTipoDocumento('DNI');
+            setDocumento('');
+        }
+    };
 
     const detalle = venta?.detalles || venta?.detalle || [];
     const subtotalVenta = detalle.reduce((s, item) => s + Number(item.subtotal || 0), 0);
@@ -73,15 +94,19 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
         if (tipo === 'factura') {
             const doc = documento.trim();
             if (!doc) {
-                setErrorDocumento('Ingresa el RUC del cliente para emitir la factura');
+                setErrorDocumento('El RUC del cliente es obligatorio para factura');
                 return;
             }
-            if (doc.length < 8) {
-                setErrorDocumento('El documento debe tener al menos 8 caracteres');
+            if (doc.length < 11) {
+                setErrorDocumento('El RUC debe tener 11 digitos');
+                return;
+            }
+            if (!/^\d{11}$/.test(doc)) {
+                setErrorDocumento('El RUC debe contener solo numeros');
                 return;
             }
             if (!clienteNombre.trim()) {
-                setErrorNombre('Ingresa el nombre o razon social del cliente');
+                setErrorNombre('La razon social del cliente es obligatoria para factura');
                 return;
             }
         }
@@ -104,12 +129,12 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
             setErrorEmail('');
             const comprobante = await emitirComprobante(venta.id_venta, {
                 tipo,
-                cliente_tipo_documento: tipo === 'factura' ? tipoDocumento : undefined,
-                cliente_dni_ruc: tipo === 'factura' ? documento.trim() : undefined,
+                cliente_tipo_documento: tipoDocumento,
+                cliente_dni_ruc: documento.trim() || undefined,
                 cliente_nombre: clienteNombre.trim() || undefined,
                 cliente_email: correo || undefined,
             });
-            exito(`Comprobante ${tipo === 'factura' ? 'factura' : 'boleta'} emitido correctamente`);
+            exito(`${tipo === 'factura' ? 'Factura' : 'Boleta'} emitida correctamente`);
             onEmitido?.(comprobante);
             onCerrar();
         } catch (err) {
@@ -127,7 +152,7 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
     return (
         <Modal
             abierto={abierto}
-            titulo="Emitir comprobante"
+            titulo={tipo === 'factura' ? 'Emitir factura' : 'Emitir boleta'}
             subtitulo={venta ? `Venta #${venta.id_venta}` : 'Selecciona el tipo de comprobante'}
             onCerrar={onCerrar}
             grande
@@ -137,7 +162,7 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                         Cancelar
                     </Button>
                     <Button onClick={enviar} cargando={ejecutando}>
-                        Emitir comprobante
+                        {tipo === 'factura' ? 'Emitir factura' : 'Emitir boleta'}
                     </Button>
                 </>
             }
@@ -148,14 +173,10 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                 <Select
                     label="Tipo de comprobante"
                     value={tipo}
-                    onChange={(e) => {
-                        setTipo(e.target.value);
-                        setErrorDocumento('');
-                        setErrorNombre('');
-                    }}
+                    onChange={(e) => cambiarTipo(e.target.value)}
                     required
                 >
-                    <option value="boleta">Boleta (sin documento)</option>
+                    <option value="boleta">Boleta</option>
                     <option value="factura">Factura (requiere RUC del cliente)</option>
                 </Select>
 
@@ -166,30 +187,14 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                         <p className="text-sm text-primary-400">Cargando datos de la empresa...</p>
                     ) : empresa ? (
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wide text-primary-400">RUC</p>
-                                <p className="text-sm font-bold text-mahogany-700">{empresa.ruc || '—'}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wide text-primary-400">Razon social</p>
-                                <p className="text-sm font-bold text-mahogany-700">{empresa.razon_social || '—'}</p>
-                            </div>
+                            <Input label="RUC" value={empresa.ruc || ''} readOnly />
+                            <Input label="Razon social" value={empresa.razon_social || ''} readOnly />
                             {empresa.nombre_comercial && (
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-wide text-primary-400">Nombre comercial</p>
-                                    <p className="text-sm text-mahogany-700">{empresa.nombre_comercial}</p>
-                                </div>
+                                <Input label="Nombre comercial" value={empresa.nombre_comercial} readOnly />
                             )}
                             {empresa.direccion && (
-                                <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-wide text-primary-400">Direccion</p>
-                                    <p className="text-sm text-mahogany-700">{empresa.direccion}</p>
-                                </div>
+                                <Input label="Direccion" value={empresa.direccion} readOnly />
                             )}
-                            <div>
-                                <p className="text-[10px] font-bold uppercase tracking-wide text-primary-400">IGV</p>
-                                <p className="text-sm text-mahogany-700">{Number(empresa.aplica_igv) === 1 ? 'Si aplica (18%)' : 'No aplica (exonerado)'}</p>
-                            </div>
                         </div>
                     ) : (
                         <Alert tipo="warning">
@@ -201,39 +206,45 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                 {/* DATOS DEL COMPRADOR */}
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
                     <p className="text-xs font-bold uppercase tracking-wide text-primary-400 mb-3">Datos del comprador</p>
+
+                    {tipo === 'factura' && (
+                        <Alert tipo="info" className="mb-3">
+                            Para emitir factura se requiere el RUC del cliente (11 digitos) y razon social.
+                        </Alert>
+                    )}
+
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {tipo === 'factura' && (
-                            <>
-                                <Select
-                                    label="Tipo de documento"
-                                    value={tipoDocumento}
-                                    onChange={(e) => setTipoDocumento(e.target.value)}
-                                    required
-                                >
-                                    {TIPOS_DOCUMENTO.map((opcion) => (
-                                        <option key={opcion} value={opcion}>{opcion}</option>
-                                    ))}
-                                </Select>
-                                <Input
-                                    label="Nro. documento (RUC/DNI)"
-                                    value={documento}
-                                    onChange={(e) => { setDocumento(e.target.value); setErrorDocumento(''); }}
-                                    error={errorDocumento}
-                                    placeholder="Ej. 20123456789"
-                                    maxLength="20"
-                                    required
-                                />
-                            </>
-                        )}
+                        <Select
+                            label="Tipo de documento"
+                            value={tipoDocumento}
+                            onChange={(e) => setTipoDocumento(e.target.value)}
+                            required
+                        >
+                            {(tipo === 'factura' ? TIPOS_DOCUMENTO_FACTURA : TIPOS_DOCUMENTO_BOLETA).map((opcion) => (
+                                <option key={opcion} value={opcion}>{opcion}</option>
+                            ))}
+                        </Select>
+
                         <Input
-                            label="Nombre completo"
+                            label={tipo === 'factura' ? 'RUC del cliente' : 'Numero de documento (opcional)'}
+                            value={documento}
+                            onChange={(e) => { setDocumento(e.target.value); setErrorDocumento(''); }}
+                            error={errorDocumento}
+                            placeholder={tipo === 'factura' ? 'Ej. 20123456789' : 'Ej. 12345678'}
+                            maxLength="20"
+                            required={tipo === 'factura'}
+                        />
+
+                        <Input
+                            label={tipo === 'factura' ? 'Razon social del cliente' : 'Nombre completo'}
                             value={clienteNombre}
                             onChange={(e) => { setClienteNombre(e.target.value); setErrorNombre(''); }}
                             error={errorNombre}
-                            placeholder="Nombre del comprador"
+                            placeholder={tipo === 'factura' ? 'Razon social del cliente' : 'Nombre del comprador'}
                             maxLength="150"
-                            required
+                            required={tipo === 'factura'}
                         />
+
                         <Input
                             label="Correo electronico"
                             type="email"
@@ -244,11 +255,6 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                             maxLength="120"
                         />
                     </div>
-                    {tipo === 'factura' && (
-                        <Alert tipo="info" className="mt-3">
-                            El RUC y nombre del cliente son obligatorios para factura.
-                        </Alert>
-                    )}
                 </div>
 
                 {/* DETALLE DE LA VENTA */}
