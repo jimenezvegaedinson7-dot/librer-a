@@ -78,7 +78,9 @@ function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
     );
 }
 
-export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTema }) {
+import { Palette } from 'lucide-react';
+
+export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTema, colorAcento, onCambiarColor }) {
     const navigate = useNavigate();
     const { usuario, cerrarSesion } = useAuth();
 
@@ -287,6 +289,17 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                             <span key={tema} className="theme-icon">
                                 {tema === 'dark' ? <FaSun className="text-sm" /> : <FaMoon className="text-sm" />}
                             </span>
+                        </button>
+
+                        {/* Personalizar colores */}
+                        <button
+                            type="button"
+                            onClick={() => navigate('/personalizacion')}
+                            aria-label="Personalizar colores"
+                            title="Personalizar colores"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e5eaf2] bg-white text-[#94a3b8] transition-all hover:border-[#d0d7e3] hover:text-[#0f172a]"
+                        >
+                            <Palette className="h-4 w-4" />
                         </button>
 
                         {/* Notificaciones */}

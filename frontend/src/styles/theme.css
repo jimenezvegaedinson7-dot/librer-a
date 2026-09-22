@@ -1428,3 +1428,144 @@ body {
 h1, h2, h3 {
     font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
+
+/* ── Accent Color System ── */
+/* Default (blue) is the baseline, overrides only apply for other accents */
+
+.admin-shell[data-accent="azul"] {
+    --color-gold-50: #eff6ff;
+    --color-gold-100: #dbeafe;
+    --color-gold-200: #bfdbfe;
+    --color-gold-300: #93c5fd;
+    --color-gold-400: #60a5fa;
+    --color-gold-500: #3b82f6;
+    --color-gold-600: #2563eb;
+    --color-gold-700: #1d4ed8;
+    --color-gold-800: #1e40af;
+    --color-gold-900: #1e3a8a;
+}
+
+.admin-shell[data-accent="indigo"] {
+    --color-gold-50: #eef2ff;
+    --color-gold-100: #e0e7ff;
+    --color-gold-200: #c7d2fe;
+    --color-gold-300: #a5b4fc;
+    --color-gold-400: #818cf8;
+    --color-gold-500: #6366f1;
+    --color-gold-600: #4f46e5;
+    --color-gold-700: #4338ca;
+    --color-gold-800: #3730a3;
+    --color-gold-900: #312e81;
+}
+
+.admin-shell[data-accent="violeta"] {
+    --color-gold-50: #f5f3ff;
+    --color-gold-100: #ede9fe;
+    --color-gold-200: #ddd6fe;
+    --color-gold-300: #c4b5fd;
+    --color-gold-400: #a78bfa;
+    --color-gold-500: #8b5cf6;
+    --color-gold-600: #7c3aed;
+    --color-gold-700: #6d28d9;
+    --color-gold-800: #5b21b6;
+    --color-gold-900: #4c1d95;
+}
+
+.admin-shell[data-accent="esmeralda"] {
+    --color-gold-50: #ecfdf5;
+    --color-gold-100: #d1fae5;
+    --color-gold-200: #a7f3d0;
+    --color-gold-300: #6ee7b7;
+    --color-gold-400: #34d399;
+    --color-gold-500: #10b981;
+    --color-gold-600: #059669;
+    --color-gold-700: #047857;
+    --color-gold-800: #065f46;
+    --color-gold-900: #064e3b;
+}
+
+.admin-shell[data-accent="turquesa"] {
+    --color-gold-50: #ecfeff;
+    --color-gold-100: #cffafe;
+    --color-gold-200: #a5f3fc;
+    --color-gold-300: #67e8f9;
+    --color-gold-400: #22d3ee;
+    --color-gold-500: #06b6d4;
+    --color-gold-600: #0891b2;
+    --color-gold-700: #0e7490;
+    --color-gold-800: #155e75;
+    --color-gold-900: #164e63;
+}
+
+.admin-shell[data-accent="rosa"] {
+    --color-gold-50: #fdf2f8;
+    --color-gold-100: #fce7f3;
+    --color-gold-200: #fbcfe8;
+    --color-gold-300: #f9a8d4;
+    --color-gold-400: #f472b6;
+    --color-gold-500: #ec4899;
+    --color-gold-600: #db2777;
+    --color-gold-700: #be185d;
+    --color-gold-800: #9d174d;
+    --color-gold-900: #831843;
+}
+
+.admin-shell[data-accent="naranja"] {
+    --color-gold-50: #fff7ed;
+    --color-gold-100: #ffedd5;
+    --color-gold-200: #fed7aa;
+    --color-gold-300: #fdba74;
+    --color-gold-400: #fb923c;
+    --color-gold-500: #f97316;
+    --color-gold-600: #ea580c;
+    --color-gold-700: #c2410c;
+    --color-gold-800: #9a3412;
+    --color-gold-900: #7c2d12;
+}
+
+.admin-shell[data-accent="rojo"] {
+    --color-gold-50: #fef2f2;
+    --color-gold-100: #fee2e2;
+    --color-gold-200: #fecaca;
+    --color-gold-300: #fca5a5;
+    --color-gold-400: #f87171;
+    --color-gold-500: #ef4444;
+    --color-gold-600: #dc2626;
+    --color-gold-700: #b91c1c;
+    --color-gold-800: #991b1b;
+    --color-gold-900: #7f1d1d;
+}
+
+/* Dark mode accent overrides */
+.admin-shell[data-theme="dark"][data-accent="azul"] {
+    --color-gold-500: #60a5fa;
+    --color-gold-600: #3b82f6;
+}
+.admin-shell[data-theme="dark"][data-accent="indigo"] {
+    --color-gold-500: #a5b4fc;
+    --color-gold-600: #6366f1;
+}
+.admin-shell[data-theme="dark"][data-accent="violeta"] {
+    --color-gold-500: #c4b5fd;
+    --color-gold-600: #8b5cf6;
+}
+.admin-shell[data-theme="dark"][data-accent="esmeralda"] {
+    --color-gold-500: #6ee7b7;
+    --color-gold-600: #10b981;
+}
+.admin-shell[data-theme="dark"][data-accent="turquesa"] {
+    --color-gold-500: #67e8f9;
+    --color-gold-600: #06b6d4;
+}
+.admin-shell[data-theme="dark"][data-accent="rosa"] {
+    --color-gold-500: #f9a8d4;
+    --color-gold-600: #ec4899;
+}
+.admin-shell[data-theme="dark"][data-accent="naranja"] {
+    --color-gold-500: #fdba74;
+    --color-gold-600: #f97316;
+}
+.admin-shell[data-theme="dark"][data-accent="rojo"] {
+    --color-gold-500: #fca5a5;
+    --color-gold-600: #ef4444;
+}

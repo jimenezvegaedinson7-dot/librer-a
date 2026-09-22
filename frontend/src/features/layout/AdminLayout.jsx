@@ -7,6 +7,7 @@ import Topbar from './Topbar';
 import Breadcrumbs from './Breadcrumbs';
 
 const CLAVE_TEMA = 'libreria-admin-theme';
+const CLAVE_COLOR = 'libreria-color-theme';
 
 function obtenerTemaInicial() {
     const temaGuardado = window.localStorage.getItem(CLAVE_TEMA);
@@ -14,10 +15,15 @@ function obtenerTemaInicial() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+function obtenerColorInicial() {
+    return window.localStorage.getItem(CLAVE_COLOR) || 'default';
+}
+
 export default function AdminLayout() {
     const [sidebarAbierto, setSidebarAbierto] = useState(false);
     const [sidebarColapsado, setSidebarColapsado] = useState(false);
     const [tema, setTema] = useState(obtenerTemaInicial);
+    const [colorAcento, setColorAcento] = useState(obtenerColorInicial);
 
     const abrirSidebar = () => setSidebarAbierto(true);
     const cerrarSidebar = () => setSidebarAbierto(false);
@@ -28,10 +34,15 @@ export default function AdminLayout() {
         window.localStorage.setItem(CLAVE_TEMA, tema);
     }, [tema]);
 
+    useEffect(() => {
+        window.localStorage.setItem(CLAVE_COLOR, colorAcento);
+    }, [colorAcento]);
+
     const mlClase = sidebarColapsado ? 'lg:ml-[72px]' : 'lg:ml-[250px]';
+    const accentAttr = colorAcento !== 'default' ? colorAcento : undefined;
 
     return (
-        <div data-theme={tema} className="admin-shell min-h-screen bg-surface">
+        <div data-theme={tema} data-accent={accentAttr} className="admin-shell min-h-screen bg-surface">
             <Sidebar
                 abierto={sidebarAbierto}
                 onCerrar={cerrarSidebar}
@@ -42,7 +53,7 @@ export default function AdminLayout() {
                 <button
                     type="button"
                     onClick={cerrarSidebar}
-                    aria-label="Cerrar menú"
+                    aria-label="Cerrar menu"
                     className="animate-solapa fixed inset-0 z-40 bg-mahogany-900/40 backdrop-blur-sm lg:hidden"
                 />
             )}
@@ -53,6 +64,8 @@ export default function AdminLayout() {
                     onToggleSidebar={toggleSidebar}
                     tema={tema}
                     onCambiarTema={cambiarTema}
+                    colorAcento={colorAcento}
+                    onCambiarColor={setColorAcento}
                 />
                 <main className="admin-main px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-6">
                     <div className="mx-auto w-full max-w-[1600px]">

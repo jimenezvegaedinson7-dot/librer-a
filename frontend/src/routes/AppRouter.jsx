@@ -40,6 +40,7 @@ const AgenciasPage = lazyConReintento(() => import('../features/agencias/Agencia
 const HistorialPage = lazyConReintento(() => import('../features/historial/HistorialPage'));
 const ReportesPage = lazyConReintento(() => import('../features/reportes/ReportesPage'));
 const EmpresaPage = lazyConReintento(() => import('../features/configuracion/EmpresaPage'));
+const PersonalizacionPage = lazyConReintento(() => import('../features/configuracion/PersonalizacionPage'));
 
 const cargar = (elemento) => <Suspense fallback={<CargandoPantalla />}>{elemento}</Suspense>;
 
@@ -72,6 +73,7 @@ const router = createBrowserRouter([
             { path: '/historial', element: cargar(<HistorialPage />) },
             { path: '/reportes', element: cargar(<ReportesPage />) },
             { path: '/configuracion/empresa', element: cargar(<EmpresaPage />) },
+            { path: '/personalizacion', element: cargar(<PersonalizacionPage />) },
         ],
     },
     {
