@@ -44,8 +44,8 @@ function SkeletonFormulario() {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2" role="status" aria-label="Cargando datos de la empresa">
                     {Array.from({ length: 6 }).map((_, i) => (
                         <div key={i} className={i === 5 ? 'md:col-span-2' : ''}>
-                            <div className="mb-1.5 h-2.5 w-28 animate-pulse rounded bg-parchment-400" />
-                            <div className="h-10 animate-pulse rounded-lg bg-parchment-300" />
+                            <div className="skeleton mb-2 h-2.5 w-28" />
+                            <div className="skeleton h-10 !rounded-lg" />
                         </div>
                     ))}
                 </div>
@@ -66,8 +66,8 @@ function Interruptor({ activo, onChange, descripcion }) {
                 role="switch"
                 aria-checked={activo}
                 onClick={() => onChange(!activo)}
-                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${
-                    activo ? 'bg-primary-600' : 'bg-parchment-400'
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b98d3e] focus-visible:ring-offset-2 ${
+                    activo ? 'interruptor--activo' : 'interruptor--inactivo'
                 }`}
             >
                 <span

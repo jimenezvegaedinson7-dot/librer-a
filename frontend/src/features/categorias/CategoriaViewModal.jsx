@@ -19,7 +19,7 @@ export default function CategoriaViewModal({ categoria, abierto, onCerrar }) {
 
             <div className="mt-5">
                 <Ficha
-                    icono={activa ? <FaCircleCheck className="text-success" /> : <FaCircleXmark className="text-primary-400" />}
+                    icono={activa ? <FaCircleCheck className="text-success" /> : <FaCircleXmark className="text-slate-500" />}
                     etiqueta="Estado"
                 >
                     <Badge color={activa ? 'success' : 'neutral'}>{activa ? 'Activa' : 'Inactiva'}</Badge>

@@ -49,7 +49,8 @@ function SalesChart({ ventasPorMes = [] }) {
 
                         <h3
                             className="
-                                text-[16px]
+                                font-title
+                                text-[17px]
                                 font-semibold
                                 tracking-[-0.01em]
                                 text-[#1c1814]

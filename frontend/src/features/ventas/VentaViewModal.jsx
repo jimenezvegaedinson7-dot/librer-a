@@ -92,7 +92,7 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                     </div>
                     <p className="mt-2 text-2xl font-semibold text-slate-700">{formatearMoneda(venta.total)}</p>
                     {Number(venta.costo_envio || 0) > 0 && (
-                        <p className="mt-1 text-xs text-primary-400">
+                        <p className="mt-1 text-xs text-slate-500">
                             Incluye envío: {formatearMoneda(venta.costo_envio)}
                         </p>
                     )}

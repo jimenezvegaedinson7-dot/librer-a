@@ -102,16 +102,16 @@ function TopBooks({ libros = [] }) {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="border-y border-[#f3efe9] bg-[#faf8f5]">
-                                <th className="px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
                                     Libro
                                 </th>
-                                <th className="px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="hidden px-4 py-3 text-left 2xl:table-cell text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
                                     Categoría
                                 </th>
-                                <th className="px-6 py-3 text-center text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="px-4 py-3 text-center text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
                                     Ventas
                                 </th>
-                                <th className="px-6 py-3 text-right text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
                                     Total
                                 </th>
                             </tr>
@@ -124,7 +124,7 @@ function TopBooks({ libros = [] }) {
                                         index < lista.length - 1 ? 'border-b border-[#f3efe9]' : ''
                                     }`}
                                 >
-                                    <td className="px-6 py-4 align-middle">
+                                    <td className="px-4 py-4 align-middle">
                                         <div className="flex items-center gap-3">
                                             <div className="h-9 w-7 shrink-0 overflow-hidden rounded-md bg-[#f3efe9] shadow-sm">
                                                 <PortadaLibro portada={libro.portada} titulo={libro.titulo} />
@@ -134,13 +134,13 @@ function TopBooks({ libros = [] }) {
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-[14px] text-[#766d62] align-middle">
+                                    <td className="hidden px-4 py-4 2xl:table-cell text-[14px] text-[#766d62] align-middle">
                                         {libro.categoria || '—'}
                                     </td>
-                                    <td className="px-6 py-4 text-center text-[14px] font-semibold text-[#1c1814] align-middle">
+                                    <td className="px-4 py-4 text-center text-[14px] font-semibold text-[#1c1814] align-middle">
                                         {Number(libro.cantidad_vendida || 0)}
                                     </td>
-                                    <td className="px-6 py-4 text-right text-[14px] font-semibold text-[#1c1814] align-middle">
+                                    <td className="px-4 py-4 text-right text-[14px] font-semibold text-[#1c1814] align-middle">
                                         S/ {Number(libro.total_generado || 0).toFixed(2)}
                                     </td>
                                     </tr>

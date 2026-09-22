@@ -35,7 +35,7 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                         ) : null}
                         <div
                             style={urlPortada ? { display: 'none' } : {}}
-                            className="flex h-full w-full flex-col items-center justify-center text-primary-400"
+                            className="flex h-full w-full flex-col items-center justify-center text-slate-500"
                         >
                             <FaImage size={38} />
                             <span className="mt-2 text-xs font-medium">

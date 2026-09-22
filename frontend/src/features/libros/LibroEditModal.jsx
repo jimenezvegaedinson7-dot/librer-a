@@ -180,9 +180,9 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
                                 disabled
                                 className="field cursor-not-allowed pr-10 font-semibold text-primary-500"
                             />
-                            <FaLock className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-primary-400" />
+                            <FaLock className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500" />
                         </div>
-                        <p className="mt-1 text-[11px] text-primary-400">Se gestiona desde Inventario.</p>
+                        <p className="mt-1 text-[11px] text-slate-500">Se gestiona desde Inventario.</p>
                     </div>
                     <Select label="Estado" name="estado" value={formulario.estado} onChange={manejarCambio}>
                         <option value="1">Activo</option>

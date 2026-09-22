@@ -285,7 +285,7 @@ export default function VentaForm({ onVentaCreada }) {
             <CardHeader
                 titulo="Registrar venta"
                 subtitulo="Agrega los libros que formarán parte de la venta."
-                acciones={<span className="text-xs font-medium text-primary-400">Nueva venta</span>}
+                acciones={<span className="text-xs font-medium text-slate-500">Nueva venta</span>}
             />
             <CardBody>
                 <div className="flex items-center gap-3">
@@ -353,13 +353,13 @@ export default function VentaForm({ onVentaCreada }) {
                                 className={clasesOpcion(tipoEntrega === opcion.valor)}
                                 disabled={guardando}
                             >
-                                <span className={`text-lg ${tipoEntrega === opcion.valor ? 'text-slate-600' : 'text-primary-400'}`}>
+                                <span className={`text-lg ${tipoEntrega === opcion.valor ? 'text-slate-600' : 'text-slate-500'}`}>
                                     {opcion.icono}
                                 </span>
                                 <span className={`text-sm font-bold ${tipoEntrega === opcion.valor ? 'text-slate-700' : 'text-slate-700'}`}>
                                     {opcion.titulo}
                                 </span>
-                                <span className="text-xs text-primary-400">{opcion.descripcion}</span>
+                                <span className="text-xs text-slate-500">{opcion.descripcion}</span>
                             </button>
                         ))}
                     </div>
@@ -457,7 +457,7 @@ export default function VentaForm({ onVentaCreada }) {
                     {detalles.length === 0 ? (
                         <div className="px-5 py-10 text-center">
                             <p className="text-sm font-medium text-primary-500">Todavía no has agregado libros.</p>
-                            <p className="mt-1 text-xs text-primary-400">Selecciona un libro y presiona Agregar.</p>
+                            <p className="mt-1 text-xs text-slate-500">Selecciona un libro y presiona Agregar.</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">

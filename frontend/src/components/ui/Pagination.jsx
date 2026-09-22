@@ -44,7 +44,7 @@ export function Pagination({ pagina, totalPaginas, onCambiarPagina }) {
 
                 {paginas.map((numero, i) =>
                     numero === '...' ? (
-                        <span key={`dots-${i}`} className="px-1.5 text-xs text-primary-400" aria-hidden="true">…</span>
+                        <span key={`dots-${i}`} className="px-1.5 text-xs text-slate-500" aria-hidden="true">…</span>
                     ) : (
                         <Button
                             key={numero}

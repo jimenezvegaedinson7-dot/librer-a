@@ -56,7 +56,7 @@ const columnasVentas = [
         render: (fila) => (
             <p className="text-sm text-slate-700">
                 <span className="font-semibold text-slate-700">{`${fila.nombre_usuario || ''} ${fila.apellido_usuario || ''}`.trim() || 'Usuario no disponible'}</span>
-                <span className="block text-xs text-primary-400">{fila.correo_compra || fila.correo_usuario || ''}</span>
+                <span className="block text-xs text-slate-500">{fila.correo_compra || fila.correo_usuario || ''}</span>
             </p>
         ),
     },
@@ -364,7 +364,7 @@ const ventaActualizada = async (mensaje) => {
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-slate-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />

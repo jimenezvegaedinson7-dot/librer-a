@@ -43,7 +43,7 @@ function obtenerEstado(estado) {
             return {
                 texto: estado || 'Sin estado',
                 color: 'neutral',
-                icono: <FaCircleXmark className="text-primary-400" />,
+                icono: <FaCircleXmark className="text-slate-500" />,
             };
     }
 }

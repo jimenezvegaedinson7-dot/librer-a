@@ -20,12 +20,12 @@ export default function Breadcrumbs() {
     }, [modulo]);
 
     return (
-        <nav aria-label="Ruta de navegación" className="admin-breadcrumbs mb-4 flex items-center gap-2 text-xs text-primary-400">
-            <Link to="/dashboard" className="transition-colors hover:text-slate-600">
+        <nav aria-label="Ruta de navegación" className="admin-breadcrumbs mb-4 flex items-center gap-2 text-xs text-slate-500">
+            <Link to="/dashboard" className="rounded transition-colors hover:text-slate-900">
                 Panel
             </Link>
-            <FaChevronRight className="text-[10px] text-primary-300" />
-            <span className="font-medium text-slate-700">{nombre}</span>
+            <FaChevronRight className="text-[9px] text-slate-400" aria-hidden="true" />
+            <span className="font-medium text-slate-800" aria-current="page">{nombre}</span>
         </nav>
     );
 }

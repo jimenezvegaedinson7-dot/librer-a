@@ -871,7 +871,7 @@
 .admin-shell[data-theme="dark"] [class*="border-l-[#0ea5e9]"] { border-left-color: #38bdf8 !important; }
 .admin-shell[data-theme="dark"] [class*="border-l-[#766d62]"] { border-left-color: #a89e91 !important; }
 
-.admin-shell[data-theme="dark"] [class*="bg-[#fbf5f4]"] { background-color: #172554 !important; }
+.admin-shell[data-theme="dark"] [class*="bg-[#fbf5f4]"] { background-color: #3a2d1d !important; }
 .admin-shell[data-theme="dark"] [class*="bg-[#fff1f2]"] { background-color: #4c0519 !important; }
 .admin-shell[data-theme="dark"] [class*="bg-[#ecfdf5]"] { background-color: #022c22 !important; }
 .admin-shell[data-theme="dark"] [class*="bg-[#fffbeb]"] { background-color: #451a03 !important; }
@@ -2650,3 +2650,135 @@
 @media (prefers-reduced-motion: reduce) {
     .muestra-color-marco { animation: none; }
 }
+
+/* ========================================
+   REPASO FINAL: verificación, perfil, empresa
+   ======================================== */
+
+/* Tarjeta de verificación de correo (misma piel que el login móvil) */
+.verificar-tarjeta {
+    border: 1px solid rgb(230 224 215 / 0.9);
+    border-radius: 1.25rem;
+    background: rgb(252 250 246 / 0.97);
+    padding: 2rem 1.5rem;
+    box-shadow: 0 30px 70px -24px rgb(0 0 0 / 0.55);
+    backdrop-filter: blur(6px);
+}
+
+@media (min-width: 640px) {
+    .verificar-tarjeta {
+        padding: 2.5rem 2.25rem;
+    }
+}
+
+.verificar-tarjeta .field {
+    border: 1px solid #ddd5c9;
+    background-color: #ffffff;
+}
+
+.verificar-tarjeta .field:focus {
+    border-color: #74212c;
+    box-shadow: 0 0 0 3px rgb(116 33 44 / 0.14);
+}
+
+/* Campo de contraseña con botón de mostrar (perfil del administrador) */
+.campo-clave {
+    display: flex;
+    height: 2.75rem;
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid #ddd5c9;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    box-shadow: 0 1px 1px rgb(44 38 33 / 0.03);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.campo-clave:hover {
+    border-color: #c9bfb1;
+}
+
+.campo-clave:focus-within {
+    border-color: var(--theme-inputs, var(--brand));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-inputs, var(--brand)) 16%, transparent);
+}
+
+.campo-clave-input {
+    height: 100%;
+    min-width: 0;
+    flex: 1 1 0%;
+    background: transparent;
+    padding: 0 0.85rem;
+    font-size: 0.875rem;
+    color: #1c1814;
+    outline: none;
+}
+
+.campo-clave-ojo {
+    margin-right: 0.25rem;
+    display: flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem;
+    color: #766d62;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.campo-clave-ojo:hover {
+    background: #f3efe9;
+    color: #1c1814;
+}
+
+.campo-clave-ojo:focus-visible {
+    outline: 2px solid #b98d3e;
+    outline-offset: -2px;
+}
+
+.admin-shell[data-theme="dark"] .campo-clave {
+    border-color: #403831;
+    background: #141210;
+}
+
+.admin-shell[data-theme="dark"] .campo-clave:hover {
+    border-color: #5c5148;
+}
+
+.admin-shell[data-theme="dark"] .campo-clave-input {
+    color: #ece6dc;
+}
+
+.admin-shell[data-theme="dark"] .campo-clave-ojo {
+    color: #a89e91;
+}
+
+.admin-shell[data-theme="dark"] .campo-clave-ojo:hover {
+    background: #26211d;
+    color: #f5f0e8;
+}
+
+/* Interruptor (IGV) */
+.interruptor--activo {
+    background-color: var(--theme-buttons, var(--brand));
+}
+
+.interruptor--inactivo {
+    background-color: #d3cbbf;
+}
+
+.admin-shell[data-theme="dark"] .interruptor--inactivo {
+    background-color: #403831;
+}
+
+.admin-shell[data-theme="dark"] .ring-gold-200 {
+    --tw-ring-color: rgb(201 162 79 / 0.35);
+}
+
+/* Cerrar sesión y textos de peligro en modo oscuro */
+.admin-shell[data-theme="dark"] [class*="text-[#b91c1c]"] { color: #fca5a5 !important; }
+.admin-shell[data-theme="dark"] [class*="hover:bg-[#fef2f2]"]:hover { background-color: rgb(127 29 29 / 0.25) !important; }
+
+/* Topbar: el borde inline claro no debe verse en modo oscuro */
+.admin-shell[data-theme="dark"] .admin-topbar { border-color: #2d2824 !important; }

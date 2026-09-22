@@ -89,7 +89,7 @@ export default function InventarioEditModal({ inventario, abierto, onCerrar, onA
     return (
         <Modal abierto={abierto} titulo="Editar inventario" subtitulo="Actualiza stock, stock mínimo y ubicación" onCerrar={onCerrar}>
             <div className="rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Libro</p>
+                <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Libro</p>
                 <p className="mt-1 font-bold text-slate-700">{inventario.titulo}</p>
             </div>
 

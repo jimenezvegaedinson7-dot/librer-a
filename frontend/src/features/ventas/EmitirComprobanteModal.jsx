@@ -182,9 +182,9 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
 
                 {/* DATOS DEL EMISOR */}
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wide text-primary-400 mb-3">Datos del emisor (empresa)</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-3">Datos del emisor (empresa)</p>
                     {cargandoEmpresa ? (
-                        <p className="text-sm text-primary-400">Cargando datos de la empresa...</p>
+                        <p className="text-sm text-slate-500">Cargando datos de la empresa...</p>
                     ) : empresa ? (
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <Input label="RUC" value={empresa.ruc || ''} readOnly />
@@ -205,7 +205,7 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
 
                 {/* DATOS DEL COMPRADOR */}
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wide text-primary-400 mb-3">Datos del comprador</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-3">Datos del comprador</p>
 
                     {tipo === 'factura' && (
                         <Alert tipo="info" className="mb-3">
@@ -259,7 +259,7 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
 
                 {/* DETALLE DE LA VENTA */}
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wide text-primary-400 mb-3">Detalle de la venta</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-3">Detalle de la venta</p>
                     {detalle.length > 0 ? (
                         <>
                             <div className="overflow-x-auto">
@@ -298,7 +298,7 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                             </div>
                         </>
                     ) : (
-                        <p className="text-sm text-primary-400">No hay detalle de productos para esta venta.</p>
+                        <p className="text-sm text-slate-500">No hay detalle de productos para esta venta.</p>
                     )}
                 </div>
 

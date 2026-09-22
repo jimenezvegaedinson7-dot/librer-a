@@ -48,13 +48,13 @@ export function DataTable({
                                 key={i}
                                 scope="col"
                                 aria-sort={ariaSort(col)}
-                                className={`whitespace-nowrap border-b border-primary-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-primary-400 ${alinear(col)}`}
+                                className={`whitespace-nowrap border-b border-primary-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 ${alinear(col)}`}
                             >
                                 {renderEncabezado(col)}
                             </th>
                         ))}
                         {acciones && (
-                            <th scope="col" className="border-b border-primary-100 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-primary-400">
+                            <th scope="col" className="border-b border-primary-100 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                                 Acciones
                             </th>
                         )}

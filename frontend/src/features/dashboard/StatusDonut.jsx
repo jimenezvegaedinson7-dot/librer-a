@@ -53,7 +53,7 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
         >
 
             <div className="mb-4">
-                <h3 className="text-[16px] font-semibold tracking-[-0.01em] text-[#1c1814]">{titulo}</h3>
+                <h3 className="font-title text-[17px] font-semibold tracking-[-0.01em] text-[#1c1814]">{titulo}</h3>
                 <p className="mt-1 text-[12px] font-normal text-[#a39a8e]">{subtitulo}</p>
             </div>
 

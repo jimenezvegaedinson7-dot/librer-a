@@ -98,7 +98,7 @@ const columnasPagos = [
         render: (fila) => (
             <p className="text-sm text-slate-700">
                 <span className="font-semibold text-slate-700">{fila.cliente?.nombre_completo || 'Sin nombre'}</span>
-                <span className="block text-xs text-primary-400">{fila.cliente?.email || 'Sin correo'}</span>
+                <span className="block text-xs text-slate-500">{fila.cliente?.email || 'Sin correo'}</span>
             </p>
         ),
     },
@@ -344,7 +344,7 @@ export default function PagosPage() {
                                     <button
                                         type="button"
                                         onClick={() => aplicarBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-slate-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />

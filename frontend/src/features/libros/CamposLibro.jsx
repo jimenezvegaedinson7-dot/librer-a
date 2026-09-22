@@ -17,7 +17,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                             className="h-full w-full object-cover"
                         />
                     ) : (
-                        <div className="flex flex-col items-center text-primary-400">
+                        <div className="flex flex-col items-center text-slate-500">
                             <FaImage size={32} />
                             <span className="mt-2 text-xs">Sin portada</span>
                         </div>
@@ -43,7 +43,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                             className="hidden"
                         />
                     </label>
-                    <p className="mt-1.5 text-xs text-primary-400">JPG, PNG o WEBP. Máximo 5 MB.</p>
+                    <p className="mt-1.5 text-xs text-slate-500">JPG, PNG o WEBP. Máximo 5 MB.</p>
 
                     {imagen && (
                         <div className="mt-3 rounded-lg border border-primary-200 bg-parchment-200 p-3">

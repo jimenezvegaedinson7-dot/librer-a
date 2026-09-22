@@ -79,7 +79,7 @@ export function EstadoModal({
                     ) : (
                         <div>
                             <label className="field-label">Nuevo estado</label>
-                            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-400">
+                            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
                                 {mensajeSinOpciones || 'Ya no admite mas cambios.'}
                             </div>
                         </div>

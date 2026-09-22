@@ -43,7 +43,7 @@ export function Input({ label, error, requerido = false, icono = null, className
             <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <div className="relative">
                 {icono && (
-                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-primary-400" aria-hidden="true">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500" aria-hidden="true">
                         {icono}
                     </span>
                 )}

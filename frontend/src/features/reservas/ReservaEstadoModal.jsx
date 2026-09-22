@@ -46,7 +46,7 @@ export default function ReservaEstadoModal({ reserva, abierto, onCerrar, onActua
             estadoActual={reserva?.estado}
             contexto={
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Libro</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">Libro</p>
                     <p className="mt-2 font-semibold text-slate-700">{reserva?.titulo}</p>
                 </div>
             }

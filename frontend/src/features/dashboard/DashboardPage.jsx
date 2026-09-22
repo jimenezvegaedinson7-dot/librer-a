@@ -97,7 +97,8 @@ export default function DashboardPage() {
 
     if (!resumen) return null;
 
-    const fechaHoy = formatoFecha.format(new Date());
+    const fechaTexto = formatoFecha.format(new Date());
+    const fechaHoy = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
 
     return (
         <div className="dashboard-page space-y-6">
@@ -113,7 +114,7 @@ export default function DashboardPage() {
                         Indicadores generales y actividad reciente de la librería
                     </p>
                 </div>
-                <p className="text-[13px] capitalize text-[#766d62] tabular-nums">{fechaHoy}</p>
+                <p className="text-[13px] text-[#766d62] tabular-nums">{fechaHoy}</p>
             </header>
 
             {/* MÉTRICAS PRINCIPALES */}
