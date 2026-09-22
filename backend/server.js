@@ -400,6 +400,21 @@ iniciarJobs();
 })();
 
 // ===============================
+// MIGRACIÓN: enviado_por_email en comprobantes
+// ===============================
+(async () => {
+    try {
+        await pool.query(`
+            ALTER TABLE comprobantes ADD COLUMN IF NOT EXISTS enviado_por_email BOOLEAN DEFAULT FALSE;
+            ALTER TABLE comprobantes ADD COLUMN IF NOT EXISTS fecha_envio_email TIMESTAMP NULL;
+        `);
+        console.log('[migracion] Columnas enviado_por_email y fecha_envio_email verificadas en comprobantes.');
+    } catch (e) {
+        console.error('[migracion] Error al migrar comprobantes email:', e.message);
+    }
+})();
+
+// ===============================
 // INICIAR SERVIDOR
 // ===============================
 app.listen(PORT, () => {

@@ -73,9 +73,8 @@ const columnasComprobantes = [
     },
 ];
 
-function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando, enviadoId }) {
-    const id = fila.id_comprobante;
-    const fueEnviado = enviadoId === id;
+function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando }) {
+    const fueEnviado = fila.enviado_por_email;
     return (
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver comprobante">
@@ -87,7 +86,7 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando,
             <BtnAccion
                 tipo="ver"
                 onClick={() => onEnviarEmail(fila)}
-                titulo={fueEnviado ? 'Enviado' : 'Enviar por correo'}
+                titulo={fueEnviado ? 'Ya enviado por correo' : 'Enviar por correo'}
                 disabled={enviando}
                 className={fueEnviado ? 'text-green-600' : ''}
             >
@@ -120,7 +119,6 @@ export default function ComprobantesPage() {
     const [comprobanteVer, setComprobanteVer] = useState(null);
     const [comprobanteImprimir, setComprobanteImprimir] = useState(null);
     const [enviandoEmail, setEnviandoEmail] = useState(null);
-    const [enviadoId, setEnviadoId] = useState(null);
     const { exito, error: mostrarError } = useToast();
 
     const cargarComprobantes = async () => {
@@ -199,11 +197,9 @@ export default function ComprobantesPage() {
         }
         try {
             setEnviandoEmail(comprobante.id_comprobante);
-            setEnviadoId(null);
             const resultado = await enviarComprobanteEmail(comprobante.id_comprobante);
-            setEnviadoId(comprobante.id_comprobante);
             exito(resultado?.mensaje || 'Comprobante enviado correctamente');
-            setTimeout(() => setEnviadoId(null), 4000);
+            cargarComprobantes();
         } catch (err) {
             mostrarError(err.response?.data?.mensaje || 'Error al enviar el comprobante');
         } finally {
@@ -336,7 +332,6 @@ export default function ComprobantesPage() {
                                     onImprimir: setComprobanteImprimir,
                                     onEnviarEmail: handleEnviarEmail,
                                     enviando: enviandoEmail === fila.id_comprobante,
-                                    enviadoId,
                                 })
                             }
                         />

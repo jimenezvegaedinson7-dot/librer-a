@@ -241,6 +241,14 @@ const enviarComprobanteEmail = async (req, res) => {
                 empresaRuc: comprobante.ruc
             });
 
+        if (resultado.enviado) {
+            const pool = require('../config/db');
+            await pool.query(
+                'UPDATE comprobantes SET enviado_por_email = TRUE, fecha_envio_email = NOW() WHERE id_comprobante = ?',
+                [idComprobante]
+            );
+        }
+
         return res.json({
             success: true,
             mensaje: `Comprobante enviado a ${emailDestino}`,
