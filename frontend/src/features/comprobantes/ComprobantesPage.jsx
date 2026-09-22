@@ -22,6 +22,7 @@ import { TableSkeleton } from '../../components/ui/TableSkeleton';
 import { DataTable } from '../../components/ui/DataTable';
 import { Badge } from '../../components/ui/Badge';
 import { BtnAccion } from '../../components/ui/Acciones';
+import { ConfirmarAccion } from '../../components/ui/ConfirmarAccion';
 import { useToast } from '../../components/providers/ToastProvider';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
@@ -85,7 +86,7 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando 
             </BtnAccion>
             <BtnAccion
                 tipo="ver"
-                onClick={() => onEnviarEmail(fila)}
+                onClick={() => onEnviarEmail(fila, fueEnviado)}
                 titulo={fueEnviado ? 'Ya enviado por correo' : 'Enviar por correo'}
                 disabled={enviando}
                 className={fueEnviado ? 'text-green-600' : ''}
@@ -119,6 +120,7 @@ export default function ComprobantesPage() {
     const [comprobanteVer, setComprobanteVer] = useState(null);
     const [comprobanteImprimir, setComprobanteImprimir] = useState(null);
     const [enviandoEmail, setEnviandoEmail] = useState(null);
+    const [reenviarConfirmar, setReenviarConfirmar] = useState(null);
     const { exito, error: mostrarError } = useToast();
 
     const cargarComprobantes = async () => {
@@ -190,9 +192,13 @@ export default function ComprobantesPage() {
         setPaginaActual(1);
     };
 
-    const handleEnviarEmail = async (comprobante) => {
+    const handleEnviarEmail = async (comprobante, fueEnviado) => {
         if (!comprobante?.cliente_email && !comprobante?.correo_compra) {
             mostrarError('No hay correo registrado para este cliente');
+            return;
+        }
+        if (fueEnviado) {
+            setReenviarConfirmar(comprobante);
             return;
         }
         try {
@@ -202,6 +208,22 @@ export default function ComprobantesPage() {
             cargarComprobantes();
         } catch (err) {
             mostrarError(err.response?.data?.mensaje || 'Error al enviar el comprobante');
+        } finally {
+            setEnviandoEmail(null);
+        }
+    };
+
+    const confirmarReenvio = async () => {
+        if (!reenviarConfirmar) return;
+        const comprobante = reenviarConfirmar;
+        setReenviarConfirmar(null);
+        try {
+            setEnviandoEmail(comprobante.id_comprobante);
+            const resultado = await enviarComprobanteEmail(comprobante.id_comprobante);
+            exito(resultado?.mensaje || 'Comprobante reenviado correctamente');
+            cargarComprobantes();
+        } catch (err) {
+            mostrarError(err.response?.data?.mensaje || 'Error al reenviar el comprobante');
         } finally {
             setEnviandoEmail(null);
         }
@@ -350,6 +372,17 @@ export default function ComprobantesPage() {
                 abierto={Boolean(comprobanteImprimir)}
                 onCerrar={() => setComprobanteImprimir(null)}
                 autoImprimir
+            />
+
+            <ConfirmarAccion
+                abierto={Boolean(reenviarConfirmar)}
+                titulo="Reenviar comprobante"
+                mensaje={`Este comprobante ya fue enviado por correo a ${reenviarConfirmar?.cliente_email || reenviarConfirmar?.correo_compra}. ¿Desea enviarlo nuevamente?`}
+                textoConfirmar="Si, enviar de nuevo"
+                variante="primary"
+                onCerrar={() => setReenviarConfirmar(null)}
+                onConfirmar={confirmarReenvio}
+                cargando={Boolean(enviandoEmail)}
             />
         </div>
     );
