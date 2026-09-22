@@ -79,10 +79,12 @@ function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
 }
 
 import { Palette } from 'lucide-react';
+import { useTema } from '../../components/providers/ThemeContext';
 
-export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTema }) {
+export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     const navigate = useNavigate();
     const { usuario, cerrarSesion } = useAuth();
+    const { tema, cambiarTema } = useTema();
 
     const [busqueda, setBusqueda] = useState('');
     const [buscadorAbierto, setBuscadorAbierto] = useState(false);
@@ -280,7 +282,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTe
                         {/* Toggle tema */}
                         <button
                             type="button"
-                            onClick={onCambiarTema}
+                            onClick={cambiarTema}
                             aria-label={tema === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
                             aria-pressed={tema === 'dark'}
                             title={tema === 'dark' ? 'Modo claro' : 'Modo oscuro'}

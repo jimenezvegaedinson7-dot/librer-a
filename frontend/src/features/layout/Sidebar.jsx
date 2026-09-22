@@ -23,12 +23,16 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
 
     return (
         <aside
+            style={{
+                backgroundColor: colores.sidebarBg,
+                borderColor: colores.sidebarBorder,
+                color: colores.sidebarText,
+            }}
             className={`
                 admin-sidebar
                 fixed left-0 top-0 z-50
                 flex h-screen flex-col
-                border-r border-[#E2E8F0]
-                bg-white text-[#334155]
+                border-r
                 transition-all duration-300 ease-in-out
                 lg:translate-x-0
                 ${abierto ? 'translate-x-0' : '-translate-x-full'}
@@ -36,36 +40,47 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
             `}
         >
             {/* Logo */}
-            <div className="relative flex items-center border-b border-[#E2E8F0] px-4 py-4">
+            <div
+                style={{ borderBottomColor: colores.sidebarBorder }}
+                className="relative flex items-center border-b px-4 py-4"
+            >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden">
                     <img src={logoLibreria} alt="Logo" className="h-full w-full object-contain" />
                 </div>
                 {!colapsado && (
                     <div className="ml-3 min-w-0">
-                        <p className="truncate text-[16px] font-semibold tracking-tight text-[#0f172a]">Libreria del Saber</p>
-                        <p className="mt-0.5 text-[12px] text-[#94a3b8]">Panel administrativo</p>
+                        <p className="truncate text-[16px] font-semibold tracking-tight" style={{ color: colores.primary }}>Libreria del Saber</p>
+                        <p className="mt-0.5 text-[12px] opacity-60">Panel administrativo</p>
                     </div>
                 )}
                 <button
                     type="button"
                     onClick={onCerrar}
                     aria-label="Cerrar menu"
-                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-lg text-[#94a3b8] transition-colors hover:bg-[#f1f5f9] hover:text-[#334155] lg:hidden"
+                    className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-lg opacity-60 transition-colors hover:opacity-100 lg:hidden"
                 >
                     <X className="h-4 w-4" />
                 </button>
             </div>
 
             {/* Navegacion */}
-            <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-4 pt-3 [scrollbar-width:thin] [scrollbar-color:#CBD5E1_transparent]">
+            <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-4 pt-3 [scrollbar-width:thin]">
                 {secciones.map((seccion) => (
                     <div key={seccion.nombre} className="mb-3 last:mb-0">
                         {!colapsado && (
-                            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.08em] text-[#94a3b8]">
+                            <p
+                                style={{ color: colores.sidebarSection }}
+                                className="mb-1.5 px-3 text-[10px] font-bold uppercase tracking-[0.08em]"
+                            >
                                 {seccion.nombre}
                             </p>
                         )}
-                        {colapsado && <div className="mb-2 border-b border-[#E2E8F0] mx-2" />}
+                        {colapsado && (
+                            <div
+                                style={{ borderBottomColor: colores.sidebarBorder }}
+                                className="mb-2 border-b mx-2"
+                            />
+                        )}
                         <div className={colapsado ? 'space-y-1' : 'space-y-0.5'}>
                             {seccion.items.map(({ nombre, ruta, icono: Icono }) => (
                                 <NavLink
@@ -73,23 +88,29 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                     to={ruta}
                                     onClick={cerrarEnMovil}
                                     title={colapsado ? nombre : undefined}
-                                    style={({ isActive }) =>
-                                        isActive
-                                            ? {
-                                                  backgroundColor: colores.primarySoft,
-                                                  color: colores.text,
-                                              }
-                                            : undefined
-                                    }
+                                    style={({ isActive }) => {
+                                        const base = {
+                                            borderRadius: '0.5rem',
+                                            transition: 'all 0.15s',
+                                        };
+                                        if (isActive) {
+                                            return {
+                                                ...base,
+                                                backgroundColor: colores.primarySoft,
+                                                color: colores.primary,
+                                            };
+                                        }
+                                        return base;
+                                    }}
                                     className={({ isActive }) =>
-                                        `group relative flex items-center rounded-lg transition-all duration-150 ${
+                                        `group relative flex items-center transition-all duration-150 ${
                                             colapsado
                                                 ? 'justify-center px-0 py-2.5'
                                                 : 'gap-3 px-3 py-2.5'
                                         } ${
                                             isActive
                                                 ? 'sidebar-nav-active font-semibold'
-                                                : 'text-[#475569] hover:bg-[#f8fafc] hover:text-[#0f172a]'
+                                                : 'hover:opacity-100'
                                         }`
                                     }
                                 >
@@ -107,9 +128,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                                     colapsado ? 'h-5 w-5' : 'h-[18px] w-[18px]'
                                                 }`}
                                                 style={{
-                                                    color: isActive
-                                                        ? colores.primary
-                                                        : undefined,
+                                                    color: isActive ? colores.primary : undefined,
                                                 }}
                                             />
                                             {!colapsado && (
@@ -127,13 +146,27 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
             </nav>
 
             {/* Footer */}
-            <div className={`border-t border-[#E2E8F0] bg-white ${colapsado ? 'px-2 py-3' : 'px-5 py-3'}`}>
+            <div
+                style={{
+                    borderTopColor: colores.sidebarBorder,
+                    backgroundColor: colores.sidebarBg,
+                }}
+                className={`border-t ${colapsado ? 'px-2 py-3' : 'px-5 py-3'}`}
+            >
                 {!colapsado && (
-                    <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#94a3b8]">Sistema de gestion</p>
+                    <p
+                        style={{ color: colores.sidebarSection }}
+                        className="text-[10px] font-bold uppercase tracking-[0.08em]"
+                    >
+                        Sistema de gestion
+                    </p>
                 )}
                 {colapsado && (
                     <div className="flex justify-center">
-                        <div className="h-1.5 w-1.5 rounded-full bg-[#CBD5E1]" />
+                        <div
+                            style={{ backgroundColor: colores.sidebarSection }}
+                            className="h-1.5 w-1.5 rounded-full opacity-40"
+                        />
                     </div>
                 )}
             </div>
