@@ -13,32 +13,6 @@ import { obtenerComprobante } from './comprobantesService';
 import { obtenerEmpresa } from '../configuracion/empresaService';
 
 const CSS_IMPRESION = `
-/* Override modal styles for comprobante view */
-.comprobante-modal .modal-panel {
-    border-radius: 0 !important;
-    border: none !important;
-    background: white !important;
-    box-shadow: none !important;
-    max-width: 100% !important;
-}
-.comprobante-modal .modal-panel .modal-header {
-    display: none !important;
-}
-.comprobante-modal .modal-panel .modal-body {
-    padding: 0 !important;
-    overflow: visible !important;
-}
-.comprobante-modal .modal-panel .modal-body > div {
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-.comprobante-modal .modal-panel .border-t {
-    border-color: #000 !important;
-}
-.comprobante-modal .modal-panel .bg-parchment-100 {
-    background: white !important;
-}
 @media print {
     body * { visibility: hidden !important; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -73,11 +47,11 @@ function fechaEmision(fecha) {
 
 function TotalFila({ label, value, strong = false }) {
     return (
-        <div className="grid grid-cols-[1fr_150px] items-center">
-            <div className={`px-2 py-1 text-right ${strong ? 'font-bold' : ''}`}>
+        <div className="grid grid-cols-[1fr_190px] items-center">
+            <div className={`px-3 py-2 text-right ${strong ? 'font-bold' : ''}`}>
                 {label} :
             </div>
-            <div className={`border border-black px-2 py-1 text-right ${strong ? 'font-bold' : ''}`}>
+            <div className={`border border-black px-3 py-2 text-right ${strong ? 'font-bold' : ''}`}>
                 S/ {formatMoney(value)}
             </div>
         </div>
@@ -178,7 +152,6 @@ export default function ComprobanteViewModal({
             subtitulo=""
             onCerrar={onCerrar}
             grande
-            className="comprobante-modal !p-0"
             footer={
                 <div className="no-print flex gap-2">
                     <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
@@ -199,30 +172,30 @@ export default function ComprobanteViewModal({
             {!cargando && !error && detalle && (
                 <div
                     id="boleta-documento"
-                    className="print-area mx-auto w-full border border-black bg-white px-2 py-1 text-[10px] font-sans text-black"
+                    className="print-area mx-auto w-full max-w-[1100px] border border-black bg-white p-3 text-[12px] font-sans text-black"
                 >
                     {/* ========================= */}
                     {/* CABECERA                   */}
                     {/* ========================= */}
-                    <div className="grid grid-cols-[1fr_320px] gap-6 border-b border-black pb-3">
+                    <div className="grid grid-cols-[1fr_390px] gap-8 border-b border-black pb-5">
                         <div>
-                            <h1 className="text-[14px] font-bold uppercase leading-tight">
+                            <h1 className="text-[20px] font-bold uppercase leading-tight">
                                 {empresaData.razon_social || '—'}
                             </h1>
                             {empresaData.nombre_comercial && (
-                                <p className="mt-0.5 text-[10px]">{empresaData.nombre_comercial}</p>
+                                <p className="mt-1 text-[13px]">{empresaData.nombre_comercial}</p>
                             )}
                             {empresaData.direccion && (
-                                <p className="mt-0.5 text-[9px]">{empresaData.direccion}</p>
+                                <p className="mt-1 text-[12px]">{empresaData.direccion}</p>
                             )}
                         </div>
 
-                        <div className="border-2 border-black px-3 py-2 text-center">
-                            <div className="text-[12px] font-bold uppercase">{tipoLabel}</div>
-                            <div className="mt-1 text-[11px] font-bold">
+                        <div className="border-2 border-black px-5 py-3 text-center">
+                            <div className="text-[17px] font-bold uppercase">{tipoLabel}</div>
+                            <div className="mt-2 text-[14px] font-bold">
                                 RUC: {empresaData.ruc || '—'}
                             </div>
-                            <div className="mt-1 text-[14px] font-bold tracking-wide">
+                            <div className="mt-2 text-[18px] font-bold tracking-wide">
                                 {numeroSerie}
                             </div>
                         </div>
@@ -231,8 +204,8 @@ export default function ComprobanteViewModal({
                     {/* ========================= */}
                     {/* DATOS DEL COMPRADOR        */}
                     {/* ========================= */}
-                    <div className="py-2">
-                        <div className="grid grid-cols-[150px_15px_1fr] gap-y-1">
+                    <div className="py-5">
+                        <div className="grid grid-cols-[190px_20px_1fr] gap-y-2">
                             <span className="font-medium">Fecha de Emisión</span>
                             <span>:</span>
                             <span>{fechaEmision(detalle?.fecha_emision)}</span>
@@ -265,12 +238,12 @@ export default function ComprobanteViewModal({
                     <table className="w-full border-collapse border border-black">
                         <thead>
                             <tr>
-                                <th className="w-[65px] border-r border-black px-1 py-1 font-bold">Cantidad</th>
-                                <th className="w-[100px] border-r border-black px-1 py-1 font-bold">Unidad Medida</th>
-                                <th className="border-r border-black px-2 py-1 font-bold">Descripción</th>
-                                <th className="w-[100px] border-r border-black px-1 py-1 font-bold">Valor Unitario</th>
-                                <th className="w-[85px] border-r border-black px-1 py-1 font-bold">Descuento</th>
-                                <th className="w-[110px] px-1 py-1 font-bold">Importe de Venta</th>
+                                <th className="w-[90px] border-r border-black px-2 py-2 font-bold">Cantidad</th>
+                                <th className="w-[130px] border-r border-black px-2 py-2 font-bold">Unidad Medida</th>
+                                <th className="border-r border-black px-3 py-2 font-bold">Descripción</th>
+                                <th className="w-[130px] border-r border-black px-2 py-2 font-bold">Valor Unitario</th>
+                                <th className="w-[110px] border-r border-black px-2 py-2 font-bold">Descuento</th>
+                                <th className="w-[150px] px-2 py-2 font-bold">Importe de Venta</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -285,22 +258,22 @@ export default function ComprobanteViewModal({
                                         key={item.id_detalle || item.id_libro || index}
                                         className="border-t border-black"
                                     >
-                                        <td className="border-r border-black px-1 py-1.5 text-center">
+                                        <td className="border-r border-black px-2 py-3 text-center">
                                             {cantidad.toFixed(2)}
                                         </td>
-                                        <td className="border-r border-black px-1 py-1.5 text-center">
+                                        <td className="border-r border-black px-2 py-3 text-center">
                                             UNIDAD
                                         </td>
-                                        <td className="border-r border-black px-2 py-1.5">
+                                        <td className="border-r border-black px-3 py-3">
                                             {item.titulo || '—'}
                                         </td>
-                                        <td className="border-r border-black px-2 py-1.5 text-right">
+                                        <td className="border-r border-black px-3 py-3 text-right">
                                             {formatMoney(precio)}
                                         </td>
-                                        <td className="border-r border-black px-2 py-1.5 text-right">
+                                        <td className="border-r border-black px-3 py-3 text-right">
                                             {formatMoney(descuento)}
                                         </td>
-                                        <td className="px-2 py-1.5 text-right">
+                                        <td className="px-3 py-3 text-right">
                                             {formatMoney(importe)}
                                         </td>
                                     </tr>
@@ -308,7 +281,7 @@ export default function ComprobanteViewModal({
                             })}
                             {detalles.length === 0 && (
                                 <tr className="border-t border-black">
-                                    <td colSpan={6} className="px-2 py-4 text-center">Sin detalle registrado.</td>
+                                    <td colSpan={6} className="px-3 py-6 text-center">Sin detalle registrado.</td>
                                 </tr>
                             )}
                         </tbody>
@@ -317,16 +290,16 @@ export default function ComprobanteViewModal({
                     {/* ========================= */}
                     {/* PARTE INFERIOR             */}
                     {/* ========================= */}
-                    <div className="grid grid-cols-[1fr_360px] gap-8 pt-3">
+                    <div className="grid grid-cols-[1fr_430px] gap-10 pt-5">
                         {/* MONTO EN LETRAS */}
-                        <div className="flex items-end pb-6">
-                            <p className="text-[11px] font-bold uppercase leading-snug">
+                        <div className="flex items-end pb-10">
+                            <p className="text-[16px] font-bold uppercase leading-snug">
                                 SON: {montoLetras}
                             </p>
                         </div>
 
                         {/* TOTALES */}
-                        <div className="border border-black p-1">
+                        <div className="border border-black p-2">
                             <TotalFila label="Op. Gravada" value={opGravada} />
                             <TotalFila label="Op. Exonerada" value={opExonerada} />
                             <TotalFila label="Op. Inafecta" value={0} />
@@ -339,7 +312,7 @@ export default function ComprobanteViewModal({
                     {/* ========================= */}
                     {/* PIE                        */}
                     {/* ========================= */}
-                    <div className="mt-4 border border-black px-3 py-2 text-center text-[8px]">
+                    <div className="mt-8 border border-black px-4 py-3 text-center text-[10px]">
                         Representación impresa del comprobante electrónico.
                     </div>
                 </div>
