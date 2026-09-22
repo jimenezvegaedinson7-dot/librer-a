@@ -35,7 +35,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
 
             {/* Logo */}
             <div className="relative flex items-center border-b border-[#E2E8F0] px-4 py-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#EFF6FF] p-1.5">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden">
                     <img src={logoLibreria} alt="Logo" className="h-full w-full object-contain" />
                 </div>
                 {!colapsado && (
