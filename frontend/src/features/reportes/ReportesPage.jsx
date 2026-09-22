@@ -1,6 +1,16 @@
 import { useEffect, useState } from 'react';
 
 import {
+    CalendarDays,
+    BarChart3,
+    Tag,
+    Banknote,
+    Trophy,
+    CalendarCheck,
+    TrendingUp,
+} from 'lucide-react';
+
+import {
     FaCartShopping,
     FaMoneyBillWave,
     FaCalendarCheck,
@@ -56,116 +66,175 @@ function EncabezadoSeccion({ icono, titulo, descripcion }) {
     );
 }
 
-const REPORT_COLORS = {
-    primary: {
-        bg: 'bg-gradient-to-br from-[#2563eb] to-[#60a5fa]',
-        iconBg: 'bg-white/15',
-        iconText: 'text-white',
-        line: '#bfdbfe',
-    },
-    danger: {
-        bg: 'bg-gradient-to-br from-[#f43f5e] to-[#fb7185]',
-        iconBg: 'bg-white/15',
-        iconText: 'text-white',
-        line: '#fecdd3',
-    },
-    success: {
-        bg: 'bg-gradient-to-br from-[#059669] to-[#34d399]',
-        iconBg: 'bg-white/15',
-        iconText: 'text-white',
-        line: '#a7f3d0',
-    },
-    warning: {
-        bg: 'bg-gradient-to-br from-[#f97316] to-[#fb923c]',
-        iconBg: 'bg-white/15',
-        iconText: 'text-white',
-        line: '#fed7aa',
-    },
-    info: {
-        bg: 'bg-gradient-to-br from-[#0284c7] to-[#38bdf8]',
-        iconBg: 'bg-white/15',
-        iconText: 'text-white',
-        line: '#bae6fd',
-    },
-    violet: {
-        bg: 'bg-gradient-to-br from-[#7c3aed] to-[#a78bfa]',
-        iconBg: 'bg-white/15',
-        iconText: 'text-white',
-        line: '#ddd6fe',
-    },
-    sky: {
-        bg: 'bg-gradient-to-br from-[#0284c7] to-[#38bdf8]',
-        iconBg: 'bg-white/15',
-        iconText: 'text-white',
-        line: '#bae6fd',
-    },
-    emerald: {
-        bg: 'bg-gradient-to-br from-[#059669] to-[#34d399]',
-        iconBg: 'bg-white/15',
-        iconText: 'text-white',
-        line: '#a7f3d0',
-    },
-    amber: {
-        bg: 'bg-gradient-to-br from-[#d97706] to-[#fbbf24]',
-        iconBg: 'bg-white/15',
-        iconText: 'text-white',
-        line: '#fde68a',
-    },
-    crimson: {
-        bg: 'bg-gradient-to-br from-[#dc2626] to-[#f87171]',
-        iconBg: 'bg-white/15',
-        iconText: 'text-white',
-        line: '#fecaca',
-    },
-};
-
-function TarjetaResumen({ icono, titulo, valor, detalle, color = 'primary' }) {
-    const c = REPORT_COLORS[color] || REPORT_COLORS.primary;
+function MiniSparkline({ data, color = '#3b82f6', height = 32, width = 120 }) {
+    if (!data || data.length < 2) return null;
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    const range = max - min || 1;
+    const step = width / (data.length - 1);
+    const points = data.map((v, i) => `${i * step},${height - ((v - min) / range) * (height - 4)}`);
+    const pathD = points.map((p, i) => (i === 0 ? `M${p}` : `L${p}`)).join(' ');
+    const fillD = `${pathD} L${width},${height} L0,${height} Z`;
     return (
-        <article className={`group relative min-h-[110px] overflow-hidden rounded-lg px-4 py-3 text-white shadow-[0_4px_12px_rgba(30,64,175,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(30,64,175,0.16)] ${c.bg}`}>
-            <div className="relative z-10">
-                <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/85">{titulo}</p>
-                        <p className="mt-2 text-[22px] font-bold leading-none tracking-[-0.02em] text-white">{valor}</p>
-                        {detalle && <p className="mt-1.5 text-[10px] font-medium text-white/80">{detalle}</p>}
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full" style={{ height }}>
+            <defs>
+                <linearGradient id={`spark-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={color} stopOpacity="0.15" />
+                    <stop offset="100%" stopColor={color} stopOpacity="0.01" />
+                </linearGradient>
+            </defs>
+            <path d={fillD} fill={`url(#spark-${color.replace('#', '')})`} />
+            <path d={pathD} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+function MiniBarChart({ data, color = '#3b82f6', highlightLast = false, height = 32 }) {
+    if (!data || data.length === 0) return null;
+    const max = Math.max(...data);
+    const barW = Math.floor(100 / data.length) - 2;
+    return (
+        <div className="flex items-end gap-[3px]" style={{ height }}>
+            {data.map((v, i) => {
+                const h = max > 0 ? (v / max) * 100 : 0;
+                const isLast = highlightLast && i === data.length - 1;
+                return (
+                    <div
+                        key={i}
+                        className="rounded-sm transition-all"
+                        style={{
+                            width: `${barW}%`,
+                            height: `${Math.max(h, 8)}%`,
+                            backgroundColor: isLast ? color : `${color}33`,
+                        }}
+                    />
+                );
+            })}
+        </div>
+    );
+}
+
+function ReportMetricCard({ icon: Icon, titulo, subtitulo, valor, monto, barColor, sparkData, badge, badgeLabel }) {
+    return (
+        <article className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl" style={{ backgroundColor: barColor }} />
+            <div className="p-5 pl-4">
+                <div className="mb-3 flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ backgroundColor: `${barColor}10`, color: barColor }}>
+                            <Icon size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.05em] text-slate-700">{titulo}</p>
+                            <p className="text-xs text-slate-400">{subtitulo}</p>
+                        </div>
                     </div>
-                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${c.iconBg} backdrop-blur-sm`}>
-                        <span className={`text-sm ${c.iconText}`}>{icono}</span>
-                    </div>
+                    {badge && (
+                        <div className="text-right">
+                            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+                                {badge}
+                            </span>
+                            {badgeLabel && <p className="mt-0.5 text-[10px] text-slate-400">{badgeLabel}</p>}
+                        </div>
+                    )}
                 </div>
-            </div>
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[30px] opacity-60">
-                <svg viewBox="0 0 400 55" preserveAspectRatio="none" className="h-full w-full">
-                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25" fill="none" stroke={c.line} strokeWidth="2" />
-                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25 L400 55 L0 55 Z" fill="rgba(255,255,255,0.08)" />
-                </svg>
+                <div className="mb-1">
+                    <p className="text-4xl font-bold text-slate-900">{valor}</p>
+                </div>
+                {monto && <p className="mb-3 text-xl font-semibold" style={{ color: barColor }}>{monto}</p>}
+                {sparkData && (
+                    <div className="mt-2">
+                        <MiniSparkline data={sparkData} color={barColor} height={28} />
+                    </div>
+                )}
             </div>
         </article>
     );
 }
 
-function Destacado({ icono, titulo, principal, detalle, color = 'primary' }) {
-    const c = REPORT_COLORS[color] || REPORT_COLORS.primary;
+function ReportBarCard({ icon: Icon, titulo, subtitulo, valor, monto, barColor, barData, badge, badgeLabel }) {
     return (
-        <article className={`group relative min-h-[85px] overflow-hidden rounded-lg px-4 py-3 text-white shadow-[0_4px_12px_rgba(30,64,175,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(30,64,175,0.16)] ${c.bg}`}>
-            <div className="relative z-10">
-                <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/85">{titulo}</p>
-                        <p className="mt-1.5 text-[16px] font-bold leading-tight text-white">{principal}</p>
-                        {detalle && <p className="mt-1 text-[10px] font-medium text-white/80">{detalle}</p>}
+        <article className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl" style={{ backgroundColor: barColor }} />
+            <div className="p-5 pl-4">
+                <div className="mb-3 flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ backgroundColor: `${barColor}10`, color: barColor }}>
+                            <Icon size={20} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.05em] text-slate-700">{titulo}</p>
+                            <p className="text-xs text-slate-400">{subtitulo}</p>
+                        </div>
                     </div>
-                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${c.iconBg} backdrop-blur-sm`}>
-                        <span className={`text-sm ${c.iconText}`}>{icono}</span>
-                    </div>
+                    {badge && (
+                        <div className="text-right">
+                            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+                                {badge}
+                            </span>
+                            {badgeLabel && <p className="mt-0.5 text-[10px] text-slate-400">{badgeLabel}</p>}
+                        </div>
+                    )}
                 </div>
+                <div className="mb-1">
+                    <p className="text-4xl font-bold text-slate-900">{valor}</p>
+                </div>
+                {monto && <p className="mb-3 text-xl font-semibold" style={{ color: barColor }}>{monto}</p>}
+                {barData && (
+                    <div className="mt-2">
+                        <MiniBarChart data={barData} color={barColor} highlightLast height={28} />
+                        <div className="mt-1 flex justify-between">
+                            {barData.map((_, i) => (
+                                <span key={i} className="text-[8px] text-slate-400">{`S${i + 1}`}</span>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[30px] opacity-60">
-                <svg viewBox="0 0 400 55" preserveAspectRatio="none" className="h-full w-full">
-                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25" fill="none" stroke={c.line} strokeWidth="2" />
-                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25 L400 55 L0 55 Z" fill="rgba(255,255,255,0.08)" />
-                </svg>
+        </article>
+    );
+}
+
+function ReportDestacadoCard({ icon: Icon, titulo, subtitulo, principal, detalle, barColor, barData, barLabels, badge, badgeLabel }) {
+    return (
+        <article className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl" style={{ backgroundColor: barColor }} />
+            <div className="p-6 pl-5">
+                <div className="mb-4 flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl" style={{ backgroundColor: `${barColor}10`, color: barColor }}>
+                            <Icon size={22} />
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.05em] text-slate-700">{titulo}</p>
+                            <p className="text-xs text-slate-400">{subtitulo}</p>
+                        </div>
+                    </div>
+                    {badge && (
+                        <div className="text-right">
+                            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+                                {badge}
+                            </span>
+                            {badgeLabel && <p className="mt-0.5 text-[10px] text-slate-400">{badgeLabel}</p>}
+                        </div>
+                    )}
+                </div>
+                <div className="mb-1">
+                    <p className="text-2xl font-bold text-slate-900">{principal}</p>
+                </div>
+                {detalle && <p className="mb-3 text-sm text-slate-500">{detalle}</p>}
+                {barData && (
+                    <div className="mt-3">
+                        <MiniBarChart data={barData} color={barColor} highlightLast height={36} />
+                        {barLabels && (
+                            <div className="mt-1 flex justify-between">
+                                {barLabels.map((l, i) => (
+                                    <span key={i} className="text-[8px] text-slate-400">{l}</span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </article>
     );
@@ -304,79 +373,81 @@ export default function ReportesPage() {
 
             {!cargando && !error && (
                 <>
-                    <Card>
-                        <CardBody className="p-0">
-                            <EncabezadoSeccion
-                                icono={<FaArrowTrendUp />}
-                                titulo="Indicadores de ventas"
-                                descripcion="Resultados calculados a partir de ventas pagadas"
-                            />
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                        <ReportMetricCard
+                            icon={CalendarDays}
+                            titulo="Ventas de hoy"
+                            subtitulo="Total del dia"
+                            valor={indicadores.ventas_hoy || 0}
+                            monto={formatearMoneda(indicadores.vendido_hoy)}
+                            barColor="#3b82f6"
+                            sparkData={ventasPorDia.slice(-7).map(d => Number(d.total_vendido || 0))}
+                        />
+                        <ReportBarCard
+                            icon={BarChart3}
+                            titulo="Ventas del mes"
+                            subtitulo="Total acumulado"
+                            valor={indicadores.ventas_mes_actual || 0}
+                            monto={formatearMoneda(indicadores.vendido_mes_actual)}
+                            barColor="#2563eb"
+                            barData={ventasPorMes.slice(-4).map(d => Number(d.total_vendido || 0))}
+                        />
+                        <ReportMetricCard
+                            icon={Tag}
+                            titulo="Ticket promedio"
+                            subtitulo="Promedio por venta pagada"
+                            valor={formatearMoneda(indicadores.ticket_promedio)}
+                            barColor="#8b5cf6"
+                            sparkData={ventasPorMes.slice(-6).map(d => Number(d.promedio_venta || 0))}
+                        />
+                        <ReportBarCard
+                            icon={Banknote}
+                            titulo="Venta mas alta"
+                            subtitulo="Mayor venta pagada"
+                            valor={formatearMoneda(indicadores.venta_mayor)}
+                            barColor="#059669"
+                            barData={ventasPorDia.slice(-6).map(d => Number(d.venta_mayor || 0))}
+                        />
+                    </div>
 
-                            <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-                                <TarjetaResumen
-                                    icono={<FaCalendarDay />}
-                                    titulo="Ventas de hoy"
-                                    valor={indicadores.ventas_hoy || 0}
-                                    detalle={formatearMoneda(indicadores.vendido_hoy)}
-                                    color="sky"
-                                />
-                                <TarjetaResumen
-                                    icono={<FaCalendarDays />}
-                                    titulo="Ventas del mes"
-                                    valor={indicadores.ventas_mes_actual || 0}
-                                    detalle={formatearMoneda(indicadores.vendido_mes_actual)}
-                                    color="primary"
-                                />
-                                <TarjetaResumen
-                                    icono={<FaReceipt />}
-                                    titulo="Ticket promedio"
-                                    valor={formatearMoneda(indicadores.ticket_promedio)}
-                                    detalle="Promedio por venta pagada"
-                                    color="violet"
-                                />
-                                <TarjetaResumen
-                                    icono={<FaMoneyBillWave />}
-                                    titulo="Venta más alta"
-                                    valor={formatearMoneda(indicadores.venta_mayor)}
-                                    detalle="Mayor venta pagada"
-                                    color="success"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-3 border-t border-primary-200 p-4 lg:grid-cols-2">
-                                <Destacado
-                                    icono={<FaTrophy />}
-                                    titulo="Mejor mes registrado"
-                                    principal={
-                                        indicadores.mejor_mes
-                                            ? `${indicadores.mejor_mes.mes} ${indicadores.mejor_mes.anio}`
-                                            : 'Sin datos'
-                                    }
-                                    detalle={
-                                        indicadores.mejor_mes
-                                            ? `${indicadores.mejor_mes.cantidad_ventas} ventas · ${formatearMoneda(indicadores.mejor_mes.total_vendido)}`
-                                            : 'Aún no existen ventas pagadas.'
-                                    }
-                                    color="amber"
-                                />
-                                <Destacado
-                                    icono={<FaCalendarDay />}
-                                    titulo="Mejor día registrado"
-                                    principal={
-                                        indicadores.mejor_dia
-                                            ? formatearFechaReportes(indicadores.mejor_dia.fecha)
-                                            : 'Sin datos'
-                                    }
-                                    detalle={
-                                        indicadores.mejor_dia
-                                            ? `${indicadores.mejor_dia.cantidad_ventas} ventas · ${formatearMoneda(indicadores.mejor_dia.total_vendido)}`
-                                            : 'Aún no existen ventas pagadas.'
-                                    }
-                                    color="success"
-                                />
-                            </div>
-                        </CardBody>
-                    </Card>
+                    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                        <ReportDestacadoCard
+                            icon={Trophy}
+                            titulo="Mejor mes registrado"
+                            subtitulo="Mes con mayor facturacion"
+                            principal={
+                                indicadores.mejor_mes
+                                    ? `${indicadores.mejor_mes.mes} ${indicadores.mejor_mes.anio}`
+                                    : 'Sin datos'
+                            }
+                            detalle={
+                                indicadores.mejor_mes
+                                    ? `${indicadores.mejor_mes.cantidad_ventas} ventas · ${formatearMoneda(indicadores.mejor_mes.total_vendido)}`
+                                    : 'Aun no existen ventas pagadas.'
+                            }
+                            barColor="#d97706"
+                            barData={ventasPorMes.slice(-12).map(d => Number(d.total_vendido || 0))}
+                            barLabels={ventasPorMes.slice(-12).map(d => d.mes ? d.mes.substring(0, 3) : '')}
+                        />
+                        <ReportDestacadoCard
+                            icon={CalendarCheck}
+                            titulo="Mejor dia registrado"
+                            subtitulo="Dia con mayor facturacion"
+                            principal={
+                                indicadores.mejor_dia
+                                    ? formatearFechaReportes(indicadores.mejor_dia.fecha)
+                                    : 'Sin datos'
+                            }
+                            detalle={
+                                indicadores.mejor_dia
+                                    ? `${indicadores.mejor_dia.cantidad_ventas} ventas · ${formatearMoneda(indicadores.mejor_dia.total_vendido)}`
+                                    : 'Aun no existen ventas pagadas.'
+                            }
+                            barColor="#059669"
+                            barData={ventasPorDia.slice(-7).map(d => Number(d.total_vendido || 0))}
+                            barLabels={['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom']}
+                        />
+                    </div>
 
                     <Card>
                         <CardBody className="p-0">
