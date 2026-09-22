@@ -85,11 +85,12 @@ export default function AgenciaEditModal({ agencia, abierto, onCerrar, onActuali
             {error && <div className="mb-5"><Alert tipo="error">{error}</Alert></div>}
 
             <form onSubmit={actualizar} className="space-y-3">
-                <Input label="Nombre de la agencia" name="nombre" value={formulario.nombre} error={errores.nombre} onChange={manejarCambio} required />
-
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="form-grid">
+                    <Input ancho={6} label="Nombre de la agencia" name="nombre" value={formulario.nombre} error={errores.nombre} onChange={manejarCambio} required />
                     <Input
-                        label="Tarifa base (S/)"
+                        ancho={3}
+                        prefijo="S/"
+                        label="Tarifa base"
                         name="tarifa_base"
                         type="number"
                         step="0.01"
@@ -99,7 +100,7 @@ export default function AgenciaEditModal({ agencia, abierto, onCerrar, onActuali
                         onChange={manejarCambio}
                         required
                     />
-                    <Select label="Estado" name="estado" value={formulario.estado} onChange={manejarCambio}>
+                    <Select ancho={3} label="Estado" name="estado" value={formulario.estado} onChange={manejarCambio}>
                         <option value="1">Activa</option>
                         <option value="0">Inactiva</option>
                     </Select>

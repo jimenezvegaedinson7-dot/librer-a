@@ -27,8 +27,9 @@ export default function CategoriaForm({ onCategoriaCreada }) {
             mensajeError="Error al registrar la categoría"
             onRegistrado={onCategoriaCreada}
             renderCampos={({ formulario, manejarCambio, errores }) => (
-                <>
+                <div className="form-grid">
                     <Input
+                        ancho={6}
                         label="Nombre de la categoría"
                         name="nombre"
                         value={formulario.nombre}
@@ -45,7 +46,7 @@ export default function CategoriaForm({ onCategoriaCreada }) {
                         placeholder="Escriba una descripción de la categoría"
                         rows="4"
                     />
-                </>
+                </div>
             )}
         />
     );

@@ -3470,3 +3470,337 @@
 .stock-barra {
     background: var(--estado-color) !important;
 }
+
+/* ========================================
+   FORMULARIOS PROPORCIONALES
+   Rejilla de 12 columnas: cada campo ocupa lo que su contenido necesita.
+   ======================================== */
+@layer components {
+    .form-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem 1.125rem;
+    }
+
+    @media (min-width: 768px) {
+        .form-grid {
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+        }
+
+        .form-grid > * {
+            grid-column: 1 / -1;
+        }
+    }
+}
+
+.campo-prefijo {
+    pointer-events: none;
+    position: absolute;
+    left: 0.85rem;
+    top: 50%;
+    z-index: 1;
+    transform: translateY(-50%);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #766d62;
+}
+
+.admin-shell[data-theme="dark"] .campo-prefijo {
+    color: #a89e91;
+}
+
+/* ========================================
+   VENTAS — punto de venta y listado
+   ======================================== */
+
+.venta-paso-titulo {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-bottom: 0.875rem;
+    font-family: var(--font-title);
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1c1814;
+}
+
+.venta-paso-numero {
+    display: inline-flex;
+    height: 1.5rem;
+    width: 1.5rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: var(--brand);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fffaf0;
+}
+
+.admin-shell[data-theme="dark"] .venta-paso-numero {
+    color: #1c1814;
+}
+
+.venta-paso + .venta-paso {
+    border-top: 1px solid #efe9e0;
+    padding-top: 1.5rem;
+}
+
+.admin-shell[data-theme="dark"] .venta-paso + .venta-paso {
+    border-top-color: #2d2824;
+}
+
+.admin-shell[data-theme="dark"] .venta-paso-titulo {
+    color: #f5f0e8;
+}
+
+.venta-detalle {
+    overflow: hidden;
+    border: 1px solid #e6e0d7;
+    border-radius: 0.75rem;
+    background: #fcfaf7;
+}
+
+.admin-shell[data-theme="dark"] .venta-detalle {
+    border-color: #2d2824;
+    background: #1a1714;
+}
+
+.venta-quitar {
+    display: inline-flex;
+    height: 2rem;
+    width: 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    color: #b91c1c;
+    transition: background-color 0.15s ease;
+}
+
+.venta-quitar:hover:not(:disabled) {
+    background: #fef2f2;
+}
+
+.venta-quitar:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.admin-shell[data-theme="dark"] .venta-quitar {
+    color: #fca5a5;
+}
+
+.admin-shell[data-theme="dark"] .venta-quitar:hover:not(:disabled) {
+    background: rgb(127 29 29 / 0.25);
+}
+
+/* Opciones de entrega */
+.venta-opcion {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    border: 1px solid #e6e0d7;
+    border-radius: 0.75rem;
+    background: #ffffff;
+    padding: 0.875rem 1rem;
+    text-align: left;
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.venta-opcion:hover:not(:disabled) {
+    border-color: #d9c49a;
+}
+
+.venta-opcion--activa {
+    border-color: var(--brand);
+    background: var(--brand-soft);
+    box-shadow: 0 0 0 1px var(--brand);
+}
+
+.venta-opcion:focus-visible {
+    outline: 2px solid #b98d3e;
+    outline-offset: 2px;
+}
+
+.venta-opcion-icono {
+    margin-bottom: 0.25rem;
+    font-size: 1.05rem;
+    color: #766d62;
+}
+
+.venta-opcion--activa .venta-opcion-icono {
+    color: var(--brand-text);
+}
+
+.admin-shell[data-theme="dark"] .venta-opcion {
+    border-color: #2d2824;
+    background: #1a1714;
+}
+
+.admin-shell[data-theme="dark"] .venta-opcion--activa {
+    border-color: var(--brand);
+    background: var(--brand-soft);
+}
+
+/* Resumen fijo */
+.venta-resumen {
+    align-self: start;
+    border: 1px solid #e6e0d7;
+    border-radius: 0.875rem;
+    background:
+        radial-gradient(280px 140px at 100% 0%, rgb(185 141 62 / 0.08), transparent 70%),
+        #fcfaf7;
+    padding: 1.25rem;
+}
+
+@media (min-width: 1280px) {
+    .venta-resumen {
+        position: sticky;
+        top: 5.5rem;
+    }
+}
+
+.venta-total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-top: 1rem;
+    border-top: 1px solid #e6e0d7;
+    padding-top: 1rem;
+}
+
+.venta-total-valor {
+    font-size: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    color: #1c1814;
+}
+
+.admin-shell[data-theme="dark"] .venta-resumen {
+    border-color: #2d2824;
+    background:
+        radial-gradient(280px 140px at 100% 0%, rgb(201 162 79 / 0.07), transparent 70%),
+        #1a1714;
+}
+
+.admin-shell[data-theme="dark"] .venta-total {
+    border-top-color: #2d2824;
+}
+
+.admin-shell[data-theme="dark"] .venta-total-valor {
+    color: #f5f0e8;
+}
+
+/* Chips de filtro por estado */
+.filtro-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filtro-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #e6e0d7;
+    border-radius: 9999px;
+    background: #ffffff;
+    padding: 0.35rem 0.5rem 0.35rem 0.8rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #5c544b;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.filtro-chip:hover {
+    border-color: #d3cbbf;
+    color: #1c1814;
+}
+
+.filtro-chip--activo {
+    border-color: #1c1814;
+    background: #1c1814;
+    color: #fffaf0;
+}
+
+.filtro-chip--activo:hover {
+    color: #fffaf0;
+}
+
+.filtro-chip:focus-visible {
+    outline: 2px solid #b98d3e;
+    outline-offset: 2px;
+}
+
+.filtro-chip-punto {
+    height: 0.5rem;
+    width: 0.5rem;
+    border-radius: 9999px;
+    background: var(--estado-color);
+}
+
+.filtro-chip-conteo {
+    min-width: 1.5rem;
+    border-radius: 9999px;
+    background: #f3efe9;
+    padding: 0.05rem 0.45rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #5c544b;
+}
+
+.filtro-chip--activo .filtro-chip-conteo {
+    background: rgb(255 255 255 / 0.16);
+    color: #fffaf0;
+}
+
+.admin-shell[data-theme="dark"] .filtro-chip {
+    border-color: #2d2824;
+    background: #1a1714;
+    color: #d8cfc2;
+}
+
+.admin-shell[data-theme="dark"] .filtro-chip--activo {
+    border-color: #f5f0e8;
+    background: #f5f0e8;
+    color: #1c1814;
+}
+
+.admin-shell[data-theme="dark"] .filtro-chip-conteo {
+    background: #2d2824;
+    color: #d8cfc2;
+}
+
+.admin-shell[data-theme="dark"] .filtro-chip--activo .filtro-chip-conteo {
+    background: rgb(28 24 20 / 0.12);
+    color: #1c1814;
+}
+
+/* Iniciales del cliente en tablas */
+.cliente-iniciales {
+    display: inline-flex;
+    height: 2.125rem;
+    width: 2.125rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #eedcae;
+    border-radius: 9999px;
+    background: #fcf8ef;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #7a5827;
+}
+
+.admin-shell[data-theme="dark"] .cliente-iniciales {
+    border-color: rgb(201 162 79 / 0.25);
+    background: rgb(201 162 79 / 0.1);
+    color: #dcbb7a;
+}

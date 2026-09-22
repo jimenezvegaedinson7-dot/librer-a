@@ -12,12 +12,11 @@ import {
     UserRound,
     Building2,
     History,
-    BarChart3,
     Settings,
 } from 'lucide-react';
 
 export const navPrincipal = [
-    { nombre: 'Resumen', ruta: '/dashboard', icono: LayoutDashboard, descripcion: 'Resumen general del sistema', seccion: 'General' },
+    { nombre: 'Resumen', ruta: '/dashboard', icono: LayoutDashboard, descripcion: 'Resumen general, estadísticas y reportes', seccion: 'General' },
     { nombre: 'Libros', ruta: '/libros', icono: BookOpen, descripcion: 'Gestión de libros', seccion: 'Catálogo' },
     { nombre: 'Autores', ruta: '/autores', icono: PenTool, descripcion: 'Gestión de autores', seccion: 'Catálogo' },
     { nombre: 'Categorías', ruta: '/categorias', icono: Tags, descripcion: 'Gestión de categorías', seccion: 'Catálogo' },
@@ -30,6 +29,5 @@ export const navPrincipal = [
     { nombre: 'Clientes', ruta: '/clientes', icono: UserRound, descripcion: 'Clientes y su actividad de compras', seccion: 'Administración' },
     { nombre: 'Agencias', ruta: '/agencias', icono: Building2, descripcion: 'Agencias de envío courier', seccion: 'Administración' },
     { nombre: 'Historial', ruta: '/historial', icono: History, descripcion: 'Auditoría de operaciones', seccion: 'Control' },
-    { nombre: 'Reportes', ruta: '/reportes', icono: BarChart3, descripcion: 'Estadísticas y reportes', seccion: 'Control' },
     { nombre: 'Datos de la empresa', ruta: '/configuracion/empresa', icono: Settings, descripcion: 'Configuración del emisor de comprobantes', seccion: 'Control' },
 ];

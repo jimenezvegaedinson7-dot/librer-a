@@ -38,7 +38,6 @@ const UsuariosPage = lazyConReintento(() => import('../features/usuarios/Usuario
 const ClientesPage = lazyConReintento(() => import('../features/clientes/ClientesPage'));
 const AgenciasPage = lazyConReintento(() => import('../features/agencias/AgenciasPage'));
 const HistorialPage = lazyConReintento(() => import('../features/historial/HistorialPage'));
-const ReportesPage = lazyConReintento(() => import('../features/reportes/ReportesPage'));
 const EmpresaPage = lazyConReintento(() => import('../features/configuracion/EmpresaPage'));
 const PersonalizacionPage = lazyConReintento(() => import('../features/configuracion/PersonalizacionPage'));
 
@@ -71,7 +70,8 @@ const router = createBrowserRouter([
             { path: '/clientes', element: cargar(<ClientesPage />) },
             { path: '/agencias', element: cargar(<AgenciasPage />) },
             { path: '/historial', element: cargar(<HistorialPage />) },
-            { path: '/reportes', element: cargar(<ReportesPage />) },
+            // Reportes se integró en el resumen; se conserva la ruta para enlaces guardados.
+            { path: '/reportes', element: <Navigate to="/dashboard" replace /> },
             { path: '/configuracion/empresa', element: cargar(<EmpresaPage />) },
             { path: '/personalizacion', element: cargar(<PersonalizacionPage />) },
         ],

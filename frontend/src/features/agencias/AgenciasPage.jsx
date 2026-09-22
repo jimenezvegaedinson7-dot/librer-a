@@ -205,8 +205,9 @@ export default function AgenciasPage() {
                 mensajeError="Error al registrar la agencia"
                 onRegistrado={agenciaCreada}
                 renderCampos={({ formulario, manejarCambio, errores }) => (
-                    <>
+                    <div className="form-grid">
                         <Input
+                            ancho={8}
                             label="Nombre de la agencia"
                             name="nombre"
                             value={formulario.nombre}
@@ -216,7 +217,9 @@ export default function AgenciasPage() {
                             required
                         />
                         <Input
-                            label="Tarifa base (S/)"
+                            ancho={4}
+                            prefijo="S/"
+                            label="Tarifa base"
                             name="tarifa_base"
                             type="number"
                             step="0.01"
@@ -224,7 +227,7 @@ export default function AgenciasPage() {
                             value={formulario.tarifa_base}
                             onChange={manejarCambio}
                             error={errores?.tarifa_base}
-                            placeholder="Ej. 12.00"
+                            placeholder="12.00"
                             required
                         />
                         <Textarea
@@ -235,7 +238,7 @@ export default function AgenciasPage() {
                             placeholder="Escriba una descripción de la agencia"
                             rows="3"
                         />
-                    </>
+                    </div>
                 )}
             />
 

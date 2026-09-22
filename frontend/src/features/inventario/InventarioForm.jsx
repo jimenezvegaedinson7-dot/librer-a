@@ -39,9 +39,9 @@ export default function InventarioForm({ onInventarioCreado }) {
             errorExterno={cargandoLibros ? null : errorLibros}
             deshabilitarEnvio={cargandoLibros}
             renderCampos={({ formulario, manejarCambio, errores }) => (
-                <>
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="form-grid">
                         <Select
+                            ancho={5}
                             label="Libro"
                             name="id_libro"
                             value={formulario.id_libro}
@@ -60,6 +60,7 @@ export default function InventarioForm({ onInventarioCreado }) {
                             ))}
                         </Select>
                         <Input
+                            ancho={3}
                             label="Ubicación"
                             name="ubicacion"
                             value={formulario.ubicacion}
@@ -67,9 +68,8 @@ export default function InventarioForm({ onInventarioCreado }) {
                             placeholder="Ej. Estante A - Nivel 2"
                             maxLength="100"
                         />
-                    </div>
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                         <Input
+                            ancho={2}
                             label="Stock"
                             name="stock"
                             type="number"
@@ -82,6 +82,7 @@ export default function InventarioForm({ onInventarioCreado }) {
                             required
                         />
                         <Input
+                            ancho={2}
                             label="Stock mínimo"
                             name="stock_minimo"
                             type="number"
@@ -93,8 +94,7 @@ export default function InventarioForm({ onInventarioCreado }) {
                             placeholder="5"
                             required
                         />
-                    </div>
-                </>
+                </div>
             )}
         />
     );

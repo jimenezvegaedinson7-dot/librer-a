@@ -93,14 +93,11 @@ export default function AutorEditModal({ autor, abierto, onCerrar, onActualizado
             {error && <div className="mb-5"><Alert tipo="error">{error}</Alert></div>}
 
             <form onSubmit={actualizar} className="space-y-3">
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                    <Input label="Nombre" name="nombre" value={formulario.nombre} error={errores.nombre} onChange={manejarCambio} required />
-                    <Input label="Apellido" name="apellido" value={formulario.apellido} error={errores.apellido} onChange={manejarCambio} required />
-                </div>
-
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                    <Input label="Nacionalidad" name="nacionalidad" value={formulario.nacionalidad} onChange={manejarCambio} />
-                    <Select label="Estado" name="estado" value={formulario.estado} onChange={manejarCambio}>
+                <div className="form-grid">
+                    <Input ancho={6} label="Nombre" name="nombre" value={formulario.nombre} error={errores.nombre} onChange={manejarCambio} required />
+                    <Input ancho={6} label="Apellido" name="apellido" value={formulario.apellido} error={errores.apellido} onChange={manejarCambio} required />
+                    <Input ancho={8} label="Nacionalidad" name="nacionalidad" value={formulario.nacionalidad} onChange={manejarCambio} />
+                    <Select ancho={4} label="Estado" name="estado" value={formulario.estado} onChange={manejarCambio}>
                         <option value="1">Activo</option>
                         <option value="0">Inactivo</option>
                     </Select>

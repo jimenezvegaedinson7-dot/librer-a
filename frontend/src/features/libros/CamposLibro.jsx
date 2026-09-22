@@ -31,7 +31,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                 </div>
 
                 <div>
-                    <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-primary-300 bg-parchment-200 px-4 py-3 text-sm font-semibold text-primary-500 transition hover:border-primary-500 hover:bg-primary-50 hover:text-primary-700">
+                    <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-primary-300 bg-parchment-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-primary-500 hover:bg-primary-50 hover:text-primary-700">
                         <FaImage />
                         {imagen ? 'Seleccionar otra imagen' : 'Seleccionar imagen'}
                         <input
@@ -74,76 +74,77 @@ export default function CamposLibro({
     errores = {},
 }) {
     return (
-        <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <Input
-                    label="Título"
-                    name="titulo"
-                    value={formulario.titulo}
-                    onChange={manejarCambio}
-                    placeholder="Ej. Cien años de soledad"
-                    error={errores.titulo}
-                    required
-                />
-                <Input
-                    label="ISBN"
-                    name="isbn"
-                    value={formulario.isbn}
-                    onChange={manejarCambio}
-                    placeholder="978-1234567890"
-                    error={errores.isbn}
-                />
-            </div>
+        <div className="form-grid">
+            <Input
+                label="Título"
+                name="titulo"
+                value={formulario.titulo}
+                onChange={manejarCambio}
+                placeholder="Ej. Cien años de soledad"
+                error={errores.titulo}
+                required
+                ancho={8}
+            />
+            <Input
+                label="ISBN"
+                name="isbn"
+                value={formulario.isbn}
+                onChange={manejarCambio}
+                placeholder="978-1234567890"
+                error={errores.isbn}
+                ancho={4}
+                className="tabular-nums"
+            />
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <Select
-                    label="Autor"
-                    name="id_autor"
-                    value={formulario.id_autor}
-                    onChange={manejarCambio}
-                    error={errores.id_autor}
-                    required
-                >
-                    <option value="">Seleccione un autor</option>
-                    {autores.map((autor) => (
-                        <option key={autor.id_autor} value={autor.id_autor}>
-                            {autor.nombre} {autor.apellido}
-                        </option>
-                    ))}
-                </Select>
+            <Select
+                label="Autor"
+                name="id_autor"
+                value={formulario.id_autor}
+                onChange={manejarCambio}
+                error={errores.id_autor}
+                required
+                ancho={editable ? 5 : 6}
+            >
+                <option value="">Seleccione un autor</option>
+                {autores.map((autor) => (
+                    <option key={autor.id_autor} value={autor.id_autor}>
+                        {autor.nombre} {autor.apellido}
+                    </option>
+                ))}
+            </Select>
 
-                <Select
-                    label="Categoría"
-                    name="id_categoria"
-                    value={formulario.id_categoria}
-                    onChange={manejarCambio}
-                    error={errores.id_categoria}
-                    required
-                >
-                    <option value="">Seleccione una categoría</option>
-                    {categorias.map((categoria) => (
-                        <option key={categoria.id_categoria} value={categoria.id_categoria}>
-                            {categoria.nombre}
-                        </option>
-                    ))}
-                </Select>
-            </div>
+            <Select
+                label="Categoría"
+                name="id_categoria"
+                value={formulario.id_categoria}
+                onChange={manejarCambio}
+                error={errores.id_categoria}
+                required
+                ancho={editable ? 4 : 6}
+            >
+                <option value="">Seleccione una categoría</option>
+                {categorias.map((categoria) => (
+                    <option key={categoria.id_categoria} value={categoria.id_categoria}>
+                        {categoria.nombre}
+                    </option>
+                ))}
+            </Select>
 
             {editable && (
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                    <Input
-                        label="Precio"
-                        name="precio"
-                        type="number"
-                        value={formulario.precio}
-                        onChange={manejarCambio}
-                        placeholder="0.00"
-                        min="0"
-                        step="0.01"
-                        error={errores.precio}
-                        required
-                    />
-                </div>
+                <Input
+                    label="Precio"
+                    name="precio"
+                    type="number"
+                    value={formulario.precio}
+                    onChange={manejarCambio}
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    error={errores.precio}
+                    required
+                    ancho={3}
+                    prefijo="S/"
+                />
             )}
 
             <Textarea

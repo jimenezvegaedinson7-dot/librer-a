@@ -172,8 +172,9 @@ export default function EmpresaPage() {
                     />
                     <CardBody>
                         <form onSubmit={guardar} noValidate className="space-y-4">
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div className="form-grid">
                                 <Input
+                                    ancho={4}
                                     label="RUC"
                                     name="ruc"
                                     value={formulario.ruc}
@@ -186,6 +187,7 @@ export default function EmpresaPage() {
                                 />
 
                                 <Input
+                                    ancho={8}
                                     label="Razón social"
                                     name="razon_social"
                                     value={formulario.razon_social}
@@ -196,6 +198,7 @@ export default function EmpresaPage() {
                                 />
 
                                 <Input
+                                    ancho={6}
                                     label="Nombre comercial"
                                     name="nombre_comercial"
                                     value={formulario.nombre_comercial}
@@ -204,6 +207,7 @@ export default function EmpresaPage() {
                                 />
 
                                 <Select
+                                    ancho={3}
                                     label="Tipo de documento"
                                     name="tipo_documento"
                                     value={formulario.tipo_documento}
@@ -213,6 +217,16 @@ export default function EmpresaPage() {
                                     <option value="RUC">RUC</option>
                                     <option value="CE">Carné de extranjería</option>
                                 </Select>
+                                <Input
+                                    ancho={3}
+                                    label="Número de documento"
+                                    placeholder="DNI o CE"
+                                    name="documento_identidad"
+                                    value={formulario.documento_identidad}
+                                    onChange={manejarCambio}
+                                    error={errores?.documento_identidad}
+                                    required
+                                />
 
                                 <Textarea
                                     label="Dirección"
@@ -223,17 +237,8 @@ export default function EmpresaPage() {
                                     rows="2"
                                 />
 
-                                <Input
-                                    label="Número de documento"
-                                    name="documento_identidad"
-                                    value={formulario.documento_identidad}
-                                    onChange={manejarCambio}
-                                    error={errores?.documento_identidad}
-                                    placeholder="Documento de identidad del representante"
-                                    required
-                                />
 
-                                <div className="md:col-span-2">
+                                <div>
                                     <Interruptor
                                         activo={formulario.aplica_igv}
                                         onChange={(activo) => setFormulario((actual) => ({ ...actual, aplica_igv: activo }))}

@@ -6,6 +6,7 @@ import {
     obtenerVentasPorMes,
     obtenerVentasPorDia,
     obtenerIndicadoresVentas,
+    obtenerStockBajo,
 } from '../reportes/reportesService';
 
 import { listarLibros } from '../libros/librosService';
@@ -22,4 +23,5 @@ export {
     obtenerVentasPorMes,
     obtenerVentasPorDia,
     obtenerIndicadoresVentas,
+    obtenerStockBajo,
 };

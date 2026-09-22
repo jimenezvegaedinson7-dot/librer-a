@@ -82,10 +82,9 @@ export default function CategoriaEditModal({ categoria, abierto, onCerrar, onAct
             {error && <div className="mb-5"><Alert tipo="error">{error}</Alert></div>}
 
             <form onSubmit={actualizar} className="space-y-3">
-                <Input label="Nombre de la categoría" name="nombre" value={formulario.nombre} error={errores.nombre} onChange={manejarCambio} required />
-
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                    <Select label="Estado" name="estado" value={formulario.estado} onChange={manejarCambio}>
+                <div className="form-grid">
+                    <Input ancho={8} label="Nombre de la categoría" name="nombre" value={formulario.nombre} error={errores.nombre} onChange={manejarCambio} required />
+                    <Select ancho={4} label="Estado" name="estado" value={formulario.estado} onChange={manejarCambio}>
                         <option value="1">Activa</option>
                         <option value="0">Inactiva</option>
                     </Select>

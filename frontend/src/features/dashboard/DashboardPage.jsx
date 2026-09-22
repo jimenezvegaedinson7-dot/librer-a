@@ -4,13 +4,15 @@ import { motion } from 'motion/react';
 
 import {
     FaBook,
-    FaUserPen,
-    FaTags,
     FaCalendarCheck,
+    FaCalendarDays,
     FaMoneyBillTrendUp,
+    FaReceipt,
+    FaRotate,
+    FaTags,
+    FaTrophy,
+    FaUserPen,
     FaUsers,
-    FaTriangleExclamation,
-    FaCircleCheck,
 } from 'react-icons/fa6';
 
 import {
@@ -22,16 +24,20 @@ import {
     obtenerVentasPorMes,
     obtenerVentasPorDia,
     obtenerIndicadoresVentas,
+    obtenerStockBajo,
 } from './dashboardService';
 
 import { Alert } from '../../components/ui/Alert';
+import { Button } from '../../components/ui/Button';
 import { formatearMoneda } from '../../lib/utils/format';
-import { num, serieDiaria } from './graficoUtils';
+import { num, serieDiaria, serieMensual } from './graficoUtils';
 
 import { MiniStat, StatCard } from './StatCard';
+import MejorRegistro from './MejorRegistro';
 import RecentBooks from './RecentBooks';
 import SalesChart from './SalesChart';
 import StatusDonut from './StatusDonut';
+import StockBajo from './StockBajo';
 import TopBooks from './TopBooks';
 
 const escalonado = {
@@ -45,6 +51,13 @@ function esArreglo(valor) {
     return Array.isArray(valor) ? valor : [];
 }
 
+function formatearFechaCorta(fecha) {
+    const partes = String(fecha || '').slice(0, 10).split('-');
+    return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : 'Sin datos';
+}
+
+const plural = (n, uno, varios) => `${n} ${Number(n) === 1 ? uno : varios}`;
+
 export default function DashboardPage() {
     const [resumen, setResumen] = useState(null);
     const [libros, setLibros] = useState([]);
@@ -54,8 +67,10 @@ export default function DashboardPage() {
     const [librosMasVendidos, setLibrosMasVendidos] = useState([]);
     const [ventasPorDia, setVentasPorDia] = useState([]);
     const [indicadores, setIndicadores] = useState({});
+    const [stockBajo, setStockBajo] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
+    const [recarga, setRecarga] = useState(0);
 
     useEffect(() => {
         let activo = true;
@@ -64,7 +79,7 @@ export default function DashboardPage() {
             try {
                 setCargando(true);
                 setError('');
-                const [r, l, vm, ve, re, lmv, vd, ind] = await Promise.all([
+                const [r, l, vm, ve, re, lmv, vd, ind, sb] = await Promise.all([
                     obtenerResumen(),
                     obtenerLibros(),
                     obtenerVentasPorMes(),
@@ -74,6 +89,7 @@ export default function DashboardPage() {
                     // Complementarios: si fallan, el resumen se muestra igual.
                     obtenerVentasPorDia().catch(() => []),
                     obtenerIndicadoresVentas().catch(() => ({})),
+                    obtenerStockBajo().catch(() => []),
                 ]);
                 if (!activo) return;
                 setResumen(r);
@@ -84,8 +100,9 @@ export default function DashboardPage() {
                 setLibrosMasVendidos(esArreglo(lmv));
                 setVentasPorDia(esArreglo(vd));
                 setIndicadores(ind || {});
+                setStockBajo(esArreglo(sb));
             } catch (err) {
-                if (activo) setError(err.response?.data?.mensaje || 'Error al cargar el dashboard');
+                if (activo) setError(err.response?.data?.mensaje || 'Error al cargar el resumen');
             } finally {
                 if (activo) setCargando(false);
             }
@@ -93,9 +110,10 @@ export default function DashboardPage() {
 
         cargar();
         return () => { activo = false; };
-    }, []);
+    }, [recarga]);
 
-    if (cargando) {
+    // Primera carga: esqueleto. Al actualizar se mantiene la vista anterior atenuada.
+    if (cargando && !resumen) {
         return (
             <div className="space-y-6" role="status" aria-label="Cargando resumen">
                 <div className="skeleton h-24 w-72 max-w-full" />
@@ -103,50 +121,52 @@ export default function DashboardPage() {
                     {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-[172px] !rounded-[0.875rem]" />)}
                 </div>
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,1fr)]">
-                    <div className="skeleton h-[460px] !rounded-[0.875rem]" />
-                    <div className="skeleton h-[460px] !rounded-[0.875rem]" />
+                    <div className="skeleton h-[520px] !rounded-[0.875rem]" />
+                    <div className="skeleton h-[520px] !rounded-[0.875rem]" />
                 </div>
             </div>
         );
     }
 
-    if (error) {
+    if (error && !resumen) {
         return <Alert tipo="error">{error}</Alert>;
     }
 
     if (!resumen) return null;
 
     const diario = serieDiaria(ventasPorDia, 14);
+    const mensual = serieMensual(ventasPorMes, 6);
     const reservasPendientes = num(reservasPorEstado.find((r) => String(r.estado).toLowerCase() === 'pendiente')?.cantidad);
-    const totalLibros = num(resumen.total_libros);
-    const stockBajo = num(resumen.libros_stock_bajo);
     const vendidoHoy = num(indicadores.vendido_hoy);
-    const ventasHoy = num(indicadores.ventas_hoy);
-    const ticketPromedio = num(indicadores.ticket_promedio);
+    const { mejor_mes: mejorMes, mejor_dia: mejorDia } = indicadores;
 
     const fechaTexto = formatoFecha.format(new Date());
     const fechaHoy = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
 
     return (
-        <div className="dashboard-page space-y-6">
+        <div className={`dashboard-page space-y-6 transition-opacity duration-200 ${cargando ? 'opacity-60' : ''}`} aria-busy={cargando}>
 
             {/* ENCABEZADO */}
-            <header className="flex flex-col gap-1 border-b border-[#e6e0d7] pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <header className="flex flex-col gap-3 border-b border-[#e6e0d7] pb-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a7231]">Panel general</p>
                     <h1 className="mt-1 font-title text-[28px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814] sm:text-[32px]">
                         Resumen
                     </h1>
                     <p className="mt-1 text-[14px] leading-relaxed text-[#766d62]">
-                        Indicadores generales y actividad reciente de la librería
+                        Indicadores, estadísticas y reportes de la librería · {fechaHoy}
                     </p>
                 </div>
-                <p className="text-[13px] text-[#766d62] tabular-nums">{fechaHoy}</p>
+                <Button variante="secondary" icono={<FaRotate />} onClick={() => setRecarga((n) => n + 1)} cargando={cargando}>
+                    {cargando ? 'Actualizando...' : 'Actualizar'}
+                </Button>
             </header>
 
-            {/* MÉTRICAS PRINCIPALES */}
+            {error && <Alert tipo="error">{error}</Alert>}
+
+            {/* INDICADORES */}
             <motion.section
-                aria-label="Métricas principales"
+                aria-label="Indicadores principales"
                 variants={escalonado}
                 initial="oculto"
                 animate="visible"
@@ -162,29 +182,30 @@ export default function DashboardPage() {
                     etiquetaTendencia="Ingresos diarios de los últimos 14 días"
                 />
                 <StatCard
-                    titulo="Ventas pagadas"
-                    valor={num(resumen.total_ventas)}
-                    icono={<FaCircleCheck />}
+                    titulo="Ventas del mes"
+                    valor={formatearMoneda(indicadores.vendido_mes_actual)}
+                    icono={<FaCalendarDays />}
+                    color="info"
+                    detalle={plural(num(indicadores.ventas_mes_actual), 'venta este mes', 'ventas este mes')}
+                    tendencia={mensual.map((d) => d.total)}
+                    etiquetaTendencia="Ingresos mensuales de los últimos 6 meses"
+                />
+                <StatCard
+                    titulo="Ticket promedio"
+                    valor={formatearMoneda(indicadores.ticket_promedio)}
+                    icono={<FaReceipt />}
                     color="success"
-                    detalle={ticketPromedio > 0 ? `Ticket promedio ${formatearMoneda(ticketPromedio)}` : `${ventasHoy} hoy`}
-                    tendencia={diario.map((d) => d.cantidad)}
-                    etiquetaTendencia="Ventas pagadas por día en los últimos 14 días"
+                    detalle={`Rango ${formatearMoneda(indicadores.venta_menor)} – ${formatearMoneda(indicadores.venta_mayor)}`}
+                    tendencia={mensual.map((d) => (d.cantidad > 0 ? d.total / d.cantidad : 0))}
+                    etiquetaTendencia="Ticket promedio por mes en los últimos 6 meses"
                 />
                 <StatCard
                     titulo="Reservas"
                     valor={num(resumen.total_reservas)}
                     icono={<FaCalendarCheck />}
-                    color="info"
+                    color="warning"
                     detalle={reservasPendientes > 0 ? `${reservasPendientes} pendientes de atender` : 'Ninguna pendiente'}
                     medidor={{ valor: reservasPendientes, total: num(resumen.total_reservas), etiqueta: 'Reservas pendientes sobre el total' }}
-                />
-                <StatCard
-                    titulo="Stock bajo"
-                    valor={stockBajo}
-                    icono={<FaTriangleExclamation />}
-                    color="warning"
-                    detalle={`de ${totalLibros} libros en catálogo`}
-                    medidor={{ valor: stockBajo, total: totalLibros, etiqueta: 'Libros con stock bajo sobre el catálogo' }}
                 />
             </motion.section>
 
@@ -202,24 +223,57 @@ export default function DashboardPage() {
                 <MiniStat titulo="Usuarios" valor={resumen.total_usuarios} icono={<FaUsers />} />
             </motion.section>
 
-            {/* RENDIMIENTO — gráfico + top libros */}
-            <section aria-label="Rendimiento">
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,1fr)]">
-                    <SalesChart ventasPorMes={ventasPorMes} ventasPorDia={ventasPorDia} />
-                    <TopBooks libros={librosMasVendidos} />
-                </div>
+            {/* MEJORES REGISTROS */}
+            <motion.section
+                aria-label="Mejores registros"
+                variants={escalonado}
+                initial="oculto"
+                animate="visible"
+                className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:gap-5"
+            >
+                <MejorRegistro
+                    icono={<FaTrophy />}
+                    etiqueta="Mejor mes registrado"
+                    principal={mejorMes ? `${mejorMes.mes} ${mejorMes.anio}` : 'Sin datos'}
+                    vacio={!mejorMes}
+                    detalle={mejorMes
+                        ? `${plural(num(mejorMes.cantidad_ventas), 'venta', 'ventas')} · ${formatearMoneda(mejorMes.total_vendido)}`
+                        : 'Aún no existen ventas pagadas.'}
+                />
+                <MejorRegistro
+                    icono={<FaCalendarCheck />}
+                    etiqueta="Mejor día registrado"
+                    principal={mejorDia ? formatearFechaCorta(mejorDia.fecha) : 'Sin datos'}
+                    vacio={!mejorDia}
+                    detalle={mejorDia
+                        ? `${plural(num(mejorDia.cantidad_ventas), 'venta', 'ventas')} · ${formatearMoneda(mejorDia.total_vendido)}`
+                        : 'Aún no existen ventas pagadas.'}
+                />
+            </motion.section>
+
+            {/* VENTAS: evolución + ranking */}
+            <section aria-label="Evolución de ventas" className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(340px,1fr)]">
+                <SalesChart
+                    ventasPorMes={ventasPorMes}
+                    ventasPorDia={ventasPorDia}
+                    dias={30}
+                    meses={12}
+                    titulo="Evolución de ventas"
+                    idBase="evolucion-ventas"
+                    conMetrica
+                />
+                <TopBooks libros={librosMasVendidos} />
             </section>
 
-            {/* ESTADOS OPERATIVOS — donuts */}
-            <section aria-label="Estados operativos">
-                <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
-                    <StatusDonut titulo="Ventas por estado" subtitulo="Todas las ventas registradas" datos={ventasPorEstado} tipo="ventas" />
-                    <StatusDonut titulo="Reservas por estado" subtitulo="Todas las reservas registradas" datos={reservasPorEstado} tipo="reservas" />
-                </div>
+            {/* ESTADOS */}
+            <section aria-label="Estados operativos" className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+                <StatusDonut titulo="Ventas por estado" subtitulo="Todas las ventas registradas" datos={ventasPorEstado} tipo="ventas" />
+                <StatusDonut titulo="Reservas por estado" subtitulo="Todas las reservas registradas" datos={reservasPorEstado} tipo="reservas" />
             </section>
 
-            {/* ACTIVIDAD RECIENTE */}
-            <section aria-label="Actividad reciente">
+            {/* INVENTARIO Y CATÁLOGO RECIENTE */}
+            <section aria-label="Inventario" className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(320px,1fr)_minmax(0,1.6fr)]">
+                <StockBajo items={stockBajo} />
                 <RecentBooks libros={libros} />
             </section>
 

@@ -96,18 +96,18 @@ export default function InventarioEditModal({ inventario, abierto, onCerrar, onA
             {error && <div className="mt-5"><Alert tipo="error">{error}</Alert></div>}
 
             <form onSubmit={actualizar} className="mt-4 space-y-3">
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                    <Input label="Stock" name="stock" type="number" min="0" value={formulario.stock} error={errores.stock} onChange={manejarCambio} required />
-                    <Input label="Stock mínimo" name="stock_minimo" type="number" min="0" value={formulario.stock_minimo} error={errores.stock_minimo} onChange={manejarCambio} required />
+                <div className="form-grid">
+                    <Input ancho={3} label="Stock" name="stock" type="number" min="0" value={formulario.stock} error={errores.stock} onChange={manejarCambio} required />
+                    <Input ancho={3} label="Stock mínimo" name="stock_minimo" type="number" min="0" value={formulario.stock_minimo} error={errores.stock_minimo} onChange={manejarCambio} required />
+                    <Input
+                        ancho={6}
+                        label="Ubicación"
+                        name="ubicacion"
+                        value={formulario.ubicacion}
+                        onChange={manejarCambio}
+                        placeholder="Ej. Estante A - Nivel 2"
+                    />
                 </div>
-
-                <Input
-                    label="Ubicación"
-                    name="ubicacion"
-                    value={formulario.ubicacion}
-                    onChange={manejarCambio}
-                    placeholder="Ej. Estante A - Nivel 2"
-                />
 
                 <div className="flex flex-col-reverse gap-3 border-t border-primary-200 pt-5 sm:flex-row sm:justify-end">
                     <Button variante="secondary" type="button" onClick={restablecerFormulario} disabled={guardando}>

@@ -51,9 +51,9 @@ export default function ReservaForm({ onReservaCreada }) {
             errorExterno={errorLibros}
             deshabilitarEnvio={cargandoLibros}
             renderCampos={({ formulario, manejarCambio, errores }) => (
-                <>
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="form-grid">
                         <Select
+                            ancho={6}
                             label="Libro"
                             name="id_libro"
                             value={formulario.id_libro}
@@ -72,6 +72,7 @@ export default function ReservaForm({ onReservaCreada }) {
                             ))}
                         </Select>
                         <Input
+                            ancho={2}
                             label="Cantidad"
                             type="number"
                             name="cantidad"
@@ -82,8 +83,7 @@ export default function ReservaForm({ onReservaCreada }) {
                             error={errores?.cantidad}
                             required
                         />
-                    </div>
-                    <div>
+                    <div className="md:col-span-4">
                         <Input
                             label="Fecha de vencimiento"
                             type="date"
@@ -95,7 +95,7 @@ export default function ReservaForm({ onReservaCreada }) {
                             Puedes dejar este campo vacío si todavía no se ha definido una fecha límite.
                         </p>
                     </div>
-                </>
+                </div>
             )}
         />
     );

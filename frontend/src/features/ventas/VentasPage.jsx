@@ -1,11 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { FaEye, FaFileCsv, FaFileInvoice, FaMagnifyingGlass, FaPenToSquare, FaReceipt, FaRotate, FaXmark } from 'react-icons/fa6';
+import {
+    FaCartPlus,
+    FaChevronUp,
+    FaCircleCheck,
+    FaClock,
+    FaEye,
+    FaFileCsv,
+    FaFileInvoice,
+    FaMagnifyingGlass,
+    FaMoneyBillTrendUp,
+    FaPenToSquare,
+    FaReceipt,
+    FaRotate,
+    FaXmark,
+} from 'react-icons/fa6';
+import { motion } from 'motion/react';
 
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input, Select } from '../../components/ui/Form';
+import { StatCard } from '../dashboard/StatCard';
+import { num, serieDiaria } from '../dashboard/graficoUtils';
 import { Alert } from '../../components/ui/Alert';
 import { Pagination } from '../../components/ui/Pagination';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -48,20 +65,27 @@ function valorOrdenVenta(venta, campo) {
 }
 
 const columnasVentas = [
-    { titulo: 'ID', alineacion: 'centro', ordenable: true, campo: 'id_venta', render: (fila) => <span className="font-semibold text-slate-700">{fila.id_venta}</span> },
+    { titulo: 'ID', alineacion: 'centro', ordenable: true, campo: 'id_venta', render: (fila) => <span className="font-semibold tabular-nums text-slate-500">#{fila.id_venta}</span> },
     {
         titulo: 'Usuario',
         ordenable: true,
         campo: 'usuario',
-        render: (fila) => (
-            <p className="text-sm text-slate-700">
-                <span className="font-semibold text-slate-700">{`${fila.nombre_usuario || ''} ${fila.apellido_usuario || ''}`.trim() || 'Usuario no disponible'}</span>
-                <span className="block text-xs text-slate-500">{fila.correo_compra || fila.correo_usuario || ''}</span>
-            </p>
-        ),
+        render: (fila) => {
+            const nombre = `${fila.nombre_usuario || ''} ${fila.apellido_usuario || ''}`.trim();
+            const iniciales = nombre.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || '?';
+            return (
+                <div className="flex min-w-0 items-center gap-3">
+                    <span className="cliente-iniciales" aria-hidden="true">{iniciales}</span>
+                    <p className="min-w-0 text-sm">
+                        <span className="block truncate font-semibold text-slate-800">{nombre || 'Usuario no disponible'}</span>
+                        <span className="block truncate text-xs text-slate-500">{fila.correo_compra || fila.correo_usuario || ''}</span>
+                    </p>
+                </div>
+            );
+        },
     },
     { titulo: 'Fecha', alineacion: 'centro', ordenable: true, campo: 'fecha_venta', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_venta) || 'Sin fecha'}</span> },
-    { titulo: 'Total', alineacion: 'centro', ordenable: true, campo: 'total', render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(Number(fila.total || 0))}</span> },
+    { titulo: 'Total', alineacion: 'derecha', ordenable: true, campo: 'total', render: (fila) => <span className="font-semibold tabular-nums text-slate-800">{formatearMoneda(Number(fila.total || 0))}</span> },
     {
         titulo: 'Estado',
         alineacion: 'centro',
@@ -127,27 +151,34 @@ function accionesVenta(fila, { onVer, onCambiarEstado, onEmitirComprobante }) {
     );
 }
 
-function Contador({ total, pendientes, pagadas, entregadas, canceladas, ingresos }) {
+const FILTROS_ESTADO = [
+    { valor: 'todos', texto: 'Todas', clase: 'estado--neutro' },
+    { valor: 'pendiente', texto: 'Pendientes', clase: 'estado--aviso' },
+    { valor: 'pagada', texto: 'Pagadas', clase: 'estado--exito' },
+    { valor: 'entregada', texto: 'Entregadas', clase: 'estado--info' },
+    { valor: 'cancelada', texto: 'Canceladas', clase: 'estado--peligro' },
+];
+
+function FiltroEstados({ valor, onCambiar, conteos }) {
     return (
-        <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#1c1814]">{total}</span>
-            </span>
-            <span className="rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2.5 text-sm font-medium text-[#d97706] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Pendientes: <span className="font-bold text-[#d97706]">{pendientes}</span>
-            </span>
-            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Pagadas: <span className="font-bold text-[#15803d]">{pagadas}</span>
-            </span>
-            <span className="rounded-xl border border-[#a5f3fc] bg-[#f0f9ff] px-4 py-2.5 text-sm font-medium text-[#0891b2] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Entregadas: <span className="font-bold text-[#0891b2]">{entregadas}</span>
-            </span>
-            <span className="rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-2.5 text-sm font-medium text-[#e11d48] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Canceladas: <span className="font-bold text-[#e11d48]">{canceladas}</span>
-            </span>
-            <span className="rounded-xl border border-[#bbf7d0] bg-[#ecfdf5] px-4 py-2.5 text-sm font-medium text-[#059669] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Ingresos: <span className="font-bold text-[#059669]">{formatearMoneda(ingresos)}</span>
-            </span>
+        <div className="filtro-chips" role="radiogroup" aria-label="Filtrar por estado">
+            {FILTROS_ESTADO.map((f) => {
+                const activo = valor === f.valor;
+                return (
+                    <button
+                        key={f.valor}
+                        type="button"
+                        role="radio"
+                        aria-checked={activo}
+                        onClick={() => onCambiar(f.valor)}
+                        className={`filtro-chip ${f.clase} ${activo ? 'filtro-chip--activo' : ''}`}
+                    >
+                        {f.valor !== 'todos' && <span className="filtro-chip-punto" aria-hidden="true" />}
+                        {f.texto}
+                        <span className="filtro-chip-conteo">{conteos[f.valor] ?? 0}</span>
+                    </button>
+                );
+            })}
         </div>
     );
 }
@@ -167,6 +198,7 @@ const [ventaVer, setVentaVer] = useState(null);
     const [busqueda, setBusqueda] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('todos');
     const [filtroEntrega, setFiltroEntrega] = useState('todos');
+    const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
 const [paginaActual, setPaginaActual] = useState(1);
 
@@ -195,6 +227,24 @@ const [paginaActual, setPaginaActual] = useState(1);
 const totalIngresos = ventas
         .filter((v) => v.estado === 'pagada' || v.estado === 'entregada')
         .reduce((acumulado, v) => acumulado + Number(v.total || 0), 0);
+
+    const cobradas = ventas.filter((v) => v.estado === 'pagada' || v.estado === 'entregada');
+    const porCobrar = ventas.filter((v) => v.estado === 'pendiente').reduce((acc, v) => acc + num(v.total), 0);
+    const diario = useMemo(() => {
+        const porDia = new Map();
+        for (const v of ventas) {
+            const clave = String(v.fecha_venta || '').slice(0, 10);
+            if (!clave) continue;
+            const dia = porDia.get(clave) || { fecha: clave, total_vendido: 0, cantidad_ventas: 0, registradas: 0 };
+            dia.registradas += 1;
+            if (v.estado === 'pagada' || v.estado === 'entregada') {
+                dia.total_vendido += num(v.total);
+                dia.cantidad_ventas += 1;
+            }
+            porDia.set(clave, dia);
+        }
+        return serieDiaria([...porDia.values()], 14);
+    }, [ventas]);
 
     const ventasFiltradas = useMemo(() => {
         const texto = busqueda.toLowerCase().trim();
@@ -329,21 +379,60 @@ const ventaActualizada = async (mensaje) => {
     return (
         <div className="space-y-4">
 <PageHeader
-                titulo="Ventas / Compras"
+                titulo="Ventas"
                 descripcion="Compras realizadas: quién compró, qué y cuánto"
                 acciones={
-                    <Contador
-                        total={ventas.length}
-                        pendientes={totalPendientes}
-                        pagadas={totalPagadas}
-                        entregadas={totalEntregadas}
-                        canceladas={totalCanceladas}
-                        ingresos={totalIngresos}
-                    />
+                    <Button onClick={() => setMostrarFormulario((v) => !v)} aria-expanded={mostrarFormulario} aria-controls="panel-nueva-venta">
+                        {mostrarFormulario ? <><FaChevronUp /> Ocultar formulario</> : <><FaCartPlus /> Nueva venta</>}
+                    </Button>
                 }
             />
 
-            <VentaForm onVentaCreada={ventaCreada} />
+            <motion.section
+                aria-label="Indicadores de ventas"
+                initial="oculto"
+                animate="visible"
+                variants={{ oculto: {}, visible: { transition: { staggerChildren: 0.06 } } }}
+                className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5"
+            >
+                <StatCard
+                    titulo="Ingresos cobrados"
+                    valor={formatearMoneda(totalIngresos)}
+                    icono={<FaMoneyBillTrendUp />}
+                    color="primary"
+                    detalle={`${cobradas.length} ${cobradas.length === 1 ? 'venta pagada o entregada' : 'ventas pagadas o entregadas'}`}
+                    tendencia={diario.map((d) => d.total)}
+                    etiquetaTendencia="Ingresos cobrados por día en los últimos 14 días"
+                />
+                <StatCard
+                    titulo="Ventas registradas"
+                    valor={ventas.length}
+                    icono={<FaReceipt />}
+                    color="info"
+                    detalle={`${totalCanceladas} ${totalCanceladas === 1 ? 'cancelada' : 'canceladas'}`}
+                    tendencia={diario.map((d) => d.cantidad)}
+                    etiquetaTendencia="Ventas cobradas por día en los últimos 14 días"
+                />
+                <StatCard
+                    titulo="Pendientes de pago"
+                    valor={totalPendientes}
+                    icono={<FaClock />}
+                    color="warning"
+                    detalle={porCobrar > 0 ? `${formatearMoneda(porCobrar)} por cobrar` : 'Nada por cobrar'}
+                    medidor={{ valor: totalPendientes, total: ventas.length, etiqueta: 'Ventas pendientes sobre el total' }}
+                />
+                <StatCard
+                    titulo="Ticket promedio"
+                    valor={cobradas.length > 0 ? formatearMoneda(totalIngresos / cobradas.length) : '—'}
+                    icono={<FaCircleCheck />}
+                    color="success"
+                    detalle={`${totalPagadas} pagadas · ${totalEntregadas} entregadas`}
+                />
+            </motion.section>
+
+            <div id="panel-nueva-venta" hidden={!mostrarFormulario}>
+                <VentaForm onVentaCreada={ventaCreada} />
+            </div>
 
             <Card>
                 <CardHeader
@@ -372,14 +461,6 @@ const ventaActualizada = async (mensaje) => {
                                 )}
                             </div>
 
-                            <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="sm:w-48">
-                                <option value="todos">Todos los estados</option>
-                                <option value="pendiente">Pendientes</option>
-                                <option value="pagada">Pagadas</option>
-                                <option value="entregada">Entregadas</option>
-                                <option value="cancelada">Canceladas</option>
-                            </Select>
-
 <Select value={filtroEntrega} onChange={(e) => setFiltroEntrega(e.target.value)} className="sm:w-52">
                                 <option value="todos">Todas las entregas</option>
                                 <option value="domicilio">A domicilio</option>
@@ -397,6 +478,19 @@ const ventaActualizada = async (mensaje) => {
                         </div>
                     }
                 />
+                <div className="px-5 pb-4 sm:px-6">
+                    <FiltroEstados
+                        valor={filtroEstado}
+                        onCambiar={setFiltroEstado}
+                        conteos={{
+                            todos: ventas.length,
+                            pendiente: totalPendientes,
+                            pagada: totalPagadas,
+                            entregada: totalEntregadas,
+                            cancelada: totalCanceladas,
+                        }}
+                    />
+                </div>
             </Card>
 
             {cargando && <TableSkeleton columnas={7} filas={8} titulo />}
@@ -427,7 +521,7 @@ const ventaActualizada = async (mensaje) => {
                         subtitulo="Historial de ventas realizadas"
                         acciones={
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                                <span className="reporte-contador">
                                     {ventasFiltradas.length} {ventasFiltradas.length === 1 ? 'venta' : 'ventas'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>

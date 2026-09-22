@@ -28,9 +28,9 @@ export default function AutorForm({ onAutorCreado }) {
             mensajeError="Error al registrar el autor"
             onRegistrado={onAutorCreado}
             renderCampos={({ formulario, manejarCambio, errores }) => (
-                <>
-                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="form-grid">
                         <Input
+                            ancho={4}
                             label="Nombre"
                             name="nombre"
                             value={formulario.nombre}
@@ -40,6 +40,7 @@ export default function AutorForm({ onAutorCreado }) {
                             required
                         />
                         <Input
+                            ancho={4}
                             label="Apellido"
                             name="apellido"
                             value={formulario.apellido}
@@ -48,8 +49,8 @@ export default function AutorForm({ onAutorCreado }) {
                             placeholder="Ej. García Márquez"
                             required
                         />
-                    </div>
                     <Input
+                        ancho={4}
                         label="Nacionalidad"
                         name="nacionalidad"
                         value={formulario.nacionalidad}
@@ -64,7 +65,7 @@ export default function AutorForm({ onAutorCreado }) {
                         placeholder="Escriba una breve biografía del autor"
                         rows="4"
                     />
-                </>
+                </div>
             )}
         />
     );

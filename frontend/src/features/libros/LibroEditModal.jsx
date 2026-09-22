@@ -170,8 +170,8 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
             <form onSubmit={actualizar} className="space-y-3">
                 <CamposLibro formulario={formulario} autores={autores} categorias={categorias} manejarCambio={manejarCambio} errores={errores} />
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <div>
+                <div className="form-grid">
+                    <div className="md:col-span-3">
                         <label className="field-label">Stock</label>
                         <div className="relative">
                             <input
@@ -184,7 +184,7 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
                         </div>
                         <p className="mt-1 text-[11px] text-slate-500">Se gestiona desde Inventario.</p>
                     </div>
-                    <Select label="Estado" name="estado" value={formulario.estado} onChange={manejarCambio}>
+                    <Select label="Estado" name="estado" value={formulario.estado} onChange={manejarCambio} ancho={3}>
                         <option value="1">Activo</option>
                         <option value="0">Inactivo</option>
                     </Select>
