@@ -13,7 +13,7 @@ export function PageHeader({ titulo, descripcion, acciones = null, icono = null,
         <div className="page-header flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
                 <div className="flex items-center gap-3">
-                    {icono && <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>{icono}</span>}
+                    {icono && <span className={`page-header-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>{icono}</span>}
                     <div>
                         <h1 className="font-title text-xl font-semibold tracking-tight text-[#0f172a] sm:text-2xl">{titulo}</h1>
                         {descripcion && <p className="mt-0.5 text-sm text-[#64748b]">{descripcion}</p>}

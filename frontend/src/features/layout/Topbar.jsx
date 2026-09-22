@@ -227,7 +227,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
 
                     {/* Buscador */}
                     <div ref={buscadorRef} className="relative hidden w-full max-w-md sm:block">
-                        <div className="flex items-center gap-2.5 rounded-xl border border-[#e5eaf2] bg-[#f8fafd] px-3.5 py-2 transition-all focus-within:border-[#0877e8] focus-within:bg-white focus-within:shadow-sm">
+                        <div className="admin-search flex items-center gap-2.5 rounded-xl border border-[#e5eaf2] bg-[#f8fafd] px-3.5 py-2 transition-all focus-within:bg-white focus-within:shadow-sm">
                             <FaMagnifyingGlass className="text-sm text-[#94a3b8]" />
                             <input
                                 ref={buscadorInputRef}

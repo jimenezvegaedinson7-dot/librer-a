@@ -1429,33 +1429,77 @@ h1, h2, h3 {
     font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
-/* ── Accent Color System (zone-based via CSS variables) ── */
-/* Variables --theme-* are set by ThemeContext based on zone config */
-/* No hardcoded accent overrides needed here */
 /* ── Zone-based accent overrides (CSS variables set by ThemeContext) ── */
 
-/* Buttons zone */
-.admin-primary-button { background: var(--theme-buttons, #2563eb) !important; border-color: var(--theme-buttons, #2563eb) !important; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
-.admin-primary-button:hover:not(:disabled) { background: var(--theme-buttons-hover, #1d4ed8) !important; border-color: var(--theme-buttons-hover, #1d4ed8) !important; }
+/* ── BUTTONS ── */
+.admin-primary-button {
+    background: var(--theme-buttons) !important;
+    border-color: var(--theme-buttons) !important;
+    color: #fff !important;
+}
+.admin-primary-button:hover:not(:disabled) {
+    background: var(--theme-buttons-hover) !important;
+    border-color: var(--theme-buttons-hover) !important;
+}
 .admin-primary-button:active:not(:disabled) { filter: brightness(0.9); }
 
-/* Inputs zone */
-.field:focus { border-color: var(--theme-inputs, #3b82f6) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-inputs, #3b82f6) 15%, transparent) !important; }
+/* ── INPUTS / FORMS ── */
+.field:focus {
+    border-color: var(--theme-inputs) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-inputs) 15%, transparent) !important;
+}
 
-/* Tables zone */
-.admin-table thead tr { background: var(--theme-tables-soft, #f1f5f9) !important; }
-.admin-table thead th { color: var(--theme-tables-text, #475569) !important; }
+/* ── TABLES (real DataTable) ── */
+.data-table-shell thead tr {
+    background: var(--theme-tables-soft) !important;
+}
+.data-table-shell thead th {
+    color: var(--theme-tables-text) !important;
+}
+.data-table-shell thead th.border-b {
+    border-color: color-mix(in srgb, var(--theme-tables) 30%, transparent) !important;
+}
 
-/* Badges zone */
-.admin-badge-accent { background: var(--theme-badges, #2563eb) !important; color: #fff !important; }
+/* ── MODALS (real modal-panel) ── */
+.modal-header {
+    border-color: var(--theme-modals-soft) !important;
+}
 
-/* Tabs zone */
-.admin-tab-active { color: var(--theme-buttons, #2563eb) !important; border-color: var(--theme-buttons, #2563eb) !important; }
+/* ── LINKS (real anchors) ── */
+a.text-primary-500,
+a[href]:not(.nav-link):not(button):not([class*="no-accent"]) {
+    /* Don't override all links, only when explicitly themed */
+}
 
-/* Modals zone */
-.admin-modal-header { border-color: var(--theme-modals-soft, #e2e8f0) !important; }
-.admin-modal-icon { background: var(--theme-modals-soft, #f1f5f9) !important; color: var(--theme-modals, #475569) !important; }
+/* ── PAGE HEADER (real icon containers) ── */
+.page-header-icon {
+    background: var(--theme-buttons-soft) !important;
+    color: var(--theme-buttons) !important;
+}
 
-/* Links zone */
-a.accent-link { color: var(--theme-links, #2563eb) !important; }
-a.accent-link:hover { color: var(--theme-links-hover, #1d4ed8) !important; }
+/* ── SIDEBAR NAV LINKS (NavLink with accent) ── */
+.sidebar-nav-active {
+    color: var(--theme-sidebar) !important;
+}
+
+/* ── NOTIFICATION BADGES ── */
+.admin-notif-badge {
+    background: var(--theme-badges) !important;
+}
+
+/* ── CHART ACCENTS ── */
+.admin-chart-accent {
+    fill: var(--theme-charts) !important;
+    stroke: var(--theme-charts) !important;
+}
+.admin-chart-accent-text {
+    color: var(--theme-charts) !important;
+}
+.admin-chart-accent-bg {
+    background: var(--theme-charts-soft) !important;
+}
+
+/* ── SEARCH FOCUS ── */
+.admin-search:focus-within {
+    border-color: var(--theme-topbar) !important;
+}

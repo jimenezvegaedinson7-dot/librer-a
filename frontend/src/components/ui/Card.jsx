@@ -22,7 +22,7 @@ export function CardHeader({ titulo, subtitulo, acciones = null, icono = null, c
         <div className="card-header">
             <div className="flex items-center gap-3">
                 {icono && (
-                    <span className={`card-header-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${ic}`}>
+                    <span className={`card-header-icon page-header-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${ic}`}>
                         {icono}
                     </span>
                 )}
