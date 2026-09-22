@@ -63,6 +63,11 @@ export async function emitirComprobante(idVenta, opciones = {}) {
     return extraerComprobante(res);
 }
 
+export async function enviarComprobanteEmail(idComprobante) {
+    const res = await client.post(`/comprobantes/${idComprobante}/enviar-email`);
+    return res?.data || res;
+}
+
 export async function obtenerResumen() {
     const res = await client.get('/comprobantes/resumen');
 

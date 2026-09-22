@@ -512,6 +512,89 @@ async function enviarCorreoReservaCreada({
     return enviarCorreo({ destinatario, asunto, html });
 }
 
+// ============================================================
+// CORREO: COMPROBANTE ELECTRÓNICO
+// ============================================================
+async function enviarComprobantePorEmail({
+    destinatario,
+    nombre,
+    tipo,
+    serie,
+    numero,
+    clienteDniRuc,
+    clienteTipoDocumento,
+    subtotal,
+    igv,
+    costoEnvio,
+    total,
+    items,
+    empresaRazon,
+    empresaRuc
+}) {
+    const tipoLabel = tipo === 'factura' ? 'FACTURA' : 'BOLETA';
+    const serieNumero = `${serie}-${String(numero).padStart(3, '0')}`;
+
+    const filas = (items || [])
+        .map((item) => {
+            const sub = Number(item.cantidad || 0) * Number(item.precio_unitario || 0);
+            return (
+                `<tr>` +
+                `<td style="padding:8px 0;border-bottom:1px solid #e2e8f0;color:#1e293b">${htmlEscape(item.titulo || item.titulo_libro || 'Libro')}</td>` +
+                `<td style="padding:8px 0;border-bottom:1px solid #e2e8f0;text-align:center;color:#64748b">${htmlEscape(item.cantidad)}</td>` +
+                `<td style="padding:8px 0;border-bottom:1px solid #e2e8f0;text-align:right;color:#1e293b">${money(item.precio_unitario)}</td>` +
+                `<td style="padding:8px 0;border-bottom:1px solid #e2e8f0;text-align:right;color:#1e293b">${money(sub)}</td>` +
+                `</tr>`
+            );
+        })
+        .join('');
+
+    const documentoLine = clienteDniRuc
+        ? `<p style="color:#64748b;font-size:13px">${htmlEscape(clienteTipoDocumento || 'DNI')}: <strong>${htmlEscape(clienteDniRuc)}</strong></p>`
+        : '';
+
+    const igvLine = Number(igv || 0) > 0
+        ? `<tr><td style="padding:6px 0;color:#64748b">IGV (18%)</td><td style="padding:6px 0;text-align:right;color:#1e293b">${money(igv)}</td></tr>`
+        : '';
+
+    const envioLine = Number(costoEnvio || 0) > 0
+        ? `<tr><td style="padding:6px 0;color:#64748b">Costo de envío</td><td style="padding:6px 0;text-align:right;color:#1e293b">${money(costoEnvio)}</td></tr>`
+        : '';
+
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(nombre || 'Cliente')}</strong>,</p>` +
+        `<p>Tu <strong>${tipoLabel} ${serieNumero}</strong> ha sido emitida correctamente.</p>` +
+        `<div style="margin:18px 0;padding:16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0">` +
+        `<p style="margin:0 0 6px;font-size:16px;font-weight:bold;color:#17181c">${tipoLabel} ${serieNumero}</p>` +
+        documentoLine +
+        `<p style="margin:4px 0 0;color:#64748b;font-size:13px">Fecha: <strong>${htmlEscape(new Date().toLocaleDateString('es-PE'))}</strong></p>` +
+        `</div>` +
+        `<table style="width:100%;border-collapse:collapse;margin:16px 0">` +
+        `<thead><tr>` +
+        `<th style="padding:6px 0;border-bottom:2px solid #e2e8f0;text-align:left;color:#64748b;font-size:13px">Libro</th>` +
+        `<th style="padding:6px 0;border-bottom:2px solid #e2e8f0;text-align:center;color:#64748b;font-size:13px">Cant.</th>` +
+        `<th style="padding:6px 0;border-bottom:2px solid #e2e8f0;text-align:right;color:#64748b;font-size:13px">P. Unit.</th>` +
+        `<th style="padding:6px 0;border-bottom:2px solid #e2e8f0;text-align:right;color:#64748b;font-size:13px">Subtotal</th>` +
+        `</tr></thead>` +
+        `<tbody>${filas}</tbody>` +
+        `</table>` +
+        `<table style="width:100%;border-collapse:collapse;margin:10px 0">` +
+        `<tr><td style="padding:4px 0;color:#64748b">Subtotal</td><td style="padding:4px 0;text-align:right;color:#1e293b">${money(subtotal)}</td></tr>` +
+        igvLine +
+        envioLine +
+        `<tr><td style="padding:8px 0;font-weight:bold;color:#17181c;font-size:16px;border-top:2px solid #e2e8f0">Total</td><td style="padding:8px 0;text-align:right;font-weight:bold;color:#17181c;font-size:16px;border-top:2px solid #e2e8f0">${money(total)}</td></tr>` +
+        `</table>` +
+        `<p style="color:#64748b;font-size:12px;margin-top:18px">Emisor: ${htmlEscape(empresaRazon || 'Librería')} — RUC: ${htmlEscape(empresaRuc || '—')}</p>` +
+        `<p style="color:#64748b;font-size:12px">Si no realizaste esta compra, ignora este correo.</p>`;
+
+    const { asunto, html } = plantillaBase({
+        tituloCabecera: `${tipoLabel} ${serieNumero}`,
+        asunto: `${tipoLabel} ${serieNumero} — Librería`,
+        cuerpoHtml
+    });
+
+    return enviarCorreo({ destinatario, asunto, html });
+}
+
 module.exports = {
     enviarCorreo,
     enviarCodigoVerificacion,
@@ -521,6 +604,7 @@ module.exports = {
     enviarCorreoPagoRechazado,
     enviarCorreoReservaCreada,
     enviarCorreoPedidoEntregado,
+    enviarComprobantePorEmail,
     smtpConfigurado,
     resendConfigurado,
     brevoConfigurado,

@@ -4,7 +4,8 @@ const router = express.Router();
 
 const {
     listarComprobantes,
-    obtenerComprobante
+    obtenerComprobante,
+    enviarComprobanteEmail
 } = require('../controllers/comprobante.controller');
 
 const comprobanteModel = require('../models/comprobante.model');
@@ -53,6 +54,11 @@ router.get('/resumen', async (req, res) => {
         });
     }
 });
+
+// ========================================
+// ENVIAR COMPROBANTE POR CORREO
+// ========================================
+router.post('/:id/enviar-email', enviarComprobanteEmail);
 
 // ========================================
 // OBTENER COMPROBANTE POR ID

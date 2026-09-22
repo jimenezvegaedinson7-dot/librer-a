@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import {
     FaEye,
     FaMagnifyingGlass,
+    FaPaperPlane,
     FaPrint,
     FaReceipt,
     FaRotate,
@@ -23,7 +24,7 @@ import { BtnAccion } from '../../components/ui/Acciones';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 
-import { listarComprobantes, obtenerResumen } from './comprobantesService';
+import { listarComprobantes, obtenerResumen, enviarComprobanteEmail } from './comprobantesService';
 import ComprobanteViewModal from './ComprobanteViewModal';
 
 const POR_PAGINA = 10;
@@ -70,7 +71,7 @@ const columnasComprobantes = [
     },
 ];
 
-function accionesComprobante(fila, { onVer, onImprimir }) {
+function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando }) {
     return (
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver comprobante">
@@ -78,6 +79,9 @@ function accionesComprobante(fila, { onVer, onImprimir }) {
             </BtnAccion>
             <BtnAccion tipo="ver" onClick={() => onImprimir(fila)} titulo="Imprimir comprobante">
                 <FaPrint />
+            </BtnAccion>
+            <BtnAccion tipo="ver" onClick={() => onEnviarEmail(fila)} titulo="Enviar por correo" disabled={enviando}>
+                <FaPaperPlane />
             </BtnAccion>
         </>
     );
@@ -99,6 +103,7 @@ export default function ComprobantesPage() {
 
     const [comprobanteVer, setComprobanteVer] = useState(null);
     const [comprobanteImprimir, setComprobanteImprimir] = useState(null);
+    const [enviandoEmail, setEnviandoEmail] = useState(null);
 
     const cargarComprobantes = async () => {
         try {
@@ -167,6 +172,22 @@ export default function ComprobantesPage() {
         setBusquedaAplicada('');
         setFiltroTipo('todos');
         setPaginaActual(1);
+    };
+
+    const handleEnviarEmail = async (comprobante) => {
+        if (!comprobante?.cliente_email && !comprobante?.correo_compra) {
+            alert('No hay correo electrónico registrado para este cliente');
+            return;
+        }
+        try {
+            setEnviandoEmail(comprobante.id_comprobante);
+            const resultado = await enviarComprobanteEmail(comprobante.id_comprobante);
+            alert(resultado?.mensaje || 'Comprobante enviado correctamente');
+        } catch (err) {
+            alert(err.response?.data?.mensaje || 'Error al enviar el comprobante');
+        } finally {
+            setEnviandoEmail(null);
+        }
     };
 
     const hayFiltros = Boolean(busquedaAplicada) || filtroTipo !== 'todos';
@@ -292,6 +313,8 @@ export default function ComprobantesPage() {
                                 accionesComprobante(fila, {
                                     onVer: setComprobanteVer,
                                     onImprimir: setComprobanteImprimir,
+                                    onEnviarEmail: handleEnviarEmail,
+                                    enviando: enviandoEmail === fila.id_comprobante,
                                 })
                             }
                         />

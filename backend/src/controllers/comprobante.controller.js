@@ -1,5 +1,6 @@
 const comprobanteModel = require('../models/comprobante.model');
 const { validarId } = require('../utils/validaciones');
+const { enviarComprobantePorEmail } = require('../utils/mailer');
 
 // ========================================
 // GENERAR COMPROBANTE (BOLETA / FACTURA)
@@ -176,10 +177,97 @@ const obtenerComprobante = async (req, res) => {
 };
 
 // ========================================
+// ENVIAR COMPROBANTE POR CORREO
+// POST /api/comprobantes/:id/enviar-email
+// ========================================
+const enviarComprobanteEmail = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const idComprobante = validarId(id);
+
+        if (!idComprobante) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'ID de comprobante inválido'
+            });
+        }
+
+        const comprobante =
+            await comprobanteModel.obtenerComprobante(
+                idComprobante
+            );
+
+        if (!comprobante) {
+            return res.status(404).json({
+                success: false,
+                mensaje: 'Comprobante no encontrado'
+            });
+        }
+
+        const emailDestino =
+            comprobante.cliente_email ||
+            comprobante.correo_compra ||
+            comprobante.correo_usuario;
+
+        if (!emailDestino) {
+            return res.status(400).json({
+                success: false,
+                mensaje:
+                    'No hay correo electrónico registrado para este cliente'
+            });
+        }
+
+        const nombreCliente =
+            comprobante.cliente_nombre ||
+            `${comprobante.nombre_usuario || ''} ${comprobante.apellido_usuario || ''}`.trim() ||
+            'Cliente';
+
+        const resultado =
+            await enviarComprobantePorEmail({
+                destinatario: emailDestino,
+                nombre: nombreCliente,
+                tipo: comprobante.tipo,
+                serie: comprobante.serie,
+                numero: comprobante.numero,
+                clienteDniRuc: comprobante.cliente_dni_ruc,
+                clienteTipoDocumento: comprobante.cliente_tipo_documento,
+                subtotal: comprobante.subtotal,
+                igv: comprobante.igv,
+                costoEnvio: comprobante.costo_envio,
+                total: comprobante.total,
+                items: comprobante.detalle || [],
+                empresaRazon: comprobante.razon_social,
+                empresaRuc: comprobante.ruc
+            });
+
+        return res.json({
+            success: true,
+            mensaje: `Comprobante enviado a ${emailDestino}`,
+            enviado: resultado.enviado,
+            consola: resultado.consola || false
+        });
+
+    } catch (error) {
+        console.error(
+            'Error al enviar comprobante por correo:',
+            error
+        );
+
+        return res.status(500).json({
+            success: false,
+            mensaje:
+                'Error al enviar el comprobante por correo'
+        });
+    }
+};
+
+// ========================================
 // EXPORTAR CONTROLADORES
 // ========================================
 module.exports = {
     generarComprobante,
     listarComprobantes,
-    obtenerComprobante
+    obtenerComprobante,
+    enviarComprobanteEmail
 };
