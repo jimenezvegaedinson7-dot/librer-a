@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useTema, COLORES } from '../../components/providers/ThemeContext';
 
 import { useNavigate } from 'react-router-dom';
 import { RotateCcw, Check, Palette } from 'lucide-react';
@@ -7,36 +7,24 @@ import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody } from '../../components/ui/Card';
 
-const COLORES = [
-    { id: 'default', nombre: 'Predeterminado', hex: '#2563eb', ring: 'ring-blue-500' },
-    { id: 'azul', nombre: 'Azul', hex: '#3b82f6', ring: 'ring-blue-400' },
-    { id: 'indigo', nombre: 'Indigo', hex: '#6366f1', ring: 'ring-indigo-500' },
-    { id: 'violeta', nombre: 'Violeta', hex: '#8b5cf6', ring: 'ring-violet-500' },
-    { id: 'esmeralda', nombre: 'Esmeralda', hex: '#10b981', ring: 'ring-emerald-500' },
-    { id: 'turquesa', nombre: 'Turquesa', hex: '#06b6d4', ring: 'ring-cyan-500' },
-    { id: 'rosa', nombre: 'Rosa', hex: '#ec4899', ring: 'ring-pink-500' },
-    { id: 'naranja', nombre: 'Naranja', hex: '#f97316', ring: 'ring-orange-500' },
-    { id: 'rojo', nombre: 'Rojo', hex: '#ef4444', ring: 'ring-red-500' },
+const OPCIONES = [
+    { id: 'default', nombre: 'Predeterminado', hex: '#2563eb' },
+    { id: 'azul', nombre: 'Azul', hex: '#3b82f6' },
+    { id: 'indigo', nombre: 'Indigo', hex: '#6366f1' },
+    { id: 'violeta', nombre: 'Violeta', hex: '#8b5cf6' },
+    { id: 'esmeralda', nombre: 'Esmeralda', hex: '#10b981' },
+    { id: 'turquesa', nombre: 'Turquesa', hex: '#06b6d4' },
+    { id: 'rosa', nombre: 'Rosa', hex: '#ec4899' },
+    { id: 'naranja', nombre: 'Naranja', hex: '#f97316' },
+    { id: 'rojo', nombre: 'Rojo', hex: '#ef4444' },
 ];
-
-const CLAVE_COLOR = 'libreria-color-theme';
-
-function obtenerColorActual() {
-    return window.localStorage.getItem(CLAVE_COLOR) || 'default';
-}
 
 export default function PersonalizacionPage() {
     const navigate = useNavigate();
-    const [seleccion, setSeleccion] = useState(obtenerColorActual);
+    const { colorAcento, cambiarColor, colores } = useTema();
 
-    const seleccionar = (id) => {
-        setSeleccion(id);
-        window.localStorage.setItem(CLAVE_COLOR, id);
-        window.location.reload();
-    };
-
-    const colorInfo = COLORES.find((c) => c.id === seleccion) || COLORES[0];
-    const accentVar = seleccion !== 'default' ? colorInfo.hex : '#2563eb';
+    const colorInfo = OPCIONES.find((c) => c.id === colorAcento) || OPCIONES[0];
+    const accentVar = colores.primary;
 
     return (
         <div className="space-y-6">
@@ -61,13 +49,13 @@ export default function PersonalizacionPage() {
                             </div>
 
                             <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 lg:grid-cols-9">
-                                {COLORES.map((color) => {
-                                    const activa = seleccion === color.id;
+                                {OPCIONES.map((color) => {
+                                    const activa = colorAcento === color.id;
                                     return (
                                         <button
                                             key={color.id}
                                             type="button"
-                                            onClick={() => seleccionar(color.id)}
+                                            onClick={() => cambiarColor(color.id)}
                                             className={`group flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all ${
                                                 activa
                                                     ? 'border-slate-900 bg-slate-50 shadow-sm'
@@ -120,9 +108,9 @@ export default function PersonalizacionPage() {
 
                                 <div>
                                     <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">Sidebar activo</p>
-                                    <div className="flex items-center gap-3 rounded-lg px-3 py-2.5" style={{ backgroundColor: `${accentVar}12` }}>
-                                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: accentVar }} />
-                                        <span className="text-sm font-medium" style={{ color: accentVar }}>Dashboard</span>
+                                    <div className="flex items-center gap-3 rounded-lg px-3 py-2.5" style={{ backgroundColor: colores.primarySoft }}>
+                                        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: colores.primary }} />
+                                        <span className="text-sm font-medium" style={{ color: colores.text }}>Dashboard</span>
                                     </div>
                                 </div>
 
@@ -159,7 +147,7 @@ export default function PersonalizacionPage() {
                             <div className="mt-5 border-t border-slate-200 pt-4">
                                 <button
                                     type="button"
-                                    onClick={() => seleccionar('default')}
+                                    onClick={() => cambiarColor('default')}
                                     className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 transition-all hover:bg-slate-50"
                                 >
                                     <RotateCcw className="h-3.5 w-3.5" />

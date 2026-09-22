@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 
 import { X } from 'lucide-react';
 
+import { useTema } from '../../components/providers/ThemeContext';
 import logoLibreria from '../../assets/logo-lbl.png';
 import { navPrincipal } from './navConfig';
 
@@ -14,6 +15,8 @@ const secciones = navPrincipal.reduce((grupos, item) => {
 }, []);
 
 function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
+    const { colorAcento, colores } = useTema();
+
     const cerrarEnMovil = () => {
         if (window.innerWidth < 1024) onCerrar?.();
     };
@@ -32,7 +35,6 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 ${colapsado ? 'w-[72px]' : 'w-[250px]'}
             `}
         >
-
             {/* Logo */}
             <div className="relative flex items-center border-b border-[#E2E8F0] px-4 py-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden">
@@ -40,21 +42,21 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 </div>
                 {!colapsado && (
                     <div className="ml-3 min-w-0">
-                        <p className="truncate text-[16px] font-semibold tracking-tight text-[#0f172a]">Librería del Saber</p>
+                        <p className="truncate text-[16px] font-semibold tracking-tight text-[#0f172a]">Libreria del Saber</p>
                         <p className="mt-0.5 text-[12px] text-[#94a3b8]">Panel administrativo</p>
                     </div>
                 )}
                 <button
                     type="button"
                     onClick={onCerrar}
-                    aria-label="Cerrar menú"
+                    aria-label="Cerrar menu"
                     className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-lg text-[#94a3b8] transition-colors hover:bg-[#f1f5f9] hover:text-[#334155] lg:hidden"
                 >
                     <X className="h-4 w-4" />
                 </button>
             </div>
 
-            {/* Navegación */}
+            {/* Navegacion */}
             <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-4 pt-3 [scrollbar-width:thin] [scrollbar-color:#CBD5E1_transparent]">
                 {secciones.map((seccion) => (
                     <div key={seccion.nombre} className="mb-3 last:mb-0">
@@ -71,6 +73,14 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                     to={ruta}
                                     onClick={cerrarEnMovil}
                                     title={colapsado ? nombre : undefined}
+                                    style={({ isActive }) =>
+                                        isActive
+                                            ? {
+                                                  backgroundColor: colores.primarySoft,
+                                                  color: colores.text,
+                                              }
+                                            : undefined
+                                    }
                                     className={({ isActive }) =>
                                         `group relative flex items-center rounded-lg transition-all duration-150 ${
                                             colapsado
@@ -78,7 +88,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                                 : 'gap-3 px-3 py-2.5'
                                         } ${
                                             isActive
-                                                ? 'sidebar-nav-active bg-[#eff6ff] text-[#2563eb]'
+                                                ? 'sidebar-nav-active font-semibold'
                                                 : 'text-[#475569] hover:bg-[#f8fafc] hover:text-[#0f172a]'
                                         }`
                                     }
@@ -86,17 +96,21 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                     {({ isActive }) => (
                                         <>
                                             {isActive && !colapsado && (
-                                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-[#2563eb]" />
+                                                <span
+                                                    className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full"
+                                                    style={{ backgroundColor: colores.primary }}
+                                                />
                                             )}
                                             <Icono
                                                 strokeWidth={1.8}
                                                 className={`shrink-0 transition-colors duration-150 ${
                                                     colapsado ? 'h-5 w-5' : 'h-[18px] w-[18px]'
-                                                } ${
-                                                    isActive
-                                                        ? 'text-[#2563eb]'
-                                                        : 'text-[#64748b] group-hover:text-[#2563eb]'
                                                 }`}
+                                                style={{
+                                                    color: isActive
+                                                        ? colores.primary
+                                                        : undefined,
+                                                }}
                                             />
                                             {!colapsado && (
                                                 <span className={`truncate text-[14px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
@@ -115,7 +129,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
             {/* Footer */}
             <div className={`border-t border-[#E2E8F0] bg-white ${colapsado ? 'px-2 py-3' : 'px-5 py-3'}`}>
                 {!colapsado && (
-                    <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#94a3b8]">Sistema de gestión</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#94a3b8]">Sistema de gestion</p>
                 )}
                 {colapsado && (
                     <div className="flex justify-center">

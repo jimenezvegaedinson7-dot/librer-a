@@ -80,7 +80,7 @@ function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
 
 import { Palette } from 'lucide-react';
 
-export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTema, colorAcento, onCambiarColor }) {
+export default function Topbar({ onAbrirMenu, onToggleSidebar, tema, onCambiarTema }) {
     const navigate = useNavigate();
     const { usuario, cerrarSesion } = useAuth();
 

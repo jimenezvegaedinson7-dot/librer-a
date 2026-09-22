@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 
 import { Outlet } from 'react-router-dom';
 
+import { ThemeProvider, useTema } from '../../components/providers/ThemeContext';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import Breadcrumbs from './Breadcrumbs';
 
 const CLAVE_TEMA = 'libreria-admin-theme';
-const CLAVE_COLOR = 'libreria-color-theme';
 
 function obtenerTemaInicial() {
     const temaGuardado = window.localStorage.getItem(CLAVE_TEMA);
@@ -15,15 +15,11 @@ function obtenerTemaInicial() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-function obtenerColorInicial() {
-    return window.localStorage.getItem(CLAVE_COLOR) || 'default';
-}
-
-export default function AdminLayout() {
+function AdminLayoutInner() {
     const [sidebarAbierto, setSidebarAbierto] = useState(false);
     const [sidebarColapsado, setSidebarColapsado] = useState(false);
     const [tema, setTema] = useState(obtenerTemaInicial);
-    const [colorAcento, setColorAcento] = useState(obtenerColorInicial);
+    const { colorAcento } = useTema();
 
     const abrirSidebar = () => setSidebarAbierto(true);
     const cerrarSidebar = () => setSidebarAbierto(false);
@@ -33,10 +29,6 @@ export default function AdminLayout() {
     useEffect(() => {
         window.localStorage.setItem(CLAVE_TEMA, tema);
     }, [tema]);
-
-    useEffect(() => {
-        window.localStorage.setItem(CLAVE_COLOR, colorAcento);
-    }, [colorAcento]);
 
     const mlClase = sidebarColapsado ? 'lg:ml-[72px]' : 'lg:ml-[250px]';
     const accentAttr = colorAcento !== 'default' ? colorAcento : undefined;
@@ -64,8 +56,6 @@ export default function AdminLayout() {
                     onToggleSidebar={toggleSidebar}
                     tema={tema}
                     onCambiarTema={cambiarTema}
-                    colorAcento={colorAcento}
-                    onCambiarColor={setColorAcento}
                 />
                 <main className="admin-main px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-6">
                     <div className="mx-auto w-full max-w-[1600px]">
@@ -77,5 +67,13 @@ export default function AdminLayout() {
                 </main>
             </div>
         </div>
+    );
+}
+
+export default function AdminLayout() {
+    return (
+        <ThemeProvider>
+            <AdminLayoutInner />
+        </ThemeProvider>
     );
 }
