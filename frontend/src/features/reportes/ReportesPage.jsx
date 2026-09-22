@@ -287,7 +287,7 @@ export default function ReportesPage() {
     const maximoDiario = Math.max(...ventasPorDia.map((item) => Number(item.total_vendido || 0)), 1);
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-2">
             <PageHeader
                 titulo="Reportes"
                 descripcion="Análisis general, comercial y operativo de la librería"
