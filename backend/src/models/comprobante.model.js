@@ -686,10 +686,15 @@ const obtenerComprobante = async (id) => {
             v.estado AS estado_venta,
             v.tipo_entrega,
             v.correo_compra,
-            v.external_reference
+            v.external_reference,
+            u.nombre AS nombre_usuario,
+            u.apellido AS apellido_usuario,
+            u.email AS correo_usuario
         FROM comprobantes c
         INNER JOIN ventas v
             ON c.id_venta = v.id_venta
+        LEFT JOIN usuarios u
+            ON v.id_usuario = u.id_usuario
         WHERE c.id_comprobante = ?
         LIMIT 1
     `, [id]);

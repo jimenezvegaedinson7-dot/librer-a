@@ -529,62 +529,144 @@ async function enviarComprobantePorEmail({
     total,
     items,
     empresaRazon,
-    empresaRuc
+    empresaRuc,
+    empresaNombreComercial,
+    empresaDireccion,
+    clienteEmail,
+    fechaEmision
 }) {
-    const tipoLabel = tipo === 'factura' ? 'FACTURA' : 'BOLETA';
-    const serieNumero = `${serie}-${String(numero).padStart(3, '0')}`;
+    const { montoEnLetras } = require('./numeroALetras');
+    const esFactura = tipo === 'factura';
+    const tipoLabel = esFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA';
+    const serieNumero = `${serie}-${String(numero).padStart(8, '0')}`;
+    const clienteTipoDoc = clienteTipoDocumento || (esFactura ? 'RUC' : 'DNI');
 
-    const filas = (items || [])
-        .map((item) => {
-            const sub = Number(item.cantidad || 0) * Number(item.precio_unitario || 0);
-            return (
+    const sub = Number(subtotal || 0);
+    const igvVal = Number(igv || 0);
+    const envio = Number(costoEnvio || 0);
+    const tot = Number(total || 0);
+    const opGravada = igvVal > 0 ? sub : 0;
+    const opExonerada = igvVal > 0 ? 0 : sub;
+
+    const fecha = fechaEmision || new Date().toLocaleDateString('es-PE');
+
+    // Filas de productos
+    let filasHtml = '';
+    (items || []).forEach((item) => {
+        const importe = Number(item.cantidad || 0) * Number(item.precio_unitario || 0);
+        filasHtml +=
+            `<tr>` +
+            `<td style="border:1px solid #94a3b8;padding:6px 8px;text-align:center;font-size:12px">${htmlEscape(item.cantidad)}</td>` +
+            `<td style="border:1px solid #94a3b8;padding:6px 8px;text-align:center;font-size:12px">UND</td>` +
+            `<td style="border:1px solid #94a3b8;padding:6px 8px;text-align:left;font-size:12px">${htmlEscape(item.titulo || item.titulo_libro || 'Libro')}</td>` +
+            `<td style="border:1px solid #94a3b8;padding:6px 8px;text-align:right;font-size:12px">${money(item.precio_unitario)}</td>` +
+            `<td style="border:1px solid #94a3b8;padding:6px 8px;text-align:right;font-size:12px">0.00</td>` +
+            `<td style="border:1px solid #94a3b8;padding:6px 8px;text-align:right;font-size:12px;font-weight:600">${money(importe)}</td>` +
+            `</tr>`;
+    });
+
+    // Filas vacias para completar
+    const numItems = (items || []).length;
+    if (numItems > 0 && numItems < 6) {
+        for (let i = 0; i < 6 - numItems; i++) {
+            filasHtml +=
                 `<tr>` +
-                `<td style="padding:8px 0;border-bottom:1px solid #e2e8f0;color:#1e293b">${htmlEscape(item.titulo || item.titulo_libro || 'Libro')}</td>` +
-                `<td style="padding:8px 0;border-bottom:1px solid #e2e8f0;text-align:center;color:#64748b">${htmlEscape(item.cantidad)}</td>` +
-                `<td style="padding:8px 0;border-bottom:1px solid #e2e8f0;text-align:right;color:#1e293b">${money(item.precio_unitario)}</td>` +
-                `<td style="padding:8px 0;border-bottom:1px solid #e2e8f0;text-align:right;color:#1e293b">${money(sub)}</td>` +
-                `</tr>`
-            );
-        })
-        .join('');
+                `<td style="border:1px solid #94a3b8;padding:6px 8px">&nbsp;</td>` +
+                `<td style="border:1px solid #94a3b8;padding:6px 8px"></td>` +
+                `<td style="border:1px solid #94a3b8;padding:6px 8px"></td>` +
+                `<td style="border:1px solid #94a3b8;padding:6px 8px"></td>` +
+                `<td style="border:1px solid #94a3b8;padding:6px 8px"></td>` +
+                `<td style="border:1px solid #94a3b8;padding:6px 8px"></td>` +
+                `</tr>`;
+        }
+    }
 
-    const documentoLine = clienteDniRuc
-        ? `<p style="color:#64748b;font-size:13px">${htmlEscape(clienteTipoDocumento || 'DNI')}: <strong>${htmlEscape(clienteDniRuc)}</strong></p>`
+    const docLine = clienteDniRuc
+        ? `${htmlEscape(clienteTipoDoc)} - ${htmlEscape(clienteDniRuc)}`
+        : '—';
+
+    const emailLine = clienteEmail
+        ? `<tr><td style="padding:2px 0;font-weight:bold;font-size:12px;color:#334155;width:130px">Correo:</td><td style="padding:2px 0;font-size:12px;color:#1e293b">${htmlEscape(clienteEmail)}</td></tr>`
         : '';
 
-    const igvLine = Number(igv || 0) > 0
-        ? `<tr><td style="padding:6px 0;color:#64748b">IGV (18%)</td><td style="padding:6px 0;text-align:right;color:#1e293b">${money(igv)}</td></tr>`
-        : '';
-
-    const envioLine = Number(costoEnvio || 0) > 0
-        ? `<tr><td style="padding:6px 0;color:#64748b">Costo de envío</td><td style="padding:6px 0;text-align:right;color:#1e293b">${money(costoEnvio)}</td></tr>`
+    const envioLine = envio > 0
+        ? `<tr><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;font-size:12px;color:#475569">Costo Envío</td><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;text-align:right;font-size:12px">${money(envio)}</td></tr>`
         : '';
 
     const cuerpoHtml =
-        `<p>Hola <strong>${htmlEscape(nombre || 'Cliente')}</strong>,</p>` +
-        `<p>Tu <strong>${tipoLabel} ${serieNumero}</strong> ha sido emitida correctamente.</p>` +
-        `<div style="margin:18px 0;padding:16px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0">` +
-        `<p style="margin:0 0 6px;font-size:16px;font-weight:bold;color:#17181c">${tipoLabel} ${serieNumero}</p>` +
-        documentoLine +
-        `<p style="margin:4px 0 0;color:#64748b;font-size:13px">Fecha: <strong>${htmlEscape(new Date().toLocaleDateString('es-PE'))}</strong></p>` +
-        `</div>` +
-        `<table style="width:100%;border-collapse:collapse;margin:16px 0">` +
-        `<thead><tr>` +
-        `<th style="padding:6px 0;border-bottom:2px solid #e2e8f0;text-align:left;color:#64748b;font-size:13px">Libro</th>` +
-        `<th style="padding:6px 0;border-bottom:2px solid #e2e8f0;text-align:center;color:#64748b;font-size:13px">Cant.</th>` +
-        `<th style="padding:6px 0;border-bottom:2px solid #e2e8f0;text-align:right;color:#64748b;font-size:13px">P. Unit.</th>` +
-        `<th style="padding:6px 0;border-bottom:2px solid #e2e8f0;text-align:right;color:#64748b;font-size:13px">Subtotal</th>` +
-        `</tr></thead>` +
-        `<tbody>${filas}</tbody>` +
+        // Contenedor comprobante
+        `<div style="max-width:760px;margin:0 auto;background:#ffffff;border:2px solid #1e293b;padding:14px;font-family:Arial,Helvetica,sans-serif;color:#111827">` +
+
+        // CABECERA
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:2px solid #1e293b;padding-bottom:12px;margin-bottom:12px">` +
+        `<tr>` +
+        `<td style="vertical-align:top;padding-right:20px">` +
+        `<p style="margin:0;font-size:15px;font-weight:bold;color:#0f172a">${htmlEscape(empresaRazon || 'Librería')}</p>` +
+        (empresaNombreComercial ? `<p style="margin:2px 0 0;font-size:11px;color:#475569">${htmlEscape(empresaNombreComercial)}</p>` : '') +
+        (empresaDireccion ? `<p style="margin:2px 0 0;font-size:11px;color:#475569">${htmlEscape(empresaDireccion)}</p>` : '') +
+        `<p style="margin:2px 0 0;font-size:11px;color:#475569">RUC: <strong>${htmlEscape(empresaRuc || '—')}</strong></p>` +
+        `</td>` +
+        `<td style="vertical-align:top;width:220px">` +
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #0f172a;text-align:center">` +
+        `<tr><td style="padding:8px;font-size:13px;font-weight:bold;color:#0f172a;letter-spacing:0.5px">${tipoLabel}</td></tr>` +
+        `<tr><td style="border-top:1px solid #94a3b8;padding:4px;font-size:11px;color:#475569">RUC: <strong>${htmlEscape(empresaRuc || '—')}</strong></td></tr>` +
+        `<tr><td style="border-top:1px solid #94a3b8;padding:8px;font-family:monospace;font-size:16px;font-weight:bold;color:#0f172a;letter-spacing:1px">${htmlEscape(serieNumero)}</td></tr>` +
         `</table>` +
-        `<table style="width:100%;border-collapse:collapse;margin:10px 0">` +
-        `<tr><td style="padding:4px 0;color:#64748b">Subtotal</td><td style="padding:4px 0;text-align:right;color:#1e293b">${money(subtotal)}</td></tr>` +
-        igvLine +
+        `</td>` +
+        `</tr>` +
+        `</table>` +
+
+        // DATOS CLIENTE
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #94a3b8;padding-bottom:10px;margin-bottom:12px">` +
+        `<tr><td style="padding:2px 0;font-weight:bold;font-size:12px;color:#334155;width:130px">Fecha de emisión:</td><td style="padding:2px 0;font-size:12px;color:#1e293b">${htmlEscape(fecha)}</td><td style="padding:2px 0;font-weight:bold;font-size:12px;color:#334155;width:130px">Tipo de moneda:</td><td style="padding:2px 0;font-size:12px;color:#1e293b">SOLES</td></tr>` +
+        `<tr><td style="padding:2px 0;font-weight:bold;font-size:12px;color:#334155">Señor(es):</td><td style="padding:2px 0;font-size:12px;color:#1e293b" colspan="3">${htmlEscape(nombre || 'Cliente')}</td></tr>` +
+        `<tr><td style="padding:2px 0;font-weight:bold;font-size:12px;color:#334155">Documento:</td><td style="padding:2px 0;font-size:12px;color:#1e293b" colspan="3">${docLine}</td></tr>` +
+        emailLine +
+        `</table>` +
+
+        // TABLA DETALLE
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-bottom:1px solid #94a3b8;margin-bottom:12px">` +
+        `<thead>` +
+        `<tr style="background:#f1f5f9">` +
+        `<th style="border:1px solid #94a3b8;padding:6px 8px;font-size:10px;font-weight:bold;text-align:center;color:#475569;width:50px">CANT.</th>` +
+        `<th style="border:1px solid #94a3b8;padding:6px 8px;font-size:10px;font-weight:bold;text-align:center;color:#475569;width:50px">UND.</th>` +
+        `<th style="border:1px solid #94a3b8;padding:6px 8px;font-size:10px;font-weight:bold;text-align:left;color:#475569">DESCRIPCIÓN</th>` +
+        `<th style="border:1px solid #94a3b8;padding:6px 8px;font-size:10px;font-weight:bold;text-align:right;color:#475569;width:80px">V. UNIT.</th>` +
+        `<th style="border:1px solid #94a3b8;padding:6px 8px;font-size:10px;font-weight:bold;text-align:right;color:#475569;width:65px">DSCTO.</th>` +
+        `<th style="border:1px solid #94a3b8;padding:6px 8px;font-size:10px;font-weight:bold;text-align:right;color:#475569;width:80px">IMPORTE</th>` +
+        `</tr>` +
+        `</thead>` +
+        `<tbody>${filasHtml}</tbody>` +
+        `</table>` +
+
+        // TOTALES + MONTO EN LETRAS
+        `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px">` +
+        `<tr>` +
+        `<td style="vertical-align:top;padding-right:16px;width:55%">` +
+        `<p style="margin:0;font-size:11px;font-style:italic;color:#475569">SON: ${htmlEscape(montoEnLetras(tot))}</p>` +
+        `</td>` +
+        `<td style="vertical-align:top;width:45%">` +
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #94a3b8;border-collapse:collapse">` +
+        `<tr><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;font-size:12px;color:#475569">Op. Gravada</td><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;text-align:right;font-size:12px">${money(opGravada)}</td></tr>` +
+        `<tr><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;font-size:12px;color:#475569">Op. Exonerada</td><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;text-align:right;font-size:12px">${money(opExonerada)}</td></tr>` +
+        `<tr><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;font-size:12px;color:#475569">Op. Inafecta</td><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;text-align:right;font-size:12px">S/ 0.00</td></tr>` +
+        `<tr><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;font-size:12px;color:#475569">IGV (18%)</td><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;text-align:right;font-size:12px">${money(igvVal)}</td></tr>` +
+        `<tr><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;font-size:12px;color:#475569">Otros Cargos</td><td style="border-bottom:1px solid #cbd5e1;padding:4px 10px;text-align:right;font-size:12px">S/ 0.00</td></tr>` +
         envioLine +
-        `<tr><td style="padding:8px 0;font-weight:bold;color:#17181c;font-size:16px;border-top:2px solid #e2e8f0">Total</td><td style="padding:8px 0;text-align:right;font-weight:bold;color:#17181c;font-size:16px;border-top:2px solid #e2e8f0">${money(total)}</td></tr>` +
+        `<tr style="background:#f1f5f9"><td style="padding:6px 10px;font-size:13px;font-weight:bold;color:#0f172a">IMPORTE TOTAL</td><td style="padding:6px 10px;text-align:right;font-size:13px;font-weight:bold;color:#0f172a">${money(tot)}</td></tr>` +
         `</table>` +
-        `<p style="color:#64748b;font-size:12px;margin-top:18px">Emisor: ${htmlEscape(empresaRazon || 'Librería')} — RUC: ${htmlEscape(empresaRuc || '—')}</p>` +
-        `<p style="color:#64748b;font-size:12px">Si no realizaste esta compra, ignora este correo.</p>`;
+        `</td>` +
+        `</tr>` +
+        `</table>` +
+
+        // PIE
+        `<p style="margin:0;text-align:center;font-size:10px;color:#94a3b8">Representación impresa del comprobante electrónico.</p>` +
+        `</div>` +
+
+        // MENSAJE FUERA DEL COMPROBANTE
+        `<div style="max-width:760px;margin:16px auto 0;font-family:Arial,Helvetica,sans-serif;color:#64748b;font-size:13px;text-align:center">` +
+        `<p style="margin:0">Este comprobante corresponde a su compra en <strong>Librería</strong>.</p>` +
+        `</div>`;
 
     const { asunto, html } = plantillaBase({
         tituloCabecera: `${tipoLabel} ${serieNumero}`,

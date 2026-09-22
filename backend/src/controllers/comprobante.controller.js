@@ -1,4 +1,5 @@
 const comprobanteModel = require('../models/comprobante.model');
+const empresaModel = require('../models/empresa.model');
 const { validarId } = require('../utils/validaciones');
 const { enviarComprobantePorEmail } = require('../utils/mailer');
 
@@ -223,6 +224,8 @@ const enviarComprobanteEmail = async (req, res) => {
             `${comprobante.nombre_usuario || ''} ${comprobante.apellido_usuario || ''}`.trim() ||
             'Cliente';
 
+        const empresa = await empresaModel.obtenerEmpresa().catch(() => ({}));
+
         const resultado =
             await enviarComprobantePorEmail({
                 destinatario: emailDestino,
@@ -232,13 +235,17 @@ const enviarComprobanteEmail = async (req, res) => {
                 numero: comprobante.numero,
                 clienteDniRuc: comprobante.cliente_dni_ruc,
                 clienteTipoDocumento: comprobante.cliente_tipo_documento,
+                clienteEmail: comprobante.cliente_email || comprobante.correo_compra,
                 subtotal: comprobante.subtotal,
                 igv: comprobante.igv,
                 costoEnvio: comprobante.costo_envio,
                 total: comprobante.total,
                 items: comprobante.detalle || [],
-                empresaRazon: comprobante.razon_social,
-                empresaRuc: comprobante.ruc
+                empresaRazon: empresa.razon_social || comprobante.razon_social,
+                empresaRuc: empresa.ruc || comprobante.ruc,
+                empresaNombreComercial: empresa.nombre_comercial,
+                empresaDireccion: empresa.direccion,
+                fechaEmision: comprobante.fecha_emision
             });
 
         if (resultado.enviado) {
