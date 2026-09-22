@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import {
+    FaCircleCheck,
     FaEye,
     FaMagnifyingGlass,
     FaPaperPlane,
@@ -21,6 +22,7 @@ import { TableSkeleton } from '../../components/ui/TableSkeleton';
 import { DataTable } from '../../components/ui/DataTable';
 import { Badge } from '../../components/ui/Badge';
 import { BtnAccion } from '../../components/ui/Acciones';
+import { useToast } from '../../components/providers/ToastProvider';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 
@@ -71,7 +73,9 @@ const columnasComprobantes = [
     },
 ];
 
-function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando }) {
+function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando, enviadoId }) {
+    const id = fila.id_comprobante;
+    const fueEnviado = enviadoId === id;
     return (
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver comprobante">
@@ -80,8 +84,20 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando 
             <BtnAccion tipo="ver" onClick={() => onImprimir(fila)} titulo="Imprimir comprobante">
                 <FaPrint />
             </BtnAccion>
-            <BtnAccion tipo="ver" onClick={() => onEnviarEmail(fila)} titulo="Enviar por correo" disabled={enviando}>
-                <FaPaperPlane />
+            <BtnAccion
+                tipo="ver"
+                onClick={() => onEnviarEmail(fila)}
+                titulo={fueEnviado ? 'Enviado' : 'Enviar por correo'}
+                disabled={enviando}
+                className={fueEnviado ? 'text-green-600' : ''}
+            >
+                {enviando ? (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : fueEnviado ? (
+                    <FaCircleCheck />
+                ) : (
+                    <FaPaperPlane />
+                )}
             </BtnAccion>
         </>
     );
@@ -104,6 +120,8 @@ export default function ComprobantesPage() {
     const [comprobanteVer, setComprobanteVer] = useState(null);
     const [comprobanteImprimir, setComprobanteImprimir] = useState(null);
     const [enviandoEmail, setEnviandoEmail] = useState(null);
+    const [enviadoId, setEnviadoId] = useState(null);
+    const { exito, error: mostrarError } = useToast();
 
     const cargarComprobantes = async () => {
         try {
@@ -176,15 +194,18 @@ export default function ComprobantesPage() {
 
     const handleEnviarEmail = async (comprobante) => {
         if (!comprobante?.cliente_email && !comprobante?.correo_compra) {
-            alert('No hay correo electrónico registrado para este cliente');
+            mostrarError('No hay correo registrado para este cliente');
             return;
         }
         try {
             setEnviandoEmail(comprobante.id_comprobante);
+            setEnviadoId(null);
             const resultado = await enviarComprobanteEmail(comprobante.id_comprobante);
-            alert(resultado?.mensaje || 'Comprobante enviado correctamente');
+            setEnviadoId(comprobante.id_comprobante);
+            exito(resultado?.mensaje || 'Comprobante enviado correctamente');
+            setTimeout(() => setEnviadoId(null), 4000);
         } catch (err) {
-            alert(err.response?.data?.mensaje || 'Error al enviar el comprobante');
+            mostrarError(err.response?.data?.mensaje || 'Error al enviar el comprobante');
         } finally {
             setEnviandoEmail(null);
         }
@@ -315,6 +336,7 @@ export default function ComprobantesPage() {
                                     onImprimir: setComprobanteImprimir,
                                     onEnviarEmail: handleEnviarEmail,
                                     enviando: enviandoEmail === fila.id_comprobante,
+                                    enviadoId,
                                 })
                             }
                         />

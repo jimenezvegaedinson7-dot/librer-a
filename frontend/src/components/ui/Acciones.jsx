@@ -6,7 +6,7 @@ const colores = {
     eliminar: 'danger-outline',
 };
 
-export function BtnAccion({ tipo, onClick, titulo, children, disabled = false }) {
+export function BtnAccion({ tipo, onClick, titulo, children, disabled = false, className = '' }) {
     return (
         <Button
             variante={colores[tipo]}
@@ -15,7 +15,7 @@ export function BtnAccion({ tipo, onClick, titulo, children, disabled = false })
             title={titulo}
             aria-label={titulo}
             disabled={disabled}
-            className="!h-8 !w-8 !p-0"
+            className={`!h-8 !w-8 !p-0 ${className}`}
         >
             {children}
         </Button>
