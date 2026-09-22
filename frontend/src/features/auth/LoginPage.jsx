@@ -436,7 +436,6 @@ export default function LoginPage() {
                                         ? resetEmail.charAt(0) + '****' + resetEmail.slice(resetEmail.indexOf('@'))
                                         : '****@****.com'}
                                 </p>
-                                <p className="mt-1 text-xs text-[#64748b]">{resetEmail}</p>
                             </div>
 
                             <div>
