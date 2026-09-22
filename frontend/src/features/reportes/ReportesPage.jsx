@@ -60,66 +60,118 @@ function EncabezadoSeccion({ icono, titulo, descripcion }) {
     );
 }
 
+const REPORT_COLORS = {
+    primary: {
+        bg: 'bg-gradient-to-br from-[#2563eb] to-[#60a5fa]',
+        iconBg: 'bg-white/15',
+        iconText: 'text-white',
+        line: '#bfdbfe',
+    },
+    danger: {
+        bg: 'bg-gradient-to-br from-[#f43f5e] to-[#fb7185]',
+        iconBg: 'bg-white/15',
+        iconText: 'text-white',
+        line: '#fecdd3',
+    },
+    success: {
+        bg: 'bg-gradient-to-br from-[#059669] to-[#34d399]',
+        iconBg: 'bg-white/15',
+        iconText: 'text-white',
+        line: '#a7f3d0',
+    },
+    warning: {
+        bg: 'bg-gradient-to-br from-[#f97316] to-[#fb923c]',
+        iconBg: 'bg-white/15',
+        iconText: 'text-white',
+        line: '#fed7aa',
+    },
+    info: {
+        bg: 'bg-gradient-to-br from-[#0284c7] to-[#38bdf8]',
+        iconBg: 'bg-white/15',
+        iconText: 'text-white',
+        line: '#bae6fd',
+    },
+    violet: {
+        bg: 'bg-gradient-to-br from-[#7c3aed] to-[#a78bfa]',
+        iconBg: 'bg-white/15',
+        iconText: 'text-white',
+        line: '#ddd6fe',
+    },
+    sky: {
+        bg: 'bg-gradient-to-br from-[#0284c7] to-[#38bdf8]',
+        iconBg: 'bg-white/15',
+        iconText: 'text-white',
+        line: '#bae6fd',
+    },
+    emerald: {
+        bg: 'bg-gradient-to-br from-[#059669] to-[#34d399]',
+        iconBg: 'bg-white/15',
+        iconText: 'text-white',
+        line: '#a7f3d0',
+    },
+    amber: {
+        bg: 'bg-gradient-to-br from-[#d97706] to-[#fbbf24]',
+        iconBg: 'bg-white/15',
+        iconText: 'text-white',
+        line: '#fde68a',
+    },
+    crimson: {
+        bg: 'bg-gradient-to-br from-[#dc2626] to-[#f87171]',
+        iconBg: 'bg-white/15',
+        iconText: 'text-white',
+        line: '#fecaca',
+    },
+};
+
 function TarjetaResumen({ icono, titulo, valor, detalle, color = 'primary' }) {
-    const colores = {
-        primary: 'from-primary-500 to-primary-600 text-white',
-        success: 'from-emerald-500 to-emerald-600 text-white',
-        warning: 'from-amber-500 to-amber-600 text-white',
-        danger: 'from-crimson-500 to-crimson-600 text-white',
-        sky: 'from-sky-500 to-sky-600 text-white',
-        violet: 'from-violet-500 to-violet-600 text-white',
-    };
-    const iconBg = {
-        primary: 'bg-primary-100 text-primary-600',
-        success: 'bg-emerald-100 text-emerald-600',
-        warning: 'bg-amber-100 text-amber-600',
-        danger: 'bg-crimson-100 text-crimson-600',
-        sky: 'bg-sky-100 text-sky-600',
-        violet: 'bg-violet-100 text-violet-600',
-    };
+    const c = REPORT_COLORS[color] || REPORT_COLORS.primary;
     return (
-        <div className="group relative overflow-hidden rounded-xl border border-primary-100 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
-            <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${colores[color]}`} />
-            <div className="flex items-start gap-3 p-4 pt-5">
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconBg[color]} text-sm transition-transform duration-200 group-hover:scale-110`}>
-                    {icono}
-                </div>
-                <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium text-slate-400">{titulo}</p>
-                    <p className="mt-1 text-xl font-bold leading-tight text-slate-800">{valor}</p>
-                    {detalle && <p className="mt-1 text-xs text-slate-400">{detalle}</p>}
+        <article className={`group relative min-h-[135px] overflow-hidden rounded-[8px] px-5 py-4 text-white shadow-[0_5px_15px_rgba(30,64,175,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(30,64,175,0.18)] ${c.bg}`}>
+            <div className="relative z-10">
+                <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                        <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/90">{titulo}</p>
+                        <p className="mt-3 text-[27px] font-semibold leading-none tracking-[-0.02em] text-white">{valor}</p>
+                        {detalle && <p className="mt-2 text-[11px] font-medium leading-relaxed text-white/85">{detalle}</p>}
+                    </div>
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${c.iconBg} backdrop-blur-sm`}>
+                        <span className={`text-base ${c.iconText}`}>{icono}</span>
+                    </div>
                 </div>
             </div>
-        </div>
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[40px] opacity-70">
+                <svg viewBox="0 0 400 55" preserveAspectRatio="none" className="h-full w-full">
+                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25" fill="none" stroke={c.line} strokeWidth="2" />
+                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25 L400 55 L0 55 Z" fill="rgba(255,255,255,0.10)" />
+                </svg>
+            </div>
+        </article>
     );
 }
 
 function Destacado({ icono, titulo, principal, detalle, color = 'primary' }) {
-    const bg = {
-        primary: 'border-primary-200 bg-gradient-to-br from-primary-50 to-white',
-        success: 'border-emerald-200 bg-gradient-to-br from-emerald-50 to-white',
-        warning: 'border-amber-200 bg-gradient-to-br from-amber-50 to-white',
-        sky: 'border-sky-200 bg-gradient-to-br from-sky-50 to-white',
-        trophy: 'border-amber-200 bg-gradient-to-br from-amber-50 to-white',
-    };
-    const iconBg = {
-        primary: 'bg-primary-100 text-primary-600',
-        success: 'bg-emerald-100 text-emerald-600',
-        warning: 'bg-amber-100 text-amber-600',
-        sky: 'bg-sky-100 text-sky-600',
-        trophy: 'bg-amber-100 text-amber-600',
-    };
+    const c = REPORT_COLORS[color] || REPORT_COLORS.primary;
     return (
-        <div className={`flex items-center gap-4 rounded-xl border p-4 transition-all duration-200 hover:shadow-sm ${bg[color]}`}>
-            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconBg[color]} text-sm`}>
-                {icono}
+        <article className={`group relative min-h-[100px] overflow-hidden rounded-[8px] px-5 py-4 text-white shadow-[0_5px_15px_rgba(30,64,175,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(30,64,175,0.18)] ${c.bg}`}>
+            <div className="relative z-10">
+                <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                        <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/90">{titulo}</p>
+                        <p className="mt-2 text-[18px] font-semibold leading-tight text-white">{principal}</p>
+                        {detalle && <p className="mt-1 text-[11px] font-medium leading-relaxed text-white/85">{detalle}</p>}
+                    </div>
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${c.iconBg} backdrop-blur-sm`}>
+                        <span className={`text-base ${c.iconText}`}>{icono}</span>
+                    </div>
+                </div>
             </div>
-            <div className="min-w-0">
-                <p className="text-xs font-medium text-slate-400">{titulo}</p>
-                <p className="mt-0.5 text-sm font-bold text-slate-800">{principal}</p>
-                <p className="mt-0.5 text-xs text-slate-400">{detalle}</p>
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[40px] opacity-70">
+                <svg viewBox="0 0 400 55" preserveAspectRatio="none" className="h-full w-full">
+                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25" fill="none" stroke={c.line} strokeWidth="2" />
+                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25 L400 55 L0 55 Z" fill="rgba(255,255,255,0.10)" />
+                </svg>
             </div>
-        </div>
+        </article>
     );
 }
 
@@ -309,7 +361,7 @@ export default function ReportesPage() {
                                             ? `${indicadores.mejor_mes.cantidad_ventas} ventas · ${formatearMoneda(indicadores.mejor_mes.total_vendido)}`
                                             : 'Aún no existen ventas pagadas.'
                                     }
-                                    color="trophy"
+                                    color="amber"
                                 />
                                 <Destacado
                                     icono={<FaCalendarDay />}
