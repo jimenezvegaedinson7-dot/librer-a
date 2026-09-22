@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import {
-    FaBook,
-    FaUserPen,
-    FaTags,
-    FaUsers,
     FaCartShopping,
     FaMoneyBillWave,
     FaCalendarCheck,
@@ -512,27 +508,6 @@ export default function ReportesPage() {
                         </CardBody>
                     </Card>
 
-                    <Card>
-                        <CardBody className="p-0">
-                            <EncabezadoSeccion
-                                icono={<FaChartColumn />}
-                                titulo="Resumen general"
-                                descripcion="Indicadores principales del sistema"
-                            />
-
-                            <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-                                <TarjetaResumen icono={<FaBook />} titulo="Libros" valor={resumen.total_libros || 0} color="primary" />
-                                <TarjetaResumen icono={<FaUserPen />} titulo="Autores" valor={resumen.total_autores || 0} color="sky" />
-                                <TarjetaResumen icono={<FaTags />} titulo="Categorías" valor={resumen.total_categorias || 0} color="violet" />
-                                <TarjetaResumen icono={<FaUsers />} titulo="Usuarios" valor={resumen.total_usuarios || 0} color="success" />
-                                <TarjetaResumen icono={<FaCartShopping />} titulo="Ventas pagadas" valor={resumen.total_ventas || 0} color="warning" />
-                                <TarjetaResumen icono={<FaMoneyBillWave />} titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} color="success" />
-                                <TarjetaResumen icono={<FaCalendarCheck />} titulo="Reservas" valor={resumen.total_reservas || 0} color="sky" />
-                                <TarjetaResumen icono={<FaTriangleExclamation />} titulo="Stock bajo" valor={resumen.libros_stock_bajo || 0} color="danger" />
-                            </div>
-                        </CardBody>
-                    </Card>
-
                     <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                         <Card>
                             <CardBody className="p-0">
@@ -588,97 +563,99 @@ export default function ReportesPage() {
                         </Card>
                     </div>
 
-                    <Card>
-                        <CardBody className="p-0">
-                            <EncabezadoSeccion icono={<FaTrophy />} titulo="Libros más vendidos" descripcion="Ranking basado únicamente en ventas pagadas" />
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        <Card>
+                            <CardBody className="p-0">
+                                <EncabezadoSeccion icono={<FaTrophy />} titulo="Libros mas vendidos" descripcion="Ranking basado unicamente en ventas pagadas" />
 
-                            {librosMasVendidos.length === 0 ? (
-                                <EmptyState titulo="Sin ventas" descripcion="Todavia no hay ventas pagadas." />
-                            ) : (
-                                <div className="overflow-x-auto p-4">
-                                    <table className="min-w-full rounded-lg border border-primary-200">
-                                        <thead>
-                                            <tr className="border-b-2 border-primary-200 bg-parchment-200">
-                                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">#</th>
-                                                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Libro</th>
-                                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Unidades</th>
-                                                <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Total generado</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-primary-200">
-                                            {librosMasVendidos.map((libro, index) => (
-                                                <tr key={libro.id_libro} className="hover:bg-parchment-200">
-                                                    <td className="px-4 py-2.5 text-center text-xs font-semibold text-mahogany-700">{index + 1}</td>
-                                                    <td className="px-4 py-2.5 text-xs font-semibold text-mahogany-700">{libro.titulo}</td>
-                                                    <td className="px-4 py-2.5 text-center">
-                                                        <span className="inline-flex rounded bg-parchment-300 px-2 py-0.5 text-[11px] font-semibold text-mahogany-700">
-                                                            {libro.cantidad_vendida}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-2.5 text-right text-xs font-bold text-mahogany-700">{formatearMoneda(libro.total_generado)}</td>
+                                {librosMasVendidos.length === 0 ? (
+                                    <EmptyState titulo="Sin ventas" descripcion="Todavia no hay ventas pagadas." />
+                                ) : (
+                                    <div className="overflow-x-auto p-3">
+                                        <table className="min-w-full rounded-lg border border-primary-200">
+                                            <thead>
+                                                <tr className="border-b-2 border-primary-200 bg-parchment-200">
+                                                    <th className="px-3 py-2.5 text-center text-[10px] font-bold uppercase tracking-wide text-mahogany-700">#</th>
+                                                    <th className="px-3 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide text-mahogany-700">Libro</th>
+                                                    <th className="px-3 py-2.5 text-center text-[10px] font-bold uppercase tracking-wide text-mahogany-700">Unid.</th>
+                                                    <th className="px-3 py-2.5 text-right text-[10px] font-bold uppercase tracking-wide text-mahogany-700">Total</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </CardBody>
-                    </Card>
-
-                    <Card>
-                        <CardBody className="p-0">
-                            <div className="flex items-center justify-between border-b border-primary-200 bg-parchment-200/50 px-4 py-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-crimson-100 text-xs text-crimson-500">
-                                        <FaTriangleExclamation />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-sm font-bold text-mahogany-700">Libros con stock bajo</h2>
-                                        <p className="mt-0.5 text-[11px] text-primary-500">Stock menor o igual al minimo configurado</p>
-                                    </div>
-                                </div>
-                                <span className="rounded-full border border-crimson-200 bg-crimson-100 px-2.5 py-1 text-[11px] font-bold text-crimson-500">
-                                    {stockBajo.length}
-                                </span>
-                            </div>
-
-                            {stockBajo.length === 0 ? (
-                                <EmptyState titulo="Inventario en orden" descripcion="Todo el inventario esta en niveles normales." />
-                            ) : (
-                                <div className="overflow-x-auto p-4">
-                                    <table className="min-w-full rounded-lg border border-primary-200">
-                                        <thead>
-                                            <tr className="border-b-2 border-primary-200 bg-parchment-200">
-                                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase text-mahogany-700">ID</th>
-                                                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase text-mahogany-700">Libro</th>
-                                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase text-mahogany-700">Stock</th>
-                                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase text-mahogany-700">Minimo</th>
-                                                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase text-mahogany-700">Ubicacion</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-primary-200">
-                                            {stockBajo.map((item) => {
-                                                const sinStock = Number(item.stock) <= 0;
-                                                return (
-                                                    <tr key={item.id_inventario} className="hover:bg-parchment-200">
-                                                        <td className="px-4 py-2.5 text-center text-xs text-mahogany-700">{item.id_inventario}</td>
-                                                        <td className="px-4 py-2.5 text-xs font-semibold text-mahogany-700">{item.titulo}</td>
-                                                        <td className="px-4 py-2.5 text-center">
-                                                            <span className={`inline-flex rounded px-2.5 py-0.5 text-[11px] font-semibold ${sinStock ? 'bg-crimson-100 text-crimson-500' : 'bg-warning-bg text-warning'}`}>
-                                                                {sinStock ? 'Sin stock' : item.stock}
+                                            </thead>
+                                            <tbody className="divide-y divide-primary-200">
+                                                {librosMasVendidos.map((libro, index) => (
+                                                    <tr key={libro.id_libro} className="hover:bg-parchment-200">
+                                                        <td className="px-3 py-2 text-center text-[11px] font-semibold text-mahogany-700">{index + 1}</td>
+                                                        <td className="px-3 py-2 text-[11px] font-semibold text-mahogany-700 truncate max-w-[140px]">{libro.titulo}</td>
+                                                        <td className="px-3 py-2 text-center">
+                                                            <span className="inline-flex rounded bg-parchment-300 px-1.5 py-0.5 text-[10px] font-semibold text-mahogany-700">
+                                                                {libro.cantidad_vendida}
                                                             </span>
                                                         </td>
-                                                        <td className="px-4 py-2.5 text-center text-xs font-semibold text-mahogany-700">{item.stock_minimo}</td>
-                                                        <td className="px-4 py-2.5 text-xs text-mahogany-700">{item.ubicacion || 'No registrada'}</td>
+                                                        <td className="px-3 py-2 text-right text-[11px] font-bold text-mahogany-700">{formatearMoneda(libro.total_generado)}</td>
                                                     </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </CardBody>
+                        </Card>
+
+                        <Card>
+                            <CardBody className="p-0">
+                                <div className="flex items-center justify-between border-b border-primary-200 bg-parchment-200/50 px-3 py-2.5">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-crimson-100 text-[11px] text-crimson-500">
+                                            <FaTriangleExclamation />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xs font-bold text-mahogany-700">Libros con stock bajo</h2>
+                                            <p className="mt-0.5 text-[10px] text-primary-500">Stock menor o igual al minimo configurado</p>
+                                        </div>
+                                    </div>
+                                    <span className="rounded-full border border-crimson-200 bg-crimson-100 px-2 py-0.5 text-[10px] font-bold text-crimson-500">
+                                        {stockBajo.length}
+                                    </span>
                                 </div>
-                            )}
-                        </CardBody>
-                    </Card>
+
+                                {stockBajo.length === 0 ? (
+                                    <EmptyState titulo="Inventario en orden" descripcion="Todo el inventario esta en niveles normales." />
+                                ) : (
+                                    <div className="overflow-x-auto p-3">
+                                        <table className="min-w-full rounded-lg border border-primary-200">
+                                            <thead>
+                                                <tr className="border-b-2 border-primary-200 bg-parchment-200">
+                                                    <th className="px-3 py-2.5 text-center text-[10px] font-bold uppercase text-mahogany-700">ID</th>
+                                                    <th className="px-3 py-2.5 text-left text-[10px] font-bold uppercase text-mahogany-700">Libro</th>
+                                                    <th className="px-3 py-2.5 text-center text-[10px] font-bold uppercase text-mahogany-700">Stock</th>
+                                                    <th className="px-3 py-2.5 text-center text-[10px] font-bold uppercase text-mahogany-700">Min.</th>
+                                                    <th className="px-3 py-2.5 text-left text-[10px] font-bold uppercase text-mahogany-700">Ubic.</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-primary-200">
+                                                {stockBajo.map((item) => {
+                                                    const sinStock = Number(item.stock) <= 0;
+                                                    return (
+                                                        <tr key={item.id_inventario} className="hover:bg-parchment-200">
+                                                            <td className="px-3 py-2 text-center text-[11px] text-mahogany-700">{item.id_inventario}</td>
+                                                            <td className="px-3 py-2 text-[11px] font-semibold text-mahogany-700 truncate max-w-[120px]">{item.titulo}</td>
+                                                            <td className="px-3 py-2 text-center">
+                                                                <span className={`inline-flex rounded px-1.5 py-0.5 text-[10px] font-semibold ${sinStock ? 'bg-crimson-100 text-crimson-500' : 'bg-warning-bg text-warning'}`}>
+                                                                    {sinStock ? 'Sin stock' : item.stock}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-3 py-2 text-center text-[11px] font-semibold text-mahogany-700">{item.stock_minimo}</td>
+                                                            <td className="px-3 py-2 text-[11px] text-mahogany-700 truncate max-w-[90px]">{item.ubicacion || 'No registrada'}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </CardBody>
+                        </Card>
+                    </div>
                 </>
             )}
         </div>
