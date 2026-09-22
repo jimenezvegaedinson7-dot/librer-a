@@ -19,9 +19,8 @@ const CSS_IMPRESION = `
     .print-area, .print-area * { visibility: visible !important; }
     .print-area {
         position: fixed !important; left: 0 !important; top: 0 !important;
-        right: 0 !important; width: 100% !important; max-width: 100% !important;
-        margin: 0 !important; border: none !important; border-radius: 0 !important;
-        box-shadow: none !important; overflow: visible !important;
+        margin: 0 auto !important;
+        overflow: visible !important;
         background: white !important;
     }
     .no-print { display: none !important; }
