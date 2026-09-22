@@ -126,23 +126,23 @@ const REPORT_COLORS = {
 function TarjetaResumen({ icono, titulo, valor, detalle, color = 'primary' }) {
     const c = REPORT_COLORS[color] || REPORT_COLORS.primary;
     return (
-        <article className={`group relative min-h-[135px] overflow-hidden rounded-[8px] px-5 py-4 text-white shadow-[0_5px_15px_rgba(30,64,175,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(30,64,175,0.18)] ${c.bg}`}>
+        <article className={`group relative min-h-[110px] overflow-hidden rounded-lg px-4 py-3 text-white shadow-[0_4px_12px_rgba(30,64,175,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(30,64,175,0.16)] ${c.bg}`}>
             <div className="relative z-10">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                        <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/90">{titulo}</p>
-                        <p className="mt-3 text-[27px] font-semibold leading-none tracking-[-0.02em] text-white">{valor}</p>
-                        {detalle && <p className="mt-2 text-[11px] font-medium leading-relaxed text-white/85">{detalle}</p>}
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/85">{titulo}</p>
+                        <p className="mt-2 text-[22px] font-bold leading-none tracking-[-0.02em] text-white">{valor}</p>
+                        {detalle && <p className="mt-1.5 text-[10px] font-medium text-white/80">{detalle}</p>}
                     </div>
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${c.iconBg} backdrop-blur-sm`}>
-                        <span className={`text-base ${c.iconText}`}>{icono}</span>
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${c.iconBg} backdrop-blur-sm`}>
+                        <span className={`text-sm ${c.iconText}`}>{icono}</span>
                     </div>
                 </div>
             </div>
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[40px] opacity-70">
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[30px] opacity-60">
                 <svg viewBox="0 0 400 55" preserveAspectRatio="none" className="h-full w-full">
                     <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25" fill="none" stroke={c.line} strokeWidth="2" />
-                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25 L400 55 L0 55 Z" fill="rgba(255,255,255,0.10)" />
+                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25 L400 55 L0 55 Z" fill="rgba(255,255,255,0.08)" />
                 </svg>
             </div>
         </article>
@@ -152,23 +152,23 @@ function TarjetaResumen({ icono, titulo, valor, detalle, color = 'primary' }) {
 function Destacado({ icono, titulo, principal, detalle, color = 'primary' }) {
     const c = REPORT_COLORS[color] || REPORT_COLORS.primary;
     return (
-        <article className={`group relative min-h-[100px] overflow-hidden rounded-[8px] px-5 py-4 text-white shadow-[0_5px_15px_rgba(30,64,175,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_22px_rgba(30,64,175,0.18)] ${c.bg}`}>
+        <article className={`group relative min-h-[85px] overflow-hidden rounded-lg px-4 py-3 text-white shadow-[0_4px_12px_rgba(30,64,175,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(30,64,175,0.16)] ${c.bg}`}>
             <div className="relative z-10">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                        <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/90">{titulo}</p>
-                        <p className="mt-2 text-[18px] font-semibold leading-tight text-white">{principal}</p>
-                        {detalle && <p className="mt-1 text-[11px] font-medium leading-relaxed text-white/85">{detalle}</p>}
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/85">{titulo}</p>
+                        <p className="mt-1.5 text-[16px] font-bold leading-tight text-white">{principal}</p>
+                        {detalle && <p className="mt-1 text-[10px] font-medium text-white/80">{detalle}</p>}
                     </div>
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${c.iconBg} backdrop-blur-sm`}>
-                        <span className={`text-base ${c.iconText}`}>{icono}</span>
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${c.iconBg} backdrop-blur-sm`}>
+                        <span className={`text-sm ${c.iconText}`}>{icono}</span>
                     </div>
                 </div>
             </div>
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[40px] opacity-70">
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[30px] opacity-60">
                 <svg viewBox="0 0 400 55" preserveAspectRatio="none" className="h-full w-full">
                     <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25" fill="none" stroke={c.line} strokeWidth="2" />
-                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25 L400 55 L0 55 Z" fill="rgba(255,255,255,0.10)" />
+                    <path d="M0 42 L20 35 L45 43 L70 39 L92 45 L118 27 L140 20 L165 28 L190 38 L215 25 L240 32 L265 17 L285 30 L305 24 L330 37 L355 21 L380 30 L400 25 L400 55 L0 55 Z" fill="rgba(255,255,255,0.08)" />
                 </svg>
             </div>
         </article>
@@ -391,27 +391,27 @@ export default function ReportesPage() {
                             />
 
                             {ventasPorMes.length === 0 ? (
-                                <EmptyState titulo="Sin ventas por mes" descripcion="Todavía no existen ventas pagadas para mostrar." />
+                                <EmptyState titulo="Sin ventas por mes" descripcion="Todavia no existen ventas pagadas para mostrar." />
                             ) : (
                                 <div className="p-4">
-                                    <div className="rounded-xl border border-primary-200 bg-parchment-200/60 p-4">
-                                        <div className="flex h-52 items-end gap-2 overflow-x-auto border-b border-primary-200 pb-7">
+                                    <div className="rounded-lg border border-primary-200 bg-parchment-200/60 p-4">
+                                        <div className="flex h-44 items-end gap-2 overflow-x-auto border-b border-primary-200 pb-6">
                                             {ventasPorMes.map((item) => {
                                                 const porcentaje = Math.max(5, (Number(item.total_vendido || 0) / maximoMensual) * 100);
                                                 return (
                                                     <div
                                                         key={`${item.anio}-${item.mes_numero}`}
-                                                        className="group relative flex h-full min-w-[48px] flex-1 items-end justify-center"
+                                                        className="group relative flex h-full min-w-[44px] flex-1 items-end justify-center"
                                                     >
                                                         <div
-                                                            className="relative w-8 rounded-t-md bg-primary-500 transition-all duration-300 hover:bg-primary-600"
+                                                            className="relative w-7 rounded-t-sm bg-primary-500 transition-all duration-300 hover:bg-primary-600"
                                                             style={{ height: `${porcentaje}%` }}
                                                         >
-                                                            <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-mahogany-700 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block">
+                                                            <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-mahogany-700 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block">
                                                                 {formatearMoneda(item.total_vendido)}
                                                             </div>
                                                         </div>
-                                                        <div className="absolute -bottom-6 whitespace-nowrap text-[10px] font-semibold text-primary-500">
+                                                        <div className="absolute -bottom-5 whitespace-nowrap text-[10px] font-semibold text-primary-500">
                                                             {item.mes} {String(item.anio).slice(-2)}
                                                         </div>
                                                     </div>
@@ -420,23 +420,23 @@ export default function ReportesPage() {
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 overflow-x-auto">
+                                    <div className="mt-4 overflow-x-auto rounded-lg border border-primary-200">
                                         <table className="min-w-full text-sm">
                                             <thead>
                                                 <tr className="border-b-2 border-primary-200 bg-parchment-200">
-                                                    <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Período</th>
-                                                    <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Ventas</th>
-                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Total vendido</th>
-                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Promedio</th>
+                                                    <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Periodo</th>
+                                                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Ventas</th>
+                                                    <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Total vendido</th>
+                                                    <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Promedio</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-primary-200">
                                                 {[...ventasPorMes].reverse().map((item) => (
-                                                    <tr key={`tabla-${item.anio}-${item.mes_numero}`} className="transition hover:bg-parchment-200">
-                                                        <td className="px-3 py-2.5 text-xs font-semibold text-mahogany-700">{item.mes} {item.anio}</td>
-                                                        <td className="px-3 py-2.5 text-center text-xs font-semibold text-mahogany-700">{item.cantidad_ventas}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-mahogany-700">{formatearMoneda(item.total_vendido)}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs text-mahogany-700">{formatearMoneda(item.promedio_venta)}</td>
+                                                    <tr key={`tabla-${item.anio}-${item.mes_numero}`} className="hover:bg-parchment-200">
+                                                        <td className="px-4 py-2.5 text-xs font-semibold text-mahogany-700">{item.mes} {item.anio}</td>
+                                                        <td className="px-4 py-2.5 text-center text-xs font-semibold text-mahogany-700">{item.cantidad_ventas}</td>
+                                                        <td className="px-4 py-2.5 text-right text-xs font-semibold text-mahogany-700">{formatearMoneda(item.total_vendido)}</td>
+                                                        <td className="px-4 py-2.5 text-right text-xs text-mahogany-700">{formatearMoneda(item.promedio_venta)}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -459,49 +459,49 @@ export default function ReportesPage() {
                                 <EmptyState titulo="Sin ventas diarias" descripcion="No existen ventas diarias para mostrar." />
                             ) : (
                                 <div className="p-4">
-                                    <div className="rounded-xl border border-primary-200 bg-parchment-200/60 p-4">
-                                        <div className="flex h-44 items-end gap-1.5 overflow-x-auto border-b border-primary-200 pb-7">
+                                    <div className="rounded-lg border border-primary-200 bg-parchment-200/60 p-4">
+                                        <div className="flex h-36 items-end gap-1.5 overflow-x-auto border-b border-primary-200 pb-6">
                                             {ventasPorDia.map((item) => {
                                                 const porcentaje = Math.max(5, (Number(item.total_vendido || 0) / maximoDiario) * 100);
                                                 return (
                                                     <div
                                                         key={String(item.fecha)}
-                                                        className="group relative flex h-full min-w-[32px] flex-1 items-end justify-center"
+                                                        className="group relative flex h-full min-w-[28px] flex-1 items-end justify-center"
                                                     >
                                                         <div
-                                                            className="relative w-5 rounded-t bg-sky-500 transition hover:bg-sky-600"
+                                                            className="relative w-4 rounded-t-sm bg-sky-500 transition hover:bg-sky-600"
                                                             style={{ height: `${porcentaje}%` }}
                                                         >
-                                                            <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-mahogany-700 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block">
+                                                            <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-mahogany-700 px-2 py-1 text-[10px] font-semibold text-white shadow-lg group-hover:block">
                                                                 {formatearMoneda(item.total_vendido)}
                                                             </div>
                                                         </div>
-                                                        <span className="absolute -bottom-6 text-[9px] font-semibold text-primary-500">{item.dia}</span>
+                                                        <span className="absolute -bottom-5 text-[9px] font-semibold text-primary-500">{item.dia}</span>
                                                     </div>
                                                 );
                                             })}
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 max-h-80 overflow-auto rounded-lg border border-primary-200">
+                                    <div className="mt-4 max-h-72 overflow-auto rounded-lg border border-primary-200">
                                         <table className="min-w-full">
                                             <thead className="sticky top-0 z-10 bg-parchment-200">
                                                 <tr className="border-b-2 border-primary-200">
-                                                    <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-mahogany-700">Fecha</th>
-                                                    <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-mahogany-700">Ventas</th>
-                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase text-mahogany-700">Total</th>
-                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase text-mahogany-700">Promedio</th>
-                                                    <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase text-mahogany-700">Venta mayor</th>
+                                                    <th className="px-4 py-3 text-left text-[11px] font-bold uppercase text-mahogany-700">Fecha</th>
+                                                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase text-mahogany-700">Ventas</th>
+                                                    <th className="px-4 py-3 text-right text-[11px] font-bold uppercase text-mahogany-700">Total</th>
+                                                    <th className="px-4 py-3 text-right text-[11px] font-bold uppercase text-mahogany-700">Promedio</th>
+                                                    <th className="px-4 py-3 text-right text-[11px] font-bold uppercase text-mahogany-700">Venta mayor</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-primary-200 bg-white">
                                                 {[...ventasPorDia].reverse().map((item) => (
                                                     <tr key={`dia-${String(item.fecha)}`} className="hover:bg-parchment-200">
-                                                        <td className="px-3 py-2.5 text-xs font-semibold text-mahogany-700">{formatearFechaReportes(item.fecha)}</td>
-                                                        <td className="px-3 py-2.5 text-center text-xs font-semibold text-mahogany-700">{item.cantidad_ventas}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-mahogany-700">{formatearMoneda(item.total_vendido)}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs text-mahogany-700">{formatearMoneda(item.promedio_venta)}</td>
-                                                        <td className="px-3 py-2.5 text-right text-xs font-semibold text-mahogany-700">{formatearMoneda(item.venta_mayor)}</td>
+                                                        <td className="px-4 py-2.5 text-xs font-semibold text-mahogany-700">{formatearFechaReportes(item.fecha)}</td>
+                                                        <td className="px-4 py-2.5 text-center text-xs font-semibold text-mahogany-700">{item.cantidad_ventas}</td>
+                                                        <td className="px-4 py-2.5 text-right text-xs font-semibold text-mahogany-700">{formatearMoneda(item.total_vendido)}</td>
+                                                        <td className="px-4 py-2.5 text-right text-xs text-mahogany-700">{formatearMoneda(item.promedio_venta)}</td>
+                                                        <td className="px-4 py-2.5 text-right text-xs font-semibold text-mahogany-700">{formatearMoneda(item.venta_mayor)}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -541,7 +541,7 @@ export default function ReportesPage() {
                                 {ventasPorEstado.length === 0 ? (
                                     <EmptyState titulo="Sin ventas" descripcion="No hay ventas registradas." />
                                 ) : (
-                                    <div className="divide-y divide-primary-200">
+                                     <div className="divide-y divide-primary-200">
                                         {ventasPorEstado.map((venta) => (
                                             <div key={venta.estado} className="flex items-center justify-between gap-4 px-4 py-3">
                                                 <div>
@@ -593,29 +593,29 @@ export default function ReportesPage() {
                             <EncabezadoSeccion icono={<FaTrophy />} titulo="Libros más vendidos" descripcion="Ranking basado únicamente en ventas pagadas" />
 
                             {librosMasVendidos.length === 0 ? (
-                                <EmptyState titulo="Sin ventas" descripcion="Todavía no hay ventas pagadas." />
+                                <EmptyState titulo="Sin ventas" descripcion="Todavia no hay ventas pagadas." />
                             ) : (
                                 <div className="overflow-x-auto p-4">
-                                    <table className="min-w-full">
+                                    <table className="min-w-full rounded-lg border border-primary-200">
                                         <thead>
                                             <tr className="border-b-2 border-primary-200 bg-parchment-200">
-                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Posición</th>
-                                                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Libro</th>
-                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Unidades</th>
-                                                <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Total generado</th>
+                                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">#</th>
+                                                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Libro</th>
+                                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Unidades</th>
+                                                <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-mahogany-700">Total generado</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-primary-200">
                                             {librosMasVendidos.map((libro, index) => (
-                                                <tr key={libro.id_libro} className="transition hover:bg-parchment-200">
-                                                    <td className="px-3 py-2.5 text-center text-xs font-semibold text-mahogany-700">#{index + 1}</td>
-                                                    <td className="px-3 py-2.5 text-xs font-semibold text-mahogany-700">{libro.titulo}</td>
-                                                    <td className="px-3 py-2.5 text-center">
-                                                        <span className="inline-flex rounded-md bg-parchment-300 px-2.5 py-1 text-[11px] font-semibold text-mahogany-700">
+                                                <tr key={libro.id_libro} className="hover:bg-parchment-200">
+                                                    <td className="px-4 py-2.5 text-center text-xs font-semibold text-mahogany-700">{index + 1}</td>
+                                                    <td className="px-4 py-2.5 text-xs font-semibold text-mahogany-700">{libro.titulo}</td>
+                                                    <td className="px-4 py-2.5 text-center">
+                                                        <span className="inline-flex rounded bg-parchment-300 px-2 py-0.5 text-[11px] font-semibold text-mahogany-700">
                                                             {libro.cantidad_vendida}
                                                         </span>
                                                     </td>
-                                                    <td className="px-3 py-2.5 text-right text-xs font-bold text-mahogany-700">{formatearMoneda(libro.total_generado)}</td>
+                                                    <td className="px-4 py-2.5 text-right text-xs font-bold text-mahogany-700">{formatearMoneda(libro.total_generado)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -634,7 +634,7 @@ export default function ReportesPage() {
                                     </div>
                                     <div>
                                         <h2 className="text-sm font-bold text-mahogany-700">Libros con stock bajo</h2>
-                                        <p className="mt-0.5 text-[11px] text-primary-500">Stock menor o igual al mínimo configurado</p>
+                                        <p className="mt-0.5 text-[11px] text-primary-500">Stock menor o igual al minimo configurado</p>
                                     </div>
                                 </div>
                                 <span className="rounded-full border border-crimson-200 bg-crimson-100 px-2.5 py-1 text-[11px] font-bold text-crimson-500">
@@ -643,17 +643,17 @@ export default function ReportesPage() {
                             </div>
 
                             {stockBajo.length === 0 ? (
-                                <EmptyState titulo="Inventario en orden" descripcion="Todo el inventario está en niveles normales." />
+                                <EmptyState titulo="Inventario en orden" descripcion="Todo el inventario esta en niveles normales." />
                             ) : (
                                 <div className="overflow-x-auto p-4">
-                                    <table className="min-w-full">
+                                    <table className="min-w-full rounded-lg border border-primary-200">
                                         <thead>
                                             <tr className="border-b-2 border-primary-200 bg-parchment-200">
-                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-mahogany-700">ID</th>
-                                                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-mahogany-700">Libro</th>
-                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-mahogany-700">Stock</th>
-                                                <th className="px-3 py-2.5 text-center text-[11px] font-bold uppercase text-mahogany-700">Mínimo</th>
-                                                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase text-mahogany-700">Ubicación</th>
+                                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase text-mahogany-700">ID</th>
+                                                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase text-mahogany-700">Libro</th>
+                                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase text-mahogany-700">Stock</th>
+                                                <th className="px-4 py-3 text-center text-[11px] font-bold uppercase text-mahogany-700">Minimo</th>
+                                                <th className="px-4 py-3 text-left text-[11px] font-bold uppercase text-mahogany-700">Ubicacion</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-primary-200">
@@ -661,15 +661,15 @@ export default function ReportesPage() {
                                                 const sinStock = Number(item.stock) <= 0;
                                                 return (
                                                     <tr key={item.id_inventario} className="hover:bg-parchment-200">
-                                                        <td className="px-3 py-2.5 text-center text-xs text-mahogany-700">{item.id_inventario}</td>
-                                                        <td className="px-3 py-2.5 text-xs font-semibold text-mahogany-700">{item.titulo}</td>
-                                                        <td className="px-3 py-2.5 text-center">
-                                                            <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${sinStock ? 'bg-crimson-100 text-crimson-500' : 'bg-warning-bg text-warning'}`}>
+                                                        <td className="px-4 py-2.5 text-center text-xs text-mahogany-700">{item.id_inventario}</td>
+                                                        <td className="px-4 py-2.5 text-xs font-semibold text-mahogany-700">{item.titulo}</td>
+                                                        <td className="px-4 py-2.5 text-center">
+                                                            <span className={`inline-flex rounded px-2.5 py-0.5 text-[11px] font-semibold ${sinStock ? 'bg-crimson-100 text-crimson-500' : 'bg-warning-bg text-warning'}`}>
                                                                 {sinStock ? 'Sin stock' : item.stock}
                                                             </span>
                                                         </td>
-                                                        <td className="px-3 py-2.5 text-center text-xs font-semibold text-mahogany-700">{item.stock_minimo}</td>
-                                                        <td className="px-3 py-2.5 text-xs text-mahogany-700">{item.ubicacion || 'No registrada'}</td>
+                                                        <td className="px-4 py-2.5 text-center text-xs font-semibold text-mahogany-700">{item.stock_minimo}</td>
+                                                        <td className="px-4 py-2.5 text-xs text-mahogany-700">{item.ubicacion || 'No registrada'}</td>
                                                     </tr>
                                                 );
                                             })}
