@@ -4,6 +4,8 @@ import {
     obtenerVentasPorEstado,
     obtenerReservasPorEstado,
     obtenerVentasPorMes,
+    obtenerVentasPorDia,
+    obtenerIndicadoresVentas,
 } from '../reportes/reportesService';
 
 import { listarLibros } from '../libros/librosService';
@@ -12,4 +14,12 @@ export async function obtenerLibros() {
     return listarLibros();
 }
 
-export { obtenerResumen, obtenerLibrosMasVendidos, obtenerVentasPorEstado, obtenerReservasPorEstado, obtenerVentasPorMes };
+export {
+    obtenerResumen,
+    obtenerLibrosMasVendidos,
+    obtenerVentasPorEstado,
+    obtenerReservasPorEstado,
+    obtenerVentasPorMes,
+    obtenerVentasPorDia,
+    obtenerIndicadoresVentas,
+};

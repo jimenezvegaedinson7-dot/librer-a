@@ -1,362 +1,220 @@
-import { FaChartColumn } from 'react-icons/fa6';
+import { useMemo, useState } from 'react';
 
-function SalesChart({ ventasPorMes = [] }) {
-    const datos = Array.isArray(ventasPorMes) ? ventasPorMes : [];
+import { FaChartColumn, FaTable } from 'react-icons/fa6';
 
-    const totalPeriodo = datos.reduce(
-        (acc, item) => acc + Number(item.total_vendido || 0),
-        0
+import { formatearMoneda } from '../../lib/utils/format';
+import { formatoEje, marcasEje, serieDiaria, serieMensual } from './graficoUtils';
+
+const PERIODOS = [
+    { id: 'dia', texto: '14 días', unidad: 'día', actual: 'Hoy', resto: 'Días anteriores' },
+    { id: 'mes', texto: '6 meses', unidad: 'mes', actual: 'Mes actual', resto: 'Meses anteriores' },
+];
+
+function Estadistica({ etiqueta, valor, detalle }) {
+    return (
+        <div className="grafico-stat">
+            <p className="grafico-stat-etiqueta">{etiqueta}</p>
+            <p className="grafico-stat-valor">{valor}</p>
+            {detalle && <p className="grafico-stat-detalle">{detalle}</p>}
+        </div>
+    );
+}
+
+function SalesChart({ ventasPorMes = [], ventasPorDia = [] }) {
+    const [periodo, setPeriodo] = useState('dia');
+    const [verTabla, setVerTabla] = useState(false);
+    const [activo, setActivo] = useState(null);
+
+    const serie = useMemo(
+        () => (periodo === 'dia' ? serieDiaria(ventasPorDia, 14) : serieMensual(ventasPorMes, 6)),
+        [periodo, ventasPorDia, ventasPorMes],
     );
 
-    const mayorMonto = datos.reduce(
-        (mayor, item) => Math.max(mayor, Number(item.total_vendido || 0)),
-        0
-    );
-
-    const mejorMes = datos.reduce((mejor, item) => {
-        if (
-            !mejor ||
-            Number(item.total_vendido || 0) >
-                Number(mejor.total_vendido || 0)
-        ) {
-            return item;
-        }
-
-        return mejor;
-    }, null);
-
-    const obtenerAltura = (monto) => {
-        if (mayorMonto <= 0) return 0;
-        return Math.max(6, (Number(monto) / mayorMonto) * 100);
-    };
+    const config = PERIODOS.find((p) => p.id === periodo);
+    const total = serie.reduce((acc, d) => acc + d.total, 0);
+    const ventas = serie.reduce((acc, d) => acc + d.cantidad, 0);
+    const conVentas = serie.filter((d) => d.cantidad > 0).length;
+    const promedio = total / serie.length;
+    const mejor = serie.reduce((m, d) => (d.total > (m?.total ?? 0) ? d : m), null);
+    const { tope, marcas } = marcasEje(mejor?.total ?? 0);
+    const alto = (v) => (tope > 0 ? (v / tope) * 100 : 0);
 
     return (
-        <section
-            className="
-                overflow-hidden
-                rounded-[8px]
-                border border-[#e6e0d7]
-                bg-white
-                shadow-[0_2px_8px_rgba(30,64,175,0.06)]
-            "
-        >
-
-            {/* CABECERA */}
-            <div className="flex items-start justify-between px-6 pt-6">
-                <div>
-                    <div className="flex items-center gap-2">
-                        <FaChartColumn className="text-[16px] text-[#8a2c36]" />
-
-                        <h3
-                            className="
-                                font-title
-                                text-[17px]
-                                font-semibold
-                                tracking-[-0.01em]
-                                text-[#1c1814]
-                            "
-                        >
-                            Ventas por mes
-                        </h3>
-                    </div>
-
-                    <p className="mt-1.5 text-[12px] font-normal text-[#a39a8e]">
-                        Ingresos de ventas pagadas por cada mes.
-                    </p>
-                </div>
-
-                <button
-                    type="button"
-                    className="
-                        flex h-9 w-9
-                        items-center justify-center
-                        rounded-full
-                        border border-[#ece7df]
-                        bg-white
-                        text-[18px]
-                        font-bold
-                        text-[#1c1814]
-                        transition
-                        hover:bg-[#faf8f5]
-                    "
-                >
-                    ···
-                </button>
-            </div>
-
-            {/* RESUMEN */}
-            <div className="flex flex-wrap items-end gap-x-14 gap-y-5 px-9 pt-8">
-
-                {/* Total periodo */}
-                <div>
-                    <p
-                        className="
-                            text-[26px]
-                            font-semibold
-                            leading-none
-                            tracking-[-0.02em]
-                            text-[#1c1814]
-                        "
-                    >
-                        S/ {totalPeriodo.toFixed(2)}
-                    </p>
-
-                    <div className="mt-2 flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-[#8a2c36]" />
-
-                        <span className="text-[12px] font-medium text-[#a39a8e]">
-                            Total vendido
-                        </span>
+        <section className="grafico-card" aria-labelledby="titulo-ingresos">
+            <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 sm:px-6">
+                <div className="flex min-w-0 items-center gap-3">
+                    <span className="ficha-icono flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" aria-hidden="true">
+                        <FaChartColumn />
+                    </span>
+                    <div className="min-w-0">
+                        <h2 id="titulo-ingresos" className="font-title text-[18px] font-semibold leading-snug text-[#1c1814]">
+                            Ingresos por ventas
+                        </h2>
+                        <p className="mt-0.5 text-[13px] text-[#766d62]">Ventas pagadas por {config.unidad}</p>
                     </div>
                 </div>
 
-                {/* mejor mes */}
-                <div>
-                    <p
-                        className="
-                            text-[26px]
-                            font-semibold
-                            leading-none
-                            tracking-[-0.02em]
-                            text-[#1c1814]
-                        "
-                    >
-                        {mejorMes
-                            ? `${mejorMes.mes} ${mejorMes.anio}`
-                            : '—'}
-                    </p>
-
-                    <div className="mt-2 flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-[#b98d3e]" />
-
-                        <span className="text-[12px] font-medium text-[#a39a8e]">
-                            Mejor mes
-                        </span>
-                    </div>
-                </div>
-
-                {/* meses registrados */}
-                <div>
-                    <p
-                        className="
-                            text-[26px]
-                            font-semibold
-                            leading-none
-                            tracking-[-0.02em]
-                            text-[#1c1814]
-                        "
-                    >
-                        {datos.length}
-                    </p>
-
-                    <div className="mt-2 flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-[#a39a8e]" />
-
-                        <span className="text-[12px] font-medium text-[#a39a8e]">
-                            {datos.length === 1 ? 'Mes' : 'Meses'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            {/* GRÁFICO */}
-            <div className="px-6 pb-6 pt-8">
-
-                {datos.length === 0 ? (
-                    <div
-                        className="
-                            flex h-[270px]
-                            items-center justify-center
-                            border-t border-[#ece7df]
-                            text-center
-                        "
-                    >
-                        <div>
-                            <div
-                                className="
-                                    mx-auto mb-3
-                                    flex h-11 w-11
-                                    items-center justify-center
-                                    rounded-full
-                                    bg-[#fbf5f4]
-                                    text-[#8a2c36]
-                                "
+                <div className="flex items-center gap-2">
+                    <div className="segmentado" role="group" aria-label="Periodo">
+                        {PERIODOS.map((p) => (
+                            <button
+                                key={p.id}
+                                type="button"
+                                aria-pressed={periodo === p.id}
+                                onClick={() => { setPeriodo(p.id); setActivo(null); }}
+                                className={`segmentado-opcion ${periodo === p.id ? 'segmentado-opcion--activa' : ''}`}
                             >
-                                <FaChartColumn />
+                                {p.texto}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setVerTabla((v) => !v)}
+                        aria-pressed={verTabla}
+                        aria-label={verTabla ? 'Ver gráfico' : 'Ver tabla'}
+                        title={verTabla ? 'Ver gráfico' : 'Ver tabla'}
+                        className={`grafico-boton ${verTabla ? 'grafico-boton--activo' : ''}`}
+                    >
+                        {verTabla ? <FaChartColumn /> : <FaTable />}
+                    </button>
+                </div>
+            </header>
+
+            <div className="grafico-stats mt-5 grid grid-cols-2 lg:grid-cols-4">
+                <Estadistica etiqueta="Total vendido" valor={formatearMoneda(total)} detalle={`${ventas} ${ventas === 1 ? 'venta' : 'ventas'}`} />
+                <Estadistica etiqueta={`Promedio por ${config.unidad}`} valor={formatearMoneda(promedio)} detalle={`${conVentas} de ${serie.length} con ventas`} />
+                <Estadistica
+                    etiqueta={`Mejor ${config.unidad}`}
+                    valor={mejor ? formatearMoneda(mejor.total) : '—'}
+                    detalle={mejor ? mejor.etiquetaLarga : 'Sin ventas en el periodo'}
+                />
+                <Estadistica
+                    etiqueta="Ticket promedio"
+                    valor={ventas > 0 ? formatearMoneda(total / ventas) : '—'}
+                    detalle="por venta pagada"
+                />
+            </div>
+
+            {verTabla ? (
+                <div className="tabla-reporte max-h-[330px] overflow-auto">
+                    <table className="min-w-full">
+                        <caption className="sr-only">Ingresos por {config.unidad}</caption>
+                        <thead className="sticky top-0">
+                            <tr>
+                                <th scope="col" className="text-left">{config.unidad === 'día' ? 'Día' : 'Mes'}</th>
+                                <th scope="col" className="text-center">Ventas</th>
+                                <th scope="col" className="text-right">Ingresos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {[...serie].reverse().map((d) => (
+                                <tr key={d.clave}>
+                                    <td>{d.etiquetaLarga}</td>
+                                    <td className="text-center">{d.cantidad}</td>
+                                    <td className="text-right font-semibold">{formatearMoneda(d.total)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <div className="px-5 pb-5 pt-6 sm:px-6">
+                    {total === 0 ? (
+                        <div className="flex h-[240px] flex-col items-center justify-center text-center">
+                            <p className="font-title text-[16px] font-semibold text-[#1c1814]">Sin ventas pagadas en este periodo</p>
+                            <p className="mt-1 text-[13px] text-[#766d62]">
+                                {periodo === 'dia' ? 'Prueba con el periodo de 6 meses.' : 'Aún no hay ventas registradas.'}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="grafico-area" onPointerLeave={() => setActivo(null)}>
+                            <div className="grafico-eje-y" aria-hidden="true">
+                                {marcas.map((m) => (
+                                    <span key={m} style={{ bottom: `${alto(m)}%` }}>{formatoEje(m)}</span>
+                                ))}
                             </div>
 
-                            <p className="text-[14px] font-semibold text-[#1c1814]">
-                                No hay ventas pagadas
-                            </p>
+                            <div className="grafico-plot">
+                                {marcas.map((m) => (
+                                    <span key={m} className="grafico-rejilla" style={{ bottom: `${alto(m)}%` }} aria-hidden="true" />
+                                ))}
 
-                            <p className="mt-1 text-[12px] text-[#a39a8e]">
-                                Cuando se registren ventas, aparecerán aquí.
-                            </p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="relative h-[280px]">
-
-                        {/* líneas horizontales estilo Valex */}
-                        <div className="absolute inset-x-10 top-0 border-t border-[#e6e0d7]" />
-                        <div className="absolute inset-x-10 top-1/4 border-t border-[#e6e0d7]" />
-                        <div className="absolute inset-x-10 top-2/4 border-t border-[#e6e0d7]" />
-                        <div className="absolute inset-x-10 top-3/4 border-t border-[#e6e0d7]" />
-                        <div className="absolute inset-x-10 bottom-8 border-t border-[#e6e0d7]" />
-
-                        {/* números eje Y decorativos */}
-                        <div className="absolute bottom-8 left-0 top-0 flex w-9 flex-col justify-between pb-0 text-right">
-                            <span className="text-[10px] font-medium text-[#a39a8e]">
-                                {mayorMonto.toFixed(0)}
-                            </span>
-
-                            <span className="text-[10px] font-medium text-[#a39a8e]">
-                                {(mayorMonto * 0.75).toFixed(0)}
-                            </span>
-
-                            <span className="text-[10px] font-medium text-[#a39a8e]">
-                                {(mayorMonto * 0.5).toFixed(0)}
-                            </span>
-
-                            <span className="text-[10px] font-medium text-[#a39a8e]">
-                                {(mayorMonto * 0.25).toFixed(0)}
-                            </span>
-
-                            <span className="text-[10px] font-medium text-[#a39a8e]">
-                                0
-                            </span>
-                        </div>
-
-                        {/* BARRAS */}
-                        <div
-                            className="
-                                absolute
-                                bottom-8 left-11 right-3 top-0
-                                flex items-end
-                                justify-around
-                                gap-3
-                            "
-                        >
-                            {datos.map((item, index) => {
-                                const monto = Number(
-                                    item.total_vendido || 0
-                                );
-
-                                const esUltimo =
-                                    index === datos.length - 1;
-
-                                return (
-                                    <div
-                                        key={`${item.anio}-${item.mes_numero}`}
-                                        className="
-                                            group relative
-                                            flex h-full flex-1
-                                            items-end justify-center
-                                        "
-                                    >
-
-                                        {/* tooltip */}
-                                        <div
-                                            className="
-                                                pointer-events-none
-                                                absolute z-20
-                                                mb-2
-                                                -translate-y-full
-                                                opacity-0
-                                                transition-all
-                                                duration-200
-                                                group-hover:opacity-100
-                                            "
-                                            style={{
-                                                bottom: `${obtenerAltura(
-                                                    monto
-                                                )}%`,
-                                            }}
-                                        >
-                                            <div
-                                                className="
-                                                    whitespace-nowrap
-                                                    rounded-[4px]
-                                                    bg-[#1c1814]
-                                                    px-3 py-1.5
-                                                    text-[11px]
-                                                    font-medium
-                                                    text-white
-                                                    shadow-lg
-                                                "
-                                            >
-                                                S/ {monto.toFixed(2)}
-                                            </div>
-
-                                            <div
-                                                className="
-                                                    mx-auto
-                                                    h-0 w-0
-                                                    border-l-[4px]
-                                                    border-r-[4px]
-                                                    border-t-[4px]
-                                                    border-l-transparent
-                                                    border-r-transparent
-                                                    border-t-[#1c1814]
-                                                "
-                                            />
-                                        </div>
-
-                                        {/* barra */}
-                                        <div
-                                            className={`
-                                                w-full
-                                                max-w-[12px]
-                                                transition-all
-                                                duration-500
-                                                group-hover:opacity-80
-
-                                                ${
-                                                    esUltimo
-                                                        ? 'bg-[#b98d3e]'
-                                                        : 'bg-[#8a2c36]'
-                                                }
-                                            `}
-                                            style={{
-                                                height: `${obtenerAltura(
-                                                    monto
-                                                )}%`,
-                                            }}
-                                        />
+                                {promedio > 0 && (
+                                    <div className="grafico-promedio" style={{ bottom: `${alto(promedio)}%` }} aria-hidden="true">
+                                        <span>Prom. {formatearMoneda(promedio)}</span>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                )}
 
-                        {/* MESES */}
-                        <div
-                            className="
-                                absolute
-                                bottom-0 left-11 right-3
-                                flex justify-around
-                            "
-                        >
-                            {datos.map((item) => (
-                                <div
-                                    key={`mes-${item.anio}-${item.mes_numero}`}
-                                    className="min-w-0 flex-1 text-center"
-                                >
-                                    <p
-                                        className="
-                                            truncate
-                                            text-[11px]
-                                            font-medium
-                                            text-[#a39a8e]
-                                        "
-                                    >
-                                        {item.mes}
-                                    </p>
-                                </div>
-                            ))}
+                                <ol className="grafico-columnas" aria-label={`Ingresos por ${config.unidad}`}>
+                                    {serie.map((d, i) => {
+                                        const esMejor = mejor && d.clave === mejor.clave;
+                                        const conTooltip = activo === d.clave;
+                                        const texto = `${d.etiquetaLarga}: ${formatearMoneda(d.total)}, ${d.cantidad} ${d.cantidad === 1 ? 'venta' : 'ventas'}`;
+                                        return (
+                                            <li
+                                                key={d.clave}
+                                                className="grafico-columna"
+                                                tabIndex={0}
+                                                aria-label={texto}
+                                                onPointerEnter={() => setActivo(d.clave)}
+                                                onFocus={() => setActivo(d.clave)}
+                                                onBlur={() => setActivo(null)}
+                                            >
+                                                <div className="grafico-columna-zona">
+                                                    {d.total > 0 ? (
+                                                        <span
+                                                            className={`grafico-barra reporte-barra ${d.actual ? 'grafico-barra--actual' : ''} ${conTooltip ? 'grafico-barra--activa' : ''}`}
+                                                            style={{ height: `${alto(d.total)}%`, '--barra-i': i }}
+                                                        >
+                                                            {esMejor && !conTooltip && (
+                                                                <span className="grafico-etiqueta-max">{formatearMoneda(d.total)}</span>
+                                                            )}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="grafico-barra-cero" />
+                                                    )}
+                                                    {conTooltip && (
+                                                        <span
+                                                            className={`grafico-tooltip ${i < 2 ? 'grafico-tooltip--inicio' : ''} ${i > serie.length - 3 ? 'grafico-tooltip--fin' : ''}`}
+                                                            style={{ bottom: `calc(${alto(d.total)}% + 10px)` }}
+                                                        >
+                                                            <strong>{formatearMoneda(d.total)}</strong>
+                                                            <span>{d.cantidad} {d.cantidad === 1 ? 'venta' : 'ventas'}</span>
+                                                            <span>{d.etiquetaLarga}</span>
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span
+                                                    className={`grafico-eje-x ${d.actual ? 'grafico-eje-x--actual' : ''} ${(serie.length - 1 - i) % 2 === 1 ? 'grafico-eje-x--alterna' : ''}`}
+                                                    aria-hidden="true"
+                                                >
+                                                    {d.etiqueta}
+                                                </span>
+                                            </li>
+                                        );
+                                    })}
+                                </ol>
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+
+                    <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12px] text-[#766d62]" aria-label="Leyenda">
+                        <li className="flex items-center gap-2">
+                            <span className="grafico-leyenda-marca grafico-leyenda-marca--actual" aria-hidden="true" />
+                            {config.actual}
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <span className="grafico-leyenda-marca" aria-hidden="true" />
+                            {config.resto}
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <span className="grafico-leyenda-linea" aria-hidden="true" />
+                            Promedio del periodo
+                        </li>
+                    </ul>
+                </div>
+            )}
         </section>
     );
 }

@@ -1,15 +1,19 @@
 import { useState } from 'react';
-import { FaRankingStar, FaBookOpen } from 'react-icons/fa6';
-import { construirUrlArchivo } from '../../lib/utils/url';
 
-function PortadaLibro({ portada, titulo }) {
+import { FaBookOpen, FaRankingStar } from 'react-icons/fa6';
+
+import { construirUrlArchivo } from '../../lib/utils/url';
+import { formatearMoneda } from '../../lib/utils/format';
+import { num } from './graficoUtils';
+
+function PortadaLibro({ portada }) {
     const [error, setError] = useState(false);
     const url = construirUrlArchivo(portada);
 
     if (!url || error) {
         return (
             <div className="flex h-full w-full items-center justify-center bg-[#f3efe9]">
-                <FaBookOpen className="text-[10px] text-[#a39a8e]" />
+                <FaBookOpen className="text-[10px] text-[#a39a8e]" aria-hidden="true" />
             </div>
         );
     }
@@ -17,7 +21,7 @@ function PortadaLibro({ portada, titulo }) {
     return (
         <img
             src={url}
-            alt={`Portada de ${titulo}`}
+            alt=""
             className="h-full w-full object-cover"
             onError={() => setError(true)}
             loading="lazy"
@@ -27,127 +31,75 @@ function PortadaLibro({ portada, titulo }) {
 
 function TopBooks({ libros = [] }) {
     const lista = Array.isArray(libros) ? libros.slice(0, 5) : [];
+    const maxUnidades = Math.max(1, ...lista.map((l) => num(l.cantidad_vendida)));
+    const totalUnidades = lista.reduce((acc, l) => acc + num(l.cantidad_vendida), 0);
+    const totalIngresos = lista.reduce((acc, l) => acc + num(l.total_generado), 0);
 
     return (
-        <section
-            className="
-                overflow-hidden
-                rounded-2xl
-                border
-                border-[#e6e0d7]
-                bg-white
-                shadow-sm
-            "
-        >
-            {/* cabecera */}
-            <div className="flex items-center justify-between px-6 py-5">
-                <div className="flex items-center gap-3.5">
-                    <div
-                        className="
-                            flex h-11 w-11
-                            items-center justify-center
-                            rounded-xl
-                            bg-[#fbf5f4]
-                            text-[#8a2c36]
-                        "
-                    >
-                        <FaRankingStar className="text-[18px]" />
-                    </div>
-                    <div>
-                        <h3
-                            className="
-                                font-title
-                                text-[18px]
-                                font-semibold
-                                leading-tight
-                                text-[#1c1814]
-                            "
-                        >
+        <section className="grafico-card flex flex-col" aria-labelledby="titulo-top-libros">
+            <header className="flex items-start justify-between gap-3 px-5 pt-5 sm:px-6">
+                <div className="flex min-w-0 items-center gap-3">
+                    <span className="ficha-icono flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" aria-hidden="true">
+                        <FaRankingStar />
+                    </span>
+                    <div className="min-w-0">
+                        <h2 id="titulo-top-libros" className="font-title text-[18px] font-semibold leading-snug text-[#1c1814]">
                             Libros más vendidos
-                        </h3>
-                        <p className="mt-0.5 text-[13px] text-[#766d62]">
-                            Ranking de ventas pagadas
-                        </p>
+                        </h2>
+                        <p className="mt-0.5 text-[13px] text-[#766d62]">Unidades en ventas pagadas</p>
                     </div>
                 </div>
-                <span className="text-[12px] font-semibold text-[#8a2c36]">
-                    Top {lista.length}
-                </span>
-            </div>
+                {lista.length > 0 && <span className="reporte-contador">Top {lista.length}</span>}
+            </header>
 
-            {/* contenido */}
             {lista.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                    <div
-                        className="
-                            mb-3
-                            flex h-10 w-10
-                            items-center justify-center
-                            rounded-full
-                            bg-[#fbf5f4]
-                            text-[#8a2c36]
-                        "
-                    >
+                <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
+                    <span className="ficha-icono mb-3 flex h-12 w-12 items-center justify-center rounded-full" aria-hidden="true">
                         <FaBookOpen />
-                    </div>
-                    <p className="text-[14px] font-semibold text-[#1c1814]">
-                        No hay ventas pagadas
-                    </p>
-                    <p className="mt-1 text-[12px] text-[#a39a8e]">
-                        Los libros más vendidos aparecerán aquí.
-                    </p>
+                    </span>
+                    <p className="font-title text-[16px] font-semibold text-[#1c1814]">Aún no hay ventas</p>
+                    <p className="mt-1 text-[13px] text-[#766d62]">El ranking aparecerá con las primeras ventas pagadas.</p>
                 </div>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className="border-y border-[#f3efe9] bg-[#faf8f5]">
-                                <th className="px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
-                                    Libro
-                                </th>
-                                <th className="hidden px-4 py-3 text-left 2xl:table-cell text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
-                                    Categoría
-                                </th>
-                                <th className="px-4 py-3 text-center text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
-                                    Ventas
-                                </th>
-                                <th className="px-4 py-3 text-right text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
-                                    Total
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {lista.map((libro, index) => (
-                                <tr
-                                    key={libro.id_libro}
-                                    className={`transition-colors duration-150 hover:bg-[#faf8f5] ${
-                                        index < lista.length - 1 ? 'border-b border-[#f3efe9]' : ''
-                                    }`}
-                                >
-                                    <td className="px-4 py-4 align-middle">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-9 w-7 shrink-0 overflow-hidden rounded-md bg-[#f3efe9] shadow-sm">
-                                                <PortadaLibro portada={libro.portada} titulo={libro.titulo} />
+                <>
+                    <ol className="flex-1 space-y-1 px-3 py-4 sm:px-4">
+                        {lista.map((libro, index) => {
+                            const unidades = num(libro.cantidad_vendida);
+                            const ancho = (unidades / maxUnidades) * 100;
+                            return (
+                                <li key={libro.id_libro} className="ranking-fila">
+                                    <span className={`reporte-puesto ${index < 3 ? `reporte-puesto--${index + 1}` : ''}`} aria-label={`Puesto ${index + 1}`}>
+                                        {index + 1}
+                                    </span>
+                                    <div className="h-11 w-8 shrink-0 overflow-hidden rounded-[4px] shadow-[0_1px_3px_rgba(28,24,20,0.25)]">
+                                        <PortadaLibro portada={libro.portada} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-baseline justify-between gap-3">
+                                            <p className="truncate text-[14px] font-semibold text-[#1c1814]" title={libro.titulo}>{libro.titulo}</p>
+                                            <p className="shrink-0 text-[13px] tabular-nums text-[#1c1814]">
+                                                <span className="font-semibold">{unidades}</span>
+                                                <span className="text-[#766d62]"> {unidades === 1 ? 'unidad' : 'unid.'}</span>
+                                            </p>
+                                        </div>
+                                        <div className="mt-1.5 flex items-center gap-3">
+                                            <div className="ranking-pista" aria-hidden="true">
+                                                <span className="ranking-barra reporte-barra-h" style={{ width: `${ancho}%`, '--barra-i': index }} />
                                             </div>
-                                            <span className="truncate text-[14px] font-medium text-[#1c1814]">
-                                                {libro.titulo || 'Sin título'}
+                                            <span className="w-[76px] shrink-0 text-right text-[12px] tabular-nums text-[#766d62]">
+                                                {formatearMoneda(libro.total_generado)}
                                             </span>
                                         </div>
-                                    </td>
-                                    <td className="hidden px-4 py-4 2xl:table-cell text-[14px] text-[#766d62] align-middle">
-                                        {libro.categoria || '—'}
-                                    </td>
-                                    <td className="px-4 py-4 text-center text-[14px] font-semibold text-[#1c1814] align-middle">
-                                        {Number(libro.cantidad_vendida || 0)}
-                                    </td>
-                                    <td className="px-4 py-4 text-right text-[14px] font-semibold text-[#1c1814] align-middle">
-                                        S/ {Number(libro.total_generado || 0).toFixed(2)}
-                                    </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ol>
+                    <footer className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-3.5 text-[13px] sm:px-6">
+                        <span className="text-[#766d62]">Top {lista.length}: {totalUnidades} unidades</span>
+                        <span className="font-semibold tabular-nums text-[#1c1814]">{formatearMoneda(totalIngresos)}</span>
+                    </footer>
+                </>
             )}
         </section>
     );

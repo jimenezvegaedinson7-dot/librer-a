@@ -20,12 +20,13 @@ import {
     obtenerReservasPorEstado,
     obtenerVentasPorEstado,
     obtenerVentasPorMes,
+    obtenerVentasPorDia,
+    obtenerIndicadoresVentas,
 } from './dashboardService';
 
-import { CargandoPantalla } from '../../components/ui/Spinner';
-import { Card } from '../../components/ui/Card';
 import { Alert } from '../../components/ui/Alert';
 import { formatearMoneda } from '../../lib/utils/format';
+import { num, serieDiaria } from './graficoUtils';
 
 import { MiniStat, StatCard } from './StatCard';
 import RecentBooks from './RecentBooks';
@@ -51,6 +52,8 @@ export default function DashboardPage() {
     const [ventasPorEstado, setVentasPorEstado] = useState([]);
     const [reservasPorEstado, setReservasPorEstado] = useState([]);
     const [librosMasVendidos, setLibrosMasVendidos] = useState([]);
+    const [ventasPorDia, setVentasPorDia] = useState([]);
+    const [indicadores, setIndicadores] = useState({});
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
 
@@ -61,13 +64,16 @@ export default function DashboardPage() {
             try {
                 setCargando(true);
                 setError('');
-                const [r, l, vm, ve, re, lmv] = await Promise.all([
+                const [r, l, vm, ve, re, lmv, vd, ind] = await Promise.all([
                     obtenerResumen(),
                     obtenerLibros(),
                     obtenerVentasPorMes(),
                     obtenerVentasPorEstado(),
                     obtenerReservasPorEstado(),
                     obtenerLibrosMasVendidos(),
+                    // Complementarios: si fallan, el resumen se muestra igual.
+                    obtenerVentasPorDia().catch(() => []),
+                    obtenerIndicadoresVentas().catch(() => ({})),
                 ]);
                 if (!activo) return;
                 setResumen(r);
@@ -76,6 +82,8 @@ export default function DashboardPage() {
                 setVentasPorEstado(esArreglo(ve));
                 setReservasPorEstado(esArreglo(re));
                 setLibrosMasVendidos(esArreglo(lmv));
+                setVentasPorDia(esArreglo(vd));
+                setIndicadores(ind || {});
             } catch (err) {
                 if (activo) setError(err.response?.data?.mensaje || 'Error al cargar el dashboard');
             } finally {
@@ -88,7 +96,18 @@ export default function DashboardPage() {
     }, []);
 
     if (cargando) {
-        return <Card><CargandoPantalla texto="Cargando dashboard..." /></Card>;
+        return (
+            <div className="space-y-6" role="status" aria-label="Cargando resumen">
+                <div className="skeleton h-24 w-72 max-w-full" />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-[172px] !rounded-[0.875rem]" />)}
+                </div>
+                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,1fr)]">
+                    <div className="skeleton h-[460px] !rounded-[0.875rem]" />
+                    <div className="skeleton h-[460px] !rounded-[0.875rem]" />
+                </div>
+            </div>
+        );
     }
 
     if (error) {
@@ -96,6 +115,14 @@ export default function DashboardPage() {
     }
 
     if (!resumen) return null;
+
+    const diario = serieDiaria(ventasPorDia, 14);
+    const reservasPendientes = num(reservasPorEstado.find((r) => String(r.estado).toLowerCase() === 'pendiente')?.cantidad);
+    const totalLibros = num(resumen.total_libros);
+    const stockBajo = num(resumen.libros_stock_bajo);
+    const vendidoHoy = num(indicadores.vendido_hoy);
+    const ventasHoy = num(indicadores.ventas_hoy);
+    const ticketPromedio = num(indicadores.ticket_promedio);
 
     const fechaTexto = formatoFecha.format(new Date());
     const fechaHoy = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
@@ -125,10 +152,40 @@ export default function DashboardPage() {
                 animate="visible"
                 className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5"
             >
-                <StatCard titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} icono={<FaMoneyBillTrendUp />} color="primary" />
-                <StatCard titulo="Ventas pagadas" valor={resumen.total_ventas} icono={<FaCircleCheck />} color="success" />
-                <StatCard titulo="Reservas" valor={resumen.total_reservas} icono={<FaCalendarCheck />} color="info" />
-                <StatCard titulo="Stock bajo" valor={resumen.libros_stock_bajo} icono={<FaTriangleExclamation />} color="warning" />
+                <StatCard
+                    titulo="Total vendido"
+                    valor={formatearMoneda(resumen.total_vendido)}
+                    icono={<FaMoneyBillTrendUp />}
+                    color="primary"
+                    detalle={vendidoHoy > 0 ? `${formatearMoneda(vendidoHoy)} vendidos hoy` : 'Sin ventas pagadas hoy'}
+                    tendencia={diario.map((d) => d.total)}
+                    etiquetaTendencia="Ingresos diarios de los últimos 14 días"
+                />
+                <StatCard
+                    titulo="Ventas pagadas"
+                    valor={num(resumen.total_ventas)}
+                    icono={<FaCircleCheck />}
+                    color="success"
+                    detalle={ticketPromedio > 0 ? `Ticket promedio ${formatearMoneda(ticketPromedio)}` : `${ventasHoy} hoy`}
+                    tendencia={diario.map((d) => d.cantidad)}
+                    etiquetaTendencia="Ventas pagadas por día en los últimos 14 días"
+                />
+                <StatCard
+                    titulo="Reservas"
+                    valor={num(resumen.total_reservas)}
+                    icono={<FaCalendarCheck />}
+                    color="info"
+                    detalle={reservasPendientes > 0 ? `${reservasPendientes} pendientes de atender` : 'Ninguna pendiente'}
+                    medidor={{ valor: reservasPendientes, total: num(resumen.total_reservas), etiqueta: 'Reservas pendientes sobre el total' }}
+                />
+                <StatCard
+                    titulo="Stock bajo"
+                    valor={stockBajo}
+                    icono={<FaTriangleExclamation />}
+                    color="warning"
+                    detalle={`de ${totalLibros} libros en catálogo`}
+                    medidor={{ valor: stockBajo, total: totalLibros, etiqueta: 'Libros con stock bajo sobre el catálogo' }}
+                />
             </motion.section>
 
             {/* CATÁLOGO */}
@@ -147,17 +204,17 @@ export default function DashboardPage() {
 
             {/* RENDIMIENTO — gráfico + top libros */}
             <section aria-label="Rendimiento">
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
-                    <SalesChart ventasPorMes={ventasPorMes} />
+                <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,1fr)]">
+                    <SalesChart ventasPorMes={ventasPorMes} ventasPorDia={ventasPorDia} />
                     <TopBooks libros={librosMasVendidos} />
                 </div>
             </section>
 
             {/* ESTADOS OPERATIVOS — donuts */}
             <section aria-label="Estados operativos">
-                <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-                    <StatusDonut titulo="Ventas por estado" subtitulo="Distribución real de las ventas" datos={ventasPorEstado} tipo="ventas" />
-                    <StatusDonut titulo="Reservas por estado" subtitulo="Distribución real de las reservas" datos={reservasPorEstado} tipo="reservas" />
+                <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+                    <StatusDonut titulo="Ventas por estado" subtitulo="Todas las ventas registradas" datos={ventasPorEstado} tipo="ventas" />
+                    <StatusDonut titulo="Reservas por estado" subtitulo="Todas las reservas registradas" datos={reservasPorEstado} tipo="reservas" />
                 </div>
             </section>
 

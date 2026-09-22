@@ -8,14 +8,14 @@ function RecentBooks({ libros = [] }) {
         const cantidad = Number(stock || 0);
 
         if (cantidad <= 0) {
-            return { texto: 'Sin stock', color: '#DC2626', bg: '#FEF2F2' };
+            return { texto: 'Sin stock', clase: 'estado--peligro' };
         }
 
         if (cantidad <= 5) {
-            return { texto: `${cantidad} disp.`, color: '#D97706', bg: '#FFFBEB' };
+            return { texto: `${cantidad} disp.`, clase: 'estado--aviso' };
         }
 
-        return { texto: `${cantidad} disp.`, color: '#059669', bg: '#ECFDF5' };
+        return { texto: `${cantidad} disp.`, clase: 'estado--exito' };
     };
 
     const librosRecientes = libros.slice(0, 5);
@@ -100,8 +100,7 @@ function RecentBooks({ libros = [] }) {
                                         </td>
                                         <td className="px-6 py-4 text-right align-middle">
                                             <span
-                                                className="inline-flex items-center rounded-full px-3 py-1 text-[12px] font-semibold"
-                                                style={{ backgroundColor: stock.bg, color: stock.color }}
+                                                className={`estado-pildora ${stock.clase}`}
                                             >
                                                 {stock.texto}
                                             </span>
