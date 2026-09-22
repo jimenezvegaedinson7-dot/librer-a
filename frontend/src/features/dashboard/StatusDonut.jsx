@@ -28,8 +28,16 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
     const unidad = tipo === 'reservas' ? 'reservas' : 'ventas';
     const IconoTitulo = tipo === 'reservas' ? FaCalendarCheck : FaCartShopping;
 
+    // Pie: lo que ya se cobró (ventas) o lo que falta atender (reservas).
+    const suma = (estados, campo) => lista
+        .filter((i) => estados.includes(String(i.estado).toLowerCase()))
+        .reduce((acc, i) => acc + num(i[campo]), 0);
+    const resumenPie = tipo === 'reservas'
+        ? { etiqueta: 'Por atender (pendientes y confirmadas)', valor: suma(['pendiente', 'confirmada'], 'cantidad') }
+        : { etiqueta: `Cobradas: ${suma(['pagada', 'entregada'], 'cantidad')} ventas`, valor: formatearMoneda(suma(['pagada', 'entregada'], 'total')) };
+
     return (
-        <section className="grafico-card" aria-labelledby={`titulo-estado-${tipo}`}>
+        <section className="grafico-card flex h-full flex-col" aria-labelledby={`titulo-estado-${tipo}`}>
             <header className="flex items-start justify-between gap-3 px-5 pt-5 sm:px-6">
                 <div className="flex min-w-0 items-center gap-3">
                     <span className="ficha-icono flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" aria-hidden="true">
@@ -47,9 +55,10 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
             </header>
 
             {total === 0 ? (
-                <p className="px-6 py-10 text-center text-[13px] text-[#766d62]">No hay {unidad} registradas.</p>
+                <p className="flex flex-1 items-center justify-center px-6 py-10 text-center text-[13px] text-[#766d62]">No hay {unidad} registradas.</p>
             ) : (
-                <div className="px-5 pb-5 pt-5 sm:px-6">
+                <>
+                <div className="flex-1 px-5 pb-5 pt-5 sm:px-6">
                     {/* Barra 100 % apilada con separación de 2px entre segmentos */}
                     <div className="estado-barra" role="img" aria-label={lista.map((i) => `${i.texto}: ${i.cantidad}`).join(', ')}>
                         {lista.map((item, i) => (
@@ -86,6 +95,11 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
                         })}
                     </ul>
                 </div>
+                <footer className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-3.5 text-[13px] sm:px-6">
+                    <span className="text-[#766d62]">{resumenPie.etiqueta}</span>
+                    <span className="font-semibold tabular-nums text-[#1c1814]">{resumenPie.valor}</span>
+                </footer>
+                </>
             )}
         </section>
     );

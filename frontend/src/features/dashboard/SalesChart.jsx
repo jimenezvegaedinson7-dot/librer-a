@@ -73,7 +73,7 @@ function SalesChart({
     const cambiarPeriodo = (id) => { setPeriodo(id); setActivo(null); };
 
     return (
-        <section className="grafico-card" aria-labelledby={`titulo-${idBase}`}>
+        <section className="grafico-card flex h-full flex-col" aria-labelledby={`titulo-${idBase}`}>
             <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 sm:px-6">
                 <div className="flex min-w-0 items-center gap-3">
                     <span className="ficha-icono flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" aria-hidden="true">

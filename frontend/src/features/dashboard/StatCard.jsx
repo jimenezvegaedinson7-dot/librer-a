@@ -49,8 +49,6 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion,
     return (
         <motion.article
             variants={reducirMovimiento ? undefined : entradaTarjeta}
-            whileHover={reducirMovimiento ? undefined : { y: -2 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
             className={`kpi-card ${tono}`}
         >
             <div className="flex items-start justify-between gap-3">

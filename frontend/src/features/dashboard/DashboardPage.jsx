@@ -58,6 +58,16 @@ function formatearFechaCorta(fecha) {
 
 const plural = (n, uno, varios) => `${n} ${Number(n) === 1 ? uno : varios}`;
 
+// Reflejo de luz que sigue al cursor dentro de cada tarjeta del mosaico.
+const TARJETAS = '.kpi-card, .mini-stat, .registro-card, .grafico-card';
+function moverLuz(evento) {
+    const tarjeta = evento.target.closest?.(TARJETAS);
+    if (!tarjeta) return;
+    const caja = tarjeta.getBoundingClientRect();
+    tarjeta.style.setProperty('--luz-x', `${evento.clientX - caja.left}px`);
+    tarjeta.style.setProperty('--luz-y', `${evento.clientY - caja.top}px`);
+}
+
 export default function DashboardPage() {
     const [resumen, setResumen] = useState(null);
     const [libros, setLibros] = useState([]);
@@ -144,7 +154,11 @@ export default function DashboardPage() {
     const fechaHoy = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
 
     return (
-        <div className={`dashboard-page space-y-6 transition-opacity duration-200 ${cargando ? 'opacity-60' : ''}`} aria-busy={cargando}>
+        <div
+            className={`dashboard-page dashboard-mosaico space-y-5 transition-opacity duration-200 ${cargando ? 'opacity-60' : ''}`}
+            aria-busy={cargando}
+            onPointerMove={moverLuz}
+        >
 
             {/* ENCABEZADO */}
             <header className="flex flex-col gap-3 border-b border-[#e6e0d7] pb-5 sm:flex-row sm:items-end sm:justify-between">
@@ -170,7 +184,7 @@ export default function DashboardPage() {
                 variants={escalonado}
                 initial="oculto"
                 animate="visible"
-                className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5"
+                className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4"
             >
                 <StatCard
                     titulo="Total vendido"
@@ -215,7 +229,7 @@ export default function DashboardPage() {
                 variants={escalonado}
                 initial="oculto"
                 animate="visible"
-                className="grid grid-cols-2 gap-4 xl:grid-cols-4 xl:gap-5"
+                className="grid grid-cols-2 gap-5 xl:grid-cols-4"
             >
                 <MiniStat titulo="Libros" valor={resumen.total_libros} icono={<FaBook />} />
                 <MiniStat titulo="Autores" valor={resumen.total_autores} icono={<FaUserPen />} />
@@ -229,7 +243,7 @@ export default function DashboardPage() {
                 variants={escalonado}
                 initial="oculto"
                 animate="visible"
-                className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:gap-5"
+                className="grid grid-cols-1 gap-5 md:grid-cols-2"
             >
                 <MejorRegistro
                     icono={<FaTrophy />}
@@ -265,15 +279,17 @@ export default function DashboardPage() {
                 <TopBooks libros={librosMasVendidos} />
             </section>
 
-            {/* ESTADOS */}
-            <section aria-label="Estados operativos" className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
+            {/* ESTADOS E INVENTARIO: tres piezas del mismo alto */}
+            <section aria-label="Estados operativos e inventario" className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                 <StatusDonut titulo="Ventas por estado" subtitulo="Todas las ventas registradas" datos={ventasPorEstado} tipo="ventas" />
                 <StatusDonut titulo="Reservas por estado" subtitulo="Todas las reservas registradas" datos={reservasPorEstado} tipo="reservas" />
+                <div className="md:col-span-2 xl:col-span-1">
+                    <StockBajo items={stockBajo} />
+                </div>
             </section>
 
-            {/* INVENTARIO Y CATÁLOGO RECIENTE */}
-            <section aria-label="Inventario" className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(320px,1fr)_minmax(0,1.6fr)]">
-                <StockBajo items={stockBajo} />
+            {/* CATÁLOGO RECIENTE */}
+            <section aria-label="Catálogo reciente">
                 <RecentBooks libros={libros} />
             </section>
 

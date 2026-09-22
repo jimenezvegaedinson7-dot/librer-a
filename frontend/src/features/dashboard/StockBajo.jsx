@@ -9,7 +9,7 @@ export default function StockBajo({ items = [] }) {
     const sinStock = lista.filter((i) => num(i.stock) <= 0).length;
 
     return (
-        <section className="grafico-card flex flex-col" aria-labelledby="titulo-stock-bajo">
+        <section className="grafico-card flex h-full flex-col" aria-labelledby="titulo-stock-bajo">
             <header className="flex items-start justify-between gap-3 px-5 pt-5 sm:px-6">
                 <div className="flex min-w-0 items-center gap-3">
                     <span

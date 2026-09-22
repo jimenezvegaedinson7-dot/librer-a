@@ -3804,3 +3804,86 @@
     background: rgb(201 162 79 / 0.1);
     color: #dcbb7a;
 }
+
+/* ========================================
+   RESUMEN — mosaico alineado y tarjetas "vivas"
+   Al pasar el cursor la tarjeta se eleva y un reflejo dorado,
+   como luz sobre el agua, sigue al puntero.
+   ======================================== */
+
+.dashboard-mosaico :is(.kpi-card, .mini-stat, .registro-card, .grafico-card) {
+    --luz-x: 50%;
+    --luz-y: 0%;
+    --elevacion: -4px;
+    position: relative;
+    height: 100%;
+    transition:
+        translate 0.35s var(--ease-out-quart),
+        box-shadow 0.35s var(--ease-out-quart),
+        border-color 0.25s ease;
+}
+
+.dashboard-mosaico .grafico-card {
+    --elevacion: -3px;
+}
+
+.dashboard-mosaico :is(.kpi-card, .mini-stat, .registro-card, .grafico-card)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: radial-gradient(380px circle at var(--luz-x) var(--luz-y), rgb(185 141 62 / 0.11), transparent 45%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+}
+
+.dashboard-mosaico :is(.kpi-card, .mini-stat, .registro-card, .grafico-card):hover {
+    translate: 0 var(--elevacion);
+    border-color: #d9c49a;
+    box-shadow:
+        0 22px 44px -22px rgb(44 38 33 / 0.32),
+        0 6px 14px -8px rgb(44 38 33 / 0.12);
+}
+
+.dashboard-mosaico :is(.kpi-card, .mini-stat, .registro-card, .grafico-card):hover::before {
+    opacity: 1;
+}
+
+/* La tarjeta destacada en burdeos recibe un reflejo más claro */
+.dashboard-mosaico .kpi-card--destacada::before {
+    background: radial-gradient(360px circle at var(--luz-x) var(--luz-y), rgb(255 236 190 / 0.18), transparent 50%);
+}
+
+.dashboard-mosaico .kpi-card--destacada:hover {
+    border-color: #5c1a23;
+    box-shadow:
+        0 26px 50px -22px rgb(92 26 35 / 0.65),
+        inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+/* El contenido queda por encima del reflejo */
+.dashboard-mosaico :is(.kpi-card, .mini-stat, .registro-card, .grafico-card) > * {
+    position: relative;
+    z-index: 1;
+}
+
+.admin-shell[data-theme="dark"] .dashboard-mosaico :is(.kpi-card, .mini-stat, .registro-card, .grafico-card)::before {
+    background: radial-gradient(380px circle at var(--luz-x) var(--luz-y), rgb(220 187 122 / 0.09), transparent 45%);
+}
+
+.admin-shell[data-theme="dark"] .dashboard-mosaico :is(.kpi-card, .mini-stat, .registro-card, .grafico-card):hover {
+    border-color: #5c4a2c;
+    box-shadow: 0 24px 48px -24px rgb(0 0 0 / 0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-mosaico :is(.kpi-card, .mini-stat, .registro-card, .grafico-card) {
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dashboard-mosaico :is(.kpi-card, .mini-stat, .registro-card, .grafico-card):hover {
+        translate: none;
+    }
+}
