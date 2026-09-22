@@ -10,17 +10,16 @@ import Breadcrumbs from './Breadcrumbs';
 function AdminLayoutInner() {
     const [sidebarAbierto, setSidebarAbierto] = useState(false);
     const [sidebarColapsado, setSidebarColapsado] = useState(false);
-    const { colorAcento, tema, cambiarTema } = useTema();
+    const { tema } = useTema();
 
     const abrirSidebar = () => setSidebarAbierto(true);
     const cerrarSidebar = () => setSidebarAbierto(false);
     const toggleSidebar = () => setSidebarColapsado((prev) => !prev);
 
     const mlClase = sidebarColapsado ? 'lg:ml-[72px]' : 'lg:ml-[250px]';
-    const accentAttr = colorAcento !== 'default' ? colorAcento : undefined;
 
     return (
-        <div data-theme={tema} data-accent={accentAttr} className="admin-shell min-h-screen bg-surface">
+        <div data-theme={tema} className="admin-shell min-h-screen bg-surface">
             <Sidebar
                 abierto={sidebarAbierto}
                 onCerrar={cerrarSidebar}

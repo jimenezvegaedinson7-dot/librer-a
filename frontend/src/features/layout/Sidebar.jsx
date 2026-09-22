@@ -15,7 +15,8 @@ const secciones = navPrincipal.reduce((grupos, item) => {
 }, []);
 
 function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
-    const { colorAcento, colores } = useTema();
+    const { getColorZona, getSidebarColores } = useTema();
+    const colores = getSidebarColores('sidebar');
 
     const cerrarEnMovil = () => {
         if (window.innerWidth < 1024) onCerrar?.();
@@ -49,7 +50,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 </div>
                 {!colapsado && (
                     <div className="ml-3 min-w-0">
-                        <p className="truncate text-[16px] font-semibold tracking-tight" style={{ color: colores.primary }}>Libreria del Saber</p>
+                        <p className="truncate text-[16px] font-semibold tracking-tight" style={{ color: colores.primary || colores.sidebarText }}>Libreria del Saber</p>
                         <p className="mt-0.5 text-[12px] opacity-60">Panel administrativo</p>
                     </div>
                 )}
@@ -89,29 +90,20 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                     onClick={cerrarEnMovil}
                                     title={colapsado ? nombre : undefined}
                                     style={({ isActive }) => {
-                                        const base = {
-                                            borderRadius: '0.5rem',
-                                            transition: 'all 0.15s',
-                                        };
+                                        const base = { borderRadius: '0.5rem', transition: 'all 0.15s' };
                                         if (isActive) {
                                             return {
                                                 ...base,
-                                                backgroundColor: colores.primarySoft,
-                                                color: colores.primary,
+                                                backgroundColor: colores.sidebarHover || colores.primarySoft,
+                                                color: colores.primary || colores.sidebarText,
                                             };
                                         }
                                         return base;
                                     }}
                                     className={({ isActive }) =>
                                         `group relative flex items-center transition-all duration-150 ${
-                                            colapsado
-                                                ? 'justify-center px-0 py-2.5'
-                                                : 'gap-3 px-3 py-2.5'
-                                        } ${
-                                            isActive
-                                                ? 'sidebar-nav-active font-semibold'
-                                                : 'hover:opacity-100'
-                                        }`
+                                            colapsado ? 'justify-center px-0 py-2.5' : 'gap-3 px-3 py-2.5'
+                                        } ${isActive ? 'sidebar-nav-active font-semibold' : ''}`
                                     }
                                 >
                                     {({ isActive }) => (
@@ -119,17 +111,13 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                             {isActive && !colapsado && (
                                                 <span
                                                     className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full"
-                                                    style={{ backgroundColor: colores.primary }}
+                                                    style={{ backgroundColor: colores.primary || colores.sidebarText }}
                                                 />
                                             )}
                                             <Icono
                                                 strokeWidth={1.8}
-                                                className={`shrink-0 transition-colors duration-150 ${
-                                                    colapsado ? 'h-5 w-5' : 'h-[18px] w-[18px]'
-                                                }`}
-                                                style={{
-                                                    color: isActive ? colores.primary : undefined,
-                                                }}
+                                                className={`shrink-0 transition-colors duration-150 ${colapsado ? 'h-5 w-5' : 'h-[18px] w-[18px]'}`}
+                                                style={{ color: isActive ? (colores.primary || colores.sidebarText) : undefined }}
                                             />
                                             {!colapsado && (
                                                 <span className={`truncate text-[14px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
@@ -147,26 +135,17 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
 
             {/* Footer */}
             <div
-                style={{
-                    borderTopColor: colores.sidebarBorder,
-                    backgroundColor: colores.sidebarBg,
-                }}
+                style={{ borderTopColor: colores.sidebarBorder, backgroundColor: colores.sidebarBg }}
                 className={`border-t ${colapsado ? 'px-2 py-3' : 'px-5 py-3'}`}
             >
                 {!colapsado && (
-                    <p
-                        style={{ color: colores.sidebarSection }}
-                        className="text-[10px] font-bold uppercase tracking-[0.08em]"
-                    >
+                    <p style={{ color: colores.sidebarSection }} className="text-[10px] font-bold uppercase tracking-[0.08em]">
                         Sistema de gestion
                     </p>
                 )}
                 {colapsado && (
                     <div className="flex justify-center">
-                        <div
-                            style={{ backgroundColor: colores.sidebarSection }}
-                            className="h-1.5 w-1.5 rounded-full opacity-40"
-                        />
+                        <div style={{ backgroundColor: colores.sidebarSection }} className="h-1.5 w-1.5 rounded-full opacity-40" />
                     </div>
                 )}
             </div>

@@ -84,7 +84,8 @@ import { useTema } from '../../components/providers/ThemeContext';
 export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     const navigate = useNavigate();
     const { usuario, cerrarSesion } = useAuth();
-    const { tema, cambiarTema } = useTema();
+    const { tema, cambiarTema, getColorZona } = useTema();
+    const topbarColor = getColorZona('topbar');
 
     const [busqueda, setBusqueda] = useState('');
     const [buscadorAbierto, setBuscadorAbierto] = useState(false);
@@ -206,7 +207,12 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
 
     return (
         <>
-            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b border-[#e5eaf2] bg-white/80 backdrop-blur-md px-3 sm:px-4 lg:px-6">
+            <header
+                className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b bg-white/80 backdrop-blur-md px-3 sm:px-4 lg:px-6"
+                style={{
+                    borderColor: topbarColor ? topbarColor.primary + '30' : '#e5eaf2',
+                }}
+            >
                 <div className="flex w-full items-center justify-between gap-4">
 
                     {/* Hamburger — visible en mobile Y desktop */}
