@@ -36,6 +36,8 @@ function getSidebarColors(colorId, tema) {
     const c = COLORES[colorId] || COLORES.default;
     if (colorId === 'default') {
         return {
+            primary: isDark ? '#60a5fa' : '#2563eb',
+            primarySoft: isDark ? 'rgba(59,130,246,0.15)' : '#dbeafe',
             sidebarBg: isDark ? SIDEBAR_BG.dark : SIDEBAR_BG.light,
             sidebarBorder: isDark ? SIDEBAR_BORDER.dark : SIDEBAR_BORDER.light,
             sidebarText: isDark ? SIDEBAR_TEXT.dark : SIDEBAR_TEXT.light,
@@ -43,8 +45,9 @@ function getSidebarColors(colorId, tema) {
             sidebarSection: SIDEBAR_SECTION[tema],
         };
     }
-    const soft = isDark ? 'rgba(255,255,255,0.08)' : c.primarySoft;
     return {
+        primary: c.primary,
+        primarySoft: isDark ? 'rgba(255,255,255,0.08)' : c.primarySoft,
         sidebarBg: isDark ? SIDEBAR_BG.dark : c.primarySoft,
         sidebarBorder: isDark ? SIDEBAR_BORDER.dark : c.primary + '40',
         sidebarText: isDark ? SIDEBAR_TEXT.dark : c.text,
