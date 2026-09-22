@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
+    FaCheckCircle,
     FaEnvelope,
     FaEye,
     FaEyeSlash,
@@ -8,11 +9,13 @@ import {
     FaLock,
     FaQrcode,
     FaRightToBracket,
+    FaTimes,
 } from 'react-icons/fa6';
 
-import { login, verificarLoginOtp } from './authService';
+import { login, verificarLoginOtp, solicitarReseteo, restablecerContrasena } from './authService';
 import { useAuth } from './AuthContext';
 import { Alert } from '../../components/ui/Alert';
+import Modal from '../../components/ui/Modal';
 
 import fondoLogin from '../../assets/fondo-login.png';
 import logoLibreria from '../../assets/logo-lbl.png';
@@ -31,8 +34,20 @@ export default function LoginPage() {
     const [codigo, setCodigo] = useState('');
     const [verificando, setVerificando] = useState(false);
 
+    // --- Forgot password modal state ---
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [resetStep, setResetStep] = useState(1); // 1=email, 2=code+pass, 3=done
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetCodigo, setResetCodigo] = useState('');
+    const [resetPassword, setResetPassword] = useState('');
+    const [resetPassword2, setResetPassword2] = useState('');
+    const [resetError, setResetError] = useState('');
+    const [resetCargando, setResetCargando] = useState(false);
+    const [mostrarResetPass, setMostrarResetPass] = useState(false);
+
     if (autenticado) return <Navigate to="/dashboard" replace />;
 
+    // --- Login handlers ---
     const enviar = async (e) => {
         e.preventDefault();
         try {
@@ -109,6 +124,88 @@ export default function LoginPage() {
         setTwoFactorToken('');
         setCodigo('');
         setError('');
+    };
+
+    // --- Forgot password handlers ---
+    const openResetModal = () => {
+        setShowResetModal(true);
+        setResetStep(1);
+        setResetEmail(email);
+        setResetCodigo('');
+        setResetPassword('');
+        setResetPassword2('');
+        setResetError('');
+        setMostrarResetPass(false);
+    };
+
+    const closeResetModal = () => {
+        setShowResetModal(false);
+        setResetStep(1);
+        setResetError('');
+    };
+
+    const enviarCodigoReset = async (e) => {
+        e.preventDefault();
+        if (!resetEmail.trim()) {
+            setResetError('Ingresa tu correo electrónico');
+            return;
+        }
+        try {
+            setResetCargando(true);
+            setResetError('');
+            await solicitarReseteo({ email: resetEmail.trim() });
+            setResetStep(2);
+        } catch (err) {
+            setResetError(err.response?.data?.mensaje || 'Error al enviar el código');
+        } finally {
+            setResetCargando(false);
+        }
+    };
+
+    const restablecer = async (e) => {
+        e.preventDefault();
+        if (!/^\d{6}$/.test(resetCodigo)) {
+            setResetError('El código debe tener 6 dígitos');
+            return;
+        }
+        if (resetPassword.length < 8) {
+            setResetError('La contraseña debe tener al menos 8 caracteres');
+            return;
+        }
+        if (!/[a-zA-Z]/.test(resetPassword)) {
+            setResetError('La contraseña debe contener al menos una letra');
+            return;
+        }
+        if (!/\d/.test(resetPassword)) {
+            setResetError('La contraseña debe contener al menos un número');
+            return;
+        }
+        if (resetPassword !== resetPassword2) {
+            setResetError('Las contraseñas no coinciden');
+            return;
+        }
+        try {
+            setResetCargando(true);
+            setResetError('');
+            await restablecerContrasena({
+                email: resetEmail.trim(),
+                codigo: resetCodigo,
+                password: resetPassword,
+            });
+            setResetStep(3);
+        } catch (err) {
+            setResetError(err.response?.data?.mensaje || 'Código incorrecto o expirado');
+        } finally {
+            setResetCargando(false);
+        }
+    };
+
+    const resetPaso2Volver = () => {
+        setResetStep(1);
+        setResetCodigo('');
+        setResetPassword('');
+        setResetPassword2('');
+        setResetError('');
     };
 
     return (
@@ -213,6 +310,16 @@ export default function LoginPage() {
                                         )}
                                     </button>
                                 </form>
+
+                                <div className="mt-4 text-center">
+                                    <button
+                                        type="button"
+                                        onClick={openResetModal}
+                                        className="text-sm font-medium text-primary-400 transition-colors hover:text-mahogany-600"
+                                    >
+                                        ¿Olvidaste tu contraseña?
+                                    </button>
+                                </div>
                             </>
                         ) : (
                             <>
@@ -286,6 +393,191 @@ export default function LoginPage() {
                     </div>
                 </section>
             </div>
+
+            {/* --- Forgot Password Modal --- */}
+            <Modal abierto={showResetModal} onCerrar={closeResetModal}>
+                <div className="p-6 sm:p-7">
+                    <div className="mb-5 flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-[#0f172a]">
+                            Restablecer contraseña
+                        </h2>
+                        <button
+                            type="button"
+                            onClick={closeResetModal}
+                            className="rounded-md p-1 text-primary-400 transition hover:bg-parchment-200 hover:text-mahogany-700"
+                        >
+                            <FaTimes />
+                        </button>
+                    </div>
+
+                    {resetError && (
+                        <div className="mb-4">
+                            <Alert tipo="error">{resetError}</Alert>
+                        </div>
+                    )}
+
+                    {/* Step 1: Enter email */}
+                    {resetStep === 1 && (
+                        <form onSubmit={enviarCodigoReset} className="space-y-4">
+                            <p className="text-sm text-[#64748b]">
+                                Ingresa el correo registrado y te enviaremos un código de 6 dígitos.
+                            </p>
+                            <div>
+                                <label className="mb-1.5 block text-sm font-semibold text-mahogany-700">
+                                    Correo electrónico
+                                </label>
+                                <div className="flex h-11 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
+                                    <span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
+                                        <FaEnvelope />
+                                    </span>
+                                    <input
+                                        type="email"
+                                        value={resetEmail}
+                                        onChange={(e) => setResetEmail(e.target.value)}
+                                        placeholder="admin@libreria.com"
+                                        autoComplete="email"
+                                        required
+                                        className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
+                                    />
+                                </div>
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={resetCargando}
+                                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-mahogany-700 bg-mahogany-700 text-sm font-semibold text-parchment-100 transition-colors hover:bg-mahogany-600 disabled:opacity-60"
+                            >
+                                {resetCargando ? (
+                                    <>
+                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                                        Enviando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaEnvelope />
+                                        Enviar código
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    )}
+
+                    {/* Step 2: Enter code + new password */}
+                    {resetStep === 2 && (
+                        <form onSubmit={restablecer} className="space-y-4">
+                            <p className="text-sm text-[#64748b]">
+                                Se envió un código a <strong>{resetEmail}</strong>.
+                            </p>
+                            <div>
+                                <label className="mb-1.5 block text-sm font-semibold text-mahogany-700">
+                                    Código de verificación
+                                </label>
+                                <div className="flex h-11 min-w-0 items-center rounded-md border border-primary-200 bg-parchment-50 px-3 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
+                                    <FaKey className="shrink-0 text-mahogany-600" />
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        maxLength="6"
+                                        value={resetCodigo}
+                                        onChange={(e) => setResetCodigo(e.target.value.replace(/\D/g, ''))}
+                                        placeholder="000000"
+                                        autoComplete="one-time-code"
+                                        required
+                                        className="min-w-0 flex-1 bg-transparent px-3 text-center text-xl font-bold tracking-[.4em] text-mahogany-700 outline-none placeholder:text-primary-200"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="mb-1.5 block text-sm font-semibold text-mahogany-700">
+                                    Nueva contraseña
+                                </label>
+                                <div className="flex h-11 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
+                                    <span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
+                                        <FaLock />
+                                    </span>
+                                    <input
+                                        type={mostrarResetPass ? 'text' : 'password'}
+                                        value={resetPassword}
+                                        onChange={(e) => setResetPassword(e.target.value)}
+                                        placeholder="Mínimo 8 caracteres, 1 letra y 1 número"
+                                        autoComplete="new-password"
+                                        required
+                                        className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setMostrarResetPass((v) => !v)}
+                                        className="mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-primary-400 transition hover:bg-parchment-200 hover:text-mahogany-700"
+                                    >
+                                        {mostrarResetPass ? <FaEyeSlash /> : <FaEye />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="mb-1.5 block text-sm font-semibold text-mahogany-700">
+                                    Confirmar contraseña
+                                </label>
+                                <div className="flex h-11 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
+                                    <span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
+                                        <FaLock />
+                                    </span>
+                                    <input
+                                        type={mostrarResetPass ? 'text' : 'password'}
+                                        value={resetPassword2}
+                                        onChange={(e) => setResetPassword2(e.target.value)}
+                                        placeholder="Repite la contraseña"
+                                        autoComplete="new-password"
+                                        required
+                                        className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={resetPaso2Volver}
+                                    className="h-11 flex-1 rounded-md border border-primary-200 bg-parchment-50 text-sm font-medium text-mahogany-700 transition hover:bg-parchment-200"
+                                >
+                                    ← Volver
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={resetCargando}
+                                    className="h-11 flex-1 rounded-md border border-mahogany-700 bg-mahogany-700 text-sm font-semibold text-parchment-100 transition-colors hover:bg-mahogany-600 disabled:opacity-60"
+                                >
+                                    {resetCargando ? (
+                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                                    ) : (
+                                        'Restablecer'
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    )}
+
+                    {/* Step 3: Success */}
+                    {resetStep === 3 && (
+                        <div className="space-y-4 text-center">
+                            <div className="flex justify-center text-4xl text-green-500">
+                                <FaCheckCircle />
+                            </div>
+                            <p className="text-sm text-[#64748b]">
+                                Contraseña actualizada correctamente. Ya puedes iniciar sesión.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    closeResetModal();
+                                    setPassword('');
+                                }}
+                                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-mahogany-700 bg-mahogany-700 text-sm font-semibold text-parchment-100 transition-colors hover:bg-mahogany-600"
+                            >
+                                <FaRightToBracket />
+                                Ir al inicio de sesión
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </Modal>
         </main>
     );
 }

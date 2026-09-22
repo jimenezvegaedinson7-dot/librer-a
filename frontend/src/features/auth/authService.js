@@ -27,3 +27,11 @@ export async function confirmar2fa(codigo) {
 export async function desactivar2fa({ password, codigo }) {
     return client.post('/auth/2fa/disable', { password, codigo });
 }
+
+export async function solicitarReseteo({ email }) {
+    return client.post('/auth/solicitar-reseteo', { email });
+}
+
+export async function restablecerContrasena({ email, codigo, password }) {
+    return client.post('/auth/reestablecer-contrasena', { email, codigo, password });
+}
