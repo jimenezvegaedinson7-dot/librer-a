@@ -7,20 +7,15 @@ import {
     Banknote,
     Trophy,
     CalendarCheck,
-    TrendingUp,
 } from 'lucide-react';
 
 import {
     FaCartShopping,
-    FaMoneyBillWave,
     FaCalendarCheck,
     FaTriangleExclamation,
     FaChartColumn,
     FaRotate,
     FaCalendarDay,
-    FaCalendarDays,
-    FaReceipt,
-    FaArrowTrendUp,
     FaTrophy,
 } from 'react-icons/fa6';
 
@@ -114,122 +109,73 @@ function MiniBarChart({ data, color = '#3b82f6', highlightLast = false, height =
     );
 }
 
-function ReportMetricCard({ icon: Icon, titulo, subtitulo, valor, monto, barColor, sparkData, badge, badgeLabel }) {
+function ReportCard({ icon: Icon, titulo, subtitulo, valor, monto, barColor, sparkData, barData, barLabels }) {
+    const hasBarData = barData && barData.length > 0;
+    const hasSparkData = sparkData && sparkData.length > 1;
     return (
-        <article className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl" style={{ backgroundColor: barColor }} />
-            <div className="p-5 pl-4">
-                <div className="mb-3 flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ backgroundColor: `${barColor}10`, color: barColor }}>
-                            <Icon size={20} />
+        <article className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl" style={{ backgroundColor: barColor }} />
+            <div className="p-4 pl-3.5">
+                <div className="mb-2 flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: `${barColor}10`, color: barColor }}>
+                            <Icon size={17} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-[0.05em] text-slate-700">{titulo}</p>
-                            <p className="text-xs text-slate-400">{subtitulo}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.05em] text-slate-700">{titulo}</p>
+                            <p className="text-[10px] text-slate-400">{subtitulo}</p>
                         </div>
                     </div>
-                    {badge && (
-                        <div className="text-right">
-                            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
-                                {badge}
-                            </span>
-                            {badgeLabel && <p className="mt-0.5 text-[10px] text-slate-400">{badgeLabel}</p>}
-                        </div>
-                    )}
                 </div>
-                <div className="mb-1">
-                    <p className="text-4xl font-bold text-slate-900">{valor}</p>
-                </div>
-                {monto && <p className="mb-3 text-xl font-semibold" style={{ color: barColor }}>{monto}</p>}
-                {sparkData && (
+                <p className="text-2xl font-bold text-slate-900">{valor}</p>
+                {monto && <p className="mt-0.5 text-sm font-semibold" style={{ color: barColor }}>{monto}</p>}
+                {hasSparkData && (
                     <div className="mt-2">
-                        <MiniSparkline data={sparkData} color={barColor} height={28} />
+                        <MiniSparkline data={sparkData} color={barColor} height={24} />
                     </div>
                 )}
-            </div>
-        </article>
-    );
-}
-
-function ReportBarCard({ icon: Icon, titulo, subtitulo, valor, monto, barColor, barData, badge, badgeLabel }) {
-    return (
-        <article className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl" style={{ backgroundColor: barColor }} />
-            <div className="p-5 pl-4">
-                <div className="mb-3 flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ backgroundColor: `${barColor}10`, color: barColor }}>
-                            <Icon size={20} />
-                        </div>
-                        <div>
-                            <p className="text-xs font-bold uppercase tracking-[0.05em] text-slate-700">{titulo}</p>
-                            <p className="text-xs text-slate-400">{subtitulo}</p>
-                        </div>
-                    </div>
-                    {badge && (
-                        <div className="text-right">
-                            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
-                                {badge}
-                            </span>
-                            {badgeLabel && <p className="mt-0.5 text-[10px] text-slate-400">{badgeLabel}</p>}
-                        </div>
-                    )}
-                </div>
-                <div className="mb-1">
-                    <p className="text-4xl font-bold text-slate-900">{valor}</p>
-                </div>
-                {monto && <p className="mb-3 text-xl font-semibold" style={{ color: barColor }}>{monto}</p>}
-                {barData && (
+                {hasBarData && (
                     <div className="mt-2">
-                        <MiniBarChart data={barData} color={barColor} highlightLast height={28} />
-                        <div className="mt-1 flex justify-between">
-                            {barData.map((_, i) => (
-                                <span key={i} className="text-[8px] text-slate-400">{`S${i + 1}`}</span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-        </article>
-    );
-}
-
-function ReportDestacadoCard({ icon: Icon, titulo, subtitulo, principal, detalle, barColor, barData, barLabels, badge, badgeLabel }) {
-    return (
-        <article className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-            <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl" style={{ backgroundColor: barColor }} />
-            <div className="p-6 pl-5">
-                <div className="mb-4 flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl" style={{ backgroundColor: `${barColor}10`, color: barColor }}>
-                            <Icon size={22} />
-                        </div>
-                        <div>
-                            <p className="text-xs font-bold uppercase tracking-[0.05em] text-slate-700">{titulo}</p>
-                            <p className="text-xs text-slate-400">{subtitulo}</p>
-                        </div>
-                    </div>
-                    {badge && (
-                        <div className="text-right">
-                            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
-                                {badge}
-                            </span>
-                            {badgeLabel && <p className="mt-0.5 text-[10px] text-slate-400">{badgeLabel}</p>}
-                        </div>
-                    )}
-                </div>
-                <div className="mb-1">
-                    <p className="text-2xl font-bold text-slate-900">{principal}</p>
-                </div>
-                {detalle && <p className="mb-3 text-sm text-slate-500">{detalle}</p>}
-                {barData && (
-                    <div className="mt-3">
-                        <MiniBarChart data={barData} color={barColor} highlightLast height={36} />
+                        <MiniBarChart data={barData} color={barColor} highlightLast height={24} />
                         {barLabels && (
-                            <div className="mt-1 flex justify-between">
+                            <div className="mt-0.5 flex justify-between">
                                 {barLabels.map((l, i) => (
-                                    <span key={i} className="text-[8px] text-slate-400">{l}</span>
+                                    <span key={i} className="text-[7px] text-slate-400">{l}</span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </article>
+    );
+}
+
+function ReportDestacadoCard({ icon: Icon, titulo, subtitulo, principal, detalle, barColor, barData, barLabels }) {
+    return (
+        <article className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+            <div className="absolute left-0 top-0 h-full w-1 rounded-l-xl" style={{ backgroundColor: barColor }} />
+            <div className="p-5 pl-4">
+                <div className="mb-3 flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: `${barColor}10`, color: barColor }}>
+                            <Icon size={19} />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.05em] text-slate-700">{titulo}</p>
+                            <p className="text-[10px] text-slate-400">{subtitulo}</p>
+                        </div>
+                    </div>
+                </div>
+                <p className="text-xl font-bold text-slate-900">{principal}</p>
+                {detalle && <p className="mt-0.5 text-xs text-slate-500">{detalle}</p>}
+                {barData && barData.length > 0 && (
+                    <div className="mt-3">
+                        <MiniBarChart data={barData} color={barColor} highlightLast height={28} />
+                        {barLabels && (
+                            <div className="mt-0.5 flex justify-between">
+                                {barLabels.map((l, i) => (
+                                    <span key={i} className="text-[7px] text-slate-400">{l}</span>
                                 ))}
                             </div>
                         )}
@@ -373,8 +319,8 @@ export default function ReportesPage() {
 
             {!cargando && !error && (
                 <>
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                        <ReportMetricCard
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                        <ReportCard
                             icon={CalendarDays}
                             titulo="Ventas de hoy"
                             subtitulo="Total del dia"
@@ -383,7 +329,7 @@ export default function ReportesPage() {
                             barColor="#3b82f6"
                             sparkData={ventasPorDia.slice(-7).map(d => Number(d.total_vendido || 0))}
                         />
-                        <ReportBarCard
+                        <ReportCard
                             icon={BarChart3}
                             titulo="Ventas del mes"
                             subtitulo="Total acumulado"
@@ -391,8 +337,9 @@ export default function ReportesPage() {
                             monto={formatearMoneda(indicadores.vendido_mes_actual)}
                             barColor="#2563eb"
                             barData={ventasPorMes.slice(-4).map(d => Number(d.total_vendido || 0))}
+                            barLabels={ventasPorMes.slice(-4).map(d => d.mes ? d.mes.substring(0, 3) : '')}
                         />
-                        <ReportMetricCard
+                        <ReportCard
                             icon={Tag}
                             titulo="Ticket promedio"
                             subtitulo="Promedio por venta pagada"
@@ -400,17 +347,18 @@ export default function ReportesPage() {
                             barColor="#8b5cf6"
                             sparkData={ventasPorMes.slice(-6).map(d => Number(d.promedio_venta || 0))}
                         />
-                        <ReportBarCard
+                        <ReportCard
                             icon={Banknote}
                             titulo="Venta mas alta"
                             subtitulo="Mayor venta pagada"
                             valor={formatearMoneda(indicadores.venta_mayor)}
                             barColor="#059669"
                             barData={ventasPorDia.slice(-6).map(d => Number(d.venta_mayor || 0))}
+                            barLabels={ventasPorDia.slice(-6).map(d => d.dia || '')}
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
                         <ReportDestacadoCard
                             icon={Trophy}
                             titulo="Mejor mes registrado"
