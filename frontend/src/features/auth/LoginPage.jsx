@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
-    FaCheckCircle,
+    FaCircleCheck,
     FaEnvelope,
     FaEye,
     FaEyeSlash,
@@ -9,13 +9,13 @@ import {
     FaLock,
     FaQrcode,
     FaRightToBracket,
-    FaTimes,
+    FaXmark,
 } from 'react-icons/fa6';
 
 import { login, verificarLoginOtp, solicitarReseteo, restablecerContrasena } from './authService';
 import { useAuth } from './AuthContext';
 import { Alert } from '../../components/ui/Alert';
-import Modal from '../../components/ui/Modal';
+import { Modal } from '../../components/ui/Modal';
 
 import fondoLogin from '../../assets/fondo-login.png';
 import logoLibreria from '../../assets/logo-lbl.png';
@@ -406,7 +406,7 @@ export default function LoginPage() {
                             onClick={closeResetModal}
                             className="rounded-md p-1 text-primary-400 transition hover:bg-parchment-200 hover:text-mahogany-700"
                         >
-                            <FaTimes />
+                            <FaXmark />
                         </button>
                     </div>
 
@@ -558,7 +558,7 @@ export default function LoginPage() {
                     {resetStep === 3 && (
                         <div className="space-y-4 text-center">
                             <div className="flex justify-center text-4xl text-green-500">
-                                <FaCheckCircle />
+                                <FaCircleCheck />
                             </div>
                             <p className="text-sm text-[#64748b]">
                                 Contraseña actualizada correctamente. Ya puedes iniciar sesión.
