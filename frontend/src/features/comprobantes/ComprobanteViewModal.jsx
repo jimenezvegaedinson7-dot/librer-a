@@ -7,7 +7,6 @@ import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
 import { CargandoPantalla } from '../../components/ui/Spinner';
 
-import { formatearFecha } from '../../lib/utils/format';
 import { montoEnLetras } from '../../lib/utils/numeroALetras';
 
 import { obtenerComprobante } from './comprobantesService';
@@ -29,14 +28,11 @@ const CSS_IMPRESION = `
 }
 `;
 
-function formatearSerieNumero(comprobante) {
-    const serie = String(comprobante?.serie ?? '');
-    const numero = String(comprobante?.numero ?? '');
-    return `${serie}-${numero.padStart(8, '0')}`;
-}
-
-function formatearMonedaPlain(valor) {
-    return `S/ ${Number(valor || 0).toFixed(2)}`;
+function formatMoney(value) {
+    return Number(value || 0).toLocaleString('es-PE', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
 }
 
 function fechaEmision(fecha) {
@@ -47,6 +43,19 @@ function fechaEmision(fecha) {
     const mes = String(d.getMonth() + 1).padStart(2, '0');
     const anio = d.getFullYear();
     return `${dia}/${mes}/${anio}`;
+}
+
+function TotalFila({ label, value, strong = false }) {
+    return (
+        <div className="grid grid-cols-[1fr_190px] items-center">
+            <div className={`px-3 py-2 text-right ${strong ? 'font-bold' : ''}`}>
+                {label} :
+            </div>
+            <div className={`border border-black px-3 py-2 text-right ${strong ? 'font-bold' : ''}`}>
+                S/ {formatMoney(value)}
+            </div>
+        </div>
+    );
 }
 
 export default function ComprobanteViewModal({
@@ -106,32 +115,35 @@ export default function ComprobanteViewModal({
 
     if (!abierto) return null;
 
-    const emisorRuc = detalle?.ruc || empresa.ruc || '';
-    const emisorRazonSocial = detalle?.razon_social || empresa.razon_social || '—';
-    const emisorNombreComercial = empresa.nombre_comercial || '';
-    const emisorDireccion = empresa.direccion || '';
-
     const esFactura = detalle?.tipo === 'factura';
-    const tipoTitulo = esFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA';
-    const prefijoSerie = esFactura ? 'F' : 'B';
+    const tipoLabel = esFactura
+        ? 'FACTURA ELECTRÓNICA'
+        : 'BOLETA DE VENTA ELECTRÓNICA';
+
+    const empresaData = {
+        ruc: empresa.ruc || detalle?.ruc || '',
+        razon_social: empresa.razon_social || detalle?.razon_social || '',
+        nombre_comercial: empresa.nombre_comercial || '',
+        direccion: empresa.direccion || '',
+    };
+
+    const numeroSerie = `${detalle?.serie || ''}-${String(detalle?.numero ?? '').padStart(8, '0')}`;
 
     const clienteNombre = detalle?.cliente_nombre || '—';
-    const clienteDoc = detalle?.cliente_dni_ruc || '';
     const clienteTipoDoc = detalle?.cliente_tipo_documento || (esFactura ? 'RUC' : 'DNI');
-    const clienteEmail = detalle?.cliente_email || detalle?.correo_compra || '';
+    const clienteDoc = detalle?.cliente_dni_ruc || '';
+    const clienteCorreo = detalle?.cliente_email || detalle?.correo_compra || '—';
 
-    const items = Array.isArray(detalle?.detalle) ? detalle.detalle : [];
+    const detalles = Array.isArray(detalle?.detalle) ? detalle.detalle : [];
+
     const subtotal = Number(detalle?.subtotal || 0);
-    const igv = Number(detalle?.igv || 0);
-    const costoEnvio = Number(detalle?.costo_envio || 0);
+    const igvVal = Number(detalle?.igv || 0);
     const total = Number(detalle?.total || 0);
 
-    const opGravada = igv > 0 ? subtotal : 0;
-    const opExonerada = igv > 0 ? 0 : subtotal;
+    const opGravada = igvVal > 0 ? subtotal : 0;
+    const opExonerada = igvVal > 0 ? 0 : subtotal;
 
-    const serieDisplay = formatearSerieNumero(detalle);
-    const serieCorta = detalle?.serie || `${prefijoSerie}001`;
-    const numeroDisplay = String(detalle?.numero ?? '').padStart(8, '0');
+    const montoLetras = montoEnLetras(total);
 
     return (
         <Modal
@@ -158,159 +170,149 @@ export default function ComprobanteViewModal({
             {!cargando && error && <Alert tipo="error">{error}</Alert>}
 
             {!cargando && !error && detalle && (
-                <div className="print-area mx-auto w-full max-w-[800px] border border-slate-700 bg-white p-4 text-[12px] text-slate-950">
-
-                    {/* ====== CABECERA ====== */}
-                    <div className="grid grid-cols-[1fr_260px] gap-4 border-b-2 border-slate-700 pb-4">
-                        {/* Emisor */}
+                <div
+                    id="boleta-documento"
+                    className="print-area mx-auto w-full max-w-[1100px] border border-black bg-white p-3 text-[12px] font-sans text-black"
+                >
+                    {/* ========================= */}
+                    {/* CABECERA                   */}
+                    {/* ========================= */}
+                    <div className="grid grid-cols-[1fr_390px] gap-8 border-b border-black pb-5">
                         <div>
-                            <p className="text-[15px] font-bold leading-tight text-slate-900">
-                                {emisorRazonSocial}
-                            </p>
-                            {emisorNombreComercial && (
-                                <p className="text-[11px] text-slate-600">{emisorNombreComercial}</p>
+                            <h1 className="text-[20px] font-bold uppercase leading-tight">
+                                {empresaData.razon_social || '—'}
+                            </h1>
+                            {empresaData.nombre_comercial && (
+                                <p className="mt-1 text-[13px]">{empresaData.nombre_comercial}</p>
                             )}
-                            {emisorDireccion && (
-                                <p className="mt-0.5 text-[11px] text-slate-600">{emisorDireccion}</p>
+                            {empresaData.direccion && (
+                                <p className="mt-1 text-[12px]">{empresaData.direccion}</p>
                             )}
-                            <p className="mt-0.5 text-[11px] text-slate-600">
-                                RUC: <span className="font-bold">{emisorRuc || '—'}</span>
-                            </p>
                         </div>
 
-                        {/* Cuadro comprobante */}
-                        <div className="flex flex-col items-center justify-center border-2 border-slate-900 p-3 text-center">
-                            <p className="text-[13px] font-bold uppercase tracking-wide text-slate-900">
-                                {tipoTitulo}
-                            </p>
-                            <div className="my-1 h-px w-full bg-slate-400" />
-                            <p className="text-[11px] text-slate-700">
-                                RUC: <span className="font-bold">{emisorRuc || '—'}</span>
-                            </p>
-                            <p className="mt-1 font-mono text-[15px] font-bold tracking-wider text-slate-900">
-                                {serieDisplay}
-                            </p>
+                        <div className="border-2 border-black px-5 py-3 text-center">
+                            <div className="text-[17px] font-bold uppercase">{tipoLabel}</div>
+                            <div className="mt-2 text-[14px] font-bold">
+                                RUC: {empresaData.ruc || '—'}
+                            </div>
+                            <div className="mt-2 text-[18px] font-bold tracking-wide">
+                                {numeroSerie}
+                            </div>
                         </div>
                     </div>
 
-                    {/* ====== DATOS CLIENTE ====== */}
-                    <div className="border-b border-slate-400 py-3">
-                        <table className="w-full text-[12px]">
-                            <tbody>
-                                <tr>
-                                    <td className="w-32 py-0.5 font-bold text-slate-700">Fecha de emisión:</td>
-                                    <td className="py-0.5 text-slate-900">{fechaEmision(detalle?.fecha_emision)}</td>
-                                    <td className="w-32 py-0.5 font-bold text-slate-700">Tipo de moneda:</td>
-                                    <td className="py-0.5 text-slate-900">SOLES</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-0.5 font-bold text-slate-700">Señor(es):</td>
-                                    <td className="py-0.5 text-slate-900" colSpan={3}>{clienteNombre}</td>
-                                </tr>
-                                <tr>
-                                    <td className="py-0.5 font-bold text-slate-700">Documento:</td>
-                                    <td className="py-0.5 text-slate-900" colSpan={3}>
-                                        {clienteDoc ? `${clienteTipoDoc} - ${clienteDoc}` : '—'}
-                                    </td>
-                                </tr>
-                                {clienteEmail && (
-                                    <tr>
-                                        <td className="py-0.5 font-bold text-slate-700">Correo:</td>
-                                        <td className="py-0.5 text-slate-900" colSpan={3}>{clienteEmail}</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                    {/* ========================= */}
+                    {/* DATOS DEL COMPRADOR        */}
+                    {/* ========================= */}
+                    <div className="py-5">
+                        <div className="grid grid-cols-[190px_20px_1fr] gap-y-2">
+                            <span className="font-medium">Fecha de Emisión</span>
+                            <span>:</span>
+                            <span>{fechaEmision(detalle?.fecha_emision)}</span>
+
+                            <span className="font-medium">Señor(es)</span>
+                            <span>:</span>
+                            <span>{clienteNombre}</span>
+
+                            <span className="font-medium">Documento</span>
+                            <span>:</span>
+                            <span>
+                                {clienteDoc
+                                    ? `${clienteTipoDoc} - ${clienteDoc}`
+                                    : '—'}
+                            </span>
+
+                            <span className="font-medium">Tipo de Moneda</span>
+                            <span>:</span>
+                            <span>SOLES</span>
+
+                            <span className="font-medium">Correo</span>
+                            <span>:</span>
+                            <span>{clienteCorreo}</span>
+                        </div>
                     </div>
 
-                    {/* ====== TABLA DETALLE ====== */}
-                    <div className="border-b border-slate-400">
-                        <table className="w-full border-collapse text-[12px]">
-                            <thead>
-                                <tr className="bg-slate-100">
-                                    <th className="w-14 border border-slate-500 px-2 py-2 text-center text-[10px] font-bold uppercase">CANT.</th>
-                                    <th className="w-14 border border-slate-500 px-2 py-2 text-center text-[10px] font-bold uppercase">UND.</th>
-                                    <th className="border border-slate-500 px-2 py-2 text-left text-[10px] font-bold uppercase">DESCRIPCIÓN</th>
-                                    <th className="w-24 border border-slate-500 px-2 py-2 text-right text-[10px] font-bold uppercase">V. UNIT.</th>
-                                    <th className="w-20 border border-slate-500 px-2 py-2 text-right text-[10px] font-bold uppercase">DSCTO.</th>
-                                    <th className="w-24 border border-slate-500 px-2 py-2 text-right text-[10px] font-bold uppercase">IMPORTE</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {items.length > 0 ? items.map((item, i) => (
-                                    <tr key={item.id_libro ?? i}>
-                                        <td className="border border-slate-400 px-2 py-2 text-center">{item.cantidad}</td>
-                                        <td className="border border-slate-400 px-2 py-2 text-center">UND</td>
-                                        <td className="border border-slate-400 px-2 py-2 text-left">{item.titulo || 'Sin título'}</td>
-                                        <td className="border border-slate-400 px-2 py-2 text-right">{formatearMonedaPlain(item.precio_unitario)}</td>
-                                        <td className="border border-slate-400 px-2 py-2 text-right">0.00</td>
-                                        <td className="border border-slate-400 px-2 py-2 text-right font-semibold">{formatearMonedaPlain(item.subtotal)}</td>
-                                    </tr>
-                                )) : (
-                                    <tr>
-                                        <td colSpan={6} className="border border-slate-400 px-2 py-6 text-center text-slate-500">
-                                            Sin detalle registrado.
+                    {/* ========================= */}
+                    {/* DETALLE                    */}
+                    {/* ========================= */}
+                    <table className="w-full border-collapse border border-black">
+                        <thead>
+                            <tr>
+                                <th className="w-[90px] border-r border-black px-2 py-2 font-bold">Cantidad</th>
+                                <th className="w-[130px] border-r border-black px-2 py-2 font-bold">Unidad Medida</th>
+                                <th className="border-r border-black px-3 py-2 font-bold">Descripción</th>
+                                <th className="w-[130px] border-r border-black px-2 py-2 font-bold">Valor Unitario</th>
+                                <th className="w-[110px] border-r border-black px-2 py-2 font-bold">Descuento</th>
+                                <th className="w-[150px] px-2 py-2 font-bold">Importe de Venta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {detalles.map((item, index) => {
+                                const cantidad = Number(item.cantidad || 0);
+                                const precio = Number(item.precio_unitario ?? 0);
+                                const descuento = Number(item.descuento || 0);
+                                const importe = Number(item.subtotal ?? (cantidad * precio - descuento));
+
+                                return (
+                                    <tr
+                                        key={item.id_detalle || item.id_libro || index}
+                                        className="border-t border-black"
+                                    >
+                                        <td className="border-r border-black px-2 py-3 text-center">
+                                            {cantidad.toFixed(2)}
+                                        </td>
+                                        <td className="border-r border-black px-2 py-3 text-center">
+                                            UNIDAD
+                                        </td>
+                                        <td className="border-r border-black px-3 py-3">
+                                            {item.titulo || '—'}
+                                        </td>
+                                        <td className="border-r border-black px-3 py-3 text-right">
+                                            {formatMoney(precio)}
+                                        </td>
+                                        <td className="border-r border-black px-3 py-3 text-right">
+                                            {formatMoney(descuento)}
+                                        </td>
+                                        <td className="px-3 py-3 text-right">
+                                            {formatMoney(importe)}
                                         </td>
                                     </tr>
-                                )}
-                                {/* Filas vacias para completar */}
-                                {items.length > 0 && items.length < 6 && Array.from({ length: 6 - items.length }).map((_, i) => (
-                                    <tr key={`empty-${i}`}>
-                                        <td className="border border-slate-400 px-2 py-2">&nbsp;</td>
-                                        <td className="border border-slate-400 px-2 py-2" />
-                                        <td className="border border-slate-400 px-2 py-2" />
-                                        <td className="border border-slate-400 px-2 py-2" />
-                                        <td className="border border-slate-400 px-2 py-2" />
-                                        <td className="border border-slate-400 px-2 py-2" />
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                );
+                            })}
+                            {detalles.length === 0 && (
+                                <tr className="border-t border-black">
+                                    <td colSpan={6} className="px-3 py-6 text-center">Sin detalle registrado.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
 
-                    {/* ====== TOTALES ====== */}
-                    <div className="grid grid-cols-[1fr_300px] gap-4 border-b border-slate-400 py-3">
-                        <div className="flex items-end">
-                            <p className="text-[11px] italic text-slate-600">
-                                SON: {montoEnLetras(total)}
+                    {/* ========================= */}
+                    {/* PARTE INFERIOR             */}
+                    {/* ========================= */}
+                    <div className="grid grid-cols-[1fr_430px] gap-10 pt-5">
+                        {/* MONTO EN LETRAS */}
+                        <div className="flex items-end pb-10">
+                            <p className="text-[16px] font-bold uppercase leading-snug">
+                                SON: {montoLetras}
                             </p>
                         </div>
-                        <div className="border border-slate-400 text-[12px]">
-                            <div className="flex justify-between border-b border-slate-300 px-3 py-1">
-                                <span className="text-slate-600">Op. Gravada</span>
-                                <span className="font-semibold">{formatearMonedaPlain(opGravada)}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-slate-300 px-3 py-1">
-                                <span className="text-slate-600">Op. Exonerada</span>
-                                <span className="font-semibold">{formatearMonedaPlain(opExonerada)}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-slate-300 px-3 py-1">
-                                <span className="text-slate-600">Op. Inafecta</span>
-                                <span className="font-semibold">S/ 0.00</span>
-                            </div>
-                            <div className="flex justify-between border-b border-slate-300 px-3 py-1">
-                                <span className="text-slate-600">IGV (18%)</span>
-                                <span className="font-semibold">{formatearMonedaPlain(igv)}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-slate-300 px-3 py-1">
-                                <span className="text-slate-600">Otros Cargos</span>
-                                <span className="font-semibold">S/ 0.00</span>
-                            </div>
-                            {costoEnvio > 0 && (
-                                <div className="flex justify-between border-b border-slate-300 px-3 py-1">
-                                    <span className="text-slate-600">Costo Envío</span>
-                                    <span className="font-semibold">{formatearMonedaPlain(costoEnvio)}</span>
-                                </div>
-                            )}
-                            <div className="flex justify-between bg-slate-100 px-3 py-2">
-                                <span className="font-bold uppercase text-slate-900">Importe Total</span>
-                                <span className="font-bold text-slate-900">{formatearMonedaPlain(total)}</span>
-                            </div>
+
+                        {/* TOTALES */}
+                        <div className="border border-black p-2">
+                            <TotalFila label="Op. Gravada" value={opGravada} />
+                            <TotalFila label="Op. Exonerada" value={opExonerada} />
+                            <TotalFila label="Op. Inafecta" value={0} />
+                            <TotalFila label="IGV" value={igvVal} />
+                            <TotalFila label="Otros Cargos" value={0} />
+                            <TotalFila label="Importe Total" value={total} strong />
                         </div>
                     </div>
 
-                    {/* ====== PIE ====== */}
-                    <div className="pt-3 text-center text-[10px] text-slate-500">
+                    {/* ========================= */}
+                    {/* PIE                        */}
+                    {/* ========================= */}
+                    <div className="mt-8 border border-black px-4 py-3 text-center text-[10px]">
                         Representación impresa del comprobante electrónico.
                     </div>
                 </div>
