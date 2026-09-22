@@ -77,10 +77,7 @@ const generarComprobante = async (req, res) => {
         return res.status(500).json({
             success: false,
             mensaje:
-                error.message ||
-                'Error al generar el comprobante',
-            _code: error.code || null,
-            _detail: error.detail || null
+                'Error al generar el comprobante'
         });
     }
 };
