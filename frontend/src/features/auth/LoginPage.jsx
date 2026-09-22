@@ -38,6 +38,7 @@ export default function LoginPage() {
     const [showResetModal, setShowResetModal] = useState(false);
     const [resetStep, setResetStep] = useState(1); // 1=email, 2=code+pass, 3=done
     const [resetEmail, setResetEmail] = useState('');
+    const [confirmEmail, setConfirmEmail] = useState('');
     const [resetCodigo, setResetCodigo] = useState('');
     const [resetPassword, setResetPassword] = useState('');
     const [resetPassword2, setResetPassword2] = useState('');
@@ -131,6 +132,7 @@ export default function LoginPage() {
         setShowResetModal(true);
         setResetStep(1);
         setResetEmail(email);
+        setConfirmEmail('');
         setResetCodigo('');
         setResetPassword('');
         setResetPassword2('');
@@ -148,6 +150,10 @@ export default function LoginPage() {
         e.preventDefault();
         if (!resetEmail.trim()) {
             setResetError('Ingresa tu correo electrónico');
+            return;
+        }
+        if (confirmEmail.trim() !== resetEmail.trim()) {
+            setResetError('Correo no coincide, intente de nuevo');
             return;
         }
         try {
@@ -416,15 +422,26 @@ export default function LoginPage() {
                         </div>
                     )}
 
-                    {/* Step 1: Enter email */}
+                    {/* Step 1: Confirm email */}
                     {resetStep === 1 && (
                         <form onSubmit={enviarCodigoReset} className="space-y-4">
                             <p className="text-sm text-[#64748b]">
-                                Ingresa el correo registrado y te enviaremos un código de 6 dígitos.
+                                Se enviará un código de verificación al correo registrado.
                             </p>
+
+                            <div className="rounded-md border border-primary-200 bg-parchment-100 px-4 py-3">
+                                <p className="text-xs text-[#94a3b8]">Correo registrado:</p>
+                                <p className="text-sm font-semibold text-mahogany-700">
+                                    {resetEmail
+                                        ? resetEmail.charAt(0) + '****' + resetEmail.slice(resetEmail.indexOf('@'))
+                                        : '****@****.com'}
+                                </p>
+                                <p className="mt-1 text-xs text-[#64748b]">{resetEmail}</p>
+                            </div>
+
                             <div>
                                 <label className="mb-1.5 block text-sm font-semibold text-mahogany-700">
-                                    Correo electrónico
+                                    Confirma tu correo electrónico
                                 </label>
                                 <div className="flex h-11 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
                                     <span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
@@ -432,15 +449,16 @@ export default function LoginPage() {
                                     </span>
                                     <input
                                         type="email"
-                                        value={resetEmail}
-                                        onChange={(e) => setResetEmail(e.target.value)}
-                                        placeholder="admin@libreria.com"
+                                        value={confirmEmail}
+                                        onChange={(e) => setConfirmEmail(e.target.value)}
+                                        placeholder="Escribe tu correo completo"
                                         autoComplete="email"
                                         required
                                         className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
                                     />
                                 </div>
                             </div>
+
                             <button
                                 type="submit"
                                 disabled={resetCargando}
