@@ -60,29 +60,64 @@ function EncabezadoSeccion({ icono, titulo, descripcion }) {
     );
 }
 
-function TarjetaResumen({ icono, titulo, valor, detalle }) {
+function TarjetaResumen({ icono, titulo, valor, detalle, color = 'primary' }) {
+    const colores = {
+        primary: 'from-primary-500 to-primary-600 text-white',
+        success: 'from-emerald-500 to-emerald-600 text-white',
+        warning: 'from-amber-500 to-amber-600 text-white',
+        danger: 'from-crimson-500 to-crimson-600 text-white',
+        sky: 'from-sky-500 to-sky-600 text-white',
+        violet: 'from-violet-500 to-violet-600 text-white',
+    };
+    const iconBg = {
+        primary: 'bg-primary-100 text-primary-600',
+        success: 'bg-emerald-100 text-emerald-600',
+        warning: 'bg-amber-100 text-amber-600',
+        danger: 'bg-crimson-100 text-crimson-600',
+        sky: 'bg-sky-100 text-sky-600',
+        violet: 'bg-violet-100 text-violet-600',
+    };
     return (
-        <div className="rounded-md border border-primary-200 bg-white p-3">
-            <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <p className="truncate text-xs font-medium text-primary-400">{titulo}</p>
-                    <p className="mt-1 text-lg font-semibold leading-tight text-mahogany-700">{valor}</p>
-                    {detalle && <p className="mt-1 text-xs text-primary-400">{detalle}</p>}
+        <div className="group relative overflow-hidden rounded-xl border border-primary-100 bg-white shadow-sm transition-all duration-200 hover:shadow-md">
+            <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${colores[color]}`} />
+            <div className="flex items-start gap-3 p-4 pt-5">
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${iconBg[color]} text-sm transition-transform duration-200 group-hover:scale-110`}>
+                    {icono}
                 </div>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center border-l border-primary-200 pl-3 text-xs text-mahogany-600">{icono}</div>
+                <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-medium text-slate-400">{titulo}</p>
+                    <p className="mt-1 text-xl font-bold leading-tight text-slate-800">{valor}</p>
+                    {detalle && <p className="mt-1 text-xs text-slate-400">{detalle}</p>}
+                </div>
             </div>
         </div>
     );
 }
 
-function Destacado({ icono, titulo, principal, detalle }) {
+function Destacado({ icono, titulo, principal, detalle, color = 'primary' }) {
+    const bg = {
+        primary: 'border-primary-200 bg-gradient-to-br from-primary-50 to-white',
+        success: 'border-emerald-200 bg-gradient-to-br from-emerald-50 to-white',
+        warning: 'border-amber-200 bg-gradient-to-br from-amber-50 to-white',
+        sky: 'border-sky-200 bg-gradient-to-br from-sky-50 to-white',
+        trophy: 'border-amber-200 bg-gradient-to-br from-amber-50 to-white',
+    };
+    const iconBg = {
+        primary: 'bg-primary-100 text-primary-600',
+        success: 'bg-emerald-100 text-emerald-600',
+        warning: 'bg-amber-100 text-amber-600',
+        sky: 'bg-sky-100 text-sky-600',
+        trophy: 'bg-amber-100 text-amber-600',
+    };
     return (
-        <div className="flex items-center gap-3 rounded-md border border-primary-200 bg-parchment-200 p-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center text-sm text-mahogany-600">{icono}</div>
+        <div className={`flex items-center gap-4 rounded-xl border p-4 transition-all duration-200 hover:shadow-sm ${bg[color]}`}>
+            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${iconBg[color]} text-sm`}>
+                {icono}
+            </div>
             <div className="min-w-0">
-                <p className="text-xs font-medium text-primary-400">{titulo}</p>
-                <p className="mt-0.5 text-sm font-semibold text-mahogany-700">{principal}</p>
-                <p className="mt-0.5 text-xs text-primary-500">{detalle}</p>
+                <p className="text-xs font-medium text-slate-400">{titulo}</p>
+                <p className="mt-0.5 text-sm font-bold text-slate-800">{principal}</p>
+                <p className="mt-0.5 text-xs text-slate-400">{detalle}</p>
             </div>
         </div>
     );
@@ -235,24 +270,28 @@ export default function ReportesPage() {
                                     titulo="Ventas de hoy"
                                     valor={indicadores.ventas_hoy || 0}
                                     detalle={formatearMoneda(indicadores.vendido_hoy)}
+                                    color="sky"
                                 />
                                 <TarjetaResumen
                                     icono={<FaCalendarDays />}
                                     titulo="Ventas del mes"
                                     valor={indicadores.ventas_mes_actual || 0}
                                     detalle={formatearMoneda(indicadores.vendido_mes_actual)}
+                                    color="primary"
                                 />
                                 <TarjetaResumen
                                     icono={<FaReceipt />}
                                     titulo="Ticket promedio"
                                     valor={formatearMoneda(indicadores.ticket_promedio)}
                                     detalle="Promedio por venta pagada"
+                                    color="violet"
                                 />
                                 <TarjetaResumen
                                     icono={<FaMoneyBillWave />}
                                     titulo="Venta más alta"
                                     valor={formatearMoneda(indicadores.venta_mayor)}
                                     detalle="Mayor venta pagada"
+                                    color="success"
                                 />
                             </div>
 
@@ -270,6 +309,7 @@ export default function ReportesPage() {
                                             ? `${indicadores.mejor_mes.cantidad_ventas} ventas · ${formatearMoneda(indicadores.mejor_mes.total_vendido)}`
                                             : 'Aún no existen ventas pagadas.'
                                     }
+                                    color="trophy"
                                 />
                                 <Destacado
                                     icono={<FaCalendarDay />}
@@ -284,6 +324,7 @@ export default function ReportesPage() {
                                             ? `${indicadores.mejor_dia.cantidad_ventas} ventas · ${formatearMoneda(indicadores.mejor_dia.total_vendido)}`
                                             : 'Aún no existen ventas pagadas.'
                                     }
+                                    color="success"
                                 />
                             </div>
                         </CardBody>
@@ -428,14 +469,14 @@ export default function ReportesPage() {
                             />
 
                             <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-                                <TarjetaResumen icono={<FaBook />} titulo="Libros" valor={resumen.total_libros || 0} />
-                                <TarjetaResumen icono={<FaUserPen />} titulo="Autores" valor={resumen.total_autores || 0} />
-                                <TarjetaResumen icono={<FaTags />} titulo="Categorías" valor={resumen.total_categorias || 0} />
-                                <TarjetaResumen icono={<FaUsers />} titulo="Usuarios" valor={resumen.total_usuarios || 0} />
-                                <TarjetaResumen icono={<FaCartShopping />} titulo="Ventas pagadas" valor={resumen.total_ventas || 0} />
-                                <TarjetaResumen icono={<FaMoneyBillWave />} titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} />
-                                <TarjetaResumen icono={<FaCalendarCheck />} titulo="Reservas" valor={resumen.total_reservas || 0} />
-                                <TarjetaResumen icono={<FaTriangleExclamation />} titulo="Stock bajo" valor={resumen.libros_stock_bajo || 0} />
+                                <TarjetaResumen icono={<FaBook />} titulo="Libros" valor={resumen.total_libros || 0} color="primary" />
+                                <TarjetaResumen icono={<FaUserPen />} titulo="Autores" valor={resumen.total_autores || 0} color="sky" />
+                                <TarjetaResumen icono={<FaTags />} titulo="Categorías" valor={resumen.total_categorias || 0} color="violet" />
+                                <TarjetaResumen icono={<FaUsers />} titulo="Usuarios" valor={resumen.total_usuarios || 0} color="success" />
+                                <TarjetaResumen icono={<FaCartShopping />} titulo="Ventas pagadas" valor={resumen.total_ventas || 0} color="warning" />
+                                <TarjetaResumen icono={<FaMoneyBillWave />} titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} color="success" />
+                                <TarjetaResumen icono={<FaCalendarCheck />} titulo="Reservas" valor={resumen.total_reservas || 0} color="sky" />
+                                <TarjetaResumen icono={<FaTriangleExclamation />} titulo="Stock bajo" valor={resumen.libros_stock_bajo || 0} color="danger" />
                             </div>
                         </CardBody>
                     </Card>
