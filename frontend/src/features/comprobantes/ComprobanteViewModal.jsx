@@ -46,7 +46,7 @@ function fechaEmision(fecha) {
 
 function TotalFila({ label, value, strong = false }) {
     return (
-        <div className="grid grid-cols-[1fr_190px] items-center">
+        <div className="grid grid-cols-[1fr_160px] items-center">
             <div className={`px-3 py-2 text-right ${strong ? 'font-bold' : ''}`}>
                 {label} :
             </div>
@@ -176,7 +176,7 @@ export default function ComprobanteViewModal({
                     {/* ========================= */}
                     {/* CABECERA                   */}
                     {/* ========================= */}
-                    <div className="grid grid-cols-[1fr_390px] gap-8 border-b border-black pb-5">
+                    <div className="grid grid-cols-[1fr_300px] gap-6 border-b border-black pb-5">
                         <div>
                             <h1 className="text-[20px] font-bold uppercase leading-tight">
                                 {empresaData.razon_social || '—'}
@@ -189,12 +189,12 @@ export default function ComprobanteViewModal({
                             )}
                         </div>
 
-                        <div className="border-2 border-black px-5 py-3 text-center">
-                            <div className="text-[17px] font-bold uppercase">{tipoLabel}</div>
-                            <div className="mt-2 text-[14px] font-bold">
+                        <div className="border-2 border-black px-3 py-2 text-center">
+                            <div className="text-[14px] font-bold uppercase">{tipoLabel}</div>
+                            <div className="mt-1 text-[12px] font-bold">
                                 RUC: {empresaData.ruc || '—'}
                             </div>
-                            <div className="mt-2 text-[18px] font-bold tracking-wide">
+                            <div className="mt-1 text-[16px] font-bold tracking-wide">
                                 {numeroSerie}
                             </div>
                         </div>
@@ -289,7 +289,7 @@ export default function ComprobanteViewModal({
                     {/* ========================= */}
                     {/* PARTE INFERIOR             */}
                     {/* ========================= */}
-                    <div className="grid grid-cols-[1fr_430px] gap-10 pt-5">
+                    <div className="grid grid-cols-[1fr_360px] gap-10 pt-5">
                         {/* MONTO EN LETRAS */}
                         <div className="flex items-end pb-10">
                             <p className="text-[16px] font-bold uppercase leading-snug">

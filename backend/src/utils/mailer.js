@@ -15,6 +15,7 @@
 
 const nodemailer = require('nodemailer');
 const { resolve4 } = require('dns').promises;
+const htmlPdfNode = require('html-pdf-node');
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || 'jimenezvegaedinson7@gmail.com';
@@ -50,17 +51,24 @@ const brevoHeaders = BREVO_API_KEY
       }
     : null;
 
-async function enviarPorBrevo({ destinatario, asunto, html, texto }) {
+async function enviarPorBrevo({ destinatario, asunto, html, texto, attachments }) {
+    const body = {
+        sender: { name: MAIL_FROM_NAME, email: BREVO_SENDER_EMAIL },
+        to: [{ email: destinatario }],
+        subject: asunto,
+        textContent: texto || undefined,
+        htmlContent: html,
+    };
+    if (attachments && attachments.length > 0) {
+        body.attachment = attachments.map(a => ({
+            name: a.filename,
+            content: a.content.toString('base64'),
+        }));
+    }
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: brevoHeaders,
-        body: JSON.stringify({
-            sender: { name: MAIL_FROM_NAME, email: BREVO_SENDER_EMAIL },
-            to: [{ email: destinatario }],
-            subject: asunto,
-            textContent: texto || undefined,
-            htmlContent: html,
-        }),
+        body: JSON.stringify(body),
     });
     const cuerpo = await res.json().catch(() => null);
     if (![200, 201].includes(res.status)) {
@@ -150,6 +158,20 @@ async function obtenerTransporter() {
 }
 
 // ============================================================
+// GENERAR PDF DESDE HTML
+// ============================================================
+async function generarPdfDesdeHtml(htmlContent, filename) {
+    const file = { content: htmlContent };
+    const options = {
+        format: 'A4',
+        margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' },
+        printBackground: true,
+    };
+    const pdfBuffer = await htmlPdfNode.generatePdf(file, options);
+    return pdfBuffer;
+}
+
+// ============================================================
 // ENVIAR CORREO
 // Devuelve { enviado: boolean, consola: boolean }
 // ============================================================
@@ -158,6 +180,7 @@ async function enviarCorreo({
     asunto,
     html,
     texto = null,
+    attachments = null,
 }) {
     // Modo consola: no hay ningún canal configurado.
     if (!brevoConfigurado && !resendConfigurado && !smtpConfigurado) {
@@ -174,7 +197,7 @@ async function enviarCorreo({
     if (brevoConfigurado) {
         try {
             const control = setTimeout(() => { throw new Error('Brevo timeout'); }, 20000);
-            const res = await enviarPorBrevo({ destinatario, asunto, html, texto }).finally(() => clearTimeout(control));
+            const res = await enviarPorBrevo({ destinatario, asunto, html, texto, attachments }).finally(() => clearTimeout(control));
             if (res && (res.messageId || res.id)) {
                 return { enviado: true, consola: false, canal: 'brevo' };
             }
@@ -217,6 +240,7 @@ async function enviarCorreo({
                     subject: asunto,
                     text: texto,
                     html,
+                    attachments: attachments || undefined,
                 });
                 return { enviado: true, consola: false, canal: 'smtp' };
             } catch (error) {
@@ -670,11 +694,21 @@ async function enviarComprobantePorEmail({
         cuerpoHtml
     });
 
-    return enviarCorreo({ destinatario, asunto, html });
+    const archivoPdf = `${serieNumero}.pdf`;
+    let attachments = null;
+    try {
+        const pdfBuffer = await generarPdfDesdeHtml(cuerpoHtml, archivoPdf);
+        attachments = [{ filename: archivoPdf, content: pdfBuffer }];
+    } catch (pdfErr) {
+        console.error(`[MAIL] Error generando PDF: ${pdfErr.message}`);
+    }
+
+    return enviarCorreo({ destinatario, asunto, html, attachments });
 }
 
 module.exports = {
     enviarCorreo,
+    generarPdfDesdeHtml,
     enviarCodigoVerificacion,
     enviarCodigoReseteo,
     enviarCorreoOrdenCreada,
