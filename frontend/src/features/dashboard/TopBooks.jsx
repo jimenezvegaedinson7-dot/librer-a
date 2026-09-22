@@ -29,8 +29,8 @@ function PortadaLibro({ portada }) {
     );
 }
 
-function TopBooks({ libros = [] }) {
-    const lista = Array.isArray(libros) ? libros.slice(0, 5) : [];
+function TopBooks({ libros = [], limite = 5 }) {
+    const lista = Array.isArray(libros) ? libros.slice(0, limite) : [];
     const maxUnidades = Math.max(1, ...lista.map((l) => num(l.cantidad_vendida)));
     const totalUnidades = lista.reduce((acc, l) => acc + num(l.cantidad_vendida), 0);
     const totalIngresos = lista.reduce((acc, l) => acc + num(l.total_generado), 0);

@@ -3423,3 +3423,50 @@
         grid-template-columns: 2.5rem minmax(0, 1fr);
     }
 }
+
+.grafico-eje-x--oculta {
+    visibility: hidden;
+}
+
+/* Reportes: mejores registros y medidor de stock */
+.registro-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid #e6e0d7;
+    border-radius: 0.875rem;
+    background:
+        radial-gradient(360px 140px at 100% 0%, rgb(185 141 62 / 0.08), transparent 70%),
+        #ffffff;
+    padding: 1.125rem 1.25rem;
+    box-shadow: var(--shadow-card);
+}
+
+.registro-principal {
+    margin-top: 0.25rem;
+    font-size: 1.375rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: #1c1814;
+}
+
+.registro-principal--vacio {
+    color: #a39a8e;
+}
+
+.admin-shell[data-theme="dark"] .registro-card {
+    border-color: #2d2824;
+    background:
+        radial-gradient(360px 140px at 100% 0%, rgb(201 162 79 / 0.07), transparent 70%),
+        #1d1a17;
+    box-shadow: none;
+}
+
+.admin-shell[data-theme="dark"] .registro-principal {
+    color: #f5f0e8;
+}
+
+.stock-barra {
+    background: var(--estado-color) !important;
+}

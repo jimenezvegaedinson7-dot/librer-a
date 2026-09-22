@@ -5,10 +5,19 @@ import { FaChartColumn, FaTable } from 'react-icons/fa6';
 import { formatearMoneda } from '../../lib/utils/format';
 import { formatoEje, marcasEje, serieDiaria, serieMensual } from './graficoUtils';
 
-const PERIODOS = [
-    { id: 'dia', texto: '14 días', unidad: 'día', actual: 'Hoy', resto: 'Días anteriores' },
-    { id: 'mes', texto: '6 meses', unidad: 'mes', actual: 'Mes actual', resto: 'Meses anteriores' },
-];
+const METRICAS = {
+    total: { texto: 'Ingresos', formato: formatearMoneda, eje: formatoEje },
+    cantidad: {
+        texto: 'N.º de ventas',
+        formato: (v) => {
+            const n = Math.round(v * 10) / 10;
+            return `${n.toLocaleString('es-PE')} ${n === 1 ? 'venta' : 'ventas'}`;
+        },
+        eje: (v) => String(v),
+    },
+};
+
+const plural = (n) => `${n} ${n === 1 ? 'venta' : 'ventas'}`;
 
 function Estadistica({ etiqueta, valor, detalle }) {
     return (
@@ -20,48 +29,89 @@ function Estadistica({ etiqueta, valor, detalle }) {
     );
 }
 
-function SalesChart({ ventasPorMes = [], ventasPorDia = [] }) {
+function SalesChart({
+    ventasPorMes = [],
+    ventasPorDia = [],
+    dias = 14,
+    meses = 6,
+    titulo = 'Ingresos por ventas',
+    idBase = 'ingresos',
+    conMetrica = false,
+}) {
     const [periodo, setPeriodo] = useState('dia');
+    const [metrica, setMetrica] = useState('total');
     const [verTabla, setVerTabla] = useState(false);
     const [activo, setActivo] = useState(null);
 
+    const periodos = [
+        { id: 'dia', texto: `${dias} días`, unidad: 'día', actual: 'Hoy', resto: 'Días anteriores' },
+        { id: 'mes', texto: `${meses} meses`, unidad: 'mes', actual: 'Mes actual', resto: 'Meses anteriores' },
+    ];
+
     const serie = useMemo(
-        () => (periodo === 'dia' ? serieDiaria(ventasPorDia, 14) : serieMensual(ventasPorMes, 6)),
-        [periodo, ventasPorDia, ventasPorMes],
+        () => (periodo === 'dia' ? serieDiaria(ventasPorDia, dias) : serieMensual(ventasPorMes, meses)),
+        [periodo, ventasPorDia, ventasPorMes, dias, meses],
     );
 
-    const config = PERIODOS.find((p) => p.id === periodo);
+    const config = periodos.find((p) => p.id === periodo);
+    const m = METRICAS[metrica];
+    const valorDe = (d) => d[metrica];
+
     const total = serie.reduce((acc, d) => acc + d.total, 0);
     const ventas = serie.reduce((acc, d) => acc + d.cantidad, 0);
+    const suma = serie.reduce((acc, d) => acc + valorDe(d), 0);
     const conVentas = serie.filter((d) => d.cantidad > 0).length;
-    const promedio = total / serie.length;
-    const mejor = serie.reduce((m, d) => (d.total > (m?.total ?? 0) ? d : m), null);
-    const { tope, marcas } = marcasEje(mejor?.total ?? 0);
+    const promedio = suma / serie.length;
+    const mejor = serie.reduce((best, d) => (valorDe(d) > (best ? valorDe(best) : 0) ? d : best), null);
+    const { tope, marcas } = marcasEje(mejor ? valorDe(mejor) : 0);
     const alto = (v) => (tope > 0 ? (v / tope) * 100 : 0);
 
+    // Con muchas columnas se rotula una de cada N (siempre la actual).
+    const pasoEscritorio = serie.length > 20 ? 3 : 1;
+    const pasoMovil = serie.length > 20 ? 5 : 2;
+
+    const cambiarPeriodo = (id) => { setPeriodo(id); setActivo(null); };
+
     return (
-        <section className="grafico-card" aria-labelledby="titulo-ingresos">
+        <section className="grafico-card" aria-labelledby={`titulo-${idBase}`}>
             <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 sm:px-6">
                 <div className="flex min-w-0 items-center gap-3">
                     <span className="ficha-icono flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" aria-hidden="true">
                         <FaChartColumn />
                     </span>
                     <div className="min-w-0">
-                        <h2 id="titulo-ingresos" className="font-title text-[18px] font-semibold leading-snug text-[#1c1814]">
-                            Ingresos por ventas
+                        <h2 id={`titulo-${idBase}`} className="font-title text-[18px] font-semibold leading-snug text-[#1c1814]">
+                            {titulo}
                         </h2>
-                        <p className="mt-0.5 text-[13px] text-[#766d62]">Ventas pagadas por {config.unidad}</p>
+                        <p className="mt-0.5 text-[13px] text-[#766d62]">
+                            {metrica === 'total' ? 'Ingresos de ventas pagadas' : 'Ventas pagadas'} por {config.unidad}
+                        </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    {conMetrica && (
+                        <div className="segmentado" role="group" aria-label="Métrica">
+                            {Object.entries(METRICAS).map(([id, info]) => (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    aria-pressed={metrica === id}
+                                    onClick={() => { setMetrica(id); setActivo(null); }}
+                                    className={`segmentado-opcion ${metrica === id ? 'segmentado-opcion--activa' : ''}`}
+                                >
+                                    {info.texto}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                     <div className="segmentado" role="group" aria-label="Periodo">
-                        {PERIODOS.map((p) => (
+                        {periodos.map((p) => (
                             <button
                                 key={p.id}
                                 type="button"
                                 aria-pressed={periodo === p.id}
-                                onClick={() => { setPeriodo(p.id); setActivo(null); }}
+                                onClick={() => cambiarPeriodo(p.id)}
                                 className={`segmentado-opcion ${periodo === p.id ? 'segmentado-opcion--activa' : ''}`}
                             >
                                 {p.texto}
@@ -82,11 +132,15 @@ function SalesChart({ ventasPorMes = [], ventasPorDia = [] }) {
             </header>
 
             <div className="grafico-stats mt-5 grid grid-cols-2 lg:grid-cols-4">
-                <Estadistica etiqueta="Total vendido" valor={formatearMoneda(total)} detalle={`${ventas} ${ventas === 1 ? 'venta' : 'ventas'}`} />
-                <Estadistica etiqueta={`Promedio por ${config.unidad}`} valor={formatearMoneda(promedio)} detalle={`${conVentas} de ${serie.length} con ventas`} />
+                <Estadistica
+                    etiqueta={metrica === 'total' ? 'Total vendido' : 'Total de ventas'}
+                    valor={metrica === 'total' ? formatearMoneda(total) : ventas}
+                    detalle={metrica === 'total' ? plural(ventas) : formatearMoneda(total)}
+                />
+                <Estadistica etiqueta={`Promedio por ${config.unidad}`} valor={m.formato(promedio)} detalle={`${conVentas} de ${serie.length} con ventas`} />
                 <Estadistica
                     etiqueta={`Mejor ${config.unidad}`}
-                    valor={mejor ? formatearMoneda(mejor.total) : '—'}
+                    valor={mejor ? m.formato(valorDe(mejor)) : '—'}
                     detalle={mejor ? mejor.etiquetaLarga : 'Sin ventas en el periodo'}
                 />
                 <Estadistica
@@ -97,14 +151,15 @@ function SalesChart({ ventasPorMes = [], ventasPorDia = [] }) {
             </div>
 
             {verTabla ? (
-                <div className="tabla-reporte max-h-[330px] overflow-auto">
+                <div className="tabla-reporte max-h-[360px] overflow-auto">
                     <table className="min-w-full">
-                        <caption className="sr-only">Ingresos por {config.unidad}</caption>
+                        <caption className="sr-only">Ventas pagadas por {config.unidad}</caption>
                         <thead className="sticky top-0">
                             <tr>
                                 <th scope="col" className="text-left">{config.unidad === 'día' ? 'Día' : 'Mes'}</th>
                                 <th scope="col" className="text-center">Ventas</th>
                                 <th scope="col" className="text-right">Ingresos</th>
+                                <th scope="col" className="text-right">Ticket</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -113,6 +168,7 @@ function SalesChart({ ventasPorMes = [], ventasPorDia = [] }) {
                                     <td>{d.etiquetaLarga}</td>
                                     <td className="text-center">{d.cantidad}</td>
                                     <td className="text-right font-semibold">{formatearMoneda(d.total)}</td>
+                                    <td className="text-right">{d.cantidad > 0 ? formatearMoneda(d.total / d.cantidad) : '—'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -120,37 +176,39 @@ function SalesChart({ ventasPorMes = [], ventasPorDia = [] }) {
                 </div>
             ) : (
                 <div className="px-5 pb-5 pt-6 sm:px-6">
-                    {total === 0 ? (
+                    {suma === 0 ? (
                         <div className="flex h-[240px] flex-col items-center justify-center text-center">
                             <p className="font-title text-[16px] font-semibold text-[#1c1814]">Sin ventas pagadas en este periodo</p>
                             <p className="mt-1 text-[13px] text-[#766d62]">
-                                {periodo === 'dia' ? 'Prueba con el periodo de 6 meses.' : 'Aún no hay ventas registradas.'}
+                                {periodo === 'dia' ? `Prueba con el periodo de ${meses} meses.` : 'Aún no hay ventas registradas.'}
                             </p>
                         </div>
                     ) : (
                         <div className="grafico-area" onPointerLeave={() => setActivo(null)}>
                             <div className="grafico-eje-y" aria-hidden="true">
-                                {marcas.map((m) => (
-                                    <span key={m} style={{ bottom: `${alto(m)}%` }}>{formatoEje(m)}</span>
+                                {marcas.map((marca) => (
+                                    <span key={marca} style={{ bottom: `${alto(marca)}%` }}>{m.eje(marca)}</span>
                                 ))}
                             </div>
 
                             <div className="grafico-plot">
-                                {marcas.map((m) => (
-                                    <span key={m} className="grafico-rejilla" style={{ bottom: `${alto(m)}%` }} aria-hidden="true" />
+                                {marcas.map((marca) => (
+                                    <span key={marca} className="grafico-rejilla" style={{ bottom: `${alto(marca)}%` }} aria-hidden="true" />
                                 ))}
 
                                 {promedio > 0 && (
                                     <div className="grafico-promedio" style={{ bottom: `${alto(promedio)}%` }} aria-hidden="true">
-                                        <span>Prom. {formatearMoneda(promedio)}</span>
+                                        <span>Prom. {m.formato(promedio)}</span>
                                     </div>
                                 )}
 
-                                <ol className="grafico-columnas" aria-label={`Ingresos por ${config.unidad}`}>
+                                <ol className="grafico-columnas" aria-label={`${m.texto} por ${config.unidad}`}>
                                     {serie.map((d, i) => {
+                                        const valor = valorDe(d);
                                         const esMejor = mejor && d.clave === mejor.clave;
                                         const conTooltip = activo === d.clave;
-                                        const texto = `${d.etiquetaLarga}: ${formatearMoneda(d.total)}, ${d.cantidad} ${d.cantidad === 1 ? 'venta' : 'ventas'}`;
+                                        const desdeFin = serie.length - 1 - i;
+                                        const texto = `${d.etiquetaLarga}: ${formatearMoneda(d.total)}, ${plural(d.cantidad)}`;
                                         return (
                                             <li
                                                 key={d.clave}
@@ -162,13 +220,13 @@ function SalesChart({ ventasPorMes = [], ventasPorDia = [] }) {
                                                 onBlur={() => setActivo(null)}
                                             >
                                                 <div className="grafico-columna-zona">
-                                                    {d.total > 0 ? (
+                                                    {valor > 0 ? (
                                                         <span
                                                             className={`grafico-barra reporte-barra ${d.actual ? 'grafico-barra--actual' : ''} ${conTooltip ? 'grafico-barra--activa' : ''}`}
-                                                            style={{ height: `${alto(d.total)}%`, '--barra-i': i }}
+                                                            style={{ height: `${alto(valor)}%`, '--barra-i': Math.min(i, 16) }}
                                                         >
                                                             {esMejor && !conTooltip && (
-                                                                <span className="grafico-etiqueta-max">{formatearMoneda(d.total)}</span>
+                                                                <span className="grafico-etiqueta-max">{m.formato(valor)}</span>
                                                             )}
                                                         </span>
                                                     ) : (
@@ -176,17 +234,19 @@ function SalesChart({ ventasPorMes = [], ventasPorDia = [] }) {
                                                     )}
                                                     {conTooltip && (
                                                         <span
-                                                            className={`grafico-tooltip ${i < 2 ? 'grafico-tooltip--inicio' : ''} ${i > serie.length - 3 ? 'grafico-tooltip--fin' : ''}`}
-                                                            style={{ bottom: `calc(${alto(d.total)}% + 10px)` }}
+                                                            className={`grafico-tooltip ${i < 2 ? 'grafico-tooltip--inicio' : ''} ${desdeFin < 2 ? 'grafico-tooltip--fin' : ''}`}
+                                                            style={{ bottom: `calc(${alto(valor)}% + 10px)` }}
                                                         >
-                                                            <strong>{formatearMoneda(d.total)}</strong>
-                                                            <span>{d.cantidad} {d.cantidad === 1 ? 'venta' : 'ventas'}</span>
+                                                            <strong>{metrica === 'total' ? formatearMoneda(d.total) : plural(d.cantidad)}</strong>
+                                                            <span>{metrica === 'total' ? plural(d.cantidad) : formatearMoneda(d.total)}</span>
                                                             <span>{d.etiquetaLarga}</span>
                                                         </span>
                                                     )}
                                                 </div>
                                                 <span
-                                                    className={`grafico-eje-x ${d.actual ? 'grafico-eje-x--actual' : ''} ${(serie.length - 1 - i) % 2 === 1 ? 'grafico-eje-x--alterna' : ''}`}
+                                                    className={`grafico-eje-x ${d.actual ? 'grafico-eje-x--actual' : ''} ${
+                                                        !d.actual && desdeFin % pasoEscritorio !== 0 ? 'grafico-eje-x--oculta' : ''
+                                                    } ${!d.actual && desdeFin % pasoMovil !== 0 ? 'grafico-eje-x--alterna' : ''}`}
                                                     aria-hidden="true"
                                                 >
                                                     {d.etiqueta}
