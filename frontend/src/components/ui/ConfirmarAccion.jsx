@@ -19,17 +19,17 @@ export function ConfirmarAccion({
 
     return (
         <Modal abierto={abierto} titulo={titulo || 'Confirmar acción'} onCerrar={onCerrar}>
-            <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+            <div className="flex items-start gap-3.5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="ficha-icono flex h-10 w-10 shrink-0 items-center justify-center rounded-full" aria-hidden="true">
                     {icono || <FaCircleQuestion />}
                 </div>
                 <div>
                     <p className="text-sm leading-6 text-slate-700">{mensaje}</p>
-                    {advertencia && <p className="mt-2 text-xs leading-5 text-slate-400">{advertencia}</p>}
+                    {advertencia && <p className="mt-1.5 text-[13px] leading-5 text-slate-500">{advertencia}</p>}
                 </div>
             </div>
 
-            <div className="mt-5 flex justify-end gap-3 border-t border-slate-200 pt-4">
+            <div className="mt-5 flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
                 <Button variante="secondary" onClick={onCerrar} disabled={cargando}>
                     Cancelar
                 </Button>

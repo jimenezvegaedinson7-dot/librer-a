@@ -4,8 +4,8 @@ const variantes = {
     primary:
         'admin-primary-button border border-mahogany-700 bg-mahogany-700 text-parchment-100 hover:bg-mahogany-600 focus-visible:ring-gold-300 active:bg-mahogany-800',
     secondary:
-        'admin-secondary-button border border-primary-200 bg-white text-primary-500 hover:border-gold-400 hover:bg-parchment-100 focus-visible:ring-parchment-300 active:bg-parchment-200',
-    ghost: 'text-primary-500 hover:bg-parchment-200 hover:text-mahogany-700 focus-visible:ring-parchment-300',
+        'admin-secondary-button border border-primary-200 bg-white text-primary-500 hover:border-gold-400 hover:bg-parchment-100 focus-visible:ring-gold-300 active:bg-parchment-200',
+    ghost: 'text-primary-600 hover:bg-parchment-200 hover:text-primary-900 focus-visible:ring-gold-300',
     danger:
         'bg-crimson-500 text-parchment-100 shadow-sm hover:bg-crimson-600 focus-visible:ring-crimson-200 active:bg-crimson-700',
     'danger-outline':
@@ -13,9 +13,9 @@ const variantes = {
 };
 
 const tamanos = {
-    sm: 'h-8 px-3 text-xs gap-1.5 rounded-lg',
-    md: 'h-10 px-4 text-sm gap-2 rounded-xl',
-    lg: 'h-11 px-5 text-sm gap-2 rounded-xl',
+    sm: 'h-8 px-3 text-xs gap-1.5 rounded-md',
+    md: 'h-10 px-4 text-sm gap-2 rounded-lg',
+    lg: 'h-11 px-5 text-[15px] gap-2 rounded-lg',
 };
 
 export function Button({
@@ -31,7 +31,7 @@ export function Button({
     ...props
 }) {
     const clases = [
-        'relative inline-flex items-center justify-center overflow-hidden font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'relative inline-flex select-none items-center justify-center overflow-hidden font-semibold tracking-[0.005em] transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100',
         variantes[variante],
         tamanos[tamano],
         cargando ? 'button-loading' : '',

@@ -48,7 +48,7 @@ export default function VentaEstadoModal({ venta, abierto, onCerrar, onActualiza
                     </div>
                     <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
                         <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Total de la venta</p>
-                        <p className="mt-2 text-xl font-bold text-mahogany-700">{formatearMoneda(venta?.total)}</p>
+                        <p className="mt-2 text-xl font-bold text-slate-700">{formatearMoneda(venta?.total)}</p>
                     </div>
                 </div>
             }

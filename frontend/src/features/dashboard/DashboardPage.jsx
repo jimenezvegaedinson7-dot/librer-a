@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { motion } from 'motion/react';
+
 import {
     FaBook,
     FaUserPen,
@@ -25,11 +27,18 @@ import { Card } from '../../components/ui/Card';
 import { Alert } from '../../components/ui/Alert';
 import { formatearMoneda } from '../../lib/utils/format';
 
-import { StatCard } from './StatCard';
+import { MiniStat, StatCard } from './StatCard';
 import RecentBooks from './RecentBooks';
 import SalesChart from './SalesChart';
 import StatusDonut from './StatusDonut';
 import TopBooks from './TopBooks';
+
+const escalonado = {
+    oculto: {},
+    visible: { transition: { staggerChildren: 0.06 } },
+};
+
+const formatoFecha = new Intl.DateTimeFormat('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 function esArreglo(valor) {
     return Array.isArray(valor) ? valor : [];
@@ -88,118 +97,55 @@ export default function DashboardPage() {
 
     if (!resumen) return null;
 
+    const fechaHoy = formatoFecha.format(new Date());
+
     return (
-        <div className="dashboard-page space-y-5">
+        <div className="dashboard-page space-y-6">
 
             {/* ENCABEZADO */}
-            <header className="space-y-1">
-                <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.01em] text-[#2D1B16]">
-                    Resumen
-                </h1>
-                <p className="mt-1 text-[14px] font-normal leading-relaxed text-[#64748B]">
-                    Indicadores generales y actividad reciente de la librería
-                </p>
+            <header className="flex flex-col gap-1 border-b border-[#e6e0d7] pb-5 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a7231]">Panel general</p>
+                    <h1 className="mt-1 font-title text-[28px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814] sm:text-[32px]">
+                        Resumen
+                    </h1>
+                    <p className="mt-1 text-[14px] leading-relaxed text-[#766d62]">
+                        Indicadores generales y actividad reciente de la librería
+                    </p>
+                </div>
+                <p className="text-[13px] capitalize text-[#766d62] tabular-nums">{fechaHoy}</p>
             </header>
 
-            {/* MÉTRICAS PRINCIPALES — tarjetas coloreadas */}
-            <section aria-labelledby="metricas-principales">
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-                    <StatCard titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} icono={<FaMoneyBillTrendUp />} color="primary" />
-                    <StatCard titulo="Ventas pagadas" valor={resumen.total_ventas} icono={<FaCircleCheck />} color="danger" />
-                    <StatCard titulo="Reservas" valor={resumen.total_reservas} icono={<FaCalendarCheck />} color="success" />
-                    <StatCard titulo="Stock bajo" valor={resumen.libros_stock_bajo} icono={<FaTriangleExclamation />} color="warning" />
-                </div>
-            </section>
+            {/* MÉTRICAS PRINCIPALES */}
+            <motion.section
+                aria-label="Métricas principales"
+                variants={escalonado}
+                initial="oculto"
+                animate="visible"
+                className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5"
+            >
+                <StatCard titulo="Total vendido" valor={formatearMoneda(resumen.total_vendido)} icono={<FaMoneyBillTrendUp />} color="primary" />
+                <StatCard titulo="Ventas pagadas" valor={resumen.total_ventas} icono={<FaCircleCheck />} color="success" />
+                <StatCard titulo="Reservas" valor={resumen.total_reservas} icono={<FaCalendarCheck />} color="info" />
+                <StatCard titulo="Stock bajo" valor={resumen.libros_stock_bajo} icono={<FaTriangleExclamation />} color="warning" />
+            </motion.section>
 
-            {/* CATÁLOGO — tarjetas blancas compactas con mini gráfica */}
-            <section aria-labelledby="catalogo-equipo">
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-
-                    {/* Libros */}
-                    <article className="relative overflow-hidden rounded-[8px] border border-[#e6ebf3] bg-white px-5 py-4 shadow-[0_2px_8px_rgba(30,64,175,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(30,64,175,0.08)]">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#eaf3ff] text-[18px] text-[#0877e8]">
-                                    <FaBook />
-                                </div>
-                                <div>
-                                    <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[#64748B]">Libros</p>
-                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#1F2937]">{resumen.total_libros}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="pointer-events-none absolute bottom-2 right-3 h-[28px] w-[120px] text-[#60a5fa] opacity-45">
-                            <svg viewBox="0 0 120 30" preserveAspectRatio="none" className="h-full w-full">
-                                <path d="M0 24 L15 20 L28 23 L42 15 L55 20 L68 13 L82 18 L96 10 L108 15 L120 8" fill="none" stroke="currentColor" strokeWidth="2" />
-                            </svg>
-                        </div>
-                    </article>
-
-                    {/* Autores */}
-                    <article className="relative overflow-hidden rounded-[8px] border border-[#e6ebf3] bg-white px-5 py-4 shadow-[0_2px_8px_rgba(30,64,175,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(30,64,175,0.08)]">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#fff0f3] text-[18px] text-[#f43f5e]">
-                                    <FaUserPen />
-                                </div>
-                                <div>
-                                    <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[#64748B]">Autores</p>
-                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#1F2937]">{resumen.total_autores}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="pointer-events-none absolute bottom-2 right-3 h-[28px] w-[120px] text-[#fb7185] opacity-45">
-                            <svg viewBox="0 0 120 30" preserveAspectRatio="none" className="h-full w-full">
-                                <path d="M0 20 L15 16 L28 22 L42 14 L55 18 L68 10 L82 16 L96 8 L108 12 L120 6" fill="none" stroke="currentColor" strokeWidth="2" />
-                            </svg>
-                        </div>
-                    </article>
-
-                    {/* Categorías */}
-                    <article className="relative overflow-hidden rounded-[8px] border border-[#e6ebf3] bg-white px-5 py-4 shadow-[0_2px_8px_rgba(30,64,175,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(30,64,175,0.08)]">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#eafaf5] text-[18px] text-[#10b981]">
-                                    <FaTags />
-                                </div>
-                                <div>
-                                    <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[#64748B]">Categorías</p>
-                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#1F2937]">{resumen.total_categorias}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="pointer-events-none absolute bottom-2 right-3 h-[28px] w-[120px] text-[#34d399] opacity-45">
-                            <svg viewBox="0 0 120 30" preserveAspectRatio="none" className="h-full w-full">
-                                <path d="M0 22 L15 18 L28 24 L42 16 L55 20 L68 12 L82 17 L96 9 L108 14 L120 7" fill="none" stroke="currentColor" strokeWidth="2" />
-                            </svg>
-                        </div>
-                    </article>
-
-                    {/* Usuarios */}
-                    <article className="relative overflow-hidden rounded-[8px] border border-[#e6ebf3] bg-white px-5 py-4 shadow-[0_2px_8px_rgba(30,64,175,0.05)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(30,64,175,0.08)]">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#fff4e8] text-[18px] text-[#f97316]">
-                                    <FaUsers />
-                                </div>
-                                <div>
-                                    <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-[#64748B]">Usuarios</p>
-                                    <p className="mt-1 text-[24px] font-semibold leading-none tracking-[-0.02em] text-[#1F2937]">{resumen.total_usuarios}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="pointer-events-none absolute bottom-2 right-3 h-[28px] w-[120px] text-[#fb923c] opacity-45">
-                            <svg viewBox="0 0 120 30" preserveAspectRatio="none" className="h-full w-full">
-                                <path d="M0 18 L15 22 L28 16 L42 20 L55 14 L68 19 L82 11 L96 16 L108 9 L120 5" fill="none" stroke="currentColor" strokeWidth="2" />
-                            </svg>
-                        </div>
-                    </article>
-
-                </div>
-            </section>
+            {/* CATÁLOGO */}
+            <motion.section
+                aria-label="Catálogo y usuarios"
+                variants={escalonado}
+                initial="oculto"
+                animate="visible"
+                className="grid grid-cols-2 gap-4 xl:grid-cols-4 xl:gap-5"
+            >
+                <MiniStat titulo="Libros" valor={resumen.total_libros} icono={<FaBook />} />
+                <MiniStat titulo="Autores" valor={resumen.total_autores} icono={<FaUserPen />} />
+                <MiniStat titulo="Categorías" valor={resumen.total_categorias} icono={<FaTags />} />
+                <MiniStat titulo="Usuarios" valor={resumen.total_usuarios} icono={<FaUsers />} />
+            </motion.section>
 
             {/* RENDIMIENTO — gráfico + top libros */}
-            <section aria-labelledby="rendimiento">
+            <section aria-label="Rendimiento">
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
                     <SalesChart ventasPorMes={ventasPorMes} />
                     <TopBooks libros={librosMasVendidos} />
@@ -207,7 +153,7 @@ export default function DashboardPage() {
             </section>
 
             {/* ESTADOS OPERATIVOS — donuts */}
-            <section aria-labelledby="estados-operativos">
+            <section aria-label="Estados operativos">
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                     <StatusDonut titulo="Ventas por estado" subtitulo="Distribución real de las ventas" datos={ventasPorEstado} tipo="ventas" />
                     <StatusDonut titulo="Reservas por estado" subtitulo="Distribución real de las reservas" datos={reservasPorEstado} tipo="reservas" />
@@ -215,7 +161,7 @@ export default function DashboardPage() {
             </section>
 
             {/* ACTIVIDAD RECIENTE */}
-            <section aria-labelledby="actividad-reciente">
+            <section aria-label="Actividad reciente">
                 <RecentBooks libros={libros} />
             </section>
 

@@ -97,8 +97,8 @@ export default function VerificarEmailPage() {
                     </div>
 
                     <div className="mb-6 text-center">
-                        <div className="mb-3 flex justify-center text-xl text-mahogany-600"><FaEnvelopeCircleCheck /></div>
-                        <h2 className="text-2xl font-semibold tracking-tight text-mahogany-700">Verifica tu correo</h2>
+                        <div className="mb-3 flex justify-center text-xl text-slate-600"><FaEnvelopeCircleCheck /></div>
+                        <h2 className="text-2xl font-semibold tracking-tight text-slate-700">Verifica tu correo</h2>
                         <p className="mt-2 text-sm leading-5 text-primary-400">
                             Ingresa el código de 6 dígitos que enviamos a tu correo para activar tu cuenta.
                         </p>
@@ -140,7 +140,7 @@ export default function VerificarEmailPage() {
                         type="button"
                         onClick={reenviar}
                         disabled={reenviando || segundos > 0 || cargando}
-                        className="mt-4 w-full text-center text-xs text-primary-400 transition-colors hover:text-mahogany-600 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="mt-4 w-full text-center text-xs text-primary-400 transition-colors hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {reenviando
                             ? 'Reenviando...'
@@ -152,13 +152,13 @@ export default function VerificarEmailPage() {
                     <button
                         type="button"
                         onClick={volverAlLogin}
-                        className="mt-2 flex w-full items-center justify-center gap-1 text-center text-xs text-primary-400 transition-colors hover:text-mahogany-600"
+                        className="mt-2 flex w-full items-center justify-center gap-1 text-center text-xs text-primary-400 transition-colors hover:text-slate-600"
                     >
                         <FaArrowLeft className="text-[10px]" /> Volver al inicio de sesión
                     </button>
 
                     <div className="mt-7 flex items-center justify-center gap-2 border-t border-primary-200 pt-5">
-                        <FaEnvelopeCircleCheck className="text-[10px] text-mahogany-600" />
+                        <FaEnvelopeCircleCheck className="text-[10px] text-slate-600" />
                         <p className="text-xs text-primary-400">La cuenta debe verificarse para poder ingresar</p>
                     </div>
                 </div>

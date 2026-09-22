@@ -28,22 +28,22 @@ const columnasMovimientos = [
     {
         titulo: 'Fecha',
         alineacion: 'centro',
-        render: (fila) => <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.fecha_movimiento) || 'Sin fecha'}</span>,
+        render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_movimiento) || 'Sin fecha'}</span>,
     },
-    { titulo: 'Libro', render: (fila) => <span className="font-semibold text-mahogany-700">{fila.titulo || 'Sin título'}</span> },
+    { titulo: 'Libro', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo || 'Sin título'}</span> },
     { titulo: 'Tipo', alineacion: 'centro', render: (fila) => tipoBadge(fila.tipo) },
     {
         titulo: 'Cantidad',
         alineacion: 'centro',
-        render: (fila) => <span className="font-semibold text-mahogany-700">{Number(fila.cantidad || 0)}</span>,
+        render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.cantidad || 0)}</span>,
     },
     {
         titulo: 'Stock resultante',
         alineacion: 'centro',
-        render: (fila) => <span className="font-bold text-mahogany-700">{Number(fila.stock_resultante || 0)}</span>,
+        render: (fila) => <span className="font-bold text-slate-700">{Number(fila.stock_resultante || 0)}</span>,
     },
     { titulo: 'Motivo', render: (fila) => <span className="text-xs text-primary-500">{fila.motivo || 'Sin motivo'}</span> },
-    { titulo: 'Usuario', render: (fila) => <span className="text-xs font-medium text-mahogany-700">{fila.usuario || '—'}</span> },
+    { titulo: 'Usuario', render: (fila) => <span className="text-xs font-medium text-slate-700">{fila.usuario || '—'}</span> },
 ];
 
 export default function MovimientosModal({ abierto, onCerrar }) {

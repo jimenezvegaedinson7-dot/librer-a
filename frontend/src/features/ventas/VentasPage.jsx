@@ -48,20 +48,20 @@ function valorOrdenVenta(venta, campo) {
 }
 
 const columnasVentas = [
-    { titulo: 'ID', alineacion: 'centro', ordenable: true, campo: 'id_venta', render: (fila) => <span className="font-semibold text-mahogany-700">{fila.id_venta}</span> },
+    { titulo: 'ID', alineacion: 'centro', ordenable: true, campo: 'id_venta', render: (fila) => <span className="font-semibold text-slate-700">{fila.id_venta}</span> },
     {
         titulo: 'Usuario',
         ordenable: true,
         campo: 'usuario',
         render: (fila) => (
-            <p className="text-sm text-mahogany-700">
-                <span className="font-semibold text-mahogany-700">{`${fila.nombre_usuario || ''} ${fila.apellido_usuario || ''}`.trim() || 'Usuario no disponible'}</span>
+            <p className="text-sm text-slate-700">
+                <span className="font-semibold text-slate-700">{`${fila.nombre_usuario || ''} ${fila.apellido_usuario || ''}`.trim() || 'Usuario no disponible'}</span>
                 <span className="block text-xs text-primary-400">{fila.correo_compra || fila.correo_usuario || ''}</span>
             </p>
         ),
     },
-    { titulo: 'Fecha', alineacion: 'centro', ordenable: true, campo: 'fecha_venta', render: (fila) => <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.fecha_venta) || 'Sin fecha'}</span> },
-    { titulo: 'Total', alineacion: 'centro', ordenable: true, campo: 'total', render: (fila) => <span className="font-bold text-mahogany-700">{formatearMoneda(Number(fila.total || 0))}</span> },
+    { titulo: 'Fecha', alineacion: 'centro', ordenable: true, campo: 'fecha_venta', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_venta) || 'Sin fecha'}</span> },
+    { titulo: 'Total', alineacion: 'centro', ordenable: true, campo: 'total', render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(Number(fila.total || 0))}</span> },
     {
         titulo: 'Estado',
         alineacion: 'centro',
@@ -130,8 +130,8 @@ function accionesVenta(fila, { onVer, onCambiarEstado, onEmitirComprobante }) {
 function Contador({ total, pendientes, pagadas, entregadas, canceladas, ingresos }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#0f172a]">{total}</span>
+            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Total: <span className="font-bold text-[#1c1814]">{total}</span>
             </span>
             <span className="rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2.5 text-sm font-medium text-[#d97706] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Pendientes: <span className="font-bold text-[#d97706]">{pendientes}</span>
@@ -364,7 +364,7 @@ const ventaActualizada = async (mensaje) => {
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-slate-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -427,7 +427,7 @@ const ventaActualizada = async (mensaje) => {
                         subtitulo="Historial de ventas realizadas"
                         acciones={
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-mahogany-700">
+                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
                                     {ventasFiltradas.length} {ventasFiltradas.length === 1 ? 'venta' : 'ventas'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>

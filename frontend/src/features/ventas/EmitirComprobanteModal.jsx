@@ -275,10 +275,10 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                                     <tbody className="divide-y divide-primary-200">
                                         {detalle.map((item, i) => (
                                             <tr key={item.id_libro ?? i}>
-                                                <td className="px-3 py-2 font-medium text-mahogany-700">{item.titulo || 'Sin titulo'}</td>
-                                                <td className="px-3 py-2 text-center text-mahogany-700">{item.cantidad}</td>
-                                                <td className="px-3 py-2 text-right text-mahogany-700">{formatearMoneda(item.precio_unitario)}</td>
-                                                <td className="px-3 py-2 text-right font-semibold text-mahogany-700">{formatearMoneda(item.subtotal)}</td>
+                                                <td className="px-3 py-2 font-medium text-slate-700">{item.titulo || 'Sin titulo'}</td>
+                                                <td className="px-3 py-2 text-center text-slate-700">{item.cantidad}</td>
+                                                <td className="px-3 py-2 text-right text-slate-700">{formatearMoneda(item.precio_unitario)}</td>
+                                                <td className="px-3 py-2 text-right font-semibold text-slate-700">{formatearMoneda(item.subtotal)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -288,12 +288,12 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                                 {costoEnvio > 0 && (
                                     <div className="flex w-full max-w-xs items-center justify-between text-sm">
                                         <span className="text-primary-500">Costo envio</span>
-                                        <span className="font-semibold text-mahogany-700">{formatearMoneda(costoEnvio)}</span>
+                                        <span className="font-semibold text-slate-700">{formatearMoneda(costoEnvio)}</span>
                                     </div>
                                 )}
                                 <div className="flex w-full max-w-xs items-center justify-between border-t-2 border-mahogany-700 pt-2">
-                                    <span className="text-sm font-extrabold uppercase tracking-wide text-mahogany-700">Total</span>
-                                    <span className="text-lg font-extrabold text-mahogany-700">{formatearMoneda(totalVenta)}</span>
+                                    <span className="text-sm font-extrabold uppercase tracking-wide text-slate-700">Total</span>
+                                    <span className="text-lg font-extrabold text-slate-700">{formatearMoneda(totalVenta)}</span>
                                 </div>
                             </div>
                         </>

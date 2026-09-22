@@ -46,12 +46,12 @@ function Avatar({ foto, inicial, className = 'h-10 w-10' }) {
 function Dato({ icono, etiqueta, valor }) {
     return (
         <div className="flex items-center gap-3 rounded-xl border border-primary-200 bg-parchment-200 px-3 py-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-parchment-50 text-mahogany-600 shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-parchment-50 text-slate-600 shadow-sm">
                 {icono}
             </div>
             <div className="min-w-0">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-primary-400">{etiqueta}</p>
-                <p className="truncate text-xs font-semibold text-mahogany-700">{valor}</p>
+                <p className="truncate text-xs font-semibold text-slate-700">{valor}</p>
             </div>
         </div>
     );
@@ -60,14 +60,14 @@ function Dato({ icono, etiqueta, valor }) {
 function CampoPassword({ label, name, value, mostrar, onMostrar, onChange }) {
     return (
         <div>
-            <label className="mb-1.5 block text-sm font-medium text-mahogany-700">{label}</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>
             <div className="flex items-center rounded-lg border border-primary-200 px-3 focus-within:ring-2 focus-within:ring-gold-100">
                 <input
                     type={mostrar ? 'text' : 'password'}
                     name={name}
                     value={value}
                     onChange={onChange}
-                    className="w-full py-2.5 text-sm text-mahogany-700 outline-none"
+                    className="w-full py-2.5 text-sm text-slate-700 outline-none"
                 />
                 <button type="button" onClick={onMostrar} className="text-primary-400">
                     {mostrar ? <FaEyeSlash /> : <FaEye />}
@@ -434,7 +434,7 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                                         </p>
                                         <div className="rounded-lg border border-dashed border-primary-300 bg-parchment-50 px-3 py-2">
                                             <p className="text-[10px] font-semibold uppercase tracking-wide text-primary-400">Código secreto</p>
-                                            <p className="font-mono text-sm font-semibold tracking-wider text-mahogany-700">{setupInfo.secret}</p>
+                                            <p className="font-mono text-sm font-semibold tracking-wider text-slate-700">{setupInfo.secret}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -475,7 +475,7 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                                 ) : (
                                     <form onSubmit={enviarDesactivacion2FA} className="space-y-3 rounded-xl border border-primary-200 bg-parchment-200 p-4">
                                         <div>
-                                            <label className="mb-1.5 block text-sm font-medium text-mahogany-700">Contraseña actual</label>
+                                            <label className="mb-1.5 block text-sm font-medium text-slate-700">Contraseña actual</label>
                                             <div className="flex items-center rounded-lg border border-primary-200 px-3 focus-within:ring-2 focus-within:ring-gold-100">
                                                 <input
                                                     type={mostrarPwdDesactivar ? 'text' : 'password'}
@@ -483,7 +483,7 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                                                     onChange={(e) => setPasswordDesactivar(e.target.value)}
                                                     required
                                                     autoComplete="current-password"
-                                                    className="w-full py-2.5 text-sm text-mahogany-700 outline-none"
+                                                    className="w-full py-2.5 text-sm text-slate-700 outline-none"
                                                 />
                                                 <button type="button" onClick={() => setMostrarPwdDesactivar((v) => !v)} className="text-primary-400">
                                                     {mostrarPwdDesactivar ? <FaEyeSlash /> : <FaEye />}

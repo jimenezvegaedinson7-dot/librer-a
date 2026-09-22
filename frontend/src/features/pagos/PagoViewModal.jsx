@@ -64,8 +64,8 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
     return (
         <Modal abierto={abierto} titulo="Detalle del pago" subtitulo="Información completa del pago y la venta" onCerrar={onCerrar} grande>
             <div className="border-b border-primary-200 pb-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Pago</p>
-                <h3 className="mt-2 text-2xl font-bold text-mahogany-700">Pago #{pago.id_pago}</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Pago</p>
+                <h3 className="mt-2 font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">Pago #{pago.id_pago}</h3>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -91,14 +91,14 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
                     <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                         <FaMoneyBillWave /> Monto total
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-mahogany-700">{formatearMoneda(pago.monto_total)}</p>
+                    <p className="mt-2 text-2xl font-semibold text-slate-700">{formatearMoneda(pago.monto_total)}</p>
                 </div>
 
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                         <FaClockRotateLeft /> Fecha
                     </div>
-                    <p className="mt-2 text-sm font-semibold text-mahogany-700">
+                    <p className="mt-2 text-sm font-semibold text-slate-700">
                         {formatearFecha(pago.fecha_creacion) || 'Sin fecha'}
                     </p>
                 </div>
@@ -127,7 +127,7 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
                     <div className="space-y-2">
                         <p className="text-sm">Venta #{pago.id_venta}</p>
                         <p className="text-xs font-normal text-primary-500">
-                            Cliente <span className="font-semibold text-mahogany-700">#{cliente.id_usuario || '—'}</span>
+                            Cliente <span className="font-semibold text-slate-700">#{cliente.id_usuario || '—'}</span>
                         </p>
                     </div>
                 </Ficha>
@@ -145,7 +145,7 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
             </div>
         </Modal>
     );

@@ -20,7 +20,7 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-[180px_1fr]">
                 <div>
                     <p className="field-label">Portada</p>
-                    <div className="flex h-[250px] w-full items-center justify-center overflow-hidden rounded-xl border border-primary-200 bg-parchment-200">
+                    <div className="mx-auto flex h-[250px] w-full max-w-[180px] items-center justify-center overflow-hidden rounded-xl md:max-w-none border border-primary-200 bg-parchment-200">
                         {urlPortada ? (
                             <img
                                 src={urlPortada}
@@ -47,9 +47,9 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
 
                 <div>
                     <div className="border-b border-primary-200 pb-4">
-                        <h3 className="text-2xl font-bold text-mahogany-700">{libro.titulo}</h3>
+                        <h3 className="font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">{libro.titulo}</h3>
                         <p className="mt-2 text-sm text-primary-500">
-                            ISBN: <span className="font-medium text-mahogany-700">{libro.isbn || 'No registrado'}</span>
+                            ISBN: <span className="font-medium text-slate-700">{libro.isbn || 'No registrado'}</span>
                         </p>
                     </div>
 
@@ -71,7 +71,7 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                     </div>
 
                     <div className="mt-5">
-                        <h4 className="mb-2 text-sm font-bold text-mahogany-700">Descripción</h4>
+                        <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Descripción</h4>
                         <div className="min-h-[80px] rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
                             <p className="text-sm leading-6 text-primary-500">
                                 {libro.descripcion || 'No se registró una descripción para este libro.'}
@@ -80,14 +80,14 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                     </div>
 
                     <div className="mt-5 flex items-center gap-3">
-                        <span className="text-sm font-semibold text-mahogany-700">Estado:</span>
+                        <span className="text-sm font-semibold text-slate-700">Estado:</span>
                         <Badge color={activo ? 'success' : 'danger'}>{activo ? 'Activo' : 'Inactivo'}</Badge>
                     </div>
                 </div>
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
             </div>
         </Modal>
     );

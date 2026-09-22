@@ -9,7 +9,7 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardBody } from '../../components/ui/Card';
 
 const OPCIONES = [
-    { id: 'default', nombre: 'Predeterminado', hex: '#2563eb' },
+    { id: 'default', nombre: 'Predeterminado', hex: '#74212c' },
     { id: 'azul', nombre: 'Azul', hex: '#2563eb' },
     { id: 'indigo', nombre: 'Indigo', hex: '#4f46e5' },
     { id: 'violeta', nombre: 'Violeta', hex: '#7c3aed' },

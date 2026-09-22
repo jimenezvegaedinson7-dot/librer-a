@@ -25,7 +25,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                     {cargando && imagen && (
                         <div className="upload-overlay absolute inset-0 flex flex-col items-center justify-center gap-2" role="status">
                             <Spinner className="text-amber-700" />
-                            <span className="text-xs font-semibold text-mahogany-700">Subiendo portada...</span>
+                            <span className="text-xs font-semibold text-slate-700">Subiendo portada...</span>
                         </div>
                     )}
                 </div>
@@ -47,7 +47,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
 
                     {imagen && (
                         <div className="mt-3 rounded-lg border border-primary-200 bg-parchment-200 p-3">
-                            <p className="text-sm font-semibold text-mahogany-700">Nueva portada seleccionada</p>
+                            <p className="text-sm font-semibold text-slate-700">Nueva portada seleccionada</p>
                             <p className="mt-1 truncate text-xs text-primary-500">{imagen.name}</p>
                             <button
                                 type="button"

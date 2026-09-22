@@ -15,8 +15,8 @@ export default function InventarioViewModal({ inventario, abierto, onCerrar }) {
     return (
         <Modal abierto={abierto} titulo="Detalle del inventario" subtitulo="Información registrada en el sistema" onCerrar={onCerrar}>
             <div className="border-b border-primary-200 pb-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Libro</p>
-                <h3 className="mt-2 text-2xl font-bold text-mahogany-700">{inventario.titulo}</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Libro</p>
+                <h3 className="mt-2 font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">{inventario.titulo}</h3>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -29,7 +29,7 @@ export default function InventarioViewModal({ inventario, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5">
-                <div className="mb-2 flex items-center gap-2 text-sm font-bold text-mahogany-700">
+                <div className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700">
                     <FaBook /> ID de inventario
                 </div>
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
@@ -38,7 +38,7 @@ export default function InventarioViewModal({ inventario, abierto, onCerrar }) {
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
             </div>
         </Modal>
     );

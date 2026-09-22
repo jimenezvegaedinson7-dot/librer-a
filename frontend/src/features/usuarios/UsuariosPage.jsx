@@ -42,12 +42,12 @@ function rolBadge(rol) {
 }
 
 const columnasUsuarios = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-mahogany-700">{fila.id_usuario}</span> },
+    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_usuario}</span> },
     {
         titulo: 'Usuario',
         render: (fila) => (
             <p className="text-sm">
-                <span className="font-semibold text-mahogany-700">{`${fila.nombre || ''} ${fila.apellido || ''}`.trim() || 'Sin nombre'}</span>
+                <span className="font-semibold text-slate-700">{`${fila.nombre || ''} ${fila.apellido || ''}`.trim() || 'Sin nombre'}</span>
                 <span className="block text-xs text-primary-400">{fila.email || 'Sin correo'}</span>
             </p>
         ),
@@ -57,17 +57,17 @@ const columnasUsuarios = [
     {
         titulo: 'Registro',
         alineacion: 'centro',
-        render: (fila) => <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.fecha_registro, { soloDia: true }) || 'Sin fecha'}</span>,
+        render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_registro, { soloDia: true }) || 'Sin fecha'}</span>,
     },
     {
         titulo: 'Compras',
         alineacion: 'centro',
-        render: (fila) => <span className="font-semibold text-mahogany-700">{Number(fila.total_compras || 0)}</span>,
+        render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.total_compras || 0)}</span>,
     },
     {
         titulo: 'Total gastado',
         alineacion: 'centro',
-        render: (fila) => <span className="font-bold text-mahogany-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>,
+        render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>,
     },
 ];
 
@@ -93,7 +93,7 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
                 onChange={(e) => !esPropio && onCambiarRol(fila, e.target.value)}
                 disabled={esPropio}
                 title={esPropio ? 'No puedes cambiar tu propio rol' : 'Cambiar rol'}
-                className="h-8 rounded-lg border border-primary-200 bg-white px-2 text-xs font-semibold text-mahogany-700 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-parchment-200 disabled:text-primary-400"
+                className="h-8 rounded-lg border border-primary-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-parchment-200 disabled:text-primary-400"
             >
                 <option value="cliente">Cliente</option>
                 <option value="administrador">Admin</option>
@@ -105,14 +105,14 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
 function Contador({ total, administradores, clientes, activos, inactivos }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#0f172a]">{total}</span>
+            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Total: <span className="font-bold text-[#1c1814]">{total}</span>
             </span>
             <span className="rounded-xl border border-[#c7d2fe] bg-[#eef2ff] px-4 py-2.5 text-sm font-medium text-[#4f46e5] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Administradores: <span className="font-bold text-[#4f46e5]">{administradores}</span>
             </span>
-            <span className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-4 py-2.5 text-sm font-medium text-[#2563eb] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Clientes: <span className="font-bold text-[#2563eb]">{clientes}</span>
+            <span className="rounded-xl border border-[#ecccc8] bg-[#fbf5f4] px-4 py-2.5 text-sm font-medium text-[#8a2c36] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Clientes: <span className="font-bold text-[#8a2c36]">{clientes}</span>
             </span>
             <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Activos: <span className="font-bold text-[#15803d]">{activos}</span>
@@ -304,7 +304,7 @@ export default function UsuariosPage() {
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-slate-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -364,7 +364,7 @@ export default function UsuariosPage() {
                         subtitulo="Usuarios registrados y su actividad de compras"
                         acciones={
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-mahogany-700">
+                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
                                     {usuariosFiltrados.length} {usuariosFiltrados.length === 1 ? 'usuario' : 'usuarios'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>

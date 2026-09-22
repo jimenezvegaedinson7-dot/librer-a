@@ -7,7 +7,7 @@ const ZONAS_IDS = ['sidebar', 'topbar', 'buttons', 'inputs', 'tables', 'modals',
 const ZONAS_DEFAULT = ['sidebar', 'topbar', 'buttons', 'icons'];
 
 const COLORES = {
-    default: { primary: '#2563eb', primaryHover: '#1d4ed8', primarySoft: '#dbeafe', text: '#1d4ed8' },
+    default: { primary: '#74212c', primaryHover: '#5c1a23', primarySoft: '#f6e6e4', text: '#74212c' },
     azul: { primary: '#2563eb', primaryHover: '#1d4ed8', primarySoft: '#dbeafe', text: '#1d4ed8' },
     indigo: { primary: '#4f46e5', primaryHover: '#4338ca', primarySoft: '#e0e7ff', text: '#4338ca' },
     violeta: { primary: '#7c3aed', primaryHover: '#6d28d9', primarySoft: '#ede9fe', text: '#6d28d9' },
@@ -25,24 +25,33 @@ const COLORES = {
     rojo: { primary: '#dc2626', primaryHover: '#b91c1c', primarySoft: '#fee2e2', text: '#b91c1c' },
 };
 
-const SIDEBAR_BG = { light: '#ffffff', dark: '#1e293b' };
-const SIDEBAR_BORDER = { light: '#E2E8F0', dark: '#475569' };
-const SIDEBAR_TEXT = { light: '#475569', dark: '#cbd5e1' };
-const SIDEBAR_HOVER = { light: '#f8fafc', dark: '#334155' };
-const SIDEBAR_SECTION = { light: '#94a3b8', dark: '#94a3b8' };
+const SIDEBAR_BG = { light: '#ffffff', dark: '#1d1a17' };
+const SIDEBAR_BORDER = { light: '#e6e0d7', dark: '#403831' };
+const SIDEBAR_TEXT = { light: '#5c544b', dark: '#d8cfc2' };
+const SIDEBAR_HOVER = { light: '#faf8f5', dark: '#2d2824' };
+const SIDEBAR_SECTION = { light: '#a39a8e', dark: '#a89e91' };
+
+// Sidebar de marca: tinta cálida con filete dorado, igual en ambos temas
+const SIDEBAR_MARCA = {
+    light: { bg: '#1f1a17', border: 'rgba(236, 220, 174, 0.10)' },
+    dark: { bg: '#110f0d', border: 'rgba(236, 220, 174, 0.08)' },
+};
 
 function getSidebarColors(colorId, tema) {
     const isDark = tema === 'dark';
     const c = COLORES[colorId] || COLORES.default;
     if (colorId === 'default') {
+        const marca = SIDEBAR_MARCA[isDark ? 'dark' : 'light'];
         return {
-            primary: isDark ? '#60a5fa' : '#2563eb',
-            primarySoft: isDark ? 'rgba(59,130,246,0.15)' : '#dbeafe',
-            sidebarBg: isDark ? SIDEBAR_BG.dark : SIDEBAR_BG.light,
-            sidebarBorder: isDark ? SIDEBAR_BORDER.dark : SIDEBAR_BORDER.light,
-            sidebarText: isDark ? SIDEBAR_TEXT.dark : SIDEBAR_TEXT.light,
-            sidebarHover: isDark ? SIDEBAR_HOVER.dark : SIDEBAR_HOVER.light,
-            sidebarSection: SIDEBAR_SECTION[tema],
+            primary: '#dcbb7a',
+            primarySoft: 'rgba(220, 187, 122, 0.12)',
+            sidebarBg: marca.bg,
+            sidebarBorder: marca.border,
+            sidebarText: '#cfc5b8',
+            sidebarHover: 'rgba(220, 187, 122, 0.10)',
+            sidebarSection: '#8a8074',
+            brandTitle: '#f5eedf',
+            oscuro: true,
         };
     }
     return {
@@ -87,6 +96,7 @@ export function ThemeProvider({ children }) {
                 r.style.removeProperty(`--theme-${z}-hover`);
                 r.style.removeProperty(`--theme-${z}-soft`);
                 r.style.removeProperty(`--theme-${z}-text`);
+                r.style.removeProperty(`--theme-${z}-on`);
                 return;
             }
             const c = COLORES[colorId] || COLORES.default;
@@ -94,6 +104,7 @@ export function ThemeProvider({ children }) {
             r.style.setProperty(`--theme-${z}-hover`, c.primaryHover);
             r.style.setProperty(`--theme-${z}-soft`, c.primarySoft);
             r.style.setProperty(`--theme-${z}-text`, c.text);
+            r.style.setProperty(`--theme-${z}-on`, '#ffffff');
         });
     }, [config, tema]);
 

@@ -47,15 +47,15 @@ const columnasComprobantes = [
     {
         titulo: 'Serie-Número',
         render: (fila) => (
-            <span className="font-mono text-xs font-bold tracking-wide text-mahogany-700">{formatearSerieNumero(fila)}</span>
+            <span className="font-mono text-xs font-bold tracking-wide text-slate-700">{formatearSerieNumero(fila)}</span>
         ),
     },
     { titulo: 'Tipo', alineacion: 'centro', render: (fila) => badgeTipo(fila.tipo) },
     {
         titulo: 'Cliente',
         render: (fila) => (
-            <p className="text-sm text-mahogany-700">
-                <span className="font-semibold text-mahogany-700">{fila.cliente_nombre || 'Sin nombre'}</span>
+            <p className="text-sm text-slate-700">
+                <span className="font-semibold text-slate-700">{fila.cliente_nombre || 'Sin nombre'}</span>
                 {fila.cliente_dni_ruc && <span className="block text-xs text-primary-400">{fila.cliente_dni_ruc}</span>}
             </p>
         ),
@@ -63,13 +63,13 @@ const columnasComprobantes = [
     {
         titulo: 'Total',
         alineacion: 'centro',
-        render: (fila) => <span className="font-bold text-mahogany-700">{formatearMoneda(fila.total)}</span>,
+        render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(fila.total)}</span>,
     },
     {
         titulo: 'Fecha',
         alineacion: 'centro',
         render: (fila) => (
-            <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.fecha_emision) || 'Sin fecha'}</span>
+            <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_emision) || 'Sin fecha'}</span>
         ),
     },
 ];
@@ -239,11 +239,11 @@ export default function ComprobantesPage() {
                 icono={<FaReceipt />}
                 acciones={
                     <div className="summary-strip flex flex-wrap gap-2">
-                        <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                            Total: <span className="font-bold text-[#0f172a]">{total}</span>
+                        <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                            Total: <span className="font-bold text-[#1c1814]">{total}</span>
                         </span>
-                        <span className="rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-4 py-2.5 text-sm font-medium text-[#475569] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                            Boletas: <span className="font-bold text-[#1e293b]">{resumen.boletas}</span>
+                        <span className="rounded-xl border border-[#e6e0d7] bg-[#faf8f5] px-4 py-2.5 text-sm font-medium text-[#5c544b] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                            Boletas: <span className="font-bold text-[#2c2621]">{resumen.boletas}</span>
                         </span>
                         <span className="rounded-xl border border-[#c7d2fe] bg-[#eef2ff] px-4 py-2.5 text-sm font-medium text-[#4f46e5] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                             Facturas: <span className="font-bold text-[#4f46e5]">{resumen.facturas}</span>
@@ -277,7 +277,7 @@ export default function ComprobantesPage() {
                                     <button
                                         type="button"
                                         onClick={() => aplicarBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-slate-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -337,7 +337,7 @@ export default function ComprobantesPage() {
                         subtitulo="Boletas y facturas generadas"
                         acciones={
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-mahogany-700">
+                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
                                     {total} {total === 1 ? 'comprobante' : 'comprobantes'} · {formatearMoneda(resumen.ingresos)}
                                 </span>
                             </div>

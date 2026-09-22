@@ -42,8 +42,8 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
     return (
         <Modal abierto={abierto} titulo="Detalle de la venta" subtitulo="Información completa de la venta" onCerrar={onCerrar} grande>
             <div className="border-b border-primary-200 pb-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Venta</p>
-                <h3 className="mt-2 text-2xl font-bold text-mahogany-700">Venta #{venta.id_venta}</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Venta</p>
+                <h3 className="mt-2 font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">Venta #{venta.id_venta}</h3>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -90,7 +90,7 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                     <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                         <FaMoneyBillWave /> Total
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-mahogany-700">{formatearMoneda(venta.total)}</p>
+                    <p className="mt-2 text-2xl font-semibold text-slate-700">{formatearMoneda(venta.total)}</p>
                     {Number(venta.costo_envio || 0) > 0 && (
                         <p className="mt-1 text-xs text-primary-400">
                             Incluye envío: {formatearMoneda(venta.costo_envio)}
@@ -111,7 +111,7 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
             <div className="mt-6 overflow-hidden rounded-xl border-2 border-primary-200">
                 <div className="flex items-center gap-2 border-b-2 border-primary-200 bg-parchment-300 px-5 py-4">
                     <FaBook className="text-primary-500" />
-                    <h3 className="font-bold text-mahogany-700">Libros vendidos</h3>
+                    <h3 className="font-title text-[17px] font-semibold text-slate-900">Libros vendidos</h3>
                 </div>
 
                 {Array.isArray(venta.detalles) && venta.detalles.length > 0 ? (
@@ -119,19 +119,19 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                         <table className="min-w-full">
                             <thead className="bg-parchment-200">
                                 <tr className="border-b-2 border-primary-300">
-                                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-mahogany-700">Libro</th>
-                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Precio</th>
-                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Cantidad</th>
-                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Subtotal</th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-700">Libro</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Precio</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Cantidad</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-primary-200">
                                 {venta.detalles.map((detalle) => (
                                     <tr key={detalle.id_detalle} className="hover:bg-parchment-200">
-                                        <td className="px-4 py-4 text-sm font-semibold text-mahogany-700">{detalle.titulo}</td>
-                                        <td className="px-4 py-4 text-center text-sm text-mahogany-700">{formatearMoneda(detalle.precio_unitario)}</td>
-                                        <td className="px-4 py-4 text-center text-sm font-semibold text-mahogany-700">{detalle.cantidad}</td>
-                                        <td className="px-4 py-4 text-center text-sm font-bold text-mahogany-700">{formatearMoneda(detalle.subtotal)}</td>
+                                        <td className="px-4 py-4 text-sm font-semibold text-slate-700">{detalle.titulo}</td>
+                                        <td className="px-4 py-4 text-center text-sm text-slate-700">{formatearMoneda(detalle.precio_unitario)}</td>
+                                        <td className="px-4 py-4 text-center text-sm font-semibold text-slate-700">{detalle.cantidad}</td>
+                                        <td className="px-4 py-4 text-center text-sm font-bold text-slate-700">{formatearMoneda(detalle.subtotal)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -143,7 +143,7 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
             </div>
         </Modal>
     );

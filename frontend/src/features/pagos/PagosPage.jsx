@@ -96,8 +96,8 @@ const columnasPagos = [
         ordenable: true,
         campo: 'cliente',
         render: (fila) => (
-            <p className="text-sm text-mahogany-700">
-                <span className="font-semibold text-mahogany-700">{fila.cliente?.nombre_completo || 'Sin nombre'}</span>
+            <p className="text-sm text-slate-700">
+                <span className="font-semibold text-slate-700">{fila.cliente?.nombre_completo || 'Sin nombre'}</span>
                 <span className="block text-xs text-primary-400">{fila.cliente?.email || 'Sin correo'}</span>
             </p>
         ),
@@ -106,14 +106,14 @@ const columnasPagos = [
     {
         titulo: 'Método de pago',
         campo: 'metodo_pago',
-        render: (fila) => <span className="text-mahogany-700">{fila.metodo_pago || 'Sin método'}</span>,
+        render: (fila) => <span className="text-slate-700">{fila.metodo_pago || 'Sin método'}</span>,
     },
     {
         titulo: 'Monto',
         alineacion: 'centro',
         ordenable: true,
         campo: 'monto_total',
-        render: (fila) => <span className="font-bold text-mahogany-700">{formatearMoneda(fila.monto_total)}</span>,
+        render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(fila.monto_total)}</span>,
     },
     {
         titulo: 'Estado venta',
@@ -135,7 +135,7 @@ const columnasPagos = [
         ordenable: true,
         campo: 'fecha_creacion',
         render: (fila) => (
-            <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.fecha_creacion) || 'Sin fecha'}</span>
+            <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_creacion) || 'Sin fecha'}</span>
         ),
     },
     {
@@ -159,8 +159,8 @@ function accionesPago(fila, { onVer }) {
 function Contador({ total, pagados, pendientes, cancelados, ingresos }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#0f172a]">{total}</span>
+            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Total: <span className="font-bold text-[#1c1814]">{total}</span>
             </span>
             <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Pagadas: <span className="font-bold text-[#15803d]">{pagados}</span>
@@ -344,7 +344,7 @@ export default function PagosPage() {
                                     <button
                                         type="button"
                                         onClick={() => aplicarBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-slate-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -408,7 +408,7 @@ export default function PagosPage() {
                         subtitulo="Detalle de pagos y su estado asociado a la venta"
                         acciones={
                             <div className="flex flex-wrap items-center gap-2">
-                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-mahogany-700">
+                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
                                     {total} {total === 1 ? 'pago' : 'pagos'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>

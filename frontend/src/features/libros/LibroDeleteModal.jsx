@@ -61,7 +61,7 @@ export default function LibroDeleteModal({ libro, abierto, eliminando, onCerrar,
                         type="button"
                         onClick={() => setMostrarPassword((a) => !a)}
                         disabled={eliminando}
-                        className="text-xs font-semibold text-primary-500 transition hover:text-mahogany-700 disabled:opacity-50"
+                        className="text-xs font-semibold text-primary-500 transition hover:text-slate-700 disabled:opacity-50"
                     >
                         {mostrarPassword ? 'Ocultar' : 'Mostrar'}
                     </button>

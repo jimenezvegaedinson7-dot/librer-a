@@ -19,8 +19,8 @@ export default function UsuarioViewModal({ usuario, abierto, onCerrar }) {
     return (
         <Modal abierto={abierto} titulo="Detalle del usuario" subtitulo="Información del usuario registrado" onCerrar={onCerrar}>
             <div className="border-b border-primary-200 pb-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Usuario</p>
-                <h3 className="mt-2 text-2xl font-bold text-mahogany-700">{`${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() || 'Sin nombre'}</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Usuario</p>
+                <h3 className="mt-2 font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">{`${usuario.nombre || ''} ${usuario.apellido || ''}`.trim() || 'Sin nombre'}</h3>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -62,12 +62,12 @@ export default function UsuarioViewModal({ usuario, abierto, onCerrar }) {
                     <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                         <FaMoneyBillWave /> Total gastado
                     </div>
-                    <p className="mt-2 text-2xl font-semibold text-mahogany-700">{formatearMoneda(Number(usuario.total_gastado || 0))}</p>
+                    <p className="mt-2 text-2xl font-semibold text-slate-700">{formatearMoneda(Number(usuario.total_gastado || 0))}</p>
                 </div>
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
             </div>
         </Modal>
     );

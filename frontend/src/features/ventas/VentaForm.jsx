@@ -289,7 +289,7 @@ export default function VentaForm({ onVentaCreada }) {
             />
             <CardBody>
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center text-mahogany-600">
+                    <div className="flex h-10 w-10 items-center justify-center text-slate-600">
                         <FaCartPlus />
                     </div>
                 </div>
@@ -324,7 +324,7 @@ export default function VentaForm({ onVentaCreada }) {
                 </div>
 
                 <div className="mt-5 rounded-xl border-2 border-primary-200 bg-parchment-200 p-4">
-                    <p className="mb-2 text-sm font-bold text-mahogany-700">Datos del comprador (opcional)</p>
+                    <p className="mb-2 text-sm font-bold text-slate-700">Datos del comprador (opcional)</p>
                     <Input
                         label="Correo del comprador"
                         type="email"
@@ -340,7 +340,7 @@ export default function VentaForm({ onVentaCreada }) {
                 </div>
 
                 <div className="mt-5">
-                    <p className="mb-2 text-sm font-bold text-mahogany-700">Tipo de entrega</p>
+                    <p className="mb-2 text-sm font-bold text-slate-700">Tipo de entrega</p>
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                         {OPCIONES_ENTREGA.map((opcion) => (
                             <button
@@ -353,10 +353,10 @@ export default function VentaForm({ onVentaCreada }) {
                                 className={clasesOpcion(tipoEntrega === opcion.valor)}
                                 disabled={guardando}
                             >
-                                <span className={`text-lg ${tipoEntrega === opcion.valor ? 'text-mahogany-600' : 'text-primary-400'}`}>
+                                <span className={`text-lg ${tipoEntrega === opcion.valor ? 'text-slate-600' : 'text-primary-400'}`}>
                                     {opcion.icono}
                                 </span>
-                                <span className={`text-sm font-bold ${tipoEntrega === opcion.valor ? 'text-mahogany-700' : 'text-mahogany-700'}`}>
+                                <span className={`text-sm font-bold ${tipoEntrega === opcion.valor ? 'text-slate-700' : 'text-slate-700'}`}>
                                     {opcion.titulo}
                                 </span>
                                 <span className="text-xs text-primary-400">{opcion.descripcion}</span>
@@ -451,7 +451,7 @@ export default function VentaForm({ onVentaCreada }) {
 
                 <div className="mt-6 overflow-hidden rounded-xl border-2 border-primary-200">
                     <div className="border-b-2 border-primary-200 bg-parchment-300 px-5 py-4">
-                        <h3 className="font-bold text-mahogany-700">Detalle de venta</h3>
+                        <h3 className="font-bold text-slate-700">Detalle de venta</h3>
                     </div>
 
                     {detalles.length === 0 ? (
@@ -464,22 +464,22 @@ export default function VentaForm({ onVentaCreada }) {
                             <table className="min-w-full">
                                 <thead className="bg-parchment-200">
                                     <tr className="border-b-2 border-primary-300">
-                                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-mahogany-700">Libro</th>
-                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Precio</th>
-                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Stock disp.</th>
-                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Cantidad</th>
-                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Subtotal</th>
-                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Acción</th>
+                                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-700">Libro</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Precio</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Stock disp.</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Cantidad</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Subtotal</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-primary-200">
                                     {detalles.map((detalle) => (
                                         <tr key={detalle.id_libro} className="transition hover:bg-parchment-200">
-                                            <td className="px-4 py-4 text-sm font-semibold text-mahogany-700">{detalle.titulo}</td>
-                                            <td className="px-4 py-4 text-center text-sm text-mahogany-700">{formatearMoneda(detalle.precio)}</td>
+                                            <td className="px-4 py-4 text-sm font-semibold text-slate-700">{detalle.titulo}</td>
+                                            <td className="px-4 py-4 text-center text-sm text-slate-700">{formatearMoneda(detalle.precio)}</td>
                                             <td className="px-4 py-4 text-center text-sm text-primary-500">{Number(detalle.stock || 0)}</td>
-                                            <td className="px-4 py-4 text-center text-sm font-semibold text-mahogany-700">{detalle.cantidad}</td>
-                                            <td className="px-4 py-4 text-center text-sm font-bold text-mahogany-700">
+                                            <td className="px-4 py-4 text-center text-sm font-semibold text-slate-700">{detalle.cantidad}</td>
+                                            <td className="px-4 py-4 text-center text-sm font-bold text-slate-700">
                                                 {formatearMoneda(Number(detalle.precio) * Number(detalle.cantidad))}
                                             </td>
                                             <td className="px-4 py-4 text-center">
@@ -505,17 +505,17 @@ export default function VentaForm({ onVentaCreada }) {
                     <div className="min-w-72 rounded-xl border-2 border-primary-200 bg-parchment-200 px-5 py-4">
                         <div className="flex items-center justify-between border-b border-primary-200 pb-2 text-sm">
                             <span className="text-primary-500">Subtotal</span>
-                            <span className="font-semibold text-mahogany-700">{formatearMoneda(subtotal)}</span>
+                            <span className="font-semibold text-slate-700">{formatearMoneda(subtotal)}</span>
                         </div>
                         <div className="flex items-center justify-between py-2 text-sm">
                             <span className="text-primary-500">Envío</span>
-                            <span className="font-semibold text-mahogany-700">
+                            <span className="font-semibold text-slate-700">
                                 {costoEnvio > 0 ? formatearMoneda(costoEnvio) : 'Gratis'}
                             </span>
                         </div>
                         <div className="flex items-center justify-between border-t border-primary-200 pt-2">
-                            <span className="text-sm font-semibold text-mahogany-700">Total</span>
-                            <span className="text-xl font-semibold text-mahogany-700">{formatearMoneda(totalGeneral)}</span>
+                            <span className="text-sm font-semibold text-slate-700">Total</span>
+                            <span className="text-xl font-semibold text-slate-700">{formatearMoneda(totalGeneral)}</span>
                         </div>
                     </div>
                 </div>

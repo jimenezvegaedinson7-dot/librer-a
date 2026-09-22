@@ -21,11 +21,11 @@ export default function Breadcrumbs() {
 
     return (
         <nav aria-label="Ruta de navegación" className="admin-breadcrumbs mb-4 flex items-center gap-2 text-xs text-primary-400">
-            <Link to="/dashboard" className="transition-colors hover:text-mahogany-600">
+            <Link to="/dashboard" className="transition-colors hover:text-slate-600">
                 Panel
             </Link>
             <FaChevronRight className="text-[10px] text-primary-300" />
-            <span className="font-medium text-mahogany-700">{nombre}</span>
+            <span className="font-medium text-slate-700">{nombre}</span>
         </nav>
     );
 }

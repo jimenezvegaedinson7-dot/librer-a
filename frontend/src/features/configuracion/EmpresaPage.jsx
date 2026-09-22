@@ -58,7 +58,7 @@ function Interruptor({ activo, onChange, descripcion }) {
     return (
         <div className="flex items-center justify-between gap-4 rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
             <div>
-                <p className="text-sm font-semibold text-mahogany-700">Aplicar IGV (18%)</p>
+                <p className="text-sm font-semibold text-slate-700">Aplicar IGV (18%)</p>
                 {descripcion && <p className="mt-0.5 text-xs text-primary-500">{descripcion}</p>}
             </div>
             <button

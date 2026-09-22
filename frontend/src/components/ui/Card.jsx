@@ -7,13 +7,13 @@ export function Card({ children, className = '', hover = false }) {
 }
 
 const iconColores = {
-    blue: 'bg-[#dbeafe] text-[#2563eb]',
+    blue: 'bg-[#f6e6e4] text-[#8a2c36]',
     rose: 'bg-[#ffe4e6] text-[#e11d48]',
     emerald: 'bg-[#d1fae5] text-[#059669]',
     amber: 'bg-[#fef3c7] text-[#d97706]',
     violet: 'bg-[#ede9fe] text-[#7c3aed]',
     sky: 'bg-[#e0f2fe] text-[#0284c7]',
-    slate: 'bg-[#f1f5f9] text-[#475569]',
+    slate: 'bg-[#f3efe9] text-[#5c544b]',
 };
 
 export function CardHeader({ titulo, subtitulo, acciones = null, icono = null, color = 'slate' }) {

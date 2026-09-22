@@ -9,7 +9,7 @@ import { Input } from '../../components/ui/Form';
 import { Alert } from '../../components/ui/Alert';
 import { Pagination } from '../../components/ui/Pagination';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { CargandoPantalla } from '../../components/ui/Spinner';
+import { TableSkeleton } from '../../components/ui/TableSkeleton';
 import { ConfirmarEliminacion } from '../../components/ui/ConfirmarEliminacion';
 import { DataTable } from '../../components/ui/DataTable';
 import { EstadoActivo } from '../../components/ui/Badge';
@@ -27,9 +27,9 @@ import CategoriaEditModal from './CategoriaEditModal';
 const POR_PAGINA = 10;
 
 const columnasCategorias = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-mahogany-700">{fila.id_categoria}</span> },
-    { titulo: 'Nombre', render: (fila) => <span className="font-semibold text-mahogany-700">{fila.nombre}</span> },
-    { titulo: 'Descripción', render: (fila) => <span className="text-mahogany-700">{fila.descripcion || 'Sin descripción'}</span> },
+    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_categoria}</span> },
+    { titulo: 'Nombre', render: (fila) => <span className="font-semibold text-slate-700">{fila.nombre}</span> },
+    { titulo: 'Descripción', render: (fila) => <span className="text-slate-700">{fila.descripcion || 'Sin descripción'}</span> },
     { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
 ];
 
@@ -46,8 +46,8 @@ function accionesCategoria(fila, { onVer, onEditar, onEliminar }) {
 function Contador({ total, activas, inactivas }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#0f172a]">{total}</span>
+            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Total: <span className="font-bold text-[#1c1814]">{total}</span>
             </span>
             <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Activas: <span className="font-bold text-[#15803d]">{activas}</span>
@@ -213,7 +213,7 @@ export default function CategoriaPage() {
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 hover:text-mahogany-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 hover:text-slate-700"
                                     >
                                         <FaXmark />
                                     </button>
@@ -227,7 +227,7 @@ export default function CategoriaPage() {
                 />
             </Card>
 
-            {cargando && <Card><CargandoPantalla texto="Cargando categorías..." /></Card>}
+            {cargando && <TableSkeleton columnas={4} filas={8} titulo />}
 
             {!cargando && error && <Alert tipo="error">{error}</Alert>}
 
@@ -272,7 +272,7 @@ export default function CategoriaPage() {
                     pagina={paginaInactivas}
                     totalPaginas={totalInactivas}
                     onCambiarPagina={setPaginaInactivas}
-                    color="bg-parchment-400 text-mahogany-700"
+                    color="bg-parchment-400 text-slate-700"
                     onVer={verCategoria}
                     onEditar={editarCategoria}
                     onEliminar={setCategoriaEliminar}

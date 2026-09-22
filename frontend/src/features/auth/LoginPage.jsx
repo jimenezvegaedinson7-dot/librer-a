@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
+    FaArrowLeft,
     FaCircleCheck,
     FaEnvelope,
     FaEye,
@@ -9,7 +11,6 @@ import {
     FaLock,
     FaQrcode,
     FaRightToBracket,
-    FaXmark,
 } from 'react-icons/fa6';
 
 import { login, verificarLoginOtp, solicitarReseteo, restablecerContrasena } from './authService';
@@ -45,6 +46,8 @@ export default function LoginPage() {
     const [resetError, setResetError] = useState('');
     const [resetCargando, setResetCargando] = useState(false);
     const [mostrarResetPass, setMostrarResetPass] = useState(false);
+
+    const reducirMovimiento = useReducedMotion();
 
     if (autenticado) return <Navigate to="/dashboard" replace />;
 
@@ -214,387 +217,409 @@ export default function LoginPage() {
         setResetError('');
     };
 
+
+    const pasoReset = {
+        1: 'Confirma tu correo para recibir un código',
+        2: 'Ingresa el código y tu nueva contraseña',
+        3: 'Proceso completado',
+    }[resetStep];
+
     return (
-        <main className="relative min-h-screen bg-parchment-300">
-            <div
-                className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url(${fondoLogin})` }}
-            />
-            <div className="fixed inset-0 bg-mahogany-900/45" />
+        <main className="login-page relative min-h-screen bg-[#f6f3ee] lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(460px,0.9fr)]">
+            {/* Panel de marca (en móvil actúa como fondo) */}
+            <aside className="login-marca fixed inset-0 overflow-hidden lg:relative lg:inset-auto lg:min-h-screen">
+                <motion.div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${fondoLogin})` }}
+                    initial={reducirMovimiento ? false : { scale: 1.06 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 1.6, ease: [0.25, 1, 0.5, 1] }}
+                    aria-hidden="true"
+                />
+                <div className="login-velo absolute inset-0" aria-hidden="true" />
 
-            <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8">
-                <section className="w-full min-w-0 max-w-[440px]">
-                    <div className="min-w-0 rounded-lg border border-primary-200 bg-parchment-50 p-7 shadow-xl sm:p-9">
-                        <div className="mb-6 flex justify-center border-b border-primary-200 pb-6">
-                            <img
-                                src={logoLibreria}
-                                alt="Logo Librería"
-                                className="h-20 w-auto object-contain sm:h-24"
-                            />
+                <div className="relative z-10 hidden h-full flex-col justify-between p-12 xl:p-16 lg:flex">
+                    <div className="flex items-center gap-3">
+                        <img src={logoLibreria} alt="" className="h-12 w-12 object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.45)]" />
+                        <div>
+                            <p className="font-title text-lg font-semibold leading-tight text-[#f5eedf]">Librería del Saber</p>
+                            <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#dcbb7a]">Administración</p>
                         </div>
+                    </div>
 
+                    <motion.div
+                        initial={reducirMovimiento ? false : { opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.7, delay: 0.15, ease: [0.25, 1, 0.5, 1] }}
+                        className="max-w-lg"
+                    >
+                        <span className="mb-6 block h-px w-16 bg-[#dcbb7a]/70" />
+                        <h2 className="font-title text-[40px] font-semibold leading-[1.1] tracking-[-0.02em] text-[#fffaf0] xl:text-[46px]">
+                            Cada libro en su lugar,
+                            <span className="block italic text-[#eedcae]">cada venta en orden.</span>
+                        </h2>
+                        <p className="mt-5 max-w-md text-[15px] leading-relaxed text-[#e9e0d2]/85">
+                            Gestiona catálogo, inventario, reservas y ventas desde un solo lugar.
+                        </p>
+                    </motion.div>
+
+                    <p className="text-xs text-[#e9e0d2]/60">
+                        © {new Date().getFullYear()} Librería del Saber · Panel de uso interno
+                    </p>
+                </div>
+            </aside>
+
+            {/* Formulario */}
+            <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10 sm:px-8">
+                <motion.section
+                    initial={reducirMovimiento ? false : { opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+                    className="login-tarjeta w-full min-w-0 max-w-[420px]"
+                >
+                    {/* Marca en móvil / tablet */}
+                    <div className="mb-7 flex flex-col items-center text-center lg:hidden">
+                        <img src={logoLibreria} alt="Librería del Saber" className="h-16 w-auto object-contain" />
+                        <p className="mt-2 font-title text-lg font-semibold text-[#1c1814]">Librería del Saber</p>
+                        <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#9a7231]">Administración</p>
+                    </div>
+
+                    <AnimatePresence mode="wait" initial={false}>
                         {!twoFactorToken ? (
-                            <>
-                                <div className="mb-6 text-center">
-                                    <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#0f172a]">
+                            <motion.div key="login" {...transicionPaso}>
+                                <div className="mb-8">
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a7231]">Acceso seguro</p>
+                                    <h1 className="mt-2 font-title text-[30px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814]">
                                         Iniciar sesión
                                     </h1>
-                                    <p className="mt-2 text-sm text-[#64748b]">
+                                    <p className="mt-2 text-sm text-[#766d62]">
                                         Ingresa tus credenciales de administración
                                     </p>
                                 </div>
 
-                                {error && (
-                                    <div className="mb-4">
-                                        <Alert tipo="error">{error}</Alert>
-                                    </div>
-                                )}
+                                <MensajeError mensaje={error} />
 
                                 <form onSubmit={enviar} className="min-w-0 space-y-5">
-                                    <div>
-                                        <label className="mb-2 block text-sm font-semibold text-mahogany-700">
-                                            Correo electrónico
-                                        </label>
-                                        <div className="flex h-12 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
-                                            <span className="flex h-full w-11 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
-                                                <FaEnvelope />
-                                            </span>
-                                            <input
-                                                type="email"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                placeholder="admin@libreria.com"
-                                                autoComplete="email"
-                                                required
-                                                className="h-full min-w-0 flex-1 bg-transparent px-4 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
-                                            />
-                                        </div>
-                                    </div>
+                                    <Campo id="login-email" etiqueta="Correo electrónico" icono={<FaEnvelope />}>
+                                        <input
+                                            id="login-email"
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="admin@libreria.com"
+                                            autoComplete="email"
+                                            required
+                                            className="login-input"
+                                        />
+                                    </Campo>
 
-                                    <div>
-                                        <label className="mb-2 block text-sm font-semibold text-mahogany-700">
-                                            Contraseña
-                                        </label>
-                                        <div className="flex h-12 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
-                                            <span className="flex h-full w-11 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
-                                                <FaLock />
-                                            </span>
-                                            <input
-                                                type={mostrarPassword ? 'text' : 'password'}
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                                placeholder="Ingresa tu contraseña"
-                                                autoComplete="current-password"
-                                                required
-                                                className="h-full min-w-0 flex-1 bg-transparent px-4 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
-                                            />
+                                    <Campo
+                                        id="login-password"
+                                        etiqueta="Contraseña"
+                                        icono={<FaLock />}
+                                        accion={
                                             <button
                                                 type="button"
                                                 onClick={() => setMostrarPassword((v) => !v)}
-                                                className="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-primary-400 transition hover:bg-parchment-200 hover:text-mahogany-700"
+                                                aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                                aria-pressed={mostrarPassword}
+                                                className="login-ojo"
                                             >
                                                 {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
                                             </button>
-                                        </div>
+                                        }
+                                    >
+                                        <input
+                                            id="login-password"
+                                            type={mostrarPassword ? 'text' : 'password'}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="Ingresa tu contraseña"
+                                            autoComplete="current-password"
+                                            required
+                                            className="login-input"
+                                        />
+                                    </Campo>
+
+                                    <div className="flex justify-end">
+                                        <button type="button" onClick={openResetModal} className="login-enlace">
+                                            ¿Olvidaste tu contraseña?
+                                        </button>
                                     </div>
 
-                                    <button
-                                        type="submit"
-                                        disabled={cargando}
-                                        className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-mahogany-700 bg-mahogany-700 text-sm font-semibold text-parchment-100 transition-colors hover:bg-mahogany-600 disabled:opacity-60"
-                                    >
-                                        {cargando ? (
-                                            <>
-                                                <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                                                Ingresando...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <FaRightToBracket />
-                                                Iniciar sesión
-                                            </>
-                                        )}
-                                    </button>
+                                    <BotonPrimario cargando={cargando} textoCarga="Ingresando..." icono={<FaRightToBracket />}>
+                                        Iniciar sesión
+                                    </BotonPrimario>
                                 </form>
-
-                                <div className="mt-4 text-center">
-                                    <button
-                                        type="button"
-                                        onClick={openResetModal}
-                                        className="text-sm font-medium text-primary-400 transition-colors hover:text-mahogany-600"
-                                    >
-                                        ¿Olvidaste tu contraseña?
-                                    </button>
-                                </div>
-                            </>
+                            </motion.div>
                         ) : (
-                            <>
-                                <div className="mb-6 text-center">
-                                    <div className="mb-4 flex justify-center text-2xl text-[#475569]">
+                            <motion.div key="otp" {...transicionPaso}>
+                                <div className="mb-8">
+                                    <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#eedcae] bg-[#fcf8ef] text-lg text-[#7a5827]">
                                         <FaQrcode />
-                                    </div>
-                                    <h1 className="font-sans text-2xl font-semibold tracking-tight text-[#0f172a]">
+                                    </span>
+                                    <h1 className="font-title text-[30px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814]">
                                         Código de verificación
                                     </h1>
-                                    <p className="mt-2 text-sm text-[#64748b]">
-                                        Ingresa el código de 6 dígitos
+                                    <p className="mt-2 text-sm text-[#766d62]">
+                                        Ingresa el código de 6 dígitos de tu aplicación de autenticación
                                     </p>
                                 </div>
 
-                                {error && (
-                                    <div className="mb-4">
-                                        <Alert tipo="error">{error}</Alert>
-                                    </div>
-                                )}
+                                <MensajeError mensaje={error} />
 
                                 <form onSubmit={enviarCodigo} className="min-w-0 space-y-5">
-                                    <div>
-                                        <label className="mb-2 block text-center text-sm font-semibold text-mahogany-700">
-                                            Código OTP
-                                        </label>
-                                        <div className="flex h-14 min-w-0 items-center rounded-md border border-primary-200 bg-parchment-50 px-4 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
-                                            <FaKey className="shrink-0 text-mahogany-600" />
-                                            <input
-                                                type="text"
-                                                inputMode="numeric"
-                                                maxLength="6"
-                                                value={codigo}
-                                                onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
-                                                placeholder="000000"
-                                                autoComplete="one-time-code"
-                                                required
-                                                className="min-w-0 flex-1 bg-transparent text-center text-2xl font-bold tracking-[.5em] text-mahogany-700 outline-none placeholder:text-primary-200"
-                                            />
-                                        </div>
-                                    </div>
+                                    <Campo id="login-otp" etiqueta="Código OTP" icono={<FaKey />}>
+                                        <input
+                                            id="login-otp"
+                                            type="text"
+                                            inputMode="numeric"
+                                            maxLength="6"
+                                            value={codigo}
+                                            onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
+                                            placeholder="000000"
+                                            autoComplete="one-time-code"
+                                            autoFocus
+                                            required
+                                            className="login-input login-input--codigo"
+                                        />
+                                    </Campo>
 
-                                    <button
-                                        type="submit"
-                                        disabled={verificando}
-                                        className="flex h-12 w-full items-center justify-center gap-2 rounded-md border border-mahogany-700 bg-mahogany-700 text-sm font-semibold text-parchment-100 transition-colors hover:bg-mahogany-600 disabled:opacity-60"
-                                    >
-                                        {verificando ? (
-                                            <>
-                                                <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                                                Verificando...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <FaQrcode />
-                                                Verificar código
-                                            </>
-                                        )}
-                                    </button>
+                                    <BotonPrimario cargando={verificando} textoCarga="Verificando..." icono={<FaQrcode />}>
+                                        Verificar código
+                                    </BotonPrimario>
 
-                                    <button
-                                        type="button"
-                                        onClick={volverAlLogin}
-                                        className="w-full text-center text-sm font-medium text-primary-400 transition-colors hover:text-mahogany-600"
-                                    >
-                                        ← Volver al inicio de sesión
+                                    <button type="button" onClick={volverAlLogin} className="login-enlace mx-auto flex items-center gap-2">
+                                        <FaArrowLeft className="text-xs" /> Volver al inicio de sesión
                                     </button>
                                 </form>
-                            </>
+                            </motion.div>
                         )}
-                    </div>
-                </section>
+                    </AnimatePresence>
+
+                    <p className="mt-10 text-center text-xs text-[#a39a8e] lg:hidden">
+                        © {new Date().getFullYear()} Librería del Saber
+                    </p>
+                </motion.section>
             </div>
 
-            {/* --- Forgot Password Modal --- */}
-            <Modal abierto={showResetModal} onCerrar={closeResetModal}>
-                <div className="p-6 sm:p-7">
-                    <div className="mb-5 flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-[#0f172a]">
-                            Restablecer contraseña
-                        </h2>
-                        <button
-                            type="button"
-                            onClick={closeResetModal}
-                            className="rounded-md p-1 text-primary-400 transition hover:bg-parchment-200 hover:text-mahogany-700"
-                        >
-                            <FaXmark />
-                        </button>
-                    </div>
+            {/* --- Modal de recuperación de contraseña --- */}
+            <Modal abierto={showResetModal} onCerrar={closeResetModal} titulo="Restablecer contraseña" subtitulo={pasoReset}>
+                <div className="login-reset">
+                    <ol className="mb-5 flex items-center gap-2" aria-label="Progreso">
+                        {[1, 2, 3].map((paso) => (
+                            <li
+                                key={paso}
+                                aria-current={resetStep === paso ? 'step' : undefined}
+                                className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
+                                    resetStep >= paso ? 'bg-[#74212c]' : 'bg-[#e6e0d7]'
+                                }`}
+                            />
+                        ))}
+                    </ol>
 
-                    {resetError && (
-                        <div className="mb-4">
-                            <Alert tipo="error">{resetError}</Alert>
-                        </div>
-                    )}
+                    <MensajeError mensaje={resetError} />
 
-                    {/* Step 1: Confirm email */}
+                    {/* Paso 1: confirmar correo */}
                     {resetStep === 1 && (
                         <form onSubmit={enviarCodigoReset} className="space-y-4">
-                            <p className="text-sm text-[#64748b]">
+                            <p className="text-sm text-[#766d62]">
                                 Se enviará un código de verificación al correo registrado.
                             </p>
 
-                            <div className="rounded-md border border-primary-200 bg-parchment-100 px-4 py-3">
-                                <p className="text-xs text-[#94a3b8]">Correo registrado:</p>
-                                <p className="text-sm font-semibold text-mahogany-700">
+                            <div className="rounded-lg border border-[#e6e0d7] bg-[#faf8f5] px-4 py-3">
+                                <p className="text-xs text-[#766d62]">Correo registrado</p>
+                                <p className="mt-0.5 text-sm font-semibold text-[#1c1814]">
                                     {resetEmail
                                         ? resetEmail.charAt(0) + '****' + resetEmail.slice(resetEmail.indexOf('@'))
                                         : '****@****.com'}
                                 </p>
                             </div>
 
-                            <div>
-                                <label className="mb-1.5 block text-sm font-semibold text-mahogany-700">
-                                    Confirma tu correo electrónico
-                                </label>
-                                <div className="flex h-11 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
-                                    <span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
-                                        <FaEnvelope />
-                                    </span>
-                                    <input
-                                        type="email"
-                                        value={confirmEmail}
-                                        onChange={(e) => setConfirmEmail(e.target.value)}
-                                        placeholder="Escribe tu correo completo"
-                                        autoComplete="email"
-                                        required
-                                        className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
-                                    />
-                                </div>
-                            </div>
+                            <Campo id="reset-email" etiqueta="Confirma tu correo electrónico" icono={<FaEnvelope />}>
+                                <input
+                                    id="reset-email"
+                                    type="email"
+                                    value={confirmEmail}
+                                    onChange={(e) => setConfirmEmail(e.target.value)}
+                                    placeholder="Escribe tu correo completo"
+                                    autoComplete="email"
+                                    required
+                                    className="login-input"
+                                />
+                            </Campo>
 
-                            <button
-                                type="submit"
-                                disabled={resetCargando}
-                                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-mahogany-700 bg-mahogany-700 text-sm font-semibold text-parchment-100 transition-colors hover:bg-mahogany-600 disabled:opacity-60"
-                            >
-                                {resetCargando ? (
-                                    <>
-                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                                        Enviando...
-                                    </>
-                                ) : (
-                                    <>
-                                        <FaEnvelope />
-                                        Enviar código
-                                    </>
-                                )}
-                            </button>
+                            <BotonPrimario cargando={resetCargando} textoCarga="Enviando..." icono={<FaEnvelope />}>
+                                Enviar código
+                            </BotonPrimario>
                         </form>
                     )}
 
-                    {/* Step 2: Enter code + new password */}
+                    {/* Paso 2: código + nueva contraseña */}
                     {resetStep === 2 && (
                         <form onSubmit={restablecer} className="space-y-4">
-                            <p className="text-sm text-[#64748b]">
-                                Se envió un código a <strong>{resetEmail}</strong>.
+                            <p className="text-sm text-[#766d62]">
+                                Se envió un código a <strong className="font-semibold text-[#1c1814]">{resetEmail}</strong>.
                             </p>
-                            <div>
-                                <label className="mb-1.5 block text-sm font-semibold text-mahogany-700">
-                                    Código de verificación
-                                </label>
-                                <div className="flex h-11 min-w-0 items-center rounded-md border border-primary-200 bg-parchment-50 px-3 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
-                                    <FaKey className="shrink-0 text-mahogany-600" />
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        maxLength="6"
-                                        value={resetCodigo}
-                                        onChange={(e) => setResetCodigo(e.target.value.replace(/\D/g, ''))}
-                                        placeholder="000000"
-                                        autoComplete="one-time-code"
-                                        required
-                                        className="min-w-0 flex-1 bg-transparent px-3 text-center text-xl font-bold tracking-[.4em] text-mahogany-700 outline-none placeholder:text-primary-200"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="mb-1.5 block text-sm font-semibold text-mahogany-700">
-                                    Nueva contraseña
-                                </label>
-                                <div className="flex h-11 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
-                                    <span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
-                                        <FaLock />
-                                    </span>
-                                    <input
-                                        type={mostrarResetPass ? 'text' : 'password'}
-                                        value={resetPassword}
-                                        onChange={(e) => setResetPassword(e.target.value)}
-                                        placeholder="Mínimo 8 caracteres, 1 letra y 1 número"
-                                        autoComplete="new-password"
-                                        required
-                                        className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
-                                    />
+
+                            <Campo id="reset-codigo" etiqueta="Código de verificación" icono={<FaKey />}>
+                                <input
+                                    id="reset-codigo"
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength="6"
+                                    value={resetCodigo}
+                                    onChange={(e) => setResetCodigo(e.target.value.replace(/\D/g, ''))}
+                                    placeholder="000000"
+                                    autoComplete="one-time-code"
+                                    required
+                                    className="login-input login-input--codigo"
+                                />
+                            </Campo>
+
+                            <Campo
+                                id="reset-password"
+                                etiqueta="Nueva contraseña"
+                                icono={<FaLock />}
+                                ayuda="Mínimo 8 caracteres, con al menos una letra y un número."
+                                accion={
                                     <button
                                         type="button"
                                         onClick={() => setMostrarResetPass((v) => !v)}
-                                        className="mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-primary-400 transition hover:bg-parchment-200 hover:text-mahogany-700"
+                                        aria-label={mostrarResetPass ? 'Ocultar contraseñas' : 'Mostrar contraseñas'}
+                                        aria-pressed={mostrarResetPass}
+                                        className="login-ojo"
                                     >
                                         {mostrarResetPass ? <FaEyeSlash /> : <FaEye />}
                                     </button>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="mb-1.5 block text-sm font-semibold text-mahogany-700">
-                                    Confirmar contraseña
-                                </label>
-                                <div className="flex h-11 min-w-0 items-center overflow-hidden rounded-md border border-primary-200 bg-parchment-50 transition focus-within:border-gold-400 focus-within:ring-2 focus-within:ring-gold-100">
-                                    <span className="flex h-full w-10 shrink-0 items-center justify-center border-r border-primary-200 text-primary-400">
-                                        <FaLock />
-                                    </span>
-                                    <input
-                                        type={mostrarResetPass ? 'text' : 'password'}
-                                        value={resetPassword2}
-                                        onChange={(e) => setResetPassword2(e.target.value)}
-                                        placeholder="Repite la contraseña"
-                                        autoComplete="new-password"
-                                        required
-                                        className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm text-mahogany-700 outline-none placeholder:text-primary-400"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={resetPaso2Volver}
-                                    className="h-11 flex-1 rounded-md border border-primary-200 bg-parchment-50 text-sm font-medium text-mahogany-700 transition hover:bg-parchment-200"
-                                >
-                                    ← Volver
+                                }
+                            >
+                                <input
+                                    id="reset-password"
+                                    type={mostrarResetPass ? 'text' : 'password'}
+                                    value={resetPassword}
+                                    onChange={(e) => setResetPassword(e.target.value)}
+                                    placeholder="Nueva contraseña"
+                                    autoComplete="new-password"
+                                    required
+                                    className="login-input"
+                                />
+                            </Campo>
+
+                            <Campo id="reset-password2" etiqueta="Confirmar contraseña" icono={<FaLock />}>
+                                <input
+                                    id="reset-password2"
+                                    type={mostrarResetPass ? 'text' : 'password'}
+                                    value={resetPassword2}
+                                    onChange={(e) => setResetPassword2(e.target.value)}
+                                    placeholder="Repite la contraseña"
+                                    autoComplete="new-password"
+                                    required
+                                    className="login-input"
+                                />
+                            </Campo>
+
+                            <div className="flex gap-3 pt-1">
+                                <button type="button" onClick={resetPaso2Volver} className="login-boton-secundario">
+                                    <FaArrowLeft className="text-xs" /> Volver
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={resetCargando}
-                                    className="h-11 flex-1 rounded-md border border-mahogany-700 bg-mahogany-700 text-sm font-semibold text-parchment-100 transition-colors hover:bg-mahogany-600 disabled:opacity-60"
-                                >
-                                    {resetCargando ? (
-                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                                    ) : (
-                                        'Restablecer'
-                                    )}
-                                </button>
+                                <BotonPrimario cargando={resetCargando} textoCarga="Guardando..." className="flex-1">
+                                    Restablecer
+                                </BotonPrimario>
                             </div>
                         </form>
                     )}
 
-                    {/* Step 3: Success */}
+                    {/* Paso 3: listo */}
                     {resetStep === 3 && (
-                        <div className="space-y-4 text-center">
-                            <div className="flex justify-center text-4xl text-green-500">
+                        <div className="space-y-5 py-2 text-center">
+                            <motion.div
+                                initial={reducirMovimiento ? false : { scale: 0.6, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: 'spring', stiffness: 320, damping: 20 }}
+                                className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#e8f3ec] text-2xl text-[#15803d]"
+                            >
                                 <FaCircleCheck />
-                            </div>
-                            <p className="text-sm text-[#64748b]">
+                            </motion.div>
+                            <p className="text-sm text-[#766d62]">
                                 Contraseña actualizada correctamente. Ya puedes iniciar sesión.
                             </p>
-                            <button
+                            <BotonPrimario
                                 type="button"
                                 onClick={() => {
                                     closeResetModal();
                                     setPassword('');
                                 }}
-                                className="flex h-11 w-full items-center justify-center gap-2 rounded-md border border-mahogany-700 bg-mahogany-700 text-sm font-semibold text-parchment-100 transition-colors hover:bg-mahogany-600"
+                                icono={<FaRightToBracket />}
                             >
-                                <FaRightToBracket />
                                 Ir al inicio de sesión
-                            </button>
+                            </BotonPrimario>
                         </div>
                     )}
                 </div>
             </Modal>
         </main>
+    );
+}
+
+const transicionPaso = {
+    initial: { opacity: 0, x: 16 },
+    animate: { opacity: 1, x: 0, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
+    exit: { opacity: 0, x: -16, transition: { duration: 0.18, ease: 'easeIn' } },
+};
+
+function Campo({ id, etiqueta, icono, accion = null, ayuda = null, children }) {
+    return (
+        <div>
+            <label htmlFor={id} className="mb-2 block text-[13px] font-semibold text-[#433c35]">
+                {etiqueta}
+            </label>
+            <div className="login-campo">
+                <span className="login-campo-icono" aria-hidden="true">{icono}</span>
+                {children}
+                {accion}
+            </div>
+            {ayuda && <p className="mt-1.5 text-xs text-[#766d62]">{ayuda}</p>}
+        </div>
+    );
+}
+
+function BotonPrimario({ children, cargando = false, textoCarga, icono = null, type = 'submit', className = 'w-full', ...props }) {
+    return (
+        <button type={type} disabled={cargando} aria-busy={cargando} className={`login-boton ${className}`} {...props}>
+            {cargando ? (
+                <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/35 border-t-white" aria-hidden="true" />
+                    {textoCarga}
+                </>
+            ) : (
+                <>
+                    {icono}
+                    {children}
+                </>
+            )}
+        </button>
+    );
+}
+
+function MensajeError({ mensaje }) {
+    return (
+        <AnimatePresence initial={false}>
+            {mensaje && (
+                <motion.div
+                    key={mensaje}
+                    role="alert"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
+                    className="overflow-hidden"
+                >
+                    <div className="mb-5">
+                        <Alert tipo="error">{mensaje}</Alert>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }

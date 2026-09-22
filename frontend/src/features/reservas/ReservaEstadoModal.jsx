@@ -30,7 +30,7 @@ function colorEstadoActual(estado) {
         case 'completada':
             return 'bg-success-bg text-success';
         default:
-            return 'bg-parchment-400 text-mahogany-700';
+            return 'bg-parchment-400 text-slate-700';
     }
 }
 
@@ -47,7 +47,7 @@ export default function ReservaEstadoModal({ reserva, abierto, onCerrar, onActua
             contexto={
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
                     <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Libro</p>
-                    <p className="mt-2 font-semibold text-mahogany-700">{reserva?.titulo}</p>
+                    <p className="mt-2 font-semibold text-slate-700">{reserva?.titulo}</p>
                 </div>
             }
             renderEstadoActual={() => <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${colorEstadoActual(reserva?.estado)}`}>{reserva?.estado}</span>}

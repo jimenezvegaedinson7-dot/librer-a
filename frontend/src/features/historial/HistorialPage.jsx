@@ -21,7 +21,7 @@ import { Input, Select } from '../../components/ui/Form';
 import { Alert } from '../../components/ui/Alert';
 import { Pagination } from '../../components/ui/Pagination';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { CargandoPantalla } from '../../components/ui/Spinner';
+import { TableSkeleton } from '../../components/ui/TableSkeleton';
 
 import { obtenerHistorial } from './historialService';
 
@@ -108,9 +108,9 @@ function formatearFecha(fecha) {
 
 function Contador({ titulo, valor, clase }) {
     return (
-        <span className="rounded-xl border border-[#bfdbfe] bg-[#eff6ff] px-4 py-2.5 text-sm font-medium text-[#2563eb] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+        <span className="rounded-xl border border-[#ecccc8] bg-[#fbf5f4] px-4 py-2.5 text-sm font-medium text-[#8a2c36] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
             <span className="block text-xs font-semibold opacity-80">{titulo}</span>
-            <span className="mt-0.5 block text-xl font-bold text-[#2563eb]">{valor}</span>
+            <span className="mt-0.5 block text-xl font-bold text-[#8a2c36]">{valor}</span>
         </span>
     );
 }
@@ -122,9 +122,9 @@ function FilaHistorial({ item }) {
 
     return (
         <tr className="border-b border-primary-200 transition last:border-0 hover:bg-parchment-200">
-            <td className="px-4 py-4 text-center text-sm font-medium text-mahogany-700">{item.id_historial}</td>
+            <td className="px-4 py-4 text-center text-sm font-medium text-slate-700">{item.id_historial}</td>
             <td className="px-4 py-4">
-                <p className="text-sm font-semibold text-mahogany-700">{usuario || 'Sistema'}</p>
+                <p className="text-sm font-semibold text-slate-700">{usuario || 'Sistema'}</p>
                 {item.id_usuario && <p className="mt-0.5 text-xs text-primary-500">Usuario #{item.id_usuario}</p>}
             </td>
             <td className="px-4 py-4 text-center">
@@ -137,10 +137,10 @@ function FilaHistorial({ item }) {
                 <Badge color="neutral">{formatearModulo(item.modulo)}</Badge>
             </td>
             <td className="max-w-xl px-4 py-4">
-                <p className="text-sm leading-6 text-mahogany-700">{item.descripcion || 'Sin descripción'}</p>
+                <p className="text-sm leading-6 text-slate-700">{item.descripcion || 'Sin descripción'}</p>
             </td>
             <td className="whitespace-nowrap px-4 py-4 text-center">
-                <p className="text-xs font-semibold text-mahogany-700">{fecha.fecha}</p>
+                <p className="text-xs font-semibold text-slate-700">{fecha.fecha}</p>
                 {fecha.hora && <p className="mt-1 text-xs text-primary-500">{fecha.hora}</p>}
             </td>
         </tr>
@@ -153,12 +153,12 @@ function TablaHistorial({ registros }) {
             <table className="min-w-full border-collapse bg-white">
                 <thead className="bg-parchment-200">
                     <tr className="border-b border-primary-200">
-                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">ID</th>
-                        <th className="border-r border-primary-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-mahogany-700">Usuario</th>
-                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Acción realizada</th>
-                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Módulo</th>
-                        <th className="border-r border-primary-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-mahogany-700">Detalle de la operación</th>
-                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-mahogany-700">Fecha y hora</th>
+                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">ID</th>
+                        <th className="border-r border-primary-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-700">Usuario</th>
+                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Acción realizada</th>
+                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Módulo</th>
+                        <th className="border-r border-primary-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-700">Detalle de la operación</th>
+                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Fecha y hora</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-primary-200">
@@ -265,8 +265,8 @@ export default function HistorialPage() {
             />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Contador titulo="Total de registros" valor={totalRegistros} clase="border-primary-200 bg-white text-mahogany-700" />
-                <Contador titulo="Registros creados" valor={totalCreaciones} clase="border-primary-200 bg-white text-mahogany-700" />
+                <Contador titulo="Total de registros" valor={totalRegistros} clase="border-primary-200 bg-white text-slate-700" />
+                <Contador titulo="Registros creados" valor={totalCreaciones} clase="border-primary-200 bg-white text-slate-700" />
                 <Contador titulo="Registros actualizados" valor={totalActualizaciones} clase="border-warning/20 bg-warning-bg text-warning" />
                 <Contador titulo="Registros eliminados" valor={totalEliminaciones} clase="border-crimson-200 bg-crimson-50 text-crimson-500" />
             </div>
@@ -309,7 +309,7 @@ export default function HistorialPage() {
                 />
             </Card>
 
-            {cargando && <Card><CargandoPantalla texto="Cargando historial..." /></Card>}
+            {cargando && <TableSkeleton columnas={5} filas={8} titulo />}
 
             {!cargando && error && <Alert tipo="error">{error}</Alert>}
 
@@ -335,7 +335,7 @@ export default function HistorialPage() {
                         titulo="Historial de operaciones"
                         subtitulo="Registro cronológico de las actividades realizadas"
                         acciones={
-                            <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-semibold text-mahogany-700">
+                            <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
                                 {historialFiltrado.length} {historialFiltrado.length === 1 ? 'registro' : 'registros'}
                             </span>
                         }

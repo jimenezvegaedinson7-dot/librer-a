@@ -9,7 +9,7 @@ import { Input, Select } from '../../components/ui/Form';
 import { Alert } from '../../components/ui/Alert';
 import { Pagination } from '../../components/ui/Pagination';
 import { EmptyState } from '../../components/ui/EmptyState';
-import { CargandoPantalla } from '../../components/ui/Spinner';
+import { TableSkeleton } from '../../components/ui/TableSkeleton';
 import { DataTable } from '../../components/ui/DataTable';
 import { Badge } from '../../components/ui/Badge';
 import { BtnAccion } from '../../components/ui/Acciones';
@@ -36,12 +36,12 @@ function EstadoStock({ stock, stockMinimo }) {
 }
 
 const columnasInventario = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-mahogany-700">{fila.id_inventario}</span> },
-    { titulo: 'Libro', render: (fila) => <span className="font-semibold text-mahogany-700">{fila.titulo}</span> },
+    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_inventario}</span> },
+    { titulo: 'Libro', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo}</span> },
     { titulo: 'Stock', alineacion: 'centro', render: (fila) => <EstadoStock stock={fila.stock} stockMinimo={fila.stock_minimo} /> },
-    { titulo: 'Stock mínimo', alineacion: 'centro', render: (fila) => <span className="font-medium text-mahogany-700">{Number(fila.stock_minimo)}</span> },
-    { titulo: 'Ubicación', render: (fila) => <span className="text-mahogany-700">{fila.ubicacion || 'No registrada'}</span> },
-    { titulo: 'Última actualización', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-mahogany-700">{formatearFecha(fila.ultima_actualizacion) || 'Sin registro'}</span> },
+    { titulo: 'Stock mínimo', alineacion: 'centro', render: (fila) => <span className="font-medium text-slate-700">{Number(fila.stock_minimo)}</span> },
+    { titulo: 'Ubicación', render: (fila) => <span className="text-slate-700">{fila.ubicacion || 'No registrada'}</span> },
+    { titulo: 'Última actualización', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.ultima_actualizacion) || 'Sin registro'}</span> },
 ];
 
 function accionesInventario(fila, { onVer, onEditar }) {
@@ -56,8 +56,8 @@ function accionesInventario(fila, { onVer, onEditar }) {
 function Contador({ total, disponibles, stockBajo, sinStock }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e2e8f0] bg-white px-4 py-2.5 text-sm font-medium text-[#334155] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#0f172a]">{total}</span>
+            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Total: <span className="font-bold text-[#1c1814]">{total}</span>
             </span>
             <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Disponibles: <span className="font-bold text-[#15803d]">{disponibles}</span>
@@ -224,7 +224,7 @@ acciones={
                                     <button
                                         type="button"
                                         onClick={() => setBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-mahogany-700"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-primary-400 transition hover:text-slate-700"
                                         title="Limpiar búsqueda"
                                     >
                                         <FaXmark />
@@ -252,7 +252,7 @@ acciones={
             </Card>
 
             {cargando && (
-                <Card><CargandoPantalla texto="Cargando inventario..." /></Card>
+                <TableSkeleton columnas={6} filas={8} titulo />
             )}
 
             {!cargando && error && <Alert tipo="error">{error}</Alert>}

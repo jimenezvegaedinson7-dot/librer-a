@@ -56,8 +56,8 @@ export default function ReservaViewModal({ reserva, abierto, onCerrar }) {
     return (
         <Modal abierto={abierto} titulo="Detalle de la reserva" subtitulo="Información registrada en el sistema" onCerrar={onCerrar}>
             <div className="border-b border-primary-200 pb-4">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary-400">Reserva</p>
-                <h3 className="mt-2 text-2xl font-bold text-mahogany-700">Reserva #{reserva.id_reserva}</h3>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Reserva</p>
+                <h3 className="mt-2 font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">Reserva #{reserva.id_reserva}</h3>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -82,18 +82,18 @@ export default function ReservaViewModal({ reserva, abierto, onCerrar }) {
                 <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                     <FaCalendarDays /> Fecha de reserva
                 </div>
-                <p className="mt-3 text-sm font-semibold text-mahogany-700">{formatearFecha(reserva.fecha_reserva)}</p>
+                <p className="mt-3 text-sm font-semibold text-slate-700">{formatearFecha(reserva.fecha_reserva)}</p>
             </div>
 
             <div className="mt-4 rounded-xl border border-primary-200 bg-parchment-200 p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                     <FaClock /> Fecha de vencimiento
                 </div>
-                <p className="mt-3 text-sm font-semibold text-mahogany-700">{formatearFecha(reserva.fecha_vencimiento)}</p>
+                <p className="mt-3 text-sm font-semibold text-slate-700">{formatearFecha(reserva.fecha_vencimiento)}</p>
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
             </div>
         </Modal>
     );

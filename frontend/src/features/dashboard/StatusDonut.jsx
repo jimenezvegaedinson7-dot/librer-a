@@ -20,7 +20,7 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
         };
 
         const colores = tipo === 'reservas' ? coloresReservas : coloresVentas;
-        return colores[String(estado).toLowerCase()] || '#94a3b8';
+        return colores[String(estado).toLowerCase()] || '#a39a8e';
     };
 
     const segmentos = [];
@@ -38,14 +38,14 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
 
     const fondo = total > 0
         ? `conic-gradient(${segmentos.join(', ')})`
-        : 'conic-gradient(#e2e8f0 0% 100%)';
+        : 'conic-gradient(#e6e0d7 0% 100%)';
 
     return (
         <section
             className="
                 overflow-hidden
                 rounded-[8px]
-                border border-[#e7eaf3]
+                border border-[#e6e0d7]
                 bg-white
                 p-5
                 shadow-[0_2px_8px_rgba(30,64,175,0.06)]
@@ -53,8 +53,8 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
         >
 
             <div className="mb-4">
-                <h3 className="text-[16px] font-semibold tracking-[-0.01em] text-[#0f172a]">{titulo}</h3>
-                <p className="mt-1 text-[12px] font-normal text-[#94a3b8]">{subtitulo}</p>
+                <h3 className="text-[16px] font-semibold tracking-[-0.01em] text-[#1c1814]">{titulo}</h3>
+                <p className="mt-1 text-[12px] font-normal text-[#a39a8e]">{subtitulo}</p>
             </div>
 
             <div className="flex flex-col items-center gap-5 sm:flex-row">
@@ -65,15 +65,15 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
                     style={{ background: fondo }}
                 >
                     <div className="absolute inset-5 flex flex-col items-center justify-center rounded-full bg-white shadow-sm">
-                        <span className="text-[26px] font-bold tracking-[-0.02em] text-[#0f172a]">{total}</span>
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[#94a3b8]">total</span>
+                        <span className="text-[26px] font-bold tracking-[-0.02em] text-[#1c1814]">{total}</span>
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.04em] text-[#a39a8e]">total</span>
                     </div>
                 </div>
 
                 {/* leyenda */}
                 <div className="w-full space-y-2">
                     {lista.length === 0 ? (
-                        <p className="text-[12px] text-[#94a3b8]">No hay datos disponibles.</p>
+                        <p className="text-[12px] text-[#a39a8e]">No hay datos disponibles.</p>
                     ) : (
                         lista.map((item) => {
                             const cantidad = Number(item.cantidad || 0);
@@ -86,9 +86,9 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
                                     key={item.estado}
                                     className="
                                         flex items-center justify-between gap-3
-                                        rounded-[6px] border border-[#edf0f6]
+                                        rounded-[6px] border border-[#ece7df]
                                         px-3.5 py-2.5
-                                        transition-colors hover:bg-[#f8fafd]
+                                        transition-colors hover:bg-[#faf8f5]
                                     "
                                 >
                                     <div className="flex items-center gap-2.5">
@@ -96,13 +96,13 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas' }) {
                                             className="h-3 w-3 rounded-full ring-2 ring-white"
                                             style={{ backgroundColor: obtenerColor(item.estado) }}
                                         />
-                                        <span className="text-[12px] font-semibold capitalize text-[#0f172a]">
+                                        <span className="text-[12px] font-semibold capitalize text-[#1c1814]">
                                             {item.estado}
                                         </span>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[14px] font-bold text-[#0f172a]">{cantidad}</p>
-                                        <p className="text-[10px] font-medium text-[#94a3b8]">{porcentaje}%</p>
+                                        <p className="text-[14px] font-bold text-[#1c1814]">{cantidad}</p>
+                                        <p className="text-[10px] font-medium text-[#a39a8e]">{porcentaje}%</p>
                                     </div>
                                 </div>
                             );
