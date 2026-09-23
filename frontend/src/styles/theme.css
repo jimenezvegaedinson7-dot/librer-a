@@ -3887,3 +3887,835 @@
         translate: none;
     }
 }
+
+/* ========================================
+   RESUMEN — sistema de tarjetas editorial
+   Marfil cálido, halo del tono semántico, icono biselado y una
+   zona gráfica integrada. Al pasar el cursor la tarjeta sube 3px,
+   toma un borde dorado y su gráfica se "dibuja" (Framer Motion).
+   ======================================== */
+
+.dashboard-mosaico :is(.kpi-card, .mini-stat, .registro-card, .grafico-card) {
+    --elevacion: -3px;
+}
+
+/* ---- Tarjetas KPI (la destacada en burdeos se conserva) ---- */
+.kpi-card:not(.kpi-card--destacada) {
+    border-color: #e8e1d6;
+    background:
+        radial-gradient(260px 150px at 100% 0%, color-mix(in srgb, var(--kpi-ink) 8%, transparent), transparent 70%),
+        linear-gradient(180deg, #fffdf9 0%, #ffffff 60%);
+    box-shadow: 0 1px 2px rgb(44 38 33 / 0.05), 0 10px 24px -18px rgb(44 38 33 / 0.22);
+}
+
+.kpi-card:not(.kpi-card--destacada) .kpi-icono {
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(150deg, color-mix(in srgb, var(--kpi-ink) 15%, #ffffff), color-mix(in srgb, var(--kpi-ink) 6%, #ffffff));
+    color: var(--kpi-ink);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--kpi-ink) 20%, transparent),
+        inset 0 1px 0 rgb(255 255 255 / 0.9),
+        0 3px 8px -4px color-mix(in srgb, var(--kpi-ink) 45%, transparent);
+}
+
+/* Zona gráfica integrada: el color semántico vive aquí, no en una línea */
+.kpi-zona {
+    position: relative;
+    height: 3.5rem;
+    margin-top: auto;
+    border-radius: 0.625rem;
+    padding: 0.5rem 0.625rem;
+    background: color-mix(in srgb, var(--kpi-ink) 5%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--kpi-ink) 10%, transparent);
+}
+
+.kpi-card--destacada .kpi-zona {
+    padding-inline: 0;
+    background: none;
+    box-shadow: none;
+}
+
+.kpi-zona .kpi-tendencia {
+    position: relative;
+    height: 100%;
+    margin-top: 0 !important;
+    background-image: linear-gradient(to top, color-mix(in srgb, var(--kpi-ink) 12%, transparent) 1px, transparent 1px);
+    background-size: 100% 50%;
+}
+
+.kpi-trazo {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.kpi-trazo polyline {
+    fill: none;
+    stroke: color-mix(in srgb, var(--kpi-ink) 72%, #1c1814);
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kpi-card--destacada .kpi-trazo polyline {
+    stroke: #fff6df;
+}
+
+.kpi-trazo-punto {
+    position: absolute;
+    height: 0.5rem;
+    width: 0.5rem;
+    translate: -50% 50%;
+    border-radius: 9999px;
+    background: #c9a24f;
+    box-shadow: 0 0 0 3px rgb(255 255 255 / 0.85), 0 0 12px 2px rgb(201 162 79 / 0.55);
+    pointer-events: none;
+}
+
+.kpi-card--destacada .kpi-trazo-punto {
+    box-shadow: 0 0 0 3px rgb(92 26 35 / 0.9), 0 0 14px 3px rgb(238 220 174 / 0.6);
+}
+
+/* Indicador radial de Reservas */
+.kpi-zona--anillo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.kpi-anillo {
+    position: relative;
+    height: 2.5rem;
+    width: 2.5rem;
+    flex-shrink: 0;
+}
+
+.kpi-anillo svg {
+    height: 100%;
+    width: 100%;
+    rotate: -90deg;
+}
+
+.kpi-anillo circle {
+    fill: none;
+    stroke-width: 5;
+}
+
+.kpi-anillo-pista {
+    stroke: color-mix(in srgb, var(--kpi-ink) 16%, transparent);
+}
+
+.kpi-anillo-valor {
+    stroke: var(--kpi-ink);
+    stroke-linecap: round;
+}
+
+.kpi-anillo-brillo {
+    stroke: #f3dfae;
+    stroke-linecap: round;
+}
+
+.kpi-anillo-cifra {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.625rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: color-mix(in srgb, var(--kpi-ink) 80%, #1c1814);
+}
+
+.kpi-anillo-leyenda {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: #766d62;
+}
+
+/* ---- Catálogo: mini estadísticas ---- */
+.mini-stat {
+    position: relative;
+    overflow: hidden;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    border-color: #e8e1d6;
+    border-radius: 0.875rem;
+    background:
+        radial-gradient(220px 130px at 100% 0%, rgb(185 141 62 / 0.08), transparent 70%),
+        linear-gradient(180deg, #fffdf9 0%, #ffffff 60%);
+    padding: 1rem 1.125rem;
+    box-shadow: 0 1px 2px rgb(44 38 33 / 0.05), 0 10px 24px -18px rgb(44 38 33 / 0.22);
+}
+
+.mini-stat-icono {
+    height: 2.5rem;
+    width: 2.5rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: linear-gradient(150deg, #f7ecd2, #fbf5e8);
+    color: #7a5827;
+    box-shadow:
+        inset 0 0 0 1px rgb(185 141 62 / 0.28),
+        inset 0 1px 0 rgb(255 255 255 / 0.9),
+        0 3px 8px -4px rgb(122 88 39 / 0.4);
+}
+
+.mini-stat-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.mini-stat-valor {
+    margin-top: 0.25rem;
+    font-family: var(--font-sans);
+    font-size: 1.625rem;
+    letter-spacing: -0.02em;
+    font-variant-numeric: proportional-nums lining-nums;
+}
+
+.mini-stat-descripcion {
+    margin-top: 0.125rem;
+    font-size: 0.75rem;
+    color: #766d62;
+}
+
+.mini-stat-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+/* ---- Mejores registros: pergamino con filete dorado ---- */
+.registro-card {
+    position: relative;
+    overflow: hidden;
+    border-color: #e6dcc8;
+    background:
+        radial-gradient(380px 160px at 100% 0%, rgb(185 141 62 / 0.12), transparent 70%),
+        linear-gradient(135deg, #fffaf0 0%, #ffffff 65%);
+    padding: 1.25rem 1.375rem;
+    box-shadow: 0 1px 2px rgb(44 38 33 / 0.05), 0 10px 24px -18px rgb(44 38 33 / 0.22);
+}
+
+.registro-card::after {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid rgb(185 141 62 / 0.26);
+    border-radius: 0.625rem;
+    pointer-events: none;
+}
+
+.registro-icono {
+    display: inline-flex;
+    height: 3rem;
+    width: 3rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.875rem;
+    background: linear-gradient(150deg, #efdcb0, #f8eed6);
+    font-size: 1.125rem;
+    color: #7a5827;
+    box-shadow:
+        inset 0 0 0 1px rgb(185 141 62 / 0.35),
+        inset 0 1px 0 rgb(255 255 255 / 0.8),
+        0 4px 10px -5px rgb(122 88 39 / 0.45);
+}
+
+.registro-detalle {
+    margin-top: 0.125rem;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    color: #766d62;
+}
+
+/* ---- Onda ornamental (decorativa, no representa datos) ---- */
+.dashboard-mosaico :is(.mini-stat, .registro-card) > .onda-decorativa,
+.onda-decorativa {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.onda-decorativa--mini {
+    position: relative;
+    height: 2rem;
+    width: 46%;
+    margin-right: 0.25rem;
+}
+
+.onda-decorativa--registro {
+    right: 1.5rem;
+    top: 50%;
+    height: 2.75rem;
+    width: 30%;
+    translate: 0 -50%;
+}
+
+.onda-decorativa svg {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    width: 100%;
+    overflow: visible;
+}
+
+.onda-area {
+    fill: rgb(185 141 62 / 0.07);
+}
+
+.onda-base {
+    fill: none;
+    stroke: rgb(185 141 62 / 0.3);
+    stroke-width: 1.25;
+}
+
+.onda-trazo {
+    fill: none;
+    stroke: #b98d3e;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+}
+
+.onda-punto {
+    position: absolute;
+    left: 100%;
+    top: 10%;
+    height: 0.4375rem;
+    width: 0.4375rem;
+    translate: -50% -50%;
+    border-radius: 9999px;
+    background: #c9a24f;
+    box-shadow: 0 0 0 3px rgb(255 255 255 / 0.9), 0 0 10px 2px rgb(201 162 79 / 0.5);
+}
+
+/* ---- Paneles analíticos: estados y stock ---- */
+.panel-analitico {
+    background:
+        radial-gradient(420px 160px at 100% 0%, rgb(185 141 62 / 0.06), transparent 70%),
+        #ffffff;
+}
+
+.panel-cabecera {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1.25rem 1.25rem 0;
+}
+
+.panel-icono {
+    display: inline-flex;
+    height: 2.5rem;
+    width: 2.5rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background: linear-gradient(150deg, #f7ecd2, #fbf5e8);
+    color: #7a5827;
+    box-shadow:
+        inset 0 0 0 1px rgb(185 141 62 / 0.28),
+        inset 0 1px 0 rgb(255 255 255 / 0.9),
+        0 3px 8px -4px rgb(122 88 39 / 0.4);
+}
+
+.panel-icono--estado {
+    background: linear-gradient(150deg, color-mix(in srgb, var(--estado-color) 16%, #ffffff), color-mix(in srgb, var(--estado-color) 6%, #ffffff));
+    color: var(--estado-color);
+    box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--estado-color) 24%, transparent),
+        inset 0 1px 0 rgb(255 255 255 / 0.9),
+        0 3px 8px -4px color-mix(in srgb, var(--estado-color) 45%, transparent);
+}
+
+.panel-titulo {
+    font-family: var(--font-title);
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #1c1814;
+}
+
+.panel-subtitulo {
+    margin-top: 0.125rem;
+    font-size: 0.8125rem;
+    color: #766d62;
+}
+
+.panel-total {
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.panel-total-cifra {
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: #1c1814;
+}
+
+.panel-total-unidad {
+    margin-top: 0.3125rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #9a7231;
+}
+
+.panel-cuerpo {
+    padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+    .panel-cabecera { padding: 1.375rem 1.5rem 0; }
+    .panel-cuerpo { padding: 1.25rem 1.5rem; }
+    .panel-pie { padding-inline: 1.5rem !important; }
+}
+
+/* Barra de estados refinada */
+.estado-barra-marco {
+    position: relative;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: #f5f0e8;
+    padding: 3px;
+    box-shadow: inset 0 1px 2px rgb(44 38 33 / 0.1);
+}
+
+.estado-barra-marco .estado-segmento {
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.24), transparent 65%);
+    background-color: var(--estado-color);
+}
+
+.estado-escala {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.375rem;
+    padding-inline: 0.125rem;
+    font-size: 0.65625rem;
+    font-variant-numeric: tabular-nums;
+    color: #a39a8e;
+}
+
+.estado-lista {
+    margin-top: 1rem;
+}
+
+.estado-fila {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.375rem;
+    transition: background-color 0.2s ease;
+}
+
+.estado-fila + .estado-fila {
+    box-shadow: 0 -1px 0 #f3efe9;
+}
+
+.estado-fila:hover {
+    background: rgb(185 141 62 / 0.06);
+}
+
+.estado-nombre {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1c1814;
+}
+
+.estado-monto {
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: #766d62;
+}
+
+.estado-mini-pista {
+    height: 0.3125rem;
+    width: 4.5rem;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--estado-color) 14%, transparent);
+}
+
+.estado-mini-pista > span {
+    display: block;
+    height: 100%;
+    border-radius: 9999px;
+    background: var(--estado-color);
+    transform-origin: left;
+    animation: barra-crecer-h 0.7s var(--ease-out-quart) 0.25s both;
+}
+
+.estado-cantidad {
+    min-width: 2ch;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #1c1814;
+}
+
+.estado-porcentaje {
+    width: 3rem;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: #766d62;
+}
+
+/* Donut de reservas */
+.panel-cuerpo--donut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+}
+
+.panel-cuerpo--donut .estado-lista {
+    width: 100%;
+    margin-top: 0;
+}
+
+.donut {
+    position: relative;
+    height: 8.5rem;
+    width: 8.5rem;
+}
+
+.donut svg {
+    height: 100%;
+    width: 100%;
+    rotate: -90deg;
+}
+
+.donut circle {
+    fill: none;
+    stroke-width: 12;
+}
+
+.donut-pista {
+    stroke: #f3efe9;
+}
+
+.donut-segmento {
+    stroke: var(--estado-color);
+}
+
+.donut-brillo {
+    stroke: rgb(255 246 223 / 0.85);
+}
+
+.donut-centro {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.donut-cifra {
+    font-size: 1.375rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: #1c1814;
+}
+
+.donut-texto {
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+    color: #766d62;
+}
+
+
+/* Destello que recorre las barras al pasar el cursor */
+.barra-destello {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 30%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, transparent, rgb(255 250 235 / 0.8), transparent);
+    pointer-events: none;
+}
+
+/* Stock bajo */
+.stock-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.stock-fila {
+    border: 1px solid #efe9df;
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, #fffdf9, #ffffff);
+    padding: 0.75rem 0.875rem;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.stock-fila:hover {
+    border-color: color-mix(in srgb, var(--estado-color) 30%, #e8e1d6);
+}
+
+.stock-titulo {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1c1814;
+}
+
+.stock-detalle {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.625rem;
+}
+
+.stock-cifras {
+    display: flex;
+    flex-shrink: 0;
+    gap: 1rem;
+}
+
+.stock-cifras dt {
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #a39a8e;
+}
+
+.stock-cifras dd {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    color: #1c1814;
+}
+
+.stock-cifras .stock-cifra-actual {
+    color: color-mix(in srgb, var(--estado-color) 82%, #1c1814);
+}
+
+.stock-pista {
+    position: relative;
+    height: 0.5rem;
+    flex: 1 1 0%;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--estado-color) 13%, #f3efe9);
+}
+
+.stock-nivel {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: 9999px;
+    background: var(--estado-color);
+}
+
+.stock-ubicacion {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #766d62;
+}
+
+.stock-ubicacion svg {
+    flex-shrink: 0;
+    font-size: 0.6875rem;
+    color: #b98d3e;
+}
+
+/* Pie integrado de los paneles */
+.panel-pie {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-top: 1px solid #f0ebe3;
+    background: linear-gradient(180deg, #fcfaf6, #f9f5ee);
+    padding: 0.875rem 1.25rem;
+    font-size: 0.8125rem;
+    color: #766d62;
+}
+
+.panel-pie-valor {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #1c1814;
+}
+
+.panel-pie-dato {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.panel-pie-dato::before {
+    content: "";
+    height: 0.5rem;
+    width: 0.5rem;
+    border-radius: 9999px;
+    background: var(--estado-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .estado-mini-pista > span {
+        animation: none;
+    }
+}
+
+/* ---- Modo oscuro ---- */
+.admin-shell[data-theme="dark"] .kpi-card:not(.kpi-card--destacada) {
+    border-color: #2d2824;
+    background:
+        radial-gradient(260px 150px at 100% 0%, color-mix(in srgb, var(--kpi-ink) 9%, transparent), transparent 70%),
+        #1d1a17;
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset;
+}
+
+.admin-shell[data-theme="dark"] .kpi-card:not(.kpi-card--destacada) .kpi-icono {
+    background: linear-gradient(150deg, color-mix(in srgb, var(--kpi-ink) 20%, #1d1a17), color-mix(in srgb, var(--kpi-ink) 8%, #1d1a17));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--kpi-ink) 24%, transparent);
+}
+
+.admin-shell[data-theme="dark"] .kpi-trazo polyline {
+    stroke: color-mix(in srgb, var(--kpi-ink) 85%, #ffffff);
+}
+
+.admin-shell[data-theme="dark"] .kpi-trazo-punto,
+.admin-shell[data-theme="dark"] .onda-punto {
+    box-shadow: 0 0 0 3px #1d1a17, 0 0 12px 2px rgb(220 187 122 / 0.5);
+}
+
+.admin-shell[data-theme="dark"] .kpi-anillo-cifra {
+    color: var(--kpi-ink);
+}
+
+.admin-shell[data-theme="dark"] .kpi-anillo-leyenda,
+.admin-shell[data-theme="dark"] .mini-stat-descripcion,
+.admin-shell[data-theme="dark"] .registro-detalle,
+.admin-shell[data-theme="dark"] .panel-subtitulo,
+.admin-shell[data-theme="dark"] .estado-monto,
+.admin-shell[data-theme="dark"] .estado-porcentaje,
+.admin-shell[data-theme="dark"] .donut-texto,
+.admin-shell[data-theme="dark"] .stock-ubicacion,
+.admin-shell[data-theme="dark"] .panel-pie {
+    color: #a89e91;
+}
+
+.admin-shell[data-theme="dark"] .mini-stat,
+.admin-shell[data-theme="dark"] .panel-analitico {
+    border-color: #2d2824;
+    background:
+        radial-gradient(260px 150px at 100% 0%, rgb(201 162 79 / 0.07), transparent 70%),
+        #1d1a17;
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset;
+}
+
+.admin-shell[data-theme="dark"] .registro-card {
+    border-color: #3a3128;
+    background:
+        radial-gradient(380px 160px at 100% 0%, rgb(201 162 79 / 0.1), transparent 70%),
+        linear-gradient(135deg, #221e1a 0%, #1d1a17 65%);
+}
+
+.admin-shell[data-theme="dark"] .registro-card::after {
+    border-color: rgb(201 162 79 / 0.2);
+}
+
+.admin-shell[data-theme="dark"] :is(.mini-stat-icono, .registro-icono, .panel-icono:not(.panel-icono--estado)) {
+    background: linear-gradient(150deg, rgb(201 162 79 / 0.2), rgb(201 162 79 / 0.08));
+    color: #dcbb7a;
+    box-shadow: inset 0 0 0 1px rgb(201 162 79 / 0.28);
+}
+
+.admin-shell[data-theme="dark"] .panel-icono--estado {
+    background: linear-gradient(150deg, color-mix(in srgb, var(--estado-color) 22%, #1d1a17), color-mix(in srgb, var(--estado-color) 8%, #1d1a17));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--estado-color) 30%, transparent);
+}
+
+.admin-shell[data-theme="dark"] :is(.panel-titulo, .panel-total-cifra, .estado-nombre, .estado-cantidad, .donut-cifra, .stock-titulo, .stock-cifras dd, .panel-pie-valor) {
+    color: #f5f0e8;
+}
+
+.admin-shell[data-theme="dark"] .panel-total-unidad {
+    color: #dcbb7a;
+}
+
+.admin-shell[data-theme="dark"] .stock-cifras .stock-cifra-actual {
+    color: color-mix(in srgb, var(--estado-color) 75%, #ffffff);
+}
+
+.admin-shell[data-theme="dark"] .onda-area { fill: rgb(201 162 79 / 0.06); }
+.admin-shell[data-theme="dark"] .onda-base { stroke: rgb(201 162 79 / 0.25); }
+.admin-shell[data-theme="dark"] .onda-trazo { stroke: #dcbb7a; }
+
+.admin-shell[data-theme="dark"] .estado-barra-marco,
+.admin-shell[data-theme="dark"] .donut-pista {
+    background: #2d2824;
+    stroke: #2d2824;
+}
+
+.admin-shell[data-theme="dark"] .estado-barra-marco {
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.4);
+}
+
+.admin-shell[data-theme="dark"] .estado-fila + .estado-fila {
+    box-shadow: 0 -1px 0 #2d2824;
+}
+
+.admin-shell[data-theme="dark"] .estado-escala {
+    color: #8a8074;
+}
+
+.admin-shell[data-theme="dark"] .stock-fila {
+    border-color: #2d2824;
+    background: #211d1a;
+}
+
+.admin-shell[data-theme="dark"] .stock-pista {
+    background: color-mix(in srgb, var(--estado-color) 16%, #2d2824);
+}
+
+.admin-shell[data-theme="dark"] .panel-pie {
+    border-color: #2d2824;
+    background: #1a1715;
+}
+
+.admin-shell[data-theme="dark"] .barra-destello {
+    background: linear-gradient(90deg, transparent, rgb(255 246 223 / 0.35), transparent);
+}
+
+.admin-shell[data-theme="dark"] .donut-brillo {
+    stroke: rgb(255 246 223 / 0.5);
+}

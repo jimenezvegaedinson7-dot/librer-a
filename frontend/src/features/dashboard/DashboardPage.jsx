@@ -219,7 +219,7 @@ export default function DashboardPage() {
                     icono={<FaCalendarCheck />}
                     color="warning"
                     detalle={reservasPendientes > 0 ? `${reservasPendientes} pendientes de atender` : 'Ninguna pendiente'}
-                    medidor={{ valor: reservasPendientes, total: num(resumen.total_reservas), etiqueta: 'Reservas pendientes sobre el total' }}
+                    medidor={{ valor: reservasPendientes, total: num(resumen.total_reservas), etiqueta: 'Reservas pendientes sobre el total', leyenda: 'del total de reservas está pendiente' }}
                 />
             </motion.section>
 
@@ -231,10 +231,10 @@ export default function DashboardPage() {
                 animate="visible"
                 className="grid grid-cols-2 gap-5 xl:grid-cols-4"
             >
-                <MiniStat titulo="Libros" valor={resumen.total_libros} icono={<FaBook />} />
-                <MiniStat titulo="Autores" valor={resumen.total_autores} icono={<FaUserPen />} />
-                <MiniStat titulo="Categorías" valor={resumen.total_categorias} icono={<FaTags />} />
-                <MiniStat titulo="Usuarios" valor={resumen.total_usuarios} icono={<FaUsers />} />
+                <MiniStat titulo="Libros" valor={resumen.total_libros} icono={<FaBook />} descripcion="Títulos en el catálogo" />
+                <MiniStat titulo="Autores" valor={resumen.total_autores} icono={<FaUserPen />} descripcion="Autores registrados" />
+                <MiniStat titulo="Categorías" valor={resumen.total_categorias} icono={<FaTags />} descripcion="Categorías del catálogo" />
+                <MiniStat titulo="Usuarios" valor={resumen.total_usuarios} icono={<FaUsers />} descripcion="Cuentas registradas" />
             </motion.section>
 
             {/* MEJORES REGISTROS */}
@@ -282,7 +282,7 @@ export default function DashboardPage() {
             {/* ESTADOS E INVENTARIO: tres piezas del mismo alto */}
             <section aria-label="Estados operativos e inventario" className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                 <StatusDonut titulo="Ventas por estado" subtitulo="Todas las ventas registradas" datos={ventasPorEstado} tipo="ventas" />
-                <StatusDonut titulo="Reservas por estado" subtitulo="Todas las reservas registradas" datos={reservasPorEstado} tipo="reservas" />
+                <StatusDonut titulo="Reservas por estado" subtitulo="Todas las reservas registradas" datos={reservasPorEstado} tipo="reservas" variante="donut" />
                 <div className="md:col-span-2 xl:col-span-1">
                     <StockBajo items={stockBajo} />
                 </div>
