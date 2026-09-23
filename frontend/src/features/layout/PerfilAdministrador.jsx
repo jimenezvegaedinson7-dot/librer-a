@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useId } from 'react';
 
+import { AnimatePresence, motion } from 'motion/react';
+
 import {
     FaCamera,
     FaCircleCheck,
@@ -28,6 +30,7 @@ import { useToast } from '../../components/providers/ToastProvider';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Form';
+import { ExitoAnimado } from '../../components/ui/Celebracion';
 
 function Avatar({ foto, inicial, className = 'h-10 w-10' }) {
     return (
@@ -112,6 +115,7 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
     });
     const [mostrarPwd, setMostrarPwd] = useState({ actual: false, nueva: false, confirmar: false });
     const [cambiandoPassword, setCambiandoPassword] = useState(false);
+    const [passwordGuardada, setPasswordGuardada] = useState(false);
 
     const [setupInfo, setSetupInfo] = useState(null);
     const [configurando2FA, setConfigurando2FA] = useState(false);
@@ -219,8 +223,8 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
         e.preventDefault();
         try {
             setCambiandoPassword(true);
-            const mensaje = await cambiarPassword(formularioPassword);
-            toast.exito(mensaje);
+            await cambiarPassword(formularioPassword);
+            setPasswordGuardada(true);
             setFormularioPassword({ password_actual: '', password_nueva: '', confirmar_password: '' });
         } catch (error) {
             toast.error(error.response?.data?.mensaje || 'Error al cambiar la contraseña');
@@ -228,6 +232,12 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
             setCambiandoPassword(false);
         }
     };
+
+    useEffect(() => {
+        if (!passwordGuardada) return undefined;
+        const temporizador = setTimeout(() => setPasswordGuardada(false), 4500);
+        return () => clearTimeout(temporizador);
+    }, [passwordGuardada]);
 
     const estado2FA = Number(perfil?.two_factor_enabled ?? usuario?.two_factor_enabled ?? 0) === 1;
 
@@ -376,7 +386,37 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                     {/* SEGURIDAD */}
                     <section className="border-t border-primary-200 pt-5">
                         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Seguridad</h3>
-                        <form onSubmit={guardarPassword} className="space-y-4">
+                        <AnimatePresence mode="wait" initial={false}>
+                        {passwordGuardada ? (
+                            <motion.div
+                                key="guardada"
+                                initial={{ opacity: 0, scale: 0.97 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.97 }}
+                                transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+                                className="perfil-exito"
+                            >
+                                <ExitoAnimado
+                                    titulo="Contraseña guardada correctamente"
+                                    detalle="Usa tu nueva contraseña la próxima vez que inicies sesión."
+                                >
+                                    <div className="mt-4">
+                                        <Button type="button" variante="secondary" onClick={() => setPasswordGuardada(false)}>
+                                            Listo
+                                        </Button>
+                                    </div>
+                                </ExitoAnimado>
+                            </motion.div>
+                        ) : (
+                        <motion.form
+                            key="formulario"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            onSubmit={guardarPassword}
+                            className="space-y-4"
+                        >
                             <CampoPassword
                                 label="Contraseña actual"
                                 name="password_actual"
@@ -408,7 +448,9 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                                     Cambiar contraseña
                                 </Button>
                             </div>
-                        </form>
+                        </motion.form>
+                        )}
+                        </AnimatePresence>
                     </section>
 
                     {/* DOBLE FACTOR */}

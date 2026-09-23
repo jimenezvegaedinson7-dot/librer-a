@@ -4719,3 +4719,196 @@
 .admin-shell[data-theme="dark"] .donut-brillo {
     stroke: rgb(255 246 223 / 0.5);
 }
+
+/* ========================================
+   CELEBRACIONES — carga de correo y confirmación animada
+   ======================================== */
+
+.carga-correo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 0 0.5rem;
+    text-align: center;
+}
+
+.carga-correo-circulo {
+    position: relative;
+    height: 8.5rem;
+    width: 8.5rem;
+}
+
+.carga-correo-circulo svg {
+    height: 100%;
+    width: 100%;
+}
+
+.carga-correo-linea {
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke 0.25s ease;
+}
+
+.carga-correo-linea--punta {
+    filter: drop-shadow(0 0 3px rgb(185 141 62 / 0.9));
+}
+
+.carga-correo-centro {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: flex;
+    height: 3.5rem;
+    width: 3.5rem;
+    translate: -50% -50%;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: linear-gradient(150deg, #fbf5e8, #f3e6c8);
+    font-size: 1.25rem;
+    color: #8a2c36;
+    box-shadow: inset 0 0 0 1px rgb(185 141 62 / 0.35), 0 6px 16px -8px rgb(122 88 39 / 0.45);
+    transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.carga-correo-centro--listo {
+    background: linear-gradient(150deg, #1f9a4f, #15803d);
+    color: #ffffff;
+    box-shadow: 0 0 0 6px rgb(21 128 61 / 0.12), 0 8px 20px -8px rgb(21 128 61 / 0.6);
+}
+
+.carga-correo-texto {
+    margin-top: 1rem;
+    font-family: var(--font-title);
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1c1814;
+}
+
+.carga-correo-texto--listo {
+    color: #15803d;
+}
+
+.carga-correo-porcentaje {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: #766d62;
+}
+
+.exito-animado {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0 0.25rem;
+}
+
+.exito-animado-sello {
+    position: relative;
+    height: 6.5rem;
+    width: 6.5rem;
+}
+
+.exito-animado-sello svg {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: visible;
+}
+
+.exito-animado-anillo {
+    fill: none;
+    stroke: #b98d3e;
+    stroke-width: 3;
+    stroke-linecap: round;
+}
+
+.exito-animado-disco {
+    fill: #e8f3ec;
+}
+
+.exito-animado-check {
+    fill: none;
+    stroke: #15803d;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.exito-animado-onda {
+    position: absolute;
+    inset: 0;
+    border: 2px solid rgb(21 128 61 / 0.45);
+    border-radius: 9999px;
+}
+
+.exito-animado-eje {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: 0;
+    width: 0;
+}
+
+.exito-animado-destello {
+    position: absolute;
+    left: -1.5px;
+    top: -5px;
+    height: 10px;
+    width: 3px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #f0d48f, #b98d3e);
+}
+
+.exito-animado-titulo {
+    font-family: var(--font-title);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1c1814;
+}
+
+.exito-animado-detalle {
+    margin-top: 0.25rem;
+    font-size: 0.84375rem;
+    color: #766d62;
+}
+
+.admin-shell[data-theme="dark"] :is(.exito-animado-titulo, .carga-correo-texto) { color: #f5f0e8; }
+.admin-shell[data-theme="dark"] :is(.exito-animado-detalle, .carga-correo-porcentaje) { color: #a89e91; }
+.admin-shell[data-theme="dark"] .exito-animado-disco { fill: rgb(46 158 91 / 0.18); }
+.admin-shell[data-theme="dark"] .exito-animado-check { stroke: #4cc27f; }
+.admin-shell[data-theme="dark"] .exito-animado-anillo { stroke: #dcbb7a; }
+
+.login-autoinicio {
+    margin: 1.25rem auto 0;
+    height: 0.25rem;
+    width: 12rem;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: #efe9df;
+}
+
+.login-autoinicio > span {
+    display: block;
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #8a2c36, #b98d3e, #15803d);
+    transform-origin: left;
+}
+
+.perfil-exito {
+    border: 1px solid #e6dcc8;
+    border-radius: 0.875rem;
+    background:
+        radial-gradient(320px 140px at 50% 0%, rgb(21 128 61 / 0.07), transparent 70%),
+        linear-gradient(180deg, #fffdf9, #ffffff);
+    padding: 1.25rem 1rem 1.5rem;
+}
+
+.admin-shell[data-theme="dark"] .perfil-exito {
+    border-color: #2d2824;
+    background:
+        radial-gradient(320px 140px at 50% 0%, rgb(46 158 91 / 0.1), transparent 70%),
+        #1d1a17;
+}

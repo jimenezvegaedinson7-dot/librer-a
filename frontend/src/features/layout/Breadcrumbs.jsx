@@ -19,6 +19,9 @@ export default function Breadcrumbs() {
         document.title = modulo ? `${modulo.nombre} · Panel Librería` : 'Panel Librería';
     }, [modulo]);
 
+    // En el Resumen (inicio del panel) la miga repetiría el título de la página.
+    if (pathname === '/dashboard') return null;
+
     return (
         <nav aria-label="Ruta de navegación" className="admin-breadcrumbs mb-4 flex items-center gap-2 text-xs text-slate-500">
             <Link to="/dashboard" className="rounded transition-colors hover:text-slate-900">

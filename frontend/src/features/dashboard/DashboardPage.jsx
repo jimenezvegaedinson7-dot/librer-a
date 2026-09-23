@@ -163,12 +163,11 @@ export default function DashboardPage() {
             {/* ENCABEZADO */}
             <header className="flex flex-col gap-3 border-b border-[#e6e0d7] pb-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a7231]">Panel general</p>
-                    <h1 className="mt-1 font-title text-[28px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814] sm:text-[32px]">
+                    <h1 className="font-title text-[28px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814] sm:text-[32px]">
                         Resumen
                     </h1>
                     <p className="mt-1 text-[14px] leading-relaxed text-[#766d62]">
-                        Indicadores, estadísticas y reportes de la librería · {fechaHoy}
+                        {fechaHoy}
                     </p>
                 </div>
                 <Button variante="secondary" icono={<FaRotate />} onClick={() => setRecarga((n) => n + 1)} cargando={cargando}>

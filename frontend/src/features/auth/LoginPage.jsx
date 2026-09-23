@@ -3,7 +3,6 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
     FaArrowLeft,
-    FaCircleCheck,
     FaEnvelope,
     FaEye,
     FaEyeSlash,
@@ -17,6 +16,8 @@ import { login, verificarLoginOtp, solicitarReseteo, restablecerContrasena } fro
 import { useAuth } from './AuthContext';
 import { Alert } from '../../components/ui/Alert';
 import { Modal } from '../../components/ui/Modal';
+import { CargaCorreo, ExitoAnimado } from '../../components/ui/Celebracion';
+import { prepararSonido, sonarPagoAprobado } from '../../lib/utils/sonido';
 
 import fondoLogin from '../../assets/fondo-login.png';
 import logoLibreria from '../../assets/logo-lbl.png';
@@ -46,6 +47,8 @@ export default function LoginPage() {
     const [resetError, setResetError] = useState('');
     const [resetCargando, setResetCargando] = useState(false);
     const [mostrarResetPass, setMostrarResetPass] = useState(false);
+    const [envioCorreo, setEnvioCorreo] = useState(null); // null | 'enviando' | 'enviado'
+    const [autoInicio, setAutoInicio] = useState('iniciando'); // 'iniciando' | 'no-admin' | 'error'
 
     const reducirMovimiento = useReducedMotion();
 
@@ -141,12 +144,52 @@ export default function LoginPage() {
         setResetPassword2('');
         setResetError('');
         setMostrarResetPass(false);
+        setEnvioCorreo(null);
     };
 
     const closeResetModal = () => {
         setShowResetModal(false);
         setResetStep(1);
         setResetError('');
+        setEnvioCorreo(null);
+    };
+
+    // Tras llenarse el cargador y mostrar "Correo enviado", pasa al código.
+    const alTerminarEnvio = () => {
+        setEnvioCorreo(null);
+        setResetStep(2);
+    };
+
+    // Inicia sesión con la contraseña recién creada mientras se ve la confirmación.
+    const iniciarConNuevaContrasena = async (correo, clave) => {
+        const pausa = new Promise((resolver) => setTimeout(resolver, 2400));
+        try {
+            const [respuesta] = await Promise.all([login({ email: correo, password: clave }), pausa]);
+
+            if (respuesta.requires_2fa) {
+                closeResetModal();
+                setEmail(correo);
+                setTwoFactorToken(respuesta.two_factor_token || '');
+                setCodigo('');
+                setError('Contraseña actualizada. Ingresa tu código de doble factor para continuar.');
+                return;
+            }
+
+            if (respuesta.data?.rol !== 'administrador') {
+                setAutoInicio('no-admin');
+                return;
+            }
+
+            iniciarSesion(respuesta.token, respuesta.data);
+            navigate('/dashboard');
+        } catch (err) {
+            await pausa;
+            if (err.response?.status === 403 && /verificar tu correo/i.test(err.response?.data?.mensaje || '')) {
+                navigate('/verificar-email', { replace: true, state: { email: correo } });
+                return;
+            }
+            setAutoInicio('error');
+        }
     };
 
     const enviarCodigoReset = async (e) => {
@@ -162,9 +205,11 @@ export default function LoginPage() {
         try {
             setResetCargando(true);
             setResetError('');
+            setEnvioCorreo('enviando');
             await solicitarReseteo({ email: resetEmail.trim() });
-            setResetStep(2);
+            setEnvioCorreo('enviado');
         } catch (err) {
+            setEnvioCorreo(null);
             setResetError(err.response?.data?.mensaje || 'Error al enviar el código');
         } finally {
             setResetCargando(false);
@@ -193,6 +238,8 @@ export default function LoginPage() {
             setResetError('Las contraseñas no coinciden');
             return;
         }
+        // El audio debe habilitarse durante el clic del usuario.
+        prepararSonido();
         try {
             setResetCargando(true);
             setResetError('');
@@ -201,7 +248,11 @@ export default function LoginPage() {
                 codigo: resetCodigo,
                 password: resetPassword,
             });
+            setAutoInicio('iniciando');
             setResetStep(3);
+            // Suena cuando el check termina de dibujarse.
+            setTimeout(sonarPagoAprobado, 600);
+            iniciarConNuevaContrasena(resetEmail.trim(), resetPassword);
         } catch (err) {
             setResetError(err.response?.data?.mensaje || 'Código incorrecto o expirado');
         } finally {
@@ -421,7 +472,11 @@ export default function LoginPage() {
                     <MensajeError mensaje={resetError} />
 
                     {/* Paso 1: confirmar correo */}
-                    {resetStep === 1 && (
+                    {resetStep === 1 && envioCorreo && (
+                        <CargaCorreo enviado={envioCorreo === 'enviado'} onCompleto={alTerminarEnvio} />
+                    )}
+
+                    {resetStep === 1 && !envioCorreo && (
                         <form onSubmit={enviarCodigoReset} className="space-y-4">
                             <p className="text-sm text-[#766d62]">
                                 Se enviará un código de verificación al correo registrado.
@@ -532,29 +587,38 @@ export default function LoginPage() {
 
                     {/* Paso 3: listo */}
                     {resetStep === 3 && (
-                        <div className="space-y-5 py-2 text-center">
-                            <motion.div
-                                initial={reducirMovimiento ? false : { scale: 0.6, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ type: 'spring', stiffness: 320, damping: 20 }}
-                                className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#e8f3ec] text-2xl text-[#15803d]"
-                            >
-                                <FaCircleCheck />
-                            </motion.div>
-                            <p className="text-sm text-[#766d62]">
-                                Contraseña actualizada correctamente. Ya puedes iniciar sesión.
-                            </p>
-                            <BotonPrimario
-                                type="button"
-                                onClick={() => {
-                                    closeResetModal();
-                                    setPassword('');
-                                }}
-                                icono={<FaRightToBracket />}
-                            >
-                                Ir al inicio de sesión
-                            </BotonPrimario>
-                        </div>
+                        <ExitoAnimado
+                            titulo="Contraseña actualizada"
+                            detalle={{
+                                iniciando: 'Iniciando sesión con tu nueva contraseña…',
+                                'no-admin': 'Este panel es solo para administradores.',
+                                error: 'No se pudo iniciar sesión automáticamente. Ingresa con tu nueva contraseña.',
+                            }[autoInicio]}
+                        >
+                            {autoInicio === 'iniciando' ? (
+                                <div className="login-autoinicio" aria-hidden="true">
+                                    <motion.span
+                                        initial={{ scaleX: 0 }}
+                                        animate={{ scaleX: 1 }}
+                                        transition={{ duration: reducirMovimiento ? 0 : 2.4, ease: 'easeInOut' }}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="mt-5">
+                                    <BotonPrimario
+                                        type="button"
+                                        onClick={() => {
+                                            closeResetModal();
+                                            setEmail(resetEmail.trim());
+                                            setPassword('');
+                                        }}
+                                        icono={<FaRightToBracket />}
+                                    >
+                                        Ir al inicio de sesión
+                                    </BotonPrimario>
+                                </div>
+                            )}
+                        </ExitoAnimado>
                     )}
                 </div>
             </Modal>
