@@ -34,8 +34,7 @@ const ReservasPage = lazyConReintento(() => import('../features/reservas/Reserva
 const VentasPage = lazyConReintento(() => import('../features/ventas/VentasPage'));
 const ComprobantesPage = lazyConReintento(() => import('../features/comprobantes/ComprobantesPage'));
 const PagosPage = lazyConReintento(() => import('../features/pagos/PagosPage'));
-const UsuariosPage = lazyConReintento(() => import('../features/usuarios/UsuariosPage'));
-const ClientesPage = lazyConReintento(() => import('../features/clientes/ClientesPage'));
+const UsuariosPage = lazyConReintento(() => import('../features/usuarios/UsuariosClientesPage'));
 const AgenciasPage = lazyConReintento(() => import('../features/agencias/AgenciasPage'));
 const HistorialPage = lazyConReintento(() => import('../features/historial/HistorialPage'));
 const EmpresaPage = lazyConReintento(() => import('../features/configuracion/EmpresaPage'));
@@ -67,7 +66,7 @@ const router = createBrowserRouter([
             { path: '/comprobantes', element: cargar(<ComprobantesPage />) },
             { path: '/pagos', element: cargar(<PagosPage />) },
             { path: '/usuarios', element: cargar(<UsuariosPage />) },
-            { path: '/clientes', element: cargar(<ClientesPage />) },
+            { path: '/clientes', element: <Navigate to="/usuarios?vista=clientes" replace /> },
             { path: '/agencias', element: cargar(<AgenciasPage />) },
             { path: '/historial', element: cargar(<HistorialPage />) },
             // Reportes se integró en el resumen; se conserva la ruta para enlaces guardados.

@@ -4912,3 +4912,103 @@
         radial-gradient(320px 140px at 50% 0%, rgb(46 158 91 / 0.1), transparent 70%),
         #1d1a17;
 }
+
+/* ========================================
+   PESTAÑAS — Usuarios: Cuentas / Clientes y compras
+   ======================================== */
+
+.pestanas {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    border-bottom: 1px solid #e6e0d7;
+}
+
+.pestana {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.75rem 0.75rem 0 0;
+    padding: 0.75rem 1rem 0.875rem;
+    color: #766d62;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.pestana:hover {
+    background: rgb(185 141 62 / 0.06);
+    color: #1c1814;
+}
+
+.pestana:focus-visible {
+    outline: 2px solid var(--ring, #b98d3e);
+    outline-offset: -2px;
+}
+
+.pestana::after {
+    content: "";
+    position: absolute;
+    inset: auto 0.75rem -1px;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: #8a2c36;
+    transform: scaleX(0);
+    transition: transform 0.25s var(--ease-out-quart);
+}
+
+.pestana--activa {
+    color: #1c1814;
+}
+
+.pestana--activa::after {
+    transform: scaleX(1);
+}
+
+.pestana-icono {
+    display: inline-flex;
+    height: 2.125rem;
+    width: 2.125rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.625rem;
+    background: #f3efe9;
+    font-size: 0.875rem;
+    color: #766d62;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pestana--activa .pestana-icono {
+    background: linear-gradient(150deg, #f7ecd2, #fbf5e8);
+    color: #8a2c36;
+    box-shadow: inset 0 0 0 1px rgb(185 141 62 / 0.3);
+}
+
+.pestana-texto {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.pestana-detalle {
+    display: block;
+    font-size: 0.75rem;
+    color: #a39a8e;
+}
+
+@media (max-width: 480px) {
+    .pestana-detalle { display: none; }
+    .pestana { padding-inline: 0.75rem; }
+}
+
+.admin-shell[data-theme="dark"] .pestanas { border-color: #2d2824; }
+.admin-shell[data-theme="dark"] .pestana { color: #a89e91; }
+.admin-shell[data-theme="dark"] .pestana:hover,
+.admin-shell[data-theme="dark"] .pestana--activa { color: #f5f0e8; }
+.admin-shell[data-theme="dark"] .pestana::after { background: #dcbb7a; }
+.admin-shell[data-theme="dark"] .pestana-icono { background: #2d2824; color: #a89e91; }
+.admin-shell[data-theme="dark"] .pestana--activa .pestana-icono {
+    background: rgb(201 162 79 / 0.14);
+    color: #dcbb7a;
+    box-shadow: inset 0 0 0 1px rgb(201 162 79 / 0.3);
+}

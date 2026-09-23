@@ -76,7 +76,7 @@ function Contador({ total, totalComprado, conCompras }) {
     );
 }
 
-export default function ClientesPage() {
+export default function ClientesPage({ incrustado = false }) {
     const [clientes, setClientes] = useState([]);
     const [total, setTotal] = useState(0);
     const [totalPaginas, setTotalPaginas] = useState(0);
@@ -146,18 +146,28 @@ export default function ClientesPage() {
 
     return (
         <div className="space-y-4">
-            <PageHeader
-                titulo="Clientes"
-                descripcion="Clientes registrados y su actividad de compras"
-                icono={<FaUserGroup />}
-                acciones={
+            {incrustado ? (
+                <div className="flex justify-end">
                     <Contador
                         total={total}
                         totalComprado={Number(resumen.total_general || 0)}
                         conCompras={conCompras}
                     />
-                }
-            />
+                </div>
+            ) : (
+                <PageHeader
+                    titulo="Clientes"
+                    descripcion="Clientes registrados y su actividad de compras"
+                    icono={<FaUserGroup />}
+                    acciones={
+                        <Contador
+                            total={total}
+                            totalComprado={Number(resumen.total_general || 0)}
+                            conCompras={conCompras}
+                        />
+                    }
+                />
+            )}
 
             <Card>
                 <CardHeader

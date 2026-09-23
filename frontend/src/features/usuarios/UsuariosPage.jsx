@@ -124,7 +124,7 @@ function Contador({ total, administradores, clientes, activos, inactivos }) {
     );
 }
 
-export default function UsuariosPage() {
+export default function UsuariosPage({ incrustado = false }) {
     const { exito, error: mostrarError } = useToast();
     const { usuario: usuarioSesion } = useAuth();
 
@@ -270,11 +270,8 @@ export default function UsuariosPage() {
 
     return (
         <div className="space-y-4">
-            <PageHeader
-                titulo="Usuarios"
-                descripcion="Control de usuarios registrados en la aplicación"
-                icono={<FaUsers />}
-                acciones={
+            {incrustado ? (
+                <div className="flex justify-end">
                     <Contador
                         total={usuarios.length}
                         administradores={totalAdministradores}
@@ -282,8 +279,23 @@ export default function UsuariosPage() {
                         activos={totalActivos}
                         inactivos={totalInactivos}
                     />
-                }
-            />
+                </div>
+            ) : (
+                <PageHeader
+                    titulo="Usuarios"
+                    descripcion="Control de usuarios registrados en la aplicación"
+                    icono={<FaUsers />}
+                    acciones={
+                        <Contador
+                            total={usuarios.length}
+                            administradores={totalAdministradores}
+                            clientes={totalClientes}
+                            activos={totalActivos}
+                            inactivos={totalInactivos}
+                        />
+                    }
+                />
+            )}
 
             <Card>
                 <CardHeader
