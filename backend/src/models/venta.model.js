@@ -132,7 +132,7 @@ const obtenerPorId = async (id) => {
 // OBTENER VENTAS POR USUARIO
 // Devuelve TODOS los campos de la venta (incluyendo costo_envio,
 // tipo_entrega, direccion, distrito, provincia, agencia,
-// correo_compra y datos de pago MP) más un arreglo `detalle`
+// correo_compra y datos de pago PayU) más un arreglo `detalle`
 // con los ítems de detalle_venta JOIN libros.
 // ========================================
 const obtenerPorUsuario = async (id_usuario) => {
@@ -588,7 +588,7 @@ const crear = async (venta) => {
 };
 
 // ========================================
-// OBTENER VENTA POR REFERENCIA EXTERNA (MP)
+// OBTENER VENTA POR REFERENCIA EXTERNA (PayU)
 // ========================================
 const buscarPorReferenciaExterna = async (externalReference) => {
     const [rows] = await pool.query(`
@@ -956,7 +956,7 @@ const listarPagosAdmin = async ({
                 row.payu_order_id,
             metodo_pago:
                 row.external_reference
-                    ? 'mercadopago'
+                    ? 'payu'
                     : null,
             estado_venta:
                 row.estado,
@@ -1009,13 +1009,13 @@ const listarPagosAdmin = async ({
 //
 // Trabaja por lotes de 50 con cursor id_venta para no saltar filas
 // mientras las ventas canceladas desaparecen del filtro.
-// Devuelve { canceladas, conPagoPendienteEnMP }.
+// Devuelve { canceladas, conPagoPendienteEnPayU }.
 // ========================================
 const TAMANO_LOTE = 50;
 
 const cancelarOrdenesAbandonadas = async (minutos = 30) => {
     let canceladas = 0;
-    let conPagoPendienteEnMP = 0;
+    let conPagoPendienteEnPayU = 0;
 
     let desdeId = 0;
 
@@ -1083,7 +1083,7 @@ const cancelarOrdenesAbandonadas = async (minutos = 30) => {
                     console.log(
                         `[venta] Orden PayU pagada detectada, no se cancela id=${venta.id_venta} (${estadoPayu.status || 'aprobado'})`
                     );
-                    conPagoPendienteEnMP++;
+                    conPagoPendienteEnPayU++;
                     continue;
                 }
 
@@ -1093,7 +1093,7 @@ const cancelarOrdenesAbandonadas = async (minutos = 30) => {
                     console.log(
                         `[venta] Orden PayU aún en proceso, no se cancela id=${venta.id_venta} (${estadoPayu.status})`
                     );
-                    conPagoPendienteEnMP++;
+                    conPagoPendienteEnPayU++;
                     continue;
                 }
 
@@ -1119,7 +1119,7 @@ const cancelarOrdenesAbandonadas = async (minutos = 30) => {
 
     return {
         canceladas,
-        conPagoPendienteEnMP
+        conPagoPendienteEnPayU
     };
 };
 

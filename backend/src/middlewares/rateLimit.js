@@ -63,7 +63,7 @@ const twoFaLimiter = rateLimit({
 });
 
 // ========================================
-// WEBHOOK MERCADO PAGO (60 / 5 min por IP)
+// WEBHOOK PAYU (60 / 5 min por IP)
 // El webhook es público; se limita por IP para
 // mitigar abuso/refuerzo sin romper retries legítimos.
 // ========================================

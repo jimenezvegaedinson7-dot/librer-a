@@ -1,7 +1,7 @@
 # Librería — Backend (Express + MySQL)
 
 API REST de la librería. Incluye el módulo de ventas con **checkout profesional**:
-pago vía Mercado Pago (API de Orders), entrega a domicilio solo para Lima
+pago vía PayU (WebCheckout), entrega a domicilio solo para Lima
 (provincias/distritos), envío por agencias courier y recogida en tienda.
 
 ## Requisitos
@@ -20,13 +20,17 @@ DB_PASSWORD=
 DB_NAME=libreria_db
 PORT=3000
 JWT_SECRET=...
-MERCADOPAGO_ACCESS_TOKEN=...
-MERCADOPAGO_NOTIFICATION_URL=...
+PAYU_ACCOUNT_ID=...
+PAYU_MERCHANT_ID=...
+PAYU_API_LOGIN=...
+PAYU_API_KEY=...
+PAYU_TEST=...
+PAYU_NOTIFICATION_URL=...
 ```
 
-> En sandbox de Mercado Pago el `MERCADOPAGO_NOTIFICATION_URL` puede dejarse
-> vacío; la confirmación del pago se obtiene con `GET /api/pagos/:orderId`
-> (consulta a MP y actualiza la venta).
+> En pruebas locales `PAYU_NOTIFICATION_URL` puede dejarse vacío; la
+> confirmación del pago se obtiene con `GET /api/pagos/:orderId`
+> (consulta a PayU y actualiza la venta).
 
 ## Puesta en marcha
 
@@ -48,8 +52,8 @@ Se ejecutan con `mysql` o un script Node contra `libreria_db` (Migrate nada).
 | `001_add_two_factor.sql` | Columnas de 2FA de usuarios |
 | `002_add_email_verification.sql` | Verificación de email |
 | `003_add_entrega_ventas.sql` | `tipo_entrega`, `direccion` en ventas |
-| `004_add_pago_ventas.sql` | Datos MP en ventas (`mp_*`, webhook) |
-| `005_add_external_reference_ventas.sql` | `external_reference` (vincula orden MP↔venta) |
+| `004_add_pago_ventas.sql` | Datos de pago en ventas (columnas históricas `mp_*`) |
+| `005_add_external_reference_ventas.sql` | `external_reference` (vincula orden de pago↔venta) |
 | `006_add_ubicaciones_lima.sql` | `provincias_lima`, `distritos_lima`, `agencias_courier` |
 | `007_add_ubicacion_venta.sql` | `id_distrito`, `id_agencia` en ventas |
 | `008_add_costo_envio.sql` | `distritos_lima.tarifa_envio`, `ventas.costo_envio` |
@@ -83,7 +87,7 @@ Se ejecutan con `mysql` o un script Node contra `libreria_db` (Migrate nada).
 
 ## Crear orden de pago
 
-`POST /api/pagos` (JWT) recibe:
+`POST /api/pagos/crear-orden` (JWT) recibe:
 
 ```json
 {
@@ -102,8 +106,9 @@ El backend:
    `domicilio`; agencia activa para `agencia`).
 2. Calcula `costo_envio` (`tarifa_envio` del distrito o `tarifa_base` de la
    agencia; `0` para tienda).
-3. Crea la orden en Mercado Pago con un ítem adicional "Envío…" y el
-   `total_amount = libros + envío`.
+3. Prepara la orden de PayU (WebCheckout firmado) con
+   `total = libros + envío`; `checkout_url` abre
+   `GET /api/pagos/checkout/:externalReference`, que envía el formulario a PayU.
 4. Crea la venta en estado `pendiente` guardando `costo_envio`, `id_distrito` o
    `id_agencia`.
 
@@ -112,10 +117,11 @@ costo_envio } }`.
 
 ## Confirmación del pago
 
-- **Webhook** (`/api/pagos/webhook`): cuando Mercado Pago notifica, actualiza la
-  venta por `external_reference` (mapea `approved/closed/paid` → `pagada`,
-  `rejected/cancelled/refunded/charged_back` → `cancelada`, resto → `pendiente`).
-- **Refresco manual** `GET /api/pagos/:orderId`: consulta MP y aplica el estado a
+- **Webhook** (`/api/pagos/webhook`): cuando PayU envía la confirmación
+  (servidor a servidor), actualiza la venta por `external_reference`.
+- **Página de retorno** `GET /api/pagos/respuesta/:externalReference`
+  (responseUrl de PayU).
+- **Refresco manual** `GET /api/pagos/:orderId`: consulta PayU y aplica el estado a
   la venta. Utilizado por la app Flutter para confirmar sin depender del webhook.
 
 ## Ventas
@@ -139,8 +145,8 @@ npm run dev                        # levantar el API
 - Máquinas de estado validadas también en los modelos (ventas y reservas).
 - Rate limiting global (`300/15min`) y estricto en login, registro,
   verificación de email y 2FA.
-- Webhook de Mercado Pago firma verificada con `MERCADOPAGO_WEBHOOK_SECRET`
-  (HMAC-SHA256, `x-signature`); sin secret solo en desarrollo.
+- Webhook de PayU con firma verificada (`sign`, MD5 de
+  `apiKey~merchant_id~reference_sale~new_value~currency~state_pol`).
 - Subida de portadas/fotos validada por magic bytes (JPEG/PNG/WebP) y con
   extensión detectada, no la de la petición.
 - Protección IDOR en `GET /api/pagos/:orderId` y `GET /api/ventas/:id/pago`

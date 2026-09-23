@@ -1,7 +1,7 @@
 -- ============================================================
 -- MIGRACIÓN 009: ÍNDICE external_reference EN VENTAS
 -- ============================================================
--- El webhook de Mercado Pago y GET /pagos/:orderId localizan la
+-- El webhook de PayU y GET /pagos/:orderId localizan la
 -- venta por external_reference. Se indexa para consultas rápidas.
 -- SEGURO: ADD INDEX IF NOT EXISTS, no borra datos.
 -- ============================================================

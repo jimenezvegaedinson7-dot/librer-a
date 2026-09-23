@@ -47,7 +47,7 @@ Implementar únicamente cambios de código aprobados.
 - Dart
 - JWT
 - bcryptjs
-- Mercado Pago
+- PayU
 
 ## REGLAS
 - NO modificar archivos fuera del alcance solicitado.

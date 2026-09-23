@@ -37,7 +37,7 @@ Auditar seguridad sin modificar automáticamente el código.
 - Revisar subida de archivos.
 - Revisar endpoints sensibles.
 - Revisar exposición de información.
-- Revisar Mercado Pago.
+- Revisar PayU.
 - Revisar webhooks.
 - Revisar validación de montos.
 - Revisar estados de pago.

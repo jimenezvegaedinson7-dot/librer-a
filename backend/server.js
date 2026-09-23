@@ -284,7 +284,7 @@ app.use(
 );
 
 // ===============================
-// API DE PAGOS (Mercado Pago)
+// API DE PAGOS (PayU)
 // ===============================
 app.use(
     '/api/pagos',

@@ -51,7 +51,7 @@ Analizar la lógica, arquitectura, flujo de datos y consecuencias de los cambios
 - Reservas.
 - Ventas.
 - Pagos.
-- Mercado Pago.
+- PayU.
 - Reportes.
 - Historial.
 

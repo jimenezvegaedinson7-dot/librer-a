@@ -1118,7 +1118,7 @@ const aplicarEstadoPagoAVenta = async ({
     }
 
     // Una venta cancelada es final. Si el pago aparece aprobado después, se
-    // conserva el dato MP y se alerta para realizar la devolución manual.
+    // conserva el dato de PayU y se alerta para realizar la devolución manual.
     if (
         venta.estado === 'cancelada' &&
         estadoVenta === 'pagada'

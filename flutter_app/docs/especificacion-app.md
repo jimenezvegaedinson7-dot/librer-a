@@ -200,4 +200,4 @@ surfaceContainerHighest=#EAE4D8 onSurfaceVariant=#68716C outline=outlineVariant=
 6. Los carruseles del inicio son obligatorios (auto-scroll, ancho adaptativo, wrap).
 7. Precios siempre en **S/** con formato de 2 decimales.
 8. Navegación inferior fija con 5 pestañas.
-9. Textos de pago siempre nombran a **PayU** (nunca Mercado Pago).
+9. Textos de pago siempre nombran a **PayU** (única pasarela).

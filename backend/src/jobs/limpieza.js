@@ -49,9 +49,9 @@ const ejecutarLimpieza = async () => {
             );
         }
 
-        if (resultado.conPagoPendienteEnMP > 0) {
+        if (resultado.conPagoPendienteEnPayU > 0) {
             console.log(
-                `[jobs] Ventas con orden MP pagada detectadas (no canceladas): ${resultado.conPagoPendienteEnMP}`
+                `[jobs] Ventas con orden PayU pagada detectadas (no canceladas): ${resultado.conPagoPendienteEnPayU}`
             );
         }
     } catch (error) {

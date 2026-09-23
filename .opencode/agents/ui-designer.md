@@ -80,7 +80,7 @@ Mejorar exclusivamente el aspecto visual y la experiencia de usuario.
 - NO modificar JWT.
 - NO modificar autenticación.
 - NO modificar 2FA.
-- NO modificar Mercado Pago.
+- NO modificar PayU.
 - NO modificar inventario.
 - NO modificar reservas.
 - NO modificar ventas.
