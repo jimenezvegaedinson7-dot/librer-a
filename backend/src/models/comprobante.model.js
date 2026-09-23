@@ -469,11 +469,13 @@ const generarComprobante = async ({
 
 // ========================================
 // LISTAR COMPROBANTES (CON PAGINACIÓN)
-// Filtros: tipo, q (serie/número/cliente), pagina/porPagina.
+// Filtros: tipo, q (serie/número/cliente),
+// envio ('enviado' | 'pendiente'), pagina/porPagina.
 // ========================================
 const listarComprobantes = async ({
     tipo,
     q,
+    envio,
     pagina,
     porPagina
 } = {}) => {
@@ -527,6 +529,16 @@ const listarComprobantes = async ({
         );
     }
 
+    if (envio === 'enviado') {
+        condiciones.push('c.enviado_por_email = TRUE');
+    } else if (envio === 'pendiente') {
+        // Pendiente = sin enviar y con algún correo al que enviarlo.
+        condiciones.push(`(
+            COALESCE(c.enviado_por_email, FALSE) = FALSE
+            AND COALESCE(NULLIF(c.cliente_email, ''), NULLIF(v.correo_compra, ''), u.email) IS NOT NULL
+        )`);
+    }
+
     const where =
         condiciones.length > 0
             ? `WHERE ${condiciones.join(' AND ')}`
@@ -540,6 +552,8 @@ const listarComprobantes = async ({
         FROM comprobantes c
         INNER JOIN ventas v
             ON c.id_venta = v.id_venta
+        LEFT JOIN usuarios u
+            ON v.id_usuario = u.id_usuario
         ${where}
     `, valores);
 
@@ -563,6 +577,12 @@ const listarComprobantes = async ({
             c.cliente_dni_ruc,
             c.cliente_tipo_documento,
             c.enviado_por_email,
+            c.fecha_envio_email,
+            COALESCE(
+                NULLIF(c.cliente_email, ''),
+                NULLIF(v.correo_compra, ''),
+                u.email
+            ) AS email_destino,
             c.subtotal,
             c.costo_envio,
             c.igv,
@@ -572,6 +592,8 @@ const listarComprobantes = async ({
         FROM comprobantes c
         INNER JOIN ventas v
             ON c.id_venta = v.id_venta
+        LEFT JOIN usuarios u
+            ON v.id_usuario = u.id_usuario
         ${where}
         ORDER BY c.id_comprobante DESC
         LIMIT ? OFFSET ?
@@ -607,7 +629,13 @@ const listarComprobantes = async ({
             fecha_emision:
                 fila.fecha_emision,
             estado_venta:
-                fila.estado_venta
+                fila.estado_venta,
+            enviado_por_email:
+                Boolean(fila.enviado_por_email),
+            fecha_envio_email:
+                fila.fecha_envio_email || null,
+            email_destino:
+                fila.email_destino || null
         })),
         total,
         paginas:

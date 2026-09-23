@@ -93,6 +93,7 @@ const listarComprobantes = async (req, res) => {
         const {
             tipo,
             q,
+            envio,
             pagina,
             por_pagina
         } = req.query;
@@ -101,6 +102,7 @@ const listarComprobantes = async (req, res) => {
             await comprobanteModel.listarComprobantes({
                 tipo,
                 q,
+                envio,
                 pagina,
                 porPagina: por_pagina
             });
