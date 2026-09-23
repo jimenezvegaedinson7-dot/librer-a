@@ -28,6 +28,7 @@ import { useToast } from '../../components/providers/ToastProvider';
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 
 import { listarComprobantes, obtenerResumen, enviarComprobanteEmail } from './comprobantesService';
+import { envioAutomaticoActivo, guardarEnvioAutomatico } from './envioAutomatico';
 import ComprobanteViewModal from './ComprobanteViewModal';
 
 const POR_PAGINA = 10;
@@ -66,6 +67,25 @@ const columnasComprobantes = [
         render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(fila.total)}</span>,
     },
     {
+        titulo: 'Correo',
+        alineacion: 'centro',
+        render: (fila) => {
+            if (fila.enviado_por_email) {
+                return (
+                    <span
+                        className="correo-estado correo-estado--enviado"
+                        title={fila.fecha_envio_email ? `Enviado el ${formatearFecha(fila.fecha_envio_email)}` : 'Enviado'}
+                    >
+                        Enviado
+                    </span>
+                );
+            }
+            return fila.email_destino
+                ? <span className="correo-estado correo-estado--pendiente" title={`Se enviará a ${fila.email_destino}`}>Pendiente</span>
+                : <span className="correo-estado" title="El cliente no tiene correo registrado">Sin correo</span>;
+        },
+    },
+    {
         titulo: 'Fecha',
         alineacion: 'centro',
         render: (fila) => (
@@ -87,9 +107,13 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando 
             <BtnAccion
                 tipo="ver"
                 onClick={() => onEnviarEmail(fila, fueEnviado)}
-                titulo={fueEnviado ? 'Ya enviado por correo' : 'Enviar por correo'}
-                disabled={enviando}
-                className={fueEnviado ? 'text-green-600' : ''}
+                titulo={
+                    fueEnviado
+                        ? `Enviado${fila.fecha_envio_email ? ` el ${formatearFecha(fila.fecha_envio_email)}` : ''} · clic para reenviar`
+                        : fila.email_destino ? 'Enviar por correo' : 'Sin correo registrado'
+                }
+                disabled={enviando || (!fueEnviado && !fila.email_destino)}
+                className={fueEnviado ? 'btn-enviado' : ''}
             >
                 {enviando ? (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -121,6 +145,11 @@ export default function ComprobantesPage() {
     const [comprobanteImprimir, setComprobanteImprimir] = useState(null);
     const [enviandoEmail, setEnviandoEmail] = useState(null);
     const [reenviarConfirmar, setReenviarConfirmar] = useState(null);
+    const [filtroEnvio, setFiltroEnvio] = useState('todos');
+    const [pendientesEnvio, setPendientesEnvio] = useState(0);
+    const [envioAuto, setEnvioAuto] = useState(() => envioAutomaticoActivo());
+    const [confirmarLote, setConfirmarLote] = useState(false);
+    const [enviandoLote, setEnviandoLote] = useState(null); // { actual, total }
     const { exito, error: mostrarError } = useToast();
 
     const cargarComprobantes = async () => {
@@ -130,6 +159,7 @@ export default function ComprobantesPage() {
             const resultado = await listarComprobantes({
                 tipo: filtroTipo === 'todos' ? undefined : filtroTipo,
                 q: busquedaAplicada.trim() || undefined,
+                envio: filtroEnvio === 'todos' ? undefined : filtroEnvio,
                 pagina: paginaActual,
                 por_pagina: POR_PAGINA,
             });
@@ -149,7 +179,7 @@ export default function ComprobantesPage() {
     useEffect(() => {
         cargarComprobantes();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [busquedaAplicada, filtroTipo, paginaActual]);
+    }, [busquedaAplicada, filtroTipo, filtroEnvio, paginaActual]);
 
     const cargarResumen = async () => {
         try {
@@ -161,6 +191,12 @@ export default function ComprobantesPage() {
             });
         } catch {
             setResumen({ boletas: 0, facturas: 0, ingresos: 0 });
+        }
+        try {
+            const pendientes = await listarComprobantes({ envio: 'pendiente', por_pagina: 1 });
+            setPendientesEnvio(pendientes.total);
+        } catch {
+            setPendientesEnvio(0);
         }
     };
 
@@ -189,11 +225,57 @@ export default function ComprobantesPage() {
         setBusqueda('');
         setBusquedaAplicada('');
         setFiltroTipo('todos');
+        setFiltroEnvio('todos');
         setPaginaActual(1);
     };
 
+    const cambiarEnvio = (valor) => {
+        setFiltroEnvio(valor);
+        setPaginaActual(1);
+    };
+
+    const alternarEnvioAuto = () => {
+        const activo = !envioAuto;
+        setEnvioAuto(activo);
+        guardarEnvioAutomatico(activo);
+        exito(activo
+            ? 'Envío automático activado: los comprobantes se enviarán al emitirlos'
+            : 'Envío automático desactivado');
+    };
+
+    // Envía, uno a uno, todos los comprobantes pendientes que tienen correo.
+    const enviarPendientes = async () => {
+        setConfirmarLote(false);
+        try {
+            const { comprobantes: lista } = await listarComprobantes({ envio: 'pendiente', por_pagina: 100 });
+            const conCorreo = lista.filter((c) => c.email_destino);
+            let enviados = 0;
+            let fallidos = 0;
+            setEnviandoLote({ actual: 0, total: conCorreo.length });
+            for (const [i, comprobante] of conCorreo.entries()) {
+                try {
+                    await enviarComprobanteEmail(comprobante.id_comprobante);
+                    enviados += 1;
+                } catch {
+                    fallidos += 1;
+                }
+                setEnviandoLote({ actual: i + 1, total: conCorreo.length });
+            }
+            const sinCorreo = lista.length - conCorreo.length;
+            const partes = [`${enviados} enviados`];
+            if (fallidos) partes.push(`${fallidos} con error`);
+            if (sinCorreo) partes.push(`${sinCorreo} sin correo`);
+            (fallidos ? mostrarError : exito)(`Envío terminado: ${partes.join(' · ')}`);
+        } catch (err) {
+            mostrarError(err.response?.data?.mensaje || 'No se pudieron enviar los comprobantes pendientes');
+        } finally {
+            setEnviandoLote(null);
+            actualizar();
+        }
+    };
+
     const handleEnviarEmail = async (comprobante, fueEnviado) => {
-        if (!comprobante?.cliente_email && !comprobante?.correo_compra) {
+        if (!comprobante?.email_destino) {
             mostrarError('No hay correo registrado para este cliente');
             return;
         }
@@ -205,7 +287,7 @@ export default function ComprobantesPage() {
             setEnviandoEmail(comprobante.id_comprobante);
             const resultado = await enviarComprobanteEmail(comprobante.id_comprobante);
             exito(resultado?.mensaje || 'Comprobante enviado correctamente');
-            cargarComprobantes();
+            actualizar();
         } catch (err) {
             mostrarError(err.response?.data?.mensaje || 'Error al enviar el comprobante');
         } finally {
@@ -221,7 +303,7 @@ export default function ComprobantesPage() {
             setEnviandoEmail(comprobante.id_comprobante);
             const resultado = await enviarComprobanteEmail(comprobante.id_comprobante);
             exito(resultado?.mensaje || 'Comprobante reenviado correctamente');
-            cargarComprobantes();
+            actualizar();
         } catch (err) {
             mostrarError(err.response?.data?.mensaje || 'Error al reenviar el comprobante');
         } finally {
@@ -229,7 +311,7 @@ export default function ComprobantesPage() {
         }
     };
 
-    const hayFiltros = Boolean(busquedaAplicada) || filtroTipo !== 'todos';
+    const hayFiltros = Boolean(busquedaAplicada) || filtroTipo !== 'todos' || filtroEnvio !== 'todos';
 
     return (
         <div className="space-y-4">
@@ -305,6 +387,55 @@ export default function ComprobantesPage() {
                 />
             </Card>
 
+            <section className="correo-panel" aria-label="Envío por correo">
+                <div className="correo-filtros" role="radiogroup" aria-label="Filtrar por envío">
+                    {[
+                        { valor: 'todos', texto: 'Todos' },
+                        { valor: 'enviado', texto: 'Enviados' },
+                        { valor: 'pendiente', texto: 'Pendientes de envío', conteo: pendientesEnvio },
+                    ].map((f) => (
+                        <button
+                            key={f.valor}
+                            type="button"
+                            role="radio"
+                            aria-checked={filtroEnvio === f.valor}
+                            onClick={() => cambiarEnvio(f.valor)}
+                            className={`correo-filtro ${filtroEnvio === f.valor ? 'correo-filtro--activo' : ''}`}
+                        >
+                            {f.texto}
+                            {f.conteo > 0 && <span className="correo-filtro-conteo">{f.conteo}</span>}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="correo-controles">
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked={envioAuto}
+                        onClick={alternarEnvioAuto}
+                        className={`interruptor ${envioAuto ? 'interruptor--activo' : ''}`}
+                    >
+                        <span className="interruptor-pista" aria-hidden="true"><span className="interruptor-bola" /></span>
+                        <span className="text-left">
+                            <span className="interruptor-texto">Envío automático</span>
+                            <span className="interruptor-detalle">{envioAuto ? 'Se envía al emitir' : 'Desactivado'}</span>
+                        </span>
+                    </button>
+
+                    <Button
+                        variante="secondary"
+                        onClick={() => setConfirmarLote(true)}
+                        disabled={pendientesEnvio === 0 || Boolean(enviandoLote)}
+                        cargando={Boolean(enviandoLote)}
+                    >
+                        {enviandoLote
+                            ? `Enviando ${enviandoLote.actual} de ${enviandoLote.total}…`
+                            : <><FaPaperPlane /> Enviar pendientes{pendientesEnvio > 0 ? ` (${pendientesEnvio})` : ''}</>}
+                    </Button>
+                </div>
+            </section>
+
             {cargando && <TableSkeleton columnas={6} filas={8} titulo />}
 
             {!cargando && error && <Alert tipo="error">{error}</Alert>}
@@ -375,9 +506,20 @@ export default function ComprobantesPage() {
             />
 
             <ConfirmarAccion
+                abierto={confirmarLote}
+                titulo="Enviar comprobantes pendientes"
+                mensaje={`Se enviarán por correo los ${pendientesEnvio} comprobantes que aún no se han enviado.`}
+                advertencia="Los que no tengan correo registrado se omitirán."
+                icono={<FaPaperPlane />}
+                textoConfirmar="Enviar ahora"
+                onCerrar={() => setConfirmarLote(false)}
+                onConfirmar={enviarPendientes}
+            />
+
+            <ConfirmarAccion
                 abierto={Boolean(reenviarConfirmar)}
                 titulo="Reenviar comprobante"
-                mensaje={`Este comprobante ya fue enviado por correo a ${reenviarConfirmar?.cliente_email || reenviarConfirmar?.correo_compra}. ¿Desea enviarlo nuevamente?`}
+                mensaje={`Este comprobante ya fue enviado por correo a ${reenviarConfirmar?.email_destino}. ¿Desea enviarlo nuevamente?`}
                 textoConfirmar="Si, enviar de nuevo"
                 variante="primary"
                 onCerrar={() => setReenviarConfirmar(null)}

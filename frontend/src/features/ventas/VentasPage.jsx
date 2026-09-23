@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import {
     FaCartPlus,
+    FaCheck,
     FaChevronUp,
     FaCircleCheck,
     FaClock,
@@ -10,7 +11,6 @@ import {
     FaFileInvoice,
     FaMagnifyingGlass,
     FaMoneyBillTrendUp,
-    FaPenToSquare,
     FaReceipt,
     FaRotate,
     FaXmark,
@@ -35,11 +35,11 @@ import { exportarCsv } from '../../lib/utils/exportarCsv';
 
 import { useToast } from '../../components/providers/ToastProvider';
 
-import { listarVentas, obtenerVenta } from './ventasService';
+import { cambiarEstadoVenta as actualizarEstadoVenta, listarVentas, obtenerVenta } from './ventasService';
+import { ConfirmarAccion } from '../../components/ui/ConfirmarAccion';
 import ComprobanteViewModal from '../comprobantes/ComprobanteViewModal';
 import VentaForm from './VentaForm';
 import VentaViewModal from './VentaViewModal';
-import VentaEstadoModal from './VentaEstadoModal';
 import EmitirComprobanteModal from './EmitirComprobanteModal';
 
 const POR_PAGINA = 10;
@@ -120,20 +120,18 @@ const columnasVentas = [
     },
 ];
 
-function accionesVenta(fila, { onVer, onCambiarEstado, onEmitirComprobante }) {
-    const ventaCancelada = fila.estado === 'cancelada';
+function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante }) {
     const conComprobante = Number(fila.tiene_comprobante ?? 0) === 1;
     const puedeEmitir = !conComprobante && (fila.estado === 'pagada' || fila.estado === 'entregada');
     return (
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>
-            <BtnAccion
-                tipo="editar"
-                onClick={() => !ventaCancelada && onCambiarEstado(fila)}
-                titulo={ventaCancelada ? 'La venta ya está cancelada' : 'Cambiar estado'}
-            >
-                <FaPenToSquare />
-            </BtnAccion>
+            {/* Única transición manual: pagada → entregada (las pendientes se cancelan solas a los 30 min). */}
+            {fila.estado === 'pagada' && (
+                <BtnAccion tipo="ver" onClick={() => onConfirmarEntrega(fila)} titulo="Confirmar entrega" className="btn-confirmar">
+                    <FaCheck />
+                </BtnAccion>
+            )}
             {conComprobante && (fila.estado === 'pagada' || fila.estado === 'entregada') && (
                 <Badge color="primary">Comprobante</Badge>
             )}
@@ -191,7 +189,8 @@ export default function VentasPage() {
     const [error, setError] = useState('');
 
 const [ventaVer, setVentaVer] = useState(null);
-    const [ventaEstado, setVentaEstado] = useState(null);
+    const [ventaEntregar, setVentaEntregar] = useState(null);
+    const [entregando, setEntregando] = useState(false);
     const [comprobanteEmitido, setComprobanteEmitido] = useState(null);
     const [comprobanteModal, setComprobanteModal] = useState(null);
 
@@ -310,11 +309,19 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
         }
     };
 
-const cambiarEstadoVenta = async (venta) => {
+    const confirmarEntrega = async () => {
+        if (!ventaEntregar) return;
         try {
-            setVentaEstado(await obtenerVenta(venta.id_venta));
+            setEntregando(true);
+            await actualizarEstadoVenta(ventaEntregar.id_venta, 'entregada');
+            const id = ventaEntregar.id_venta;
+            setVentaEntregar(null);
+            await cargarVentas();
+            exito(`Venta #${id} marcada como entregada`);
         } catch (err) {
-            mostrarError(err.response?.data?.mensaje || 'Error al obtener la venta');
+            mostrarError(err.response?.data?.mensaje || 'Error al confirmar la entrega');
+        } finally {
+            setEntregando(false);
         }
     };
 
@@ -343,10 +350,7 @@ const cambiarEstadoVenta = async (venta) => {
         exito(respuesta?.mensaje || 'Venta registrada correctamente');
     };
 
-const ventaActualizada = async (mensaje) => {
-        await cargarVentas();
-        exito(mensaje || 'Estado de venta actualizado correctamente');
-    };
+
 
     const exportar = () => {
         exportarCsv({
@@ -540,7 +544,7 @@ const ventaActualizada = async (mensaje) => {
                             acciones={(fila) =>
                                 accionesVenta(fila, {
                                     onVer: verVenta,
-                                    onCambiarEstado: cambiarEstadoVenta,
+                                    onConfirmarEntrega: setVentaEntregar,
                                     onEmitirComprobante: abrirEmitirComprobante,
                                 })
                             }
@@ -551,11 +555,16 @@ const ventaActualizada = async (mensaje) => {
             )}
 
 <VentaViewModal venta={ventaVer} abierto={Boolean(ventaVer)} onCerrar={() => setVentaVer(null)} />
-            <VentaEstadoModal
-                venta={ventaEstado}
-                abierto={Boolean(ventaEstado)}
-                onCerrar={() => setVentaEstado(null)}
-                onActualizado={ventaActualizada}
+            <ConfirmarAccion
+                abierto={Boolean(ventaEntregar)}
+                titulo="Confirmar entrega"
+                mensaje={`¿Confirmas que la venta #${ventaEntregar?.id_venta} (${formatearMoneda(ventaEntregar?.total)}) ya fue entregada al cliente?`}
+                advertencia="La venta pasará a «Entregada» y no podrá volver a otro estado."
+                icono={<FaCheck />}
+                textoConfirmar="Sí, fue entregada"
+                onCerrar={() => setVentaEntregar(null)}
+                onConfirmar={confirmarEntrega}
+                cargando={entregando}
             />
 <ComprobanteViewModal
                 comprobante={comprobanteEmitido}

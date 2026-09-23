@@ -10,7 +10,8 @@ import { emailValido } from '../../lib/utils/validaciones';
 
 import { useToast } from '../../components/providers/ToastProvider';
 
-import { emitirComprobante } from '../comprobantes/comprobantesService';
+import { emitirComprobante, enviarComprobanteEmail } from '../comprobantes/comprobantesService';
+import { envioAutomaticoActivo } from '../comprobantes/envioAutomatico';
 import { obtenerEmpresa } from '../configuracion/empresaService';
 
 const TIPOS_DOCUMENTO_BOLETA = ['DNI', 'CE', 'PASAPORTE'];
@@ -82,7 +83,6 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
     };
 
     const detalle = venta?.detalles || venta?.detalle || [];
-    const subtotalVenta = detalle.reduce((s, item) => s + Number(item.subtotal || 0), 0);
     const costoEnvio = Number(venta?.costo_envio || 0);
     const totalVenta = Number(venta?.total || 0);
 
@@ -137,6 +137,12 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
             exito(`${tipo === 'factura' ? 'Factura' : 'Boleta'} emitida correctamente`);
             onEmitido?.(comprobante);
             onCerrar();
+            // Modo automático: se envía por correo sin bloquear la ventana.
+            if (envioAutomaticoActivo() && comprobante?.id_comprobante) {
+                enviarComprobanteEmail(comprobante.id_comprobante)
+                    .then((r) => exito(r?.mensaje || 'Comprobante enviado por correo'))
+                    .catch((err) => mostrarError(err.response?.data?.mensaje || 'Se emitió, pero no se pudo enviar por correo'));
+            }
         } catch (err) {
             mostrarError(
                 err.response?.data?.mensaje ||
@@ -254,6 +260,11 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                             placeholder="correo@ejemplo.com"
                             maxLength="120"
                         />
+                        {envioAutomaticoActivo() && (
+                            <p className="envio-auto-nota sm:col-span-2">
+                                Envío automático activado: el comprobante se enviará por correo al emitirlo.
+                            </p>
+                        )}
                     </div>
                 </div>
 
