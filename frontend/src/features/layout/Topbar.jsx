@@ -3,66 +3,24 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
-    FaArrowRight,
     FaBars,
     FaBell,
-    FaCalendarCheck,
-    FaCartShopping,
     FaChevronDown,
-    FaChevronRight,
-    FaCircleCheck,
-    FaClock,
-    FaClockRotateLeft,
-    FaCreditCard,
     FaGear,
     FaMagnifyingGlass,
     FaMoon,
-    FaPenToSquare,
     FaRightFromBracket,
-    FaRotate,
     FaSun,
-    FaTrash,
     FaUser,
     FaXmark,
 } from 'react-icons/fa6';
 
 import { construirUrlArchivo } from '../../lib/api/client';
-import storage from '../../lib/storage';
-import { formatearFecha } from '../../lib/utils/format';
-import { obtenerHistorial } from '../historial/historialService';
+import PanelNotificaciones from '../notificaciones/PanelNotificaciones';
+import { esPrimeraVez, leerVistas, marcarVistas, obtenerNotificaciones } from '../notificaciones/notificacionesService';
 import { useAuth } from '../auth/AuthContext';
 import PerfilAdministrador from './PerfilAdministrador';
 import { navPrincipal } from './navConfig';
-
-const moduloIcono = (modulo) => {
-    const m = String(modulo || '').toLowerCase();
-    if (m.includes('reserva')) return <FaCalendarCheck />;
-    if (m.includes('venta') || m.includes('compra')) return <FaCartShopping />;
-    if (m.includes('pago')) return <FaCreditCard />;
-    if (m.includes('libro') || m.includes('inventario')) return <FaCircleCheck />;
-    return <FaBell />;
-};
-
-const moduloColor = (modulo) => {
-    const m = String(modulo || '').toLowerCase();
-    if (m.includes('reserva')) return { bg: '#ECFDF5', color: '#059669' };
-    if (m.includes('venta') || m.includes('compra')) return { bg: '#fbf5f4', color: '#8a2c36' };
-    if (m.includes('pago')) return { bg: '#F5F3FF', color: '#7C3AED' };
-    if (m.includes('libro') || m.includes('inventario')) return { bg: '#FFF7ED', color: '#EA580C' };
-    return { bg: '#f3efe9', color: '#766d62' };
-};
-
-const operacionConfig = (item) => {
-    const tipo = String(item.tipo_operacion || '').toUpperCase();
-    const descripcion = String(item.descripcion || '').toLowerCase();
-    if (descripcion.includes('cancelad')) return { color: '#DC2626', bg: '#FEF2F2', label: 'Cancelada' };
-    if (descripcion.includes('pagada') || descripcion.includes('completada') || descripcion.includes('confirmada'))
-        return { color: '#059669', bg: '#ECFDF5', label: 'Completada' };
-    if (tipo === 'CREAR') return { color: '#D97706', bg: '#FFFBEB', label: 'Crear' };
-    if (tipo === 'ACTUALIZAR') return { color: '#8a2c36', bg: '#fbf5f4', label: 'Actualizar' };
-    if (tipo === 'ELIMINAR') return { color: '#DC2626', bg: '#FEF2F2', label: 'Eliminar' };
-    return { color: '#766d62', bg: '#f3efe9', label: 'Actividad' };
-};
 
 function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
     return (
@@ -91,7 +49,8 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     const [buscadorAbierto, setBuscadorAbierto] = useState(false);
 
     const [notificaciones, setNotificaciones] = useState([]);
-    const [cantidadNuevas, setCantidadNuevas] = useState(0);
+    const [vistas, setVistas] = useState(() => leerVistas());
+    const [resaltadas, setResaltadas] = useState(() => new Set());
     const [cargandoNotif, setCargandoNotif] = useState(false);
     const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false);
 
@@ -107,6 +66,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     const nombre = `${usuario?.nombre || ''} ${usuario?.apellido || ''}`.trim() || 'Administrador';
     const inicial = usuario?.nombre?.charAt(0)?.toUpperCase() || 'A';
     const foto = construirUrlArchivo(usuario?.foto_perfil);
+    const cantidadNuevas = notificaciones.filter((n) => !vistas.has(n.clave)).length;
 
     const resultadosBusqueda = useMemo(() => {
         const texto = busqueda.trim().toLowerCase();
@@ -116,23 +76,16 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
         );
     }, [busqueda]);
 
-    const cargarNotificaciones = async (primeraCarga = false) => {
+    // Solo eventos que requieren atención: pagos aprobados, reservas pendientes y stock bajo.
+    const cargarNotificaciones = async () => {
         try {
             setCargandoNotif(true);
-            const registros = await obtenerHistorial();
-            setNotificaciones(registros);
-            const ultimoId = registros.length > 0 ? Number(registros[0].id_historial) : 0;
-            const ultimoVisto = storage.getUltimoHistorialVisto();
-            if (primeraCarga && !ultimoVisto) {
-                storage.setUltimoHistorialVisto(ultimoId);
-                setCantidadNuevas(0);
-                return;
-            }
-            const nuevos = registros.filter((r) => Number(r.id_historial) > Number(ultimoVisto || 0));
-            setCantidadNuevas(nuevos.length);
-            return registros;
+            const lista = await obtenerNotificaciones();
+            if (esPrimeraVez()) marcarVistas(lista.map((n) => n.clave));
+            setVistas(leerVistas());
+            setNotificaciones(lista);
+            return lista;
         } catch {
-            setNotificaciones([]);
             return [];
         } finally {
             setCargandoNotif(false);
@@ -140,8 +93,8 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     };
 
     useEffect(() => {
-        cargarNotificaciones(true);
-        const intervalo = setInterval(() => cargarNotificaciones(), 30000);
+        cargarNotificaciones();
+        const intervalo = setInterval(() => cargarNotificaciones(), 60000);
         return () => clearInterval(intervalo);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -180,9 +133,17 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
         setNotificacionesAbiertas(abrir);
         setMenuAbierto(false);
         if (!abrir) return;
-        const registros = await cargarNotificaciones();
-        if (registros.length > 0) storage.setUltimoHistorialVisto(registros[0].id_historial);
-        setCantidadNuevas(0);
+        const lista = await cargarNotificaciones();
+        // Se resaltan las que eran nuevas y quedan marcadas como vistas.
+        const vistasAntes = leerVistas();
+        setResaltadas(new Set(lista.filter((n) => !vistasAntes.has(n.clave)).map((n) => n.clave)));
+        marcarVistas(lista.map((n) => n.clave));
+        setVistas(leerVistas());
+    };
+
+    const irANotificacion = (notificacion) => {
+        setNotificacionesAbiertas(false);
+        navigate(notificacion.destino);
     };
 
     const manejarHamburguesa = () => {
@@ -327,111 +288,15 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                             </button>
 
                             {notificacionesAbiertas && (
-                                <div className="animate-suave fixed left-3 right-3 top-16 z-50 overflow-hidden rounded-[16px] border border-[#e6e0d7] bg-white shadow-[0_24px_60px_-12px_rgba(28,24,20,0.22)] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[500px]">
-
-                                    {/* Header */}
-                                    <div className="border-b border-[#e6e0d7] px-6 py-5">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3.5">
-                                                <div className="flex h-[44px] w-[44px] items-center justify-center rounded-xl bg-[#fbf5f4]">
-                                                    <FaBell className="text-[18px] text-[#8a2c36]" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-title text-[18px] font-semibold text-[#1c1814]">
-                                                        Notificaciones
-                                                    </h3>
-                                                    <p className="mt-0.5 text-[13px] text-[#766d62]">
-                                                        Actividades recientes del sistema
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => cargarNotificaciones()}
-                                                className="flex items-center gap-1.5 rounded-[9px] border border-[#e6e0d7] bg-white px-3.5 py-2 text-[12px] font-semibold text-[#8a2c36] transition-all hover:bg-[#faf8f5] hover:border-[#d3cbbf]"
-                                            >
-                                                <FaRotate className="text-[11px]" />
-                                                Actualizar
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Lista */}
-                                    <div className="max-h-[480px] overflow-y-auto scrollbar-light">
-                                        {cargandoNotif && notificaciones.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center py-16 text-center">
-                                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f3efe9]">
-                                                    <FaBell className="text-[20px] text-[#d3cbbf]" />
-                                                </div>
-                                                <p className="text-[14px] font-medium text-[#1c1814]/60">Cargando...</p>
-                                            </div>
-                                        ) : notificaciones.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center py-16 text-center">
-                                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fbf5f4]">
-                                                    <FaBell className="text-[20px] text-[#8a2c36]/40" />
-                                                </div>
-                                                <p className="text-[14px] font-semibold text-[#1c1814]">Sin notificaciones</p>
-                                                <p className="mt-1 text-[13px] text-[#766d62]">No hay actividad reciente</p>
-                                            </div>
-                                        ) : (
-                                            notificaciones.slice(0, 15).map((item, index) => {
-                                                const op = operacionConfig(item);
-                                                const mc = moduloColor(item.modulo);
-                                                return (
-                                                    <div
-                                                        key={item.id_historial}
-                                                        className={`group flex items-start gap-3.5 px-5 py-4 transition-all duration-150 hover:bg-[#faf8f5] ${
-                                                            index < 14 ? 'border-b border-[#f3efe9]' : ''
-                                                        }`}
-                                                    >
-                                                        <div
-                                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[15px]"
-                                                            style={{ backgroundColor: mc.bg, color: mc.color }}
-                                                        >
-                                                            {moduloIcono(item.modulo)}
-                                                        </div>
-                                                        <div className="min-w-0 flex-1">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-[14px] font-semibold text-[#1c1814]">
-                                                                    {item.modulo || 'Sistema'}
-                                                                </span>
-                                                                <span
-                                                                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
-                                                                    style={{ backgroundColor: op.bg, color: op.color }}
-                                                                >
-                                                                    {(op.label === 'Completada' || op.label === 'Confirmada') && <FaCircleCheck className="text-[8px]" />}
-                                                                    {op.label}
-                                                                </span>
-                                                                <span className="ml-auto flex items-center gap-1 text-[11px] text-[#a39a8e]">
-                                                                    <FaClock className="text-[9px]" />
-                                                                    {formatearFecha(item.fecha_registro)}
-                                                                </span>
-                                                            </div>
-                                                            <p className="mt-1.5 text-[13px] leading-relaxed text-[#766d62]">
-                                                                {item.descripcion?.replace(/#/g, '')}
-                                                            </p>
-                                                        </div>
-                                                        <FaChevronRight className="mt-2.5 h-3.5 w-3.5 shrink-0 text-[#d3cbbf] opacity-0 transition-all duration-150 group-hover:opacity-100 group-hover:text-[#766d62]" />
-                                                    </div>
-                                                );
-                                            })
-                                        )}
-                                    </div>
-
-                                    {/* Footer */}
-                                    <div className="border-t border-[#e6e0d7] bg-[#faf8f5]">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setNotificacionesAbiertas(false);
-                                                navigate('/historial');
-                                            }}
-                                            className="group flex w-full items-center justify-center gap-2 py-3.5 text-[13px] font-semibold text-[#8a2c36] transition-all hover:bg-[#fbf5f4]"
-                                        >
-                                            <FaClockRotateLeft className="text-[12px] text-[#8a2c36]/60 transition-colors group-hover:text-[#8a2c36]" />
-                                            Ver historial completo
-                                        </button>
-                                    </div>
+                                <div className="animate-suave fixed left-3 right-3 top-16 z-50 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 sm:w-[440px]">
+                                    <PanelNotificaciones
+                                        notificaciones={notificaciones}
+                                        nuevas={resaltadas}
+                                        cargando={cargandoNotif}
+                                        onAbrir={irANotificacion}
+                                        onActualizar={() => cargarNotificaciones()}
+                                        onMarcarLeidas={() => setResaltadas(new Set())}
+                                    />
                                 </div>
                             )}
                         </div>

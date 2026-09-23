@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { FaBoxesStacked, FaClockRotateLeft, FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
@@ -156,6 +157,16 @@ const [inventarioVer, setInventarioVer] = useState(null);
             mostrarError(err.response?.data?.mensaje || 'Error al obtener el inventario');
         }
     };
+
+    // Desde una notificación: ?ver=... abre directamente el inventario del libro.
+    const [parametros, setParametros] = useSearchParams();
+    useEffect(() => {
+        const ver = parametros.get('ver');
+        if (!ver) return;
+        setParametros({}, { replace: true });
+        verInventario({ id_libro: ver });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [parametros]);
 
     const editarInventario = async (registro) => {
         try {

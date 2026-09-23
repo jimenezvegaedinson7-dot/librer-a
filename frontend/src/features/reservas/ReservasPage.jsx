@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
@@ -152,6 +153,16 @@ export default function ReservasPage() {
             mostrarError(err.response?.data?.mensaje || 'Error al obtener la reserva');
         }
     };
+
+    // Desde una notificación: ?ver=... abre directamente la reserva.
+    const [parametros, setParametros] = useSearchParams();
+    useEffect(() => {
+        const ver = parametros.get('ver');
+        if (!ver) return;
+        setParametros({}, { replace: true });
+        verReserva({ id_reserva: ver });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [parametros]);
 
     const cambiarEstadoReserva = async (reserva) => {
         try {

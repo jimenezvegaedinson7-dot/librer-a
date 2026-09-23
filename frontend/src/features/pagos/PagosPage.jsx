@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import {
     FaCreditCard,
@@ -194,6 +195,27 @@ export default function PagosPage() {
 
     const [orden, setOrden] = useState({ campo: 'fecha_creacion', direccion: 'desc' });
     const [pagoVer, setPagoVer] = useState(null);
+
+    // Busca el pago por su referencia externa y abre su detalle.
+    const abrirPagoPorReferencia = async (referencia) => {
+        try {
+            const resultado = await listarPagos({ q: referencia, por_pagina: 5 });
+            const fila = resultado.pagos.find((p) => p.external_reference === referencia);
+            if (fila) setPagoVer(fila);
+        } catch {
+            // Si falla, la página se muestra igual.
+        }
+    };
+
+    // Desde una notificación: ?ver=... abre directamente el detalle del pago.
+    const [parametros, setParametros] = useSearchParams();
+    useEffect(() => {
+        const ver = parametros.get('ver');
+        if (!ver) return;
+        setParametros({}, { replace: true });
+        abrirPagoPorReferencia(ver);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [parametros]);
 
     const cargarPagos = async () => {
         try {
