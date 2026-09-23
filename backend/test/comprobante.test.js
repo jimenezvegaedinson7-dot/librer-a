@@ -145,11 +145,28 @@ test('factura con tipo inválido vuelve a default RUC', () => {
     );
 });
 
-test('boleta no guarda tipo de documento (null)', () => {
+test('boleta guarda el tipo de documento si es válido', () => {
     assert.equal(
         normalizarTipoDocumentoCliente(
             'boleta',
             'DNI'
+        ),
+        'DNI'
+    );
+});
+
+test('boleta con tipo inválido o vacío no guarda tipo (null)', () => {
+    assert.equal(
+        normalizarTipoDocumentoCliente(
+            'boleta',
+            'TARJETA'
+        ),
+        null
+    );
+    assert.equal(
+        normalizarTipoDocumentoCliente(
+            'boleta',
+            null
         ),
         null
     );

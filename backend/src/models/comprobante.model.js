@@ -48,8 +48,9 @@ const esClienteDniRucValido = (cliente_dni_ruc) => {
 // ========================================
 // NORMALIZAR TIPO DE DOCUMENTO DEL CLIENTE
 // (función pura, testeable sin BD)
-// Para factura: default 'RUC'. Solo acepta DNI/RUC/CE/PASAPORTE.
-// Para boleta: null (no aplica).
+// Solo acepta DNI/RUC/CE/PASAPORTE.
+// Factura: si el tipo no es válido, default 'RUC'.
+// Boleta: guarda el tipo si es válido; si no, null.
 // ========================================
 const normalizarTipoDocumentoCliente = (
     tipoComprobante,
@@ -198,12 +199,6 @@ const generarComprobante = async ({
         );
     }
 
-    const tipoDocumentoCliente =
-        normalizarTipoDocumentoCliente(
-            tipoComprobante,
-            cliente_tipo_documento || venta.cliente_tipo_documento || null
-        );
-
     // ========================================
     // LEER VENTA (cabecera + detalles)
     // ========================================
@@ -227,6 +222,13 @@ const generarComprobante = async ({
             400
         );
     }
+
+    // Tipo de documento: el enviado o, si falta, el guardado en la venta.
+    const tipoDocumentoCliente =
+        normalizarTipoDocumentoCliente(
+            tipoComprobante,
+            cliente_tipo_documento || venta.cliente_tipo_documento || null
+        );
 
     // ========================================
     // EMPRESA EMISORA (snapshots)
