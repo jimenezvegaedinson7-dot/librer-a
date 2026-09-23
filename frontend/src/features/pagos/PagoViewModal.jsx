@@ -65,7 +65,7 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
         <Modal abierto={abierto} titulo="Detalle del pago" subtitulo="Información completa del pago y la venta" onCerrar={onCerrar} grande>
             <div className="border-b border-primary-200 pb-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Pago</p>
-                <h3 className="mt-2 font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">Pago #{pago.id_pago}</h3>
+                <h3 className="mt-2 font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">Pago de la venta #{pago.id_venta}</h3>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -126,6 +126,11 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
                 <Ficha color="amber" icono={<FaIdBadge />} etiqueta="Referencias de la venta">
                     <div className="space-y-2">
                         <p className="text-sm">Venta #{pago.id_venta}</p>
+                        {pago.id_pago && (
+                            <p className="text-xs font-normal text-primary-500">
+                                Transacción PayU <span className="font-semibold text-slate-700">{pago.id_pago}</span>
+                            </p>
+                        )}
                         <p className="text-xs font-normal text-primary-500">
                             Cliente <span className="font-semibold text-slate-700">#{cliente.id_usuario || '—'}</span>
                         </p>

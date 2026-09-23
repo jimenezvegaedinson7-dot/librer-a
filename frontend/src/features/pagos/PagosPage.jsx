@@ -443,7 +443,7 @@ export default function PagosPage() {
                         <DataTable
                             columnas={columnasPagos}
                             filas={pagosOrdenados}
-                            keyExtractor={(fila) => fila.id_pago ?? fila.id_venta}
+                            keyExtractor={(fila) => fila.id_venta}
                             orden={orden}
                             onOrdenar={manejarOrden}
                             acciones={(fila) => accionesPago(fila, { onVer: setPagoVer })}
