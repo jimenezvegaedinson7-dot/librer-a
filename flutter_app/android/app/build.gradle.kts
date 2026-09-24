@@ -1,7 +1,27 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// ---------------------------------------------------------------------------
+// FIRMA DE RELEASE
+// Todas las versiones deben firmarse con la MISMA clave: Android solo instala
+// una actualización encima de la app si la firma coincide.
+// La clave y sus contraseñas NO están en Git. Se buscan en:
+//   1. android/key.properties (ignorado por Git), o
+//   2. %USERPROFILE%/.libreria-firma/key.properties
+// ---------------------------------------------------------------------------
+val keystoreProperties = Properties()
+val keystorePropertiesFile = listOf(
+    rootProject.file("key.properties"),
+    file("${System.getProperty("user.home")}/.libreria-firma/key.properties"),
+).firstOrNull { it.exists() }
+if (keystorePropertiesFile != null) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -29,11 +49,35 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (keystorePropertiesFile != null) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // Sin clave de release no se firma con la de depuración: un APK
+            // con otra firma no podría instalarse encima de la versión anterior.
+            signingConfig = signingConfigs.findByName("release")
+        }
+    }
+}
+
+// Si falta key.properties, el build de release se detiene con un aviso claro.
+tasks.matching { it.name == "assembleRelease" || it.name == "bundleRelease" }.configureEach {
+    doFirst {
+        if (keystorePropertiesFile == null) {
+            throw GradleException(
+                "No se encontró key.properties con la firma de release. " +
+                    "Colócalo en android/key.properties o en " +
+                    "%USERPROFILE%/.libreria-firma/key.properties (ver docs de firma)."
+            )
         }
     }
 }

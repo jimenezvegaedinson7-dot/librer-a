@@ -48,6 +48,7 @@ const agenciaRoutes = require('./src/routes/agencia.routes');
 const empresaRoutes = require('./src/routes/empresa.routes');
 const comprobanteRoutes = require('./src/routes/comprobante.routes');
 const clienteRoutes = require('./src/routes/cliente.routes');
+const appRoutes = require('./src/routes/app.routes');
 
 // ===============================
 // CONFIGURACIÓN DE EXPRESS
@@ -313,6 +314,14 @@ app.use(
 app.use(
     '/api/empresa',
     empresaRoutes
+);
+
+// ===============================
+// API DE LA APP ANDROID (VERSIÓN PUBLICADA, PÚBLICA)
+// ===============================
+app.use(
+    '/api/app',
+    appRoutes
 );
 
 // ===============================

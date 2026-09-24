@@ -40,6 +40,9 @@ dependencies:
   url_launcher: ^6.3.2
   flutter_secure_storage: ^11.1.0
   google_fonts: ^8.2.1
+  package_info_plus: ^10.2.1
+  path_provider: ^2.1.6
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:
@@ -95,10 +98,12 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 
+# Icono de la app: el logo actual (libro con pluma) sobre marfil.
+# Regenerar con: dart run flutter_launcher_icons
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "assets/icons/app_icon_android.png"
-  adaptive_icon_background: "#0D1B2A"
-  adaptive_icon_foreground: "assets/icons/app_icon_android.png"
+  image_path: "assets/icons/app_icon_legacy.png"
+  adaptive_icon_background: "#F6F1E9"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
   min_sdk_android: 21

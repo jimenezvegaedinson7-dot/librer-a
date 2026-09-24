@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../services/carrito_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/comprobador_actualizacion.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/estanteria.dart';
 import 'home_screen.dart';
@@ -33,6 +34,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Aviso de nueva versión del APK (una vez por arranque de la app).
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => ComprobadorActualizacion.comprobar(context),
+    );
+  }
   bool _loading = false;
   String? _errorMessage;
 

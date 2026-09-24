@@ -12,6 +12,7 @@ import '../utils/constants.dart';
 import '../widgets/aparecer.dart';
 import '../widgets/app_bottom_navigation.dart';
 import '../widgets/book_cover.dart';
+import '../widgets/comprobador_actualizacion.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/estanteria.dart';
@@ -59,6 +60,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _cargarNombre();
+    // Aviso de nueva versión del APK (una vez por arranque de la app).
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => ComprobadorActualizacion.comprobar(context),
+    );
   }
 
   @override
