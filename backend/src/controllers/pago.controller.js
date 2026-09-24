@@ -2,7 +2,6 @@ const payuService = require('../services/payu.service');
 const ventaModel = require('../models/venta.model');
 const usuarioModel = require('../models/usuario.model');
 const ubicacionModel = require('../models/ubicacion.model');
-const agenciaModel = require('../models/agencia.model');
 const pool = require('../config/database');
 const crypto = require('crypto');
 const { validarId } = require('../utils/validaciones');
@@ -230,10 +229,11 @@ const eventoWebhookYaProcesado = (clave) => {
 
 // ========================================
 // TIPOS DE ENTREGA SOPORTADOS
+// (cualquier otro valor se trata como recojo en tienda).
+// El envío por agencia ya no se ofrece: solo se entrega en Lima.
 // ========================================
 const ListaTipoEntrega = [
-    'domicilio',
-    'agencia'
+    'domicilio'
 ];
 
 const construirRespuestaOrdenExistente = async (venta) => {
@@ -298,7 +298,6 @@ const crearOrden = async (req, res) => {
             direccion,
             correo_compra,
             id_distrito,
-            id_agencia,
             idempotencia_clave,
             cliente_documento,
             cliente_tipo_documento
@@ -383,8 +382,20 @@ const crearOrden = async (req, res) => {
         }
 
         // ========================================
-        // NORMALIZAR TIPO DE ENTREGA (domicilio | agencia | tienda)
+        // NORMALIZAR TIPO DE ENTREGA (domicilio | tienda)
+        // Una app antigua podría pedir 'agencia': se rechaza con un
+        // aviso en lugar de convertirla en recojo en tienda sin avisar.
         // ========================================
+        if (tipo_entrega === 'agencia') {
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    mensaje:
+                        'El envío por agencia ya no está disponible. Elige envío a domicilio o recojo en tienda.'
+                });
+        }
+
         const tipoEntrega =
             ListaTipoEntrega.includes(
                 tipo_entrega
@@ -398,7 +409,6 @@ const crearOrden = async (req, res) => {
         // ========================================
         let costoEnvio = 0;
         let distritoEntrega = null;
-        let agenciaEntrega = null;
 
         if (
             tipoEntrega === 'domicilio'
@@ -435,31 +445,6 @@ const crearOrden = async (req, res) => {
 
             costoEnvio = Number(
                 distritoEntrega.tarifa_envio
-            ) || 0;
-        } else if (
-            tipoEntrega === 'agencia'
-        ) {
-            agenciaEntrega =
-                await agenciaModel
-                    .obtenerPorId(
-                        validarId(id_agencia)
-                    );
-
-            if (
-                !agenciaEntrega ||
-                Number(agenciaEntrega.estado) !== 1
-            ) {
-                return res
-                    .status(400)
-                    .json({
-                        success: false,
-                        mensaje:
-                            'Selecciona una agencia de envío válida'
-                    });
-            }
-
-            costoEnvio = Number(
-                agenciaEntrega.tarifa_base
             ) || 0;
         }
 
@@ -676,9 +661,7 @@ const crearOrden = async (req, res) => {
         const shippingTitulo =
             tipoEntrega === 'domicilio'
                 ? `Envío a domicilio (${distritoEntrega.provincia} - ${distritoEntrega.nombre})`
-                : tipoEntrega === 'agencia'
-                    ? `Envío por agencia (${agenciaEntrega.nombre})`
-                    : null;
+                : null;
 
         // ========================================
         // CREAR ORDEN EN PAYU
@@ -715,10 +698,7 @@ const crearOrden = async (req, res) => {
                     tipoEntrega === 'domicilio'
                         ? validarId(id_distrito)
                         : null,
-                id_agencia:
-                    tipoEntrega === 'agencia'
-                        ? validarId(id_agencia)
-                        : null,
+                id_agencia: null,
                 correo_compra:
                     correo_compra ||
                     req.usuario.email,

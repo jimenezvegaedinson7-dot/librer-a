@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../models/agencia.dart';
 import '../models/ubicacion.dart';
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
@@ -15,12 +14,12 @@ import '../widgets/loading_view.dart';
 import '../widgets/precio_texto.dart';
 import '../widgets/presionable.dart';
 
-enum _TipoEntrega { domicilio, agencia, tienda }
+enum _TipoEntrega { domicilio, tienda }
 
 /// Pantalla "Entrega y pago".
 ///
 /// Se abre desde "Mi carrito" al presionar "Realizar pedido". Permite elegir
-/// el tipo de entrega (a domicilio, agencia o recoger en tienda), ingresar los
+/// el tipo de entrega (a domicilio en Lima o recoger en tienda), ingresar los
 /// datos de envío cuando corresponde y revisar el resumen (subtotal, envío,
 /// total). Al confirmar con [COMPRAR Y PAGAR] se crea la orden en PayU
 /// (WebCheckout) y se abre el checkout con el navegador, reutilizando
@@ -47,10 +46,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
 
   List<Provincia> _provincias = [];
   List<Distrito> _distritos = [];
-  List<Agencia> _agencias = [];
   int? _idProvincia;
   int? _idDistrito;
-  int? _idAgencia;
 
   @override
   void initState() {
@@ -68,11 +65,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   Future<void> _cargarUbicaciones() async {
     setState(() => _cargandoUbicaciones = true);
     try {
-      final agencias = await ApiService.instance.obtenerAgencias();
       final provincias = await ApiService.instance.obtenerProvincias();
       if (!mounted) return;
       setState(() {
-        _agencias = agencias;
         _provincias = provincias;
         if (_provincias.isNotEmpty && _idProvincia == null) {
           _idProvincia = _provincias.first.idProvincia;
@@ -144,14 +139,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       // los precios reales de la BD).
       final orden = await ApiService.instance.crearOrdenPago(
         detalles: detalles,
-        tipoEntrega: esDomicilio
-            ? 'domicilio'
-            : _tipoEntrega == _TipoEntrega.agencia
-            ? 'agencia'
-            : 'tienda',
+        tipoEntrega: esDomicilio ? 'domicilio' : 'tienda',
         direccion: esDomicilio ? _direccionController.text.trim() : null,
         idDistrito: esDomicilio ? _idDistrito : null,
-        idAgencia: _tipoEntrega == _TipoEntrega.agencia ? _idAgencia : null,
         clienteTipoDocumento: _tipoDocumento,
         clienteDocumento: _documentoController.text.trim(),
       );
@@ -218,11 +208,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         }
         if (_direccionController.text.trim().length < 5) {
           return 'Indica una dirección de entrega válida.';
-        }
-        return null;
-      case _TipoEntrega.agencia:
-        if (_idAgencia == null) {
-          return 'Selecciona una agencia de envío.';
         }
         return null;
       case _TipoEntrega.tienda:
@@ -302,11 +287,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
             .where((d) => d.idDistrito == _idDistrito)
             .firstOrNull;
         return distrito?.tarifaEnvio ?? 0;
-      case _TipoEntrega.agencia:
-        final agencia = _agencias
-            .where((a) => a.idAgencia == _idAgencia)
-            .firstOrNull;
-        return agencia?.tarifaBase ?? 0;
       case _TipoEntrega.tienda:
         return 0;
     }
@@ -391,15 +371,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         ),
         const SizedBox(height: 8),
         _OpcionEntrega(
-          seleccionado: _tipoEntrega == _TipoEntrega.agencia,
-          icon: Icons.store_mall_directory_outlined,
-          titulo: 'Agencia',
-          detalle: 'Recógelo en una agencia de envío.',
-          etiqueta: 'Según agencia',
-          onTap: () => setState(() => _tipoEntrega = _TipoEntrega.agencia),
-        ),
-        const SizedBox(height: 8),
-        _OpcionEntrega(
           seleccionado: _tipoEntrega == _TipoEntrega.tienda,
           icon: Icons.storefront_outlined,
           titulo: 'Recoger en tienda',
@@ -419,10 +390,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                 _TipoEntrega.domicilio => Padding(
                   padding: const EdgeInsets.only(top: 16),
                   child: _buildEntregaDomicilio(),
-                ),
-                _TipoEntrega.agencia => Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: _buildEntregaAgencia(),
                 ),
                 _TipoEntrega.tienda => const Padding(
                   padding: EdgeInsets.only(top: 12),
@@ -504,41 +471,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
             alignLabelWithHint: true,
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildEntregaAgencia() {
-    if (_cargandoUbicaciones) {
-      return const LoadingView(message: 'Cargando opciones de envío...');
-    }
-    final textTheme = Theme.of(context).textTheme;
-
-    if (_agencias.isEmpty) {
-      return Text(
-        'No hay agencias disponibles por el momento.',
-        style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Agencia de envío',
-          style: textTheme.labelMedium?.copyWith(
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        for (final a in _agencias) ...[
-          _OpcionAgencia(
-            agencia: a,
-            seleccionada: _idAgencia == a.idAgencia,
-            onTap: () => setState(() => _idAgencia = a.idAgencia),
-          ),
-          const SizedBox(height: 8),
-        ],
       ],
     );
   }
@@ -1253,77 +1185,3 @@ class _OpcionEntrega extends StatelessWidget {
   }
 }
 
-/// Agencia de envío con su tarifa real.
-class _OpcionAgencia extends StatelessWidget {
-  final Agencia agencia;
-  final bool seleccionada;
-  final VoidCallback onTap;
-
-  const _OpcionAgencia({
-    required this.agencia,
-    required this.seleccionada,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final descripcion = (agencia.descripcion ?? '').trim();
-    return Semantics(
-      selected: seleccionada,
-      button: true,
-      child: AnimatedContainer(
-        duration: Duracion.rapida,
-        decoration: BoxDecoration(
-          color: seleccionada ? AppColors.primaryContainer : AppColors.surface,
-          borderRadius: BorderRadius.circular(Radios.sm),
-          border: Border.all(
-            color: seleccionada ? AppColors.primary : AppColors.divider,
-          ),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(Radios.sm),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-              child: Row(
-                children: [
-                  Icon(
-                    seleccionada
-                        ? Icons.radio_button_checked_rounded
-                        : Icons.radio_button_off_rounded,
-                    size: 20,
-                    color: seleccionada
-                        ? AppColors.primary
-                        : AppColors.dividerStrong,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(agencia.nombre, style: textTheme.titleSmall),
-                        if (descripcion.isNotEmpty)
-                          Text(
-                            descripcion,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  PrecioTexto(monto: agencia.tarifaBase, tamano: 15),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

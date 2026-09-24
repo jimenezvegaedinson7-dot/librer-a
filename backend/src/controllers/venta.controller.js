@@ -1,7 +1,6 @@
 const ventaModel = require('../models/venta.model');
 const historialModel = require('../models/historial.model');
 const ubicacionModel = require('../models/ubicacion.model');
-const agenciaModel = require('../models/agencia.model');
 const pool = require('../config/database');
 const { validarId } = require('../utils/validaciones');
 const { VENTA, permitirTransicion } = require('../utils/transiciones');
@@ -191,14 +190,14 @@ const obtenerMisVentas = async (req, res) => {
 
 // ========================================
 // CREAR VENTA (ADMIN)
-// Acepta tipo de entrega (tienda | domicilio | agencia),
-// dirección e id_distrito para domicilio, id_agencia para
-// agencia y una referencia opcional.
+// Acepta tipo de entrega (tienda | domicilio), dirección e
+// id_distrito para domicilio y una referencia opcional.
+// El envío por agencia ya no se ofrece (solo se entrega en
+// Lima); las ventas antiguas por agencia se conservan.
 // ========================================
 const ListaTipoEntrega = [
     'tienda',
-    'domicilio',
-    'agencia'
+    'domicilio'
 ];
 
 const crearVenta = async (req, res) => {
@@ -211,7 +210,6 @@ const crearVenta = async (req, res) => {
 
         const tipo_entrega = req.body.tipo_entrega;
         const id_distrito = req.body.id_distrito;
-        const id_agencia = req.body.id_agencia;
         const direccion = req.body.direccion;
         const referencia = req.body.referencia;
         const cliente_documento = req.body.cliente_documento;
@@ -235,7 +233,7 @@ const crearVenta = async (req, res) => {
                 return res.status(400).json({
                     success: false,
                     mensaje:
-                        'Tipo de entrega no válido. Usa "tienda", "domicilio" o "agencia"'
+                        'Tipo de entrega no válido. Usa "tienda" o "domicilio"'
                 });
             }
 
@@ -293,7 +291,6 @@ const crearVenta = async (req, res) => {
         // ========================================
         let costoEnvio = 0;
         let distritoEntrega = null;
-        let agenciaEntrega = null;
 
         if (
             tipoEntrega === 'domicilio'
@@ -327,31 +324,6 @@ const crearVenta = async (req, res) => {
             costoEnvio = Number(
                 distritoEntrega.tarifa_envio
             ) || 0;
-        } else if (
-            tipoEntrega === 'agencia'
-        ) {
-            agenciaEntrega =
-                await agenciaModel
-                    .obtenerPorId(
-                        validarId(id_agencia)
-                    );
-
-            if (
-                !agenciaEntrega ||
-                Number(
-                    agenciaEntrega.estado
-                ) !== 1
-            ) {
-                return res.status(400).json({
-                    success: false,
-                    mensaje:
-                        'Selecciona una agencia de envío válida'
-                });
-            }
-
-            costoEnvio = Number(
-                agenciaEntrega.tarifa_base
-            ) || 0;
         }
 
         // 'tienda' no requiere datos adicionales: costoEnvio queda 0.
@@ -372,10 +344,7 @@ const crearVenta = async (req, res) => {
                     tipoEntrega === 'domicilio'
                         ? validarId(id_distrito)
                         : null,
-                id_agencia:
-                    tipoEntrega === 'agencia'
-                        ? validarId(id_agencia)
-                        : null,
+                id_agencia: null,
                 referencia:
                     referencia &&
                     String(referencia).trim()
@@ -420,10 +389,7 @@ const crearVenta = async (req, res) => {
                     tipoEntrega === 'domicilio'
                         ? validarId(id_distrito)
                         : null,
-                id_agencia:
-                    tipoEntrega === 'agencia'
-                        ? validarId(id_agencia)
-                        : null,
+                id_agencia: null,
                 direccion:
                     tipoEntrega === 'domicilio'
                         ? String(direccion).trim()

@@ -8,7 +8,6 @@ import {
     FaRotateLeft,
     FaShop,
     FaTrash,
-    FaTruckFast,
 } from 'react-icons/fa6';
 
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
@@ -21,7 +20,6 @@ import { emailValido } from '../../lib/utils/validaciones';
 
 import { listarLibros, crearVenta } from './ventasService';
 import { listarDistritosParaEnvio } from './ubicacionesService';
-import { listarAgenciasActivas } from '../agencias/agenciasService';
 
 const OPCIONES_ENTREGA = [
     {
@@ -35,12 +33,6 @@ const OPCIONES_ENTREGA = [
         titulo: 'A domicilio',
         descripcion: 'Entrega en la dirección del cliente',
         icono: <FaLocationDot />,
-    },
-    {
-        valor: 'agencia',
-        titulo: 'Agencia courier',
-        descripcion: 'Envío por agencia de transporte',
-        icono: <FaTruckFast />,
     },
 ];
 
@@ -57,11 +49,9 @@ export default function VentaForm({ onVentaCreada }) {
     const [correoCompra, setCorreoCompra] = useState('');
     const [errorCorreo, setErrorCorreo] = useState('');
     const [distritos, setDistritos] = useState([]);
-    const [agencias, setAgencias] = useState([]);
     const [idDistrito, setIdDistrito] = useState('');
     const [direccion, setDireccion] = useState('');
     const [referencia, setReferencia] = useState('');
-    const [idAgencia, setIdAgencia] = useState('');
     const [cargandoEnvio, setCargandoEnvio] = useState(true);
     const [errorEnvio, setErrorEnvio] = useState('');
 
@@ -89,13 +79,9 @@ export default function VentaForm({ onVentaCreada }) {
             try {
                 setCargandoEnvio(true);
                 setErrorEnvio('');
-                const [distritosData, agenciasData] = await Promise.all([
-                    listarDistritosParaEnvio(),
-                    listarAgenciasActivas(),
-                ]);
+                const distritosData = await listarDistritosParaEnvio();
                 if (!activo) return;
                 setDistritos(distritosData);
-                setAgencias(agenciasData);
             } catch {
                 if (activo) setErrorEnvio('No se pudieron cargar los datos de envío');
             } finally {
@@ -193,16 +179,10 @@ export default function VentaForm({ onVentaCreada }) {
     const costoEnvio = useMemo(() => {
         if (tipoEntrega === 'tienda') return 0;
 
-        if (tipoEntrega === 'domicilio') {
-            const distrito = distritos.find((d) => Number(d.id_distrito) === Number(idDistrito));
-            const tarifa = distrito ? Number(distrito.tarifa_envio || 0) : 0;
-            return Number.isFinite(tarifa) ? tarifa : 0;
-        }
-
-        const agencia = agencias.find((a) => Number(a.id_agencia) === Number(idAgencia));
-        const tarifa = agencia ? Number(agencia.tarifa_base || 0) : 0;
+        const distrito = distritos.find((d) => Number(d.id_distrito) === Number(idDistrito));
+        const tarifa = distrito ? Number(distrito.tarifa_envio || 0) : 0;
         return Number.isFinite(tarifa) ? tarifa : 0;
-    }, [tipoEntrega, idDistrito, idAgencia, distritos, agencias]);
+    }, [tipoEntrega, idDistrito, distritos]);
 
     const totalGeneral = subtotal + costoEnvio;
 
@@ -216,7 +196,6 @@ export default function VentaForm({ onVentaCreada }) {
         setIdDistrito('');
         setDireccion('');
         setReferencia('');
-        setIdAgencia('');
         setError('');
     };
 
@@ -233,11 +212,6 @@ export default function VentaForm({ onVentaCreada }) {
 
         if (tipoEntrega === 'domicilio' && !direccion.trim()) {
             setError('Indique la dirección de entrega');
-            return;
-        }
-
-        if (tipoEntrega === 'agencia' && !idAgencia) {
-            setError('Seleccione la agencia de envío');
             return;
         }
 
@@ -259,7 +233,6 @@ export default function VentaForm({ onVentaCreada }) {
                 id_distrito: tipoEntrega === 'tienda' ? undefined : idDistrito,
                 direccion: tipoEntrega === 'domicilio' ? direccion : undefined,
                 referencia: tipoEntrega === 'domicilio' ? referencia : undefined,
-                id_agencia: tipoEntrega === 'agencia' ? idAgencia : undefined,
                 correo_compra: correo || undefined,
             });
             limpiar();
@@ -406,7 +379,7 @@ export default function VentaForm({ onVentaCreada }) {
                                 <span className="venta-paso-numero" aria-hidden="true">3</span>
                                 Tipo de entrega
                             </h3>
-                            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3" role="radiogroup" aria-label="Tipo de entrega">
+                            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2" role="radiogroup" aria-label="Tipo de entrega">
                                 {OPCIONES_ENTREGA.map((opcion) => {
                                     const activa = tipoEntrega === opcion.valor;
                                     return (
@@ -470,25 +443,6 @@ export default function VentaForm({ onVentaCreada }) {
                                 </div>
                             )}
 
-                            {tipoEntrega === 'agencia' && (
-                                <div className="form-grid mt-4">
-                                    <Select
-                                        ancho={6}
-                                        label="Agencia de envío"
-                                        value={idAgencia}
-                                        onChange={(e) => setIdAgencia(e.target.value)}
-                                        disabled={cargandoEnvio || guardando}
-                                        requerido
-                                    >
-                                        <option value="">{cargandoEnvio ? 'Cargando agencias...' : 'Seleccione la agencia'}</option>
-                                        {agencias.map((agencia) => (
-                                            <option key={agencia.id_agencia} value={agencia.id_agencia}>
-                                                {agencia.nombre} — {formatearMoneda(agencia.tarifa_base)}
-                                            </option>
-                                        ))}
-                                    </Select>
-                                </div>
-                            )}
                         </section>
 
                         {errorEnvio && <Alert tipo="error">{errorEnvio}</Alert>}

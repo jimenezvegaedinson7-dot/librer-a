@@ -121,10 +121,9 @@ class Constants {
   static const String pagosPath = '/pagos';
 
   // ---------------------------------------------------------------------------
-  // Rutas de ubicaciones (Lima) y agencias courier
+  // Rutas de ubicaciones (Lima)
   // ---------------------------------------------------------------------------
   static const String ubicacionesPath = '/ubicaciones';
-  static const String agenciasPath = '/agencias';
 
   /// Prefijo de las rutas 2FA bajo /auth.
   static const String twoFactorBasePath = '/auth/2fa';

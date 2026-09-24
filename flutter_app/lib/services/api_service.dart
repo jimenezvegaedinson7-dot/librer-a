@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
-import '../models/agencia.dart';
 import '../models/libro.dart';
 import '../models/orden_pago.dart';
 import '../models/reserva.dart';
@@ -603,7 +602,7 @@ class ApiService {
   /// [OrdenPago.checkoutUrl] para redirigir al checkout.
   ///
   /// [tipoEntrega] puede ser `domicilio` (con [idDistrito] y [direccion]) o
-  /// `agencia` (con [idAgencia]).
+  /// `tienda` (recojo en tienda). El envío por agencia ya no se ofrece.
   ///
   /// La `idempotencia_clave` se genera UNA vez por intento de checkout y se
   /// reutiliza en los reintentos (tras un timeout, el backend responde
@@ -614,7 +613,6 @@ class ApiService {
     String? tipoEntrega,
     String? direccion,
     int? idDistrito,
-    int? idAgencia,
     String? clienteTipoDocumento,
     String? clienteDocumento,
   }) async {
@@ -626,7 +624,6 @@ class ApiService {
         tipoEntrega ?? '',
         direccion?.trim() ?? '',
         idDistrito?.toString() ?? '',
-        idAgencia?.toString() ?? '',
         clienteDocumento ?? '',
       ].join('|');
 
@@ -648,7 +645,6 @@ class ApiService {
           if (direccion != null && direccion.trim().isNotEmpty)
             'direccion': direccion.trim(),
           'id_distrito': ?idDistrito,
-          'id_agencia': ?idAgencia,
           if (clienteTipoDocumento != null && clienteTipoDocumento.isNotEmpty)
             'cliente_tipo_documento': clienteTipoDocumento,
           if (clienteDocumento != null && clienteDocumento.trim().isNotEmpty)
@@ -748,25 +744,6 @@ class ApiService {
             .toList();
       }
       throw const ApiException('El servidor no devolvió los distritos.');
-    } on DioException catch (e) {
-      throw _toApiException(e);
-    }
-  }
-
-  /// Obtiene las agencias courier activas contra `GET /agencias/activas`.
-  Future<List<Agencia>> obtenerAgencias() async {
-    try {
-      final response = await _dio.get<dynamic>(
-        '${Constants.agenciasPath}/activas',
-      );
-      final data = response.data;
-      if (data is Map && data['data'] is List) {
-        return (data['data'] as List)
-            .whereType<Map>()
-            .map((e) => Agencia.fromJson(Map<String, dynamic>.from(e)))
-            .toList();
-      }
-      throw const ApiException('El servidor no devolvió las agencias.');
     } on DioException catch (e) {
       throw _toApiException(e);
     }
