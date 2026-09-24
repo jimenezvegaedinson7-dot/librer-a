@@ -16,11 +16,12 @@ import '../widgets/comprobador_actualizacion.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/estanteria.dart';
-import '../widgets/libro_card.dart';
 import '../widgets/loading_view.dart';
+import '../widgets/precio_texto.dart';
 import '../widgets/presionable.dart';
 import '../widgets/seccion_titulo.dart';
 import 'carrito_screen.dart';
+import 'detalle_libro_screen.dart';
 import 'libros_screen.dart';
 import 'perfil_screen.dart';
 import 'reservas_screen.dart';
@@ -175,7 +176,7 @@ class _InicioTabState extends State<_InicioTab> {
   }
 
   /// Categorías reales del catálogo con su número de títulos y una portada.
-  List<({String nombre, int cantidad, Libro muestra})> get _categorias {
+  List<({String nombre, int cantidad, List<Libro> muestras})> get _categorias {
     final porCategoria = <String, List<Libro>>{};
     for (final libro in _libros) {
       final categoria = (libro.categoria ?? '').trim();
@@ -188,7 +189,7 @@ class _InicioTabState extends State<_InicioTab> {
               (e) => (
                 nombre: e.key,
                 cantidad: e.value.length,
-                muestra: e.value.first,
+                muestras: e.value.take(3).toList(),
               ),
             )
             .toList()
@@ -683,9 +684,10 @@ class _AbanicoPortadasState extends State<_AbanicoPortadas>
       Curves.easeInOut.transform(t < 0.5 ? t * 2 : (1 - t) * 2) * 2 - 1;
 }
 
-/// Recorrido por categorías reales: portada de muestra, nombre y cantidad.
+/// Recorrido por categorías reales: un pequeño abanico con portadas de la
+/// categoría y, debajo y sin tarjeta, su nombre y cantidad de títulos.
 class _Categorias extends StatelessWidget {
-  final List<({String nombre, int cantidad, Libro muestra})> categorias;
+  final List<({String nombre, int cantidad, List<Libro> muestras})> categorias;
   final ValueChanged<String?> onTap;
 
   const _Categorias({required this.categorias, required this.onTap});
@@ -705,67 +707,52 @@ class _Categorias extends StatelessWidget {
             onAccion: () => onTap(null),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 6),
         SizedBox(
-          height: 76,
+          height: 206,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            clipBehavior: Clip.none,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             itemCount: categorias.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 10),
+            separatorBuilder: (_, _) => const SizedBox(width: 4),
             itemBuilder: (context, i) {
               final c = categorias[i];
               return Presionable(
-                child: Material(
-                  color: AppColors.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(Radios.md),
-                    side: const BorderSide(color: AppColors.divider),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(Radios.md),
+                child: Semantics(
+                  button: true,
+                  label: 'Categoría ${c.nombre}, ${c.cantidad} títulos',
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () => onTap(c.nombre),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
-                      child: Row(
+                    child: SizedBox(
+                      width: 118,
+                      child: Column(
                         children: [
                           SizedBox(
-                            width: 40,
-                            height: 60,
-                            child: BookCover(
-                              url: Constants.buildPortadaUrl(c.muestra.portada),
-                              borderRadius: 3,
-                              fit: BoxFit.cover,
+                            height: 128,
+                            child: _AbanicoCategoria(libros: c.muestras),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            c.nombre,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: textTheme.titleMedium?.copyWith(
+                              fontSize: 15,
+                              height: 1.2,
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 130,
-                                ),
-                                child: Text(
-                                  c.nombre,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: textTheme.titleMedium?.copyWith(
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                c.cantidad == 1
-                                    ? '1 título'
-                                    : '${c.cantidad} títulos',
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
+                          const SizedBox(height: 2),
+                          Text(
+                            c.cantidad == 1
+                                ? '1 título'
+                                : '${c.cantidad} títulos',
+                            style: textTheme.labelSmall?.copyWith(
+                              color: AppColors.gold,
+                              letterSpacing: 0.6,
+                            ),
                           ),
                         ],
                       ),
@@ -781,10 +768,255 @@ class _Categorias extends StatelessWidget {
   }
 }
 
+/// Hasta tres portadas de la categoría abiertas en abanico (como el banner).
+class _AbanicoCategoria extends StatelessWidget {
+  final List<Libro> libros;
+
+  const _AbanicoCategoria({required this.libros});
+
+  @override
+  Widget build(BuildContext context) {
+    final visibles = libros.take(3).toList();
+    // Posición de cada portada según cuántas hay (la del centro, delante).
+    final configuracion = switch (visibles.length) {
+      1 => const [(0.0, 0.0)],
+      2 => const [(-14.0, -0.10), (14.0, 0.10)],
+      _ => const [(-22.0, -0.16), (22.0, 0.16), (0.0, 0.0)],
+    };
+    final orden = switch (visibles.length) {
+      1 => const [0],
+      2 => const [0, 1],
+      _ => const [1, 2, 0],
+    };
+
+    return ExcludeSemantics(
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          for (var k = 0; k < visibles.length; k++)
+            Transform.translate(
+              offset: Offset(
+                configuracion[k].$1,
+                k == visibles.length - 1 ? -2 : 4,
+              ),
+              child: Transform.rotate(
+                angle: configuracion[k].$2,
+                child: _PortadaLibro(
+                  libro: visibles[orden[k]],
+                  ancho: 66,
+                  sombraFuerte: k == visibles.length - 1,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Portada con aspecto de libro: lomo sombreado, esquinas de libro y sombra
+/// cálida. Sin tarjeta alrededor.
+class _PortadaLibro extends StatelessWidget {
+  final Libro libro;
+  final double ancho;
+  final bool sombraFuerte;
+  final Object? heroTag;
+
+  const _PortadaLibro({
+    required this.libro,
+    required this.ancho,
+    this.sombraFuerte = true,
+    this.heroTag,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const forma = BorderRadius.only(
+      topLeft: Radius.circular(2),
+      bottomLeft: Radius.circular(2),
+      topRight: Radius.circular(6),
+      bottomRight: Radius.circular(6),
+    );
+    final portada = ClipRRect(
+      borderRadius: forma,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          BookCover(
+            url: Constants.buildPortadaUrl(libro.portada),
+            borderRadius: 0,
+            fit: BoxFit.cover,
+            sombra: false,
+          ),
+          // Lomo: sombra y brillo a la izquierda, como un libro real.
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                stops: [0, 0.035, 0.07, 0.12, 1],
+                colors: [
+                  Color(0x55000000),
+                  Color(0x33FFFFFF),
+                  Color(0x22000000),
+                  Color(0x00000000),
+                  Color(0x00000000),
+                ],
+              ),
+            ),
+          ),
+          // Brillo suave de la cubierta.
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0x14FFFFFF),
+                  Color(0x00FFFFFF),
+                  Color(0x12000000),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return Container(
+      width: ancho,
+      height: ancho * 1.5,
+      decoration: BoxDecoration(
+        borderRadius: forma,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.tinta.withValues(
+              alpha: sombraFuerte ? 0.30 : 0.18,
+            ),
+            blurRadius: sombraFuerte ? 18 : 10,
+            offset: Offset(3, sombraFuerte ? 10 : 5),
+          ),
+          BoxShadow(
+            color: AppColors.tinta.withValues(alpha: 0.10),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: heroTag == null ? portada : Hero(tag: heroTag!, child: portada),
+    );
+  }
+}
+
+/// Libro del carrusel: portada suelta y, debajo y sin tarjeta, categoría,
+/// título, autor, precio y disponibilidad.
+class _LibroSuelto extends StatelessWidget {
+  final Libro libro;
+  final double ancho;
+
+  const _LibroSuelto({required this.libro, required this.ancho});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final disponible = libro.esActivo && libro.hayStock;
+    final heroTag = ('inicio', libro.idLibro);
+    final titulo = libro.titulo?.trim().isNotEmpty == true
+        ? libro.titulo!
+        : 'Sin título';
+    final autor = (libro.autor ?? '').trim();
+
+    return Presionable(
+      child: Semantics(
+        button: true,
+        label: autor.isEmpty ? titulo : '$titulo, de $autor',
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) =>
+                  DetalleLibroScreen(libro: libro, heroTag: heroTag),
+            ),
+          ),
+          child: ExcludeSemantics(
+            child: SizedBox(
+              width: ancho,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Opacity(
+                        opacity: disponible ? 1 : 0.55,
+                        child: _PortadaLibro(
+                          libro: libro,
+                          ancho: ancho,
+                          heroTag: heroTag,
+                        ),
+                      ),
+                      if (!disponible)
+                        Positioned(
+                          left: 8,
+                          top: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.tinta.withValues(alpha: 0.86),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              'Agotado',
+                              style: textTheme.labelSmall?.copyWith(
+                                color: Colors.white,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    titulo,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontSize: 15,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    autor.isEmpty ? 'Autor no registrado' : autor,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  PrecioTexto(monto: libro.precio, tamano: 16),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Carrusel horizontal de libros que avanza de a un libro hacia la derecha y
 /// vuelve al inicio al llegar al final.
 ///
-/// Muestra una fila de [LibroCard] con el nombre de la sección y una acción.
+/// Muestra una fila de libros sueltos (portada y datos, sin tarjeta) con el
+/// nombre de la sección y una acción.
 class _LibroCarrusel extends StatefulWidget {
   final List<Libro> libros;
   final String nombre;
@@ -823,19 +1055,19 @@ class _LibroCarruselState extends State<_LibroCarrusel> {
     super.dispose();
   }
 
-  /// Calcula el ancho de una tarjeta según el tamaño de pantalla.
+  /// Ancho de cada libro (portada) según el tamaño de pantalla.
   double _cardWidthPara(BuildContext context) {
     final ancho = MediaQuery.of(context).size.width;
-    if (ancho >= 1000) return 235;
-    if (ancho >= 750) return 215;
-    return 170;
+    if (ancho >= 1000) return 190;
+    if (ancho >= 750) return 170;
+    return 140;
   }
 
   void _avanzar() {
     final lista = widget.libros;
     if (lista.length <= 1 || !_controller.hasClients) return;
 
-    final itemW = _cardWidthPara(context) + 14;
+    final itemW = _cardWidthPara(context) + 20;
     const inicio = 0.0;
     final finalMax =
         itemW * lista.length - _controller.position.viewportDimension;
@@ -873,19 +1105,21 @@ class _LibroCarruselState extends State<_LibroCarrusel> {
           ),
         ),
         SizedBox(
-          height: cardW * 1.3 + 140,
+          // Portada 2:3 + texto (título en 2 líneas, autor y precio).
+          height:
+              cardW * 1.5 +
+              14 +
+              MediaQuery.textScalerOf(context).scale(15) * 1.2 * 2 +
+              72,
           child: ListView.separated(
             controller: _controller,
             scrollDirection: Axis.horizontal,
             clipBehavior: Clip.none,
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
             itemCount: widget.libros.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 14),
+            separatorBuilder: (_, _) => const SizedBox(width: 20),
             itemBuilder: (context, index) {
-              return SizedBox(
-                width: cardW,
-                child: LibroCard(libro: widget.libros[index]),
-              );
+              return _LibroSuelto(libro: widget.libros[index], ancho: cardW);
             },
           ),
         ),
