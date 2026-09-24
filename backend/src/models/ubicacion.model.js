@@ -66,9 +66,26 @@ const esDistritoDeLima = (distrito) =>
         .trim()
         .toLowerCase() === 'lima';
 
+// ========================================
+// ACTUALIZAR LA TARIFA DE ENVÍO DE UN DISTRITO
+// Solo modifica tarifa_envio (nunca nombre, provincia ni id).
+// Las ventas guardan su propio costo_envio: no se ven afectadas.
+// ========================================
+const actualizarTarifaDistrito = async (id_distrito, tarifa_envio) => {
+    const [rows] = await pool.query(`
+        UPDATE distritos_lima
+        SET tarifa_envio = ?
+        WHERE id_distrito = ?
+        RETURNING id_distrito, nombre, tarifa_envio
+    `, [tarifa_envio, id_distrito]);
+
+    return rows[0] || null;
+};
+
 module.exports = {
     obtenerProvincias,
     obtenerDistritosPorProvincia,
     existeDistrito,
-    esDistritoDeLima
+    esDistritoDeLima,
+    actualizarTarifaDistrito
 };

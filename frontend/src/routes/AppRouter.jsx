@@ -35,6 +35,7 @@ const VentasPage = lazyConReintento(() => import('../features/ventas/VentasPage'
 const ComprobantesPage = lazyConReintento(() => import('../features/comprobantes/ComprobantesPage'));
 const PagosPage = lazyConReintento(() => import('../features/pagos/PagosPage'));
 const UsuariosPage = lazyConReintento(() => import('../features/usuarios/UsuariosClientesPage'));
+const TarifasEnvioPage = lazyConReintento(() => import('../features/tarifas/TarifasEnvioPage'));
 const HistorialPage = lazyConReintento(() => import('../features/historial/HistorialPage'));
 const EmpresaPage = lazyConReintento(() => import('../features/configuracion/EmpresaPage'));
 const PersonalizacionPage = lazyConReintento(() => import('../features/configuracion/PersonalizacionPage'));
@@ -69,6 +70,7 @@ const router = createBrowserRouter([
             // El envío por agencia ya no se ofrece (solo Lima): la página queda
             // oculta; se redirige para no romper enlaces guardados.
             { path: '/agencias', element: <Navigate to="/" replace /> },
+            { path: '/tarifas-envio', element: cargar(<TarifasEnvioPage />) },
             { path: '/historial', element: cargar(<HistorialPage />) },
             // Reportes se integró en el resumen; se conserva la ruta para enlaces guardados.
             { path: '/reportes', element: <Navigate to="/dashboard" replace /> },

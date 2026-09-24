@@ -9,6 +9,7 @@ import {
     ReceiptText,
     CreditCard,
     Users,
+    Truck,
     History,
     Settings,
 } from 'lucide-react';
@@ -24,6 +25,7 @@ export const navPrincipal = [
     { nombre: 'Comprobantes', ruta: '/comprobantes', icono: ReceiptText, descripcion: 'Boletas y facturas emitidas', seccion: 'Operaciones' },
     { nombre: 'Pagos', ruta: '/pagos', icono: CreditCard, descripcion: 'Pagos recibidos de las ventas', seccion: 'Operaciones' },
     { nombre: 'Usuarios', ruta: '/usuarios', icono: Users, descripcion: 'Cuentas, permisos y clientes con sus compras', seccion: 'Administración' },
+    { nombre: 'Tarifas de envío', ruta: '/tarifas-envio', icono: Truck, descripcion: 'Precio del envío a domicilio por distrito de Lima', seccion: 'Administración' },
     { nombre: 'Historial', ruta: '/historial', icono: History, descripcion: 'Auditoría de operaciones', seccion: 'Control' },
     { nombre: 'Datos de la empresa', ruta: '/configuracion/empresa', icono: Settings, descripcion: 'Configuración del emisor de comprobantes', seccion: 'Control' },
 ];

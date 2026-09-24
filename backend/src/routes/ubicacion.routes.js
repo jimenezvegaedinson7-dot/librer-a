@@ -4,10 +4,12 @@ const router = express.Router();
 
 const {
     listarProvincias,
-    listarDistritos
+    listarDistritos,
+    actualizarTarifaDistrito
 } = require('../controllers/ubicacion.controller');
 
 const verificarToken = require('../middlewares/auth.middleware');
+const verificarRol = require('../middlewares/rol.middleware');
 
 // ========================================
 // REQUIEREN JWT (datos de envío)
@@ -28,6 +30,15 @@ router.get(
 router.get(
     '/provincias/:id_provincia/distritos',
     listarDistritos
+);
+
+// ========================================
+// TARIFA DE ENVÍO DE UN DISTRITO (SOLO ADMINISTRADOR)
+// ========================================
+router.put(
+    '/distritos/:id',
+    verificarRol('administrador'),
+    actualizarTarifaDistrito
 );
 
 module.exports = router;
