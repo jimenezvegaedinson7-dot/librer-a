@@ -280,7 +280,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Future<void> _cerrarSesion() async {
     // El carrito pertenece a la sesión: al salir no debe quedar nada de esta
     // cuenta para la siguiente que inicie sesión.
-    CarritoService.instance.limpiar();
+    CarritoService.instance.vaciarSesion();
     ApiService.instance.limpiarEstadoCheckout();
     await StorageService.instance.limpiarSesion();
     if (!mounted) return;

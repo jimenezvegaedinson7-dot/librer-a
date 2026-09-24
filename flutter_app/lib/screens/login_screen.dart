@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // El carrito pertenece a la sesión anterior: al autenticar con otra
       // cuenta (o la misma después de un logout), se empieza con el carrito
       // vacío para no mezclar datos entre usuarios.
-      CarritoService.instance.limpiar();
+      CarritoService.instance.vaciarSesion();
       ApiService.instance.limpiarEstadoCheckout();
 
       Navigator.of(context).pushAndRemoveUntil(

@@ -916,24 +916,6 @@ class ApiService {
     }
   }
 
-  /// Busca libros por título, autor o categoría sobre el catálogo obtenido del
-  /// backend.
-  ///
-  /// Si el backend expone un endpoint de búsqueda dedicado, basta con ajustar
-  /// esta función para llamarlo; las pantallas no necesitarán cambios porque
-  /// ya delegarían aquí el filtrado.
-  Future<List<Libro>> buscarLibros(String query) async {
-    final libros = await obtenerLibros();
-    final q = query.trim().toLowerCase();
-    if (q.isEmpty) return libros;
-    return libros.where((libro) {
-      final titulo = (libro.titulo ?? '').toLowerCase();
-      final autor = (libro.autor ?? '').toLowerCase();
-      final categoria = (libro.categoria ?? '').toLowerCase();
-      return titulo.contains(q) || autor.contains(q) || categoria.contains(q);
-    }).toList();
-  }
-
   /// Obtiene el perfil del usuario a través de `GET /usuarios/perfil`.
   Future<Usuario> obtenerPerfil() async {
     try {

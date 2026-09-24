@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../screens/login_screen.dart';
-
 /// Clave global del [Navigator] para navegar sin contexto de widget.
 ///
 /// La usa el interceptor HTTP de [ApiService] cuando la sesión expira con
 /// 401 y se necesita redirigir al Login desde un servicio (sin BuildContext).
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+/// Construye la pantalla de Login. La registra `main.dart` al arrancar, así
+/// la capa de servicios no importa pantallas (evita el ciclo de imports
+/// servicios → pantallas → servicios).
+WidgetBuilder? constructorLogin;
 
 bool _navegandoALogin = false;
 
@@ -18,10 +21,11 @@ bool _navegandoALogin = false;
 /// encuentran token y no vuelven a navegar.
 void irALogin() {
   final navigator = navigatorKey.currentState;
-  if (navigator == null || _navegandoALogin) return;
+  final login = constructorLogin;
+  if (navigator == null || login == null || _navegandoALogin) return;
   _navegandoALogin = true;
   navigator.pushAndRemoveUntil(
-    MaterialPageRoute<void>(builder: (_) => const LoginScreen()),
+    MaterialPageRoute<void>(builder: login),
     (route) => false,
   );
   WidgetsBinding.instance.addPostFrameCallback((_) {

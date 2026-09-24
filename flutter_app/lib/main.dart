@@ -2,16 +2,23 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
+import 'services/carrito_service.dart';
 import 'services/navigation.dart';
 import 'services/tema_controller.dart';
 import 'utils/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = true;
   // Restaura el tema de colores elegido por el usuario.
   TemaController.instance.cargar();
+  // Restaura el carrito guardado antes de mostrar la app, para que nada lo
+  // pise mientras carga.
+  await CarritoService.instance.cargar();
+  // Pantalla a la que vuelve la app cuando la sesión expira (401).
+  constructorLogin = (_) => const LoginScreen();
   runApp(const LibreriaApp());
 }
 

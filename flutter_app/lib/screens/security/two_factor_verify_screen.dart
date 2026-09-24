@@ -53,7 +53,7 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
       if (!mounted) return;
       // El carrito pertenece a la sesión anterior: al completar el login con
       // 2FA se empieza con el carrito vacío (no mezclar datos entre cuentas).
-      CarritoService.instance.limpiar();
+      CarritoService.instance.vaciarSesion();
       ApiService.instance.limpiarEstadoCheckout();
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute<void>(builder: (_) => const HomeScreen()),

@@ -34,18 +34,18 @@ class Constants {
   /// Dominio del backend en producción (Render).
   static const String _produccionHost = 'libreria-api-v9h0.onrender.com';
 
-  /// SELECTOR DE ENTORNO:
+  /// SELECTOR DE ENTORNO (se elige al compilar, sin editar código):
   ///
-  /// - `true`  → PRODUCCIÓN (usa el backend desplegado en Render).
-  /// - `false` → DESARROLLO (usa el backend local en localhost:3000).
-  /// La app web en localhost:8080 también utiliza esta API de producción.
-  static const bool _usarApiProduccion = true;
+  /// - Por defecto → PRODUCCIÓN (backend desplegado en Render). Así ningún
+  ///   APK o build web sale apuntando por error a un servidor local.
+  /// - `--dart-define=API_LOCAL=true` → DESARROLLO (backend local :3000).
+  static const bool _usarApiProduccion = !bool.fromEnvironment('API_LOCAL');
 
   /// SELECTOR DE DISPOSITIVO (solo Android en DESARROLLO):
   ///
-  /// - `false` → EMULADOR (usa 10.0.2.2).
-  /// - `true`  → CELULAR físico (usa 192.168.1.31).
-  static const bool _usarCelularFisico = false;
+  /// - Por defecto → EMULADOR (usa 10.0.2.2).
+  /// - `--dart-define=API_CELULAR=true` → CELULAR físico (usa 192.168.1.31).
+  static const bool _usarCelularFisico = bool.fromEnvironment('API_CELULAR');
 
   /// Host de la API.
   ///
