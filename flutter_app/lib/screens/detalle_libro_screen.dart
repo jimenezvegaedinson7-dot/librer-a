@@ -246,7 +246,7 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
                 MaterialPageRoute<void>(builder: (_) => const CarritoScreen()),
               );
             },
-            icon: const CarritoBadge(child: Icon(Icons.shopping_bag_outlined)),
+            icon: const CarritoBadge(child: Icon(Icons.shopping_cart_outlined)),
           ),
           const SizedBox(width: 4),
         ],

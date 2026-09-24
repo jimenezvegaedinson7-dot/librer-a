@@ -42,8 +42,8 @@ class AppBottomNavigation extends StatelessWidget {
     ),
     (
       tab: AppTab.carrito,
-      icon: Icons.shopping_bag_outlined,
-      activo: Icons.shopping_bag_rounded,
+      icon: Icons.shopping_cart_outlined,
+      activo: Icons.shopping_cart_rounded,
       label: 'Carrito',
     ),
     (

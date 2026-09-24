@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../models/libro.dart';
 import '../models/reserva.dart';
 import '../services/api_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_tokens.dart';
-import '../utils/constants.dart';
 import '../utils/formats.dart';
 import '../widgets/aparecer.dart';
 import '../widgets/app_page_header.dart';
-import '../widgets/book_cover.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/estado_chip.dart';
+import '../widgets/portadas_libro.dart';
 import '../widgets/loading_view.dart';
 import 'mis_compras_screen.dart';
 
@@ -199,10 +199,13 @@ class _ReservasScreenState extends State<ReservasScreen> {
     }
 
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       sliver: SliverList.separated(
         itemCount: _reservas.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        separatorBuilder: (_, _) => const Padding(
+          padding: EdgeInsets.symmetric(vertical: 18),
+          child: Divider(height: 1, color: AppColors.divider),
+        ),
         itemBuilder: (context, index) {
           final reserva = _reservas[index];
           return Aparecer(
@@ -237,7 +240,9 @@ TonoEstado _tonoReserva(String? estado) {
   }
 }
 
-/// Tarjeta de una reserva.
+/// Una reserva sin tarjeta: portada suelta con aspecto de libro y, a su
+/// lado, título, estado, número, fecha, cantidad, vencimiento y la opción de
+/// cancelar.
 class _ReservaCard extends StatelessWidget {
   final Reserva reserva;
   final bool cancelando;
@@ -252,158 +257,111 @@ class _ReservaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final tieneportada = reserva.portada != null && reserva.portada!.isNotEmpty;
     final cantidad = reserva.cantidad ?? 1;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(Radios.md),
-        border: Border.all(color: AppColors.divider),
-        boxShadow: Sombra.tarjeta,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 60,
-                  height: 88,
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: AppColors.paper,
-                    borderRadius: BorderRadius.circular(Radios.xs),
-                  ),
-                  child: BookCover(
-                    url: tieneportada
-                        ? Constants.buildPortadaUrl(reserva.portada)
-                        : '',
-                    borderRadius: 3,
-                  ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        PortadaLibro(
+          libro: Libro(
+            idLibro: reserva.idLibro,
+            titulo: reserva.titulo,
+            portada: reserva.portada,
+          ),
+          ancho: 84,
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              EstadoChip(
+                texto: Reserva(estado: reserva.estado).estadoLabel,
+                tono: _tonoReserva(reserva.estado),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                reserva.titulo ?? 'Libro',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: textTheme.titleMedium?.copyWith(height: 1.2),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Reserva N° ${reserva.idReserva?.toString() ?? '—'}'
+                ' · ${Formats.fecha(reserva.fechaReserva)}',
+                style: textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              reserva.titulo ?? 'Libro',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: textTheme.titleMedium?.copyWith(
-                                height: 1.2,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _Dato(
+                      icon: Icons.inventory_2_outlined,
+                      label: 'Cantidad',
+                      valor:
+                          '${reserva.cantidad?.toString() ?? '—'} '
+                          '${cantidad == 1 ? 'unidad' : 'unidades'}',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _Dato(
+                      icon: Icons.event_busy_outlined,
+                      label: 'Vence',
+                      valor: Formats.fecha(reserva.fechaVencimiento),
+                    ),
+                  ),
+                ],
+              ),
+              // Cancelar la reserva (solo pendiente o confirmada).
+              if (onCancelar != null) ...[
+                const SizedBox(height: 6),
+                SizedBox(
+                  height: 40,
+                  child: AnimatedSwitcher(
+                    duration: Duracion.rapida,
+                    child: cancelando
+                        ? const Align(
+                            key: ValueKey('cancelando'),
+                            alignment: Alignment.centerLeft,
+                            child: SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : Align(
+                            key: const ValueKey('cancelar'),
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: onCancelar,
+                              icon: const Icon(Icons.close_rounded, size: 17),
+                              label: const Text('Cancelar reserva'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.error,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
+                                minimumSize: const Size(0, 36),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          EstadoChip(
-                            texto: Reserva(estado: reserva.estado).estadoLabel,
-                            tono: _tonoReserva(reserva.estado),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Reserva N° ${reserva.idReserva?.toString() ?? '—'}'
-                        ' · ${Formats.fecha(reserva.fechaReserva)}',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.paper,
-                          borderRadius: BorderRadius.circular(Radios.sm),
-                          border: Border.all(color: AppColors.divider),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _Dato(
-                                icon: Icons.inventory_2_outlined,
-                                label: 'Cantidad',
-                                valor:
-                                    '${reserva.cantidad?.toString() ?? '—'} '
-                                    '${cantidad == 1 ? 'unidad' : 'unidades'}',
-                              ),
-                            ),
-                            Container(
-                              width: 1,
-                              height: 28,
-                              color: AppColors.divider,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _Dato(
-                                icon: Icons.event_busy_outlined,
-                                label: 'Vence',
-                                valor: Formats.fecha(reserva.fechaVencimiento),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ],
-            ),
+            ],
           ),
-
-          // Cancelar la reserva (solo pendiente o confirmada).
-          if (onCancelar != null) ...[
-            const Divider(height: 1),
-            SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: AnimatedSwitcher(
-                duration: Duracion.rapida,
-                child: cancelando
-                    ? const Center(
-                        key: ValueKey('cancelando'),
-                        child: SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : TextButton.icon(
-                        key: const ValueKey('cancelar'),
-                        onPressed: onCancelar,
-                        icon: const Icon(Icons.close_rounded, size: 17),
-                        label: const Text('Cancelar reserva'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.error,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              bottom: Radius.circular(Radios.md),
-                            ),
-                          ),
-                        ),
-                      ),
-              ),
-            ),
-          ],
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
-/// Dato compacto (etiqueta + valor) dentro de la franja de la reserva.
+/// Dato compacto (icono, etiqueta y valor) de la reserva.
 class _Dato extends StatelessWidget {
   final IconData icon;
   final String label;

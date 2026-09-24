@@ -12,6 +12,7 @@ import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/loading_view.dart';
 import '../widgets/precio_texto.dart';
+import '../widgets/portadas_libro.dart';
 import '../widgets/presionable.dart';
 import 'carrito_screen.dart';
 import 'detalle_libro_screen.dart';
@@ -405,28 +406,43 @@ class _LibrosScreenState extends State<LibrosScreen> {
     );
   }
 
+  /// Hasta 3 libros de muestra de una categoría (o de todo el catálogo).
+  List<Libro> _muestras(String? categoria) {
+    final buscada = categoria?.trim().toLowerCase();
+    return _libros
+        .where(
+          (l) =>
+              buscada == null ||
+              (l.categoria ?? '').trim().toLowerCase() == buscada,
+        )
+        .take(3)
+        .toList();
+  }
+
+  /// Categorías como en Inicio: abanico de portadas y nombre, sin tarjeta.
   Widget _buildChips() {
     return SizedBox(
-      height: 52,
+      height: 186,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+        clipBehavior: Clip.none,
+        padding: const EdgeInsets.fromLTRB(14, 18, 14, 0),
         children: [
           _ChipCategoria(
             label: 'Todos',
             cantidad: _libros.length,
+            muestras: _muestras(null),
             seleccionado: _categoria == null,
             onTap: () => setState(() => _categoria = null),
           ),
-          for (final categoria in _categorias) ...[
-            const SizedBox(width: 8),
+          for (final categoria in _categorias)
             _ChipCategoria(
               label: categoria,
               cantidad: _cantidadEnCategoria(categoria),
+              muestras: _muestras(categoria),
               seleccionado: _categoria == categoria,
               onTap: () => setState(() => _categoria = categoria),
             ),
-          ],
         ],
       ),
     );
@@ -610,12 +626,14 @@ class _CampoBusquedaState extends State<_CampoBusqueda> {
 class _ChipCategoria extends StatelessWidget {
   final String label;
   final int cantidad;
+  final List<Libro> muestras;
   final bool seleccionado;
   final VoidCallback onTap;
 
   const _ChipCategoria({
     required this.label,
     required this.cantidad,
+    required this.muestras,
     required this.seleccionado,
     required this.onTap,
   });
@@ -627,42 +645,63 @@ class _ChipCategoria extends StatelessWidget {
       child: Semantics(
         selected: seleccionado,
         button: true,
-        child: InkWell(
+        label: 'Categoría $label, $cantidad títulos',
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: onTap,
-          borderRadius: BorderRadius.circular(999),
-          child: AnimatedContainer(
-            duration: Duracion.rapida,
-            curve: Curva.salida,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: seleccionado ? AppColors.primary : AppColors.surface,
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: seleccionado ? AppColors.primary : AppColors.divider,
+          child: ExcludeSemantics(
+            child: SizedBox(
+              width: 96,
+              child: Column(
+                children: [
+                  AnimatedOpacity(
+                    duration: Duracion.rapida,
+                    opacity: seleccionado ? 1 : 0.82,
+                    child: AnimatedScale(
+                      duration: Duracion.base,
+                      curve: Curva.salida,
+                      scale: seleccionado ? 1.06 : 1,
+                      child: SizedBox(
+                        height: 78,
+                        child: AbanicoCategoria(libros: muestras, ancho: 46),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: textTheme.titleSmall?.copyWith(
+                      color: seleccionado
+                          ? AppColors.primary
+                          : AppColors.textPrimary,
+                      fontWeight: seleccionado
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    cantidad == 1 ? '1 título' : '$cantidad títulos',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: AppColors.gold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  AnimatedContainer(
+                    duration: Duracion.base,
+                    curve: Curva.salida,
+                    height: 3,
+                    width: seleccionado ? 28 : 0,
+                    decoration: BoxDecoration(
+                      color: AppColors.dorado,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: textTheme.labelMedium?.copyWith(
-                    color: seleccionado
-                        ? Colors.white
-                        : AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '$cantidad',
-                  style: textTheme.labelSmall?.copyWith(
-                    color: seleccionado
-                        ? AppColors.doradoClaro
-                        : AppColors.textTertiary,
-                  ),
-                ),
-              ],
             ),
           ),
         ),

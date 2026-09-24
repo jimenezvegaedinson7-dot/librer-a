@@ -67,7 +67,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
                   ),
                 const Expanded(
                   child: EmptyView(
-                    icon: Icons.shopping_bag_outlined,
+                    icon: Icons.shopping_cart_outlined,
                     title: 'Tu carrito está vacío',
                     message: 'Agrega libros desde el catálogo para empezar.',
                   ),

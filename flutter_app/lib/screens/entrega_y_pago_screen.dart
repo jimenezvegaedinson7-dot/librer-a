@@ -300,7 +300,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       return Scaffold(
         appBar: AppBar(title: const Text('Finalizar pedido')),
         body: const EmptyView(
-          icon: Icons.shopping_bag_outlined,
+          icon: Icons.shopping_cart_outlined,
           title: 'Tu carrito está vacío',
           message: 'Agrega libros al carrito para continuar.',
         ),

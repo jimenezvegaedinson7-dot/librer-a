@@ -7,7 +7,7 @@ import '../widgets/aparecer.dart';
 import '../widgets/app_page_header.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
-import '../widgets/libro_card.dart';
+import '../widgets/portadas_libro.dart';
 import '../widgets/libros_grid.dart';
 import '../widgets/loading_view.dart';
 import '../widgets/presionable.dart';
@@ -15,7 +15,7 @@ import '../widgets/presionable.dart';
 /// Pantalla "Mis favoritos" (lista de deseos).
 ///
 /// Carga los libros marcados como favoritos desde `GET /favoritos` y los
-/// muestra en una grilla reutilizable ([LibrosGrid] + [LibroCard]). Cada
+/// muestra en una grilla de libros sueltos ([LibroSuelto]). Cada
 /// tarjeta incluye un corazón para quitarla sin abrir el libro.
 class FavoritosScreen extends StatefulWidget {
   const FavoritosScreen({super.key});
@@ -157,25 +157,36 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
       );
     }
 
+    // Libros sueltos (portada con aspecto de libro y datos debajo, sin
+    // tarjeta), como en Inicio.
     final width = MediaQuery.sizeOf(context).width;
+    const espacio = 20.0;
+    final columnas = LibrosGrid.columnCount(width);
+    final ancho = (width - 40 - espacio * (columnas - 1)) / columnas;
+    final alto =
+        ancho * 1.5 +
+        14 +
+        MediaQuery.textScalerOf(context).scale(15) * 2.4 +
+        72;
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       sliver: SliverGrid(
-        gridDelegate: LibrosGrid.delegate(width),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: columnas,
+          crossAxisSpacing: espacio,
+          mainAxisSpacing: 18,
+          mainAxisExtent: alto,
+        ),
         delegate: SliverChildBuilderDelegate((context, index) {
           final libro = _libros[index];
           return Aparecer(
             key: ValueKey(libro.idLibro ?? index),
             indice: index,
-            child: Stack(
-              children: [
-                Positioned.fill(child: LibroCard(libro: libro)),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: _QuitarCorazon(onTap: () => _quitar(libro)),
-                ),
-              ],
+            child: LibroSuelto(
+              libro: libro,
+              ancho: ancho,
+              heroPrefijo: 'favoritos',
+              accesorio: _QuitarCorazon(onTap: () => _quitar(libro)),
             ),
           );
         }, childCount: _libros.length),
@@ -184,7 +195,7 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
   }
 }
 
-/// Botón corazón sobre la tarjeta para quitar el favorito directamente.
+/// Botón corazón sobre la portada para quitar el favorito directamente.
 class _QuitarCorazon extends StatelessWidget {
   final VoidCallback onTap;
 
