@@ -115,9 +115,10 @@ export default function ComprobanteViewModal({
     if (!abierto) return null;
 
     const esFactura = detalle?.tipo === 'factura';
-    const tipoLabel = esFactura
-        ? 'FACTURA ELECTRÓNICA'
-        : 'BOLETA DE VENTA ELECTRÓNICA';
+    // Denominación temporal: el sistema aún no emite el comprobante
+    // electrónico ante SUNAT, así que boletas y facturas no se presentan como
+    // documento electrónico oficial.
+    const tipoLabel = 'COMPROBANTE DE VENTA';
 
     const empresaData = {
         ruc: empresa.ruc || detalle?.ruc || '',
@@ -137,6 +138,7 @@ export default function ComprobanteViewModal({
 
     const subtotal = Number(detalle?.subtotal || 0);
     const igvVal = Number(detalle?.igv || 0);
+    const costoEnvio = Number(detalle?.costo_envio || 0);
     const total = Number(detalle?.total || 0);
 
     const opGravada = igvVal > 0 ? subtotal : 0;
@@ -303,16 +305,9 @@ export default function ComprobanteViewModal({
                             <TotalFila label="Op. Exonerada" value={opExonerada} />
                             <TotalFila label="Op. Inafecta" value={0} />
                             <TotalFila label="IGV" value={igvVal} />
-                            <TotalFila label="Otros Cargos" value={0} />
+                            <TotalFila label="Costo de envío" value={costoEnvio} />
                             <TotalFila label="Importe Total" value={total} strong />
                         </div>
-                    </div>
-
-                    {/* ========================= */}
-                    {/* PIE                        */}
-                    {/* ========================= */}
-                    <div className="mt-8 border border-black px-4 py-3 text-center text-[10px]">
-                        Representación impresa del comprobante electrónico.
                     </div>
                 </div>
             )}

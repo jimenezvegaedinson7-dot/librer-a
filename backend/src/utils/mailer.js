@@ -539,8 +539,25 @@ async function enviarCorreoReservaCreada({
 // ============================================================
 // CORREO: COMPROBANTE ELECTRÓNICO
 // ============================================================
-async function enviarComprobantePorEmail({
-    destinatario,
+// Fecha de emisión legible en horario de Perú: "23/09/2026 11:42 p. m.".
+function formatearFechaEmision(fecha) {
+    const d = fecha ? new Date(fecha) : new Date();
+    if (Number.isNaN(d.getTime())) return String(fecha || '');
+    return d
+        .toLocaleString('es-PE', {
+            timeZone: 'America/Lima',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        })
+        .replace(',', '');
+}
+
+// Representación imprimible del comprobante (cuerpo del correo y PDF).
+function construirHtmlComprobante({
     nombre,
     tipo,
     serie,
@@ -561,7 +578,10 @@ async function enviarComprobantePorEmail({
 }) {
     const { montoEnLetras } = require('./numeroALetras');
     const esFactura = tipo === 'factura';
-    const tipoLabel = esFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA ELECTRÓNICA';
+    // Denominación temporal: el sistema aún no emite el comprobante
+    // electrónico ante SUNAT (sin XML firmado ni OSE/PSE), así que ni la
+    // boleta ni la factura se presentan como documento electrónico oficial.
+    const tipoLabel = 'COMPROBANTE DE VENTA';
     const serieNumero = `${serie}-${String(numero).padStart(8, '0')}`;
     const clienteTipoDoc = clienteTipoDocumento || (esFactura ? 'RUC' : 'DNI');
 
@@ -571,7 +591,7 @@ async function enviarComprobantePorEmail({
     const opGravada = igvVal > 0 ? sub : 0;
     const opExonerada = igvVal > 0 ? 0 : sub;
 
-    const fecha = fechaEmision || new Date().toLocaleDateString('es-PE');
+    const fecha = formatearFechaEmision(fechaEmision);
 
     const docLine = clienteDniRuc
         ? `${htmlEscape(clienteTipoDoc)} - ${htmlEscape(clienteDniRuc)}`
@@ -601,21 +621,6 @@ async function enviarComprobantePorEmail({
             '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' + formatMailMoney(importe) + '</td>' +
             '</tr>';
     });
-
-    const numItems = (items || []).length;
-    if (numItems > 0 && numItems < 6) {
-        for (let i = 0; i < 6 - numItems; i++) {
-            filasHtml +=
-                '<tr>' +
-                '<td style="border:1px solid #000;padding:6px 8px">&nbsp;</td>' +
-                '<td style="border:1px solid #000;padding:6px 8px"></td>' +
-                '<td style="border:1px solid #000;padding:6px 8px"></td>' +
-                '<td style="border:1px solid #000;padding:6px 8px"></td>' +
-                '<td style="border:1px solid #000;padding:6px 8px"></td>' +
-                '<td style="border:1px solid #000;padding:6px 8px"></td>' +
-                '</tr>';
-        }
-    }
 
     const totalFila = (label, value, strong) => {
         const weight = strong ? 'font-weight:bold' : '';
@@ -655,19 +660,19 @@ async function enviarComprobantePorEmail({
 
         '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #000;margin-bottom:16px">' +
         '<thead><tr>' +
-        '<th style="border:1px solid #000;padding:6px 8px;font-size:11px;font-weight:bold;width:70px">Cantidad</th>' +
-        '<th style="border:1px solid #000;padding:6px 8px;font-size:11px;font-weight:bold;width:110px">Unidad Medida</th>' +
+        '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:58px">Cant.</th>' +
+        '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:62px">U. Medida</th>' +
         '<th style="border:1px solid #000;padding:6px 8px;font-size:11px;font-weight:bold;text-align:left">Descripci\u00f3n</th>' +
-        '<th style="border:1px solid #000;padding:6px 8px;font-size:11px;font-weight:bold;width:110px">Valor Unitario</th>' +
-        '<th style="border:1px solid #000;padding:6px 8px;font-size:11px;font-weight:bold;width:90px">Descuento</th>' +
-        '<th style="border:1px solid #000;padding:6px 8px;font-size:11px;font-weight:bold;width:130px">Importe de Venta</th>' +
+        '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:84px">Valor Unitario</th>' +
+        '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:72px">Descuento</th>' +
+        '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:92px">Importe de Venta</th>' +
         '</tr></thead>' +
         '<tbody>' + filasHtml + '</tbody>' +
         '</table>' +
 
         '<table width="100%" cellpadding="0" cellspacing="0">' +
         '<tr>' +
-        '<td style="vertical-align:bottom;padding-bottom:40px;padding-right:20px;width:55%">' +
+        '<td style="vertical-align:top;padding-top:6px;padding-right:20px;width:55%">' +
         '<p style="margin:0;font-size:14px;font-weight:bold;text-transform:uppercase;line-height:1.3">SON: ' + htmlEscape(montoEnLetras(tot)) + '</p>' +
         '</td>' +
         '<td style="vertical-align:top;width:45%">' +
@@ -676,17 +681,21 @@ async function enviarComprobantePorEmail({
         totalFila('Op. Exonerada', opExonerada, false) +
         totalFila('Op. Inafecta', 0, false) +
         totalFila('IGV', igvVal, false) +
-        totalFila('Otros Cargos', 0, false) +
+        totalFila('Costo de envío', Number(costoEnvio || 0), false) +
         totalFila('Importe Total', tot, true) +
         '</table>' +
         '</td>' +
         '</tr>' +
         '</table>' +
-
-        '<div style="margin-top:30px;border:1px solid #000;padding:10px;text-align:center;font-size:10px">' +
-        'Representaci\u00f3n impresa del comprobante electr\u00f3nico.' +
-        '</div>' +
         '</div>';
+
+    return { cuerpoHtml, tipoLabel, serieNumero };
+}
+
+async function enviarComprobantePorEmail(datos) {
+    const { destinatario } = datos;
+    const { cuerpoHtml, tipoLabel, serieNumero } =
+        construirHtmlComprobante(datos);
 
     const { asunto, html } = plantillaBase({
         tituloCabecera: `${tipoLabel} ${serieNumero}`,
@@ -717,6 +726,7 @@ module.exports = {
     enviarCorreoReservaCreada,
     enviarCorreoPedidoEntregado,
     enviarComprobantePorEmail,
+    construirHtmlComprobante,
     smtpConfigurado,
     resendConfigurado,
     brevoConfigurado,
