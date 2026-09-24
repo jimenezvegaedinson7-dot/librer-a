@@ -4,22 +4,51 @@ import '../models/libro.dart';
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_tokens.dart';
 import '../utils/constants.dart';
-import '../utils/formats.dart';
-import '../widgets/app_page_header.dart';
+import '../widgets/aparecer.dart';
 import '../widgets/book_cover.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/loading_view.dart';
+import '../widgets/precio_texto.dart';
+import '../widgets/presionable.dart';
 import 'carrito_screen.dart';
 import 'detalle_libro_screen.dart';
 
 enum _Orden { tituloAZ, tituloZA, precioMenor, precioMayor }
 
-/// Pantalla "Catálogo": buscador, chips de categoría y grilla en dos columnas
-/// estilo Stitch (portadas con lomo, badges de stock y botón de carrito).
+const Map<_Orden, String> _nombreOrden = {
+  _Orden.tituloAZ: 'Título A-Z',
+  _Orden.tituloZA: 'Título Z-A',
+  _Orden.precioMenor: 'Precio menor',
+  _Orden.precioMayor: 'Precio mayor',
+};
+
+/// Petición desde otra pestaña para abrir el catálogo con una categoría
+/// aplicada o con el buscador activo (solo afecta a la vista).
+class SolicitudCatalogo extends ChangeNotifier {
+  String? categoria;
+  bool enfocarBusqueda = false;
+
+  void abrirCategoria(String? valor) {
+    categoria = valor;
+    enfocarBusqueda = false;
+    notifyListeners();
+  }
+
+  void abrirBuscador() {
+    enfocarBusqueda = true;
+    notifyListeners();
+  }
+}
+
+/// Pantalla "Catálogo": buscador destacado, categorías, orden y estado, y una
+/// grilla comercial de libros con acceso rápido al carrito.
 class LibrosScreen extends StatefulWidget {
-  const LibrosScreen({super.key});
+  final SolicitudCatalogo? solicitud;
+
+  const LibrosScreen({super.key, this.solicitud});
 
   @override
   State<LibrosScreen> createState() => _LibrosScreenState();
@@ -38,17 +67,36 @@ class _LibrosScreenState extends State<LibrosScreen> {
   _Orden _orden = _Orden.tituloAZ;
 
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
+  final ScrollController _scroll = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    widget.solicitud?.addListener(_atenderSolicitud);
     _cargarLibros();
   }
 
   @override
   void dispose() {
+    widget.solicitud?.removeListener(_atenderSolicitud);
     _searchController.dispose();
+    _searchFocus.dispose();
+    _scroll.dispose();
     super.dispose();
+  }
+
+  void _atenderSolicitud() {
+    final solicitud = widget.solicitud;
+    if (solicitud == null || !mounted) return;
+    if (solicitud.enfocarBusqueda) {
+      _searchFocus.requestFocus();
+    } else {
+      setState(() => _categoria = solicitud.categoria);
+    }
+    if (_scroll.hasClients) {
+      _scroll.animateTo(0, duration: Duracion.base, curve: Curva.salida);
+    }
   }
 
   Future<void> _cargarLibros() async {
@@ -123,6 +171,13 @@ class _LibrosScreenState extends State<LibrosScreen> {
     return lista;
   }
 
+  int _cantidadEnCategoria(String categoria) {
+    final buscada = categoria.trim().toLowerCase();
+    return _libros
+        .where((l) => (l.categoria ?? '').trim().toLowerCase() == buscada)
+        .length;
+  }
+
   List<Libro> _aplicarFiltros() {
     final List<Libro> lista = List<Libro>.from(_libros);
 
@@ -191,45 +246,15 @@ class _LibrosScreenState extends State<LibrosScreen> {
   Future<void> _seleccionarDisponibilidad() async {
     final resultado = await showModalBottomSheet<String>(
       context: context,
-      showDragHandle: true,
       builder: (context) {
-        return SafeArea(
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: Text(
-                  'Estado',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-
-              ListTile(
-                title: const Text('Todos'),
-                trailing: _disponible == null
-                    ? const Icon(Icons.check_rounded)
-                    : null,
-                onTap: () => Navigator.pop(context, 'todos'),
-              ),
-
-              ListTile(
-                title: const Text('Disponibles'),
-                trailing: _disponible == true
-                    ? const Icon(Icons.check_rounded)
-                    : null,
-                onTap: () => Navigator.pop(context, 'disponibles'),
-              ),
-
-              ListTile(
-                title: const Text('Agotados'),
-                trailing: _disponible == false
-                    ? const Icon(Icons.check_rounded)
-                    : null,
-                onTap: () => Navigator.pop(context, 'agotados'),
-              ),
-            ],
-          ),
+        return _HojaOpciones(
+          titulo: 'Estado',
+          subtitulo: 'Muestra los libros según su disponibilidad.',
+          opciones: [
+            _Opcion('Todos', 'todos', _disponible == null),
+            _Opcion('Disponibles', 'disponibles', _disponible == true),
+            _Opcion('Agotados', 'agotados', _disponible == false),
+          ],
         );
       },
     );
@@ -257,45 +282,14 @@ class _LibrosScreenState extends State<LibrosScreen> {
   Future<void> _seleccionarOrden() async {
     final resultado = await showModalBottomSheet<_Orden>(
       context: context,
-      showDragHandle: true,
       builder: (context) {
-        return SafeArea(
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
-                child: Text(
-                  'Ordenar',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-
-              _OrdenTile(
-                label: 'Título A-Z',
-                value: _Orden.tituloAZ,
-                actual: _orden,
-              ),
-
-              _OrdenTile(
-                label: 'Título Z-A',
-                value: _Orden.tituloZA,
-                actual: _orden,
-              ),
-
-              _OrdenTile(
-                label: 'Precio menor',
-                value: _Orden.precioMenor,
-                actual: _orden,
-              ),
-
-              _OrdenTile(
-                label: 'Precio mayor',
-                value: _Orden.precioMayor,
-                actual: _orden,
-              ),
-            ],
-          ),
+        return _HojaOpciones<_Orden>(
+          titulo: 'Ordenar',
+          subtitulo: 'Elige cómo se ordenan los resultados.',
+          opciones: [
+            for (final orden in _Orden.values)
+              _Opcion(_nombreOrden[orden]!, orden, orden == _orden),
+          ],
         );
       },
     );
@@ -318,7 +312,9 @@ class _LibrosScreenState extends State<LibrosScreen> {
         bottom: false,
         child: RefreshIndicator(
           onRefresh: _cargarLibros,
+          color: AppColors.primary,
           child: CustomScrollView(
+            controller: _scroll,
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(child: _buildHeader()),
@@ -333,27 +329,28 @@ class _LibrosScreenState extends State<LibrosScreen> {
                   hasScrollBody: false,
                   child: ErrorView(message: _error!, onRetry: _cargarLibros),
                 )
-              else if (filtrados.isEmpty)
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: EmptyView(
-                    icon: Icons.search_off_rounded,
-                    title: 'No encontramos libros',
-                    message: 'Prueba con otra búsqueda o cambia los filtros.',
-                  ),
-                )
               else ...[
                 if (_categorias.length > 1)
                   SliverToBoxAdapter(child: _buildChips()),
 
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
                     child: _buildSortBar(filtrados.length),
                   ),
                 ),
 
-                _buildGrid(filtrados),
+                if (filtrados.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: EmptyView(
+                      icon: Icons.search_off_rounded,
+                      title: 'No encontramos libros',
+                      message: 'Prueba con otra búsqueda o cambia los filtros.',
+                    ),
+                  )
+                else
+                  _buildGrid(filtrados),
 
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
@@ -365,39 +362,42 @@ class _LibrosScreenState extends State<LibrosScreen> {
   }
 
   Widget _buildHeader() {
+    final textTheme = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const AppPageHeader(title: 'Catálogo'),
-
-          const SizedBox(height: 18),
-
-          TextField(
-            controller: _searchController,
-            onChanged: (value) {
-              setState(() {
-                _query = value;
-              });
-            },
-            textInputAction: TextInputAction.search,
-            decoration: InputDecoration(
-              hintText: 'Título, autor o ISBN...',
-              prefixIcon: const Icon(Icons.search_rounded),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      onPressed: () {
-                        _searchController.clear();
-
-                        setState(() {
-                          _query = '';
-                        });
-                      },
-                      icon: const Icon(Icons.close_rounded),
-                    )
-                  : Icon(Icons.tune_rounded, color: AppColors.gold),
-              filled: true,
+          Aparecer(
+            desplazamiento: 18,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'EXPLORAR',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: AppColors.gold,
+                    letterSpacing: 1.6,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text('Catálogo', style: textTheme.headlineLarge),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Aparecer(
+            indice: 1,
+            desplazamiento: 18,
+            child: _CampoBusqueda(
+              controller: _searchController,
+              focusNode: _searchFocus,
+              onChanged: (value) => setState(() => _query = value),
+              onLimpiar: () {
+                _searchController.clear();
+                setState(() => _query = '');
+              },
             ),
           ),
         ],
@@ -406,76 +406,78 @@ class _LibrosScreenState extends State<LibrosScreen> {
   }
 
   Widget _buildChips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border.all(color: AppColors.divider),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _CategorySegment(
-              label: 'Todos',
-              seleccionado: _categoria == null,
-              onTap: () => setState(() => _categoria = null),
+    return SizedBox(
+      height: 52,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+        children: [
+          _ChipCategoria(
+            label: 'Todos',
+            cantidad: _libros.length,
+            seleccionado: _categoria == null,
+            onTap: () => setState(() => _categoria = null),
+          ),
+          for (final categoria in _categorias) ...[
+            const SizedBox(width: 8),
+            _ChipCategoria(
+              label: categoria,
+              cantidad: _cantidadEnCategoria(categoria),
+              seleccionado: _categoria == categoria,
+              onTap: () => setState(() => _categoria = categoria),
             ),
-            for (final categoria in _categorias) ...[
-              const _SegmentDivider(),
-              _CategorySegment(
-                label: categoria,
-                seleccionado: _categoria == categoria,
-                onTap: () => setState(() => _categoria = categoria),
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildSortBar(int total) {
+    final textTheme = Theme.of(context).textTheme;
     return Row(
       children: [
         Expanded(
-          child: Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: '$total ',
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                TextSpan(
-                  text: total == 1
-                      ? 'título disponible'
-                      : 'títulos disponibles',
-                ),
-              ],
+          child: AnimatedSwitcher(
+            duration: Duracion.rapida,
+            child: Text.rich(
+              key: ValueKey(total),
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$total ',
+                    style: textTheme.titleSmall?.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  TextSpan(
+                    text: total == 1
+                        ? 'título disponible'
+                        : 'títulos disponibles',
+                  ),
+                ],
+              ),
+              style: textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
             ),
-            style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(color: AppColors.textSecondary),
           ),
         ),
         const SizedBox(width: 10),
-
-        _SmallFilterButton(
+        _BotonFiltro(
           icon: Icons.swap_vert_rounded,
           label: 'Ordenar',
+          activo: _orden != _Orden.tituloAZ,
           onTap: _seleccionarOrden,
         ),
         const SizedBox(width: 8),
-
-        _SmallFilterButton(
+        _BotonFiltro(
           icon: Icons.tune_rounded,
           label: _disponible == null
               ? 'Estado'
               : _disponible!
-              ? 'Disponible'
-              : 'Agotado',
+              ? 'Disponibles'
+              : 'Agotados',
+          activo: _disponible != null,
           onTap: _seleccionarDisponibilidad,
         ),
       ],
@@ -490,53 +492,27 @@ class _LibrosScreenState extends State<LibrosScreen> {
         ? 3
         : 2;
 
+    // Cada tarjeta es solo la portada, en proporción de libro (2:3): la
+    // imagen llena su espacio y todas las tarjetas quedan niveladas.
+    const espacioColumnas = 12.0;
+    final anchoTarjeta =
+        (width - 40 - espacioColumnas * (columns - 1)) / columns;
+
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       sliver: SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: columns,
-          mainAxisSpacing: 20,
-          crossAxisSpacing: 12,
-          childAspectRatio: width >= 700 ? 0.54 : 0.45,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: espacioColumnas,
+          mainAxisExtent: anchoTarjeta * 1.5,
         ),
         delegate: SliverChildBuilderDelegate(
           childCount: libros.length,
-          (context, index) => _LibroGridCard(libro: libros[index]),
-        ),
-      ),
-    );
-  }
-}
-
-/// Segmento de la barra horizontal continua de categorías: el activo se
-/// rellena de grafito y el resto queda transparente sobre la barra blanca.
-class _CategorySegment extends StatelessWidget {
-  final String label;
-  final bool seleccionado;
-  final VoidCallback onTap;
-
-  const _CategorySegment({
-    required this.label,
-    required this.seleccionado,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-        decoration: BoxDecoration(
-          color: seleccionado ? AppColors.primary : Colors.transparent,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: seleccionado ? Colors.white : AppColors.textSecondary,
-            fontWeight: FontWeight.w700,
-            fontSize: 12,
-            letterSpacing: 0.2,
+          (context, index) => Aparecer(
+            key: ValueKey(libros[index].idLibro ?? index),
+            indice: index,
+            child: _LibroGridCard(libro: libros[index]),
           ),
         ),
       ),
@@ -544,25 +520,168 @@ class _CategorySegment extends StatelessWidget {
   }
 }
 
-/// Separador vertical fino entre segmentos de la barra de categorías.
-class _SegmentDivider extends StatelessWidget {
-  const _SegmentDivider();
+/// Buscador destacado: borde que se ilumina en burdeos al enfocarlo.
+class _CampoBusqueda extends StatefulWidget {
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onLimpiar;
+
+  const _CampoBusqueda({
+    required this.controller,
+    required this.focusNode,
+    required this.onChanged,
+    required this.onLimpiar,
+  });
+
+  @override
+  State<_CampoBusqueda> createState() => _CampoBusquedaState();
+}
+
+class _CampoBusquedaState extends State<_CampoBusqueda> {
+  @override
+  void initState() {
+    super.initState();
+    widget.focusNode.addListener(_refrescar);
+  }
+
+  @override
+  void dispose() {
+    widget.focusNode.removeListener(_refrescar);
+    super.dispose();
+  }
+
+  void _refrescar() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
-    return Container(width: 1, height: 22, color: AppColors.divider);
+    final enfocado = widget.focusNode.hasFocus;
+    return AnimatedContainer(
+      duration: Duracion.rapida,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(Radios.md),
+        boxShadow: enfocado
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.14),
+                  blurRadius: 0,
+                  spreadRadius: 4,
+                ),
+              ]
+            : Sombra.tarjeta,
+      ),
+      child: TextField(
+        controller: widget.controller,
+        focusNode: widget.focusNode,
+        onChanged: widget.onChanged,
+        textInputAction: TextInputAction.search,
+        decoration: InputDecoration(
+          hintText: 'Título, autor o ISBN...',
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: enfocado ? AppColors.primary : AppColors.textTertiary,
+          ),
+          suffixIcon: widget.controller.text.isNotEmpty
+              ? IconButton(
+                  tooltip: 'Limpiar búsqueda',
+                  onPressed: widget.onLimpiar,
+                  icon: const Icon(Icons.close_rounded),
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(Radios.md),
+            borderSide: const BorderSide(color: AppColors.divider),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(Radios.md),
+            borderSide: const BorderSide(color: AppColors.divider),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(Radios.md),
+            borderSide: BorderSide(color: AppColors.primary, width: 1.4),
+          ),
+        ),
+      ),
+    );
   }
 }
 
-/// Botón compacto de la barra de ordenamiento (estilo Stitch).
-class _SmallFilterButton extends StatelessWidget {
-  final IconData icon;
+/// Chip de categoría con su número de títulos; el activo se rellena en burdeos.
+class _ChipCategoria extends StatelessWidget {
   final String label;
+  final int cantidad;
+  final bool seleccionado;
   final VoidCallback onTap;
 
-  const _SmallFilterButton({
+  const _ChipCategoria({
+    required this.label,
+    required this.cantidad,
+    required this.seleccionado,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Presionable(
+      child: Semantics(
+        selected: seleccionado,
+        button: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(999),
+          child: AnimatedContainer(
+            duration: Duracion.rapida,
+            curve: Curva.salida,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: seleccionado ? AppColors.primary : AppColors.surface,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: seleccionado ? AppColors.primary : AppColors.divider,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: textTheme.labelMedium?.copyWith(
+                    color: seleccionado
+                        ? Colors.white
+                        : AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '$cantidad',
+                  style: textTheme.labelSmall?.copyWith(
+                    color: seleccionado
+                        ? AppColors.doradoClaro
+                        : AppColors.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Botón compacto de orden/estado; se marca en dorado cuando está activo.
+class _BotonFiltro extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool activo;
+  final VoidCallback onTap;
+
+  const _BotonFiltro({
     required this.icon,
     required this.label,
+    required this.activo,
     required this.onTap,
   });
 
@@ -571,16 +690,28 @@ class _SmallFilterButton extends StatelessWidget {
     return OutlinedButton(
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.textSecondary,
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 10),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        side: const BorderSide(color: AppColors.divider),
-        backgroundColor: AppColors.surface,
+        foregroundColor: activo ? AppColors.primary : AppColors.textSecondary,
+        backgroundColor: activo
+            ? AppColors.primaryContainer
+            : AppColors.surface,
+        minimumSize: const Size(0, 38),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+        side: BorderSide(
+          color: activo
+              ? AppColors.primary.withValues(alpha: 0.35)
+              : AppColors.divider,
+        ),
+        textStyle: Theme.of(context).textTheme.labelMedium,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 17, color: AppColors.gold),
+          Icon(
+            icon,
+            size: 16,
+            color: activo ? AppColors.primary : AppColors.gold,
+          ),
           const SizedBox(width: 5),
           Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
         ],
@@ -589,8 +720,111 @@ class _SmallFilterButton extends StatelessWidget {
   }
 }
 
-/// Tarjeta vertical de la grilla del catálogo: portada con lomo, badge de
-/// stock, título en serif, autor, precio y botón de carrito.
+class _Opcion<T> {
+  final String texto;
+  final T valor;
+  final bool actual;
+
+  const _Opcion(this.texto, this.valor, this.actual);
+}
+
+/// Hoja inferior de opciones con título serif y selección marcada.
+class _HojaOpciones<T> extends StatelessWidget {
+  final String titulo;
+  final String subtitulo;
+  final List<_Opcion<T>> opciones;
+
+  const _HojaOpciones({
+    required this.titulo,
+    required this.subtitulo,
+    required this.opciones,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(titulo, style: textTheme.titleLarge),
+            const SizedBox(height: 4),
+            Text(
+              subtitulo,
+              style: textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 14),
+            for (final opcion in opciones)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Material(
+                  color: opcion.actual
+                      ? AppColors.primaryContainer
+                      : AppColors.paper,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(Radios.sm),
+                    side: BorderSide(
+                      color: opcion.actual
+                          ? AppColors.primary.withValues(alpha: 0.3)
+                          : AppColors.divider,
+                    ),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(Radios.sm),
+                    onTap: () => Navigator.of(context).pop(opcion.valor),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              opcion.texto,
+                              style: textTheme.bodyLarge?.copyWith(
+                                fontWeight: opcion.actual
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                                color: opcion.actual
+                                    ? AppColors.primary
+                                    : AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          AnimatedOpacity(
+                            opacity: opcion.actual ? 1 : 0,
+                            duration: Duracion.rapida,
+                            child: Icon(
+                              Icons.check_circle_rounded,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Tarjeta de la grilla del catálogo: portada sobre papel con estado de stock,
+/// título serif, autor, precio destacado y botón para añadir al carrito.
+/// Tarjeta de la grilla del catálogo: solo la portada a tarjeta completa,
+/// con el estado de stock arriba y, sobre un velo inferior, el precio y el
+/// botón para añadir al carrito. Título y autor se leen en la ficha del libro
+/// (y los anuncia el lector de pantalla).
 class _LibroGridCard extends StatelessWidget {
   final Libro libro;
 
@@ -598,132 +832,105 @@ class _LibroGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final disponible = libro.esActivo && libro.hayStock;
     final stock = libro.stock ?? 0;
-    final categoria = (libro.categoria ?? '').trim();
+    final radio = BorderRadius.circular(Radios.md);
+    final titulo = libro.titulo?.trim().isNotEmpty == true
+        ? libro.titulo!
+        : 'Sin título';
+    final autor = (libro.autor ?? '').trim();
 
-    return Material(
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => DetalleLibroScreen(libro: libro),
-            ),
-          );
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
+    return Presionable(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: radio,
+          boxShadow: Sombra.tarjeta,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: radio,
+          clipBehavior: Clip.antiAlias,
+          child: Semantics(
+            label: autor.isEmpty ? titulo : '$titulo, de $autor',
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => DetalleLibroScreen(
+                      libro: libro,
+                      heroTag: ('catalogo', libro.idLibro),
+                    ),
+                  ),
+                );
+              },
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  BookCover(
-                    url: Constants.buildPortadaUrl(libro.portada),
-                    borderRadius: 0,
-                    fit: BoxFit.contain,
+                  Opacity(
+                    opacity: disponible ? 1 : 0.55,
+                    child: Hero(
+                      tag: ('catalogo', libro.idLibro),
+                      child: BookCover(
+                        url: Constants.buildPortadaUrl(libro.portada),
+                        borderRadius: 0,
+                        fit: BoxFit.cover,
+                        sombra: false,
+                      ),
+                    ),
                   ),
-
-                  // Efecto de lomo / plegado lateral del libro físico.
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: SizedBox(
-                      width: 8,
+                  // Velo inferior para que el precio se lea sobre cualquier
+                  // portada.
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: 92,
+                    child: IgnorePointer(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            begin: Alignment.centerLeft,
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
                             colors: [
-                              Color(0x4D17181C),
-                              Color(0x1A17181C),
-                              Colors.transparent,
+                              AppColors.tinta.withValues(alpha: 0),
+                              AppColors.tinta.withValues(alpha: 0.82),
                             ],
                           ),
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _StockBadge(disponible: disponible, stock: stock),
-
-                  const SizedBox(height: 7),
-
-                  Text(
-                    libro.titulo?.trim().isNotEmpty == true
-                        ? libro.titulo!
-                        : 'Sin título',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleSmall?.copyWith(
-                      height: 1.2,
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Positioned(
+                    left: 8,
+                    top: 8,
+                    child: _StockBadge(disponible: disponible, stock: stock),
                   ),
-
-                  const SizedBox(height: 2),
-
-                  Text(
-                    (libro.autor ?? '').trim().isNotEmpty
-                        ? libro.autor!
-                        : 'Autor no registrado',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                      fontSize: 11,
-                    ),
-                  ),
-
-                  if (categoria.isNotEmpty) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      categoria,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: textTheme.labelSmall?.copyWith(
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 9,
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 10),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'S/ ${Formats.precio(libro.precio)}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: textTheme.labelLarge?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w800,
+                  Positioned(
+                    left: 12,
+                    right: 8,
+                    bottom: 8,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: PrecioTexto(
+                              monto: libro.precio,
+                              tamano: 18,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-
-                      _AddButton(libro: libro, disponible: disponible),
-                    ],
+                        _AddButton(libro: libro, disponible: disponible),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -746,98 +953,124 @@ class _StockBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        color: AppColors.surface.withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
-      child: Text(
-        label,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.labelSmall
-            ?.copyWith(color: color, fontWeight: FontWeight.w700, fontSize: 9),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _AddButton extends StatelessWidget {
+/// Botón para añadir al carrito: confirma con un check animado.
+class _AddButton extends StatefulWidget {
   final Libro libro;
   final bool disponible;
 
   const _AddButton({required this.libro, required this.disponible});
 
   @override
-  Widget build(BuildContext context) {
-    final onTap = disponible && libro.idLibro != null
-        ? () {
-            CarritoService.instance.agregar(libro);
+  State<_AddButton> createState() => _AddButtonState();
+}
 
-            final messenger = ScaffoldMessenger.of(context);
-            messenger.hideCurrentSnackBar();
-            messenger.showSnackBar(
-              SnackBar(
-                content: Text('${libro.titulo} se agregó al carrito'),
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 2),
-                action: SnackBarAction(
-                  label: 'Ver carrito',
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => CarritoScreen()),
-                    );
-                  },
-                ),
-              ),
-            );
-          }
-        : null;
+class _AddButtonState extends State<_AddButton> {
+  bool _agregado = false;
 
-    return Material(
-      color: disponible ? AppColors.primary : AppColors.surfaceElevated,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: InkWell(
-        customBorder: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        onTap: onTap,
-        child: SizedBox(
-          width: 38,
-          height: 38,
-          child: Icon(
-            Icons.add_shopping_cart_rounded,
-            size: 19,
-            color: disponible ? Colors.white : AppColors.textTertiary,
-          ),
+  void _agregar() {
+    final libro = widget.libro;
+    CarritoService.instance.agregar(libro);
+
+    setState(() => _agregado = true);
+    Future<void>.delayed(const Duration(milliseconds: 1400), () {
+      if (mounted) setState(() => _agregado = false);
+    });
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text('${libro.titulo} se agregó al carrito'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        // Con acción, Flutter lo deja fijo por defecto; aquí debe cerrarse
+        // solo para no tapar el pago ni la barra inferior.
+        persist: false,
+        action: SnackBarAction(
+          label: 'Ver carrito',
+          onPressed: () {
+            Navigator.of(context)
+                .push(MaterialPageRoute<void>(builder: (_) => CarritoScreen()));
+          },
         ),
       ),
     );
   }
-}
-
-class _OrdenTile extends StatelessWidget {
-  final String label;
-  final _Orden value;
-  final _Orden actual;
-
-  const _OrdenTile({
-    required this.label,
-    required this.value,
-    required this.actual,
-  });
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(label),
-      trailing: value == actual
-          ? Icon(
-              Icons.check_rounded,
-              color: Theme.of(context).colorScheme.primary,
-            )
-          : null,
-      onTap: () {
-        Navigator.of(context).pop(value);
-      },
+    final disponible = widget.disponible;
+    final onTap = disponible && widget.libro.idLibro != null ? _agregar : null;
+    final fondo = !disponible
+        ? AppColors.surfaceElevated
+        : _agregado
+        ? AppColors.success
+        : AppColors.primary;
+
+    return Tooltip(
+      message: disponible ? 'Añadir al carrito' : 'Sin existencias',
+      child: Presionable(
+        escala: 0.9,
+        habilitado: onTap != null,
+        child: AnimatedContainer(
+          duration: Duracion.rapida,
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: fondo,
+            borderRadius: BorderRadius.circular(Radios.sm),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(Radios.sm),
+              onTap: onTap,
+              child: AnimatedSwitcher(
+                duration: Duracion.rapida,
+                transitionBuilder: (child, anim) =>
+                    ScaleTransition(scale: anim, child: child),
+                child: Icon(
+                  _agregado
+                      ? Icons.check_rounded
+                      : Icons.add_shopping_cart_rounded,
+                  key: ValueKey(_agregado),
+                  size: 19,
+                  color: disponible ? Colors.white : AppColors.textTertiary,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

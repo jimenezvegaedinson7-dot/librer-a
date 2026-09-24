@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
+import '../utils/app_colors.dart';
+import '../utils/app_theme.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/estanteria.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 
@@ -67,50 +70,121 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.primary,
-      body: SafeArea(
-        child: Center(
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: 1),
-            duration: const Duration(milliseconds: 750),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, child) {
-              return Opacity(
-                opacity: value,
-                child: Transform.scale(
-                  scale: 0.92 + 0.08 * value,
-                  child: child,
-                ),
-              );
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const AppLogo(width: 112, height: 112),
-                const SizedBox(height: 20),
-                Text(
-                  'Librería',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 28,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                const SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
+      body: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary,
+              Color.alphaBlend(
+                Colors.black.withValues(alpha: 0.35),
+                AppColors.primary,
+              ),
+            ],
           ),
+        ),
+        child: Stack(
+          children: [
+            const Positioned.fill(
+              child: EstanteriaAnimada(
+                tinta: Colors.white,
+                acento: AppColors.doradoClaro,
+                opacidad: 0.1,
+                altoBalda: 84,
+                semilla: 11,
+                duracion: Duration(milliseconds: 1100),
+              ),
+            ),
+            // Velo radial: el centro queda limpio para el logo.
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    radius: 0.75,
+                    colors: [
+                      AppColors.primaryDark.withValues(alpha: 0.9),
+                      AppColors.primaryDark.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Center(
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 1),
+                  duration: const Duration(milliseconds: 750),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.scale(
+                        scale: 0.92 + 0.08 * value,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 156,
+                        height: 156,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.doradoClaro.withValues(
+                              alpha: 0.55,
+                            ),
+                          ),
+                        ),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                          child: const Center(
+                            child: AppLogo(width: 104, height: 104),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Librería',
+                        style: AppTheme.serif(
+                          fontSize: 30,
+                          color: Colors.white,
+                          letterSpacing: -0.4,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        width: 36,
+                        height: 2,
+                        decoration: BoxDecoration(
+                          color: AppColors.doradoClaro,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      const SizedBox(
+                        width: 26,
+                        height: 26,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          strokeCap: StrokeCap.round,
+                          color: AppColors.doradoClaro,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

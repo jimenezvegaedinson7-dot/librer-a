@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import '../models/libro.dart';
 import '../services/api_service.dart';
 import '../utils/app_colors.dart';
+import '../widgets/aparecer.dart';
 import '../widgets/app_page_header.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/libro_card.dart';
 import '../widgets/libros_grid.dart';
 import '../widgets/loading_view.dart';
+import '../widgets/presionable.dart';
 
 /// Pantalla "Mis favoritos" (lista de deseos).
 ///
@@ -81,11 +83,13 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       await _cargar();
+      if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.message)));
     } catch (_) {
       if (!mounted) return;
       await _cargar();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No se pudo actualizar tus favoritos.')),
       );
@@ -94,18 +98,30 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Abierta encima de otra pantalla (desde Perfil o Reservas): flecha para volver.
+    final apilada = Navigator.of(context).canPop();
     return Scaffold(
+      appBar: apilada ? AppBar(toolbarHeight: 52) : null,
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
           onRefresh: _cargar,
+          color: AppColors.primary,
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
-                child: const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 20, 20, 14),
-                  child: AppPageHeader(title: 'Mis favoritos'),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+                  child: AppPageHeader(
+                    eyebrow: 'Lista de deseos',
+                    title: 'Mis favoritos',
+                    subtitle: _libros.isEmpty
+                        ? null
+                        : _libros.length == 1
+                        ? '1 libro guardado'
+                        : '${_libros.length} libros guardados',
+                  ),
                 ),
               ),
               _buildBody(),
@@ -135,7 +151,8 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
         child: EmptyView(
           icon: Icons.favorite_border_rounded,
           title: 'Sin favoritos todavía',
-          message: 'Toca el corazón en la ficha de un libro para guardarlo aquí.',
+          message:
+              'Toca el corazón en la ficha de un libro para guardarlo aquí.',
         ),
       );
     }
@@ -145,26 +162,23 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
       sliver: SliverGrid(
         gridDelegate: LibrosGrid.delegate(width),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final libro = _libros[index];
-            return Stack(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final libro = _libros[index];
+          return Aparecer(
+            key: ValueKey(libro.idLibro ?? index),
+            indice: index,
+            child: Stack(
               children: [
-                Positioned.fill(
-                  child: LibroCard(libro: libro),
-                ),
+                Positioned.fill(child: LibroCard(libro: libro)),
                 Positioned(
                   top: 8,
                   right: 8,
-                  child: _QuitarCorazon(
-                    onTap: () => _quitar(libro),
-                  ),
+                  child: _QuitarCorazon(onTap: () => _quitar(libro)),
                 ),
               ],
-            );
-          },
-          childCount: _libros.length,
-        ),
+            ),
+          );
+        }, childCount: _libros.length),
       ),
     );
   }
@@ -178,19 +192,25 @@ class _QuitarCorazon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface.withValues(alpha: 0.92),
-      shape: const CircleBorder(),
-      elevation: 1,
-      child: InkWell(
-        customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: const Padding(
-          padding: EdgeInsets.all(6),
-          child: Icon(
-            Icons.favorite_rounded,
-            size: 20,
-            color: AppColors.error,
+    return Tooltip(
+      message: 'Quitar de favoritos',
+      child: Presionable(
+        escala: 0.88,
+        child: Material(
+          color: AppColors.surface.withValues(alpha: 0.95),
+          shape: const CircleBorder(side: BorderSide(color: AppColors.divider)),
+          elevation: 0,
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.all(7),
+              child: Icon(
+                Icons.favorite_rounded,
+                size: 18,
+                color: AppColors.primary,
+              ),
+            ),
           ),
         ),
       ),

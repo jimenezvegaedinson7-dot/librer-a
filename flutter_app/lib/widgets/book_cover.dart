@@ -2,20 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
 
-/// Portada reutilizable para libros.
-///
-/// Conserva la proporción original de la imagen y evita recortes
-/// excesivos. Si la imagen no existe o falla, muestra un placeholder.
+/// Portada de libro con sombra cálida y marcador de posición editorial.
 class BookCover extends StatelessWidget {
   final String url;
   final double borderRadius;
   final BoxFit fit;
+
+  /// Sin sombra cuando la portada llena su contenedor (tarjetas a sangre).
+  final bool sombra;
 
   const BookCover({
     super.key,
     required this.url,
     this.borderRadius = 4,
     this.fit = BoxFit.contain,
+    this.sombra = true,
   });
 
   @override
@@ -24,24 +25,20 @@ class BookCover extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.paper,
         borderRadius: radius,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryDark.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        boxShadow: sombra
+            ? [
+                BoxShadow(
+                  color: AppColors.tinta.withValues(alpha: 0.10),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
       ),
       child: ClipRRect(
         borderRadius: radius,
-        child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          color: AppColors.paper,
-          padding: const EdgeInsets.all(4),
-          alignment: Alignment.center,
+        child: SizedBox.expand(
           child: url.trim().isEmpty
               ? const _CoverPlaceholder(loading: false)
               : Image.network(
@@ -51,14 +48,19 @@ class BookCover extends StatelessWidget {
                   fit: fit,
                   alignment: Alignment.center,
                   webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
-                  errorBuilder: (_, _, _) {
-                    return const _CoverPlaceholder(loading: false);
+                  errorBuilder: (_, _, _) =>
+                      const _CoverPlaceholder(loading: false),
+                  frameBuilder: (context, child, frame, sincrono) {
+                    if (sincrono) return child;
+                    return AnimatedOpacity(
+                      opacity: frame == null ? 0 : 1,
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeOut,
+                      child: child,
+                    );
                   },
                   loadingBuilder: (context, child, progress) {
-                    if (progress == null) {
-                      return child;
-                    }
-
+                    if (progress == null) return child;
                     return const _CoverPlaceholder(loading: true);
                   },
                 ),
@@ -75,25 +77,30 @@ class _CoverPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: const BoxDecoration(color: AppColors.surfaceElevated),
-      alignment: Alignment.center,
-      child: loading
-          ? SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.primary,
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.pergamino, AppColors.surfaceElevated],
+        ),
+      ),
+      child: Center(
+        child: loading
+            ? SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.gold,
+                ),
+              )
+            : Icon(
+                Icons.auto_stories_outlined,
+                size: 34,
+                color: AppColors.gold.withValues(alpha: 0.8),
               ),
-            )
-          : Icon(
-              Icons.auto_stories_rounded,
-              size: 40,
-              color: AppColors.primary,
-            ),
+      ),
     );
   }
 }

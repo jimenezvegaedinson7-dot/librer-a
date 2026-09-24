@@ -11,11 +11,16 @@ class PerfilTema {
   final Color inicio;
   final Color fin;
 
+  /// Acento fijo opcional. Si se define, sustituye al acento calculado (lo usa
+  /// el tema de marca para conservar el dorado junto al burdeos).
+  final Color? acento;
+
   const PerfilTema({
     required this.id,
     required this.nombre,
     required this.inicio,
     required this.fin,
+    this.acento,
   });
 
   bool get esGradiente => inicio != fin;
@@ -29,8 +34,7 @@ class PerfilTema {
 
   /// Color de texto legible sobre [gradiente] (oscuro si el tema es claro).
   Color get textColor {
-    final luminancia = (inicio.computeLuminance() + fin.computeLuminance()) /
-        2;
+    final luminancia = (inicio.computeLuminance() + fin.computeLuminance()) / 2;
     return luminancia > 0.5 ? const Color(0xFF17181C) : Colors.white;
   }
 
@@ -39,6 +43,7 @@ class PerfilTema {
   /// Usa el extremo más oscuro del tema; si ambos son claros devuelve el
   /// grafito neutro para mantener botones legibles.
   Color get colorPrincipal {
+    if (acento != null) return inicio;
     final base = inicio.computeLuminance() <= fin.computeLuminance()
         ? inicio
         : fin;
@@ -52,13 +57,17 @@ class PerfilTema {
   ///
   /// Para temas claros se conserva el dorado de marca.
   Color get colorAcento {
-    final luminancia = (inicio.computeLuminance() + fin.computeLuminance()) /
-        2;
-    return luminancia > 0.85 ? const Color(0xFFD3A331) : inicio;
+    if (acento != null) return acento!;
+    final luminancia = (inicio.computeLuminance() + fin.computeLuminance()) / 2;
+    return luminancia > 0.85 ? const Color(0xFFB98D3E) : inicio;
   }
 
   /// Acento oscurecido para textos sobre superficies claras (precios).
   Color get colorAcentoOscuro => _oscurecer(colorAcento, 0.28);
+
+  /// Color de los precios: el principal en el tema de marca, el acento
+  /// oscurecido en el resto (mantiene contraste sobre fondos claros).
+  Color get colorPrecio => acento != null ? colorPrincipal : colorAcentoOscuro;
 
   /// Contenedor claro del color principal (perfiles de iconos, chips).
   Color get contenedorPrincipal =>
@@ -76,11 +85,18 @@ Color _oscurecer(Color color, double proporcion) =>
 /// Prefijo del id de los temas personalizados: `custom_AABBCC_DDEEFF`.
 const _customPrefixo = 'custom_';
 
-/// Id del tema por defecto (superficie blanca).
-const String perfilTemaDefaultId = 'default';
+/// Id del tema por defecto: la identidad de la librería (burdeos + dorado).
+const String perfilTemaDefaultId = 'libreria';
 
 /// Paleta de temas predefinidos: colores sólidos y degradados.
 const List<PerfilTema> perfilTemas = [
+  PerfilTema(
+    id: 'libreria',
+    nombre: 'Librería',
+    inicio: Color(0xFF7A2530),
+    fin: Color(0xFF4E1620),
+    acento: Color(0xFFB98D3E),
+  ),
   PerfilTema(
     id: 'default',
     nombre: 'Blanco',

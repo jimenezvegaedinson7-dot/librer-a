@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../models/libro.dart';
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_tokens.dart';
 import '../utils/constants.dart';
-import '../utils/formats.dart';
+import '../widgets/aparecer.dart';
 import '../widgets/book_cover.dart';
 import '../widgets/carrito_badge.dart';
+import '../widgets/estado_chip.dart';
+import '../widgets/estanteria.dart';
+import '../widgets/precio_texto.dart';
+import '../widgets/presionable.dart';
 import 'carrito_screen.dart';
 
-/// Pantalla de detalle de un libro (ficha) rediseñada según Stitch:
-/// portada con halo, autor como eyebrow, sinopsis expandible, ficha técnica
-/// con campos reales y barra inferior fija con cantidad y total.
+/// Ficha del libro: portada sobre pergamino, datos comerciales (precio,
+/// disponibilidad y cantidad), sinopsis expandible, ficha técnica y barra
+/// inferior fija con total, reserva y compra.
 class DetalleLibroScreen extends StatefulWidget {
   final Libro libro;
 
-  const DetalleLibroScreen({super.key, required this.libro});
+  /// Etiqueta de la transición de portada desde la tarjeta de origen.
+  final Object? heroTag;
+
+  const DetalleLibroScreen({super.key, required this.libro, this.heroTag});
 
   @override
   State<DetalleLibroScreen> createState() => _DetalleLibroScreenState();
@@ -30,6 +37,9 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
   bool _sinopsisCompleta = false;
   bool? _esFavorito;
   bool _favoritoCambiando = false;
+
+  /// Confirmación visual breve tras añadir al carrito.
+  bool _agregado = false;
 
   @override
   void initState() {
@@ -143,6 +153,11 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
         duration: const Duration(seconds: 2),
       ),
     );
+
+    setState(() => _agregado = true);
+    Future<void>.delayed(const Duration(milliseconds: 1400), () {
+      if (mounted) setState(() => _agregado = false);
+    });
   }
 
   /// Crea la reserva contra `POST /reservas`, con protección contra el doble
@@ -201,9 +216,11 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final wide = width >= 700;
+    final esFavorito = _esFavorito ?? false;
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.pergamino,
         leading: IconButton(
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           onPressed: () => Navigator.of(context).maybePop(),
@@ -212,9 +229,7 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
         title: const Text('Ficha del libro'),
         actions: [
           IconButton(
-            tooltip: (_esFavorito ?? false)
-                ? 'Quitar de favoritos'
-                : 'Agregar a favoritos',
+            tooltip: esFavorito ? 'Quitar de favoritos' : 'Agregar a favoritos',
             onPressed: _favoritoCambiando ? null : _toggleFavorito,
             icon: _favoritoCambiando
                 ? const SizedBox(
@@ -222,30 +237,24 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : Icon(
-                    (_esFavorito ?? false)
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
-                    color: (_esFavorito ?? false)
-                        ? AppColors.error
-                        : null,
-                  ),
+                : _CorazonFavorito(activo: esFavorito),
           ),
           IconButton(
+            tooltip: 'Ver carrito',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const CarritoScreen()),
               );
             },
-            icon: const CarritoBadge(child: Icon(Icons.shopping_cart_outlined)),
+            icon: const CarritoBadge(child: Icon(Icons.shopping_bag_outlined)),
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
           child: wide ? _buildWide(context) : _buildPortrait(context),
         ),
       ),
@@ -253,6 +262,7 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
         libro: _libro,
         cantidad: _cantidad,
         reservando: _reservando > 0,
+        agregado: _agregado,
         onAdd: _agregarAlCarrito,
         onReservar: _reservar,
       ),
@@ -263,115 +273,155 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Center(child: _PortadaGrande(libro: _libro)),
-        const SizedBox(height: 26),
-        _buildInfo(context),
+        _EscenarioPortada(libro: _libro, heroTag: widget.heroTag),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+          child: Aparecer(indice: 1, child: _buildInfo(context)),
+        ),
       ],
     );
   }
 
   Widget _buildWide(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(width: 260, child: _PortadaGrande(libro: _libro)),
-        const SizedBox(width: 32),
-        Expanded(child: _buildInfo(context)),
-      ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 300,
+            child: _EscenarioPortada(
+              libro: _libro,
+              redondeado: true,
+              heroTag: widget.heroTag,
+            ),
+          ),
+          const SizedBox(width: 32),
+          Expanded(child: _buildInfo(context)),
+        ],
+      ),
     );
   }
 
   Widget _buildInfo(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final descripcion = (_libro.descripcion ?? '').trim();
+    final disponible = _libro.hayStock;
+    final autor = (_libro.autor ?? '').trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Autor como eyebrow sobre el título (estilo Stitch).
-        Text(
-          (_libro.autor ?? '').toUpperCase(),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: textTheme.labelSmall?.copyWith(
-            color: AppColors.gold,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.4,
-          ),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            EstadoChip(
+              texto: _libro.categoria ?? 'General',
+              tono: TonoEstado.marca,
+              conPunto: false,
+            ),
+            EstadoChip(
+              texto: disponible ? 'Envío inmediato' : 'Sin existencias',
+              tono: disponible ? TonoEstado.exito : TonoEstado.peligro,
+            ),
+          ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 12),
         Text(
           _libro.titulo ?? 'Sin título',
-          style: textTheme.headlineMedium?.copyWith(
-            height: 1.1,
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w800,
-          ),
+          style: textTheme.displaySmall?.copyWith(height: 1.12),
         ),
-        const SizedBox(height: 10),
-        _chip(textTheme, _libro.categoria ?? 'General'),
+        if (autor.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: 'de ',
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+                TextSpan(
+                  text: autor,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
 
         const SizedBox(height: 18),
 
-        // Bloque de precio.
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              'S/ ${Formats.precio(_libro.precio)}',
-              style: GoogleFonts.inter(
-                fontSize: 26,
-                height: 32 / 26,
-                color: AppColors.primary,
-                fontWeight: FontWeight.w900,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 3),
-                child: Text(
-                  _libro.hayStock ? 'Envío inmediato' : 'Sin existencias',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: _libro.hayStock
-                        ? AppColors.success
-                        : AppColors.error,
-                    fontWeight: FontWeight.w700,
-                  ),
+        // Bloque comercial: precio + cantidad.
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(Radios.md),
+            border: Border.all(color: AppColors.divider),
+            boxShadow: Sombra.tarjeta,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Precio',
+                      style: textTheme.labelSmall?.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    PrecioTexto(
+                      monto: _libro.precio,
+                      tamano: 28,
+                      peso: FontWeight.w700,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      disponible
+                          ? '${_libro.stock} ${_libro.stock == 1 ? 'ejemplar disponible' : 'ejemplares disponibles'}'
+                          : 'Agotado por ahora',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: disponible
+                            ? AppColors.textSecondary
+                            : AppColors.error,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 22),
-
-        // Selector de cantidad.
-        Row(
-          children: [
-            Text(
-              'Cantidad',
-              style: textTheme.titleSmall?.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'Cantidad',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  _CantidadSelector(
+                    cantidad: _cantidad,
+                    max: _libro.stock ?? 0,
+                    onMenos: _decrementar,
+                    onMas: _incrementar,
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 16),
-            _CantidadSelector(
-              cantidad: _cantidad,
-              max: _libro.stock ?? 0,
-              onMenos: _decrementar,
-              onMas: _incrementar,
-            ),
-          ],
+            ],
+          ),
         ),
 
         if (descripcion.isNotEmpty) ...[
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           _SinopsisCard(
             descripcion: descripcion,
             completa: _sinopsisCompleta,
@@ -385,7 +435,6 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
         // Ficha técnica con campos reales del modelo.
         _Card(
           title: 'Ficha técnica',
-          icon: Icons.library_books_outlined,
           child: Column(
             children: [
               _infoRow(context, 'Autor', _libro.autor ?? '—'),
@@ -395,6 +444,7 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
                 context,
                 'Stock',
                 _libro.hayStock ? '${_libro.stock} disponibles' : 'Agotado',
+                ultimo: true,
               ),
             ],
           ),
@@ -403,43 +453,40 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
     );
   }
 
-  Widget _chip(TextTheme textTheme, String label) {
+  Widget _infoRow(
+    BuildContext context,
+    String label,
+    String value, {
+    bool ultimo = false,
+  }) {
+    final textTheme = Theme.of(context).textTheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 11),
       decoration: BoxDecoration(
-        color: AppColors.primaryContainer,
-        borderRadius: BorderRadius.circular(999),
+        border: ultimo
+            ? null
+            : const Border(bottom: BorderSide(color: AppColors.divider)),
       ),
-      child: Text(
-        label,
-        style: textTheme.labelMedium?.copyWith(
-          color: AppColors.primaryDark,
-          fontWeight: FontWeight.w700,
-          fontSize: 11,
-        ),
-      ),
-    );
-  }
-
-  Widget _infoRow(BuildContext context, String label, String value) {
-    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(color: muted),
+          SizedBox(
+            width: 96,
+            child: Text(
+              label,
+              style: textTheme.bodyMedium?.copyWith(
+                color: AppColors.textTertiary,
+              ),
+            ),
           ),
-          const Spacer(),
-          Flexible(
+          Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: Theme.of(context).textTheme.bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
         ],
@@ -448,32 +495,131 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
   }
 }
 
-/// Portada grande del detalle.
-///
-/// Se evita el halo con [RadialGradient]: en el GPU Mali de algunos equipos
-/// el degradado radial rompe el rasterizado y deja la pantalla en blanco.
-class _PortadaGrande extends StatelessWidget {
-  final Libro libro;
-  const _PortadaGrande({required this.libro});
+/// Corazón de favorito: late al activarse.
+class _CorazonFavorito extends StatelessWidget {
+  final bool activo;
+
+  const _CorazonFavorito({required this.activo});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return AnimatedSwitcher(
+      duration: Duracion.base,
+      transitionBuilder: (child, anim) => ScaleTransition(
+        scale: TweenSequence<double>([
+          TweenSequenceItem(tween: Tween(begin: 0.6, end: 1.18), weight: 60),
+          TweenSequenceItem(tween: Tween(begin: 1.18, end: 1.0), weight: 40),
+        ]).animate(anim),
+        child: child,
+      ),
+      child: Icon(
+        activo ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+        key: ValueKey(activo),
+        color: activo ? AppColors.primary : AppColors.textPrimary,
+      ),
+    );
+  }
+}
+
+/// Portada grande sobre una banda de pergamino.
+///
+/// Se evita el halo con [RadialGradient]: en el GPU Mali de algunos equipos
+/// el degradado radial rompe el rasterizado y deja la pantalla en blanco.
+class _EscenarioPortada extends StatelessWidget {
+  final Libro libro;
+  final bool redondeado;
+  final Object? heroTag;
+
+  const _EscenarioPortada({
+    required this.libro,
+    this.redondeado = false,
+    this.heroTag,
+  });
+
+  /// Con etiqueta, la portada llega volando desde la tarjeta de origen.
+  Widget _conHero(Widget portada) =>
+      heroTag == null ? portada : Hero(tag: heroTag!, child: portada);
+
+  @override
+  Widget build(BuildContext context) {
+    final portada = Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 260),
+        constraints: const BoxConstraints(maxWidth: 210),
         child: AspectRatio(
-          aspectRatio: 3 / 4,
-          child: BookCover(
-            url: Constants.buildPortadaUrl(libro.portada),
-            borderRadius: 6,
+          aspectRatio: 2 / 3,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.tinta.withValues(alpha: 0.28),
+                  blurRadius: 30,
+                  offset: const Offset(0, 16),
+                ),
+              ],
+            ),
+            child: _conHero(
+              BookCover(
+                url: Constants.buildPortadaUrl(libro.portada),
+                borderRadius: 6,
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
+        ),
+      ),
+    );
+
+    return ClipRRect(
+      borderRadius: redondeado
+          ? BorderRadius.circular(Radios.lg)
+          : BorderRadius.zero,
+      child: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.pergamino, AppColors.background],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Estantería tenue detrás de la portada, como en una vitrina.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: ShaderMask(
+                  blendMode: BlendMode.dstIn,
+                  shaderCallback: (rect) => const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.white, Colors.transparent],
+                    stops: [0.3, 1],
+                  ).createShader(rect),
+                  child: EstanteriaAnimada(
+                    tinta: AppColors.primaryDark,
+                    acento: AppColors.dorado,
+                    opacidad: 0.12,
+                    altoBalda: 72,
+                    semilla: libro.idLibro.hashCode,
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+              child: heroTag == null
+                  ? Aparecer(desplazamiento: 20, child: portada)
+                  : portada,
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// Selector numérico de cantidad con botones redondeados.
+/// Selector numérico de cantidad en píldora.
 class _CantidadSelector extends StatelessWidget {
   final int cantidad;
   final int max;
@@ -490,30 +636,49 @@ class _CantidadSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 42,
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.paper,
         border: Border.all(color: AppColors.divider),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            onPressed: onMenos,
+            tooltip: 'Quitar uno',
+            onPressed: cantidad > 1 ? onMenos : null,
             icon: const Icon(Icons.remove_rounded, size: 18),
             color: AppColors.primary,
             visualDensity: VisualDensity.compact,
           ),
-          Text(
-            '$cantidad',
-            style: GoogleFonts.inter(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w800,
-              fontSize: 16,
-              fontFeatures: const [FontFeature.tabularFigures()],
+          SizedBox(
+            width: 26,
+            child: AnimatedSwitcher(
+              duration: Duracion.rapida,
+              transitionBuilder: (child, anim) => FadeTransition(
+                opacity: anim,
+                child: SlideTransition(
+                  position: Tween(
+                    begin: const Offset(0, 0.35),
+                    end: Offset.zero,
+                  ).animate(anim),
+                  child: child,
+                ),
+              ),
+              child: Text(
+                '$cantidad',
+                key: ValueKey(cantidad),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontSize: 16,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
             ),
           ),
           IconButton(
+            tooltip: 'Añadir uno',
             onPressed: max > cantidad ? onMas : null,
             icon: const Icon(Icons.add_rounded, size: 18),
             color: AppColors.primary,
@@ -543,29 +708,40 @@ class _SinopsisCard extends StatelessWidget {
 
     return _Card(
       title: 'Sinopsis',
-      icon: Icons.auto_stories_outlined,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            descripcion,
-            maxLines: completa ? null : 3,
-            overflow: completa ? null : TextOverflow.ellipsis,
-            style: textTheme.bodyMedium?.copyWith(
-              height: 1.5,
-              color: AppColors.textSecondary,
+          AnimatedSize(
+            duration: Duracion.base,
+            curve: Curva.salida,
+            alignment: Alignment.topCenter,
+            child: Text(
+              descripcion,
+              maxLines: completa ? null : 4,
+              overflow: completa ? null : TextOverflow.ellipsis,
+              style: textTheme.bodyMedium?.copyWith(
+                height: 1.6,
+                color: AppColors.textSecondary,
+              ),
             ),
           ),
-          const SizedBox(height: 6),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: onToggle,
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.gold,
-                visualDensity: VisualDensity.compact,
-              ),
-              child: Text(completa ? 'Leer menos' : 'Leer más'),
+          const SizedBox(height: 4),
+          TextButton(
+            onPressed: onToggle,
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              visualDensity: VisualDensity.compact,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(completa ? 'Leer menos' : 'Leer más'),
+                AnimatedRotation(
+                  turns: completa ? 0.5 : 0,
+                  duration: Duracion.base,
+                  child: const Icon(Icons.expand_more_rounded, size: 18),
+                ),
+              ],
             ),
           ),
         ],
@@ -574,22 +750,21 @@ class _SinopsisCard extends StatelessWidget {
   }
 }
 
-/// Contenedor con encabezado para las tarjetas (Sinopsis / Ficha técnica).
+/// Contenedor con encabezado serif para Sinopsis y Ficha técnica.
 class _Card extends StatelessWidget {
   final String title;
-  final IconData icon;
   final Widget child;
 
-  const _Card({required this.title, required this.icon, required this.child});
+  const _Card({required this.title, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(Radios.md),
         border: Border.all(color: AppColors.divider),
       ),
       child: Column(
@@ -597,18 +772,19 @@ class _Card extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: AppColors.gold),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w800,
+              Container(
+                width: 3,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: AppColors.gold,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
+              const SizedBox(width: 8),
+              Text(title, style: Theme.of(context).textTheme.titleMedium),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           child,
         ],
       ),
@@ -616,11 +792,12 @@ class _Card extends StatelessWidget {
   }
 }
 
-/// Barra inferior fija con subtotal y acción principal.
+/// Barra inferior fija con total, reserva y compra.
 class _StickyBar extends StatelessWidget {
   final Libro libro;
   final int cantidad;
   final bool reservando;
+  final bool agregado;
   final VoidCallback onAdd;
   final VoidCallback onReservar;
 
@@ -628,6 +805,7 @@ class _StickyBar extends StatelessWidget {
     required this.libro,
     required this.cantidad,
     required this.reservando,
+    required this.agregado,
     required this.onAdd,
     required this.onReservar,
   });
@@ -643,18 +821,13 @@ class _StickyBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryDark.withValues(alpha: 0.06),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
-          ),
-        ],
+        border: const Border(top: BorderSide(color: AppColors.divider)),
+        boxShadow: Sombra.barra,
       ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
           child: Row(
             children: [
               Expanded(
@@ -665,34 +838,32 @@ class _StickyBar extends StatelessWidget {
                     Text(
                       'Total',
                       style: textTheme.labelSmall?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
+                        color: AppColors.textTertiary,
                       ),
                     ),
-                    Text(
-                      'S/ ${Formats.precio(total)}',
-                      style: GoogleFonts.inter(
-                        fontSize: 20,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w900,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+                    AnimatedSwitcher(
+                      duration: Duracion.rapida,
+                      transitionBuilder: (child, anim) =>
+                          FadeTransition(opacity: anim, child: child),
+                      child: PrecioTexto(
+                        key: ValueKey(total),
+                        monto: total,
+                        tamano: 20,
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              SizedBox(
-                height: 52,
+              Presionable(
+                habilitado: disponible && !reservando,
                 child: OutlinedButton(
                   onPressed: disponible && !reservando ? onReservar : null,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    minimumSize: const Size(0, 52),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    side: BorderSide(color: AppColors.primary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                    minimumSize: const Size(0, 50),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    side: BorderSide(
+                      color: AppColors.primary.withValues(alpha: 0.5),
                     ),
                   ),
                   child: reservando
@@ -701,52 +872,54 @@ class _StickyBar extends StatelessWidget {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : compact
-                      ? const Text(
-                          'Reservar',
-                          style: TextStyle(fontWeight: FontWeight.w800),
-                        )
-                      : const Row(
+                      : Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.event_available_outlined, size: 18),
-                            SizedBox(width: 6),
-                            Text(
-                              'Reservar',
-                              style: TextStyle(fontWeight: FontWeight.w700),
-                            ),
+                            if (!compact) ...[
+                              const Icon(
+                                Icons.event_available_outlined,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            const Text('Reservar'),
                           ],
                         ),
                 ),
               ),
               const SizedBox(width: 8),
-              SizedBox(
-                height: 52,
-                child: FilledButton(
-                  onPressed: disponible && !reservando ? onAdd : null,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: disponible
-                        ? AppColors.primary
-                        : AppColors.surfaceElevated,
-                    foregroundColor: disponible
-                        ? Colors.white
-                        : AppColors.textTertiary,
-                    minimumSize: const Size(0, 52),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+              Presionable(
+                habilitado: disponible && !reservando,
+                child: AnimatedContainer(
+                  duration: Duracion.rapida,
+                  child: FilledButton(
+                    onPressed: disponible && !reservando ? onAdd : null,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: agregado
+                          ? AppColors.success
+                          : AppColors.primary,
+                      minimumSize: const Size(0, 50),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                     ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.add_shopping_cart_rounded, size: 18),
-                      SizedBox(width: 6),
-                      Text(
-                        'Añadir',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                    child: AnimatedSwitcher(
+                      duration: Duracion.rapida,
+                      transitionBuilder: (child, anim) =>
+                          ScaleTransition(scale: anim, child: child),
+                      child: Row(
+                        key: ValueKey(agregado),
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            agregado
+                                ? Icons.check_rounded
+                                : Icons.add_shopping_cart_rounded,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(agregado ? 'Añadido' : 'Añadir'),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),

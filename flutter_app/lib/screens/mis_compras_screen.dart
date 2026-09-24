@@ -4,11 +4,16 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/venta.dart';
 import '../services/api_service.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_tokens.dart';
 import '../utils/formats.dart';
+import '../widgets/aparecer.dart';
 import '../widgets/app_page_header.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
+import '../widgets/estado_chip.dart';
 import '../widgets/loading_view.dart';
+import '../widgets/precio_texto.dart';
+import '../widgets/presionable.dart';
 
 /// Pantalla "Mis compras": lista las ventas del cliente desde
 /// `GET /ventas/mis-ventas`.
@@ -63,18 +68,30 @@ class MisComprasScreenState extends State<MisComprasScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Abierta encima de otra pantalla (desde Perfil o Reservas): flecha para volver.
+    final apilada = Navigator.of(context).canPop();
     return Scaffold(
+      appBar: apilada ? AppBar(toolbarHeight: 52) : null,
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
           onRefresh: _cargarVentas,
+          color: AppColors.primary,
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
-                child: const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 20, 20, 14),
-                  child: AppPageHeader(title: 'Mis compras'),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+                  child: AppPageHeader(
+                    eyebrow: 'Historial',
+                    title: 'Mis compras',
+                    subtitle: _ventas.isEmpty
+                        ? null
+                        : _ventas.length == 1
+                        ? '1 compra registrada'
+                        : '${_ventas.length} compras registradas',
+                  ),
                 ),
               ),
               _buildBody(),
@@ -114,8 +131,14 @@ class MisComprasScreenState extends State<MisComprasScreen> {
       sliver: SliverList.separated(
         itemCount: _ventas.length,
         separatorBuilder: (_, _) => const SizedBox(height: 12),
-        itemBuilder: (context, index) =>
-            _VentaTile(venta: _ventas[index], onActualizada: _cargarVentas),
+        itemBuilder: (context, index) => Aparecer(
+          key: ValueKey(_ventas[index].idVenta ?? index),
+          indice: index,
+          child: _VentaTile(
+            venta: _ventas[index],
+            onActualizada: _cargarVentas,
+          ),
+        ),
       ),
     );
   }
@@ -248,106 +271,183 @@ class _VentaTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     final entrega = _entregaLabel;
     final infoEntrega = _infoEntrega;
     final esDomicilio = venta.tipoEntrega?.toLowerCase().trim() == 'domicilio';
+    final detalleEntrega = [
+      if (infoEntrega.isNotEmpty) infoEntrega,
+      if (esDomicilio && (venta.direccion ?? '').isNotEmpty) venta.direccion!,
+    ].join(' · ');
+    final radio = BorderRadius.circular(Radios.md);
 
-    return GestureDetector(
-      onTap: () => _mostrarDetalle(context),
+    return Presionable(
+      escala: 0.985,
       child: Container(
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryDark.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          borderRadius: radio,
+          border: Border.all(color: AppColors.divider),
+          boxShadow: Sombra.tarjeta,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Compra #${venta.idVenta ?? '—'}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                _EstadoChip(venta: venta),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _fechaLabel(venta.fechaVenta),
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-            if (entrega != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                'Entrega: $entrega',
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-            ],
-            if (infoEntrega.isNotEmpty) ...[
-              const SizedBox(height: 2),
-              Text(
-                infoEntrega,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-            ],
-            if (esDomicilio && (venta.direccion ?? '').isNotEmpty) ...[
-              const SizedBox(height: 2),
-              Text(
-                venta.direccion!,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-            ],
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                const Text('Total: ', style: TextStyle(fontSize: 15)),
-                Text(
-                  'S/ ${Formats.precio(venta.total)}',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-            if (venta.pendiente) ...[
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: radio,
+            onTap: () => _mostrarDetalle(context),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextButton.icon(
-                    onPressed: () => _verificarPago(context),
-                    icon: const Icon(Icons.refresh_rounded, size: 18),
-                    label: const Text('Verificar'),
+                  Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: AppColors.pergamino,
+                          borderRadius: BorderRadius.circular(Radios.sm),
+                          border: Border.all(
+                            color: AppColors.gold.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.receipt_long_outlined,
+                          size: 20,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Compra #${venta.idVenta ?? '—'}',
+                              style: textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _fechaLabel(venta.fechaVenta),
+                              style: textTheme.bodySmall?.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _EstadoChip(venta: venta),
+                    ],
                   ),
-                  TextButton.icon(
-                    onPressed: () => _continuarPago(context),
-                    icon: const Icon(Icons.payment_rounded, size: 18),
-                    label: const Text('Continuar pago'),
+                  if (entrega != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 9,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.paper,
+                        borderRadius: BorderRadius.circular(Radios.sm),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            esDomicilio
+                                ? Icons.local_shipping_outlined
+                                : venta.tipoEntrega?.toLowerCase().trim() ==
+                                      'agencia'
+                                ? Icons.store_mall_directory_outlined
+                                : Icons.storefront_outlined,
+                            size: 17,
+                            color: AppColors.gold,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Entrega: $entrega',
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                if (detalleEntrega.isNotEmpty)
+                                  Text(
+                                    detalleEntrega,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Text(
+                        'Total:',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      PrecioTexto(monto: venta.total, tamano: 19),
+                      const Spacer(),
+                      Text(
+                        'Ver detalle',
+                        style: textTheme.labelMedium?.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                    ],
                   ),
+                  if (venta.pendiente) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => _verificarPago(context),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(0, 42),
+                            ),
+                            child: const Text('Verificar'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () => _continuarPago(context),
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(0, 42),
+                            ),
+                            child: const Text('Continuar pago'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
-            ],
-          ],
+            ),
+          ),
         ),
       ),
     );
@@ -385,12 +485,7 @@ class _DetalleVentaSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Detalle de la compra',
-                        style: textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
+                      Text('Detalle de la compra', style: textTheme.titleLarge),
                       const SizedBox(height: 2),
                       Text(
                         'Compra #${venta.idVenta ?? '—'}',
@@ -522,8 +617,9 @@ class _FilaDetalle extends StatelessWidget {
           value,
           style: destacado
               ? textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.price,
                 )
               : textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
@@ -585,8 +681,7 @@ class _SeguimientoPedido extends StatelessWidget {
               child: Container(
                 height: 2,
                 margin: const EdgeInsets.only(bottom: 24),
-                color:
-                    pasos[i].$2 ? AppColors.success : AppColors.divider,
+                color: pasos[i].$2 ? AppColors.success : AppColors.divider,
               ),
             ),
           _Paso(etiqueta: pasos[i].$1, activo: pasos[i].$2),
@@ -642,7 +737,7 @@ class _Paso extends StatelessWidget {
   }
 }
 
-/// Badge del estado de la venta.
+/// Chip del estado de la venta.
 class _EstadoChip extends StatelessWidget {
   final Venta venta;
 
@@ -651,22 +746,11 @@ class _EstadoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final estadoRaw = (venta.estado ?? '').toLowerCase().trim();
-    final color = estadoRaw == 'cancelada'
-        ? AppColors.error
+    final tono = estadoRaw == 'cancelada'
+        ? TonoEstado.peligro
         : (estadoRaw == 'entregada' || venta.pagada)
-        ? AppColors.success
-        : AppColors.warning;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        venta.estadoLabel,
-        style: Theme.of(context).textTheme.labelMedium
-            ?.copyWith(color: color, fontWeight: FontWeight.w700),
-      ),
-    );
+        ? TonoEstado.exito
+        : TonoEstado.aviso;
+    return EstadoChip(texto: venta.estadoLabel, tono: tono);
   }
 }

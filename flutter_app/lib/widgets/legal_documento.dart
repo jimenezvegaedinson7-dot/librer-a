@@ -31,15 +31,22 @@ class LegalDocumento extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: Navigator.of(context).canPop() ? AppBar(toolbarHeight: 52) : null,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            AppPageHeader(title: titulo, titleColor: AppColors.textPrimary),
+            AppPageHeader(
+              eyebrow: 'Legal',
+              title: titulo,
+              titleColor: AppColors.textPrimary,
+            ),
             const SizedBox(height: 10),
             Text(
               'Última actualización: $fechaActualizacion',
-              style: textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
+              style: textTheme.bodySmall?.copyWith(
+                color: AppColors.textTertiary,
+              ),
             ),
             const SizedBox(height: 20),
             for (final seccion in secciones) ...[

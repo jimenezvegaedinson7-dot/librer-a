@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
+import '../utils/app_colors.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/error_banner.dart';
+import '../widgets/estanteria.dart';
 import 'home_screen.dart';
 import 'recuperar_contrasena_screen.dart';
 import 'registro_screen.dart';
@@ -19,12 +21,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const _background = Color(0xFFF4F5F7);
+  static const _background = Color(0xFFF6F1E9);
   static const _surface = Color(0xFFFFFFFF);
-  static const _ink = Color(0xFF17181C);
-  static const _muted = Color(0xFF5B5E66);
-  static const _gold = Color(0xFFD3A331);
-  static const _border = Color(0xFFDEE1E6);
+  static const _ink = Color(0xFF1C1814);
+  static const _muted = Color(0xFF675E54);
+  static const _gold = Color(0xFFB98D3E);
+  static const _border = Color(0xFFE7DFD3);
 
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -116,229 +118,235 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: _background,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: (constraints.maxHeight - 52).clamp(
-                    0,
-                    double.infinity,
+      body: FondoEstanteria(
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: (constraints.maxHeight - 52).clamp(
+                      0,
+                      double.infinity,
+                    ),
                   ),
-                ),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Center(child: AppLogo(width: 170, height: 126)),
-                          const SizedBox(height: 22),
-                          Text(
-                            'Bienvenido',
-                            textAlign: TextAlign.center,
-                            style: textTheme.headlineLarge?.copyWith(
-                              color: _ink,
-                              fontSize: 36,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Center(
+                              child: AppLogo(width: 170, height: 126),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Ingresa a tu cuenta para continuar.',
-                            textAlign: TextAlign.center,
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: _muted,
-                              height: 1.45,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          const Row(
-                            children: [
-                              Expanded(child: Divider(color: _border)),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 12),
-                                child: Icon(
-                                  Icons.auto_stories_outlined,
-                                  color: _gold,
-                                  size: 19,
-                                ),
+                            const SizedBox(height: 22),
+                            Text(
+                              'Bienvenido',
+                              textAlign: TextAlign.center,
+                              style: textTheme.headlineLarge?.copyWith(
+                                color: _ink,
+                                fontSize: 36,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.5,
                               ),
-                              Expanded(child: Divider(color: _border)),
-                            ],
-                          ),
-                          const SizedBox(height: 28),
-
-                          Text(
-                            'Correo electrónico',
-                            style: textTheme.titleSmall?.copyWith(
-                              color: _ink,
-                              fontWeight: FontWeight.w700,
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            autocorrect: false,
-                            cursorColor: _gold,
-                            style: const TextStyle(color: _ink),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                            ],
-                            decoration: _inputDecoration(
-                              hint: 'nombre@correo.com',
-                              icon: Icons.alternate_email_rounded,
+                            const SizedBox(height: 8),
+                            Text(
+                              'Ingresa a tu cuenta para continuar.',
+                              textAlign: TextAlign.center,
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: _muted,
+                                height: 1.45,
+                              ),
                             ),
-                            validator: (value) {
-                              final v = value?.trim() ?? '';
-                              if (v.isEmpty) return 'Ingresa tu correo';
-                              final emailRegex = RegExp(
-                                r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                              );
-                              if (!emailRegex.hasMatch(v)) {
-                                return 'Ingresa un correo válido';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 18),
-
-                          Text(
-                            'Contraseña',
-                            style: textTheme.titleSmall?.copyWith(
-                              color: _ink,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: _obscurePassword,
-                            textInputAction: TextInputAction.done,
-                            cursorColor: _gold,
-                            style: const TextStyle(color: _ink),
-                            onFieldSubmitted: (_) => _login(),
-                            decoration:
-                                _inputDecoration(
-                                  hint: 'Ingresa tu contraseña',
-                                  icon: Icons.lock_outline_rounded,
-                                ).copyWith(
-                                  suffixIcon: IconButton(
-                                    color: _muted,
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined,
-                                    ),
-                                    onPressed: () {
-                                      setState(
-                                        () => _obscurePassword =
-                                            !_obscurePassword,
-                                      );
-                                    },
+                            const SizedBox(height: 24),
+                            const Row(
+                              children: [
+                                Expanded(child: Divider(color: _border)),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12),
+                                  child: Icon(
+                                    Icons.auto_stories_outlined,
+                                    color: _gold,
+                                    size: 19,
                                   ),
                                 ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Ingresa tu contraseña';
-                              }
-                              return null;
-                            },
-                          ),
-
-                          const SizedBox(height: 6),
-                          Align(
-                            alignment: Alignment.center,
-                            child: TextButton(
-                              onPressed: _loading ? null : _openRecuperar,
-                              style: TextButton.styleFrom(
-                                foregroundColor: _gold,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                minimumSize: const Size(0, 36),
-                                tapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                textStyle: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              child: const Text('¿Olvidaste tu contraseña?'),
+                                Expanded(child: Divider(color: _border)),
+                              ],
                             ),
-                          ),
+                            const SizedBox(height: 28),
 
-                          if (_errorMessage != null) ...[
-                            const SizedBox(height: 16),
-                            ErrorBanner(message: _errorMessage!),
-                          ],
-
-                          const SizedBox(height: 28),
-                          SizedBox(
-                            height: 56,
-                            child: _loading
-                                ? const Center(
-                                    child: CircularProgressIndicator(
-                                      color: _gold,
-                                    ),
-                                  )
-                                : FilledButton(
-                                    onPressed: _login,
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: _ink,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      textStyle: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                                    child: const Text('Iniciar sesión'),
-                                  ),
-                          ),
-                          const SizedBox(height: 18),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                '¿Aún no tienes una cuenta?',
-                                style: textTheme.bodyMedium?.copyWith(
-                                  color: _muted,
-                                ),
+                            Text(
+                              'Correo electrónico',
+                              style: textTheme.titleSmall?.copyWith(
+                                color: _ink,
+                                fontWeight: FontWeight.w700,
                               ),
-                              TextButton(
-                                onPressed: _loading ? null : _openRegistro,
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.next,
+                              autocorrect: false,
+                              cursorColor: _gold,
+                              style: const TextStyle(color: _ink),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                              ],
+                              decoration: _inputDecoration(
+                                hint: 'nombre@correo.com',
+                                icon: Icons.alternate_email_rounded,
+                              ),
+                              validator: (value) {
+                                final v = value?.trim() ?? '';
+                                if (v.isEmpty) return 'Ingresa tu correo';
+                                final emailRegex = RegExp(
+                                  r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                                );
+                                if (!emailRegex.hasMatch(v)) {
+                                  return 'Ingresa un correo válido';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 18),
+
+                            Text(
+                              'Contraseña',
+                              style: textTheme.titleSmall?.copyWith(
+                                color: _ink,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.done,
+                              cursorColor: _gold,
+                              style: const TextStyle(color: _ink),
+                              onFieldSubmitted: (_) => _login(),
+                              decoration:
+                                  _inputDecoration(
+                                    hint: 'Ingresa tu contraseña',
+                                    icon: Icons.lock_outline_rounded,
+                                  ).copyWith(
+                                    suffixIcon: IconButton(
+                                      color: _muted,
+                                      icon: Icon(
+                                        _obscurePassword
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_outlined,
+                                      ),
+                                      onPressed: () {
+                                        setState(
+                                          () => _obscurePassword =
+                                              !_obscurePassword,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Ingresa tu contraseña';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 6),
+                            Align(
+                              alignment: Alignment.center,
+                              child: TextButton(
+                                onPressed: _loading ? null : _openRecuperar,
                                 style: TextButton.styleFrom(
-                                  foregroundColor: _gold,
-                                  padding: const EdgeInsets.only(left: 6),
+                                  foregroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  minimumSize: const Size(0, 36),
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                   textStyle: const TextStyle(
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
                                   ),
                                 ),
-                                child: const Text('Crear cuenta'),
+                                child: const Text('¿Olvidaste tu contraseña?'),
                               ),
+                            ),
+
+                            if (_errorMessage != null) ...[
+                              const SizedBox(height: 16),
+                              ErrorBanner(message: _errorMessage!),
                             ],
-                          ),
-                        ],
+
+                            const SizedBox(height: 28),
+                            SizedBox(
+                              height: 56,
+                              child: _loading
+                                  ? const Center(
+                                      child: CircularProgressIndicator(
+                                        color: _gold,
+                                      ),
+                                    )
+                                  : FilledButton(
+                                      onPressed: _login,
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                        textStyle: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.2,
+                                        ),
+                                      ),
+                                      child: const Text('Iniciar sesión'),
+                                    ),
+                            ),
+                            const SizedBox(height: 18),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '¿Aún no tienes una cuenta?',
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    color: _muted,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: _loading ? null : _openRegistro,
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: AppColors.primary,
+                                    padding: const EdgeInsets.only(left: 6),
+                                    textStyle: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  child: const Text('Crear cuenta'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -369,11 +377,11 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFB3261E)),
+        borderSide: const BorderSide(color: Color(0xFFB42318)),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFB3261E), width: 1.6),
+        borderSide: const BorderSide(color: Color(0xFFB42318), width: 1.6),
       ),
     );
   }

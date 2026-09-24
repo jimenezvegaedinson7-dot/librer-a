@@ -1,11 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../utils/app_colors.dart';
+
 import 'package:flutter/services.dart';
 
 import '../services/api_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/error_banner.dart';
+import '../widgets/estanteria.dart';
 import 'login_screen.dart';
 
 /// Segundo paso para recuperar la contraseña.
@@ -25,12 +29,12 @@ class ReestablecerContrasenaScreen extends StatefulWidget {
 
 class _ReestablecerContrasenaScreenState
     extends State<ReestablecerContrasenaScreen> {
-  static const _background = Color(0xFFF4F5F7);
+  static const _background = Color(0xFFF6F1E9);
   static const _surface = Color(0xFFFFFFFF);
-  static const _ink = Color(0xFF17181C);
-  static const _muted = Color(0xFF5B5E66);
-  static const _gold = Color(0xFFD3A331);
-  static const _border = Color(0xFFDEE1E6);
+  static const _ink = Color(0xFF1C1814);
+  static const _muted = Color(0xFF675E54);
+  static const _gold = Color(0xFFB98D3E);
+  static const _border = Color(0xFFE7DFD3);
 
   final _formKey = GlobalKey<FormState>();
   final _otpController = TextEditingController();
@@ -167,261 +171,261 @@ class _ReestablecerContrasenaScreenState
           'Nueva contraseña',
           style: textTheme.titleMedium?.copyWith(
             color: _ink,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
-      body: SafeArea(
-        top: false,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(28, 12, 28, 24),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: (constraints.maxHeight - 36).clamp(
-                    0,
-                    double.infinity,
+      body: FondoEstanteria(
+        child: SafeArea(
+          top: false,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(28, 12, 28, 24),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: (constraints.maxHeight - 36).clamp(
+                      0,
+                      double.infinity,
+                    ),
                   ),
-                ),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 420),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const Center(
-                            child: AppLogo(width: 84, height: 84),
-                          ),
-                          const SizedBox(height: 18),
-                          Text(
-                            'Crea una nueva contraseña',
-                            textAlign: TextAlign.center,
-                            style: textTheme.headlineMedium?.copyWith(
-                              color: _ink,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.4,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Ingresa el código que enviamos a:\n${widget.email}',
-                            textAlign: TextAlign.center,
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: _muted,
-                              height: 1.45,
-                            ),
-                          ),
-                          const SizedBox(height: 26),
-
-                          // Campo OTP (6 dígitos, numérico)
-                          TextFormField(
-                            controller: _otpController,
-                            keyboardType: TextInputType.number,
-                            textInputAction: TextInputAction.next,
-                            autofocus: true,
-                            autocorrect: false,
-                            cursorColor: _gold,
-                            style: const TextStyle(
-                              color: _ink,
-                              fontSize: 22,
-                              letterSpacing: 8,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(6),
-                            ],
-                            decoration: _inputDecoration(
-                              label: 'Código de 6 dígitos',
-                              icon: Icons.mark_email_read_outlined,
-                            ),
-                            validator: (value) {
-                              final v = value?.trim() ?? '';
-                              if (v.length != 6) {
-                                return 'El código debe tener 6 dígitos';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 18),
-
-                          // Nueva contraseña
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: _obscurePassword,
-                            textInputAction: TextInputAction.next,
-                            autocorrect: false,
-                            cursorColor: _gold,
-                            style: const TextStyle(color: _ink),
-                            decoration:
-                                _inputDecoration(
-                                  label: 'Nueva contraseña',
-                                  icon: Icons.lock_outline_rounded,
-                                ).copyWith(
-                                  suffixIcon: IconButton(
-                                    color: _muted,
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined,
-                                    ),
-                                    onPressed: () {
-                                      setState(
-                                        () => _obscurePassword =
-                                            !_obscurePassword,
-                                      );
-                                    },
-                                  ),
-                                ),
-                            validator: _validarPassword,
-                          ),
-                          const SizedBox(height: 18),
-
-                          // Confirmar contraseña
-                          TextFormField(
-                            controller: _confirmController,
-                            obscureText: _obscureConfirm,
-                            textInputAction: TextInputAction.done,
-                            autocorrect: false,
-                            cursorColor: _gold,
-                            style: const TextStyle(color: _ink),
-                            onFieldSubmitted: (_) => _restablecer(),
-                            decoration:
-                                _inputDecoration(
-                                  label: 'Confirmar contraseña',
-                                  icon: Icons.lock_reset_rounded,
-                                ).copyWith(
-                                  suffixIcon: IconButton(
-                                    color: _muted,
-                                    icon: Icon(
-                                      _obscureConfirm
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined,
-                                    ),
-                                    onPressed: () {
-                                      setState(
-                                        () => _obscureConfirm =
-                                            !_obscureConfirm,
-                                      );
-                                    },
-                                  ),
-                                ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Confirma tu contraseña';
-                              }
-                              if (value != _passwordController.text) {
-                                return 'Las contraseñas no coinciden';
-                              }
-                              return null;
-                            },
-                          ),
-
-                          if (_errorMessage != null) ...[
-                            const SizedBox(height: 16),
-                            ErrorBanner(message: _errorMessage!),
-                          ],
-
-                          if (_infoMessage != null) ...[
-                            const SizedBox(height: 16),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEDF3ED),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.info_outline_rounded,
-                                    color: Color(0xFF2E7D32),
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      _infoMessage!,
-                                      style: textTheme.bodySmall?.copyWith(
-                                        color: const Color(0xFF2E7D32),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            height: 54,
-                            child: _loading
-                                ? const Center(
-                                    child: CircularProgressIndicator(
-                                      color: _gold,
-                                    ),
-                                  )
-                                : FilledButton(
-                                    onPressed: _restablecer,
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: _ink,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      textStyle: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Guardar nueva contraseña',
-                                    ),
-                                  ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Reenviar código
-                          TextButton(
-                            onPressed: _loading
-                                ? null
-                                : (_segundosReintento > 0
-                                      ? null
-                                      : _reenviar),
-                            style: TextButton.styleFrom(
-                              foregroundColor: _gold,
-                              textStyle: const TextStyle(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Center(child: AppLogo(width: 84, height: 84)),
+                            const SizedBox(height: 18),
+                            Text(
+                              'Crea una nueva contraseña',
+                              textAlign: TextAlign.center,
+                              style: textTheme.headlineMedium?.copyWith(
+                                color: _ink,
                                 fontWeight: FontWeight.w700,
+                                letterSpacing: -0.4,
                               ),
                             ),
-                            child: _reenviando
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: _gold,
-                                      strokeWidth: 2,
+                            const SizedBox(height: 10),
+                            Text(
+                              'Ingresa el código que enviamos a:\n${widget.email}',
+                              textAlign: TextAlign.center,
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: _muted,
+                                height: 1.45,
+                              ),
+                            ),
+                            const SizedBox(height: 26),
+
+                            // Campo OTP (6 dígitos, numérico)
+                            TextFormField(
+                              controller: _otpController,
+                              keyboardType: TextInputType.number,
+                              textInputAction: TextInputAction.next,
+                              autofocus: true,
+                              autocorrect: false,
+                              cursorColor: _gold,
+                              style: const TextStyle(
+                                color: _ink,
+                                fontSize: 22,
+                                letterSpacing: 8,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(6),
+                              ],
+                              decoration: _inputDecoration(
+                                label: 'Código de 6 dígitos',
+                                icon: Icons.mark_email_read_outlined,
+                              ),
+                              validator: (value) {
+                                final v = value?.trim() ?? '';
+                                if (v.length != 6) {
+                                  return 'El código debe tener 6 dígitos';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 18),
+
+                            // Nueva contraseña
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.next,
+                              autocorrect: false,
+                              cursorColor: _gold,
+                              style: const TextStyle(color: _ink),
+                              decoration:
+                                  _inputDecoration(
+                                    label: 'Nueva contraseña',
+                                    icon: Icons.lock_outline_rounded,
+                                  ).copyWith(
+                                    suffixIcon: IconButton(
+                                      color: _muted,
+                                      icon: Icon(
+                                        _obscurePassword
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_outlined,
+                                      ),
+                                      onPressed: () {
+                                        setState(
+                                          () => _obscurePassword =
+                                              !_obscurePassword,
+                                        );
+                                      },
                                     ),
-                                  )
-                                : Text(
-                                    _segundosReintento > 0
-                                        ? 'Reenviar código en '
-                                              '$_segundosReintento s'
-                                        : '¿No recibiste el código? Reenviar',
                                   ),
-                          ),
-                        ],
+                              validator: _validarPassword,
+                            ),
+                            const SizedBox(height: 18),
+
+                            // Confirmar contraseña
+                            TextFormField(
+                              controller: _confirmController,
+                              obscureText: _obscureConfirm,
+                              textInputAction: TextInputAction.done,
+                              autocorrect: false,
+                              cursorColor: _gold,
+                              style: const TextStyle(color: _ink),
+                              onFieldSubmitted: (_) => _restablecer(),
+                              decoration:
+                                  _inputDecoration(
+                                    label: 'Confirmar contraseña',
+                                    icon: Icons.lock_reset_rounded,
+                                  ).copyWith(
+                                    suffixIcon: IconButton(
+                                      color: _muted,
+                                      icon: Icon(
+                                        _obscureConfirm
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_outlined,
+                                      ),
+                                      onPressed: () {
+                                        setState(
+                                          () => _obscureConfirm =
+                                              !_obscureConfirm,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Confirma tu contraseña';
+                                }
+                                if (value != _passwordController.text) {
+                                  return 'Las contraseñas no coinciden';
+                                }
+                                return null;
+                              },
+                            ),
+
+                            if (_errorMessage != null) ...[
+                              const SizedBox(height: 16),
+                              ErrorBanner(message: _errorMessage!),
+                            ],
+
+                            if (_infoMessage != null) ...[
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE6F2EA),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.info_outline_rounded,
+                                      color: Color(0xFF1F7A45),
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        _infoMessage!,
+                                        style: textTheme.bodySmall?.copyWith(
+                                          color: const Color(0xFF1F7A45),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              height: 54,
+                              child: _loading
+                                  ? const Center(
+                                      child: CircularProgressIndicator(
+                                        color: _gold,
+                                      ),
+                                    )
+                                  : FilledButton(
+                                      onPressed: _restablecer,
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: AppColors.primary,
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                        textStyle: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: 0.2,
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Guardar nueva contraseña',
+                                      ),
+                                    ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Reenviar código
+                            TextButton(
+                              onPressed: _loading
+                                  ? null
+                                  : (_segundosReintento > 0 ? null : _reenviar),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                textStyle: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              child: _reenviando
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: _gold,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      _segundosReintento > 0
+                                          ? 'Reenviar código en '
+                                                '$_segundosReintento s'
+                                          : '¿No recibiste el código? Reenviar',
+                                    ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -437,10 +441,7 @@ class _ReestablecerContrasenaScreenState
       prefixIcon: Icon(icon, color: _gold, size: 21),
       filled: true,
       fillColor: _surface,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 17,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: _border),
@@ -455,11 +456,11 @@ class _ReestablecerContrasenaScreenState
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFB3261E)),
+        borderSide: const BorderSide(color: Color(0xFFB42318)),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Color(0xFFB3261E), width: 1.6),
+        borderSide: const BorderSide(color: Color(0xFFB42318), width: 1.6),
       ),
     );
   }

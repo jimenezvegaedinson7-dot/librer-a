@@ -6,10 +6,14 @@ import '../models/ubicacion.dart';
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_tokens.dart';
 import '../utils/formats.dart';
+import '../widgets/aparecer.dart';
 import '../widgets/app_page_header.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/loading_view.dart';
+import '../widgets/precio_texto.dart';
+import '../widgets/presionable.dart';
 
 enum _TipoEntrega { domicilio, agencia, tienda }
 
@@ -319,7 +323,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       return Scaffold(
         appBar: AppBar(title: const Text('Finalizar pedido')),
         body: const EmptyView(
-          icon: Icons.shopping_cart_outlined,
+          icon: Icons.shopping_bag_outlined,
           title: 'Tu carrito está vacío',
           message: 'Agrega libros al carrito para continuar.',
         ),
@@ -334,29 +338,35 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           children: [
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
                 children: [
-                  const AppPageHeader(title: 'Entrega y pago'),
-                  const SizedBox(height: 22),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: _buildSeccionEntrega(context),
+                  const AppPageHeader(
+                    eyebrow: 'Paso 2 de 3',
+                    title: 'Entrega y pago',
+                    subtitle:
+                        'Elige cómo recibir tu pedido y confirma tus datos.',
                   ),
                   const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(14),
+                  const _Pasos(),
+                  const SizedBox(height: 18),
+                  Aparecer(
+                    child: _Seccion(
+                      numero: '1',
+                      titulo: 'Tipo de entrega',
+                      child: _buildSeccionEntrega(context),
                     ),
-                    child: _buildSeccionDocumento(context),
                   ),
-                  const SizedBox(height: 20),
-                  _buildResumen(context),
+                  const SizedBox(height: 14),
+                  Aparecer(
+                    indice: 1,
+                    child: _Seccion(
+                      numero: '2',
+                      titulo: 'Documento de identidad',
+                      child: _buildSeccionDocumento(context),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Aparecer(indice: 2, child: _buildResumen(context)),
                 ],
               ),
             ),
@@ -371,48 +381,57 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(
+        _OpcionEntrega(
+          seleccionado: _tipoEntrega == _TipoEntrega.domicilio,
           icon: Icons.local_shipping_outlined,
-          title: 'Tipo de entrega',
+          titulo: 'A domicilio',
+          detalle: 'Te lo llevamos a una dirección en Lima.',
+          etiqueta: 'Según distrito',
+          onTap: () => setState(() => _tipoEntrega = _TipoEntrega.domicilio),
         ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _EntregaChip(
-              seleccionado: _tipoEntrega == _TipoEntrega.domicilio,
-              icon: Icons.local_shipping_outlined,
-              label: 'A domicilio',
-              onTap: () =>
-                  setState(() => _tipoEntrega = _TipoEntrega.domicilio),
-            ),
-            _EntregaChip(
-              seleccionado: _tipoEntrega == _TipoEntrega.agencia,
-              icon: Icons.store_mall_directory_outlined,
-              label: 'Agencia',
-              onTap: () => setState(() => _tipoEntrega = _TipoEntrega.agencia),
-            ),
-            _EntregaChip(
-              seleccionado: _tipoEntrega == _TipoEntrega.tienda,
-              icon: Icons.storefront_outlined,
-              label: 'Recoger en tienda',
-              onTap: () => setState(() => _tipoEntrega = _TipoEntrega.tienda),
-            ),
-          ],
+        const SizedBox(height: 8),
+        _OpcionEntrega(
+          seleccionado: _tipoEntrega == _TipoEntrega.agencia,
+          icon: Icons.store_mall_directory_outlined,
+          titulo: 'Agencia',
+          detalle: 'Recógelo en una agencia de envío.',
+          etiqueta: 'Según agencia',
+          onTap: () => setState(() => _tipoEntrega = _TipoEntrega.agencia),
         ),
-        if (_tipoEntrega == _TipoEntrega.domicilio) ...[
-          const SizedBox(height: 16),
-          _buildEntregaDomicilio(),
-        ],
-        if (_tipoEntrega == _TipoEntrega.agencia) ...[
-          const SizedBox(height: 16),
-          _buildEntregaAgencia(),
-        ],
-        if (_tipoEntrega == _TipoEntrega.tienda) ...[
-          const SizedBox(height: 12),
-          const _NotaTienda(),
-        ],
+        const SizedBox(height: 8),
+        _OpcionEntrega(
+          seleccionado: _tipoEntrega == _TipoEntrega.tienda,
+          icon: Icons.storefront_outlined,
+          titulo: 'Recoger en tienda',
+          detalle: 'Pasa por nuestra tienda cuando quieras.',
+          etiqueta: 'Sin costo',
+          onTap: () => setState(() => _tipoEntrega = _TipoEntrega.tienda),
+        ),
+        AnimatedSize(
+          duration: Duracion.base,
+          curve: Curva.salida,
+          alignment: Alignment.topCenter,
+          child: AnimatedSwitcher(
+            duration: Duracion.base,
+            child: KeyedSubtree(
+              key: ValueKey(_tipoEntrega),
+              child: switch (_tipoEntrega) {
+                _TipoEntrega.domicilio => Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: _buildEntregaDomicilio(),
+                ),
+                _TipoEntrega.agencia => Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: _buildEntregaAgencia(),
+                ),
+                _TipoEntrega.tienda => const Padding(
+                  padding: EdgeInsets.only(top: 12),
+                  child: _NotaTienda(),
+                ),
+              },
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -426,8 +445,12 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<int>(
+          style: Theme.of(context).textTheme.bodyLarge,
           initialValue: _idProvincia,
-          decoration: const InputDecoration(labelText: 'Provincia'),
+          decoration: const InputDecoration(
+            labelText: 'Provincia',
+            prefixIcon: Icon(Icons.map_outlined),
+          ),
           items: [
             for (final p in _provincias)
               DropdownMenuItem(
@@ -447,13 +470,20 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         ),
         const SizedBox(height: 12),
         DropdownButtonFormField<int>(
+          style: Theme.of(context).textTheme.bodyLarge,
           initialValue: _idDistrito,
-          decoration: const InputDecoration(labelText: 'Distrito'),
+          decoration: const InputDecoration(
+            labelText: 'Distrito',
+            prefixIcon: Icon(Icons.location_on_outlined),
+          ),
           items: [
             for (final d in _distritos)
               DropdownMenuItem(
                 value: d.idDistrito,
-                child: Text(d.nombre, overflow: TextOverflow.ellipsis),
+                child: Text(
+                  '${d.nombre} · S/ ${Formats.precio(d.tarifaEnvio)}',
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
           ],
           onChanged: _distritos.isEmpty
@@ -469,7 +499,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           controller: _direccionController,
           maxLines: 2,
           decoration: const InputDecoration(
+            labelText: 'Dirección',
             hintText: 'Dirección de entrega (calle, número)',
+            alignLabelWithHint: true,
           ),
         ),
       ],
@@ -480,24 +512,34 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     if (_cargandoUbicaciones) {
       return const LoadingView(message: 'Cargando opciones de envío...');
     }
+    final textTheme = Theme.of(context).textTheme;
 
-    return DropdownButtonFormField<int>(
-      initialValue: _idAgencia,
-      decoration: const InputDecoration(labelText: 'Agencia de envío'),
-      items: [
-        for (final a in _agencias)
-          DropdownMenuItem(
-            value: a.idAgencia,
-            child: Text(a.nombre, overflow: TextOverflow.ellipsis),
+    if (_agencias.isEmpty) {
+      return Text(
+        'No hay agencias disponibles por el momento.',
+        style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Agencia de envío',
+          style: textTheme.labelMedium?.copyWith(
+            color: AppColors.textSecondary,
           ),
+        ),
+        const SizedBox(height: 8),
+        for (final a in _agencias) ...[
+          _OpcionAgencia(
+            agencia: a,
+            seleccionada: _idAgencia == a.idAgencia,
+            onTap: () => setState(() => _idAgencia = a.idAgencia),
+          ),
+          const SizedBox(height: 8),
+        ],
       ],
-      onChanged: _agencias.isEmpty
-          ? null
-          : (valor) {
-              if (valor != null) {
-                setState(() => _idAgencia = valor);
-              }
-            },
     );
   }
 
@@ -505,41 +547,48 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(
-          icon: Icons.badge_outlined,
-          title: 'Documento de identidad',
-        ),
-        const SizedBox(height: 12),
-        DropdownButtonFormField<String>(
-          initialValue: _tipoDocumento,
-          decoration: const InputDecoration(labelText: 'Tipo de documento'),
-          items: const [
-            DropdownMenuItem(value: 'DNI', child: Text('DNI')),
-            DropdownMenuItem(value: 'RUC', child: Text('RUC')),
-            DropdownMenuItem(value: 'CE', child: Text('Carné de extranjería')),
-          ],
-          onChanged: (valor) {
-            if (valor != null) {
+        SizedBox(
+          width: double.infinity,
+          child: SegmentedButton<String>(
+            showSelectedIcon: false,
+            segments: const [
+              ButtonSegment(value: 'DNI', label: Text('DNI')),
+              ButtonSegment(value: 'RUC', label: Text('RUC')),
+              ButtonSegment(value: 'CE', label: Text('Carné ext.')),
+            ],
+            selected: {_tipoDocumento},
+            onSelectionChanged: (valores) {
+              final valor = valores.first;
               setState(() {
                 _tipoDocumento = valor;
                 _documentoController.clear();
               });
-            }
-          },
+            },
+          ),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: _documentoController,
           keyboardType: TextInputType.number,
-          maxLength: _tipoDocumento == 'RUC' ? 11 : _tipoDocumento == 'DNI' ? 8 : 20,
+          maxLength: _tipoDocumento == 'RUC'
+              ? 11
+              : _tipoDocumento == 'DNI'
+              ? 8
+              : 20,
           decoration: InputDecoration(
             labelText: 'Número de documento',
+            prefixIcon: const Icon(Icons.badge_outlined),
             hintText: _tipoDocumento == 'DNI'
                 ? 'Ej. 12345678'
                 : _tipoDocumento == 'RUC'
                 ? 'Ej. 20123456789'
                 : 'Ej. 12345678',
             counterText: '',
+            helperText: _tipoDocumento == 'DNI'
+                ? '8 dígitos'
+                : _tipoDocumento == 'RUC'
+                ? '11 dígitos'
+                : 'Al menos 8 caracteres',
           ),
         ),
       ],
@@ -550,23 +599,47 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     final subtotal = CarritoService.instance.total;
     final costoEnvio = _costoEnvio();
     final total = subtotal + costoEnvio;
+    final textTheme = Theme.of(context).textTheme;
+    final items = CarritoService.instance.items;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.pergamino.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(Radios.md),
+        border: Border.all(color: AppColors.gold.withValues(alpha: 0.28)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionHeader(
-            icon: Icons.receipt_long_outlined,
-            title: 'Resumen del pedido',
-          ),
-          const SizedBox(height: 12),
-          const Divider(height: 1),
-          const SizedBox(height: 12),
+          Text('Resumen del pedido', style: textTheme.titleMedium),
+          const SizedBox(height: 10),
+          for (final item in items)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${item.libro.titulo ?? 'Libro'} × ${item.cantidad}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'S/ ${Formats.precio(item.subtotal)}',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Divider(height: 20, color: AppColors.gold.withValues(alpha: 0.25)),
           _FilaResumen(
             label: 'Subtotal',
             value: 'S/ ${Formats.precio(subtotal)}',
@@ -574,15 +647,23 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           const SizedBox(height: 6),
           _FilaResumen(
             label: 'Envío',
-            value: 'S/ ${Formats.precio(costoEnvio)}',
+            value: costoEnvio == 0
+                ? 'Gratis'
+                : 'S/ ${Formats.precio(costoEnvio)}',
           ),
-          const SizedBox(height: 10),
-          const Divider(height: 1),
-          const SizedBox(height: 12),
-          _FilaResumen(
-            label: 'Total',
-            value: 'S/ ${Formats.precio(total)}',
-            destacado: true,
+          Divider(height: 22, color: AppColors.gold.withValues(alpha: 0.25)),
+          Row(
+            children: [
+              Expanded(child: Text('Total', style: textTheme.titleMedium)),
+              AnimatedSwitcher(
+                duration: Duracion.rapida,
+                child: PrecioTexto(
+                  key: ValueKey(total),
+                  monto: total,
+                  tamano: 21,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -590,124 +671,172 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   }
 
   Widget _buildBarraPagar(BuildContext context) {
+    final total = CarritoService.instance.total + _costoEnvio();
+    final textTheme = Theme.of(context).textTheme;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+      decoration: BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x1617181C),
-            blurRadius: 16,
-            offset: Offset(0, -4),
-          ),
-        ],
+        border: const Border(top: BorderSide(color: AppColors.divider)),
+        boxShadow: Sombra.barra,
       ),
-      child: Column(
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: _procesando
-                ? Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  )
-                : FilledButton(
-                    onPressed: _realizarCompra,
-                    child: const Text('Ir al pago seguro'),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Presionable(
+              habilitado: !_procesando,
+              child: SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: FilledButton(
+                  onPressed: _procesando ? null : _realizarCompra,
+                  child: AnimatedSwitcher(
+                    duration: Duracion.rapida,
+                    child: _procesando
+                        ? SizedBox(
+                            key: const ValueKey('cargando'),
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.4,
+                              color: AppColors.primary,
+                            ),
+                          )
+                        : Row(
+                            key: const ValueKey('pagar'),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.lock_outline_rounded, size: 18),
+                              const SizedBox(width: 8),
+                              const Text('Ir al pago seguro'),
+                              const SizedBox(width: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text('S/ ${Formats.precio(total)}'),
+                              ),
+                            ],
+                          ),
                   ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Serás redirigido a PayU para completar tu pago de forma segura.',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(color: AppColors.textTertiary),
-          ),
-        ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.verified_user_outlined,
+                  size: 14,
+                  color: AppColors.textTertiary,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    'Serás redirigido a PayU para completar tu pago de forma segura.',
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildExito(BuildContext context) {
     final conCheckout = (_checkoutUrl ?? '').isNotEmpty;
+    final textTheme = Theme.of(context).textTheme;
 
     if (conCheckout) {
       return Scaffold(
         appBar: AppBar(title: const Text('Compra en proceso')),
         body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.hourglass_top_rounded,
-                  size: 80,
-                  color: AppColors.warning,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '¡Gracias por tu compra!',
-                  style: Theme.of(context).textTheme.headlineSmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _total != null
-                      ? 'Tu orden por S/ ${Formats.precio(_total!)} quedó creada. '
-                            'Ahora solo falta pagarla en PayU para confirmarla.'
-                      : 'Tu orden quedó creada. Ahora solo falta pagarla '
-                            'en PayU para confirmarla.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium
-                      ?.copyWith(color: AppColors.textSecondary, height: 1.4),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Si la ventana de pago se cerró, puedes volver a abrirla.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: AppColors.textTertiary),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: _procesando
-                      ? Center(
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        )
-                      : FilledButton(
-                          onPressed: _verificarPago,
-                          child: const Text('Ya pagué, verificar'),
-                        ),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: _reabrirCheckout,
-                  child: const Text('Reabrir pago en PayU'),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () =>
-                      Navigator.of(context).popUntil((route) => route.isFirst),
-                  child: const Text('Volver al catálogo'),
-                ),
-              ],
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(28),
+            child: Aparecer(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const _Medallon(
+                    icon: Icons.hourglass_top_rounded,
+                    color: AppColors.warning,
+                    fondo: AppColors.warningContainer,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '¡Gracias por tu compra!',
+                    textAlign: TextAlign.center,
+                    style: textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _total != null
+                        ? 'Tu orden por S/ ${Formats.precio(_total!)} quedó creada. '
+                              'Ahora solo falta pagarla en PayU para confirmarla.'
+                        : 'Tu orden quedó creada. Ahora solo falta pagarla '
+                              'en PayU para confirmarla.',
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Si la ventana de pago se cerró, puedes volver a abrirla.',
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                  const SizedBox(height: 26),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: FilledButton(
+                      onPressed: _procesando ? null : _verificarPago,
+                      child: _procesando
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.4,
+                              ),
+                            )
+                          : const Text('Ya pagué, verificar'),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _reabrirCheckout,
+                      icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                      label: const Text('Reabrir pago en PayU'),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.of(context)
+                            .popUntil((route) => route.isFirst),
+                    child: const Text('Volver al catálogo'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -717,38 +846,42 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Compra realizada')),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.check_circle_rounded,
-                size: 80,
-                color: AppColors.success,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '¡Gracias por tu compra!',
-                style: Theme.of(context).textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _total != null
-                    ? 'Tu orden por S/ ${Formats.precio(_total!)} se registró correctamente.'
-                    : 'Tu orden se registró correctamente.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium
-                    ?.copyWith(color: AppColors.textSecondary, height: 1.4),
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () =>
-                    Navigator.of(context).popUntil((route) => route.isFirst),
-                child: const Text('Volver al catálogo'),
-              ),
-            ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(28),
+          child: Aparecer(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const _Medallon(
+                  icon: Icons.check_rounded,
+                  color: AppColors.success,
+                  fondo: AppColors.successContainer,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '¡Gracias por tu compra!',
+                  textAlign: TextAlign.center,
+                  style: textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _total != null
+                      ? 'Tu orden por S/ ${Formats.precio(_total!)} se registró correctamente.'
+                      : 'Tu orden se registró correctamente.',
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 26),
+                FilledButton(
+                  onPressed: () =>
+                      Navigator.of(context).popUntil((route) => route.isFirst),
+                  child: const Text('Volver al catálogo'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -756,28 +889,178 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   }
 }
 
-/// Cabecera de sección con icono.
-class _SectionHeader extends StatelessWidget {
+/// Medallón circular con filete dorado para estados finales.
+class _Medallon extends StatelessWidget {
   final IconData icon;
-  final String title;
+  final Color color;
+  final Color fondo;
 
-  const _SectionHeader({required this.icon, required this.title});
+  const _Medallon({
+    required this.icon,
+    required this.color,
+    required this.fondo,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: colorScheme.primary),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w700),
-          ),
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.7, end: 1),
+      duration: Duracion.lenta,
+      curve: Curves.easeOutBack,
+      builder: (context, escala, child) =>
+          Transform.scale(scale: escala, child: child),
+      child: Container(
+        width: 96,
+        height: 96,
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.gold.withValues(alpha: 0.45)),
         ),
-      ],
+        child: DecoratedBox(
+          decoration: BoxDecoration(color: fondo, shape: BoxShape.circle),
+          child: Icon(icon, size: 42, color: color),
+        ),
+      ),
+    );
+  }
+}
+
+/// Pasos del flujo de compra (Carrito ✓ · Entrega · Pago).
+class _Pasos extends StatelessWidget {
+  const _Pasos();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    Widget paso(
+      String numero,
+      String texto, {
+      required bool hecho,
+      required bool actual,
+    }) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: hecho || actual ? AppColors.primary : AppColors.surface,
+              border: Border.all(
+                color: hecho || actual
+                    ? AppColors.primary
+                    : AppColors.dividerStrong,
+                width: 1.5,
+              ),
+            ),
+            child: hecho
+                ? const Icon(Icons.check_rounded, size: 15, color: Colors.white)
+                : Text(
+                    numero,
+                    style: textTheme.labelMedium?.copyWith(
+                      color: actual ? Colors.white : AppColors.textTertiary,
+                    ),
+                  ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            texto,
+            style: textTheme.labelSmall?.copyWith(
+              color: hecho || actual
+                  ? AppColors.textPrimary
+                  : AppColors.textTertiary,
+              fontWeight: actual ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget linea(bool activa) => Expanded(
+      child: Container(
+        height: 2,
+        margin: const EdgeInsets.only(bottom: 18, left: 6, right: 6),
+        decoration: BoxDecoration(
+          color: activa ? AppColors.gold : AppColors.divider,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(Radios.md),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Row(
+        children: [
+          paso('1', 'Carrito', hecho: true, actual: false),
+          linea(true),
+          paso('2', 'Entrega', hecho: false, actual: true),
+          linea(false),
+          paso('3', 'Pago', hecho: false, actual: false),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sección numerada del formulario.
+class _Seccion extends StatelessWidget {
+  final String numero;
+  final String titulo;
+  final Widget child;
+
+  const _Seccion({
+    required this.numero,
+    required this.titulo,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(Radios.md),
+        border: Border.all(color: AppColors.divider),
+        boxShadow: Sombra.tarjeta,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  numero,
+                  style: textTheme.labelMedium?.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(child: Text(titulo, style: textTheme.titleMedium)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
     );
   }
 }
@@ -786,13 +1069,8 @@ class _SectionHeader extends StatelessWidget {
 class _FilaResumen extends StatelessWidget {
   final String label;
   final String value;
-  final bool destacado;
 
-  const _FilaResumen({
-    required this.label,
-    required this.value,
-    this.destacado = false,
-  });
+  const _FilaResumen({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -802,19 +1080,14 @@ class _FilaResumen extends StatelessWidget {
         Expanded(
           child: Text(
             label,
-            style: destacado
-                ? textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)
-                : textTheme.bodyMedium,
+            style: textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
         Text(
           value,
-          style: destacado
-              ? textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
-                )
-              : textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );
@@ -830,18 +1103,22 @@ class _NotaTienda extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.primaryContainer.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.successContainer,
+        borderRadius: BorderRadius.circular(Radios.sm),
       ),
       child: Row(
         children: [
-          Icon(Icons.storefront_rounded, size: 20, color: AppColors.primary),
+          const Icon(
+            Icons.storefront_rounded,
+            size: 20,
+            color: AppColors.success,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Puedes recoger tu pedido en nuestra tienda sin costo de envío.',
               style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(height: 1.35),
+                  ?.copyWith(color: AppColors.textPrimary, height: 1.4),
             ),
           ),
         ],
@@ -850,27 +1127,203 @@ class _NotaTienda extends StatelessWidget {
   }
 }
 
-/// Chip de selección de tipo de entrega (estilo consistente con el existente).
-class _EntregaChip extends StatelessWidget {
+/// Tarjeta seleccionable de tipo de entrega.
+class _OpcionEntrega extends StatelessWidget {
   final bool seleccionado;
   final IconData icon;
-  final String label;
+  final String titulo;
+  final String detalle;
+  final String etiqueta;
   final VoidCallback onTap;
 
-  const _EntregaChip({
+  const _OpcionEntrega({
     required this.seleccionado,
     required this.icon,
-    required this.label,
+    required this.titulo,
+    required this.detalle,
+    required this.etiqueta,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ChoiceChip(
-      selected: seleccionado,
-      onSelected: (_) => onTap(),
-      avatar: Icon(icon, size: 18),
-      label: Text(label),
+    final textTheme = Theme.of(context).textTheme;
+    return Presionable(
+      escala: 0.985,
+      child: Semantics(
+        selected: seleccionado,
+        button: true,
+        child: AnimatedContainer(
+          duration: Duracion.rapida,
+          decoration: BoxDecoration(
+            color: seleccionado ? AppColors.primaryContainer : AppColors.paper,
+            borderRadius: BorderRadius.circular(Radios.sm),
+            border: Border.all(
+              color: seleccionado ? AppColors.primary : AppColors.divider,
+              width: seleccionado ? 1.4 : 1,
+            ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(Radios.sm),
+              onTap: onTap,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: seleccionado
+                            ? AppColors.primary
+                            : AppColors.surface,
+                        borderRadius: BorderRadius.circular(Radios.sm),
+                        border: Border.all(color: AppColors.divider),
+                      ),
+                      child: Icon(
+                        icon,
+                        size: 20,
+                        color: seleccionado
+                            ? Colors.white
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Tarifa junto al título: la descripción usa todo
+                          // el ancho y no se aprieta en pantallas angostas.
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 2,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                titulo,
+                                style: textTheme.titleSmall?.copyWith(
+                                  color: seleccionado
+                                      ? AppColors.primary
+                                      : AppColors.textPrimary,
+                                ),
+                              ),
+                              Text(
+                                etiqueta,
+                                style: textTheme.labelSmall?.copyWith(
+                                  color: AppColors.textTertiary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            detalle,
+                            style: textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    AnimatedSwitcher(
+                      duration: Duracion.rapida,
+                      child: Icon(
+                        seleccionado
+                            ? Icons.radio_button_checked_rounded
+                            : Icons.radio_button_off_rounded,
+                        key: ValueKey(seleccionado),
+                        size: 20,
+                        color: seleccionado
+                            ? AppColors.primary
+                            : AppColors.dividerStrong,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Agencia de envío con su tarifa real.
+class _OpcionAgencia extends StatelessWidget {
+  final Agencia agencia;
+  final bool seleccionada;
+  final VoidCallback onTap;
+
+  const _OpcionAgencia({
+    required this.agencia,
+    required this.seleccionada,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final descripcion = (agencia.descripcion ?? '').trim();
+    return Semantics(
+      selected: seleccionada,
+      button: true,
+      child: AnimatedContainer(
+        duration: Duracion.rapida,
+        decoration: BoxDecoration(
+          color: seleccionada ? AppColors.primaryContainer : AppColors.surface,
+          borderRadius: BorderRadius.circular(Radios.sm),
+          border: Border.all(
+            color: seleccionada ? AppColors.primary : AppColors.divider,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(Radios.sm),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+              child: Row(
+                children: [
+                  Icon(
+                    seleccionada
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.radio_button_off_rounded,
+                    size: 20,
+                    color: seleccionada
+                        ? AppColors.primary
+                        : AppColors.dividerStrong,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(agencia.nombre, style: textTheme.titleSmall),
+                        if (descripcion.isNotEmpty)
+                          Text(
+                            descripcion,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  PrecioTexto(monto: agencia.tarifaBase, tamano: 15),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

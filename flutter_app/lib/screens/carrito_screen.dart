@@ -3,20 +3,24 @@ import 'package:flutter/material.dart';
 import '../models/carrito_item.dart';
 import '../services/carrito_service.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_tokens.dart';
 import '../utils/constants.dart';
 import '../utils/formats.dart';
+import '../widgets/aparecer.dart';
 import '../widgets/app_page_header.dart';
 import '../widgets/book_cover.dart';
 import '../widgets/empty_view.dart';
+import '../widgets/estado_chip.dart';
+import '../widgets/precio_texto.dart';
+import '../widgets/presionable.dart';
 import 'entrega_y_pago_screen.dart';
 
 /// Pantalla "Mi carrito".
 ///
-/// Muestra cada libro como una tarjeta única con portada, título, autor,
-/// estado, precio, cantidad ([−]/[+]) y acciones (guardar para más tarde /
-/// eliminar con confirmación). La parte inferior fija muestra el subtotal y
-/// el botón "Realizar pedido", que abre [EntregaYPagoScreen] para continuar
-/// con el envío y el pago (fuera de esta pantalla).
+/// Muestra cada libro como una tarjeta con portada, título, autor, estado,
+/// precio, cantidad ([−]/[+]) y acciones (guardar para más tarde / eliminar
+/// con confirmación). La parte inferior fija muestra el total y el botón
+/// "Continuar con la compra", que abre [EntregaYPagoScreen].
 ///
 /// Se puede usar como pantalla completa (con [AppBar]) o embebida como pestaña
 /// de la navegación inferior ([embedded] = true). En ambos casos consume el
@@ -48,12 +52,27 @@ class _CarritoScreenState extends State<CarritoScreen> {
         builder: (context, _) {
           final items = CarritoService.instance.items;
           final guardados = CarritoService.instance.guardados;
+          final unidades = CarritoService.instance.totalUnidades;
 
           if (items.isEmpty && guardados.isEmpty) {
-            return const EmptyView(
-              icon: Icons.shopping_cart_outlined,
-              title: 'Tu carrito está vacío',
-              message: 'Agrega libros desde el catálogo para empezar.',
+            return Column(
+              children: [
+                if (widget.embedded)
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 18, 20, 0),
+                    child: AppPageHeader(
+                      eyebrow: 'Tu pedido',
+                      title: 'Mi carrito',
+                    ),
+                  ),
+                const Expanded(
+                  child: EmptyView(
+                    icon: Icons.shopping_bag_outlined,
+                    title: 'Tu carrito está vacío',
+                    message: 'Agrega libros desde el catálogo para empezar.',
+                  ),
+                ),
+              ],
             );
           }
 
@@ -63,31 +82,41 @@ class _CarritoScreenState extends State<CarritoScreen> {
                 child: ListView(
                   padding: EdgeInsets.fromLTRB(
                     16,
-                    widget.embedded ? 18 : 16,
+                    widget.embedded ? 18 : 14,
                     16,
                     24,
                   ),
                   children: [
-                    if (widget.embedded) ...[
-                      const Padding(
-                        padding: EdgeInsets.only(left: 4, bottom: 18),
-                        child: AppPageHeader(title: 'Mi carrito'),
+                    if (widget.embedded)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, bottom: 16),
+                        child: AppPageHeader(
+                          eyebrow: 'Tu pedido',
+                          title: 'Mi carrito',
+                          subtitle: items.isEmpty
+                              ? null
+                              : unidades == 1
+                              ? '1 unidad lista para comprar'
+                              : '$unidades unidades listas para comprar',
+                        ),
                       ),
-                    ],
                     if (items.isEmpty && guardados.isNotEmpty) ...[
                       const _CartVacioConGuardados(),
                       const SizedBox(height: 16),
                     ],
                     if (items.isNotEmpty) ...[
-                      if (!widget.embedded)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 18),
-                          child: _StepperBanner(pasoActual: 1),
-                        ),
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 18),
+                        child: _StepperBanner(pasoActual: 1),
+                      ),
                       _SectionTitle(title: 'Mis libros', count: items.length),
                       const SizedBox(height: 12),
-                      for (final item in items) ...[
-                        _CarritoItemCard(item: item),
+                      for (var i = 0; i < items.length; i++) ...[
+                        Aparecer(
+                          key: ValueKey('item-${items[i].libro.idLibro}'),
+                          indice: i,
+                          child: _CarritoItemCard(item: items[i]),
+                        ),
                         const SizedBox(height: 12),
                       ],
                       const SizedBox(height: 4),
@@ -102,7 +131,10 @@ class _CarritoScreenState extends State<CarritoScreen> {
                       ),
                       const SizedBox(height: 12),
                       for (final item in guardados) ...[
-                        _GuardadoCard(item: item),
+                        Aparecer(
+                          key: ValueKey('guardado-${item.libro.idLibro}'),
+                          child: _GuardadoCard(item: item),
+                        ),
                         const SizedBox(height: 12),
                       ],
                     ],
@@ -126,22 +158,18 @@ class _CarritoScreenState extends State<CarritoScreen> {
     );
   }
 
-  /// Barra inferior fija con el subtotal y el botón "Realizar pedido".
+  /// Barra inferior fija con el total y el botón para continuar.
   Widget _buildBarraPagar(BuildContext context) {
     final subtotal = CarritoService.instance.total;
     final unidades = CarritoService.instance.totalUnidades;
+    final textTheme = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+      decoration: BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x1617181C),
-            blurRadius: 16,
-            offset: Offset(0, -4),
-          ),
-        ],
+        border: const Border(top: BorderSide(color: AppColors.divider)),
+        boxShadow: Sombra.barra,
       ),
       child: SafeArea(
         top: false,
@@ -149,47 +177,57 @@ class _CarritoScreenState extends State<CarritoScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
-                  child: Text(
-                    'Total',
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Total', style: textTheme.titleMedium),
+                      Text(
+                        unidades == 1
+                            ? '$unidades unidad en tu carrito'
+                            : '$unidades unidades en tu carrito',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  'S/ ${Formats.precio(subtotal)}',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.primary,
+                AnimatedSwitcher(
+                  duration: Duracion.rapida,
+                  child: PrecioTexto(
+                    key: ValueKey(subtotal),
+                    monto: subtotal,
+                    tamano: 24,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              unidades == 1
-                  ? '$unidades unidad en tu carrito'
-                  : '$unidades unidades en tu carrito',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(color: AppColors.textTertiary),
-            ),
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: FilledButton(
-                onPressed: _irAPago,
-                child: const Text('Continuar con la compra'),
+            Presionable(
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _irAPago,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Continuar con la compra'),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_rounded, size: 18),
+                    ],
+                  ),
+                ),
               ),
             ),
             if (!widget.embedded) ...[
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               TextButton(
                 onPressed: () => Navigator.of(context).maybePop(),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.gold,
+                  foregroundColor: AppColors.textSecondary,
                   visualDensity: VisualDensity.compact,
                 ),
                 child: const Text('Seguir explorando'),
@@ -215,104 +253,117 @@ class _CarritoItemCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(Radios.md),
+        border: Border.all(color: AppColors.divider),
+        boxShadow: Sombra.tarjeta,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Column(
         children: [
-          // Portada grande a la izquierda.
-          SizedBox(
-            width: 92,
-            height: 132,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: BookCover(url: Constants.buildPortadaUrl(libro.portada)),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 14, 10),
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  libro.titulo ?? 'Sin título',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
+                Container(
+                  width: 82,
+                  height: 118,
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppColors.paper,
+                    borderRadius: BorderRadius.circular(Radios.sm),
+                  ),
+                  child: BookCover(
+                    url: Constants.buildPortadaUrl(libro.portada),
+                    borderRadius: 3,
                   ),
                 ),
-                if ((libro.autor ?? '').isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    libro.autor!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-                if (libro.estado != null) ...[
-                  const SizedBox(height: 6),
-                  _EstadoBadge(estado: libro.esActivo),
-                ],
-                const SizedBox(height: 8),
-                Text(
-                  'S/ ${Formats.precio(libro.precio)} c/u',
-                  maxLines: 1,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    _CantidadControl(item: item, idLibro: id),
-                    const Spacer(),
-                    Text(
-                      'S/ ${Formats.precio(item.subtotal)}',
-                      style: textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        libro.titulo ?? 'Sin título',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.titleMedium?.copyWith(height: 1.2),
                       ),
-                    ),
-                  ],
+                      if ((libro.autor ?? '').isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          libro.autor!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            'S/ ${Formats.precio(libro.precio)} c/u',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          if (libro.estado != null)
+                            EstadoChip(
+                              texto: libro.esActivo ? 'Activo' : 'Inactivo',
+                              tono: libro.esActivo
+                                  ? TonoEstado.exito
+                                  : TonoEstado.peligro,
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _CantidadControl(item: item, idLibro: id),
+                          const Spacer(),
+                          AnimatedSwitcher(
+                            duration: Duracion.rapida,
+                            child: PrecioTexto(
+                              key: ValueKey(item.subtotal),
+                              monto: item.subtotal,
+                              tamano: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Wrap(
-                  spacing: 4,
-                  runSpacing: 4,
-                  children: [
-                    _CardActionButton(
-                      icon: Icons.bookmark_add_outlined,
-                      label: 'Guardar',
-                      color: AppColors.primary,
-                      onPressed: id == null
-                          ? null
-                          : () =>
-                                CarritoService.instance.guardarParaDespues(id),
-                    ),
-                    _CardActionButton(
-                      icon: Icons.delete_outline_rounded,
-                      label: 'Eliminar',
-                      color: AppColors.error,
-                      onPressed: id == null
-                          ? null
-                          : () => _confirmarEliminar(context, id),
-                    ),
-                  ],
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            child: Row(
+              children: [
+                _CardActionButton(
+                  icon: Icons.bookmark_add_outlined,
+                  label: 'Guardar',
+                  color: AppColors.textSecondary,
+                  onPressed: id == null
+                      ? null
+                      : () => CarritoService.instance.guardarParaDespues(id),
+                ),
+                const Spacer(),
+                _CardActionButton(
+                  icon: Icons.delete_outline_rounded,
+                  label: 'Eliminar',
+                  color: AppColors.error,
+                  onPressed: id == null
+                      ? null
+                      : () => _confirmarEliminar(context, id),
                 ),
               ],
             ),
@@ -338,6 +389,10 @@ class _CarritoItemCard extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
+              minimumSize: const Size(0, 44),
+            ),
             child: const Text('Eliminar'),
           ),
         ],
@@ -364,18 +419,19 @@ class _GuardadoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.paper,
+        borderRadius: BorderRadius.circular(Radios.md),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 62,
-            height: 90,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: BookCover(url: Constants.buildPortadaUrl(libro.portada)),
+            width: 56,
+            height: 82,
+            child: BookCover(
+              url: Constants.buildPortadaUrl(libro.portada),
+              borderRadius: 3,
             ),
           ),
           const SizedBox(width: 14),
@@ -387,13 +443,13 @@ class _GuardadoCard extends StatelessWidget {
                   libro.titulo ?? 'Sin título',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
+                  style: textTheme.titleMedium?.copyWith(
                     height: 1.2,
+                    fontSize: 15,
                   ),
                 ),
                 if ((libro.autor ?? '').isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     libro.autor!,
                     maxLines: 1,
@@ -404,13 +460,7 @@ class _GuardadoCard extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 6),
-                Text(
-                  'S/ ${Formats.precio(libro.precio)}',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                PrecioTexto(monto: libro.precio, tamano: 15),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -451,27 +501,23 @@ class _CartVacioConGuardados extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.primaryContainer.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.secondaryContainer.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(Radios.sm),
+        border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 20,
-            color: colorScheme.primary,
-          ),
+          Icon(Icons.bookmark_outline_rounded, size: 20, color: AppColors.gold),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Tu carrito está vacío, pero tienes libros guardados para más '
               'tarde.',
               style: Theme.of(context).textTheme.bodySmall
-                  ?.copyWith(color: colorScheme.onSurface, height: 1.35),
+                  ?.copyWith(color: AppColors.textPrimary, height: 1.4),
             ),
           ),
         ],
@@ -490,30 +536,43 @@ class _CantidadControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      height: 38,
       decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.paper,
+        border: Border.all(color: AppColors.divider),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           _StepButton(
             icon: Icons.remove_rounded,
+            tooltip: 'Quitar uno',
             onPressed: idLibro == null
                 ? null
                 : () => CarritoService.instance.decrementar(idLibro!),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              '${item.cantidad}',
-              style: Theme.of(context).textTheme.titleSmall
-                  ?.copyWith(fontWeight: FontWeight.w700),
+          SizedBox(
+            width: 24,
+            child: AnimatedSwitcher(
+              duration: Duracion.rapida,
+              transitionBuilder: (child, anim) => FadeTransition(
+                opacity: anim,
+                child: ScaleTransition(scale: anim, child: child),
+              ),
+              child: Text(
+                '${item.cantidad}',
+                key: ValueKey(item.cantidad),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
             ),
           ),
           _StepButton(
             icon: Icons.add_rounded,
+            tooltip: 'Añadir uno',
             onPressed: idLibro == null
                 ? null
                 : () {
@@ -544,17 +603,23 @@ class _CantidadControl extends StatelessWidget {
 /// Botón compacto de paso para el control de cantidad.
 class _StepButton extends StatelessWidget {
   final IconData icon;
+  final String tooltip;
   final VoidCallback? onPressed;
 
-  const _StepButton({required this.icon, required this.onPressed});
+  const _StepButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      tooltip: tooltip,
       onPressed: onPressed,
-      icon: Icon(icon, size: 18),
+      icon: Icon(icon, size: 17),
       visualDensity: VisualDensity.compact,
-      constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
       padding: EdgeInsets.zero,
       color: AppColors.primary,
       disabledColor: AppColors.textTertiary,
@@ -586,47 +651,13 @@ class _CardActionButton extends StatelessWidget {
         foregroundColor: color ?? AppColors.primary,
         visualDensity: VisualDensity.compact,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+        textStyle: Theme.of(context).textTheme.labelMedium,
       ),
     );
   }
 }
 
-/// Insignia del estado del libro (Activo / Inactivo).
-///
-/// El backend entrega `estado` como 0/1; el modelo [Libro] lo normaliza a
-/// bool y aquí solo se muestra la etiqueta correspondiente.
-class _EstadoBadge extends StatelessWidget {
-  final bool estado;
-
-  const _EstadoBadge({required this.estado});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: estado
-            ? AppColors.success.withValues(alpha: 0.12)
-            : AppColors.errorContainer,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        estado ? 'Activo' : 'Inactivo',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: estado ? AppColors.success : AppColors.error,
-        ),
-      ),
-    );
-  }
-}
-
-/// Indicador de pasos del flujo de compra (Carrito · Entrega · Pago),
-/// alineado con el diseño de Stitch para "Carrito".
+/// Indicador de pasos del flujo de compra (Carrito · Entrega · Pago).
 class _StepperBanner extends StatelessWidget {
   final int pasoActual;
 
@@ -636,8 +667,13 @@ class _StepperBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     const pasos = ['Carrito', 'Entrega', 'Pago'];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(Radios.md),
+        border: Border.all(color: AppColors.divider),
+      ),
       child: Row(
         children: [
           for (var i = 0; i < pasos.length; i++) ...[
@@ -645,10 +681,13 @@ class _StepperBanner extends StatelessWidget {
               Expanded(
                 child: Container(
                   height: 2,
-                  margin: const EdgeInsets.only(bottom: 18),
-                  color: i <= pasoActual - 1
-                      ? AppColors.gold
-                      : AppColors.divider,
+                  margin: const EdgeInsets.only(bottom: 18, left: 6, right: 6),
+                  decoration: BoxDecoration(
+                    color: i <= pasoActual - 1
+                        ? AppColors.gold
+                        : AppColors.divider,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
             _StepDot(
@@ -676,47 +715,36 @@ class _StepDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: Duracion.base,
           width: 28,
           height: 28,
           decoration: BoxDecoration(
             color: completado ? AppColors.primary : AppColors.surface,
             shape: BoxShape.circle,
             border: Border.all(
-              color: completado ? AppColors.primary : AppColors.divider,
-              width: 2,
+              color: completado ? AppColors.primary : AppColors.dividerStrong,
+              width: 1.5,
             ),
           ),
           alignment: Alignment.center,
-          child: completado
-              ? Text(
-                  '$numero',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                  ),
-                )
-              : Text(
-                  '$numero',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+          child: Text(
+            '$numero',
+            style: textTheme.labelMedium?.copyWith(
+              color: completado ? Colors.white : AppColors.textTertiary,
+            ),
+          ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 5),
         Text(
           label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: completado ? AppColors.textPrimary : AppColors.textSecondary,
-            fontWeight: completado ? FontWeight.w800 : FontWeight.w600,
-            fontSize: 10,
+          style: textTheme.labelSmall?.copyWith(
+            color: completado ? AppColors.textPrimary : AppColors.textTertiary,
+            fontWeight: completado ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
       ],
@@ -724,7 +752,7 @@ class _StepDot extends StatelessWidget {
   }
 }
 
-/// Tarjeta de resumen del pedido (subtotal y total), estilo Stitch.
+/// Tarjeta de resumen del pedido (subtotal y total) sobre pergamino.
 class _ResumenCard extends StatelessWidget {
   const _ResumenCard();
 
@@ -736,20 +764,14 @@ class _ResumenCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider),
+        color: AppColors.pergamino.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(Radios.md),
+        border: Border.all(color: AppColors.gold.withValues(alpha: 0.28)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Resumen del pedido',
-            style: textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          Text('Resumen del pedido', style: textTheme.titleMedium),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -764,35 +786,36 @@ class _ResumenCard extends StatelessWidget {
               Text(
                 'S/ ${Formats.precio(subtotal)}',
                 style: textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const Divider(height: 26, color: AppColors.divider),
+          Divider(height: 24, color: AppColors.gold.withValues(alpha: 0.25)),
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  'Total',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              Text(
-                'S/ ${Formats.precio(subtotal)}',
-                style: textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.primary,
-                ),
-              ),
+              Expanded(child: Text('Total', style: textTheme.titleMedium)),
+              PrecioTexto(monto: subtotal, tamano: 20),
             ],
           ),
           const SizedBox(height: 10),
-          Text(
-            'El envío y la entrega se definen en el siguiente paso.',
-            style: textTheme.bodySmall?.copyWith(color: AppColors.textTertiary),
+          Row(
+            children: [
+              Icon(
+                Icons.local_shipping_outlined,
+                size: 16,
+                color: AppColors.gold,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'El envío y la entrega se definen en el siguiente paso.',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -809,27 +832,19 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Row(
       children: [
-        Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall
-                ?.copyWith(fontWeight: FontWeight.w700),
-          ),
-        ),
+        Expanded(child: Text(title, style: textTheme.titleMedium)),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2),
           decoration: BoxDecoration(
-            color: AppColors.surfaceElevated,
-            borderRadius: BorderRadius.circular(6),
+            color: AppColors.primaryContainer,
+            borderRadius: BorderRadius.circular(999),
           ),
           child: Text(
             '$count',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
-            ),
+            style: textTheme.labelSmall?.copyWith(color: AppColors.primary),
           ),
         ),
       ],

@@ -9,10 +9,15 @@ import '../services/carrito_service.dart';
 import '../services/storage_service.dart';
 import '../services/tema_controller.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_tokens.dart';
 import '../utils/avatar_generator.dart';
 import '../utils/constants.dart';
 import '../utils/perfil_temas.dart';
+import '../widgets/aparecer.dart';
 import '../widgets/app_page_header.dart';
+import '../widgets/estado_chip.dart';
+import '../widgets/estanteria.dart';
+import '../widgets/presionable.dart';
 import 'login_screen.dart';
 import 'mis_compras_screen.dart';
 import 'reservas_screen.dart';
@@ -24,11 +29,11 @@ import 'security/two_factor_setup_screen.dart';
 import 'legal/politica_privacidad_screen.dart';
 import 'legal/terminos_condiciones_screen.dart';
 
-const _profileInk = Color(0xFF202124);
-const _profileMuted = Color(0xFF6B7280);
-const _profileBorder = Color(0xFFD9DCE1);
+const _profileInk = Color(0xFF1C1814);
+const _profileMuted = Color(0xFF675E54);
+const _profileBorder = Color(0xFFE7DFD3);
 const _profileSurface = Color(0xFFFFFFFF);
-const _profileSoft = Color(0xFFF3F4F6);
+const _profileSoft = Color(0xFFF1E8D8);
 
 /// Pantalla de perfil del cliente.
 ///
@@ -89,10 +94,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
       showDragHandle: true,
       backgroundColor: _profileSurface,
       isScrollControlled: true,
-      builder: (sheetContext) => _CustomThemeSheet(
-        inicioInicial: _tema.inicio,
-        finInicial: _tema.fin,
-      ),
+      builder: (sheetContext) =>
+          _CustomThemeSheet(inicioInicial: _tema.inicio, finInicial: _tema.fin),
     );
     if (resultado == null || !mounted) return;
     final id = perfilTemaIdPersonalizado(resultado.$1, fin: resultado.$2);
@@ -357,9 +360,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   Future<void> _privacidad() async {
     await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => const PoliticaPrivacidadScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const PoliticaPrivacidadScreen()),
     );
   }
 
@@ -603,104 +604,76 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final usuario = _usuario;
-    final tema = _tema;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _PerfilFondoPainter(tema: _tema, sutil: true),
-            ),
-          ),
-          SafeArea(
-            bottom: false,
-            child: RefreshIndicator(
-              color: _profileInk,
-              backgroundColor: _profileSurface,
-              onRefresh: _refrescarPerfil,
-              child: ListView(
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          color: AppColors.primary,
+          backgroundColor: _profileSurface,
+          onRefresh: _refrescarPerfil,
+          child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
             children: [
               AppPageHeader(
+                eyebrow: 'Tu cuenta',
                 title: 'Mi perfil',
-                titleColor: _profileInk,
-                trailing: _refreshing
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2.5),
-                      )
-                    : null,
+                trailing: AnimatedSwitcher(
+                  duration: Duracion.rapida,
+                  child: _refreshing
+                      ? const SizedBox(
+                          key: ValueKey('cargando'),
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2.2),
+                        )
+                      : const SizedBox(key: ValueKey('listo'), width: 22),
+                ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-              Column(
-                children: [
-                  GestureDetector(
-                    onTap: _cambiarFoto,
-                    child: SizedBox(
-                      width: 96,
-                      height: 96,
-                      child: Stack(
-                        children: [
-                          Center(
-                            child: _Avatar(
-                              usuario: usuario,
-                              anillo: tema.inicio,
-                            ),
-                          ),
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                color: _profileSoft,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: _profileSurface,
-                                  width: 2,
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.photo_camera_rounded,
-                                size: 15,
-                                color: _profileInk,
-                              ),
-                            ),
-                          ),
-                        ],
+              Aparecer(child: _buildPortada(context, usuario)),
+
+              const SizedBox(height: 16),
+
+              // Accesos rápidos
+              Aparecer(
+                indice: 1,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _AccesoRapido(
+                        icon: Icons.receipt_long_outlined,
+                        label: 'Mis compras',
+                        onTap: _misCompras,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    usuario?.nombreCompleto ?? 'Cliente',
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: textTheme.titleLarge?.copyWith(
-                      color: _profileInk,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _AccesoRapido(
+                        icon: Icons.bookmark_outline_rounded,
+                        label: 'Mis reservas',
+                        onTap: _misReservas,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Toca la foto para actualizarla',
-                    textAlign: TextAlign.center,
-                    style: textTheme.labelSmall?.copyWith(
-                      color: _profileMuted,
-                      fontWeight: FontWeight.w700,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _AccesoRapido(
+                        icon: Icons.favorite_border_rounded,
+                        label: 'Mis favoritos',
+                        onTap: _misFavoritos,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
               // Datos
+              _sectionTitle(textTheme, 'Tus datos'),
+              const SizedBox(height: 10),
               _profileCard(
                 child: Column(
                   children: [
@@ -717,29 +690,26 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       'Teléfono',
                       usuario?.telefono ?? '—',
                     ),
-                    _divider(),
-                    _row(
-                      context,
-                      Icons.badge_outlined,
-                      'Rol',
-                      _formatRol(usuario?.rol),
-                    ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
               // Personalización de colores
-              _sectionTitle(textTheme, 'Personaliza tus colores'),
-              const SizedBox(height: 8),
+              _sectionTitle(
+                textTheme,
+                'Personaliza tus colores',
+                detalle: 'Se aplican a toda la aplicación.',
+              ),
+              const SizedBox(height: 10),
               _buildCarruselColores(),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-              // Acciones del perfil
-              _sectionTitle(textTheme, 'Cuenta'),
-              const SizedBox(height: 8),
+              // Seguridad y cuenta
+              _sectionTitle(textTheme, 'Cuenta y seguridad'),
+              const SizedBox(height: 10),
               _profileCard(
                 child: Column(
                   children: [
@@ -759,40 +729,18 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     _divider(),
                     _actionTile(
                       context,
-                      icon: Icons.receipt_long_outlined,
-                      label: 'Mis compras',
-                      onTap: _misCompras,
-                    ),
-                    _divider(),
-                    _actionTile(
-                      context,
-                      icon: Icons.event_note_outlined,
-                      label: 'Mis reservas',
-                      onTap: _misReservas,
-                    ),
-                    _divider(),
-                    _actionTile(
-                      context,
-                      icon: Icons.favorite_border_rounded,
-                      label: 'Mis favoritos',
-                      onTap: _misFavoritos,
-                    ),
-                    _divider(),
-                    _actionTile(
-                      context,
                       icon: _twoFactorEnabled
                           ? Icons.shield_rounded
                           : Icons.shield_outlined,
                       label: _twoFactorEnabled
                           ? 'Desactivar doble factor'
                           : 'Activar doble factor',
-                      trailing: _twoFactorEnabled
-                          ? const Icon(
-                              Icons.check_circle_rounded,
-                              color: _profileInk,
-                              size: 20,
-                            )
-                          : null,
+                      trailing: EstadoChip(
+                        texto: _twoFactorEnabled ? 'Activo' : 'Inactivo',
+                        tono: _twoFactorEnabled
+                            ? TonoEstado.exito
+                            : TonoEstado.neutro,
+                      ),
                       onTap: _twoFactorEnabled
                           ? _desactivarTwoFactor
                           : _activarTwoFactor,
@@ -801,11 +749,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
               // Legal
               _sectionTitle(textTheme, 'Legal'),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               _profileCard(
                 child: Column(
                   children: [
@@ -826,46 +774,155 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
               // Cerrar sesión
-              SizedBox(
-                height: 54,
-                child: OutlinedButton.icon(
-                  onPressed: _confirmarCierre,
-                  icon: const Icon(Icons.logout_rounded, color: _profileInk),
-                  label: Text(
-                    'Cerrar sesión',
-                    style: textTheme.titleMedium?.copyWith(
-                      color: _profileInk,
-                      fontWeight: FontWeight.w600,
-                    ),
+              OutlinedButton.icon(
+                onPressed: _confirmarCierre,
+                icon: const Icon(Icons.logout_rounded, size: 20),
+                label: const Text('Cerrar sesión'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                  side: BorderSide(
+                    color: AppColors.error.withValues(alpha: 0.35),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _profileInk,
-                    side: const BorderSide(color: _profileBorder),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
+                  minimumSize: const Size(double.infinity, 52),
                 ),
               ),
             ],
           ),
         ),
       ),
-        ],
+    );
+  }
+
+  /// Portada del perfil con el degradado del tema elegido por el usuario.
+  Widget _buildPortada(BuildContext context, Usuario? usuario) {
+    final textTheme = Theme.of(context).textTheme;
+    final tema = _tema;
+    final tinta = tema.textColor;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(Radios.lg),
+      child: AnimatedContainer(
+        duration: Duracion.lenta,
+        curve: Curva.suave,
+        decoration: BoxDecoration(gradient: tema.gradiente),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: EstanteriaAnimada(
+                  key: ValueKey('estante-${tema.id}'),
+                  tinta: tinta == Colors.white ? Colors.white : AppColors.tinta,
+                  acento: AppColors.doradoClaro,
+                  opacidad: tinta == Colors.white ? 0.12 : 0.07,
+                  altoBalda: 64,
+                  semilla: 5,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+              child: Row(
+                children: [
+                  Semantics(
+                    button: true,
+                    label: 'Cambiar foto de perfil',
+                    child: GestureDetector(
+                      onTap: _cambiarFoto,
+                      child: SizedBox(
+                        width: 92,
+                        height: 92,
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: _Avatar(
+                                usuario: usuario,
+                                anillo: Colors.white.withValues(alpha: 0.9),
+                              ),
+                            ),
+                            Positioned(
+                              right: 0,
+                              bottom: 2,
+                              child: Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  color: AppColors.dorado,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.photo_camera_rounded,
+                                  size: 15,
+                                  color: AppColors.tinta,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          usuario?.nombreCompleto ?? 'Tu cuenta',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.headlineSmall?.copyWith(
+                            color: tinta,
+                            height: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          usuario?.email ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: tinta.withValues(alpha: 0.78),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        _PildoraPortada(
+                          texto: 'Toca la foto para actualizarla',
+                          tinta: tinta,
+                          suave: true,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _sectionTitle(TextTheme textTheme, String title) {
-    return Text(
-      title,
-      style: textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.w600,
-        color: _profileInk,
-      ),
+  Widget _sectionTitle(TextTheme textTheme, String title, {String? detalle}) {
+    // El detalle va debajo del título para que nunca se corte.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: textTheme.titleMedium?.copyWith(color: _profileInk)),
+        if (detalle != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            detalle,
+            style: textTheme.bodySmall?.copyWith(color: _profileMuted),
+          ),
+        ],
+      ],
     );
   }
 
@@ -877,45 +934,46 @@ class _PerfilScreenState extends State<PerfilScreen> {
     Widget? trailing,
   }) {
     return ListTile(
-      leading: Icon(icon, color: _profileMuted),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: _profileSoft,
+          borderRadius: BorderRadius.circular(Radios.sm),
+        ),
+        child: Icon(icon, size: 19, color: AppColors.primary),
+      ),
       title: Text(label, style: const TextStyle(color: _profileInk)),
-      trailing:
-          trailing ??
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ?trailing,
+          const SizedBox(width: 4),
           const Icon(Icons.chevron_right_rounded, color: _profileMuted),
+        ],
+      ),
       onTap: onTap,
     );
   }
 
   Widget _profileCard({required Widget child}) {
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      color: _profileSurface,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: _profileBorder),
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: _profileSurface,
+        borderRadius: BorderRadius.circular(Radios.md),
+        border: Border.all(color: _profileBorder),
+        boxShadow: Sombra.tarjeta,
       ),
-      child: child,
+      child: Material(color: Colors.transparent, child: child),
     );
-  }
-
-  String _formatRol(String? rol) {
-    if (rol == null || rol.isEmpty) return '—';
-    final lower = rol.toLowerCase();
-    switch (lower) {
-      case 'administrador':
-        return 'Administrador';
-      case 'cliente':
-        return 'Cliente';
-      default:
-        return rol[0].toUpperCase() + rol.substring(1);
-    }
   }
 
   Widget _row(BuildContext context, IconData icon, String label, String value) {
     return ListTile(
-      leading: Icon(icon, color: _profileMuted),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+      leading: Icon(icon, color: AppColors.gold),
       title: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall
@@ -926,13 +984,104 @@ class _PerfilScreenState extends State<PerfilScreen> {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: Theme.of(context).textTheme.bodyMedium
-            ?.copyWith(fontWeight: FontWeight.w600, color: _profileInk),
+            ?.copyWith(fontWeight: FontWeight.w500, color: _profileInk),
       ),
     );
   }
 
   Widget _divider() =>
-      const Divider(height: 1, indent: 56, color: _profileBorder);
+      const Divider(height: 1, indent: 64, color: _profileBorder);
+}
+
+/// Píldora translúcida sobre la portada del perfil.
+class _PildoraPortada extends StatelessWidget {
+  final String texto;
+  final Color tinta;
+  final bool suave;
+
+  const _PildoraPortada({
+    required this.texto,
+    required this.tinta,
+    this.suave = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: tinta.withValues(alpha: suave ? 0.08 : 0.16),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: tinta.withValues(alpha: 0.2)),
+      ),
+      // En una sola línea: en pantallas angostas el texto se reduce.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Text(
+          texto,
+          maxLines: 1,
+          style: Theme.of(context).textTheme.labelSmall
+              ?.copyWith(color: tinta.withValues(alpha: suave ? 0.8 : 1)),
+        ),
+      ),
+    );
+  }
+}
+
+/// Acceso rápido del perfil (compras, reservas, favoritos).
+class _AccesoRapido extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _AccesoRapido({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Presionable(
+      child: Material(
+        color: _profileSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radios.md),
+          side: const BorderSide(color: _profileBorder),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(Radios.md),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+            child: Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 20, color: AppColors.primary),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium
+                      ?.copyWith(color: _profileInk),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Opción del selector de foto con icono, etiqueta y altura táctil cómoda.
@@ -1111,10 +1260,7 @@ class _Iniciales extends StatelessWidget {
       radius: 41,
       backgroundColor: accent == null
           ? _profileSoft
-          : Color.alphaBlend(
-              accent!.withValues(alpha: 0.16),
-              _profileSoft,
-            ),
+          : Color.alphaBlend(accent!.withValues(alpha: 0.16), _profileSoft),
       child: Text(
         _iniciales(),
         style: Theme.of(context).textTheme.headlineMedium
@@ -1154,7 +1300,7 @@ class _TemaSwatch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final esPersonalizado = tema == null;
-    final colorCheck = tema?.textColor ?? const Color(0xFF202227);
+    final colorCheck = tema?.textColor ?? const Color(0xFF2C2621);
 
     return InkWell(
       onTap: onTap,
@@ -1166,11 +1312,11 @@ class _TemaSwatch extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: tema?.gradiente,
-          color: esPersonalizado ? const Color(0xFFF3F4F6) : null,
+          color: esPersonalizado ? const Color(0xFFF1E8D8) : null,
           border: Border.all(
             color: seleccionado
-                ? const Color(0xFF202227)
-                : const Color(0xFFD9DCE1),
+                ? const Color(0xFF2C2621)
+                : const Color(0xFFD6CAB8),
             width: seleccionado ? 3 : 1,
           ),
           boxShadow: [
@@ -1184,11 +1330,7 @@ class _TemaSwatch extends StatelessWidget {
         child: seleccionado
             ? Icon(Icons.check_rounded, size: 18, color: colorCheck)
             : esPersonalizado
-            ? const Icon(
-                Icons.add_rounded,
-                size: 18,
-                color: Color(0xFF6B7280),
-              )
+            ? const Icon(Icons.add_rounded, size: 18, color: Color(0xFF675E54))
             : null,
       ),
     );
@@ -1336,8 +1478,8 @@ class _ColorPalette extends StatelessWidget {
                 color: color,
                 border: Border.all(
                   color: color == seleccionado
-                      ? const Color(0xFF202227)
-                      : const Color(0xFFD9DCE1),
+                      ? const Color(0xFF2C2621)
+                      : const Color(0xFFD6CAB8),
                   width: color == seleccionado ? 3 : 1,
                 ),
               ),
@@ -1359,95 +1501,4 @@ class _ColorPalette extends StatelessWidget {
 Color _textoLegible(Color a, Color b) {
   final luminancia = (a.computeLuminance() + b.computeLuminance()) / 2;
   return luminancia > 0.5 ? const Color(0xFF17181C) : Colors.white;
-}
-
-/// Fondo decorativo del perfil.
-///
-/// En modo normal ([sutil] = false) decora el banner: resplandor suave del
-/// acento, anillos concéntricos y puntos luminosos. En modo [sutil] decora
-/// toda la pantalla detrás del contenido con un tinte muy ligero del tema para
-/// no restar legibilidad a las tarjetas.
-class _PerfilFondoPainter extends CustomPainter {
-  final PerfilTema tema;
-  final bool sutil;
-
-  const _PerfilFondoPainter({required this.tema, this.sutil = false});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final peso = sutil ? 0.20 : 1.0;
-
-    if (sutil) {
-      // Fondo base muy claro con un leve tinte del acento del tema.
-      final base = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Color.alphaBlend(
-            tema.colorAcento.withValues(alpha: 0.10),
-            const Color(0xFFF8F8FA),
-          ),
-          const Color(0xFFF3F4F6),
-        ],
-      ).createShader(Offset.zero & size);
-      canvas.drawRect(Offset.zero & size, Paint()..shader = base);
-    }
-
-    // Resplandor suave del acento en la esquina superior derecha.
-    final centro = Offset(size.width * 0.95, size.height * 0.12);
-    final glow = RadialGradient(
-      colors: [
-        tema.colorAcento.withValues(alpha: (0.55 * peso).clamp(0.0, 1.0)),
-        tema.colorAcento.withValues(alpha: 0.0),
-      ],
-    ).createShader(Rect.fromCircle(center: centro, radius: size.width * 0.7));
-    canvas.drawRect(Offset.zero & size, Paint()..shader = glow);
-
-    // Resplandor complementario inferior con el color principal.
-    final centro2 = Offset(size.width * 0.04, size.height * 1.02);
-    final glow2 = RadialGradient(
-      colors: [
-        Colors.white.withValues(alpha: (0.26 * peso).clamp(0.0, 1.0)),
-        Colors.white.withValues(alpha: 0.0),
-      ],
-    ).createShader(Rect.fromCircle(center: centro2, radius: size.width * 0.6));
-    canvas.drawRect(Offset.zero & size, Paint()..shader = glow2);
-
-    // Anillos concéntricos decorativos en la parte inferior izquierda.
-    final anillos = Offset(size.width * 0.08, size.height * 0.94);
-    canvas.drawCircle(
-      anillos,
-      size.width * 0.34,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6
-        ..color = Colors.white.withValues(alpha: (0.42 * peso).clamp(0.0, 1.0)),
-    );
-    canvas.drawCircle(
-      anillos,
-      size.width * 0.25,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0
-        ..color = Colors.white.withValues(alpha: (0.22 * peso).clamp(0.0, 1.0)),
-    );
-
-    // Puntos luminosos dispersos.
-    final puntos = [
-      Offset(size.width * 0.06, size.height * 0.14),
-      Offset(size.width * 0.12, size.height * 0.26),
-      Offset(size.width * 0.90, size.height * 0.88),
-    ];
-    for (final punto in puntos) {
-      canvas.drawCircle(
-        punto,
-        2.2,
-        Paint()..color = Colors.white.withValues(alpha: (0.45 * peso).clamp(0.0, 1.0)),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _PerfilFondoPainter oldDelegate) =>
-      oldDelegate.tema.id != tema.id || oldDelegate.sutil != sutil;
 }
