@@ -301,7 +301,9 @@ const crearVenta = async (req, res) => {
                         validarId(id_distrito)
                     );
 
-            if (!distritoEntrega) {
+            // Solo se envía a domicilio dentro de Lima (provincia). Una app
+            // antigua podría enviar un distrito de otra provincia.
+            if (!ubicacionModel.esDistritoDeLima(distritoEntrega)) {
                 return res.status(400).json({
                     success: false,
                     mensaje:

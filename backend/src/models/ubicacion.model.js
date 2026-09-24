@@ -53,8 +53,22 @@ const existeDistrito = async (id_distrito) => {
     return rows[0] || null;
 };
 
+// ========================================
+// ¿EL DISTRITO ES DE LIMA (PROVINCIA)?
+// El envío a domicilio solo se ofrece en la provincia de Lima
+// (Lima Metropolitana). Recibe la fila de existeDistrito().
+// ========================================
+const esDistritoDeLima = (distrito) =>
+    Boolean(distrito) &&
+    String(distrito.provincia || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase() === 'lima';
+
 module.exports = {
     obtenerProvincias,
     obtenerDistritosPorProvincia,
-    existeDistrito
+    existeDistrito,
+    esDistritoDeLima
 };

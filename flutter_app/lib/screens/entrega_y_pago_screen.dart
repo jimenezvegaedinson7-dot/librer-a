@@ -44,9 +44,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   String? _checkoutUrl;
   double? _total;
 
-  List<Provincia> _provincias = [];
   List<Distrito> _distritos = [];
-  int? _idProvincia;
   int? _idDistrito;
 
   @override
@@ -65,16 +63,15 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   Future<void> _cargarUbicaciones() async {
     setState(() => _cargandoUbicaciones = true);
     try {
+      // El envío a domicilio es solo dentro de Lima (provincia): se busca
+      // por nombre y se cargan únicamente sus distritos.
       final provincias = await ApiService.instance.obtenerProvincias();
+      final lima = provincias
+          .where((p) => p.nombre.trim().toLowerCase() == 'lima')
+          .firstOrNull;
       if (!mounted) return;
-      setState(() {
-        _provincias = provincias;
-        if (_provincias.isNotEmpty && _idProvincia == null) {
-          _idProvincia = _provincias.first.idProvincia;
-          _cargarDistritos(_idProvincia!);
-        }
-        _cargandoUbicaciones = false;
-      });
+      setState(() => _cargandoUbicaciones = false);
+      if (lima != null) _cargarDistritos(lima.idProvincia);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _cargandoUbicaciones = false);
@@ -411,30 +408,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        DropdownButtonFormField<int>(
-          style: Theme.of(context).textTheme.bodyLarge,
-          initialValue: _idProvincia,
-          decoration: const InputDecoration(
-            labelText: 'Provincia',
-            prefixIcon: Icon(Icons.map_outlined),
-          ),
-          items: [
-            for (final p in _provincias)
-              DropdownMenuItem(
-                value: p.idProvincia,
-                child: Text(p.nombre, overflow: TextOverflow.ellipsis),
-              ),
-          ],
-          onChanged: (valor) {
-            if (valor == null) return;
-            setState(() {
-              _idProvincia = valor;
-              _idDistrito = null;
-              _distritos = [];
-            });
-            _cargarDistritos(valor);
-          },
-        ),
+        const _ZonaReparto(),
         const SizedBox(height: 12),
         DropdownButtonFormField<int>(
           style: Theme.of(context).textTheme.bodyLarge,
@@ -1185,3 +1159,44 @@ class _OpcionEntrega extends StatelessWidget {
   }
 }
 
+/// Zona de reparto fija: el envío a domicilio es solo dentro de Lima.
+class _ZonaReparto extends StatelessWidget {
+  const _ZonaReparto();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.paper,
+        borderRadius: BorderRadius.circular(Radios.sm),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.location_city_outlined, size: 20, color: AppColors.gold),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'Lima',
+                    style: textTheme.titleSmall?.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const TextSpan(text: '  ·  Repartimos solo dentro de Lima'),
+                ],
+              ),
+              style: textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
