@@ -9,15 +9,16 @@ const crypto = require('crypto');
 // ========================================
 // GENERAR FIRMA DEL WEBCHECKOUT (Payment Form)
 // MD5(apiKey~merchantId~referenceCode~amount~currency)
-// El `amount` del formulario va en céntimos (ej. 2500 = S/25.00).
+// El `amount` del formulario va en SOLES con 2 decimales (ej. "25.00"):
+// PayU WebCheckout lo cobra tal cual. La firma usa exactamente ese texto.
 // ========================================
 const generarFirmaCheckout = ({
     referenceCode,
-    amountCents
+    amount
 }) => {
     return crypto
         .createHash('md5')
-        .update(`${cliente.apiKey}~${cliente.merchantId}~${referenceCode}~${amountCents}~PEN`)
+        .update(`${cliente.apiKey}~${cliente.merchantId}~${referenceCode}~${amount}~PEN`)
         .digest('hex');
 };
 
@@ -63,7 +64,9 @@ const construirFormularioCheckout = ({
         throw error;
     }
 
-    const amount = String(cantidadCents);
+    // En soles con 2 decimales (S/ 40.00 → "40.00"). Antes se enviaban
+    // céntimos ("4000") y PayU cobraba 100 veces el total.
+    const amount = (cantidadCents / 100).toFixed(2);
 
     const campos = {
         merchantId: String(cliente.merchantId),
@@ -76,7 +79,7 @@ const construirFormularioCheckout = ({
         currency: 'PEN',
         signature: generarFirmaCheckout({
             referenceCode: String(externalReference),
-            amountCents: amount
+            amount
         }),
         test: cliente.test ? '1' : '0',
         buyerEmail,

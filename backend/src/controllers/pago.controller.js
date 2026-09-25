@@ -1304,11 +1304,9 @@ const webhookPago = async (req, res) => {
         const referenceSale = String(
             body?.reference_sale || ''
         ).trim();
-        // PayU envía el monto en la unidad más pequeña (centavos para PEN,
-        // cents para USD). Se normaliza dividiendo por 100 para comparar
-        // con el total almacenado en soles.
-        const rawValue = Number(body?.value);
-        const value = Number.isFinite(rawValue) ? rawValue / 100 : rawValue;
+        // PayU WebCheckout envía `value` en soles (el mismo `amount` del
+        // formulario, p. ej. "40.00"): se compara directo con el total.
+        const value = Number(body?.value);
         const currency = body?.currency;
         const statePol = String(
             body?.state_pol ?? ''
