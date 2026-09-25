@@ -40,8 +40,16 @@ class CarritoService extends ChangeNotifier {
   /// Número total de unidades agregadas.
   int get totalUnidades => _items.fold(0, (acc, item) => acc + item.cantidad);
 
-  /// Total de la compra (suma de subtotales).
-  double get total => _items.fold(0.0, (acc, item) => acc + item.subtotal);
+  /// Total de la compra (suma de subtotales), exacto a 2 decimales.
+  double get total =>
+      _items.fold(0, (acc, item) => acc + item.subtotalCentimos) / 100;
+
+  /// Unidades de un libro que ya están en el carrito.
+  int cantidadDe(int? idLibro) {
+    if (idLibro == null) return 0;
+    final index = _indexDeLibro(idLibro);
+    return index < 0 ? 0 : _items[index].cantidad;
+  }
 
   /// `true` si el carrito está vacío.
   bool get vacio => _items.isEmpty;
@@ -51,20 +59,29 @@ class CarritoService extends ChangeNotifier {
     return _items.indexWhere((item) => item.libro.idLibro == idLibro);
   }
 
-  /// Agrega un libro al carrito. Si ya existe, incrementa la cantidad.
-  void agregar(Libro libro, {int cantidad = 1}) {
+  /// Agrega un libro al carrito. Si ya existe, suma la cantidad.
+  ///
+  /// Nunca supera el stock disponible: devuelve cuántas unidades se
+  /// agregaron realmente (0 si ya estaban todas en el carrito o no hay
+  /// stock), para que la pantalla avise al usuario.
+  int agregar(Libro libro, {int cantidad = 1}) {
     final id = libro.idLibro;
-    if (id == null) return;
+    if (id == null || cantidad <= 0) return 0;
 
+    final stock = libro.stock ?? 0;
     final index = _indexDeLibro(id);
+    final actual = index >= 0 ? _items[index].cantidad : 0;
+    final agregables = (stock - actual).clamp(0, cantidad);
+    if (agregables == 0) return 0;
+
     if (index >= 0) {
-      _items[index] = _items[index].copiar(
-        cantidad: _items[index].cantidad + cantidad,
-      );
+      // Se guarda el libro recibido: trae el precio y stock más recientes.
+      _items[index] = CarritoItem(libro: libro, cantidad: actual + agregables);
     } else {
-      _items.add(CarritoItem(libro: libro, cantidad: cantidad));
+      _items.add(CarritoItem(libro: libro, cantidad: agregables));
     }
     _cambio();
+    return agregables;
   }
 
   /// Incrementa en 1 la cantidad de un libro en el carrito.
@@ -216,13 +233,20 @@ class CarritoService extends ChangeNotifier {
       return;
     }
 
+    // Sin superar el stock disponible del libro.
+    final stock = item.libro.stock ?? 0;
     final enCarrito = _indexDeLibro(id);
     if (enCarrito >= 0) {
+      final suma = _items[enCarrito].cantidad + item.cantidad;
       _items[enCarrito] = _items[enCarrito].copiar(
-        cantidad: _items[enCarrito].cantidad + item.cantidad,
+        cantidad: stock > 0 && suma > stock ? stock : suma,
       );
     } else {
-      _items.add(item);
+      _items.add(
+        stock > 0 && item.cantidad > stock
+            ? item.copiar(cantidad: stock)
+            : item,
+      );
     }
     _cambio();
   }

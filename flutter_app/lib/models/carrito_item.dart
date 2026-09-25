@@ -9,8 +9,14 @@ class CarritoItem {
 
   CarritoItem({required this.libro, this.cantidad = 1});
 
-  /// Subtotal del ítem (precio por cantidad).
-  double get subtotal => (libro.precio ?? 0) * cantidad;
+  /// Precio unitario en céntimos (evita errores de redondeo con decimales).
+  int get precioCentimos => ((libro.precio ?? 0) * 100).round();
+
+  /// Subtotal del ítem en céntimos (precio unitario × cantidad).
+  int get subtotalCentimos => precioCentimos * cantidad;
+
+  /// Subtotal del ítem (precio por cantidad), exacto a 2 decimales.
+  double get subtotal => subtotalCentimos / 100;
 
   /// Devuelve una copia con la cantidad indicada.
   CarritoItem copiar({int? cantidad}) {

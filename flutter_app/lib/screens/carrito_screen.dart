@@ -197,6 +197,8 @@ class _CarritoScreenState extends State<CarritoScreen> {
                 ),
                 AnimatedSwitcher(
                   duration: Duracion.rapida,
+                  // Solo el precio nuevo: el anterior no se superpone.
+                  layoutBuilder: _soloActual,
                   child: PrecioTexto(
                     key: ValueKey(subtotal),
                     monto: subtotal,
@@ -329,6 +331,8 @@ class _CarritoItemCard extends StatelessWidget {
                           const Spacer(),
                           AnimatedSwitcher(
                             duration: Duracion.rapida,
+                            // Solo el precio nuevo: el anterior no se superpone.
+                            layoutBuilder: _soloActual,
                             child: PrecioTexto(
                               key: ValueKey(item.subtotal),
                               monto: item.subtotal,
@@ -756,8 +760,15 @@ class _StepDot extends StatelessWidget {
 class _ResumenCard extends StatelessWidget {
   const _ResumenCard();
 
+  // Escucha el carrito: al ser `const`, el padre no lo reconstruye y el
+  // resumen quedaría con cantidades y montos antiguos.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: CarritoService.instance,
+    builder: (context, _) => _contenido(context),
+  );
+
+  Widget _contenido(BuildContext context) {
     final subtotal = CarritoService.instance.total;
     final textTheme = Theme.of(context).textTheme;
 
@@ -773,6 +784,43 @@ class _ResumenCard extends StatelessWidget {
         children: [
           Text('Resumen del pedido', style: textTheme.titleMedium),
           const SizedBox(height: 12),
+          // Cada libro: cantidad × precio unitario = subtotal.
+          for (final item in CarritoService.instance.items) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.libro.titulo ?? 'Libro',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyMedium,
+                      ),
+                      Text(
+                        '${item.cantidad} × S/ ${Formats.precio(item.precioCentimos / 100)}',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'S/ ${Formats.precio(item.subtotal)}',
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+          Divider(height: 16, color: AppColors.gold.withValues(alpha: 0.25)),
           Row(
             children: [
               Expanded(
@@ -851,3 +899,8 @@ class _SectionTitle extends StatelessWidget {
     );
   }
 }
+
+/// Muestra solo el hijo actual del AnimatedSwitcher (sin superponer el
+/// anterior), alineado a la derecha.
+Widget _soloActual(Widget? actual, List<Widget> anteriores) =>
+    Align(alignment: Alignment.centerRight, child: actual);

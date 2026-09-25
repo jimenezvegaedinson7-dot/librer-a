@@ -1037,7 +1037,25 @@ class _AddButtonState extends State<_AddButton> {
 
   void _agregar() {
     final libro = widget.libro;
-    CarritoService.instance.agregar(libro);
+    final agregadas = CarritoService.instance.agregar(libro);
+
+    if (agregadas == 0) {
+      final enCarrito = CarritoService.instance.cantidadDe(libro.idLibro);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              enCarrito > 0
+                  ? 'Ya tienes en tu carrito las $enCarrito unidades disponibles de este libro.'
+                  : 'Este libro no tiene stock disponible.',
+            ),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      return;
+    }
 
     setState(() => _agregado = true);
     Future<void>.delayed(const Duration(milliseconds: 1400), () {
@@ -1048,7 +1066,10 @@ class _AddButtonState extends State<_AddButton> {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
-        content: Text('${libro.titulo} se agregó al carrito'),
+        content: Text(
+          '${libro.titulo} se agregó al carrito · '
+          '${CarritoService.instance.cantidadDe(libro.idLibro)} en total',
+        ),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
         // Con acción, Flutter lo deja fijo por defecto; aquí debe cerrarse

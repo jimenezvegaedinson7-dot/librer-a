@@ -140,19 +140,28 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
   void _agregarAlCarrito() {
     if (!_libro.esActivo || !_libro.hayStock || _libro.idLibro == null) return;
 
-    CarritoService.instance.agregar(_libro, cantidad: _cantidad);
+    final agregadas = CarritoService.instance.agregar(
+      _libro,
+      cantidad: _cantidad,
+    );
+    final enCarrito = CarritoService.instance.cantidadDe(_libro.idLibro);
 
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
         content: Text(
-          '$_cantidad ${_cantidad == 1 ? 'ejemplar agregado' : 'ejemplares agregados'} al carrito',
+          agregadas == 0
+              ? 'Ya tienes en tu carrito las $enCarrito unidades disponibles de este libro.'
+              : agregadas < _cantidad
+              ? 'Solo se agregaron $agregadas: ya tienes las $enCarrito unidades disponibles.'
+              : '$agregadas ${agregadas == 1 ? 'ejemplar agregado' : 'ejemplares agregados'} · $enCarrito en tu carrito',
         ),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
       ),
     );
+    if (agregadas == 0) return;
 
     setState(() => _agregado = true);
     Future<void>.delayed(const Duration(milliseconds: 1400), () {
