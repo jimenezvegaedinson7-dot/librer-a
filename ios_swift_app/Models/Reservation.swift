@@ -9,6 +9,7 @@ struct Reservation: Codable, Equatable, Identifiable {
     let fechaReserva: Date?
     let fechaVencimiento: Date?
     let estado: String
+    let portada: String?
 
     var id: Int { idReserva }
 
@@ -21,6 +22,7 @@ struct Reservation: Codable, Equatable, Identifiable {
         case fechaReserva = "fecha_reserva"
         case fechaVencimiento = "fecha_vencimiento"
         case estado
+        case portada
     }
 
     init(from decoder: Decoder) throws {
@@ -33,5 +35,6 @@ struct Reservation: Codable, Equatable, Identifiable {
         fechaReserva = try container.decodeFlexibleDateIfPresent(forKey: .fechaReserva)
         fechaVencimiento = try container.decodeFlexibleDateIfPresent(forKey: .fechaVencimiento)
         estado = try container.decode(String.self, forKey: .estado)
+        portada = try container.decodeFlexibleStringIfPresent(forKey: .portada)
     }
 }

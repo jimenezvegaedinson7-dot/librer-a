@@ -3,6 +3,8 @@ import Foundation
 enum HTTPMethod: String {
     case get = "GET"
     case post = "POST"
+    case put = "PUT"
+    case delete = "DELETE"
 }
 
 struct AnyEncodable: Encodable {
@@ -22,17 +24,23 @@ struct APIEndpoint<Response: Decodable> {
     let pathComponents: [String]
     let body: AnyEncodable?
     let requiresAuthorization: Bool
+    /// `false` en operaciones donde un 401 significa "contraseña o código
+    /// incorrecto" (cambiar contraseña, 2FA): se muestra el error sin cerrar
+    /// la sesión.
+    let expiresSessionOnUnauthorized: Bool
 
     init(
         method: HTTPMethod,
         pathComponents: [String],
         body: AnyEncodable? = nil,
-        requiresAuthorization: Bool = true
+        requiresAuthorization: Bool = true,
+        expiresSessionOnUnauthorized: Bool = true
     ) {
         self.method = method
         self.pathComponents = pathComponents
         self.body = body
         self.requiresAuthorization = requiresAuthorization
+        self.expiresSessionOnUnauthorized = expiresSessionOnUnauthorized
     }
 }
 

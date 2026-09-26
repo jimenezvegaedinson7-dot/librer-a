@@ -1,16 +1,57 @@
-# Librería Secure iOS — Fase 5
+# Librería del Saber — iOS (SwiftUI)
 
-Base nativa en Swift/SwiftUI para una aplicación **complementaria** de seguridad, confirmación y seguimiento. La aplicación Flutter continúa siendo la aplicación principal.
+App nativa en Swift/SwiftUI para clientes, con las mismas funciones que la app Flutter (`flutter_app/`): catálogo, detalle, favoritos, carrito, checkout con PayU, reservas, compras, cuenta, temas de color, registro, recuperación de contraseña y 2FA. No usa Flutter ni dependencias externas.
 
-## Requisitos para compilar posteriormente
+## Paridad con Flutter
 
-- macOS con Xcode 15 o posterior.
-- iOS 17 o posterior (se usa `NavigationStack` y `ContentUnavailableView`).
-- Crear un target iOS App llamado `LibreriaSecureApp` y añadir `App/`, `Core/`, `Models/`, `Services/`, `ViewModels/`, `Views/`, `Components/` y `Utilities/` al target.
-- Crear un target XCTest y añadir los archivos de `Tests/`.
-- Copiar las claves necesarias de `Configuration/Info.plist.example` al `Info.plist` generado por Xcode. No usar el archivo de ejemplo como un segundo Info.plist del target.
+| Flutter | iOS |
+|---|---|
+| Inicio (banner, categorías, carruseles) | `Views/Store/StoreHomeView.swift` |
+| Catálogo (búsqueda, categorías, orden, estado) | `Views/Store/CatalogView.swift` |
+| Detalle del libro, favorito, reservar, añadir | `Views/Store/BookDetailView.swift` |
+| Carrito (cantidades con tope de stock, guardar para después, resumen en céntimos) | `Views/Store/CartView.swift`, `Services/CartStore.swift` |
+| Entrega y pago (Lima a domicilio o recojo en tienda, DNI/RUC/CE, PayU) | `Views/Store/CheckoutView.swift` |
+| Favoritos | `Views/Store/FavoritesView.swift` |
+| Mis reservas (cancelar) y Mis compras (continuar pago y verificar) | `Views/Store/MyReservationsView.swift`, `Views/Purchases/` |
+| Perfil, 35 temas y degradado propio (`custom_AABBCC_DDEEFF`), seguridad, legal | `Views/Account/AccountView.swift`, `Views/Account/CustomThemeSheet.swift` |
+| Foto de perfil: elegir avatar, subir imagen o tomar foto (máx. 5 MB) | `Views/Account/ProfilePhotoActions.swift` |
+| Editar perfil, cambiar contraseña, 2FA, Términos, Privacidad | `Views/Account/AccountForms.swift` |
+| Login, registro, verificar correo y recuperar contraseña (reenvío con espera de 60 s) | `Views/Authentication/LoginView.swift` |
+| Splash, logo, estantería animada, balda de carga y pulsación | `App/RootView.swift`, `Design/Bookshelf.swift` |
 
-No se generó manualmente un `.xcodeproj` porque no puede validarse de forma fiable desde Windows. Tampoco se añadieron dependencias externas.
+Diferencias deliberadas:
+
+- **Sin actualizador de APK**: en iOS las actualizaciones se distribuyen por App Store o TestFlight. `GET /api/app/version` no se usa.
+- **PayU**: la URL de pago se abre en Safari. Al volver, el usuario pulsa **Verificar pago**, que consulta `GET /api/pagos/:orderId`.
+- **Face ID / Touch ID**: bloqueo local opcional heredado de la base anterior.
+
+El carrito (`carrito_v1`, ligado al id del usuario) y el tema (`perfil_tema`) se guardan en `UserDefaults`. Ninguno de los dos contiene datos sensibles.
+
+## Abrir y compilar en Xcode
+
+Requisitos: un Mac con **Xcode 16 o posterior** (el proyecto usa carpetas sincronizadas) y un iPhone con **iOS 17 o posterior**.
+
+1. Copia la carpeta `ios_swift_app` al Mac (o clona el repositorio).
+2. Abre `LibreriaSecureApp.xcodeproj` con doble clic.
+3. En el panel izquierdo selecciona el proyecto **LibreriaSecureApp** → target **LibreriaSecureApp** → pestaña **Signing & Capabilities**.
+4. Deja marcado **Automatically manage signing** y en **Team** elige tu Apple ID (si no aparece: **Add Account…**). Una cuenta gratuita sirve; la app firmada así caduca a los 7 días.
+5. Si Xcode dice que el **Bundle Identifier** no está disponible, cámbialo por uno propio, por ejemplo `com.tunombre.libreriadelsaber`.
+6. Arriba elige el destino (**iPhone 15** del simulador o tu iPhone conectado) y pulsa **▶ Run** (`Cmd+R`).
+7. Para las pruebas: **Product → Test** (`Cmd+U`).
+8. En un iPhone real con cuenta gratuita: **Ajustes → General → VPN y gestión de dispositivos → tu Apple ID → Confiar**, y activar **Ajustes → Privacidad y seguridad → Modo de desarrollador**.
+
+Qué contiene el proyecto:
+
+| Elemento | Detalle |
+|---|---|
+| Target `LibreriaSecureApp` | App iPhone, iOS 17, Swift 5, orientación vertical, nombre visible "Librería del Saber" |
+| Target `LibreriaSecureAppTests` | XCTest con `Tests/` (usa la app como host) |
+| Carpetas sincronizadas | `App`, `Components`, `Content`, `Core`, `Design`, `Models`, `Resources`, `Services`, `Utilities`, `ViewModels`, `Views`; cualquier `.swift` nuevo en ellas entra solo al target |
+| `Resources/Assets.xcassets` | Icono de la app (1024×1024, sin transparencia), logo `Logo` (el mismo de Flutter) y color de acento burdeos |
+| `Configuration/Info.plist` | `LibreriaAPIBaseURL` y los textos de permiso de cámara y Face ID; Xcode genera el resto del Info.plist |
+| Esquema compartido | `LibreriaSecureApp` con Run, Test y Archive |
+
+Bundle ID por defecto: `com.edinsonjimenez.libreriadelsaber`. No hay certificados, perfiles ni equipo de firma en el repositorio: cada persona elige su **Team** en Xcode.
 
 ## Configuración de API
 
@@ -22,7 +63,7 @@ La URL se resuelve en este orden:
 
 No hay credenciales, tokens ni secretos en el repositorio. El JWT definitivo se almacena exclusivamente en Keychain con accesibilidad `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`. El `two_factor_token` temporal permanece solo en memoria durante el flujo de login.
 
-La única información guardada en `UserDefaults` es la preferencia booleana no sensible `security.biometricLockEnabled`. Nunca se escriben allí JWT, contraseñas, OTP/TOTP ni tokens temporales.
+`UserDefaults` guarda solo datos no sensibles: `security.biometricLockEnabled`, `perfil_tema` y `carrito_v1`. Nunca se escriben allí JWT, contraseñas, OTP/TOTP ni tokens temporales.
 
 ## Alcance implementado
 
@@ -63,6 +104,15 @@ Face ID/Touch ID es exclusivamente un bloqueo local. No sustituye contraseña, l
 El Inicio usa el mismo `APIClient`, la misma `URLSession` y el mismo `SessionExpirationCoordinator` de la sesión:
 
 - `GET /api/historial/mi-historial`
+- `POST /api/auth/registro`, `POST /api/auth/verificar-email`, `POST /api/auth/reenviar-codigo`
+- `POST /api/auth/solicitar-reseteo`, `POST /api/auth/reestablecer-contrasena`
+- `POST /api/auth/2fa/setup`, `POST /api/auth/2fa/confirm`, `POST /api/auth/2fa/disable`
+- `PUT /api/usuarios/perfil`, `PUT /api/usuarios/foto` (multipart, campo `foto`), `PUT /api/usuarios/password`
+- `GET /api/libros`, `GET /api/libros/:id`
+- `GET /api/favoritos`, `GET|POST|DELETE /api/favoritos/:idLibro`
+- `POST /api/reservas`, `DELETE /api/reservas/:id`
+- `GET /api/ubicaciones/provincias`, `GET /api/ubicaciones/provincias/:id/distritos`
+- `POST /api/pagos/crear-orden` (con clave de idempotencia)
 - `GET /api/ventas/mis-ventas`
 - `GET /api/reservas/mis-reservas`
 
@@ -129,10 +179,12 @@ No se consulta el catálogo o el libro por separado y no existen acciones para c
 - `GET /api/pagos/:orderId`
 - `GET /api/historial/mi-historial`
 
-## Fuera de alcance de Fase 5
+## Fuera de alcance
 
-No se implementan creación de venta, carrito, checkout, creación/reintento/reembolso de pago, comprobantes descargables, tracking, APNs, catálogo, administración, creación/cancelación de reservas, publicación, certificados ni provisioning.
+Comprobantes descargables, tracking, notificaciones push (APNs), actualizador de APK, administración, publicación en App Store, certificados y provisioning.
 
 ## Validación pendiente en macOS
 
-Desde Windows no están disponibles Xcode, los SDK de iOS, Keychain/LocalAuthentication de iOS, simuladores ni la ejecución de XCTest. Deben validarse posteriormente en macOS/Xcode la compilación, navegación compartida al detalle de reserva, pull to refresh, fechas y calendario local, Dynamic Type, VoiceOver y todas las pruebas XCTest.
+Desde Windows no están disponibles Xcode, los SDK de iOS, Keychain/LocalAuthentication de iOS, simuladores ni la ejecución de XCTest. Deben validarse posteriormente en macOS/Xcode la compilación, navegación compartida al detalle de reserva, pull to refresh, fechas y calendario local, Dynamic Type, VoiceOver y todas las pruebas XCTest (incluida `CartStoreTests`). También debe probarse el flujo completo de PayU en sandbox, la subida de foto de perfil y el QR de 2FA.
+
+`Views/Reservations/ReservationsView.swift` es de la fase anterior: ya no se muestra en las pestañas, pero se conserva junto con su ViewModel y sus pruebas. La antigua `HomeView` se eliminó (estaba incompleta y la sustituye `Views/Store/StoreHomeView.swift`).

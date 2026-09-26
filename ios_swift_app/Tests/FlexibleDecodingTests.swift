@@ -6,7 +6,7 @@ final class FlexibleDecodingTests: XCTestCase {
     private let decoder = JSONDecoder()
 
     func testDecodesNumbersEncodedAsStrings() throws {
-        let json = #"""
+        let json = """
         {
             "id_libro":"12",
             "titulo":"Swift seguro",
@@ -21,7 +21,7 @@ final class FlexibleDecodingTests: XCTestCase {
             "categoria":"Tecnología",
             "estado":"1"
         }
-        """#.data(using: .utf8)!
+        """.data(using: .utf8)!
 
         let book = try decoder.decode(Book.self, from: json)
 
@@ -32,7 +32,7 @@ final class FlexibleDecodingTests: XCTestCase {
     }
 
     func testDecodesFlexibleBooleans() throws {
-        let template = #"""
+        let template = """
         {
             "id_usuario":1,
             "nombre":"Ada",
@@ -46,7 +46,7 @@ final class FlexibleDecodingTests: XCTestCase {
             "two_factor_enabled":TWO_FACTOR,
             "email_verified_at":null
         }
-        """#
+        """
 
         let variants = [("true", "0", true, false), ("1", "\"1\"", true, true), ("\"0\"", "false", false, false)]
         for (state, twoFactor, expectedState, expectedTwoFactor) in variants {
@@ -60,7 +60,7 @@ final class FlexibleDecodingTests: XCTestCase {
     }
 
     func testDecodesSupportedDateFormats() throws {
-        let json = #"""
+        let json = """
         {
             "id_usuario":"5",
             "nombre":"Linus",
@@ -74,7 +74,7 @@ final class FlexibleDecodingTests: XCTestCase {
             "two_factor_enabled":0,
             "email_verified_at":"2026-09-15"
         }
-        """#.data(using: .utf8)!
+        """.data(using: .utf8)!
 
         let user = try decoder.decode(User.self, from: json)
 
@@ -83,7 +83,7 @@ final class FlexibleDecodingTests: XCTestCase {
     }
 
     func testNormalizesDetalleAndDetalles() throws {
-        let base = #"""
+        let base = """
         {
             "id_venta":"8",
             "id_usuario":"5",
@@ -115,7 +115,7 @@ final class FlexibleDecodingTests: XCTestCase {
                 "subtotal":"20.00"
             }]
         }
-        """#
+        """
 
         for key in ["detalle", "detalles"] {
             let source = base.replacingOccurrences(of: "DETAIL_KEY", with: key)

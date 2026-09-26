@@ -2,6 +2,10 @@ import SwiftUI
 
 struct PurchaseDetailView: View {
     @StateObject private var viewModel: PurchaseDetailViewModel
+    @EnvironmentObject private var appState: AppState
+    @Environment(\.openURL) private var openURL
+    @State private var toast: ToastMessage?
+    @State private var verifying = false
 
     init(
         purchaseID: Int,
@@ -30,6 +34,7 @@ struct PurchaseDetailView: View {
         .task {
             await viewModel.loadInitial()
         }
+        .toast($toast)
     }
 
     @ViewBuilder
@@ -64,6 +69,9 @@ struct PurchaseDetailView: View {
                 }
 
                 summarySection(purchase)
+                if viewModel.isPending {
+                    pendingPaymentActions
+                }
                 productsSection(purchase)
                 paymentSection
                 deliverySection(purchase)
@@ -98,6 +106,59 @@ struct PurchaseDetailView: View {
             }
             LabeledContent("Total", value: HomeFormatters.pen(purchase.total))
                 .fontWeight(.semibold)
+        }
+    }
+
+    /// Igual que Flutter (Mis compras): reabrir PayU o consultar la orden.
+    private var pendingPaymentActions: some View {
+        HStack(spacing: 10) {
+            Button {
+                Task { await verifyPayment() }
+            } label: {
+                if verifying { ProgressView() } else { Text("Verificar pago") }
+            }
+            .buttonStyle(BrandButtonStyle(filled: false))
+            .disabled(verifying)
+
+            Button("Continuar pago") { continuePayment() }
+                .buttonStyle(BrandButtonStyle())
+        }
+    }
+
+    private func continuePayment() {
+        guard let url = viewModel.checkoutURL else {
+            toast = ToastMessage(
+                text: "No encontramos una ventana de pago activa para esta compra. Inicia el pago nuevamente desde \"Mi carrito\"."
+            )
+            return
+        }
+        openURL(url) { accepted in
+            if !accepted { toast = ToastMessage(text: "No se pudo abrir la ventana de pago.") }
+        }
+    }
+
+    private func verifyPayment() async {
+        guard let orderID = viewModel.orderID else {
+            toast = ToastMessage(text: "El pago aún está pendiente.")
+            return
+        }
+        verifying = true
+        defer { verifying = false }
+        do {
+            let state = try await appState.checkoutService.orderState(orderID: orderID)
+            if state.isPaid || state.isCancelled {
+                appState.checkoutService.resetIdempotency()
+            }
+            toast = ToastMessage(
+                text: state.isPaid ? "Pago confirmado."
+                    : state.isCancelled ? "El pago fue cancelado."
+                    : "El pago aún está pendiente."
+            )
+            if state.isPaid || state.isCancelled {
+                await viewModel.reload()
+            }
+        } catch {
+            toast = ToastMessage(text: error.localizedDescription)
         }
     }
 

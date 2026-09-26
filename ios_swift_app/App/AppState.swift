@@ -27,6 +27,12 @@ final class AppState: ObservableObject, SessionExpirationHandling {
     let purchaseService: PurchaseService
     let paymentService: PaymentService
     let reservationService: ReservationService
+    let catalogService: CatalogService
+    let favoritesService: FavoritesService
+    let checkoutService: CheckoutService
+    let accountService: AccountService
+    let cartStore: CartStore
+    let themeStore: ThemeStore
 
     private let profileService: ProfileService
     private let keychainStore: KeychainStore
@@ -65,6 +71,12 @@ final class AppState: ObservableObject, SessionExpirationHandling {
         purchaseService = PurchaseService(client: client)
         paymentService = PaymentService(client: client)
         reservationService = ReservationService(client: client)
+        catalogService = CatalogService(client: client)
+        favoritesService = FavoritesService(client: client)
+        checkoutService = CheckoutService(client: client)
+        accountService = AccountService(client: client)
+        cartStore = CartStore()
+        themeStore = ThemeStore()
         expirationCoordinator.handler = self
     }
 
@@ -107,6 +119,10 @@ final class AppState: ObservableObject, SessionExpirationHandling {
         }
 
         try await keychainStore.save(token: token)
+        // Carrito de la sesión anterior: se empieza vacío (no mezclar cuentas).
+        cartStore.clearSession()
+        cartStore.restore(for: user.idUsuario)
+        checkoutService.resetIdempotency()
         if isBiometricLockEnabled && !isForegroundActive {
             sessionState = .locked(message: nil, isUnlocking: false)
         } else {
@@ -156,6 +172,8 @@ final class AppState: ObservableObject, SessionExpirationHandling {
 
     func signOut() async {
         sessionState = .loading(message: "Cerrando sesión…")
+        cartStore.clearSession()
+        checkoutService.resetIdempotency()
         do {
             try await keychainStore.delete()
             sessionState = .unauthenticated(message: nil)
@@ -164,6 +182,24 @@ final class AppState: ObservableObject, SessionExpirationHandling {
                 message: error.localizedDescription,
                 retryAction: .validateSession
             )
+        }
+    }
+
+    /// Actualiza los datos del usuario tras editar el perfil o la foto.
+    func updateUser(_ updated: User) {
+        user = updated
+        if case .authenticated = sessionState {
+            sessionState = .authenticated(updated)
+        }
+    }
+
+    /// Vuelve a leer el perfil (p. ej. tras activar o desactivar 2FA).
+    func refreshProfile() async {
+        do {
+            let fresh = try await profileService.profile()
+            updateUser(fresh)
+        } catch {
+            // Sin conexión: se mantiene el perfil que ya había.
         }
     }
 
@@ -220,6 +256,7 @@ final class AppState: ObservableObject, SessionExpirationHandling {
 
     func sessionDidExpire(message: String?) async {
         try? await keychainStore.delete()
+        checkoutService.resetIdempotency()
         sessionState = .unauthenticated(
             message: message ?? Self.expiredSessionMessage
         )
@@ -236,6 +273,7 @@ final class AppState: ObservableObject, SessionExpirationHandling {
                 return
             }
 
+            cartStore.restore(for: user.idUsuario)
             if isBiometricLockEnabled && !isForegroundActive {
                 sessionState = .locked(message: nil, isUnlocking: false)
             } else {

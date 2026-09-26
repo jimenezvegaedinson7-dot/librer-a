@@ -1,82 +1,63 @@
 import SwiftUI
+import Combine
 
-private enum MainTab: Hashable {
+enum MainTab: Hashable {
     case home
-    case purchases
+    case catalog
+    case cart
     case reservations
     case profile
-    case security
 }
 
+/// Navegación compartida entre pestañas (p. ej. Inicio → Catálogo con una
+/// categoría o con el buscador activo).
+@MainActor
+final class StoreRouter: ObservableObject {
+    @Published var selectedTab: MainTab = .home
+    @Published var catalogCategory: String?
+    @Published var focusCatalogSearch = false
+    /// Aumenta para pedir a Reservas que recargue (tras reservar un libro).
+    @Published var reservationsVersion = 0
+
+    func openCatalog(category: String? = nil, search: Bool = false) {
+        catalogCategory = category
+        focusCatalogSearch = search
+        selectedTab = .catalog
+    }
+}
+
+/// Las mismas 5 pestañas que la app Flutter.
 struct MainView: View {
     @EnvironmentObject private var appState: AppState
-    @State private var selectedTab: MainTab = .home
-    @State private var showingLogoutAlert = false
+    @EnvironmentObject private var cart: CartStore
+    @EnvironmentObject private var themeStore: ThemeStore
+    @StateObject private var router = StoreRouter()
+    let user: User
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            HomeView(
-                user: appState.user,
-                activityService: appState.activityService,
-                purchaseService: appState.purchaseService,
-                purchaseDetailService: appState.purchaseService,
-                paymentService: appState.paymentService,
-                reservationService: appState.reservationService,
-                onShowPurchases: { selectedTab = .purchases },
-                onShowReservations: { selectedTab = .reservations }
-            )
-            .tabItem { Label("Inicio", systemImage: "house") }
-            .tag(MainTab.home)
+        TabView(selection: $router.selectedTab) {
+            StoreHomeView(user: user)
+                .tabItem { Label("Inicio", systemImage: "house") }
+                .tag(MainTab.home)
 
-            PurchasesView(
-                purchaseService: appState.purchaseService,
-                purchaseDetailService: appState.purchaseService,
-                paymentService: appState.paymentService
-            )
-            .tabItem { Label("Compras", systemImage: "bag") }
-            .tag(MainTab.purchases)
+            CatalogView()
+                .tabItem { Label("Catálogo", systemImage: "books.vertical") }
+                .tag(MainTab.catalog)
 
-            ReservationsView(
-                reservationService: appState.reservationService,
-                detailService: appState.purchaseService
-            )
-            .tabItem { Label("Reservas", systemImage: "bookmark") }
-            .tag(MainTab.reservations)
+            CartView()
+                .tabItem { Label("Carrito", systemImage: "cart") }
+                .badge(cart.totalUnits)
+                .tag(MainTab.cart)
 
-            ProfileView(
-                profileService: ProfileService(client: APIClient()),
-                onLogout: { await appState.signOut() },
-                onBiometricToggle: { newValue in
-                    if newValue {
-                        Task { await appState.enableBiometricLock() }
-                    } else {
-                        appState.disableBiometricLock()
-                    }
-                }
-            )
-            .tabItem { Label("Perfil", systemImage: "person") }
-            .tag(MainTab.profile)
+            MyReservationsView()
+                .tabItem { Label("Reservas", systemImage: "bookmark") }
+                .tag(MainTab.reservations)
 
-            SecurityView()
-                .tabItem { Label("Seguridad", systemImage: "lock.shield") }
-                .tag(MainTab.security)
+            AccountView()
+                .tabItem { Label("Perfil", systemImage: "person") }
+                .tag(MainTab.profile)
         }
-        .alert("Cerrar sesión", isPresented: $showingLogoutAlert) {
-            Button("Cancelar", role: .cancel) { }
-            Button("Cerrar sesión", role: .destructive) {
-                Task { await appState.signOut() }
-            }
-        } message: {
-            Text("Tendrás que iniciar sesión nuevamente para acceder a Librería Secure.")
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showingLogoutAlert = true
-                } label: {
-                    Text("Cerrar sesión")
-                }
-            }
-        }
+        .tint(themeStore.theme.primary)
+        .environmentObject(router)
     }
 }

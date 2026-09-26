@@ -9,6 +9,8 @@ struct LibreriaSecureApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(appState)
+                .environmentObject(appState.cartStore)
+                .environmentObject(appState.themeStore)
                 .task {
                     await appState.restoreSession()
                 }

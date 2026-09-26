@@ -46,7 +46,51 @@ final class APIClient {
             }
             throw error
         }
+        return try await perform(
+            request,
+            requiresAuthorization: endpoint.requiresAuthorization
+                && endpoint.expiresSessionOnUnauthorized
+        )
+    }
 
+    /// Envía un archivo como `multipart/form-data` (foto de perfil).
+    func upload<Response: Decodable>(
+        _ responseType: Response.Type,
+        method: HTTPMethod,
+        pathComponents: [String],
+        fieldName: String,
+        fileName: String,
+        mimeType: String,
+        fileData: Data
+    ) async throws -> Response {
+        let endpoint = APIEndpoint<Response>(method: method, pathComponents: pathComponents)
+        var request: URLRequest
+        do {
+            request = try await makeRequest(for: endpoint)
+        } catch let error as APIError {
+            if case .unauthorized(let message) = error {
+                await sessionExpirationCoordinator.notify(message: message)
+            }
+            throw error
+        }
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        var body = Data()
+        body.append(Data("--\(boundary)\r\n".utf8))
+        body.append(Data("Content-Disposition: form-data; name=\"\(fieldName)\"; filename=\"\(fileName)\"\r\n".utf8))
+        body.append(Data("Content-Type: \(mimeType)\r\n\r\n".utf8))
+        body.append(fileData)
+        body.append(Data("\r\n--\(boundary)--\r\n".utf8))
+        request.httpBody = body
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        return try await perform(request, requiresAuthorization: true)
+    }
+
+    private func perform<Response: Decodable>(
+        _ request: URLRequest,
+        requiresAuthorization: Bool
+    ) async throws -> Response {
         let data: Data
         let response: URLResponse
         do {
@@ -65,7 +109,7 @@ final class APIClient {
                 statusCode: httpResponse.statusCode,
                 message: serverMessage?.mensaje
             )
-            if endpoint.requiresAuthorization, case .unauthorized(let message) = error {
+            if requiresAuthorization, case .unauthorized(let message) = error {
                 await sessionExpirationCoordinator.notify(message: message)
             }
             throw error

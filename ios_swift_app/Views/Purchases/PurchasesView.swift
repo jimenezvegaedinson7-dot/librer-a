@@ -35,7 +35,7 @@ struct PurchasesView: View {
         if viewModel.purchases.isEmpty {
             switch viewModel.state {
             case .idle, .loading:
-                ProgressView("Cargando compras…")
+                ShelfLoadingView(message: "Cargando tus compras...")
             case .empty, .loaded:
                 ContentUnavailableView(
                     "No tienes compras todavía",

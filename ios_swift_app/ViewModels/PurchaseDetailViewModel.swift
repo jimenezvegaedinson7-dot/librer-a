@@ -70,6 +70,24 @@ final class PurchaseDetailViewModel: ObservableObject {
         await loadPayment()
     }
 
+    /// Venta aún sin pagar: se ofrecen "Continuar pago" y "Verificar pago".
+    var isPending: Bool {
+        purchase?.estado.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "pendiente"
+    }
+
+    /// Página de PayU registrada para la venta (`GET /api/ventas/:id/pago`).
+    var checkoutURL: URL? {
+        guard let raw = salePayment?.checkoutURL?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !raw.isEmpty else { return nil }
+        return URL(string: raw)
+    }
+
+    var orderID: String? {
+        if let salePayment, let id = Self.validOrderID(from: salePayment) { return id }
+        let fallback = purchase?.payuOrderID?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return (fallback?.isEmpty ?? true) ? nil : fallback
+    }
+
     private func loadPayment() async {
         guard let purchase, !isLoadingPayment else { return }
         isLoadingPayment = true
