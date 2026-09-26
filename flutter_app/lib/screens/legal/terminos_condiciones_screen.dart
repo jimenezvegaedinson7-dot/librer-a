@@ -27,7 +27,8 @@ class TerminosCondicionesScreen extends StatelessWidget {
               'válidos y reales. Eres responsable de mantener la '
               'confidencialidad de tu contraseña y de toda la actividad que se '
               'realice en tu cuenta. Debes notificarnos de inmediato cualquier '
-              'uso no autorizado.',
+              'uso no autorizado. Puedes eliminar tu cuenta cuando quieras '
+              'desde Perfil → Eliminar mi cuenta.',
         ),
         LegalSeccion(
           titulo: '3. Catálogo, precios y disponibilidad',
@@ -60,8 +61,11 @@ class TerminosCondicionesScreen extends StatelessWidget {
               'Aceptamos devoluciones o cambios de libros en buen estado '
               'dentro de los 7 días calendario posteriores a la entrega, '
               'siempre que no presenten señales de uso y conserven su empaque '
-              'original. Las condiciones especiales de cada venta se indican '
-              'al momento de la compra.',
+              'original. Si el libro llegó dañado, con fallas de impresión o '
+              'no corresponde a tu pedido, lo cambiamos o te devolvemos el '
+              'importe por el mismo medio de pago, sin costo para ti. Las '
+              'condiciones especiales de cada venta se indican al momento de '
+              'la compra.',
         ),
         LegalSeccion(
           titulo: '7. Reservas de libros',
@@ -98,7 +102,11 @@ class TerminosCondicionesScreen extends StatelessWidget {
           titulo: '11. Contacto',
           texto:
               'Por consultas sobre estos términos puedes escribirnos a través '
-              'de la información de contacto publicada en la aplicación.',
+              'de la información de contacto publicada en la aplicación. Si no '
+              'estás conforme con un producto o con nuestra atención, puedes '
+              'registrar un reclamo o una queja en nuestro Libro de '
+              'Reclamaciones virtual (Perfil → Libro de Reclamaciones). Te '
+              'responderemos en un plazo no mayor a 15 días hábiles.',
         ),
       ],
     );

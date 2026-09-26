@@ -39,6 +39,9 @@ const TarifasEnvioPage = lazyConReintento(() => import('../features/tarifas/Tari
 const HistorialPage = lazyConReintento(() => import('../features/historial/HistorialPage'));
 const EmpresaPage = lazyConReintento(() => import('../features/configuracion/EmpresaPage'));
 const PersonalizacionPage = lazyConReintento(() => import('../features/configuracion/PersonalizacionPage'));
+const LibroReclamacionesPage = lazyConReintento(() => import('../features/reclamaciones/LibroReclamacionesPage'));
+const ReclamacionesPage = lazyConReintento(() => import('../features/reclamaciones/ReclamacionesPage'));
+const CierreCajaPage = lazyConReintento(() => import('../features/cierre/CierreCajaPage'));
 
 const cargar = (elemento) => <Suspense fallback={<CargandoPantalla />}>{elemento}</Suspense>;
 
@@ -50,6 +53,11 @@ const router = createBrowserRouter([
     {
         path: '/verificar-email',
         element: cargar(<VerificarEmailPage />),
+    },
+    {
+        // Público (sin sesión): lo enlazan las apps y el login.
+        path: '/libro-de-reclamaciones',
+        element: cargar(<LibroReclamacionesPage />),
     },
     {
         element: (
@@ -64,6 +72,8 @@ const router = createBrowserRouter([
             { path: '/reservas', element: cargar(<ReservasPage />) },
             { path: '/ventas', element: cargar(<VentasPage />) },
             { path: '/comprobantes', element: cargar(<ComprobantesPage />) },
+            { path: '/cierre-caja', element: cargar(<CierreCajaPage />) },
+            { path: '/reclamaciones', element: cargar(<ReclamacionesPage />) },
             { path: '/pagos', element: cargar(<PagosPage />) },
             { path: '/usuarios', element: cargar(<UsuariosPage />) },
             { path: '/clientes', element: <Navigate to="/usuarios?vista=clientes" replace /> },

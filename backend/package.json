@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "test": "node --test test/transiciones.test.js test/fileType.test.js test/crypto.test.js test/payuStatus.test.js test/comprobante.test.js test/reserva.test.js test/passwordReset.test.js test/tarifaEnvio.test.js test/appVersion.test.js test/payuMonto.test.js test/impuestos.test.js",
+    "test": "node --test test/transiciones.test.js test/fileType.test.js test/crypto.test.js test/payuStatus.test.js test/comprobante.test.js test/reserva.test.js test/passwordReset.test.js test/tarifaEnvio.test.js test/appVersion.test.js test/payuMonto.test.js test/impuestos.test.js test/diasHabiles.test.js test/reclamacion.test.js",
     "test:integration": "node --test test-integration/http.smoke.test.js",
     "resetear-precios": "node scripts/resetearPrecios.js",
     "resetear-precios:dry": "node scripts/resetearPrecios.js --dry-run",

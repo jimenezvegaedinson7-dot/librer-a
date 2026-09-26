@@ -469,6 +469,21 @@ class ApiService {
     }
   }
 
+  /// Elimina la cuenta del cliente (`DELETE /usuarios/cuenta`).
+  ///
+  /// Una contraseña incorrecta llega como 400 (no 401): no cierra la sesión
+  /// por sí sola y se muestra el mensaje del backend.
+  Future<void> eliminarCuenta({required String password}) async {
+    try {
+      await _dio.delete<dynamic>(
+        Constants.eliminarCuentaPath,
+        data: {'password': password, 'confirmacion': 'ELIMINAR'},
+      );
+    } on DioException catch (e) {
+      throw _toApiException(e);
+    }
+  }
+
   /// Obtiene las reservas del cliente contra `GET /reservas/mis-reservas`.
   Future<List<Reserva>> obtenerMisReservas() async {
     try {
@@ -561,8 +576,9 @@ class ApiService {
   /// Consulta si un libro está en favoritos contra `GET /favoritos/:id`.
   Future<bool> esFavorito(int idLibro) async {
     try {
-      final response =
-          await _dio.get<dynamic>('${Constants.favoritosPath}/$idLibro');
+      final response = await _dio.get<dynamic>(
+        '${Constants.favoritosPath}/$idLibro',
+      );
       final data = response.data;
       if (data is Map && data['data'] is Map) {
         final inner = Map<String, dynamic>.from(data['data'] as Map);

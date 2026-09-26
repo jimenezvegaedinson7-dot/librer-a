@@ -179,6 +179,13 @@ final class AccountService {
         _ = try await client.send(APIEndpoint<APIStatusPayload>.confirmTwoFactor(.init(codigo: code)))
     }
 
+    /// `DELETE /api/usuarios/cuenta`: anonimiza la cuenta (Ley 29733).
+    func deleteAccount(password: String) async throws {
+        _ = try await client.send(
+            APIEndpoint<APIStatusPayload>.deleteAccount(.init(password: password, confirmacion: "ELIMINAR"))
+        )
+    }
+
     func disableTwoFactor(password: String, code: String) async throws {
         _ = try await client.send(
             APIEndpoint<APIStatusPayload>.disableTwoFactor(.init(password: password, codigo: code))

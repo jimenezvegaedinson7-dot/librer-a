@@ -77,6 +77,12 @@ extension APIEndpoint where Response == APIStatusPayload {
         .init(method: .post, pathComponents: ["api", "auth", "2fa", "disable"], body: AnyEncodable(body),
               expiresSessionOnUnauthorized: false)
     }
+
+    // Contraseña incorrecta → 400; no debe cerrar la sesión.
+    static func deleteAccount(_ body: DeleteAccountRequest) -> Self {
+        .init(method: .delete, pathComponents: ["api", "usuarios", "cuenta"], body: AnyEncodable(body),
+              expiresSessionOnUnauthorized: false)
+    }
 }
 
 extension APIEndpoint where Response == CreatedReservation {

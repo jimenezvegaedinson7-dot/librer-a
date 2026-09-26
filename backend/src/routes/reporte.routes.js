@@ -10,7 +10,8 @@ const {
     obtenerStockBajo,
     obtenerVentasPorMes,
     obtenerVentasPorDia,
-    obtenerIndicadoresVentas
+    obtenerIndicadoresVentas,
+    obtenerCierreCaja
 } = require('../controllers/reporte.controller');
 
 const verificarToken = require('../middlewares/auth.middleware');
@@ -89,6 +90,14 @@ router.get(
 router.get(
     '/indicadores-ventas',
     obtenerIndicadoresVentas
+);
+
+// ========================================
+// CIERRE DE CAJA DEL DÍA
+// ========================================
+router.get(
+    '/cierre-caja',
+    obtenerCierreCaja
 );
 
 module.exports = router;

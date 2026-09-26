@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/usuario.dart';
 import '../services/api_service.dart';
@@ -24,6 +25,7 @@ import 'reservas_screen.dart';
 import 'favoritos_screen.dart';
 import 'security/cambiar_password_screen.dart';
 import 'security/editar_perfil_screen.dart';
+import 'security/eliminar_cuenta_screen.dart';
 import 'security/two_factor_disable_screen.dart';
 import 'security/two_factor_setup_screen.dart';
 import 'legal/politica_privacidad_screen.dart';
@@ -330,6 +332,31 @@ class _PerfilScreenState extends State<PerfilScreen> {
     await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(builder: (_) => const CambiarPasswordScreen()),
     );
+  }
+
+  Future<void> _eliminarCuenta() async {
+    final eliminada = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(builder: (_) => const EliminarCuentaScreen()),
+    );
+    if (eliminada != true || !mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Tu cuenta fue eliminada.')));
+    await _cerrarSesion();
+  }
+
+  Future<void> _libroReclamaciones() async {
+    final ok = await launchUrl(
+      Uri.parse(Constants.libroReclamacionesUrl),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo abrir el Libro de Reclamaciones.'),
+        ),
+      );
+    }
   }
 
   Future<void> _misCompras() async {
@@ -769,6 +796,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       icon: Icons.privacy_tip_outlined,
                       label: 'Política de Privacidad',
                       onTap: _privacidad,
+                    ),
+                    _divider(),
+                    _actionTile(
+                      context,
+                      icon: Icons.menu_book_outlined,
+                      label: 'Libro de Reclamaciones',
+                      onTap: _libroReclamaciones,
+                    ),
+                    _divider(),
+                    _actionTile(
+                      context,
+                      icon: Icons.person_remove_outlined,
+                      label: 'Eliminar mi cuenta',
+                      onTap: _eliminarCuenta,
                     ),
                   ],
                 ),

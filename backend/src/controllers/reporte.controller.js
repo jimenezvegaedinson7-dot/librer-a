@@ -219,6 +219,35 @@ const obtenerIndicadoresVentas = async (req, res) => {
 // ========================================
 // EXPORTAR CONTROLADORES
 // ========================================
+// ========================================
+// CIERRE DE CAJA
+// GET /api/reportes/cierre-caja?fecha=YYYY-MM-DD (hoy por defecto)
+// ========================================
+const obtenerCierreCaja = async (req, res) => {
+    const hoy = new Date(Date.now() - 5 * 3600 * 1000).toISOString().slice(0, 10);
+    const fecha = typeof req.query.fecha === 'string' && req.query.fecha ? req.query.fecha : hoy;
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || Number.isNaN(Date.parse(`${fecha}T00:00:00Z`))) {
+        return res.status(400).json({
+            success: false,
+            mensaje: 'Fecha no válida (usa AAAA-MM-DD)'
+        });
+    }
+
+    try {
+        return res.json({
+            success: true,
+            data: await reporteModel.obtenerCierreCaja(fecha)
+        });
+    } catch (error) {
+        console.error('Error al obtener el cierre de caja:', error);
+        return res.status(500).json({
+            success: false,
+            mensaje: 'Error al obtener el cierre de caja'
+        });
+    }
+};
+
 module.exports = {
     obtenerResumenGeneral,
     obtenerLibrosMasVendidos,
@@ -227,5 +256,6 @@ module.exports = {
     obtenerStockBajo,
     obtenerVentasPorMes,
     obtenerVentasPorDia,
-    obtenerIndicadoresVentas
+    obtenerIndicadoresVentas,
+    obtenerCierreCaja
 };

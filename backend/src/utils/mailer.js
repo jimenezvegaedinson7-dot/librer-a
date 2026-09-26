@@ -734,7 +734,78 @@ async function enviarComprobantePorEmail(datos) {
     return enviarCorreo({ destinatario, asunto, html, attachments });
 }
 
+// ============================================================
+// LIBRO DE RECLAMACIONES
+// ============================================================
+// Copia de la hoja al consumidor (obligatoria al registrarla) y
+// respuesta del proveedor.
+function htmlHojaReclamacion(r, empresa) {
+    const fila = (etiqueta, valor) =>
+        `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;width:38%;color:#475569">${htmlEscape(etiqueta)}</td>` +
+        `<td style="padding:6px 10px;border:1px solid #e2e8f0;color:#0f172a">${htmlEscape(valor ?? '—')}</td></tr>`;
+    const fecha = new Date(r.fecha_registro || Date.now()).toLocaleString('es-PE', { timeZone: 'America/Lima' });
+    return (
+        `<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0">` +
+        fila('Hoja N.°', r.numero) +
+        fila('Fecha', fecha) +
+        fila('Proveedor', `${empresa?.razon_social || ''} — RUC ${empresa?.ruc || ''}`) +
+        fila('Dirección del proveedor', empresa?.direccion || '—') +
+        fila('Consumidor', r.consumidor_nombre) +
+        fila('Documento', `${r.consumidor_tipo_documento} ${r.consumidor_documento}`) +
+        fila('Domicilio', r.consumidor_domicilio) +
+        fila('Teléfono', r.consumidor_telefono || '—') +
+        fila('Correo', r.consumidor_email) +
+        (r.es_menor ? fila('Padre, madre o apoderado', r.apoderado_nombre) : '') +
+        fila('Bien contratado', `${r.bien_tipo === 'servicio' ? 'Servicio' : 'Producto'}: ${r.bien_descripcion}`) +
+        fila('Monto reclamado', r.monto_reclamado !== null && r.monto_reclamado !== undefined ? `S/ ${Number(r.monto_reclamado).toFixed(2)}` : '—') +
+        fila('Tipo', r.tipo === 'queja' ? 'Queja' : 'Reclamo') +
+        fila('Detalle', r.detalle) +
+        fila('Pedido del consumidor', r.pedido) +
+        `</table>`
+    );
+}
+
+async function enviarConstanciaReclamacion({ reclamacion, empresa }) {
+    const r = reclamacion;
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(r.consumidor_nombre)}</strong>,</p>` +
+        `<p>Registramos tu ${r.tipo === 'queja' ? 'queja' : 'reclamo'} en nuestro Libro de Reclamaciones con la hoja ` +
+        `<strong>N.° ${htmlEscape(r.numero)}</strong>. Esta es tu copia:</p>` +
+        htmlHojaReclamacion(r, empresa) +
+        `<p>Te responderemos en un plazo no mayor a <strong>15 días hábiles</strong> ` +
+        `(a más tardar el ${htmlEscape(r.fecha_limite)}).</p>` +
+        `<p style="color:#64748b;font-size:12px">La formulación del reclamo no impide acudir a otras vías de solución de ` +
+        `controversias ni es requisito previo para interponer una denuncia ante el INDECOPI.</p>`;
+    const { asunto, html } = plantillaBase({
+        tituloCabecera: `Libro de Reclamaciones — Hoja N.° ${r.numero}`,
+        asunto: `Constancia de tu ${r.tipo === 'queja' ? 'queja' : 'reclamo'} N.° ${r.numero}`,
+        cuerpoHtml
+    });
+    return enviarCorreo({ destinatario: r.consumidor_email, asunto, html });
+}
+
+async function enviarRespuestaReclamacion({ reclamacion, empresa }) {
+    const r = reclamacion;
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(r.consumidor_nombre)}</strong>,</p>` +
+        `<p>Esta es nuestra respuesta a tu ${r.tipo === 'queja' ? 'queja' : 'reclamo'} ` +
+        `<strong>N.° ${htmlEscape(r.numero)}</strong>:</p>` +
+        `<div style="margin:14px 0;padding:14px;border-left:4px solid #7a2530;background:#fbf7f0;white-space:pre-line">` +
+        `${htmlEscape(r.respuesta)}</div>` +
+        `<p style="color:#64748b;font-size:13px">Tu hoja registrada:</p>` +
+        htmlHojaReclamacion(r, empresa) +
+        `<p style="color:#64748b;font-size:12px">Si no estás conforme, puedes acudir al INDECOPI.</p>`;
+    const { asunto, html } = plantillaBase({
+        tituloCabecera: `Respuesta a tu hoja N.° ${r.numero}`,
+        asunto: `Respuesta a tu ${r.tipo === 'queja' ? 'queja' : 'reclamo'} N.° ${r.numero}`,
+        cuerpoHtml
+    });
+    return enviarCorreo({ destinatario: r.consumidor_email, asunto, html });
+}
+
 module.exports = {
+    enviarConstanciaReclamacion,
+    enviarRespuestaReclamacion,
     enviarCorreo,
     generarPdfDesdeHtml,
     enviarCodigoVerificacion,

@@ -84,7 +84,9 @@ class PoliticaPrivacidadScreen extends StatelessWidget {
           texto:
               'Por consultas sobre el tratamiento de tus datos, para ejercer '
               'tus derechos ARCO o cancelar tu cuenta, escríbenos a través de '
-              'la información de contacto publicada en la aplicación.',
+              'la información de contacto publicada en la aplicación. Si '
+              'prefieres cancelar tu cuenta, también puedes eliminarla '
+              'directamente desde Perfil → Eliminar mi cuenta.',
         ),
       ],
     );

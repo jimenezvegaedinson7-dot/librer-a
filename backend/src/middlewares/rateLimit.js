@@ -73,7 +73,16 @@ const webhookLimit = rateLimit({
     limit: 60
 });
 
+// ========================================
+// LIBRO DE RECLAMACIONES (público): 5 hojas / 15 min
+// ========================================
+const reclamacionLimiter = rateLimit({
+    ...config,
+    limit: 5
+});
+
 module.exports = {
+    reclamacionLimiter,
     baseLimiter,
     loginLimiter,
     registroLimiter,

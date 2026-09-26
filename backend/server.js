@@ -49,6 +49,7 @@ const empresaRoutes = require('./src/routes/empresa.routes');
 const comprobanteRoutes = require('./src/routes/comprobante.routes');
 const clienteRoutes = require('./src/routes/cliente.routes');
 const appRoutes = require('./src/routes/app.routes');
+const reclamacionRoutes = require('./src/routes/reclamacion.routes');
 
 // ===============================
 // CONFIGURACIÓN DE EXPRESS
@@ -338,6 +339,14 @@ app.use(
 );
 
 // ===============================
+// LIBRO DE RECLAMACIONES (registro público)
+// ===============================
+app.use(
+    '/api/reclamaciones',
+    reclamacionRoutes
+);
+
+// ===============================
 // API DE FAVORITOS (LISTA DE DESEOS)
 // ===============================
 app.use(
@@ -437,6 +446,23 @@ iniciarJobs();
         console.log('[migracion] 023 control de ventas verificada.');
     } catch (e) {
         console.error('[migracion] Error en la migración 023:', e.message);
+    }
+})();
+
+// ===============================
+// MIGRACIÓN 024: Libro de Reclamaciones
+// y eliminación de cuentas
+// ===============================
+(async () => {
+    try {
+        const sql = require('fs').readFileSync(
+            require('path').join(__dirname, 'database', 'migrations', '024_reclamaciones_y_cuentas.sql'),
+            'utf8'
+        );
+        await pool.query(sql);
+        console.log('[migracion] 024 reclamaciones y cuentas verificada.');
+    } catch (e) {
+        console.error('[migracion] Error en la migración 024:', e.message);
     }
 })();
 

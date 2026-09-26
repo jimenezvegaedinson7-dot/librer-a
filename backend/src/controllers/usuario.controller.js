@@ -5,6 +5,7 @@ const path = require('path');
 const pool = require('../config/database');
 
 const usuarioModel = require('../models/usuario.model');
+const historialModel = require('../models/historial.model');
 const {
     esEmailValido,
     esEstadoValido,
@@ -702,11 +703,78 @@ const cambiarPassword = async (req, res) => {
 // ========================================
 // EXPORTAR
 // ========================================
+// ========================================
+// ELIMINAR MI CUENTA (cliente)
+// DELETE /api/usuarios/cuenta  { password, confirmacion: "ELIMINAR" }
+// ----------------------------------------
+// Contraseña incorrecta → 400 (no 401): la app no debe tratarlo como
+// sesión vencida.
+// ========================================
+const eliminarMiCuenta = async (req, res) => {
+    try {
+        const idUsuario = req.usuario.id_usuario;
+        const { password, confirmacion } = req.body || {};
+
+        if (req.usuario.rol !== 'cliente') {
+            return res.status(403).json({
+                success: false,
+                mensaje: 'Las cuentas de administrador no se eliminan desde aquí'
+            });
+        }
+        if (String(confirmacion || '').trim().toUpperCase() !== 'ELIMINAR') {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'Escribe ELIMINAR para confirmar'
+            });
+        }
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'Ingresa tu contraseña'
+            });
+        }
+
+        const usuario = await usuarioModel.buscarPorIdConPassword(idUsuario);
+        if (!usuario) {
+            return res.status(404).json({ success: false, mensaje: 'Usuario no encontrado' });
+        }
+        if (!(await bcrypt.compare(String(password), usuario.password))) {
+            return res.status(400).json({ success: false, mensaje: 'La contraseña es incorrecta' });
+        }
+
+        const aleatoria = require('crypto').randomBytes(32).toString('hex');
+        const resultado = await usuarioModel.eliminarCuenta(
+            idUsuario,
+            await bcrypt.hash(aleatoria, 10)
+        );
+
+        try {
+            await historialModel.crear({
+                id_usuario: null,
+                tipo_operacion: 'ELIMINAR',
+                modulo: 'usuarios',
+                descripcion: `Cuenta #${idUsuario} eliminada por su titular (datos anonimizados; ${resultado.reservas_canceladas} reservas canceladas)`
+            });
+        } catch (errorHistorial) {
+            console.error('No se pudo registrar el historial:', errorHistorial.message);
+        }
+
+        return res.json({
+            success: true,
+            mensaje: 'Tu cuenta fue eliminada. Tus compras se conservan solo por obligación tributaria.'
+        });
+    } catch (error) {
+        console.error('Error al eliminar cuenta:', error);
+        return res.status(500).json({ success: false, mensaje: 'No se pudo eliminar la cuenta' });
+    }
+};
+
 module.exports = {
     listarUsuarios,
     adminUpdateUsuario,
     obtenerPerfil,
     actualizarPerfil,
     subirFotoPerfil,
-    cambiarPassword
+    cambiarPassword,
+    eliminarMiCuenta
 };

@@ -55,6 +55,7 @@ struct AccountView: View {
                 case .favorites: FavoritesView()
                 case .terms: LegalDocumentView(document: .terms)
                 case .privacy: LegalDocumentView(document: .privacy)
+                case .deleteAccount: DeleteAccountView()
                 }
             }
             .sheet(isPresented: $showPurchases) {
@@ -257,6 +258,13 @@ struct AccountView: View {
             linkRow("doc.text", "Términos y Condiciones", .terms)
             Divider().padding(.leading, 60)
             linkRow("hand.raised", "Política de Privacidad", .privacy)
+            Divider().padding(.leading, 60)
+            Link(destination: LegalDocument.complaintsBookURL) {
+                rowLabel("book.closed", "Libro de Reclamaciones")
+            }
+            .buttonStyle(.plain)
+            Divider().padding(.leading, 60)
+            linkRow("person.crop.circle.badge.xmark", "Eliminar mi cuenta", .deleteAccount)
         }
     }
 
@@ -311,7 +319,7 @@ struct AccountView: View {
 }
 
 enum AccountRoute: Hashable {
-    case editProfile, changePassword, twoFactor, favorites, terms, privacy
+    case editProfile, changePassword, twoFactor, favorites, terms, privacy, deleteAccount
 }
 
 /// Foto de perfil o iniciales.

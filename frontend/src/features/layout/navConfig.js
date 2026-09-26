@@ -12,6 +12,8 @@ import {
     Truck,
     History,
     Settings,
+    Calculator,
+    BookText,
 } from 'lucide-react';
 
 export const navPrincipal = [
@@ -24,8 +26,10 @@ export const navPrincipal = [
     { nombre: 'Ventas', ruta: '/ventas', icono: ShoppingCart, descripcion: 'Compras: quién compró, qué y cuánto', seccion: 'Operaciones' },
     { nombre: 'Comprobantes', ruta: '/comprobantes', icono: ReceiptText, descripcion: 'Boletas y facturas emitidas', seccion: 'Operaciones' },
     { nombre: 'Pagos', ruta: '/pagos', icono: CreditCard, descripcion: 'Pagos recibidos de las ventas', seccion: 'Operaciones' },
+    { nombre: 'Cierre de caja', ruta: '/cierre-caja', icono: Calculator, descripcion: 'Cobros del día por medio de pago, reembolsos y neto', seccion: 'Operaciones' },
     { nombre: 'Usuarios', ruta: '/usuarios', icono: Users, descripcion: 'Cuentas, permisos y clientes con sus compras', seccion: 'Administración' },
     { nombre: 'Tarifas de envío', ruta: '/tarifas-envio', icono: Truck, descripcion: 'Precio del envío a domicilio por distrito de Lima', seccion: 'Administración' },
+    { nombre: 'Libro de Reclamaciones', ruta: '/reclamaciones', icono: BookText, descripcion: 'Reclamos y quejas: respuesta en 15 días hábiles', seccion: 'Control' },
     { nombre: 'Historial', ruta: '/historial', icono: History, descripcion: 'Auditoría de operaciones', seccion: 'Control' },
     { nombre: 'Datos de la empresa', ruta: '/configuracion/empresa', icono: Settings, descripcion: 'Configuración del emisor de comprobantes', seccion: 'Control' },
 ];

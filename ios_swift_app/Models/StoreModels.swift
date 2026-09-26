@@ -243,6 +243,11 @@ struct ChangePasswordRequest: Encodable {
 
 struct CodeRequest: Encodable { let codigo: String }
 
+struct DeleteAccountRequest: Encodable {
+    let password: String
+    let confirmacion: String
+}
+
 struct DisableTwoFactorRequest: Encodable {
     let password: String
     let codigo: String

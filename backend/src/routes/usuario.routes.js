@@ -14,7 +14,8 @@ const {
     obtenerPerfil,
     actualizarPerfil,
     subirFotoPerfil,
-    cambiarPassword
+    cambiarPassword,
+    eliminarMiCuenta
 } = require('../controllers/usuario.controller');
 
 const verificarRol = require('../middlewares/rol.middleware');
@@ -64,6 +65,14 @@ router.put(
 router.put(
     '/password',
     cambiarPassword
+);
+
+// ========================================
+// ELIMINAR MI CUENTA (derecho de cancelación)
+// ========================================
+router.delete(
+    '/cuenta',
+    eliminarMiCuenta
 );
 
 // ========================================

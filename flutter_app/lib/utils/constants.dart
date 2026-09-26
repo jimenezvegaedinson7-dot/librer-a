@@ -64,8 +64,9 @@ class Constants {
 
   /// Dirección base del servidor (sin `/api`), usada para servir archivos
   /// estáticos como imágenes.
-  static String get serverBaseUrl =>
-      _usarApiProduccion ? 'https://$_produccionHost' : 'http://$host:$_serverPort';
+  static String get serverBaseUrl => _usarApiProduccion
+      ? 'https://$_produccionHost'
+      : 'http://$host:$_serverPort';
 
   /// Dirección base de la API (con `/api`).
   static String get apiBaseUrl => '$serverBaseUrl$_apiVersionPath';
@@ -81,7 +82,8 @@ class Constants {
   static const String verificarEmailPath = '/auth/verificar-email';
   static const String reenviarCodigoPath = '/auth/reenviar-codigo';
   static const String solicitarReseteoPath = '/auth/solicitar-reseteo';
-  static const String reestablecerContrasenaPath = '/auth/reestablecer-contrasena';
+  static const String reestablecerContrasenaPath =
+      '/auth/reestablecer-contrasena';
   static const String librosPath = '/libros';
   static const String perfilPath = '/usuarios/perfil';
 
@@ -99,6 +101,11 @@ class Constants {
   static const String actualizarPerfilPath = '/usuarios/perfil';
   static const String fotoPerfilPath = '/usuarios/foto';
   static const String cambiarPasswordPath = '/usuarios/password';
+  static const String eliminarCuentaPath = '/usuarios/cuenta';
+
+  /// Libro de Reclamaciones virtual (página pública del panel web).
+  static const String libroReclamacionesUrl =
+      'https://librer-a-zeta.vercel.app/libro-de-reclamaciones';
 
   // ---------------------------------------------------------------------------
   // Rutas de reservas (solo cliente)

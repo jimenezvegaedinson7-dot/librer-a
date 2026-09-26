@@ -1,5 +1,14 @@
 const pool = require('../config/database');
 
+// Ingresos = ventas cobradas: pagadas o ya entregadas (una venta entregada
+// sigue siendo un ingreso). Las canceladas y reembolsadas no cuentan.
+//
+// Fechas en hora de Perú: `fecha_venta` se guarda en la zona del servidor
+// (UTC en Render); sin convertir, una venta de las 8 p. m. contaría como
+// del día siguiente.
+const FECHA_LIMA = "((fecha_venta AT TIME ZONE current_setting('TimeZone')) AT TIME ZONE 'America/Lima')";
+const HOY_LIMA = "((NOW() AT TIME ZONE 'America/Lima')::date)";
+
 // ========================================
 // REPORTE GENERAL DEL SISTEMA
 // ========================================
@@ -29,7 +38,7 @@ const obtenerResumenGeneral = async () => {
             COUNT(*) AS total_ventas,
             COALESCE(SUM(total), 0) AS total_vendido
         FROM ventas
-        WHERE estado = 'pagada'
+        WHERE estado IN ('pagada', 'entregada')
     `);
 
     const [[reservas]] = await pool.query(`
@@ -71,7 +80,7 @@ const obtenerLibrosMasVendidos = async () => {
             ON d.id_venta = v.id_venta
         INNER JOIN libros l
             ON d.id_libro = l.id_libro
-        WHERE v.estado = 'pagada'
+        WHERE v.estado IN ('pagada', 'entregada')
         GROUP BY
             l.id_libro,
             l.titulo
@@ -147,10 +156,10 @@ const obtenerStockBajo = async () => {
 const obtenerVentasPorMes = async () => {
     const [rows] = await pool.query(`
         SELECT
-            EXTRACT(YEAR FROM fecha_venta) AS anio,
-            EXTRACT(MONTH FROM fecha_venta) AS mes_numero,
+            EXTRACT(YEAR FROM ${FECHA_LIMA}) AS anio,
+            EXTRACT(MONTH FROM ${FECHA_LIMA}) AS mes_numero,
 
-            CASE EXTRACT(MONTH FROM fecha_venta)
+            CASE EXTRACT(MONTH FROM ${FECHA_LIMA})
                 WHEN 1 THEN 'Ene'
                 WHEN 2 THEN 'Feb'
                 WHEN 3 THEN 'Mar'
@@ -179,15 +188,15 @@ const obtenerVentasPorMes = async () => {
 
         FROM ventas
 
-        WHERE estado = 'pagada'
+        WHERE estado IN ('pagada', 'entregada')
 
         GROUP BY
-            EXTRACT(YEAR FROM fecha_venta),
-            EXTRACT(MONTH FROM fecha_venta)
+            EXTRACT(YEAR FROM ${FECHA_LIMA}),
+            EXTRACT(MONTH FROM ${FECHA_LIMA})
 
         ORDER BY
-            EXTRACT(YEAR FROM fecha_venta) DESC,
-            EXTRACT(MONTH FROM fecha_venta) DESC
+            EXTRACT(YEAR FROM ${FECHA_LIMA}) DESC,
+            EXTRACT(MONTH FROM ${FECHA_LIMA}) DESC
 
         LIMIT 12
     `);
@@ -201,13 +210,13 @@ const obtenerVentasPorMes = async () => {
 const obtenerVentasPorDia = async () => {
     const [rows] = await pool.query(`
         SELECT
-            DATE(fecha_venta) AS fecha,
+            DATE(${FECHA_LIMA}) AS fecha,
 
-            EXTRACT(DAY FROM fecha_venta) AS dia,
+            EXTRACT(DAY FROM ${FECHA_LIMA}) AS dia,
 
-            EXTRACT(MONTH FROM fecha_venta) AS mes_numero,
+            EXTRACT(MONTH FROM ${FECHA_LIMA}) AS mes_numero,
 
-            EXTRACT(YEAR FROM fecha_venta) AS anio,
+            EXTRACT(YEAR FROM ${FECHA_LIMA}) AS anio,
 
             COUNT(*) AS cantidad_ventas,
 
@@ -228,16 +237,16 @@ const obtenerVentasPorDia = async () => {
 
         FROM ventas
 
-        WHERE estado = 'pagada'
+        WHERE estado IN ('pagada', 'entregada')
 
         GROUP BY
-            DATE(fecha_venta),
-            EXTRACT(DAY FROM fecha_venta),
-            EXTRACT(MONTH FROM fecha_venta),
-            EXTRACT(YEAR FROM fecha_venta)
+            DATE(${FECHA_LIMA}),
+            EXTRACT(DAY FROM ${FECHA_LIMA}),
+            EXTRACT(MONTH FROM ${FECHA_LIMA}),
+            EXTRACT(YEAR FROM ${FECHA_LIMA})
 
         ORDER BY
-            DATE(fecha_venta) DESC
+            DATE(${FECHA_LIMA}) DESC
 
         LIMIT 30
     `);
@@ -275,7 +284,7 @@ const obtenerIndicadoresVentas = async () => {
 
         FROM ventas
 
-        WHERE estado = 'pagada'
+        WHERE estado IN ('pagada', 'entregada')
     `);
 
     const [[hoy]] = await pool.query(`
@@ -290,8 +299,8 @@ const obtenerIndicadoresVentas = async () => {
         FROM ventas
 
         WHERE
-            estado = 'pagada'
-            AND DATE(fecha_venta) = CURRENT_DATE
+            estado IN ('pagada', 'entregada')
+            AND DATE(${FECHA_LIMA}) = ${HOY_LIMA}
     `);
 
     const [[mesActual]] = await pool.query(`
@@ -306,17 +315,17 @@ const obtenerIndicadoresVentas = async () => {
         FROM ventas
 
         WHERE
-            estado = 'pagada'
-            AND EXTRACT(YEAR FROM fecha_venta) = EXTRACT(YEAR FROM CURRENT_DATE)
-            AND EXTRACT(MONTH FROM fecha_venta) = EXTRACT(MONTH FROM CURRENT_DATE)
+            estado IN ('pagada', 'entregada')
+            AND EXTRACT(YEAR FROM ${FECHA_LIMA}) = EXTRACT(YEAR FROM ${HOY_LIMA})
+            AND EXTRACT(MONTH FROM ${FECHA_LIMA}) = EXTRACT(MONTH FROM ${HOY_LIMA})
     `);
 
     const [[mejorMes]] = await pool.query(`
         SELECT
-            EXTRACT(YEAR FROM fecha_venta) AS anio,
-            EXTRACT(MONTH FROM fecha_venta) AS mes_numero,
+            EXTRACT(YEAR FROM ${FECHA_LIMA}) AS anio,
+            EXTRACT(MONTH FROM ${FECHA_LIMA}) AS mes_numero,
 
-            CASE EXTRACT(MONTH FROM fecha_venta)
+            CASE EXTRACT(MONTH FROM ${FECHA_LIMA})
                 WHEN 1 THEN 'Enero'
                 WHEN 2 THEN 'Febrero'
                 WHEN 3 THEN 'Marzo'
@@ -340,11 +349,11 @@ const obtenerIndicadoresVentas = async () => {
 
         FROM ventas
 
-        WHERE estado = 'pagada'
+        WHERE estado IN ('pagada', 'entregada')
 
         GROUP BY
-            EXTRACT(YEAR FROM fecha_venta),
-            EXTRACT(MONTH FROM fecha_venta)
+            EXTRACT(YEAR FROM ${FECHA_LIMA}),
+            EXTRACT(MONTH FROM ${FECHA_LIMA})
 
         ORDER BY
             total_vendido DESC,
@@ -355,7 +364,7 @@ const obtenerIndicadoresVentas = async () => {
 
     const [[mejorDia]] = await pool.query(`
         SELECT
-            DATE(fecha_venta) AS fecha,
+            DATE(${FECHA_LIMA}) AS fecha,
 
             COUNT(*) AS cantidad_ventas,
 
@@ -366,10 +375,10 @@ const obtenerIndicadoresVentas = async () => {
 
         FROM ventas
 
-        WHERE estado = 'pagada'
+        WHERE estado IN ('pagada', 'entregada')
 
         GROUP BY
-            DATE(fecha_venta)
+            DATE(${FECHA_LIMA})
 
         ORDER BY
             total_vendido DESC,
@@ -445,6 +454,108 @@ const obtenerIndicadoresVentas = async () => {
 // ========================================
 // EXPORTAR MODELO
 // ========================================
+// ========================================
+// CIERRE DE CAJA DEL DÍA (hora de Perú)
+// ----------------------------------------
+// Cobros del día por medio de pago (mostrador y reservas: el método
+// registrado; pedidos de la app: PayU), reembolsos del día y neto.
+// Una venta reembolsada después cuenta como cobro el día que se cobró
+// y como reembolso el día que se devolvió.
+// ========================================
+const MEDIO = "CASE WHEN v.origen IN ('panel', 'reserva') THEN COALESCE(v.metodo_pago, 'efectivo') ELSE 'payu' END";
+const EN_LIMA = (columna) =>
+    `((${columna} AT TIME ZONE current_setting('TimeZone')) AT TIME ZONE 'America/Lima')`;
+
+const obtenerCierreCaja = async (fecha) => {
+    const [cobros] = await pool.query(`
+        SELECT ${MEDIO} AS medio,
+               COUNT(*) AS cantidad,
+               COALESCE(SUM(v.total), 0) AS total
+        FROM ventas v
+        WHERE v.estado IN ('pagada', 'entregada', 'reembolsada')
+          AND DATE(${EN_LIMA('COALESCE(v.fecha_pago, v.fecha_venta)')}) = ?::date
+        GROUP BY 1
+    `, [fecha]);
+
+    const [reembolsos] = await pool.query(`
+        SELECT ${MEDIO} AS medio,
+               COUNT(*) AS cantidad,
+               COALESCE(SUM(v.total), 0) AS total
+        FROM ventas v
+        WHERE v.estado = 'reembolsada'
+          AND v.fecha_reembolso IS NOT NULL
+          AND DATE(${EN_LIMA('v.fecha_reembolso')}) = ?::date
+        GROUP BY 1
+    `, [fecha]);
+
+    const [ventas] = await pool.query(`
+        SELECT v.id_venta,
+               v.origen,
+               v.estado,
+               v.total,
+               v.metodo_pago,
+               v.referencia_pago,
+               v.payu_order_id,
+               ${MEDIO} AS medio,
+               TO_CHAR(${EN_LIMA('COALESCE(v.fecha_pago, v.fecha_venta)')}, 'HH24:MI') AS hora,
+               CASE WHEN v.origen = 'panel'
+                    THEN COALESCE(v.cliente_nombre, 'Cliente de mostrador')
+                    ELSE COALESCE(v.cliente_nombre, TRIM(u.nombre || ' ' || u.apellido))
+               END AS cliente
+        FROM ventas v
+        LEFT JOIN usuarios u ON u.id_usuario = v.id_usuario
+        WHERE v.estado IN ('pagada', 'entregada', 'reembolsada')
+          AND DATE(${EN_LIMA('COALESCE(v.fecha_pago, v.fecha_venta)')}) = ?::date
+        ORDER BY COALESCE(v.fecha_pago, v.fecha_venta) ASC
+    `, [fecha]);
+
+    const [[comprobantes]] = await pool.query(`
+        SELECT COUNT(*) AS emitidos,
+               COALESCE(SUM(CASE WHEN numero_sunat IS NULL THEN 1 ELSE 0 END), 0) AS sin_sunat
+        FROM comprobantes
+        WHERE estado = 'emitido'
+          AND DATE(${EN_LIMA('fecha_emision')}) = ?::date
+    `, [fecha]);
+
+    const medios = {};
+    const asegurar = (medio) => {
+        medios[medio] = medios[medio] || { medio, cobrado: 0, cobros: 0, reembolsado: 0, reembolsos: 0 };
+        return medios[medio];
+    };
+    for (const fila of cobros) {
+        const m = asegurar(fila.medio);
+        m.cobrado = Number(fila.total);
+        m.cobros = Number(fila.cantidad);
+    }
+    for (const fila of reembolsos) {
+        const m = asegurar(fila.medio);
+        m.reembolsado = Number(fila.total);
+        m.reembolsos = Number(fila.cantidad);
+    }
+    const porMedio = Object.values(medios).map((m) => ({
+        ...m,
+        neto: Number((m.cobrado - m.reembolsado).toFixed(2))
+    }));
+    const suma = (campo) => Number(porMedio.reduce((acc, m) => acc + m[campo], 0).toFixed(2));
+
+    return {
+        fecha,
+        por_medio: porMedio,
+        totales: {
+            cobrado: suma('cobrado'),
+            reembolsado: suma('reembolsado'),
+            neto: suma('neto'),
+            cobros: porMedio.reduce((acc, m) => acc + m.cobros, 0),
+            reembolsos: porMedio.reduce((acc, m) => acc + m.reembolsos, 0)
+        },
+        ventas: ventas.map((v) => ({ ...v, total: Number(v.total) })),
+        comprobantes: {
+            emitidos: Number(comprobantes.emitidos || 0),
+            sin_sunat: Number(comprobantes.sin_sunat || 0)
+        }
+    };
+};
+
 module.exports = {
     obtenerResumenGeneral,
     obtenerLibrosMasVendidos,
@@ -453,5 +564,6 @@ module.exports = {
     obtenerStockBajo,
     obtenerVentasPorMes,
     obtenerVentasPorDia,
-    obtenerIndicadoresVentas
+    obtenerIndicadoresVentas,
+    obtenerCierreCaja
 };
