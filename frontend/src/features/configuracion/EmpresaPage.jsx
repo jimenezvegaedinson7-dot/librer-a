@@ -21,7 +21,23 @@ const FORMULARIO_VACIO = {
     documento_identidad: '',
     direccion: '',
     aplica_igv: false,
+    libros_exonerados: true,
+    exoneracion_libros_hasta: '2026-10-17',
+    tasa_igv: '18',
 };
+
+const redondear = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+
+// Misma regla que el backend (utils/impuestos): libros exonerados hasta la
+// fecha indicada; el envío (servicio) siempre gravado si hay IGV.
+function ejemploTributos({ aplica_igv, libros_exonerados, exoneracion_libros_hasta, tasa_igv }, libros, envio) {
+    if (!aplica_igv) return { gravada: 0, exonerada: libros + envio, igv: 0 };
+    const hoy = new Date(Date.now() - 5 * 3600 * 1000).toISOString().slice(0, 10);
+    const exonerados = libros_exonerados && (!exoneracion_libros_hasta || hoy <= exoneracion_libros_hasta);
+    const conIgv = envio + (exonerados ? 0 : libros);
+    const gravada = redondear(conIgv / (1 + Number(tasa_igv || 18) / 100));
+    return { gravada, exonerada: exonerados ? libros : 0, igv: redondear(conIgv - gravada) };
+}
 
 const REGLAS = {
     ruc: [
@@ -54,11 +70,11 @@ function SkeletonFormulario() {
     );
 }
 
-function Interruptor({ activo, onChange, descripcion }) {
+function Interruptor({ activo, onChange, titulo, descripcion }) {
     return (
         <div className="flex items-center justify-between gap-4 rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
             <div>
-                <p className="text-sm font-semibold text-slate-700">Aplicar IGV (18%)</p>
+                <p className="text-sm font-semibold text-slate-700">{titulo}</p>
                 {descripcion && <p className="mt-0.5 text-xs text-primary-500">{descripcion}</p>}
             </div>
             <button
@@ -104,6 +120,9 @@ export default function EmpresaPage() {
                     documento_identidad: String(datos.documento_identidad ?? ''),
                     direccion: String(datos.direccion ?? ''),
                     aplica_igv: Number(datos.aplica_igv) === 1,
+                    libros_exonerados: Number(datos.libros_exonerados ?? 1) === 1,
+                    exoneracion_libros_hasta: String(datos.exoneracion_libros_hasta ?? '').slice(0, 10),
+                    tasa_igv: String(Number(datos.tasa_igv ?? 18)),
                 });
             }
         } catch (err) {
@@ -238,12 +257,64 @@ export default function EmpresaPage() {
                                 />
 
 
-                                <div>
+                                <div className="space-y-3">
                                     <Interruptor
+                                        titulo="Empresa afecta al IGV"
                                         activo={formulario.aplica_igv}
                                         onChange={(activo) => setFormulario((actual) => ({ ...actual, aplica_igv: activo }))}
-                                        descripcion="Activar solo si la empresa es contribuyente del IGV. Las facturas calcularan IGV (18%) sobre el total. Las boletas nunca incluyen IGV."
+                                        descripcion="Actívalo si el RUC está en el Régimen General, MYPE Tributario o RER (si el RUC emite facturas, no está en el Nuevo RUS). Los precios ya incluyen el IGV: el comprobante solo lo muestra desglosado."
                                     />
+                                    {formulario.aplica_igv && (
+                                        <>
+                                            <Interruptor
+                                                titulo="Libros exonerados del IGV (Ley 31053)"
+                                                activo={formulario.libros_exonerados}
+                                                onChange={(activo) => setFormulario((actual) => ({ ...actual, libros_exonerados: activo }))}
+                                                descripcion="La venta de libros no paga IGV mientras rija la exoneración. El envío a domicilio es un servicio y sí paga IGV."
+                                            />
+                                            <div className="form-grid">
+                                                {formulario.libros_exonerados && (
+                                                    <Input
+                                                        ancho={6}
+                                                        label="Exonerados hasta"
+                                                        type="date"
+                                                        name="exoneracion_libros_hasta"
+                                                        value={formulario.exoneracion_libros_hasta}
+                                                        onChange={manejarCambio}
+                                                    />
+                                                )}
+                                                <Input
+                                                    ancho={6}
+                                                    label="Tasa del IGV (%)"
+                                                    type="number"
+                                                    min="0"
+                                                    max="30"
+                                                    step="0.01"
+                                                    name="tasa_igv"
+                                                    value={formulario.tasa_igv}
+                                                    onChange={manejarCambio}
+                                                />
+                                            </div>
+                                            {formulario.libros_exonerados && (
+                                                <p className="text-xs text-slate-500">
+                                                    Si la exoneración se prorroga, cambia la fecha. Pasada esa fecha, los libros se
+                                                    calcularán como gravados automáticamente.
+                                                </p>
+                                            )}
+                                        </>
+                                    )}
+                                    {(() => {
+                                        const t = ejemploTributos(formulario, 40, 10);
+                                        return (
+                                            <p className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
+                                                Ejemplo con la configuración actual — S/ 40.00 en libros + S/ 10.00 de envío:
+                                                {' '}Op. exonerada <strong>S/ {t.exonerada.toFixed(2)}</strong>
+                                                {' · '}Op. gravada <strong>S/ {t.gravada.toFixed(2)}</strong>
+                                                {' · '}IGV <strong>S/ {t.igv.toFixed(2)}</strong>
+                                                {' · '}Total <strong>S/ 50.00</strong>
+                                            </p>
+                                        );
+                                    })()}
                                 </div>
                             </div>
 

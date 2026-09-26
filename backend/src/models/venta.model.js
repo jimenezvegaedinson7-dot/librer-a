@@ -34,10 +34,19 @@ const obtenerTodos = async () => {
             v.payu_payer_email,
             v.cliente_documento,
             v.cliente_tipo_documento,
+            v.cliente_nombre,
+            v.origen,
+            v.metodo_pago,
+            v.referencia_pago,
+            v.fecha_pago,
+            v.id_reserva,
+            v.motivo_reembolso,
+            v.fecha_reembolso,
             EXISTS (
                 SELECT 1
                 FROM comprobantes cc
                 WHERE cc.id_venta = v.id_venta
+                  AND cc.estado = 'emitido'
             ) AS tiene_comprobante
         FROM ventas v
         INNER JOIN usuarios u
@@ -85,10 +94,19 @@ const obtenerPorId = async (id) => {
             v.payu_payer_email,
             v.cliente_documento,
             v.cliente_tipo_documento,
+            v.cliente_nombre,
+            v.origen,
+            v.metodo_pago,
+            v.referencia_pago,
+            v.fecha_pago,
+            v.id_reserva,
+            v.motivo_reembolso,
+            v.fecha_reembolso,
             EXISTS (
                 SELECT 1
                 FROM comprobantes cc
                 WHERE cc.id_venta = v.id_venta
+                  AND cc.estado = 'emitido'
             ) AS tiene_comprobante
         FROM ventas v
         INNER JOIN usuarios u
@@ -160,10 +178,19 @@ const obtenerPorUsuario = async (id_usuario) => {
             v.payu_payer_email,
             v.cliente_documento,
             v.cliente_tipo_documento,
+            v.cliente_nombre,
+            v.origen,
+            v.metodo_pago,
+            v.referencia_pago,
+            v.fecha_pago,
+            v.id_reserva,
+            v.motivo_reembolso,
+            v.fecha_reembolso,
             EXISTS (
                 SELECT 1
                 FROM comprobantes cc
                 WHERE cc.id_venta = v.id_venta
+                  AND cc.estado = 'emitido'
             ) AS tiene_comprobante
         FROM ventas v
         LEFT JOIN distritos_lima d
@@ -286,13 +313,21 @@ const agruparDetalles = (detalles) => {
 
 // ========================================
 // CREAR VENTA
+// ----------------------------------------
+// `conexionExterna`: si se pasa, la venta se crea dentro de esa
+// transacción (sin BEGIN/COMMIT propios). Lo usa la reserva al
+// completarse, para que reserva y venta se guarden juntas.
+// `descontar_stock: false`: el stock ya se descontó antes (reserva).
 // ========================================
-const crear = async (venta) => {
+const crear = async (venta, conexionExterna = null) => {
+    const propia = !conexionExterna;
     const connection =
-        await pool.getConnection();
+        conexionExterna || await pool.getConnection();
 
     try {
-        await connection.beginTransaction();
+        if (propia) {
+            await connection.beginTransaction();
+        }
 
         const {
             id_usuario,
@@ -309,6 +344,12 @@ const crear = async (venta) => {
             costo_envio,
             cliente_documento,
             cliente_tipo_documento,
+            cliente_nombre,
+            origen = 'app',
+            metodo_pago,
+            referencia_pago,
+            id_reserva,
+            descontar_stock = true,
             estado = 'pendiente'
         } = venta;
 
@@ -398,6 +439,7 @@ const crear = async (venta) => {
 
             // ========================================
             // BLOQUEAR INVENTARIO
+            // (una reserva ya lo descontó: no se vuelve a validar)
             // ========================================
             const [inventario] =
                 await connection.query(`
@@ -425,6 +467,7 @@ const crear = async (venta) => {
             // VALIDAR STOCK
             // ========================================
             if (
+                descontar_stock &&
                 stockActual < cantidad
             ) {
                 throw new Error(
@@ -493,9 +536,15 @@ const crear = async (venta) => {
                     id_agencia,
                     costo_envio,
                     cliente_documento,
-                    cliente_tipo_documento
+                    cliente_tipo_documento,
+                    cliente_nombre,
+                    origen,
+                    metodo_pago,
+                    referencia_pago,
+                    fecha_pago,
+                    id_reserva
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 id_usuario,
                 total,
@@ -511,7 +560,14 @@ const crear = async (venta) => {
                 id_agencia || null,
                 costo_envio || 0,
                 cliente_documento || null,
-                cliente_tipo_documento || null
+                cliente_tipo_documento || null,
+                cliente_nombre || null,
+                origen,
+                metodo_pago || null,
+                referencia_pago || null,
+                // Una venta que nace pagada (mostrador o reserva) se cobró ahora.
+                estado === 'pagada' ? new Date() : null,
+                id_reserva || null
             ]);
 
         const idVenta =
@@ -542,6 +598,10 @@ const crear = async (venta) => {
                 detalle.subtotal
             ]);
 
+            if (!descontar_stock) {
+                continue;
+            }
+
             await connection.query(`
                 UPDATE inventario
                 SET stock = stock - ?
@@ -567,7 +627,9 @@ const crear = async (venta) => {
             });
         }
 
-        await connection.commit();
+        if (propia) {
+            await connection.commit();
+        }
 
         return {
             id_venta: idVenta,
@@ -578,12 +640,16 @@ const crear = async (venta) => {
         };
 
     } catch (error) {
-        await connection.rollback();
+        if (propia) {
+            await connection.rollback();
+        }
 
         throw error;
 
     } finally {
-        connection.release();
+        if (propia) {
+            connection.release();
+        }
     }
 };
 
@@ -796,6 +862,120 @@ const actualizarEstado = async (
 
         throw error;
 
+    } finally {
+        connection.release();
+    }
+};
+
+// ========================================
+// REEMBOLSAR UNA VENTA PAGADA O ENTREGADA
+// ----------------------------------------
+// En una sola transacción:
+//   1. Bloquea la venta y valida la transición (pagada/entregada →
+//      reembolsada).
+//   2. Si `devolverStock`, reingresa los libros al inventario (kardex
+//      "devolucion_venta"). En una venta pagada que no salió de la
+//      tienda siempre se devuelven.
+//   3. Marca la venta como reembolsada con el motivo.
+//   4. Anula su comprobante emitido: legalmente se revierte con una
+//      nota de crédito, cuyo número de SUNAT se registra después.
+// El dinero se devuelve por el mismo medio del cobro (en PayU, desde
+// su panel); aquí solo queda el registro.
+// ========================================
+const reembolsar = async (id, { motivo, devolverStock, idUsuario }) => {
+    const connection =
+        await pool.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        const [ventas] = await connection.query(`
+            SELECT id_venta, estado
+            FROM ventas
+            WHERE id_venta = ?
+            FOR UPDATE
+        `, [id]);
+
+        if (ventas.length === 0) {
+            await connection.rollback();
+            return null;
+        }
+
+        const venta = ventas[0];
+
+        if (
+            !['pagada', 'entregada'].includes(venta.estado) ||
+            !permitirTransicion(VENTA, venta.estado, 'reembolsada')
+        ) {
+            const error = new Error(
+                `Solo se puede reembolsar una venta pagada o entregada (estado actual: "${venta.estado}")`
+            );
+            error.status = 400;
+            throw error;
+        }
+
+        const reingresar =
+            venta.estado === 'pagada' || Boolean(devolverStock);
+
+        if (reingresar) {
+            const [detalles] = await connection.query(`
+                SELECT id_libro, cantidad
+                FROM detalle_venta
+                WHERE id_venta = ?
+            `, [id]);
+
+            for (const detalle of detalles) {
+                await connection.query(`
+                    UPDATE inventario
+                    SET stock = stock + ?
+                    WHERE id_libro = ?
+                `, [detalle.cantidad, detalle.id_libro]);
+
+                const [[{ stock: stockNuevo }]] = await connection.query(`
+                    SELECT stock
+                    FROM inventario
+                    WHERE id_libro = ?
+                `, [detalle.id_libro]);
+
+                await registrarMovimiento(connection, {
+                    id_libro: detalle.id_libro,
+                    id_usuario: idUsuario || null,
+                    tipo: 'entrada',
+                    motivo: 'devolucion_venta',
+                    cantidad: detalle.cantidad,
+                    stock_resultante: stockNuevo
+                });
+            }
+        }
+
+        await connection.query(`
+            UPDATE ventas
+            SET estado = 'reembolsada',
+                motivo_reembolso = ?,
+                fecha_reembolso = NOW()
+            WHERE id_venta = ?
+        `, [motivo, id]);
+
+        const [anulados] = await connection.query(`
+            UPDATE comprobantes
+            SET estado = 'anulado',
+                motivo_anulacion = ?,
+                fecha_anulacion = NOW()
+            WHERE id_venta = ?
+              AND estado = 'emitido'
+            RETURNING id_comprobante, serie, numero
+        `, [`Reembolso de la venta: ${motivo}`, id]);
+
+        await connection.commit();
+
+        return {
+            estado_anterior: venta.estado,
+            stock_devuelto: reingresar,
+            comprobante_anulado: anulados[0] || null
+        };
+    } catch (error) {
+        await connection.rollback();
+        throw error;
     } finally {
         connection.release();
     }
@@ -1028,6 +1208,7 @@ const cancelarOrdenesAbandonadas = async (minutos = 30) => {
             FROM ventas
             WHERE
                 estado = 'pendiente'
+                AND origen = 'app'
                 AND id_venta > ?
                 AND fecha_venta < NOW() - (? * INTERVAL '1 MINUTE')
             ORDER BY id_venta ASC
@@ -1138,5 +1319,6 @@ module.exports = {
     agruparDetalles,
     obtenerDatosPago,
     listarPagosAdmin,
-    cancelarOrdenesAbandonadas
+    cancelarOrdenesAbandonadas,
+    reembolsar
 };

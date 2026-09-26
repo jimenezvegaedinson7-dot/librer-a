@@ -46,12 +46,14 @@ test('venta: entregada -> cancelada es FALSO (FASE 5)', () => {
     );
 });
 
-test('venta: entregada no tiene transiciones salientes', () => {
-    assert.equal(
-        estadosValidos(VENTA).includes('entregada'),
-        true
-    );
-    assert.deepEqual(VENTA.entregada, []);
+test('venta: entregada solo puede pasar a reembolsada (devolución)', () => {
+    assert.ok(estadosValidos(VENTA).includes('entregada'));
+    assert.deepEqual(VENTA.entregada, ['reembolsada']);
+});
+
+test('venta: reembolsada es estado final', () => {
+    assert.deepEqual(VENTA.reembolsada, []);
+    assert.equal(permitirTransicion(VENTA, 'reembolsada', 'pagada'), false);
 });
 
 test('venta: cancelada es estado final y no regresa', () => {

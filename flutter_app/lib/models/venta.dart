@@ -122,6 +122,8 @@ class Venta {
         return 'Entregada';
       case 'cancelada':
         return 'Cancelada';
+      case 'reembolsada':
+        return 'Reembolsada';
       default:
         return estado ?? '—';
     }

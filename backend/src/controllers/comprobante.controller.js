@@ -1,4 +1,5 @@
 const comprobanteModel = require('../models/comprobante.model');
+const historialModel = require('../models/historial.model');
 const empresaModel = require('../models/empresa.model');
 const { validarId } = require('../utils/validaciones');
 const { enviarComprobantePorEmail } = require('../utils/mailer');
@@ -60,11 +61,6 @@ const generarComprobante = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(
-            'Error al generar comprobante:',
-            error
-        );
-
         const status = error.status || 500;
 
         if (status >= 400 && status < 500) {
@@ -75,6 +71,11 @@ const generarComprobante = async (req, res) => {
                     'Error al generar el comprobante'
             });
         }
+
+        console.error(
+            'Error al generar comprobante:',
+            error
+        );
 
         return res.status(500).json({
             success: false,
@@ -94,6 +95,7 @@ const listarComprobantes = async (req, res) => {
             tipo,
             q,
             envio,
+            estado,
             pagina,
             por_pagina
         } = req.query;
@@ -103,6 +105,7 @@ const listarComprobantes = async (req, res) => {
                 tipo,
                 q,
                 envio,
+                estado,
                 pagina,
                 porPagina: por_pagina
             });
@@ -208,10 +211,21 @@ const enviarComprobanteEmail = async (req, res) => {
             });
         }
 
+        if (comprobante.estado === 'anulado') {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'Este comprobante está anulado: no se envía al cliente'
+            });
+        }
+
+        // En ventas de mostrador la cuenta de la venta es la del
+        // administrador: nunca se usa como destinatario.
+        const esMostrador = comprobante.origen === 'panel';
+
         const emailDestino =
             comprobante.cliente_email ||
             comprobante.correo_compra ||
-            comprobante.correo_usuario;
+            (esMostrador ? null : comprobante.correo_usuario);
 
         if (!emailDestino) {
             return res.status(400).json({
@@ -223,7 +237,9 @@ const enviarComprobanteEmail = async (req, res) => {
 
         const nombreCliente =
             comprobante.cliente_nombre ||
-            `${comprobante.nombre_usuario || ''} ${comprobante.apellido_usuario || ''}`.trim() ||
+            (esMostrador
+                ? ''
+                : `${comprobante.nombre_usuario || ''} ${comprobante.apellido_usuario || ''}`.trim()) ||
             'Cliente';
 
         const empresa = await empresaModel.obtenerEmpresa().catch(() => ({}));
@@ -242,6 +258,9 @@ const enviarComprobanteEmail = async (req, res) => {
                 igv: comprobante.igv,
                 costoEnvio: comprobante.costo_envio,
                 total: comprobante.total,
+                opGravada: comprobante.op_gravada,
+                opExonerada: comprobante.op_exonerada,
+                numeroSunat: comprobante.numero_sunat,
                 items: comprobante.detalle || [],
                 empresaRazon: empresa.razon_social || comprobante.razon_social,
                 empresaRuc: empresa.ruc || comprobante.ruc,
@@ -282,9 +301,108 @@ const enviarComprobanteEmail = async (req, res) => {
 // ========================================
 // EXPORTAR CONTROLADORES
 // ========================================
+// ========================================
+// REGISTRAR NÚMERO SUNAT (ADMIN)
+// PUT /api/comprobantes/:id/sunat
+// { numero_sunat, nota_credito_sunat }
+// ========================================
+const registrarSunat = async (req, res) => {
+    try {
+        const idComprobante = validarId(req.params.id);
+        if (!idComprobante) {
+            return res.status(400).json({ success: false, mensaje: 'ID de comprobante inválido' });
+        }
+
+        const { numero_sunat, nota_credito_sunat } = req.body;
+        if (!numero_sunat && !nota_credito_sunat) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'Indica el número del comprobante SUNAT o de su nota de crédito'
+            });
+        }
+
+        const comprobante = await comprobanteModel.registrarSunat(idComprobante, {
+            numero_sunat,
+            nota_credito_sunat
+        });
+        if (!comprobante) {
+            return res.status(404).json({ success: false, mensaje: 'Comprobante no encontrado' });
+        }
+
+        await registrarHistorialComprobante(req, idComprobante,
+            `Comprobante #${idComprobante}: SUNAT ${comprobante.numero_sunat || '—'}` +
+            (comprobante.nota_credito_sunat ? `, nota de crédito ${comprobante.nota_credito_sunat}` : ''));
+
+        return res.json({ success: true, mensaje: 'Datos de SUNAT registrados', comprobante });
+    } catch (error) {
+        return responderError(res, error, 'Error al registrar los datos de SUNAT');
+    }
+};
+
+// ========================================
+// ANULAR COMPROBANTE (ADMIN)
+// POST /api/comprobantes/:id/anular
+// { motivo, nota_credito_sunat }
+// ========================================
+const anularComprobante = async (req, res) => {
+    try {
+        const idComprobante = validarId(req.params.id);
+        if (!idComprobante) {
+            return res.status(400).json({ success: false, mensaje: 'ID de comprobante inválido' });
+        }
+
+        const motivo = typeof req.body.motivo === 'string' ? req.body.motivo.trim() : '';
+        if (motivo.length < 5 || motivo.length > 255) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'Indica el motivo de la anulación (entre 5 y 255 caracteres)'
+            });
+        }
+
+        const comprobante = await comprobanteModel.anular(idComprobante, {
+            motivo,
+            nota_credito_sunat: req.body.nota_credito_sunat
+        });
+        if (!comprobante) {
+            return res.status(404).json({ success: false, mensaje: 'Comprobante no encontrado' });
+        }
+
+        await registrarHistorialComprobante(req, idComprobante,
+            `Comprobante ${comprobante.serie}-${String(comprobante.numero).padStart(8, '0')} anulado. Motivo: ${motivo}`);
+
+        return res.json({ success: true, mensaje: 'Comprobante anulado', comprobante });
+    } catch (error) {
+        return responderError(res, error, 'Error al anular el comprobante');
+    }
+};
+
+const registrarHistorialComprobante = async (req, idComprobante, descripcion) => {
+    try {
+        await historialModel.crear({
+            id_usuario: req.usuario?.id_usuario || null,
+            tipo_operacion: 'ACTUALIZAR',
+            modulo: 'comprobantes',
+            descripcion
+        });
+    } catch (error) {
+        console.error(`No se pudo registrar el historial del comprobante #${idComprobante}:`, error.message);
+    }
+};
+
+const responderError = (res, error, mensajeGenerico) => {
+    const status = error.status || 500;
+    if (status >= 400 && status < 500) {
+        return res.status(status).json({ success: false, mensaje: error.message || mensajeGenerico });
+    }
+    console.error(mensajeGenerico, error);
+    return res.status(500).json({ success: false, mensaje: mensajeGenerico });
+};
+
 module.exports = {
     generarComprobante,
     listarComprobantes,
     obtenerComprobante,
-    enviarComprobanteEmail
+    enviarComprobanteEmail,
+    registrarSunat,
+    anularComprobante
 };

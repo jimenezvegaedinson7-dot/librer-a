@@ -564,10 +564,12 @@ function construirHtmlComprobante({
     numero,
     clienteDniRuc,
     clienteTipoDocumento,
-    subtotal,
     igv,
     costoEnvio,
     total,
+    opGravada: opGravadaDato,
+    opExonerada: opExoneradaDato,
+    numeroSunat,
     items,
     empresaRazon,
     empresaRuc,
@@ -585,11 +587,14 @@ function construirHtmlComprobante({
     const serieNumero = `${serie}-${String(numero).padStart(8, '0')}`;
     const clienteTipoDoc = clienteTipoDocumento || (esFactura ? 'RUC' : 'DNI');
 
-    const sub = Number(subtotal || 0);
     const igvVal = Number(igv || 0);
     const tot = Number(total || 0);
-    const opGravada = igvVal > 0 ? sub : 0;
-    const opExonerada = igvVal > 0 ? 0 : sub;
+    const envio = Number(costoEnvio || 0);
+    // Desglose del backend (utils/impuestos): gravada + exonerada + IGV = total.
+    // Comprobantes antiguos sin desglose: se deriva del IGV registrado.
+    const tieneDesglose = Number(opGravadaDato || 0) + Number(opExoneradaDato || 0) > 0;
+    const opGravada = tieneDesglose ? Number(opGravadaDato || 0) : igvVal > 0 ? tot - igvVal : 0;
+    const opExonerada = tieneDesglose ? Number(opExoneradaDato || 0) : igvVal > 0 ? 0 : tot;
 
     const fecha = formatearFechaEmision(fechaEmision);
 
@@ -622,6 +627,20 @@ function construirHtmlComprobante({
             '</tr>';
     });
 
+    // El envío es un servicio: va como línea del detalle (su IGV ya está
+    // incluido en el desglose), no como una suma aparte.
+    if (envio > 0) {
+        filasHtml +=
+            '<tr>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:center">1.00</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:center">SERVICIO</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:left">Servicio de env\u00edo a domicilio</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' + formatMailMoney(envio) + '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' + formatMailMoney(0) + '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' + formatMailMoney(envio) + '</td>' +
+            '</tr>';
+    }
+
     const totalFila = (label, value, strong) => {
         const weight = strong ? 'font-weight:bold' : '';
         return '<tr>' +
@@ -645,6 +664,7 @@ function construirHtmlComprobante({
         '<tr><td style="padding:10px;font-size:16px;font-weight:bold;text-transform:uppercase">' + tipoLabel + '</td></tr>' +
         '<tr><td style="border-top:1px solid #000;padding:6px;font-size:13px;font-weight:bold">RUC: ' + htmlEscape(empresaRuc || '\u2014') + '</td></tr>' +
         '<tr><td style="border-top:1px solid #000;padding:10px;font-size:18px;font-weight:bold;letter-spacing:1px">' + htmlEscape(serieNumero) + '</td></tr>' +
+        (numeroSunat ? '<tr><td style="border-top:1px solid #000;padding:6px;font-size:12px">Comprobante SUNAT: <strong>' + htmlEscape(numeroSunat) + '</strong></td></tr>' : '') +
         '</table>' +
         '</td>' +
         '</tr>' +
@@ -681,7 +701,6 @@ function construirHtmlComprobante({
         totalFila('Op. Exonerada', opExonerada, false) +
         totalFila('Op. Inafecta', 0, false) +
         totalFila('IGV', igvVal, false) +
-        totalFila('Costo de envío', Number(costoEnvio || 0), false) +
         totalFila('Importe Total', tot, true) +
         '</table>' +
         '</td>' +

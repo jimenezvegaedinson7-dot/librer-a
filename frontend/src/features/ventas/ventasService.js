@@ -39,8 +39,23 @@ export async function crearVenta(payload) {
     if (payload.correo_compra) {
         body.correo_compra = payload.correo_compra.trim();
     }
+    // Venta de mostrador: se registra ya cobrada.
+    for (const campo of ['cliente_nombre', 'cliente_documento', 'cliente_tipo_documento', 'metodo_pago', 'referencia_pago']) {
+        if (payload[campo]) {
+            body[campo] = payload[campo];
+        }
+    }
 
     return client.post('/ventas', body);
+}
+
+// Reembolso de una venta pagada o entregada: devuelve el stock y anula
+// su comprobante emitido.
+export async function reembolsarVenta(id, { motivo, devolverStock }) {
+    return client.post(`/ventas/${id}/reembolso`, {
+        motivo,
+        devolver_stock: Boolean(devolverStock),
+    });
 }
 
 export async function cambiarEstadoVenta(id, estado) {

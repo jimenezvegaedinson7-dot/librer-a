@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const { calcularTributos } = require('../utils/impuestos');
 const ventaModel = require('./venta.model');
 const empresaModel = require('./empresa.model');
 
@@ -241,20 +242,28 @@ const generarComprobante = async ({
     // Si el admin no envía el DNI/RUC, se toma de la venta
     // (guardado automáticamente desde Flutter al momento de la compra).
     // ========================================
+    // En una venta de mostrador el usuario de la venta es el
+    // administrador que la registró: nunca se usan sus datos como
+    // datos del cliente.
+    const esMostrador = venta.origen === 'panel';
+
+    const nombreDeLaCuenta = esMostrador
+        ? ''
+        : `${venta.nombre_usuario || ''} ${venta.apellido_usuario || ''}`.trim();
+
     const clienteNombre =
         cliente_nombre !== undefined &&
         cliente_nombre !== null &&
         String(cliente_nombre).trim() !== ''
             ? String(cliente_nombre).trim()
-            : `${venta.nombre_usuario || ''} ${venta.apellido_usuario || ''}`
-                  .trim() || null;
+            : (venta.cliente_nombre || nombreDeLaCuenta || null);
 
     const clienteEmail =
         cliente_email !== undefined &&
         cliente_email !== null &&
         String(cliente_email).trim() !== ''
             ? String(cliente_email).trim()
-            : (venta.correo_compra || venta.correo_usuario || null);
+            : (venta.correo_compra || (esMostrador ? null : venta.correo_usuario) || null);
 
     // Default: DNI/RUC de la venta (Flutter checkout).
     // Solo se sobreescribe si el admin envia un valor diferente.
@@ -299,20 +308,31 @@ const generarComprobante = async ({
     );
 
     // ========================================
-    // Los precios de venta ya incluyen IGV. El comprobante nunca
-    // debe superar el total efectivamente pagado; en factura se
-    // informa la porción de IGV incluida en ese total.
-// ========================================
-    let igv = 0;
-    const totalComprobante = totalVenta;
+    // TRIBUTOS (utils/impuestos): los precios ya incluyen el IGV.
+    // Libros exonerados (Ley 31053) mientras rija; envío gravado.
+    // El comprobante nunca supera el total efectivamente pagado.
+    // ========================================
+    const tributos = calcularTributos({
+        subtotalLibros: subtotalVenta,
+        costoEnvio,
+        empresa
+    });
 
+    const totalComprobante = totalVenta;
+    const igv = tributos.igv;
+
+    // ========================================
+    // BOLETAS DE MÁS DE S/ 700: el Reglamento de Comprobantes de
+    // Pago exige identificar al adquirente (nombre y documento).
+    // ========================================
     if (
-        tipoComprobante === 'factura' &&
-        Number(empresa.aplica_igv) === 1 &&
-        totalVenta > 0
+        tipoComprobante === 'boleta' &&
+        totalComprobante > 700 &&
+        (!dniRucFinal || !clienteNombre)
     ) {
-        igv = Number(
-            (totalVenta - totalVenta / 1.18).toFixed(2)
+        throw crearError(
+            'Las boletas de más de S/ 700 deben indicar el nombre y el DNI (o documento) del cliente',
+            400
         );
     }
 
@@ -357,12 +377,12 @@ const generarComprobante = async ({
                 SELECT id_comprobante
                 FROM comprobantes
                 WHERE id_venta = ?
+                  AND estado = 'emitido'
                 LIMIT 1
             `, [id_venta]);
 
         if (existentes.length > 0) {
-            await connection.rollback();
-
+            // El catch hace el ROLLBACK.
             throw crearError(
                 'Ya existe un comprobante para esta venta',
                 409
@@ -374,6 +394,13 @@ const generarComprobante = async ({
         // ========================================
         const serie =
             serieSegunTipo(tipoComprobante);
+
+        // Serializa la numeración de la serie: dos ventas distintas
+        // emitidas a la vez no pueden tomar el mismo número.
+        await connection.query(
+            'SELECT pg_advisory_xact_lock(hashtext(?))',
+            [`comprobantes:${serie}`]
+        );
 
         const [ultimos] =
             await connection.query(`
@@ -407,9 +434,11 @@ const generarComprobante = async ({
                     subtotal,
                     costo_envio,
                     igv,
-                    total
+                    total,
+                    op_gravada,
+                    op_exonerada
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 id_venta,
                 tipoComprobante,
@@ -424,7 +453,9 @@ const generarComprobante = async ({
                 subtotalVenta,
                 costoEnvio,
                 igv,
-                totalComprobante
+                totalComprobante,
+                tributos.op_gravada,
+                tributos.op_exonerada
             ]);
 
         await connection.commit();
@@ -476,6 +507,7 @@ const listarComprobantes = async ({
     tipo,
     q,
     envio,
+    estado,
     pagina,
     porPagina
 } = {}) => {
@@ -517,25 +549,42 @@ const listarComprobantes = async ({
             `%${String(q).trim()}%`;
 
         condiciones.push(`(
-            c.serie LIKE ? OR
+            c.serie ILIKE ? OR
             CAST(c.numero AS TEXT) LIKE ? OR
-            c.cliente_nombre LIKE ?
+            c.cliente_nombre ILIKE ? OR
+            c.cliente_dni_ruc LIKE ? OR
+            c.numero_sunat ILIKE ?
         )`);
 
         valores.push(
+            busqueda,
+            busqueda,
             busqueda,
             busqueda,
             busqueda
         );
     }
 
+    if (estado === 'emitido' || estado === 'anulado') {
+        condiciones.push('c.estado = ?');
+        valores.push(estado);
+    } else if (estado === 'sin_sunat') {
+        // Emitidos que aún no tienen su comprobante electrónico SUNAT.
+        condiciones.push(`(c.estado = 'emitido' AND c.numero_sunat IS NULL)`);
+    }
+
     if (envio === 'enviado') {
         condiciones.push('c.enviado_por_email = TRUE');
     } else if (envio === 'pendiente') {
-        // Pendiente = sin enviar y con algún correo al que enviarlo.
+        // Pendiente = emitido, sin enviar y con algún correo del cliente.
         condiciones.push(`(
-            COALESCE(c.enviado_por_email, FALSE) = FALSE
-            AND COALESCE(NULLIF(c.cliente_email, ''), NULLIF(v.correo_compra, ''), u.email) IS NOT NULL
+            c.estado = 'emitido'
+            AND COALESCE(c.enviado_por_email, FALSE) = FALSE
+            AND COALESCE(
+                NULLIF(c.cliente_email, ''),
+                NULLIF(v.correo_compra, ''),
+                CASE WHEN v.origen = 'panel' THEN NULL ELSE u.email END
+            ) IS NOT NULL
         )`);
     }
 
@@ -581,12 +630,19 @@ const listarComprobantes = async ({
             COALESCE(
                 NULLIF(c.cliente_email, ''),
                 NULLIF(v.correo_compra, ''),
-                u.email
+                CASE WHEN v.origen = 'panel' THEN NULL ELSE u.email END
             ) AS email_destino,
             c.subtotal,
             c.costo_envio,
             c.igv,
             c.total,
+            c.op_gravada,
+            c.op_exonerada,
+            c.estado,
+            c.numero_sunat,
+            c.nota_credito_sunat,
+            c.motivo_anulacion,
+            c.fecha_anulacion,
             c.fecha_emision,
             v.estado AS estado_venta
         FROM comprobantes c
@@ -626,6 +682,13 @@ const listarComprobantes = async ({
             ),
             igv: Number(fila.igv),
             total: Number(fila.total),
+            op_gravada: Number(fila.op_gravada || 0),
+            op_exonerada: Number(fila.op_exonerada || 0),
+            estado: fila.estado || 'emitido',
+            numero_sunat: fila.numero_sunat || null,
+            nota_credito_sunat: fila.nota_credito_sunat || null,
+            motivo_anulacion: fila.motivo_anulacion || null,
+            fecha_anulacion: fila.fecha_anulacion || null,
             fecha_emision:
                 fila.fecha_emision,
             estado_venta:
@@ -659,7 +722,7 @@ const listarResumen = async () => {
             COALESCE(
                 SUM(
                     CASE
-                        WHEN tipo = 'boleta' THEN 1
+                        WHEN tipo = 'boleta' AND estado = 'emitido' THEN 1
                         ELSE 0
                     END
                 ),
@@ -668,13 +731,14 @@ const listarResumen = async () => {
             COALESCE(
                 SUM(
                     CASE
-                        WHEN tipo = 'factura' THEN 1
+                        WHEN tipo = 'factura' AND estado = 'emitido' THEN 1
                         ELSE 0
                     END
                 ),
                 0
             ) AS facturas,
-            COALESCE(SUM(total), 0) AS ingresos
+            COALESCE(SUM(CASE WHEN estado = 'emitido' THEN total ELSE 0 END), 0) AS ingresos,
+            COALESCE(SUM(CASE WHEN estado = 'anulado' THEN 1 ELSE 0 END), 0) AS anulados
         FROM comprobantes
     `);
 
@@ -683,8 +747,93 @@ const listarResumen = async () => {
     return {
         boletas: Number(fila.boletas || 0),
         facturas: Number(fila.facturas || 0),
-        ingresos: Number(fila.ingresos || 0)
+        ingresos: Number(fila.ingresos || 0),
+        anulados: Number(fila.anulados || 0)
     };
+};
+
+// ========================================
+// NÚMERO DE COMPROBANTE ELECTRÓNICO SUNAT
+// ----------------------------------------
+// Serie y número del comprobante emitido en SUNAT (p. ej. EB01-125 o
+// E001-40): 4 caracteres alfanuméricos, guion y hasta 8 dígitos.
+// ========================================
+const FORMATO_SUNAT = /^[A-Z0-9]{4}-\d{1,8}$/;
+
+const normalizarNumeroSunat = (valor) => {
+    if (valor === undefined || valor === null || String(valor).trim() === '') {
+        return null;
+    }
+    const texto = String(valor).trim().toUpperCase();
+    if (!FORMATO_SUNAT.test(texto)) {
+        throw crearError(
+            'Número SUNAT no válido. Usa la serie y el número, por ejemplo EB01-125 o E001-40',
+            400
+        );
+    }
+    const [serie, numero] = texto.split('-');
+    return `${serie}-${Number(numero)}`;
+};
+
+// Registra el comprobante electrónico SUNAT (y su nota de crédito, si
+// el comprobante está anulado).
+const registrarSunat = async (id, { numero_sunat, nota_credito_sunat }) => {
+    const numero = normalizarNumeroSunat(numero_sunat);
+    const nota = normalizarNumeroSunat(nota_credito_sunat);
+
+    const actual = await obtenerComprobante(id);
+    if (!actual) {
+        return null;
+    }
+    if (nota && actual.estado !== 'anulado') {
+        throw crearError(
+            'La nota de crédito solo se registra en un comprobante anulado',
+            400
+        );
+    }
+
+    await pool.query(`
+        UPDATE comprobantes
+        SET numero_sunat = COALESCE(?, numero_sunat),
+            nota_credito_sunat = COALESCE(?, nota_credito_sunat)
+        WHERE id_comprobante = ?
+    `, [numero, nota, id]);
+
+    return obtenerComprobante(id);
+};
+
+// ========================================
+// ANULAR COMPROBANTE (datos errados)
+// ----------------------------------------
+// La venta sigue vigente: tras anular se puede emitir un comprobante
+// nuevo con los datos correctos. En SUNAT, la anulación de una boleta o
+// factura electrónica se hace con una nota de crédito.
+// Para devolver el dinero se usa el reembolso de la venta, que también
+// anula su comprobante.
+// ========================================
+const anular = async (id, { motivo, nota_credito_sunat }) => {
+    const nota = normalizarNumeroSunat(nota_credito_sunat);
+
+    const [filas] = await pool.query(`
+        UPDATE comprobantes
+        SET estado = 'anulado',
+            motivo_anulacion = ?,
+            fecha_anulacion = NOW(),
+            nota_credito_sunat = COALESCE(?, nota_credito_sunat)
+        WHERE id_comprobante = ?
+          AND estado = 'emitido'
+        RETURNING id_comprobante
+    `, [motivo, nota, id]);
+
+    if (filas.length === 0) {
+        const actual = await obtenerComprobante(id);
+        if (!actual) {
+            return null;
+        }
+        throw crearError('El comprobante ya está anulado', 400);
+    }
+
+    return obtenerComprobante(id);
 };
 
 // ========================================
@@ -711,8 +860,17 @@ const obtenerComprobante = async (id) => {
             c.costo_envio,
             c.igv,
             c.total,
+            c.op_gravada,
+            c.op_exonerada,
+            c.estado,
+            c.numero_sunat,
+            c.nota_credito_sunat,
+            c.motivo_anulacion,
+            c.fecha_anulacion,
             c.fecha_emision,
             v.id_usuario,
+            v.origen,
+            v.cliente_nombre AS cliente_nombre_venta,
             v.estado AS estado_venta,
             v.tipo_entrega,
             v.correo_compra,
@@ -750,6 +908,8 @@ const obtenerComprobante = async (id) => {
         total: Number(
             cabeceras[0].total
         ),
+        op_gravada: Number(cabeceras[0].op_gravada || 0),
+        op_exonerada: Number(cabeceras[0].op_exonerada || 0),
         detalle
     };
 };
@@ -762,6 +922,9 @@ module.exports = {
     listarComprobantes,
     listarResumen,
     obtenerComprobante,
+    registrarSunat,
+    anular,
+    normalizarNumeroSunat,
     esClienteDniRucValido,
     normalizarTipoDocumentoCliente,
     validarDatosClienteFactura

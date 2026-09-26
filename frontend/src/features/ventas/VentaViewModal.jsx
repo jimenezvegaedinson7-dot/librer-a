@@ -1,4 +1,4 @@
-import { FaUser, FaCalendarDays, FaMoneyBillWave, FaBook, FaLocationDot, FaShop, FaEnvelope, FaTruckFast } from 'react-icons/fa6';
+import { FaUser, FaCalendarDays, FaMoneyBillWave, FaBook, FaLocationDot, FaShop, FaEnvelope, FaTruckFast, FaCashRegister, FaRotateLeft } from 'react-icons/fa6';
 
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
@@ -6,13 +6,24 @@ import { Badge } from '../../components/ui/Badge';
 import { Ficha } from '../../components/ui/Ficha';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
+import { textoMetodoPago, textoOrigen } from './metodosPago';
 
 const estados = {
     pendiente: { texto: 'Pendiente', color: 'warning' },
     pagada: { texto: 'Pagada', color: 'success' },
     entregada: { texto: 'Entregada', color: 'info' },
     cancelada: { texto: 'Cancelada', color: 'danger' },
+    reembolsada: { texto: 'Reembolsada', color: 'neutral' },
 };
+
+// Cómo se cobró: PayU en pedidos de la app; en tienda, el medio anotado.
+function descripcionCobro(venta) {
+    if (venta.origen === 'panel' || venta.origen === 'reserva') {
+        const metodo = textoMetodoPago(venta.metodo_pago) || 'Sin registrar';
+        return venta.referencia_pago ? `${metodo} · Op. ${venta.referencia_pago}` : metodo;
+    }
+    return venta.payu_order_id ? `PayU · Orden ${venta.payu_order_id}` : 'PayU';
+}
 
 function descripcionEntrega(venta) {
     if (venta.tipo_entrega === 'domicilio') return 'A domicilio';
@@ -47,8 +58,15 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha color="violet" icono={<FaUser />} etiqueta="Usuario">
-                    {venta.nombre_usuario} {venta.apellido_usuario}
+                <Ficha color="violet" icono={<FaUser />} etiqueta="Cliente">
+                    {venta.origen === 'panel'
+                        ? venta.cliente_nombre || 'Cliente de mostrador'
+                        : venta.cliente_nombre || `${venta.nombre_usuario || ''} ${venta.apellido_usuario || ''}`.trim()}
+                    {venta.cliente_documento && (
+                        <span className="block text-xs font-normal text-slate-500">
+                            {venta.cliente_tipo_documento || 'Doc.'} {venta.cliente_documento}
+                        </span>
+                    )}
                 </Ficha>
                 <Ficha color="violet" icono={<FaCalendarDays />} etiqueta="Fecha de venta">
                     <span className="text-sm">{formatearFecha(venta.fecha_venta) || 'Sin fecha'}</span>
@@ -60,9 +78,32 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                     {entrega}
                 </Ficha>
                 <Ficha color="violet" icono={<FaEnvelope />} etiqueta="Correo de la compra">
-                    {venta.correo_compra || venta.correo_usuario || 'Sin correo'}
+                    {venta.correo_compra || (venta.origen === 'panel' ? '' : venta.correo_usuario) || 'Sin correo'}
                 </Ficha>
             </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Ficha color="violet" icono={<FaCashRegister />} etiqueta={`Origen: ${textoOrigen(venta)}`}>
+                    {descripcionCobro(venta)}
+                    {venta.fecha_pago && (
+                        <span className="block text-xs font-normal text-slate-500">Cobrada el {formatearFecha(venta.fecha_pago)}</span>
+                    )}
+                </Ficha>
+                {venta.origen === 'panel' && venta.nombre_usuario && (
+                    <Ficha color="violet" icono={<FaUser />} etiqueta="Registrada por">
+                        {venta.nombre_usuario} {venta.apellido_usuario}
+                    </Ficha>
+                )}
+            </div>
+
+            {venta.estado === 'reembolsada' && (
+                <div className="mt-4 rounded-xl border border-slate-300 bg-slate-50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                        <FaRotateLeft /> Reembolsada{venta.fecha_reembolso ? ` el ${formatearFecha(venta.fecha_reembolso)}` : ''}
+                    </div>
+                    <p className="mt-2 text-sm text-slate-700">{venta.motivo_reembolso || 'Sin motivo registrado'}</p>
+                </div>
+            )}
 
             {venta.tipo_entrega === 'domicilio' && (
                 <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4">

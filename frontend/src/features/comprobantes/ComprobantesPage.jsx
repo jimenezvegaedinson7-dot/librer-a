@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import {
+    FaBan,
     FaCircleCheck,
     FaEye,
+    FaHashtag,
     FaMagnifyingGlass,
     FaPaperPlane,
     FaPrint,
@@ -30,6 +32,7 @@ import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 import { listarComprobantes, obtenerResumen, enviarComprobanteEmail } from './comprobantesService';
 import { envioAutomaticoActivo, guardarEnvioAutomatico } from './envioAutomatico';
 import ComprobanteViewModal from './ComprobanteViewModal';
+import { AnularComprobanteModal, RegistrarSunatModal } from './ComprobanteSunatModal';
 
 const POR_PAGINA = 10;
 
@@ -48,7 +51,22 @@ const columnasComprobantes = [
     {
         titulo: 'Serie-Número',
         render: (fila) => (
-            <span className="font-mono text-xs font-bold tracking-wide text-slate-700">{formatearSerieNumero(fila)}</span>
+            <p className="text-xs">
+                <span className={`font-mono font-bold tracking-wide ${fila.estado === 'anulado' ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                    {formatearSerieNumero(fila)}
+                </span>
+                {fila.estado === 'anulado' && (
+                    <span className="ml-2 align-middle"><Badge color="danger">Anulado</Badge></span>
+                )}
+                <span className="mt-0.5 block text-[11px] text-slate-500">
+                    {fila.numero_sunat
+                        ? `SUNAT ${fila.numero_sunat}`
+                        : fila.estado === 'anulado'
+                          ? ''
+                          : <span className="text-amber-700">Falta N.° SUNAT</span>}
+                    {fila.nota_credito_sunat ? ` · NC ${fila.nota_credito_sunat}` : ''}
+                </span>
+            </p>
         ),
     },
     { titulo: 'Tipo', alineacion: 'centro', render: (fila) => badgeTipo(fila.tipo) },
@@ -94,8 +112,9 @@ const columnasComprobantes = [
     },
 ];
 
-function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando }) {
+function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando, onSunat, onAnular }) {
     const fueEnviado = fila.enviado_por_email;
+    const anulado = fila.estado === 'anulado';
     return (
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver comprobante">
@@ -112,7 +131,7 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando 
                         ? `Enviado${fila.fecha_envio_email ? ` el ${formatearFecha(fila.fecha_envio_email)}` : ''} · clic para reenviar`
                         : fila.email_destino ? 'Enviar por correo' : 'Sin correo registrado'
                 }
-                disabled={enviando || (!fueEnviado && !fila.email_destino)}
+                disabled={anulado || enviando || (!fueEnviado && !fila.email_destino)}
                 className={fueEnviado ? 'btn-enviado' : ''}
             >
                 {enviando ? (
@@ -123,6 +142,18 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando 
                     <FaPaperPlane />
                 )}
             </BtnAccion>
+            <BtnAccion
+                tipo="ver"
+                onClick={() => onSunat(fila)}
+                titulo={anulado ? 'Registrar nota de crédito SUNAT' : 'Registrar N.° de comprobante SUNAT'}
+            >
+                <FaHashtag />
+            </BtnAccion>
+            {!anulado && (
+                <BtnAccion tipo="eliminar" onClick={() => onAnular(fila)} titulo="Anular comprobante (datos errados)">
+                    <FaBan />
+                </BtnAccion>
+            )}
         </>
     );
 }
@@ -150,6 +181,9 @@ export default function ComprobantesPage() {
     const [envioAuto, setEnvioAuto] = useState(() => envioAutomaticoActivo());
     const [confirmarLote, setConfirmarLote] = useState(false);
     const [enviandoLote, setEnviandoLote] = useState(null); // { actual, total }
+    const [filtroEstado, setFiltroEstado] = useState('todos');
+    const [comprobanteSunat, setComprobanteSunat] = useState(null);
+    const [comprobanteAnular, setComprobanteAnular] = useState(null);
     const { exito, error: mostrarError } = useToast();
 
     const cargarComprobantes = async () => {
@@ -160,6 +194,7 @@ export default function ComprobantesPage() {
                 tipo: filtroTipo === 'todos' ? undefined : filtroTipo,
                 q: busquedaAplicada.trim() || undefined,
                 envio: filtroEnvio === 'todos' ? undefined : filtroEnvio,
+                estado: filtroEstado === 'todos' ? undefined : filtroEstado,
                 pagina: paginaActual,
                 por_pagina: POR_PAGINA,
             });
@@ -179,7 +214,7 @@ export default function ComprobantesPage() {
     useEffect(() => {
         cargarComprobantes();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [busquedaAplicada, filtroTipo, filtroEnvio, paginaActual]);
+    }, [busquedaAplicada, filtroTipo, filtroEnvio, filtroEstado, paginaActual]);
 
     const cargarResumen = async () => {
         try {
@@ -188,9 +223,10 @@ export default function ComprobantesPage() {
                 boletas: Number(datos.boletas || 0),
                 facturas: Number(datos.facturas || 0),
                 ingresos: Number(datos.ingresos || 0),
+                anulados: Number(datos.anulados || 0),
             });
         } catch {
-            setResumen({ boletas: 0, facturas: 0, ingresos: 0 });
+            setResumen({ boletas: 0, facturas: 0, ingresos: 0, anulados: 0 });
         }
         try {
             const pendientes = await listarComprobantes({ envio: 'pendiente', por_pagina: 1 });
@@ -226,6 +262,7 @@ export default function ComprobantesPage() {
         setBusquedaAplicada('');
         setFiltroTipo('todos');
         setFiltroEnvio('todos');
+        setFiltroEstado('todos');
         setPaginaActual(1);
     };
 
@@ -248,7 +285,7 @@ export default function ComprobantesPage() {
         setConfirmarLote(false);
         try {
             const { comprobantes: lista } = await listarComprobantes({ envio: 'pendiente', por_pagina: 100 });
-            const conCorreo = lista.filter((c) => c.email_destino);
+            const conCorreo = lista.filter((c) => c.email_destino && c.estado !== 'anulado');
             let enviados = 0;
             let fallidos = 0;
             setEnviandoLote({ actual: 0, total: conCorreo.length });
@@ -311,7 +348,13 @@ export default function ComprobantesPage() {
         }
     };
 
-    const hayFiltros = Boolean(busquedaAplicada) || filtroTipo !== 'todos' || filtroEnvio !== 'todos';
+    const hayFiltros = Boolean(busquedaAplicada) || filtroTipo !== 'todos' || filtroEnvio !== 'todos' || filtroEstado !== 'todos';
+
+    const comprobanteActualizado = async (comprobante, mensaje) => {
+        exito(mensaje);
+        actualizar();
+        return comprobante;
+    };
 
     return (
         <div className="space-y-4">
@@ -333,6 +376,11 @@ export default function ComprobantesPage() {
                         <span className="rounded-xl border border-[#bbf7d0] bg-[#ecfdf5] px-4 py-2.5 text-sm font-medium text-[#059669] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                             Ingresos: <span className="font-bold text-[#059669]">{formatearMoneda(resumen.ingresos)}</span>
                         </span>
+                        {resumen.anulados > 0 && (
+                            <span className="rounded-xl border border-[#fecaca] bg-[#fef2f2] px-4 py-2.5 text-sm font-medium text-[#b91c1c] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                                Anulados: <span className="font-bold">{resumen.anulados}</span>
+                            </span>
+                        )}
                     </div>
                 }
             />
@@ -371,6 +419,21 @@ export default function ComprobantesPage() {
                                 <option value="todos">Todos los tipos</option>
                                 <option value="boleta">Boletas</option>
                                 <option value="factura">Facturas</option>
+                            </Select>
+
+                            <Select
+                                value={filtroEstado}
+                                onChange={(e) => {
+                                    setFiltroEstado(e.target.value);
+                                    setPaginaActual(1);
+                                }}
+                                className="sm:w-52"
+                                aria-label="Filtrar por estado"
+                            >
+                                <option value="todos">Todos los estados</option>
+                                <option value="emitido">Emitidos</option>
+                                <option value="sin_sunat">Sin N.° SUNAT</option>
+                                <option value="anulado">Anulados</option>
                             </Select>
 
                             {hayFiltros && (
@@ -485,6 +548,8 @@ export default function ComprobantesPage() {
                                     onImprimir: setComprobanteImprimir,
                                     onEnviarEmail: handleEnviarEmail,
                                     enviando: enviandoEmail === fila.id_comprobante,
+                                    onSunat: setComprobanteSunat,
+                                    onAnular: setComprobanteAnular,
                                 })
                             }
                         />
@@ -504,6 +569,23 @@ export default function ComprobantesPage() {
                 onCerrar={() => setComprobanteImprimir(null)}
                 autoImprimir
             />
+
+            {comprobanteSunat && (
+                <RegistrarSunatModal
+                    comprobante={comprobanteSunat}
+                    abierto
+                    onCerrar={() => setComprobanteSunat(null)}
+                    onGuardado={(c) => comprobanteActualizado(c, 'Datos de SUNAT registrados')}
+                />
+            )}
+            {comprobanteAnular && (
+                <AnularComprobanteModal
+                    comprobante={comprobanteAnular}
+                    abierto
+                    onCerrar={() => setComprobanteAnular(null)}
+                    onAnulado={(c) => comprobanteActualizado(c, 'Comprobante anulado. Ya puedes emitir uno nuevo desde Ventas.')}
+                />
+            )}
 
             <ConfirmarAccion
                 abierto={confirmarLote}

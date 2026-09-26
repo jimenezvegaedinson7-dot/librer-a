@@ -15,14 +15,19 @@ const CAMPOS_PERMITIDOS = [
     'emisor_electronico',
     'aplica_igv',
     'fecha_inscripcion',
-    'fecha_inicio'
+    'fecha_inicio',
+    'libros_exonerados',
+    'exoneracion_libros_hasta',
+    'tasa_igv'
 ];
 
 const CAMPOS_SELECT =
     'id, ruc, razon_social, nombre_comercial, ' +
     'tipo_documento, documento_identidad, direccion, ' +
     'sistema_emision, emisor_electronico, aplica_igv, ' +
-    'fecha_inscripcion, fecha_inicio, created_at, updated_at';
+    'fecha_inscripcion, fecha_inicio, ' +
+    'libros_exonerados, exoneracion_libros_hasta, tasa_igv, ' +
+    'created_at, updated_at';
 
 // ========================================
 // OBTENER EMPRESA (EMISOR)

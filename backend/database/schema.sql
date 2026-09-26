@@ -182,7 +182,7 @@ CREATE TABLE IF NOT EXISTS ventas (
     fecha_venta TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     total NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     costo_envio NUMERIC(10,2) NOT NULL DEFAULT 0.00,
-    estado VARCHAR(20) NOT NULL DEFAULT 'pendiente' CHECK (estado IN ('pendiente', 'pagada', 'entregada', 'cancelada')),
+    estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
     tipo_entrega VARCHAR(20) NULL,
     direccion VARCHAR(255) NULL,
     referencia VARCHAR(255) NULL,
@@ -195,6 +195,18 @@ CREATE TABLE IF NOT EXISTS ventas (
     id_distrito INT NULL,
     id_agencia INT NULL,
     idempotencia_clave VARCHAR(64) NULL,
+    cliente_documento VARCHAR(20) NULL,
+    cliente_tipo_documento VARCHAR(10) NULL,
+    origen VARCHAR(20) NOT NULL DEFAULT 'app',
+    metodo_pago VARCHAR(20) NULL,
+    referencia_pago VARCHAR(100) NULL,
+    fecha_pago TIMESTAMP NULL,
+    cliente_nombre VARCHAR(255) NULL,
+    id_reserva INT NULL,
+    motivo_reembolso VARCHAR(255) NULL,
+    fecha_reembolso TIMESTAMP NULL,
+    CONSTRAINT ventas_estado_check
+        CHECK (estado IN ('pendiente', 'pagada', 'entregada', 'cancelada', 'reembolsada')),
     CONSTRAINT fk_ventas_usuario
         FOREIGN KEY (id_usuario)
         REFERENCES usuarios (id_usuario),
@@ -558,6 +570,10 @@ CREATE TABLE IF NOT EXISTS empresa (
     sistema_emision VARCHAR(50) NULL,
     emisor_electronico VARCHAR(255) NULL,
     aplica_igv SMALLINT NOT NULL DEFAULT 0,
+    -- Ley 31053: venta de libros exonerada del IGV hasta esta fecha.
+    libros_exonerados SMALLINT NOT NULL DEFAULT 1,
+    exoneracion_libros_hasta DATE NULL DEFAULT '2026-10-17',
+    tasa_igv NUMERIC(5,2) NOT NULL DEFAULT 18.00,
     fecha_inscripcion DATE NULL,
     fecha_inicio DATE NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -599,15 +615,27 @@ CREATE TABLE IF NOT EXISTS comprobantes (
     costo_envio NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     igv NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     total NUMERIC(10,2) NOT NULL,
+    op_gravada NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    op_exonerada NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     fecha_emision TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    enviado_por_email BOOLEAN DEFAULT FALSE,
+    fecha_envio_email TIMESTAMP NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'emitido',
+    numero_sunat VARCHAR(20) NULL,
+    nota_credito_sunat VARCHAR(20) NULL,
+    motivo_anulacion VARCHAR(255) NULL,
+    fecha_anulacion TIMESTAMP NULL,
     UNIQUE (serie, numero),
-    UNIQUE (id_venta),
     CONSTRAINT fk_comprobantes_venta
         FOREIGN KEY (id_venta)
         REFERENCES ventas (id_venta)
 );
 
 CREATE INDEX IF NOT EXISTS idx_comprobantes_venta ON comprobantes (id_venta);
+-- Un solo comprobante emitido por venta (uno anulado permite reemitir).
+CREATE UNIQUE INDEX IF NOT EXISTS uq_comprobante_venta_emitido
+    ON comprobantes (id_venta)
+    WHERE estado = 'emitido';
 
 -- ============================================================
 -- DATOS INICIALES: EMPRESA EMISORA (migración 013)

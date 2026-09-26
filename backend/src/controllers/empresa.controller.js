@@ -14,7 +14,8 @@ const CAMPOS_PERMITIDOS = [
     'emisor_electronico',
     'aplica_igv',
     'fecha_inscripcion',
-    'fecha_inicio'
+    'fecha_inicio',
+    'exoneracion_libros_hasta'
 ];
 
 // ========================================
@@ -113,12 +114,46 @@ const actualizarEmpresa = async (req, res) => {
         }
 
         // ========================================
+        // IGV: EXONERACIÓN DE LIBROS (Ley 31053) Y TASA
+        // ========================================
+        if (
+            body.libros_exonerados !== undefined &&
+            body.libros_exonerados !== null &&
+            body.libros_exonerados !== ''
+        ) {
+            if (![0, 1].includes(Number(body.libros_exonerados))) {
+                return res.status(400).json({
+                    success: false,
+                    mensaje: 'El campo libros_exonerados debe ser 0 o 1'
+                });
+            }
+            campos.libros_exonerados = Number(body.libros_exonerados);
+        }
+
+        if (
+            body.tasa_igv !== undefined &&
+            body.tasa_igv !== null &&
+            body.tasa_igv !== ''
+        ) {
+            const tasa = Number(body.tasa_igv);
+            if (!Number.isFinite(tasa) || tasa < 0 || tasa > 30) {
+                return res.status(400).json({
+                    success: false,
+                    mensaje: 'La tasa del IGV debe estar entre 0 y 30'
+                });
+            }
+            campos.tasa_igv = Number(tasa.toFixed(2));
+        }
+
+        // ========================================
         // RECORRER CAMPOS PERMITIDOS
         // ========================================
         for (const campo of CAMPOS_PERMITIDOS) {
             if (
                 campo === 'ruc' ||
-                campo === 'aplica_igv'
+                campo === 'aplica_igv' ||
+                campo === 'libros_exonerados' ||
+                campo === 'tasa_igv'
             ) {
                 continue;
             }
@@ -134,7 +169,8 @@ const actualizarEmpresa = async (req, res) => {
 
             if (
                 campo === 'fecha_inscripcion' ||
-                campo === 'fecha_inicio'
+                campo === 'fecha_inicio' ||
+                campo === 'exoneracion_libros_hasta'
             ) {
                 if (valor === '') {
                     campos[campo] = null;

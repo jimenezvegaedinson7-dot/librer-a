@@ -5,7 +5,9 @@ const router = express.Router();
 const {
     listarComprobantes,
     obtenerComprobante,
-    enviarComprobanteEmail
+    enviarComprobanteEmail,
+    registrarSunat,
+    anularComprobante
 } = require('../controllers/comprobante.controller');
 
 const comprobanteModel = require('../models/comprobante.model');
@@ -38,7 +40,8 @@ router.get('/resumen', async (req, res) => {
             success: true,
             boletas: resumen.boletas,
             facturas: resumen.facturas,
-            ingresos: resumen.ingresos
+            ingresos: resumen.ingresos,
+            anulados: resumen.anulados
         });
 
     } catch (error) {
@@ -59,6 +62,18 @@ router.get('/resumen', async (req, res) => {
 // ENVIAR COMPROBANTE POR CORREO
 // ========================================
 router.post('/:id/enviar-email', enviarComprobanteEmail);
+
+// ========================================
+// COMPROBANTE ELECTRÓNICO SUNAT (serie-número)
+// Y NOTA DE CRÉDITO
+// ========================================
+router.put('/:id/sunat', registrarSunat);
+
+// ========================================
+// ANULAR COMPROBANTE (datos errados; la
+// venta sigue vigente y se puede reemitir)
+// ========================================
+router.post('/:id/anular', anularComprobante);
 
 // ========================================
 // OBTENER COMPROBANTE POR ID

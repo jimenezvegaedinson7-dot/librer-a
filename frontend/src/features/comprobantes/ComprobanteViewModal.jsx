@@ -136,13 +136,18 @@ export default function ComprobanteViewModal({
 
     const detalles = Array.isArray(detalle?.detalle) ? detalle.detalle : [];
 
-    const subtotal = Number(detalle?.subtotal || 0);
     const igvVal = Number(detalle?.igv || 0);
     const costoEnvio = Number(detalle?.costo_envio || 0);
     const total = Number(detalle?.total || 0);
 
-    const opGravada = igvVal > 0 ? subtotal : 0;
-    const opExonerada = igvVal > 0 ? 0 : subtotal;
+    // Desglose calculado por el backend (utils/impuestos): libros exonerados
+    // mientras rija la Ley 31053 y envío gravado. Siempre cumple
+    // gravada + exonerada + IGV = total. Comprobantes antiguos sin desglose:
+    // se deriva del IGV registrado.
+    const tieneDesglose = Number(detalle?.op_gravada || 0) + Number(detalle?.op_exonerada || 0) > 0;
+    const opGravada = tieneDesglose ? Number(detalle.op_gravada || 0) : igvVal > 0 ? total - igvVal : 0;
+    const opExonerada = tieneDesglose ? Number(detalle.op_exonerada || 0) : igvVal > 0 ? 0 : total;
+    const anulado = detalle?.estado === 'anulado';
 
     const montoLetras = montoEnLetras(total);
 
@@ -173,8 +178,18 @@ export default function ComprobanteViewModal({
             {!cargando && !error && detalle && (
                 <div
                     id="boleta-documento"
-                    className="print-area mx-auto w-full max-w-[1100px] border border-black bg-white p-3 text-[12px] font-sans text-black"
+                    className="print-area relative mx-auto w-full max-w-[1100px] border border-black bg-white p-3 text-[12px] font-sans text-black"
                 >
+                    {anulado && (
+                        <div
+                            className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                            aria-hidden="true"
+                        >
+                            <span className="-rotate-12 rounded-lg border-4 border-red-600 px-6 py-2 text-[48px] font-black tracking-[0.2em] text-red-600 opacity-40">
+                                ANULADO
+                            </span>
+                        </div>
+                    )}
                     {/* ========================= */}
                     {/* CABECERA                   */}
                     {/* ========================= */}
@@ -199,8 +214,24 @@ export default function ComprobanteViewModal({
                             <div className="mt-1 text-[16px] font-bold tracking-wide">
                                 {numeroSerie}
                             </div>
+                            {detalle?.numero_sunat && (
+                                <div className="mt-1 text-[11px]">
+                                    Comprobante SUNAT: <strong>{detalle.numero_sunat}</strong>
+                                </div>
+                            )}
+                            {detalle?.nota_credito_sunat && (
+                                <div className="text-[11px]">
+                                    Nota de crédito: <strong>{detalle.nota_credito_sunat}</strong>
+                                </div>
+                            )}
                         </div>
                     </div>
+
+                    {anulado && (
+                        <p className="mt-3 border border-red-600 px-3 py-2 text-[12px] font-semibold text-red-700">
+                            Comprobante anulado{detalle?.motivo_anulacion ? `: ${detalle.motivo_anulacion}` : ''}
+                        </p>
+                    )}
 
                     {/* ========================= */}
                     {/* DATOS DEL COMPRADOR        */}
@@ -280,6 +311,16 @@ export default function ComprobanteViewModal({
                                     </tr>
                                 );
                             })}
+                            {costoEnvio > 0 && (
+                                <tr className="border-t border-black">
+                                    <td className="border-r border-black px-2 py-3 text-center">1.00</td>
+                                    <td className="border-r border-black px-2 py-3 text-center">SERVICIO</td>
+                                    <td className="border-r border-black px-3 py-3">Servicio de envío a domicilio</td>
+                                    <td className="border-r border-black px-3 py-3 text-right">{formatMoney(costoEnvio)}</td>
+                                    <td className="border-r border-black px-3 py-3 text-right">{formatMoney(0)}</td>
+                                    <td className="px-3 py-3 text-right">{formatMoney(costoEnvio)}</td>
+                                </tr>
+                            )}
                             {detalles.length === 0 && (
                                 <tr className="border-t border-black">
                                     <td colSpan={6} className="px-3 py-6 text-center">Sin detalle registrado.</td>
@@ -305,7 +346,6 @@ export default function ComprobanteViewModal({
                             <TotalFila label="Op. Exonerada" value={opExonerada} />
                             <TotalFila label="Op. Inafecta" value={0} />
                             <TotalFila label="IGV" value={igvVal} />
-                            <TotalFila label="Costo de envío" value={costoEnvio} />
                             <TotalFila label="Importe Total" value={total} strong />
                         </div>
                     </div>

@@ -8,7 +8,8 @@ const {
     obtenerMisVentas,
     crearVenta,
     actualizarEstadoVenta,
-    obtenerPagoVenta
+    obtenerPagoVenta,
+    reembolsarVenta
 } = require('../controllers/venta.controller');
 
 const {
@@ -70,6 +71,14 @@ router.put(
     '/:id/estado',
     verificarRol('administrador'),
     actualizarEstadoVenta
+);
+
+// Reembolsar una venta pagada o entregada
+// (devuelve stock y anula el comprobante emitido)
+router.post(
+    '/:id/reembolso',
+    verificarRol('administrador'),
+    reembolsarVenta
 );
 
 // Generar comprobante de pago (boleta/factura)

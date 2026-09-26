@@ -320,12 +320,15 @@ acciones={(reserva) => {
                 onCerrar={() => setReservaVer(null)}
             />
 
-            <ReservaEstadoModal
-                reserva={reservaEstado}
-                abierto={Boolean(reservaEstado)}
-                onCerrar={() => setReservaEstado(null)}
-                onActualizado={reservaActualizada}
-            />
+            {reservaEstado && (
+                <ReservaEstadoModal
+                    reserva={reservaEstado}
+                    abierto
+                    onCerrar={() => setReservaEstado(null)}
+                    onActualizado={reservaActualizada}
+                
+                />
+            )}
         </div>
     );
 }

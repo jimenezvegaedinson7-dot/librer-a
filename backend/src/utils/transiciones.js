@@ -8,7 +8,9 @@
 //
 // Nota: una venta/reserva "entregada"/"completada" NO puede pasar
 // a "cancelada": el bien ya salió de la tienda / la reserva ya se
-// consumió.
+// consumió. Una venta pagada o entregada solo se revierte como
+// "reembolsada" (devolución del dinero, con su nota de crédito), por
+// el flujo dedicado POST /api/ventas/:id/reembolso.
 // ========================================
 
 const VENTA = {
@@ -19,12 +21,17 @@ const VENTA = {
 
     pagada: [
         'entregada',
-        'cancelada'
+        'cancelada',
+        'reembolsada'
     ],
 
-    entregada: [],
+    entregada: [
+        'reembolsada'
+    ],
 
-    cancelada: []
+    cancelada: [],
+
+    reembolsada: []
 };
 
 const RESERVA = {

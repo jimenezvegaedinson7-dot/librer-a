@@ -424,6 +424,23 @@ iniciarJobs();
 })();
 
 // ===============================
+// MIGRACIÓN 023: control de ventas,
+// comprobantes (anulación, SUNAT) e IGV
+// ===============================
+(async () => {
+    try {
+        const sql = require('fs').readFileSync(
+            require('path').join(__dirname, 'database', 'migrations', '023_control_ventas.sql'),
+            'utf8'
+        );
+        await pool.query(sql);
+        console.log('[migracion] 023 control de ventas verificada.');
+    } catch (e) {
+        console.error('[migracion] Error en la migración 023:', e.message);
+    }
+})();
+
+// ===============================
 // INICIAR SERVIDOR
 // ===============================
 app.listen(PORT, () => {

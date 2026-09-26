@@ -43,9 +43,14 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
         setEjecutando(false);
 
         if (venta) {
-            const nombreCompleto = [venta.nombre_usuario, venta.apellido_usuario].filter(Boolean).join(' ').trim();
-            setClienteNombre(nombreCompleto);
-            setClienteEmail(venta.correo_compra || venta.correo_usuario || '');
+            // En una venta de mostrador la cuenta de la venta es la del
+            // administrador que la registró: el cliente es el anotado en la venta.
+            const esMostrador = venta.origen === 'panel';
+            const nombreCuenta = esMostrador
+                ? ''
+                : [venta.nombre_usuario, venta.apellido_usuario].filter(Boolean).join(' ').trim();
+            setClienteNombre(venta.cliente_nombre || nombreCuenta);
+            setClienteEmail(venta.correo_compra || (esMostrador ? '' : venta.correo_usuario) || '');
 
             if (tipoInicial === 'factura') {
                 setTipoDocumento('RUC');

@@ -20,6 +20,7 @@ import { emailValido } from '../../lib/utils/validaciones';
 
 import { listarLibros, crearVenta } from './ventasService';
 import { listarDistritosParaEnvio } from './ubicacionesService';
+import SelectorCobro from './SelectorCobro';
 
 const OPCIONES_ENTREGA = [
     {
@@ -48,6 +49,10 @@ export default function VentaForm({ onVentaCreada }) {
     const [tipoEntrega, setTipoEntrega] = useState('tienda');
     const [correoCompra, setCorreoCompra] = useState('');
     const [errorCorreo, setErrorCorreo] = useState('');
+    const [clienteNombre, setClienteNombre] = useState('');
+    const [clienteDni, setClienteDni] = useState('');
+    const [metodoPago, setMetodoPago] = useState('');
+    const [referenciaPago, setReferenciaPago] = useState('');
     const [distritos, setDistritos] = useState([]);
     const [idDistrito, setIdDistrito] = useState('');
     const [direccion, setDireccion] = useState('');
@@ -193,6 +198,10 @@ export default function VentaForm({ onVentaCreada }) {
         setTipoEntrega('tienda');
         setCorreoCompra('');
         setErrorCorreo('');
+        setClienteNombre('');
+        setClienteDni('');
+        setMetodoPago('');
+        setReferenciaPago('');
         setIdDistrito('');
         setDireccion('');
         setReferencia('');
@@ -215,6 +224,17 @@ export default function VentaForm({ onVentaCreada }) {
             return;
         }
 
+        if (!metodoPago) {
+            setError('Indica cómo pagó el cliente (efectivo, Yape, Plin, tarjeta o transferencia)');
+            return;
+        }
+
+        const dni = clienteDni.trim();
+        if (dni && !/^\d{8}$/.test(dni)) {
+            setError('El DNI debe tener 8 dígitos');
+            return;
+        }
+
         const correo = correoCompra.trim();
         if (correo) {
             const errorCorreoValido = emailValido(correo);
@@ -234,6 +254,11 @@ export default function VentaForm({ onVentaCreada }) {
                 direccion: tipoEntrega === 'domicilio' ? direccion : undefined,
                 referencia: tipoEntrega === 'domicilio' ? referencia : undefined,
                 correo_compra: correo || undefined,
+                cliente_nombre: clienteNombre.trim() || undefined,
+                cliente_documento: dni || undefined,
+                cliente_tipo_documento: dni ? 'DNI' : undefined,
+                metodo_pago: metodoPago,
+                referencia_pago: metodoPago !== 'efectivo' ? referenciaPago.trim() || undefined : undefined,
             });
             limpiar();
             await cargarLibros();
@@ -251,7 +276,7 @@ export default function VentaForm({ onVentaCreada }) {
         <Card className="admin-form-card">
             <CardHeader
                 titulo="Registrar venta"
-                subtitulo="Agrega los libros, los datos del comprador y la forma de entrega."
+                subtitulo="Venta de mostrador: se registra ya cobrada. Agrega los libros, el comprador, la entrega y cómo pagó."
                 icono={<FaCartPlus />}
                 acciones={<span>Nueva venta</span>}
             />
@@ -359,6 +384,26 @@ export default function VentaForm({ onVentaCreada }) {
                             <div className="form-grid">
                                 <Input
                                     ancho={7}
+                                    label="Nombre del cliente"
+                                    type="text"
+                                    value={clienteNombre}
+                                    onChange={(e) => setClienteNombre(e.target.value)}
+                                    maxLength={255}
+                                    placeholder="Ej. Juan Pérez"
+                                    disabled={guardando}
+                                />
+                                <Input
+                                    ancho={5}
+                                    label="DNI"
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={clienteDni}
+                                    onChange={(e) => setClienteDni(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                                    placeholder="8 dígitos"
+                                    disabled={guardando}
+                                />
+                                <Input
+                                    ancho={7}
                                     label="Correo del comprador"
                                     type="email"
                                     value={correoCompra}
@@ -371,6 +416,11 @@ export default function VentaForm({ onVentaCreada }) {
                                     disabled={guardando}
                                 />
                             </div>
+                            {totalGeneral > 700 && (!clienteNombre.trim() || !clienteDni.trim()) && (
+                                <p className="mt-2 text-xs text-amber-700">
+                                    Para emitir una boleta de más de S/ 700 se necesitan el nombre y el DNI del cliente.
+                                </p>
+                            )}
                         </section>
 
                         {/* 3. Entrega */}
@@ -445,6 +495,24 @@ export default function VentaForm({ onVentaCreada }) {
 
                         </section>
 
+                        {/* 4. Cobro */}
+                        <section className="venta-paso" aria-labelledby="paso-cobro">
+                            <h3 id="paso-cobro" className="venta-paso-titulo">
+                                <span className="venta-paso-numero" aria-hidden="true">4</span>
+                                Cobro
+                            </h3>
+                            <SelectorCobro
+                                metodo={metodoPago}
+                                onMetodo={(valor) => {
+                                    setMetodoPago(valor);
+                                    setError('');
+                                }}
+                                referencia={referenciaPago}
+                                onReferencia={setReferenciaPago}
+                                deshabilitado={guardando}
+                            />
+                        </section>
+
                         {errorEnvio && <Alert tipo="error">{errorEnvio}</Alert>}
                         {error && <Alert tipo="error">{error}</Alert>}
                     </div>
@@ -477,7 +545,7 @@ export default function VentaForm({ onVentaCreada }) {
 
                         <div className="mt-5 flex flex-col gap-2.5">
                             <Button onClick={guardarVenta} disabled={guardando || detalles.length === 0} cargando={guardando} tamano="lg" className="w-full">
-                                <FaFloppyDisk /> {guardando ? 'Registrando...' : 'Registrar venta'}
+                                <FaFloppyDisk /> {guardando ? 'Registrando...' : 'Registrar venta cobrada'}
                             </Button>
                             <Button variante="secondary" onClick={limpiar} disabled={guardando} className="w-full">
                                 <FaRotateLeft /> Limpiar

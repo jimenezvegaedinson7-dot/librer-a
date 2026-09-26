@@ -156,6 +156,7 @@ const obtenerTodos = async () => {
             u.apellido AS apellido_usuario,
             r.id_libro,
             l.titulo,
+            l.precio,
             r.cantidad,
             r.fecha_reserva,
             r.fecha_vencimiento,
@@ -183,6 +184,7 @@ const obtenerPorId = async (id) => {
             u.apellido AS apellido_usuario,
             r.id_libro,
             l.titulo,
+            l.precio,
             r.cantidad,
             r.fecha_reserva,
             r.fecha_vencimiento,
@@ -334,7 +336,10 @@ const crear = async (reserva) => {
 // ========================================
 // ACTUALIZAR ESTADO DE RESERVA
 // ========================================
-const actualizarEstado = async (id, nuevoEstado) => {
+// `alCompletar(connection, reserva)`: se ejecuta dentro de la misma
+// transacción cuando la reserva pasa a "completada" (registra la venta
+// del cobro en tienda). Si falla, no se completa la reserva.
+const actualizarEstado = async (id, nuevoEstado, { alCompletar } = {}) => {
     const connection = await pool.getConnection();
 
     try {
@@ -344,6 +349,7 @@ const actualizarEstado = async (id, nuevoEstado) => {
         const [reservas] = await connection.query(`
             SELECT
                 id_reserva,
+                id_usuario,
                 id_libro,
                 cantidad,
                 estado
@@ -407,6 +413,11 @@ const actualizarEstado = async (id, nuevoEstado) => {
                 cantidad: reserva.cantidad,
                 stock_resultante: stockNuevo
             });
+        }
+
+        // Completada: el cliente recogió y pagó → se registra la venta.
+        if (nuevoEstado === 'completada' && alCompletar) {
+            await alCompletar(connection, reserva);
         }
 
         const [resultado] = await connection.query(`

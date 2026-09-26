@@ -8,7 +8,8 @@ enum PurchasePresentation {
                 "PENDIENTE": ("Pendiente", .warning),
                 "PAGADA": ("Pagada", .positive),
                 "ENTREGADA": ("Entregada", .positive),
-                "CANCELADA": ("Cancelada", .negative)
+                "CANCELADA": ("Cancelada", .negative),
+                "REEMBOLSADA": ("Reembolsada", .neutral)
             ]
         )
     }

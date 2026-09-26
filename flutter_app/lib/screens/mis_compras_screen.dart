@@ -639,6 +639,38 @@ class _SeguimientoPedido extends StatelessWidget {
   Widget build(BuildContext context) {
     final raw = (estado ?? '').toLowerCase().trim();
 
+    // Reembolsada: el dinero se devolvió (venta pagada o entregada).
+    if (raw == 'reembolsada') {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.textSecondary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Row(
+          children: [
+            Icon(
+              Icons.currency_exchange_rounded,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Este pedido fue reembolsado.',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (raw == 'cancelada') {
       return Container(
         width: double.infinity,
@@ -748,6 +780,8 @@ class _EstadoChip extends StatelessWidget {
     final estadoRaw = (venta.estado ?? '').toLowerCase().trim();
     final tono = estadoRaw == 'cancelada'
         ? TonoEstado.peligro
+        : estadoRaw == 'reembolsada'
+        ? TonoEstado.neutro
         : (estadoRaw == 'entregada' || venta.pagada)
         ? TonoEstado.exito
         : TonoEstado.aviso;

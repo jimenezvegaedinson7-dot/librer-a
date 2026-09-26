@@ -79,5 +79,25 @@ export async function obtenerResumen() {
         boletas: Number(origen?.boletas ?? 0),
         facturas: Number(origen?.facturas ?? 0),
         ingresos: Number(origen?.ingresos ?? 0),
+        anulados: Number(origen?.anulados ?? 0),
     };
+}
+
+// Serie y número del comprobante electrónico emitido en SUNAT (y de su
+// nota de crédito si el comprobante está anulado).
+export async function registrarSunat(idComprobante, { numeroSunat, notaCreditoSunat }) {
+    const body = {};
+    if (numeroSunat) body.numero_sunat = numeroSunat.trim();
+    if (notaCreditoSunat) body.nota_credito_sunat = notaCreditoSunat.trim();
+    const res = await client.put(`/comprobantes/${idComprobante}/sunat`, body);
+    return extraerComprobante(res);
+}
+
+// Anula un comprobante con datos errados (la venta sigue vigente y se
+// puede emitir uno nuevo). En SUNAT se anula con una nota de crédito.
+export async function anularComprobante(idComprobante, { motivo, notaCreditoSunat }) {
+    const body = { motivo: motivo.trim() };
+    if (notaCreditoSunat) body.nota_credito_sunat = notaCreditoSunat.trim();
+    const res = await client.post(`/comprobantes/${idComprobante}/anular`, body);
+    return extraerComprobante(res);
 }

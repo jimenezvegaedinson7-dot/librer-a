@@ -6,6 +6,7 @@ const { validarId } = require('../utils/validaciones');
 const { VENTA, permitirTransicion } = require('../utils/transiciones');
 const { PUBLIC_BASE_URL } = require('../config/payu');
 const { enviarCorreoPedidoEntregado } = require('../utils/mailer');
+const { validarCobroTienda } = require('../utils/metodosPago');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR LA VENTA
@@ -216,6 +217,29 @@ const crearVenta = async (req, res) => {
         const cliente_tipo_documento = req.body.cliente_tipo_documento;
 
         // ========================================
+        // VENTA DE MOSTRADOR: SE COBRA EN EL MOMENTO
+        // (efectivo, Yape, Plin, POS o transferencia).
+        // Nace "pagada": no depende de PayU ni la cancela
+        // el trabajo de pedidos abandonados.
+        // ========================================
+        const cobro = validarCobroTienda(
+            req.body.metodo_pago,
+            req.body.referencia_pago
+        );
+
+        if (!cobro.ok) {
+            return res.status(400).json({
+                success: false,
+                mensaje: cobro.mensaje
+            });
+        }
+
+        const clienteNombre =
+            typeof req.body.cliente_nombre === 'string'
+                ? req.body.cliente_nombre.trim().slice(0, 255)
+                : '';
+
+        // ========================================
         // NORMALIZAR TIPO DE ENTREGA
         // ========================================
         let tipoEntrega = 'tienda';
@@ -358,7 +382,11 @@ const crearVenta = async (req, res) => {
                 costo_envio: costoEnvio,
                 cliente_documento: cliente_documento || null,
                 cliente_tipo_documento: cliente_tipo_documento || null,
-                estado: 'pendiente'
+                cliente_nombre: clienteNombre || null,
+                origen: 'panel',
+                metodo_pago: cobro.metodo,
+                referencia_pago: cobro.referencia,
+                estado: 'pagada'
             });
 
         // ========================================
@@ -369,7 +397,7 @@ const crearVenta = async (req, res) => {
             tipo_operacion: 'CREAR',
             modulo: 'ventas',
             descripcion:
-                `Venta #${resultado.id_venta} creada correctamente por un total de S/ ${Number(resultado.total).toFixed(2)} (${tipoEntrega})`
+                `Venta de mostrador #${resultado.id_venta} por S/ ${Number(resultado.total).toFixed(2)} (${tipoEntrega}), cobrada con ${cobro.metodo}${cobro.referencia ? ` (ref. ${cobro.referencia})` : ''}`
         });
 
         return res.status(201).json({
@@ -403,7 +431,8 @@ const crearVenta = async (req, res) => {
                             referencia
                         ).trim()
                         : null,
-                estado: 'pendiente'
+                estado: 'pagada',
+                metodo_pago: cobro.metodo
             }
         });
 
@@ -447,6 +476,107 @@ const crearVenta = async (req, res) => {
 };
 
 // ========================================
+// REEMBOLSAR VENTA (ADMIN)
+// POST /api/ventas/:id/reembolso
+// { motivo, devolver_stock }
+// ----------------------------------------
+// Devolución del dinero de una venta pagada o entregada. Devuelve el
+// stock (siempre si no salió de la tienda; si ya se entregó, solo si
+// el cliente devolvió los libros) y anula el comprobante emitido.
+// El dinero se devuelve por el mismo medio del cobro: en ventas PayU,
+// desde el panel de PayU.
+// ========================================
+const reembolsarVenta = async (req, res) => {
+    try {
+        const idVenta = validarId(req.params.id);
+
+        if (!idVenta) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'ID de venta inválido'
+            });
+        }
+
+        const motivo =
+            typeof req.body.motivo === 'string'
+                ? req.body.motivo.trim()
+                : '';
+
+        if (motivo.length < 5 || motivo.length > 255) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'Indica el motivo del reembolso (entre 5 y 255 caracteres)'
+            });
+        }
+
+        const devolverStock =
+            req.body.devolver_stock === true ||
+            req.body.devolver_stock === 'true' ||
+            req.body.devolver_stock === 1;
+
+        const id_usuario = req.usuario.id_usuario;
+
+        const resultado = await ventaModel.reembolsar(idVenta, {
+            motivo,
+            devolverStock,
+            idUsuario: id_usuario
+        });
+
+        if (!resultado) {
+            return res.status(404).json({
+                success: false,
+                mensaje: 'Venta no encontrada'
+            });
+        }
+
+        const comprobante = resultado.comprobante_anulado;
+
+        await registrarHistorial({
+            id_usuario,
+            tipo_operacion: 'ACTUALIZAR',
+            modulo: 'ventas',
+            descripcion:
+                `Venta #${idVenta} reembolsada (antes "${resultado.estado_anterior}"). Motivo: ${motivo}.` +
+                (resultado.stock_devuelto ? ' Stock devuelto.' : ' Sin devolución de stock.') +
+                (comprobante
+                    ? ` Comprobante ${comprobante.serie}-${String(comprobante.numero).padStart(8, '0')} anulado.`
+                    : '')
+        });
+
+        return res.json({
+            success: true,
+            mensaje: 'Venta reembolsada correctamente',
+            data: {
+                id_venta: idVenta,
+                estado: 'reembolsada',
+                stock_devuelto: resultado.stock_devuelto,
+                comprobante_anulado: comprobante
+                    ? {
+                        id_comprobante: comprobante.id_comprobante,
+                        serie: comprobante.serie,
+                        numero: comprobante.numero
+                    }
+                    : null
+            }
+        });
+    } catch (error) {
+        if (error.status === 400) {
+            return res.status(400).json({
+                success: false,
+                mensaje: error.message
+            });
+        }
+
+        console.error('Error al reembolsar venta:', error);
+
+        return res.status(500).json({
+            success: false,
+            mensaje: 'Error al reembolsar la venta'
+        });
+    }
+};
+
+// ========================================
 // ACTUALIZAR ESTADO DE VENTA
 // ========================================
 const actualizarEstadoVenta = async (req, res) => {
@@ -475,6 +605,14 @@ const actualizarEstadoVenta = async (req, res) => {
             'entregada',
             'cancelada'
         ];
+
+        if (estado === 'reembolsada') {
+            return res.status(400).json({
+                success: false,
+                mensaje:
+                    'Para reembolsar usa la opción "Reembolsar": registra el motivo, devuelve el stock y anula el comprobante.'
+            });
+        }
 
         if (
             !estado ||
@@ -537,7 +675,7 @@ const actualizarEstadoVenta = async (req, res) => {
         if (estadoActual === 'pagada' && estado === 'cancelada') {
             return res.status(403).json({
                 success: false,
-                mensaje: 'No se puede cancelar una venta ya pagada. Se requiere gestionar el reembolso a traves de PayU primero.'
+                mensaje: 'Una venta pagada no se cancela: usa "Reembolsar", que devuelve el stock y anula su comprobante.'
             });
         }
         const puedeCambiar =
@@ -744,5 +882,6 @@ module.exports = {
     obtenerMisVentas,
     crearVenta,
     actualizarEstadoVenta,
-    obtenerPagoVenta
+    obtenerPagoVenta,
+    reembolsarVenta
 };

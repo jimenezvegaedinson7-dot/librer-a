@@ -1,4 +1,6 @@
 const reservaModel = require('../models/reserva.model');
+const ventaModel = require('../models/venta.model');
+const { validarCobroTienda } = require('../utils/metodosPago');
 const historialModel = require('../models/historial.model');
 const { validarId, esCantidadPositiva, esNumeroNoNegativo } = require('../utils/validaciones');
 const { RESERVA, permitirTransicion } = require('../utils/transiciones');
@@ -418,12 +420,53 @@ const actualizarEstado = async (req, res) => {
         }
 
         // ========================================
+        // COMPLETADA = EL CLIENTE RECOGIÓ Y PAGÓ EN TIENDA
+        // Se registra la venta (ya pagada) en la misma transacción,
+        // sin volver a descontar el stock que la reserva ya apartó.
+        // ========================================
+        let cobro = null;
+        let ventaCreada = null;
+
+        if (estado === 'completada') {
+            cobro = validarCobroTienda(
+                req.body.metodo_pago,
+                req.body.referencia_pago
+            );
+
+            if (!cobro.ok) {
+                return res.status(400).json({
+                    success: false,
+                    mensaje: cobro.mensaje
+                });
+            }
+        }
+
+        // ========================================
         // ACTUALIZAR ESTADO
         // ========================================
         const actualizado =
             await reservaModel.actualizarEstado(
                 idReserva,
-                estado
+                estado,
+                {
+                    alCompletar: async (connection, reserva) => {
+                        ventaCreada = await ventaModel.crear({
+                            id_usuario: reserva.id_usuario,
+                            detalles: [{
+                                id_libro: reserva.id_libro,
+                                cantidad: reserva.cantidad
+                            }],
+                            tipo_entrega: 'tienda',
+                            costo_envio: 0,
+                            origen: 'reserva',
+                            id_reserva: reserva.id_reserva,
+                            metodo_pago: cobro.metodo,
+                            referencia_pago: cobro.referencia,
+                            descontar_stock: false,
+                            estado: 'pagada'
+                        }, connection);
+                    }
+                }
             );
 
         if (!actualizado) {
@@ -442,13 +485,23 @@ const actualizarEstado = async (req, res) => {
             tipo_operacion: 'ACTUALIZAR',
             modulo: 'reservas',
             descripcion:
-                `Reserva #${idReserva} actualizada de "${estadoActual}" a "${estado}"`
+                `Reserva #${idReserva} actualizada de "${estadoActual}" a "${estado}"` +
+                (ventaCreada
+                    ? `. Venta #${ventaCreada.id_venta} registrada por S/ ${Number(ventaCreada.total).toFixed(2)} (${cobro.metodo})`
+                    : '')
         });
 
         return res.json({
             success: true,
-            mensaje:
-                `Reserva actualizada a estado "${estado}" correctamente`
+            mensaje: ventaCreada
+                ? `Reserva completada. Se registró la venta #${ventaCreada.id_venta}.`
+                : `Reserva actualizada a estado "${estado}" correctamente`,
+            data: ventaCreada
+                ? {
+                    id_venta: ventaCreada.id_venta,
+                    total: ventaCreada.total
+                }
+                : undefined
         });
 
     } catch (error) {
