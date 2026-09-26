@@ -7,6 +7,7 @@ import {
     FaCircleCheck,
     FaClock,
     FaEye,
+    FaFileCircleCheck,
     FaFileCsv,
     FaFileInvoice,
     FaMagnifyingGlass,
@@ -44,6 +45,7 @@ import VentaViewModal from './VentaViewModal';
 import EmitirComprobanteModal from './EmitirComprobanteModal';
 import ReembolsoModal from './ReembolsoModal';
 import { textoMetodoPago, textoOrigen } from './metodosPago';
+import { correoVisible, esCorreoDeCuentaEliminada } from '../../lib/utils/cuentas';
 
 const POR_PAGINA = 10;
 
@@ -64,12 +66,17 @@ function nombreCliente(venta) {
     return venta.cliente_nombre || `${venta.nombre_usuario || ''} ${venta.apellido_usuario || ''}`.trim();
 }
 
+const esDeCuentaEliminada = (venta) => venta.origen !== 'panel' && esCorreoDeCuentaEliminada(venta.correo_usuario);
+
 function detalleCobro(venta) {
     if (venta.origen === 'panel' || venta.origen === 'reserva') {
         const metodo = textoMetodoPago(venta.metodo_pago);
         return [textoOrigen(venta), metodo].filter(Boolean).join(' · ');
     }
-    return venta.correo_compra || venta.correo_usuario || '';
+    if (esDeCuentaEliminada(venta)) {
+        return 'Cuenta eliminada por su titular';
+    }
+    return correoVisible(venta.correo_compra) || correoVisible(venta.correo_usuario);
 }
 
 function valorOrdenVenta(venta, campo) {
@@ -105,8 +112,8 @@ const columnasVentas = [
             );
         },
     },
-    { titulo: 'Fecha', alineacion: 'centro', ordenable: true, campo: 'fecha_venta', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_venta) || 'Sin fecha'}</span> },
-    { titulo: 'Total', alineacion: 'derecha', ordenable: true, campo: 'total', render: (fila) => <span className="font-semibold tabular-nums text-slate-800">{formatearMoneda(Number(fila.total || 0))}</span> },
+    { titulo: 'Fecha', alineacion: 'centro', ordenable: true, campo: 'fecha_venta', render: (fila) => <span className="whitespace-nowrap text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_venta) || 'Sin fecha'}</span> },
+    { titulo: 'Total', alineacion: 'derecha', ordenable: true, campo: 'total', render: (fila) => <span className="whitespace-nowrap font-semibold tabular-nums text-slate-800">{formatearMoneda(Number(fila.total || 0))}</span> },
     {
         titulo: 'Estado',
         alineacion: 'centro',
@@ -126,10 +133,11 @@ const columnasVentas = [
             if (fila.tipo_entrega === 'domicilio') {
                 return <Badge color="primary">A domicilio</Badge>;
             }
+            // Ventas antiguas: el envío por agencia ya no se ofrece.
             if (fila.tipo_entrega === 'agencia') {
                 return (
-                    <span title={fila.agencia || 'Agencia courier'}>
-                        <Badge color="warning">Agencia</Badge>
+                    <span title={fila.agencia || 'Agencia courier (servicio ya no disponible)'}>
+                        <Badge color="neutral">Agencia (histórico)</Badge>
                     </span>
                 );
             }
@@ -154,7 +162,14 @@ function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, o
                 </BtnAccion>
             )}
             {conComprobante && (fila.estado === 'pagada' || fila.estado === 'entregada') && (
-                <Badge color="primary">Comprobante</Badge>
+                <span
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700"
+                    title="Comprobante emitido (ver en Comprobantes)"
+                    aria-label="Comprobante emitido"
+                    role="img"
+                >
+                    <FaFileCircleCheck />
+                </span>
             )}
             {puedeEmitir && (
                 <>
@@ -402,14 +417,13 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
                 { titulo: 'Origen', exportar: (f) => textoOrigen(f) },
                 { titulo: 'Método de pago', exportar: (f) => (f.origen === 'panel' || f.origen === 'reserva' ? textoMetodoPago(f.metodo_pago) : 'PayU') },
                 { titulo: 'Referencia de pago', exportar: (f) => f.referencia_pago || f.payu_order_id || '' },
-                { titulo: 'Correo', exportar: (f) => f.correo_compra || f.correo_usuario || '' },
+                { titulo: 'Correo', exportar: (f) => correoVisible(f.correo_compra) || correoVisible(f.correo_usuario) },
                 { titulo: 'Fecha', exportar: (f) => f.fecha_venta || '' },
                 { titulo: 'Total', exportar: (f) => f.total || 0 },
                 { titulo: 'Costo envío', exportar: (f) => f.costo_envio || 0 },
                 { titulo: 'Estado', exportar: (f) => f.estado || '' },
                 { titulo: 'Tipo de entrega', exportar: (f) => f.tipo_entrega || '' },
                 { titulo: 'Dirección', exportar: (f) => f.direccion || '' },
-                { titulo: 'Agencia', exportar: (f) => f.agencia || '' },
                 { titulo: 'Motivo de reembolso', exportar: (f) => f.motivo_reembolso || '' },
             ],
             filas: ventasOrdenadas,
@@ -486,7 +500,7 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
             <Card>
                 <CardHeader
                     titulo="Lista de ventas"
-                    subtitulo="Busca ventas por usuario, ID o total"
+                    subtitulo="Busca ventas por cliente, ID o total"
                     acciones={
                         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                             <div className="relative">
@@ -513,7 +527,6 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
 <Select value={filtroEntrega} onChange={(e) => setFiltroEntrega(e.target.value)} className="sm:w-52">
                                 <option value="todos">Todas las entregas</option>
                                 <option value="domicilio">A domicilio</option>
-                                <option value="agencia">Agencia courier</option>
                                 <option value="tienda">Recoger en tienda</option>
                             </Select>
 

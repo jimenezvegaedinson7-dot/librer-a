@@ -28,6 +28,7 @@ import { ConfirmarAccion } from '../../components/ui/ConfirmarAccion';
 import { useToast } from '../../components/providers/ToastProvider';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
+import { correoVisible } from '../../lib/utils/cuentas';
 
 import { listarComprobantes, obtenerResumen, enviarComprobanteEmail } from './comprobantesService';
 import { envioAutomaticoActivo, guardarEnvioAutomatico } from './envioAutomatico';
@@ -59,12 +60,15 @@ const columnasComprobantes = [
                     <span className="ml-2 align-middle"><Badge color="danger">Anulado</Badge></span>
                 )}
                 <span className="mt-0.5 block text-[11px] text-slate-500">
-                    {fila.numero_sunat
-                        ? `SUNAT ${fila.numero_sunat}`
-                        : fila.estado === 'anulado'
-                          ? ''
-                          : <span className="text-amber-700">Falta N.° SUNAT</span>}
-                    {fila.nota_credito_sunat ? ` · NC ${fila.nota_credito_sunat}` : ''}
+                    {[
+                        fila.numero_sunat ? `SUNAT ${fila.numero_sunat}` : null,
+                        fila.nota_credito_sunat ? `Nota de crédito ${fila.nota_credito_sunat}` : null,
+                    ]
+                        .filter(Boolean)
+                        .join(' · ') ||
+                        (fila.estado === 'anulado'
+                            ? 'Sin nota de crédito registrada'
+                            : <span className="text-amber-700">Falta N.° SUNAT</span>)}
                 </span>
             </p>
         ),
@@ -74,7 +78,7 @@ const columnasComprobantes = [
         titulo: 'Cliente',
         render: (fila) => (
             <p className="text-sm text-slate-700">
-                <span className="font-semibold text-slate-700">{fila.cliente_nombre || 'Sin nombre'}</span>
+                <span className="font-semibold text-slate-700">{fila.cliente_nombre || 'Cliente sin nombre'}</span>
                 {fila.cliente_dni_ruc && <span className="block text-xs text-slate-500">{fila.cliente_dni_ruc}</span>}
             </p>
         ),
@@ -88,6 +92,9 @@ const columnasComprobantes = [
         titulo: 'Correo',
         alineacion: 'centro',
         render: (fila) => {
+            if (fila.estado === 'anulado') {
+                return <span className="text-xs text-slate-400" title="Los comprobantes anulados no se envían">No aplica</span>;
+            }
             if (fila.enviado_por_email) {
                 return (
                     <span
@@ -98,7 +105,7 @@ const columnasComprobantes = [
                     </span>
                 );
             }
-            return fila.email_destino
+            return correoVisible(fila.email_destino)
                 ? <span className="correo-estado correo-estado--pendiente" title={`Se enviará a ${fila.email_destino}`}>Pendiente</span>
                 : <span className="correo-estado" title="El cliente no tiene correo registrado">Sin correo</span>;
         },
@@ -129,9 +136,9 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando,
                 titulo={
                     fueEnviado
                         ? `Enviado${fila.fecha_envio_email ? ` el ${formatearFecha(fila.fecha_envio_email)}` : ''} · clic para reenviar`
-                        : fila.email_destino ? 'Enviar por correo' : 'Sin correo registrado'
+                        : correoVisible(fila.email_destino) ? 'Enviar por correo' : 'Sin correo registrado'
                 }
-                disabled={anulado || enviando || (!fueEnviado && !fila.email_destino)}
+                disabled={anulado || enviando || (!fueEnviado && !correoVisible(fila.email_destino))}
                 className={fueEnviado ? 'btn-enviado' : ''}
             >
                 {enviando ? (
@@ -178,6 +185,8 @@ export default function ComprobantesPage() {
     const [reenviarConfirmar, setReenviarConfirmar] = useState(null);
     const [filtroEnvio, setFiltroEnvio] = useState('todos');
     const [pendientesEnvio, setPendientesEnvio] = useState(0);
+    // Pendientes que sí tienen un correo al que enviar (excluye cuentas eliminadas).
+    const [enviables, setEnviables] = useState(0);
     const [envioAuto, setEnvioAuto] = useState(() => envioAutomaticoActivo());
     const [confirmarLote, setConfirmarLote] = useState(false);
     const [enviandoLote, setEnviandoLote] = useState(null); // { actual, total }
@@ -229,10 +238,12 @@ export default function ComprobantesPage() {
             setResumen({ boletas: 0, facturas: 0, ingresos: 0, anulados: 0 });
         }
         try {
-            const pendientes = await listarComprobantes({ envio: 'pendiente', por_pagina: 1 });
+            const pendientes = await listarComprobantes({ envio: 'pendiente', por_pagina: 100 });
             setPendientesEnvio(pendientes.total);
+            setEnviables(pendientes.comprobantes.filter((c) => correoVisible(c.email_destino) && c.estado !== 'anulado').length);
         } catch {
             setPendientesEnvio(0);
+            setEnviables(0);
         }
     };
 
@@ -285,7 +296,7 @@ export default function ComprobantesPage() {
         setConfirmarLote(false);
         try {
             const { comprobantes: lista } = await listarComprobantes({ envio: 'pendiente', por_pagina: 100 });
-            const conCorreo = lista.filter((c) => c.email_destino && c.estado !== 'anulado');
+            const conCorreo = lista.filter((c) => correoVisible(c.email_destino) && c.estado !== 'anulado');
             let enviados = 0;
             let fallidos = 0;
             setEnviandoLote({ actual: 0, total: conCorreo.length });
@@ -312,7 +323,7 @@ export default function ComprobantesPage() {
     };
 
     const handleEnviarEmail = async (comprobante, fueEnviado) => {
-        if (!comprobante?.email_destino) {
+        if (!correoVisible(comprobante?.email_destino)) {
             mostrarError('No hay correo registrado para este cliente');
             return;
         }
@@ -374,7 +385,7 @@ export default function ComprobantesPage() {
                             Facturas: <span className="font-bold text-[#4f46e5]">{resumen.facturas}</span>
                         </span>
                         <span className="rounded-xl border border-[#bbf7d0] bg-[#ecfdf5] px-4 py-2.5 text-sm font-medium text-[#059669] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                            Ingresos: <span className="font-bold text-[#059669]">{formatearMoneda(resumen.ingresos)}</span>
+                            Importe emitido: <span className="font-bold text-[#059669]">{formatearMoneda(resumen.ingresos)}</span>
                         </span>
                         {resumen.anulados > 0 && (
                             <span className="rounded-xl border border-[#fecaca] bg-[#fef2f2] px-4 py-2.5 text-sm font-medium text-[#b91c1c] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
@@ -489,12 +500,12 @@ export default function ComprobantesPage() {
                     <Button
                         variante="secondary"
                         onClick={() => setConfirmarLote(true)}
-                        disabled={pendientesEnvio === 0 || Boolean(enviandoLote)}
+                        disabled={enviables === 0 || Boolean(enviandoLote)}
                         cargando={Boolean(enviandoLote)}
                     >
                         {enviandoLote
                             ? `Enviando ${enviandoLote.actual} de ${enviandoLote.total}…`
-                            : <><FaPaperPlane /> Enviar pendientes{pendientesEnvio > 0 ? ` (${pendientesEnvio})` : ''}</>}
+                            : <><FaPaperPlane /> Enviar pendientes{enviables > 0 ? ` (${enviables})` : ''}</>}
                     </Button>
                 </div>
             </section>
@@ -590,7 +601,9 @@ export default function ComprobantesPage() {
             <ConfirmarAccion
                 abierto={confirmarLote}
                 titulo="Enviar comprobantes pendientes"
-                mensaje={`Se enviarán por correo los ${pendientesEnvio} comprobantes que aún no se han enviado.`}
+                mensaje={enviables === 1
+                    ? 'Se enviará por correo el comprobante pendiente que tiene correo registrado.'
+                    : `Se enviarán por correo los ${enviables} comprobantes pendientes que tienen correo registrado.`}
                 advertencia="Los que no tengan correo registrado se omitirán."
                 icono={<FaPaperPlane />}
                 textoConfirmar="Enviar ahora"

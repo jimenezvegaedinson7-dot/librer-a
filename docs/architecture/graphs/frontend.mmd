@@ -1,0 +1,73 @@
+%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+flowchart LR
+    LoginPage["/<br/>LoginPage"]
+    LoginPage --> authService(["authService"])
+    VerificarEmailPage["/verificar-email<br/>VerificarEmailPage"]
+    VerificarEmailPage --> authService(["authService"])
+    LibroReclamacionesPage["/libro-de-reclamaciones<br/>LibroReclamacionesPage"]
+    LibroReclamacionesPage --> reclamacionesService(["reclamacionesService"])
+    DashboardPage["/dashboard<br/>DashboardPage"]
+    DashboardPage --> dashboardService(["dashboardService"])
+    LibrosPage["/libros<br/>LibrosPage"]
+    LibrosPage --> librosService(["librosService"])
+    LibrosPage --> inventarioService(["inventarioService"])
+    AutoresPage["/autores<br/>AutoresPage"]
+    AutoresPage --> autoresService(["autoresService"])
+    CategoriasPage["/categorias<br/>CategoriasPage"]
+    CategoriasPage --> categoriasService(["categoriasService"])
+    InventarioPage["/inventario<br/>InventarioPage"]
+    InventarioPage --> inventarioService(["inventarioService"])
+    ReservasPage["/reservas<br/>ReservasPage"]
+    ReservasPage --> reservasService(["reservasService"])
+    VentasPage["/ventas<br/>VentasPage"]
+    VentasPage --> ventasService(["ventasService"])
+    VentasPage --> comprobantesService(["comprobantesService"])
+    VentasPage --> empresaService(["empresaService"])
+    VentasPage --> ubicacionesService(["ubicacionesService"])
+    ComprobantesPage["/comprobantes<br/>ComprobantesPage"]
+    ComprobantesPage --> comprobantesService(["comprobantesService"])
+    ComprobantesPage --> empresaService(["empresaService"])
+    CierreCajaPage["/cierre-caja<br/>CierreCajaPage"]
+    ReclamacionesPage["/reclamaciones<br/>ReclamacionesPage"]
+    ReclamacionesPage --> reclamacionesService(["reclamacionesService"])
+    PagosPage["/pagos<br/>PagosPage"]
+    PagosPage --> pagosService(["pagosService"])
+    PagosPage --> ventasService(["ventasService"])
+    UsuariosClientesPage["/usuarios<br/>UsuariosClientesPage"]
+    UsuariosClientesPage --> usuariosService(["usuariosService"])
+    TarifasEnvioPage["/tarifas-envio<br/>TarifasEnvioPage"]
+    TarifasEnvioPage --> tarifasService(["tarifasService"])
+    HistorialPage["/historial<br/>HistorialPage"]
+    HistorialPage --> historialService(["historialService"])
+    EmpresaPage["/configuracion/empresa<br/>EmpresaPage"]
+    EmpresaPage --> empresaService(["empresaService"])
+    PersonalizacionPage["/personalizacion<br/>PersonalizacionPage"]
+    agenciasService --> _api_agencias{{"/api/agencias"}}
+    authService --> _api_auth{{"/api/auth"}}
+    perfilService --> _api_usuarios{{"/api/usuarios"}}
+    autoresService --> _api_autores{{"/api/autores"}}
+    categoriasService --> _api_categorias{{"/api/categorias"}}
+    clientesService --> _api_clientes{{"/api/clientes"}}
+    comprobantesService --> _api_comprobantes{{"/api/comprobantes"}}
+    comprobantesService --> _api_ventas{{"/api/ventas"}}
+    empresaService --> _api_empresa{{"/api/empresa"}}
+    dashboardService --> _api_libros{{"/api/libros"}}
+    dashboardService --> _api_reportes{{"/api/reportes"}}
+    historialService --> _api_historial{{"/api/historial"}}
+    inventarioService --> _api_inventario{{"/api/inventario"}}
+    inventarioService --> _api_libros{{"/api/libros"}}
+    librosService --> _api_libros{{"/api/libros"}}
+    librosService --> _api_autores{{"/api/autores"}}
+    librosService --> _api_categorias{{"/api/categorias"}}
+    pagosService --> _api_pagos{{"/api/pagos"}}
+    reclamacionesService --> _api_reclamaciones{{"/api/reclamaciones"}}
+    reclamacionesService --> _api_empresa{{"/api/empresa"}}
+    reportesService --> _api_reportes{{"/api/reportes"}}
+    reservasService --> _api_reservas{{"/api/reservas"}}
+    reservasService --> _api_libros{{"/api/libros"}}
+    tarifasService --> _api_ubicaciones{{"/api/ubicaciones"}}
+    usuariosService --> _api_usuarios{{"/api/usuarios"}}
+    ubicacionesService --> _api_ubicaciones{{"/api/ubicaciones"}}
+    ventasService --> _api_ventas{{"/api/ventas"}}
+    ventasService --> _api_libros{{"/api/libros"}}
+

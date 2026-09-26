@@ -1,0 +1,24 @@
+%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+sequenceDiagram
+    autonumber
+    participant F as Flutter · entrega_y_pago
+    participant API as /api/pagos (pago.controller)
+    participant VM as venta.model
+    participant P as PayU (payu.service)
+    participant B as Navegador (url_launcher)
+    participant DB as PostgreSQL
+    F->>API: GET /api/ubicaciones/provincias(/:id/distritos), GET /api/agencias/activas
+    F->>API: POST /api/pagos/crear-orden (JWT, clave de idempotencia)
+    API->>VM: crear venta pendiente
+    VM->>DB: ventas, detalle_venta, inventario
+    API->>P: crearOrden
+    API-->>F: checkout_url
+    F->>B: abrir checkout_url
+    B->>API: GET /api/pagos/checkout/:externalReference
+    API-->>B: formulario auto-enviado a PayU
+    P->>API: POST /api/pagos/webhook (confirmación)
+    API->>VM: actualizarDatosPago + actualizarEstado
+    B->>API: GET /api/pagos/respuesta/:externalReference
+    F->>API: GET /api/pagos/:orderId (estado)
+    F->>API: GET /api/ventas/mis-ventas
+    Note over API: React (admin) lee: GET /api/pagos y GET /api/pagos/resumen

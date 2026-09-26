@@ -19,7 +19,6 @@ import { Pagination } from '../../components/ui/Pagination';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { TableSkeleton } from '../../components/ui/TableSkeleton';
 import { DataTable } from '../../components/ui/DataTable';
-import { Badge } from '../../components/ui/Badge';
 import { BtnAccion } from '../../components/ui/Acciones';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
@@ -27,47 +26,11 @@ import { exportarCsv } from '../../lib/utils/exportarCsv';
 
 import { listarPagos, obtenerResumen } from './pagosService';
 import PagoViewModal from './PagoViewModal';
+import { EntregaBadge, EstadoPagoBadge, EstadoVentaBadge } from './PagoBadges';
+import { configEstadoPago, enriquecerPago } from './pagoPresentacion';
+import { listarVentas } from '../ventas/ventasService';
 
 const POR_PAGINA = 10;
-
-const estadosVenta = {
-    pendiente: { texto: 'Pendiente', color: 'warning' },
-    pagada: { texto: 'Pagada', color: 'success' },
-    entregada: { texto: 'Entregada', color: 'info' },
-    cancelada: { texto: 'Cancelada', color: 'danger' },
-};
-
-const estadosPago = {
-    approved: { texto: 'Aprobado', color: 'success' },
-    pending: { texto: 'Pendiente', color: 'warning' },
-    in_process: { texto: 'En proceso', color: 'warning' },
-    rejected: { texto: 'Rechazado', color: 'danger' },
-    refunded: { texto: 'Reembolsado', color: 'warning' },
-    cancelled: { texto: 'Cancelado', color: 'neutral' },
-};
-
-function estadoVentaBadge(estado) {
-    const dato = estadosVenta[estado] || { texto: estado || 'Sin estado', color: 'neutral' };
-    return <Badge color={dato.color}>{dato.texto}</Badge>;
-}
-
-function estadoPagoBadge(estado) {
-    const dato = estadosPago[estado] || estadosPago[`${estado}`.toLowerCase()];
-    return <Badge color={dato?.color || 'neutral'}>{dato?.texto || estado || 'Sin pago'}</Badge>;
-}
-
-function entregaBadge(tipo) {
-    switch (tipo) {
-        case 'domicilio':
-            return <Badge color="primary">A domicilio</Badge>;
-        case 'agencia':
-            return <Badge color="warning">Agencia</Badge>;
-        case 'tienda':
-            return <Badge color="neutral">Tienda</Badge>;
-        default:
-            return <Badge color="neutral">Sin especificar</Badge>;
-    }
-}
 
 function valorOrdenPago(pago, campo) {
     switch (campo) {
@@ -86,11 +49,6 @@ function valorOrdenPago(pago, campo) {
     }
 }
 
-function formatearReferencia(referencia) {
-    if (!referencia) return 'Sin referencia';
-    return referencia.length > 26 ? `${referencia.slice(0, 26)}…` : referencia;
-}
-
 const columnasPagos = [
     {
         titulo: 'Cliente',
@@ -99,53 +57,58 @@ const columnasPagos = [
         render: (fila) => (
             <p className="text-sm text-slate-700">
                 <span className="font-semibold text-slate-700">{fila.cliente?.nombre_completo || 'Sin nombre'}</span>
-                <span className="block text-xs text-slate-500">{fila.cliente?.email || 'Sin correo'}</span>
+                <span className="block text-xs text-slate-500">{fila.cliente?.email || fila.origen_texto}</span>
             </p>
         ),
     },
-    { titulo: 'Entrega', alineacion: 'centro', campo: 'tipo_entrega', ordenable: true, render: (fila) => entregaBadge(fila.tipo_entrega) },
+    { titulo: 'Entrega', alineacion: 'centro', campo: 'tipo_entrega', ordenable: true, render: (fila) => <EntregaBadge tipo={fila.tipo_entrega} /> },
     {
         titulo: 'Método de pago',
         campo: 'metodo_pago',
-        render: (fila) => <span className="text-slate-700">{fila.metodo_pago || 'Sin método'}</span>,
+        render: (fila) => (
+            <p className="text-sm text-slate-700">
+                <span className="whitespace-nowrap">{fila.metodo_pago}</span>
+                <span className="block text-xs text-slate-500">
+                    {fila.origen_texto}{fila.referencia_pago ? ` · Op. ${fila.referencia_pago}` : ''}
+                </span>
+            </p>
+        ),
     },
     {
         titulo: 'Monto',
         alineacion: 'centro',
         ordenable: true,
         campo: 'monto_total',
-        render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(fila.monto_total)}</span>,
+        render: (fila) => <span className="whitespace-nowrap font-bold text-slate-700">{formatearMoneda(fila.monto_total)}</span>,
     },
     {
         titulo: 'Estado venta',
         alineacion: 'centro',
         ordenable: true,
         campo: 'estado_venta',
-        render: (fila) => estadoVentaBadge(fila.estado_venta),
+        render: (fila) => <EstadoVentaBadge estado={fila.estado_venta} />,
     },
     {
         titulo: 'Estado pago',
         alineacion: 'centro',
         ordenable: true,
         campo: 'estado_pago',
-        render: (fila) => estadoPagoBadge(fila.estado_pago),
+        render: (fila) => <EstadoPagoBadge estado={fila.estado_pago} />,
     },
     {
         titulo: 'Fecha',
         alineacion: 'centro',
         ordenable: true,
         campo: 'fecha_creacion',
-        render: (fila) => (
-            <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_creacion) || 'Sin fecha'}</span>
-        ),
-    },
-    {
-        titulo: 'Referencia',
-        render: (fila) => (
-            <span title={fila.external_reference} className="block max-w-48 truncate text-xs font-medium text-primary-500">
-                {formatearReferencia(fila.external_reference)}
-            </span>
-        ),
+        render: (fila) => {
+            const [dia, hora] = (formatearFecha(fila.fecha_creacion) || 'Sin fecha').split(', ');
+            return (
+                <p className="whitespace-nowrap text-xs font-medium text-slate-700">
+                    {dia}
+                    {hora && <span className="block text-[11px] font-normal text-slate-500">{hora}</span>}
+                </p>
+            );
+        },
     },
 ];
 
@@ -195,6 +158,17 @@ export default function PagosPage() {
 
     const [orden, setOrden] = useState({ campo: 'fecha_creacion', direccion: 'desc' });
     const [pagoVer, setPagoVer] = useState(null);
+    // Ventas indexadas por id: aportan origen, método de cobro y cliente.
+    const [ventasPorId, setVentasPorId] = useState(() => new Map());
+
+    const cargarVentas = async () => {
+        try {
+            const ventas = await listarVentas();
+            setVentasPorId(new Map(ventas.map((v) => [Number(v.id_venta), v])));
+        } catch {
+            // Sin ventas se muestra lo que trae /api/pagos.
+        }
+    };
 
     // Busca el pago por su referencia externa y abre su detalle.
     const abrirPagoPorReferencia = async (referencia) => {
@@ -261,12 +235,14 @@ export default function PagosPage() {
 
     useEffect(() => {
         cargarResumen();
+        cargarVentas();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const actualizar = () => {
         cargarPagos();
         cargarResumen();
+        cargarVentas();
     };
 
     const aplicarBusqueda = (valor) => {
@@ -290,7 +266,7 @@ export default function PagosPage() {
     };
 
     const pagosOrdenados = useMemo(() => {
-        const copia = [...pagos];
+        const copia = pagos.map((pago) => enriquecerPago(pago, ventasPorId.get(Number(pago.id_venta))));
         copia.sort((a, b) => {
             const va = valorOrdenPago(a, orden.campo);
             const vb = valorOrdenPago(b, orden.campo);
@@ -299,7 +275,7 @@ export default function PagosPage() {
             return 0;
         });
         return copia;
-    }, [pagos, orden]);
+    }, [pagos, orden, ventasPorId]);
 
     const totalPagados = resumen.pagado;
     const totalPendientes = resumen.pendiente;
@@ -314,13 +290,14 @@ export default function PagosPage() {
                 { titulo: 'ID venta', exportar: (f) => f.id_venta },
                 { titulo: 'Cliente', exportar: (f) => f.cliente?.nombre_completo || '' },
                 { titulo: 'Email', exportar: (f) => f.cliente?.email || '' },
+                { titulo: 'Origen', exportar: (f) => f.origen_texto || '' },
                 { titulo: 'Tipo de entrega', exportar: (f) => f.tipo_entrega || '' },
                 { titulo: 'Método de pago', exportar: (f) => f.metodo_pago || '' },
                 { titulo: 'Monto', exportar: (f) => f.monto_total || 0 },
                 { titulo: 'Estado venta', exportar: (f) => f.estado_venta || '' },
-                { titulo: 'Estado pago', exportar: (f) => f.estado_pago || '' },
+                { titulo: 'Estado pago', exportar: (f) => configEstadoPago(f.estado_pago).texto },
                 { titulo: 'Fecha', exportar: (f) => f.fecha_creacion || '' },
-                { titulo: 'Referencia', exportar: (f) => f.external_reference || '' },
+                { titulo: 'Referencia', exportar: (f) => f.referencia_pago || f.external_reference || '' },
                 { titulo: 'Orden PayU', exportar: (f) => f.payu_order_id || '' },
             ],
             filas: pagosOrdenados,
@@ -453,7 +430,11 @@ export default function PagosPage() {
                 </Card>
             )}
 
-            <PagoViewModal pago={pagoVer} abierto={Boolean(pagoVer)} onCerrar={() => setPagoVer(null)} />
+            <PagoViewModal
+                pago={pagoVer ? enriquecerPago(pagoVer, ventasPorId.get(Number(pagoVer.id_venta))) : null}
+                abierto={Boolean(pagoVer)}
+                onCerrar={() => setPagoVer(null)}
+            />
         </div>
     );
 }

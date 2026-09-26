@@ -81,6 +81,7 @@ function Interruptor({ activo, onChange, titulo, descripcion }) {
                 type="button"
                 role="switch"
                 aria-checked={activo}
+                aria-label={titulo}
                 onClick={() => onChange(!activo)}
                 className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b98d3e] focus-visible:ring-offset-2 ${
                     activo ? 'interruptor--activo' : 'interruptor--inactivo'
@@ -187,7 +188,7 @@ export default function EmpresaPage() {
                 <Card>
                     <CardHeader
                         titulo="Datos de la empresa"
-                        subtitulo="El RUC se usa como emisor en los comprobantes electrónicos"
+                        subtitulo="El RUC aparece como emisor en los comprobantes de venta"
                     />
                     <CardBody>
                         <form onSubmit={guardar} noValidate className="space-y-4">

@@ -77,6 +77,7 @@ export default function DashboardPage() {
     const [librosMasVendidos, setLibrosMasVendidos] = useState([]);
     const [ventasPorDia, setVentasPorDia] = useState([]);
     const [indicadores, setIndicadores] = useState({});
+    // null = no se pudo consultar (no se afirma que no haya stock bajo).
     const [stockBajo, setStockBajo] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
@@ -99,7 +100,7 @@ export default function DashboardPage() {
                     // Complementarios: si fallan, el resumen se muestra igual.
                     obtenerVentasPorDia().catch(() => []),
                     obtenerIndicadoresVentas().catch(() => ({})),
-                    obtenerStockBajo().catch(() => []),
+                    obtenerStockBajo().catch(() => null),
                 ]);
                 if (!activo) return;
                 setResumen(r);
@@ -110,7 +111,7 @@ export default function DashboardPage() {
                 setLibrosMasVendidos(esArreglo(lmv));
                 setVentasPorDia(esArreglo(vd));
                 setIndicadores(ind || {});
-                setStockBajo(esArreglo(sb));
+                setStockBajo(sb === null ? null : esArreglo(sb));
             } catch (err) {
                 if (activo) setError(err.response?.data?.mensaje || 'Error al cargar el resumen');
             } finally {
@@ -190,7 +191,7 @@ export default function DashboardPage() {
                     valor={formatearMoneda(resumen.total_vendido)}
                     icono={<FaMoneyBillTrendUp />}
                     color="primary"
-                    detalle={vendidoHoy > 0 ? `${formatearMoneda(vendidoHoy)} vendidos hoy` : 'Sin ventas pagadas hoy'}
+                    detalle={vendidoHoy > 0 ? `${formatearMoneda(vendidoHoy)} vendidos hoy` : 'Sin ventas cobradas hoy'}
                     tendencia={diario.map((d) => d.total)}
                     etiquetaTendencia="Ingresos diarios de los últimos 14 días"
                 />
@@ -217,7 +218,7 @@ export default function DashboardPage() {
                     valor={num(resumen.total_reservas)}
                     icono={<FaCalendarCheck />}
                     color="warning"
-                    detalle={reservasPendientes > 0 ? `${reservasPendientes} pendientes de atender` : 'Ninguna pendiente'}
+                    detalle={reservasPendientes > 0 ? `${reservasPendientes} ${reservasPendientes === 1 ? 'pendiente' : 'pendientes'} de atender` : 'Ninguna pendiente'}
                     medidor={{ valor: reservasPendientes, total: num(resumen.total_reservas), etiqueta: 'Reservas pendientes sobre el total', leyenda: 'del total de reservas está pendiente' }}
                 />
             </motion.section>
@@ -251,7 +252,7 @@ export default function DashboardPage() {
                     vacio={!mejorMes}
                     detalle={mejorMes
                         ? `${plural(num(mejorMes.cantidad_ventas), 'venta', 'ventas')} · ${formatearMoneda(mejorMes.total_vendido)}`
-                        : 'Aún no existen ventas pagadas.'}
+                        : 'Aún no existen ventas cobradas.'}
                 />
                 <MejorRegistro
                     icono={<FaCalendarCheck />}
@@ -260,7 +261,7 @@ export default function DashboardPage() {
                     vacio={!mejorDia}
                     detalle={mejorDia
                         ? `${plural(num(mejorDia.cantidad_ventas), 'venta', 'ventas')} · ${formatearMoneda(mejorDia.total_vendido)}`
-                        : 'Aún no existen ventas pagadas.'}
+                        : 'Aún no existen ventas cobradas.'}
                 />
             </motion.section>
 
@@ -289,7 +290,7 @@ export default function DashboardPage() {
 
             {/* CATÁLOGO RECIENTE */}
             <section aria-label="Catálogo reciente">
-                <RecentBooks libros={libros} />
+                <RecentBooks libros={libros} stockBajo={stockBajo} />
             </section>
 
         </div>

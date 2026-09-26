@@ -1,0 +1,35 @@
+%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+flowchart LR
+    API(["ApiService (Dio)"])
+    detalle_libro_screen["detalle_libro_screen"] --> API
+    entrega_y_pago_screen["entrega_y_pago_screen"] --> API
+    favoritos_screen["favoritos_screen"] --> API
+    home_screen["home_screen"] --> API
+    libros_screen["libros_screen"] --> API
+    login_screen["login_screen"] --> API
+    mis_compras_screen["mis_compras_screen"] --> API
+    perfil_screen["perfil_screen"] --> API
+    recuperar_contrasena_screen["recuperar_contrasena_screen"] --> API
+    reestablecer_contrasena_screen["reestablecer_contrasena_screen"] --> API
+    registro_screen["registro_screen"] --> API
+    reservas_screen["reservas_screen"] --> API
+    cambiar_password_screen["cambiar_password_screen"] --> API
+    editar_perfil_screen["editar_perfil_screen"] --> API
+    eliminar_cuenta_screen["eliminar_cuenta_screen"] --> API
+    two_factor_disable_screen["two_factor_disable_screen"] --> API
+    two_factor_setup_screen["two_factor_setup_screen"] --> API
+    two_factor_verify_screen["two_factor_verify_screen"] --> API
+    splash_screen["splash_screen"] --> API
+    verificacion_email_screen["verificacion_email_screen"] --> API
+    API --> _api_ventas{{"/api/ventas"}}
+    API --> _api_auth{{"/api/auth"}}
+    API --> _api_usuarios{{"/api/usuarios"}}
+    API --> _api_reservas{{"/api/reservas"}}
+    API --> _api_favoritos{{"/api/favoritos"}}
+    API --> _api_pagos{{"/api/pagos"}}
+    API --> _api_ubicaciones{{"/api/ubicaciones"}}
+    API --> _api_libros{{"/api/libros"}}
+    STORE(["StorageService<br/>secure storage + prefs"])
+    API --> STORE
+    CARRITO(["CarritoService<br/>(local)"])
+

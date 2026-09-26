@@ -4,14 +4,10 @@ import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Ficha } from '../../components/ui/Ficha';
+import { formatearFecha } from '../../lib/utils/format';
 
-function formatearFecha(fecha) {
-    if (!fecha) return 'Sin fecha';
-    return new Date(fecha).toLocaleString('es-PE', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    });
-}
+// Mismo formato de fecha que el resto del panel.
+const mostrarFecha = (fecha) => formatearFecha(fecha) || 'Sin fecha';
 
 function obtenerEstado(estado) {
     switch (estado) {
@@ -82,14 +78,14 @@ export default function ReservaViewModal({ reserva, abierto, onCerrar }) {
                 <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                     <FaCalendarDays /> Fecha de reserva
                 </div>
-                <p className="mt-3 text-sm font-semibold text-slate-700">{formatearFecha(reserva.fecha_reserva)}</p>
+                <p className="mt-3 text-sm font-semibold text-slate-700">{mostrarFecha(reserva.fecha_reserva)}</p>
             </div>
 
             <div className="mt-4 rounded-xl border border-primary-200 bg-parchment-200 p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-primary-500">
                     <FaClock /> Fecha de vencimiento
                 </div>
-                <p className="mt-3 text-sm font-semibold text-slate-700">{formatearFecha(reserva.fecha_vencimiento)}</p>
+                <p className="mt-3 text-sm font-semibold text-slate-700">{mostrarFecha(reserva.fecha_vencimiento)}</p>
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">

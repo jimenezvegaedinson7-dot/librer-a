@@ -1,17 +1,30 @@
 import { FaBookOpen, FaArrowRight } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 
-function RecentBooks({ libros = [] }) {
+function RecentBooks({ libros = [], stockBajo = [] }) {
     const navigate = useNavigate();
 
-    const obtenerStock = (stock) => {
-        const cantidad = Number(stock || 0);
+    // Stock bajo según el mínimo configurado en Inventario (la lista ya viene
+    // del backend), no un umbral fijo; los libros inactivos se indican aparte.
+    // stockBajo null = la consulta falló: no se clasifica como bajo ni normal.
+    const idsStockBajo = stockBajo ? new Set(stockBajo.map((item) => Number(item.id_libro))) : null;
+
+    const obtenerStock = (libro) => {
+        const cantidad = Number(libro.stock || 0);
+
+        if (Number(libro.estado) === 0) {
+            return { texto: 'Inactivo', clase: 'estado--neutro' };
+        }
 
         if (cantidad <= 0) {
             return { texto: 'Sin stock', clase: 'estado--peligro' };
         }
 
-        if (cantidad <= 5) {
+        if (!idsStockBajo) {
+            return { texto: `${cantidad} disp.`, clase: 'estado--neutro' };
+        }
+
+        if (idsStockBajo.has(Number(libro.id_libro))) {
             return { texto: `${cantidad} disp.`, clase: 'estado--aviso' };
         }
 
@@ -78,7 +91,7 @@ function RecentBooks({ libros = [] }) {
                         </thead>
                         <tbody>
                             {librosRecientes.map((libro, index) => {
-                                const stock = obtenerStock(libro.stock);
+                                const stock = obtenerStock(libro);
 
                                 return (
                                     <tr

@@ -1,0 +1,96 @@
+%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+flowchart LR
+    subgraph React
+        R__api_agencias["agencias"]
+        R__api_auth["auth"]
+        R__api_autores["autores"]
+        R__api_categorias["categorias"]
+        R__api_clientes["clientes"]
+        R__api_comprobantes["comprobantes"]
+        R__api_empresa["empresa"]
+        R__api_historial["historial"]
+        R__api_inventario["inventario"]
+        R__api_libros["libros"]
+        R__api_pagos["pagos"]
+        R__api_reclamaciones["reclamaciones"]
+        R__api_reportes["reportes"]
+        R__api_reservas["reservas"]
+        R__api_ubicaciones["ubicaciones"]
+        R__api_usuarios["usuarios"]
+        R__api_ventas["ventas"]
+    end
+    subgraph Flutter
+        F__api_auth["auth"]
+        F__api_favoritos["favoritos"]
+        F__api_libros["libros"]
+        F__api_pagos["pagos"]
+        F__api_reservas["reservas"]
+        F__api_ubicaciones["ubicaciones"]
+        F__api_usuarios["usuarios"]
+        F__api_ventas["ventas"]
+    end
+    E__api_agencias(("/api/agencias")) --> C_agencia_controller["agencia.controller"]
+    R__api_agencias --> E__api_agencias
+    E__api_auth(("/api/auth")) --> C_auth_controller["auth.controller"] & C_auth2fa_controller["auth2fa.controller"]
+    R__api_auth --> E__api_auth
+    F__api_auth --> E__api_auth
+    E__api_autores(("/api/autores")) --> C_autor_controller["autor.controller"]
+    R__api_autores --> E__api_autores
+    E__api_categorias(("/api/categorias")) --> C_categoria_controller["categoria.controller"]
+    R__api_categorias --> E__api_categorias
+    E__api_clientes(("/api/clientes")) --> C_cliente_controller["cliente.controller"]
+    R__api_clientes --> E__api_clientes
+    E__api_comprobantes(("/api/comprobantes")) --> C_comprobante_controller["comprobante.controller"]
+    R__api_comprobantes --> E__api_comprobantes
+    E__api_empresa(("/api/empresa")) --> C_empresa_controller["empresa.controller"]
+    R__api_empresa --> E__api_empresa
+    E__api_favoritos(("/api/favoritos")) --> C_favorito_controller["favorito.controller"]
+    F__api_favoritos --> E__api_favoritos
+    E__api_historial(("/api/historial")) --> C_historial_controller["historial.controller"]
+    R__api_historial --> E__api_historial
+    E__api_inventario(("/api/inventario")) --> C_inventario_controller["inventario.controller"]
+    R__api_inventario --> E__api_inventario
+    E__api_libros(("/api/libros")) --> C_libro_controller["libro.controller"]
+    R__api_libros --> E__api_libros
+    F__api_libros --> E__api_libros
+    E__api_pagos(("/api/pagos")) --> C_pago_controller["pago.controller"]
+    R__api_pagos --> E__api_pagos
+    F__api_pagos --> E__api_pagos
+    E__api_reclamaciones(("/api/reclamaciones")) --> C_reclamacion_controller["reclamacion.controller"]
+    R__api_reclamaciones --> E__api_reclamaciones
+    E__api_reportes(("/api/reportes")) --> C_reporte_controller["reporte.controller"]
+    R__api_reportes --> E__api_reportes
+    E__api_reservas(("/api/reservas")) --> C_reserva_controller["reserva.controller"]
+    R__api_reservas --> E__api_reservas
+    F__api_reservas --> E__api_reservas
+    E__api_ubicaciones(("/api/ubicaciones")) --> C_ubicacion_controller["ubicacion.controller"]
+    R__api_ubicaciones --> E__api_ubicaciones
+    F__api_ubicaciones --> E__api_ubicaciones
+    E__api_usuarios(("/api/usuarios")) --> C_usuario_controller["usuario.controller"]
+    R__api_usuarios --> E__api_usuarios
+    F__api_usuarios --> E__api_usuarios
+    E__api_ventas(("/api/ventas")) --> C_venta_controller["venta.controller"] & C_comprobante_controller["comprobante.controller"]
+    R__api_ventas --> E__api_ventas
+    F__api_ventas --> E__api_ventas
+    DB[("PostgreSQL")]
+    C_agencia_controller --> DB
+    C_app_controller --> DB
+    C_auth_controller --> DB
+    C_auth2fa_controller --> DB
+    C_autor_controller --> DB
+    C_categoria_controller --> DB
+    C_cliente_controller --> DB
+    C_comprobante_controller --> DB
+    C_empresa_controller --> DB
+    C_favorito_controller --> DB
+    C_historial_controller --> DB
+    C_inventario_controller --> DB
+    C_libro_controller --> DB
+    C_pago_controller --> DB
+    C_reclamacion_controller --> DB
+    C_reporte_controller --> DB
+    C_reserva_controller --> DB
+    C_ubicacion_controller --> DB
+    C_usuario_controller --> DB
+    C_venta_controller --> DB
+

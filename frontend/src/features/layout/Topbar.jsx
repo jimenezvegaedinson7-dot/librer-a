@@ -92,10 +92,21 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
         }
     };
 
+    // Consulta cada minuto solo mientras la pestaña está visible (no gasta
+    // el límite de peticiones del API en segundo plano) y al volver a ella.
     useEffect(() => {
         cargarNotificaciones();
-        const intervalo = setInterval(() => cargarNotificaciones(), 60000);
-        return () => clearInterval(intervalo);
+        const intervalo = setInterval(() => {
+            if (document.visibilityState === 'visible') cargarNotificaciones();
+        }, 60000);
+        const alVolver = () => {
+            if (document.visibilityState === 'visible') cargarNotificaciones();
+        };
+        document.addEventListener('visibilitychange', alVolver);
+        return () => {
+            clearInterval(intervalo);
+            document.removeEventListener('visibilitychange', alVolver);
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

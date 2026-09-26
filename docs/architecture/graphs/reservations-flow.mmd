@@ -1,0 +1,19 @@
+%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+sequenceDiagram
+    autonumber
+    participant F as Flutter · detalle_libro / reservas
+    participant R as React · ReservasPage
+    participant API as /api/reservas (reserva.controller)
+    participant RM as reserva.model
+    participant DB as PostgreSQL
+    participant J as jobs/limpieza (cada 5 min)
+    F->>API: POST /api/reservas (JWT)
+    API->>RM: validarFechaVencimiento + crear
+    RM->>DB: reservas, inventario
+    API-->>F: correo de reserva creada (mailer)
+    F->>API: GET /api/reservas/mis-reservas
+    F->>API: DELETE /api/reservas/:id (cancelar, solo dueño)
+    R->>API: GET /api/reservas (admin)
+    R->>API: PUT /api/reservas/:id/estado (admin, utils/transiciones)
+    API->>RM: actualizarEstado
+    J->>RM: cancelarVencidas()

@@ -46,7 +46,7 @@ function TopBooks({ libros = [], limite = 5 }) {
                         <h2 id="titulo-top-libros" className="font-title text-[18px] font-semibold leading-snug text-[#1c1814]">
                             Libros más vendidos
                         </h2>
-                        <p className="mt-0.5 text-[13px] text-[#766d62]">Unidades en ventas pagadas</p>
+                        <p className="mt-0.5 text-[13px] text-[#766d62]">Unidades en ventas cobradas (pagadas y entregadas)</p>
                     </div>
                 </div>
                 {lista.length > 0 && <span className="reporte-contador">Top {lista.length}</span>}
@@ -58,7 +58,7 @@ function TopBooks({ libros = [], limite = 5 }) {
                         <FaBookOpen />
                     </span>
                     <p className="font-title text-[16px] font-semibold text-[#1c1814]">Aún no hay ventas</p>
-                    <p className="mt-1 text-[13px] text-[#766d62]">El ranking aparecerá con las primeras ventas pagadas.</p>
+                    <p className="mt-1 text-[13px] text-[#766d62]">El ranking aparecerá con las primeras ventas cobradas.</p>
                 </div>
             ) : (
                 <>

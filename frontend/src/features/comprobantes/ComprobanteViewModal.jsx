@@ -11,6 +11,7 @@ import { montoEnLetras } from '../../lib/utils/numeroALetras';
 
 import { obtenerComprobante } from './comprobantesService';
 import { obtenerEmpresa } from '../configuracion/empresaService';
+import { correoVisible } from '../../lib/utils/cuentas';
 
 const CSS_IMPRESION = `
 @media print {
@@ -132,7 +133,7 @@ export default function ComprobanteViewModal({
     const clienteNombre = detalle?.cliente_nombre || '—';
     const clienteTipoDoc = detalle?.cliente_tipo_documento || (esFactura ? 'RUC' : 'DNI');
     const clienteDoc = detalle?.cliente_dni_ruc || '';
-    const clienteCorreo = detalle?.cliente_email || detalle?.correo_compra || '—';
+    const clienteCorreo = correoVisible(detalle?.cliente_email) || correoVisible(detalle?.correo_compra) || '—';
 
     const detalles = Array.isArray(detalle?.detalle) ? detalle.detalle : [];
 

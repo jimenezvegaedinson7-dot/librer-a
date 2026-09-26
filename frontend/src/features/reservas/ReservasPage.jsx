@@ -17,6 +17,7 @@ import { FaEye, FaPenToSquare } from 'react-icons/fa6';
 
 import { useToast } from '../../components/providers/ToastProvider';
 import { BtnAccion } from '../../components/ui/Acciones';
+import { formatearFecha } from '../../lib/utils/format';
 
 import { listarReservas, obtenerReserva } from './reservasService';
 import ReservaForm from './ReservaForm';
@@ -25,13 +26,8 @@ import ReservaEstadoModal from './ReservaEstadoModal';
 
 const POR_PAGINA = 10;
 
-function formatearFecha(fecha) {
-    if (!fecha) return 'Sin fecha';
-    return new Date(fecha).toLocaleString('es-PE', {
-        dateStyle: 'short',
-        timeStyle: 'short',
-    });
-}
+// Mismo formato de fecha que el resto del panel.
+const mostrarFecha = (fecha) => formatearFecha(fecha) || 'Sin fecha';
 
 function obtenerEstado(estado) {
     switch (estado) {
@@ -53,8 +49,8 @@ const columnasReservas = [
     { titulo: 'Usuario', render: (fila) => <span className="font-semibold text-slate-700">{fila.nombre_usuario} {fila.apellido_usuario}</span> },
     { titulo: 'Libro', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo}</span> },
     { titulo: 'Cantidad', alineacion: 'centro', render: (fila) => <span className="font-bold text-slate-700">{fila.cantidad}</span> },
-    { titulo: 'Fecha reserva', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_reserva)}</span> },
-    { titulo: 'Vencimiento', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_vencimiento)}</span> },
+    { titulo: 'Fecha reserva', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{mostrarFecha(fila.fecha_reserva)}</span> },
+    { titulo: 'Vencimiento', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{mostrarFecha(fila.fecha_vencimiento)}</span> },
     {
         titulo: 'Estado',
         alineacion: 'centro',

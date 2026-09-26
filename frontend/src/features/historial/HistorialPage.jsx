@@ -255,7 +255,7 @@ export default function HistorialPage() {
     return (
         <div className="space-y-4">
             <PageHeader
-                titulo="Gestión de Historial"
+                titulo="Historial de actividad"
                 descripcion="Consulta y supervisa las actividades registradas en el sistema"
                 acciones={
                     <Button variante="secondary" icono={<FaRotate />} onClick={cargarHistorial} disabled={cargando}>

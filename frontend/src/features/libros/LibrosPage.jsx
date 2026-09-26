@@ -22,6 +22,8 @@ import { useToast } from '../../components/providers/ToastProvider';
 import { listarLibros, obtenerLibro, eliminarLibro } from './librosService';
 import LibroForm from './LibroForm';
 import { StockBadge } from './libroUi';
+import { nivelStock } from './nivelStock';
+import { listarInventario } from '../inventario/inventarioService';
 import LibroViewModal from './LibroViewModal';
 import LibroEditModal from './LibroEditModal';
 import LibroDeleteModal from './LibroDeleteModal';
@@ -34,7 +36,7 @@ const columnasLibros = [
     { titulo: 'Autor', render: (fila) => <span className="text-slate-700">{fila.autor}</span> },
     { titulo: 'Categoría', render: (fila) => <span className="text-slate-700">{fila.categoria}</span> },
     { titulo: 'Precio', alineacion: 'centro', render: (fila) => <span className="font-semibold text-slate-700">{formatearMoneda(fila.precio)}</span> },
-    { titulo: 'Stock', alineacion: 'centro', render: (fila) => <StockBadge stock={fila.stock} /> },
+    { titulo: 'Stock', alineacion: 'centro', render: (fila) => <StockBadge stock={fila.stock} stockMinimo={fila.stock_minimo} /> },
     { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
 ];
 
@@ -99,6 +101,7 @@ export default function LibrosPage() {
     const [busqueda, setBusqueda] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('todos');
     const [filtroStock, setFiltroStock] = useState('todos');
+    const [avisoMinimos, setAvisoMinimos] = useState('');
 
     const [paginaActivos, setPaginaActivos] = useState(1);
     const [paginaInactivos, setPaginaInactivos] = useState(1);
@@ -112,7 +115,21 @@ export default function LibrosPage() {
         try {
             setCargando(true);
             setError('');
-            setLibros(await listarLibros());
+            setAvisoMinimos('');
+            // El mínimo de stock vive en Inventario: se une para usar el mismo
+            // criterio de "stock bajo" que esa sección.
+            const [lista, inventario] = await Promise.all([
+                listarLibros(),
+                // Si Inventario falla no se inventa un mínimo: queda sin dato.
+                listarInventario().catch(() => null),
+            ]);
+            if (!inventario) {
+                setAvisoMinimos('No se pudo consultar Inventario: el nivel de stock bajo no está disponible por ahora.');
+                setLibros(lista.map((libro) => ({ ...libro, stock_minimo: undefined })));
+                return;
+            }
+            const minimos = new Map(inventario.map((item) => [Number(item.id_libro), item.stock_minimo]));
+            setLibros(lista.map((libro) => ({ ...libro, stock_minimo: minimos.get(Number(libro.id_libro)) ?? null })));
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Error al cargar los libros');
         } finally {
@@ -138,12 +155,7 @@ export default function LibrosPage() {
                 (filtroEstado === 'activo' && estado === 1) ||
                 (filtroEstado === 'inactivo' && estado !== 1);
 
-            const stock = Number(libro.stock);
-            const coincideStock =
-                filtroStock === 'todos' ||
-                (filtroStock === 'disponible' && stock > 5) ||
-                (filtroStock === 'bajo' && stock > 0 && stock <= 5) ||
-                (filtroStock === 'sin-stock' && stock <= 0);
+            const coincideStock = filtroStock === 'todos' || nivelStock(libro.stock, libro.stock_minimo) === filtroStock;
 
             return coincideBusqueda && coincideEstado && coincideStock;
         });
@@ -172,7 +184,7 @@ export default function LibrosPage() {
 
     const verLibro = async (libro) => {
         try {
-            setLibroVer(await obtenerLibro(libro.id_libro));
+            setLibroVer({ ...(await obtenerLibro(libro.id_libro)), stock_minimo: libro.stock_minimo });
         } catch (err) {
             mostrarError(err.response?.data?.mensaje || 'Error al obtener el libro');
         }
@@ -289,6 +301,7 @@ export default function LibrosPage() {
             )}
 
             {!cargando && error && <Alert tipo="error">{error}</Alert>}
+            {!cargando && !error && avisoMinimos && <Alert tipo="warning">{avisoMinimos}</Alert>}
 
             {!cargando && !error && libros.length === 0 && (
                 <EmptyState

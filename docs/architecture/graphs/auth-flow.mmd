@@ -1,0 +1,23 @@
+%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+sequenceDiagram
+    autonumber
+    participant C as Cliente (React / Flutter)
+    participant A as POST /api/auth/login
+    participant U as usuario.model
+    participant DB as PostgreSQL (usuarios)
+    participant V as POST /api/auth/2fa/verify-login
+    C->>A: email + password
+    A->>U: buscarPorEmail
+    U->>DB: SELECT usuarios
+    A-->>A: bcrypt.compare
+    alt sin 2FA
+        A-->>C: token JWT (24 h) + data
+    else con 2FA
+        A-->>C: requires_2fa + two_factor_token (5 min)
+        C->>V: two_factor_token + código TOTP
+        V->>U: buscarPorIdConPassword / obtenerSecreto2FA
+        V-->>V: descifrar secreto + otplib.verify
+        V-->>C: token JWT (24 h)
+    end
+    Note over C: React guarda en localStorage (solo rol administrador)<br/>Flutter en flutter_secure_storage (solo rol cliente)
+    Note over C: Peticiones siguientes: Authorization Bearer → verificarToken (+ verificarRol)

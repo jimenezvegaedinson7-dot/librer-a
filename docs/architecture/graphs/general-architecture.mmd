@@ -1,0 +1,19 @@
+%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+flowchart TB
+    DB[("PostgreSQL · 16 tablas")]
+    subgraph API["Backend Node/Express (Render)"]
+        direction TB
+        MW["helmet · cors · rate limit · JWT · roles"]
+        R["19 routers /api/*"]
+        C["20 controladores"]
+        M["17 modelos SQL"]
+        MW --> R --> C --> M
+    end
+    M --> DB
+    EXT1["PayU WebCheckout"]
+    EXT2["SMTP (nodemailer)"]
+    EXT3["Cloudinary"]
+    C --> EXT1 & EXT2 & EXT3
+    EXT1 -. webhook .-> R
+    REACT["React Admin (Vercel)<br/>rol administrador"] -->|"axios + Bearer"| MW
+    FLUTTER["Flutter Android<br/>rol cliente"] -->|"Dio + Bearer"| MW

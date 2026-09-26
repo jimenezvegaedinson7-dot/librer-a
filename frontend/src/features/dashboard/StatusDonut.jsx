@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'motion/react';
-import { FaCalendarCheck, FaCartShopping, FaCircleCheck, FaCircleXmark, FaClock, FaTruck } from 'react-icons/fa6';
+import { FaCalendarCheck, FaCartShopping, FaCircleCheck, FaCircleXmark, FaClock, FaRotateLeft, FaTruck } from 'react-icons/fa6';
 
 import { formatearMoneda } from '../../lib/utils/format';
 import { Destello } from './Decoraciones';
@@ -14,11 +14,13 @@ const ESTADOS = {
     confirmada: { texto: 'Confirmada', clase: 'estado--info', Icono: FaCircleCheck, orden: 2 },
     pendiente: { texto: 'Pendiente', clase: 'estado--aviso', Icono: FaClock, orden: 3 },
     cancelada: { texto: 'Cancelada', clase: 'estado--peligro', Icono: FaCircleXmark, orden: 4 },
+    reembolsada: { texto: 'Reembolsada', clase: 'estado--neutro', Icono: FaRotateLeft, orden: 5 },
 };
 
 const configEstado = (estado) => {
     const clave = String(estado || '').toLowerCase();
-    return ESTADOS[clave] || { texto: clave || 'Otro', clase: 'estado--neutro', Icono: FaClock, orden: 9 };
+    const texto = clave ? clave.charAt(0).toUpperCase() + clave.slice(1) : 'Otro';
+    return ESTADOS[clave] || { texto, clase: 'estado--neutro', Icono: FaClock, orden: 9 };
 };
 
 // Barra 100 % apilada con escala y destello al pasar el cursor.

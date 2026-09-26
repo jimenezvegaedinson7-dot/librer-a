@@ -84,7 +84,7 @@ function SalesChart({
                             {titulo}
                         </h2>
                         <p className="mt-0.5 text-[13px] text-[#766d62]">
-                            {metrica === 'total' ? 'Ingresos de ventas pagadas' : 'Ventas pagadas'} por {config.unidad}
+                            {metrica === 'total' ? 'Ingresos cobrados (ventas pagadas y entregadas)' : 'Ventas cobradas'} por {config.unidad}
                         </p>
                     </div>
                 </div>
@@ -153,7 +153,7 @@ function SalesChart({
             {verTabla ? (
                 <div className="tabla-reporte max-h-[360px] overflow-auto">
                     <table className="min-w-full">
-                        <caption className="sr-only">Ventas pagadas por {config.unidad}</caption>
+                        <caption className="sr-only">Ventas cobradas por {config.unidad}</caption>
                         <thead className="sticky top-0">
                             <tr>
                                 <th scope="col" className="text-left">{config.unidad === 'día' ? 'Día' : 'Mes'}</th>
@@ -178,7 +178,7 @@ function SalesChart({
                 <div className="px-5 pb-5 pt-6 sm:px-6">
                     {suma === 0 ? (
                         <div className="flex h-[240px] flex-col items-center justify-center text-center">
-                            <p className="font-title text-[16px] font-semibold text-[#1c1814]">Sin ventas pagadas en este periodo</p>
+                            <p className="font-title text-[16px] font-semibold text-[#1c1814]">Sin ventas cobradas en este periodo</p>
                             <p className="mt-1 text-[13px] text-[#766d62]">
                                 {periodo === 'dia' ? `Prueba con el periodo de ${meses} meses.` : 'Aún no hay ventas registradas.'}
                             </p>

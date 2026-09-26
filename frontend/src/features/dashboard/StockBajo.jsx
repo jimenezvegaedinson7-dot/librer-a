@@ -7,6 +7,8 @@ import { num } from './graficoUtils';
 const plural = (n, uno, varios) => `${n} ${Number(n) === 1 ? uno : varios}`;
 
 export default function StockBajo({ items = [] }) {
+    // items null = la consulta falló; no se afirma que el inventario esté en orden.
+    const sinDatos = items === null;
     const lista = Array.isArray(items) ? items : [];
     const sinStock = lista.filter((i) => num(i.stock) <= 0).length;
     // Rojo solo si hay libros agotados; ámbar si solo están bajo el mínimo.
@@ -31,12 +33,20 @@ export default function StockBajo({ items = [] }) {
                     </div>
                 </div>
                 <div className="panel-total">
-                    <p className="panel-total-cifra">{lista.length}</p>
+                    <p className="panel-total-cifra">{sinDatos ? '—' : lista.length}</p>
                     <p className="panel-total-unidad">{Number(lista.length) === 1 ? 'libro' : 'libros'}</p>
                 </div>
             </header>
 
-            {lista.length === 0 ? (
+            {sinDatos ? (
+                <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
+                    <span className="panel-icono mb-3 !h-12 !w-12 !rounded-full" aria-hidden="true">
+                        <FaTriangleExclamation />
+                    </span>
+                    <p className="font-title text-[16px] font-semibold text-[#1c1814]">Stock no disponible</p>
+                    <p className="mt-1 text-[13px] text-[#766d62]">No se pudo consultar el inventario. Actualiza la página para reintentar.</p>
+                </div>
+            ) : lista.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
                     <span className="panel-icono mb-3 !h-12 !w-12 !rounded-full" aria-hidden="true">
                         <FaBoxOpen />

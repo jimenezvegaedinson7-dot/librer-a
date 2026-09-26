@@ -7,6 +7,7 @@ import { Ficha } from '../../components/ui/Ficha';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 import { textoMetodoPago, textoOrigen } from './metodosPago';
+import { correoVisible } from '../../lib/utils/cuentas';
 
 const estados = {
     pendiente: { texto: 'Pendiente', color: 'warning' },
@@ -27,7 +28,7 @@ function descripcionCobro(venta) {
 
 function descripcionEntrega(venta) {
     if (venta.tipo_entrega === 'domicilio') return 'A domicilio';
-    if (venta.tipo_entrega === 'agencia') return 'Agencia courier';
+    if (venta.tipo_entrega === 'agencia') return 'Agencia courier (histórico)';
     if (venta.tipo_entrega === 'tienda') return 'Recoger en tienda';
     return 'Sin especificar';
 }
@@ -78,7 +79,7 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                     {entrega}
                 </Ficha>
                 <Ficha color="violet" icono={<FaEnvelope />} etiqueta="Correo de la compra">
-                    {venta.correo_compra || (venta.origen === 'panel' ? '' : venta.correo_usuario) || 'Sin correo'}
+                    {correoVisible(venta.correo_compra) || (venta.origen === 'panel' ? '' : correoVisible(venta.correo_usuario)) || 'Sin correo'}
                 </Ficha>
             </div>
 

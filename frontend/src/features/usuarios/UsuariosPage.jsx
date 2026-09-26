@@ -26,6 +26,7 @@ import { ConfirmarAccion } from '../../components/ui/ConfirmarAccion';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 import { exportarCsv } from '../../lib/utils/exportarCsv';
+import { correoVisible, esCuentaEliminada } from '../../lib/utils/cuentas';
 
 import { useToast } from '../../components/providers/ToastProvider';
 import { useAuth } from '../auth/AuthContext';
@@ -48,16 +49,22 @@ const columnasUsuarios = [
         render: (fila) => (
             <p className="text-sm">
                 <span className="font-semibold text-slate-700">{`${fila.nombre || ''} ${fila.apellido || ''}`.trim() || 'Sin nombre'}</span>
-                <span className="block text-xs text-slate-500">{fila.email || 'Sin correo'}</span>
+                <span className="block text-xs text-slate-500">
+                    {esCuentaEliminada(fila) ? 'Datos anonimizados a pedido del titular' : correoVisible(fila.email) || 'Sin correo'}
+                </span>
             </p>
         ),
     },
     { titulo: 'Rol', alineacion: 'centro', render: (fila) => rolBadge(fila.rol) },
-    { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
+    {
+        titulo: 'Estado',
+        alineacion: 'centro',
+        render: (fila) => (esCuentaEliminada(fila) ? <Badge color="neutral">Eliminada</Badge> : <EstadoActivo activo={fila.estado} />),
+    },
     {
         titulo: 'Registro',
         alineacion: 'centro',
-        render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_registro, { soloDia: true }) || 'Sin fecha'}</span>,
+        render: (fila) => <span className="whitespace-nowrap text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_registro, { soloDia: true }) || 'Sin fecha'}</span>,
     },
     {
         titulo: 'Compras',
@@ -73,6 +80,14 @@ const columnasUsuarios = [
 
 function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio }) {
     const activo = Number(fila.estado) === 1;
+    // Una cuenta eliminada por su titular no se reactiva ni cambia de rol.
+    if (esCuentaEliminada(fila)) {
+        return (
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver usuario">
+                <FaEye />
+            </BtnAccion>
+        );
+    }
     return (
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver usuario">
@@ -258,7 +273,7 @@ export default function UsuariosPage({ incrustado = false }) {
             columnas: [
                 { titulo: 'ID', exportar: (f) => f.id_usuario },
                 { titulo: 'Nombre', exportar: (f) => `${f.nombre || ''} ${f.apellido || ''}`.trim() },
-                { titulo: 'Email', exportar: (f) => f.email || '' },
+                { titulo: 'Email', exportar: (f) => correoVisible(f.email) },
                 { titulo: 'Rol', exportar: (f) => f.rol || '' },
                 { titulo: 'Estado', exportar: (f) => (Number(f.estado) === 1 ? 'Activo' : 'Inactivo') },
                 { titulo: 'Compras', exportar: (f) => f.total_compras || 0 },

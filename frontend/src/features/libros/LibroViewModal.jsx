@@ -65,7 +65,7 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                                 <span className="text-sm font-medium text-primary-500">
                                     {Number(libro.stock) === 1 ? 'unidad' : 'unidades'}
                                 </span>
-                                <span className="ml-auto"><StockBadge stock={libro.stock} /></span>
+                                <span className="ml-auto"><StockBadge stock={libro.stock} stockMinimo={libro.stock_minimo} /></span>
                             </div>
                         </Ficha>
                     </div>

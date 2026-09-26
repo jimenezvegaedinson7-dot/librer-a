@@ -18,6 +18,7 @@ import { exportarCsv } from '../../lib/utils/exportarCsv';
 
 import { listarClientes } from './clientesService';
 import ClienteViewModal from './ClienteViewModal';
+import { correoVisible, esCuentaEliminada } from '../../lib/utils/cuentas';
 
 const POR_PAGINA = 10;
 
@@ -27,7 +28,7 @@ const columnasClientes = [
         render: (fila) => (
             <p className="text-sm text-slate-700">
                 <span className="font-semibold text-slate-700">{fila.nombre_completo || 'Sin nombre'}</span>
-                <span className="block text-xs text-slate-500">{fila.email || 'Sin correo'}</span>
+                <span className="block text-xs text-slate-500">{esCuentaEliminada(fila) ? 'Cuenta eliminada por su titular' : correoVisible(fila.email) || 'Sin correo'}</span>
             </p>
         ),
     },
@@ -135,7 +136,7 @@ export default function ClientesPage({ incrustado = false }) {
             columnas: [
                 { titulo: 'ID', exportar: (f) => f.id_usuario },
                 { titulo: 'Cliente', exportar: (f) => f.nombre_completo || '' },
-                { titulo: 'Email', exportar: (f) => f.email || '' },
+                { titulo: 'Email', exportar: (f) => correoVisible(f.email) },
                 { titulo: 'Nº compras', exportar: (f) => f.numero_compras || 0 },
                 { titulo: 'Total gastado', exportar: (f) => f.total_gastado || 0 },
                 { titulo: 'Última compra', exportar: (f) => f.ultima_compra || '' },

@@ -6,6 +6,7 @@ import { Badge, EstadoActivo } from '../../components/ui/Badge';
 import { Ficha } from '../../components/ui/Ficha';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
+import { correoVisible, esCuentaEliminada } from '../../lib/utils/cuentas';
 
 function rolBadge(rol) {
     if (rol === 'administrador') return <Badge color="primary">Administrador</Badge>;
@@ -28,7 +29,7 @@ export default function UsuarioViewModal({ usuario, abierto, onCerrar }) {
                     #{usuario.id_usuario}
                 </Ficha>
                 <Ficha color="slate" icono={<FaEnvelope />} etiqueta="Correo electrónico">
-                    {usuario.email || 'Sin correo'}
+                    {esCuentaEliminada(usuario) ? 'Cuenta eliminada por su titular (datos anonimizados)' : correoVisible(usuario.email) || 'Sin correo'}
                 </Ficha>
             </div>
 

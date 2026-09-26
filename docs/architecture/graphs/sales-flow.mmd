@@ -1,0 +1,21 @@
+%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+sequenceDiagram
+    autonumber
+    participant P as React · VentaForm / VentasPage
+    participant V as /api/ventas (venta.controller)
+    participant VM as venta.model
+    participant H as historial.model
+    participant CM as comprobante.model
+    participant DB as PostgreSQL
+    P->>V: POST /api/ventas (JWT + admin)
+    V->>VM: crear (transacción)
+    VM->>DB: ventas, detalle_venta, inventario (transacción)
+    V->>H: crear (historial_operaciones)
+    P->>V: PUT /api/ventas/:id/estado
+    V->>VM: obtenerPorId + actualizarEstado (utils/transiciones)
+    V-->>V: correo "pedido entregado" (mailer) si corresponde
+    P->>V: POST /api/ventas/:id/comprobante
+    V->>CM: generarComprobante
+    CM->>DB: comprobantes
+    P->>V: POST /api/comprobantes/:id/enviar-email
+    Note over P: Flutter solo lee: GET /api/ventas/mis-ventas y GET /api/ventas/:id/pago
