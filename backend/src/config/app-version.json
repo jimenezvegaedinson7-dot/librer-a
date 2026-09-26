@@ -1,8 +1,8 @@
 {
-    "version": "1.0.0",
-    "versionCode": 1,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.0/libreria-1.0.0.apk",
-    "sha256": "fece343e2d7aa19b8c9b08e3fa8a27ab14292489e11c72e043fbfc0356bc3573",
+    "version": "1.0.1",
+    "versionCode": 2,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.1/libreria-1.0.1.apk",
+    "sha256": "0b351e766c7e712b57967076d9fe61274e5cfbfd7e21c941984cd51e8c843cc4",
     "obligatoria": false,
-    "notas": "Primera versión con actualizaciones automáticas."
+    "notas": "Nuevo diseño con portadas sueltas, icono más grande, Editar perfil y Cambiar contraseña renovados, y correcciones del carrito."
 }

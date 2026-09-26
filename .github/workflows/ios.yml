@@ -1,0 +1,92 @@
+name: iOS
+
+on:
+  push:
+    paths:
+      - 'ios_swift_app/**'
+      - '.github/workflows/ios.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: ios_swift_app
+
+env:
+  PROJECT: LibreriaSecureApp.xcodeproj
+  SCHEME: LibreriaSecureApp
+
+jobs:
+  ipa:
+    name: IPA sin firmar (para AltStore)
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versión de Xcode
+        run: xcodebuild -version
+
+      - name: Compilar para iPhone sin firma
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      - name: Empaquetar .ipa
+        run: |
+          APP="build/Build/Products/Release-iphoneos/$SCHEME.app"
+          test -d "$APP"
+          rm -rf Payload && mkdir Payload
+          cp -R "$APP" Payload/
+          zip -qry "LibreriaDelSaber-unsigned.ipa" Payload
+          ls -lh LibreriaDelSaber-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LibreriaDelSaber-ipa
+          path: ios_swift_app/LibreriaDelSaber-unsigned.ipa
+          retention-days: 14
+
+  tests:
+    name: Pruebas en simulador
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Elegir simulador de iPhone
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)["devices"]
+          ios = sorted((k for k in data if "iOS" in k), reverse=True)
+          for runtime in ios:
+              for d in data[runtime]:
+                  if d["name"].startswith("iPhone"):
+                      print(d["udid"]); sys.exit()
+          ')
+          echo "Simulador: $UDID"
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Ejecutar XCTest
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
