@@ -20,7 +20,7 @@ import PanelNotificaciones from '../notificaciones/PanelNotificaciones';
 import { esPrimeraVez, leerVistas, marcarVistas, obtenerNotificaciones } from '../notificaciones/notificacionesService';
 import { useAuth } from '../auth/AuthContext';
 import PerfilAdministrador from './PerfilAdministrador';
-import { navPrincipal } from './navConfig';
+import { navPorRol } from './navConfig';
 
 function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
     return (
@@ -71,10 +71,10 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     const resultadosBusqueda = useMemo(() => {
         const texto = busqueda.trim().toLowerCase();
         if (!texto) return [];
-        return navPrincipal.filter(
+        return navPorRol(usuario?.rol).filter(
             (m) => m.nombre.toLowerCase().includes(texto) || m.descripcion.toLowerCase().includes(texto),
         );
-    }, [busqueda]);
+    }, [busqueda, usuario?.rol]);
 
     // Solo eventos que requieren atención: pagos aprobados, reservas pendientes y stock bajo.
     const cargarNotificaciones = async () => {

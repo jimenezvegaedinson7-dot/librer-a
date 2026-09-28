@@ -161,7 +161,7 @@ const MODULOS = [
 
 | Archivo | Uso |\n|---|---|
 | \`auth.middleware.js\` | \`verificarToken\`: exige \`Authorization: Bearer <jwt>\`, valida con \`jwt.verify\` y deja \`req.usuario\`. |
-| \`rol.middleware.js\` | \`verificarRol('administrador')\`: restringe por rol. |
+| \`rol.middleware.js\` | \`verificarRol(...roles)\`: multirrol, acepta \`administrador\`/\`cajero\` y responde **403** (nunca 401). \`verificarPanel\`: cualquier usuario interno. \`esPersonalInterno(usuario)\` para anti-IDOR. Roles centralizados en \`utils/roles.js\`. |
 | \`rateLimit.js\` | \`baseLimiter\` (global), \`loginLimiter\`, \`registroLimiter\`, \`verificacionLimiter\`, \`twoFaLimiter\`, \`webhookLimit\`. |
 | \`upload.middleware.js\` | Multer en memoria, 5 MB, validación de tipo; sube la portada a Cloudinary si está configurado (\`req.file.cloudinaryUrl\`) o al disco \`/uploads\`. Campo \`portada\`. |
 | \`uploadPerfil.middleware.js\` | Igual para fotos de perfil. Campo \`foto\`. |
@@ -176,6 +176,7 @@ const MODULOS = [
 | \`utils/transiciones.js\` | Máquinas de estado permitidas de \`VENTA\` y \`RESERVA\` (\`permitirTransicion\`). |
 | \`utils/payuStatus.js\` | Traduce estados de PayU a estados de venta. |
 | \`utils/validaciones.js\` | \`validarId\`, \`esEmailValido\`, \`esNumeroNoNegativo\`, \`esCantidadPositiva\`, \`esEstadoValido\`… |
+| \`utils/roles.js\` | Roles del dominio (\`ADMINISTRADOR\`, \`CAJERO\`, \`CLIENTE\`), \`ROLES\` (lista), \`normalizarRol\`, \`esRolValido\`, \`esPersonalInterno\`, \`ROLES_INTERNOS\`. \`usuarios.rol\` es \`VARCHAR(20)\` con \`CHECK IN ('cliente','administrador','cajero')\` (migración \`025_rol_cajero.sql\`). |
 | \`utils/fileType.js\` | Detección del tipo real de archivo por firma (uploads). |
 | \`utils/numeroALetras.js\` | Importe en letras para comprobantes. |
 | \`services/payu.service.js\` | Integración **PayU WebCheckout**: crear orden, formulario de checkout, consulta de orden. |
@@ -236,8 +237,8 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 \`<ToastProvider>\` → \`<AuthProvider>\` → \`<RouterProvider>\` (react-router ${pkg.dependencies['react-router-dom']}).
 
 - **Cliente HTTP**: \`lib/api/client.js\` (axios). \`baseURL = VITE_API_URL\` (\`.env.production\` apunta a \`https://libreria-api-v9h0.onrender.com/api\`, \`.env.development\` a \`http://localhost:3000/api\`). Interceptor de petición añade \`Bearer <token>\`; el de respuesta devuelve \`response.data\` y ante **401** limpia la sesión y redirige a \`/\`.
-- **Sesión**: \`features/auth/AuthContext.jsx\` + \`lib/storage/index.js\` (\`localStorage\`: \`token\`, \`usuario\`, \`ultimoHistorialVisto\`). Solo entra el rol \`administrador\` (validado en \`LoginPage\`).
-- **Guard**: \`routes/RutaProtegida.jsx\` redirige a \`/\` si no hay token.
+- **Sesión**: \`features/auth/AuthContext.jsx\` + \`lib/storage/index.js\` (\`localStorage\`: \`token\`, \`usuario\`, \`ultimoHistorialVisto\`). Solo entran los roles \`administrador\` y \`cajero\` (validado en \`LoginPage\`).
+- **Guards**: \`routes/RutaProtegida.jsx\` redirige a \`/\` si no hay token y cierra sesión si la cuenta no es del panel; \`routes/RutaPorRol.jsx\` exige \`administrador\` o \`cajero\` y manda a \`/punto-venta\` cuando el rol no tiene acceso. Helpers en \`lib/roles.js\` (\`esDelPanel\`, \`inicioPorRol\`, \`portadaDeRol\`) y hook \`features/auth/useRol.js\`. Un **403** no cierra sesión.
 - **Layout**: \`features/layout/AdminLayout.jsx\` (ThemeProvider, Sidebar, Topbar, Breadcrumbs, transición de página con Framer Motion).
 - **Tema**: \`components/providers/ThemeContext.jsx\` (modo claro/oscuro y colores por zona en \`localStorage\`). Estilos globales: \`src/index.css\` → \`src/styles/theme.css\` (tokens de marca, dark mode, componentes).
 - **Despliegue**: Vercel (\`frontend/vercel.json\` reescribe todo a \`index.html\`).
@@ -246,7 +247,7 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 
 | Ruta | Componente | Archivo |\n|---|---|---|\n`;
     for (const r of H.frontend.rutas) md += `| \`${r.path}\` | ${r.component || '—'} | ${r.file ? `\`${corto(r.file)}\`` : r.element.includes('Navigate') ? `redirección: \`${r.element}\`` : '—'} |\n`;
-    md += `\nTodas excepto \`/\` y \`/verificar-email\` cuelgan de \`<RutaProtegida><AdminLayout/></RutaProtegida>\`. \`/reportes\` redirige a \`/dashboard\` (Reportes se integró en el Resumen).\n`;
+    md += `\nTodas excepto \`/\` y \`/verificar-email\` cuelgan de \`<RutaProtegida><AdminLayout/></RutaProtegida>\`, más un \`<RutaPorRol roles={['administrador','cajero']}>\` en las rutas restringidas. \`/punto-venta\` es la portada del \`cajero\`; \`/reportes\` redirige a \`/dashboard\` (Reportes se integró en el Resumen).\n`;
 
     md += `\n## Cadena página → servicio → endpoint\n\nArchivos que importan funciones de servicio y los endpoints que alcanzan (el componente puede ser una página, un formulario o un modal):\n\n| Archivo | Endpoints |\n|---|---|\n`;
     for (const [archivo, eps] of Object.entries(H.frontend.endpointsPorArchivo).sort()) if (eps.length) md += `| \`${corto(archivo)}\` | ${eps.map((e) => `\`${e}\``).join('<br>')} |\n`;

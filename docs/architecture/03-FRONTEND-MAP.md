@@ -9,8 +9,8 @@
 `<ToastProvider>` → `<AuthProvider>` → `<RouterProvider>` (react-router ^7.18.3).
 
 - **Cliente HTTP**: `lib/api/client.js` (axios). `baseURL = VITE_API_URL` (`.env.production` apunta a `https://libreria-api-v9h0.onrender.com/api`, `.env.development` a `http://localhost:3000/api`). Interceptor de petición añade `Bearer <token>`; el de respuesta devuelve `response.data` y ante **401** limpia la sesión y redirige a `/`.
-- **Sesión**: `features/auth/AuthContext.jsx` + `lib/storage/index.js` (`localStorage`: `token`, `usuario`, `ultimoHistorialVisto`). Solo entra el rol `administrador` (validado en `LoginPage`).
-- **Guard**: `routes/RutaProtegida.jsx` redirige a `/` si no hay token.
+- **Sesión**: `features/auth/AuthContext.jsx` + `lib/storage/index.js` (`localStorage`: `token`, `usuario`, `ultimoHistorialVisto`). Solo entran los roles `administrador` y `cajero` (validado en `LoginPage`).
+- **Guards**: `routes/RutaProtegida.jsx` redirige a `/` si no hay token y cierra sesión si la cuenta no es del panel; `routes/RutaPorRol.jsx` exige `administrador` o `cajero` y manda a `/punto-venta` cuando el rol no tiene acceso. Helpers en `lib/roles.js` (`esDelPanel`, `inicioPorRol`, `portadaDeRol`) y hook `features/auth/useRol.js`. Un **403** no cierra sesión.
 - **Layout**: `features/layout/AdminLayout.jsx` (ThemeProvider, Sidebar, Topbar, Breadcrumbs, transición de página con Framer Motion).
 - **Tema**: `components/providers/ThemeContext.jsx` (modo claro/oscuro y colores por zona en `localStorage`). Estilos globales: `src/index.css` → `src/styles/theme.css` (tokens de marca, dark mode, componentes).
 - **Despliegue**: Vercel (`frontend/vercel.json` reescribe todo a `index.html`).
@@ -22,6 +22,7 @@
 | `/` | LoginPage | `features/auth/LoginPage.jsx` |
 | `/verificar-email` | VerificarEmailPage | `features/auth/VerificarEmailPage.jsx` |
 | `/libro-de-reclamaciones` | LibroReclamacionesPage | `features/reclamaciones/LibroReclamacionesPage.jsx` |
+| `/punto-venta` | PuntoVentaPage | `features/puntoventa/PuntoVentaPage.jsx` |
 | `/dashboard` | DashboardPage | `features/dashboard/DashboardPage.jsx` |
 | `/libros` | LibrosPage | `features/libros/LibrosPage.jsx` |
 | `/autores` | AutoresPage | `features/autores/AutoresPage.jsx` |
@@ -31,19 +32,19 @@
 | `/ventas` | VentasPage | `features/ventas/VentasPage.jsx` |
 | `/comprobantes` | ComprobantesPage | `features/comprobantes/ComprobantesPage.jsx` |
 | `/cierre-caja` | CierreCajaPage | `features/cierre/CierreCajaPage.jsx` |
-| `/reclamaciones` | ReclamacionesPage | `features/reclamaciones/ReclamacionesPage.jsx` |
 | `/pagos` | PagosPage | `features/pagos/PagosPage.jsx` |
 | `/usuarios` | UsuariosPage | `features/usuarios/UsuariosClientesPage.jsx` |
-| `/clientes` | Navigate | redirección: `<Navigate to="/usuarios?vista=clientes" replace /> }` |
-| `/agencias` | Navigate | redirección: `<Navigate to="/" replace /> }` |
+| `/clientes` | Navigate | redirección: `para(SOLO_ADMIN, <Navigate to="/usuarios?vista=clientes" replace />) }` |
+| `/reclamaciones` | ReclamacionesPage | `features/reclamaciones/ReclamacionesPage.jsx` |
 | `/tarifas-envio` | TarifasEnvioPage | `features/tarifas/TarifasEnvioPage.jsx` |
 | `/historial` | HistorialPage | `features/historial/HistorialPage.jsx` |
-| `/reportes` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `/configuracion/empresa` | EmpresaPage | `features/configuracion/EmpresaPage.jsx` |
 | `/personalizacion` | PersonalizacionPage | `features/configuracion/PersonalizacionPage.jsx` |
+| `/agencias` | Navigate | redirección: `<Navigate to="/" replace /> }` |
+| `/reportes` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `*` | Navigate | redirección: `<Navigate to="/" replace />` |
 
-Todas excepto `/` y `/verificar-email` cuelgan de `<RutaProtegida><AdminLayout/></RutaProtegida>`. `/reportes` redirige a `/dashboard` (Reportes se integró en el Resumen).
+Todas excepto `/` y `/verificar-email` cuelgan de `<RutaProtegida><AdminLayout/></RutaProtegida>`, más un `<RutaPorRol roles={['administrador','cajero']}>` en las rutas restringidas. `/punto-venta` es la portada del `cajero`; `/reportes` redirige a `/dashboard` (Reportes se integró en el Resumen).
 
 ## Cadena página → servicio → endpoint
 
@@ -81,6 +82,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/libros/useCatalogo.js` | `GET /api/autores`<br>`GET /api/categorias` |
 | `features/notificaciones/notificacionesService.js` | `GET /api/pagos`<br>`GET /api/reportes/stock-bajo`<br>`GET /api/reservas` |
 | `features/pagos/PagosPage.jsx` | `GET /api/pagos`<br>`GET /api/pagos/resumen`<br>`GET /api/ventas` |
+| `features/puntoventa/PuntoVentaPage.jsx` | `GET /api/pagos/resumen`<br>`GET /api/reportes/cierre-caja`<br>`GET /api/reportes/reservas-por-estado`<br>`GET /api/reportes/stock-bajo`<br>`GET /api/reportes/ventas-por-estado` |
 | `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `features/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
 | `features/reservas/ReservaEstadoModal.jsx` | `PUT /api/reservas/:param/estado` |
@@ -175,6 +177,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/reportes/reportesService.js` | `obtenerVentasPorMes` | `GET /api/reportes/ventas-por-mes` |
 | `features/reportes/reportesService.js` | `obtenerVentasPorDia` | `GET /api/reportes/ventas-por-dia` |
 | `features/reportes/reportesService.js` | `obtenerIndicadoresVentas` | `GET /api/reportes/indicadores-ventas` |
+| `features/reportes/reportesService.js` | `obtenerCierreCaja` | `GET /api/reportes/cierre-caja` |
 | `features/reservas/reservasService.js` | `listarReservas` | `GET /api/reservas` |
 | `features/reservas/reservasService.js` | `obtenerReserva` | `GET /api/reservas/:param` |
 | `features/reservas/reservasService.js` | `crearReserva` | `POST /api/reservas` |
@@ -201,10 +204,10 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/providers/ThemeContext.jsx` | 4 |
 | `components/providers/ToastProvider.jsx` | 15 |
 | `components/ui/Acciones.jsx` | 13 |
-| `components/ui/Alert.jsx` | 35 |
+| `components/ui/Alert.jsx` | 36 |
 | `components/ui/Badge.jsx` | 22 |
 | `components/ui/Button.jsx` | 50 |
-| `components/ui/Card.jsx` | 21 |
+| `components/ui/Card.jsx` | 22 |
 | `components/ui/Celebracion.jsx` | 2 |
 | `components/ui/ConfirmarAccion.jsx` | 3 |
 | `components/ui/ConfirmarEliminacion.jsx` | 2 |
@@ -216,15 +219,16 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/Form.jsx` | 39 |
 | `components/ui/FormularioAlta.jsx` | 5 |
 | `components/ui/Modal.jsx` | 28 |
-| `components/ui/PageHeader.jsx` | 18 |
+| `components/ui/PageHeader.jsx` | 19 |
 | `components/ui/Pagination.jsx` | 13 |
-| `components/ui/Spinner.jsx` | 4 |
+| `components/ui/Spinner.jsx` | 5 |
 | `components/ui/TableSkeleton.jsx` | 16 |
 
 ## Hooks y utilidades
 
 - `lib/api/client.js`
 - `lib/hooks/useFormulario.js`
+- `lib/roles.js`
 - `lib/storage/index.js`
 - `lib/utils/cuentas.js`
 - `lib/utils/exportarCsv.js`

@@ -49,7 +49,7 @@
 | Archivo | Uso |
 |---|---|
 | `auth.middleware.js` | `verificarToken`: exige `Authorization: Bearer <jwt>`, valida con `jwt.verify` y deja `req.usuario`. |
-| `rol.middleware.js` | `verificarRol('administrador')`: restringe por rol. |
+| `rol.middleware.js` | `verificarRol(...roles)`: multirrol, acepta `administrador`/`cajero` y responde **403** (nunca 401). `verificarPanel`: cualquier usuario interno. `esPersonalInterno(usuario)` para anti-IDOR. Roles centralizados en `utils/roles.js`. |
 | `rateLimit.js` | `baseLimiter` (global), `loginLimiter`, `registroLimiter`, `verificacionLimiter`, `twoFaLimiter`, `webhookLimit`. |
 | `upload.middleware.js` | Multer en memoria, 5 MB, validación de tipo; sube la portada a Cloudinary si está configurado (`req.file.cloudinaryUrl`) o al disco `/uploads`. Campo `portada`. |
 | `uploadPerfil.middleware.js` | Igual para fotos de perfil. Campo `foto`. |
@@ -65,6 +65,7 @@
 | `utils/transiciones.js` | Máquinas de estado permitidas de `VENTA` y `RESERVA` (`permitirTransicion`). |
 | `utils/payuStatus.js` | Traduce estados de PayU a estados de venta. |
 | `utils/validaciones.js` | `validarId`, `esEmailValido`, `esNumeroNoNegativo`, `esCantidadPositiva`, `esEstadoValido`… |
+| `utils/roles.js` | Roles del dominio (`ADMINISTRADOR`, `CAJERO`, `CLIENTE`), `ROLES` (lista), `normalizarRol`, `esRolValido`, `esPersonalInterno`, `ROLES_INTERNOS`. `usuarios.rol` es `VARCHAR(20)` con `CHECK IN ('cliente','administrador','cajero')` (migración `025_rol_cajero.sql`). |
 | `utils/fileType.js` | Detección del tipo real de archivo por firma (uploads). |
 | `utils/numeroALetras.js` | Importe en letras para comprobantes. |
 | `services/payu.service.js` | Integración **PayU WebCheckout**: crear orden, formulario de checkout, consulta de orden. |
@@ -161,12 +162,12 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| GET | `/api/comprobantes` | JWT + rol:administrador | controllers/comprobante.controller.js#listarComprobantes | `comprobante.model.js#listarComprobantes` | comprobantes, usuarios, ventas |
-| GET | `/api/comprobantes/resumen` | JWT + rol:administrador | inline (comprobante.routes.js) | `comprobante.model.js#listarResumen` | comprobantes |
-| POST | `/api/comprobantes/:id/enviar-email` | JWT + rol:administrador | controllers/comprobante.controller.js#enviarComprobanteEmail | `comprobante.model.js#obtenerComprobante`<br>`empresa.model.js#obtenerEmpresa` | comprobantes, empresa, usuarios, ventas |
-| PUT | `/api/comprobantes/:id/sunat` | JWT + rol:administrador | controllers/comprobante.controller.js#registrarSunat | `comprobante.model.js#registrarSunat`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
-| POST | `/api/comprobantes/:id/anular` | JWT + rol:administrador | controllers/comprobante.controller.js#anularComprobante | `comprobante.model.js#anular`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
-| GET | `/api/comprobantes/:id` | JWT + rol:administrador | controllers/comprobante.controller.js#obtenerComprobante | `comprobante.model.js#obtenerComprobante` | comprobantes, usuarios, ventas |
+| GET | `/api/comprobantes` | JWT + verificarPanel | controllers/comprobante.controller.js#listarComprobantes | `comprobante.model.js#listarComprobantes` | comprobantes, usuarios, ventas |
+| GET | `/api/comprobantes/resumen` | JWT + verificarPanel | inline (comprobante.routes.js) | `comprobante.model.js#listarResumen` | comprobantes |
+| POST | `/api/comprobantes/:id/enviar-email` | JWT + verificarPanel | controllers/comprobante.controller.js#enviarComprobanteEmail | `comprobante.model.js#obtenerComprobante`<br>`empresa.model.js#obtenerEmpresa` | comprobantes, empresa, usuarios, ventas |
+| GET | `/api/comprobantes/:id` | JWT + verificarPanel | controllers/comprobante.controller.js#obtenerComprobante | `comprobante.model.js#obtenerComprobante` | comprobantes, usuarios, ventas |
+| PUT | `/api/comprobantes/:id/sunat` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/comprobante.controller.js#registrarSunat | `comprobante.model.js#registrarSunat`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
+| POST | `/api/comprobantes/:id/anular` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/comprobante.controller.js#anularComprobante | `comprobante.model.js#anular`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
 
 ### /api/empresa
 
@@ -196,13 +197,13 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| GET | `/api/inventario` | JWT + rol:administrador | controllers/inventario.controller.js#obtenerInventario | `inventario.model.js#obtenerTodos` | inventario, libros |
-| GET | `/api/inventario/stock-bajo` | JWT + rol:administrador | controllers/inventario.controller.js#obtenerStockBajo | `inventario.model.js#obtenerStockBajo` | inventario, libros |
-| GET | `/api/inventario/movimientos` | JWT + rol:administrador | controllers/inventario.controller.js#listarMovimientos | `inventario.model.js#listarMovimientos` | libros, movimientos_inventario, usuarios |
-| GET | `/api/inventario/libro/:id` | JWT + rol:administrador | controllers/inventario.controller.js#obtenerInventarioPorLibro | `inventario.model.js#obtenerPorLibro` | inventario, libros |
-| POST | `/api/inventario` | JWT + rol:administrador | controllers/inventario.controller.js#crearInventario | `historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro` | historial_operaciones, inventario, libros |
-| PUT | `/api/inventario/libro/:id/stock` | JWT + rol:administrador | controllers/inventario.controller.js#actualizarStock | `historial.model.js#crear`<br>`inventario.model.js#actualizarStock` | historial_operaciones, inventario |
-| PUT | `/api/inventario/libro/:id` | JWT + rol:administrador | controllers/inventario.controller.js#actualizarInventario | `historial.model.js#crear`<br>`inventario.model.js#actualizar`<br>`inventario.model.js#obtenerPorLibro` | historial_operaciones, inventario, libros |
+| GET | `/api/inventario` | JWT + verificarPanel | controllers/inventario.controller.js#obtenerInventario | `inventario.model.js#obtenerTodos` | inventario, libros |
+| GET | `/api/inventario/stock-bajo` | JWT + verificarPanel | controllers/inventario.controller.js#obtenerStockBajo | `inventario.model.js#obtenerStockBajo` | inventario, libros |
+| GET | `/api/inventario/movimientos` | JWT + verificarPanel | controllers/inventario.controller.js#listarMovimientos | `inventario.model.js#listarMovimientos` | libros, movimientos_inventario, usuarios |
+| GET | `/api/inventario/libro/:id` | JWT + verificarPanel | controllers/inventario.controller.js#obtenerInventarioPorLibro | `inventario.model.js#obtenerPorLibro` | inventario, libros |
+| POST | `/api/inventario` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/inventario.controller.js#crearInventario | `historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro` | historial_operaciones, inventario, libros |
+| PUT | `/api/inventario/libro/:id/stock` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/inventario.controller.js#actualizarStock | `historial.model.js#crear`<br>`inventario.model.js#actualizarStock` | historial_operaciones, inventario |
+| PUT | `/api/inventario/libro/:id` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/inventario.controller.js#actualizarInventario | `historial.model.js#crear`<br>`inventario.model.js#actualizar`<br>`inventario.model.js#obtenerPorLibro` | historial_operaciones, inventario, libros |
 
 ### /api/libros
 
@@ -221,8 +222,8 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/pagos/checkout/:externalReference` | — | controllers/pago.controller.js#renderCheckoutPage | `payu.service.js#construirFormularioCheckout`<br>`venta.model.js#buscarPorReferenciaExterna` | ventas |
 | GET | `/api/pagos/respuesta/:externalReference` | — | controllers/pago.controller.js#renderRespuestaPage | — | — |
 | POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `usuario.model.js#buscarPorId`<br>`venta.model.js#actualizarDatosPago`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
-| GET | `/api/pagos` | JWT + rol:administrador | controllers/pago.controller.js#listarPagosAdmin | `venta.model.js#listarPagosAdmin` | usuarios, ventas |
-| GET | `/api/pagos/resumen` | JWT + rol:administrador | inline (pago.routes.js) | `pago.model.js#listarResumen` | ventas |
+| GET | `/api/pagos` | JWT + verificarPanel | controllers/pago.controller.js#listarPagosAdmin | `venta.model.js#listarPagosAdmin` | usuarios, ventas |
+| GET | `/api/pagos/resumen` | JWT + verificarPanel | inline (pago.routes.js) | `pago.model.js#listarResumen` | ventas |
 | POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `payu.service.js#crearOrden`<br>`ubicacion.model.js#esDistritoDeLima`<br>`ubicacion.model.js#existeDistrito`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#crear` | detalle_venta, distritos_lima, inventario, libros, provincias_lima, usuarios, ventas |
 | GET | `/api/pagos/:orderId` | JWT | controllers/pago.controller.js#obtenerOrden | `payu.service.js#obtenerOrdenDiagnostico`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#actualizarDatosPago`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#buscarPorPayuOrderId`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
 
@@ -240,15 +241,15 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| GET | `/api/reportes/resumen` | JWT + rol:administrador | controllers/reporte.controller.js#obtenerResumenGeneral | `reporte.model.js#obtenerResumenGeneral` | autores, categorias, inventario, libros, reservas, usuarios, ventas |
-| GET | `/api/reportes/libros-mas-vendidos` | JWT + rol:administrador | controllers/reporte.controller.js#obtenerLibrosMasVendidos | `reporte.model.js#obtenerLibrosMasVendidos` | detalle_venta, libros, ventas |
-| GET | `/api/reportes/ventas-por-estado` | JWT + rol:administrador | controllers/reporte.controller.js#obtenerVentasPorEstado | `reporte.model.js#obtenerVentasPorEstado` | ventas |
-| GET | `/api/reportes/reservas-por-estado` | JWT + rol:administrador | controllers/reporte.controller.js#obtenerReservasPorEstado | `reporte.model.js#obtenerReservasPorEstado` | reservas |
-| GET | `/api/reportes/stock-bajo` | JWT + rol:administrador | controllers/reporte.controller.js#obtenerStockBajo | `reporte.model.js#obtenerStockBajo` | inventario, libros |
-| GET | `/api/reportes/ventas-por-mes` | JWT + rol:administrador | controllers/reporte.controller.js#obtenerVentasPorMes | `reporte.model.js#obtenerVentasPorMes` | ventas |
-| GET | `/api/reportes/ventas-por-dia` | JWT + rol:administrador | controllers/reporte.controller.js#obtenerVentasPorDia | `reporte.model.js#obtenerVentasPorDia` | ventas |
-| GET | `/api/reportes/indicadores-ventas` | JWT + rol:administrador | controllers/reporte.controller.js#obtenerIndicadoresVentas | `reporte.model.js#obtenerIndicadoresVentas` | ventas |
-| GET | `/api/reportes/cierre-caja` | JWT + rol:administrador | controllers/reporte.controller.js#obtenerCierreCaja | `reporte.model.js#obtenerCierreCaja` | comprobantes, usuarios, ventas |
+| GET | `/api/reportes/ventas-por-estado` | JWT + verificarPanel | controllers/reporte.controller.js#obtenerVentasPorEstado | `reporte.model.js#obtenerVentasPorEstado` | ventas |
+| GET | `/api/reportes/reservas-por-estado` | JWT + verificarPanel | controllers/reporte.controller.js#obtenerReservasPorEstado | `reporte.model.js#obtenerReservasPorEstado` | reservas |
+| GET | `/api/reportes/stock-bajo` | JWT + verificarPanel | controllers/reporte.controller.js#obtenerStockBajo | `reporte.model.js#obtenerStockBajo` | inventario, libros |
+| GET | `/api/reportes/cierre-caja` | JWT + verificarPanel | controllers/reporte.controller.js#obtenerCierreCaja | `reporte.model.js#obtenerCierreCaja` | comprobantes, usuarios, ventas |
+| GET | `/api/reportes/resumen` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerResumenGeneral | `reporte.model.js#obtenerResumenGeneral` | autores, categorias, inventario, libros, reservas, usuarios, ventas |
+| GET | `/api/reportes/libros-mas-vendidos` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerLibrosMasVendidos | `reporte.model.js#obtenerLibrosMasVendidos` | detalle_venta, libros, ventas |
+| GET | `/api/reportes/ventas-por-mes` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerVentasPorMes | `reporte.model.js#obtenerVentasPorMes` | ventas |
+| GET | `/api/reportes/ventas-por-dia` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerVentasPorDia | `reporte.model.js#obtenerVentasPorDia` | ventas |
+| GET | `/api/reportes/indicadores-ventas` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerIndicadoresVentas | `reporte.model.js#obtenerIndicadoresVentas` | ventas |
 
 ### /api/reservas
 
@@ -257,9 +258,9 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/reservas/mis-reservas` | JWT | controllers/reserva.controller.js#obtenerMisReservas | `reserva.model.js#obtenerPorUsuario` | libros, reservas |
 | POST | `/api/reservas` | JWT | controllers/reserva.controller.js#crearReserva | `historial.model.js#crear`<br>`reserva.model.js#crear`<br>`reserva.model.js#fechaVencimientoDefecto`<br>`reserva.model.js#obtenerPorId`<br>`reserva.model.js#validarFechaVencimiento` | historial_operaciones, inventario, libros, reservas, usuarios |
 | DELETE | `/api/reservas/:id` | JWT | controllers/reserva.controller.js#cancelarReserva | `historial.model.js#crear`<br>`reserva.model.js#actualizarEstado`<br>`reserva.model.js#obtenerPorId`<br>`venta.model.js#crear` | detalle_venta, historial_operaciones, inventario, libros, reservas, usuarios, ventas |
-| GET | `/api/reservas` | JWT + rol:administrador | controllers/reserva.controller.js#obtenerReservas | `reserva.model.js#obtenerTodos` | libros, reservas, usuarios |
+| GET | `/api/reservas` | JWT + verificarPanel | controllers/reserva.controller.js#obtenerReservas | `reserva.model.js#obtenerTodos` | libros, reservas, usuarios |
 | GET | `/api/reservas/:id` | JWT | controllers/reserva.controller.js#obtenerReserva | `reserva.model.js#obtenerPorId` | libros, reservas, usuarios |
-| PUT | `/api/reservas/:id/estado` | JWT + rol:administrador | controllers/reserva.controller.js#actualizarEstado | `historial.model.js#crear`<br>`reserva.model.js#actualizarEstado`<br>`reserva.model.js#obtenerPorId`<br>`venta.model.js#crear` | detalle_venta, historial_operaciones, inventario, libros, reservas, usuarios, ventas |
+| PUT | `/api/reservas/:id/estado` | JWT + verificarPanel | controllers/reserva.controller.js#actualizarEstado | `historial.model.js#crear`<br>`reserva.model.js#actualizarEstado`<br>`reserva.model.js#obtenerPorId`<br>`venta.model.js#crear` | detalle_venta, historial_operaciones, inventario, libros, reservas, usuarios, ventas |
 
 ### /api/ubicaciones
 
@@ -286,13 +287,13 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/ventas/mis-ventas` | JWT | controllers/venta.controller.js#obtenerMisVentas | `venta.model.js#obtenerPorUsuario` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, ventas |
-| POST | `/api/ventas` | JWT + rol:administrador | controllers/venta.controller.js#crearVenta | `historial.model.js#crear`<br>`ubicacion.model.js#esDistritoDeLima`<br>`ubicacion.model.js#existeDistrito`<br>`venta.model.js#crear` | detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, ventas |
-| GET | `/api/ventas` | JWT + rol:administrador | controllers/venta.controller.js#obtenerVentas | `venta.model.js#obtenerTodos` | agencias_courier, comprobantes, distritos_lima, provincias_lima, usuarios, ventas |
+| POST | `/api/ventas` | JWT + verificarPanel | controllers/venta.controller.js#crearVenta | `historial.model.js#crear`<br>`ubicacion.model.js#esDistritoDeLima`<br>`ubicacion.model.js#existeDistrito`<br>`venta.model.js#crear` | detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, ventas |
+| GET | `/api/ventas` | JWT + verificarPanel | controllers/venta.controller.js#obtenerVentas | `venta.model.js#obtenerTodos` | agencias_courier, comprobantes, distritos_lima, provincias_lima, usuarios, ventas |
 | GET | `/api/ventas/:id` | JWT | controllers/venta.controller.js#obtenerVenta | `venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, usuarios, ventas |
 | GET | `/api/ventas/:id/pago` | JWT | controllers/venta.controller.js#obtenerPagoVenta | `venta.model.js#obtenerDatosPago` | ventas |
-| PUT | `/api/ventas/:id/estado` | JWT + rol:administrador | controllers/venta.controller.js#actualizarEstadoVenta | `historial.model.js#crear`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
-| POST | `/api/ventas/:id/reembolso` | JWT + rol:administrador | controllers/venta.controller.js#reembolsarVenta | `historial.model.js#crear`<br>`venta.model.js#reembolsar` | comprobantes, detalle_venta, historial_operaciones, inventario, ventas |
-| POST | `/api/ventas/:id/comprobante` | JWT + rol:administrador | controllers/comprobante.controller.js#generarComprobante | `comprobante.model.js#generarComprobante` | comprobantes, ventas |
+| PUT | `/api/ventas/:id/estado` | JWT + verificarPanel | controllers/venta.controller.js#actualizarEstadoVenta | `historial.model.js#crear`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
+| POST | `/api/ventas/:id/comprobante` | JWT + verificarPanel | controllers/comprobante.controller.js#generarComprobante | `comprobante.model.js#generarComprobante` | comprobantes, ventas |
+| POST | `/api/ventas/:id/reembolso` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/venta.controller.js#reembolsarVenta | `historial.model.js#crear`<br>`venta.model.js#reembolsar` | comprobantes, detalle_venta, historial_operaciones, inventario, ventas |
 
 ## Modelos y tablas
 

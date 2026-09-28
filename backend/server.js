@@ -467,6 +467,22 @@ iniciarJobs();
 })();
 
 // ===============================
+// MIGRACIÓN 025: rol "cajero"
+// ===============================
+(async () => {
+    try {
+        const sql = require('fs').readFileSync(
+            require('path').join(__dirname, 'database', 'migrations', '025_rol_cajero.sql'),
+            'utf8'
+        );
+        await pool.query(sql);
+        console.log('[migracion] 025 rol cajero verificado.');
+    } catch (e) {
+        console.error('[migracion] Error en la migración 025:', e.message);
+    }
+})();
+
+// ===============================
 // INICIAR SERVIDOR
 // ===============================
 app.listen(PORT, () => {

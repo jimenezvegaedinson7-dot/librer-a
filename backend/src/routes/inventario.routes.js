@@ -13,25 +13,29 @@ const {
 } = require('../controllers/inventario.controller');
 
 const verificarToken = require('../middlewares/auth.middleware');
-const verificarRol = require('../middlewares/rol.middleware');
+const {
+    verificarRol,
+    verificarPanel,
+} = require('../middlewares/rol.middleware');
+const { ROLES } = require('../utils/roles');
 
 // ========================================
-// CONSULTAR INVENTARIO
+// CONSULTAR INVENTARIO (ADMINISTRADOR O CAJERO)
 // ========================================
 
-// Obtener todo el inventario (SOLO ADMIN)
+// Obtener todo el inventario
 router.get(
     '/',
     verificarToken,
-    verificarRol('administrador'),
+    verificarPanel,
     obtenerInventario
 );
 
-// Obtener libros con stock bajo (SOLO ADMIN)
+// Obtener libros con stock bajo
 router.get(
     '/stock-bajo',
     verificarToken,
-    verificarRol('administrador'),
+    verificarPanel,
     obtenerStockBajo
 );
 
@@ -41,27 +45,27 @@ router.get(
 router.get(
     '/movimientos',
     verificarToken,
-    verificarRol('administrador'),
+    verificarPanel,
     listarMovimientos
 );
 
-// Obtener inventario de un libro (SOLO ADMIN)
+// Obtener inventario de un libro
 router.get(
     '/libro/:id',
     verificarToken,
-    verificarRol('administrador'),
+    verificarPanel,
     obtenerInventarioPorLibro
 );
 
 // ========================================
-// ADMINISTRADOR
+// SOLO ADMINISTRADOR: cualquier modificación de stock
 // ========================================
 
 // Crear registro de inventario
 router.post(
     '/',
     verificarToken,
-    verificarRol('administrador'),
+    verificarRol(ROLES.ADMINISTRADOR),
     crearInventario
 );
 
@@ -69,7 +73,7 @@ router.post(
 router.put(
     '/libro/:id/stock',
     verificarToken,
-    verificarRol('administrador'),
+    verificarRol(ROLES.ADMINISTRADOR),
     actualizarStock
 );
 
@@ -77,7 +81,7 @@ router.put(
 router.put(
     '/libro/:id',
     verificarToken,
-    verificarRol('administrador'),
+    verificarRol(ROLES.ADMINISTRADOR),
     actualizarInventario
 );
 

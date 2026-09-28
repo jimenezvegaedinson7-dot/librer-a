@@ -13,25 +13,30 @@ const {
 const comprobanteModel = require('../models/comprobante.model');
 
 const verificarToken = require('../middlewares/auth.middleware');
-const verificarRol = require('../middlewares/rol.middleware');
+const {
+    verificarRol,
+    verificarPanel,
+} = require('../middlewares/rol.middleware');
+const { ROLES } = require('../utils/roles');
 
 // ========================================
-// TODAS LAS RUTAS REQUIEREN JWT + ADMIN
+// TODAS LAS RUTAS REQUIEREN JWT
 // ========================================
 router.use(verificarToken);
-router.use(verificarRol('administrador'));
 
 // ========================================
-// LISTAR COMPROBANTES
+// ADMINISTRADOR O CAJERO — consulta y envío
 // ========================================
-router.get('/', listarComprobantes);
+
+// LISTAR COMPROBANTES
+router.get('/', verificarPanel, listarComprobantes);
 
 // ========================================
 // RESUMEN GLOBAL (COUNT por tipo + ingresos)
 // Declarado ANTES de /:id para que "resumen"
 // no sea interpretado como un id.
 // ========================================
-router.get('/resumen', async (req, res) => {
+router.get('/resumen', verificarPanel, async (req, res) => {
     try {
         const resumen =
             await comprobanteModel.listarResumen();
@@ -61,23 +66,38 @@ router.get('/resumen', async (req, res) => {
 // ========================================
 // ENVIAR COMPROBANTE POR CORREO
 // ========================================
-router.post('/:id/enviar-email', enviarComprobanteEmail);
+router.post(
+    '/:id/enviar-email',
+    verificarPanel,
+    enviarComprobanteEmail
+);
 
 // ========================================
+// OBTENER COMPROBANTE POR ID
+// ========================================
+router.get('/:id', verificarPanel, obtenerComprobante);
+
+// ========================================
+// SOLO ADMINISTRADOR
+// ========================================
+
 // COMPROBANTE ELECTRÓNICO SUNAT (serie-número)
 // Y NOTA DE CRÉDITO
 // ========================================
-router.put('/:id/sunat', registrarSunat);
+router.put(
+    '/:id/sunat',
+    verificarRol(ROLES.ADMINISTRADOR),
+    registrarSunat
+);
 
 // ========================================
 // ANULAR COMPROBANTE (datos errados; la
 // venta sigue vigente y se puede reemitir)
 // ========================================
-router.post('/:id/anular', anularComprobante);
-
-// ========================================
-// OBTENER COMPROBANTE POR ID
-// ========================================
-router.get('/:id', obtenerComprobante);
+router.post(
+    '/:id/anular',
+    verificarRol(ROLES.ADMINISTRADOR),
+    anularComprobante
+);
 
 module.exports = router;

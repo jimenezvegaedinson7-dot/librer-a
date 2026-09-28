@@ -36,8 +36,15 @@ import UsuarioViewModal from './UsuarioViewModal';
 
 const POR_PAGINA = 10;
 
+const ETIQUETA_ROL = {
+    cliente: 'Cliente',
+    cajero: 'Cajero',
+    administrador: 'Administrador',
+};
+
 function rolBadge(rol) {
     if (rol === 'administrador') return <Badge color="primary">Administrador</Badge>;
+    if (rol === 'cajero') return <Badge color="success">Cajero</Badge>;
     if (rol === 'cliente') return <Badge color="info">Cliente</Badge>;
     return <Badge color="neutral">{rol || 'Sin rol'}</Badge>;
 }
@@ -111,13 +118,14 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
                 className="h-8 rounded-lg border border-primary-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-parchment-200 disabled:text-primary-400"
             >
                 <option value="cliente">Cliente</option>
+                <option value="cajero">Cajero</option>
                 <option value="administrador">Admin</option>
             </select>
         </>
     );
 }
 
-function Contador({ total, administradores, clientes, activos, inactivos }) {
+function Contador({ total, administradores, cajeros, clientes, activos, inactivos }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
             <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
@@ -125,6 +133,9 @@ function Contador({ total, administradores, clientes, activos, inactivos }) {
             </span>
             <span className="rounded-xl border border-[#c7d2fe] bg-[#eef2ff] px-4 py-2.5 text-sm font-medium text-[#4f46e5] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Administradores: <span className="font-bold text-[#4f46e5]">{administradores}</span>
+            </span>
+            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Cajeros: <span className="font-bold text-[#15803d]">{cajeros}</span>
             </span>
             <span className="rounded-xl border border-[#ecccc8] bg-[#fbf5f4] px-4 py-2.5 text-sm font-medium text-[#8a2c36] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Clientes: <span className="font-bold text-[#8a2c36]">{clientes}</span>
@@ -188,6 +199,7 @@ export default function UsuariosPage({ incrustado = false }) {
     }, [usuarios, busqueda, filtroRol, filtroEstado]);
 
     const totalAdministradores = usuarios.filter((u) => u.rol === 'administrador').length;
+    const totalCajeros = usuarios.filter((u) => u.rol === 'cajero').length;
     const totalClientes = usuarios.filter((u) => u.rol === 'cliente').length;
     const totalActivos = usuarios.filter((u) => Number(u.estado) === 1).length;
     const totalInactivos = usuarios.filter((u) => Number(u.estado) !== 1).length;
@@ -236,11 +248,13 @@ export default function UsuariosPage({ incrustado = false }) {
             usuario,
             valor: rol,
             titulo: 'Cambiar rol',
-            mensaje: `¿Quieres cambiar el rol de "${usuario.nombre || 'este usuario'}" a ${rol === 'administrador' ? 'Administrador' : 'Cliente'}?`,
+            mensaje: `¿Quieres cambiar el rol de "${usuario.nombre || 'este usuario'}" a ${ETIQUETA_ROL[rol] || rol}?`,
             advertencia:
-                rol === 'administrador'
-                    ? 'El usuario podrá acceder a este panel administrativo.'
-                    : 'El usuario perderá el acceso a este panel administrativo.',
+                ETIQUETA_ROL[rol] === 'Administrador'
+                    ? 'El usuario podrá acceder a este panel administrativo con todos los permisos.'
+                    : ETIQUETA_ROL[rol] === 'Cajero'
+                        ? 'Podrá atender el punto de venta, pero no podrá administrar el catálogo, los usuarios ni anular comprobantes.'
+                        : 'El usuario perderá el acceso a este panel administrativo.',
             textoConfirmar: 'Cambiar rol',
             variante: 'primary',
         });
@@ -301,13 +315,14 @@ export default function UsuariosPage({ incrustado = false }) {
                     descripcion="Control de usuarios registrados en la aplicación"
                     icono={<FaUsers />}
                     acciones={
-                        <Contador
-                            total={usuarios.length}
-                            administradores={totalAdministradores}
-                            clientes={totalClientes}
-                            activos={totalActivos}
-                            inactivos={totalInactivos}
-                        />
+                    <Contador
+                        total={usuarios.length}
+                        administradores={totalAdministradores}
+                        cajeros={totalCajeros}
+                        clientes={totalClientes}
+                        activos={totalActivos}
+                        inactivos={totalInactivos}
+                    />
                     }
                 />
             )}
@@ -340,9 +355,10 @@ export default function UsuariosPage({ incrustado = false }) {
                             </div>
 
                             <Select value={filtroRol} onChange={(e) => setFiltroRol(e.target.value)} className="sm:w-44">
-                                <option value="todos">Todos los roles</option>
-                                <option value="administrador">Administradores</option>
-                                <option value="cliente">Clientes</option>
+                <option value="todos">Todos los roles</option>
+                <option value="administrador">Administradores</option>
+                <option value="cajero">Cajeros</option>
+                <option value="cliente">Clientes</option>
                             </Select>
 
                             <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="sm:w-44">

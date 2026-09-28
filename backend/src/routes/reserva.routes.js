@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 const verificarToken = require('../middlewares/auth.middleware');
-const verificarRol = require('../middlewares/rol.middleware');
+const { verificarPanel } = require('../middlewares/rol.middleware');
 
 const {
     obtenerReservas,
@@ -33,26 +33,27 @@ router.post('/', crearReserva);
 router.delete('/:id', cancelarReserva);
 
 // ========================================
-// ADMINISTRADOR
+// ADMINISTRADOR Y CAJERO
 // ========================================
 
 // Obtener todas las reservas
 router.get(
     '/',
-    verificarRol('administrador'),
+    verificarPanel,
     obtenerReservas
 );
 
-// Obtener una reserva por ID (dueño o administrador; valida el controller)
+// Obtener una reserva por ID (dueño o personal del panel; valida el controller)
 router.get(
     '/:id',
     obtenerReserva
 );
 
 // Actualizar estado de una reserva
+// (confirmar, completar —exige método de cobro— o cancelar)
 router.put(
     '/:id/estado',
-    verificarRol('administrador'),
+    verificarPanel,
     actualizarEstado
 );
 

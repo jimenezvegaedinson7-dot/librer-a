@@ -12,6 +12,12 @@ const {
     validarId
 } = require('../utils/validaciones');
 const {
+    ROLES_ASIGNABLES,
+    esCliente,
+    esRolValido,
+    normalizar
+} = require('../utils/roles');
+const {
     validarPassword
 } = require('./auth.controller');
 const {
@@ -116,6 +122,21 @@ const adminUpdateUsuario = async (req, res) => {
             });
         }
 
+        // ========================================
+        // UNA CUENTA ELIMINADA ES DEFINITIVA
+        // El titular pidió su cancelación (Ley 29733): la fila se
+        // anonimiza y queda inactiva. No se reactiva, no cambia de
+        // rol y no vuelve a ser cliente. Solo la restringe el
+        // backend, no la interfaz.
+        // ========================================
+        if (usuario.fecha_eliminacion) {
+            return res.status(403).json({
+                success: false,
+                mensaje:
+                    'Esta cuenta fue eliminada por su titular: no se puede reactivar ni cambiar de rol'
+            });
+        }
+
         const { estado, rol } =
             req.body;
 
@@ -135,14 +156,11 @@ const adminUpdateUsuario = async (req, res) => {
         // ========================================
         if (
             rol !== undefined &&
-            !['administrador', 'cliente'].includes(
-                rol
-            )
+            !esRolValido(rol)
         ) {
             return res.status(400).json({
                 success: false,
-                mensaje:
-                    'El rol debe ser "administrador" o "cliente"'
+                mensaje: `El rol debe ser ${ROLES_ASIGNABLES.map((r) => `"${r}"`).join(', ')}`
             });
         }
 
@@ -173,7 +191,7 @@ const adminUpdateUsuario = async (req, res) => {
 
                 rol: rol === undefined
                     ? null
-                    : rol
+                    : normalizar(rol)
             }
         );
 
@@ -715,10 +733,10 @@ const eliminarMiCuenta = async (req, res) => {
         const idUsuario = req.usuario.id_usuario;
         const { password, confirmacion } = req.body || {};
 
-        if (req.usuario.rol !== 'cliente') {
+        if (!esCliente(req.usuario.rol)) {
             return res.status(403).json({
                 success: false,
-                mensaje: 'Las cuentas de administrador no se eliminan desde aquí'
+                mensaje: 'Solo las cuentas de cliente pueden eliminarse desde aquí'
             });
         }
         if (String(confirmacion || '').trim().toUpperCase() !== 'ELIMINAR') {

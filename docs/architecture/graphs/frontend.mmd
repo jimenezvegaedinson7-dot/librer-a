@@ -6,6 +6,9 @@ flowchart LR
     VerificarEmailPage --> authService(["authService"])
     LibroReclamacionesPage["/libro-de-reclamaciones<br/>LibroReclamacionesPage"]
     LibroReclamacionesPage --> reclamacionesService(["reclamacionesService"])
+    PuntoVentaPage["/punto-venta<br/>PuntoVentaPage"]
+    PuntoVentaPage --> reportesService(["reportesService"])
+    PuntoVentaPage --> pagosService(["pagosService"])
     DashboardPage["/dashboard<br/>DashboardPage"]
     DashboardPage --> dashboardService(["dashboardService"])
     LibrosPage["/libros<br/>LibrosPage"]
@@ -28,13 +31,13 @@ flowchart LR
     ComprobantesPage --> comprobantesService(["comprobantesService"])
     ComprobantesPage --> empresaService(["empresaService"])
     CierreCajaPage["/cierre-caja<br/>CierreCajaPage"]
-    ReclamacionesPage["/reclamaciones<br/>ReclamacionesPage"]
-    ReclamacionesPage --> reclamacionesService(["reclamacionesService"])
     PagosPage["/pagos<br/>PagosPage"]
     PagosPage --> pagosService(["pagosService"])
     PagosPage --> ventasService(["ventasService"])
     UsuariosClientesPage["/usuarios<br/>UsuariosClientesPage"]
     UsuariosClientesPage --> usuariosService(["usuariosService"])
+    ReclamacionesPage["/reclamaciones<br/>ReclamacionesPage"]
+    ReclamacionesPage --> reclamacionesService(["reclamacionesService"])
     TarifasEnvioPage["/tarifas-envio<br/>TarifasEnvioPage"]
     TarifasEnvioPage --> tarifasService(["tarifasService"])
     HistorialPage["/historial<br/>HistorialPage"]

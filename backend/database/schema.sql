@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     telefono VARCHAR(20) NULL,
     foto_perfil VARCHAR(255) NULL,
     password VARCHAR(255) NOT NULL,
-    rol VARCHAR(20) NOT NULL DEFAULT 'cliente' CHECK (rol IN ('cliente', 'administrador')),
+    rol VARCHAR(20) NOT NULL DEFAULT 'cliente' CHECK (rol IN ('cliente', 'administrador', 'cajero')),
     estado SMALLINT NOT NULL DEFAULT 1,
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     two_factor_enabled SMALLINT NOT NULL DEFAULT 0,
@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 );
 
 CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios (email);
+CREATE INDEX IF NOT EXISTS idx_usuarios_rol ON usuarios (rol);
 
 -- ============================================================
 -- CATEGORÍAS

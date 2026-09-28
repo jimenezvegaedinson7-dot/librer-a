@@ -54,8 +54,8 @@ Dev: @types/react, @types/react-dom, @vitejs/plugin-react, oxlint, vite.
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 97 | 225 | 0 (confirmado con **madge**: ninguno) |
-| Frontend (`import`) | 134 | 589 | 0 (confirmado con **madge**: ninguno) |
+| Backend (`require`) | 102 | 245 | 0 (confirmado con **madge**: ninguno) |
+| Frontend (`import`) | 138 | 613 | 0 (confirmado con **madge**: ninguno) |
 | Flutter (`import` relativos) | 68 | 298 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter

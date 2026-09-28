@@ -21,11 +21,14 @@ import { AuthProvider } from '../features/auth/AuthContext';
 import { ToastProvider } from '../components/providers/ToastProvider';
 import AdminLayout from '../features/layout/AdminLayout';
 import RutaProtegida from './RutaProtegida';
+import RutaPorRol from './RutaPorRol';
+import { ROLES } from '../lib/roles';
 import { CargandoPantalla } from '../components/ui/Spinner';
 
 const LoginPage = lazyConReintento(() => import('../features/auth/LoginPage'));
 const VerificarEmailPage = lazyConReintento(() => import('../features/auth/VerificarEmailPage'));
 const DashboardPage = lazyConReintento(() => import('../features/dashboard/DashboardPage'));
+const PuntoVentaPage = lazyConReintento(() => import('../features/puntoventa/PuntoVentaPage'));
 const LibrosPage = lazyConReintento(() => import('../features/libros/LibrosPage'));
 const AutoresPage = lazyConReintento(() => import('../features/autores/AutoresPage'));
 const CategoriasPage = lazyConReintento(() => import('../features/categorias/CategoriasPage'));
@@ -44,6 +47,13 @@ const ReclamacionesPage = lazyConReintento(() => import('../features/reclamacion
 const CierreCajaPage = lazyConReintento(() => import('../features/cierre/CierreCajaPage'));
 
 const cargar = (elemento) => <Suspense fallback={<CargandoPantalla />}>{elemento}</Suspense>;
+
+// Restringe una pantalla del panel a ciertos roles. Si el rol no está
+// autorizado, RutaPorRol redirige a la portada que le corresponde.
+const para = (roles, elemento) => <RutaPorRol roles={roles}>{cargar(elemento)}</RutaPorRol>;
+
+const AMBOS = [ROLES.ADMINISTRADOR, ROLES.CAJERO];
+const SOLO_ADMIN = [ROLES.ADMINISTRADOR];
 
 const router = createBrowserRouter([
     {
@@ -64,28 +74,39 @@ const router = createBrowserRouter([
             <RutaProtegida><AdminLayout /></RutaProtegida>
         ),
         children: [
-            { path: '/dashboard', element: cargar(<DashboardPage />) },
-            { path: '/libros', element: cargar(<LibrosPage />) },
-            { path: '/autores', element: cargar(<AutoresPage />) },
-            { path: '/categorias', element: cargar(<CategoriasPage />) },
-            { path: '/inventario', element: cargar(<InventarioPage />) },
-            { path: '/reservas', element: cargar(<ReservasPage />) },
-            { path: '/ventas', element: cargar(<VentasPage />) },
-            { path: '/comprobantes', element: cargar(<ComprobantesPage />) },
-            { path: '/cierre-caja', element: cargar(<CierreCajaPage />) },
-            { path: '/reclamaciones', element: cargar(<ReclamacionesPage />) },
-            { path: '/pagos', element: cargar(<PagosPage />) },
-            { path: '/usuarios', element: cargar(<UsuariosPage />) },
-            { path: '/clientes', element: <Navigate to="/usuarios?vista=clientes" replace /> },
+            // --- Portadas ---
+            { path: '/punto-venta', element: para(AMBOS, <PuntoVentaPage />) },
+            { path: '/dashboard', element: para(SOLO_ADMIN, <DashboardPage />) },
+
+            // --- Catálogo: el cajero solo consulta ---
+            { path: '/libros', element: para(AMBOS, <LibrosPage />) },
+            { path: '/autores', element: para(SOLO_ADMIN, <AutoresPage />) },
+            { path: '/categorias', element: para(SOLO_ADMIN, <CategoriasPage />) },
+            { path: '/inventario', element: para(AMBOS, <InventarioPage />) },
+
+            // --- Operaciones ---
+            { path: '/reservas', element: para(AMBOS, <ReservasPage />) },
+            { path: '/ventas', element: para(AMBOS, <VentasPage />) },
+            { path: '/comprobantes', element: para(AMBOS, <ComprobantesPage />) },
+            { path: '/cierre-caja', element: para(AMBOS, <CierreCajaPage />) },
+            { path: '/pagos', element: para(AMBOS, <PagosPage />) },
+
+            // --- Administración y control: solo administrador ---
+            { path: '/usuarios', element: para(SOLO_ADMIN, <UsuariosPage />) },
+            { path: '/clientes', element: para(SOLO_ADMIN, <Navigate to="/usuarios?vista=clientes" replace />) },
+            { path: '/reclamaciones', element: para(SOLO_ADMIN, <ReclamacionesPage />) },
+            { path: '/tarifas-envio', element: para(SOLO_ADMIN, <TarifasEnvioPage />) },
+            { path: '/historial', element: para(SOLO_ADMIN, <HistorialPage />) },
+            { path: '/configuracion/empresa', element: para(SOLO_ADMIN, <EmpresaPage />) },
+            // La personalización de tema es local al navegador: no expone
+            // datos del backend, así que queda disponible para ambos roles.
+            { path: '/personalizacion', element: cargar(<PersonalizacionPage />) },
+
             // El envío por agencia ya no se ofrece (solo Lima): la página queda
             // oculta; se redirige para no romper enlaces guardados.
             { path: '/agencias', element: <Navigate to="/" replace /> },
-            { path: '/tarifas-envio', element: cargar(<TarifasEnvioPage />) },
-            { path: '/historial', element: cargar(<HistorialPage />) },
             // Reportes se integró en el resumen; se conserva la ruta para enlaces guardados.
             { path: '/reportes', element: <Navigate to="/dashboard" replace /> },
-            { path: '/configuracion/empresa', element: cargar(<EmpresaPage />) },
-            { path: '/personalizacion', element: cargar(<PersonalizacionPage />) },
         ],
     },
     {

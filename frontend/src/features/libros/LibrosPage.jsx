@@ -18,6 +18,7 @@ import { FaEye, FaPenToSquare, FaTrash } from 'react-icons/fa6';
 import { formatearMoneda } from '../../lib/utils/format';
 
 import { useToast } from '../../components/providers/ToastProvider';
+import { useRol } from '../auth/useRol';
 
 import { listarLibros, obtenerLibro, eliminarLibro } from './librosService';
 import LibroForm from './LibroForm';
@@ -40,12 +41,16 @@ const columnasLibros = [
     { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
 ];
 
-function accionesLibro(fila, { onVer, onEditar, onEliminar }) {
+function accionesLibro(fila, { onVer, onEditar, onEliminar, puedeEditar }) {
     return (
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver libro"><FaEye /></BtnAccion>
-            <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar libro"><FaPenToSquare /></BtnAccion>
-            <BtnAccion tipo="eliminar" onClick={() => onEliminar(fila)} titulo="Eliminar libro"><FaTrash /></BtnAccion>
+            {puedeEditar && (
+                <>
+                    <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar libro"><FaPenToSquare /></BtnAccion>
+                    <BtnAccion tipo="eliminar" onClick={() => onEliminar(fila)} titulo="Eliminar libro"><FaTrash /></BtnAccion>
+                </>
+            )}
         </>
     );
 }
@@ -66,7 +71,7 @@ function Contador({ total, activos, inactivos }) {
     );
 }
 
-function TablaLibros({ titulo, subtitulo, paginados, contadorLibros, pagina, totalPaginas, onCambiarPagina, color, onVer, onEditar, onEliminar }) {
+function TablaLibros({ titulo, subtitulo, paginados, contadorLibros, pagina, totalPaginas, onCambiarPagina, color, onVer, onEditar, onEliminar, puedeEditar }) {
     return (
         <Card>
             <CardHeader
@@ -83,7 +88,7 @@ function TablaLibros({ titulo, subtitulo, paginados, contadorLibros, pagina, tot
                     columnas={columnasLibros}
                     filas={paginados}
                     keyExtractor={(fila) => fila.id_libro}
-                    acciones={(fila) => accionesLibro(fila, { onVer, onEditar, onEliminar })}
+                    acciones={(fila) => accionesLibro(fila, { onVer, onEditar, onEliminar, puedeEditar })}
                 />
             </CardBody>
             <Pagination pagina={pagina} totalPaginas={totalPaginas} onCambiarPagina={onCambiarPagina} />
@@ -93,6 +98,7 @@ function TablaLibros({ titulo, subtitulo, paginados, contadorLibros, pagina, tot
 
 export default function LibrosPage() {
     const { exito, error: mostrarError } = useToast();
+    const { puedeEditarCatalogo } = useRol();
 
     const [libros, setLibros] = useState([]);
     const [cargando, setCargando] = useState(true);
@@ -238,11 +244,15 @@ export default function LibrosPage() {
         <div className="space-y-4">
             <PageHeader
                 titulo="Libros"
-                descripcion="Administra el catálogo de la librería"
+                descripcion={
+                    puedeEditarCatalogo
+                        ? 'Administra el catálogo de la librería'
+                        : 'Consulta el catálogo de la librería (solo lectura)'
+                }
                 acciones={<Contador total={libros.length} activos={librosActivos.length} inactivos={librosInactivos.length} />}
             />
 
-            <LibroForm onLibroCreado={libroCreado} />
+            {puedeEditarCatalogo && <LibroForm onLibroCreado={libroCreado} />}
 
             <Card>
                 <CardHeader
@@ -306,7 +316,11 @@ export default function LibrosPage() {
             {!cargando && !error && libros.length === 0 && (
                 <EmptyState
                     titulo="No hay libros registrados"
-                    descripcion="Registra un nuevo libro utilizando el formulario."
+                    descripcion={
+                        puedeEditarCatalogo
+                            ? 'Registra un nuevo libro utilizando el formulario.'
+                            : 'Todavía no hay libros en el catálogo.'
+                    }
                     icono={<FaBook />}
                 />
             )}
@@ -333,6 +347,7 @@ export default function LibrosPage() {
                     onVer={verLibro}
                     onEditar={editarLibro}
                     onEliminar={(l) => setLibroEliminar(l)}
+                    puedeEditar={puedeEditarCatalogo}
                 />
             )}
 
@@ -349,6 +364,7 @@ export default function LibrosPage() {
                     onVer={verLibro}
                     onEditar={editarLibro}
                     onEliminar={(l) => setLibroEliminar(l)}
+                    puedeEditar={puedeEditarCatalogo}
                 />
             )}
 

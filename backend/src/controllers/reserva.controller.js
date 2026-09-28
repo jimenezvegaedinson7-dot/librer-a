@@ -5,6 +5,7 @@ const historialModel = require('../models/historial.model');
 const { validarId, esCantidadPositiva, esNumeroNoNegativo } = require('../utils/validaciones');
 const { RESERVA, permitirTransicion } = require('../utils/transiciones');
 const { enviarCorreoReservaCreada } = require('../utils/mailer');
+const { esPersonalInterno } = require('../utils/roles');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR RESERVAS
@@ -87,19 +88,17 @@ const obtenerReserva = async (req, res) => {
         }
 
         // ========================================
-        // VERIFICAR PROPIEDAD (IDOR) — dueño o admin
+        // VERIFICAR PROPIETIDAD (IDOR) — dueño o personal
+        // del panel (administrador y cajero)
         // (misma regla que DELETE /reservas/:id)
         // ========================================
-        const esAdmin =
-            String(
-                req.usuario?.rol || ''
-            ).toLowerCase() ===
-            'administrador';
+        const esStaff =
+            esPersonalInterno(req.usuario?.rol);
 
         if (
             Number(reserva.id_usuario) !==
                 Number(req.usuario.id_usuario) &&
-            !esAdmin
+            !esStaff
         ) {
             return res.status(403).json({
                 success: false,

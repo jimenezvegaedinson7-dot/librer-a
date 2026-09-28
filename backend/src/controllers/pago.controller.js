@@ -15,6 +15,7 @@ const {
     enviarCorreoPagoRechazado
 } = require('../utils/mailer');
 const { PUBLIC_BASE_URL } = require('../config/payu');
+const { esPersonalInterno } = require('../utils/roles');
 
 // ========================================
 // CORREOS TRANSACCIONALES (fire-and-forget)
@@ -891,15 +892,13 @@ const obtenerOrden = async (req, res) => {
         // ========================================
         // VERIFICAR PROPIEDAD DE LA VENTA (IDOR)
         // ========================================
-        const esAdmin =
-            String(
-                req.usuario?.rol || ''
-            ).toLowerCase() === 'administrador';
+        const esStaff =
+            esPersonalInterno(req.usuario?.rol);
 
         if (
             Number(ventaPago.id_usuario) !==
                 Number(req.usuario?.id_usuario) &&
-            !esAdmin
+            !esStaff
         ) {
             return res.status(403).json({
                 success: false,

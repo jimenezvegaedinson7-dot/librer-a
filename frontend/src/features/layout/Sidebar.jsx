@@ -2,26 +2,38 @@ import { NavLink } from 'react-router-dom';
 
 import { X } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
+import { useMemo } from 'react';
 
 import { useTema } from '../../components/providers/ThemeContext';
+import { useAuth } from '../auth/AuthContext';
 import logoLibreria from '../../assets/logo-lbl.png';
-import { navPrincipal } from './navConfig';
+import { navPorRol } from './navConfig';
+import { esCajero } from '../../lib/roles';
 
-const secciones = navPrincipal.reduce((grupos, item) => {
-    const nombre = item.seccion || 'General';
-    const grupo = grupos.find((actual) => actual.nombre === nombre);
-    if (grupo) grupo.items.push(item);
-    else grupos.push({ nombre, items: [item] });
-    return grupos;
-}, []);
+const agruparPorSeccion = (items) =>
+    items.reduce((grupos, item) => {
+        const nombre = item.seccion || 'General';
+        const grupo = grupos.find((actual) => actual.nombre === nombre);
+        if (grupo) grupo.items.push(item);
+        else grupos.push({ nombre, items: [item] });
+        return grupos;
+    }, []);
 
 const resorte = { type: 'spring', stiffness: 420, damping: 36, mass: 0.8 };
 
 function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
     const { getSidebarColores } = useTema();
+    const { usuario } = useAuth();
     const colores = getSidebarColores('sidebar');
     const reducirMovimiento = useReducedMotion();
     const acento = colores.primary || colores.sidebarText;
+
+    // El menú se calcula con el rol real de la sesión: un cajero nunca
+    // ve los accesos administrativos aunque los escriba a mano.
+    const secciones = useMemo(
+        () => agruparPorSeccion(navPorRol(usuario?.rol)),
+        [usuario?.rol],
+    );
 
     const cerrarEnMovil = () => {
         if (window.innerWidth < 1024) onCerrar?.();
@@ -64,7 +76,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                             Librería del Saber
                         </p>
                         <p className="mt-0.5 text-[10.5px] font-medium uppercase tracking-[0.14em]" style={{ color: acento, opacity: 0.85 }}>
-                            Administración
+                            {esCajero(usuario?.rol) ? 'Punto de venta' : 'Administración'}
                         </p>
                     </div>
                 )}

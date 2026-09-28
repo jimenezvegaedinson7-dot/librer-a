@@ -18,13 +18,16 @@ import { Alert } from '../../components/ui/Alert';
 import { Modal } from '../../components/ui/Modal';
 import { CargaCorreo, ExitoAnimado } from '../../components/ui/Celebracion';
 import { prepararSonido, sonarPagoAprobado } from '../../lib/utils/sonido';
+import { esPersonalInterno, inicioPorRol } from '../../lib/roles';
 
 import fondoLogin from '../../assets/fondo-login.png';
 import logoLibreria from '../../assets/logo-lbl.png';
 
+const MENSAJE_FUERA_DE_PANEL = 'Este panel es solo para personal interno (administrador o cajero)';
+
 export default function LoginPage() {
     const navigate = useNavigate();
-    const { autenticado, iniciarSesion } = useAuth();
+    const { autenticado, usuario, iniciarSesion } = useAuth();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -52,7 +55,7 @@ export default function LoginPage() {
 
     const reducirMovimiento = useReducedMotion();
 
-    if (autenticado) return <Navigate to="/dashboard" replace />;
+    if (autenticado) return <Navigate to={inicioPorRol(usuario?.rol)} replace />;
 
     // --- Login handlers ---
     const enviar = async (e) => {
@@ -72,13 +75,13 @@ export default function LoginPage() {
 
             const { token, data } = respuesta;
 
-            if (data.rol !== 'administrador') {
-                setError('Este panel es solo para administradores');
+            if (!esPersonalInterno(data?.rol)) {
+                setError(MENSAJE_FUERA_DE_PANEL);
                 return;
             }
 
             iniciarSesion(token, data);
-            navigate('/dashboard');
+            navigate(inicioPorRol(data.rol));
         } catch (err) {
             if (
                 err.response?.status === 403 &&
@@ -113,13 +116,13 @@ export default function LoginPage() {
 
             const { token, data } = respuesta;
 
-            if (data.rol !== 'administrador') {
-                setError('Este panel es solo para administradores');
+            if (!esPersonalInterno(data?.rol)) {
+                setError(MENSAJE_FUERA_DE_PANEL);
                 return;
             }
 
             iniciarSesion(token, data);
-            navigate('/dashboard');
+            navigate(inicioPorRol(data.rol));
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Código incorrecto o expirado');
         } finally {
@@ -175,13 +178,13 @@ export default function LoginPage() {
                 return;
             }
 
-            if (respuesta.data?.rol !== 'administrador') {
+            if (!esPersonalInterno(respuesta.data?.rol)) {
                 setAutoInicio('no-admin');
                 return;
             }
 
             iniciarSesion(respuesta.token, respuesta.data);
-            navigate('/dashboard');
+            navigate(inicioPorRol(respuesta.data.rol));
         } catch (err) {
             await pausa;
             if (err.response?.status === 403 && /verificar tu correo/i.test(err.response?.data?.mensaje || '')) {
@@ -596,7 +599,7 @@ export default function LoginPage() {
                             titulo="Contraseña actualizada"
                             detalle={{
                                 iniciando: 'Iniciando sesión con tu nueva contraseña…',
-                                'no-admin': 'Este panel es solo para administradores.',
+                                'no-admin': 'Este panel es solo para personal interno (administrador o cajero).',
                                 error: 'No se pudo iniciar sesión automáticamente. Ingresa con tu nueva contraseña.',
                             }[autoInicio]}
                         >

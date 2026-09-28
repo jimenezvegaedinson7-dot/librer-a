@@ -19,6 +19,7 @@ import { FaEye, FaPenToSquare } from 'react-icons/fa6';
 import { formatearFecha } from '../../lib/utils/format';
 
 import { useToast } from '../../components/providers/ToastProvider';
+import { useRol } from '../auth/useRol';
 
 import { listarInventario, obtenerInventarioLibro } from './inventarioService';
 import InventarioForm from './InventarioForm';
@@ -45,11 +46,13 @@ const columnasInventario = [
     { titulo: 'Última actualización', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.ultima_actualizacion) || 'Sin registro'}</span> },
 ];
 
-function accionesInventario(fila, { onVer, onEditar }) {
+function accionesInventario(fila, { onVer, onEditar, puedeEditar }) {
     return (
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver inventario"><FaEye /></BtnAccion>
-            <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar inventario"><FaPenToSquare /></BtnAccion>
+            {puedeEditar && (
+                <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar inventario"><FaPenToSquare /></BtnAccion>
+            )}
         </>
     );
 }
@@ -75,6 +78,7 @@ function Contador({ total, disponibles, stockBajo, sinStock }) {
 
 export default function InventarioPage() {
     const { exito, error: mostrarError } = useToast();
+    const { puedeEditarStock } = useRol();
 
     const [inventario, setInventario] = useState([]);
     const [cargando, setCargando] = useState(true);
@@ -198,8 +202,12 @@ const [inventarioVer, setInventarioVer] = useState(null);
         <div className="space-y-4">
             <PageHeader
                 titulo="Inventario"
-                descripcion="Administra el stock y ubicación de los libros"
-acciones={
+                descripcion={
+                    puedeEditarStock
+                        ? 'Administra el stock y ubicación de los libros'
+                        : 'Consulta el stock y la ubicación de los libros (solo lectura)'
+                }
+                acciones={
                     <>
                         <Contador
                             total={inventario.length}
@@ -214,7 +222,7 @@ acciones={
                 }
             />
 
-            <InventarioForm onInventarioCreado={inventarioCreado} />
+            {puedeEditarStock && <InventarioForm onInventarioCreado={inventarioCreado} />}
 
             <Card>
                 <CardHeader
@@ -301,20 +309,22 @@ acciones={
                             columnas={columnasInventario}
                             filas={inventarioPaginado}
                             keyExtractor={(fila) => fila.id_inventario}
-                            acciones={(fila) => accionesInventario(fila, { onVer: verInventario, onEditar: editarInventario })}
+                            acciones={(fila) => accionesInventario(fila, { onVer: verInventario, onEditar: editarInventario, puedeEditar: puedeEditarStock })}
                         />
                     </CardBody>
                     <Pagination pagina={paginaActual} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
                 </Card>
             )}
 
-<InventarioViewModal inventario={inventarioVer} abierto={Boolean(inventarioVer)} onCerrar={() => setInventarioVer(null)} />
-            <InventarioEditModal
-                inventario={inventarioEditar}
-                abierto={Boolean(inventarioEditar)}
-                onCerrar={() => setInventarioEditar(null)}
-                onActualizado={inventarioActualizado}
-            />
+            <InventarioViewModal inventario={inventarioVer} abierto={Boolean(inventarioVer)} onCerrar={() => setInventarioVer(null)} />
+            {puedeEditarStock && (
+                <InventarioEditModal
+                    inventario={inventarioEditar}
+                    abierto={Boolean(inventarioEditar)}
+                    onCerrar={() => setInventarioEditar(null)}
+                    onActualizado={inventarioActualizado}
+                />
+            )}
             <MovimientosModal abierto={movimientosAbierto} onCerrar={() => setMovimientosAbierto(false)} />
         </div>
     );

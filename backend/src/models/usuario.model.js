@@ -115,7 +115,8 @@ const buscarPorId = async (id) => {
             foto_perfil,
             rol,
             estado,
-            fecha_registro
+            fecha_registro,
+            fecha_eliminacion
         FROM usuarios
         WHERE id_usuario = ?
         LIMIT 1

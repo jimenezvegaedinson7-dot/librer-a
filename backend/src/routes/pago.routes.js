@@ -14,7 +14,10 @@ const {
 const pagoModel = require('../models/pago.model');
 
 const verificarToken = require('../middlewares/auth.middleware');
-const verificarRol = require('../middlewares/rol.middleware');
+const {
+    verificarRol,
+    verificarPanel,
+} = require('../middlewares/rol.middleware');
 const { webhookLimit } = require('../middlewares/rateLimit');
 
 // ========================================
@@ -50,22 +53,22 @@ router.post(
 router.use(verificarToken);
 
 // ========================================
-// LISTAR PAGOS (SOLO ADMIN)
+// LISTAR PAGOS (ADMINISTRADOR O CAJERO — solo lectura)
 // ========================================
 router.get(
     '/',
-    verificarRol('administrador'),
+    verificarPanel,
     listarPagosAdmin
 );
 
 // ========================================
-// RESUMEN GLOBAL DE PAGOS (SOLO ADMIN)
+// RESUMEN GLOBAL DE PAGOS (ADMINISTRADOR O CAJERO — solo lectura)
 // Declarado ANTES de /:orderId para que "resumen"
 // no sea interpretado como un orderId.
 // ========================================
 router.get(
     '/resumen',
-    verificarRol('administrador'),
+    verificarPanel,
     async (req, res) => {
         try {
             const resumen =

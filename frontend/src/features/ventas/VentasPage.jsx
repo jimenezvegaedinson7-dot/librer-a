@@ -36,6 +36,7 @@ import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 import { exportarCsv } from '../../lib/utils/exportarCsv';
 
 import { useToast } from '../../components/providers/ToastProvider';
+import { useRol } from '../auth/useRol';
 
 import { cambiarEstadoVenta as actualizarEstadoVenta, listarVentas, obtenerVenta } from './ventasService';
 import { ConfirmarAccion } from '../../components/ui/ConfirmarAccion';
@@ -149,7 +150,7 @@ const columnasVentas = [
     },
 ];
 
-function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, onReembolsar }) {
+function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, onReembolsar, puedeReembolsar }) {
     const conComprobante = Number(fila.tiene_comprobante ?? 0) === 1;
     const puedeEmitir = !conComprobante && (fila.estado === 'pagada' || fila.estado === 'entregada');
     return (
@@ -181,7 +182,8 @@ function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, o
                     </BtnAccion>
                 </>
             )}
-            {(fila.estado === 'pagada' || fila.estado === 'entregada') && (
+            {/* Reembolsar devuelve stock y dinero: solo el administrador. */}
+            {puedeReembolsar && (fila.estado === 'pagada' || fila.estado === 'entregada') && (
                 <BtnAccion tipo="eliminar" onClick={() => onReembolsar(fila)} titulo="Reembolsar venta">
                     <FaRotateLeft />
                 </BtnAccion>
@@ -225,6 +227,7 @@ function FiltroEstados({ valor, onCambiar, conteos }) {
 
 export default function VentasPage() {
     const { exito, error: mostrarError } = useToast();
+    const { puedeReembolsar } = useRol();
 
     const [ventas, setVentas] = useState([]);
     const [cargando, setCargando] = useState(true);
@@ -606,6 +609,7 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
                                     onConfirmarEntrega: setVentaEntregar,
                                     onEmitirComprobante: abrirEmitirComprobante,
                                     onReembolsar: setVentaReembolsar,
+                                    puedeReembolsar,
                                 })
                             }
                         />

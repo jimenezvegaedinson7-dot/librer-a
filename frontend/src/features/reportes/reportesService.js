@@ -39,3 +39,12 @@ export async function obtenerIndicadoresVentas() {
     const res = await client.get('/reportes/indicadores-ventas');
     return res?.data ?? {};
 }
+
+// Cierre del día. Es el único indicador de caja que necesita el punto
+// de venta: en lugar de /reportes/indicadores-ventas (solo admin).
+export async function obtenerCierreCaja(fecha) {
+    const res = await client.get('/reportes/cierre-caja', {
+        params: fecha ? { fecha } : undefined,
+    });
+    return res?.data ?? {};
+}

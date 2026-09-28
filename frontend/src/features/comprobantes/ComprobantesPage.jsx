@@ -34,6 +34,7 @@ import { listarComprobantes, obtenerResumen, enviarComprobanteEmail } from './co
 import { envioAutomaticoActivo, guardarEnvioAutomatico } from './envioAutomatico';
 import ComprobanteViewModal from './ComprobanteViewModal';
 import { AnularComprobanteModal, RegistrarSunatModal } from './ComprobanteSunatModal';
+import { useRol } from '../auth/useRol';
 
 const POR_PAGINA = 10;
 
@@ -119,7 +120,7 @@ const columnasComprobantes = [
     },
 ];
 
-function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando, onSunat, onAnular }) {
+function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando, onSunat, onAnular, puedeAnular, puedeRegistrarSunat }) {
     const fueEnviado = fila.enviado_por_email;
     const anulado = fila.estado === 'anulado';
     return (
@@ -149,14 +150,17 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando,
                     <FaPaperPlane />
                 )}
             </BtnAccion>
-            <BtnAccion
-                tipo="ver"
-                onClick={() => onSunat(fila)}
-                titulo={anulado ? 'Registrar nota de crédito SUNAT' : 'Registrar N.° de comprobante SUNAT'}
-            >
-                <FaHashtag />
-            </BtnAccion>
-            {!anulado && (
+            {/* Registrar SUNAT y anular invalidan el comprobante: solo el administrador. */}
+            {puedeRegistrarSunat && (
+                <BtnAccion
+                    tipo="ver"
+                    onClick={() => onSunat(fila)}
+                    titulo={anulado ? 'Registrar nota de crédito SUNAT' : 'Registrar N.° de comprobante SUNAT'}
+                >
+                    <FaHashtag />
+                </BtnAccion>
+            )}
+            {puedeAnular && !anulado && (
                 <BtnAccion tipo="eliminar" onClick={() => onAnular(fila)} titulo="Anular comprobante (datos errados)">
                     <FaBan />
                 </BtnAccion>
@@ -194,6 +198,7 @@ export default function ComprobantesPage() {
     const [comprobanteSunat, setComprobanteSunat] = useState(null);
     const [comprobanteAnular, setComprobanteAnular] = useState(null);
     const { exito, error: mostrarError } = useToast();
+    const { puedeAnularComprobantes, puedeRegistrarSunat } = useRol();
 
     const cargarComprobantes = async () => {
         try {
@@ -561,6 +566,8 @@ export default function ComprobantesPage() {
                                     enviando: enviandoEmail === fila.id_comprobante,
                                     onSunat: setComprobanteSunat,
                                     onAnular: setComprobanteAnular,
+                                    puedeAnular: puedeAnularComprobantes,
+                                    puedeRegistrarSunat,
                                 })
                             }
                         />

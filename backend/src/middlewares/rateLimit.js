@@ -24,10 +24,15 @@ const config = {
 
 // ========================================
 // LÍMITE GENERAL (300 peticiones / 15 min)
+// RATE_LIMIT_GENERAL permite subirlo solo en pruebas de integración,
+// que disparan muchas peticiones seguidas. Sin esa variable el
+// valor sigue siendo 300, exactamente igual que antes.
 // ========================================
+const limiteGeneral = Number(process.env.RATE_LIMIT_GENERAL) || 300;
+
 const baseLimiter = rateLimit({
     ...config,
-    limit: 300
+    limit: limiteGeneral
 });
 
 // ========================================

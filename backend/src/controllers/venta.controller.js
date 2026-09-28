@@ -7,6 +7,7 @@ const { VENTA, permitirTransicion } = require('../utils/transiciones');
 const { PUBLIC_BASE_URL } = require('../config/payu');
 const { enviarCorreoPedidoEntregado } = require('../utils/mailer');
 const { validarCobroTienda } = require('../utils/metodosPago');
+const { esPersonalInterno } = require('../utils/roles');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR LA VENTA
@@ -117,17 +118,16 @@ const obtenerVenta = async (req, res) => {
         // ========================================
         // VERIFICAR PROPIEDAD (IDOR)
         // El dueño de la venta puede ver el detalle completo
-        // de su compra; el admin puede ver todas.
+        // de su compra; el personal del panel (administrador y
+        // cajero) puede ver todas.
         // ========================================
-        const esAdmin =
-            String(
-                req.usuario?.rol || ''
-            ).toLowerCase() === 'administrador';
+        const esStaff =
+            esPersonalInterno(req.usuario?.rol);
 
         if (
             Number(venta.id_usuario) !==
                 Number(req.usuario.id_usuario) &&
-            !esAdmin
+            !esStaff
         ) {
             return res.status(403).json({
                 success: false,
@@ -789,16 +789,15 @@ const obtenerPagoVenta = async (req, res) => {
 
         // ========================================
         // VERIFICAR PROPIEDAD (IDOR)
+        // (mismo criterio que obtenerVenta)
         // ========================================
-        const esAdmin =
-            String(
-                req.usuario?.rol || ''
-            ).toLowerCase() === 'administrador';
+        const esStaff =
+            esPersonalInterno(req.usuario?.rol);
 
         if (
             Number(datosPago.id_usuario) !==
                 Number(req.usuario.id_usuario) &&
-            !esAdmin
+            !esStaff
         ) {
             return res.status(403).json({
                 success: false,
