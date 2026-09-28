@@ -151,14 +151,14 @@ export default function PuntoVentaPage() {
                     <CardBody className="space-y-3">
                         <h2 className="text-sm font-semibold text-[#1c1814]">Accesos rÃ¡pidos</h2>
                         <div className="grid gap-2 sm:grid-cols-2">
-                            {ACCESOS.map(({ nombre, detalle, ruta, icono }) => (
+                            {ACCESOS.map(({ nombre, detalle, ruta, icono: Icono }) => (
                                 <Link
                                     key={ruta}
                                     to={ruta}
                                     className="flex items-center gap-3 rounded-xl border border-[#e6e0d7] bg-[#faf8f5] px-3 py-2.5 transition-colors hover:border-[#dcbb7a] hover:bg-[#fcf8ef]"
                                 >
                                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-[#9a7231] shadow-sm">
-                                        {icono}
+                                        <Icono className="h-5 w-5" />
                                     </span>
                                     <span className="min-w-0">
                                         <span className="block truncate text-[13.5px] font-semibold text-[#1c1814]">{nombre}</span>
