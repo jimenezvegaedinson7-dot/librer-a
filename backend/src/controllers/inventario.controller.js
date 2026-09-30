@@ -1,6 +1,6 @@
 const inventarioModel = require('../models/inventario.model');
 const historialModel = require('../models/historial.model');
-const { validarId, esNumeroNoNegativo } = require('../utils/validaciones');
+const { validarId, normalizarStock, esTextoValido } = require('../utils/validaciones');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR INVENTARIO
@@ -118,23 +118,22 @@ const crearInventario = async (req, res) => {
             });
         }
 
-        if (
-            stock !== undefined &&
-            (isNaN(Number(stock)) || Number(stock) < 0)
-        ) {
+        const stockNumero = stock === undefined ? 0 : normalizarStock(stock);
+        const stockMinimoNumero = stock_minimo === undefined ? 5 : normalizarStock(stock_minimo);
+        if (ubicacion != null && !esTextoValido(ubicacion, 100, true)) {
+            return res.status(400).json({ success: false, mensaje: 'Ubicación inválida' });
+        }
+        if (stockNumero === null) {
             return res.status(400).json({
                 success: false,
-                mensaje: 'El stock no puede ser negativo'
+                mensaje: 'El stock debe ser un entero válido mayor o igual a 0'
             });
         }
 
-        if (
-            stock_minimo !== undefined &&
-            (isNaN(Number(stock_minimo)) || Number(stock_minimo) < 0)
-        ) {
+        if (stockMinimoNumero === null) {
             return res.status(400).json({
                 success: false,
-                mensaje: 'El stock mínimo no puede ser negativo'
+                mensaje: 'El stock mínimo debe ser un entero válido mayor o igual a 0'
             });
         }
 
@@ -150,8 +149,8 @@ const crearInventario = async (req, res) => {
 
         const id = await inventarioModel.crear({
             id_libro: idLibroNum,
-            stock: stock !== undefined ? Number(stock) : 0,
-            stock_minimo: stock_minimo !== undefined ? Number(stock_minimo) : 5,
+            stock: stockNumero,
+            stock_minimo: stockMinimoNumero,
             ubicacion,
             id_usuario
         }, 'creacion');
@@ -172,6 +171,13 @@ const crearInventario = async (req, res) => {
 
     } catch (error) {
         console.error('Error al crear inventario:', error);
+
+        if (error.code === '23503') {
+            return res.status(400).json({ success: false, mensaje: 'El libro no existe' });
+        }
+        if (error.code === '23505') {
+            return res.status(409).json({ success: false, mensaje: 'Este libro ya tiene inventario' });
+        }
 
         res.status(500).json({
             success: false,
@@ -199,21 +205,18 @@ const actualizarStock = async (req, res) => {
 
         const id_usuario = req.usuario.id_usuario;
 
-        if (
-            stock === undefined ||
-            isNaN(Number(stock)) ||
-            Number(stock) < 0
-        ) {
+        const stockNumero = normalizarStock(stock);
+        if (stockNumero === null) {
             return res.status(400).json({
                 success: false,
-                mensaje: 'El stock debe ser un número mayor o igual a 0'
+                mensaje: 'El stock debe ser un entero válido mayor o igual a 0'
             });
         }
 
         const actualizado =
             await inventarioModel.actualizarStock(
                 idLibro,
-                Number(stock),
+                stockNumero,
                 'ajuste_manual'
             );
 
@@ -281,26 +284,28 @@ const actualizarInventario = async (req, res) => {
             });
         }
 
-        if (stock !== undefined && Number(stock) < 0) {
+        const stockNumero = stock === undefined ? undefined : normalizarStock(stock);
+        const stockMinimoNumero = stock_minimo === undefined ? undefined : normalizarStock(stock_minimo);
+        if (ubicacion != null && !esTextoValido(ubicacion, 100, true)) {
+            return res.status(400).json({ success: false, mensaje: 'Ubicación inválida' });
+        }
+        if (stockNumero === null) {
             return res.status(400).json({
                 success: false,
-                mensaje: 'El stock no puede ser negativo'
+                mensaje: 'El stock debe ser un entero válido mayor o igual a 0'
             });
         }
 
-        if (
-            stock_minimo !== undefined &&
-            Number(stock_minimo) < 0
-        ) {
+        if (stockMinimoNumero === null) {
             return res.status(400).json({
                 success: false,
-                mensaje: 'El stock mínimo no puede ser negativo'
+                mensaje: 'El stock mínimo debe ser un entero válido mayor o igual a 0'
             });
         }
 
         await inventarioModel.actualizar(idLibro, {
-            stock,
-            stock_minimo,
+            stock: stockNumero,
+            stock_minimo: stockMinimoNumero,
             ubicacion,
             id_usuario
         }, 'ajuste_manual');
@@ -355,18 +360,18 @@ const obtenerStockBajo = async (req, res) => {
 // ========================================
 const listarMovimientos = async (req, res) => {
     try {
-        const pagina = Number(req.query.pagina) || 1;
-        const porPagina = Number(req.query.por_pagina) || 20;
+        const pagina = req.query.pagina === undefined ? 1 : validarId(req.query.pagina);
+        const porPagina = req.query.por_pagina === undefined ? 20 : validarId(req.query.por_pagina);
         let id_libro = null;
 
-        if (Number.isNaN(pagina) || pagina < 1) {
+        if (!pagina) {
             return res.status(400).json({
                 success: false,
                 mensaje: 'La página debe ser un número mayor o igual a 1'
             });
         }
 
-        if (Number.isNaN(porPagina) || porPagina < 1) {
+        if (!porPagina) {
             return res.status(400).json({
                 success: false,
                 mensaje: 'por_pagina debe ser un número mayor o igual a 1'

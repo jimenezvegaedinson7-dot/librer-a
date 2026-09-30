@@ -9,8 +9,8 @@
 `<ToastProvider>` → `<AuthProvider>` → `<RouterProvider>` (react-router ^7.18.3).
 
 - **Cliente HTTP**: `lib/api/client.js` (axios). `baseURL = VITE_API_URL` (`.env.production` apunta a `https://libreria-api-v9h0.onrender.com/api`, `.env.development` a `http://localhost:3000/api`). Interceptor de petición añade `Bearer <token>`; el de respuesta devuelve `response.data` y ante **401** limpia la sesión y redirige a `/`.
-- **Sesión**: `features/auth/AuthContext.jsx` + `lib/storage/index.js` (`localStorage`: `token`, `usuario`, `ultimoHistorialVisto`). Solo entran los roles `administrador` y `cajero` (validado en `LoginPage`).
-- **Guards**: `routes/RutaProtegida.jsx` redirige a `/` si no hay token y cierra sesión si la cuenta no es del panel; `routes/RutaPorRol.jsx` exige `administrador` o `cajero` y manda a `/punto-venta` cuando el rol no tiene acceso. Helpers en `lib/roles.js` (`esDelPanel`, `inicioPorRol`, `portadaDeRol`) y hook `features/auth/useRol.js`. Un **403** no cierra sesión.
+- **Sesión**: `features/auth/AuthContext.jsx` + `lib/storage/index.js` (`localStorage`: `token`, `usuario`, `ultimoHistorialVisto`). Solo entra `administrador`; perfil actualiza los datos de sesión desde la API.
+- **Guards**: `routes/RutaProtegida.jsx` redirige a `/` sin token o sin rol administrador. `routes/RutaPorRol.jsx` exige los roles configurados (solo administrador en el panel). Un **401** limpia sesión; un **403** muestra rechazo de permisos.
 - **Layout**: `features/layout/AdminLayout.jsx` (ThemeProvider, Sidebar, Topbar, Breadcrumbs, transición de página con Framer Motion).
 - **Tema**: `components/providers/ThemeContext.jsx` (modo claro/oscuro y colores por zona en `localStorage`). Estilos globales: `src/index.css` → `src/styles/theme.css` (tokens de marca, dark mode, componentes).
 - **Despliegue**: Vercel (`frontend/vercel.json` reescribe todo a `index.html`).
@@ -44,7 +44,7 @@
 | `/reportes` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `*` | Navigate | redirección: `<Navigate to="/" replace />` |
 
-Todas excepto `/` y `/verificar-email` cuelgan de `<RutaProtegida><AdminLayout/></RutaProtegida>`, más un `<RutaPorRol roles={['administrador','cajero']}>` en las rutas restringidas. `/punto-venta` es la portada del `cajero`; `/reportes` redirige a `/dashboard` (Reportes se integró en el Resumen).
+El panel cuelga de `<RutaProtegida><AdminLayout/></RutaProtegida>` y permite solo administrador. `/`, `/verificar-email` y `/libro-de-reclamaciones` son públicas. `/reportes` y `/cierre-caja` redirigen a `/dashboard`; `/agencias` a `/`.
 
 ## Cadena página → servicio → endpoint
 

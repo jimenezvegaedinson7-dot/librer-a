@@ -69,6 +69,7 @@ async function enviarPorBrevo({ destinatario, asunto, html, texto, attachments }
         method: 'POST',
         headers: brevoHeaders,
         body: JSON.stringify(body),
+        signal: AbortSignal.timeout(20000),
     });
     const cuerpo = await res.json().catch(() => null);
     if (![200, 201].includes(res.status)) {
@@ -97,6 +98,7 @@ async function enviarPorResend({ destinatario, asunto, html, texto }) {
             text: texto || undefined,
             html,
         }),
+        signal: AbortSignal.timeout(20000),
     });
     const cuerpo = await res.json().catch(() => null);
     if (!res.ok) {
@@ -138,7 +140,7 @@ async function obtenerTransporter() {
             host: await hostIpv4(),
             port: SMTP_PORT,
             secure: SMTP_SECURE,
-            requireTLS: !SMTP_SECURE,
+            requireTLS: !SMTP_SECURE && process.env.SMTP_REQUIRE_TLS !== 'false',
             servername: SMTP_HOST,
             family: 4,
             auth: {
@@ -196,8 +198,7 @@ async function enviarCorreo({
     // remitente verificado (correo, sin necesidad de dominio).
     if (brevoConfigurado) {
         try {
-            const control = setTimeout(() => { throw new Error('Brevo timeout'); }, 20000);
-            const res = await enviarPorBrevo({ destinatario, asunto, html, texto, attachments }).finally(() => clearTimeout(control));
+            const res = await enviarPorBrevo({ destinatario, asunto, html, texto, attachments });
             if (res && (res.messageId || res.id)) {
                 return { enviado: true, consola: false, canal: 'brevo' };
             }
@@ -211,8 +212,7 @@ async function enviarCorreo({
     // Canal 2: Resend (HTTPS).
     if (resendConfigurado) {
         try {
-            const control = setTimeout(() => { throw new Error('Resend timeout'); }, 20000);
-            const res = await enviarPorResend({ destinatario, asunto, html, texto }).finally(() => clearTimeout(control));
+            const res = await enviarPorResend({ destinatario, asunto, html, texto });
             if (res && res.id) {
                 return { enviado: true, consola: false, canal: 'resend' };
             }

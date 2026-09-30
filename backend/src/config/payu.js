@@ -42,7 +42,7 @@ if (!cliente) {
 }
 
 module.exports = {
-    cliente: PAYU_CONFIG,
+    cliente,
     PAYU_API_BASE,
     PAYU_CHECKOUT_BASE,
     PUBLIC_BASE_URL

@@ -1,4 +1,5 @@
 const historialModel = require('../models/historial.model');
+const { esTextoValido } = require('../utils/validaciones');
 
 // ========================================
 // OBTENER TODO EL HISTORIAL
@@ -59,7 +60,7 @@ const crearHistorial = async (req, res) => {
 
         const id_usuario = req.usuario?.id_usuario ?? null;
 
-        if (!tipo_operacion || !modulo || !descripcion) {
+        if (!esTextoValido(tipo_operacion, 20) || !esTextoValido(modulo, 50) || !esTextoValido(descripcion, 100000)) {
             return res.status(400).json({
                 success: false,
                 mensaje: 'Faltan datos obligatorios'

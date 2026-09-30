@@ -274,8 +274,8 @@ const reembolsarVenta = async (req, res) => {
             }
         });
     } catch (error) {
-        if (error.status === 400) {
-            return res.status(400).json({
+        if (error.status >= 400 && error.status < 500) {
+            return res.status(error.status).json({
                 success: false,
                 mensaje: error.message
             });
@@ -357,6 +357,10 @@ const actualizarEstadoVenta = async (req, res) => {
 
         const estadoActual =
             ventaActual.estado;
+
+        if (['panel', 'reserva'].includes(ventaActual.origen)) {
+            return res.status(409).json({ success: false, mensaje: 'Las ventas históricas son de solo lectura' });
+        }
 
         // ========================================
         // MISMO ESTADO

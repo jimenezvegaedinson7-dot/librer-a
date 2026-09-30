@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const categoriaModel = require('../models/categoria.model');
 const historialModel = require('../models/historial.model');
 const usuarioModel = require('../models/usuario.model');
-const { validarId } = require('../utils/validaciones');
+const { validarId, esTextoValido, esEstadoValido } = require('../utils/validaciones');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR CATEGORÍAS
@@ -117,8 +117,8 @@ const crearCategoria = async (req, res) => {
         // VALIDAR NOMBRE
         // ========================================
         if (
-            !nombre ||
-            !nombre.trim()
+            !esTextoValido(nombre, 80) ||
+            (descripcion !== undefined && !esTextoValido(descripcion, 255, true))
         ) {
             return res.status(400).json({
                 success: false,
@@ -217,7 +217,7 @@ const actualizarCategoria = async (req, res) => {
         // ========================================
         if (
             nombre !== undefined &&
-            !nombre.trim()
+            !esTextoValido(nombre, 80)
         ) {
             return res.status(400).json({
                 success: false,
@@ -231,10 +231,7 @@ const actualizarCategoria = async (req, res) => {
         // ========================================
         if (
             estado !== undefined &&
-            estado !== '' &&
-            ![0, 1].includes(
-                Number(estado)
-            )
+            !esEstadoValido(estado)
         ) {
             return res.status(400).json({
                 success: false,
@@ -246,6 +243,9 @@ const actualizarCategoria = async (req, res) => {
         // ========================================
         // ACTUALIZAR
         // ========================================
+        if (descripcion !== undefined && !esTextoValido(descripcion, 255, true)) {
+            return res.status(400).json({ success: false, mensaje: 'Descripción inválida' });
+        }
         await categoriaModel.actualizar(
             idCategoria,
             {
@@ -324,7 +324,7 @@ const eliminarCategoria = async (req, res) => {
         // VALIDAR CONTRASEÑA
         // ========================================
         if (
-            !password ||
+            typeof password !== 'string' ||
             !password.trim()
         ) {
             return res.status(400).json({
@@ -473,7 +473,7 @@ const eliminarCategoria = async (req, res) => {
             error.code ===
                 'ER_ROW_IS_REFERENCED_2' ||
             error.code ===
-                'ER_ROW_IS_REFERENCED'
+                'ER_ROW_IS_REFERENCED' || error.code === '23503'
         ) {
             return res.status(409).json({
                 success: false,

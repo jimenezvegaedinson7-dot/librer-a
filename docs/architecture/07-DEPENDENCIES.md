@@ -41,7 +41,7 @@ Todas las dependencias se importan en algún archivo.
 | `react-router-dom` | ^7.18.3 |
 | `tailwindcss` | ^4.3.3 |
 
-Dev: @types/react, @types/react-dom, @vitejs/plugin-react, oxlint, vite.
+Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxlint, vite.
 
 ## Paquetes Flutter (`flutter pub deps --style=compact`)
 
@@ -54,7 +54,7 @@ Dev: @types/react, @types/react-dom, @vitejs/plugin-react, oxlint, vite.
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 107 | 259 | 0 (confirmado con **madge**: ninguno) |
+| Backend (`require`) | 118 | 274 | 0 (confirmado con **madge**: ninguno) |
 | Frontend (`import`) | 139 | 603 | 0 (confirmado con **madge**: ninguno) |
 | Flutter (`import` relativos) | 68 | 298 | 4 caminos cíclicos |
 
@@ -75,5 +75,5 @@ Ejemplos de caminos:
 
 - Flutter: ninguno.
 - React: funciones de servicio no importadas: `agenciasService#obtenerAgencia`, `ubicacionesService#listarProvincias`/`listarDistritos` (se usan solo internamente por `listarDistritosParaEnvio`).
-- Backend: endpoints `GET /api/historial/mi-historial`, `POST /api/historial`, `GET /api/inventario/stock-bajo`, `PUT /api/inventario/libro/:id/stock`, `GET /api/debug-egress` (sin cliente).
+- Backend: endpoints `GET /api/historial/mi-historial`, `POST /api/historial`, `PUT /api/inventario/libro/:id/stock` sin consumidor React/Flutter; `GET /api/debug-egress` es diagnóstico manual protegido.
 - Estilos: `frontend/src/styles/theme.css` conserva clases de la antigua página Reportes (`reporte-card`, `reporte-grafico`, `reporte-tooltip`, `reporte-encabezado`) que ya no usa ningún componente.

@@ -125,7 +125,7 @@ const consultarEstadoOrdenPayu = async ({
             };
         }
 
-        let status = null;
+        let ordenes = [];
 
         // 1) POR ID DE ORDEN (payu_order_id)
         if (orderId) {
@@ -134,8 +134,8 @@ const consultarEstadoOrdenPayu = async ({
                     orderId: Number(orderId)
                 });
 
-            status =
-                consulta?.result?.payload?.status ?? null;
+            const payload = consulta?.result?.payload;
+            ordenes = Array.isArray(payload) ? payload : (payload ? [payload] : []);
         } else if (externalReference) {
             // 2) POR REFERENCIA EXTERNA (ORDER_DETAIL_BY_REFERENCE_CODE)
             const consulta =
@@ -150,15 +150,10 @@ const consultarEstadoOrdenPayu = async ({
 
             const payload =
                 consulta?.result?.payload;
-            const orden =
-                Array.isArray(payload)
-                    ? payload[0]
-                    : payload;
-
-            status = orden?.status ?? null;
+            ordenes = Array.isArray(payload) ? payload : (payload ? [payload] : []);
         }
 
-        if (!status) {
+        if (ordenes.length === 0) {
             return {
                 pagado: false,
                 error: false,
@@ -166,6 +161,16 @@ const consultarEstadoOrdenPayu = async ({
                 mensaje:
                     'No se encontró la orden en PayU o no tiene estado'
             };
+        }
+
+        const estados = ordenes.flatMap(orden => [orden.status,
+            ...(orden.transactions || []).map(tx => tx.transactionResponse?.state)])
+            .map(normalizarEstado).filter(Boolean);
+        const status = estados.find(estado => ESTADOS_PAGADOS.includes(estado)) ||
+            estados.find(estado => ESTADOS_PENDIENTES.includes(estado)) || estados[0];
+        if (!status || (!ESTADOS_PAGADOS.includes(status) &&
+            !ESTADOS_PENDIENTES.includes(status) && !ESTADOS_CANCELADOS.includes(status))) {
+            throw new Error('PayU devolvió una orden sin estado reconocido');
         }
 
         const pagado =

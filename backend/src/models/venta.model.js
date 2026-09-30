@@ -1015,7 +1015,8 @@ const actualizarEstadoEntrega = async (
                 SELECT
                     id_venta,
                     estado_entrega,
-                    tipo_entrega
+                    tipo_entrega,
+                    origen
                 FROM ventas
                 WHERE id_venta = ?
                 FOR UPDATE
@@ -1030,6 +1031,10 @@ const actualizarEstadoEntrega = async (
         const venta =
             ventas[0];
 
+        if (['panel', 'reserva'].includes(venta.origen)) {
+            throw Object.assign(new Error('Las ventas históricas son de solo lectura'), { status: 409 });
+        }
+
         // ========================================
         // MISMO ESTADO
         // ========================================
@@ -1037,9 +1042,9 @@ const actualizarEstadoEntrega = async (
             venta.estado_entrega ===
             nuevoEstado
         ) {
-            throw new Error(
+            throw Object.assign(new Error(
                 `El pedido ya se encuentra en estado "${nuevoEstado}"`
-            );
+            ), { status: 400 });
         }
 
         // ========================================
@@ -1050,9 +1055,9 @@ const actualizarEstadoEntrega = async (
         // un pedido con tipo inválido llegaría al UPDATE y la base lo
         // rechazaría con 23514, es decir un 500 en vez de un error claro.
         if (!esTipoEntregaValido(venta.tipo_entrega)) {
-            throw new Error(
+            throw Object.assign(new Error(
                 'El pedido contiene un tipo de entrega no compatible con el flujo actual. Requiere corrección de datos antes de continuar.'
-            );
+            ), { status: 409 });
         }
 
         // ========================================
@@ -1069,9 +1074,9 @@ const actualizarEstadoEntrega = async (
             );
 
         if (!puedeCambiar) {
-            throw new Error(
+            throw Object.assign(new Error(
                 `No se puede cambiar el pedido de "${venta.estado_entrega}" a "${nuevoEstado}"`
-            );
+            ), { status: 400 });
         }
 
         const [resultado] =
@@ -1121,7 +1126,7 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario }) => {
         await connection.beginTransaction();
 
         const [ventas] = await connection.query(`
-            SELECT id_venta, estado
+            SELECT id_venta, estado, origen
             FROM ventas
             WHERE id_venta = ?
             FOR UPDATE
@@ -1133,6 +1138,12 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario }) => {
         }
 
         const venta = ventas[0];
+
+        if (['panel', 'reserva'].includes(venta.origen)) {
+            const error = new Error('Las ventas históricas son de solo lectura');
+            error.status = 409;
+            throw error;
+        }
 
         if (
             !['pagada', 'entregada'].includes(venta.estado) ||

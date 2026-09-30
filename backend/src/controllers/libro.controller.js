@@ -3,9 +3,11 @@ const bcrypt = require('bcryptjs');
 const pool = require('../config/database');
 const libroModel = require('../models/libro.model');
 const inventarioModel = require('../models/inventario.model');
+const autorModel = require('../models/autor.model');
+const categoriaModel = require('../models/categoria.model');
 const historialModel = require('../models/historial.model');
 const usuarioModel = require('../models/usuario.model');
-const { validarId } = require('../utils/validaciones');
+const { validarId, esNumeroNoNegativo, esEstadoValido } = require('../utils/validaciones');
 const {
     eliminarImagen,
     publicIdDesdeUrl
@@ -140,14 +142,16 @@ const crearLibro = async (req, res) => {
             });
         }
 
-        if (
-            isNaN(Number(precio)) ||
-            Number(precio) < 0
-        ) {
+        if (typeof titulo !== 'string' || !titulo.trim() || titulo.trim().length > 200 ||
+            (isbn != null && (typeof isbn !== 'string' || isbn.trim().length > 20)) ||
+            (descripcion != null && typeof descripcion !== 'string')) {
+            return res.status(400).json({ success: false, mensaje: 'Título, ISBN o descripción inválidos' });
+        }
+        if (!esNumeroNoNegativo(precio) || Number(precio) > 99999999.99) {
             return res.status(400).json({
                 success: false,
                 mensaje:
-                    'El precio no puede ser negativo'
+                    'El precio debe ser un número válido mayor o igual a 0'
             });
         }
 
@@ -158,6 +162,23 @@ const crearLibro = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 mensaje: 'ID de autor o categoría inválido'
+            });
+        }
+
+        const autorExistente = await autorModel.obtenerPorId(idAutor);
+        const categoriaExistente = await categoriaModel.obtenerPorId(idCategoria);
+
+        if (!autorExistente) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'Autor no encontrado'
+            });
+        }
+
+        if (!categoriaExistente) {
+            return res.status(400).json({
+                success: false,
+                mensaje: 'Categoría no encontrada'
             });
         }
 
@@ -279,14 +300,17 @@ const crearLibro = async (req, res) => {
         // ISBN DUPLICADO
         // ========================================
         if (
-            error.code ===
-            'ER_DUP_ENTRY'
+            ['ER_DUP_ENTRY', '23505'].includes(error.code)
         ) {
             return res.status(409).json({
                 success: false,
                 mensaje:
                     'El ISBN ingresado ya está registrado'
             });
+        }
+
+        if (error.code === '23503') {
+            return res.status(400).json({ success: false, mensaje: 'Autor o categoría inexistente' });
         }
 
         return res.status(500).json({
@@ -340,15 +364,16 @@ const actualizarLibro = async (req, res) => {
         // ========================================
         // VALIDAR PRECIO
         // ========================================
-        if (
-            precio !== undefined &&
-            precio !== '' &&
-            Number(precio) < 0
-        ) {
+        if ((titulo !== undefined && (typeof titulo !== 'string' || !titulo.trim() || titulo.trim().length > 200)) ||
+            (isbn !== undefined && (typeof isbn !== 'string' || isbn.trim().length > 20)) ||
+            (descripcion !== undefined && typeof descripcion !== 'string')) {
+            return res.status(400).json({ success: false, mensaje: 'Título, ISBN o descripción inválidos' });
+        }
+        if (precio !== undefined && (!esNumeroNoNegativo(precio) || Number(precio) > 99999999.99)) {
             return res.status(400).json({
                 success: false,
                 mensaje:
-                    'El precio no puede ser negativo'
+                    'El precio debe ser un número válido mayor o igual a 0'
             });
         }
 
@@ -357,16 +382,22 @@ const actualizarLibro = async (req, res) => {
         // ========================================
         if (
             estado !== undefined &&
-            estado !== '' &&
-            ![0, 1].includes(
-                Number(estado)
-            )
+            !esEstadoValido(estado)
         ) {
             return res.status(400).json({
                 success: false,
                 mensaje:
                     'El estado debe ser activo o inactivo'
             });
+        }
+
+        const idAutor = id_autor === undefined ? libroExistente.id_autor : validarId(id_autor);
+        const idCategoria = id_categoria === undefined ? libroExistente.id_categoria : validarId(id_categoria);
+        if (!idAutor || !idCategoria) {
+            return res.status(400).json({ success: false, mensaje: 'ID de autor o categoría inválido' });
+        }
+        if (!(await autorModel.obtenerPorId(idAutor)) || !(await categoriaModel.obtenerPorId(idCategoria))) {
+            return res.status(400).json({ success: false, mensaje: 'Autor o categoría inexistente' });
         }
 
         // ========================================
@@ -376,23 +407,6 @@ const actualizarLibro = async (req, res) => {
             libroExistente.portada || null;
 
         if (req.file) {
-            // Eliminar portada anterior si estaba en Cloudinary
-            const publicIdAnterior =
-                publicIdDesdeUrl(
-                    libroExistente.portada
-                );
-
-            if (publicIdAnterior) {
-                try {
-                    await eliminarImagen(publicIdAnterior);
-                } catch (errorEliminar) {
-                    console.error(
-                        'No se pudo eliminar la portada anterior:',
-                        errorEliminar.message
-                    );
-                }
-            }
-
             portada =
                 req.file.cloudinaryUrl ||
                 `/uploads/portadas/${req.file.filename}`;
@@ -431,16 +445,10 @@ const actualizarLibro = async (req, res) => {
                 portada,
 
                 id_autor:
-                    id_autor !== undefined &&
-                    id_autor !== ''
-                        ? Number(id_autor)
-                        : libroExistente.id_autor,
+                    idAutor,
 
                 id_categoria:
-                    id_categoria !== undefined &&
-                    id_categoria !== ''
-                        ? Number(id_categoria)
-                        : libroExistente.id_categoria,
+                    idCategoria,
 
                 estado:
                     estado !== undefined &&
@@ -451,6 +459,16 @@ const actualizarLibro = async (req, res) => {
                         )
             }
         );
+
+        // La portada vigente sigue disponible si el UPDATE falla (ISBN,
+        // FK, etc.). Solo se retira después de confirmar la nueva URL.
+        if (req.file) {
+            const anterior = publicIdDesdeUrl(libroExistente.portada);
+            if (anterior) {
+                try { await eliminarImagen(anterior); }
+                catch (errorEliminar) { console.error('No se pudo eliminar la portada anterior:', errorEliminar.message); }
+            }
+        }
 
         // ========================================
         // HISTORIAL
@@ -484,14 +502,17 @@ const actualizarLibro = async (req, res) => {
         // ISBN DUPLICADO
         // ========================================
         if (
-            error.code ===
-            'ER_DUP_ENTRY'
+            ['ER_DUP_ENTRY', '23505'].includes(error.code)
         ) {
             return res.status(409).json({
                 success: false,
                 mensaje:
                     'El ISBN ingresado ya está registrado'
             });
+        }
+
+        if (error.code === '23503') {
+            return res.status(400).json({ success: false, mensaje: 'Autor o categoría inexistente' });
         }
 
         return res.status(500).json({

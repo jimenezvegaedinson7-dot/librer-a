@@ -689,6 +689,7 @@ test('matriz funcional del flujo comercial', async (t) => {
                 direccion: 'Av. Siempre Viva 742',
                 idempotencia_clave: clave,
                 tipo_entrega: 'tienda',
+                costo_envio: 999,
             };
 
             const stockAntes = await leerStock(sembrados.libroManual);
@@ -711,6 +712,11 @@ test('matriz funcional del flujo comercial', async (t) => {
                 `la creación debe devolver data.id_venta, llegó: ${JSON.stringify(primeraCuerpo).slice(0, 200)}`
             );
             sembrados.ventas.push(idPrimera);
+
+            const ventaRecojo = await leerVenta(idPrimera);
+            assert.equal(Number(ventaRecojo.costo_envio), 0, 'el recojo no cobra una tarifa enviada por el cliente');
+            const [precios] = await pool.query('SELECT precio FROM libros WHERE id_libro = ?', [sembrados.libroManual]);
+            assert.equal(Number(ventaRecojo.total), Number(precios[0].precio), 'total de recojo = precio real del libro');
 
             const segunda = await pedir('/api/pagos/crear-orden', cliente, 'POST', cuerpo);
             const segundaCuerpo = await segunda.json().catch(() => ({}));

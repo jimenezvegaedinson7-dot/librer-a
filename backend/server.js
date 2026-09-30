@@ -17,7 +17,7 @@ if (
 }
 
 const express = require('express');
-const cors = require('cors');
+const crearCors = require('./src/config/cors');
 const helmet = require('helmet');
 const path = require('path');
 
@@ -92,22 +92,7 @@ const PORT = process.env.PORT || 3000;
 // ===============================
 // MIDDLEWARE
 // ===============================
-const origenesPermitidos = process.env.FRONTEND_ORIGINS
-    ? process.env.FRONTEND_ORIGINS.split(',').map(o => o.trim())
-    : ['http://localhost:5173'];
-
-app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || origenesPermitidos.includes(origin)) {
-            return callback(null, true);
-        }
-
-        return callback(
-            new Error('Origen no permitido por CORS'),
-            false
-        );
-    }
-}));
+app.use(crearCors());
 
 app.use(express.json({ limit: '1mb' }));
 
@@ -181,6 +166,8 @@ app.get(
 // ===============================
 app.get(
     '/api/debug-egress',
+    verificarToken,
+    verificarRol('administrador'),
     async (req, res) => {
         const net = require('net');
         const { resolve4 } = require('dns').promises;
@@ -199,7 +186,7 @@ app.get(
         }
         try {
             const t0 = Date.now();
-            const f = await fetch('https://api.ipify.org?format=json');
+            const f = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
             info.https443 = (await f.text()).slice(0, 60) + ' ms=' + (Date.now() - t0);
         } catch (e) { info.https443 = 'error: ' + e.message; }
         res.json(info);

@@ -254,6 +254,10 @@ export default function AutoresPage() {
 
             {!cargando && error && <Alert tipo="error">{error}</Alert>}
 
+            {!cargando && !error && autores.length === 0 && (
+                <EmptyState titulo="No hay autores registrados" descripcion="Registra el primer autor con el formulario superior." />
+            )}
+
             {!cargando && !error && autores.length > 0 && autoresFiltrados.length === 0 && (
                 <EmptyState
                     titulo="No se encontraron autores"

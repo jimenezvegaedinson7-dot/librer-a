@@ -15,7 +15,7 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 
 ## Cifras (análisis 2026-09-30)
 
-- Backend: **107** archivos JS (incluye tests y scripts) · **105** endpoints · 20 routers · 21 controladores · 17 modelos · 16 tablas.
+- Backend: **118** archivos JS (incluye tests y scripts) · **105** endpoints · 20 routers · 21 controladores · 17 modelos · 16 tablas.
 - Frontend: **139** archivos JS/JSX · 24 rutas · 23 archivos de servicio.
 - Flutter: **68** archivos Dart · 30 métodos en ApiService · 20 pantallas/widgets con llamadas a la API.
 
@@ -29,6 +29,7 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 | Autores | `/api/autores` | features/autores | — |
 | Categorías | `/api/categorias` | features/categorias | — |
 | Inventario | `/api/inventario` | features/inventario | — |
+| Pedidos | `/api/pedidos` | features/pedidos | — |
 | Reservas | `/api/reservas` | features/reservas | detalle de libro (crear), reservas |
 | Ventas | `/api/ventas` | features/ventas | mis compras |
 | Pagos (PayU) | `/api/pagos` | features/pagos | entrega y pago, mis compras |
@@ -38,8 +39,9 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 | Reportes / Resumen | `/api/reportes` | features/dashboard (vía reportes/reportesService) | — |
 | Favoritos | `/api/favoritos` | — | favoritos, detalle de libro |
 | Ubicaciones (Lima) | `/api/ubicaciones` | features/ventas/ubicacionesService | entrega y pago |
-| Agencias courier | `/api/agencias` | features/agencias | entrega y pago |
+| Agencias courier (legacy) | `/api/agencias` | ruta redirigida; features/agencias sin ruta activa | — |
 | Empresa (emisor) | `/api/empresa` | features/configuracion/EmpresaPage | — |
+| Reclamaciones | `/api/reclamaciones` | features/reclamaciones | enlace al formulario público |
 
 ## Dónde buscar
 
@@ -65,6 +67,6 @@ Regenera todos los archivos a partir del código (solo lectura del código). Si 
 
 Ver detalle en `05-API-MAP.md` y `07-DEPENDENCIES.md`.
 - Ningún cliente llama a un endpoint inexistente.
-- `GET /api/debug-egress` público y sin uso.
+- `GET /api/debug-egress` es diagnóstico manual protegido (JWT + admin), sin consumidor React/Flutter.
 - Endpoints de backend sin cliente: historial (mi-historial, POST), inventario (stock-bajo, PUT stock).
 - Flutter: solo quedan ciclos de navegación entre pantallas (sin ciclo servicios ↔ pantallas).

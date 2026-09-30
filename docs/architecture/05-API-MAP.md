@@ -14,7 +14,7 @@ Total de endpoints registrados en el backend: **105** (incluye 4 definidos direc
 | GET | `/` | inline (server.js) | — | — | — | Pública |
 | GET | `/api` | inline (server.js) | — | — | — | Pública |
 | GET | `/api/test-db` | inline (server.js) | JWT + rol:administrador | — | — | JWT + admin |
-| GET | `/api/debug-egress` | inline (server.js) | — | — | — | Pública |
+| GET | `/api/debug-egress` | inline (server.js) | JWT + rol:administrador | — | — | JWT + admin |
 | GET | `/api/agencias/activas` | controllers/agencia.controller.js#listarAgencias | JWT | declarado en features/agencias/agenciasService.js#listarAgenciasActivas (sin uso) | — | JWT |
 | GET | `/api/agencias` | controllers/agencia.controller.js#listarTodasAgencias | JWT + rol:administrador | features/agencias/AgenciasPage.jsx | — | JWT + admin |
 | GET | `/api/agencias/:id` | controllers/agencia.controller.js#obtenerAgencia | JWT | declarado en features/agencias/agenciasService.js#obtenerAgencia (sin uso) | — | JWT |
@@ -42,12 +42,12 @@ Total de endpoints registrados en el backend: **105** (incluye 4 definidos direc
 | PUT | `/api/categorias/:id` | controllers/categoria.controller.js#actualizarCategoria | JWT + rol:administrador | features/categorias/CategoriaEditModal.jsx | — | JWT + admin |
 | DELETE | `/api/categorias/:id` | controllers/categoria.controller.js#eliminarCategoria | JWT + rol:administrador | features/categorias/CategoriasPage.jsx | — | JWT + admin |
 | GET | `/api/clientes` | controllers/cliente.controller.js#listarClientes | JWT + rol:administrador | features/clientes/ClientesPage.jsx | — | JWT + admin |
-| GET | `/api/comprobantes` | controllers/comprobante.controller.js#listarComprobantes | JWT + verificarPanel | features/comprobantes/ComprobantesPage.jsx | — | JWT |
-| GET | `/api/comprobantes/resumen` | inline (comprobante.routes.js) | JWT + verificarPanel | features/comprobantes/ComprobantesPage.jsx | — | JWT |
-| POST | `/api/comprobantes/:id/enviar-email` | controllers/comprobante.controller.js#enviarComprobanteEmail | JWT + verificarPanel | features/comprobantes/ComprobantesPage.jsx<br>features/ventas/EmitirComprobanteModal.jsx | — | JWT |
-| GET | `/api/comprobantes/:id` | controllers/comprobante.controller.js#obtenerComprobante | JWT + verificarPanel | features/comprobantes/ComprobanteViewModal.jsx | — | JWT |
-| PUT | `/api/comprobantes/:id/sunat` | controllers/comprobante.controller.js#registrarSunat | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT |
-| POST | `/api/comprobantes/:id/anular` | controllers/comprobante.controller.js#anularComprobante | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT |
+| GET | `/api/comprobantes` | controllers/comprobante.controller.js#listarComprobantes | JWT + verificarPanel | features/comprobantes/ComprobantesPage.jsx | — | JWT + admin |
+| GET | `/api/comprobantes/resumen` | inline (comprobante.routes.js) | JWT + verificarPanel | features/comprobantes/ComprobantesPage.jsx | — | JWT + admin |
+| POST | `/api/comprobantes/:id/enviar-email` | controllers/comprobante.controller.js#enviarComprobanteEmail | JWT + verificarPanel | features/comprobantes/ComprobantesPage.jsx<br>features/ventas/EmitirComprobanteModal.jsx | — | JWT + admin |
+| GET | `/api/comprobantes/:id` | controllers/comprobante.controller.js#obtenerComprobante | JWT + verificarPanel | features/comprobantes/ComprobanteViewModal.jsx | — | JWT + admin |
+| PUT | `/api/comprobantes/:id/sunat` | controllers/comprobante.controller.js#registrarSunat | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT + admin |
+| POST | `/api/comprobantes/:id/anular` | controllers/comprobante.controller.js#anularComprobante | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT + admin |
 | GET | `/api/empresa` | controllers/empresa.controller.js#obtenerEmpresa | — | features/comprobantes/ComprobanteViewModal.jsx<br>features/configuracion/EmpresaPage.jsx<br>features/reclamaciones/LibroReclamacionesPage.jsx<br>features/ventas/EmitirComprobanteModal.jsx | — | Pública |
 | PUT | `/api/empresa` | controllers/empresa.controller.js#actualizarEmpresa | JWT + rol:administrador | features/configuracion/EmpresaPage.jsx | — | JWT + admin |
 | GET | `/api/favoritos` | controllers/favorito.controller.js#listarMisFavoritos | JWT | — | screens/favoritos_screen.dart | JWT |
@@ -57,13 +57,13 @@ Total de endpoints registrados en el backend: **105** (incluye 4 definidos direc
 | GET | `/api/historial/mi-historial` | controllers/historial.controller.js#obtenerMiHistorial | JWT | — | — | JWT |
 | POST | `/api/historial` | controllers/historial.controller.js#crearHistorial | JWT + rol:administrador | — | — | JWT + admin |
 | GET | `/api/historial` | controllers/historial.controller.js#obtenerHistorial | JWT + rol:administrador | features/historial/HistorialPage.jsx | — | JWT + admin |
-| GET | `/api/inventario` | controllers/inventario.controller.js#obtenerInventario | JWT + verificarPanel | features/inventario/InventarioPage.jsx<br>features/libros/LibrosPage.jsx | — | JWT |
-| GET | `/api/inventario/stock-bajo` | controllers/inventario.controller.js#obtenerStockBajo | JWT + verificarPanel | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js<br>features/notificaciones/notificacionesService.js | — | JWT |
-| GET | `/api/inventario/movimientos` | controllers/inventario.controller.js#listarMovimientos | JWT + verificarPanel | features/inventario/MovimientosModal.jsx | — | JWT |
-| GET | `/api/inventario/libro/:id` | controllers/inventario.controller.js#obtenerInventarioPorLibro | JWT + verificarPanel | features/inventario/InventarioPage.jsx | — | JWT |
-| POST | `/api/inventario` | controllers/inventario.controller.js#crearInventario | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/inventario/InventarioForm.jsx | — | JWT |
-| PUT | `/api/inventario/libro/:id/stock` | controllers/inventario.controller.js#actualizarStock | JWT + verificarRol(ROLES.ADMINISTRADOR) | — | — | JWT |
-| PUT | `/api/inventario/libro/:id` | controllers/inventario.controller.js#actualizarInventario | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/inventario/InventarioEditModal.jsx | — | JWT |
+| GET | `/api/inventario` | controllers/inventario.controller.js#obtenerInventario | JWT + verificarPanel | features/inventario/InventarioPage.jsx<br>features/libros/LibrosPage.jsx | — | JWT + admin |
+| GET | `/api/inventario/stock-bajo` | controllers/inventario.controller.js#obtenerStockBajo | JWT + verificarPanel | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js<br>features/notificaciones/notificacionesService.js | — | JWT + admin |
+| GET | `/api/inventario/movimientos` | controllers/inventario.controller.js#listarMovimientos | JWT + verificarPanel | features/inventario/MovimientosModal.jsx | — | JWT + admin |
+| GET | `/api/inventario/libro/:id` | controllers/inventario.controller.js#obtenerInventarioPorLibro | JWT + verificarPanel | features/inventario/InventarioPage.jsx | — | JWT + admin |
+| POST | `/api/inventario` | controllers/inventario.controller.js#crearInventario | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/inventario/InventarioForm.jsx | — | JWT + admin |
+| PUT | `/api/inventario/libro/:id/stock` | controllers/inventario.controller.js#actualizarStock | JWT + verificarRol(ROLES.ADMINISTRADOR) | — | — | JWT + admin |
+| PUT | `/api/inventario/libro/:id` | controllers/inventario.controller.js#actualizarInventario | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/inventario/InventarioEditModal.jsx | — | JWT + admin |
 | GET | `/api/libros` | controllers/libro.controller.js#obtenerLibros | — | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js<br>features/inventario/MovimientosModal.jsx<br>features/inventario/useLibros.js<br>features/libros/LibrosPage.jsx<br>features/reservas/ReservaForm.jsx<br>features/reservas/reservasService.js | screens/home_screen.dart<br>screens/libros_screen.dart | Pública |
 | GET | `/api/libros/:id` | controllers/libro.controller.js#obtenerLibro | — | features/libros/LibrosPage.jsx | screens/detalle_libro_screen.dart | Pública |
 | POST | `/api/libros` | controllers/libro.controller.js#crearLibro | JWT + rol:administrador + upload(portada) | features/libros/LibroForm.jsx | — | JWT + admin |
@@ -72,32 +72,32 @@ Total de endpoints registrados en el backend: **105** (incluye 4 definidos direc
 | GET | `/api/pagos/checkout/:externalReference` | controllers/pago.controller.js#renderCheckoutPage | — | — | — | Pública |
 | GET | `/api/pagos/respuesta/:externalReference` | controllers/pago.controller.js#renderRespuestaPage | — | — | — | Pública |
 | POST | `/api/pagos/webhook` | controllers/pago.controller.js#webhookPago | webhookLimit + express.urlencoded + express.json | — | — | Pública |
-| GET | `/api/pagos` | controllers/pago.controller.js#listarPagosAdmin | JWT + verificarPanel | features/notificaciones/notificacionesService.js<br>features/pagos/PagosPage.jsx | — | JWT |
-| GET | `/api/pagos/resumen` | inline (pago.routes.js) | JWT + verificarPanel | features/pagos/PagosPage.jsx | — | JWT |
+| GET | `/api/pagos` | controllers/pago.controller.js#listarPagosAdmin | JWT + verificarPanel | features/notificaciones/notificacionesService.js<br>features/pagos/PagosPage.jsx | — | JWT + admin |
+| GET | `/api/pagos/resumen` | inline (pago.routes.js) | JWT + verificarPanel | features/pagos/PagosPage.jsx | — | JWT + admin |
 | POST | `/api/pagos/crear-orden` | controllers/pago.controller.js#crearOrden | JWT | — | screens/entrega_y_pago_screen.dart | JWT |
 | GET | `/api/pagos/:orderId` | controllers/pago.controller.js#obtenerOrden | JWT | — | screens/entrega_y_pago_screen.dart<br>screens/mis_compras_screen.dart | JWT |
-| GET | `/api/pedidos` | controllers/pedido.controller.js#obtenerPedidos | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT |
+| GET | `/api/pedidos` | controllers/pedido.controller.js#obtenerPedidos | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT + admin |
 | GET | `/api/pedidos/usuario/:id_usuario` | controllers/pedido.controller.js#obtenerMisPedidos | JWT | — | — | JWT |
-| GET | `/api/pedidos/:id` | controllers/pedido.controller.js#obtenerPedido | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT |
-| PUT | `/api/pedidos/:id/estado` | controllers/pedido.controller.js#actualizarEstadoPedido | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT |
+| GET | `/api/pedidos/:id` | controllers/pedido.controller.js#obtenerPedido | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT + admin |
+| PUT | `/api/pedidos/:id/estado` | controllers/pedido.controller.js#actualizarEstadoPedido | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT + admin |
 | POST | `/api/reclamaciones` | controllers/reclamacion.controller.js#registrar | reclamacionLimiter | features/reclamaciones/LibroReclamacionesPage.jsx | — | Pública |
 | GET | `/api/reclamaciones` | controllers/reclamacion.controller.js#listar | JWT + rol:administrador | features/reclamaciones/ReclamacionesPage.jsx | — | JWT + admin |
 | GET | `/api/reclamaciones/resumen` | controllers/reclamacion.controller.js#resumen | JWT + rol:administrador | features/reclamaciones/ReclamacionesPage.jsx | — | JWT + admin |
 | GET | `/api/reclamaciones/:id` | controllers/reclamacion.controller.js#obtener | JWT + rol:administrador | — | — | JWT + admin |
 | PUT | `/api/reclamaciones/:id/respuesta` | controllers/reclamacion.controller.js#responder | JWT + rol:administrador | features/reclamaciones/ReclamacionesPage.jsx | — | JWT + admin |
-| GET | `/api/reportes/ventas-por-estado` | controllers/reporte.controller.js#obtenerVentasPorEstado | JWT + verificarPanel | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT |
-| GET | `/api/reportes/reservas-por-estado` | controllers/reporte.controller.js#obtenerReservasPorEstado | JWT + verificarPanel | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT |
-| GET | `/api/reportes/resumen` | controllers/reporte.controller.js#obtenerResumenGeneral | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT |
-| GET | `/api/reportes/libros-mas-vendidos` | controllers/reporte.controller.js#obtenerLibrosMasVendidos | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT |
-| GET | `/api/reportes/ventas-por-mes` | controllers/reporte.controller.js#obtenerVentasPorMes | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT |
-| GET | `/api/reportes/ventas-por-dia` | controllers/reporte.controller.js#obtenerVentasPorDia | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT |
-| GET | `/api/reportes/indicadores-ventas` | controllers/reporte.controller.js#obtenerIndicadoresVentas | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT |
+| GET | `/api/reportes/ventas-por-estado` | controllers/reporte.controller.js#obtenerVentasPorEstado | JWT + verificarPanel | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
+| GET | `/api/reportes/reservas-por-estado` | controllers/reporte.controller.js#obtenerReservasPorEstado | JWT + verificarPanel | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
+| GET | `/api/reportes/resumen` | controllers/reporte.controller.js#obtenerResumenGeneral | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
+| GET | `/api/reportes/libros-mas-vendidos` | controllers/reporte.controller.js#obtenerLibrosMasVendidos | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
+| GET | `/api/reportes/ventas-por-mes` | controllers/reporte.controller.js#obtenerVentasPorMes | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
+| GET | `/api/reportes/ventas-por-dia` | controllers/reporte.controller.js#obtenerVentasPorDia | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
+| GET | `/api/reportes/indicadores-ventas` | controllers/reporte.controller.js#obtenerIndicadoresVentas | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
 | GET | `/api/reservas/mis-reservas` | controllers/reserva.controller.js#obtenerMisReservas | JWT | — | screens/reservas_screen.dart | JWT |
 | POST | `/api/reservas` | controllers/reserva.controller.js#crearReserva | JWT | features/reservas/ReservaForm.jsx | screens/detalle_libro_screen.dart | JWT |
 | DELETE | `/api/reservas/:id` | controllers/reserva.controller.js#cancelarReserva | JWT | — | screens/reservas_screen.dart | JWT |
-| GET | `/api/reservas` | controllers/reserva.controller.js#obtenerReservas | JWT + verificarPanel | features/notificaciones/notificacionesService.js<br>features/reservas/ReservasPage.jsx | — | JWT |
+| GET | `/api/reservas` | controllers/reserva.controller.js#obtenerReservas | JWT + verificarPanel | features/notificaciones/notificacionesService.js<br>features/reservas/ReservasPage.jsx | — | JWT + admin |
 | GET | `/api/reservas/:id` | controllers/reserva.controller.js#obtenerReserva | JWT | features/reservas/ReservasPage.jsx | — | JWT |
-| PUT | `/api/reservas/:id/estado` | controllers/reserva.controller.js#actualizarEstado | JWT + verificarPanel | features/reservas/ReservaEstadoModal.jsx | — | JWT |
+| PUT | `/api/reservas/:id/estado` | controllers/reserva.controller.js#actualizarEstado | JWT + verificarPanel | features/reservas/ReservaEstadoModal.jsx | — | JWT + admin |
 | GET | `/api/ubicaciones/provincias` | controllers/ubicacion.controller.js#listarProvincias | JWT | features/tarifas/TarifasEnvioPage.jsx | screens/entrega_y_pago_screen.dart | JWT |
 | GET | `/api/ubicaciones/provincias/:id_provincia/distritos` | controllers/ubicacion.controller.js#listarDistritos | JWT | features/tarifas/TarifasEnvioPage.jsx | screens/entrega_y_pago_screen.dart | JWT |
 | PUT | `/api/ubicaciones/distritos/:id` | controllers/ubicacion.controller.js#actualizarTarifaDistrito | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
@@ -110,12 +110,12 @@ Total de endpoints registrados en el backend: **105** (incluye 4 definidos direc
 | PATCH | `/api/usuarios/:id` | controllers/usuario.controller.js#adminUpdateUsuario | JWT + rol:administrador | features/usuarios/UsuariosPage.jsx | — | JWT + admin |
 | GET | `/api/ventas/mis-ventas` | controllers/venta.controller.js#obtenerMisVentas | JWT | — | screens/mis_compras_screen.dart | JWT |
 | POST | `/api/ventas` | inline (venta.routes.js) | JWT | — | — | JWT |
-| GET | `/api/ventas` | controllers/venta.controller.js#obtenerVentas | JWT + verificarPanel | features/pagos/PagosPage.jsx<br>features/ventas/VentasPage.jsx | — | JWT |
+| GET | `/api/ventas` | controllers/venta.controller.js#obtenerVentas | JWT + verificarPanel | features/pagos/PagosPage.jsx<br>features/ventas/VentasPage.jsx | — | JWT + admin |
 | GET | `/api/ventas/:id` | controllers/venta.controller.js#obtenerVenta | JWT | features/ventas/VentasPage.jsx | — | JWT |
 | GET | `/api/ventas/:id/pago` | controllers/venta.controller.js#obtenerPagoVenta | JWT | — | screens/mis_compras_screen.dart | JWT |
-| PUT | `/api/ventas/:id/estado` | controllers/venta.controller.js#actualizarEstadoVenta | JWT + verificarPanel | features/ventas/VentasPage.jsx | — | JWT |
-| POST | `/api/ventas/:id/comprobante` | controllers/comprobante.controller.js#generarComprobante | JWT + verificarPanel | features/ventas/EmitirComprobanteModal.jsx | — | JWT |
-| POST | `/api/ventas/:id/reembolso` | controllers/venta.controller.js#reembolsarVenta | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/ventas/ReembolsoModal.jsx | — | JWT |
+| PUT | `/api/ventas/:id/estado` | controllers/venta.controller.js#actualizarEstadoVenta | JWT + verificarPanel | features/ventas/VentasPage.jsx | — | JWT + admin |
+| POST | `/api/ventas/:id/comprobante` | controllers/comprobante.controller.js#generarComprobante | JWT + verificarPanel | features/ventas/EmitirComprobanteModal.jsx | — | JWT + admin |
+| POST | `/api/ventas/:id/reembolso` | controllers/venta.controller.js#reembolsarVenta | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/ventas/ReembolsoModal.jsx | — | JWT + admin |
 
 ## Endpoints compartidos por React y Flutter (18)
 
@@ -145,7 +145,7 @@ Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL 
 - `GET /` — Salud del servidor.
 - `GET /api` — Salud de la API.
 - `GET /api/test-db` — Diagnóstico de conexión a BD (solo admin).
-- `GET /api/debug-egress` — ⚠️ Diagnóstico de salida SMTP **público, sin JWT**. Posiblemente no utilizado; revisar si debe existir en producción.
+- `GET /api/debug-egress` — Diagnóstico manual SMTP (JWT + administrador). DNS, TCP y salida HTTPS; sin consumidor en React/Flutter.
 - `GET /api/app/version` — Posiblemente no utilizado por ningún cliente.
 - `GET /api/historial/mi-historial` — Posiblemente no utilizado por ningún cliente.
 - `POST /api/historial` — Posiblemente no utilizado por ningún cliente.

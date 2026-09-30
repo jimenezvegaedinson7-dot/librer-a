@@ -1,4 +1,5 @@
 const empresaModel = require('../models/empresa.model');
+const { esEstadoValido, esNumeroNoNegativo, esTextoValido } = require('../utils/validaciones');
 
 // ========================================
 // CAMPOS EDITABLES (whitelist del body)
@@ -26,9 +27,8 @@ const esFechaValida = (valor) => {
         return false;
     }
 
-    const fecha = new Date(`${valor}T00:00:00`);
-
-    return !Number.isNaN(fecha.getTime());
+    const fecha = new Date(`${valor}T00:00:00Z`);
+    return Number.isFinite(fecha.getTime()) && fecha.toISOString().slice(0, 10) === valor;
 };
 
 // ========================================
@@ -65,6 +65,23 @@ const obtenerEmpresa = async (req, res) => {
 const actualizarEmpresa = async (req, res) => {
     try {
         const body = req.body || {};
+
+        const largos = { ruc: 11, razon_social: 255, nombre_comercial: 255, tipo_documento: 20,
+            documento_identidad: 20, direccion: 255, sistema_emision: 50, emisor_electronico: 255,
+            fecha_inscripcion: 10, fecha_inicio: 10, exoneracion_libros_hasta: 10 };
+        for (const [campo, maximo] of Object.entries(largos)) {
+            if (body[campo] !== undefined && !esTextoValido(body[campo], maximo, !['ruc', 'razon_social'].includes(campo))) {
+                return res.status(400).json({ success: false, mensaje: `El campo ${campo} no es válido` });
+            }
+        }
+        for (const campo of ['aplica_igv', 'libros_exonerados']) {
+            if (body[campo] !== undefined && !esEstadoValido(body[campo])) {
+                return res.status(400).json({ success: false, mensaje: `El campo ${campo} debe ser 0 o 1` });
+            }
+        }
+        if (body.tasa_igv !== undefined && (!esNumeroNoNegativo(body.tasa_igv) || Number(body.tasa_igv) > 30)) {
+            return res.status(400).json({ success: false, mensaje: 'La tasa del IGV debe estar entre 0 y 30' });
+        }
 
         const campos = {};
 

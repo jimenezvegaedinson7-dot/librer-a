@@ -64,14 +64,15 @@ test('los tres roles del sistema están declarados', () => {
     assert.equal(ROLES.CLIENTE, 'cliente');
 });
 
-test('el panel acepta administrador y cajero, no cliente', () => {
-    assert.deepEqual(ROLES_PANEL, ['administrador', 'cajero']);
-    assert.ok(ROLES_PANEL.includes(ROLES.CAJERO));
+test('el panel solo acepta administrador', () => {
+    assert.deepEqual(ROLES_PANEL, ['administrador']);
+    assert.ok(!ROLES_PANEL.includes(ROLES.CAJERO));
     assert.ok(!ROLES_PANEL.includes(ROLES.CLIENTE));
 });
 
-test('un administrador puede asignar los tres roles', () => {
-    assert.deepEqual(ROLES_ASIGNABLES, ['administrador', 'cajero', 'cliente']);
+test('un administrador no crea nuevos cajeros legacy', () => {
+    assert.deepEqual(ROLES_ASIGNABLES, ['administrador', 'cliente']);
+    assert.equal(esRolValido('cajero'), false);
     assert.ok(ROLES_ASIGNABLES.every(esRolValido));
     assert.equal(esRolValido('vendedor'), false);
     assert.equal(esRolValido(''), false);
@@ -95,9 +96,9 @@ test('los helpers de rol distinguen cada valor', () => {
     assert.ok(!esPersonalInterno('cliente'));
 });
 
-test('esPersonalInterno incluye cajero y administrador', () => {
+test('esPersonalInterno no da privilegios al cajero legacy', () => {
     assert.ok(esPersonalInterno('administrador'));
-    assert.ok(esPersonalInterno('cajero'));
+    assert.equal(esPersonalInterno('cajero'), false);
     assert.equal(esPersonalInterno('cliente'), false);
     assert.equal(esPersonalInterno(undefined), false);
 });
@@ -162,7 +163,7 @@ test('verificarRol compara el rol sin distinguir mayúsculas', () => {
 // middleware verificarPanel
 // ========================================
 
-test('verificarPanel deja pasar al cajero', () => {
+test('verificarPanel rechaza al cajero legacy', () => {
     // CAJERO ya no tiene acceso al panel (Fase 5)
     assert.equal(ejecutar(verificarPanel, como(ROLES.CAJERO)).siguiente, false);
 });
@@ -183,7 +184,7 @@ test('verificarPanel rechaza un rol desconocido', () => {
     assert.equal(ejecutar(verificarPanel, { usuario: { rol: null } }).status, 403);
 });
 
-test('verificarPanel es el mismo atajo para ambos roles del panel', () => {
+test('verificarPanel permite solo al administrador', () => {
     // ADMINISTRADOR tiene acceso, CAJERO y CLIENTE no
     assert.equal(ejecutar(verificarPanel, como(ROLES.ADMINISTRADOR)).siguiente, true);
     assert.equal(ejecutar(verificarPanel, como(ROLES.CAJERO)).siguiente, false);

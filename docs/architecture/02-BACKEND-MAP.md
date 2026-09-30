@@ -6,9 +6,9 @@
 ## Arranque (`backend/server.js`)
 
 1. `dotenv` y comprobación obligatoria de `TWO_FACTOR_ENCRYPTION_KEY` (≥ 16 caracteres; si falta, el proceso no arranca).
-2. `helmet` (sin CSP, CORP cross-origin) → `cors` con lista blanca `FRONTEND_ORIGINS` (por defecto `http://localhost:5173`) → `express.json({ limit: '1mb' })` → `baseLimiter`.
+2. `helmet` (sin CSP, CORP cross-origin) → `config/cors.js` con lista `FRONTEND_ORIGINS` y patrón `FRONTEND_ORIGINS_REGEX` (regex inválida desactiva previews y conserva lista explícita) → `express.json({ limit: '1mb' })` → `baseLimiter`.
 3. Estáticos: `/uploads` → `backend/uploads` (portadas y fotos locales cuando Cloudinary no está configurado).
-4. Endpoints en línea: `GET /`, `GET /api`, `GET /api/test-db` (JWT + admin), `GET /api/debug-egress` (público).
+4. Endpoints en línea: `GET /`, `GET /api`, `GET /api/test-db` y `GET /api/debug-egress` (ambos JWT + admin).
 5. Montaje de 20 routers bajo `/api/*` → 404 JSON → `error.middleware`.
 6. `iniciarJobs()` (limpieza cada 5 min) y 3 migraciones idempotentes en línea (tabla `favoritos`; columnas `cliente_documento`/`cliente_tipo_documento` en `ventas`; `enviado_por_email`/`fecha_envio_email` en `comprobantes`).
 7. `app.listen(PORT || 3000)`.
@@ -50,7 +50,7 @@
 | Archivo | Uso |
 |---|---|
 | `auth.middleware.js` | `verificarToken`: exige `Authorization: Bearer <jwt>`, valida con `jwt.verify` y deja `req.usuario`. |
-| `rol.middleware.js` | `verificarRol(...roles)`: multirrol, acepta `administrador`/`cajero` y responde **403** (nunca 401). `verificarPanel`: cualquier usuario interno. `esPersonalInterno(usuario)` para anti-IDOR. Roles centralizados en `utils/roles.js`. |
+| `rol.middleware.js` | `verificarRol(...roles)`: **401** sin usuario y **403** sin permiso. `verificarPanel` y el bypass anti-IDOR `esPersonalInterno` admiten solo administrador. Cajero legacy no recibe privilegios. Roles centralizados en `utils/roles.js`. |
 | `rateLimit.js` | `baseLimiter` (global), `loginLimiter`, `registroLimiter`, `verificacionLimiter`, `twoFaLimiter`, `webhookLimit`. |
 | `upload.middleware.js` | Multer en memoria, 5 MB, validación de tipo; sube la portada a Cloudinary si está configurado (`req.file.cloudinaryUrl`) o al disco `/uploads`. Campo `portada`. |
 | `uploadPerfil.middleware.js` | Igual para fotos de perfil. Campo `foto`. |
@@ -100,7 +100,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| GET | `/api/debug-egress` | — | inline (server.js) | — | — |
+| GET | `/api/debug-egress` | JWT + rol:administrador | inline (server.js) | — | — |
 
 ### /api/agencias
 
@@ -212,8 +212,8 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 |---|---|---|---|---|---|
 | GET | `/api/libros` | — | controllers/libro.controller.js#obtenerLibros | `libro.model.js#obtenerTodos` | autores, categorias, inventario, libros |
 | GET | `/api/libros/:id` | — | controllers/libro.controller.js#obtenerLibro | `libro.model.js#obtenerPorId` | autores, categorias, inventario, libros |
-| POST | `/api/libros` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#crearLibro | `historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro`<br>`libro.model.js#crear`<br>`libro.model.js#eliminar` | historial_operaciones, inventario, libros |
-| PUT | `/api/libros/:id` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#actualizarLibro | `historial.model.js#crear`<br>`libro.model.js#actualizar`<br>`libro.model.js#obtenerPorId` | autores, categorias, historial_operaciones, inventario, libros |
+| POST | `/api/libros` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#crearLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro`<br>`libro.model.js#crear`<br>`libro.model.js#eliminar` | autores, categorias, historial_operaciones, inventario, libros |
+| PUT | `/api/libros/:id` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#actualizarLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`libro.model.js#actualizar`<br>`libro.model.js#obtenerPorId` | autores, categorias, historial_operaciones, inventario, libros |
 | DELETE | `/api/libros/:id` | JWT + rol:administrador | controllers/libro.controller.js#eliminarLibro | `historial.model.js#crear`<br>`inventario.model.js#eliminarMovimientosPorLibro`<br>`inventario.model.js#eliminarPorLibro`<br>`libro.model.js#obtenerPorId`<br>`usuario.model.js#buscarPorIdConPassword` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, movimientos_inventario, reservas, usuarios |
 
 ### /api/pagos
@@ -340,7 +340,7 @@ Tablas presentes en el código (17): `agencias_courier`, `autores`, `categorias`
 
 ## Observaciones
 
-- ⚠️ `GET /api/debug-egress` es **público** (sin JWT) y abre conexiones TCP a los puertos SMTP. Posiblemente no utilizado.
+- `GET /api/debug-egress` es un diagnóstico manual **JWT + admin**, con conexiones TCP acotadas y timeout HTTPS.
 - La pasarela de pagos (`/api/pagos`) es **PayU**.
 - `GET /api/test-db` responde "Conexión con MySQL exitosa"; funciona (el adaptador devuelve `[rows]`), solo el texto está desactualizado.
 - Endpoints sin cliente: ver la sección correspondiente en `05-API-MAP.md`.

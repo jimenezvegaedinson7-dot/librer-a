@@ -178,6 +178,10 @@ const Pedido = {
             const estadoActual =
                 ventaActual.estado_entrega || 'pendiente';
 
+            if (['panel', 'reserva'].includes(ventaActual.origen)) {
+                return res.status(409).json({ success: false, mensaje: 'Las ventas históricas son de solo lectura' });
+            }
+
             // Mismo estado
             if (estadoActual === estado) {
                 return res.status(400).json({
@@ -250,6 +254,9 @@ const Pedido = {
 
         } catch (error) {
             console.error('Error al actualizar estado de pedido:', error);
+            if (error.status >= 400 && error.status < 500) {
+                return res.status(error.status).json({ success: false, mensaje: error.message });
+            }
             return res.status(500).json({
                 success: false,
                 mensaje: 'Error al actualizar el estado del pedido',

@@ -70,7 +70,8 @@ for (const [archivo, metodos] of Object.entries(H.flutter.usoApi)) {
 }
 const auth = (e) => {
     const mw = e.middleware || [];
-    if (mw.includes('rol:administrador')) return 'JWT + admin';
+    if (mw.includes('rol:administrador') || mw.includes('verificarPanel') ||
+        mw.includes('soloAdmin') || mw.some(m => m.includes('ROLES.ADMINISTRADOR'))) return 'JWT + admin';
     if (mw.includes('JWT')) return 'JWT';
     return 'Pública';
 };
@@ -87,6 +88,7 @@ const MODULOS = [
     ['Autores', 'autores', 'features/autores', '—'],
     ['Categorías', 'categorias', 'features/categorias', '—'],
     ['Inventario', 'inventario', 'features/inventario', '—'],
+    ['Pedidos', 'pedidos', 'features/pedidos', '—'],
     ['Reservas', 'reservas', 'features/reservas', 'detalle de libro (crear), reservas'],
     ['Ventas', 'ventas', 'features/ventas', 'mis compras'],
     ['Pagos (PayU)', 'pagos', 'features/pagos', 'entrega y pago, mis compras'],
@@ -96,8 +98,9 @@ const MODULOS = [
     ['Reportes / Resumen', 'reportes', 'features/dashboard (vía reportes/reportesService)', '—'],
     ['Favoritos', 'favoritos', '—', 'favoritos, detalle de libro'],
     ['Ubicaciones (Lima)', 'ubicaciones', 'features/ventas/ubicacionesService', 'entrega y pago'],
-    ['Agencias courier', 'agencias', 'features/agencias', 'entrega y pago'],
+    ['Agencias courier (legacy)', 'agencias', 'ruta redirigida; features/agencias sin ruta activa', '—'],
     ['Empresa (emisor)', 'empresa', 'features/configuracion/EmpresaPage', '—'],
+    ['Reclamaciones', 'reclamaciones', 'features/reclamaciones', 'enlace al formulario público'],
 ];
 
 // ════════════════════════ 05-API-MAP ════════════════════════
@@ -125,7 +128,7 @@ const MODULOS = [
         'GET /': 'Salud del servidor.',
         'GET /api': 'Salud de la API.',
         'GET /api/test-db': 'Diagnóstico de conexión a BD (solo admin).',
-        'GET /api/debug-egress': '⚠️ Diagnóstico de salida SMTP **público, sin JWT**. Posiblemente no utilizado; revisar si debe existir en producción.',
+        'GET /api/debug-egress': 'Diagnóstico manual SMTP (JWT + administrador). DNS, TCP y salida HTTPS; sin consumidor en React/Flutter.',
         'GET /api/pagos/checkout/:x': 'Lo abre el navegador con la `checkout_url` que devuelve `POST /api/pagos/crear-orden` (Flutter la lanza con url_launcher).',
         'GET /api/pagos/respuesta/:x': 'Página de retorno (responseUrl) de PayU.',
         'POST /api/pagos/webhook': 'Confirmación de PayU (servidor a servidor).',
@@ -140,9 +143,9 @@ const MODULOS = [
     let md = cab('Mapa del backend (Node.js + Express + PostgreSQL)');
     md += `## Arranque (\`backend/server.js\`)\n\n`;
     md += `1. \`dotenv\` y comprobación obligatoria de \`TWO_FACTOR_ENCRYPTION_KEY\` (≥ 16 caracteres; si falta, el proceso no arranca).
-2. \`helmet\` (sin CSP, CORP cross-origin) → \`cors\` con lista blanca \`FRONTEND_ORIGINS\` (por defecto \`http://localhost:5173\`) → \`express.json({ limit: '1mb' })\` → \`baseLimiter\`.
+2. \`helmet\` (sin CSP, CORP cross-origin) → \`config/cors.js\` con lista \`FRONTEND_ORIGINS\` y patrón \`FRONTEND_ORIGINS_REGEX\` (regex inválida desactiva previews y conserva lista explícita) → \`express.json({ limit: '1mb' })\` → \`baseLimiter\`.
 3. Estáticos: \`/uploads\` → \`backend/uploads\` (portadas y fotos locales cuando Cloudinary no está configurado).
-4. Endpoints en línea: \`GET /\`, \`GET /api\`, \`GET /api/test-db\` (JWT + admin), \`GET /api/debug-egress\` (público).
+4. Endpoints en línea: \`GET /\`, \`GET /api\`, \`GET /api/test-db\` y \`GET /api/debug-egress\` (ambos JWT + admin).
 5. Montaje de ${Object.keys(H.backend.montajes).length} routers bajo \`/api/*\` → 404 JSON → \`error.middleware\`.
 6. \`iniciarJobs()\` (limpieza cada 5 min) y 3 migraciones idempotentes en línea (tabla \`favoritos\`; columnas \`cliente_documento\`/\`cliente_tipo_documento\` en \`ventas\`; \`enviado_por_email\`/\`fecha_envio_email\` en \`comprobantes\`).
 7. \`app.listen(PORT || 3000)\`.
@@ -161,7 +164,7 @@ const MODULOS = [
 
 | Archivo | Uso |\n|---|---|
 | \`auth.middleware.js\` | \`verificarToken\`: exige \`Authorization: Bearer <jwt>\`, valida con \`jwt.verify\` y deja \`req.usuario\`. |
-| \`rol.middleware.js\` | \`verificarRol(...roles)\`: multirrol, acepta \`administrador\`/\`cajero\` y responde **403** (nunca 401). \`verificarPanel\`: cualquier usuario interno. \`esPersonalInterno(usuario)\` para anti-IDOR. Roles centralizados en \`utils/roles.js\`. |
+| \`rol.middleware.js\` | \`verificarRol(...roles)\`: **401** sin usuario y **403** sin permiso. \`verificarPanel\` y el bypass anti-IDOR \`esPersonalInterno\` admiten solo administrador. Cajero legacy no recibe privilegios. Roles centralizados en \`utils/roles.js\`. |
 | \`rateLimit.js\` | \`baseLimiter\` (global), \`loginLimiter\`, \`registroLimiter\`, \`verificacionLimiter\`, \`twoFaLimiter\`, \`webhookLimit\`. |
 | \`upload.middleware.js\` | Multer en memoria, 5 MB, validación de tipo; sube la portada a Cloudinary si está configurado (\`req.file.cloudinaryUrl\`) o al disco \`/uploads\`. Campo \`portada\`. |
 | \`uploadPerfil.middleware.js\` | Igual para fotos de perfil. Campo \`foto\`. |
@@ -216,7 +219,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 ## Observaciones
 
-- ⚠️ \`GET /api/debug-egress\` es **público** (sin JWT) y abre conexiones TCP a los puertos SMTP. Posiblemente no utilizado.
+- \`GET /api/debug-egress\` es un diagnóstico manual **JWT + admin**, con conexiones TCP acotadas y timeout HTTPS.
 ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún archivo importa**: ${listaDeps(depsBackendSinUso)}.\n` : ''}- La pasarela de pagos (\`/api/pagos\`) es **PayU**.
 - \`GET /api/test-db\` responde "Conexión con MySQL exitosa"; funciona (el adaptador devuelve \`[rows]\`), solo el texto está desactualizado.
 - Endpoints sin cliente: ver la sección correspondiente en \`05-API-MAP.md\`.
@@ -237,8 +240,8 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 \`<ToastProvider>\` → \`<AuthProvider>\` → \`<RouterProvider>\` (react-router ${pkg.dependencies['react-router-dom']}).
 
 - **Cliente HTTP**: \`lib/api/client.js\` (axios). \`baseURL = VITE_API_URL\` (\`.env.production\` apunta a \`https://libreria-api-v9h0.onrender.com/api\`, \`.env.development\` a \`http://localhost:3000/api\`). Interceptor de petición añade \`Bearer <token>\`; el de respuesta devuelve \`response.data\` y ante **401** limpia la sesión y redirige a \`/\`.
-- **Sesión**: \`features/auth/AuthContext.jsx\` + \`lib/storage/index.js\` (\`localStorage\`: \`token\`, \`usuario\`, \`ultimoHistorialVisto\`). Solo entran los roles \`administrador\` y \`cajero\` (validado en \`LoginPage\`).
-- **Guards**: \`routes/RutaProtegida.jsx\` redirige a \`/\` si no hay token y cierra sesión si la cuenta no es del panel; \`routes/RutaPorRol.jsx\` exige \`administrador\` o \`cajero\` y manda a \`/punto-venta\` cuando el rol no tiene acceso. Helpers en \`lib/roles.js\` (\`esDelPanel\`, \`inicioPorRol\`, \`portadaDeRol\`) y hook \`features/auth/useRol.js\`. Un **403** no cierra sesión.
+- **Sesión**: \`features/auth/AuthContext.jsx\` + \`lib/storage/index.js\` (\`localStorage\`: \`token\`, \`usuario\`, \`ultimoHistorialVisto\`). Solo entra \`administrador\`; perfil actualiza los datos de sesión desde la API.
+- **Guards**: \`routes/RutaProtegida.jsx\` redirige a \`/\` sin token o sin rol administrador. \`routes/RutaPorRol.jsx\` exige los roles configurados (solo administrador en el panel). Un **401** limpia sesión; un **403** muestra rechazo de permisos.
 - **Layout**: \`features/layout/AdminLayout.jsx\` (ThemeProvider, Sidebar, Topbar, Breadcrumbs, transición de página con Framer Motion).
 - **Tema**: \`components/providers/ThemeContext.jsx\` (modo claro/oscuro y colores por zona en \`localStorage\`). Estilos globales: \`src/index.css\` → \`src/styles/theme.css\` (tokens de marca, dark mode, componentes).
 - **Despliegue**: Vercel (\`frontend/vercel.json\` reescribe todo a \`index.html\`).
@@ -247,7 +250,7 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 
 | Ruta | Componente | Archivo |\n|---|---|---|\n`;
     for (const r of H.frontend.rutas) md += `| \`${r.path}\` | ${r.component || '—'} | ${r.file ? `\`${corto(r.file)}\`` : r.element.includes('Navigate') ? `redirección: \`${r.element}\`` : '—'} |\n`;
-    md += `\nTodas excepto \`/\` y \`/verificar-email\` cuelgan de \`<RutaProtegida><AdminLayout/></RutaProtegida>\`, más un \`<RutaPorRol roles={['administrador','cajero']}>\` en las rutas restringidas. \`/punto-venta\` es la portada del \`cajero\`; \`/reportes\` redirige a \`/dashboard\` (Reportes se integró en el Resumen).\n`;
+    md += `\nEl panel cuelga de \`<RutaProtegida><AdminLayout/></RutaProtegida>\` y permite solo administrador. \`/\`, \`/verificar-email\` y \`/libro-de-reclamaciones\` son públicas. \`/reportes\` y \`/cierre-caja\` redirigen a \`/dashboard\`; \`/agencias\` a \`/\`.\n`;
 
     md += `\n## Cadena página → servicio → endpoint\n\nArchivos que importan funciones de servicio y los endpoints que alcanzan (el componente puede ser una página, un formulario o un modal):\n\n| Archivo | Endpoints |\n|---|---|\n`;
     for (const [archivo, eps] of Object.entries(H.frontend.endpointsPorArchivo).sort()) if (eps.length) md += `| \`${corto(archivo)}\` | ${eps.map((e) => `\`${e}\``).join('<br>')} |\n`;
@@ -415,7 +418,7 @@ Ejemplos de caminos:\n\n${H.flutter.ciclos.slice(0, 4).map((c) => `- ${c.map(cor
     md += `\n## Posiblemente no utilizado\n
 - Flutter: ${H.posiblesNoUsados.flutter.map((f) => `\`${corto(f)}\` (ningún archivo lo importa)`).join(', ') || 'ninguno'}.
 - React: funciones de servicio no importadas: \`agenciasService#obtenerAgencia\`, \`ubicacionesService#listarProvincias\`/\`listarDistritos\` (se usan solo internamente por \`listarDistritosParaEnvio\`).
-- Backend: ${depsBackendSinUso.length ? `dependencias ${listaDeps(depsBackendSinUso)}; ` : ''}endpoints \`GET /api/historial/mi-historial\`, \`POST /api/historial\`, \`GET /api/inventario/stock-bajo\`, \`PUT /api/inventario/libro/:id/stock\`, \`GET /api/debug-egress\` (sin cliente).
+- Backend: ${depsBackendSinUso.length ? `dependencias ${listaDeps(depsBackendSinUso)}; ` : ''}endpoints \`GET /api/historial/mi-historial\`, \`POST /api/historial\`, \`PUT /api/inventario/libro/:id/stock\` sin consumidor React/Flutter; \`GET /api/debug-egress\` es diagnóstico manual protegido.
 - Estilos: \`frontend/src/styles/theme.css\` conserva clases de la antigua página Reportes (\`reporte-card\`, \`reporte-grafico\`, \`reporte-tooltip\`, \`reporte-encabezado\`) que ya no usa ningún componente.
 `;
     escribir('07-DEPENDENCIES.md', md);
@@ -541,7 +544,7 @@ Regenera todos los archivos a partir del código (solo lectura del código). Si 
 
 Ver detalle en \`05-API-MAP.md\` y \`07-DEPENDENCIES.md\`.
 - Ningún cliente llama a un endpoint inexistente.
-- \`GET /api/debug-egress\` público y sin uso.
+- \`GET /api/debug-egress\` es diagnóstico manual protegido (JWT + admin), sin consumidor React/Flutter.
 ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps(depsBackendSinUso)}.\n` : ''}- Endpoints de backend sin cliente: historial (mi-historial, POST), inventario (stock-bajo, PUT stock).
 - Flutter: solo quedan ciclos de navegación entre pantallas (sin ciclo servicios ↔ pantallas).
 `;

@@ -2,7 +2,7 @@ const autorModel = require('../models/autor.model');
 const historialModel = require('../models/historial.model');
 const usuarioModel = require('../models/usuario.model');
 const bcrypt = require('bcryptjs');
-const { validarId } = require('../utils/validaciones');
+const { validarId, esTextoValido, esEstadoValido } = require('../utils/validaciones');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR AUTORES
@@ -118,10 +118,10 @@ const crearAutor = async (req, res) => {
         // VALIDACIONES
         // ========================================
         if (
-            !nombre ||
-            !nombre.trim() ||
-            !apellido ||
-            !apellido.trim()
+            !esTextoValido(nombre, 80) ||
+            !esTextoValido(apellido, 80) ||
+            (nacionalidad !== undefined && !esTextoValido(nacionalidad, 80, true)) ||
+            (biografia !== undefined && !esTextoValido(biografia, 100000, true))
         ) {
             return res.status(400).json({
                 success: false,
@@ -228,10 +228,7 @@ const actualizarAutor = async (req, res) => {
         // ========================================
         if (
             estado !== undefined &&
-            estado !== '' &&
-            ![0, 1].includes(
-                Number(estado)
-            )
+            !esEstadoValido(estado)
         ) {
             return res.status(400).json({
                 success: false,
@@ -245,7 +242,7 @@ const actualizarAutor = async (req, res) => {
         // ========================================
         if (
             nombre !== undefined &&
-            !nombre.trim()
+            !esTextoValido(nombre, 80)
         ) {
             return res.status(400).json({
                 success: false,
@@ -259,7 +256,7 @@ const actualizarAutor = async (req, res) => {
         // ========================================
         if (
             apellido !== undefined &&
-            !apellido.trim()
+            !esTextoValido(apellido, 80)
         ) {
             return res.status(400).json({
                 success: false,
@@ -271,6 +268,10 @@ const actualizarAutor = async (req, res) => {
         // ========================================
         // ACTUALIZAR
         // ========================================
+        if ((nacionalidad !== undefined && !esTextoValido(nacionalidad, 80, true)) ||
+            (biografia !== undefined && !esTextoValido(biografia, 100000, true))) {
+            return res.status(400).json({ success: false, mensaje: 'Nacionalidad o biografía inválidas' });
+        }
         await autorModel.actualizar(
             idAutor,
             {
@@ -359,7 +360,7 @@ const eliminarAutor = async (req, res) => {
         // VALIDAR CONTRASEÑA
         // ========================================
         if (
-            !password ||
+            typeof password !== 'string' ||
             !password.trim()
         ) {
             return res.status(400).json({
@@ -506,7 +507,7 @@ const eliminarAutor = async (req, res) => {
             error.code ===
                 'ER_ROW_IS_REFERENCED_2' ||
             error.code ===
-                'ER_ROW_IS_REFERENCED'
+                'ER_ROW_IS_REFERENCED' || error.code === '23503'
         ) {
             return res.status(409).json({
                 success: false,

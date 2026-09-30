@@ -29,6 +29,15 @@ const generarComprobante = async (req, res) => {
             cliente_email
         } = req.body;
 
+        for (const [campo, valor, maximo] of [
+            ['cliente_dni_ruc', cliente_dni_ruc, 20], ['cliente_tipo_documento', cliente_tipo_documento, 10],
+            ['cliente_nombre', cliente_nombre, 255], ['cliente_email', cliente_email, 255]
+        ]) {
+            if (valor !== undefined && (typeof valor !== 'string' || valor.trim().length > maximo)) {
+                return res.status(400).json({ success: false, mensaje: `El campo ${campo} no es válido` });
+            }
+        }
+
         const emailCliente =
             typeof cliente_email === 'string'
                 ? cliente_email.trim()
@@ -277,6 +286,10 @@ const enviarComprobanteEmail = async (req, res) => {
             );
         }
 
+        if (!resultado.enviado) {
+            return res.status(409).json({ success: false, enviado: false,
+                mensaje: 'No se pudo enviar el comprobante por correo. Intenta nuevamente o verifica la configuración del servicio.' });
+        }
         return res.json({
             success: true,
             mensaje: `Comprobante enviado a ${emailDestino}`,

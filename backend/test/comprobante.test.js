@@ -73,7 +73,7 @@ test('factura sin DNI/RUC da error 400 (mensaje en español)', () => {
     assert.equal(resultado.ok, false);
     assert.match(
         resultado.mensaje,
-        /La factura requiere el RUC o DNI del cliente/
+        /La factura requiere el RUC del cliente/
     );
 });
 

@@ -49,7 +49,7 @@ router.get(
 // ventas desde la aplicación).
 //
 // Las ventas históricas con origen 'panel' o 'reserva' se conservan
-// intactas y siguen visibles para consulta, comprobante y reembolso.
+// intactas y siguen visibles exclusivamente para consulta.
 //
 // Se responde 405 y no 404 a propósito: la ruta no existe, pero el
 // método se documenta para que quede claro que es una retirada
@@ -65,8 +65,7 @@ router.post('/', (req, res) => {
 });
 
 // ========================================
-// ADMINISTRADOR Y CAJERO
-// (operación diaria de caja)
+// SOLO ADMINISTRADOR (panel ecommerce)
 // ========================================
 
 // Obtener todas las ventas

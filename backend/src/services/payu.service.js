@@ -184,14 +184,23 @@ const consultarReporte = async (command, details) => {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(10000)
     });
 
     if (!response.ok) {
-        return null;
+        const error = new Error(
+            `PayU reports API error: ${response.status} ${response.statusText}`
+        );
+        error.cause = { status: response.status, statusText: response.statusText };
+        throw error;
     }
 
-    return response.json();
+    const reporte = await response.json();
+    if (reporte?.code !== 'SUCCESS') {
+        throw new Error('PayU reports API: respuesta no exitosa');
+    }
+    return reporte;
 };
 
 // ========================================

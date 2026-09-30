@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { FaFloppyDisk, FaRotateLeft } from 'react-icons/fa6';
 
@@ -36,6 +36,7 @@ export function FormularioAlta({
     });
 
     const [guardando, setGuardando] = useState(false);
+    const envioEnCurso = useRef(false);
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
 
@@ -47,6 +48,7 @@ export function FormularioAlta({
 
     const enviar = async (e) => {
         e.preventDefault();
+        if (envioEnCurso.current) return;
         setMensaje('');
         setError('');
 
@@ -57,6 +59,7 @@ export function FormularioAlta({
         }
 
         try {
+            envioEnCurso.current = true;
             setGuardando(true);
             const respuesta = await guardar(formulario);
             // El botón deja de cargar apenas el servidor confirma el guardado;
@@ -75,6 +78,7 @@ export function FormularioAlta({
                     : {},
             );
         } finally {
+            envioEnCurso.current = false;
             setGuardando(false);
         }
     };

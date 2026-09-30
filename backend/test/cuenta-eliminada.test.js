@@ -166,12 +166,12 @@ test('el bloqueo es por cuenta eliminada, no por el rol pedido', async () => {
     // y no de una validación de rol.
     cuentaActiva();
 
-    const res = await ejecutar({ rol: 'cajero' });
+    const res = await ejecutar({ rol: 'administrador' });
 
     assert.equal(res.statusCode, null);
     assert.equal(res.cuerpo.success, true);
     assert.equal(doble.escrituras.length, 1);
-    assert.equal(doble.escrituras[0].cambios.rol, 'cajero');
+    assert.equal(doble.escrituras[0].cambios.rol, 'administrador');
 });
 
 test('una cuenta viva sí puede desactivarse', async () => {

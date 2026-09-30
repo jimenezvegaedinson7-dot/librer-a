@@ -25,7 +25,7 @@ const DOCUMENTOS_VALIDOS = [
 // ========================================
 // ¿EL DNI/RUC DEL CLIENTE ES VÁLIDO?
 // (función pura, testeable sin BD)
-// Regla (factura): >= 8 caracteres, solo alfanumérico
+// Regla genérica de documentos (boleta / registros históricos).
 // (DNI: 8 dígitos, RUC: 11 dígitos, CE/Pasaporte alfanumérico).
 // ========================================
 const esClienteDniRucValido = (cliente_dni_ruc) => {
@@ -39,7 +39,7 @@ const esClienteDniRucValido = (cliente_dni_ruc) => {
 
     const texto = cliente_dni_ruc.trim();
 
-    if (texto.length < 8) {
+    if (texto.length < 8 || texto.length > 20) {
         return false;
     }
 
@@ -86,11 +86,11 @@ const validarDatosClienteFactura = (
         return { ok: true };
     }
 
-    if (!esClienteDniRucValido(cliente_dni_ruc)) {
+    if (typeof cliente_dni_ruc !== 'string' || !/^\d{11}$/.test(cliente_dni_ruc.trim())) {
         return {
             ok: false,
             mensaje:
-                'La factura requiere el RUC o DNI del cliente'
+                'La factura requiere el RUC del cliente (11 dígitos numéricos)'
         };
     }
 
@@ -230,6 +230,14 @@ const generarComprobante = async ({
             tipoComprobante,
             cliente_tipo_documento || venta.cliente_tipo_documento || null
         );
+
+    if (tipoComprobante === 'factura' && tipoDocumentoCliente !== 'RUC') {
+        throw crearError('La factura requiere tipo de documento RUC', 400);
+    }
+
+    if (['panel', 'reserva'].includes(venta.origen)) {
+        throw crearError('Las ventas históricas son de solo lectura', 409);
+    }
 
     // ========================================
     // EMPRESA EMISORA (snapshots)

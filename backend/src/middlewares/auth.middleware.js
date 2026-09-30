@@ -17,7 +17,8 @@ const obtenerEstadoUsuario = async (idUsuario) => {
                 id_usuario,
                 estado,
                 rol,
-                email
+                email,
+                fecha_eliminacion
             FROM usuarios
             WHERE id_usuario = ?
             LIMIT 1
@@ -28,6 +29,7 @@ const obtenerEstadoUsuario = async (idUsuario) => {
         const datos = rows[0]
             ? {
                 estado: Number(rows[0].estado),
+                eliminada: Boolean(rows[0].fecha_eliminacion),
                 rol: rows[0].rol || null,
                 email: rows[0].email || null
             }
@@ -94,7 +96,7 @@ const verificarToken = async (req, res, next) => {
             });
         }
 
-        if (datosUsuario.estado === 0) {
+        if (datosUsuario.estado !== 1 || datosUsuario.eliminada) {
             return res.status(401).json({
                 success: false,
                 mensaje: 'Cuenta desactivada'
@@ -121,7 +123,7 @@ const verificarToken = async (req, res, next) => {
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({
                 success: false,
-                mensaje: 'El token token ha expirado'
+                mensaje: 'El token ha expirado'
             });
         }
 

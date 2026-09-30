@@ -148,6 +148,9 @@ const columnasVentas = [
 ];
 
 function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, onReembolsar, puedeReembolsar }) {
+    if (fila.origen === 'panel' || fila.origen === 'reserva') {
+        return <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>;
+    }
     const conComprobante = Number(fila.tiene_comprobante ?? 0) === 1;
     const puedeEmitir = !conComprobante && (fila.estado === 'pagada' || fila.estado === 'entregada');
     return (
