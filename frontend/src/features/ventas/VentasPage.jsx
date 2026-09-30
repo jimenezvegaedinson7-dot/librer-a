@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import {
-    FaCartPlus,
     FaCheck,
-    FaChevronUp,
     FaCircleCheck,
     FaClock,
     FaEye,
@@ -41,7 +39,6 @@ import { useRol } from '../auth/useRol';
 import { cambiarEstadoVenta as actualizarEstadoVenta, listarVentas, obtenerVenta } from './ventasService';
 import { ConfirmarAccion } from '../../components/ui/ConfirmarAccion';
 import ComprobanteViewModal from '../comprobantes/ComprobanteViewModal';
-import VentaForm from './VentaForm';
 import VentaViewModal from './VentaViewModal';
 import EmitirComprobanteModal from './EmitirComprobanteModal';
 import ReembolsoModal from './ReembolsoModal';
@@ -243,7 +240,6 @@ const [ventaVer, setVentaVer] = useState(null);
     const [busqueda, setBusqueda] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('todos');
     const [filtroEntrega, setFiltroEntrega] = useState('todos');
-    const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
 const [paginaActual, setPaginaActual] = useState(1);
 
@@ -261,9 +257,46 @@ const [paginaActual, setPaginaActual] = useState(1);
         }
     };
 
+    // Carga inicial. `cargando` ya nace en true, así que este efecto no
+    // enciende el spinner: solo espera la respuesta y entonces actualiza.
+    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
-        cargarVentas();
+        let vigente = true;
+
+        (async () => {
+            try {
+                const datos = await listarVentas();
+                if (vigente) setVentas(datos);
+            } catch (err) {
+                if (vigente) {
+                    setError(err.response?.data?.mensaje || 'Error al cargar las ventas');
+                }
+            } finally {
+                if (vigente) setCargando(false);
+            }
+        })();
+
+        return () => {
+            vigente = false;
+        };
     }, []);
+
+    // Al cambiar cualquier filtro se vuelve a la primera página: se hace
+    // aquí, en el evento, y no en un efecto que la reinicie tras el render.
+    const alBuscar = (valor) => {
+        setBusqueda(valor);
+        setPaginaActual(1);
+    };
+
+    const alFiltrarEstado = (valor) => {
+        setFiltroEstado(valor);
+        setPaginaActual(1);
+    };
+
+    const alFiltrarEntrega = (valor) => {
+        setFiltroEntrega(valor);
+        setPaginaActual(1);
+    };
 
     const totalPendientes = ventas.filter((v) => v.estado === 'pendiente').length;
     const totalPagadas = ventas.filter((v) => v.estado === 'pagada').length;
@@ -315,7 +348,11 @@ const totalIngresos = ventas
         });
     }, [ventas, busqueda, filtroEstado, filtroEntrega]);
 
-const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
+    const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
+
+    // Si la lista se acorta (filtro) la página se recorta durante el render
+    // en vez de corregirse después con un efecto.
+    const paginaActualEfectiva = totalPaginas > 0 ? Math.min(paginaActual, totalPaginas) : 1;
 
     const ventasOrdenadas = useMemo(() => {
         const copia = [...ventasFiltradas];
@@ -329,7 +366,10 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
         return copia;
     }, [ventasFiltradas, orden]);
 
-    const ventasPaginadas = ventasOrdenadas.slice((paginaActual - 1) * POR_PAGINA, paginaActual * POR_PAGINA);
+    const ventasPaginadas = ventasOrdenadas.slice(
+        (paginaActualEfectiva - 1) * POR_PAGINA,
+        paginaActualEfectiva * POR_PAGINA,
+    );
 
     const manejarOrden = (campo) => {
         setOrden((actual) => {
@@ -339,14 +379,6 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
             return { campo, direccion: 'asc' };
         });
     };
-
-    useEffect(() => {
-        setPaginaActual(1);
-    }, [busqueda, filtroEstado, filtroEntrega]);
-
-    useEffect(() => {
-        if (totalPaginas > 0 && paginaActual > totalPaginas) setPaginaActual(totalPaginas);
-    }, [paginaActual, totalPaginas]);
 
     const verVenta = async (venta) => {
         try {
@@ -403,13 +435,6 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
         );
     };
 
-    const ventaCreada = async (respuesta) => {
-        await cargarVentas();
-        exito(respuesta?.mensaje || 'Venta registrada correctamente');
-    };
-
-
-
     const exportar = () => {
         exportarCsv({
             nombreArchivo: `ventas_${new Date().toISOString().slice(0, 10)}`,
@@ -444,14 +469,9 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
 
     return (
         <div className="space-y-4">
-<PageHeader
+            <PageHeader
                 titulo="Ventas"
                 descripcion="Compras realizadas: quién compró, qué y cuánto"
-                acciones={
-                    <Button onClick={() => setMostrarFormulario((v) => !v)} aria-expanded={mostrarFormulario} aria-controls="panel-nueva-venta">
-                        {mostrarFormulario ? <><FaChevronUp /> Ocultar formulario</> : <><FaCartPlus /> Nueva venta</>}
-                    </Button>
-                }
             />
 
             <motion.section
@@ -496,10 +516,6 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
                 />
             </motion.section>
 
-            <div id="panel-nueva-venta" hidden={!mostrarFormulario}>
-                <VentaForm onVentaCreada={ventaCreada} />
-            </div>
-
             <Card>
                 <CardHeader
                     titulo="Lista de ventas"
@@ -510,7 +526,7 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
                                 <Input
                                     type="text"
                                     value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    onChange={(e) => alBuscar(e.target.value)}
                                     placeholder="Buscar venta..."
                                     icono={<FaMagnifyingGlass />}
                                     className="pr-8 sm:w-72"
@@ -527,7 +543,7 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
                                 )}
                             </div>
 
-<Select value={filtroEntrega} onChange={(e) => setFiltroEntrega(e.target.value)} className="sm:w-52">
+<Select value={filtroEntrega} onChange={(e) => alFiltrarEntrega(e.target.value)} className="sm:w-52">
                                 <option value="todos">Todas las entregas</option>
                                 <option value="domicilio">A domicilio</option>
                                 <option value="tienda">Recoger en tienda</option>
@@ -546,7 +562,7 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
                 <div className="px-5 pb-4 sm:px-6">
                     <FiltroEstados
                         valor={filtroEstado}
-                        onCambiar={setFiltroEstado}
+                        onCambiar={alFiltrarEstado}
                         conteos={{
                             todos: ventas.length,
                             pendiente: totalPendientes,
@@ -614,7 +630,7 @@ const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
                             }
                         />
                     </CardBody>
-                    <Pagination pagina={paginaActual} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
+                    <Pagination pagina={paginaActualEfectiva} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
                 </Card>
             )}
 

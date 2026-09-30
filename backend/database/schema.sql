@@ -185,6 +185,7 @@ CREATE TABLE IF NOT EXISTS ventas (
     total NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     costo_envio NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     estado VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+    estado_entrega VARCHAR(20) NOT NULL DEFAULT 'pendiente',
     tipo_entrega VARCHAR(20) NULL,
     direccion VARCHAR(255) NULL,
     referencia VARCHAR(255) NULL,
@@ -209,6 +210,24 @@ CREATE TABLE IF NOT EXISTS ventas (
     fecha_reembolso TIMESTAMP NULL,
     CONSTRAINT ventas_estado_check
         CHECK (estado IN ('pendiente', 'pagada', 'entregada', 'cancelada', 'reembolsada')),
+    CONSTRAINT ventas_estado_entrega_check
+        CHECK (estado_entrega IN ('pendiente', 'preparando', 'listo_recojo', 'en_camino', 'entregado', 'cancelado')),
+    CONSTRAINT ventas_tipo_entrega_check
+        CHECK (tipo_entrega IS NULL OR tipo_entrega IN ('domicilio', 'tienda')),
+    -- Coherencia entre el tipo de entrega y el estado en que está.
+    -- 'listo_recojo' solo tiene sentido para recojo en tienda y
+    -- 'en_camino' solo para envío a domicilio. La API ya lo valida;
+    -- esto impide además que un UPDATE directo por SQL deje un pedido
+    -- en un estado que nunca ocurriría en el flujo real.
+    -- Las ventas legacy con tipo_entrega NULL quedan fuera de esta regla.
+    CONSTRAINT ventas_tipo_estado_entrega_check
+        CHECK (
+            tipo_entrega IS NULL
+            OR (tipo_entrega = 'domicilio'
+                AND estado_entrega IN ('pendiente', 'preparando', 'en_camino', 'entregado', 'cancelado'))
+            OR (tipo_entrega = 'tienda'
+                AND estado_entrega IN ('pendiente', 'preparando', 'listo_recojo', 'entregado', 'cancelado'))
+        ),
     CONSTRAINT fk_ventas_usuario
         FOREIGN KEY (id_usuario)
         REFERENCES usuarios (id_usuario),
@@ -227,6 +246,7 @@ CREATE INDEX IF NOT EXISTS idx_ventas_id_distrito ON ventas (id_distrito);
 CREATE INDEX IF NOT EXISTS idx_ventas_id_agencia ON ventas (id_agencia);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_ventas_usuario_idempotencia ON ventas (id_usuario, idempotencia_clave) WHERE idempotencia_clave IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_ventas_estado_fecha ON ventas (estado, fecha_venta);
+CREATE INDEX IF NOT EXISTS idx_ventas_estado_entrega ON ventas (estado_entrega);
 
 -- ============================================================
 -- DETALLE DE VENTA
@@ -249,6 +269,29 @@ CREATE TABLE IF NOT EXISTS detalle_venta (
 
 CREATE INDEX IF NOT EXISTS idx_detalle_venta ON detalle_venta (id_venta);
 CREATE INDEX IF NOT EXISTS idx_detalle_libro ON detalle_venta (id_libro);
+
+-- ============================================================
+-- FAVORITOS
+-- ============================================================
+-- Deben existir en el esquema canónico: el arranque en test no ejecuta
+-- src/config/migraciones.js (la base de pruebas se crea desde este
+-- archivo), así que si la tabla viviera solo allí, /api/favoritos
+-- fallaría en las pruebas y en cualquier base creada desde el esquema.
+CREATE TABLE IF NOT EXISTS favoritos (
+    id_usuario INT NOT NULL,
+    id_libro   INT NOT NULL,
+    fecha      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_usuario, id_libro),
+    CONSTRAINT fk_favoritos_usuario
+        FOREIGN KEY (id_usuario) REFERENCES usuarios (id_usuario)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_favoritos_libro
+        FOREIGN KEY (id_libro) REFERENCES libros (id_libro)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_favoritos_usuario ON favoritos (id_usuario);
+CREATE INDEX IF NOT EXISTS idx_favoritos_libro ON favoritos (id_libro);
 
 -- ============================================================
 -- HISTORIAL DE OPERACIONES

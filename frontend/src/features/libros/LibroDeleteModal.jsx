@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { FaLock, FaTriangleExclamation, FaTrash } from 'react-icons/fa6';
 
@@ -7,15 +7,11 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Form';
 
 export default function LibroDeleteModal({ libro, abierto, eliminando, onCerrar, onConfirmar }) {
+    // La contraseña arranca vacía y oculta cada vez que el padre da una `key`
+    // nueva a este componente (una por libro). Al abrir otro registro React
+    // lo remonta, así que no hace falta un efecto que lo reinicie.
     const [password, setPassword] = useState('');
     const [mostrarPassword, setMostrarPassword] = useState(false);
-
-    useEffect(() => {
-        if (abierto) {
-            setPassword('');
-            setMostrarPassword(false);
-        }
-    }, [abierto, libro]);
 
     if (!abierto || !libro) return null;
 

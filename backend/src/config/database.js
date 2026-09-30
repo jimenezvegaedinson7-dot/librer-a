@@ -3,11 +3,52 @@ require('dotenv').config();
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+// La conexión se puede definir de dos formas equivalentes:
+//   1) DATABASE_URL (típico en Render/Heroku).
+//   2) Las piezas DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME.
+//
+// Antes, en producción solo se aceptaba DATABASE_URL: si faltaba,
+// connectionString quedaba en undefined y `pg` caía silenciosamente a
+// localhost:5432, dejando el servidor sin poder conectarse a su base.
+// Con el arranque fail-secure eso además impedía levantar el proceso.
+// Ahora ambas formas sirven en todos los entornos, y si no hay ninguna
+// se avisa de forma explícita en vez de fallar con ECONNREFUSED.
+const construirConnectionString = () => {
+    if (process.env.DATABASE_URL) {
+        return process.env.DATABASE_URL;
+    }
+
+    const { DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME } = process.env;
+
+    if (!DB_HOST || !DB_USER || !DB_NAME) {
+        if (isProduction) {
+            throw new Error(
+                '[DB] Falta la configuración de base de datos. Define ' +
+                'DATABASE_URL o, en su defecto, DB_HOST, DB_USER y DB_NAME.'
+            );
+        }
+
+        return undefined;
+    }
+
+    const credenciales = `${DB_USER}:${DB_PASSWORD ?? ''}`;
+
+    return `postgresql://${credenciales}@${DB_HOST}:${DB_PORT || 5432}/${DB_NAME}`;
+};
+
+const connectionString = construirConnectionString();
+
+// En producción el servidor de base de datos se espera cifrado (Render,
+// Neon, Supabase, etc.), así que SSL está activo por defecto. Si se
+// despliega contra un PostgreSQL propio sin TLS, se puede desactivar de
+// forma explícita con DB_SSL=false en lugar de romper la conexión.
+const usarSsl = isProduction
+    ? process.env.DB_SSL !== 'false'
+    : process.env.DB_SSL === 'true';
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || (isProduction
-        ? process.env.DATABASE_URL
-        : `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`),
-    ssl: isProduction ? { rejectUnauthorized: false } : false,
+    connectionString,
+    ssl: usarSsl ? { rejectUnauthorized: false } : false,
     max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,

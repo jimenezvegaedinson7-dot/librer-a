@@ -364,8 +364,12 @@ const plantillaBase = ({
 
 const etiquetaTipoEntrega = (tipoEntrega) => {
     if (tipoEntrega === 'domicilio') return 'Envío a domicilio';
-    if (tipoEntrega === 'agencia') return 'Envío por agencia';
-    return 'Recojo en tienda';
+    if (tipoEntrega === 'tienda') return 'Recojo en tienda';
+
+    // No se inventa la ruta. Un tipo desconocido (o ausente en una venta
+    // legacy) se dice como lo que es, en vez de anunciarle al cliente un
+    // "recojo en tienda" que el sistema no puede confirmar.
+    return 'Tipo de entrega por confirmar';
 };
 
 const money = (valor) =>

@@ -118,9 +118,37 @@ export default function AgenciasPage() {
         }
     };
 
+    // Carga inicial. `cargando` ya nace en true, así que este efecto no
+    // enciende el spinner: solo espera la respuesta y entonces actualiza.
+    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
-        cargarAgencias();
+        let vigente = true;
+
+        (async () => {
+            try {
+                const datos = await listarAgencias();
+                if (vigente) setAgencias(datos);
+            } catch (err) {
+                if (vigente) {
+                    setError(err.response?.data?.mensaje || 'Error al cargar las agencias');
+                }
+            } finally {
+                if (vigente) setCargando(false);
+            }
+        })();
+
+        return () => {
+            vigente = false;
+        };
     }, []);
+
+    // Al buscar se vuelve a la primera página: se hace aquí, en el
+    // evento, y no en un efecto que la reinicie después del render.
+    const alBuscar = (valor) => {
+        setBusqueda(valor);
+        setPaginaActivas(1);
+        setPaginaInactivas(1);
+    };
 
     const agenciasFiltradas = useMemo(() => {
         const texto = busqueda.toLowerCase().trim();
@@ -143,23 +171,15 @@ export default function AgenciasPage() {
     const paginasActivas = Math.max(1, Math.ceil(agenciasActivasFiltradas.length / POR_PAGINA));
     const paginasInactivas = Math.max(1, Math.ceil(agenciasInactivasFiltradas.length / POR_PAGINA));
 
-    useEffect(() => {
-        setPaginaActivas(1);
-        setPaginaInactivas(1);
-    }, [busqueda]);
+    // Si la lista se acorta (búsqueda o borrado) la página se recorta
+    // durante el render en vez de corregirse después con un efecto.
+    const paginaActivasActual = Math.min(paginaActivas, paginasActivas);
+    const paginaInactivasActual = Math.min(paginaInactivas, paginasInactivas);
 
-    useEffect(() => {
-        if (paginaActivas > paginasActivas) setPaginaActivas(paginasActivas);
-    }, [paginaActivas, paginasActivas]);
-
-    useEffect(() => {
-        if (paginaInactivas > paginasInactivas) setPaginaInactivas(paginasInactivas);
-    }, [paginaInactivas, paginasInactivas]);
-
-    const agenciasActivas = agenciasActivasFiltradas.slice((paginaActivas - 1) * POR_PAGINA, paginaActivas * POR_PAGINA);
+    const agenciasActivas = agenciasActivasFiltradas.slice((paginaActivasActual - 1) * POR_PAGINA, paginaActivasActual * POR_PAGINA);
     const agenciasInactivas = agenciasInactivasFiltradas.slice(
-        (paginaInactivas - 1) * POR_PAGINA,
-        paginaInactivas * POR_PAGINA,
+        (paginaInactivasActual - 1) * POR_PAGINA,
+        paginaInactivasActual * POR_PAGINA,
     );
 
     const agenciaCreada = async () => {
@@ -252,7 +272,7 @@ export default function AgenciasPage() {
                                 <Input
                                     type="text"
                                     value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    onChange={(e) => alBuscar(e.target.value)}
                                     placeholder="Buscar agencia..."
                                     icono={<FaMagnifyingGlass />}
                                     className="pr-8 sm:w-72"
@@ -260,7 +280,7 @@ export default function AgenciasPage() {
                                 {busqueda && (
                                     <button
                                         type="button"
-                                        onClick={() => setBusqueda('')}
+                                        onClick={() => alBuscar('')}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-slate-700"
                                     >
                                         <FaXmark />
@@ -301,7 +321,7 @@ export default function AgenciasPage() {
                     subtitulo="Agencias disponibles para los pedidos"
                     paginadas={agenciasActivas}
                     totalFiltradas={agenciasActivasFiltradas.length}
-                    pagina={paginaActivas}
+                    pagina={paginaActivasActual}
                     totalPaginas={paginasActivas}
                     onCambiarPagina={setPaginaActivas}
                     onEditar={setAgenciaEditar}
@@ -314,7 +334,7 @@ export default function AgenciasPage() {
                     subtitulo="Agencias deshabilitadas temporalmente"
                     paginadas={agenciasInactivas}
                     totalFiltradas={agenciasInactivasFiltradas.length}
-                    pagina={paginaInactivas}
+                    pagina={paginaInactivasActual}
                     totalPaginas={paginasInactivas}
                     onCambiarPagina={setPaginaInactivas}
                     onEditar={setAgenciaEditar}
@@ -322,6 +342,7 @@ export default function AgenciasPage() {
             )}
 
             <AgenciaEditModal
+                key={agenciaEditar?.id_agencia}
                 agencia={agenciaEditar}
                 abierto={Boolean(agenciaEditar)}
                 onCerrar={() => setAgenciaEditar(null)}

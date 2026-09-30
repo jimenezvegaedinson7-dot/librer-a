@@ -1,4 +1,4 @@
-%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-09-30 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     LoginPage["/<br/>LoginPage"]
     LoginPage --> authService(["authService"])
@@ -6,9 +6,6 @@ flowchart LR
     VerificarEmailPage --> authService(["authService"])
     LibroReclamacionesPage["/libro-de-reclamaciones<br/>LibroReclamacionesPage"]
     LibroReclamacionesPage --> reclamacionesService(["reclamacionesService"])
-    PuntoVentaPage["/punto-venta<br/>PuntoVentaPage"]
-    PuntoVentaPage --> reportesService(["reportesService"])
-    PuntoVentaPage --> pagosService(["pagosService"])
     DashboardPage["/dashboard<br/>DashboardPage"]
     DashboardPage --> dashboardService(["dashboardService"])
     LibrosPage["/libros<br/>LibrosPage"]
@@ -22,15 +19,15 @@ flowchart LR
     InventarioPage --> inventarioService(["inventarioService"])
     ReservasPage["/reservas<br/>ReservasPage"]
     ReservasPage --> reservasService(["reservasService"])
+    PedidosPage["/pedidos<br/>PedidosPage"]
+    PedidosPage --> pedidosService(["pedidosService"])
     VentasPage["/ventas<br/>VentasPage"]
     VentasPage --> ventasService(["ventasService"])
     VentasPage --> comprobantesService(["comprobantesService"])
     VentasPage --> empresaService(["empresaService"])
-    VentasPage --> ubicacionesService(["ubicacionesService"])
     ComprobantesPage["/comprobantes<br/>ComprobantesPage"]
     ComprobantesPage --> comprobantesService(["comprobantesService"])
     ComprobantesPage --> empresaService(["empresaService"])
-    CierreCajaPage["/cierre-caja<br/>CierreCajaPage"]
     PagosPage["/pagos<br/>PagosPage"]
     PagosPage --> pagosService(["pagosService"])
     PagosPage --> ventasService(["ventasService"])
@@ -56,6 +53,7 @@ flowchart LR
     empresaService --> _api_empresa{{"/api/empresa"}}
     dashboardService --> _api_libros{{"/api/libros"}}
     dashboardService --> _api_reportes{{"/api/reportes"}}
+    dashboardService --> _api_inventario{{"/api/inventario"}}
     historialService --> _api_historial{{"/api/historial"}}
     inventarioService --> _api_inventario{{"/api/inventario"}}
     inventarioService --> _api_libros{{"/api/libros"}}
@@ -63,9 +61,11 @@ flowchart LR
     librosService --> _api_autores{{"/api/autores"}}
     librosService --> _api_categorias{{"/api/categorias"}}
     pagosService --> _api_pagos{{"/api/pagos"}}
+    pedidosService --> _api_pedidos{{"/api/pedidos"}}
     reclamacionesService --> _api_reclamaciones{{"/api/reclamaciones"}}
     reclamacionesService --> _api_empresa{{"/api/empresa"}}
     reportesService --> _api_reportes{{"/api/reportes"}}
+    reportesService --> _api_inventario{{"/api/inventario"}}
     reservasService --> _api_reservas{{"/api/reservas"}}
     reservasService --> _api_libros{{"/api/libros"}}
     tarifasService --> _api_ubicaciones{{"/api/ubicaciones"}}

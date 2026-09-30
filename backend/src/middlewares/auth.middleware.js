@@ -121,7 +121,7 @@ const verificarToken = async (req, res, next) => {
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({
                 success: false,
-                mensaje: 'El token ha expirado'
+                mensaje: 'El token token ha expirado'
             });
         }
 

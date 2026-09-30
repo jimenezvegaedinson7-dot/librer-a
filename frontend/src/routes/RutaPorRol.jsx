@@ -14,14 +14,14 @@ export default function RutaPorRol({ roles, children }) {
     const ubicacion = useLocation();
 
     if (!esPersonalInterno(usuario?.rol)) {
-        return <Navigate to={inicioPorRol(usuario?.rol)} replace />;
+        return <Navigate to={inicioPorRol()} replace />;
     }
 
     const permitidos = roles.map((rol) => String(rol).toLowerCase());
     const rolActual = String(usuario?.rol || '').toLowerCase();
 
     if (!permitidos.includes(rolActual)) {
-        return <Navigate to={inicioPorRol(rolActual)} replace state={{ desde: ubicacion.pathname }} />;
+        return <Navigate to={inicioPorRol()} replace state={{ desde: ubicacion.pathname }} />;
     }
 
     return children;

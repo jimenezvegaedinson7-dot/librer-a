@@ -2,16 +2,15 @@
 // SMOKE DE PERMISOS POR ROL (HTTP + PostgreSQL)
 // ============================================================
 // Crea un administrador, un cajero y un cliente, y comprueba la
-// matriz de permisos acordada:
+// matriz de permisos acordada (contrato Fase 5):
 //
-//   · cajero  -> operación de caja: ventas, reservas, pagos,
-//                comprobantes, libros e inventario (solo lectura)
-//   · cajero  -> solo los agregados operativos de reportes
-//   · cajero  -> sin acceso a lo exclusivo del administrador
-//                (reportes administrativos, reembolsos, anulación,
-//                SUNAT, usuarios, catálogo, historial)
-//   · cliente -> sin acceso a las lecturas del panel, pero sí a
-//                sus propias rutas y al catálogo público
+//   · administrador -> acceso completo al panel
+//   · cajero        -> 403 en TODAS las rutas del panel (ya no opera)
+//   · cliente       -> 403 en el panel, pero 200 en sus propias rutas
+//                      y en el catálogo público
+//   · sin token     -> 401 en endpoints protegidos existentes
+//   · token inválido -> 401
+//   · ruta eliminada -> 404
 //
 // Solo hace lecturas y comprueba rechazos (403): ninguna petición
 // llega al controlador, así que no deja datos de prueba.
@@ -30,8 +29,8 @@ const pool = require('../src/config/database');
 const baseUrl = process.env.TEST_BASE_URL || 'http://localhost:3000';
 
 // ------------------------------------------------------------
-// Consultas que el cajero comparte con el administrador.
-// El cliente recibe 403 en todas.
+// Rutas del panel (todas exigen rol administrador).
+// El cajero y el cliente reciben 403 en todas.
 // ------------------------------------------------------------
 const PANEL_OPERATIVO = [
     '/api/ventas',
@@ -43,15 +42,13 @@ const PANEL_OPERATIVO = [
     '/api/inventario',
     '/api/inventario/stock-bajo',
     '/api/inventario/movimientos',
+    '/api/pedidos',
     '/api/reportes/ventas-por-estado',
     '/api/reportes/reservas-por-estado',
-    '/api/reportes/stock-bajo',
-    '/api/reportes/cierre-caja',
 ];
 
 // ------------------------------------------------------------
-// Reportes administrativos: el cajero NO debe verlos aunque
-// conozca la URL. El administrador sí.
+// Reportes administrativos: solo el administrador los ve.
 // ------------------------------------------------------------
 const REPORTES_ADMIN = [
     '/api/reportes/resumen',
@@ -92,20 +89,11 @@ const RUTAS_PUBLICAS = [
     '/api/libros',
 ];
 
-// El catálogo es público, pero el administrador y el cajero también
-// tienen que poder leerlo con su token (lo usa el panel).
+// El catálogo es público: cualquier rol autenticado o anónimo lo lee.
 const CATALOGO = ['/api/libros'];
 
-// Operaciones del día que el cajero sí puede ejecutar. Se apuntan a
-// un id inexistente: responden 404/400, nunca 403, lo que prueba que
-// el middleware dejó pasar la petición sin tocar la base.
-const OPERACIONES_DEL_PANEL = [
-    ['PUT', '/api/ventas/999999/estado'],
-    ['POST', '/api/ventas/999999/comprobante'],
-    ['PUT', '/api/reservas/999999/estado'],
-];
-
-// Rutas que el cliente puede usar con normalidad.
+// Rutas propias del cliente (solo exigen autenticación, no rol):
+// el cliente las usa con normalidad y recibe 200.
 const RUTAS_DEL_CLIENTE = [
     '/api/ventas/mis-ventas',
     '/api/reservas/mis-reservas',
@@ -114,6 +102,8 @@ const RUTAS_DEL_CLIENTE = [
 ];
 
 const ids = [];
+const idsCategoria = [];
+const idsAutor = [];
 
 const crearUsuario = async (rol) => {
     const email = `perm-${rol}-${crypto.randomUUID()}@example.test`;
@@ -130,6 +120,30 @@ const crearUsuario = async (rol) => {
     ids.push(id);
 
     return id;
+};
+
+const crearCategoria = async (nombre) => {
+    const [resultado] = await pool.query(`
+        INSERT INTO categorias (nombre, estado)
+        VALUES (?, 1)
+        RETURNING id_categoria
+    `, [`${nombre}-${crypto.randomUUID().slice(0, 8)}`]);
+
+    idsCategoria.push(resultado[0].id_categoria);
+
+    return resultado[0].id_categoria;
+};
+
+const crearAutor = async (nombre) => {
+    const [resultado] = await pool.query(`
+        INSERT INTO autores (nombre, apellido, estado)
+        VALUES (?, 'Prueba', 1)
+        RETURNING id_autor
+    `, [`${nombre}-${crypto.randomUUID().slice(0, 8)}`]);
+
+    idsAutor.push(resultado[0].id_autor);
+
+    return resultado[0].id_autor;
 };
 
 const tokenPara = (idUsuario) =>
@@ -165,6 +179,13 @@ test.after(async () => {
     for (const id of ids) {
         await pool.query('DELETE FROM usuarios WHERE id_usuario = ?', [id]);
     }
+    // categorias y autores los referencian libros, así que van al final.
+    for (const id of idsCategoria) {
+        await pool.query('DELETE FROM categorias WHERE id_categoria = ?', [id]);
+    }
+    for (const id of idsAutor) {
+        await pool.query('DELETE FROM autores WHERE id_autor = ?', [id]);
+    }
     await pool.end();
 });
 
@@ -177,19 +198,8 @@ test('matriz de permisos por rol', async () => {
     const cajero = cabeceras(tokenPara(idCajero));
     const cliente = cabeceras(tokenPara(idCliente));
 
-    // --- Cajero: operación de caja ---
-    for (const ruta of PANEL_OPERATIVO) {
-        const respuesta = await pedir(ruta, cajero);
-
-        assert.equal(
-            respuesta.status,
-            200,
-            `cajero en ${ruta} devolvió ${respuesta.status}`
-        );
-    }
-
-    // --- Cajero: los reportes administrativos le dan 403 ---
-    for (const ruta of REPORTES_ADMIN) {
+    // --- Cajero: bloqueado en TODO el panel (403) ---
+    for (const ruta of [...PANEL_OPERATIVO, ...REPORTES_ADMIN]) {
         const respuesta = await pedir(ruta, cajero);
 
         assert.equal(
@@ -199,7 +209,7 @@ test('matriz de permisos por rol', async () => {
         );
     }
 
-    // --- Cajero: no toca lo exclusivo del administrador ---
+    // --- Cajero: no toca lo exclusivo del administrador (403) ---
     for (const [metodo, ruta] of EXCLUSIVOS_DE_ADMIN) {
         const respuesta = await pedir(ruta, cajero, metodo, {});
 
@@ -210,29 +220,18 @@ test('matriz de permisos por rol', async () => {
         );
     }
 
-    // --- Cajero: puede leer el catálogo con su token ---
+    // --- Cajero: puede leer el catálogo público con su token ---
     for (const ruta of CATALOGO) {
         const respuesta = await pedir(ruta, cajero);
 
         assert.equal(
             respuesta.status,
             200,
-            `cajero en ${ruta} devolvió ${respuesta.status} (debería poder leer)`
+            `cajero en ${ruta} devolvió ${respuesta.status} (catálogo público)`
         );
     }
 
-    // --- Cajero: el filtro deja pasar las operaciones del día ---
-    for (const [metodo, ruta] of OPERACIONES_DEL_PANEL) {
-        const respuesta = await pedir(ruta, cajero, metodo, {});
-
-        assert.notEqual(
-            respuesta.status,
-            403,
-            `cajero bloqueado en ${metodo} ${ruta}`
-        );
-    }
-
-    // --- Cliente: fuera del panel ---
+    // --- Cliente: fuera del panel (403) ---
     for (const ruta of [...PANEL_OPERATIVO, ...REPORTES_ADMIN]) {
         const respuesta = await pedir(ruta, cliente);
 
@@ -253,7 +252,7 @@ test('matriz de permisos por rol', async () => {
         );
     }
 
-    // --- Cliente: sus propias rutas siguen funcionando ---
+    // --- Cliente: sus propias rutas siguen funcionando (200) ---
     for (const ruta of RUTAS_DEL_CLIENTE) {
         const respuesta = await pedir(ruta, cliente);
 
@@ -264,7 +263,7 @@ test('matriz de permisos por rol', async () => {
         );
     }
 
-    // --- Administrador: acceso completo ---
+    // --- Administrador: acceso completo al panel (200) ---
     for (const ruta of [
         ...PANEL_OPERATIVO,
         ...REPORTES_ADMIN,
@@ -281,7 +280,7 @@ test('matriz de permisos por rol', async () => {
         );
     }
 
-    // --- Las rutas públicas siguen abiertas para todos ---
+    // --- Las rutas públicas siguen abiertas para todos (200) ---
     for (const ruta of RUTAS_PUBLICAS) {
         const sinToken = await pedir(ruta, {});
 
@@ -293,22 +292,165 @@ test('matriz de permisos por rol', async () => {
     }
 });
 
+test('los favoritos del cliente funcionan sobre el esquema canónico', async () => {
+    // Guarda contra una regresión concreta: la tabla `favoritos` estaba
+    // creada solo por src/config/migraciones.js, que NO se ejecuta con
+    // NODE_ENV=test. Como la base de pruebas sale de database/schema.sql,
+    // la tabla faltaba y estas rutas devolvían 500. Al estar ahora en el
+    // esquema canónico, el ciclo completo debe funcionar.
+    const idCliente = await crearUsuario('cliente');
+    const cliente = cabeceras(tokenPara(idCliente));
+
+    const idCategoria = await crearCategoria('Favoritos');
+    const idAutor = await crearAutor('Favoritos');
+    const [libro] = await pool.query(`
+        INSERT INTO libros
+            (titulo, isbn, precio, stock, id_autor, id_categoria, estado)
+        VALUES
+            ('Libro favorito', ?, 19.90, 5, ?, ?, 1)
+        RETURNING id_libro
+    `, [`ISBN-FAV-${crypto.randomUUID().slice(0, 8)}`, idAutor, idCategoria]);
+
+    const idLibro = libro[0].id_libro;
+
+    try {
+        const antes = await pedir(
+            `/api/favoritos/${idLibro}`,
+            cliente
+        );
+        assert.equal(
+            antes.status,
+            200,
+            `consultar favorito devolvió ${antes.status}`
+        );
+        assert.equal(
+            (await antes.json()).data.es_favorito,
+            false,
+            'un libro recién creado no debe ser favorito'
+        );
+
+        const agregar = await pedir(
+            `/api/favoritos/${idLibro}`,
+            cliente,
+            'POST'
+        );
+        assert.equal(
+            agregar.status,
+            200,
+            `agregar favorito devolvió ${agregar.status}`
+        );
+        assert.equal(
+            (await agregar.json()).data.es_favorito,
+            true,
+            'tras agregar, el libro debe quedar como favorito'
+        );
+
+        const listado = await pedir('/api/favoritos', cliente);
+        assert.equal(listado.status, 200);
+        assert.ok(
+            (await listado.json()).data.some(
+                (f) => f.id_libro === idLibro
+            ),
+            'el listado debe incluir el favorito recién agregado'
+        );
+
+        const quitar = await pedir(
+            `/api/favoritos/${idLibro}`,
+            cliente,
+            'DELETE'
+        );
+        assert.equal(
+            quitar.status,
+            200,
+            `quitar favorito devolvió ${quitar.status}`
+        );
+        assert.equal(
+            (await quitar.json()).data.es_favorito,
+            false,
+            'tras quitar, el libro debe dejar de ser favorito'
+        );
+
+        // La lista de otro cliente no puede ver el favorito de este.
+        const otroId = await crearUsuario('cliente');
+        const listadoAjeno = await pedir(
+            '/api/favoritos',
+            cabeceras(tokenPara(otroId))
+        );
+        assert.equal(listadoAjeno.status, 200);
+        assert.ok(
+            !(await listadoAjeno.json()).data.some(
+                (f) => f.id_libro === idLibro
+            ),
+            'los favoritos son privados por usuario'
+        );
+    } finally {
+        await pool.query(
+            'DELETE FROM libros WHERE id_libro = ?',
+            [idLibro]
+        );
+    }
+});
+
 test('sin token no se pasa: 401, no 403', async () => {
-    for (const ruta of ['/api/ventas', '/api/reportes/resumen', '/api/usuarios']) {
+    // Endpoints protegidos que existen y requieren JWT:
+    // - /api/ventas (y subpaths) exigen verificarToken antes del rol
+    // - /api/usuarios (y subpaths) exigen verificarToken antes del rol
+    // - /api/reportes/:subpath
+    // Sin token → 401 (el middleware de autenticación corre primero).
+    const protegidos = [
+        '/api/ventas',
+        '/api/ventas/mis-ventas',
+        '/api/usuarios',
+        '/api/usuarios/perfil',
+        '/api/reportes/resumen',
+        '/api/reservas',
+        '/api/inventario',
+        '/api/pedidos',
+        '/api/historial',
+        '/api/reclamaciones',
+    ];
+
+    for (const ruta of protegidos) {
         const respuesta = await pedir(ruta, {});
 
         assert.equal(
             respuesta.status,
             401,
-            `sin token en ${ruta} devolvió ${respuesta.status}`
+            `${ruta} sin token devolvió ${respuesta.status} (debería ser 401)`
         );
     }
+
+    // Una ruta que fue eliminada devuelve 404 (no 401 ni 500).
+    // Se usa una ruta de otro namespace (sin mount en server.js):
+    // con o sin token debe caer en el handler 404 final.
+    const eliminada = await pedir('/api/ruta-eliminada', {});
+    assert.equal(
+        eliminada.status,
+        404,
+        `ruta eliminada devolvió ${eliminada.status} (debería ser 404)`
+    );
+
+    // Con token también debe ser 404 (el namespace del panel aplica
+    // verificarToken, así que sin token es 401 y nunca llega al 404).
+    const idAdmin = await crearUsuario('administrador');
+    const admin = cabeceras(tokenPara(idAdmin));
+    const eliminadaConToken = await pedir(
+        '/api/reportes/cierre-caja',
+        admin
+    );
+    assert.equal(
+        eliminadaConToken.status,
+        404,
+        `ruta eliminada con token devolvió ${eliminadaConToken.status} (debería ser 404)`
+    );
 });
 
 test('un token inválido devuelve 401 y no 403', async () => {
     const invalido = { Authorization: 'Bearer no-es-un-jwt' };
 
-    const respuesta = await pedir('/api/ventas', invalido);
+    // Con token inválido pero formato correcto, el middleware intenta verificar
+    // y como no es válido devuelve 401. Probar con un subpath que tenga handler.
+    const respuesta = await pedir('/api/reportes/resumen', invalido);
 
     assert.equal(respuesta.status, 401);
 });

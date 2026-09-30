@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel administrativo
 
-> Generado desde el código real el 2026-09-26 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-09-30 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -22,16 +22,15 @@
 | `/` | LoginPage | `features/auth/LoginPage.jsx` |
 | `/verificar-email` | VerificarEmailPage | `features/auth/VerificarEmailPage.jsx` |
 | `/libro-de-reclamaciones` | LibroReclamacionesPage | `features/reclamaciones/LibroReclamacionesPage.jsx` |
-| `/punto-venta` | PuntoVentaPage | `features/puntoventa/PuntoVentaPage.jsx` |
 | `/dashboard` | DashboardPage | `features/dashboard/DashboardPage.jsx` |
 | `/libros` | LibrosPage | `features/libros/LibrosPage.jsx` |
 | `/autores` | AutoresPage | `features/autores/AutoresPage.jsx` |
 | `/categorias` | CategoriasPage | `features/categorias/CategoriasPage.jsx` |
 | `/inventario` | InventarioPage | `features/inventario/InventarioPage.jsx` |
 | `/reservas` | ReservasPage | `features/reservas/ReservasPage.jsx` |
+| `/pedidos` | PedidosPage | `features/pedidos/PedidosPage.jsx` |
 | `/ventas` | VentasPage | `features/ventas/VentasPage.jsx` |
 | `/comprobantes` | ComprobantesPage | `features/comprobantes/ComprobantesPage.jsx` |
-| `/cierre-caja` | CierreCajaPage | `features/cierre/CierreCajaPage.jsx` |
 | `/pagos` | PagosPage | `features/pagos/PagosPage.jsx` |
 | `/usuarios` | UsuariosPage | `features/usuarios/UsuariosClientesPage.jsx` |
 | `/clientes` | Navigate | redirección: `para(SOLO_ADMIN, <Navigate to="/usuarios?vista=clientes" replace />) }` |
@@ -41,6 +40,7 @@
 | `/configuracion/empresa` | EmpresaPage | `features/configuracion/EmpresaPage.jsx` |
 | `/personalizacion` | PersonalizacionPage | `features/configuracion/PersonalizacionPage.jsx` |
 | `/agencias` | Navigate | redirección: `<Navigate to="/" replace /> }` |
+| `/cierre-caja` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `/reportes` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `*` | Navigate | redirección: `<Navigate to="/" replace />` |
 
@@ -67,8 +67,8 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/comprobantes/ComprobanteViewModal.jsx` | `GET /api/comprobantes/:param`<br>`GET /api/empresa` |
 | `features/comprobantes/ComprobantesPage.jsx` | `GET /api/comprobantes`<br>`GET /api/comprobantes/resumen`<br>`POST /api/comprobantes/:param/enviar-email` |
 | `features/configuracion/EmpresaPage.jsx` | `GET /api/empresa`<br>`PUT /api/empresa` |
-| `features/dashboard/DashboardPage.jsx` | `GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/reservas-por-estado`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/stock-bajo`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
-| `features/dashboard/dashboardService.js` | `GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/reservas-por-estado`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/stock-bajo`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
+| `features/dashboard/DashboardPage.jsx` | `GET /api/inventario/stock-bajo`<br>`GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/reservas-por-estado`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
+| `features/dashboard/dashboardService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/reservas-por-estado`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
 | `features/historial/HistorialPage.jsx` | `GET /api/historial` |
 | `features/inventario/InventarioEditModal.jsx` | `PUT /api/inventario/libro/:param` |
 | `features/inventario/InventarioForm.jsx` | `POST /api/inventario` |
@@ -80,9 +80,9 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/libros/LibroForm.jsx` | `POST /api/libros` |
 | `features/libros/LibrosPage.jsx` | `DELETE /api/libros/:param`<br>`GET /api/inventario`<br>`GET /api/libros`<br>`GET /api/libros/:param` |
 | `features/libros/useCatalogo.js` | `GET /api/autores`<br>`GET /api/categorias` |
-| `features/notificaciones/notificacionesService.js` | `GET /api/pagos`<br>`GET /api/reportes/stock-bajo`<br>`GET /api/reservas` |
+| `features/notificaciones/notificacionesService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/pagos`<br>`GET /api/reservas` |
 | `features/pagos/PagosPage.jsx` | `GET /api/pagos`<br>`GET /api/pagos/resumen`<br>`GET /api/ventas` |
-| `features/puntoventa/PuntoVentaPage.jsx` | `GET /api/pagos/resumen`<br>`GET /api/reportes/cierre-caja`<br>`GET /api/reportes/reservas-por-estado`<br>`GET /api/reportes/stock-bajo`<br>`GET /api/reportes/ventas-por-estado` |
+| `features/pedidos/PedidosPage.jsx` | `GET /api/pedidos`<br>`GET /api/pedidos/:param`<br>`PUT /api/pedidos/:param/estado` |
 | `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `features/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
 | `features/reservas/ReservaEstadoModal.jsx` | `PUT /api/reservas/:param/estado` |
@@ -94,7 +94,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/usuarios/UsuariosPage.jsx` | `GET /api/usuarios`<br>`PATCH /api/usuarios/:param` |
 | `features/ventas/EmitirComprobanteModal.jsx` | `GET /api/empresa`<br>`POST /api/comprobantes/:param/enviar-email`<br>`POST /api/ventas/:param/comprobante` |
 | `features/ventas/ReembolsoModal.jsx` | `POST /api/ventas/:param/reembolso` |
-| `features/ventas/VentaForm.jsx` | `GET /api/libros`<br>`GET /api/ubicaciones/provincias`<br>`GET /api/ubicaciones/provincias/:param/distritos`<br>`POST /api/ventas` |
 | `features/ventas/VentasPage.jsx` | `GET /api/ventas`<br>`GET /api/ventas/:param`<br>`PUT /api/ventas/:param/estado` |
 
 ## Servicios (`features/*/*Service.js`)
@@ -147,7 +146,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/dashboard/dashboardService.js` | `obtenerVentasPorMes` | `GET /api/reportes/ventas-por-mes` (vía features/reportes/reportesService.js#obtenerVentasPorMes) |
 | `features/dashboard/dashboardService.js` | `obtenerVentasPorDia` | `GET /api/reportes/ventas-por-dia` (vía features/reportes/reportesService.js#obtenerVentasPorDia) |
 | `features/dashboard/dashboardService.js` | `obtenerIndicadoresVentas` | `GET /api/reportes/indicadores-ventas` (vía features/reportes/reportesService.js#obtenerIndicadoresVentas) |
-| `features/dashboard/dashboardService.js` | `obtenerStockBajo` | `GET /api/reportes/stock-bajo` (vía features/reportes/reportesService.js#obtenerStockBajo) |
+| `features/dashboard/dashboardService.js` | `obtenerStockBajo` | `GET /api/inventario/stock-bajo` (vía features/reportes/reportesService.js#obtenerStockBajo) |
 | `features/historial/historialService.js` | `obtenerHistorial` | `GET /api/historial` |
 | `features/inventario/inventarioService.js` | `listarInventario` | `GET /api/inventario` |
 | `features/inventario/inventarioService.js` | `obtenerInventarioLibro` | `GET /api/inventario/libro/:param` |
@@ -164,6 +163,10 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/libros/librosService.js` | `listarCategorias` | `GET /api/categorias` |
 | `features/pagos/pagosService.js` | `listarPagos` | `GET /api/pagos` |
 | `features/pagos/pagosService.js` | `obtenerResumen` | `GET /api/pagos/resumen` |
+| `features/pedidos/pedidosService.js` | `listarPedidos` | `GET /api/pedidos` |
+| `features/pedidos/pedidosService.js` | `obtenerPedido` | `GET /api/pedidos/:param` |
+| `features/pedidos/pedidosService.js` | `listarPedidosFiltrados` | `GET /api/pedidos` |
+| `features/pedidos/pedidosService.js` | `cambiarEstadoPedido` | `PUT /api/pedidos/:param/estado` |
 | `features/reclamaciones/reclamacionesService.js` | `registrarReclamacion` | `POST /api/reclamaciones` |
 | `features/reclamaciones/reclamacionesService.js` | `listarReclamaciones` | `GET /api/reclamaciones` |
 | `features/reclamaciones/reclamacionesService.js` | `obtenerResumenReclamaciones` | `GET /api/reclamaciones/resumen` |
@@ -173,11 +176,10 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/reportes/reportesService.js` | `obtenerLibrosMasVendidos` | `GET /api/reportes/libros-mas-vendidos` |
 | `features/reportes/reportesService.js` | `obtenerVentasPorEstado` | `GET /api/reportes/ventas-por-estado` |
 | `features/reportes/reportesService.js` | `obtenerReservasPorEstado` | `GET /api/reportes/reservas-por-estado` |
-| `features/reportes/reportesService.js` | `obtenerStockBajo` | `GET /api/reportes/stock-bajo` |
+| `features/reportes/reportesService.js` | `obtenerStockBajo` | `GET /api/inventario/stock-bajo` |
 | `features/reportes/reportesService.js` | `obtenerVentasPorMes` | `GET /api/reportes/ventas-por-mes` |
 | `features/reportes/reportesService.js` | `obtenerVentasPorDia` | `GET /api/reportes/ventas-por-dia` |
 | `features/reportes/reportesService.js` | `obtenerIndicadoresVentas` | `GET /api/reportes/indicadores-ventas` |
-| `features/reportes/reportesService.js` | `obtenerCierreCaja` | `GET /api/reportes/cierre-caja` |
 | `features/reservas/reservasService.js` | `listarReservas` | `GET /api/reservas` |
 | `features/reservas/reservasService.js` | `obtenerReserva` | `GET /api/reservas/:param` |
 | `features/reservas/reservasService.js` | `crearReserva` | `POST /api/reservas` |
@@ -192,7 +194,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/ventas/ubicacionesService.js` | `listarDistritosParaEnvio` | `GET /api/ubicaciones/provincias` (vía features/ventas/ubicacionesService.js#listarProvincias)<br>`GET /api/ubicaciones/provincias/:param/distritos` (vía features/ventas/ubicacionesService.js#listarDistritos) |
 | `features/ventas/ventasService.js` | `listarVentas` | `GET /api/ventas` |
 | `features/ventas/ventasService.js` | `obtenerVenta` | `GET /api/ventas/:param` |
-| `features/ventas/ventasService.js` | `crearVenta` | `POST /api/ventas` |
 | `features/ventas/ventasService.js` | `reembolsarVenta` | `POST /api/ventas/:param/reembolso` |
 | `features/ventas/ventasService.js` | `cambiarEstadoVenta` | `PUT /api/ventas/:param/estado` |
 | `features/ventas/ventasService.js` | `listarLibros` | `GET /api/libros` (vía features/libros/librosService.js#listarLibros) |
@@ -201,27 +202,28 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 
 | Archivo | Usado por (nº de archivos) |
 |---|---|
-| `components/providers/ThemeContext.jsx` | 4 |
-| `components/providers/ToastProvider.jsx` | 15 |
-| `components/ui/Acciones.jsx` | 13 |
-| `components/ui/Alert.jsx` | 36 |
+| `components/providers/ThemeContext.jsx` | 1 |
+| `components/providers/ToastProvider.jsx` | 16 |
+| `components/providers/tema.js` | 5 |
+| `components/ui/Acciones.jsx` | 14 |
+| `components/ui/Alert.jsx` | 34 |
 | `components/ui/Badge.jsx` | 22 |
-| `components/ui/Button.jsx` | 50 |
-| `components/ui/Card.jsx` | 22 |
+| `components/ui/Button.jsx` | 48 |
+| `components/ui/Card.jsx` | 20 |
 | `components/ui/Celebracion.jsx` | 2 |
-| `components/ui/ConfirmarAccion.jsx` | 3 |
+| `components/ui/ConfirmarAccion.jsx` | 4 |
 | `components/ui/ConfirmarEliminacion.jsx` | 2 |
-| `components/ui/DataTable.jsx` | 14 |
-| `components/ui/EmptyState.jsx` | 15 |
+| `components/ui/DataTable.jsx` | 15 |
+| `components/ui/EmptyState.jsx` | 16 |
 | `components/ui/ErrorBoundary.jsx` | 1 |
 | `components/ui/EstadoModal.jsx` | 1 |
-| `components/ui/Ficha.jsx` | 9 |
-| `components/ui/Form.jsx` | 39 |
+| `components/ui/Ficha.jsx` | 10 |
+| `components/ui/Form.jsx` | 38 |
 | `components/ui/FormularioAlta.jsx` | 5 |
-| `components/ui/Modal.jsx` | 28 |
-| `components/ui/PageHeader.jsx` | 19 |
+| `components/ui/Modal.jsx` | 29 |
+| `components/ui/PageHeader.jsx` | 18 |
 | `components/ui/Pagination.jsx` | 13 |
-| `components/ui/Spinner.jsx` | 5 |
+| `components/ui/Spinner.jsx` | 4 |
 | `components/ui/TableSkeleton.jsx` | 16 |
 
 ## Hooks y utilidades
@@ -238,7 +240,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `lib/utils/url.js`
 - `lib/utils/validaciones.js`
 
-## Framer Motion (`motion/react`) — 19 archivos
+## Framer Motion (`motion/react`) — 20 archivos
 
 - `components/providers/ToastProvider.jsx`
 - `components/ui/Celebracion.jsx`
@@ -256,6 +258,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `features/layout/PerfilAdministrador.jsx`
 - `features/layout/Sidebar.jsx`
 - `features/notificaciones/PanelNotificaciones.jsx`
+- `features/pedidos/PedidosPage.jsx`
 - `features/tarifas/TarifasEnvioPage.jsx`
 - `features/usuarios/UsuariosClientesPage.jsx`
 - `features/ventas/VentasPage.jsx`

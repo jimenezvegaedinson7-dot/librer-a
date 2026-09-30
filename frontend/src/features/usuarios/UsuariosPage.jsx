@@ -182,9 +182,46 @@ export default function UsuariosPage({ incrustado = false }) {
         }
     };
 
+    // Carga inicial. `cargando` ya nace en true, así que este efecto no
+    // enciende el spinner: solo espera la respuesta y entonces actualiza.
+    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
-        cargarUsuarios();
+        let vigente = true;
+
+        (async () => {
+            try {
+                const datos = await listarUsuarios();
+                if (vigente) setUsuarios(datos);
+            } catch (err) {
+                if (vigente) {
+                    setError(err.response?.data?.mensaje || 'Error al cargar los usuarios');
+                }
+            } finally {
+                if (vigente) setCargando(false);
+            }
+        })();
+
+        return () => {
+            vigente = false;
+        };
     }, []);
+
+    // Al cambiar cualquier filtro se vuelve a la primera página: se hace
+    // aquí, en el evento, y no en un efecto que la reinicie tras el render.
+    const alBuscar = (valor) => {
+        setBusqueda(valor);
+        setPaginaActual(1);
+    };
+
+    const alFiltrarRol = (valor) => {
+        setFiltroRol(valor);
+        setPaginaActual(1);
+    };
+
+    const alFiltrarEstado = (valor) => {
+        setFiltroEstado(valor);
+        setPaginaActual(1);
+    };
 
     const usuariosFiltrados = useMemo(() => {
         const texto = busqueda.toLowerCase().trim();
@@ -205,15 +242,15 @@ export default function UsuariosPage({ incrustado = false }) {
     const totalInactivos = usuarios.filter((u) => Number(u.estado) !== 1).length;
 
     const totalPaginas = Math.ceil(usuariosFiltrados.length / POR_PAGINA);
-    const usuariosPaginados = usuariosFiltrados.slice((paginaActual - 1) * POR_PAGINA, paginaActual * POR_PAGINA);
 
-    useEffect(() => {
-        setPaginaActual(1);
-    }, [busqueda, filtroRol, filtroEstado]);
+    // Si la lista se acorta (filtro) la página se recorta durante el render
+    // en vez de corregirse después con un efecto.
+    const paginaActualEfectiva = totalPaginas > 0 ? Math.min(paginaActual, totalPaginas) : 1;
 
-    useEffect(() => {
-        if (totalPaginas > 0 && paginaActual > totalPaginas) setPaginaActual(totalPaginas);
-    }, [paginaActual, totalPaginas]);
+    const usuariosPaginados = usuariosFiltrados.slice(
+        (paginaActualEfectiva - 1) * POR_PAGINA,
+        paginaActualEfectiva * POR_PAGINA,
+    );
 
     const limpiarFiltros = () => {
         setBusqueda('');
@@ -337,7 +374,7 @@ export default function UsuariosPage({ incrustado = false }) {
                                 <Input
                                     type="text"
                                     value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    onChange={(e) => alBuscar(e.target.value)}
                                     placeholder="Buscar usuario..."
                                     icono={<FaMagnifyingGlass />}
                                     className="pr-8 sm:w-72"
@@ -354,14 +391,14 @@ export default function UsuariosPage({ incrustado = false }) {
                                 )}
                             </div>
 
-                            <Select value={filtroRol} onChange={(e) => setFiltroRol(e.target.value)} className="sm:w-44">
+                            <Select value={filtroRol} onChange={(e) => alFiltrarRol(e.target.value)} className="sm:w-44">
                 <option value="todos">Todos los roles</option>
                 <option value="administrador">Administradores</option>
                 <option value="cajero">Cajeros</option>
                 <option value="cliente">Clientes</option>
                             </Select>
 
-                            <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="sm:w-44">
+                            <Select value={filtroEstado} onChange={(e) => alFiltrarEstado(e.target.value)} className="sm:w-44">
                                 <option value="todos">Todos los estados</option>
                                 <option value="1">Activos</option>
                                 <option value="0">Inactivos</option>
@@ -431,7 +468,7 @@ export default function UsuariosPage({ incrustado = false }) {
                             }
                         />
                     </CardBody>
-                    <Pagination pagina={paginaActual} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
+                    <Pagination pagina={paginaActualEfectiva} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
                 </Card>
             )}
 

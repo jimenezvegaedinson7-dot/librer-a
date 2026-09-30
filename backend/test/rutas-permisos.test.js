@@ -37,6 +37,7 @@ const matrizDe = (archivo, router) => {
 
 const routers = {
     'venta.routes.js': require('../src/routes/venta.routes'),
+    'pedido.routes.js': require('../src/routes/pedido.routes'),
     'reserva.routes.js': require('../src/routes/reserva.routes'),
     'pago.routes.js': require('../src/routes/pago.routes'),
     'comprobante.routes.js': require('../src/routes/comprobante.routes'),
@@ -61,7 +62,7 @@ const rolesDe = (clave) => {
 };
 
 const ADMIN = [ROLES.ADMINISTRADOR];
-const PANEL = [ROLES.ADMINISTRADOR, ROLES.CAJERO];
+const PANEL = [ROLES.ADMINISTRADOR];
 
 // Comprueba que el endpoint admite exactamente esos roles.
 const esperaRoles = (clave, esperados) => {
@@ -91,14 +92,12 @@ test('los reportes administrativos son solo de administrador', () => {
     }
 });
 
-test('los agregados operativos del mostrador son de administrador y cajero', () => {
+test('los agregados operativos del mostrador son solo de administrador', () => {
     for (const ruta of [
         'GET /ventas-por-estado',
         'GET /reservas-por-estado',
-        'GET /stock-bajo',
-        'GET /cierre-caja',
     ]) {
-        esperaRoles(`reporte.routes.js ${ruta}`, PANEL);
+        esperaRoles(`reporte.routes.js ${ruta}`, ADMIN);
     }
 });
 
@@ -136,7 +135,6 @@ test('todos los reportes exigen un rol: ninguno queda abierto', () => {
 
 test('el cajero opera ventas, reservas, pagos, comprobantes e inventario', () => {
     const permitidas = [
-        'venta.routes.js POST /',
         'venta.routes.js GET /',
         'venta.routes.js PUT /:id/estado',
         'venta.routes.js POST /:id/comprobante',
@@ -155,8 +153,43 @@ test('el cajero opera ventas, reservas, pagos, comprobantes e inventario', () =>
     ];
 
     for (const clave of permitidas) {
-        esperaRoles(clave, PANEL);
+        esperaRoles(clave, ADMIN);
     }
+});
+
+// ========================================
+// VENTA MANUAL RETIRADA
+// ========================================
+// Las ventas ya no se crean desde el panel: nacen en la app y las
+// cobra PayU. POST /api/ventas responde 405 y no tiene guard de rol,
+// porque ningún rol del panel puede crearlas.
+
+test('ningún rol puede crear ventas manualmente', () => {
+    const roles = rolesDe('venta.routes.js POST /');
+
+    assert.deepEqual(
+        roles,
+        [],
+        'POST /api/ventas no debe admitir ningún rol del panel'
+    );
+});
+
+test('la venta manual no expone ninguna ruta de creación alternativa', () => {
+    // Crear una venta sería una ruta POST sobre la colección (sin :id),
+    // porque no parte de una venta existente. Las rutas POST con :id
+    // (comprobante, reembolso) operan sobre una venta ya creada y sí
+    // se conservan.
+    const rutasDeColeccion = [...indice.keys()].filter(
+        (clave) =>
+            clave.startsWith('venta.routes.js POST') &&
+            !clave.includes('/:id')
+    );
+
+    assert.deepEqual(
+        rutasDeColeccion,
+        ['venta.routes.js POST /'],
+        'solo debe sobrevivir el POST raíz, que responde 405'
+    );
 });
 
 // ========================================
@@ -175,6 +208,39 @@ test('las operaciones de control son solo de administrador', () => {
 
     for (const clave of soloAdmin) {
         esperaRoles(clave, ADMIN);
+    }
+});
+
+// ========================================
+// PEDIDOS: módulo logístico exclusivo del administrador
+// ========================================
+
+test('los pedidos del panel son solo de administrador', () => {
+    for (const ruta of [
+        'GET /',
+        'GET /:id',
+        'PUT /:id/estado',
+    ]) {
+        esperaRoles(`pedido.routes.js ${ruta}`, ADMIN);
+    }
+});
+
+test('el módulo de pedidos no quedó abierto al cajero ni al cliente', () => {
+    for (const [clave, guards] of indice) {
+        if (!clave.startsWith('pedido.routes.js')) continue;
+
+        if (clave === 'pedido.routes.js GET /usuario/:id_usuario') continue;
+
+        const roles = guards.flatMap((guard) => guard.rolesPermitidos);
+
+        assert.ok(
+            !roles.includes(ROLES.CAJERO),
+            `${clave} no debe admitir al cajero`
+        );
+        assert.ok(
+            !roles.includes(ROLES.CLIENTE),
+            `${clave} no debe admitir al cliente`
+        );
     }
 });
 

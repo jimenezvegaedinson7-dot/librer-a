@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { FaFloppyDisk, FaRotateLeft } from 'react-icons/fa6';
 
@@ -25,17 +25,13 @@ function inicialFormulario(agencia) {
 }
 
 export default function AgenciaEditModal({ agencia, abierto, onCerrar, onActualizado }) {
+    // El formulario se inicializa aquí y se reinicia por completo cuando el
+    // padre cambia la `key` de este componente (una por agencia). Así el
+    // estado nace del registro editado sin necesidad de un efecto.
     const [formulario, setFormulario] = useState(inicialFormulario(agencia || {}));
     const [errores, setErrores] = useState({});
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
-
-    useEffect(() => {
-        if (!abierto || !agencia) return;
-        setFormulario(inicialFormulario(agencia));
-        setErrores({});
-        setError('');
-    }, [abierto, agencia]);
 
     if (!abierto || !agencia) return null;
 

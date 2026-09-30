@@ -1,6 +1,6 @@
 # Dependencias
 
-> Generado desde el código real el 2026-09-26 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-09-30 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Paquetes npm
@@ -54,8 +54,8 @@ Dev: @types/react, @types/react-dom, @vitejs/plugin-react, oxlint, vite.
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 102 | 245 | 0 (confirmado con **madge**: ninguno) |
-| Frontend (`import`) | 138 | 613 | 0 (confirmado con **madge**: ninguno) |
+| Backend (`require`) | 107 | 259 | 0 (confirmado con **madge**: ninguno) |
+| Frontend (`import`) | 139 | 603 | 0 (confirmado con **madge**: ninguno) |
 | Flutter (`import` relativos) | 68 | 298 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter

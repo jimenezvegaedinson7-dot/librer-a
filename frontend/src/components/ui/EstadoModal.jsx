@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { FaFloppyDisk } from 'react-icons/fa6';
 
@@ -29,12 +29,22 @@ export function EstadoModal({
 
     const opciones = obtenerOpciones ? obtenerOpciones(estadoActual) : [];
 
-    useEffect(() => {
-        if (!abierto) return;
-        const disponibles = obtenerOpciones ? obtenerOpciones(estadoActual) : [];
-        setEstado(disponibles.length > 0 ? disponibles[0].valor : '');
-        setError('');
-    }, [abierto, estadoActual, obtenerOpciones]);
+    const [abiertoAnterior, setAbiertoAnterior] = useState(abierto);
+    const [estadoActualAnterior, setEstadoActualAnterior] = useState(estadoActual);
+
+    // Al abrir el diálogo se preselecciona la primera opción disponible. Se
+    // ajusta durante el render en vez de en un efecto, para que el modal
+    // muestre el valor ya elegido en el mismo pintado. Además se compara solo
+    // `estadoActual`: si `obtenerOpciones` cambia de identidad entre
+    // renders ya no se pisa lo que el usuario eligió.
+    if (abiertoAnterior !== abierto || (abierto && estadoActualAnterior !== estadoActual)) {
+        setAbiertoAnterior(abierto);
+        setEstadoActualAnterior(estadoActual);
+        if (abierto) {
+            setEstado(opciones.length > 0 ? opciones[0].valor : '');
+            setError('');
+        }
+    }
 
     if (!abierto) return null;
 

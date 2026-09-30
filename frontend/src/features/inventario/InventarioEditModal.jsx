@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { FaFloppyDisk, FaRotateLeft } from 'react-icons/fa6';
 
@@ -24,17 +24,13 @@ function inicialFormulario(inventario) {
 }
 
 export default function InventarioEditModal({ inventario, abierto, onCerrar, onActualizado }) {
+    // El formulario se inicializa aquí y se reinicia por completo cuando el
+    // padre cambia la `key` de este componente (una por registro). Así el
+    // estado nace del registro editado sin necesidad de un efecto.
     const [formulario, setFormulario] = useState(inicialFormulario(inventario || {}));
     const [errores, setErrores] = useState({});
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
-
-    useEffect(() => {
-        if (!abierto || !inventario) return;
-        setFormulario(inicialFormulario(inventario));
-        setErrores({});
-        setError('');
-    }, [abierto, inventario]);
 
     if (!abierto || !inventario) return null;
 

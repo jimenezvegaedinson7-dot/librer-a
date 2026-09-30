@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
-import { ThemeProvider, useTema } from '../../components/providers/ThemeContext';
+import { ThemeProvider } from '../../components/providers/ThemeContext';
+import { useTema } from '../../components/providers/tema';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import Breadcrumbs from './Breadcrumbs';

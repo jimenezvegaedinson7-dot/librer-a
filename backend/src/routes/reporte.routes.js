@@ -7,11 +7,9 @@ const {
     obtenerLibrosMasVendidos,
     obtenerVentasPorEstado,
     obtenerReservasPorEstado,
-    obtenerStockBajo,
     obtenerVentasPorMes,
     obtenerVentasPorDia,
-    obtenerIndicadoresVentas,
-    obtenerCierreCaja
+    obtenerIndicadoresVentas
 } = require('../controllers/reporte.controller');
 
 const verificarToken = require('../middlewares/auth.middleware');
@@ -60,25 +58,6 @@ router.get(
     '/reservas-por-estado',
     verificarPanel,
     obtenerReservasPorEstado
-);
-
-// ========================================
-// STOCK BAJO
-// ========================================
-router.get(
-    '/stock-bajo',
-    verificarPanel,
-    obtenerStockBajo
-);
-
-// ========================================
-// CIERRE DE CAJA DEL DÍA
-// (totales y cobros del día, por medio de pago)
-// ========================================
-router.get(
-    '/cierre-caja',
-    verificarPanel,
-    obtenerCierreCaja
 );
 
 // ============================================================

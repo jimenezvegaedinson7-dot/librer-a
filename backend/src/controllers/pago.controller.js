@@ -16,6 +16,7 @@ const {
 } = require('../utils/mailer');
 const { PUBLIC_BASE_URL } = require('../config/payu');
 const { esPersonalInterno } = require('../utils/roles');
+const { TIPOS_ENTREGA } = require('../utils/transiciones');
 
 // ========================================
 // CORREOS TRANSACCIONALES (fire-and-forget)
@@ -230,12 +231,10 @@ const eventoWebhookYaProcesado = (clave) => {
 
 // ========================================
 // TIPOS DE ENTREGA SOPORTADOS
-// (cualquier otro valor se trata como recojo en tienda).
+// El dominio es 'domicilio' | 'tienda' y vive en utils/transiciones
+// para que backend, panel y app no se desincronicen.
 // El envío por agencia ya no se ofrece: solo se entrega en Lima.
 // ========================================
-const ListaTipoEntrega = [
-    'domicilio'
-];
 
 const construirRespuestaOrdenExistente = async (venta) => {
     // Con WebCheckout el checkout_url apunta a la página propia que
@@ -384,10 +383,35 @@ const crearOrden = async (req, res) => {
 
         // ========================================
         // NORMALIZAR TIPO DE ENTREGA (domicilio | tienda)
-        // Una app antigua podría pedir 'agencia': se rechaza con un
-        // aviso en lugar de convertirla en recojo en tienda sin avisar.
         // ========================================
-        if (tipo_entrega === 'agencia') {
+        // Si el campo no viene, se asume recojo en tienda: es lo que
+        // enviaban las apps antiguas y no conviene romperlas.
+        //
+        // Si viene con un valor explícito que no existe, NO se adivina.
+        // Convertir en silencio un typo (p. ej. 'domiciloi') en 'tienda'
+        // enviaba el pedido por una ruta que el cliente nunca eligió.
+        // Solo una cadena puede ser un tipo de entrega. Un número, un
+        // booleano o un array es un cliente roto, y tratarlo como
+        // "no enviado" mandaba el pedido a recojo en silencio.
+        if (
+            tipo_entrega !== undefined &&
+            tipo_entrega !== null &&
+            tipo_entrega !== '' &&
+            typeof tipo_entrega !== 'string'
+        ) {
+            return res.status(400).json({
+                success: false,
+                mensaje: `El tipo de entrega debe ser un texto: usa ${TIPOS_ENTREGA.map((t) => `"${t}"`).join(' o ')}.`
+            });
+        }
+
+        // El trim va antes de comparar contra 'agencia', o un valor con
+        // espacios (" agencia ") caería en el mensaje genérico de tipo
+        // inexistente en vez de explicar que la agencia ya no existe.
+        const tipoSolicitado =
+            typeof tipo_entrega === 'string' ? tipo_entrega.trim() : '';
+
+        if (tipoSolicitado === 'agencia') {
             return res
                 .status(400)
                 .json({
@@ -397,12 +421,14 @@ const crearOrden = async (req, res) => {
                 });
         }
 
-        const tipoEntrega =
-            ListaTipoEntrega.includes(
-                tipo_entrega
-            )
-                ? tipo_entrega
-                : 'tienda';
+        if (tipoSolicitado && !TIPOS_ENTREGA.includes(tipoSolicitado)) {
+            return res.status(400).json({
+                success: false,
+                mensaje: `El tipo de entrega "${tipoSolicitado}" no existe. Usa ${TIPOS_ENTREGA.join(' o ')}.`
+            });
+        }
+
+        const tipoEntrega = tipoSolicitado || 'tienda';
 
         // ========================================
         // VALIDAR DATOS DE ENVÍO SEGÚN TIPO
@@ -828,6 +854,18 @@ const crearOrden = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 mensaje
+            });
+        }
+
+        // Violación de un CHECK de la base. Casi siempre significa que un
+        // dato de entrada contradice el dominio, no que el servidor esté
+        // roto: sin esto el cliente recibía un 500 y no podía saber qué
+        // corregir. Se expone solo el nombre de la restricción.
+        if (error.code === '23514' || error.errno === 3819) {
+            return res.status(400).json({
+                success: false,
+                mensaje:
+                    'Los datos del envío no son válidos. Revisa el tipo de entrega y la dirección.'
             });
         }
 

@@ -4,11 +4,11 @@ import { X } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useMemo } from 'react';
 
-import { useTema } from '../../components/providers/ThemeContext';
+import { useTema } from '../../components/providers/tema';
 import { useAuth } from '../auth/AuthContext';
 import logoLibreria from '../../assets/logo-lbl.png';
 import { navPorRol } from './navConfig';
-import { esCajero } from '../../lib/roles';
+
 
 const agruparPorSeccion = (items) =>
     items.reduce((grupos, item) => {
@@ -76,7 +76,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                             Librería del Saber
                         </p>
                         <p className="mt-0.5 text-[10.5px] font-medium uppercase tracking-[0.14em]" style={{ color: acento, opacity: 0.85 }}>
-                            {esCajero(usuario?.rol) ? 'Punto de venta' : 'Administración'}
+                            Administración
                         </p>
                     </div>
                 )}

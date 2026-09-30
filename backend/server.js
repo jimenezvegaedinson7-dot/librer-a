@@ -43,6 +43,7 @@ const reporteRoutes = require('./src/routes/reporte.routes');
 const usuarioRoutes = require('./src/routes/usuario.routes');
 const favoritoRoutes = require('./src/routes/favorito.routes');
 const pagoRoutes = require('./src/routes/pago.routes');
+const pedidoRoutes = require('./src/routes/pedido.routes');
 const ubicacionRoutes = require('./src/routes/ubicacion.routes');
 const agenciaRoutes = require('./src/routes/agencia.routes');
 const empresaRoutes = require('./src/routes/empresa.routes');
@@ -238,6 +239,14 @@ app.use(
 );
 
 // ===============================
+// API DE PEDIDOS
+// ===============================
+app.use(
+    '/api/pedidos',
+    pedidoRoutes
+);
+
+// ===============================
 // API DE RESERVAS
 // ===============================
 app.use(
@@ -376,117 +385,29 @@ app.use(manejarErrores);
 iniciarJobs();
 
 // ===============================
-// MIGRACIÓN: tabla favoritos
-// ===============================
-(async () => {
-    try {
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS favoritos (
-                id_usuario INT NOT NULL,
-                id_libro   INT NOT NULL,
-                fecha      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (id_usuario, id_libro),
-                CONSTRAINT fk_favoritos_usuario
-                    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
-                    ON DELETE CASCADE,
-                CONSTRAINT fk_favoritos_libro
-                    FOREIGN KEY (id_libro) REFERENCES libros(id_libro)
-                    ON DELETE CASCADE
-            );
-            CREATE INDEX IF NOT EXISTS idx_favoritos_usuario ON favoritos (id_usuario);
-            CREATE INDEX IF NOT EXISTS idx_favoritos_libro ON favoritos (id_libro);
-        `);
-        console.log('[migracion] Tabla favoritos verificada.');
-    } catch (e) {
-        console.error('[migracion] Error al crear favoritos:', e.message);
-    }
-})();
-
-// ===============================
-// MIGRACIÓN: cliente_documento en ventas
-// ===============================
-(async () => {
-    try {
-        await pool.query(`
-            ALTER TABLE ventas ADD COLUMN IF NOT EXISTS cliente_documento VARCHAR(20) NULL;
-            ALTER TABLE ventas ADD COLUMN IF NOT EXISTS cliente_tipo_documento VARCHAR(10) NULL;
-        `);
-        console.log('[migracion] Columnas cliente_documento y cliente_tipo_documento verificadas en ventas.');
-    } catch (e) {
-        console.error('[migracion] Error al migrar ventas:', e.message);
-    }
-})();
-
-// ===============================
-// MIGRACIÓN: enviado_por_email en comprobantes
-// ===============================
-(async () => {
-    try {
-        await pool.query(`
-            ALTER TABLE comprobantes ADD COLUMN IF NOT EXISTS enviado_por_email BOOLEAN DEFAULT FALSE;
-            ALTER TABLE comprobantes ADD COLUMN IF NOT EXISTS fecha_envio_email TIMESTAMP NULL;
-        `);
-        console.log('[migracion] Columnas enviado_por_email y fecha_envio_email verificadas en comprobantes.');
-    } catch (e) {
-        console.error('[migracion] Error al migrar comprobantes email:', e.message);
-    }
-})();
-
-// ===============================
-// MIGRACIÓN 023: control de ventas,
-// comprobantes (anulación, SUNAT) e IGV
-// ===============================
-(async () => {
-    try {
-        const sql = require('fs').readFileSync(
-            require('path').join(__dirname, 'database', 'migrations', '023_control_ventas.sql'),
-            'utf8'
-        );
-        await pool.query(sql);
-        console.log('[migracion] 023 control de ventas verificada.');
-    } catch (e) {
-        console.error('[migracion] Error en la migración 023:', e.message);
-    }
-})();
-
-// ===============================
-// MIGRACIÓN 024: Libro de Reclamaciones
-// y eliminación de cuentas
-// ===============================
-(async () => {
-    try {
-        const sql = require('fs').readFileSync(
-            require('path').join(__dirname, 'database', 'migrations', '024_reclamaciones_y_cuentas.sql'),
-            'utf8'
-        );
-        await pool.query(sql);
-        console.log('[migracion] 024 reclamaciones y cuentas verificada.');
-    } catch (e) {
-        console.error('[migracion] Error en la migración 024:', e.message);
-    }
-})();
-
-// ===============================
-// MIGRACIÓN 025: rol "cajero"
-// ===============================
-(async () => {
-    try {
-        const sql = require('fs').readFileSync(
-            require('path').join(__dirname, 'database', 'migrations', '025_rol_cajero.sql'),
-            'utf8'
-        );
-        await pool.query(sql);
-        console.log('[migracion] 025 rol cajero verificado.');
-    } catch (e) {
-        console.error('[migracion] Error en la migración 025:', e.message);
-    }
-})();
-
-// ===============================
 // INICIAR SERVIDOR
 // ===============================
-app.listen(PORT, () => {
-    console.log(
-        `Servidor ejecutándose en http://localhost:${PORT}`
-    );
+// El esquema se verifica ANTES de aceptar tráfico: si una migración
+// falla en producción el proceso termina en vez de servir contra una
+// base incompleta. Las migraciones son idempotentes, así que reiniciar
+// el servicio no duplica nada.
+const { aplicarMigraciones } = require('./src/config/migraciones');
+
+async function iniciar() {
+    // En test la base ya está creada desde database/schema.sql y no
+    // se toca el esquema (ver src/config/migraciones.js).
+    if (process.env.NODE_ENV !== 'test') {
+        await aplicarMigraciones(pool);
+    }
+
+    app.listen(PORT, () => {
+        console.log(
+            `Servidor ejecutándose en http://localhost:${PORT}`
+        );
+    });
+}
+
+iniciar().catch((error) => {
+    console.error('[bootstrap] Arranque abortado:', error.message);
+    process.exit(1);
 });

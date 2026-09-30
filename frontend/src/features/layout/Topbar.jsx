@@ -37,7 +37,7 @@ function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
 }
 
 import { Palette } from 'lucide-react';
-import { useTema } from '../../components/providers/ThemeContext';
+import { useTema } from '../../components/providers/tema';
 
 export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     const navigate = useNavigate();

@@ -1,4 +1,4 @@
-%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-09-30 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     libro_routes["/api/libros<br/>libro.routes"]
     libro_routes --> libro_controller["libro.controller"]
@@ -8,6 +8,8 @@ flowchart LR
     categoria_routes --> categoria_controller["categoria.controller"]
     inventario_routes["/api/inventario<br/>inventario.routes"]
     inventario_routes --> inventario_controller["inventario.controller"]
+    pedido_routes["/api/pedidos<br/>pedido.routes"]
+    pedido_routes --> pedido_controller["pedido.controller"]
     reserva_routes["/api/reservas<br/>reserva.routes"]
     reserva_routes --> reserva_controller["reserva.controller"]
     venta_routes["/api/ventas<br/>venta.routes"]
@@ -67,6 +69,8 @@ flowchart LR
     pago_controller --> payu_service[("payu.service")]
     pago_controller --> venta_model[("venta.model")]
     pago_controller --> ubicacion_model[("ubicacion.model")]
+    pedido_controller --> historial_model[("historial.model")]
+    pedido_controller --> venta_model[("venta.model")]
     reclamacion_controller --> empresa_model[("empresa.model")]
     reclamacion_controller --> reclamacion_model[("reclamacion.model")]
     reclamacion_controller --> historial_model[("historial.model")]
@@ -80,7 +84,6 @@ flowchart LR
     usuario_controller --> historial_model[("historial.model")]
     venta_controller --> historial_model[("historial.model")]
     venta_controller --> venta_model[("venta.model")]
-    venta_controller --> ubicacion_model[("ubicacion.model")]
     agencia_model -.-> T_agencias_courier[/"agencias_courier"/]
     autor_model -.-> T_autores[/"autores"/]
     categoria_model -.-> T_categorias[/"categorias"/]

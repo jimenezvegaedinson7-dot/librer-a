@@ -143,9 +143,49 @@ export default function LibrosPage() {
         }
     };
 
+    // Carga inicial. `cargando` ya nace en true, así que este efecto no
+    // enciende el spinner: solo espera la respuesta y entonces actualiza.
+    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
-        cargarLibros();
+        let vigente = true;
+
+        (async () => {
+            try {
+                const datos = await listarLibros();
+                if (vigente) setLibros(datos);
+            } catch (err) {
+                if (vigente) {
+                    setError(err.response?.data?.mensaje || 'Error al cargar los libros');
+                }
+            } finally {
+                if (vigente) setCargando(false);
+            }
+        })();
+
+        return () => {
+            vigente = false;
+        };
     }, []);
+
+    // Al cambiar cualquier filtro se vuelve a la primera página: se hace
+    // aquí, en el evento, y no en un efecto que la reinicie tras el render.
+    const alBuscar = (valor) => {
+        setBusqueda(valor);
+        setPaginaActivos(1);
+        setPaginaInactivos(1);
+    };
+
+    const alFiltrarEstado = (valor) => {
+        setFiltroEstado(valor);
+        setPaginaActivos(1);
+        setPaginaInactivos(1);
+    };
+
+    const alFiltrarStock = (valor) => {
+        setFiltroStock(valor);
+        setPaginaActivos(1);
+        setPaginaInactivos(1);
+    };
 
     const librosFiltrados = useMemo(() => {
         const texto = busqueda.toLowerCase().trim();
@@ -172,21 +212,14 @@ export default function LibrosPage() {
 
     const totalActivos = Math.ceil(librosActivos.length / POR_PAGINA);
     const totalInactivos = Math.ceil(librosInactivos.length / POR_PAGINA);
-    const activosPaginados = librosActivos.slice((paginaActivos - 1) * POR_PAGINA, paginaActivos * POR_PAGINA);
-    const inactivosPaginados = librosInactivos.slice((paginaInactivos - 1) * POR_PAGINA, paginaInactivos * POR_PAGINA);
 
-    useEffect(() => {
-        setPaginaActivos(1);
-        setPaginaInactivos(1);
-    }, [busqueda, filtroEstado, filtroStock]);
+    // Si la lista se acorta (búsqueda o borrado) la página se recorta
+    // durante el render en vez de corregirse después con un efecto.
+    const paginaActivosActual = totalActivos > 0 ? Math.min(paginaActivos, totalActivos) : 1;
+    const paginaInactivosActual = totalInactivos > 0 ? Math.min(paginaInactivos, totalInactivos) : 1;
 
-    useEffect(() => {
-        if (totalActivos > 0 && paginaActivos > totalActivos) setPaginaActivos(totalActivos);
-    }, [paginaActivos, totalActivos]);
-
-    useEffect(() => {
-        if (totalInactivos > 0 && paginaInactivos > totalInactivos) setPaginaInactivos(totalInactivos);
-    }, [paginaInactivos, totalInactivos]);
+    const activosPaginados = librosActivos.slice((paginaActivosActual - 1) * POR_PAGINA, paginaActivosActual * POR_PAGINA);
+    const inactivosPaginados = librosInactivos.slice((paginaInactivosActual - 1) * POR_PAGINA, paginaInactivosActual * POR_PAGINA);
 
     const verLibro = async (libro) => {
         try {
@@ -264,7 +297,7 @@ export default function LibrosPage() {
                                 <Input
                                     type="text"
                                     value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    onChange={(e) => alBuscar(e.target.value)}
                                     placeholder="Buscar libro..."
                                     icono={<FaMagnifyingGlass />}
                                     className="pr-8 sm:w-64"
@@ -272,7 +305,7 @@ export default function LibrosPage() {
                                 {busqueda && (
                                     <button
                                         type="button"
-                                        onClick={() => setBusqueda('')}
+                                        onClick={() => alBuscar('')}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
                                         title="Limpiar búsqueda"
                                     >
@@ -281,13 +314,13 @@ export default function LibrosPage() {
                                 )}
                             </div>
 
-                            <Select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)} className="sm:w-44">
+                            <Select value={filtroEstado} onChange={(e) => alFiltrarEstado(e.target.value)} className="sm:w-44">
                                 <option value="todos">Todos los estados</option>
                                 <option value="activo">Activos</option>
                                 <option value="inactivo">Inactivos</option>
                             </Select>
 
-                            <Select value={filtroStock} onChange={(e) => setFiltroStock(e.target.value)} className="sm:w-44">
+                            <Select value={filtroStock} onChange={(e) => alFiltrarStock(e.target.value)} className="sm:w-44">
                                 <option value="todos">Todo el stock</option>
                                 <option value="disponible">Disponible</option>
                                 <option value="bajo">Stock bajo</option>
@@ -340,7 +373,7 @@ export default function LibrosPage() {
                     subtitulo="Libros disponibles actualmente en el sistema"
                     paginados={activosPaginados}
                     contadorLibros={librosActivos.length}
-                    pagina={paginaActivos}
+                    pagina={paginaActivosActual}
                     totalPaginas={totalActivos}
                     onCambiarPagina={setPaginaActivos}
                     color="bg-success-bg text-success"
@@ -357,7 +390,7 @@ export default function LibrosPage() {
                     subtitulo="Libros retirados temporalmente del catálogo"
                     paginados={inactivosPaginados}
                     contadorLibros={librosInactivos.length}
-                    pagina={paginaInactivos}
+                    pagina={paginaInactivosActual}
                     totalPaginas={totalInactivos}
                     onCambiarPagina={setPaginaInactivos}
                     color="bg-parchment-400 text-slate-700"
@@ -369,8 +402,15 @@ export default function LibrosPage() {
             )}
 
             <LibroViewModal libro={libroVer} abierto={Boolean(libroVer)} onCerrar={() => setLibroVer(null)} />
-            <LibroEditModal libro={libroEditar} abierto={Boolean(libroEditar)} onCerrar={() => setLibroEditar(null)} onActualizado={libroActualizado} />
+            <LibroEditModal
+                key={libroEditar?.id_libro}
+                libro={libroEditar}
+                abierto={Boolean(libroEditar)}
+                onCerrar={() => setLibroEditar(null)}
+                onActualizado={libroActualizado}
+            />
             <LibroDeleteModal
+                key={libroEliminar?.id_libro}
                 libro={libroEliminar}
                 abierto={Boolean(libroEliminar)}
                 eliminando={eliminando}

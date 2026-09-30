@@ -28,12 +28,12 @@ import { CargandoPantalla } from '../components/ui/Spinner';
 const LoginPage = lazyConReintento(() => import('../features/auth/LoginPage'));
 const VerificarEmailPage = lazyConReintento(() => import('../features/auth/VerificarEmailPage'));
 const DashboardPage = lazyConReintento(() => import('../features/dashboard/DashboardPage'));
-const PuntoVentaPage = lazyConReintento(() => import('../features/puntoventa/PuntoVentaPage'));
 const LibrosPage = lazyConReintento(() => import('../features/libros/LibrosPage'));
 const AutoresPage = lazyConReintento(() => import('../features/autores/AutoresPage'));
 const CategoriasPage = lazyConReintento(() => import('../features/categorias/CategoriasPage'));
 const InventarioPage = lazyConReintento(() => import('../features/inventario/InventarioPage'));
 const ReservasPage = lazyConReintento(() => import('../features/reservas/ReservasPage'));
+const PedidosPage = lazyConReintento(() => import('../features/pedidos/PedidosPage'));
 const VentasPage = lazyConReintento(() => import('../features/ventas/VentasPage'));
 const ComprobantesPage = lazyConReintento(() => import('../features/comprobantes/ComprobantesPage'));
 const PagosPage = lazyConReintento(() => import('../features/pagos/PagosPage'));
@@ -44,7 +44,6 @@ const EmpresaPage = lazyConReintento(() => import('../features/configuracion/Emp
 const PersonalizacionPage = lazyConReintento(() => import('../features/configuracion/PersonalizacionPage'));
 const LibroReclamacionesPage = lazyConReintento(() => import('../features/reclamaciones/LibroReclamacionesPage'));
 const ReclamacionesPage = lazyConReintento(() => import('../features/reclamaciones/ReclamacionesPage'));
-const CierreCajaPage = lazyConReintento(() => import('../features/cierre/CierreCajaPage'));
 
 const cargar = (elemento) => <Suspense fallback={<CargandoPantalla />}>{elemento}</Suspense>;
 
@@ -52,7 +51,7 @@ const cargar = (elemento) => <Suspense fallback={<CargandoPantalla />}>{elemento
 // autorizado, RutaPorRol redirige a la portada que le corresponde.
 const para = (roles, elemento) => <RutaPorRol roles={roles}>{cargar(elemento)}</RutaPorRol>;
 
-const AMBOS = [ROLES.ADMINISTRADOR, ROLES.CAJERO];
+const AMBOS = [ROLES.ADMINISTRADOR];
 const SOLO_ADMIN = [ROLES.ADMINISTRADOR];
 
 const router = createBrowserRouter([
@@ -75,7 +74,6 @@ const router = createBrowserRouter([
         ),
         children: [
             // --- Portadas ---
-            { path: '/punto-venta', element: para(AMBOS, <PuntoVentaPage />) },
             { path: '/dashboard', element: para(SOLO_ADMIN, <DashboardPage />) },
 
             // --- Catálogo: el cajero solo consulta ---
@@ -86,10 +84,12 @@ const router = createBrowserRouter([
 
             // --- Operaciones ---
             { path: '/reservas', element: para(AMBOS, <ReservasPage />) },
+            // Logística de las ventas de la app: solo el administrador
+            // mueve el estado de entrega.
+            { path: '/pedidos', element: para(SOLO_ADMIN, <PedidosPage />) },
             { path: '/ventas', element: para(AMBOS, <VentasPage />) },
             { path: '/comprobantes', element: para(AMBOS, <ComprobantesPage />) },
-            { path: '/cierre-caja', element: para(AMBOS, <CierreCajaPage />) },
-            { path: '/pagos', element: para(AMBOS, <PagosPage />) },
+            { path: '/pagos', element: para(SOLO_ADMIN, <PagosPage />) },
 
             // --- Administración y control: solo administrador ---
             { path: '/usuarios', element: para(SOLO_ADMIN, <UsuariosPage />) },
@@ -105,6 +105,9 @@ const router = createBrowserRouter([
             // El envío por agencia ya no se ofrece (solo Lima): la página queda
             // oculta; se redirige para no romper enlaces guardados.
             { path: '/agencias', element: <Navigate to="/" replace /> },
+            // El cierre de caja no tiene endpoint propio: el resumen del día
+            // se ve en el dashboard. Se redirige para no romper enlaces.
+            { path: '/cierre-caja', element: <Navigate to="/dashboard" replace /> },
             // Reportes se integró en el resumen; se conserva la ruta para enlaces guardados.
             { path: '/reportes', element: <Navigate to="/dashboard" replace /> },
         ],

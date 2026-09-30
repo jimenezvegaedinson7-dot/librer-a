@@ -1,13 +1,13 @@
-# Librería — Backend (Express + MySQL)
+# Librería — Backend (Express + PostgreSQL)
 
 API REST de la librería. Incluye el módulo de ventas con **checkout profesional**:
-pago vía PayU (WebCheckout), entrega a domicilio solo para Lima
-(provincias/distritos), envío por agencias courier y recogida en tienda.
+pago vía PayU (WebCheckout) y dos modos de entrega: **domicilio**
+(dirección, distrito y provincia) y **recogida en tienda**.
 
 ## Requisitos
 
 - Node.js 18+
-- MariaDB 10.6+ (se usa `ADD COLUMN IF NOT EXISTS`, presente en MariaDB)
+- PostgreSQL 14+
 
 ## Configuración
 
@@ -15,7 +15,7 @@ Crear `.env` a partir de `.env.example`:
 
 ```
 DB_HOST=localhost
-DB_USER=root
+DB_USER=postgres
 DB_PASSWORD=
 DB_NAME=libreria_db
 PORT=3000
@@ -34,8 +34,9 @@ PAYU_NOTIFICATION_URL=...
 
 ## Puesta en marcha
 
-1. Tener MySQL/MariaDB disponible y crear la base de datos (por defecto
-   `libreria_db`). Aplicar las migraciones de `database/` que correspondan.
+1. Tener PostgreSQL disponible y crear la base de datos (por defecto
+   `libreria_db`). Para una instalación limpia, aplicar
+   `database/schema.sql`, que ya incluye las restricciones de entrega.
 2. Crear el archivo `.env` copiando `.env.example` y rellenar al menos:
    `DB_*`, `JWT_SECRET` y `TWO_FACTOR_ENCRYPTION_KEY` (mínimo 16 caracteres).
 3. Instalar dependencias: `npm install`.
@@ -45,7 +46,10 @@ PAYU_NOTIFICATION_URL=...
 
 ## Migraciones
 
-Se ejecutan con `mysql` o un script Node contra `libreria_db` (Migrate nada).
+Para bases ya existentes se aplican los archivos de `database/migrations/`
+en orden. En `test` se aplican de forma idempotente; en `production` el
+arranque **falla de forma explícita** si una migración pendiente no se ha
+aplicado, para no mutar el esquema a mitad de un deploy.
 
 | Migración | Cambio |
 | --- | --- |
@@ -60,6 +64,20 @@ Se ejecutan con `mysql` o un script Node contra `libreria_db` (Migrate nada).
 | `009_add_external_reference_index.sql` | Índice sobre `ventas.external_reference` |
 | `010_add_distritos_provincias.sql` | Distritos del resto de provincias de Lima |
 | `011_add_estado_entregada.sql` | `entregada` en el ENUM de `ventas.estado` |
+| `027_restringir_tipo_entrega.sql` | Limita `ventas.tipo_entrega` a `domicilio`/`tienda` (NULL sigue admitido para ventas legacy) |
+| `028_coherencia_tipo_estado_entrega.sql` | CHECK de coherencia entre `tipo_entrega` y `estado_entrega` |
+
+## Entregas
+
+- `tipo_entrega` admite solo `domicilio` y `tienda`. `agencia` se retiró del
+  flujo: la API responde `400` y la base lo rechaza.
+- El valor es obligatorio en la creación por API; si una app antigua lo omite,
+  se asume `tienda`.
+- `NULL` solo existe en ventas legacy ya pagadas. Para esas filas, cualquier
+  cambio de estado logístico responde `409` pidiendo corregir los datos.
+- `domicilio`: `pendiente → preparando → en_camino → entregado`
+- `tienda`: `pendiente → preparando → listo_recojo → entregado`
+- `cancelado` es válido desde cualquier estado previo a `entregado`.
 
 ## Datos de envío (solo Lima)
 
@@ -92,25 +110,27 @@ Se ejecutan con `mysql` o un script Node contra `libreria_db` (Migrate nada).
 ```json
 {
   "items": [{ "id_libro": 1, "cantidad": 2 }],
-  "tipo_entrega": "domicilio | agencia | tienda",
+  "tipo_entrega": "domicilio | tienda",
   "direccion": "Av. Jorge Basadre 680, Of. 203",
   "correo_compra": "cliente@correo.com",
   "id_distrito": 31,
-  "id_agencia": 2
+  "idempotencia_clave": "uuid-del-dispositivo"
 }
 ```
 
 El backend:
 
 1. Valida los datos de envío (distrito real de Lima + dirección para
-   `domicilio`; agencia activa para `agencia`).
-2. Calcula `costo_envio` (`tarifa_envio` del distrito o `tarifa_base` de la
-   agencia; `0` para tienda).
+   `domicilio`; nada adicional para `tienda`). Un `tipo_entrega` distinto de
+   `domicilio`/`tienda` —o que no sea texto— responde `400`.
+2. Calcula `costo_envio` (`tarifa_envio` del distrito; `0` para tienda).
 3. Prepara la orden de PayU (WebCheckout firmado) con
    `total = libros + envío`; `checkout_url` abre
    `GET /api/pagos/checkout/:externalReference`, que envía el formulario a PayU.
-4. Crea la venta en estado `pendiente` guardando `costo_envio`, `id_distrito` o
-   `id_agencia`.
+4. Crea la venta en estado `pendiente` guardando `costo_envio` e `id_distrito`.
+
+`idempotencia_clave` es obligatoria: repetir la misma clave con el mismo cuerpo
+devuelve `200` y la venta ya creada, en vez de duplicar el pedido.
 
 Respuesta: `{ data: { id_venta, order_id, checkout_url, status, total,
 costo_envio } }`.
@@ -134,15 +154,17 @@ también `costo_envio` y los nombres de `distrito`, `provincia` y `agencia`
 
 ```bash
 node --check server.js            # sintaxis
+npm test                          # unitarios
+npm run test:integration          # integración (requiere API y base de datos)
 npm run dev                        # levantar el API
 ```
 
-## Seguridad (Fase 1)
+## Seguridad
 
-- `POST /api/ventas` solo para administradores; las ventas nuevas nacen en
-  estado `pendiente` y el admin confirma el cobro con
-  `PUT /api/ventas/:id/estado` (`pendiente -> pagada`).
-- Máquinas de estado validadas también en los modelos (ventas y reservas).
+- `POST /api/ventas` está cerrado (`405`): las ventas nuevas solo nacen desde
+  el checkout de la app, vía PayU. El panel administrativo ya no crea ventas.
+- Máquinas de estado validadas también en los modelos (ventas y reservas), y
+  el estado logístico depende del `tipo_entrega` de cada venta.
 - Rate limiting global (`300/15min`) y estricto en login, registro,
   verificación de email y 2FA.
 - Webhook de PayU con firma verificada (`sign`, MD5 de

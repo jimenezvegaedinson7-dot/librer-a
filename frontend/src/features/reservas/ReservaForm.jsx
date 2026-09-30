@@ -20,19 +20,27 @@ export default function ReservaForm({ onReservaCreada }) {
     const [cargandoLibros, setCargandoLibros] = useState(true);
     const [errorLibros, setErrorLibros] = useState('');
 
-    const cargarLibros = async () => {
-        try {
-            setErrorLibros('');
-            setLibros(await listarLibrosActivos());
-        } catch {
-            setErrorLibros('No se pudieron cargar los libros');
-        } finally {
-            setCargandoLibros(false);
-        }
-    };
-
+    // Catálogo de libros: viene del servidor, así que se sincroniza con un
+    // efecto. `cargandoLibros` ya nace en true, por lo que este efecto no
+    // enciende el spinner, solo espera la respuesta. `vigente` evita fijar
+    // estado si el formulario se desmonta antes de que responda.
     useEffect(() => {
-        cargarLibros();
+        let vigente = true;
+
+        (async () => {
+            try {
+                const datos = await listarLibrosActivos();
+                if (vigente) setLibros(datos);
+            } catch {
+                if (vigente) setErrorLibros('No se pudieron cargar los libros');
+            } finally {
+                if (vigente) setCargandoLibros(false);
+            }
+        })();
+
+        return () => {
+            vigente = false;
+        };
     }, []);
 
     return (

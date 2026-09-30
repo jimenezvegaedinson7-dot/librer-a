@@ -70,5 +70,10 @@ backups/
 # No ignorar el schema de la base de datos
 !backend/database/schema.sql
 
+# Locales del asistente y datos de respaldo manuales (nunca git)
+.claude/
+backend/_test_smtp.js
+ventas.json
+
 # Credenciales locales
 token.txt

@@ -106,9 +106,11 @@ function formatearFecha(fecha) {
     };
 }
 
-function Contador({ titulo, valor, clase }) {
+function Contador({ titulo, valor, clase = '' }) {
     return (
-        <span className="rounded-xl border border-[#ecccc8] bg-[#fbf5f4] px-4 py-2.5 text-sm font-medium text-[#8a2c36] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+        <span
+            className={`rounded-xl border border-[#ecccc8] bg-[#fbf5f4] px-4 py-2.5 text-sm font-medium text-[#8a2c36] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${clase}`}
+        >
             <span className="block text-xs font-semibold opacity-80">{titulo}</span>
             <span className="mt-0.5 block text-xl font-bold text-[#8a2c36]">{valor}</span>
         </span>
@@ -193,9 +195,46 @@ export default function HistorialPage() {
         }
     };
 
+    // Carga inicial. `cargando` ya nace en true, así que este efecto no
+    // enciende el spinner: solo espera la respuesta y entonces actualiza.
+    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
-        cargarHistorial();
+        let vigente = true;
+
+        (async () => {
+            try {
+                const datos = await obtenerHistorial();
+                if (vigente) setHistorial(datos);
+            } catch (err) {
+                if (vigente) {
+                    setError(err.response?.data?.mensaje || 'Error al cargar el historial');
+                }
+            } finally {
+                if (vigente) setCargando(false);
+            }
+        })();
+
+        return () => {
+            vigente = false;
+        };
     }, []);
+
+    // Al cambiar cualquier filtro se vuelve a la primera página: se hace
+    // aquí, en el evento, y no en un efecto que la reinicie tras el render.
+    const alBuscar = (valor) => {
+        setBusqueda(valor);
+        setPaginaActual(1);
+    };
+
+    const alFiltrarModulo = (valor) => {
+        setFiltroModulo(valor);
+        setPaginaActual(1);
+    };
+
+    const alFiltrarOperacion = (valor) => {
+        setFiltroOperacion(valor);
+        setPaginaActual(1);
+    };
 
     const modulos = useMemo(() => {
         const lista = historial.map((item) => item.modulo).filter(Boolean);
@@ -227,16 +266,14 @@ export default function HistorialPage() {
     }, [historial, busqueda, filtroModulo, filtroOperacion]);
 
     const totalPaginas = Math.ceil(historialFiltrado.length / POR_PAGINA);
-    const inicio = (paginaActual - 1) * POR_PAGINA;
+
+    // Si el historial se acorta (filtro) la página se recorta durante el
+    // render en vez de corregirse después con un efecto.
+    const paginaActualEfectiva =
+        totalPaginas > 0 ? Math.min(paginaActual, totalPaginas) : 1;
+
+    const inicio = (paginaActualEfectiva - 1) * POR_PAGINA;
     const historialPaginado = historialFiltrado.slice(inicio, inicio + POR_PAGINA);
-
-    useEffect(() => {
-        setPaginaActual(1);
-    }, [busqueda, filtroModulo, filtroOperacion]);
-
-    useEffect(() => {
-        if (totalPaginas > 0 && paginaActual > totalPaginas) setPaginaActual(totalPaginas);
-    }, [paginaActual, totalPaginas]);
 
     const totalRegistros = historial.length;
     const totalCreaciones = historial.filter((item) => item.tipo_operacion === 'CREAR').length;
@@ -280,12 +317,12 @@ export default function HistorialPage() {
                             <Input
                                 type="text"
                                 value={busqueda}
-                                onChange={(e) => setBusqueda(e.target.value)}
+                                onChange={(e) => alBuscar(e.target.value)}
                                 placeholder="Buscar registro..."
                                 icono={<FaMagnifyingGlass />}
                                 className="pr-8 sm:w-64"
                             />
-                            <Select value={filtroModulo} onChange={(e) => setFiltroModulo(e.target.value)} className="sm:w-52">
+                            <Select value={filtroModulo} onChange={(e) => alFiltrarModulo(e.target.value)} className="sm:w-52">
                                 <option value="todos">Todos los módulos</option>
                                 {modulos.map((modulo) => (
                                     <option key={modulo} value={modulo}>
@@ -293,7 +330,7 @@ export default function HistorialPage() {
                                     </option>
                                 ))}
                             </Select>
-                            <Select value={filtroOperacion} onChange={(e) => setFiltroOperacion(e.target.value)} className="sm:w-56">
+                            <Select value={filtroOperacion} onChange={(e) => alFiltrarOperacion(e.target.value)} className="sm:w-56">
                                 <option value="todos">Todas las acciones</option>
                                 <option value="CREAR">Creados</option>
                                 <option value="ACTUALIZAR">Actualizados / estados</option>
@@ -343,7 +380,7 @@ export default function HistorialPage() {
                     <CardBody className="p-4">
                         <TablaHistorial registros={historialPaginado} />
                     </CardBody>
-                    <Pagination pagina={paginaActual} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
+                    <Pagination pagina={paginaActualEfectiva} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
                 </Card>
             )}
         </div>

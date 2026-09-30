@@ -108,9 +108,37 @@ export default function CategoriaPage() {
         }
     };
 
+    // Carga inicial. `cargando` ya nace en true, así que este efecto no
+    // enciende el spinner: solo espera la respuesta y entonces actualiza.
+    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
-        cargarCategorias();
+        let vigente = true;
+
+        (async () => {
+            try {
+                const datos = await listarCategorias();
+                if (vigente) setCategorias(datos);
+            } catch (err) {
+                if (vigente) {
+                    setError(err.response?.data?.mensaje || 'Error al cargar las categorías');
+                }
+            } finally {
+                if (vigente) setCargando(false);
+            }
+        })();
+
+        return () => {
+            vigente = false;
+        };
     }, []);
+
+    // Al buscar se vuelve a la primera página: se hace aquí, en el
+    // evento, y no en un efecto que la reinicie después del render.
+    const alBuscar = (valor) => {
+        setBusqueda(valor);
+        setPaginaActivas(1);
+        setPaginaInactivas(1);
+    };
 
     const categoriasFiltradas = useMemo(() => {
         const texto = busqueda.toLowerCase().trim();
@@ -126,21 +154,14 @@ export default function CategoriaPage() {
 
     const totalActivas = Math.ceil(categoriasActivas.length / POR_PAGINA);
     const totalInactivas = Math.ceil(categoriasInactivas.length / POR_PAGINA);
-    const activasPaginadas = categoriasActivas.slice((paginaActivas - 1) * POR_PAGINA, paginaActivas * POR_PAGINA);
-    const inactivasPaginadas = categoriasInactivas.slice((paginaInactivas - 1) * POR_PAGINA, paginaInactivas * POR_PAGINA);
 
-    useEffect(() => {
-        setPaginaActivas(1);
-        setPaginaInactivas(1);
-    }, [busqueda]);
+    // Si la lista se acorta (búsqueda o borrado) la página se recorta
+    // durante el render en vez de corregirse después con un efecto.
+    const paginaActivasActual = totalActivas > 0 ? Math.min(paginaActivas, totalActivas) : 1;
+    const paginaInactivasActual = totalInactivas > 0 ? Math.min(paginaInactivas, totalInactivas) : 1;
 
-    useEffect(() => {
-        if (totalActivas > 0 && paginaActivas > totalActivas) setPaginaActivas(totalActivas);
-    }, [paginaActivas, totalActivas]);
-
-    useEffect(() => {
-        if (totalInactivas > 0 && paginaInactivas > totalInactivas) setPaginaInactivas(totalInactivas);
-    }, [paginaInactivas, totalInactivas]);
+    const activasPaginadas = categoriasActivas.slice((paginaActivasActual - 1) * POR_PAGINA, paginaActivasActual * POR_PAGINA);
+    const inactivasPaginadas = categoriasInactivas.slice((paginaInactivasActual - 1) * POR_PAGINA, paginaInactivasActual * POR_PAGINA);
 
     const verCategoria = async (categoria) => {
         try {
@@ -204,7 +225,7 @@ export default function CategoriaPage() {
                                 <Input
                                     type="text"
                                     value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    onChange={(e) => alBuscar(e.target.value)}
                                     placeholder="Buscar categoría..."
                                     icono={<FaMagnifyingGlass />}
                                     className="pr-8 sm:w-72"
@@ -212,7 +233,7 @@ export default function CategoriaPage() {
                                 {busqueda && (
                                     <button
                                         type="button"
-                                        onClick={() => setBusqueda('')}
+                                        onClick={() => alBuscar('')}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-slate-700"
                                     >
                                         <FaXmark />
@@ -253,7 +274,7 @@ export default function CategoriaPage() {
                     subtitulo="Categorías disponibles actualmente"
                     paginadas={activasPaginadas}
                     contador={categoriasActivas.length}
-                    pagina={paginaActivas}
+                    pagina={paginaActivasActual}
                     totalPaginas={totalActivas}
                     onCambiarPagina={setPaginaActivas}
                     color="bg-success-bg text-success"
@@ -269,7 +290,7 @@ export default function CategoriaPage() {
                     subtitulo="Categorías retiradas temporalmente"
                     paginadas={inactivasPaginadas}
                     contador={categoriasInactivas.length}
-                    pagina={paginaInactivas}
+                    pagina={paginaInactivasActual}
                     totalPaginas={totalInactivas}
                     onCambiarPagina={setPaginaInactivas}
                     color="bg-parchment-400 text-slate-700"
@@ -280,7 +301,13 @@ export default function CategoriaPage() {
             )}
 
             <CategoriaViewModal categoria={categoriaVer} abierto={Boolean(categoriaVer)} onCerrar={() => setCategoriaVer(null)} />
-            <CategoriaEditModal categoria={categoriaEditar} abierto={Boolean(categoriaEditar)} onCerrar={() => setCategoriaEditar(null)} onActualizado={categoriaActualizada} />
+            <CategoriaEditModal
+                key={categoriaEditar?.id_categoria}
+                categoria={categoriaEditar}
+                abierto={Boolean(categoriaEditar)}
+                onCerrar={() => setCategoriaEditar(null)}
+                onActualizado={categoriaActualizada}
+            />
             <ConfirmarEliminacion
                 abierto={Boolean(categoriaEliminar)}
                 titulo="Eliminar categoría"

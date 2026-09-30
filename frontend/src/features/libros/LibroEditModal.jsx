@@ -28,24 +28,33 @@ function validarImagen(archivo) {
 export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado }) {
     const [autores, setAutores] = useState([]);
     const [categorias, setCategorias] = useState([]);
-    const [formulario, setFormulario] = useState({
-        titulo: '',
-        isbn: '',
-        descripcion: '',
-        precio: '',
-        stock: 0,
-        id_autor: '',
-        id_categoria: '',
-        estado: '1',
-    });
+    // El formulario, la imagen y los avisos se inicializan desde el libro
+    // editado y el padre da una `key` distinta por libro: al abrir otro
+    // registro React remonta este componente y todo arranca en cero sin
+    // necesidad de un efecto que copie props al estado.
+    const [formulario, setFormulario] = useState(() => ({
+        titulo: libro?.titulo || '',
+        isbn: libro?.isbn || '',
+        descripcion: libro?.descripcion || '',
+        precio: libro?.precio ?? '',
+        stock: libro?.stock ?? 0,
+        id_autor: libro?.id_autor || '',
+        id_categoria: libro?.id_categoria || '',
+        estado: libro?.estado !== undefined && libro?.estado !== null ? String(libro.estado) : '1',
+    }));
     const [imagen, setImagen] = useState(null);
     const [preview, setPreview] = useState(null);
-    const [portadaActual, setPortadaActual] = useState(null);
+    // La portada guardada no se edita aquí, solo se muestra: se deriva del
+    // libro recibido en lugar de guardarse en estado.
+    const portadaActual = libro ? construirUrlArchivo(libro.portada) : null;
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
     const [errores, setErrores] = useState({});
     const inputArchivoRef = useRef(null);
 
+    // Autores y categorías vienen del servidor: esto sí es sincronizar con
+    // un sistema externo, por lo que corresponde a un efecto. El `activo`
+    // evita fijar estado si el modal se cerró mientras cargaban.
     useEffect(() => {
         if (!abierto || !libro) return;
 
@@ -59,23 +68,6 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
             .catch(() => {
                 if (activo) setError('Error al cargar autores o categorías');
             });
-
-        setFormulario({
-            titulo: libro.titulo || '',
-            isbn: libro.isbn || '',
-            descripcion: libro.descripcion || '',
-            precio: libro.precio ?? '',
-            stock: libro.stock ?? 0,
-            id_autor: libro.id_autor || '',
-            id_categoria: libro.id_categoria || '',
-            estado: libro.estado !== undefined && libro.estado !== null ? String(libro.estado) : '1',
-        });
-        setPortadaActual(construirUrlArchivo(libro.portada));
-        setImagen(null);
-        setPreview(null);
-        setError('');
-        setErrores({});
-        if (inputArchivoRef.current) inputArchivoRef.current.value = '';
 
         return () => {
             activo = false;

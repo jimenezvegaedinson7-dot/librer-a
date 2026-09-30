@@ -319,6 +319,7 @@ const [inventarioVer, setInventarioVer] = useState(null);
             <InventarioViewModal inventario={inventarioVer} abierto={Boolean(inventarioVer)} onCerrar={() => setInventarioVer(null)} />
             {puedeEditarStock && (
                 <InventarioEditModal
+                    key={inventarioEditar?.id_inventario}
                     inventario={inventarioEditar}
                     abierto={Boolean(inventarioEditar)}
                     onCerrar={() => setInventarioEditar(null)}

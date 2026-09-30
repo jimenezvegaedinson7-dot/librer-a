@@ -1,4 +1,4 @@
-%% Generado 2026-09-26 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-09-30 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     subgraph React
         R__api_agencias["agencias"]
@@ -12,6 +12,7 @@ flowchart LR
         R__api_inventario["inventario"]
         R__api_libros["libros"]
         R__api_pagos["pagos"]
+        R__api_pedidos["pedidos"]
         R__api_reclamaciones["reclamaciones"]
         R__api_reportes["reportes"]
         R__api_reservas["reservas"]
@@ -56,6 +57,8 @@ flowchart LR
     E__api_pagos(("/api/pagos")) --> C_pago_controller["pago.controller"]
     R__api_pagos --> E__api_pagos
     F__api_pagos --> E__api_pagos
+    E__api_pedidos(("/api/pedidos")) --> C_pedido_controller["pedido.controller"]
+    R__api_pedidos --> E__api_pedidos
     E__api_reclamaciones(("/api/reclamaciones")) --> C_reclamacion_controller["reclamacion.controller"]
     R__api_reclamaciones --> E__api_reclamaciones
     E__api_reportes(("/api/reportes")) --> C_reporte_controller["reporte.controller"]
@@ -87,6 +90,7 @@ flowchart LR
     C_inventario_controller --> DB
     C_libro_controller --> DB
     C_pago_controller --> DB
+    C_pedido_controller --> DB
     C_reclamacion_controller --> DB
     C_reporte_controller --> DB
     C_reserva_controller --> DB

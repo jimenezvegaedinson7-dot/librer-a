@@ -1,6 +1,6 @@
 # Flujos de datos
 
-> Generado desde el código real el 2026-09-26 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-09-30 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arquitectura general
@@ -26,7 +26,7 @@
 `POST /api/auth/solicitar-reseteo` → `usuario.model.js#buscarPorEmail`, `usuario.model.js#guardarCodigoVerificacion` → tablas: usuarios (envía código por correo con `utils/mailer`) → `POST /api/auth/reestablecer-contrasena` → `usuario.model.js#actualizarPassword`, `usuario.model.js#buscarPorEmail`, `usuario.model.js#limpiarCodigoVerificacion` → tablas: usuarios.
 
 ## 3. Venta desde el panel (React, administrador)
-1. `VentaForm` → `POST /api/ventas` → `historial.model.js#crear`, `ubicacion.model.js#esDistritoDeLima`, `ubicacion.model.js#existeDistrito`, `venta.model.js#crear` → tablas: detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, ventas.
+1. `VentaForm` → `POST /api/ventas` → inline (venta.routes.js) → tablas: —.
 2. Cambio de estado: `VentaEstadoModal` → `PUT /api/ventas/:id/estado` → `historial.model.js#crear`, `venta.model.js#actualizarEstado`, `venta.model.js#obtenerPorId` → tablas: agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas (transiciones validadas en `utils/transiciones.js`; al entregar se envía correo).
 3. Comprobante: `EmitirComprobanteModal` → `POST /api/ventas/:id/comprobante` → `comprobante.model.js#generarComprobante` → tablas: comprobantes, ventas; envío: `POST /api/comprobantes/:id/enviar-email` → `comprobante.model.js#obtenerComprobante`, `empresa.model.js#obtenerEmpresa` → tablas: comprobantes, empresa, usuarios, ventas.
 

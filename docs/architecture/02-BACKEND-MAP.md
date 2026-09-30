@@ -1,6 +1,6 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-09-26 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-09-30 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
@@ -9,7 +9,7 @@
 2. `helmet` (sin CSP, CORP cross-origin) → `cors` con lista blanca `FRONTEND_ORIGINS` (por defecto `http://localhost:5173`) → `express.json({ limit: '1mb' })` → `baseLimiter`.
 3. Estáticos: `/uploads` → `backend/uploads` (portadas y fotos locales cuando Cloudinary no está configurado).
 4. Endpoints en línea: `GET /`, `GET /api`, `GET /api/test-db` (JWT + admin), `GET /api/debug-egress` (público).
-5. Montaje de 19 routers bajo `/api/*` → 404 JSON → `error.middleware`.
+5. Montaje de 20 routers bajo `/api/*` → 404 JSON → `error.middleware`.
 6. `iniciarJobs()` (limpieza cada 5 min) y 3 migraciones idempotentes en línea (tabla `favoritos`; columnas `cliente_documento`/`cliente_tipo_documento` en `ventas`; `enviado_por_email`/`fecha_envio_email` en `comprobantes`).
 7. `app.listen(PORT || 3000)`.
 
@@ -30,6 +30,7 @@
 | `/api/inventario` | `routes/inventario.routes.js` |
 | `/api/libros` | `routes/libro.routes.js` |
 | `/api/pagos` | `routes/pago.routes.js` |
+| `/api/pedidos` | `routes/pedido.routes.js` |
 | `/api/reclamaciones` | `routes/reclamacion.routes.js` |
 | `/api/reportes` | `routes/reporte.routes.js` |
 | `/api/reservas` | `routes/reserva.routes.js` |
@@ -227,6 +228,15 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `payu.service.js#crearOrden`<br>`ubicacion.model.js#esDistritoDeLima`<br>`ubicacion.model.js#existeDistrito`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#crear` | detalle_venta, distritos_lima, inventario, libros, provincias_lima, usuarios, ventas |
 | GET | `/api/pagos/:orderId` | JWT | controllers/pago.controller.js#obtenerOrden | `payu.service.js#obtenerOrdenDiagnostico`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#actualizarDatosPago`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#buscarPorPayuOrderId`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
 
+### /api/pedidos
+
+| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
+|---|---|---|---|---|---|
+| GET | `/api/pedidos` | JWT + verificarPanel | controllers/pedido.controller.js#obtenerPedidos | `venta.model.js#obtenerConFiltros` | agencias_courier, comprobantes, distritos_lima, provincias_lima, usuarios, ventas |
+| GET | `/api/pedidos/usuario/:id_usuario` | JWT | controllers/pedido.controller.js#obtenerMisPedidos | `venta.model.js#obtenerPorUsuario` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, ventas |
+| GET | `/api/pedidos/:id` | JWT + verificarPanel | controllers/pedido.controller.js#obtenerPedido | `venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, usuarios, ventas |
+| PUT | `/api/pedidos/:id/estado` | JWT + verificarPanel | controllers/pedido.controller.js#actualizarEstadoPedido | `historial.model.js#crear`<br>`venta.model.js#actualizarEstadoEntrega`<br>`venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, libros, provincias_lima, usuarios, ventas |
+
 ### /api/reclamaciones
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
@@ -243,8 +253,6 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 |---|---|---|---|---|---|
 | GET | `/api/reportes/ventas-por-estado` | JWT + verificarPanel | controllers/reporte.controller.js#obtenerVentasPorEstado | `reporte.model.js#obtenerVentasPorEstado` | ventas |
 | GET | `/api/reportes/reservas-por-estado` | JWT + verificarPanel | controllers/reporte.controller.js#obtenerReservasPorEstado | `reporte.model.js#obtenerReservasPorEstado` | reservas |
-| GET | `/api/reportes/stock-bajo` | JWT + verificarPanel | controllers/reporte.controller.js#obtenerStockBajo | `reporte.model.js#obtenerStockBajo` | inventario, libros |
-| GET | `/api/reportes/cierre-caja` | JWT + verificarPanel | controllers/reporte.controller.js#obtenerCierreCaja | `reporte.model.js#obtenerCierreCaja` | comprobantes, usuarios, ventas |
 | GET | `/api/reportes/resumen` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerResumenGeneral | `reporte.model.js#obtenerResumenGeneral` | autores, categorias, inventario, libros, reservas, usuarios, ventas |
 | GET | `/api/reportes/libros-mas-vendidos` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerLibrosMasVendidos | `reporte.model.js#obtenerLibrosMasVendidos` | detalle_venta, libros, ventas |
 | GET | `/api/reportes/ventas-por-mes` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerVentasPorMes | `reporte.model.js#obtenerVentasPorMes` | ventas |
@@ -287,7 +295,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/ventas/mis-ventas` | JWT | controllers/venta.controller.js#obtenerMisVentas | `venta.model.js#obtenerPorUsuario` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, ventas |
-| POST | `/api/ventas` | JWT + verificarPanel | controllers/venta.controller.js#crearVenta | `historial.model.js#crear`<br>`ubicacion.model.js#esDistritoDeLima`<br>`ubicacion.model.js#existeDistrito`<br>`venta.model.js#crear` | detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, ventas |
+| POST | `/api/ventas` | JWT | inline (venta.routes.js) | — | — |
 | GET | `/api/ventas` | JWT + verificarPanel | controllers/venta.controller.js#obtenerVentas | `venta.model.js#obtenerTodos` | agencias_courier, comprobantes, distritos_lima, provincias_lima, usuarios, ventas |
 | GET | `/api/ventas/:id` | JWT | controllers/venta.controller.js#obtenerVenta | `venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, usuarios, ventas |
 | GET | `/api/ventas/:id/pago` | JWT | controllers/venta.controller.js#obtenerPagoVenta | `venta.model.js#obtenerDatosPago` | ventas |

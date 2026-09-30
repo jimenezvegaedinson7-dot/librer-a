@@ -1,5 +1,5 @@
 import { useAuth } from './AuthContext';
-import { esAdministrador, esCajero } from '../../lib/roles';
+import { esAdministrador } from '../../lib/roles';
 
 // ============================================================
 // PERMISOS DE INTERFAZ
@@ -16,14 +16,13 @@ export function useRol() {
     return {
         rol,
         esAdmin,
-        esCajero: esCajero(rol),
 
-        // Catálogo, inventario y acciones sensibles: exclusiva del admin.
-        puedeEditarCatalogo: esAdmin,
-        puedeEditarStock: esAdmin,
-        puedeReembolsar: esAdmin,
-        puedeAnularComprobantes: esAdmin,
-        puedeRegistrarSunat: esAdmin,
+        // Acciones sensibles: exclusiva del admin.
+        podeEditarCatalogo: esAdmin,
+        podeEditarStock: esAdmin,
+        podeReembolsar: esAdmin,
+        podeAnularComprobantes: esAdmin,
+        podeRegistrarSunat: esAdmin,
     };
 }
 

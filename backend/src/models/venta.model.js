@@ -1,5 +1,11 @@
 const pool = require('../config/database');
-const { VENTA, permitirTransicion } = require('../utils/transiciones');
+const {
+    VENTA,
+    permitirTransicion,
+    permitirTransicionEntrega,
+    esTipoEntregaValido,
+    TIPOS_ENTREGA
+} = require('../utils/transiciones');
 const { consultarEstadoOrdenPayu } = require('../utils/payuStatus');
 const { registrarMovimiento } = require('./inventario.model');
 
@@ -18,6 +24,7 @@ const obtenerTodos = async () => {
             v.total,
             v.costo_envio,
             v.estado,
+            v.estado_entrega,
             v.tipo_entrega,
             v.direccion,
             v.referencia,
@@ -78,6 +85,7 @@ const obtenerPorId = async (id) => {
             v.total,
             v.costo_envio,
             v.estado,
+            v.estado_entrega,
             v.tipo_entrega,
             v.direccion,
             v.referencia,
@@ -162,6 +170,7 @@ const obtenerPorUsuario = async (id_usuario) => {
             v.total,
             v.costo_envio,
             v.estado,
+            v.estado_entrega,
             v.tipo_entrega,
             v.direccion,
             v.referencia,
@@ -255,6 +264,89 @@ const obtenerPorUsuario = async (id_usuario) => {
                 venta.id_venta
             ) || []
     }));
+};
+
+// ========================================
+// OBTENER VENTAS CON FILTROS (módulo PEDIDOS)
+// Devuelve las ventas con mismos JOINs que obtenerTodos pero
+// aplicando filtros opcionales:
+//   tipo_entrega   -> tipo de entrega ('domicilio' | 'tienda')
+//   estado_entrega -> estado logístico del pedido
+// ========================================
+const obtenerConFiltros = async (filtros = {}) => {
+    const condiciones = [];
+    const valores = [];
+
+    if (filtros.tipo_entrega) {
+        condiciones.push('v.tipo_entrega = ?');
+        valores.push(filtros.tipo_entrega);
+    }
+
+    if (filtros.estado_entrega) {
+        condiciones.push('v.estado_entrega = ?');
+        valores.push(filtros.estado_entrega);
+    }
+
+    const where = condiciones.length > 0
+        ? `WHERE ${condiciones.join(' AND ')}`
+        : '';
+
+    const [rows] = await pool.query(`
+        SELECT
+            v.id_venta,
+            v.id_usuario,
+            u.nombre AS nombre_usuario,
+            u.apellido AS apellido_usuario,
+            u.email AS correo_usuario,
+            v.fecha_venta,
+            v.total,
+            v.costo_envio,
+            v.estado,
+            v.estado_entrega,
+            v.tipo_entrega,
+            v.direccion,
+            v.referencia,
+            v.id_distrito,
+            v.id_agencia,
+            d.nombre AS distrito,
+            p.nombre AS provincia,
+            a.nombre AS agencia,
+            v.correo_compra,
+            v.external_reference,
+            v.payu_order_id,
+            v.payu_payment_id,
+            v.payu_payment_status,
+            v.payu_payer_email,
+            v.cliente_documento,
+            v.cliente_tipo_documento,
+            v.cliente_nombre,
+            v.origen,
+            v.metodo_pago,
+            v.referencia_pago,
+            v.fecha_pago,
+            v.id_reserva,
+            v.motivo_reembolso,
+            v.fecha_reembolso,
+            EXISTS (
+                SELECT 1
+                FROM comprobantes cc
+                WHERE cc.id_venta = v.id_venta
+                  AND cc.estado = 'emitido'
+            ) AS tiene_comprobante
+        FROM ventas v
+        INNER JOIN usuarios u
+            ON v.id_usuario = u.id_usuario
+        LEFT JOIN distritos_lima d
+            ON v.id_distrito = d.id_distrito
+        LEFT JOIN provincias_lima p
+            ON d.id_provincia = p.id_provincia
+        LEFT JOIN agencias_courier a
+            ON v.id_agencia = a.id_agencia
+        ${where}
+        ORDER BY v.id_venta DESC
+    `, valores);
+
+    return rows;
 };
 
 // ========================================
@@ -362,6 +454,40 @@ const crear = async (venta, conexionExterna = null) => {
                 'Los datos de la venta no son válidos'
             );
         }
+
+        // ========================================
+        // NORMALIZAR TIPO DE ENTREGA
+        // ========================================
+        // Este model se puede llamar directo (scripts, tests, jobs), no
+        // solo por el controlador HTTP. Guardar el valor tal cual
+        // trusting que alguien ya lo validó hacía que un tipo inválido
+        // terminara en un 23514 de la base, es decir un error opaco.
+        // Un tipo explícito e inválido se rechaza aquí con un mensaje
+        // claro; ausente significa NULL (venta legacy, admisible).
+        // Un valor no textual (número, booleano, array) es un bug de quien
+        // llama, no una ausencia: si se cuela, PostgreSQL lo convertía
+        // silenciosamente o devolvía un 23514 opaco.
+        const tipoAusente =
+            tipo_entrega === undefined ||
+            tipo_entrega === null ||
+            tipo_entrega === '';
+
+        if (!tipoAusente && typeof tipo_entrega !== 'string') {
+            throw new Error(
+                `El tipo de entrega debe ser texto. Valor recibido: ${JSON.stringify(tipo_entrega)}. Usa ${TIPOS_ENTREGA.join(' o ')}.`
+            );
+        }
+
+        const tipoSolicitado =
+            tipoAusente ? '' : tipo_entrega.trim();
+
+        if (tipoSolicitado && !esTipoEntregaValido(tipoSolicitado)) {
+            throw new Error(
+                `El tipo de entrega "${tipoSolicitado}" no existe. Usa ${TIPOS_ENTREGA.join(' o ')}.`
+            );
+        }
+
+        const tipoEntregaVenta = tipoSolicitado || null;
 
         // ========================================
         // AGRUPAR LIBROS REPETIDOS
@@ -549,7 +675,7 @@ const crear = async (venta, conexionExterna = null) => {
                 id_usuario,
                 total,
                 estado,
-                tipo_entrega || null,
+                tipoEntregaVenta,
                 direccion || null,
                 referencia || null,
                 correo_compra || null,
@@ -847,6 +973,111 @@ const actualizarEstado = async (
             await connection.query(`
                 UPDATE ventas
                 SET estado = ?
+                WHERE id_venta = ?
+            `, [
+                nuevoEstado,
+                id
+            ]);
+
+        await connection.commit();
+
+        return resultado.affectedRows;
+
+    } catch (error) {
+        await connection.rollback();
+
+        throw error;
+
+    } finally {
+        connection.release();
+    }
+};
+
+// ========================================
+// ACTUALIZAR ESTADO DE ENTREGA (módulo PEDIDOS)
+// ========================================
+// Actualiza SOLO la columna estado_entrega (estado logístico:
+// pendiente → preparando → listo_recojo/en_camino → entregado).
+// NO toca el estado comercial de la venta (`estado`), ni devuelve
+// stock ni registra movimientos: es un cambio operativo del envío.
+const actualizarEstadoEntrega = async (
+    id,
+    nuevoEstado
+) => {
+    const connection =
+        await pool.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        const [ventas] =
+            await connection.query(`
+                SELECT
+                    id_venta,
+                    estado_entrega,
+                    tipo_entrega
+                FROM ventas
+                WHERE id_venta = ?
+                FOR UPDATE
+            `, [id]);
+
+        if (ventas.length === 0) {
+            await connection.rollback();
+
+            return 0;
+        }
+
+        const venta =
+            ventas[0];
+
+        // ========================================
+        // MISMO ESTADO
+        // ========================================
+        if (
+            venta.estado_entrega ===
+            nuevoEstado
+        ) {
+            throw new Error(
+                `El pedido ya se encuentra en estado "${nuevoEstado}"`
+            );
+        }
+
+        // ========================================
+        // TIPO DE ENTREGA LEGACY
+        // ========================================
+        // Este model es la última línea antes de la base, así que valida
+        // por construcción y no por confianza en el llamador. Sin esto,
+        // un pedido con tipo inválido llegaría al UPDATE y la base lo
+        // rechazaría con 23514, es decir un 500 en vez de un error claro.
+        if (!esTipoEntregaValido(venta.tipo_entrega)) {
+            throw new Error(
+                'El pedido contiene un tipo de entrega no compatible con el flujo actual. Requiere corrección de datos antes de continuar.'
+            );
+        }
+
+        // ========================================
+        // MÁQUINA DE ESTADOS DE ENTREGA
+        // ========================================
+        // Consciente del tipo: 'listo_recojo' solo existe para recojo en
+        // tienda y 'en_camino' solo para envío a domicilio. Coincide con
+        // el CHECK ventas_tipo_estado_entrega_check de la base.
+        const puedeCambiar =
+            permitirTransicionEntrega(
+                venta.tipo_entrega,
+                venta.estado_entrega,
+                nuevoEstado
+            );
+
+        if (!puedeCambiar) {
+            throw new Error(
+                `No se puede cambiar el pedido de "${venta.estado_entrega}" a "${nuevoEstado}"`
+            );
+        }
+
+        const [resultado] =
+            await connection.query(`
+                UPDATE ventas
+                SET estado_entrega = ?
                 WHERE id_venta = ?
             `, [
                 nuevoEstado,
@@ -1311,11 +1542,13 @@ module.exports = {
     obtenerTodos,
     obtenerPorId,
     obtenerPorUsuario,
+    obtenerConFiltros,
     buscarPorReferenciaExterna,
     buscarPorPayuOrderId,
     crear,
     actualizarDatosPago,
     actualizarEstado,
+    actualizarEstadoEntrega,
     agruparDetalles,
     obtenerDatosPago,
     listarPagosAdmin,

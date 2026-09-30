@@ -68,11 +68,9 @@ const verificarRol = (...rolesPermitidos) => {
     return middleware;
 };
 
-// Atajo de solo lectura para el panel: administrador y cajero.
-const verificarPanel = verificarRol(
-    ROLES.ADMINISTRADOR,
-    ROLES.CAJERO
-);
+// Atajo para el panel: SOLO administrador (contrato actual: el
+// cajero y el cliente reciben 403 en todas las rutas del panel).
+const verificarPanel = verificarRol(ROLES.ADMINISTRADOR);
 
 module.exports = verificarRol;
 module.exports.verificarRol = verificarRol;

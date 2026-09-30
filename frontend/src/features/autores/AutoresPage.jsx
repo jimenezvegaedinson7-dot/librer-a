@@ -108,9 +108,37 @@ export default function AutoresPage() {
         }
     };
 
+    // Carga inicial. `cargando` ya nace en true, así que este efecto no
+    // enciende el spinner: solo espera la respuesta y entonces actualiza.
+    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
-        cargarAutores();
+        let vigente = true;
+
+        (async () => {
+            try {
+                const datos = await listarAutores();
+                if (vigente) setAutores(datos);
+            } catch (err) {
+                if (vigente) {
+                    setError(err.response?.data?.mensaje || 'Error al cargar los autores');
+                }
+            } finally {
+                if (vigente) setCargando(false);
+            }
+        })();
+
+        return () => {
+            vigente = false;
+        };
     }, []);
+
+    // Al buscar se vuelve a la primera página: se hace aquí, en el
+    // evento, y no en un efecto que la reinicie después del render.
+    const alBuscar = (valor) => {
+        setBusqueda(valor);
+        setPaginaActivos(1);
+        setPaginaInactivos(1);
+    };
 
     const autoresFiltrados = useMemo(() => {
         const texto = busqueda.toLowerCase().trim();
@@ -128,21 +156,14 @@ export default function AutoresPage() {
 
     const totalActivos = Math.ceil(autoresActivos.length / POR_PAGINA);
     const totalInactivos = Math.ceil(autoresInactivos.length / POR_PAGINA);
-    const activosPaginados = autoresActivos.slice((paginaActivos - 1) * POR_PAGINA, paginaActivos * POR_PAGINA);
-    const inactivosPaginados = autoresInactivos.slice((paginaInactivos - 1) * POR_PAGINA, paginaInactivos * POR_PAGINA);
 
-    useEffect(() => {
-        setPaginaActivos(1);
-        setPaginaInactivos(1);
-    }, [busqueda]);
+    // Si la lista se acorta (búsqueda o borrado) la página se recorta
+    // durante el render en vez de corregirse después con un efecto.
+    const paginaActivosActual = totalActivos > 0 ? Math.min(paginaActivos, totalActivos) : 1;
+    const paginaInactivosActual = totalInactivos > 0 ? Math.min(paginaInactivos, totalInactivos) : 1;
 
-    useEffect(() => {
-        if (totalActivos > 0 && paginaActivos > totalActivos) setPaginaActivos(totalActivos);
-    }, [paginaActivos, totalActivos]);
-
-    useEffect(() => {
-        if (totalInactivos > 0 && paginaInactivos > totalInactivos) setPaginaInactivos(totalInactivos);
-    }, [paginaInactivos, totalInactivos]);
+    const activosPaginados = autoresActivos.slice((paginaActivosActual - 1) * POR_PAGINA, paginaActivosActual * POR_PAGINA);
+    const inactivosPaginados = autoresInactivos.slice((paginaInactivosActual - 1) * POR_PAGINA, paginaInactivosActual * POR_PAGINA);
 
     const verAutor = async (autor) => {
         try {
@@ -206,7 +227,7 @@ export default function AutoresPage() {
                                 <Input
                                     type="text"
                                     value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    onChange={(e) => alBuscar(e.target.value)}
                                     placeholder="Buscar autor..."
                                     icono={<FaMagnifyingGlass />}
                                     className="pr-8 sm:w-72"
@@ -214,7 +235,7 @@ export default function AutoresPage() {
                                 {busqueda && (
                                     <button
                                         type="button"
-                                        onClick={() => setBusqueda('')}
+                                        onClick={() => alBuscar('')}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-slate-700"
                                     >
                                         <FaXmark />
@@ -247,7 +268,7 @@ export default function AutoresPage() {
                     subtitulo="Autores disponibles actualmente"
                     paginados={activosPaginados}
                     contador={autoresActivos.length}
-                    pagina={paginaActivos}
+                    pagina={paginaActivosActual}
                     totalPaginas={totalActivos}
                     onCambiarPagina={setPaginaActivos}
                     color="bg-success-bg text-success"
@@ -263,7 +284,7 @@ export default function AutoresPage() {
                     subtitulo="Autores retirados temporalmente"
                     paginados={inactivosPaginados}
                     contador={autoresInactivos.length}
-                    pagina={paginaInactivos}
+                    pagina={paginaInactivosActual}
                     totalPaginas={totalInactivos}
                     onCambiarPagina={setPaginaInactivos}
                     color="bg-parchment-400 text-slate-700"
@@ -274,7 +295,13 @@ export default function AutoresPage() {
             )}
 
             <AutorViewModal autor={autorVer} abierto={Boolean(autorVer)} onCerrar={() => setAutorVer(null)} />
-            <AutorEditModal autor={autorEditar} abierto={Boolean(autorEditar)} onCerrar={() => setAutorEditar(null)} onActualizado={autorActualizado} />
+            <AutorEditModal
+                key={autorEditar?.id_autor}
+                autor={autorEditar}
+                abierto={Boolean(autorEditar)}
+                onCerrar={() => setAutorEditar(null)}
+                onActualizado={autorActualizado}
+            />
             <ConfirmarEliminacion
                 abierto={Boolean(autorEliminar)}
                 titulo="Eliminar autor"

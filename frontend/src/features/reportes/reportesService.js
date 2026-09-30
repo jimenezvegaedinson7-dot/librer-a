@@ -20,8 +20,9 @@ export async function obtenerReservasPorEstado() {
     return Array.isArray(res?.data) ? res.data : [];
 }
 
+// Stock bajo vive en el módulo de inventario, no en el de reportes.
 export async function obtenerStockBajo() {
-    const res = await client.get('/reportes/stock-bajo');
+    const res = await client.get('/inventario/stock-bajo');
     return Array.isArray(res?.data) ? res.data : [];
 }
 
@@ -37,14 +38,5 @@ export async function obtenerVentasPorDia() {
 
 export async function obtenerIndicadoresVentas() {
     const res = await client.get('/reportes/indicadores-ventas');
-    return res?.data ?? {};
-}
-
-// Cierre del día. Es el único indicador de caja que necesita el punto
-// de venta: en lugar de /reportes/indicadores-ventas (solo admin).
-export async function obtenerCierreCaja(fecha) {
-    const res = await client.get('/reportes/cierre-caja', {
-        params: fecha ? { fecha } : undefined,
-    });
     return res?.data ?? {};
 }

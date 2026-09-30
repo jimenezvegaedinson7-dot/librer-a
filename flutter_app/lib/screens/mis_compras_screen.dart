@@ -241,6 +241,9 @@ class _VentaTile extends StatelessWidget {
     }
   }
 
+  /// Etiqueta de la entrega tal como se realizó. `agencia` no se puede elegir
+  /// al comprar (el checkout solo ofrece domicilio y tienda); solo aparece
+  /// aquí para poder identificar pedidos antiguos de la base.
   String? get _entregaLabel {
     switch (venta.tipoEntrega?.toLowerCase().trim()) {
       case 'domicilio':

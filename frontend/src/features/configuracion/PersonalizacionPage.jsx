@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { RotateCcw, Check, Palette, Loader2 } from 'lucide-react';
 
-import { useTema, COLORES, ZONAS_IDS, ZONAS_DEFAULT } from '../../components/providers/ThemeContext';
+import { useTema, COLORES, ZONAS_IDS, ZONAS_DEFAULT } from '../../components/providers/tema';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
@@ -67,9 +67,19 @@ function ModalAplicar({ colorId, abierto, onCerrar, onAplicar }) {
     const [aplicando, setAplicando] = useState(false);
     const [aplicado, setAplicado] = useState(false);
 
-    useEffect(() => {
-        if (abierto) { setZonas([...ZONAS_DEFAULT]); setAplicando(false); setAplicado(false); }
-    }, [abierto]);
+    // Al abrir se marcan todas las zonas. Se ajusta durante el render para
+    // que el modal ya salga con la selección completa, sin un efecto que lo
+    // repintara después y borrara lo que el usuario acababa de desmarcar.
+    const [abiertoAnterior, setAbiertoAnterior] = useState(abierto);
+
+    if (abierto !== abiertoAnterior) {
+        setAbiertoAnterior(abierto);
+        if (abierto) {
+            setZonas([...ZONAS_DEFAULT]);
+            setAplicando(false);
+            setAplicado(false);
+        }
+    }
 
     if (!abierto) return null;
 
@@ -134,7 +144,16 @@ function ModalAplicar({ colorId, abierto, onCerrar, onAplicar }) {
 
 function ModalRestablecer({ abierto, onCerrar, onRestablecer, onRestablecerTodo }) {
     const [zonas, setZonas] = useState([]);
-    useEffect(() => { if (abierto) setZonas([]); }, [abierto]);
+
+    // Igual que en ModalAplicar: la selección arranca vacía en cada apertura,
+    // ajustada en el render para no depender de un efecto en cascada.
+    const [abiertoAnterior, setAbiertoAnterior] = useState(abierto);
+
+    if (abierto !== abiertoAnterior) {
+        setAbiertoAnterior(abierto);
+        if (abierto) setZonas([]);
+    }
+
     if (!abierto) return null;
 
     return (

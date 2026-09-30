@@ -27,7 +27,7 @@ const MENSAJE_FUERA_DE_PANEL = 'Este panel es solo para personal interno (admini
 
 export default function LoginPage() {
     const navigate = useNavigate();
-    const { autenticado, usuario, iniciarSesion } = useAuth();
+    const { autenticado, iniciarSesion } = useAuth();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -55,7 +55,7 @@ export default function LoginPage() {
 
     const reducirMovimiento = useReducedMotion();
 
-    if (autenticado) return <Navigate to={inicioPorRol(usuario?.rol)} replace />;
+    if (autenticado) return <Navigate to={inicioPorRol()} replace />;
 
     // --- Login handlers ---
     const enviar = async (e) => {
@@ -81,7 +81,7 @@ export default function LoginPage() {
             }
 
             iniciarSesion(token, data);
-            navigate(inicioPorRol(data.rol));
+            navigate(inicioPorRol());
         } catch (err) {
             if (
                 err.response?.status === 403 &&
@@ -122,7 +122,7 @@ export default function LoginPage() {
             }
 
             iniciarSesion(token, data);
-            navigate(inicioPorRol(data.rol));
+            navigate(inicioPorRol());
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Código incorrecto o expirado');
         } finally {
@@ -184,7 +184,7 @@ export default function LoginPage() {
             }
 
             iniciarSesion(respuesta.token, respuesta.data);
-            navigate(inicioPorRol(respuesta.data.rol));
+            navigate(inicioPorRol());
         } catch (err) {
             await pausa;
             if (err.response?.status === 403 && /verificar tu correo/i.test(err.response?.data?.mensaje || '')) {

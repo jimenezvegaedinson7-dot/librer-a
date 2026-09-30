@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { FaLock, FaTriangleExclamation, FaTrash } from 'react-icons/fa6';
 
@@ -17,13 +17,19 @@ export function ConfirmarEliminacion({
 }) {
     const [password, setPassword] = useState('');
     const [mostrarPassword, setMostrarPassword] = useState(false);
+    const [abiertoAnterior, setAbiertoAnterior] = useState(abierto);
 
-    useEffect(() => {
+    // Al abrir el diálogo la contraseña arranca vacía y oculta. Se ajusta
+    // durante el render en vez de en un efecto: React descarta este render y
+    // vuelve a dibujar de inmediato con el estado ya corregido, así no hay un
+    // render intermedio con la contraseña del intento anterior.
+    if (abierto !== abiertoAnterior) {
+        setAbiertoAnterior(abierto);
         if (abierto) {
             setPassword('');
             setMostrarPassword(false);
         }
-    }, [abierto]);
+    }
 
     if (!abierto) return null;
 

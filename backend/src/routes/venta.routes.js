@@ -6,7 +6,6 @@ const {
     obtenerVentas,
     obtenerVenta,
     obtenerMisVentas,
-    crearVenta,
     actualizarEstadoVenta,
     obtenerPagoVenta,
     reembolsarVenta
@@ -38,12 +37,32 @@ router.get(
     obtenerMisVentas
 );
 
-// Crear venta de mostrador (administrador o cajero: confirma el cobro)
-router.post(
-    '/',
-    verificarPanel,
-    crearVenta
-);
+// ========================================
+// VENTA DE MOSTRADOR: RETIRADA
+// ----------------------------------------
+// El local es 100% virtual: no hay caja, ni punto de venta, ni venta
+// de mostrador. El administrador NO puede crear ventas ni falsificar
+// el origen 'app'.
+//
+// Toda venta nueva nace del flujo real: APP -> PayU -> venta online
+// (ver src/controllers/pago.controller.js, que es el único que crea
+// ventas desde la aplicación).
+//
+// Las ventas históricas con origen 'panel' o 'reserva' se conservan
+// intactas y siguen visibles para consulta, comprobante y reembolso.
+//
+// Se responde 405 y no 404 a propósito: la ruta no existe, pero el
+// método se documenta para que quede claro que es una retirada
+// deliberada y no un descuido.
+// ========================================
+router.post('/', (req, res) => {
+    res.status(405).json({
+        success: false,
+        mensaje:
+            'La creación manual de ventas está deshabilitada. ' +
+            'Las ventas se generan únicamente desde la app con pago PayU.'
+    });
+});
 
 // ========================================
 // ADMINISTRADOR Y CAJERO

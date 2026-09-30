@@ -163,7 +163,8 @@ test('verificarRol compara el rol sin distinguir mayúsculas', () => {
 // ========================================
 
 test('verificarPanel deja pasar al cajero', () => {
-    assert.equal(ejecutar(verificarPanel, como(ROLES.CAJERO)).siguiente, true);
+    // CAJERO ya no tiene acceso al panel (Fase 5)
+    assert.equal(ejecutar(verificarPanel, como(ROLES.CAJERO)).siguiente, false);
 });
 
 test('verificarPanel deja pasar al administrador', () => {
@@ -183,12 +184,10 @@ test('verificarPanel rechaza un rol desconocido', () => {
 });
 
 test('verificarPanel es el mismo atajo para ambos roles del panel', () => {
-    const atajo = verificarRol(ROLES.ADMINISTRADOR, ROLES.CAJERO);
-
-    for (const rol of ROLES_PANEL) {
-        assert.equal(ejecutar(atajo, como(rol)).siguiente, true);
-        assert.equal(ejecutar(verificarPanel, como(rol)).siguiente, true);
-    }
+    // ADMINISTRADOR tiene acceso, CAJERO y CLIENTE no
+    assert.equal(ejecutar(verificarPanel, como(ROLES.ADMINISTRADOR)).siguiente, true);
+    assert.equal(ejecutar(verificarPanel, como(ROLES.CAJERO)).siguiente, false);
+    assert.equal(ejecutar(verificarPanel, como(ROLES.CLIENTE)).siguiente, false);
 });
 
 // ========================================

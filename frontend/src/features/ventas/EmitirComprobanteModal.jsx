@@ -33,46 +33,74 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
     const [empresa, setEmpresa] = useState(null);
     const [cargandoEmpresa, setCargandoEmpresa] = useState(false);
 
+    // Datos del emisor: vienen del servidor, así que se sincronizan con un
+    // efecto. `vigente` evita fijar estado si el modal se cerró antes de que
+    // la empresa respondiera.
     useEffect(() => {
         if (!abierto) return undefined;
 
-        setTipo(tipoInicial);
-        setErrorDocumento('');
-        setErrorNombre('');
-        setErrorEmail('');
-        setEjecutando(false);
+        let vigente = true;
 
-        if (venta) {
+        obtenerEmpresa()
+            .then((emp) => {
+                if (vigente) setEmpresa(emp);
+            })
+            .catch(() => {
+                if (vigente) setEmpresa(null);
+            })
+            .finally(() => {
+                if (vigente) setCargandoEmpresa(false);
+            });
+
+        return () => {
+            vigente = false;
+        };
+    }, [abierto]);
+
+    // El formulario se prepara de los datos de la venta al abrir el modal. Se
+    // ajusta durante el render en vez de en un efecto, para que el modal
+    // muestre el cliente y el documento ya cargados en el mismo pintado.
+    const [abiertoAnterior, setAbiertoAnterior] = useState(abierto);
+    const [ventaAnterior, setVentaAnterior] = useState(venta);
+    const [tipoInicialAnterior, setTipoInicialAnterior] = useState(tipoInicial);
+
+    const debePreparar =
+        abiertoAnterior !== abierto ||
+        (abierto && (ventaAnterior !== venta || tipoInicialAnterior !== tipoInicial));
+
+    if (debePreparar) {
+        setAbiertoAnterior(abierto);
+        setVentaAnterior(venta);
+        setTipoInicialAnterior(tipoInicial);
+
+        if (abierto) {
+            setTipo(tipoInicial);
+            setErrorDocumento('');
+            setErrorNombre('');
+            setErrorEmail('');
+            setEjecutando(false);
+
+            // El emisor se vuelve a pedir en cada apertura; se marca como
+            // pendiente aquí para que el botón no espere al efecto.
+            setEmpresa(null);
+            setCargandoEmpresa(true);
+
             // En una venta de mostrador la cuenta de la venta es la del
             // administrador que la registró: el cliente es el anotado en la venta.
-            const esMostrador = venta.origen === 'panel';
+            const esMostrador = venta?.origen === 'panel';
             const nombreCuenta = esMostrador
                 ? ''
-                : [venta.nombre_usuario, venta.apellido_usuario].filter(Boolean).join(' ').trim();
-            setClienteNombre(venta.cliente_nombre || nombreCuenta);
-            setClienteEmail(venta.correo_compra || (esMostrador ? '' : venta.correo_usuario) || '');
+                : [venta?.nombre_usuario, venta?.apellido_usuario].filter(Boolean).join(' ').trim();
 
-            if (tipoInicial === 'factura') {
-                setTipoDocumento('RUC');
-                setDocumento(venta.cliente_documento || '');
-            } else {
-                setTipoDocumento(venta.cliente_tipo_documento || 'DNI');
-                setDocumento(venta.cliente_documento || '');
-            }
-        } else {
-            setClienteNombre('');
-            setClienteEmail('');
-            setDocumento('');
+            setClienteNombre(venta?.cliente_nombre || nombreCuenta);
+            setClienteEmail(venta?.correo_compra || (esMostrador ? '' : venta?.correo_usuario) || '');
+
+            // El número de documento es el mismo en ambos casos; lo que cambia
+            // con el tipo de comprobante es la etiqueta del tipo (RUC o DNI).
+            setTipoDocumento(tipoInicial === 'factura' ? 'RUC' : venta?.cliente_tipo_documento || 'DNI');
+            setDocumento(venta?.cliente_documento || '');
         }
-
-        setCargandoEmpresa(true);
-        obtenerEmpresa()
-            .then((emp) => setEmpresa(emp))
-            .catch(() => setEmpresa(null))
-            .finally(() => setCargandoEmpresa(false));
-
-        return undefined;
-    }, [abierto, tipoInicial, venta]);
+    }
 
     const cambiarTipo = (nuevoTipo) => {
         setTipo(nuevoTipo);
