@@ -145,7 +145,7 @@ export default function LibroForm({ onLibroCreado }) {
                 icono={<FaBookOpen />}
                 acciones={
                     <span className="rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-semibold text-slate-600">
-                        Nuevo registro
+                        Nuevo libro
                     </span>
                 }
             />

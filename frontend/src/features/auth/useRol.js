@@ -17,12 +17,12 @@ export function useRol() {
         rol,
         esAdmin,
 
-        // Acciones sensibles: exclusiva del admin.
-        podeEditarCatalogo: esAdmin,
-        podeEditarStock: esAdmin,
-        podeReembolsar: esAdmin,
-        podeAnularComprobantes: esAdmin,
-        podeRegistrarSunat: esAdmin,
+        // Catálogo, inventario y acciones sensibles: exclusiva del admin.
+        puedeEditarCatalogo: esAdmin,
+        puedeEditarStock: esAdmin,
+        puedeReembolsar: esAdmin,
+        puedeAnularComprobantes: esAdmin,
+        puedeRegistrarSunat: esAdmin,
     };
 }
 
