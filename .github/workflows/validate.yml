@@ -33,6 +33,8 @@ jobs:
       TWO_FACTOR_ENCRYPTION_KEY: ci-two-factor-key-not-for-production
       FRONTEND_ORIGINS: http://localhost:5173
       TRUST_PROXY: 0
+      PAYU_API_KEY: ci-payu-api-key-dummy
+      PAYU_MERCHANT_ID: 508029
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
