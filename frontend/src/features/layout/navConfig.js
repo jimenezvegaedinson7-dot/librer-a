@@ -12,7 +12,6 @@ import {
     History,
     Settings,
     BookText,
-    Folder,
 } from 'lucide-react';
 
 import { ROLES, esPersonalInterno } from '../../lib/roles';
@@ -50,7 +49,6 @@ export const navPrincipal = [
 
     // --- Control ---
     { nombre: 'Reclamaciones', ruta: '/reclamaciones', icono: BookText, descripcion: 'Reclamos y quejas: respuesta en 15 días hábiles', seccion: 'Control', roles: [ROLES.ADMINISTRADOR] },
-    { nombre: 'Reportes', ruta: '/reportes', icono: Folder, descripcion: 'Reportes de ventas, pedidos, ingresos y stock', seccion: 'Control', roles: [ROLES.ADMINISTRADOR] },
     { nombre: 'Historial', ruta: '/historial', icono: History, descripcion: 'Auditoría de operaciones importantes', seccion: 'Control', roles: [ROLES.ADMINISTRADOR] },
 
     // --- Configuración ---
