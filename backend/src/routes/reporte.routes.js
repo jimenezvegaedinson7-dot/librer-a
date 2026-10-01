@@ -25,21 +25,15 @@ const soloAdmin = verificarRol(ROLES.ADMINISTRADOR);
 // ============================================================
 // Todas las rutas requieren JWT y son de solo lectura.
 //
-// El permiso NO es global: se decide endpoint por endpoint.
-//
-// Cajero: solo los agregados operativos que necesita para atender
-// el mostrador (pendientes, stock y cierre del día).
-// Administrador: además, estadísticas globales, rankings y series
-// históricas del dashboard. Ocultarlos en la interfaz no basta:
-// si el cajero conoce la URL debe recibir 403.
+// Todos los agregados, estadísticas y series requieren administrador.
+// El backend aplica el permiso aunque se acceda directamente por URL.
 // ============================================================
 router.use(verificarToken);
 
 // ============================================================
-// ADMINISTRADOR O CAJERO — indicators operativos del mostrador
+// SOLO ADMINISTRADOR — indicadores operativos
 // ============================================================
-// Uso del cajero: /punto-venta y el panel de notificaciones.
-// Son conteos por estado y avisos de stock, no estadísticas globales.
+// Conteos por estado para el dashboard y el panel de notificaciones.
 // ============================================================
 
 // ========================================
@@ -63,8 +57,7 @@ router.get(
 // ============================================================
 // SOLO ADMINISTRADOR — estadísticas administrativas
 // ============================================================
-// Consumidas únicamente por el dashboard. Un cajero que conozca
-// estas URL recibe 403 aunque el frontend no las use nunca.
+// Consumidas por el dashboard y protegidas también en el backend.
 // ============================================================
 
 // ========================================

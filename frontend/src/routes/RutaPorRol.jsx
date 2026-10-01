@@ -8,7 +8,7 @@ import { esPersonalInterno, inicioPorRol } from '../lib/roles';
 // mostrar un error técnico.
 //
 // El backend sigue siendo la fuente de verdad: esto solo evita que
-// el cajero vea o pulse pantallas que no le corresponden.
+// una cuenta sin permiso vea o pulse pantallas que no le corresponden.
 export default function RutaPorRol({ roles, children }) {
     const { usuario } = useAuth();
     const ubicacion = useLocation();

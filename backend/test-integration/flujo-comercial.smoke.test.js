@@ -52,9 +52,9 @@ const sembrados = {
     pedidos: [],
 };
 
-const tokenPara = (idUsuario) =>
+const tokenPara = (idUsuario, rol) =>
     jwt.sign(
-        { id_usuario: idUsuario },
+        { id_usuario: idUsuario, ...(rol ? { rol } : {}) },
         process.env.JWT_SECRET,
         { expiresIn: '5m' }
     );
@@ -132,20 +132,20 @@ const llamarWebhook = ({ externalReference, value, transactionId, statePol = '4'
 const sembrar = async () => {
     const sufijo = crypto.randomUUID();
 
-    const crearUsuario = async (rol) => {
+    const crearUsuario = async (rol, etiqueta = rol) => {
         const [resultado] = await pool.query(`
             INSERT INTO usuarios
                 (nombre, apellido, email, password, rol, estado)
             VALUES
                 ('Comercial', 'CI', ?, 'no-login', ?, 1)
             RETURNING id_usuario
-        `, [`com-${rol}-${sufijo}@example.test`, rol]);
+        `, [`com-${etiqueta}-${sufijo}@example.test`, rol]);
 
         return resultado[0].id_usuario;
     };
 
     sembrados.admin = await crearUsuario('administrador');
-    sembrados.cajero = await crearUsuario('cajero');
+    sembrados.cajero = await crearUsuario('cliente', 'ex-cajero');
     sembrados.cliente = await crearUsuario('cliente');
 
     const [autor] = await pool.query(`
@@ -418,7 +418,7 @@ test('matriz funcional del flujo comercial', async (t) => {
     await sembrarVentasLegacy();
 
     const admin = cabeceras(tokenPara(sembrados.admin));
-    const cajero = cabeceras(tokenPara(sembrados.cajero));
+    const cajero = cabeceras(tokenPara(sembrados.cajero, 'cajero'));
     const cliente = cabeceras(tokenPara(sembrados.cliente));
 
     try {

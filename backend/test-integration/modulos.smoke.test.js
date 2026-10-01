@@ -13,8 +13,8 @@ const pedir = (ruta, method='GET', body) => fetch(`${process.env.TEST_BASE_URL}$
 });
 test.before(async () => {
     const hash=await bcrypt.hash(password,4);
-    for (const rol of ['administrador','cliente','cajero']) {
-        const [u]=await pool.query('INSERT INTO usuarios (nombre,apellido,email,password,rol) VALUES (\'Módulo\',\'Audit\',?,?,?)',[`${crypto.randomUUID()}@example.test`,hash,rol]);
+    for (const rol of ['administrador','cliente','rolRetirado']) {
+        const [u]=await pool.query('INSERT INTO usuarios (nombre,apellido,email,password,rol) VALUES (\'Módulo\',\'Audit\',?,?,?)',[`${crypto.randomUUID()}@example.test`,hash,rol === 'rolRetirado' ? 'cliente' : rol]);
         if (rol==='administrador') admin=u.insertId; else if (rol==='cliente') cliente=u.insertId; else cajero=u.insertId;
     }
     token=jwt.sign({id_usuario:admin},process.env.JWT_SECRET);
@@ -92,8 +92,8 @@ test('pedidos: dos avances concurrentes del mismo estado no producen 500',async 
         assert.deepEqual(respuestas.map(r => r.status).sort(),[200,400]);
     } finally { await bloqueo.rollback(); bloqueo.release(); }
 });
-test('cajero legacy no puede consultar ventas, pagos o reservas ajenos por ID',async () => {
-    const legacy=jwt.sign({id_usuario:cajero,rol:'administrador'},process.env.JWT_SECRET);
+test('un claim de rol retirado no permite consultar ventas, pagos o reservas ajenos por ID',async () => {
+    const legacy=jwt.sign({id_usuario:cajero,rol:'cajero'},process.env.JWT_SECRET);
     const referencia=crypto.randomUUID(); await pool.query('UPDATE ventas SET external_reference=? WHERE id_venta=?',[referencia,ventas[0]]);
     const [r]=await pool.query('INSERT INTO reservas (id_usuario,id_libro,cantidad) VALUES (?,?,1)',[cliente,libro]);
     try {

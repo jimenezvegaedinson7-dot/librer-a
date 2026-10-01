@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../config/database');
+const { esRolValido } = require('../utils/roles');
 
 // ========================================
 // El estado, rol y email se consultan en cada request para que una
@@ -88,7 +89,7 @@ const verificarToken = async (req, res, next) => {
 
         if (
             !datosUsuario ||
-            datosUsuario.estado === null
+            datosUsuario.estado === null || !esRolValido(datosUsuario.rol)
         ) {
             return res.status(401).json({
                 success: false,

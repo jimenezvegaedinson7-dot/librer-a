@@ -10,9 +10,9 @@ const rutas = ['/api/inventario', '/api/pedidos', '/api/ventas', '/api/pagos', '
 test.before(async () => {
     for (const rol of ['administrador','cajero','cliente','inactivo','eliminado','borrado']) {
         const [rows] = await pool.query("INSERT INTO usuarios (nombre,apellido,email,password,rol,estado) VALUES ('Sesión','Audit',?,'x',?,?)", [
-            `${crypto.randomUUID()}@example.test`, ['cajero','cliente'].includes(rol) ? rol : 'administrador', rol === 'inactivo' ? 0 : 1]);
+            `${crypto.randomUUID()}@example.test`, ['cajero','cliente'].includes(rol) ? 'cliente' : 'administrador', rol === 'inactivo' ? 0 : 1]);
         const id = rows.insertId; ids.push(id);
-        tokens[rol] = jwt.sign({id_usuario:id, rol:'administrador'}, process.env.JWT_SECRET);
+        tokens[rol] = jwt.sign({id_usuario:id, rol: rol === 'cajero' ? 'cajero' : 'administrador'}, process.env.JWT_SECRET);
         if (rol === 'eliminado') await pool.query('UPDATE usuarios SET fecha_eliminacion=NOW() WHERE id_usuario=?',[id]);
         if (rol === 'borrado') await pool.query('DELETE FROM usuarios WHERE id_usuario=?',[id]);
     }

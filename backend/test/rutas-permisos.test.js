@@ -114,7 +114,7 @@ test('ningún reporte administrativo quedó abierto al cajero', () => {
         const roles = rolesDe(`reporte.routes.js ${ruta}`);
 
         assert.ok(
-            !roles.includes(ROLES.CAJERO),
+            !roles.includes('cajero'),
             `${ruta} no debe admitir al cajero`
         );
         assert.ok(roles.includes(ROLES.ADMINISTRADOR));
@@ -130,10 +130,10 @@ test('todos los reportes exigen un rol: ninguno queda abierto', () => {
 });
 
 // ========================================
-// OPERACIONES DEL CAJERO
+// OPERACIONES DEL ADMINISTRADOR
 // ========================================
 
-test('el cajero opera ventas, reservas, pagos, comprobantes e inventario', () => {
+test('solo el administrador opera ventas, reservas, pagos, comprobantes e inventario', () => {
     const permitidas = [
         'venta.routes.js GET /',
         'venta.routes.js PUT /:id/estado',
@@ -234,7 +234,7 @@ test('el módulo de pedidos no quedó abierto al cajero ni al cliente', () => {
         const roles = guards.flatMap((guard) => guard.rolesPermitidos);
 
         assert.ok(
-            !roles.includes(ROLES.CAJERO),
+            !roles.includes('cajero'),
             `${clave} no debe admitir al cajero`
         );
         assert.ok(
@@ -306,7 +306,7 @@ test('todo guard de rol declara al menos un rol válido', () => {
             );
             for (const rol of guard.rolesPermitidos) {
                 assert.ok(
-                    [ROLES.ADMINISTRADOR, ROLES.CAJERO, ROLES.CLIENTE].includes(rol),
+                    [ROLES.ADMINISTRADOR, ROLES.CLIENTE].includes(rol),
                     `${clave} declara un rol desconocido: ${rol}`
                 );
             }
@@ -315,7 +315,7 @@ test('todo guard de rol declara al menos un rol válido', () => {
 });
 
 test('un guard de rol solo se usa con el panel completo o con el administrador', () => {
-    // Combinaciones admitidas: panel (admin+cajero), solo admin,
+    // Combinaciones admitidas: solo admin,
     // solo cliente, o ninguno (ruta abierta). Nada más.
     for (const [clave, guards] of indice) {
         for (const guard of guards) {
@@ -324,8 +324,7 @@ test('un guard de rol solo se usa con el panel completo o con el administrador',
             assert.ok(
                 roles.length === 0 ||
                     roles.join(',') === ROLES.ADMINISTRADOR ||
-                    roles.join(',') === ROLES.CLIENTE ||
-                    roles.join(',') === `${ROLES.ADMINISTRADOR},${ROLES.CAJERO}`,
+                    roles.join(',') === ROLES.CLIENTE,
                 `${clave} declara un juego de roles inesperado: ${roles.join(',')}`
             );
         }

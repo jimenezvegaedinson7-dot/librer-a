@@ -30,23 +30,17 @@ import { correoVisible, esCuentaEliminada } from '../../lib/utils/cuentas';
 
 import { useToast } from '../../components/providers/ToastProvider';
 import { useAuth } from '../auth/AuthContext';
+import { ROLES, ETIQUETAS_ROL as ETIQUETA_ROL, etiquetaRol } from '../../lib/roles';
 
 import { listarUsuarios, actualizarUsuario } from './usuariosService';
 import UsuarioViewModal from './UsuarioViewModal';
 
 const POR_PAGINA = 10;
 
-const ETIQUETA_ROL = {
-    cliente: 'Cliente',
-    cajero: 'Cajero',
-    administrador: 'Administrador',
-};
-
 function rolBadge(rol) {
     if (rol === 'administrador') return <Badge color="primary">Administrador</Badge>;
-    if (rol === 'cajero') return <Badge color="success">Cajero</Badge>;
     if (rol === 'cliente') return <Badge color="info">Cliente</Badge>;
-    return <Badge color="neutral">{rol || 'Sin rol'}</Badge>;
+    return <Badge color="neutral">{etiquetaRol(rol)}</Badge>;
 }
 
 const columnasUsuarios = [
@@ -111,21 +105,20 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
             </BtnAccion>
 
             <select
-                value={fila.rol || ''}
+                value={ETIQUETA_ROL[fila.rol] ? fila.rol : ''}
                 onChange={(e) => !esPropio && onCambiarRol(fila, e.target.value)}
                 disabled={esPropio}
                 title={esPropio ? 'No puedes cambiar tu propio rol' : 'Cambiar rol'}
                 className="h-8 rounded-lg border border-primary-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-parchment-200 disabled:text-primary-400"
             >
-                <option value="cliente">Cliente</option>
-                <option value="cajero">Cajero</option>
-                <option value="administrador">Admin</option>
+                {!ETIQUETA_ROL[fila.rol] && <option value="" disabled>Rol no válido</option>}
+                {Object.entries(ETIQUETA_ROL).map(([rol, etiqueta]) => <option key={rol} value={rol}>{etiqueta}</option>)}
             </select>
         </>
     );
 }
 
-function Contador({ total, administradores, cajeros, clientes, activos, inactivos }) {
+function Contador({ total, administradores, clientes, activos, inactivos }) {
     return (
         <div className="summary-strip flex flex-wrap gap-2">
             <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
@@ -133,9 +126,6 @@ function Contador({ total, administradores, cajeros, clientes, activos, inactivo
             </span>
             <span className="rounded-xl border border-[#c7d2fe] bg-[#eef2ff] px-4 py-2.5 text-sm font-medium text-[#4f46e5] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Administradores: <span className="font-bold text-[#4f46e5]">{administradores}</span>
-            </span>
-            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Cajeros: <span className="font-bold text-[#15803d]">{cajeros}</span>
             </span>
             <span className="rounded-xl border border-[#ecccc8] bg-[#fbf5f4] px-4 py-2.5 text-sm font-medium text-[#8a2c36] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Clientes: <span className="font-bold text-[#8a2c36]">{clientes}</span>
@@ -236,7 +226,6 @@ export default function UsuariosPage({ incrustado = false }) {
     }, [usuarios, busqueda, filtroRol, filtroEstado]);
 
     const totalAdministradores = usuarios.filter((u) => u.rol === 'administrador').length;
-    const totalCajeros = usuarios.filter((u) => u.rol === 'cajero').length;
     const totalClientes = usuarios.filter((u) => u.rol === 'cliente').length;
     const totalActivos = usuarios.filter((u) => Number(u.estado) === 1).length;
     const totalInactivos = usuarios.filter((u) => Number(u.estado) !== 1).length;
@@ -287,11 +276,9 @@ export default function UsuariosPage({ incrustado = false }) {
             titulo: 'Cambiar rol',
             mensaje: `¿Quieres cambiar el rol de "${usuario.nombre || 'este usuario'}" a ${ETIQUETA_ROL[rol] || rol}?`,
             advertencia:
-                ETIQUETA_ROL[rol] === 'Administrador'
+                rol === ROLES.ADMINISTRADOR
                     ? 'El usuario podrá acceder a este panel administrativo con todos los permisos.'
-                    : ETIQUETA_ROL[rol] === 'Cajero'
-                        ? 'Podrá atender el punto de venta, pero no podrá administrar el catálogo, los usuarios ni anular comprobantes.'
-                        : 'El usuario perderá el acceso a este panel administrativo.',
+                    : 'El usuario perderá el acceso a este panel administrativo.',
             textoConfirmar: 'Cambiar rol',
             variante: 'primary',
         });
@@ -325,7 +312,7 @@ export default function UsuariosPage({ incrustado = false }) {
                 { titulo: 'ID', exportar: (f) => f.id_usuario },
                 { titulo: 'Nombre', exportar: (f) => `${f.nombre || ''} ${f.apellido || ''}`.trim() },
                 { titulo: 'Email', exportar: (f) => correoVisible(f.email) },
-                { titulo: 'Rol', exportar: (f) => f.rol || '' },
+                { titulo: 'Rol', exportar: (f) => etiquetaRol(f.rol) },
                 { titulo: 'Estado', exportar: (f) => (Number(f.estado) === 1 ? 'Activo' : 'Inactivo') },
                 { titulo: 'Compras', exportar: (f) => f.total_compras || 0 },
                 { titulo: 'Total gastado', exportar: (f) => f.total_gastado || 0 },
@@ -355,7 +342,6 @@ export default function UsuariosPage({ incrustado = false }) {
                     <Contador
                         total={usuarios.length}
                         administradores={totalAdministradores}
-                        cajeros={totalCajeros}
                         clientes={totalClientes}
                         activos={totalActivos}
                         inactivos={totalInactivos}
@@ -391,10 +377,9 @@ export default function UsuariosPage({ incrustado = false }) {
                                 )}
                             </div>
 
-                            <Select value={filtroRol} onChange={(e) => alFiltrarRol(e.target.value)} className="sm:w-44">
+                            <Select aria-label="Filtrar por rol" value={filtroRol} onChange={(e) => alFiltrarRol(e.target.value)} className="sm:w-44">
                 <option value="todos">Todos los roles</option>
                 <option value="administrador">Administradores</option>
-                <option value="cajero">Cajeros</option>
                 <option value="cliente">Clientes</option>
                             </Select>
 

@@ -28,8 +28,8 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
     const reducirMovimiento = useReducedMotion();
     const acento = colores.primary || colores.sidebarText;
 
-    // El menú se calcula con el rol real de la sesión: un cajero nunca
-    // ve los accesos administrativos aunque los escriba a mano.
+    // El menú se calcula con el rol real de la sesión y muestra únicamente
+    // los accesos permitidos al administrador.
     const secciones = useMemo(
         () => agruparPorSeccion(navPorRol(usuario?.rol)),
         [usuario?.rol],

@@ -118,8 +118,7 @@ const obtenerVenta = async (req, res) => {
         // ========================================
         // VERIFICAR PROPIEDAD (IDOR)
         // El dueño de la venta puede ver el detalle completo
-        // de su compra; el personal del panel (administrador y
-        // cajero) puede ver todas.
+        // de su compra; el administrador puede ver todas.
         // ========================================
         const esStaff =
             esPersonalInterno(req.usuario?.rol);

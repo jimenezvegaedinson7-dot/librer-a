@@ -23,7 +23,7 @@ import { esPersonalInterno, inicioPorRol } from '../../lib/roles';
 import fondoLogin from '../../assets/fondo-login.png';
 import logoLibreria from '../../assets/logo-lbl.png';
 
-const MENSAJE_FUERA_DE_PANEL = 'Este panel es solo para personal interno (administrador o cajero)';
+const MENSAJE_FUERA_DE_PANEL = 'Este panel es solo para administradores';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -599,7 +599,7 @@ export default function LoginPage() {
                             titulo="Contraseña actualizada"
                             detalle={{
                                 iniciando: 'Iniciando sesión con tu nueva contraseña…',
-                                'no-admin': 'Este panel es solo para personal interno (administrador o cajero).',
+                                'no-admin': MENSAJE_FUERA_DE_PANEL,
                                 error: 'No se pudo iniciar sesión automáticamente. Ingresa con tu nueva contraseña.',
                             }[autoInicio]}
                         >

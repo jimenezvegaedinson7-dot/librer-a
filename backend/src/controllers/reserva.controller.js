@@ -89,7 +89,7 @@ const obtenerReserva = async (req, res) => {
 
         // ========================================
         // VERIFICAR PROPIETIDAD (IDOR) — dueño o personal
-        // del panel (administrador y cajero)
+        // del panel (administrador)
         // (misma regla que DELETE /reservas/:id)
         // ========================================
         const esStaff =

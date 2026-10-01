@@ -2,12 +2,11 @@
 // ROLES DEL SISTEMA
 // Fuente única de verdad para los nombres de rol. La lista de
 // valores válidos debe coincidir con la restricción CHECK de
-// usuarios.rol (migración 025).
+// usuarios.rol (migración 029).
 // ============================================================
 
 const ROLES = {
     ADMINISTRADOR: 'administrador',
-    CAJERO: 'cajero',
     CLIENTE: 'cliente',
 };
 
@@ -27,15 +26,10 @@ const normalizar = (rol) => String(rol || '').trim().toLowerCase();
 const esAdministrador = (rol) =>
     normalizar(rol) === ROLES.ADMINISTRADOR;
 
-const esCajero = (rol) =>
-    normalizar(rol) === ROLES.CAJERO;
-
 const esCliente = (rol) =>
     normalizar(rol) === ROLES.CLIENTE;
 
-// "Personal interno": solo administrador. Cajero es un rol histórico
-// sin privilegios de panel ni acceso a compras de otros usuarios.
-// Se usa en las
+// "Personal interno": solo administrador. Se usa en las
 // comprobaciones de propiedad (anti-IDOR) donde el dueño de una
 // venta o reserva y el personal autorizado ven el mismo registro.
 const esPersonalInterno = (rol) =>
@@ -50,7 +44,6 @@ module.exports = {
     ROLES_ASIGNABLES,
     normalizar,
     esAdministrador,
-    esCajero,
     esCliente,
     esPersonalInterno,
     esRolValido,

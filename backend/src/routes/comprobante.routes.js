@@ -25,7 +25,7 @@ const { ROLES } = require('../utils/roles');
 router.use(verificarToken);
 
 // ========================================
-// ADMINISTRADOR O CAJERO — consulta y envío
+// SOLO ADMINISTRADOR — consulta y envío
 // ========================================
 
 // LISTAR COMPROBANTES

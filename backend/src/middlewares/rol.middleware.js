@@ -2,13 +2,14 @@ const {
     ROLES,
     esPersonalInterno,
     normalizar,
+    esRolValido,
 } = require('../utils/roles');
 
 // ============================================================
 // PERMISOS POR ROL
 // Uso:
 //   verificarRol(ROLES.ADMINISTRADOR)
-//   verificarRol(ROLES.ADMINISTRADOR, ROLES.CAJERO)
+//   verificarRol(ROLES.ADMINISTRADOR, ROLES.CLIENTE)
 // Acepta uno o varios roles; si el usuario tiene cualquiera de
 // ellos, la petición continúa. `req.usuario` lo arma
 // auth.middleware.js releyendo rol y estado desde la base, así que
@@ -21,7 +22,7 @@ const SIN_PERMISOS = 'No tienes permisos para realizar esta acción.';
 const verificarRol = (...rolesPermitidos) => {
     const permitidos = rolesPermitidos
         .map((rol) => normalizar(rol))
-        .filter(Boolean);
+        .filter(esRolValido);
 
     const middleware = (req, res, next) => {
 
@@ -68,8 +69,7 @@ const verificarRol = (...rolesPermitidos) => {
     return middleware;
 };
 
-// Atajo para el panel: SOLO administrador (contrato actual: el
-// cajero y el cliente reciben 403 en todas las rutas del panel).
+// Atajo para el panel: SOLO administrador.
 const verificarPanel = verificarRol(ROLES.ADMINISTRADOR);
 
 module.exports = verificarRol;

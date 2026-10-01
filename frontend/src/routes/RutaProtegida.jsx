@@ -4,7 +4,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import { esPersonalInterno } from '../lib/roles';
 
-// El panel es para personal interno: administrador y cajero. El backend
+// El panel es exclusivo del administrador. El backend
 // valida el rol en cada petición; aquí se evita además cargar el panel
 // con una sesión que no corresponde (por ejemplo, datos guardados de
 // una cuenta de cliente).

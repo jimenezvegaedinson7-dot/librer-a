@@ -1,7 +1,8 @@
 // ============================================================
 // SMOKE DE PERMISOS POR ROL (HTTP + PostgreSQL)
 // ============================================================
-// Crea un administrador, un cajero y un cliente, y comprueba la
+// Crea cuentas del contrato actual y un JWT con claim de rol retirado.
+// Comprueba la
 // matriz de permisos acordada (contrato Fase 5):
 //
 //   · administrador -> acceso completo al panel
@@ -191,11 +192,12 @@ test.after(async () => {
 
 test('matriz de permisos por rol', async () => {
     const idAdmin = await crearUsuario('administrador');
-    const idCajero = await crearUsuario('cajero');
+    const idCajero = await crearUsuario('cliente');
     const idCliente = await crearUsuario('cliente');
 
     const admin = cabeceras(tokenPara(idAdmin));
-    const cajero = cabeceras(tokenPara(idCajero));
+    // Un claim antiguo nunca sustituye el rol cliente de la base.
+    const cajero = cabeceras(jwt.sign({ id_usuario: idCajero, rol: 'cajero' }, process.env.JWT_SECRET, { expiresIn: '5m' }));
     const cliente = cabeceras(tokenPara(idCliente));
 
     // --- Cajero: bloqueado en TODO el panel (403) ---
@@ -220,7 +222,7 @@ test('matriz de permisos por rol', async () => {
         );
     }
 
-    // --- Cajero: puede leer el catálogo público con su token ---
+    // --- El catálogo público no depende del claim de rol ---
     for (const ruta of CATALOGO) {
         const respuesta = await pedir(ruta, cajero);
 

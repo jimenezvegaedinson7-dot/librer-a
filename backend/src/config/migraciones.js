@@ -75,10 +75,10 @@ const SENTENCIAS_BASE = [
 const MIGRACIONES = [
     '023_control_ventas.sql',
     '024_reclamaciones_y_cuentas.sql',
-    '025_rol_cajero.sql',
     '026_add_estado_entrega_ventas.sql',
     '027_restringir_tipo_entrega.sql',
-    '028_coherencia_tipo_estado_entrega.sql'
+    '028_coherencia_tipo_estado_entrega.sql',
+    '029_retirar_rol_obsoleto.sql'
 ];
 
 // En producción un fallo de migración debe detener el arranque:

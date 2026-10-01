@@ -16,7 +16,6 @@ const {
     ROLES_ASIGNABLES,
     normalizar,
     esAdministrador,
-    esCajero,
     esCliente,
     esPersonalInterno,
     esRolValido,
@@ -58,15 +57,15 @@ const como = (rol) => ({ usuario: { id_usuario: 1, rol } });
 // utils/roles
 // ========================================
 
-test('los tres roles del sistema están declarados', () => {
+test('solo administrador y cliente pertenecen al contrato actual', () => {
     assert.equal(ROLES.ADMINISTRADOR, 'administrador');
-    assert.equal(ROLES.CAJERO, 'cajero');
     assert.equal(ROLES.CLIENTE, 'cliente');
+    assert.deepEqual(Object.values(ROLES).sort(), ['administrador', 'cliente']);
 });
 
 test('el panel solo acepta administrador', () => {
     assert.deepEqual(ROLES_PANEL, ['administrador']);
-    assert.ok(!ROLES_PANEL.includes(ROLES.CAJERO));
+    assert.ok(!ROLES_PANEL.includes('cajero'));
     assert.ok(!ROLES_PANEL.includes(ROLES.CLIENTE));
 });
 
@@ -80,16 +79,13 @@ test('un administrador no crea nuevos cajeros legacy', () => {
 });
 
 test('normalizar tolera mayúsculas y espacios', () => {
-    assert.equal(normalizar('  Cajero '), 'cajero');
+    assert.equal(normalizar('  Cliente '), 'cliente');
     assert.equal(normalizar('ADMINISTRADOR'), 'administrador');
     assert.equal(normalizar(undefined), '');
 });
 
 test('los helpers de rol distinguen cada valor', () => {
     assert.ok(esAdministrador('administrador'));
-    assert.ok(!esCajero('administrador'));
-
-    assert.ok(esCajero('CAJERO'));
     assert.ok(!esAdministrador('cajero'));
 
     assert.ok(esCliente('cliente'));
@@ -120,7 +116,7 @@ test('verificarRol deja pasar al rol permitido', () => {
 test('verificarRol rechaza con 403 a un rol no permitido', () => {
     const { siguiente, status, cuerpo } = ejecutar(
         verificarRol(ROLES.ADMINISTRADOR),
-        como(ROLES.CAJERO)
+        como('cajero')
     );
 
     assert.equal(siguiente, false);
@@ -129,11 +125,11 @@ test('verificarRol rechaza con 403 a un rol no permitido', () => {
 });
 
 test('verificarRol acepta varios roles a la vez', () => {
-    const middleware = verificarRol(ROLES.ADMINISTRADOR, ROLES.CAJERO);
+    const middleware = verificarRol(ROLES.ADMINISTRADOR, ROLES.CLIENTE);
 
-    assert.equal(ejecutar(middleware, como(ROLES.CAJERO)).siguiente, true);
+    assert.equal(ejecutar(middleware, como(ROLES.CLIENTE)).siguiente, true);
     assert.equal(ejecutar(middleware, como(ROLES.ADMINISTRADOR)).siguiente, true);
-    assert.equal(ejecutar(middleware, como(ROLES.CLIENTE)).status, 403);
+    assert.equal(ejecutar(middleware, como('cajero')).status, 403);
 });
 
 test('verificarRol responde 401 sin sesión', () => {
@@ -148,6 +144,12 @@ test('verificarRol falla cerrado si se configura sin roles', () => {
 
     assert.equal(status, 403);
     assert.equal(siguiente, false);
+});
+
+test('el rol retirado tampoco puede habilitarse por configuración del middleware', () => {
+    const resultado = ejecutar(verificarRol('cajero'), como('cajero'));
+    assert.equal(resultado.status, 403);
+    assert.equal(resultado.siguiente, false);
 });
 
 test('verificarRol compara el rol sin distinguir mayúsculas', () => {
@@ -165,7 +167,7 @@ test('verificarRol compara el rol sin distinguir mayúsculas', () => {
 
 test('verificarPanel rechaza al cajero legacy', () => {
     // CAJERO ya no tiene acceso al panel (Fase 5)
-    assert.equal(ejecutar(verificarPanel, como(ROLES.CAJERO)).siguiente, false);
+    assert.equal(ejecutar(verificarPanel, como('cajero')).siguiente, false);
 });
 
 test('verificarPanel deja pasar al administrador', () => {
@@ -187,7 +189,7 @@ test('verificarPanel rechaza un rol desconocido', () => {
 test('verificarPanel permite solo al administrador', () => {
     // ADMINISTRADOR tiene acceso, CAJERO y CLIENTE no
     assert.equal(ejecutar(verificarPanel, como(ROLES.ADMINISTRADOR)).siguiente, true);
-    assert.equal(ejecutar(verificarPanel, como(ROLES.CAJERO)).siguiente, false);
+    assert.equal(ejecutar(verificarPanel, como('cajero')).siguiente, false);
     assert.equal(ejecutar(verificarPanel, como(ROLES.CLIENTE)).siguiente, false);
 });
 
@@ -201,7 +203,7 @@ test('el cajero no puede usar un permiso exclusivo del administrador', () => {
     // Reembolsos, anulación de comprobantes, SUNAT, usuarios.
     for (const operacion of ['reembolsar', 'anular', 'sunat', 'usuarios']) {
         assert.equal(
-            ejecutar(soloAdmin, como(ROLES.CAJERO)).status,
+            ejecutar(soloAdmin, como('cajero')).status,
             403,
             `el cajero no debería poder ${operacion}`
         );

@@ -76,7 +76,7 @@ const router = createBrowserRouter([
             // --- Portadas ---
             { path: '/dashboard', element: para(SOLO_ADMIN, <DashboardPage />) },
 
-            // --- Catálogo: el cajero solo consulta ---
+            // --- Catálogo: administración ---
             { path: '/libros', element: para(AMBOS, <LibrosPage />) },
             { path: '/autores', element: para(SOLO_ADMIN, <AutoresPage />) },
             { path: '/categorias', element: para(SOLO_ADMIN, <CategoriasPage />) },

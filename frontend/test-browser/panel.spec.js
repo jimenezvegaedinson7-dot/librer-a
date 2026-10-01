@@ -137,3 +137,31 @@ test('rutas guardadas de reportes y cierre de caja resuelven al Dashboard', asyn
         await expect(page.getByRole('heading',{name:'Resumen',exact:true})).toBeVisible();
     }
 });
+
+test('usuarios: solo administrador y cliente en filtros, selector, contador y detalle', async ({page}) => {
+    await sesion(page); await apiVacia(page);
+    const usuarios = [admin, {id_usuario:2,nombre:'Audit',apellido:'Cliente',rol:'cliente',estado:1},
+        {id_usuario:3,nombre:'Cuenta',apellido:'Histórica',rol:'cajero',estado:0}];
+    await page.route('http://127.0.0.1:59999/api/usuarios*',route => route.request().url().includes('/perfil') ?
+        route.fulfill({json:{success:true,data:admin}}) : route.fulfill({json:{success:true,data:usuarios}}));
+    await page.goto('/usuarios');
+    await expect(page.getByTitle('Ver usuario',{exact:true})).toHaveCount(3);
+    expect(await page.locator('main').innerText()).not.toMatch(/cajer/i);
+    await expect(page.getByRole('combobox',{name:'Filtrar por rol'}).locator('option'))
+        .toHaveText(['Todos los roles','Administradores','Clientes']);
+    const fila = page.locator('tr').filter({hasText:'Audit Cliente'});
+    await expect(fila.getByTitle('Cambiar rol',{exact:true}).locator('option')).toHaveText(['Cliente','Administrador']);
+    await page.locator('tr').filter({hasText:'Cuenta Histórica'}).getByTitle('Ver usuario',{exact:true}).click();
+    expect(await page.getByRole('dialog').innerText()).not.toMatch(/cajer/i);
+    await expect(page.getByRole('dialog').getByText('Rol no válido',{exact:true})).toBeVisible();
+});
+
+test('login de una cuenta sin permiso no ofrece un rol retirado', async ({page}) => {
+    await page.route('http://127.0.0.1:59999/api/auth/login',route => route.fulfill({json:{success:true,token:'test',data:{...admin,rol:'cliente'}}}));
+    await page.goto('/admin/login');
+    await page.locator('input[type=email]').fill('audit@example.test');
+    await page.locator('input[type=password]').fill('Audit-only-123!');
+    await page.getByRole('button',{name:'Iniciar sesión',exact:true}).click();
+    await expect(page.getByText('Este panel es solo para administradores',{exact:true})).toBeVisible();
+    expect(await page.locator('body').innerText()).not.toMatch(/cajer/i);
+});

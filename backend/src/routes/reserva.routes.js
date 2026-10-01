@@ -33,7 +33,7 @@ router.post('/', crearReserva);
 router.delete('/:id', cancelarReserva);
 
 // ========================================
-// ADMINISTRADOR Y CAJERO
+// SOLO ADMINISTRADOR
 // ========================================
 
 // Obtener todas las reservas

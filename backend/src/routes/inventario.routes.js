@@ -20,7 +20,7 @@ const {
 const { ROLES } = require('../utils/roles');
 
 // ========================================
-// CONSULTAR INVENTARIO (ADMINISTRADOR O CAJERO)
+// CONSULTAR INVENTARIO (SOLO ADMINISTRADOR)
 // ========================================
 
 // Obtener todo el inventario

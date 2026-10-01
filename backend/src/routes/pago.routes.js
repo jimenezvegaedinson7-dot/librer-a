@@ -53,7 +53,7 @@ router.post(
 router.use(verificarToken);
 
 // ========================================
-// LISTAR PAGOS (ADMINISTRADOR O CAJERO — solo lectura)
+// LISTAR PAGOS (SOLO ADMINISTRADOR — solo lectura)
 // ========================================
 router.get(
     '/',
@@ -62,7 +62,7 @@ router.get(
 );
 
 // ========================================
-// RESUMEN GLOBAL DE PAGOS (ADMINISTRADOR O CAJERO — solo lectura)
+// RESUMEN GLOBAL DE PAGOS (SOLO ADMINISTRADOR — solo lectura)
 // Declarado ANTES de /:orderId para que "resumen"
 // no sea interpretado como un orderId.
 // ========================================

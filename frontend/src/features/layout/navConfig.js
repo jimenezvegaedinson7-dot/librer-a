@@ -19,7 +19,7 @@ import { ROLES, esPersonalInterno } from '../../lib/roles';
 // ============================================================
 // MENÚ DEL PANEL 100% VIRTUAL
 // Panel orientado a ecommerce: sin módulos presenciales (POS,
-// cierre de caja, cajero). Las nuevas ventas nacen del flujo
+// cierre de caja). Las nuevas ventas nacen del flujo
 // APP + PayU. panel/reserva son LEGACIO.
 // ============================================================
 

@@ -7,11 +7,12 @@ import { Ficha } from '../../components/ui/Ficha';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 import { correoVisible, esCuentaEliminada } from '../../lib/utils/cuentas';
+import { etiquetaRol } from '../../lib/roles';
 
 function rolBadge(rol) {
     if (rol === 'administrador') return <Badge color="primary">Administrador</Badge>;
     if (rol === 'cliente') return <Badge color="info">Cliente</Badge>;
-    return <Badge color="neutral">{rol || 'Sin rol'}</Badge>;
+    return <Badge color="neutral">{etiquetaRol(rol)}</Badge>;
 }
 
 export default function UsuarioViewModal({ usuario, abierto, onCerrar }) {
