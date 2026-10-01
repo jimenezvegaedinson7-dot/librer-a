@@ -23,7 +23,7 @@ export default class ErrorBoundary extends Component {
             return (
                 <main className="flex min-h-screen items-center justify-center bg-[#f6f3ee] p-6">
                     <div role="alert" className="w-full max-w-md overflow-hidden rounded-2xl border border-[#e6e0d7] bg-white text-center shadow-[0_24px_60px_-24px_rgba(28,24,20,0.3)]">
-                        <div className="h-1 bg-gradient-to-r from-[#74212c] via-[#b98d3e] to-transparent" aria-hidden="true" />
+                        <div className="h-1 bg-gradient-to-r from-[#004d43] via-[#c98f12] to-transparent" aria-hidden="true" />
                         <div className="p-8">
                             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-[#fecaca] bg-[#fef2f2] text-2xl font-semibold text-[#b91c1c]" aria-hidden="true">
                                 !
@@ -38,7 +38,7 @@ export default class ErrorBoundary extends Component {
                             <button
                                 type="button"
                                 onClick={this.reiniciar}
-                                className="mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-[#74212c] px-6 text-sm font-semibold text-[#fffaf0] shadow-sm transition hover:bg-[#5c1a23] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b98d3e] focus-visible:ring-offset-2"
+                                className="mt-6 inline-flex h-11 items-center justify-center rounded-lg bg-[#004d43] px-6 text-sm font-semibold text-[#fffaf0] shadow-sm transition hover:bg-[#013a33] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c98f12] focus-visible:ring-offset-2"
                             >
                                 Recargar aplicación
                             </button>

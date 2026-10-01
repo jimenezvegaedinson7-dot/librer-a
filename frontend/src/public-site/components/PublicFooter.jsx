@@ -45,6 +45,7 @@ export default function PublicFooter({ legal }) {
                 </div>
                 <div className="pie__legal">
                     <p>© {new Date().getFullYear()} {SITIO.nombre} · {legal.nombreComercial} · {legal.razonSocial} · RUC {legal.ruc}</p>
+                    <a className="pie__admin" href={SITIO.rutaLoginAdmin}>Acceso administrativo</a>
                 </div>
             </div>
         </footer>

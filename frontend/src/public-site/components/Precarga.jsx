@@ -17,9 +17,10 @@ import { hayPendientes, marcarTerminada, precargaTerminada, suscribir } from '..
 // recurso nunca responde.
 // ============================================================
 
-const MINIMO_MS = 900;
+// El logo tarda ~0.75 s en unir sus piezas: el mínimo deja verlo completo.
+const MINIMO_MS = 800;
 const TOPE_MS = 12000;
-const SALIDA_MS = 600;
+const SALIDA_MS = 380;
 
 let iniciada = false;
 

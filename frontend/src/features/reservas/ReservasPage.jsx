@@ -70,8 +70,8 @@ function Contador({ total, pendientes, confirmadas, canceladas, completadas }) {
             <span className="rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2.5 text-sm font-medium text-[#d97706] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Pendientes: <span className="font-bold text-[#d97706]">{pendientes}</span>
             </span>
-            <span className="rounded-xl border border-[#ecccc8] bg-[#fbf5f4] px-4 py-2.5 text-sm font-medium text-[#8a2c36] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Confirmadas: <span className="font-bold text-[#8a2c36]">{confirmadas}</span>
+            <span className="rounded-xl border border-[#bcdcd3] bg-[#f2f8f6] px-4 py-2.5 text-sm font-medium text-[#0b5c51] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Confirmadas: <span className="font-bold text-[#0b5c51]">{confirmadas}</span>
             </span>
             <span className="rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-2.5 text-sm font-medium text-[#e11d48] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Canceladas: <span className="font-bold text-[#e11d48]">{canceladas}</span>

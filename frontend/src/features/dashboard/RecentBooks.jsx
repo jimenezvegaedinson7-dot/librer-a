@@ -39,8 +39,8 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
             {/* cabecera */}
             <div className="flex items-center justify-between px-6 py-5">
                 <div className="flex items-center gap-3.5">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#fbf5f4]">
-                        <FaBookOpen className="text-[18px] text-[#8a2c36]" />
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f2f8f6]">
+                        <FaBookOpen className="text-[18px] text-[#0b5c51]" />
                     </div>
                     <div>
                         <h3 className="font-title text-[18px] font-semibold text-[#1c1814]">
@@ -54,7 +54,7 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
                 <button
                     type="button"
                     onClick={() => navigate('/libros')}
-                    className="group flex items-center gap-1.5 rounded-lg border border-[#e6e0d7] bg-white px-3.5 py-2 text-[12px] font-semibold text-[#8a2c36] transition-all hover:bg-[#fbf5f4] hover:border-[#d3cbbf]"
+                    className="group flex items-center gap-1.5 rounded-lg border border-[#e6e0d7] bg-white px-3.5 py-2 text-[12px] font-semibold text-[#0b5c51] transition-all hover:bg-[#f2f8f6] hover:border-[#d3cbbf]"
                 >
                     Ver todos
                     <FaArrowRight className="text-[10px] transition-transform group-hover:translate-x-0.5" />
@@ -64,8 +64,8 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
             {/* contenido */}
             {librosRecientes.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-14 text-center">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fbf5f4]">
-                        <FaBookOpen className="text-[20px] text-[#8a2c36]/40" />
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f2f8f6]">
+                        <FaBookOpen className="text-[20px] text-[#0b5c51]/40" />
                     </div>
                     <p className="text-[14px] font-semibold text-[#1c1814]">No hay libros registrados</p>
                     <p className="mt-1 text-[13px] text-[#766d62]">Los últimos libros agregados aparecerán aquí.</p>

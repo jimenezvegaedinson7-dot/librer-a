@@ -54,6 +54,7 @@ const EmpresaPage = lazyConReintento(() => import('../features/configuracion/Emp
 const PersonalizacionPage = lazyConReintento(() => import('../features/configuracion/PersonalizacionPage'));
 const LibroReclamacionesPage = lazyConReintento(() => import('../features/reclamaciones/LibroReclamacionesPage'));
 const ReclamacionesPage = lazyConReintento(() => import('../features/reclamaciones/ReclamacionesPage'));
+const AnunciosPage = lazyConReintento(() => import('../features/anuncios/AnunciosPage'));
 
 const cargar = (elemento) => <Suspense fallback={<CargandoPantalla />}>{elemento}</Suspense>;
 
@@ -122,6 +123,7 @@ const router = createBrowserRouter([
             { path: '/usuarios', element: para(SOLO_ADMIN, <UsuariosPage />) },
             { path: '/clientes', element: para(SOLO_ADMIN, <Navigate to="/usuarios?vista=clientes" replace />) },
             { path: '/reclamaciones', element: para(SOLO_ADMIN, <ReclamacionesPage />) },
+        { path: '/anuncios', element: para(SOLO_ADMIN, <AnunciosPage />) },
             { path: '/tarifas-envio', element: para(SOLO_ADMIN, <TarifasEnvioPage />) },
             { path: '/historial', element: para(SOLO_ADMIN, <HistorialPage />) },
             { path: '/configuracion/empresa', element: para(SOLO_ADMIN, <EmpresaPage />) },

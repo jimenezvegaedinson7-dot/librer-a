@@ -2,6 +2,7 @@
 flowchart LR
     subgraph React
         R__api_agencias["agencias"]
+        R__api_anuncios["anuncios"]
         R__api_auth["auth"]
         R__api_autores["autores"]
         R__api_categorias["categorias"]
@@ -32,6 +33,8 @@ flowchart LR
     end
     E__api_agencias(("/api/agencias")) --> C_agencia_controller["agencia.controller"]
     R__api_agencias --> E__api_agencias
+    E__api_anuncios(("/api/anuncios")) --> C_anuncio_controller["anuncio.controller"]
+    R__api_anuncios --> E__api_anuncios
     E__api_auth(("/api/auth")) --> C_auth_controller["auth.controller"] & C_auth2fa_controller["auth2fa.controller"]
     R__api_auth --> E__api_auth
     F__api_auth --> E__api_auth
@@ -77,6 +80,7 @@ flowchart LR
     F__api_ventas --> E__api_ventas
     DB[("PostgreSQL")]
     C_agencia_controller --> DB
+    C_anuncio_controller --> DB
     C_app_controller --> DB
     C_auth_controller --> DB
     C_auth2fa_controller --> DB

@@ -2,7 +2,8 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FaArrowLeft, FaArrowRight, FaChevronRight } from 'react-icons/fa6';
 
-import { portada, soles } from '../lib/formato';
+import { PrecioOferta } from '../components/PrecioOferta';
+import { portada } from '../lib/formato';
 
 function Libro({ libro, indice }) {
     return (
@@ -24,7 +25,7 @@ function Libro({ libro, indice }) {
                 <p className="libro__autor">{libro.autor}</p>
                 <p className="libro__pie">
                     <span>{libro.categoria}</span>
-                    <span className="precio">{soles(libro.precio)}</span>
+                    <PrecioOferta libro={libro} />
                 </p>
             </div>
         </li>

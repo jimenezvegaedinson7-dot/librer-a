@@ -8,7 +8,7 @@ import { Alert } from '../../components/ui/Alert';
 
 import useCatalogo from './useCatalogo';
 import { crearLibro } from './librosService';
-import CamposLibro, { SelectorPortada } from './CamposLibro';
+import CamposLibro, { SelectorPortada, CamposDescuento } from './CamposLibro';
 import { requerido, numeroNoNegativo, seleccionRequerida } from '../../lib/utils/validaciones';
 
 const FORMULARIO_VACIO = {
@@ -18,6 +18,9 @@ const FORMULARIO_VACIO = {
     precio: '',
     id_autor: '',
     id_categoria: '',
+    descuento_porcentaje: '',
+    precio_oferta: '',
+    descuento_hasta: '',
 };
 
 const REGLAS = {
@@ -179,6 +182,12 @@ export default function LibroForm({ onLibroCreado }) {
                                 formulario={formulario}
                                 autores={autores}
                                 categorias={categorias}
+                                manejarCambio={manejarCambio}
+                                errores={errores}
+                            />
+
+                            <CamposDescuento
+                                formulario={formulario}
                                 manejarCambio={manejarCambio}
                                 errores={errores}
                             />

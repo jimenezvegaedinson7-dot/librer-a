@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const rutas = ['/dashboard','/libros','/autores','/categorias','/inventario','/pedidos','/ventas',
-    '/pagos','/comprobantes','/tarifas-envio','/usuarios','/reclamaciones','/historial','/configuracion/empresa'];
+    '/pagos','/comprobantes','/tarifas-envio','/usuarios','/anuncios','/reclamaciones','/historial','/configuracion/empresa'];
 const admin = { id_usuario: 1, nombre:'Audit', apellido:'Admin', rol:'administrador', estado:1 };
 async function sesion(page, usuario = admin, token = 'audit-token') {
     await page.addInitScript(({ usuario, token }) => {

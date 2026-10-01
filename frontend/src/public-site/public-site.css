@@ -11,6 +11,10 @@
     /* Paleta */
     --verde-900: #013a33;
     --verde-700: #004d43;
+    /* Marco de la página (barra superior y pie): verde oscuro de la marca. */
+    --marco: #013a33;
+    --marco-texto: #dfe6dd;
+    --marco-tenue: #b8c9c2;
     --verde-600: #0b5c51;
     --salvia-100: #dfe6dd;
     --salvia-50: #f2f6f4;
@@ -164,14 +168,10 @@ html.lenis, html.lenis body { height: auto; }
 .cierre-descarga { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); margin-top: var(--e-4); padding: var(--e-3); border: 1px solid var(--borde); border-radius: var(--r-tarjeta); background: var(--verde-100); }
 .cierre-descarga p { font-weight: 600; color: var(--texto); max-width: 52ch; }
 
-/* ---------- Cabecera (avisos · franja · principal · menú) ---------- */
-.avisos { background: var(--salvia-100); color: var(--verde-700); font-size: var(--t-menu); font-weight: 600; }
+/* ---------- Cabecera (avisos · principal · menú) ---------- */
+.avisos { background: var(--marco); color: var(--marco-texto); font-size: var(--t-menu); font-weight: 600; }
 .avisos .contenedor { display: flex; justify-content: space-between; gap: var(--e-3); min-height: 44px; align-items: center; }
 .avisos a:hover { text-decoration: underline; text-underline-offset: 3px; }
-.franja { background: var(--verde-700); color: var(--blanco); font-size: var(--t-menu); font-weight: 600; }
-.franja .contenedor { display: flex; justify-content: flex-end; gap: var(--e-3); min-height: 40px; align-items: center; }
-.franja a:hover { text-decoration: underline; text-underline-offset: 3px; }
-.sitio .franja__admin { color: var(--salvia-100); font-weight: 500; }
 
 .cabecera { position: sticky; top: 0; z-index: 50; background: var(--blanco); transition: box-shadow var(--d-media) var(--ease-salida); }
 .cabecera[data-sombra='true'] { box-shadow: 0 4px 18px -10px rgba(0, 0, 0, 0.3); }
@@ -219,7 +219,7 @@ html.lenis, html.lenis body { height: auto; }
     .cabecera__descarga-texto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 }
 @media (max-width: 1023px) {
-    .avisos li:not(:first-child), .franja, .menu, .cabecera__acciones .cabecera__enlace { display: none; }
+    .avisos li:not(:first-child), .menu, .cabecera__acciones .cabecera__enlace { display: none; }
     .avisos .contenedor { justify-content: center; }
     .cabecera__principal { min-height: 60px; gap: 0.75rem; }
     .cabecera__principal .buscador { display: none; }
@@ -446,16 +446,51 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 .libro__datos { margin-top: 0.9rem; }
 .libro__titulo { font-size: 1rem; font-weight: 500; line-height: 1.3; min-height: 2.6em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .libro__autor { color: var(--texto-3); font-size: 0.875rem; margin-top: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.libro__pie { display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.45rem; font-size: 0.8125rem; color: var(--texto-3); }
+.libro__pie { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 0.45rem; font-size: 0.8125rem; color: var(--texto-3); }
+.libro__pie > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Precio resaltado en verde claro: pastilla clara con texto verde oscuro,
    para que destaque sin gritar y sin perder contraste. */
 .precio {
     display: inline-block; align-self: center; padding: 0.1rem 0.55rem; border-radius: 999px;
     background: var(--verde-100); color: var(--verde-900);
     font-weight: 700; font-size: 0.9375rem; font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+    white-space: nowrap; flex: none;
 }
 .libro--esqueleto .libro__tapa, .tarjeta-libro--esqueleto .tarjeta-libro__tapa { background: linear-gradient(100deg, #ececec 30%, #f7f7f7 50%, #ececec 70%) 0 0 / 300% 100%; box-shadow: none; animation: brillo 1.4s linear infinite; }
 .libro--esqueleto .libro__datos { min-height: calc(2.6rem + 1.3rem + 1.25rem + 0.65rem); }
+
+/* ---------- Precio en oferta ----------
+   Reusa el verde claro de .precio, que ya estaba aprobado. La pastilla de
+   porcentaje va en el verde oscuro para separarse del precio final sin
+   meter un cuarto color en la paleta. */
+.precio.oferta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.15rem 0.5rem 0.15rem 0.25rem;
+    background: var(--verde-100);
+}
+.precio.oferta .oferta__pastilla {
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: var(--verde-900);
+    color: var(--blanco);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+}
+/* El precio tachado no hereda el peso de la pastilla: si no, compite
+   visualmente con el precio final, que es el que importa. */
+.precio.oferta .oferta__anterior {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--verde-900);
+    opacity: 0.65;
+}
+.precio.oferta .oferta__final {
+    font-weight: 800;
+    font-size: 1rem;
+}
 @keyframes brillo { to { background-position: -150% 0; } }
 .aviso { margin-top: var(--e-3); padding: var(--e-3); border: 1px solid var(--borde); border-radius: var(--r-tarjeta); color: var(--texto-2); max-width: 64ch; background: var(--blanco); }
 
@@ -477,6 +512,10 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 .categoria { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--ambar-700); background: var(--ambar-100); padding: 0.15rem 0.55rem; border-radius: 999px; }
 .agotado { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--ambar-700); background: var(--ambar-100); padding: 0.15rem 0.55rem; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(235, 170, 32, 0.5); }
 .tarjeta-libro .boton { margin-top: auto; width: 100%; padding-inline: 0.75rem; white-space: nowrap; }
+/* La acción repetida en cada tarjeta va en contorno verde: 25 botones ámbar
+   seguidos convertían la rejilla en una pared amarilla. Se rellena al pasar. */
+.tarjeta-libro .boton--linea { color: var(--verde-700); border-color: var(--verde-700); background: var(--blanco); }
+.tarjeta-libro .boton--linea:hover { color: var(--blanco); background: var(--verde-700); border-color: var(--verde-700); }
 /* En la rejilla el <p> lleva a la vez .precio y .tarjeta-libro__precio: la
    pastilla verde la pinta .precio, aquí solo va el margen. */
 .tarjeta-libro__precio { margin-top: 0.35rem; }
@@ -495,6 +534,8 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 .video-destacado__vacio svg { width: 2.4rem; height: 2.4rem; color: var(--ambar-500); }
 .video-destacado__vacio p { font-size: var(--t-menu); color: var(--salvia-100); max-width: 28ch; }
 @media (max-width: 700px) { .video-destacado__marco { aspect-ratio: 16 / 9; } }
+/* Sin archivo todavía: una banda baja con el aviso, no un gran bloque vacío. */
+.video-destacado__marco:has(.video-destacado__vacio) { aspect-ratio: auto; min-height: clamp(150px, 16vw, 210px); display: grid; background: linear-gradient(120deg, var(--verde-900), var(--marco)); }
 
 /* ---------- Promociones del inicio ---------- */
 .promos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 20px); }
@@ -609,7 +650,7 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 @media (max-width: 767px) { .tienda { grid-template-columns: 1fr; gap: var(--e-3); } .tienda__mapa { aspect-ratio: 4 / 3; } }
 
 /* ---------- Pie ---------- */
-.pie { background: var(--verde-900); color: var(--salvia-100); padding-block: var(--e-5) var(--e-3); font-size: 0.875rem; }
+.pie { background: var(--marco); color: var(--marco-texto); padding-block: var(--e-5) var(--e-3); font-size: 0.875rem; }
 .pie__rejilla { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--e-4); }
 .pie .marca span { color: var(--blanco); }
 .pie__lema { max-width: 40ch; margin-top: 1rem; }
@@ -617,9 +658,82 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 .pie h2 { font-size: 0.875rem; font-weight: 700; color: var(--blanco); margin-bottom: 0.8rem; }
 .pie ul { display: grid; gap: 0.5rem; }
 .pie a:hover { color: var(--blanco); text-decoration: underline; text-underline-offset: 3px; }
-.pie__legal { margin-top: var(--e-4); padding-top: var(--e-3); border-top: 1px solid rgba(255, 255, 255, 0.2); display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--e-2); font-size: 0.8125rem; color: #b8c9c2; }
+.pie__legal { margin-top: var(--e-4); padding-top: var(--e-3); border-top: 1px solid rgba(255, 255, 255, 0.16); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--e-2); font-size: 0.8125rem; color: var(--marco-tenue); }
+/* Acceso del personal: discreto, solo en el pie. */
+.sitio .pie__admin { font-size: 0.75rem; color: var(--marco-tenue); opacity: 0.85; }
+.sitio .pie__admin:hover { opacity: 1; }
 @media (max-width: 767px) { .pie__rejilla { grid-template-columns: 1fr; } }
 
 @media (prefers-reduced-motion: reduce) {
     .sitio *, .sitio *::before, .sitio *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}
+
+/* ============================================================
+   PULIDO VISUAL: botones con relieve y libros que parecen libros
+   ============================================================ */
+
+/* Botones: un poco de relieve en reposo, se elevan al pasar y se hunden
+   al pulsar. Los colores de cada variante no cambian. */
+.boton {
+    letter-spacing: 0.005em;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 8px 18px -12px rgba(0, 0, 0, 0.55);
+    transition: background var(--d-rapida) var(--ease-salida), border-color var(--d-rapida), color var(--d-rapida),
+        transform var(--d-rapida) var(--ease-salida), box-shadow var(--d-rapida) var(--ease-salida);
+}
+.boton:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 14px 24px -14px rgba(0, 0, 0, 0.6); }
+.boton:active { transform: translateY(0); box-shadow: 0 4px 10px -8px rgba(0, 0, 0, 0.5); }
+.boton--linea { box-shadow: none; }
+.boton--linea:hover { box-shadow: 0 10px 20px -14px rgba(1, 58, 51, 0.55); }
+/* La flecha final se adelanta un poco al pasar. */
+.boton svg:last-child:not(:first-child) { transition: transform var(--d-rapida) var(--ease-salida); }
+.boton:hover svg:last-child:not(:first-child) { transform: translateX(3px); }
+/* Flechas del carrusel: discos blancos que se vuelven verdes. */
+.catalogo__controles .boton--icono { background: var(--blanco); color: var(--verde-700); border-color: var(--gris-300); box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.4); }
+.catalogo__controles .boton--icono:hover { background: var(--verde-700); color: var(--blanco); border-color: var(--verde-700); }
+
+/* Portadas como libros de verdad: filo de hojas a la derecha (capas de
+   papel con box-shadow), lomo sombreado a la izquierda y esquinas suaves. */
+.libro__tapa, .tarjeta-libro__tapa {
+    border-radius: 2px 6px 6px 2px;
+    box-shadow:
+        3px 0 0 -1px #f3ecdc, 5px 1px 0 -1px #e2d8c4, 7px 2px 0 -2px #d6cab2,
+        0 16px 28px -14px rgba(0, 0, 0, 0.45), 0 4px 10px -4px rgba(0, 0, 0, 0.25);
+}
+.tarjeta-libro__tapa { position: relative; overflow: hidden; }
+.tarjeta-libro__tapa::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 7%; z-index: 1; background: linear-gradient(90deg, rgba(0, 0, 0, 0.28), rgba(255, 255, 255, 0.14) 60%, transparent); pointer-events: none; }
+.libro__tapa img, .tarjeta-libro__tapa img { transition: transform 700ms var(--ease-salida); }
+.libro:hover .libro__tapa { transform: perspective(900px) rotateY(-9deg) translateY(-6px); box-shadow: 3px 0 0 -1px #f3ecdc, 5px 1px 0 -1px #e2d8c4, 7px 2px 0 -2px #d6cab2, 0 28px 40px -18px rgba(0, 0, 0, 0.5); }
+.libro__titulo { font-weight: 600; color: var(--texto); }
+
+/* Carrusel: los bordes se desvanecen para insinuar que hay más libros. */
+.catalogo__ventana {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - var(--gutter) * 2), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - var(--gutter) * 2), transparent 100%);
+}
+
+/* Tarjetas del catálogo: papel blanco que flota y se eleva al pasar. */
+.tarjeta-libro {
+    padding: 16px 16px 18px; gap: 0.4rem;
+    border: 1px solid rgba(1, 58, 51, 0.08); border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 26px -18px rgba(1, 58, 51, 0.35);
+    transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida), border-color var(--d-media);
+}
+/* Ya revelada, la tarjeta responde al instante (sin el retraso escalonado de la entrada). */
+.sitio [data-revelar][data-visto] > .tarjeta-libro { transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida), border-color var(--d-media), opacity 800ms var(--ease-salida); transition-delay: 0s; }
+.tarjeta-libro:hover { transform: translateY(-4px); border-color: rgba(1, 58, 51, 0.18); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 24px 40px -22px rgba(1, 58, 51, 0.45); }
+.tarjeta-libro:hover .tarjeta-libro__tapa { transform: none; }
+.tarjeta-libro:hover .tarjeta-libro__tapa img { transform: scale(1.04); }
+.tarjeta-libro__tapa { margin: 4px 8px 0.75rem 2px; }
+.tarjeta-libro__precio { align-self: flex-start; }
+/* Sin stock: cinta sobre la portada en lugar de una etiqueta suelta. */
+.tarjeta-libro__tapa .agotado {
+    position: absolute; z-index: 2; left: 8px; top: 8px; margin: 0;
+    background: rgba(1, 58, 51, 0.88); color: var(--blanco); box-shadow: none;
+    backdrop-filter: blur(2px);
+}
+.tarjeta-libro--sin-stock .tarjeta-libro__tapa img { filter: saturate(0.6) brightness(0.92); }
+
+@media (prefers-reduced-motion: reduce) {
+    .boton:hover, .tarjeta-libro:hover { transform: none; }
+    .tarjeta-libro:hover .tarjeta-libro__tapa img { transform: none; }
 }

@@ -3,6 +3,9 @@ name: Librería del Saber — Web pública
 description: Librería comercial clara y ordenada, en verde de marca sobre fondos blancos, con un libro 3D en el hero que pasa sus hojas al acercar el cursor.
 colors:
   verde-900: "#013a33"
+  marco: "#013a33"
+  marco-texto: "#dfe6dd"
+  marco-tenue: "#b8c9c2"
   verde-700: "#004d43"
   verde-600: "#0b5c51"
   salvia-100: "#dfe6dd"
@@ -144,7 +147,7 @@ components:
     typography: "{typography.label}"
     height: "40px"
   footer:
-    backgroundColor: "{colors.verde-900}"
+    backgroundColor: "{colors.marco}"
     textColor: "{colors.salvia-100}"
 ---
 
@@ -156,7 +159,7 @@ Alcance: la web pública (`src/public-site/`, todo bajo la clase raíz `.sitio`,
 
 **Creative North Star: "La librería que pasa sus hojas"**
 
-Una librería comercial de barrio grande, clara y ordenada: fondos blancos y gris claro, verde oscuro para la marca y para cada acción, y un acento ámbar mínimo. La navegación se lee como la de una librería en línea real: barra de avisos, franja verde, cabecera blanca con buscador y un menú con separadores finos. Cada entrada del menú es una página propia con migas de pan.
+Una librería comercial de barrio grande, clara y ordenada: fondos blancos y gris claro, verde oscuro para la marca y para cada acción, y un acento ámbar mínimo. La navegación se lee como la de una librería en línea real: barra de avisos en verde oscuro, cabecera blanca con buscador y un menú con separadores finos. Cada entrada del menú es una página propia con migas de pan.
 
 La densidad es de comercio, no de revista: tipografía Work Sans compacta en una sola familia, tarjetas blancas con borde fino y radio pequeño, botones en píldora. El único gesto espectacular vive en el hero: un libro 3D de cuero verde, cerrado en reposo, que sigue al cursor y, con el cursor encima, se abre y pasa sus hojas una a una. Todo el movimiento es de salida suave y se apaga con `prefers-reduced-motion`.
 
@@ -176,11 +179,14 @@ Verde profundo y blancos de tienda, con un único acento ámbar escaso.
 
 ### Primary
 - **Verde Librería** (verde-700): marca, enlaces del menú y de migas, botón principal, chip seleccionado, fondo del hero y de las zonas `.oscuro`, anillo de foco.
-- **Verde Encuadernación** (verde-900): pie de página, hover de botones, fondo de la tercera promo, extremo inferior del degradado del hero, enlace destacado del menú.
+- **Verde Encuadernación** (verde-900): hover de botones, fondo de la tercera promo, extremo inferior del degradado del hero, enlace destacado del menú.
 - **Verde Luz** (verde-600): solo el resplandor radial del hero y el énfasis `em` de las frases tipográficas grandes.
 
 ### Secondary
 - **Ámbar Marcapáginas** (ambar-500): la cinta de seda que cuelga del libro 3D y los distintivos pequeños ("Agotado", "Tu equipo"), siempre con texto negro.
+
+### Marco
+- **Verde Marco** (marco, mismo tono que verde-900): barra de avisos superior y pie de página; enmarca la página con el verde oscuro de la marca. Texto claro (marco-texto) y legal tenue (marco-tenue), ambos con contraste AA.
 
 ### Neutral
 - **Blanco** (blanco): fondo base, cabecera, tarjetas, botón invertido sobre verde.
@@ -223,11 +229,11 @@ Los precios van en 700, 16px, negro, con cifras tabulares; los títulos de libro
 
 Contenedor centrado de ancho máximo 1280px con márgenes laterales fluidos (gutter de 16 a 56px). El ritmo vertical de sección es fluido (44 a 80px); dentro de las secciones la escala es 16 / 24 / 40 / 64px.
 
-- **Cabecera** en cuatro franjas: avisos (44px, salvia), franja verde (40px, alineada a la derecha, con el acceso administrativo discreto), cabecera principal blanca y pegajosa (76px: logo, buscador de hasta 640px, "Nuestra tienda", "Descargar app") y menú (44px) con separadores verticales de 1px. La cabecera gana una sombra suave al desplazarse.
+- **Cabecera** en tres bandas: avisos (44px, verde oscuro con texto claro), cabecera principal blanca y pegajosa (76px: logo, buscador de hasta 640px, "Nuestra tienda", "Descargar app") y menú (44px) con separadores verticales de 1px. La cabecera gana una sombra suave al desplazarse.
 - **Hero**: rejilla 5/7 (texto a la izquierda, escena 3D a la derecha), alto mínimo min(640px, 76svh). Fondo animado propio, sin imágenes (sections/HeroFondo.jsx): degradado esmeralda luminoso (#01362f a #0a7563) con resplandores esmeralda, ámbar y turquesa, aurora que respira, tres haces de luz que barren despacio desde arriba y 14 burbujas de vidrio (7 en móvil) que suben con vaivén; un velo verde a la izquierda mantiene el texto sereno. Quieto con movimiento reducido.
 - **Páginas interiores**: migas de pan en banda gris, luego la sección con cabecera (título + filete) y contenido.
 - **Rejillas**: catálogo en `auto-fill` de mínimo 190px (dos columnas bajo 520px); carrusel horizontal con scroll-snap en el inicio; promos en 3 columnas; ventajas en 12 columnas alternando texto (5) y visual (6); descarga en 2 columnas; pie 2/1/1.
-- **Responsive**: bajo 1024px desaparecen franja, menú y enlaces de cabecera; aparece un botón de menú que abre un cajón lateral (máx. 360px) y el buscador baja a su propia fila; las rejillas pasan a una columna. Bajo 520px el botón de descarga de la cabecera queda solo con icono.
+- **Responsive**: bajo 1024px desaparecen el menú y los enlaces de cabecera; aparece un botón de menú que abre un cajón lateral (máx. 360px) y el buscador baja a su propia fila; las rejillas pasan a una columna. Bajo 520px el botón de descarga de la cabecera queda solo con icono.
 
 ## Elevation & Depth
 
@@ -286,7 +292,7 @@ Bordes de 1px en gris filete; 1.5px en las opciones de entrega. Los separadores 
 - **Pie:** verde encuadernación, texto salvia, títulos blancos 700 14px, logo blanco, legal sobre filete blanco al 20%.
 
 ### Pantalla de carga
-Solo en las rutas públicas y en la primera carga. Vive en `index.html` (`#precarga`) para pintarse antes del JavaScript; la retira `components/Precarga.jsx` cuando la página está montada, las fuentes y el evento load están listos y no quedan recursos registrados (fondo e imagen del hero, primer cuadro del libro 3D). Fondo propio de CSS: degradado verde profundo (#013a33 a #001d19), luces difusas que flotan despacio, grano SVG y viñeta; disco de vidrio (backdrop-filter blur 14px) con el logo "f" blanco, aro fino con un arco dorado (#f3d58a a #ebaa20) y otro crema girando en sentidos opuestos. "Librería del Saber" (600) y "Preparando tu experiencia de lectura..." (14px). Entrada del logo 800ms, pulso de 2.5%, mínimo 900ms en pantalla, salida con opacidad en 600ms. Sin partículas, pulso ni arco crema con movimiento reducido.
+Solo en las rutas públicas y en la primera carga. Vive en `index.html` (`#precarga`) para pintarse antes del JavaScript; la retira `components/Precarga.jsx` cuando la página está montada, las fuentes y el evento load están listos y no quedan recursos registrados (imagen del hero, primer cuadro del libro 3D). Sobria: fondo de papel claro (degradado radial de blanco a #ece6db), el logo "f" en verde (public/precarga/logo-f-verde.webp, 96 a 128px) que llega en cinco pedazos (recortes con clip-path) que se juntan en unos 0.75s y luego respira 5px cada 5s con un reflejo de luz recortado a su silueta, y debajo "Librería del Saber" en verde (700) y "Preparando tu experiencia de lectura...". Sin barras, partículas ni líneas doradas. Mínimo 800ms en pantalla (lo que tarda en unirse el logo), salida con opacidad en 380ms. Con movimiento reducido solo aparece, sin respiración ni reflejo.
 
 ### Cierre de descarga
 Al final de las páginas que explican la app (Aplicación, Características): banda salvia pálida con borde gris filete y radio 8px, una frase en 600 y el botón principal "Descargar la app". Ninguna página termina sin salida.
@@ -317,5 +323,5 @@ Salida `cubic-bezier(0.16, 1, 0.3, 1)` (expo.out en GSAP), duraciones de 200ms (
 - **Don't** introducir marrón, burdeos ni rosa en la interfaz.
 - **Don't** añadir una segunda familia tipográfica ni titulares en serif.
 - **Don't** usar sombras duras o desplazadas; la profundidad es tonal o difusa.
-- **Don't** convertir el acceso administrativo en algo más que un enlace discreto en la franja (y en el pie del cajón móvil).
+- **Don't** convertir el acceso administrativo en algo más que un enlace discreto al final del pie (no va en la cabecera ni en el menú).
 - **Don't** usar otra etiqueta para la acción principal: siempre "Descargar la app" ("Descargar para Android" solo donde se descarga el archivo).

@@ -51,6 +51,7 @@ const comprobanteRoutes = require('./src/routes/comprobante.routes');
 const clienteRoutes = require('./src/routes/cliente.routes');
 const appRoutes = require('./src/routes/app.routes');
 const reclamacionRoutes = require('./src/routes/reclamacion.routes');
+const anuncioRoutes = require('./src/routes/anuncio.routes');
 
 // ===============================
 // CONFIGURACIÓN DE EXPRESS
@@ -340,6 +341,14 @@ app.use(
 app.use(
     '/api/reclamaciones',
     reclamacionRoutes
+);
+
+// ===============================
+// ANUNCIOS EN VIDEO DE LA WEB PÚBLICA
+// ===============================
+app.use(
+    '/api/anuncios',
+    anuncioRoutes
 );
 
 // ===============================

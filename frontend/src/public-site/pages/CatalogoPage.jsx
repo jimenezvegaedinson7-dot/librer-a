@@ -3,14 +3,15 @@ import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
 import { FaMagnifyingGlass, FaMobileScreenButton } from 'react-icons/fa6';
 
 import Migas from '../components/Migas';
-import { portada, soles } from '../lib/formato';
+import { PrecioOferta } from '../components/PrecioOferta';
+import { portada } from '../lib/formato';
 
 // Sin tildes ni mayúsculas: "Garcia" encuentra "García".
 const normalizar = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
 function TarjetaLibro({ libro, indice }) {
     return (
-        <li className="tarjeta-libro" style={{ '--i': indice % 10 }}>
+        <li className={`tarjeta-libro${libro.disponible ? '' : ' tarjeta-libro--sin-stock'}`} style={{ '--i': indice % 10 }}>
             <div className="tarjeta-libro__tapa">
                 <img
                     src={portada(libro.portada, 320)}
@@ -22,13 +23,13 @@ function TarjetaLibro({ libro, indice }) {
                     loading="lazy"
                     decoding="async"
                 />
+                {!libro.disponible && <span className="agotado">Sin stock por ahora</span>}
             </div>
             {libro.categoria && <span className="categoria">{libro.categoria}</span>}
             <h2 className="libro__titulo">{libro.titulo}</h2>
             <p className="libro__autor">{libro.autor}</p>
-            <p className="tarjeta-libro__precio precio">{soles(libro.precio)}</p>
-            {!libro.disponible && <span className="agotado">Sin stock por ahora</span>}
-            <Link to="/descargar" className="boton boton--chico">
+            <PrecioOferta libro={libro} clase="tarjeta-libro__precio" />
+            <Link to="/descargar" className="boton boton--linea boton--chico">
                 <FaMobileScreenButton aria-hidden="true" /> {libro.disponible ? 'Comprar en la app' : 'Ver en la app'}
             </Link>
         </li>

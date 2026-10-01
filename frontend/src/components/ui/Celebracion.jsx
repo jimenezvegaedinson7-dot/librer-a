@@ -7,7 +7,7 @@ const LINEAS = 36;
 const EASE = [0.25, 1, 0.5, 1];
 
 // Color de cada línea: recorre burdeos → dorado → verde de la marca.
-const PALETA = ['#8a2c36', '#a8423c', '#c2780a', '#b98d3e', '#8f9a3a', '#15803d'];
+const PALETA = ['#0b5c51', '#a8423c', '#c2780a', '#c98f12', '#8f9a3a', '#15803d'];
 function colorLinea(i) {
     const posicion = (i / (LINEAS - 1)) * (PALETA.length - 1);
     return PALETA[Math.round(posicion)];

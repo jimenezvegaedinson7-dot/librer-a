@@ -41,6 +41,8 @@ flowchart LR
     UsuariosClientesPage --> usuariosService(["usuariosService"])
     ReclamacionesPage["/reclamaciones<br/>ReclamacionesPage"]
     ReclamacionesPage --> reclamacionesService(["reclamacionesService"])
+    AnunciosPage["/anuncios<br/>AnunciosPage"]
+    AnunciosPage --> anunciosService(["anunciosService"])
     TarifasEnvioPage["/tarifas-envio<br/>TarifasEnvioPage"]
     TarifasEnvioPage --> tarifasService(["tarifasService"])
     HistorialPage["/historial<br/>HistorialPage"]
@@ -49,6 +51,7 @@ flowchart LR
     EmpresaPage --> empresaService(["empresaService"])
     PersonalizacionPage["/personalizacion<br/>PersonalizacionPage"]
     agenciasService --> _api_agencias{{"/api/agencias"}}
+    anunciosService --> _api_anuncios{{"/api/anuncios"}}
     authService --> _api_auth{{"/api/auth"}}
     perfilService --> _api_usuarios{{"/api/usuarios"}}
     autoresService --> _api_autores{{"/api/autores"}}

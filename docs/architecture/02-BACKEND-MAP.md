@@ -9,7 +9,7 @@
 2. `helmet` (sin CSP, CORP cross-origin) → `config/cors.js` con lista `FRONTEND_ORIGINS` y patrón `FRONTEND_ORIGINS_REGEX` (regex inválida desactiva previews y conserva lista explícita) → `express.json({ limit: '1mb' })` → `baseLimiter`.
 3. Estáticos: `/uploads` → `backend/uploads` (portadas y fotos locales cuando Cloudinary no está configurado).
 4. Endpoints en línea: `GET /`, `GET /api`, `GET /api/test-db` y `GET /api/debug-egress` (ambos JWT + admin).
-5. Montaje de 20 routers bajo `/api/*` → 404 JSON → `error.middleware`.
+5. Montaje de 21 routers bajo `/api/*` → 404 JSON → `error.middleware`.
 6. `iniciarJobs()` (limpieza cada 5 min) y 3 migraciones idempotentes en línea (tabla `favoritos`; columnas `cliente_documento`/`cliente_tipo_documento` en `ventas`; `enviado_por_email`/`fecha_envio_email` en `comprobantes`).
 7. `app.listen(PORT || 3000)`.
 
@@ -18,6 +18,7 @@
 | Prefijo | Archivo de rutas |
 |---|---|
 | `/api/agencias` | `routes/agencia.routes.js` |
+| `/api/anuncios` | `routes/anuncio.routes.js` |
 | `/api/app` | `routes/app.routes.js` |
 | `/api/auth` | `routes/auth.routes.js` |
 | `/api/autores` | `routes/autor.routes.js` |
@@ -111,6 +112,16 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/agencias/:id` | JWT | controllers/agencia.controller.js#obtenerAgencia | `agencia.model.js#obtenerPorId` | agencias_courier |
 | POST | `/api/agencias` | JWT + rol:administrador | controllers/agencia.controller.js#crearAgencia | `agencia.model.js#crear` | agencias_courier |
 | PUT | `/api/agencias/:id` | JWT + rol:administrador | controllers/agencia.controller.js#actualizarAgencia | `agencia.model.js#actualizar`<br>`agencia.model.js#obtenerPorId` | agencias_courier |
+
+### /api/anuncios
+
+| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
+|---|---|---|---|---|---|
+| GET | `/api/anuncios` | — | controllers/anuncio.controller.js#obtenerAnuncioActivo | — | — |
+| GET | `/api/anuncios/todos` | JWT + rol:administrador | controllers/anuncio.controller.js#listarAnuncios | — | — |
+| POST | `/api/anuncios` | JWT + rol:administrador + uploadVideo(video) | controllers/anuncio.controller.js#crearAnuncio | — | — |
+| PUT | `/api/anuncios/:id` | JWT + rol:administrador + uploadVideo(video) | controllers/anuncio.controller.js#actualizarAnuncio | — | — |
+| DELETE | `/api/anuncios/:id` | JWT + rol:administrador | controllers/anuncio.controller.js#eliminarAnuncio | `usuario.model.js#buscarPorIdConPassword` | usuarios |
 
 ### /api/app
 
@@ -308,6 +319,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Modelo | Tablas que consulta o modifica |
 |---|---|
 | `models/agencia.model.js` | agencias_courier |
+| `models/anuncio.model.js` | anuncios |
 | `models/autor.model.js` | autores |
 | `models/categoria.model.js` | categorias |
 | `models/cliente.model.js` | usuarios, ventas |
@@ -325,7 +337,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/usuario.model.js` | favoritos, inventario, reservas, usuarios, ventas |
 | `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, inventario, libros, provincias_lima, usuarios, ventas |
 
-Tablas presentes en el código (17): `agencias_courier`, `autores`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`. El esquema está en `backend/database/schema.sql` + 22 migraciones en `backend/database/migrations`.
+Tablas presentes en el código (18): `agencias_courier`, `anuncios`, `autores`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`. El esquema está en `backend/database/schema.sql` + 22 migraciones en `backend/database/migrations`.
 
 ## Integraciones externas
 

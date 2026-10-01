@@ -751,6 +751,44 @@ test('matriz funcional del flujo comercial', async (t) => {
         });
 
         // ==============================================
+        // 6b2. DESCUENTOS: se cobra el precio con la promoción vigente
+        // ----------------------------------------
+        // La web y la app anuncian el precio rebajado; la orden de PayU no
+        // puede cobrar el de lista. Y una promoción vencida ya no rebaja.
+        // ==============================================
+        await t.test('la orden cobra el precio con descuento vigente y no el vencido', async () => {
+            const [precios] = await pool.query('SELECT precio FROM libros WHERE id_libro = ?', [sembrados.libroManual]);
+            const lista = Number(precios[0].precio);
+            const oferta = Number((lista * 0.5).toFixed(2));
+            const ordenTotal = async () => {
+                const r = await pedir('/api/pagos/crear-orden', cliente, 'POST', {
+                    items: [{ id_libro: sembrados.libroManual, cantidad: 1 }],
+                    correo_compra: 'oferta@example.test',
+                    direccion: 'Av. Siempre Viva 742',
+                    idempotencia_clave: crypto.randomUUID(),
+                    tipo_entrega: 'tienda',
+                });
+                const cuerpo = await r.json().catch(() => ({}));
+                assert.ok(r.status >= 200 && r.status < 300, `orden con oferta devolvió ${r.status}: ${JSON.stringify(cuerpo).slice(0, 200)}`);
+                sembrados.ventas.push(cuerpo.data.id_venta);
+                return Number((await leerVenta(cuerpo.data.id_venta)).total);
+            };
+            try {
+                await pool.query('UPDATE libros SET precio_oferta = ?, descuento_hasta = NULL WHERE id_libro = ?', [oferta, sembrados.libroManual]);
+                assert.equal(await ordenTotal(), oferta, 'con oferta vigente se cobra el precio de oferta');
+
+                const publico = await (await fetch(`${baseUrl}/api/libros/${sembrados.libroManual}`)).json();
+                const libro = publico.data || publico.libro || publico;
+                assert.equal(Number(libro.precio_final), oferta, 'la API pública anuncia el mismo precio que se cobra');
+
+                await pool.query("UPDATE libros SET descuento_hasta = (NOW() AT TIME ZONE 'America/Lima')::date - 1 WHERE id_libro = ?", [sembrados.libroManual]);
+                assert.equal(await ordenTotal(), lista, 'una promoción vencida ya no rebaja el precio');
+            } finally {
+                await pool.query('UPDATE libros SET precio_oferta = NULL, descuento_porcentaje = NULL, descuento_hasta = NULL WHERE id_libro = ?', [sembrados.libroManual]);
+            }
+        });
+
+        // ==============================================
         // 6c. PAYU: idempotencia_clave con formato inválido
         // ==============================================
         await t.test('idempotencia_clave inválida se rechaza con 400', async () => {

@@ -31,12 +31,31 @@ import LibroDeleteModal from './LibroDeleteModal';
 
 const POR_PAGINA = 10;
 
+// El precio en oferta se lee de precio_final y del porcentaje efectivo que
+// ya calculó el backend. Recalcularlo aquí duplicaría la regla y volvería a
+// abrir la puerta a que el panel y la web se contradigan.
+function PrecioCelda({ fila }) {
+    if (Number(fila.descuento_vigente) !== 1) {
+        return <span className="font-semibold text-slate-700">{formatearMoneda(fila.precio)}</span>;
+    }
+
+    return (
+        <span className="flex flex-col items-center gap-0.5">
+            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
+                -{fila.descuento_porcentaje_efectivo}%
+            </span>
+            <span className="text-[11px] text-slate-400 line-through">{formatearMoneda(fila.precio)}</span>
+            <span className="font-bold text-emerald-700">{formatearMoneda(fila.precio_final)}</span>
+        </span>
+    );
+}
+
 const columnasLibros = [
     { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_libro}</span> },
     { titulo: 'Título', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo}</span> },
     { titulo: 'Autor', render: (fila) => <span className="text-slate-700">{fila.autor}</span> },
     { titulo: 'Categoría', render: (fila) => <span className="text-slate-700">{fila.categoria}</span> },
-    { titulo: 'Precio', alineacion: 'centro', render: (fila) => <span className="font-semibold text-slate-700">{formatearMoneda(fila.precio)}</span> },
+    { titulo: 'Precio', alineacion: 'centro', render: (fila) => <PrecioCelda fila={fila} /> },
     { titulo: 'Stock', alineacion: 'centro', render: (fila) => <StockBadge stock={fila.stock} stockMinimo={fila.stock_minimo} /> },
     { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
 ];

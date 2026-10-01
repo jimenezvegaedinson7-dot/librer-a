@@ -83,11 +83,6 @@ export default function PublicHeader() {
                     ))}
                 </ul>
             </div>
-            <div className="franja">
-                <div className="contenedor">
-                    <a className="franja__admin" href={SITIO.rutaLoginAdmin}>Acceso administrativo</a>
-                </div>
-            </div>
 
             <header className="cabecera" data-sombra={sombra}>
                 <div className="contenedor cabecera__principal">
@@ -162,7 +157,6 @@ export default function PublicHeader() {
                             </nav>
                             <div className="cajon__pie">
                                 <Link to="/nosotros#tienda" onClick={() => setAbierto(false)}>Nuestra tienda en Pallasca</Link>
-                                <a href={SITIO.rutaLoginAdmin}>Acceso administrativo</a>
                             </div>
                         </motion.div>
                     </div>

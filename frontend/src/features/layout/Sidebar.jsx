@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 
 import { useTema } from '../../components/providers/tema';
 import { useAuth } from '../auth/AuthContext';
-import logoLibreria from '../../assets/logo-principal-claro.png';
+import logoLibreria from '../../public-site/assets/logo-f-blanco-96.webp';
 import { navPorRol } from './navConfig';
 
 
@@ -113,7 +113,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                     title={colapsado ? nombre : undefined}
                                     aria-label={colapsado ? nombre : undefined}
                                     className={({ isActive }) =>
-                                        `group relative flex items-center rounded-lg outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#dcbb7a]/60 ${
+                                        `group relative flex items-center rounded-lg outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#f0c866]/60 ${
                                             colapsado ? 'h-10 justify-center' : 'h-10 gap-3 px-3'
                                         } ${isActive ? 'sidebar-nav-active' : 'hover:bg-[var(--sb-hover)]'}`
                                     }

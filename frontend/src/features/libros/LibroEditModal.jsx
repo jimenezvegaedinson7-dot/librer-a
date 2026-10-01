@@ -8,8 +8,23 @@ import { Select } from '../../components/ui/Form';import { Alert } from '../../c
 
 import { listarAutores, listarCategorias, actualizarLibro } from './librosService';
 import { construirUrlArchivo } from '../../lib/utils/url';
-import CamposLibro, { SelectorPortada } from './CamposLibro';
+import CamposLibro, { SelectorPortada, CamposDescuento } from './CamposLibro';
 import { requerido, numeroNoNegativo, seleccionRequerida, validarFormulario } from '../../lib/utils/validaciones';
+
+// mysql2 devuelve las columnas DATE como Date en hora local, así que los
+// getters locales conservan el día correcto. Con toISOString() se correría
+// un día hacia atrás enropicativo de Lima (UTC-5) y la promoción vencería
+// antes de tiempo.
+function aFechaInput(valor) {
+    if (!valor) return '';
+    if (typeof valor === 'string') return valor.slice(0, 10);
+    if (valor instanceof Date && !Number.isNaN(valor.getTime())) {
+        const mes = String(valor.getMonth() + 1).padStart(2, '0');
+        const dia = String(valor.getDate()).padStart(2, '0');
+        return `${valor.getFullYear()}-${mes}-${dia}`;
+    }
+    return '';
+}
 
 const REGLAS = {
     titulo: [(v) => requerido(v, 'El título')],
@@ -40,6 +55,9 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
         stock: libro?.stock ?? 0,
         id_autor: libro?.id_autor || '',
         id_categoria: libro?.id_categoria || '',
+        descuento_porcentaje: libro?.descuento_porcentaje ?? '',
+        precio_oferta: libro?.precio_oferta ?? '',
+        descuento_hasta: aFechaInput(libro?.descuento_hasta),
         estado: libro?.estado !== undefined && libro?.estado !== null ? String(libro.estado) : '1',
     }));
     const [imagen, setImagen] = useState(null);
@@ -126,6 +144,9 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
             stock: libro.stock ?? 0,
             id_autor: libro.id_autor || '',
             id_categoria: libro.id_categoria || '',
+            descuento_porcentaje: libro.descuento_porcentaje ?? '',
+            precio_oferta: libro.precio_oferta ?? '',
+            descuento_hasta: aFechaInput(libro.descuento_hasta),
             estado: libro.estado !== undefined && libro.estado !== null ? String(libro.estado) : '1',
         });
         cancelarNuevaImagen();
@@ -190,6 +211,12 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
                     onQuitar={cancelarNuevaImagen}
                     inputRef={inputArchivoRef}
                     cargando={guardando}
+                />
+
+                <CamposDescuento
+                    formulario={formulario}
+                    manejarCambio={manejarCambio}
+                    errores={errores}
                 />
 
                 <div className="flex flex-col-reverse gap-3 border-t border-primary-200 pt-5 sm:flex-row sm:justify-end">

@@ -7,7 +7,7 @@ export function Card({ children, className = '', hover = false }) {
 }
 
 const iconColores = {
-    blue: 'bg-[#f6e6e4] text-[#8a2c36]',
+    blue: 'bg-[#dfeee9] text-[#0b5c51]',
     rose: 'bg-[#ffe4e6] text-[#e11d48]',
     emerald: 'bg-[#d1fae5] text-[#059669]',
     amber: 'bg-[#fef3c7] text-[#d97706]',

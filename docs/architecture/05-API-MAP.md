@@ -3,7 +3,7 @@
 > Generado desde el código real el 2026-10-01 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
-Total de endpoints registrados en el backend: **105** (incluye 4 definidos directamente en `server.js`).
+Total de endpoints registrados en el backend: **110** (incluye 4 definidos directamente en `server.js`).
 
 - **Auth**: `Pública` = sin JWT · `JWT` = requiere `Authorization: Bearer` · `JWT + admin` = además rol `administrador`.
 - **React / Flutter**: archivos que llaman al endpoint (directamente o a través de su servicio). `—` = ningún cliente lo usa.
@@ -20,6 +20,11 @@ Total de endpoints registrados en el backend: **105** (incluye 4 definidos direc
 | GET | `/api/agencias/:id` | controllers/agencia.controller.js#obtenerAgencia | JWT | declarado en features/agencias/agenciasService.js#obtenerAgencia (sin uso) | — | JWT |
 | POST | `/api/agencias` | controllers/agencia.controller.js#crearAgencia | JWT + rol:administrador | features/agencias/AgenciasPage.jsx | — | JWT + admin |
 | PUT | `/api/agencias/:id` | controllers/agencia.controller.js#actualizarAgencia | JWT + rol:administrador | features/agencias/AgenciaEditModal.jsx | — | JWT + admin |
+| GET | `/api/anuncios` | controllers/anuncio.controller.js#obtenerAnuncioActivo | — | declarado en features/anuncios/anunciosService.js#obtenerAnuncioActivo (sin uso) | — | Pública |
+| GET | `/api/anuncios/todos` | controllers/anuncio.controller.js#listarAnuncios | JWT + rol:administrador | features/anuncios/AnunciosPage.jsx | — | JWT + admin |
+| POST | `/api/anuncios` | controllers/anuncio.controller.js#crearAnuncio | JWT + rol:administrador + uploadVideo(video) | features/anuncios/AnunciosPage.jsx | — | JWT + admin |
+| PUT | `/api/anuncios/:id` | controllers/anuncio.controller.js#actualizarAnuncio | JWT + rol:administrador + uploadVideo(video) | features/anuncios/AnunciosPage.jsx | — | JWT + admin |
+| DELETE | `/api/anuncios/:id` | controllers/anuncio.controller.js#eliminarAnuncio | JWT + rol:administrador | features/anuncios/AnunciosPage.jsx | — | JWT + admin |
 | GET | `/api/app/version` | controllers/app.controller.js#obtenerVersion | — | — | — | Pública |
 | POST | `/api/auth/registro` | controllers/auth.controller.js#registrar | registroLimiter | — | screens/registro_screen.dart | Pública |
 | POST | `/api/auth/login` | controllers/auth.controller.js#login | loginLimiter | features/auth/LoginPage.jsx | screens/login_screen.dart | Pública |

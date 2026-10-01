@@ -4,9 +4,9 @@ flowchart TB
     subgraph API["Backend Node/Express (Render)"]
         direction TB
         MW["helmet · cors · rate limit · JWT · roles"]
-        R["20 routers /api/*"]
-        C["21 controladores"]
-        M["17 modelos SQL"]
+        R["21 routers /api/*"]
+        C["22 controladores"]
+        M["18 modelos SQL"]
         MW --> R --> C --> M
     end
     M --> DB

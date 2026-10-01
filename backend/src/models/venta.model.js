@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const { PRECIO_FINAL_SQL } = require('./libro.model');
 const {
     VENTA,
     permitirTransicion,
@@ -517,12 +518,13 @@ const crear = async (venta, conexionExterna = null) => {
             const [libros] =
                 await connection.query(`
                     SELECT
-                        id_libro,
-                        titulo,
-                        precio,
-                        estado
-                    FROM libros
-                    WHERE id_libro = ?
+                        l.id_libro,
+                        l.titulo,
+                        l.precio,
+                        l.estado,
+                        ${PRECIO_FINAL_SQL}
+                    FROM libros l
+                    WHERE l.id_libro = ?
                     LIMIT 1
                 `, [id_libro]);
 
@@ -549,8 +551,12 @@ const crear = async (venta, conexionExterna = null) => {
             // ========================================
             // VALIDAR PRECIO
             // ========================================
+            // Se cobra el precio final (con la promoción vigente), el mismo
+            // que muestran la web y el panel. Cobrar el de lista mientras
+            // la web anuncia la oferta sería vender más caro de lo
+            // publicado.
             const precioUnitario =
-                Number(libro.precio);
+                Number(libro.precio_final);
 
             if (
                 !Number.isFinite(

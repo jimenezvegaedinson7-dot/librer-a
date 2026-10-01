@@ -7,7 +7,7 @@ export const ZONAS_IDS = ['sidebar', 'topbar', 'buttons', 'inputs', 'tables', 'm
 export const ZONAS_DEFAULT = ['sidebar', 'topbar', 'buttons', 'icons'];
 
 export const COLORES = {
-    default: { primary: '#74212c', primaryHover: '#5c1a23', primarySoft: '#f6e6e4', text: '#74212c' },
+    default: { primary: '#004d43', primaryHover: '#013a33', primarySoft: '#dfeee9', text: '#004d43' },
     azul: { primary: '#2563eb', primaryHover: '#1d4ed8', primarySoft: '#dbeafe', text: '#1d4ed8' },
     indigo: { primary: '#4f46e5', primaryHover: '#4338ca', primarySoft: '#e0e7ff', text: '#4338ca' },
     violeta: { primary: '#7c3aed', primaryHover: '#6d28d9', primarySoft: '#ede9fe', text: '#6d28d9' },
@@ -33,8 +33,8 @@ const SIDEBAR_SECTION = { light: '#a39a8e', dark: '#a89e91' };
 
 // Sidebar de marca: tinta cálida con filete dorado, igual en ambos temas
 const SIDEBAR_MARCA = {
-    light: { bg: '#1f1a17', border: 'rgba(236, 220, 174, 0.10)' },
-    dark: { bg: '#110f0d', border: 'rgba(236, 220, 174, 0.08)' },
+    light: { bg: '#013a33', border: 'rgba(223, 230, 221, 0.12)' },
+    dark: { bg: '#01241f', border: 'rgba(223, 230, 221, 0.08)' },
 };
 
 export function getSidebarColors(colorId, tema) {
@@ -43,14 +43,14 @@ export function getSidebarColors(colorId, tema) {
     if (colorId === 'default') {
         const marca = SIDEBAR_MARCA[isDark ? 'dark' : 'light'];
         return {
-            primary: '#dcbb7a',
-            primarySoft: 'rgba(220, 187, 122, 0.12)',
+            primary: '#f0c866',
+            primarySoft: 'rgba(240, 200, 102, 0.14)',
             sidebarBg: marca.bg,
             sidebarBorder: marca.border,
-            sidebarText: '#cfc5b8',
-            sidebarHover: 'rgba(220, 187, 122, 0.10)',
-            sidebarSection: '#8a8074',
-            brandTitle: '#f5eedf',
+            sidebarText: '#d3e0db',
+            sidebarHover: 'rgba(223, 230, 221, 0.10)',
+            sidebarSection: '#8fb1a7',
+            brandTitle: '#ffffff',
             oscuro: true,
         };
     }

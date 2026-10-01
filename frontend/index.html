@@ -95,139 +95,78 @@
       @font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/work-sans-latin-700-normal.woff2') format('woff2'); }
       #precarga { display: none; }
       html.precarga-bloqueo, html.precarga-bloqueo body { overflow: hidden; }
-      html[data-precarga] body { background: #012b26; }
+      html[data-precarga] body { background: #f6f3ee; }
+      /* Pantalla de carga sobria: papel claro, el logo de la librería que
+         respira despacio con un reflejo de luz, y el nombre debajo.
+         Sin barras ni destellos. */
       html[data-precarga] #precarga {
         position: fixed; inset: 0; z-index: 2147483000;
         display: grid; place-items: center;
-        overflow: hidden; isolation: isolate;
-        color: #f3ecdc;
+        color: #013a33;
         font-family: 'Work Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-        background:
-          radial-gradient(60% 50% at 50% 46%, rgba(11, 92, 81, 0.55), transparent 70%),
-          radial-gradient(45% 40% at 12% 8%, rgba(0, 77, 67, 0.7), transparent 70%),
-          radial-gradient(40% 35% at 90% 95%, rgba(235, 170, 32, 0.10), transparent 70%),
-          linear-gradient(160deg, #013a33 0%, #012b26 55%, #001d19 100%);
-        transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      /* Grano muy sutil (ruido SVG propio) y viñeta. */
-      #precarga::before {
-        content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.07; mix-blend-mode: soft-light;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
-      }
-      #precarga::after {
-        content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-        background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 12, 10, 0.55) 100%);
+        background: radial-gradient(70% 60% at 50% 42%, #ffffff 0%, #f6f3ee 60%, #ece6db 100%);
+        transition: opacity 380ms cubic-bezier(0.16, 1, 0.3, 1);
       }
       #precarga.precarga--saliendo { opacity: 0; pointer-events: none; }
-
-      /* Luces difusas que flotan detrás del vidrio. */
-      .precarga__luz { position: absolute; z-index: -1; border-radius: 50%; filter: blur(60px); will-change: transform; }
-      .precarga__luz--a { width: 42vmax; height: 42vmax; left: 6%; top: 8%; background: rgba(16, 122, 104, 0.35); animation: precarga-flotar 14s ease-in-out infinite alternate; }
-      .precarga__luz--b { width: 34vmax; height: 34vmax; right: 4%; bottom: 2%; background: rgba(235, 170, 32, 0.12); animation: precarga-flotar 18s ease-in-out -6s infinite alternate-reverse; }
-      .precarga__luz--c { width: 26vmax; height: 26vmax; left: 50%; top: 50%; margin: -13vmax 0 0 -13vmax; background: rgba(223, 230, 221, 0.07); animation: precarga-flotar 11s ease-in-out -3s infinite alternate; }
-      @keyframes precarga-flotar { from { transform: translate3d(-3%, -2%, 0) scale(1); } to { transform: translate3d(4%, 3%, 0) scale(1.08); } }
-
-      /* Partículas: pocas, pequeñas y lentas. */
-      .precarga__polvo { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
-      .precarga__polvo i {
-        position: absolute; bottom: -8px; left: var(--x); width: 3px; height: 3px; border-radius: 50%;
-        background: rgba(243, 213, 138, 0.55); opacity: 0;
-        animation: precarga-subir var(--d) linear var(--t) infinite;
-      }
-      @keyframes precarga-subir {
-        0% { transform: translate3d(0, 0, 0); opacity: 0; }
-        15% { opacity: 0.7; }
-        85% { opacity: 0.35; }
-        100% { transform: translate3d(12px, -70vh, 0); opacity: 0; }
-      }
-
       .precarga__centro { display: grid; justify-items: center; text-align: center; padding: 24px; }
-      .precarga__emblema { --t: 208px; position: relative; width: var(--t); height: var(--t); display: grid; place-items: center; }
-
-      /* Disco de vidrio: desenfoca las luces que pasan detrás. */
-      .precarga__vidrio {
-        position: absolute; inset: 22px; border-radius: 50%;
-        background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03) 55%, rgba(235, 170, 32, 0.05));
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -18px 30px rgba(0, 20, 16, 0.35), 0 24px 60px -20px rgba(0, 0, 0, 0.6), 0 0 80px -10px rgba(16, 122, 104, 0.45);
-        -webkit-backdrop-filter: blur(14px) saturate(140%);
-        backdrop-filter: blur(14px) saturate(140%);
-      }
-      /* Reflejo curvo en la parte superior del vidrio. */
-      .precarga__vidrio::after {
-        content: ''; position: absolute; left: 16%; right: 16%; top: 7%; height: 34%; border-radius: 50%;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
-      }
-
-      /* Aro: pista fina y dos arcos (dorado y crema) que giran despacio. */
-      .precarga__aro { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-      .precarga__aro circle { fill: none; transform-origin: 50% 50%; }
-      .precarga__pista { stroke: rgba(223, 230, 221, 0.14); stroke-width: 1; }
-      .precarga__arco-oro { stroke: url(#precarga-oro); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 150 490; animation: precarga-girar 2.8s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite; }
-      .precarga__arco-crema { stroke: rgba(243, 236, 220, 0.55); stroke-width: 1; stroke-linecap: round; stroke-dasharray: 60 580; animation: precarga-girar 4.6s linear infinite reverse; }
-      @keyframes precarga-girar { to { transform: rotate(360deg); } }
-
       .precarga__logo {
-        position: relative; width: 62px; height: auto;
-        filter: drop-shadow(0 0 18px rgba(243, 213, 138, 0.28)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
-        animation: precarga-entrar 800ms cubic-bezier(0.16, 1, 0.3, 1) both, precarga-pulso 3.6s ease-in-out 900ms infinite;
+        position: relative; width: clamp(96px, 26vw, 128px); aspect-ratio: 320 / 377;
+        animation: precarga-respirar 5s ease-in-out 0.9s infinite;
       }
-      @keyframes precarga-entrar { from { opacity: 0; transform: translateY(8px) scale(0.92); } to { opacity: 1; transform: none; } }
-      @keyframes precarga-pulso { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
-
-      .precarga__nombre { margin: 22px 0 0; font-size: 1.375rem; font-weight: 600; letter-spacing: 0.01em; animation: precarga-aparecer 800ms cubic-bezier(0.16, 1, 0.3, 1) 180ms both; }
-      .precarga__frase { margin: 8px 0 0; font-size: 0.875rem; color: rgba(223, 230, 221, 0.72); animation: precarga-aparecer 800ms cubic-bezier(0.16, 1, 0.3, 1) 320ms both; }
-      .precarga__frase::before { content: ''; display: block; width: 28px; height: 1px; margin: 0 auto 12px; background: linear-gradient(90deg, transparent, rgba(235, 170, 32, 0.8), transparent); }
+      .precarga__logo { filter: drop-shadow(0 10px 18px rgba(1, 58, 51, 0.18)); }
+      /* El logo llega en pedazos que se juntan hasta completarlo: cada pieza es
+         el logo entero recortado a una región, que entra desde fuera. */
+      .precarga__pieza {
+        position: absolute; inset: 0; width: 100%; height: 100%;
+        clip-path: var(--recorte);
+        animation: precarga-unir 480ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+        animation-delay: calc(40ms + var(--i) * 45ms);
+      }
+      /* Ya unido, el logo entero se superpone y borra las finas juntas de los cortes. */
+      .precarga__entero { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; animation: precarga-sellar 160ms ease-out 0.7s forwards; }
+      @keyframes precarga-sellar { to { opacity: 1; } }
+      @keyframes precarga-unir {
+        from { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(0.92); }
+        60% { opacity: 1; }
+        to { opacity: 1; transform: none; }
+      }
+      /* Reflejo que cruza el logo: recortado a su silueta. */
+      .precarga__logo::after {
+        content: ''; position: absolute; inset: 0; pointer-events: none;
+        background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.45) 50%, transparent 62%) 0 0 / 260% 100% no-repeat;
+        -webkit-mask: url('/precarga/logo-f-verde.webp') center / contain no-repeat;
+        mask: url('/precarga/logo-f-verde.webp') center / contain no-repeat;
+        animation: precarga-reflejo 3.2s ease-in-out 0.8s infinite;
+      }
+      @keyframes precarga-entrar { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+      @keyframes precarga-respirar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+      @keyframes precarga-reflejo { 0% { background-position: 130% 0; } 60%, 100% { background-position: -30% 0; } }
+      .precarga__nombre { margin: 22px 0 0; font-size: 1.375rem; font-weight: 700; letter-spacing: -0.01em; animation: precarga-aparecer 500ms cubic-bezier(0.16, 1, 0.3, 1) 300ms both; }
+      .precarga__frase { margin: 6px 0 0; font-size: 0.875rem; color: #5b6763; animation: precarga-aparecer 500ms cubic-bezier(0.16, 1, 0.3, 1) 400ms both; }
       @keyframes precarga-aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
       @media (max-width: 520px) {
-        .precarga__emblema { --t: 168px; }
-        .precarga__vidrio { inset: 18px; }
-        .precarga__logo { width: 50px; }
-        .precarga__nombre { font-size: 1.1875rem; margin-top: 18px; }
+        .precarga__nombre { font-size: 1.1875rem; }
         .precarga__frase { font-size: 0.8125rem; }
       }
       @media (prefers-reduced-motion: reduce) {
-        .precarga__polvo { display: none; }
-        .precarga__luz { animation: none; }
-        .precarga__logo { animation: precarga-aparecer-simple 400ms ease-out both; }
-        .precarga__nombre, .precarga__frase { animation: precarga-aparecer-simple 400ms ease-out both; }
-        .precarga__arco-oro { animation-duration: 9s; animation-timing-function: linear; }
-        .precarga__arco-crema { animation: none; }
+        .precarga__logo, .precarga__nombre, .precarga__frase { animation: precarga-aparecer-simple 400ms ease-out both; }
+        .precarga__pieza { animation: none; }
+        .precarga__entero { animation: none; opacity: 1; }
+        .precarga__logo::after { display: none; }
         @keyframes precarga-aparecer-simple { from { opacity: 0; } to { opacity: 1; } }
       }
     </style>
   </head>
   <body>
     <div id="precarga" role="status" aria-live="polite" aria-busy="true">
-      <span class="precarga__luz precarga__luz--a" aria-hidden="true"></span>
-      <span class="precarga__luz precarga__luz--b" aria-hidden="true"></span>
-      <span class="precarga__luz precarga__luz--c" aria-hidden="true"></span>
-      <span class="precarga__polvo" aria-hidden="true">
-        <i style="--x: 12%; --d: 16s; --t: -2s"></i>
-        <i style="--x: 24%; --d: 21s; --t: -9s"></i>
-        <i style="--x: 37%; --d: 18s; --t: -14s"></i>
-        <i style="--x: 52%; --d: 24s; --t: -5s"></i>
-        <i style="--x: 63%; --d: 17s; --t: -11s"></i>
-        <i style="--x: 76%; --d: 22s; --t: -3s"></i>
-        <i style="--x: 88%; --d: 19s; --t: -16s"></i>
-        <i style="--x: 45%; --d: 26s; --t: -20s"></i>
-      </span>
       <div class="precarga__centro">
-        <div class="precarga__emblema" aria-hidden="true">
-          <span class="precarga__vidrio"></span>
-          <svg class="precarga__aro" viewBox="0 0 208 208" focusable="false">
-            <defs>
-              <linearGradient id="precarga-oro" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#f3d58a" />
-                <stop offset="1" stop-color="#ebaa20" stop-opacity="0.2" />
-              </linearGradient>
-            </defs>
-            <circle class="precarga__pista" cx="104" cy="104" r="102" />
-            <circle class="precarga__arco-oro" cx="104" cy="104" r="102" />
-            <circle class="precarga__arco-crema" cx="104" cy="104" r="96" />
-          </svg>
-          <img class="precarga__logo" data-src="/precarga/logo-f-blanco.webp" alt="" width="160" height="188" decoding="async" fetchpriority="high" />
+        <div class="precarga__logo" aria-hidden="true">
+          <img class="precarga__pieza" data-src="/precarga/logo-f-verde.webp" alt="" width="320" height="377" decoding="async" style="--i: 0; --recorte: polygon(0 0, 55% 0, 45% 38%, 0 48%); --dx: -34px; --dy: -26px; --r: -14deg" />
+          <img class="precarga__pieza" data-src="/precarga/logo-f-verde.webp" alt="" width="320" height="377" decoding="async" style="--i: 1; --recorte: polygon(55% 0, 100% 0, 100% 30%, 62% 42%, 45% 38%); --dx: 36px; --dy: -30px; --r: 12deg" />
+          <img class="precarga__pieza" data-src="/precarga/logo-f-verde.webp" alt="" width="320" height="377" decoding="async" style="--i: 2; --recorte: polygon(0 48%, 45% 38%, 62% 42%, 52% 70%, 0 78%); --dx: -40px; --dy: 6px; --r: 9deg" />
+          <img class="precarga__pieza" data-src="/precarga/logo-f-verde.webp" alt="" width="320" height="377" decoding="async" style="--i: 3; --recorte: polygon(62% 42%, 100% 30%, 100% 100%, 60% 100%, 52% 70%); --dx: 38px; --dy: 22px; --r: -10deg" />
+          <img class="precarga__pieza" data-src="/precarga/logo-f-verde.webp" alt="" width="320" height="377" decoding="async" style="--i: 4; --recorte: polygon(0 78%, 52% 70%, 60% 100%, 0 100%); --dx: -22px; --dy: 34px; --r: 13deg" />
+          <img class="precarga__entero" data-src="/precarga/logo-f-verde.webp" alt="" width="320" height="377" decoding="async" />
         </div>
         <p class="precarga__nombre">Librería del Saber</p>
         <p class="precarga__frase">Preparando tu experiencia de lectura...</p>
@@ -235,13 +174,14 @@
     </div>
     <script>
       // Fuera de la web pública la pantalla de carga no se usa.
-      // El logo se pide solo en la web pública (el panel no lo descarga).
+      // La imagen se pide solo en la web pública (el panel no la descarga).
       var precarga = document.getElementById('precarga');
       if (!document.documentElement.hasAttribute('data-precarga')) {
         if (precarga) precarga.remove();
       } else if (precarga) {
-        var logo = precarga.querySelector('.precarga__logo');
-        logo.src = logo.getAttribute('data-src');
+        precarga.querySelectorAll('img[data-src]').forEach(function (img) {
+          img.src = img.getAttribute('data-src');
+        });
       }
     </script>
     <div id="root"></div>

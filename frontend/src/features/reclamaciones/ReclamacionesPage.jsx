@@ -214,7 +214,7 @@ export default function ReclamacionesPage() {
                     subtitulo={
                         <span>
                             Formulario público:{' '}
-                            <a href={urlPublica} target="_blank" rel="noreferrer" className="font-semibold text-[#7a2530] underline">
+                            <a href={urlPublica} target="_blank" rel="noreferrer" className="font-semibold text-[#004d43] underline">
                                 {urlPublica} <FaArrowUpRightFromSquare className="inline text-xs" />
                             </a>
                         </span>

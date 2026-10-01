@@ -10,7 +10,7 @@ import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Modal } from '../../components/ui/Modal';
 
 const OPCIONES = [
-    { id: 'default', nombre: 'Predeterminado', hex: '#74212c' },
+    { id: 'default', nombre: 'Predeterminado', hex: '#004d43' },
     { id: 'azul', nombre: 'Azul', hex: '#2563eb' },
     { id: 'indigo', nombre: 'Índigo', hex: '#4f46e5' },
     { id: 'violeta', nombre: 'Violeta', hex: '#7c3aed' },
@@ -215,7 +215,7 @@ export default function PersonalizacionPage() {
 
     // En "Predeterminado" la barra lateral real es tinta con acento dorado; la vista previa lo refleja.
     const sidebarPrevia = esMarca
-        ? { fondo: '#1f1a17', borde: 'rgba(236,220,174,0.14)', acento: '#dcbb7a', activo: 'rgba(220,187,122,0.12)', texto: '#cfc5b8', titulo: '#f5eedf' }
+        ? { fondo: '#013a33', borde: 'rgba(223,230,221,0.14)', acento: '#f0c866', activo: 'rgba(240,200,102,0.14)', texto: '#d3e0db', titulo: '#ffffff' }
         : { fondo: soft, borde: border, acento: hex, activo: soft2, texto: '#766d62', titulo: hex };
 
     const zonasPersonalizadas = ZONAS_IDS.filter((z) => config.zonas[z]).length;

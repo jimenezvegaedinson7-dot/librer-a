@@ -104,6 +104,120 @@ const subirImagen = async (
 };
 
 // ========================================
+// SUBIR VIDEO A CLOUDINARY
+// Mismo camino que las imágenes pero contra el endpoint /video/upload.
+// El resource_type va en la URL, no en el cuerpo, por eso no se puede
+// reutilizar subirImagen() tal cual.
+// Devuelve { url, publicId } o lanza error.
+// ========================================
+const subirVideo = async (
+    buffer,
+    { carpeta = 'libreria' } = {}
+) => {
+    if (!configurado) {
+        throw new Error(
+            'Cloudinary no está configurado'
+        );
+    }
+
+    const timestamp =
+        Math.floor(Date.now() / 1000);
+
+    const params = {
+        folder: carpeta,
+        timestamp
+    };
+
+    const body = new FormData();
+    body.append(
+        'file',
+        new Blob([buffer]),
+        'video'
+    );
+    body.append('folder', carpeta);
+    body.append('timestamp', String(timestamp));
+    body.append('api_key', API_KEY);
+    body.append(
+        'signature',
+        firmar(params)
+    );
+
+    const respuesta =
+        await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`,
+            {
+                method: 'POST',
+                body
+            }
+        );
+
+    const json =
+        await respuesta
+            .json()
+            .catch(() => null);
+
+    if (
+        !respuesta.ok ||
+        !json ||
+        !json.secure_url
+    ) {
+        throw new Error(
+            json?.error?.message ||
+            'Error al subir el video a Cloudinary'
+        );
+    }
+
+    return {
+        url: json.secure_url,
+        publicId: json.public_id
+    };
+};
+
+// ========================================
+// ELIMINAR VIDEO POR PUBLIC_ID
+// ========================================
+const eliminarVideo = async (
+    publicId
+) => {
+    if (!configurado) {
+        return false;
+    }
+
+    const timestamp =
+        Math.floor(Date.now() / 1000);
+
+    const params = {
+        public_id: publicId,
+        timestamp
+    };
+
+    const body = new FormData();
+    body.append('public_id', publicId);
+    body.append('timestamp', String(timestamp));
+    body.append('api_key', API_KEY);
+    body.append(
+        'signature',
+        firmar(params)
+    );
+
+    const respuesta =
+        await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/destroy`,
+            {
+                method: 'POST',
+                body
+            }
+        );
+
+    const json =
+        await respuesta
+            .json()
+            .catch(() => null);
+
+    return json?.result === 'ok';
+};
+
+// ========================================
 // ELIMINAR IMAGEN POR PUBLIC_ID
 // ========================================
 const eliminarImagen = async (
@@ -151,6 +265,11 @@ const eliminarImagen = async (
 // EXTRAER PUBLIC_ID DESDE UNA URL
 // de https://res.cloudinary.com/<cloud>/
 // image/upload/v<version>/<public_id>
+// o video/upload/v<version>/<public_id>
+//
+// El resource_type va en la URL, así que una URL de video NO
+// matchea el patrón de imagen y antes de este cambio devolvía
+// null: el archivo viejo se quedaba en Cloudinary para siempre.
 // ========================================
 const publicIdDesdeUrl = (url) => {
     if (
@@ -160,9 +279,14 @@ const publicIdDesdeUrl = (url) => {
         return null;
     }
 
+    const recurso =
+        '(image|video|raw)';
+
     const versionado =
         url.match(
-            /\/image\/upload\/v\d+\/(.+)$/
+            new RegExp(
+                `/${recurso}/upload/v\\d+/(.+)$`
+            )
         );
 
     if (versionado) {
@@ -174,7 +298,9 @@ const publicIdDesdeUrl = (url) => {
 
     const directo =
         url.match(
-            /\/image\/upload\/(.+)$/
+            new RegExp(
+                `/${recurso}/upload/(.+)$`
+            )
         );
 
     if (directo) {
@@ -187,9 +313,88 @@ const publicIdDesdeUrl = (url) => {
     return null;
 };
 
+// ========================================
+// TIPO DE RECURSO DE UNA URL DE CLOUDINARY
+// 'image' | 'video' | 'raw' | null. Sirve para borrar por el
+// endpoint que corresponde a cada archivo.
+// ========================================
+const tipoDesdeUrl = (url) => {
+    if (
+        !url ||
+        !url.includes('res.cloudinary.com')
+    ) {
+        return null;
+    }
+
+    const encontrado = url.match(
+        /res\.cloudinary\.com\/[^/]+\/(image|video|raw)\//
+    );
+
+    return encontrado ? encontrado[1] : null;
+};
+
+// ========================================
+// ELIMINAR CUALQUIER RECURSO POR PUBLIC_ID
+// Elige el endpoint según el tipo que se le pase. Si el publicId
+// viene de una URL, tipoDesdeUrl() lo deduce solo.
+// ========================================
+const eliminarRecurso = async (
+    publicId,
+    tipo = 'image'
+) => {
+    if (tipo === 'video') {
+        return eliminarVideo(publicId);
+    }
+
+    if (tipo === 'raw') {
+        if (!configurado) {
+            return false;
+        }
+
+        const timestamp =
+            Math.floor(Date.now() / 1000);
+
+        const params = {
+            public_id: publicId,
+            timestamp
+        };
+
+        const body = new FormData();
+        body.append('public_id', publicId);
+        body.append('timestamp', String(timestamp));
+        body.append('api_key', API_KEY);
+        body.append(
+            'signature',
+            firmar(params)
+        );
+
+        const respuesta =
+            await fetch(
+                `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/raw/destroy`,
+                {
+                    method: 'POST',
+                    body
+                }
+            );
+
+        const json =
+            await respuesta
+                .json()
+                .catch(() => null);
+
+        return json?.result === 'ok';
+    }
+
+    return eliminarImagen(publicId);
+};
+
 module.exports = {
     subirImagen,
+    subirVideo,
     eliminarImagen,
+    eliminarVideo,
+    eliminarRecurso,
     publicIdDesdeUrl,
+    tipoDesdeUrl,
     configurado
 };

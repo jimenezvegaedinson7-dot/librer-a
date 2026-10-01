@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
 
 // Web pública: páginas separadas (Inicio, Catálogo, Aplicación,
@@ -17,9 +20,19 @@ const LIBROS = Array.from({ length: 14 }, (_, i) => ({
     portada: 'data:image/gif;base64,R0lGODlhAQABAAAAACw=',
 }));
 
-async function apiPublica(page, { falla = false, vacia = false } = {}) {
-    await page.route(`${API}/libros`, (r) => (falla ? r.fulfill({ status: 503, json: {} }) : r.fulfill({ json: vacia ? [] : LIBROS })));
+const VIDEO_PRUEBA = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures/anuncio.webm'));
+
+async function apiPublica(page, { falla = false, vacia = false, libros = LIBROS, anuncio = null } = {}) {
+    await page.route(`${API}/libros`, (r) => (falla ? r.fulfill({ status: 503, json: {} }) : r.fulfill({ json: vacia ? [] : libros })));
     await page.route(`${API}/empresa`, (r) => r.fulfill({ json: { success: true, empresa: { razon_social: 'FLORES SALINAS SARA', nombre_comercial: 'MATIDANA', ruc: '10447545387' } } }));
+    // El video lo sube el administrador, así que por defecto no hay ninguno
+    // activo. Las pruebas del video pasan uno explícito.
+    await page.route(`${API}/anuncios`, (r) => r.fulfill({ json: { success: true, anuncio } }));
+    // El archivo del anuncio se sirve con un WebM real y diminuto: la portada
+    // retira la sección si el video no carga, así que una URL inventada no basta.
+    if (anuncio?.video_url && !anuncio.roto) {
+        await page.route(anuncio.video_url, (r) => r.fulfill({ body: VIDEO_PRUEBA, contentType: 'video/webm' }));
+    }
 }
 
 const menu = (page) => page.getByRole('navigation', { name: 'Principal' });
@@ -153,10 +166,11 @@ test('selector de entrega: teclado y resultado anunciado', async ({ page }) => {
     await expect(page.locator('.selector-entrega__resultado')).toContainText('Pallasca');
 });
 
-test('acceso administrativo lleva al login del panel, que no se indexa', async ({ page }) => {
+test('acceso administrativo: solo en el pie, discreto, y lleva al login del panel', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
-    await page.locator('.franja__admin').click();
+    await expect(page.locator('header a[href="/admin/login"], .avisos a[href="/admin/login"]')).toHaveCount(0);
+    await page.locator('.pie__admin').click();
     await expect(page).toHaveURL(/\/admin\/login$/);
     await expect(page).toHaveTitle(/Acceso administrativo/);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow');
@@ -212,30 +226,42 @@ test('recarga: un enlace con ancla sigue llevando a su sección', async ({ page 
 });
 
 // Video de anuncios del inicio. Es solo el video: sin título, sin texto propio
-// y sin botón. El archivo todavía no está en el repo, así que la sección debe
-// avisar en vez de dejar un reproductor roto. Y si el archivo existe pero el
-// navegador no lo puede reproducir, el reproductor se queda: el mensaje de
-// "llega muy pronto" sería falso.
-test('video del inicio: es solo el video, sin título ni botón, y avisa si el archivo aún no está', async ({ page }) => {
+// y sin botón. Lo sube el administrador, así que sin anuncio activo la sección
+// no se monta: es preferible a dejar un hueco vacío en la portada.
+test('video del inicio: sin anuncio activo no hay sección, y no rompe la portada', async ({ page }) => {
     const errores = [];
     page.on('pageerror', (e) => errores.push(String(e)));
     await apiPublica(page);
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
 
+    await expect(page.locator('.video-destacado')).toHaveCount(0);
+    // La portada sigue completa: el hero no desaparece por falta de video.
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    expect(errores).toHaveLength(0);
+});
+
+test('video del inicio: el anuncio activo se reproduce solo, sin título ni botón', async ({ page }) => {
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    await apiPublica(page, {
+        anuncio: { id_anuncio: 7, titulo: 'Promo', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4' },
+    });
+    await page.goto('/');
+    await page.waitForSelector('#precarga', { state: 'detached' });
+
     const seccion = page.locator('.video-destacado');
     await expect(seccion).toHaveCount(1);
-    await expect(page.getByText('El video llega muy pronto')).toBeVisible();
-    await expect(seccion.locator('video')).toHaveCount(0);
 
-    // Lo único que puede haber dentro de la sección es el reproductor (o el
-    // aviso). Nada de encabezado, párrafo propio ni enlace.
-    await expect(seccion.locator('h1, h2, h3, p, a, button')).toHaveCount(1); // el <p> del aviso
-    await expect(seccion.locator('h1, h2, h3, a, button')).toHaveCount(0);
+    const video = seccion.locator('video');
+    await expect(video).toHaveCount(1);
+    await expect(video).toHaveAttribute('src', /anuncio\.mp4$/);
+    await expect(video).toHaveAttribute('controls', '');
 
-    // Sin texto de presentación ni de autores: el video se explica solo.
+    // Ni una palabra de texto propio: ni encabezado, ni párrafo, ni enlace.
+    await expect(seccion.locator('h1, h2, h3, p, a, button')).toHaveCount(0);
     const texto = await seccion.innerText();
-    for (const palabra of ['autor', 'firma', 'catálogo', 'Novedades', 'Anuncios']) {
+    for (const palabra of ['autor', 'firma', 'catálogo', 'Novedades', 'Anuncios', 'Promo']) {
         expect(texto.toLowerCase()).not.toContain(palabra.toLowerCase());
     }
     expect(errores).toHaveLength(0);
@@ -243,8 +269,20 @@ test('video del inicio: es solo el video, sin título ni botón, y avisa si el a
 
 // El fondo se lo queda la página, no la sección: antes iba ámbar y quedaba
 // un bloque suelto que rompía el ritmo de la portada.
+test('video del inicio: si el archivo no carga, la sección se retira en vez de quedar rota', async ({ page }) => {
+    await apiPublica(page, {
+        anuncio: { id_anuncio: 8, titulo: 'Roto', video_url: 'https://res.cloudinary.com/x/video/upload/v1/no-existe.mp4', roto: true },
+    });
+    await page.route('https://res.cloudinary.com/x/video/upload/v1/no-existe.mp4', (r) => r.fulfill({ status: 404, body: '' }));
+    await page.goto('/');
+    await page.waitForSelector('#precarga', { state: 'detached' });
+    await expect(page.locator('.video-destacado')).toHaveCount(0);
+});
+
 test('video del inicio: usa el fondo de la página, no uno propio', async ({ page }) => {
-    await apiPublica(page);
+    await apiPublica(page, {
+        anuncio: { id_anuncio: 7, titulo: 'Promo', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4' },
+    });
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
     const fondos = await page.evaluate(() => {
@@ -263,18 +301,16 @@ test('video del inicio: usa el fondo de la página, no uno propio', async ({ pag
     expect(fondos.seccion).not.toBe('rgb(253, 245, 228)'); // nada de ámbar
 });
 
-test('video del inicio: ocupa todo el ancho y monta el reproductor si el archivo existe', async ({ page }) => {
-    await page.route('**/video/anuncio.mp4', (r) => (r.request().method() === 'HEAD'
-        ? r.fulfill({ status: 200, contentType: 'video/mp4' })
-        : r.fulfill({ status: 200, contentType: 'video/mp4', body: Buffer.from('no soy un mp4') })));
-    await apiPublica(page);
+test('video del inicio: ocupa todo el ancho el anuncio que llega de la API', async ({ page }) => {
+    await apiPublica(page, {
+        anuncio: { id_anuncio: 7, titulo: 'Promo', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4' },
+    });
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
 
     const video = page.locator('.video-destacado__marco video');
     await expect(video).toHaveCount(1);
-    await expect(video).toHaveAttribute('src', '/video/anuncio.mp4');
-    await expect(video).toHaveAttribute('poster', '/video/anuncio-poster.webp');
+    await expect(video).toHaveAttribute('src', 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4');
 
     // A todo el ancho: el video mide lo mismo que el contenedor de la sección.
     const anchos = await page.evaluate(() => {
@@ -284,10 +320,77 @@ test('video del inicio: ocupa todo el ancho y monta el reproductor si el archivo
     });
     expect(Math.abs(anchos.marco - anchos.contenedor)).toBeLessThan(2);
 
-    // Un video ilegible no debe pasar por "el archivo no está".
+    // El reproductor se queda aunque el video no se pueda decodificar: el
+    // aviso de "llega muy pronto" sería falso, el archivo sí llegó.
     await page.waitForTimeout(1000);
     await expect(video).toHaveCount(1);
-    await expect(page.getByText('El video llega muy pronto')).toHaveCount(0);
+});
+
+// ============================================================
+// DESCUENTOS
+// precio_final, descuento_vigente y descuento_porcentaje_efectivo los
+// calcula el backend. La web solo los pinta, así que estas pruebas
+// comprueban que no invente cifras ni deje la pastilla cuando la
+// promoción ya venció.
+// ============================================================
+
+const enOferta = {
+    ...LIBROS[0],
+    descuento_vigente: 1,
+    descuento_porcentaje: 30,
+    descuento_porcentaje_efectivo: 30,
+    precio_final: '27.93',
+};
+
+const promoVencida = {
+    ...LIBROS[1],
+    descuento_vigente: 0,
+    descuento_porcentaje: 30,
+    descuento_porcentaje_efectivo: 0,
+    precio_final: '39.90',
+};
+
+test('catálogo: en oferta muestra porcentaje, precio tachado y precio final', async ({ page }) => {
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    await apiPublica(page, { libros: [enOferta, ...LIBROS.slice(1)] });
+    await page.goto('/catalogo');
+
+    const tarjeta = page.locator('.rejilla-libros .tarjeta-libro').first();
+    await expect(tarjeta.locator('.oferta__pastilla')).toHaveText('-30%');
+    await expect(tarjeta.locator('.oferta__anterior s')).toHaveText('S/ 39.90');
+    await expect(tarjeta.locator('.oferta__final')).toHaveText('S/ 27.93');
+    expect(errores).toHaveLength(0);
+});
+
+test('catálogo: una promoción vencida vuelve al precio normal y sin pastilla', async ({ page }) => {
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    await apiPublica(page, { libros: [promoVencida, ...LIBROS.slice(2)] });
+    await page.goto('/catalogo');
+
+    const tarjeta = page.locator('.rejilla-libros .tarjeta-libro').first();
+    await expect(tarjeta.locator('.oferta')).toHaveCount(0);
+    await expect(tarjeta.locator('.oferta__pastilla')).toHaveCount(0);
+    await expect(tarjeta).toContainText('S/ 39.90');
+    expect(errores).toHaveLength(0);
+});
+
+test('catálogo: sin descuento no hay precio tachado en ninguna tarjeta', async ({ page }) => {
+    await apiPublica(page);
+    await page.goto('/catalogo');
+    await expect(page.locator('.rejilla-libros .oferta')).toHaveCount(0);
+    await expect(page.locator('.rejilla-libros .oferta__anterior')).toHaveCount(0);
+});
+
+test('inicio: el carrusel de la portada también aplica el descuento', async ({ page }) => {
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(String(e)));
+    await apiPublica(page, { libros: [enOferta, ...LIBROS.slice(1)] });
+    await page.goto('/');
+    await page.waitForSelector('#precarga', { state: 'detached' });
+    await expect(page.locator('.libro .oferta__pastilla').first()).toHaveText('-30%');
+    expect(errores).toHaveLength(0);
 });
 
 test('catálogo: el precio se resalta en pastilla verde clara', async ({ page }) => {

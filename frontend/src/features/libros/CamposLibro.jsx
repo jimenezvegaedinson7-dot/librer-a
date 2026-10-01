@@ -1,4 +1,4 @@
-import { FaImage, FaXmark } from 'react-icons/fa6';
+import { FaImage, FaTag, FaXmark } from 'react-icons/fa6';
 
 import { Input, Select, Textarea } from '../../components/ui/Form';
 import { Spinner } from '../../components/ui/Spinner';
@@ -61,6 +61,154 @@ export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQ
                     )}
                 </div>
             </div>
+        </div>
+    );
+}
+
+// ============================================================
+// DESCUENTO
+//
+// Reglas (las mismas que valida el backend en utils/descuentos.js):
+//   - Porcentaje (1 a 99) o precio de oferta, nunca los dos: al escribir
+//     en uno, el otro se bloquea.
+//   - El precio de oferta debe ser mayor que 0 y menor que el precio normal.
+//   - La fecha "Hasta" solo se puede poner con un descuento, incluye ese
+//     día completo (hora de Lima) y no puede ser anterior a hoy.
+// El precio final se calcula aquí para que el administrador vea el
+// resultado antes de guardar.
+// ============================================================
+
+// Hoy en Lima como AAAA-MM-DD (para el mínimo del calendario).
+const hoyEnLima = () =>
+    new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Lima',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).format(new Date());
+
+export function CamposDescuento({ formulario, manejarCambio, errores = {} }) {
+    const precio = Number(formulario.precio);
+    const precioValido = Number.isFinite(precio) && precio > 0;
+
+    const textoPorcentaje = String(formulario.descuento_porcentaje ?? '').trim();
+    const textoOferta = String(formulario.precio_oferta ?? '').trim();
+    const porcentaje = Number(textoPorcentaje);
+    const oferta = Number(textoOferta);
+
+    const usaPorcentaje = textoPorcentaje !== '';
+    const usaOferta = textoOferta !== '';
+
+    // Avisos en vivo, antes de guardar.
+    let aviso = '';
+    if (usaPorcentaje && usaOferta) {
+        aviso = 'Usa porcentaje o precio de oferta, no los dos. Borra uno de los dos campos.';
+    } else if (usaPorcentaje && (!Number.isInteger(porcentaje) || porcentaje < 1 || porcentaje > 99)) {
+        aviso = 'El porcentaje debe ser un número entero entre 1 y 99.';
+    } else if (usaOferta && (!Number.isFinite(oferta) || oferta <= 0)) {
+        aviso = 'El precio de oferta debe ser mayor que 0.';
+    } else if (usaOferta && precioValido && oferta >= precio) {
+        aviso = `El precio de oferta debe ser menor que el precio normal (S/ ${precio.toFixed(2)}).`;
+    } else if ((usaPorcentaje || usaOferta) && !precioValido) {
+        aviso = 'Primero indica el precio normal del libro.';
+    }
+
+    const hayDescuento = (usaPorcentaje || usaOferta) && !aviso;
+
+    const final = !hayDescuento
+        ? precio
+        : usaOferta
+            ? oferta
+            : Math.round(precio * (1 - porcentaje / 100) * 100) / 100;
+
+    const porcentajeEfectivo = hayDescuento
+        ? Math.round(((precio - final) / precio) * 100)
+        : 0;
+
+    const hoy = hoyEnLima();
+    const fecha = formulario.descuento_hasta || '';
+    const vencida = hayDescuento && fecha !== '' && fecha < hoy;
+
+    return (
+        <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+            <div className="flex items-center gap-2">
+                <FaTag className="text-emerald-700" />
+                <span className="text-sm font-semibold text-slate-800">Descuento (opcional)</span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <Input
+                    label="Porcentaje"
+                    name="descuento_porcentaje"
+                    type="number"
+                    value={formulario.descuento_porcentaje}
+                    onChange={manejarCambio}
+                    placeholder={usaOferta ? 'Usa solo uno' : 'Ej. 30'}
+                    min="1"
+                    max="99"
+                    step="1"
+                    disabled={usaOferta && !usaPorcentaje}
+                    error={errores.descuento_porcentaje}
+                    ancho={4}
+                    prefijo="-%"
+                />
+
+                <Input
+                    label="Precio de oferta"
+                    name="precio_oferta"
+                    type="number"
+                    value={formulario.precio_oferta}
+                    onChange={manejarCambio}
+                    placeholder={usaPorcentaje ? 'Usa solo uno' : 'Ej. 24.90'}
+                    min="0.01"
+                    max={precioValido ? (precio - 0.01).toFixed(2) : undefined}
+                    step="0.01"
+                    disabled={usaPorcentaje && !usaOferta}
+                    error={errores.precio_oferta}
+                    ancho={4}
+                    prefijo="S/"
+                />
+
+                <Input
+                    label="Hasta (incluido)"
+                    name="descuento_hasta"
+                    type="date"
+                    value={formulario.descuento_hasta}
+                    onChange={manejarCambio}
+                    min={hoy}
+                    disabled={!usaPorcentaje && !usaOferta}
+                    error={errores.descuento_hasta}
+                    ancho={4}
+                />
+            </div>
+
+            <p className="text-xs text-slate-600">
+                Elige un porcentaje o un precio de oferta (no los dos). La fecha es opcional: la promoción dura
+                hasta ese día inclusive; si la dejas vacía, no vence. Este precio es el que se cobra en la app.
+            </p>
+
+            {aviso && (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800" role="alert">
+                    {aviso}
+                </p>
+            )}
+
+            {vencida && (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+                    Esta promoción ya venció: el libro se vende a su precio normal. Cambia la fecha o quita el descuento.
+                </p>
+            )}
+
+            {hayDescuento && !vencida && (
+                <div className="flex flex-wrap items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm">
+                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">
+                        -{porcentajeEfectivo}%
+                    </span>
+                    <span className="text-slate-500 line-through">S/ {precio.toFixed(2)}</span>
+                    <span className="font-bold text-emerald-700">S/ {final.toFixed(2)}</span>
+                    {fecha && <span className="text-xs text-slate-500">hasta el {fecha.split('-').reverse().join('/')}</span>}
+                </div>
+            )}
         </div>
     );
 }

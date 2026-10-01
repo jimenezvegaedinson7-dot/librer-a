@@ -41,9 +41,9 @@ export const UBICACION_TIENDA = {
 export const NAVEGACION = [
     { ruta: '/', texto: 'Inicio' },
     { ruta: '/catalogo', texto: 'Catálogo' },
-    { ruta: '/aplicacion', texto: 'Aplicación' },
-    { ruta: '/caracteristicas', texto: 'Características' },
     { ruta: '/nosotros', texto: 'Nosotros' },
+    { ruta: '/caracteristicas', texto: 'Características' },
+    { ruta: '/aplicacion', texto: 'Aplicación' },
     { ruta: '/descargar', texto: 'Descargar', destacado: true },
 ];
 

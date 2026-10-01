@@ -16,7 +16,7 @@ const iconos = {
 const acentos = {
     success: '#4ade80',
     error: '#f87171',
-    info: '#dcbb7a',
+    info: '#f0c866',
 };
 
 export function ToastProvider({ children }) {
@@ -60,7 +60,7 @@ export function ToastProvider({ children }) {
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={reducirMovimiento ? { opacity: 0 } : { opacity: 0, x: 24, transition: { duration: 0.18 } }}
                                 transition={{ duration: 0.28, ease: [0.25, 1, 0.5, 1] }}
-                                className="pointer-events-auto relative flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-xl border border-white/10 bg-[#1f1a17] py-3.5 pl-4 pr-3 text-[#f5eedf] shadow-[0_18px_40px_-14px_rgba(0,0,0,0.55)]"
+                                className="pointer-events-auto relative flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-xl border border-white/10 bg-[#013a33] py-3.5 pl-4 pr-3 text-[#f5eedf] shadow-[0_18px_40px_-14px_rgba(0,0,0,0.55)]"
                             >
                                 <span className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: acento }} aria-hidden="true" />
                                 <span className="mt-0.5 shrink-0 text-base" style={{ color: acento }} aria-hidden="true"><Icono /></span>
@@ -68,7 +68,7 @@ export function ToastProvider({ children }) {
                                 <button
                                     type="button"
                                     onClick={() => eliminar(toast.id)}
-                                    className="-my-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[#cfc5b8] transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#dcbb7a]"
+                                    className="-my-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[#cfc5b8] transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0c866]"
                                     aria-label="Cerrar notificación"
                                 >
                                     <FaXmark className="text-xs" />

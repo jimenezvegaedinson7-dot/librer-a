@@ -8,6 +8,7 @@ const categoriaModel = require('../models/categoria.model');
 const historialModel = require('../models/historial.model');
 const usuarioModel = require('../models/usuario.model');
 const { validarId, esNumeroNoNegativo, esEstadoValido } = require('../utils/validaciones');
+const { validarDescuentos } = require('../utils/descuentos');
 const {
     eliminarImagen,
     publicIdDesdeUrl
@@ -36,6 +37,26 @@ const registrarHistorial = async ({
             error.message
         );
     }
+};
+
+// ========================================
+// PRECIO DE LISTA QUE QUEDA TRAS EL GUARDADO
+// En una edición puede venir en el body o seguir siendo el que ya
+// estaba guardado. Los descuentos se validan contra este valor, no
+// contra el original.
+// ========================================
+const precioFinalDelBody = (
+    precio,
+    precioGuardado
+) => {
+    if (
+        precio === undefined ||
+        precio === ''
+    ) {
+        return Number(precioGuardado);
+    }
+
+    return Number(precio);
 };
 
 // ========================================
@@ -155,6 +176,22 @@ const crearLibro = async (req, res) => {
             });
         }
 
+        // El precio de lista ya está validado, así que la oferta se
+        // puede comparar contra él sin miedo.
+        const descuentos =
+            validarDescuentos(
+                req.body,
+                Number(precio)
+            );
+
+        if (descuentos.mensaje) {
+            return res.status(400).json({
+                success: false,
+                mensaje: descuentos.mensaje
+            });
+        }
+
+
         const idAutor = validarId(id_autor);
         const idCategoria = validarId(id_categoria);
 
@@ -222,7 +259,9 @@ const crearLibro = async (req, res) => {
                 id_categoria:
                     idCategoria,
 
-                estado: 1
+                estado: 1,
+
+                ...descuentos.valor
             });
 
         // ========================================
@@ -378,6 +417,52 @@ const actualizarLibro = async (req, res) => {
         }
 
         // ========================================
+        // VALIDAR DESCUENTOS
+        // Se comparan contra el precio que queda tras este guardado, no
+        // contra el anterior: si el admin sube el precio normal y deja
+        // la oferta puesta, la oferta nueva puede haberse quedado por
+        // encima. Validar contra el precio viejo dejaría pasar justo ese
+        // caso, que es el que luego muestra un "descuento" al revés.
+        // ========================================
+        const precioFinal = precioFinalDelBody(precio, libroExistente.precio);
+        const aNumero = (v) => (v === null || v === undefined ? null : Number(v));
+        const descuentos = validarDescuentos(req.body, precioFinal, {
+            descuento_porcentaje: aNumero(libroExistente.descuento_porcentaje),
+            precio_oferta: aNumero(libroExistente.precio_oferta),
+            descuento_hasta: libroExistente.descuento_hasta || null
+        });
+
+        if (descuentos.mensaje) {
+            return res.status(400).json({
+                success: false,
+                mensaje: descuentos.mensaje
+            });
+        }
+
+        // Si el admin baja el precio normal y no toca la oferta guardada,
+        // esa oferta puede quedarse por encima del precio nuevo. No se
+        // avisa porque no venga en el body, así que se compara aquí. Es
+        // más claro que dejar el dato guardado y que la web muestre un
+        // "descuento" que sube el precio.
+        if (descuentos.valor.precio_oferta === undefined) {
+            const ofertaGuardada = Number(
+                libroExistente.precio_oferta
+            );
+
+            if (
+                libroExistente.precio_oferta !== null &&
+                ofertaGuardada >= precioFinal
+            ) {
+                return res.status(400).json({
+                    success: false,
+                    mensaje:
+                        'El precio de oferta guardado ya no es menor que el nuevo precio normal. Actualiza la oferta o quítala para continuar.'
+                });
+            }
+        }
+
+
+        // ========================================
         // VALIDAR ESTADO
         // ========================================
         if (
@@ -456,7 +541,12 @@ const actualizarLibro = async (req, res) => {
                         ? Number(estado)
                         : Number(
                             libroExistente.estado
-                        )
+                        ),
+
+                // Se envían tal cual: undefined significa "no lo
+                // mandaron" y null significa "limpiarlo", y el modelo
+                // necesita esa diferencia.
+                ...descuentos.valor
             }
         );
 

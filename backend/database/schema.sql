@@ -109,16 +109,51 @@ CREATE TABLE IF NOT EXISTS libros (
     id_autor INT NOT NULL,
     id_categoria INT NOT NULL,
     estado SMALLINT NOT NULL DEFAULT 1,
+    -- Promoción opcional. Los tres campos en NULL = sin descuento.
+    descuento_porcentaje SMALLINT NULL,
+    precio_oferta NUMERIC(10,2) NULL,
+    descuento_hasta DATE NULL,
     CONSTRAINT fk_libros_autor
         FOREIGN KEY (id_autor)
         REFERENCES autores (id_autor),
     CONSTRAINT fk_libros_categoria
         FOREIGN KEY (id_categoria)
-        REFERENCES categorias (id_categoria)
+        REFERENCES categorias (id_categoria),
+    CONSTRAINT libros_descuento_porcentaje_check
+        CHECK (descuento_porcentaje IS NULL OR descuento_porcentaje BETWEEN 1 AND 99),
+    -- Una oferta mas cara que el precio de lista es un dato mal
+    -- capturado, no un descuento. Mismo criterio que aplica la
+    -- migracion 030, para que las dos rutas de creacion de esquema
+    -- dejen la base igual.
+    CONSTRAINT libros_precio_oferta_check
+        CHECK (
+            precio_oferta IS NULL
+            OR (precio_oferta >= 0 AND precio_oferta <= precio)
+        )
 );
 
 CREATE INDEX IF NOT EXISTS idx_libros_autor ON libros (id_autor);
 CREATE INDEX IF NOT EXISTS idx_libros_categoria ON libros (id_categoria);
+CREATE INDEX IF NOT EXISTS idx_libros_descuento ON libros (descuento_porcentaje);
+
+-- ============================================================
+-- ANUNCIOS EN VIDEO (WEB PÚBLICA)
+-- ============================================================
+-- Los videos de publicidad que el administrador sube desde el panel.
+-- La web pública lee el activo con GET /api/anuncios.
+CREATE TABLE IF NOT EXISTS anuncios (
+    id_anuncio SERIAL PRIMARY KEY,
+    titulo VARCHAR(200) NOT NULL,
+    video_url VARCHAR(500) NOT NULL,
+    video_public_id VARCHAR(255) NULL,
+    poster_url VARCHAR(500) NULL,
+    estado SMALLINT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT anuncios_estado_check CHECK (estado IN (0, 1))
+);
+
+CREATE INDEX IF NOT EXISTS idx_anuncios_estado ON anuncios (estado, id_anuncio DESC);
 
 -- ============================================================
 -- INVENTARIO
@@ -637,6 +672,12 @@ $$ language 'plpgsql';
 DROP TRIGGER IF EXISTS update_empresa_updated_at ON empresa;
 CREATE TRIGGER update_empresa_updated_at
     BEFORE UPDATE ON empresa
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_anuncios_updated_at ON anuncios;
+CREATE TRIGGER update_anuncios_updated_at
+    BEFORE UPDATE ON anuncios
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 

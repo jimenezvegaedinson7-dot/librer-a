@@ -24,7 +24,7 @@ import { navPorRol } from './navConfig';
 
 function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
     return (
-        <div className={`overflow-hidden rounded-full bg-mahogany-200 ring-2 ring-[#eedcae] ${className}`}>
+        <div className={`overflow-hidden rounded-full bg-mahogany-200 ring-2 ring-[#f6dea3] ${className}`}>
             {foto ? (
                 <img src={foto} alt="Foto del administrador" className="h-full w-full object-cover" />
             ) : (
@@ -239,7 +239,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                                                 onClick={() => navegarModulo(modulo.ruta)}
                                                 className="flex w-full items-center gap-3 border-b border-[#f3efe9] px-4 py-3 text-left transition last:border-0 hover:bg-[#faf8f5]"
                                             >
-                                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#fbf5f4] text-[#8a2c36]">
+                                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f2f8f6] text-[#0b5c51]">
                                                     <Icono className="text-sm" />
                                                 </span>
                                                 <span className="min-w-0">

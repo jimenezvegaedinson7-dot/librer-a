@@ -42,6 +42,7 @@
 | `/usuarios` | UsuariosPage | `features/usuarios/UsuariosClientesPage.jsx` |
 | `/clientes` | Navigate | redirección: `para(SOLO_ADMIN, <Navigate to="/usuarios?vista=clientes" replace />) }` |
 | `/reclamaciones` | ReclamacionesPage | `features/reclamaciones/ReclamacionesPage.jsx` |
+| `/anuncios` | AnunciosPage | `features/anuncios/AnunciosPage.jsx` |
 | `/tarifas-envio` | TarifasEnvioPage | `features/tarifas/TarifasEnvioPage.jsx` |
 | `/historial` | HistorialPage | `features/historial/HistorialPage.jsx` |
 | `/configuracion/empresa` | EmpresaPage | `features/configuracion/EmpresaPage.jsx` |
@@ -61,6 +62,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 |---|---|
 | `features/agencias/AgenciaEditModal.jsx` | `PUT /api/agencias/:param` |
 | `features/agencias/AgenciasPage.jsx` | `GET /api/agencias`<br>`POST /api/agencias` |
+| `features/anuncios/AnunciosPage.jsx` | `DELETE /api/anuncios/:param`<br>`GET /api/anuncios/todos`<br>`POST /api/anuncios`<br>`PUT /api/anuncios/:param` |
 | `features/auth/LoginPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/solicitar-reseteo` |
 | `features/auth/VerificarEmailPage.jsx` | `POST /api/auth/reenviar-codigo`<br>`POST /api/auth/verificar-email` |
 | `features/autores/AutorEditModal.jsx` | `PUT /api/autores/:param` |
@@ -112,6 +114,11 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/agencias/agenciasService.js` | `obtenerAgencia` | `GET /api/agencias/:param` |
 | `features/agencias/agenciasService.js` | `crearAgencia` | `POST /api/agencias` |
 | `features/agencias/agenciasService.js` | `actualizarAgencia` | `PUT /api/agencias/:param` |
+| `features/anuncios/anunciosService.js` | `listarAnuncios` | `GET /api/anuncios/todos` |
+| `features/anuncios/anunciosService.js` | `obtenerAnuncioActivo` | `GET /api/anuncios` |
+| `features/anuncios/anunciosService.js` | `crearAnuncio` | `POST /api/anuncios` |
+| `features/anuncios/anunciosService.js` | `actualizarAnuncio` | `PUT /api/anuncios/:param` |
+| `features/anuncios/anunciosService.js` | `eliminarAnuncio` | `DELETE /api/anuncios/:param` |
 | `features/auth/authService.js` | `login` | `POST /api/auth/login` |
 | `features/auth/authService.js` | `verificarEmail` | `POST /api/auth/verificar-email` |
 | `features/auth/authService.js` | `reenviarCodigo` | `POST /api/auth/reenviar-codigo` |
@@ -210,31 +217,32 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | Archivo | Usado por (nº de archivos) |
 |---|---|
 | `components/providers/ThemeContext.jsx` | 1 |
-| `components/providers/ToastProvider.jsx` | 16 |
+| `components/providers/ToastProvider.jsx` | 17 |
 | `components/providers/tema.js` | 5 |
-| `components/ui/Acciones.jsx` | 14 |
-| `components/ui/Alert.jsx` | 34 |
-| `components/ui/Badge.jsx` | 22 |
-| `components/ui/Button.jsx` | 48 |
-| `components/ui/Card.jsx` | 20 |
+| `components/ui/Acciones.jsx` | 15 |
+| `components/ui/Alert.jsx` | 35 |
+| `components/ui/Badge.jsx` | 23 |
+| `components/ui/Button.jsx` | 49 |
+| `components/ui/Card.jsx` | 21 |
 | `components/ui/Celebracion.jsx` | 2 |
 | `components/ui/ConfirmarAccion.jsx` | 4 |
-| `components/ui/ConfirmarEliminacion.jsx` | 2 |
-| `components/ui/DataTable.jsx` | 15 |
-| `components/ui/EmptyState.jsx` | 16 |
+| `components/ui/ConfirmarEliminacion.jsx` | 3 |
+| `components/ui/DataTable.jsx` | 16 |
+| `components/ui/EmptyState.jsx` | 17 |
 | `components/ui/ErrorBoundary.jsx` | 1 |
 | `components/ui/EstadoModal.jsx` | 1 |
 | `components/ui/Ficha.jsx` | 10 |
-| `components/ui/Form.jsx` | 38 |
+| `components/ui/Form.jsx` | 39 |
 | `components/ui/FormularioAlta.jsx` | 5 |
-| `components/ui/Modal.jsx` | 29 |
-| `components/ui/PageHeader.jsx` | 18 |
+| `components/ui/Modal.jsx` | 30 |
+| `components/ui/PageHeader.jsx` | 19 |
 | `components/ui/Pagination.jsx` | 13 |
 | `components/ui/Spinner.jsx` | 4 |
-| `components/ui/TableSkeleton.jsx` | 16 |
+| `components/ui/TableSkeleton.jsx` | 17 |
 | `public-site/components/CierreDescarga.jsx` | 2 |
 | `public-site/components/Migas.jsx` | 2 |
 | `public-site/components/Precarga.jsx` | 1 |
+| `public-site/components/PrecioOferta.jsx` | 2 |
 | `public-site/components/PublicFooter.jsx` | 1 |
 | `public-site/components/PublicHeader.jsx` | 1 |
 

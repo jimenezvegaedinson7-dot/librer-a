@@ -127,8 +127,8 @@ function Contador({ total, administradores, clientes, activos, inactivos }) {
             <span className="rounded-xl border border-[#c7d2fe] bg-[#eef2ff] px-4 py-2.5 text-sm font-medium text-[#4f46e5] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Administradores: <span className="font-bold text-[#4f46e5]">{administradores}</span>
             </span>
-            <span className="rounded-xl border border-[#ecccc8] bg-[#fbf5f4] px-4 py-2.5 text-sm font-medium text-[#8a2c36] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Clientes: <span className="font-bold text-[#8a2c36]">{clientes}</span>
+            <span className="rounded-xl border border-[#bcdcd3] bg-[#f2f8f6] px-4 py-2.5 text-sm font-medium text-[#0b5c51] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                Clientes: <span className="font-bold text-[#0b5c51]">{clientes}</span>
             </span>
             <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                 Activos: <span className="font-bold text-[#15803d]">{activos}</span>

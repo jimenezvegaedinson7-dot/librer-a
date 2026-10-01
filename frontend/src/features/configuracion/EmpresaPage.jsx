@@ -83,7 +83,7 @@ function Interruptor({ activo, onChange, titulo, descripcion }) {
                 aria-checked={activo}
                 aria-label={titulo}
                 onClick={() => onChange(!activo)}
-                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b98d3e] focus-visible:ring-offset-2 ${
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c98f12] focus-visible:ring-offset-2 ${
                     activo ? 'interruptor--activo' : 'interruptor--inactivo'
                 }`}
             >
