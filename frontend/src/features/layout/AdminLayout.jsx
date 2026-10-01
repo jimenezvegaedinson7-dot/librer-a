@@ -8,6 +8,7 @@ import { useTema } from '../../components/providers/tema';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import Breadcrumbs from './Breadcrumbs';
+import { usePaginaPanel } from '../../lib/hooks/usePaginaPanel';
 
 function AdminLayoutInner() {
     const [sidebarAbierto, setSidebarAbierto] = useState(false);
@@ -70,6 +71,7 @@ function AdminLayoutInner() {
 }
 
 export default function AdminLayout() {
+    usePaginaPanel();
     return (
         <ThemeProvider>
             <AdminLayoutInner />

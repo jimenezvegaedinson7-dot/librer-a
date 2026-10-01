@@ -283,9 +283,12 @@ const router = leer(`${FRONT}/routes/AppRouter.jsx`);
 const lazys = {};
 for (const m of router.matchAll(/const\s+(\w+)\s*=\s*lazyConReintento\(\(\)\s*=>\s*import\('([^']+)'\)\)/g)) lazys[m[1]] = rel(path.resolve(`${FRONT}/routes`, m[2])) + '.jsx';
 for (const m of router.matchAll(/import\s+(\w+)\s+from\s+'([^']+)'/g)) if (m[2].startsWith('.')) lazys[m[1]] ||= rel(path.resolve(`${FRONT}/routes`, m[2])) + '.jsx';
+// Exportaciones con nombre cargadas en diferido: import('...').then((m) => ({ default: m.X }))
+for (const m of router.matchAll(/const\s+(\w+)\s*=\s*lazyConReintento\(\(\)\s*=>\s*import\('([^']+)'\)\.then/g)) lazys[m[1]] ||= rel(path.resolve(`${FRONT}/routes`, m[2])) + '.jsx';
 const rutasFront = [];
 for (const m of router.matchAll(/path:\s*'([^']+)'\s*,\s*element:\s*([^\n]+)/g)) {
-    const comp = /<(\w+)/.exec(m[2]);
+    // El primer componente que no sea un envoltorio <Suspense>.
+    const comp = /<(?!Suspense\b)(\w+)/.exec(m[2]);
     rutasFront.push({ path: m[1], element: m[2].trim().replace(/,\s*$/, ''), component: comp ? comp[1] : null, file: comp ? lazys[comp[1]] || null : null });
 }
 

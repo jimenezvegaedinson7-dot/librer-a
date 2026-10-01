@@ -72,6 +72,8 @@ backups/
 
 # Locales del asistente y datos de respaldo manuales (nunca git)
 .claude/
+# Capturas de revision del asistente de diseno (artefactos, no sitio)
+frontend/.impeccable/
 backend/_test_smtp.js
 ventas.json
 

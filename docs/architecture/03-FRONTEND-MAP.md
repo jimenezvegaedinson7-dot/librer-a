@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel administrativo
 
-> Generado desde el código real el 2026-09-30 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-01 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -19,7 +19,14 @@
 
 | Ruta | Componente | Archivo |
 |---|---|---|
-| `/` | LoginPage | `features/auth/LoginPage.jsx` |
+| `/` | InicioPage | `public-site/pages/paginas.jsx` |
+| `/catalogo` | CatalogoPublicoPage | `public-site/pages/CatalogoPage.jsx` |
+| `/aplicacion` | AplicacionPage | `public-site/pages/paginas.jsx` |
+| `/caracteristicas` | CaracteristicasPage | `public-site/pages/paginas.jsx` |
+| `/nosotros` | NosotrosPage | `public-site/pages/paginas.jsx` |
+| `/descargar` | DescargarPage | `public-site/pages/paginas.jsx` |
+| `/admin/login` | LoginPage | `features/auth/LoginPage.jsx` |
+| `/admin` | Navigate | redirección: `<Navigate to="/admin/login" replace />` |
 | `/verificar-email` | VerificarEmailPage | `features/auth/VerificarEmailPage.jsx` |
 | `/libro-de-reclamaciones` | LibroReclamacionesPage | `features/reclamaciones/LibroReclamacionesPage.jsx` |
 | `/dashboard` | DashboardPage | `features/dashboard/DashboardPage.jsx` |
@@ -39,7 +46,7 @@
 | `/historial` | HistorialPage | `features/historial/HistorialPage.jsx` |
 | `/configuracion/empresa` | EmpresaPage | `features/configuracion/EmpresaPage.jsx` |
 | `/personalizacion` | PersonalizacionPage | `features/configuracion/PersonalizacionPage.jsx` |
-| `/agencias` | Navigate | redirección: `<Navigate to="/" replace /> }` |
+| `/agencias` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `/cierre-caja` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `/reportes` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `*` | Navigate | redirección: `<Navigate to="/" replace />` |
@@ -225,11 +232,17 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/Pagination.jsx` | 13 |
 | `components/ui/Spinner.jsx` | 4 |
 | `components/ui/TableSkeleton.jsx` | 16 |
+| `public-site/components/CierreDescarga.jsx` | 2 |
+| `public-site/components/Migas.jsx` | 2 |
+| `public-site/components/Precarga.jsx` | 1 |
+| `public-site/components/PublicFooter.jsx` | 1 |
+| `public-site/components/PublicHeader.jsx` | 1 |
 
 ## Hooks y utilidades
 
 - `lib/api/client.js`
 - `lib/hooks/useFormulario.js`
+- `lib/hooks/usePaginaPanel.js`
 - `lib/roles.js`
 - `lib/storage/index.js`
 - `lib/utils/cuentas.js`
@@ -239,8 +252,10 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `lib/utils/sonido.js`
 - `lib/utils/url.js`
 - `lib/utils/validaciones.js`
+- `public-site/lib/formato.js`
+- `public-site/lib/precarga.js`
 
-## Framer Motion (`motion/react`) — 20 archivos
+## Framer Motion (`motion/react`) — 24 archivos
 
 - `components/providers/ToastProvider.jsx`
 - `components/ui/Celebracion.jsx`
@@ -262,6 +277,10 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `features/tarifas/TarifasEnvioPage.jsx`
 - `features/usuarios/UsuariosClientesPage.jsx`
 - `features/ventas/VentasPage.jsx`
+- `public-site/components/PublicHeader.jsx`
+- `public-site/PublicLayout.jsx`
+- `public-site/sections/FeatureStory.jsx`
+- `public-site/sections/Hero.jsx`
 
 ## Módulo Dashboard (Resumen)
 

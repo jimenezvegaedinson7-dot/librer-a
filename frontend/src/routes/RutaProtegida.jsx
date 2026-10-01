@@ -20,7 +20,7 @@ export default function RutaProtegida({ children }) {
     }, [autenticado, esDelPanel, cerrarSesion]);
 
     if (!autenticado || !esDelPanel) {
-        return <Navigate to="/" replace state={{ desde: ubicacion.pathname }} />;
+        return <Navigate to="/admin/login" replace state={{ desde: ubicacion.pathname }} />;
     }
 
     return children;

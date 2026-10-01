@@ -27,7 +27,7 @@ for (const rol of ['cajero','cliente','anónimo']) {
         await apiVacia(page);
         for (const ruta of rutas.concat('/personalizacion')) {
             await page.goto(ruta);
-            await expect(page).toHaveURL('http://127.0.0.1:5179/');
+            await expect(page).toHaveURL('http://127.0.0.1:5179/admin/login');
             await expect(page.getByRole('complementary', {name:'Navegación principal'})).toHaveCount(0);
         }
     });
@@ -37,7 +37,7 @@ for (const caso of ['token inválido','inactivo','eliminado']) {
         await sesion(page);
         await page.route('http://127.0.0.1:59999/api/**',route => route.fulfill({status:401,json:{success:false,mensaje:'Cuenta desactivada'}}));
         await page.goto('/personalizacion');
-        await expect(page).toHaveURL('http://127.0.0.1:5179/');
+        await expect(page).toHaveURL('http://127.0.0.1:5179/admin/login');
         await expect(page.getByRole('complementary', {name:'Navegación principal'})).toHaveCount(0);
     });
 }
@@ -79,7 +79,7 @@ test('rol degradado en backend: localStorage admin no autoriza URL manual', asyn
     await sesion(page); await apiVacia(page);
     await page.route('**/api/usuarios/perfil',route => route.fulfill({json:{success:true,data:{...admin,rol:'cliente'}}}));
     await page.goto('/personalizacion');
-    await expect(page).toHaveURL('http://127.0.0.1:5179/');
+    await expect(page).toHaveURL('http://127.0.0.1:5179/admin/login');
 });
 test('alta autor: doble submit no duplica, error backend visible y conserva campos', async ({page}) => {
     await sesion(page); await apiVacia(page);

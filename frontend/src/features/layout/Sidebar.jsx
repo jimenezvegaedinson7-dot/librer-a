@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 
 import { useTema } from '../../components/providers/tema';
 import { useAuth } from '../auth/AuthContext';
-import logoLibreria from '../../assets/logo-lbl.png';
+import logoLibreria from '../../assets/logo-principal-claro.png';
 import { navPorRol } from './navConfig';
 
 

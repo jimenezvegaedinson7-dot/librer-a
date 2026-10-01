@@ -1,6 +1,6 @@
 # Dependencias
 
-> Generado desde el código real el 2026-09-30 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-01 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Paquetes npm
@@ -31,8 +31,12 @@ Todas las dependencias se importan en algún archivo.
 
 | Paquete | Versión |
 |---|---|
+| `@gsap/react` | ^2.1.2 |
+| `@react-three/fiber` | ^9.8.1 |
 | `@tailwindcss/vite` | ^4.3.3 |
 | `axios` | ^1.20.0 |
+| `gsap` | ^3.15.0 |
+| `lenis` | ^1.3.26 |
 | `lucide-react` | ^1.47.0 |
 | `motion` | ^13.4.0 |
 | `react` | ^19.2.8 |
@@ -40,6 +44,7 @@ Todas las dependencias se importan en algún archivo.
 | `react-icons` | ^5.7.0 |
 | `react-router-dom` | ^7.18.3 |
 | `tailwindcss` | ^4.3.3 |
+| `three` | ^0.186.1 |
 
 Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxlint, vite.
 
@@ -54,8 +59,8 @@ Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxl
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 118 | 274 | 0 (confirmado con **madge**: ninguno) |
-| Frontend (`import`) | 139 | 603 | 0 (confirmado con **madge**: ninguno) |
+| Backend (`require`) | 119 | 277 | 0 (confirmado con **madge**: ninguno) |
+| Frontend (`import`) | 166 | 666 | 0 (confirmado con **madge**: ninguno) |
 | Flutter (`import` relativos) | 68 | 298 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter

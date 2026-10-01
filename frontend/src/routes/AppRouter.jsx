@@ -25,6 +25,16 @@ import RutaPorRol from './RutaPorRol';
 import { ROLES } from '../lib/roles';
 import { CargandoPantalla } from '../components/ui/Spinner';
 
+const PublicLayout = lazyConReintento(() => import('../public-site/PublicLayout'));
+const InicioPage = lazyConReintento(() => import('../public-site/pages/paginas').then((m) => ({ default: m.InicioPage })));
+const CatalogoPublicoPage = lazyConReintento(() => import('../public-site/pages/CatalogoPage'));
+const AplicacionPage = lazyConReintento(() => import('../public-site/pages/paginas').then((m) => ({ default: m.AplicacionPage })));
+const CaracteristicasPage = lazyConReintento(() => import('../public-site/pages/paginas').then((m) => ({ default: m.CaracteristicasPage })));
+const NosotrosPage = lazyConReintento(() => import('../public-site/pages/paginas').then((m) => ({ default: m.NosotrosPage })));
+const DescargarPage = lazyConReintento(() => import('../public-site/pages/paginas').then((m) => ({ default: m.DescargarPage })));
+
+// Páginas de la web pública: sin pantalla de carga del panel.
+const publica = (elemento) => <Suspense fallback={null}>{elemento}</Suspense>;
 const LoginPage = lazyConReintento(() => import('../features/auth/LoginPage'));
 const VerificarEmailPage = lazyConReintento(() => import('../features/auth/VerificarEmailPage'));
 const DashboardPage = lazyConReintento(() => import('../features/dashboard/DashboardPage'));
@@ -56,8 +66,25 @@ const SOLO_ADMIN = [ROLES.ADMINISTRADOR];
 
 const router = createBrowserRouter([
     {
-        path: '/',
-        element: <LoginPage />,
+        // Web pública comercial: cada sección es una página propia.
+        element: publica(<PublicLayout />),
+        children: [
+            { path: '/', element: publica(<InicioPage />) },
+            { path: '/catalogo', element: publica(<CatalogoPublicoPage />) },
+            { path: '/aplicacion', element: publica(<AplicacionPage />) },
+            { path: '/caracteristicas', element: publica(<CaracteristicasPage />) },
+            { path: '/nosotros', element: publica(<NosotrosPage />) },
+            { path: '/descargar', element: publica(<DescargarPage />) },
+        ],
+    },
+    {
+        // Login del panel administrativo (antes en la raíz).
+        path: '/admin/login',
+        element: cargar(<LoginPage />),
+    },
+    {
+        path: '/admin',
+        element: <Navigate to="/admin/login" replace />,
     },
     {
         path: '/verificar-email',
@@ -104,7 +131,7 @@ const router = createBrowserRouter([
 
             // El envío por agencia ya no se ofrece (solo Lima): la página queda
             // oculta; se redirige para no romper enlaces guardados.
-            { path: '/agencias', element: <Navigate to="/" replace /> },
+            { path: '/agencias', element: <Navigate to="/dashboard" replace /> },
             // El cierre de caja no tiene endpoint propio: el resumen del día
             // se ve en el dashboard. Se redirige para no romper enlaces.
             { path: '/cierre-caja', element: <Navigate to="/dashboard" replace /> },

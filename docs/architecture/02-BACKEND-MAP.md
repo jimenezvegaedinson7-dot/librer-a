@@ -1,6 +1,6 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-09-30 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-01 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
@@ -50,7 +50,7 @@
 | Archivo | Uso |
 |---|---|
 | `auth.middleware.js` | `verificarToken`: exige `Authorization: Bearer <jwt>`, valida con `jwt.verify` y deja `req.usuario`. |
-| `rol.middleware.js` | `verificarRol(...roles)`: **401** sin usuario y **403** sin permiso. `verificarPanel` y el bypass anti-IDOR `esPersonalInterno` admiten solo administrador. Cajero legacy no recibe privilegios. Roles centralizados en `utils/roles.js`. |
+| `rol.middleware.js` | `verificarRol(...roles)`: **401** sin usuario y **403** sin permiso. `verificarPanel` y el bypass anti-IDOR `esPersonalInterno` admiten solo administrador. Roles centralizados en `utils/roles.js`. |
 | `rateLimit.js` | `baseLimiter` (global), `loginLimiter`, `registroLimiter`, `verificacionLimiter`, `twoFaLimiter`, `webhookLimit`. |
 | `upload.middleware.js` | Multer en memoria, 5 MB, validación de tipo; sube la portada a Cloudinary si está configurado (`req.file.cloudinaryUrl`) o al disco `/uploads`. Campo `portada`. |
 | `uploadPerfil.middleware.js` | Igual para fotos de perfil. Campo `foto`. |
@@ -66,7 +66,7 @@
 | `utils/transiciones.js` | Máquinas de estado permitidas de `VENTA` y `RESERVA` (`permitirTransicion`). |
 | `utils/payuStatus.js` | Traduce estados de PayU a estados de venta. |
 | `utils/validaciones.js` | `validarId`, `esEmailValido`, `esNumeroNoNegativo`, `esCantidadPositiva`, `esEstadoValido`… |
-| `utils/roles.js` | Roles del dominio (`ADMINISTRADOR`, `CAJERO`, `CLIENTE`), `ROLES` (lista), `normalizarRol`, `esRolValido`, `esPersonalInterno`, `ROLES_INTERNOS`. `usuarios.rol` es `VARCHAR(20)` con `CHECK IN ('cliente','administrador','cajero')` (migración `025_rol_cajero.sql`). |
+| `utils/roles.js` | Dominio actual: `ADMINISTRADOR` y `CLIENTE`. Exporta `ROLES`, `ROLES_PANEL`, `ROLES_ASIGNABLES`, `normalizar`, `esRolValido` y `esPersonalInterno`. `usuarios.rol` solo admite `cliente`/`administrador`; la migración `029_retirar_rol_obsoleto.sql` conserva las cuentas del rol retirado como clientes inactivos, sin cambiar IDs ni compras. |
 | `utils/fileType.js` | Detección del tipo real de archivo por firma (uploads). |
 | `utils/numeroALetras.js` | Importe en letras para comprobantes. |
 | `services/payu.service.js` | Integración **PayU WebCheckout**: crear orden, formulario de checkout, consulta de orden. |

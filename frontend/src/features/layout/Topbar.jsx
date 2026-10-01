@@ -168,7 +168,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
 
     const salir = () => {
         cerrarSesion();
-        navigate('/', { replace: true });
+        navigate('/admin/login', { replace: true });
     };
 
     const navegarModulo = (ruta) => {

@@ -1,6 +1,12 @@
-%% Generado 2026-09-30 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-01 desde el código real (actualizar-mapa.mjs)
 flowchart LR
-    LoginPage["/<br/>LoginPage"]
+    paginas["/<br/>paginas"]
+    CatalogoPage["/catalogo<br/>CatalogoPage"]
+    paginas["/aplicacion<br/>paginas"]
+    paginas["/caracteristicas<br/>paginas"]
+    paginas["/nosotros<br/>paginas"]
+    paginas["/descargar<br/>paginas"]
+    LoginPage["/admin/login<br/>LoginPage"]
     LoginPage --> authService(["authService"])
     VerificarEmailPage["/verificar-email<br/>VerificarEmailPage"]
     VerificarEmailPage --> authService(["authService"])

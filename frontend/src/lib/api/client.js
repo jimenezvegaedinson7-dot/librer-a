@@ -4,6 +4,9 @@ import env from '../../config/env';
 import storage from '../storage';
 import { construirUrlArchivo } from '../utils/url';
 
+// Login del panel: una sesión vencida vuelve aquí.
+const RUTA_LOGIN = '/admin/login';
+
 const client = axios.create({
     baseURL: env.apiUrl,
     // Timeout generoso para arranques en frío de Render free, pero finito:
@@ -51,8 +54,8 @@ client.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401 && !es401DeCredencial(error)) {
             storage.clearSesion();
-            if (window.location.pathname !== '/') {
-                window.location.href = '/';
+            if (window.location.pathname !== RUTA_LOGIN) {
+                window.location.href = RUTA_LOGIN;
             }
         }
         return Promise.reject(error);

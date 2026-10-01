@@ -10,7 +10,7 @@ import { Input } from '../../components/ui/Form';
 import { Alert } from '../../components/ui/Alert';
 
 import fondoLogin from '../../assets/fondo-login.png';
-import logoLibreria from '../../assets/logo-lbl.png';
+import logoLibreria from '../../assets/logo-principal-oscuro.png';
 
 const SEGUNDOS_REINTENTO = 60;
 
@@ -37,7 +37,7 @@ export default function VerificarEmailPage() {
         return () => clearInterval(intervalo);
     }, [segundos]);
 
-    const volverAlLogin = () => navigate('/', { replace: true });
+    const volverAlLogin = () => navigate('/admin/login', { replace: true });
 
     const enviar = async (e) => {
         e.preventDefault();
@@ -103,10 +103,10 @@ export default function VerificarEmailPage() {
                 </div>
 
                 <div className="mb-6">
-                    <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#eedcae] bg-[#fcf8ef] text-lg text-[#7a5827]" aria-hidden="true">
+                    <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#e3cdb2] bg-[#f7f1ea] text-lg text-[#7a5c43]" aria-hidden="true">
                         <FaEnvelopeCircleCheck />
                     </span>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a7231]">Activación de cuenta</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a5c43]">Activación de cuenta</p>
                     <h1 className="mt-1.5 font-title text-[28px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814]">Verifica tu correo</h1>
                     <p className="mt-2 text-sm leading-6 text-[#766d62]">
                         Ingresa el código de 6 dígitos que enviamos a tu correo para activar tu cuenta.

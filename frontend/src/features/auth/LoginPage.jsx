@@ -14,6 +14,7 @@ import {
 
 import { login, verificarLoginOtp, solicitarReseteo, restablecerContrasena } from './authService';
 import { useAuth } from './AuthContext';
+import { usePaginaPanel } from '../../lib/hooks/usePaginaPanel';
 import { Alert } from '../../components/ui/Alert';
 import { Modal } from '../../components/ui/Modal';
 import { CargaCorreo, ExitoAnimado } from '../../components/ui/Celebracion';
@@ -21,11 +22,13 @@ import { prepararSonido, sonarPagoAprobado } from '../../lib/utils/sonido';
 import { esPersonalInterno, inicioPorRol } from '../../lib/roles';
 
 import fondoLogin from '../../assets/fondo-login.png';
-import logoLibreria from '../../assets/logo-lbl.png';
+import logoClaro from '../../public-site/assets/logo-f-blanco-96.webp';
+import logoOscuro from '../../public-site/assets/logo-f-verde.webp';
 
 const MENSAJE_FUERA_DE_PANEL = 'Este panel es solo para administradores';
 
 export default function LoginPage() {
+    usePaginaPanel('Acceso administrativo');
     const navigate = useNavigate();
     const { autenticado, iniciarSesion } = useAuth();
 
@@ -279,7 +282,7 @@ export default function LoginPage() {
     }[resetStep];
 
     return (
-        <main className="login-page relative min-h-screen bg-[#f6f3ee] lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(460px,0.9fr)]">
+        <main className="login-page relative min-h-screen bg-[#f7f4ef] lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(460px,0.9fr)]">
             {/* Panel de marca (en móvil actúa como fondo) */}
             <aside className="login-marca fixed inset-0 overflow-hidden lg:relative lg:inset-auto lg:min-h-screen">
                 <motion.div
@@ -294,10 +297,10 @@ export default function LoginPage() {
 
                 <div className="relative z-10 hidden h-full flex-col justify-between p-12 xl:p-16 lg:flex">
                     <div className="flex items-center gap-3">
-                        <img src={logoLibreria} alt="" className="h-12 w-12 object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.45)]" />
+                        <img src={logoClaro} alt="" className="h-12 w-12 object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.45)]" />
                         <div>
                             <p className="font-title text-lg font-semibold leading-tight text-[#f5eedf]">Librería del Saber</p>
-                            <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#dcbb7a]">Administración</p>
+                            <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#d6b896]">Administración</p>
                         </div>
                     </div>
 
@@ -307,10 +310,10 @@ export default function LoginPage() {
                         transition={{ duration: 0.7, delay: 0.15, ease: [0.25, 1, 0.5, 1] }}
                         className="max-w-lg"
                     >
-                        <span className="mb-6 block h-px w-16 bg-[#dcbb7a]/70" />
+                        <span className="mb-6 block h-px w-16 bg-[#d6b896]/70" />
                         <h2 className="font-title text-[40px] font-semibold leading-[1.1] tracking-[-0.02em] text-[#fffaf0] xl:text-[46px]">
                             Cada libro en su lugar,
-                            <span className="block italic text-[#eedcae]">cada venta en orden.</span>
+                            <span className="block italic text-[#e3cdb2]">cada venta en orden.</span>
                         </h2>
                         <p className="mt-5 max-w-md text-[15px] leading-relaxed text-[#e9e0d2]/85">
                             Gestiona catálogo, inventario, reservas y ventas desde un solo lugar.
@@ -333,16 +336,16 @@ export default function LoginPage() {
                 >
                     {/* Marca en móvil / tablet */}
                     <div className="mb-7 flex flex-col items-center text-center lg:hidden">
-                        <img src={logoLibreria} alt="Librería del Saber" className="h-16 w-auto object-contain" />
+                        <img src={logoOscuro} alt="Librería del Saber" className="h-16 w-auto object-contain" />
                         <p className="mt-2 font-title text-lg font-semibold text-[#1c1814]">Librería del Saber</p>
-                        <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#9a7231]">Administración</p>
+                        <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#7a5c43]">Administración</p>
                     </div>
 
                     <AnimatePresence mode="wait" initial={false}>
                         {!twoFactorToken ? (
                             <motion.div key="login" {...transicionPaso}>
                                 <div className="mb-8">
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#9a7231]">Acceso seguro</p>
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a5c43]">Acceso seguro</p>
                                     <h1 className="mt-2 font-title text-[30px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814]">
                                         Iniciar sesión
                                     </h1>
@@ -409,7 +412,7 @@ export default function LoginPage() {
                         ) : (
                             <motion.div key="otp" {...transicionPaso}>
                                 <div className="mb-8">
-                                    <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#eedcae] bg-[#fcf8ef] text-lg text-[#7a5827]">
+                                    <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#e3cdb2] bg-[#f7f1ea] text-lg text-[#7a5c43]">
                                         <FaQrcode />
                                     </span>
                                     <h1 className="font-title text-[30px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814]">
@@ -455,7 +458,7 @@ export default function LoginPage() {
                         © {new Date().getFullYear()} Librería del Saber
                     </p>
                     <p className="mt-3 text-center text-xs">
-                        <a href="/libro-de-reclamaciones" className="font-semibold text-[#7a2530] underline underline-offset-2">
+                        <a href="/libro-de-reclamaciones" className="font-semibold text-[#004d43] underline underline-offset-2">
                             Libro de Reclamaciones
                         </a>
                     </p>
@@ -471,7 +474,7 @@ export default function LoginPage() {
                                 key={paso}
                                 aria-current={resetStep === paso ? 'step' : undefined}
                                 className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                                    resetStep >= paso ? 'bg-[#74212c]' : 'bg-[#e6e0d7]'
+                                    resetStep >= paso ? 'bg-[#004d43]' : 'bg-[#e6e0d7]'
                                 }`}
                             />
                         ))}

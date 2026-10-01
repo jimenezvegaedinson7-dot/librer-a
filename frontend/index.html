@@ -1,12 +1,244 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-PE">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- Fuentes del panel (Inter, Source Serif 4): sin bloquear el primer pintado.
+         La web pública usa Work Sans autoalojada y no las descarga. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" /></noscript>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Librería — Panel administrativo</title>
+    <meta name="theme-color" content="#004d43" />
+    <title>Librería del Saber · Libros con entrega en Lima y recojo en Pallasca</title>
+    <meta name="description" content="Librería del Saber: explora el catálogo en la app, paga en línea con PayU y recibe tus libros a domicilio en Lima o recógelos sin costo en nuestra tienda de Pallasca, Áncash. Descarga la app para Android." />
+    <link rel="canonical" href="https://librer-a-zeta.vercel.app/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_PE" />
+    <meta property="og:site_name" content="Librería del Saber" />
+    <meta property="og:title" content="Librería del Saber · Una librería de verdad, ahora en tu teléfono" />
+    <meta property="og:description" content="Catálogo en la app, pago con PayU, entrega a domicilio en Lima y recojo sin costo en Pallasca." />
+    <meta property="og:url" content="https://librer-a-zeta.vercel.app/" />
+    <meta property="og:image" content="https://librer-a-zeta.vercel.app/og-libreria.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Inicio de la web de Librería del Saber: libro encuadernado en cuero verde con el título Librería del Saber, y el texto Una librería de verdad, ahora en tu teléfono." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Librería del Saber" />
+    <meta name="twitter:description" content="Catálogo en la app, pago con PayU, entrega en Lima y recojo en Pallasca." />
+    <meta name="twitter:image" content="https://librer-a-zeta.vercel.app/og-libreria.jpg" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BookStore",
+        "name": "Librería del Saber",
+        "url": "https://librer-a-zeta.vercel.app/",
+        "logo": "https://librer-a-zeta.vercel.app/logo-principal.png",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Jr. Plaza de Armas s/n",
+          "addressLocality": "Pallasca",
+          "addressRegion": "Áncash",
+          "addressCountry": "PE"
+        },
+        "areaServed": "PE",
+        "paymentAccepted": "PayU"
+      }
+    </script>
+
+    <!--
+      PANTALLA DE CARGA de la web pública. Se pinta con el HTML, antes de
+      que descargue el JavaScript; la retira src/public-site/components/Precarga.jsx
+      cuando fuentes, imágenes del hero y libro 3D están listos.
+      Solo se activa en las rutas de PublicLayout (el panel no la ve).
+    -->
+    <script>
+      (function () {
+        var ruta = location.pathname.replace(/\/+$/, '') || '/';
+        var publicas = ['/', '/catalogo', '/aplicacion', '/caracteristicas', '/nosotros', '/descargar'];
+        if (publicas.indexOf(ruta) === -1) return;
+        var html = document.documentElement;
+        html.setAttribute('data-precarga', '');
+        html.classList.add('precarga-bloqueo');
+        // Fuentes de la primera pantalla (texto, títulos, botones y pantalla de carga).
+        [400, 600, 700].forEach(function (peso) {
+          var f = document.createElement('link');
+          f.rel = 'preload'; f.as = 'font'; f.type = 'font/woff2'; f.crossOrigin = 'anonymous';
+          f.href = '/fonts/work-sans-latin-' + peso + '-normal.woff2';
+          document.head.appendChild(f);
+        });
+        // Inicio: precargar la imagen del libro del hero (elemento LCP).
+        if (ruta === '/') {
+          var l = document.createElement('link');
+          l.rel = 'preload'; l.as = 'image'; l.fetchPriority = 'high';
+          l.setAttribute('imagesrcset', '/hero/libro-3d-720.webp 720w, /hero/libro-3d-1200.webp 1200w');
+          l.setAttribute('imagesizes', '(max-width: 1023px) 90vw, 55vw');
+          document.head.appendChild(l);
+        }
+      })();
+    </script>
+    <style>
+      /* Work Sans (web pública y pantalla de carga), autoalojada con nombre fijo
+         para precargarla desde el HTML: así el texto no cambia de fuente al recargar. */
+      @font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/work-sans-latin-400-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/work-sans-latin-500-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/work-sans-latin-600-normal.woff2') format('woff2'); }
+      @font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/work-sans-latin-700-normal.woff2') format('woff2'); }
+      #precarga { display: none; }
+      html.precarga-bloqueo, html.precarga-bloqueo body { overflow: hidden; }
+      html[data-precarga] body { background: #012b26; }
+      html[data-precarga] #precarga {
+        position: fixed; inset: 0; z-index: 2147483000;
+        display: grid; place-items: center;
+        overflow: hidden; isolation: isolate;
+        color: #f3ecdc;
+        font-family: 'Work Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+        background:
+          radial-gradient(60% 50% at 50% 46%, rgba(11, 92, 81, 0.55), transparent 70%),
+          radial-gradient(45% 40% at 12% 8%, rgba(0, 77, 67, 0.7), transparent 70%),
+          radial-gradient(40% 35% at 90% 95%, rgba(235, 170, 32, 0.10), transparent 70%),
+          linear-gradient(160deg, #013a33 0%, #012b26 55%, #001d19 100%);
+        transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      /* Grano muy sutil (ruido SVG propio) y viñeta. */
+      #precarga::before {
+        content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.07; mix-blend-mode: soft-light;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
+      }
+      #precarga::after {
+        content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+        background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0, 12, 10, 0.55) 100%);
+      }
+      #precarga.precarga--saliendo { opacity: 0; pointer-events: none; }
+
+      /* Luces difusas que flotan detrás del vidrio. */
+      .precarga__luz { position: absolute; z-index: -1; border-radius: 50%; filter: blur(60px); will-change: transform; }
+      .precarga__luz--a { width: 42vmax; height: 42vmax; left: 6%; top: 8%; background: rgba(16, 122, 104, 0.35); animation: precarga-flotar 14s ease-in-out infinite alternate; }
+      .precarga__luz--b { width: 34vmax; height: 34vmax; right: 4%; bottom: 2%; background: rgba(235, 170, 32, 0.12); animation: precarga-flotar 18s ease-in-out -6s infinite alternate-reverse; }
+      .precarga__luz--c { width: 26vmax; height: 26vmax; left: 50%; top: 50%; margin: -13vmax 0 0 -13vmax; background: rgba(223, 230, 221, 0.07); animation: precarga-flotar 11s ease-in-out -3s infinite alternate; }
+      @keyframes precarga-flotar { from { transform: translate3d(-3%, -2%, 0) scale(1); } to { transform: translate3d(4%, 3%, 0) scale(1.08); } }
+
+      /* Partículas: pocas, pequeñas y lentas. */
+      .precarga__polvo { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+      .precarga__polvo i {
+        position: absolute; bottom: -8px; left: var(--x); width: 3px; height: 3px; border-radius: 50%;
+        background: rgba(243, 213, 138, 0.55); opacity: 0;
+        animation: precarga-subir var(--d) linear var(--t) infinite;
+      }
+      @keyframes precarga-subir {
+        0% { transform: translate3d(0, 0, 0); opacity: 0; }
+        15% { opacity: 0.7; }
+        85% { opacity: 0.35; }
+        100% { transform: translate3d(12px, -70vh, 0); opacity: 0; }
+      }
+
+      .precarga__centro { display: grid; justify-items: center; text-align: center; padding: 24px; }
+      .precarga__emblema { --t: 208px; position: relative; width: var(--t); height: var(--t); display: grid; place-items: center; }
+
+      /* Disco de vidrio: desenfoca las luces que pasan detrás. */
+      .precarga__vidrio {
+        position: absolute; inset: 22px; border-radius: 50%;
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03) 55%, rgba(235, 170, 32, 0.05));
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -18px 30px rgba(0, 20, 16, 0.35), 0 24px 60px -20px rgba(0, 0, 0, 0.6), 0 0 80px -10px rgba(16, 122, 104, 0.45);
+        -webkit-backdrop-filter: blur(14px) saturate(140%);
+        backdrop-filter: blur(14px) saturate(140%);
+      }
+      /* Reflejo curvo en la parte superior del vidrio. */
+      .precarga__vidrio::after {
+        content: ''; position: absolute; left: 16%; right: 16%; top: 7%; height: 34%; border-radius: 50%;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
+      }
+
+      /* Aro: pista fina y dos arcos (dorado y crema) que giran despacio. */
+      .precarga__aro { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+      .precarga__aro circle { fill: none; transform-origin: 50% 50%; }
+      .precarga__pista { stroke: rgba(223, 230, 221, 0.14); stroke-width: 1; }
+      .precarga__arco-oro { stroke: url(#precarga-oro); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 150 490; animation: precarga-girar 2.8s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite; }
+      .precarga__arco-crema { stroke: rgba(243, 236, 220, 0.55); stroke-width: 1; stroke-linecap: round; stroke-dasharray: 60 580; animation: precarga-girar 4.6s linear infinite reverse; }
+      @keyframes precarga-girar { to { transform: rotate(360deg); } }
+
+      .precarga__logo {
+        position: relative; width: 62px; height: auto;
+        filter: drop-shadow(0 0 18px rgba(243, 213, 138, 0.28)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.35));
+        animation: precarga-entrar 800ms cubic-bezier(0.16, 1, 0.3, 1) both, precarga-pulso 3.6s ease-in-out 900ms infinite;
+      }
+      @keyframes precarga-entrar { from { opacity: 0; transform: translateY(8px) scale(0.92); } to { opacity: 1; transform: none; } }
+      @keyframes precarga-pulso { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+
+      .precarga__nombre { margin: 22px 0 0; font-size: 1.375rem; font-weight: 600; letter-spacing: 0.01em; animation: precarga-aparecer 800ms cubic-bezier(0.16, 1, 0.3, 1) 180ms both; }
+      .precarga__frase { margin: 8px 0 0; font-size: 0.875rem; color: rgba(223, 230, 221, 0.72); animation: precarga-aparecer 800ms cubic-bezier(0.16, 1, 0.3, 1) 320ms both; }
+      .precarga__frase::before { content: ''; display: block; width: 28px; height: 1px; margin: 0 auto 12px; background: linear-gradient(90deg, transparent, rgba(235, 170, 32, 0.8), transparent); }
+      @keyframes precarga-aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+      @media (max-width: 520px) {
+        .precarga__emblema { --t: 168px; }
+        .precarga__vidrio { inset: 18px; }
+        .precarga__logo { width: 50px; }
+        .precarga__nombre { font-size: 1.1875rem; margin-top: 18px; }
+        .precarga__frase { font-size: 0.8125rem; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .precarga__polvo { display: none; }
+        .precarga__luz { animation: none; }
+        .precarga__logo { animation: precarga-aparecer-simple 400ms ease-out both; }
+        .precarga__nombre, .precarga__frase { animation: precarga-aparecer-simple 400ms ease-out both; }
+        .precarga__arco-oro { animation-duration: 9s; animation-timing-function: linear; }
+        .precarga__arco-crema { animation: none; }
+        @keyframes precarga-aparecer-simple { from { opacity: 0; } to { opacity: 1; } }
+      }
+    </style>
   </head>
   <body>
+    <div id="precarga" role="status" aria-live="polite" aria-busy="true">
+      <span class="precarga__luz precarga__luz--a" aria-hidden="true"></span>
+      <span class="precarga__luz precarga__luz--b" aria-hidden="true"></span>
+      <span class="precarga__luz precarga__luz--c" aria-hidden="true"></span>
+      <span class="precarga__polvo" aria-hidden="true">
+        <i style="--x: 12%; --d: 16s; --t: -2s"></i>
+        <i style="--x: 24%; --d: 21s; --t: -9s"></i>
+        <i style="--x: 37%; --d: 18s; --t: -14s"></i>
+        <i style="--x: 52%; --d: 24s; --t: -5s"></i>
+        <i style="--x: 63%; --d: 17s; --t: -11s"></i>
+        <i style="--x: 76%; --d: 22s; --t: -3s"></i>
+        <i style="--x: 88%; --d: 19s; --t: -16s"></i>
+        <i style="--x: 45%; --d: 26s; --t: -20s"></i>
+      </span>
+      <div class="precarga__centro">
+        <div class="precarga__emblema" aria-hidden="true">
+          <span class="precarga__vidrio"></span>
+          <svg class="precarga__aro" viewBox="0 0 208 208" focusable="false">
+            <defs>
+              <linearGradient id="precarga-oro" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#f3d58a" />
+                <stop offset="1" stop-color="#ebaa20" stop-opacity="0.2" />
+              </linearGradient>
+            </defs>
+            <circle class="precarga__pista" cx="104" cy="104" r="102" />
+            <circle class="precarga__arco-oro" cx="104" cy="104" r="102" />
+            <circle class="precarga__arco-crema" cx="104" cy="104" r="96" />
+          </svg>
+          <img class="precarga__logo" data-src="/precarga/logo-f-blanco.webp" alt="" width="160" height="188" decoding="async" fetchpriority="high" />
+        </div>
+        <p class="precarga__nombre">Librería del Saber</p>
+        <p class="precarga__frase">Preparando tu experiencia de lectura...</p>
+      </div>
+    </div>
+    <script>
+      // Fuera de la web pública la pantalla de carga no se usa.
+      // El logo se pide solo en la web pública (el panel no lo descarga).
+      var precarga = document.getElementById('precarga');
+      if (!document.documentElement.hasAttribute('data-precarga')) {
+        if (precarga) precarga.remove();
+      } else if (precarga) {
+        var logo = precarga.querySelector('.precarga__logo');
+        logo.src = logo.getAttribute('data-src');
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
