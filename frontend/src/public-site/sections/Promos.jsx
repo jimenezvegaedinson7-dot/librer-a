@@ -7,7 +7,7 @@ import imgInicio360 from '../assets/app/inicio-360.webp';
 // Tres tarjetas que llevan a las páginas principales.
 export default function Promos() {
     return (
-        <section className="seccion gris" aria-labelledby="promos-titulo">
+        <section className="seccion verde-claro" aria-labelledby="promos-titulo">
             <div className="contenedor">
                 <h2 id="promos-titulo" className="visualmente-oculto">Descubre más</h2>
                 <div className="promos">

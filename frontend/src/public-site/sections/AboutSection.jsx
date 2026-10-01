@@ -2,7 +2,7 @@ import { useRef } from 'react';
 
 import { FaDiamondTurnRight, FaLocationDot } from 'react-icons/fa6';
 
-import { SITIO, UBICACION_TIENDA } from '../config/site';
+import { UBICACION_TIENDA } from '../config/site';
 import { gsap, useGSAP } from '../animation/scroll';
 
 const CITA = 'Somos una librería con tienda frente a la Plaza de Armas de Pallasca, en Áncash. Con la app, nuestro catálogo llega a lectores de todo el Perú.';
@@ -32,7 +32,7 @@ export default function AboutSection({ legal, reducido }) {
     }, { scope: seccion, dependencies: [reducido] });
 
     return (
-        <section id="nosotros" ref={seccion} className="seccion" aria-labelledby="nosotros-titulo">
+        <section id="nosotros" ref={seccion} className="seccion verde-claro" aria-labelledby="nosotros-titulo">
             <div className="contenedor">
                 <h1 id="nosotros-titulo" className="seccion__titulo">Nosotros</h1>
                 <p className="nosotros__cita">
@@ -50,10 +50,7 @@ export default function AboutSection({ legal, reducido }) {
                     </div>
                     <div>
                         <h2>Reclamos</h2>
-                        <p>
-                            Si algo no salió bien, regístralo en nuestro{' '}
-                            <a className="subrayado enlace-texto" href={SITIO.rutaReclamaciones}>Libro de Reclamaciones</a>.
-                        </p>
+                        <p>Si algo no salió bien, puedes registrarlo en el Libro de Reclamaciones que encontrarás al pie de esta página.</p>
                     </div>
                 </div>
 

@@ -105,7 +105,7 @@ export default function FeatureStory({ reducido }) {
     }, { scope: seccion, dependencies: [reducido] });
 
     return (
-        <section id="ventajas" ref={seccion} className="seccion" aria-labelledby="ventajas-titulo">
+        <section id="ventajas" ref={seccion} className="seccion crema" aria-labelledby="ventajas-titulo">
                         <div className="contenedor">
                 <h1 id="ventajas-titulo" className="seccion__titulo">Comprar un libro, sin vueltas</h1>
                 <p className="seccion__entrada">Lo que la app resuelve por ti, de la búsqueda a la entrega.</p>

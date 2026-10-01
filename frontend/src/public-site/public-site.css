@@ -15,6 +15,13 @@
     --salvia-100: #dfe6dd;
     --salvia-50: #f2f6f4;
     --ambar-500: #ebaa20;
+    --ambar-100: #fbeecd;
+    --ambar-700: #6d4700;
+    --ambar-50: #fdf5e4;
+    --ambar-300: #f0c65a;
+    /* Verde vajito: fondos de sección que dan aire sin competir con el texto. */
+    --verde-100: #dcece7;
+    --verde-050: #eff6f3;
     --blanco: #ffffff;
     --gris-50: #f7f7f7;
     --gris-100: #f3f3f3;
@@ -113,22 +120,28 @@ html.lenis, html.lenis body { height: auto; }
     color: var(--texto);
 }
 .oscuro :focus-visible { outline-color: var(--blanco); }
-.gris { background-color: var(--gris-100); }
-.salvia { background-color: var(--salvia-50); }
+/* Fondos con color para que las secciones no se sigan pareciendo. */
+.verde-claro { background-color: var(--verde-100); }
+.verde-tenue { background-color: var(--verde-050); }
+.crema { background-color: var(--ambar-50); }
 
 /* ---------- Botones en píldora ---------- */
+/* Botón principal en amarillo: es la acción que queremos que se pulse. El
+   verde queda para .boton--marca, donde manda la marca y no la urgencia. */
 .boton {
     display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem;
     min-height: 48px; padding: 0 1.5rem;
     font: 600 1rem/1 var(--f-texto);
-    color: var(--blanco); background: var(--accion);
-    border: 1px solid var(--accion); border-radius: 999px;
+    color: var(--negro); background: var(--ambar-500);
+    border: 1px solid var(--ambar-500); border-radius: 999px;
     cursor: pointer;
     transition: background var(--d-rapida) var(--ease-salida), border-color var(--d-rapida), transform var(--d-rapida) var(--ease-salida);
 }
-.boton:hover { background: var(--accion-hover); border-color: var(--accion-hover); }
+.boton:hover { background: var(--ambar-300); border-color: var(--ambar-300); }
 .boton:active { transform: translateY(1px); }
-.boton--marca { background: var(--marca); border-color: var(--marca); }
+/* .boton--marca mantiene el texto claro: el botón base ahora es amarillo con
+   texto oscuro, y sin esto el verde se quedaría ilegible. */
+.boton--marca { background: var(--marca); border-color: var(--marca); color: var(--blanco); }
 .boton--marca:hover { background: var(--verde-900); border-color: var(--verde-900); }
 .boton--linea { background: transparent; color: var(--texto); border-color: var(--borde); }
 .boton--linea:hover { background: rgba(0, 0, 0, 0.05); border-color: var(--texto-3); }
@@ -148,7 +161,7 @@ html.lenis, html.lenis body { height: auto; }
 .oscuro .enlace-texto { color: var(--blanco); }
 
 /* Cierre con la acción principal al final de las páginas de la app. */
-.cierre-descarga { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); margin-top: var(--e-4); padding: var(--e-3); border: 1px solid var(--borde); border-radius: var(--r-tarjeta); background: var(--salvia-50); }
+.cierre-descarga { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); margin-top: var(--e-4); padding: var(--e-3); border: 1px solid var(--borde); border-radius: var(--r-tarjeta); background: var(--verde-100); }
 .cierre-descarga p { font-weight: 600; color: var(--texto); max-width: 52ch; }
 
 /* ---------- Cabecera (avisos · franja · principal · menú) ---------- */
@@ -216,7 +229,7 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* ---------- Migas y cabecera de página ---------- */
-.migas { background: var(--gris-100); font-size: var(--t-meta); color: var(--gris-700); }
+.migas { background: var(--verde-050); font-size: var(--t-meta); color: var(--gris-700); }
 .migas ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; min-height: 44px; }
 .migas li + li::before { content: '›'; margin-right: 0.4rem; color: var(--gris-500); }
 .migas a { color: var(--verde-700); font-weight: 600; }
@@ -225,8 +238,22 @@ html.lenis, html.lenis body { height: auto; }
 /* ---------- Secciones ---------- */
 .seccion { position: relative; padding-block: var(--seccion); }
 .seccion__titulo { font-size: var(--t-h1); max-width: 30ch; color: var(--texto); }
+/* Rayita ámbar bajo el título: el mismo acento en todas las secciones, para
+   que el ojo sepa dónde empieza cada bloque. */
+.seccion__titulo::after { content: ''; display: block; width: 52px; height: 4px; margin-top: 0.7rem; border-radius: 2px; background: var(--ambar-500); }
 .seccion__entrada { font-size: var(--t-lead); color: var(--texto-2); max-width: 62ch; margin-top: 0.6rem; line-height: 1.55; }
 .seccion__cabeza { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--e-2); padding-bottom: 0.75rem; border-bottom: 1px solid var(--borde); }
+
+/* Distintivo sobre un título: da color a las secciones que son solo texto. */
+.sello {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    padding: 0.35rem 0.8rem; border-radius: 999px;
+    font: 700 0.75rem/1 var(--f-texto); letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ambar-700); background: var(--ambar-100);
+    box-shadow: inset 0 0 0 1px rgba(235, 170, 32, 0.5);
+}
+.sello svg { width: 0.85rem; height: 0.85rem; }
+.oscuro .sello { color: var(--ambar-500); background: rgba(235, 170, 32, 0.16); box-shadow: inset 0 0 0 1px rgba(235, 170, 32, 0.4); }
 
 /* Titulares que se revelan por líneas al entrar en pantalla. Visibles por
    defecto: solo se ocultan cuando el script está listo (.sitio.js). */
@@ -244,71 +271,143 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* ---------- Hero (Inicio) ---------- */
-/* Fondo animado propio (ver sections/HeroFondo.jsx): verde profundo,
-   aurora, haces de luz y burbujas de vidrio, sin imágenes. */
+/* Fondo con imagen (fondo_inicio.png) + cristal y efectos animados encima. */
 .hero {
     padding: 0; overflow: clip; isolation: isolate;
     background-color: var(--verde-900);
-    background-image:
-        radial-gradient(70% 60% at 78% 30%, rgba(24, 170, 138, 0.75), transparent 70%),
-        radial-gradient(60% 55% at 62% 100%, rgba(235, 170, 32, 0.28), transparent 70%),
-        radial-gradient(50% 50% at 100% 85%, rgba(34, 150, 190, 0.35), transparent 70%),
-        linear-gradient(125deg, #01362f 0%, #005447 42%, #0a7563 100%);
 }
 .hero > .contenedor { z-index: 1; }
 .hero-fondo { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-/* Velo que mantiene el texto de la izquierda sobre fondo sereno. */
-.hero-fondo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(1, 50, 43, 0.62) 0%, rgba(1, 50, 43, 0.22) 42%, transparent 66%); }
-
-.hero-fondo__aurora { position: absolute; border-radius: 50%; filter: blur(70px); will-change: transform; }
-.hero-fondo__aurora--a { width: 60vmax; height: 38vmax; right: -12vmax; top: -10vmax; background: radial-gradient(closest-side, rgba(40, 220, 170, 0.5), transparent); animation: hero-aurora 18s ease-in-out infinite alternate; }
-.hero-fondo__aurora--b { width: 44vmax; height: 30vmax; left: 20%; bottom: -16vmax; background: radial-gradient(closest-side, rgba(255, 190, 70, 0.32), transparent); animation: hero-aurora 24s ease-in-out -8s infinite alternate-reverse; }
-.hero-fondo__aurora--c { width: 40vmax; height: 28vmax; right: 8%; bottom: -8vmax; background: radial-gradient(closest-side, rgba(56, 190, 220, 0.34), transparent); animation: hero-aurora 20s ease-in-out -4s infinite alternate; }
-@keyframes hero-aurora { from { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); } to { transform: translate3d(-6%, 8%, 0) scale(1.15) rotate(8deg); } }
-
-/* Haces de luz: franjas largas y desenfocadas que barren desde arriba. */
-.hero-fondo__haz {
-    position: absolute; top: -30%; width: 14%; height: 160%;
-    background: linear-gradient(180deg, rgba(255, 236, 190, 0.3), rgba(190, 255, 230, 0.08) 55%, transparent 80%);
-    filter: blur(18px); transform-origin: 50% 0; will-change: transform, opacity;
+.hero-fondo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: var(--bg-hero);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
-.hero-fondo__haz--a { left: 52%; animation: hero-haz 13s ease-in-out infinite alternate; }
-.hero-fondo__haz--b { left: 66%; width: 8%; animation: hero-haz 17s ease-in-out -5s infinite alternate-reverse; }
-.hero-fondo__haz--c { left: 80%; width: 11%; animation: hero-haz 21s ease-in-out -11s infinite alternate; }
-@keyframes hero-haz {
-    0% { transform: rotate(18deg); opacity: 0.35; }
-    50% { opacity: 0.9; }
-    100% { transform: rotate(-10deg); opacity: 0.45; }
-}
-
-/* Burbujas de vidrio: brillo arriba a la izquierda, borde fino, suben y se mecen. */
-.hero-fondo__burbujas { position: absolute; inset: 0; }
-.hero-fondo__burbujas i {
-    position: absolute; bottom: calc(-1 * var(--s) - 10px); left: var(--x);
-    width: var(--s); height: var(--s); border-radius: 50%;
+/* Velo del hero: dos capas. La izquierda se oscurece con un degradado neutro
+   para que las letras blancas resalten, y una viñeta suave cierra el conjunto. */
+.hero-fondo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
     background:
-        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.7) 0 7%, rgba(255, 255, 255, 0.12) 20%, transparent 36%),
-        radial-gradient(circle at 70% 78%, rgba(255, 196, 80, 0.3), transparent 45%),
-        radial-gradient(circle, rgba(223, 230, 221, 0.05) 55%, rgba(223, 230, 221, 0.22) 100%);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22), 0 0 24px rgba(40, 220, 170, 0.35);
-    opacity: 0; will-change: transform, opacity;
-    animation: hero-burbuja var(--d) linear var(--t) infinite;
+        linear-gradient(90deg,
+            rgba(8, 12, 15, 0.80) 0%,
+            rgba(8, 12, 15, 0.64) 16%,
+            rgba(8, 12, 15, 0.40) 36%,
+            rgba(8, 12, 15, 0.17) 55%,
+            transparent 75%),
+        radial-gradient(125% 105% at 42% 45%, transparent 44%, rgba(4, 8, 10, 0.36) 100%);
 }
-@keyframes hero-burbuja {
-    0% { transform: translate3d(0, 0, 0) scale(0.85); opacity: 0; }
-    10% { opacity: 1; }
-    25% { transform: translate3d(var(--v), -28vh, 0) scale(0.95); }
-    50% { transform: translate3d(calc(var(--v) * -0.6), -58vh, 0) scale(1); }
-    75% { transform: translate3d(var(--v), -88vh, 0) scale(1.04); opacity: 0.75; }
-    100% { transform: translate3d(0, -118vh, 0) scale(1.08); opacity: 0; }
+/* Cristal de la izquierda: difumina la imagen y suma un velo claro de vidrio.
+   Va bajo el ::after para que el oscurecido de contraste quede por encima. */
+.hero-fondo__panel {
+    position: absolute;
+    inset: 0;
+    -webkit-backdrop-filter: blur(18px) saturate(130%) brightness(0.94);
+    backdrop-filter: blur(18px) saturate(130%) brightness(0.94);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.045) 34%, rgba(255, 255, 255, 0) 62%);
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 32%, transparent 66%);
+    mask-image: linear-gradient(90deg, #000 0%, #000 32%, transparent 66%);
 }
+
+/* While the loading screen is up the crystal stays out: the first paint of the
+   hero is the most expensive one (a full-bleed blur plus nine more) and it is
+   exactly what the user is looking at. It comes in once the load finishes. */
+.hero-fondo__prisma,
+.hero-fondo__esquirlas,
+.hero-fondo__panel { transition: opacity 700ms var(--ease-salida); }
+html[data-precarga] .hero-fondo__prisma,
+html[data-precarga] .hero-fondo__esquirlas,
+html[data-precarga] .hero-fondo__panel { opacity: 0; }
+
+/* Haces de prisma: barras finas de luz al sesgo con la luz separada en tonos,
+   como al pasar por un cristal. Tenues y desenfocadas, nunca tapan la foto. */
+.hero-fondo__prisma { position: absolute; inset: -25% -20%; }
+.hero-fondo__prisma i {
+    position: absolute;
+    top: var(--y); left: var(--x);
+    width: var(--w); height: var(--h);
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(120, 200, 255, 0.14) 20%,
+        rgba(255, 255, 255, 0.26) 48%,
+        rgba(255, 170, 210, 0.13) 68%,
+        transparent 100%);
+    filter: blur(9px);
+    transform: rotate(var(--r));
+    animation: hero-prisma var(--d) ease-in-out var(--t) infinite alternate;
+}
+@keyframes hero-prisma {
+    0% { transform: rotate(var(--r)) translate3d(0, 0, 0) scaleX(0.9); opacity: 0.3; }
+    50% { transform: rotate(var(--r)) translate3d(2.4vw, -1.6vh, 0) scaleX(1.3); opacity: 0.85; }
+    100% { transform: rotate(var(--r)) translate3d(-2.4vw, 1.6vh, 0) scaleX(1); opacity: 0.45; }
+}
+
+/* Esquirlas: cristal angular y pequeño. El contorno lo da el clip-path, que
+   rota entre formas; el borde iluminado viene del ::before. */
+.hero-fondo__esquirlas { position: absolute; inset: 0; }
+.hero-fondo__esquirlas i {
+    position: absolute;
+    top: var(--y); left: var(--x);
+    width: var(--s); height: var(--s);
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0.05) 55%, rgba(170, 220, 255, 0.16));
+    -webkit-backdrop-filter: blur(3px) saturate(175%) brightness(1.1);
+    backdrop-filter: blur(3px) saturate(175%) brightness(1.1);
+    will-change: transform;
+    animation: hero-esquirla var(--d) ease-in-out var(--t) infinite alternate;
+}
+/* Cara iluminada: el filo que delata el grosor del cristal. */
+.hero-fondo__esquirlas i::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(150deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 44%);
+}
+@keyframes hero-esquirla {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg); }
+    50% { transform: translate3d(var(--dx), var(--dy), 0) rotate(12deg); }
+    100% { transform: translate3d(calc(var(--dx) * -1), calc(var(--dy) * -0.7), 0) rotate(-8deg); }
+}
+/* Formas: se van turnando para que no se repita ninguna silueta. */
+.hero-fondo__esquirlas i:nth-child(6n+1) { clip-path: polygon(50% 0%, 100% 38%, 78% 100%, 22% 100%, 0% 38%); }
+.hero-fondo__esquirlas i:nth-child(6n+2) { clip-path: polygon(0% 0%, 100% 0%, 82% 100%, 18% 100%); }
+.hero-fondo__esquirlas i:nth-child(6n+3) { clip-path: polygon(0% 12%, 100% 0%, 100% 88%, 12% 100%); }
+.hero-fondo__esquirlas i:nth-child(6n+4) { clip-path: polygon(50% 0%, 100% 100%, 0% 100%); }
+.hero-fondo__esquirlas i:nth-child(6n+5) { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+.hero-fondo__esquirlas i:nth-child(6n+6) { clip-path: polygon(8% 0%, 100% 22%, 74% 100%, 0% 62%); }
+/* Sin backdrop-filter la esquirla se ve plana: se refuerza el filo. */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+    .hero-fondo__esquirlas i { background: linear-gradient(140deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.04) 60%, rgba(170, 220, 255, 0.12)); }
+}
+
 @media (max-width: 1023px) {
-    .hero-fondo::after { background: linear-gradient(180deg, rgba(1, 58, 51, 0.7) 0%, rgba(1, 58, 51, 0.3) 45%, transparent 75%); }
-    .hero-fondo__burbujas i:nth-child(even) { display: none; }
+    /* En móvil el texto arriba y el libro abajo: el velo sube desde el borde superior. */
+    .hero-fondo::after {
+        background:
+            linear-gradient(180deg,
+                rgba(8, 12, 15, 0.78) 0%,
+                rgba(8, 12, 15, 0.56) 26%,
+                rgba(8, 12, 15, 0.25) 50%,
+                transparent 76%),
+            radial-gradient(130% 100% at 50% 38%, transparent 40%, rgba(4, 8, 10, 0.34) 100%);
+    }
+    /* Cristal más barato en móvil: el difuminado es lo más caro. */
+    .hero-fondo__panel {
+        -webkit-backdrop-filter: blur(9px) saturate(125%) brightness(0.95);
+        backdrop-filter: blur(9px) saturate(125%) brightness(0.95);
+        -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 30%, transparent 62%);
+        mask-image: linear-gradient(180deg, #000 0%, #000 30%, transparent 62%);
+    }
+    .hero-fondo__esquirlas i { -webkit-backdrop-filter: blur(2px) saturate(150%); backdrop-filter: blur(2px) saturate(150%); }
+    .hero-fondo__esquirlas i:nth-child(even) { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .hero-fondo__aurora, .hero-fondo__haz { animation: none; }
-    .hero-fondo__burbujas { display: none; }
+    .hero-fondo__esquirlas i, .hero-fondo__prisma i { animation: none; }
 }
 .hero__rejilla { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: var(--e-4); min-height: min(640px, 76svh); padding-block: var(--e-4); }
 .hero__titulo { font-size: var(--t-hero); max-width: 14ch; line-height: 1.1; }
@@ -331,7 +430,7 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* ---------- Libros (carrusel del inicio) ---------- */
-.catalogo { overflow: clip; }
+.catalogo { overflow: clip; background: var(--verde-050); }
 .catalogo__controles { display: flex; align-items: center; gap: 0.6rem; }
 .catalogo__ventana { position: relative; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: thin; }
 .catalogo__pista { display: flex; gap: clamp(16px, 2vw, 28px); padding: var(--e-4) var(--gutter) var(--e-3); width: max-content; }
@@ -348,7 +447,13 @@ html.lenis, html.lenis body { height: auto; }
 .libro__titulo { font-size: 1rem; font-weight: 500; line-height: 1.3; min-height: 2.6em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .libro__autor { color: var(--texto-3); font-size: 0.875rem; margin-top: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .libro__pie { display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.45rem; font-size: 0.8125rem; color: var(--texto-3); }
-.precio { color: var(--negro); font-weight: 700; font-size: 1rem; font-variant-numeric: tabular-nums; }
+/* Precio resaltado en verde claro: pastilla clara con texto verde oscuro,
+   para que destaque sin gritar y sin perder contraste. */
+.precio {
+    display: inline-block; align-self: center; padding: 0.1rem 0.55rem; border-radius: 999px;
+    background: var(--verde-100); color: var(--verde-900);
+    font-weight: 700; font-size: 0.9375rem; font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+}
 .libro--esqueleto .libro__tapa, .tarjeta-libro--esqueleto .tarjeta-libro__tapa { background: linear-gradient(100deg, #ececec 30%, #f7f7f7 50%, #ececec 70%) 0 0 / 300% 100%; box-shadow: none; animation: brillo 1.4s linear infinite; }
 .libro--esqueleto .libro__datos { min-height: calc(2.6rem + 1.3rem + 1.25rem + 0.65rem); }
 @keyframes brillo { to { background-position: -150% 0; } }
@@ -364,18 +469,32 @@ html.lenis, html.lenis body { height: auto; }
 .resultado { margin-top: var(--e-3); font-size: var(--t-menu); color: var(--texto-3); }
 .rejilla-libros { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: clamp(12px, 1.6vw, 20px); margin-top: var(--e-2); }
 .tarjeta-libro { display: flex; flex-direction: column; gap: 0.35rem; padding: 14px; border: 1px solid var(--gris-300); border-radius: var(--r-tarjeta); background: var(--blanco); transition: box-shadow var(--d-media) var(--ease-salida), border-color var(--d-media); }
-.tarjeta-libro:hover { box-shadow: var(--sombra-tarjeta); border-color: #bdbdbd; }
+.tarjeta-libro:hover { box-shadow: var(--sombra-tarjeta); border-color: var(--verde-600); }
 .tarjeta-libro__tapa { aspect-ratio: 2 / 3; border-radius: 2px 4px 4px 2px; overflow: hidden; background: var(--gris-100); box-shadow: var(--sombra-libro); margin-bottom: 0.55rem; transition: transform var(--d-media) var(--ease-salida); }
 .tarjeta-libro:hover .tarjeta-libro__tapa { transform: translateY(-4px); }
 .tarjeta-libro__tapa img { width: 100%; height: 100%; object-fit: cover; }
 .tarjeta-libro .libro__titulo { min-height: 2.6em; }
-.categoria { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--verde-700); background: var(--salvia-100); padding: 0.15rem 0.55rem; border-radius: 999px; }
-.agotado { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--negro); background: var(--ambar-500); padding: 0.15rem 0.55rem; border-radius: 999px; }
+.categoria { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--ambar-700); background: var(--ambar-100); padding: 0.15rem 0.55rem; border-radius: 999px; }
+.agotado { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--ambar-700); background: var(--ambar-100); padding: 0.15rem 0.55rem; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(235, 170, 32, 0.5); }
 .tarjeta-libro .boton { margin-top: auto; width: 100%; padding-inline: 0.75rem; white-space: nowrap; }
-.tarjeta-libro__precio { margin-top: 0.2rem; }
+/* En la rejilla el <p> lleva a la vez .precio y .tarjeta-libro__precio: la
+   pastilla verde la pinta .precio, aquí solo va el margen. */
+.tarjeta-libro__precio { margin-top: 0.35rem; }
 @media (max-width: 520px) { .rejilla-libros { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tarjeta-libro { padding: 10px; } }
 @media (max-width: 520px) { .tarjeta-libro .boton { font-size: 0.8125rem; padding-inline: 0.5rem; } .tarjeta-libro .boton svg { display: none; } }
 @media (max-width: 380px) { .tarjeta-libro .boton { font-size: 0.75rem; } }
+
+/* ---------- Video de anuncios ---------- */
+/* Sin fondo propio: hereda el de toda la página. El video ocupa todo el
+   ancho del contenedor, no una columna al lado de un texto. */
+.video-destacado__marco { position: relative; width: 100%; aspect-ratio: 21 / 9; border-radius: var(--r-tarjeta); overflow: hidden; background: var(--verde-900); box-shadow: var(--sombra-tarjeta); }
+.video-destacado__marco video { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Mientras no haya archivo, esto es lo que se ve: un aviso, no un
+   reproductor roto. */
+.video-destacado__vacio { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; padding: var(--e-3); text-align: center; color: var(--blanco); }
+.video-destacado__vacio svg { width: 2.4rem; height: 2.4rem; color: var(--ambar-500); }
+.video-destacado__vacio p { font-size: var(--t-menu); color: var(--salvia-100); max-width: 28ch; }
+@media (max-width: 700px) { .video-destacado__marco { aspect-ratio: 16 / 9; } }
 
 /* ---------- Promociones del inicio ---------- */
 .promos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 20px); }
@@ -430,7 +549,7 @@ html.lenis, html.lenis body { height: auto; }
 .ventaja__detalle svg { width: 1rem; height: 1rem; color: var(--marca); }
 .ficha { position: relative; padding: clamp(1.1rem, 2.4vw, 1.6rem); background: var(--blanco); border: 1px solid var(--gris-300); border-radius: var(--r-tarjeta); box-shadow: var(--sombra-tarjeta); }
 .ficha__pie { margin-top: 0.85rem; font-size: 0.75rem; color: var(--gris-500); text-align: center; }
-.recorte { position: relative; overflow: hidden; border-radius: 12px; background: var(--gris-50); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06); }
+.recorte { position: relative; overflow: hidden; border-radius: 12px; background: var(--verde-050); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06); }
 .recorte img { width: 100%; height: auto; }
 .tipografica { font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem); font-weight: 700; line-height: 1.15; color: var(--texto); }
 .tipografica em { font-style: normal; color: var(--verde-600); }
@@ -442,7 +561,7 @@ html.lenis, html.lenis body { height: auto; }
 /* Selector de entrega: réplica del de la app. */
 .selector-entrega { display: grid; gap: 0.75rem; max-width: 460px; margin-inline: auto; }
 .opcion-entrega { display: grid; grid-template-columns: 48px 1fr auto; gap: 1rem; align-items: center; text-align: left; padding: 1rem 1.1rem; border-radius: 12px; border: 1.5px solid var(--gris-300); background: var(--blanco); color: var(--negro); font: inherit; cursor: pointer; transition: border-color var(--d-rapida), background var(--d-rapida); }
-.opcion-entrega[aria-checked='true'] { border-color: var(--verde-700); background: var(--salvia-50); }
+.opcion-entrega[aria-checked='true'] { border-color: var(--verde-700); background: var(--verde-050); }
 .opcion-entrega__icono { width: 48px; height: 48px; border-radius: 10px; display: grid; place-items: center; background: var(--verde-700); color: var(--blanco); }
 .opcion-entrega[aria-checked='false'] .opcion-entrega__icono { background: var(--blanco); color: var(--verde-700); border: 1px solid var(--gris-300); }
 .opcion-entrega__icono svg { width: 22px; height: 22px; }

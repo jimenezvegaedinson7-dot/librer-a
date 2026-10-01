@@ -57,26 +57,34 @@ export default function PublicLayout() {
         metadatos(pathname);
         const anterior = rutaPrevia.current;
         rutaPrevia.current = pathname;
-        if (anterior === null || anterior === pathname) return undefined;
-        if (lenis.current) lenis.current.scrollTo(0, { immediate: true });
-        else window.scrollTo(0, 0);
-        const titulo = pagina.current?.querySelector('main h1');
-        if (titulo) {
-            titulo.setAttribute('tabindex', '-1');
-            titulo.focus({ preventScroll: true });
+        if (anterior === pathname) return undefined;
+        // Con ancla en la url no se toca el scroll: de eso se encarga el
+        // efecto de abajo, que además sabe esperar a que Lenis esté activo.
+        if (!hash) {
+            if (lenis.current) lenis.current.scrollTo(0, { immediate: true });
+            else window.scrollTo(0, 0);
+        }
+        // El foco en el título solo tiene sentido al navegar, no al recargar.
+        if (anterior !== null) {
+            const titulo = pagina.current?.querySelector('main h1');
+            if (titulo) {
+                titulo.setAttribute('tabindex', '-1');
+                titulo.focus({ preventScroll: true });
+            }
         }
         const t = setTimeout(() => ScrollTrigger.refresh(), 150);
         return () => clearTimeout(t);
-    }, [pathname, lenis]);
+    }, [pathname, hash, lenis]);
 
-    // Enlaces con ancla (p. ej. /nosotros#tienda): baja a esa sección
-    // cuando la página ya está montada.
+    // Enlaces con ancla (p. ej. /nosotros#tienda): baja a esa sección cuando la
+    // página ya está montada. Espera a que termine la pantalla de carga porque
+    // mientras tanto Lenis está detenido y se tragaría el desplazamiento.
     useEffect(() => {
         const id = decodeURIComponent(hash.replace('#', ''));
-        if (!id) return undefined;
+        if (!id || !cargada) return undefined;
         const t = setTimeout(() => irASeccion(id, lenis.current), 220);
         return () => clearTimeout(t);
-    }, [pathname, hash, lenis]);
+    }, [pathname, hash, lenis, cargada]);
 
     // Las alturas cambian cuando llega el catálogo.
     useEffect(() => {

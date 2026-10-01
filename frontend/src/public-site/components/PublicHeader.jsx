@@ -85,7 +85,6 @@ export default function PublicHeader() {
             </div>
             <div className="franja">
                 <div className="contenedor">
-                    <a href={SITIO.rutaReclamaciones}>Libro de Reclamaciones</a>
                     <a className="franja__admin" href={SITIO.rutaLoginAdmin}>Acceso administrativo</a>
                 </div>
             </div>
@@ -163,7 +162,6 @@ export default function PublicHeader() {
                             </nav>
                             <div className="cajon__pie">
                                 <Link to="/nosotros#tienda" onClick={() => setAbierto(false)}>Nuestra tienda en Pallasca</Link>
-                                <a href={SITIO.rutaReclamaciones}>Libro de Reclamaciones</a>
                                 <a href={SITIO.rutaLoginAdmin}>Acceso administrativo</a>
                             </div>
                         </motion.div>

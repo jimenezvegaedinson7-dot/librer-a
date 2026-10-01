@@ -43,7 +43,7 @@ export default function MobileExperience({ reducido }) {
     }, { scope: seccion, dependencies: [reducido] });
 
     return (
-        <section id="app" ref={seccion} className="seccion app" aria-labelledby="app-titulo">
+        <section id="app" ref={seccion} className="seccion app verde-claro" aria-labelledby="app-titulo">
             <div className="contenedor app__rejilla">
                 <div>
                     <h1 id="app-titulo" className="seccion__titulo">Toda la librería cabe en la app</h1>

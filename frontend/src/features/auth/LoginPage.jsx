@@ -457,11 +457,6 @@ export default function LoginPage() {
                     <p className="mt-10 text-center text-xs text-[#a39a8e] lg:hidden">
                         © {new Date().getFullYear()} Librería del Saber
                     </p>
-                    <p className="mt-3 text-center text-xs">
-                        <a href="/libro-de-reclamaciones" className="font-semibold text-[#004d43] underline underline-offset-2">
-                            Libro de Reclamaciones
-                        </a>
-                    </p>
                 </motion.section>
             </div>
 

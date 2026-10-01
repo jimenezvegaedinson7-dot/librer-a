@@ -61,6 +61,11 @@
         var ruta = location.pathname.replace(/\/+$/, '') || '/';
         var publicas = ['/', '/catalogo', '/aplicacion', '/caracteristicas', '/nosotros', '/descargar'];
         if (publicas.indexOf(ruta) === -1) return;
+        // Al recargar, siempre desde arriba. Por defecto el navegador devuelve
+        // la página en la posición en la que se estaba, que no es lo que
+        // queremos; se desactiva antes de que llegue a pintar.
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+        window.scrollTo(0, 0);
         var html = document.documentElement;
         html.setAttribute('data-precarga', '');
         html.classList.add('precarga-bloqueo');

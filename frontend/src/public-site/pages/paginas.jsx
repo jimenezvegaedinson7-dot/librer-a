@@ -4,6 +4,7 @@ import Migas from '../components/Migas';
 import Hero from '../sections/Hero';
 import BookShowcase from '../sections/BookShowcase';
 import Promos from '../sections/Promos';
+import VideoSection from '../sections/VideoSection';
 import MobileExperience from '../sections/MobileExperience';
 import FeatureStory from '../sections/FeatureStory';
 import DownloadSection from '../sections/DownloadSection';
@@ -18,6 +19,7 @@ export function InicioPage() {
         <>
             <Hero reducido={reducido} />
             <BookShowcase catalogo={catalogo} reducido={reducido} />
+            <VideoSection />
             <Promos />
         </>
     );
