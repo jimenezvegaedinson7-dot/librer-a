@@ -139,8 +139,9 @@ test('descargar: Android real desde la configuración, iOS en preparación sin e
     await apiPublica(page);
     await page.goto('/descargar');
     const android = page.locator('a[data-descarga="android"]');
-    await expect(android).toHaveAttribute('href', /github\.com\/jimenezvegaedinson7-dot\/librer-a\/releases\/download\/v1\.0\.0\/libreria-1\.0\.1\.apk$/);
-    await expect(page.locator('main')).toContainText('56.8 MB');
+    await expect(android).toHaveAttribute('href', /github\.com\/jimenezvegaedinson7-dot\/librer-a\/releases\/download\/v1\.0\.2\/libreria-1\.0\.2\.apk$/);
+    await expect(page.locator('main')).toContainText('53.7 MB');
+    await expect(page.locator('main')).toContainText('1.0.2');
     const ios = page.getByRole('article', { name: 'iPhone' });
     await expect(ios).toContainText('En preparación');
     await expect(ios.locator('a')).toHaveCount(0);
@@ -579,4 +580,3 @@ test('inicio: explora por categoría y cómo comprar', async ({ page }) => {
     await tarjetas.first().click();
     await expect(page).toHaveURL(/\/catalogo\?categoria=/);
 });
-
