@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { FaBars, FaXmark, FaMagnifyingGlass, FaMobileScreenButton, FaLocationDot, FaChevronRight } from 'react-icons/fa6';
+import { FaBars, FaXmark, FaMagnifyingGlass, FaMobileScreenButton, FaLocationDot, FaChevronRight, FaTruckFast, FaStore, FaShieldHalved } from 'react-icons/fa6';
 
 import logo from '../assets/logo-f-verde-96.webp';
 import { AVISOS, NAVEGACION, SITIO } from '../config/site';
 import { EASE } from '../config/motion';
+
+// Iconos de la franja superior, en el orden de AVISOS (config/site.js):
+// envío a domicilio, recojo en tienda y pago con PayU.
+const ICONOS_AVISOS = [FaTruckFast, FaStore, FaShieldHalved];
 
 // Buscador de la cabecera: lleva al catálogo con la búsqueda aplicada.
 function Buscador({ id }) {
@@ -78,9 +82,15 @@ export default function PublicHeader() {
         <>
             <div className="avisos">
                 <ul className="contenedor">
-                    {AVISOS.map((a) => (
-                        <li key={a.texto}>{a.ruta ? <Link to={a.ruta}>{a.texto}</Link> : a.texto}</li>
-                    ))}
+                    {AVISOS.map((a, i) => {
+                        const Icono = ICONOS_AVISOS[i] || FaShieldHalved;
+                        return (
+                            <li key={a.texto}>
+                                <span className="aviso-icono" aria-hidden="true"><Icono /></span>
+                                {a.ruta ? <Link to={a.ruta}>{a.texto}</Link> : a.texto}
+                            </li>
+                        );
+                    })}
                 </ul>
             </div>
 
@@ -100,7 +110,7 @@ export default function PublicHeader() {
                     <Marca />
                     <Buscador id="buscar-escritorio" />
                     <div className="cabecera__acciones">
-                        <Link to="/nosotros#tienda" className="cabecera__enlace"><FaLocationDot aria-hidden="true" /> Nuestra tienda</Link>
+                        <Link to="/nosotros#tienda" className="cabecera__enlace"><FaLocationDot aria-hidden="true" /> <span className="cabecera__enlace-texto">Nuestra tienda<small>Pallasca, Áncash</small></span></Link>
                         <Link to="/descargar" className="boton boton--chico cabecera__descarga"><FaMobileScreenButton aria-hidden="true" /> <span className="cabecera__descarga-texto">Descargar la app</span></Link>
                     </div>
                 </div>

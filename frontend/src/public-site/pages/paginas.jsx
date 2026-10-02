@@ -7,6 +7,8 @@ import Promos from '../sections/Promos';
 import VideoSection from '../sections/VideoSection';
 import ExplorarCategorias from '../sections/ExplorarCategorias';
 import ComoComprar from '../sections/ComoComprar';
+import BandaCatalogo from '../sections/BandaCatalogo';
+import Beneficios from '../sections/Beneficios';
 import MobileExperience from '../sections/MobileExperience';
 import FeatureStory from '../sections/FeatureStory';
 import DownloadSection from '../sections/DownloadSection';
@@ -20,11 +22,13 @@ export function InicioPage() {
     return (
         <>
             <Hero reducido={reducido} />
-            <BookShowcase catalogo={catalogo} reducido={reducido} />
             <ExplorarCategorias catalogo={catalogo} />
+            <BookShowcase catalogo={catalogo} reducido={reducido} />
+            <BandaCatalogo catalogo={catalogo} />
             <VideoSection />
             <ComoComprar />
             <Promos />
+            <Beneficios />
         </>
     );
 }

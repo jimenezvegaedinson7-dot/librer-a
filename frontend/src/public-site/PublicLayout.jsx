@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { MotionConfig } from 'motion/react';
 
 import './public-site.css';
+import './tema-editorial.css';
 
 import PublicHeader from './components/PublicHeader';
 import PublicFooter from './components/PublicFooter';

@@ -1,0 +1,249 @@
+/* ============================================================
+   TEMA EDITORIAL — Librería del Saber
+   Rediseño visual tomado de la referencia de diseño: marfil y crema,
+   azul marino profundo, dorado elegante y acentos caramelo, con
+   títulos en serif. Solo presentación: ningún dato ni ruta cambia.
+
+   La paleta vive aquí, en tokens de .sitio. Los nombres --verde-* se
+   conservan porque los usan todos los componentes, pero ahora apuntan
+   al azul marino: cambiar un valor aquí cambia toda la web.
+   Este archivo se carga después de public-site.css.
+   ============================================================ */
+
+.sitio {
+    /* Paleta base */
+    --marino-950: #0a1f31;
+    --marino-900: #0d2940;
+    --marino-700: #16395a;
+    --carbon: #111820;
+    --marfil: #fff9ef;
+    --crema: #f4ebdd;
+    --crema-claro: #faf4ea;
+    --dorado: #d5a447;
+    --dorado-hover: #e3b865;
+    --dorado-oscuro: #b8892f;
+    --caramelo: #a65a32;
+    --vino: #7a1725;
+    --tinta: #111820;
+
+    /* Tokens heredados, ahora en la paleta editorial */
+    --verde-900: var(--marino-950);
+    --verde-700: var(--marino-900);
+    --verde-600: var(--marino-700);
+    --verde-100: var(--crema);
+    --verde-050: var(--crema-claro);
+    --salvia-100: #eadfcc;
+    --salvia-50: var(--marfil);
+    --ambar-500: var(--dorado);
+    --ambar-300: var(--dorado-hover);
+    --ambar-100: #f5e6c4;
+    --ambar-50: var(--marfil);
+    --ambar-700: #6b4a12;
+    --negro: var(--tinta);
+    --gris-300: #e2d8c8;
+    --gris-100: #f3ede3;
+    --marco: var(--marino-950);
+    --marco-texto: #eae2d3;
+    --marco-tenue: #b9b2a5;
+    --avisos-fondo: var(--marino-900);
+    --avisos-texto: var(--marfil);
+
+    /* Tipografía de títulos: serif editorial (Source Serif 4, ya cargada
+       desde index.html) con respaldo Georgia. */
+    --f-titulo: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+
+    --sombra-tarjeta: 0 14px 32px -20px rgba(13, 41, 64, 0.35);
+
+    background: var(--marfil);
+}
+
+/* ---------- Títulos en serif ---------- */
+.sitio :is(.seccion__titulo, .hero__titulo, .nosotros-hero__titulo, .app-portada__titulo,
+    .descargar-portada__titulo, .promo h3, .paso h3, .explorar__texto strong,
+    .nosotros-pilar h3, .nosotros-tienda__tarjeta h2, .nosotros-cierre h2,
+    .banda-catalogo h2, .ventaja h2, .instalar h2, .marca span) {
+    font-family: var(--f-titulo);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+.sitio .hero__titulo { font-weight: 600; line-height: 1.08; }
+.sitio .seccion__titulo::after { height: 2px; width: 44px; background: var(--dorado); }
+
+/* ---------- Franja superior ---------- */
+.avisos { background: var(--marino-900); }
+.avisos li::before { display: none; }
+.avisos li::after { left: 26px; }
+.aviso-icono {
+    display: grid; place-items: center; flex: none; width: 18px; height: 18px; color: var(--dorado);
+    transition: transform var(--d-rapida) var(--ease-salida);
+}
+.aviso-icono svg { width: 16px; height: 16px; }
+.avisos li:hover .aviso-icono { transform: translateY(-1px) scale(1.08); }
+.avisos li + li { position: relative; }
+@media (min-width: 1024px) {
+    .avisos .contenedor { justify-content: center; gap: 0; }
+    .avisos li + li { margin-left: 2.2rem; padding-left: 2.2rem; }
+    .avisos li + li::before {
+        display: block; content: ''; position: absolute; left: 0; top: 50%; translate: 0 -50%;
+        width: 1px; height: 14px; border-radius: 0; background: rgba(213, 164, 71, 0.45); box-shadow: none;
+    }
+}
+
+/* ---------- Cabecera ---------- */
+.cabecera { background: var(--marfil); }
+.cabecera[data-sombra='true'] { box-shadow: 0 6px 22px -14px rgba(13, 41, 64, 0.45); }
+.marca { color: var(--marino-900); }
+.marca img { width: 34px; }
+.marca span { font-size: 1.375rem; color: var(--marino-900); }
+.buscador { border-color: #ddd0bb; border-radius: 10px; background: var(--blanco); overflow: hidden; }
+.buscador:focus-within { border-color: var(--dorado); box-shadow: 0 0 0 3px rgba(213, 164, 71, 0.2); }
+.buscador button { border-left: 0; background: var(--dorado); color: var(--marino-900); padding: 0 1.05rem; transition: background var(--d-rapida); }
+.buscador button:hover { background: var(--dorado-hover); }
+.cabecera__enlace { color: var(--marino-900); line-height: 1.15; }
+.cabecera__enlace svg { color: var(--dorado-oscuro); width: 20px; height: 20px; }
+.cabecera__enlace-texto { display: grid; }
+.cabecera__enlace-texto small { font-size: 0.75rem; font-weight: 500; color: var(--texto-3); }
+.menu { border-bottom-color: #e7dcc9; background: var(--marfil); }
+.menu ul { justify-content: center; }
+.menu li + li::before { background: #d9cbb3; }
+.menu a { color: var(--marino-900); }
+.menu a::after { height: 2px; background: var(--dorado); }
+.menu a[aria-current='page'] { color: var(--marino-900); }
+.menu a[data-destacado] { color: var(--caramelo); }
+
+/* ---------- Botones ---------- */
+.boton--marca { background: var(--marino-900); border-color: var(--marino-900); color: var(--blanco); }
+.boton--marca:hover { background: var(--marino-700); border-color: var(--marino-700); }
+.sitio .boton--compra { background: var(--dorado); border-color: var(--dorado-oscuro); color: var(--marino-950); }
+.sitio .boton--compra:hover { background: var(--dorado-hover); border-color: var(--dorado); }
+.sitio .boton--compra:active { background: var(--dorado-oscuro); }
+
+/* ---------- Hero ---------- */
+.hero { background-color: var(--marino-950); }
+.hero-fondo::after {
+    background:
+        linear-gradient(90deg,
+            rgba(10, 31, 49, 0.88) 0%,
+            rgba(13, 41, 64, 0.72) 22%,
+            rgba(13, 41, 64, 0.42) 42%,
+            rgba(13, 41, 64, 0.12) 62%,
+            transparent 78%),
+        radial-gradient(125% 105% at 42% 45%, transparent 44%, rgba(8, 20, 32, 0.4) 100%);
+}
+
+/* ---------- Secciones ---------- */
+.verde-claro { background-color: var(--crema); }
+.crema { background-color: var(--marfil); }
+.gris { background-color: var(--crema-claro); }
+.precio { background: #f1e3c6; color: var(--marino-950); }
+
+/* ---------- Explora por categoría ---------- */
+.explorar { background: var(--marfil); }
+.explorar__rejilla { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.explorar__tarjeta {
+    grid-template-columns: 58px minmax(0, 1fr); gap: 0.85rem; padding: 14px 16px;
+    border-radius: 14px; border-color: #ece1cf; background: var(--blanco);
+    box-shadow: 0 1px 2px rgba(13, 41, 64, 0.05), 0 12px 24px -20px rgba(13, 41, 64, 0.35);
+}
+.explorar__icono {
+    display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%;
+    background: #f6ecdb; color: var(--dorado-oscuro);
+    transition: transform var(--d-media) var(--ease-salida), background var(--d-media);
+}
+.explorar__icono svg { width: 26px; height: 26px; }
+.explorar__tarjeta:hover .explorar__icono { transform: scale(1.06) rotate(-4deg); background: #f1e0c0; }
+.explorar__texto strong { font-size: 1.0625rem; color: var(--marino-900); line-height: 1.2; }
+.explorar__cuenta { margin-left: 0.3rem; font-family: var(--f-texto); font-size: 0.75rem; font-weight: 500; color: var(--texto-3); }
+.explorar__ver { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8125rem; font-weight: 600; color: var(--caramelo); }
+.explorar__ver svg { width: 0.7rem; height: 0.7rem; transition: transform var(--d-rapida) var(--ease-salida); }
+.explorar__tarjeta:hover .explorar__ver svg { transform: translateX(3px); }
+
+/* ---------- Libros (carrusel del inicio): tarjeta horizontal ---------- */
+.catalogo { background: var(--crema); }
+.catalogo__pista { gap: 18px; }
+.libro {
+    width: clamp(290px, 26vw, 330px);
+    display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 1rem; align-items: start;
+    padding: 14px; border-radius: 14px; background: var(--blanco);
+    border: 1px solid #ece1cf;
+    box-shadow: 0 1px 2px rgba(13, 41, 64, 0.05), 0 14px 28px -22px rgba(13, 41, 64, 0.4);
+    transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida);
+}
+.libro:hover { transform: translateY(-4px); box-shadow: 0 2px 4px rgba(13, 41, 64, 0.05), 0 26px 40px -24px rgba(13, 41, 64, 0.5); }
+.libro .libro__tapa { width: 104px; }
+.libro:hover .libro__tapa { transform: none; }
+.libro .libro__tapa img { transition: transform 700ms var(--ease-salida); }
+.libro:hover .libro__tapa img { transform: scale(1.04); }
+.libro__datos { margin-top: 0.2rem; display: flex; flex-direction: column; gap: 0.25rem; min-height: 100%; }
+.libro .libro__titulo { font-family: var(--f-titulo); font-size: 1.0625rem; font-weight: 600; color: var(--marino-900); min-height: 0; }
+.libro .libro__pie { flex-wrap: wrap; }
+.libro__comprar { margin-top: auto; align-self: flex-start; }
+.libro .libro-nuevo { white-space: normal; font-size: 0.5625rem; line-height: 1.15; max-width: calc(100% - 6px); padding: 0.18rem 0.6rem 0.18rem 0.35rem; }
+.libro .etiqueta-top { font-size: 0.5625rem; }
+.libro__comprar.boton--chico { min-height: 34px; padding: 0 0.9rem; font-size: 0.8125rem; }
+
+/* ---------- Banda "Descubre el catálogo" ---------- */
+.banda-catalogo {
+    position: relative; overflow: clip; isolation: isolate; padding-block: clamp(2.4rem, 5vw, 3.6rem);
+    background: var(--marino-900);
+}
+.banda-catalogo__fondo {
+    position: absolute; inset: 0; z-index: -1;
+    background: var(--fondo-banda) center 55% / cover no-repeat;
+    opacity: 0.55;
+}
+.banda-catalogo__fondo::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(10, 31, 49, 0.35) 0%, rgba(13, 41, 64, 0.92) 40%, rgba(13, 41, 64, 0.92) 70%, rgba(10, 31, 49, 0.5) 100%);
+}
+.banda-catalogo__contenido { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); }
+.banda-catalogo h2 { font-size: clamp(1.5rem, 1.2rem + 1vw, 2.1rem); line-height: 1.15; color: var(--marfil); }
+.banda-catalogo p { margin-top: 0.4rem; color: #d9cfbd; max-width: 52ch; }
+
+/* ---------- Beneficios (antes del pie) ---------- */
+.beneficios { background: var(--crema-claro); border-top: 1px solid #ece1cf; padding-block: 1.6rem; }
+.beneficios ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-3); }
+.beneficios li { display: flex; align-items: center; gap: 0.9rem; }
+.beneficios li + li { border-left: 1px solid #e3d5bd; padding-left: var(--e-3); }
+.beneficios svg { flex: none; width: 30px; height: 30px; color: var(--marino-900); transition: transform var(--d-media) var(--ease-salida); }
+.beneficios li:hover svg { transform: translateY(-2px); color: var(--dorado-oscuro); }
+.beneficios strong { display: block; font-family: var(--f-titulo); font-size: 1.0625rem; color: var(--marino-900); }
+.beneficios span { font-size: 0.8125rem; color: var(--texto-3); }
+
+/* ---------- Pie ---------- */
+.pie { background: var(--marino-950); }
+.pie .marca span { font-size: 1.375rem; }
+.pie h2 { font-family: var(--f-titulo); font-size: 1rem; font-weight: 600; color: var(--dorado); }
+.pie a:hover { color: var(--dorado-hover); }
+.pie__legal { border-top-color: rgba(213, 164, 71, 0.22); }
+
+/* ---------- Aparición al entrar en pantalla ---------- */
+.sitio [data-revelar] > .libro { transition: opacity 800ms var(--ease-salida), transform 800ms var(--ease-salida), box-shadow var(--d-media) var(--ease-salida); }
+
+@media (max-width: 1023px) {
+    .menu ul { justify-content: flex-start; }
+    .beneficios ul { grid-template-columns: 1fr; gap: 0.9rem; }
+    .beneficios li + li { border-left: 0; padding-left: 0; }
+}
+@media (max-width: 520px) {
+    .libro { width: 280px; grid-template-columns: 92px minmax(0, 1fr); }
+    .libro .libro__tapa { width: 92px; }
+    .marca span { font-size: 1.1875rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .libro:hover, .libro:hover .libro__tapa img, .explorar__tarjeta:hover .explorar__icono,
+    .beneficios li:hover svg, .avisos li:hover .aviso-icono { transform: none; }
+}
+
+/* Ajustes de tablet y móvil. */
+.libro__comprar { white-space: nowrap; }
+.libro .precio.oferta { flex-wrap: wrap; max-width: 100%; }
+@media (max-width: 640px) {
+    .explorar__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .explorar__tarjeta { grid-template-columns: 1fr; justify-items: start; gap: 0.5rem; padding: 12px; }
+    .explorar__icono { width: 44px; height: 44px; }
+    .explorar__icono svg { width: 20px; height: 20px; }
+    .explorar__texto strong { font-size: 0.9375rem; }
+}
+.tarjeta-libro .libro__titulo { font-family: var(--f-titulo); font-weight: 600; font-size: 1.0625rem; color: var(--marino-900); }
+.tarjeta-libro:hover .libro__titulo { color: var(--caramelo); }

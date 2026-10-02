@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaArrowRight, FaChevronRight } from 'react-icons/fa6';
+import { FaArrowLeft, FaArrowRight, FaChevronRight, FaMobileScreenButton } from 'react-icons/fa6';
 
 import { PrecioOferta } from '../components/PrecioOferta';
 import { portada } from '../lib/formato';
@@ -30,6 +30,9 @@ function Libro({ libro, indice }) {
                     <span>{libro.categoria}</span>
                     <PrecioOferta libro={libro} />
                 </p>
+                <Link to="/descargar" className="boton boton--compra boton--chico libro__comprar" aria-label={`${libro.disponible ? 'Comprar' : 'Reservar'} «${libro.titulo}» en la app`}>
+                    <FaMobileScreenButton aria-hidden="true" /> {libro.disponible ? 'Comprar en la app' : 'Reservar en la app'}
+                </Link>
             </div>
         </li>
     );
