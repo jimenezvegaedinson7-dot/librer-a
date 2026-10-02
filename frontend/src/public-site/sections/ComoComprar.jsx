@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { FaDownload, FaMagnifyingGlass, FaCreditCard, FaBoxOpen } from 'react-icons/fa6';
 
 // ============================================================
@@ -49,10 +48,6 @@ export default function ComoComprar() {
                         </li>
                     ))}
                 </ol>
-                <div className="como-comprar__accion">
-                    <Link to="/descargar" className="boton"><FaDownload aria-hidden="true" /> Descargar la app</Link>
-                    <Link to="/catalogo" className="boton boton--linea">Ver el catálogo</Link>
-                </div>
             </div>
         </section>
     );

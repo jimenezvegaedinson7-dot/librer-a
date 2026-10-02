@@ -1,0 +1,79 @@
+/* ============================================================
+   CELULAR Y TABLET
+   Ajustes para que la web se sienta como una tienda en el teléfono:
+   barra inferior fija, secciones más compactas, rejillas de dos
+   columnas y botones a mano del pulgar. Se carga al final.
+   ============================================================ */
+
+/* ---------- Barra inferior ---------- */
+.barra-movil { display: none; }
+@media (max-width: 767px) {
+    .barra-movil {
+        position: fixed; z-index: 55; left: 0; right: 0; bottom: 0;
+        display: grid; grid-template-columns: repeat(4, 1fr);
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+        background: rgba(255, 249, 239, 0.94);
+        -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+        border-top: 1px solid rgba(13, 41, 64, 0.1);
+        box-shadow: 0 -10px 24px -18px rgba(13, 41, 64, 0.45);
+    }
+    .barra-movil__enlace {
+        display: grid; justify-items: center; gap: 3px; padding: 6px 0 4px; border-radius: 12px;
+        font-size: 0.6875rem; font-weight: 600; color: var(--texto-3);
+        transition: color var(--d-rapida), background var(--d-rapida);
+    }
+    .barra-movil__enlace svg { width: 20px; height: 20px; transition: transform var(--d-rapida) var(--ease-salida); }
+    .barra-movil__enlace.active { color: var(--marino-900, var(--verde-700)); background: rgba(213, 164, 71, 0.16); }
+    .barra-movil__enlace.active svg { color: var(--dorado-oscuro, var(--ambar-500)); transform: translateY(-1px); }
+    .barra-movil__enlace:active svg { transform: scale(0.92); }
+    /* Espacio para que la barra no tape el final del pie. */
+    .sitio .pie { padding-bottom: calc(var(--e-3) + 72px + env(safe-area-inset-bottom)); }
+}
+
+/* ---------- Secciones más compactas en el teléfono ---------- */
+@media (max-width: 640px) {
+    .sitio { --seccion: 2.4rem; }
+    .sitio .seccion__titulo { font-size: 1.5rem; }
+    .sitio .seccion__entrada { font-size: 0.9375rem; margin-top: 0.4rem; }
+    .sitio .seccion__cabeza { align-items: center; }
+
+    /* Hero: menos alto y botones lado a lado. */
+    .hero__rejilla { padding-top: 2rem; }
+    .hero__titulo { font-size: 2.1rem; }
+    .hero__bajada { font-size: 0.9375rem; }
+    .hero__acciones { flex-wrap: nowrap; gap: 0.5rem; }
+    .hero__acciones .boton { flex: 1; min-height: 44px; padding: 0 0.8rem; font-size: 0.875rem; }
+    .hero__escena { height: 36svh; min-height: 240px; }
+
+    /* Pasos de compra en dos columnas, sin texto largo de sobra. */
+    .pasos { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .paso { padding: 14px 12px 16px; gap: 0.35rem; }
+    .paso__numero { width: 38px; height: 38px; font-size: 1rem; box-shadow: 0 0 0 4px var(--blanco); }
+    .paso h3 { font-size: 0.9375rem; }
+    .paso p { font-size: 0.8125rem; line-height: 1.45; }
+
+    /* Banda del catálogo: botón a todo el ancho. */
+    .banda-catalogo__contenido .boton { width: 100%; }
+
+    /* Ofertas: tarjeta compacta. */
+    .oferta-tarjeta h3 { font-size: 1.0625rem; padding-right: 2.6rem; }
+    .oferta-tarjeta__porcentaje { font-size: 0.875rem; }
+
+    /* Promos en una fila desplazable, como en las apps de tienda. */
+    .promos {
+        display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+        margin-inline: calc(-1 * var(--gutter)); padding: 0 var(--gutter) 6px; scrollbar-width: none;
+    }
+    .promos::-webkit-scrollbar { display: none; }
+    .promo { flex: none; width: 82%; min-height: 230px; scroll-snap-align: center; }
+
+    /* Pie más corto: columnas en dos. */
+    .pie__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-3) var(--e-2); }
+    .pie__rejilla > div:first-child { grid-column: 1 / -1; }
+}
+
+/* ---------- Tablet ---------- */
+@media (min-width: 641px) and (max-width: 1023px) {
+    .pasos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ofertas__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

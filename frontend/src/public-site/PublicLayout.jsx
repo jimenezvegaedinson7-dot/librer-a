@@ -4,10 +4,12 @@ import { MotionConfig } from 'motion/react';
 
 import './public-site.css';
 import './tema-editorial.css';
+import './responsive-movil.css';
 
 import PublicHeader from './components/PublicHeader';
 import PublicFooter from './components/PublicFooter';
 import Precarga from './components/Precarga';
+import BarraMovil from './components/BarraMovil';
 import { precargaTerminada, usePrecargaTerminada } from './lib/precarga';
 import { useCatalogo, useEmpresa } from './hooks/useApiPublica';
 import { puedeUsar3D, useMovimientoReducido } from './hooks/useEntorno';
@@ -122,6 +124,7 @@ export default function PublicLayout() {
                     <Outlet context={{ reducido, catalogo, legal }} />
                 </main>
                 <PublicFooter legal={legal} />
+                <BarraMovil />
                 <Precarga />
             </div>
         </MotionConfig>

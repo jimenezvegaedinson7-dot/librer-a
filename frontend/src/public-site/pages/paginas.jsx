@@ -8,7 +8,6 @@ import VideoSection from '../sections/VideoSection';
 import ExplorarCategorias from '../sections/ExplorarCategorias';
 import ComoComprar from '../sections/ComoComprar';
 import BandaCatalogo from '../sections/BandaCatalogo';
-import Beneficios from '../sections/Beneficios';
 import OfertasDestacadas from '../sections/OfertasDestacadas';
 import MobileExperience from '../sections/MobileExperience';
 import FeatureStory from '../sections/FeatureStory';
@@ -30,7 +29,6 @@ export function InicioPage() {
             <VideoSection />
             <ComoComprar />
             <Promos />
-            <Beneficios />
         </>
     );
 }
