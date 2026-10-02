@@ -442,14 +442,10 @@ test('catálogo: en oferta muestra porcentaje, precio tachado y precio final', a
     await expect(tarjeta.locator('.oferta__pastilla')).toHaveText('-30%');
     await expect(tarjeta.locator('.oferta__anterior s')).toHaveText('S/ 39.90');
     await expect(tarjeta.locator('.oferta__final')).toHaveText('S/ 27.93');
-    for (const selector of ['.oferta__pastilla', '.oferta__final']) {
-        const estilo = await tarjeta.locator(selector).evaluate(el => {
-            const css = getComputedStyle(el);
-            return { color: css.color, subrayado: css.textDecorationLine };
-        });
-        expect(estilo.color).toBe('rgb(194, 65, 12)');
-        expect(estilo.subrayado).toContain('underline');
-    }
+    // Estilo formal: pastilla roja sobria con texto blanco y precio final en rojo.
+    await expect(tarjeta.locator('.oferta__pastilla')).toHaveCSS('background-color', 'rgb(177, 39, 4)');
+    await expect(tarjeta.locator('.oferta__pastilla')).toHaveCSS('color', 'rgb(255, 255, 255)');
+    await expect(tarjeta.locator('.oferta__final')).toHaveCSS('color', 'rgb(177, 39, 4)');
     expect(errores).toHaveLength(0);
 });
 
@@ -480,12 +476,11 @@ test('inicio: el carrusel de la portada también aplica el descuento', async ({ 
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
     await expect(page.locator('.libro .oferta__pastilla').first()).toHaveText('-30%');
-    await expect(page.locator('.libro .oferta__final').first()).toHaveCSS('color', 'rgb(194, 65, 12)');
-    await expect(page.locator('.libro .oferta__final').first()).toHaveCSS('text-decoration-line', 'underline');
+    await expect(page.locator('.libro .oferta__final').first()).toHaveCSS('color', 'rgb(177, 39, 4)');
     expect(errores).toHaveLength(0);
 });
 
-test('catálogo: el precio se resalta en pastilla crema dorada', async ({ page }) => {
+test('catálogo: el precio es texto sobrio sin pastilla de color', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/catalogo');
     const precio = page.locator('.tarjeta-libro__precio').first();
@@ -494,13 +489,12 @@ test('catálogo: el precio se resalta en pastilla crema dorada', async ({ page }
         const s = getComputedStyle(e);
         return { fondo: s.backgroundColor, color: s.color, radio: s.borderRadius };
     });
-    // Crema dorada de fondo con texto azul marino: resalta y mantiene contraste.
-    expect(estilos.fondo).toBe('rgb(241, 227, 198)');
-    expect(estilos.color).toBe('rgb(10, 31, 49)');
-    expect(estilos.radio).toBe('999px');
+    // Estilo formal: sin fondo de color, texto en tinta oscura.
+    expect(estilos.fondo).toBe('rgba(0, 0, 0, 0)');
+    expect(estilos.color).toBe('rgb(17, 24, 32)');
 });
 
-test('el botón principal es dorado', async ({ page }) => {
+test('el botón principal es azul marino con texto blanco', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/descargar');
     const boton = page.locator('.descargar .boton, .seccion.crema .boton').first();
@@ -509,8 +503,8 @@ test('el botón principal es dorado', async ({ page }) => {
         const s = getComputedStyle(e);
         return { fondo: s.backgroundColor, color: s.color };
     });
-    expect(estilos.fondo).toBe('rgb(213, 164, 71)');
-    expect(estilos.color).toBe('rgb(17, 24, 32)');
+    expect(estilos.fondo).toBe('rgb(13, 41, 64)');
+    expect(estilos.color).toBe('rgb(255, 255, 255)');
 });
 
 // El pie va en verde oscuro sobre texto claro. Con este contraste alto
@@ -620,12 +614,12 @@ test('catálogo: ordenar por precio y filtrar ofertas y stock', async ({ page })
     await expect(tarjetas).toHaveCount(13);
 });
 
-test('catálogo: botón de compra dorado y stock real en la tarjeta', async ({ page }) => {
+test('catálogo: botón de compra azul marino y stock real en la tarjeta', async ({ page }) => {
     const libros = LIBROS.map((l, i) => ({ ...l, stock: i === 1 ? 2 : l.stock }));
     await apiPublica(page, { libros });
     await page.goto('/catalogo');
     const boton = page.locator('.tarjeta-libro .boton--compra').first();
-    await expect(boton).toHaveCSS('background-color', 'rgb(213, 164, 71)');
+    await expect(boton).toHaveCSS('background-color', 'rgb(13, 41, 64)');
     await expect(page.locator('.stock--poco')).toHaveCount(1);
     await expect(page.locator('.stock--poco')).toHaveText('Quedan solo 2 en stock');
     await expect(page.locator('.tarjeta-libro--sin-stock .boton--compra')).toContainText('Reservar en la app');

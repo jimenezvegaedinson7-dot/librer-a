@@ -5,6 +5,7 @@ import { MotionConfig } from 'motion/react';
 import './public-site.css';
 import './tema-editorial.css';
 import './responsive-movil.css';
+import './formal.css';
 
 import PublicHeader from './components/PublicHeader';
 import PublicFooter from './components/PublicFooter';
