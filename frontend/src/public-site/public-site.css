@@ -9,32 +9,40 @@
 
 .sitio {
     /* Paleta */
-    --verde-900: #013a33;
-    --verde-700: #004d43;
+    /* Paleta de la marca (fuente única: cambiar aquí cambia toda la web). */
+    --verde-900: #033a2c;   /* verde oscuro: pie y fondos profundos */
+    --verde-700: #064e3b;   /* verde principal: marca, enlaces, acciones */
+    --marfil: #fffdf7;      /* fondo marfil */
+    --dorado: #d6a84b;      /* dorado elegante: botones y detalles */
+    --dorado-hover: #e2bc6b;
+    --tinta: #17221d;       /* texto oscuro */
     /* Marco de la página (barra superior y pie): verde oscuro de la marca. */
-    --marco: #013a33;
-    --marco-texto: #dfe6dd;
-    --marco-tenue: #b8c9c2;
-    --verde-600: #0b5c51;
+    --marco: var(--verde-900);
+    --marco-texto: #e8f3ed;
+    --marco-tenue: #b9cfc4;
+    /* Franja de beneficios (barra superior). */
+    --avisos-fondo: var(--verde-700);
+    --avisos-texto: var(--marfil);
+    --verde-600: #0d6b52;
     --oferta: #c2410c;
     --oferta-fondo: #ffedd5;
-    --salvia-100: #dfe6dd;
-    --salvia-50: #f2f6f4;
-    --ambar-500: #ebaa20;
-    --ambar-100: #fbeecd;
+    --salvia-100: #d7e9df;
+    --salvia-50: #f3f9f5;
+    --ambar-500: var(--dorado);
+    --ambar-100: #f6ebd2;
     --ambar-700: #6d4700;
-    --ambar-50: #fdf5e4;
-    --ambar-300: #f0c65a;
+    --ambar-50: var(--marfil);
+    --ambar-300: var(--dorado-hover);
     /* Verde vajito: fondos de sección que dan aire sin competir con el texto. */
-    --verde-100: #dcece7;
-    --verde-050: #eff6f3;
+    --verde-100: #e8f3ed;  /* verde claro de fondos */
+    --verde-050: #f3f9f5;
     --blanco: #ffffff;
     --gris-50: #f7f7f7;
     --gris-100: #f3f3f3;
     --gris-300: #cfcfcf;
     --gris-500: #757575;
     --gris-700: #4a4a4a;
-    --negro: #111111;
+    --negro: var(--tinta);
 
     /* Semánticos (las zonas .oscuro los redefinen) */
     --texto: var(--negro);
@@ -171,7 +179,7 @@ html.lenis, html.lenis body { height: auto; }
 .cierre-descarga p { font-weight: 600; color: var(--texto); max-width: 52ch; }
 
 /* ---------- Cabecera (avisos · principal · menú) ---------- */
-.avisos { background: var(--marco); color: var(--marco-texto); font-size: var(--t-menu); font-weight: 600; }
+.avisos { background: var(--avisos-fondo); color: var(--avisos-texto); font-size: var(--t-menu); font-weight: 600; }
 .avisos .contenedor { display: flex; justify-content: space-between; gap: var(--e-3); min-height: 44px; align-items: center; }
 .avisos a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
@@ -182,7 +190,7 @@ html.lenis, html.lenis body { height: auto; }
 .marca img { width: 30px; height: auto; }
 .marca span { font-size: 1.125rem; font-weight: 600; color: var(--negro); }
 .buscador { flex: 1; display: flex; align-items: center; max-width: 640px; height: 44px; border: 1px solid var(--gris-300); border-radius: var(--r-control); background: var(--blanco); }
-.buscador:focus-within { border-color: var(--verde-700); box-shadow: 0 0 0 3px rgba(0, 77, 67, 0.15); }
+.buscador:focus-within { border-color: var(--verde-700); box-shadow: 0 0 0 3px rgba(6, 78, 59, 0.15); }
 .buscador input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; padding: 0 0.9rem; font: 400 0.875rem var(--f-texto); color: var(--negro); outline: none; }
 .buscador input::placeholder { color: var(--gris-500); }
 .buscador button { height: 100%; padding: 0 0.9rem; border: 0; border-left: 1px solid var(--gris-300); background: transparent; color: var(--verde-700); cursor: pointer; display: grid; place-items: center; }
@@ -252,10 +260,10 @@ html.lenis, html.lenis body { height: auto; }
     padding: 0.35rem 0.8rem; border-radius: 999px;
     font: 700 0.75rem/1 var(--f-texto); letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--ambar-700); background: var(--ambar-100);
-    box-shadow: inset 0 0 0 1px rgba(235, 170, 32, 0.5);
+    box-shadow: inset 0 0 0 1px rgba(214, 168, 75, 0.5);
 }
 .sello svg { width: 0.85rem; height: 0.85rem; }
-.oscuro .sello { color: var(--ambar-500); background: rgba(235, 170, 32, 0.16); box-shadow: inset 0 0 0 1px rgba(235, 170, 32, 0.4); }
+.oscuro .sello { color: var(--ambar-500); background: rgba(214, 168, 75, 0.16); box-shadow: inset 0 0 0 1px rgba(214, 168, 75, 0.4); }
 
 /* Titulares que se revelan por líneas al entrar en pantalla. Visibles por
    defecto: solo se ocultan cuando el script está listo (.sitio.js). */
@@ -420,7 +428,7 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 /* Pista solo en pantallas sin hover (táctiles): el libro se abre con un toque. */
 .hero__pista { display: none; }
 @media (hover: none) {
-    .hero__pista { display: block; position: absolute; left: 50%; bottom: 3%; translate: -50% 0; z-index: 1; margin: 0; padding: 0.35rem 0.85rem; border-radius: 999px; background: rgba(1, 58, 51, 0.6); color: var(--salvia-100); font-size: var(--t-meta); font-weight: 600; white-space: nowrap; pointer-events: none; }
+    .hero__pista { display: block; position: absolute; left: 50%; bottom: 3%; translate: -50% 0; z-index: 1; margin: 0; padding: 0.35rem 0.85rem; border-radius: 999px; background: rgba(3, 58, 44, 0.6); color: var(--salvia-100); font-size: var(--t-meta); font-weight: 600; white-space: nowrap; pointer-events: none; }
 }
 /* La sombra de contacto del libro se desvanece antes del borde del lienzo:
    sin esto se cortaba en una línea recta al final del hero. */
@@ -515,7 +523,7 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 .tarjeta-libro__tapa img { width: 100%; height: 100%; object-fit: cover; }
 .tarjeta-libro .libro__titulo { min-height: 2.6em; }
 .categoria { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--ambar-700); background: var(--ambar-100); padding: 0.15rem 0.55rem; border-radius: 999px; }
-.agotado { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--ambar-700); background: var(--ambar-100); padding: 0.15rem 0.55rem; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(235, 170, 32, 0.5); }
+.agotado { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--ambar-700); background: var(--ambar-100); padding: 0.15rem 0.55rem; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(214, 168, 75, 0.5); }
 .tarjeta-libro .boton { margin-top: auto; width: 100%; padding-inline: 0.75rem; white-space: nowrap; }
 /* La acción repetida en cada tarjeta va en contorno verde: 25 botones ámbar
    seguidos convertían la rejilla en una pared amarilla. Se rellena al pasar. */
@@ -688,7 +696,7 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 .boton:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 14px 24px -14px rgba(0, 0, 0, 0.6); }
 .boton:active { transform: translateY(0); box-shadow: 0 4px 10px -8px rgba(0, 0, 0, 0.5); }
 .boton--linea { box-shadow: none; }
-.boton--linea:hover { box-shadow: 0 10px 20px -14px rgba(1, 58, 51, 0.55); }
+.boton--linea:hover { box-shadow: 0 10px 20px -14px rgba(3, 58, 44, 0.55); }
 /* La flecha final se adelanta un poco al pasar. */
 .boton svg:last-child:not(:first-child) { transition: transform var(--d-rapida) var(--ease-salida); }
 .boton:hover svg:last-child:not(:first-child) { transform: translateX(3px); }
@@ -719,13 +727,13 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 /* Tarjetas del catálogo: papel blanco que flota y se eleva al pasar. */
 .tarjeta-libro {
     padding: 16px 16px 18px; gap: 0.4rem;
-    border: 1px solid rgba(1, 58, 51, 0.08); border-radius: 14px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 26px -18px rgba(1, 58, 51, 0.35);
+    border: 1px solid rgba(3, 58, 44, 0.08); border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 26px -18px rgba(3, 58, 44, 0.35);
     transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida), border-color var(--d-media);
 }
 /* Ya revelada, la tarjeta responde al instante (sin el retraso escalonado de la entrada). */
 .sitio [data-revelar][data-visto] > .tarjeta-libro { transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida), border-color var(--d-media), opacity 800ms var(--ease-salida); transition-delay: 0s; }
-.tarjeta-libro:hover { transform: translateY(-4px); border-color: rgba(1, 58, 51, 0.18); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 24px 40px -22px rgba(1, 58, 51, 0.45); }
+.tarjeta-libro:hover { transform: translateY(-4px); border-color: rgba(3, 58, 44, 0.18); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 24px 40px -22px rgba(3, 58, 44, 0.45); }
 .tarjeta-libro:hover .tarjeta-libro__tapa { transform: none; }
 .tarjeta-libro:hover .tarjeta-libro__tapa img { transform: scale(1.04); }
 .tarjeta-libro__tapa { margin: 4px 8px 0.75rem 2px; }
@@ -733,7 +741,7 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 /* Sin stock: cinta sobre la portada en lugar de una etiqueta suelta. */
 .tarjeta-libro__tapa .agotado {
     position: absolute; z-index: 2; left: 8px; top: 8px; margin: 0;
-    background: rgba(1, 58, 51, 0.88); color: var(--blanco); box-shadow: none;
+    background: rgba(3, 58, 44, 0.88); color: var(--blanco); box-shadow: none;
     backdrop-filter: blur(2px);
 }
 .tarjeta-libro--sin-stock .tarjeta-libro__tapa img { filter: saturate(0.6) brightness(0.92); }
@@ -748,7 +756,7 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
     left: 0.6rem;
     padding: 0.2rem 0.6rem;
     border-radius: 0.3rem;
-    background: #004d43;
+    background: var(--verde-700);
     color: #fff;
     font-size: 0.75rem;
     font-weight: 700;
@@ -763,12 +771,12 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 
 /* Botón de compra: amarillo de tienda, píldora, sombra suave y foco claro. */
 .sitio .boton--compra {
-    background: #ffd814; border-color: #fcd200; color: #0f1111;
+    background: var(--dorado); border-color: #c99a3c; color: var(--tinta);
     font-weight: 600; letter-spacing: 0;
     box-shadow: 0 2px 5px 0 rgba(213, 217, 217, 0.5);
 }
-.sitio .boton--compra:hover { background: #f7ca00; border-color: #f2c200; box-shadow: 0 4px 10px -2px rgba(160, 130, 0, 0.35); }
-.sitio .boton--compra:active { background: #f0b800; }
+.sitio .boton--compra:hover { background: var(--dorado-hover); border-color: var(--dorado); box-shadow: 0 4px 10px -2px rgba(150, 110, 30, 0.35); }
+.sitio .boton--compra:active { background: #c99a3c; }
 .sitio .boton--compra:focus-visible { outline: 2px solid #007185; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(0, 113, 133, 0.18); }
 
 /* Etiquetas sobre la portada. */
@@ -876,11 +884,11 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 .explorar__tarjeta {
     position: relative; display: grid; grid-template-columns: 116px minmax(0, 1fr) auto; align-items: center; gap: 1rem;
     padding: 16px 18px; border-radius: 14px; background: var(--blanco);
-    border: 1px solid rgba(1, 58, 51, 0.08);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 26px -18px rgba(1, 58, 51, 0.35);
+    border: 1px solid rgba(3, 58, 44, 0.08);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 26px -18px rgba(3, 58, 44, 0.35);
     transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida);
 }
-.explorar__tarjeta:hover { transform: translateY(-4px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 24px 40px -22px rgba(1, 58, 51, 0.45); }
+.explorar__tarjeta:hover { transform: translateY(-4px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 24px 40px -22px rgba(3, 58, 44, 0.45); }
 .explorar__portadas { position: relative; height: 92px; }
 .explorar__portadas img {
     position: absolute; bottom: 0; width: 58px; height: 87px; object-fit: cover; border-radius: 2px 5px 5px 2px;
@@ -911,7 +919,7 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 .paso__numero {
     position: relative; z-index: 1; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
     background: var(--verde-700); color: var(--blanco); font-weight: 800; font-size: 1.25rem;
-    box-shadow: 0 0 0 6px var(--salvia-50), 0 10px 18px -8px rgba(1, 58, 51, 0.55);
+    box-shadow: 0 0 0 6px var(--salvia-50), 0 10px 18px -8px rgba(3, 58, 44, 0.55);
     transition: transform 700ms cubic-bezier(0.34, 1.56, 0.64, 1); transition-delay: calc(var(--i, 0) * 90ms + 200ms);
 }
 .paso__icono { color: var(--ambar-500); font-size: 1.35rem; margin-top: 0.35rem; }
@@ -964,4 +972,44 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 @media (max-width: 520px) {
     .sitio .actualizacion-app { grid-template-columns: 1fr; }
     .sitio .actualizacion-app__qr { justify-self: center; }
+}
+
+/* ============================================================
+   FRANJA DE BENEFICIOS (barra superior)
+   Verde profundo, texto marfil y un sello dorado delante de cada
+   beneficio. Aparecen uno tras otro con un leve ascenso y reaccionan
+   al pasar el mouse con un subrayado dorado.
+   ============================================================ */
+.avisos { position: relative; overflow: hidden; }
+.avisos::after {
+    content: ''; position: absolute; inset: auto 0 0 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(214, 168, 75, 0.55), transparent);
+}
+.avisos li {
+    position: relative; display: inline-flex; align-items: center; gap: 0.5rem;
+    padding-block: 0.2rem; letter-spacing: 0.01em;
+    animation: aviso-entrar 700ms var(--ease-salida) both;
+    transition: color var(--d-rapida), transform var(--d-rapida) var(--ease-salida);
+}
+.avisos li:nth-child(2) { animation-delay: 120ms; }
+.avisos li:nth-child(3) { animation-delay: 240ms; }
+/* Sello dorado: círculo con una marca de verificación. */
+.avisos li::before {
+    content: ''; flex: none; width: 15px; height: 15px; border-radius: 50%;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.2 8.3l2.4 2.4 5.2-5.4' fill='none' stroke='%23033a2c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 11px no-repeat,
+        var(--dorado);
+    box-shadow: 0 0 0 3px rgba(214, 168, 75, 0.18);
+}
+.avisos li::after {
+    content: ''; position: absolute; left: 23px; right: 0; bottom: -1px; height: 1px;
+    background: var(--dorado); transform: scaleX(0); transform-origin: left;
+    transition: transform 400ms var(--ease-salida);
+}
+.avisos li:hover { transform: translateY(-1px); color: #ffffff; }
+.avisos li:hover::after { transform: scaleX(1); }
+@keyframes aviso-entrar { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+    .avisos li { animation: none; }
+    .avisos li:hover { transform: none; }
 }

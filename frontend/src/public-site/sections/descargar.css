@@ -7,7 +7,7 @@
     position: relative; overflow: clip;
     background:
         radial-gradient(55% 75% at 80% 40%, rgba(31, 122, 103, 0.8), transparent 70%),
-        radial-gradient(40% 60% at 0% 0%, rgba(235, 170, 32, 0.16), transparent 70%),
+        radial-gradient(40% 60% at 0% 0%, rgba(214, 168, 75, 0.16), transparent 70%),
         linear-gradient(150deg, var(--verde-700), var(--verde-900) 70%);
 }
 .descargar-portada__rejilla {
@@ -31,7 +31,7 @@
 .descargar-portada__telefono { position: relative; display: grid; place-items: center; min-height: 440px; }
 .descargar-portada__telefono::before {
     content: ''; position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(235, 170, 32, 0.35), transparent);
+    background: radial-gradient(closest-side, rgba(214, 168, 75, 0.35), transparent);
     filter: blur(20px);
 }
 .descargar-portada__telefono .telefono {
@@ -44,8 +44,8 @@
 /* ---------- Tarjetas por plataforma ---------- */
 .descargar-plataformas .descarga__rejilla { margin-top: var(--e-3); align-items: stretch; }
 .descargar-plataformas .tarjeta-descarga {
-    border-radius: 18px; border-color: rgba(1, 58, 51, 0.1);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 34px -24px rgba(1, 58, 51, 0.45);
+    border-radius: 18px; border-color: rgba(3, 58, 44, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 34px -24px rgba(3, 58, 44, 0.45);
 }
 .descargar-plataformas .tarjeta-descarga[data-disponible='false'] { background: rgba(255, 255, 255, 0.7); }
 .descargar-plataformas .tarjeta-descarga[data-disponible='false'] .icono-app { filter: grayscale(0.6) opacity(0.7); }
@@ -61,7 +61,7 @@
 .instalar__paso {
     position: relative; display: grid; gap: 0.5rem; align-content: start;
     padding: 1.4rem 1.3rem 1.5rem; border-radius: 16px; background: var(--blanco);
-    border: 1px solid rgba(1, 58, 51, 0.08);
+    border: 1px solid rgba(3, 58, 44, 0.08);
 }
 .instalar__numero {
     display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;

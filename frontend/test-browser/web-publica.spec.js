@@ -482,12 +482,12 @@ test('catálogo: el precio se resalta en pastilla verde clara', async ({ page })
         return { fondo: s.backgroundColor, color: s.color, radio: s.borderRadius };
     });
     // Verde claro de fondo con texto verde oscuro: resalta y mantiene contraste.
-    expect(estilos.fondo).toBe('rgb(220, 236, 231)');
-    expect(estilos.color).toBe('rgb(1, 58, 51)');
+    expect(estilos.fondo).toBe('rgb(232, 243, 237)');
+    expect(estilos.color).toBe('rgb(3, 58, 44)');
     expect(estilos.radio).toBe('999px');
 });
 
-test('el botón principal es amarillo', async ({ page }) => {
+test('el botón principal es dorado', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/descargar');
     const boton = page.locator('.descargar .boton, .seccion.crema .boton').first();
@@ -496,8 +496,8 @@ test('el botón principal es amarillo', async ({ page }) => {
         const s = getComputedStyle(e);
         return { fondo: s.backgroundColor, color: s.color };
     });
-    expect(estilos.fondo).toBe('rgb(235, 170, 32)');
-    expect(estilos.color).toBe('rgb(17, 17, 17)');
+    expect(estilos.fondo).toBe('rgb(214, 168, 75)');
+    expect(estilos.color).toBe('rgb(23, 34, 29)');
 });
 
 // El pie va en verde oscuro sobre texto claro. Con este contraste alto
@@ -538,7 +538,7 @@ test('el pie mantiene contraste alto', async ({ page }) => {
         };
     });
 
-    expect(medido.pieFondo).toBe('rgb(1, 58, 51)');
+    expect(medido.pieFondo).toBe('rgb(3, 58, 44)');
     for (const [donde, valor] of Object.entries(medido)) {
         if (donde === 'pieFondo') continue;
         expect(valor, `${donde} = ${valor}:1`).toBeGreaterThanOrEqual(4.5);
@@ -558,10 +558,10 @@ test('cada variante de botón conserva un texto legible', async ({ page }) => {
         };
         return { marca: leer('.boton--marca'), blanco: leer('.boton--blanco') };
     });
-    expect(colores.marca.fondo).toBe('rgb(0, 77, 67)');
+    expect(colores.marca.fondo).toBe('rgb(6, 78, 59)');
     expect(colores.marca.texto).toBe('rgb(255, 255, 255)');
     expect(colores.blanco.fondo).toBe('rgb(255, 255, 255)');
-    expect(colores.blanco.texto).toBe('rgb(0, 77, 67)');
+    expect(colores.blanco.texto).toBe('rgb(6, 78, 59)');
 });
 
 // ============================================================
@@ -607,12 +607,12 @@ test('catálogo: ordenar por precio y filtrar ofertas y stock', async ({ page })
     await expect(tarjetas).toHaveCount(13);
 });
 
-test('catálogo: botón de compra amarillo de tienda y stock real en la tarjeta', async ({ page }) => {
+test('catálogo: botón de compra dorado y stock real en la tarjeta', async ({ page }) => {
     const libros = LIBROS.map((l, i) => ({ ...l, stock: i === 1 ? 2 : l.stock }));
     await apiPublica(page, { libros });
     await page.goto('/catalogo');
     const boton = page.locator('.tarjeta-libro .boton--compra').first();
-    await expect(boton).toHaveCSS('background-color', 'rgb(255, 216, 20)');
+    await expect(boton).toHaveCSS('background-color', 'rgb(214, 168, 75)');
     await expect(page.locator('.stock--poco')).toHaveCount(1);
     await expect(page.locator('.stock--poco')).toHaveText('Quedan solo 2 en stock');
     await expect(page.locator('.tarjeta-libro--sin-stock .boton--compra')).toContainText('Reservar en la app');
@@ -627,4 +627,18 @@ test('inicio: explora por categoría y cómo comprar', async ({ page }) => {
     await expect(page.locator('.paso')).toHaveCount(4);
     await tarjetas.first().click();
     await expect(page).toHaveURL(/\/catalogo\?categoria=/);
+});
+
+// Franja de beneficios: verde profundo, texto marfil y sello dorado.
+test('franja de beneficios: verde profundo, texto marfil y detalle dorado', async ({ page }) => {
+    await apiPublica(page);
+    await page.goto('/');
+    const franja = page.locator('.avisos');
+    await expect(franja).toHaveCSS('background-color', 'rgb(6, 78, 59)');
+    await expect(franja).toHaveCSS('color', 'rgb(255, 253, 247)');
+    const sello = await page.locator('.avisos li').first().evaluate((li) => getComputedStyle(li, '::before').backgroundColor);
+    expect(sello).toBe('rgb(214, 168, 75)');
+    for (const texto of ['Envío a domicilio en Lima', 'Recojo sin costo en nuestra tienda de Pallasca', 'Pago en línea seguro con PayU']) {
+        await expect(page.locator('.avisos')).toContainText(texto);
+    }
 });

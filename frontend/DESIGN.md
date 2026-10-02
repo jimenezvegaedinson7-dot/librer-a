@@ -2,15 +2,18 @@
 name: Librería del Saber — Web pública
 description: Librería comercial clara y ordenada, en verde de marca sobre fondos blancos, con un libro 3D en el hero que pasa sus hojas al acercar el cursor.
 colors:
-  verde-900: "#013a33"
-  marco: "#013a33"
+  verde-900: "#033a2c"
+  marco: "#033a2c"
   marco-texto: "#dfe6dd"
   marco-tenue: "#b8c9c2"
-  verde-700: "#004d43"
+  verde-700: "#064e3b"
+  marfil: "#fffdf7"
+  dorado: "#d6a84b"
+  tinta: "#17221d"
   verde-600: "#0b5c51"
   salvia-100: "#dfe6dd"
   salvia-50: "#f2f6f4"
-  ambar-500: "#ebaa20"
+  ambar-500: "#d6a84b"
   oferta: "#c2410c"
   oferta-fondo: "#ffedd5"
   oferta-sobre-oscuro: "#fdba74"
@@ -20,7 +23,7 @@ colors:
   gris-300: "#cfcfcf"
   gris-500: "#757575"
   gris-700: "#4a4a4a"
-  negro: "#111111"
+  negro: "#17221d"
 typography:
   display:
     fontFamily: "'Work Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
@@ -177,6 +180,8 @@ La paleta es verde, blanca y gris; el ámbar es escaso a propósito. No hay marr
 - Logo "f" en verde sobre claro, en blanco sobre verde.
 
 ## Colors
+
+Paleta centralizada en las variables de `.sitio` (public-site.css): verde principal #064E3B, verde oscuro #033A2C (pie), verde claro de fondos #E8F3ED, marfil #FFFDF7 (secciones `.crema`), dorado elegante #D6A84B (botones, sellos de la franja de beneficios) y texto #17221D. La franja de beneficios va en verde principal con texto marfil y un sello dorado por beneficio; entran escalonados y reaccionan al pasar el mouse con un subrayado dorado.
 
 Verde profundo y blancos de tienda, con un único acento ámbar escaso.
 
