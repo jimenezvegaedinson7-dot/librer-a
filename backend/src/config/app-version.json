@@ -1,8 +1,8 @@
 {
-    "version": "1.0.2",
-    "versionCode": 3,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.2/libreria-1.0.2.apk",
-    "sha256": "c794b3f4eee3ac2cfafb355c716acba21291592b9927374f95f2f25631e13fed",
+    "version": "1.0.3",
+    "versionCode": 4,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.3/libreria-1.0.3.apk",
+    "sha256": "269ba731c0f2bf29fe151d15675af3d0722df8886858a12ea62885bb1fbea342",
     "obligatoria": false,
-    "notas": "Logo oficial de la web en el icono, arranque, acceso e inicio de la app. Descuentos en naranja y subrayados, precios de oferta y libros nuevos, conservando el diseño de Flutter."
+    "notas": "Foto de perfil centrada con nombre debajo y sin fondo propio. Ofertas más visibles con etiqueta naranja. Actualización desde la web mediante QR y botón, conservando el resto del diseño."
 }

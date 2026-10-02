@@ -27,7 +27,7 @@ async function apiPublica(page, { falla = false, vacia = false, libros = LIBROS,
     await page.route(`${API}/libros`, (r) => (falla ? r.fulfill({ status: 503, json: {} }) : r.fulfill({ json: vacia ? [] : libros })));
     await page.route(`${API}/empresa`, (r) => r.fulfill({ json: { success: true, empresa: { razon_social: 'FLORES SALINAS SARA', nombre_comercial: 'MATIDANA', ruc: '10447545387' } } }));
     await page.route(`${API}/app/version`, r => r.fulfill({json:{version:DESCARGAS.android.version,
-        versionCode:3, apkUrl:DESCARGAS.android.url, sha256:'a'.repeat(64)}}));
+        versionCode:4, apkUrl:DESCARGAS.android.url, sha256:'a'.repeat(64)}}));
     // El video lo sube el administrador, así que por defecto no hay ninguno
     // activo. Las pruebas del video pasan uno explícito.
     await page.route(`${API}/anuncios`, (r) => r.fulfill({ json: { success: true, anuncio } }));
