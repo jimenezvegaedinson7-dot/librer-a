@@ -1,27 +1,15 @@
 import client from '../../lib/api/client';
 
-// ============================================================
-// TARIFAS DE ENVÍO A DOMICILIO (solo distritos de Lima)
-// La única fuente es PostgreSQL (distritos_lima.tarifa_envio).
-// ============================================================
-
-// Distritos de la provincia de Lima con su tarifa actual.
-export async function listarDistritosLima() {
-    const resProvincias = await client.get('/ubicaciones/provincias');
-    const provincias = Array.isArray(resProvincias?.data) ? resProvincias.data : [];
-    const lima = provincias.find(
-        (p) => String(p.nombre || '').trim().toLowerCase() === 'lima',
-    );
-    if (!lima) return [];
-
-    const res = await client.get(`/ubicaciones/provincias/${lima.id_provincia}/distritos`);
+// Solo cobertura local. Los distritos/tarifas Lima quedan en el historial.
+export async function listarZonasDelivery() {
+    const res = await client.get('/zonas-delivery/todos');
     return Array.isArray(res?.data) ? res.data : [];
 }
 
-// Actualiza solo la tarifa de envío de un distrito de Lima (administrador).
-export async function actualizarTarifaDistrito(idDistrito, tarifaEnvio) {
-    const res = await client.put(`/ubicaciones/distritos/${idDistrito}`, {
-        tarifa_envio: Number(tarifaEnvio),
-    });
+export async function guardarZonaDelivery(idZona, datos) {
+    const cuerpo = { nombre: datos.nombre.trim(), tarifa: Number(datos.tarifa), estado: Number(datos.estado) };
+    const res = idZona
+        ? await client.put(`/zonas-delivery/${idZona}`, cuerpo)
+        : await client.post('/zonas-delivery', cuerpo);
     return res?.data;
 }

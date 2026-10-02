@@ -3,7 +3,7 @@
 > Generado desde el código real el 2026-10-02 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
-Total de endpoints registrados en el backend: **110** (incluye 4 definidos directamente en `server.js`).
+Total de endpoints registrados en el backend: **114** (incluye 4 definidos directamente en `server.js`).
 
 - **Auth**: `Pública` = sin JWT · `JWT` = requiere `Authorization: Bearer` · `JWT + admin` = además rol `administrador`.
 - **React / Flutter**: archivos que llaman al endpoint (directamente o a través de su servicio). `—` = ningún cliente lo usa.
@@ -103,9 +103,9 @@ Total de endpoints registrados en el backend: **110** (incluye 4 definidos direc
 | GET | `/api/reservas` | controllers/reserva.controller.js#obtenerReservas | JWT + verificarPanel | features/notificaciones/notificacionesService.js<br>features/reservas/ReservasPage.jsx | — | JWT + admin |
 | GET | `/api/reservas/:id` | controllers/reserva.controller.js#obtenerReserva | JWT | features/reservas/ReservasPage.jsx | — | JWT |
 | PUT | `/api/reservas/:id/estado` | controllers/reserva.controller.js#actualizarEstado | JWT + verificarPanel | features/reservas/ReservaEstadoModal.jsx | — | JWT + admin |
-| GET | `/api/ubicaciones/provincias` | controllers/ubicacion.controller.js#listarProvincias | JWT | features/tarifas/TarifasEnvioPage.jsx | screens/entrega_y_pago_screen.dart | JWT |
-| GET | `/api/ubicaciones/provincias/:id_provincia/distritos` | controllers/ubicacion.controller.js#listarDistritos | JWT | features/tarifas/TarifasEnvioPage.jsx | screens/entrega_y_pago_screen.dart | JWT |
-| PUT | `/api/ubicaciones/distritos/:id` | controllers/ubicacion.controller.js#actualizarTarifaDistrito | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
+| GET | `/api/ubicaciones/provincias` | controllers/ubicacion.controller.js#listarProvincias | JWT | declarado en features/ventas/ubicacionesService.js#listarProvincias, features/ventas/ubicacionesService.js#listarDistritosParaEnvio (sin uso) | — | JWT |
+| GET | `/api/ubicaciones/provincias/:id_provincia/distritos` | controllers/ubicacion.controller.js#listarDistritos | JWT | declarado en features/ventas/ubicacionesService.js#listarDistritos, features/ventas/ubicacionesService.js#listarDistritosParaEnvio (sin uso) | — | JWT |
+| PUT | `/api/ubicaciones/distritos/:id` | controllers/ubicacion.controller.js#actualizarTarifaDistrito | JWT + rol:administrador | — | — | JWT + admin |
 | GET | `/api/usuarios` | controllers/usuario.controller.js#listarUsuarios | JWT + rol:administrador | features/usuarios/UsuariosPage.jsx | — | JWT + admin |
 | GET | `/api/usuarios/perfil` | controllers/usuario.controller.js#obtenerPerfil | JWT | features/layout/PerfilAdministrador.jsx | screens/perfil_screen.dart<br>screens/splash_screen.dart | JWT |
 | PUT | `/api/usuarios/perfil` | controllers/usuario.controller.js#actualizarPerfil | JWT | features/layout/PerfilAdministrador.jsx | screens/security/editar_perfil_screen.dart | JWT |
@@ -121,6 +121,10 @@ Total de endpoints registrados en el backend: **110** (incluye 4 definidos direc
 | PUT | `/api/ventas/:id/estado` | controllers/venta.controller.js#actualizarEstadoVenta | JWT + verificarPanel | features/ventas/VentasPage.jsx | — | JWT + admin |
 | POST | `/api/ventas/:id/comprobante` | controllers/comprobante.controller.js#generarComprobante | JWT + verificarPanel | features/ventas/EmitirComprobanteModal.jsx | — | JWT + admin |
 | POST | `/api/ventas/:id/reembolso` | controllers/venta.controller.js#reembolsarVenta | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/ventas/ReembolsoModal.jsx | — | JWT + admin |
+| GET | `/api/zonas-delivery` | controllers/zonaDelivery.controller.js#listarZonas | JWT | — | screens/entrega_y_pago_screen.dart | JWT |
+| GET | `/api/zonas-delivery/todos` | controllers/zonaDelivery.controller.js#listarTodasZonas | JWT + rol:administrador | features/tarifas/TarifasEnvioPage.jsx | — | JWT + admin |
+| POST | `/api/zonas-delivery` | controllers/zonaDelivery.controller.js#crearZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
+| PUT | `/api/zonas-delivery/:id` | controllers/zonaDelivery.controller.js#actualizarZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
 
 ## Endpoints compartidos por React y Flutter (18)
 
@@ -143,7 +147,7 @@ Total de endpoints registrados en el backend: **110** (incluye 4 definidos direc
 - `PUT /api/usuarios/foto`
 - `PUT /api/usuarios/password`
 
-## Endpoints sin cliente en el código (13)
+## Endpoints sin cliente en el código (14)
 
 Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL o desde un tercero:
 
@@ -159,4 +163,5 @@ Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL 
 - `POST /api/pagos/webhook` — Confirmación de PayU (servidor a servidor).
 - `GET /api/pedidos/usuario/:id_usuario` — Posiblemente no utilizado por ningún cliente.
 - `GET /api/reclamaciones/:id` — Posiblemente no utilizado por ningún cliente.
+- `PUT /api/ubicaciones/distritos/:id` — Posiblemente no utilizado por ningún cliente.
 - `POST /api/ventas` — Posiblemente no utilizado por ningún cliente.

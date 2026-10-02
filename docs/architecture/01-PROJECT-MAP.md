@@ -15,9 +15,9 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 
 ## Cifras (análisis 2026-10-02)
 
-- Backend: **126** archivos JS (incluye tests y scripts) · **110** endpoints · 21 routers · 22 controladores · 18 modelos · 16 tablas.
-- Frontend: **178** archivos JS/JSX · 32 rutas · 25 archivos de servicio.
-- Flutter: **68** archivos Dart · 30 métodos en ApiService · 21 pantallas/widgets con llamadas a la API.
+- Backend: **130** archivos JS (incluye tests y scripts) · **114** endpoints · 22 routers · 23 controladores · 19 modelos · 16 tablas.
+- Frontend: **179** archivos JS/JSX · 32 rutas · 25 archivos de servicio.
+- Flutter: **69** archivos Dart · 31 métodos en ApiService · 21 pantallas/widgets con llamadas a la API.
 
 ## Módulos de negocio
 
@@ -38,7 +38,8 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 | Historial / auditoría | `/api/historial` | features/historial · layout/Topbar (notificaciones) | — |
 | Reportes / Resumen | `/api/reportes` | features/dashboard (vía reportes/reportesService) | — |
 | Favoritos | `/api/favoritos` | — | favoritos, detalle de libro |
-| Ubicaciones (Lima) | `/api/ubicaciones` | features/ventas/ubicacionesService | entrega y pago |
+| Cobertura Pallasca | `/api/zonas-delivery` | features/tarifas | entrega y pago, mis compras |
+| Ubicaciones (Lima, legacy) | `/api/ubicaciones` | features/ventas/ubicacionesService (legacy) | ApiService legacy; sin selector en checkout |
 | Agencias courier (legacy) | `/api/agencias` | ruta redirigida; features/agencias sin ruta activa | — |
 | Empresa (emisor) | `/api/empresa` | features/configuracion/EmpresaPage | — |
 | Reclamaciones | `/api/reclamaciones` | features/reclamaciones | enlace al formulario público |

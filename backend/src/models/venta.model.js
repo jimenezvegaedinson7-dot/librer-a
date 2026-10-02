@@ -9,6 +9,8 @@ const {
 } = require('../utils/transiciones');
 const { consultarEstadoOrdenPayu } = require('../utils/payuStatus');
 const { registrarMovimiento } = require('./inventario.model');
+const zonaDeliveryModel = require('./zonaDelivery.model');
+const { validarId } = require('../utils/validaciones');
 
 // ========================================
 // OBTENER TODAS LAS VENTAS
@@ -27,6 +29,9 @@ const obtenerTodos = async () => {
             v.estado,
             v.estado_entrega,
             v.tipo_entrega,
+            v.cobertura_entrega,
+            v.id_zona_delivery,
+            v.zona_delivery_nombre,
             v.direccion,
             v.referencia,
             v.id_distrito,
@@ -88,6 +93,9 @@ const obtenerPorId = async (id) => {
             v.estado,
             v.estado_entrega,
             v.tipo_entrega,
+            v.cobertura_entrega,
+            v.id_zona_delivery,
+            v.zona_delivery_nombre,
             v.direccion,
             v.referencia,
             v.id_distrito,
@@ -173,6 +181,9 @@ const obtenerPorUsuario = async (id_usuario) => {
             v.estado,
             v.estado_entrega,
             v.tipo_entrega,
+            v.cobertura_entrega,
+            v.id_zona_delivery,
+            v.zona_delivery_nombre,
             v.direccion,
             v.referencia,
             v.id_distrito,
@@ -305,6 +316,9 @@ const obtenerConFiltros = async (filtros = {}) => {
             v.estado,
             v.estado_entrega,
             v.tipo_entrega,
+            v.cobertura_entrega,
+            v.id_zona_delivery,
+            v.zona_delivery_nombre,
             v.direccion,
             v.referencia,
             v.id_distrito,
@@ -435,6 +449,8 @@ const crear = async (venta, conexionExterna = null) => {
             id_distrito,
             id_agencia,
             costo_envio,
+            cobertura_entrega,
+            id_zona_delivery,
             cliente_documento,
             cliente_tipo_documento,
             cliente_nombre,
@@ -489,6 +505,26 @@ const crear = async (venta, conexionExterna = null) => {
         }
 
         const tipoEntregaVenta = tipoSolicitado || null;
+
+        let costoEnvioVenta = Number(costo_envio || 0);
+        let zonaEntrega = null;
+        if (cobertura_entrega === 'pallasca') {
+            if (!tipoEntregaVenta) throw new Error('Selecciona el tipo de entrega en Pallasca');
+            costoEnvioVenta = 0;
+            if (tipoEntregaVenta === 'domicilio') {
+                const idZona = validarId(id_zona_delivery);
+                zonaEntrega = idZona ? await zonaDeliveryModel.obtenerPorId(idZona, connection, true) : null;
+                if (!zonaEntrega || Number(zonaEntrega.estado) !== 1) {
+                    const error = new Error('Selecciona una zona activa de delivery dentro de Pallasca');
+                    error.deliveryValidation = true;
+                    throw error;
+                }
+                if (typeof direccion !== 'string' || direccion.trim().length < 5 || direccion.trim().length > 255) {
+                    throw new Error('Indica una dirección de entrega válida');
+                }
+                costoEnvioVenta = Number(zonaEntrega.tarifa);
+            }
+        }
 
         // ========================================
         // AGRUPAR LIBROS REPETIDOS
@@ -643,7 +679,7 @@ const crear = async (venta, conexionExterna = null) => {
         total = Number(
             (
                 total +
-                Number(costo_envio || 0)
+                costoEnvioVenta
             ).toFixed(2)
         );
 
@@ -667,6 +703,9 @@ const crear = async (venta, conexionExterna = null) => {
                     id_distrito,
                     id_agencia,
                     costo_envio,
+                    cobertura_entrega,
+                    id_zona_delivery,
+                    zona_delivery_nombre,
                     cliente_documento,
                     cliente_tipo_documento,
                     cliente_nombre,
@@ -676,21 +715,26 @@ const crear = async (venta, conexionExterna = null) => {
                     fecha_pago,
                     id_reserva
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 id_usuario,
                 total,
                 estado,
                 tipoEntregaVenta,
-                direccion || null,
-                referencia || null,
+                cobertura_entrega === 'pallasca'
+                    ? (tipoEntregaVenta === 'tienda' ? null : direccion.trim()) : (direccion || null),
+                cobertura_entrega === 'pallasca'
+                    ? (tipoEntregaVenta === 'tienda' ? null : referencia?.trim() || null) : (referencia || null),
                 correo_compra || null,
                 external_reference || null,
                 payu_order_id || null,
                 idempotencia_clave || null,
-                id_distrito || null,
-                id_agencia || null,
-                costo_envio || 0,
+                cobertura_entrega === 'pallasca' ? null : (id_distrito || null),
+                cobertura_entrega === 'pallasca' ? null : (id_agencia || null),
+                costoEnvioVenta,
+                cobertura_entrega || null,
+                zonaEntrega?.id_zona || null,
+                zonaEntrega?.nombre || null,
                 cliente_documento || null,
                 cliente_tipo_documento || null,
                 cliente_nombre || null,
@@ -767,7 +811,7 @@ const crear = async (venta, conexionExterna = null) => {
             id_venta: idVenta,
             total,
             costo_envio:
-                costo_envio || 0,
+                costoEnvioVenta,
             detalles: detallesProcesados
         };
 
@@ -1361,6 +1405,11 @@ const listarPagosAdmin = async ({
             v.estado,
             v.tipo_entrega,
             v.fecha_venta,
+            v.cobertura_entrega,
+            v.id_zona_delivery,
+            v.zona_delivery_nombre,
+            v.direccion,
+            v.referencia,
             v.cliente_documento,
             v.cliente_tipo_documento,
             u.nombre AS nombre_usuario,
@@ -1394,6 +1443,12 @@ const listarPagosAdmin = async ({
                 Number(row.total),
             tipo_entrega:
                 row.tipo_entrega,
+            cobertura_entrega: row.cobertura_entrega,
+            id_zona_delivery: row.id_zona_delivery,
+            zona_delivery_nombre: row.zona_delivery_nombre,
+            direccion: row.direccion,
+            referencia: row.referencia,
+            costo_envio: Number(row.costo_envio),
             fecha_creacion:
                 row.fecha_venta,
             cliente: {

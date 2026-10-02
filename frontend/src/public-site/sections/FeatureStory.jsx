@@ -11,13 +11,13 @@ import CierreDescarga from '../components/CierreDescarga';
 const OPCIONES = {
     domicilio: {
         Icono: FaTruckFast,
-        titulo: 'A domicilio',
-        detalle: 'En Lima',
-        resultado: 'La tarifa depende de tu distrito y la ves antes de pagar.',
+        titulo: 'Delivery dentro de Pallasca',
+        detalle: 'Con tarifa por zona',
+        resultado: 'Elige una zona de reparto activa. Su tarifa se informa antes de pagar.',
     },
     tienda: {
         Icono: FaStore,
-        titulo: 'Recoger en tienda',
+        titulo: 'Recojo en Pallasca',
         detalle: 'Sin costo de envío',
         resultado: 'Recoges en la tienda de Pallasca, frente a la Plaza de Armas.',
     },
@@ -113,10 +113,10 @@ export default function FeatureStory({ reducido }) {
                 <div className="ventajas__lista">
                     <article className="ventaja" data-ventaja="1">
                         <div className="ventaja__texto">
-                            <h2>Te lo llevamos en Lima o lo recoges sin costo</h2>
+                            <h2>Delivery o recojo sin costo en Pallasca</h2>
                             <p>
-                                Al finalizar el pedido eliges cómo recibirlo. En Lima lo llevamos a tu dirección con la tarifa de
-                                tu distrito; si prefieres, lo recoges en nuestra tienda de Pallasca sin pagar envío.
+                                Al finalizar el pedido eliges cómo recibirlo. Dentro de Pallasca lo llevamos a tu dirección con la tarifa de
+                                tu zona; si prefieres, lo recoges en nuestra tienda de Pallasca sin pagar envío.
                             </p>
                         </div>
                         <div className="ventaja__visual">

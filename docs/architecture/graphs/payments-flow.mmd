@@ -7,11 +7,12 @@ sequenceDiagram
     participant P as PayU (payu.service)
     participant B as Navegador (url_launcher)
     participant DB as PostgreSQL
-    F->>API: GET /api/ubicaciones/provincias(/:id/distritos), GET /api/agencias/activas
-    F->>API: POST /api/pagos/crear-orden (JWT, clave de idempotencia)
-    API->>VM: crear venta pendiente
-    VM->>DB: ventas, detalle_venta, inventario
-    API->>P: crearOrden
+    F->>API: GET /api/zonas-delivery (activas de Pallasca)
+    F->>API: POST /api/pagos/crear-orden (JWT, idempotencia, entrega y zona)
+    API->>P: crearOrden (URL local WebCheckout)
+    API->>VM: crear venta pendiente con cobertura pallasca
+    VM->>DB: Validar zona activa FOR SHARE y tarifa definitiva
+    VM->>DB: ventas, detalle_venta, inventario (total libros más envío)
     API-->>F: checkout_url
     F->>B: abrir checkout_url
     B->>API: GET /api/pagos/checkout/:externalReference

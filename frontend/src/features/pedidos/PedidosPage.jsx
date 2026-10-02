@@ -29,6 +29,7 @@ import { Ficha } from '../../components/ui/Ficha';
 import { StatCard } from '../dashboard/StatCard';
 import { useToast } from '../../components/providers/ToastProvider';
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
+import { descripcionEntrega, esEntregaPallasca, ubicacionEntrega } from '../../lib/utils/entrega';
 
 import {
     listarPedidos,
@@ -40,7 +41,6 @@ import {
     COLOR_ESTADO,
     ETIQUETA_COMERCIAL,
     COLOR_COMERCIAL,
-    ETIQUETA_TIPO_ENTREGA,
     ETIQUETA_PAGO,
     siguienteEstado,
     puedeCancelar,
@@ -88,8 +88,8 @@ const nombreCliente = (p) => {
 };
 
 const destino = (p) => {
-    if (p?.tipo_entrega === 'tienda') return 'Recoge en tienda';
-    const partes = [p?.direccion, p?.distrito].filter(Boolean).join(', ');
+    if (p?.tipo_entrega === 'tienda') return esEntregaPallasca(p) ? 'Recojo en Pallasca' : 'Recoge en tienda';
+    const partes = [p?.direccion, ubicacionEntrega(p)].filter(Boolean).join(', ');
     return partes || 'Sin dirección registrada';
 };
 
@@ -212,6 +212,7 @@ export default function PedidosPage() {
                 p.correo_usuario,
                 p.correo_compra,
                 p.distrito,
+                p.zona_delivery_nombre,
                 p.direccion,
                 p.external_reference,
             ]
@@ -285,7 +286,7 @@ export default function PedidosPage() {
             titulo: 'Entrega',
             render: (p) => (
                 <Badge color={esTipoEntregaValido(p.tipo_entrega) ? (p.tipo_entrega === 'domicilio' ? 'primary' : 'info') : 'danger'}>
-                    {ETIQUETA_TIPO_ENTREGA[p.tipo_entrega] || p.tipo_entrega || 'Sin tipo'}
+                    {descripcionEntrega(p)}
                 </Badge>
             ),
         },
@@ -487,13 +488,14 @@ export default function PedidosPage() {
                             </Ficha>
 
                             <Ficha icono={<FaStore aria-hidden="true" />} etiqueta="Tipo de entrega">
-                                {ETIQUETA_TIPO_ENTREGA[detalle.tipo_entrega]
-                                    || detalle.tipo_entrega
-                                    || 'Sin tipo definido'}
+                                {descripcionEntrega(detalle)}
                             </Ficha>
 
                             <Ficha icono={<FaMapLocationDot aria-hidden="true" />} etiqueta="Destino">
                                 {destino(detalle)}
+                            </Ficha>
+                            <Ficha icono={<FaTruck aria-hidden="true" />} etiqueta="Costo de entrega">
+                                {formatearMoneda(detalle.costo_envio)}
                             </Ficha>
 
                             <Ficha icono={<FaCircleCheck aria-hidden="true" />} etiqueta="Pago">

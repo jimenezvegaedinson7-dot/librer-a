@@ -21,6 +21,7 @@ flowchart LR
         R__api_ubicaciones["ubicaciones"]
         R__api_usuarios["usuarios"]
         R__api_ventas["ventas"]
+        R__api_zonas_delivery["zonas-delivery"]
     end
     subgraph Flutter
         F__api_auth["auth"]
@@ -31,6 +32,7 @@ flowchart LR
         F__api_ubicaciones["ubicaciones"]
         F__api_usuarios["usuarios"]
         F__api_ventas["ventas"]
+        F__api_zonas_delivery["zonas-delivery"]
     end
     E__api_agencias(("/api/agencias")) --> C_agencia_controller["agencia.controller"]
     R__api_agencias --> E__api_agencias
@@ -81,6 +83,9 @@ flowchart LR
     E__api_ventas(("/api/ventas")) --> C_venta_controller["venta.controller"] & C_comprobante_controller["comprobante.controller"]
     R__api_ventas --> E__api_ventas
     F__api_ventas --> E__api_ventas
+    E__api_zonas_delivery(("/api/zonas-delivery")) --> C_zonaDelivery_controller["zonaDelivery.controller"]
+    R__api_zonas_delivery --> E__api_zonas_delivery
+    F__api_zonas_delivery --> E__api_zonas_delivery
     DB[("PostgreSQL")]
     C_agencia_controller --> DB
     C_anuncio_controller --> DB
@@ -104,4 +109,5 @@ flowchart LR
     C_ubicacion_controller --> DB
     C_usuario_controller --> DB
     C_venta_controller --> DB
+    C_zonaDelivery_controller --> DB
 

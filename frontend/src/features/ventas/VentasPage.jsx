@@ -32,6 +32,7 @@ import { Badge } from '../../components/ui/Badge';
 import { BtnAccion } from '../../components/ui/Acciones';
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 import { exportarCsv } from '../../lib/utils/exportarCsv';
+import { descripcionEntrega } from '../../lib/utils/entrega';
 
 import { useToast } from '../../components/providers/ToastProvider';
 import { useRol } from '../auth/useRol';
@@ -129,7 +130,7 @@ const columnasVentas = [
         campo: 'tipo_entrega',
         render: (fila) => {
             if (fila.tipo_entrega === 'domicilio') {
-                return <Badge color="primary">A domicilio</Badge>;
+                return <Badge color="primary">{descripcionEntrega(fila)}</Badge>;
             }
             // Ventas antiguas: el envío por agencia ya no se ofrece.
             if (fila.tipo_entrega === 'agencia') {
@@ -140,7 +141,7 @@ const columnasVentas = [
                 );
             }
             if (fila.tipo_entrega === 'tienda') {
-                return <Badge color="neutral">Recoger en tienda</Badge>;
+                return <Badge color="neutral">{descripcionEntrega(fila)}</Badge>;
             }
             return <Badge color="neutral">Sin especificar</Badge>;
         },
@@ -453,7 +454,7 @@ const totalIngresos = ventas
                 { titulo: 'Total', exportar: (f) => f.total || 0 },
                 { titulo: 'Costo envío', exportar: (f) => f.costo_envio || 0 },
                 { titulo: 'Estado', exportar: (f) => f.estado || '' },
-                { titulo: 'Tipo de entrega', exportar: (f) => f.tipo_entrega || '' },
+                { titulo: 'Tipo de entrega', exportar: (f) => descripcionEntrega(f) },
                 { titulo: 'Dirección', exportar: (f) => f.direccion || '' },
                 { titulo: 'Motivo de reembolso', exportar: (f) => f.motivo_reembolso || '' },
             ],

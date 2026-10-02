@@ -45,6 +45,7 @@ const favoritoRoutes = require('./src/routes/favorito.routes');
 const pagoRoutes = require('./src/routes/pago.routes');
 const pedidoRoutes = require('./src/routes/pedido.routes');
 const ubicacionRoutes = require('./src/routes/ubicacion.routes');
+const zonaDeliveryRoutes = require('./src/routes/zonaDelivery.routes');
 const agenciaRoutes = require('./src/routes/agencia.routes');
 const empresaRoutes = require('./src/routes/empresa.routes');
 const comprobanteRoutes = require('./src/routes/comprobante.routes');
@@ -322,6 +323,8 @@ app.use(
     '/api/app',
     appRoutes
 );
+
+app.use('/api/zonas-delivery', zonaDeliveryRoutes);
 
 // ===============================
 // API DE COMPROBANTES DE PAGO

@@ -18,8 +18,8 @@ export default function Promos() {
                         <img className="promo__imagen" src={imgInicio360} srcSet={`${imgInicio360} 360w, ${imgInicio} 780w`} sizes="(max-width: 1023px) 34vw, 170px" alt="" width="390" height="844" loading="lazy" decoding="async" />
                     </article>
                     <article className="promo promo--clara">
-                        <h3>Te lo llevamos en Lima o lo recoges sin costo</h3>
-                        <p>Entrega a domicilio con tarifa por distrito, o recojo en nuestra tienda de Pallasca.</p>
+                        <h3>Delivery o recojo sin costo en Pallasca</h3>
+                        <p>Delivery dentro de Pallasca con tarifa por zona, o recojo gratis en nuestra tienda.</p>
                         <Link to="/caracteristicas" className="boton boton--marca boton--chico">Ver cómo funciona <FaChevronRight aria-hidden="true" /></Link>
                     </article>
                     <article className="promo promo--profunda oscuro">

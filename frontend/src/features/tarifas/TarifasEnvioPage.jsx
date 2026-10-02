@@ -6,6 +6,7 @@ import {
     FaArrowUpWideShort,
     FaMagnifyingGlass,
     FaPenToSquare,
+    FaPlus,
     FaRotate,
     FaScaleBalanced,
     FaTruckFast,
@@ -26,7 +27,7 @@ import { useToast } from '../../components/providers/ToastProvider';
 
 import { StatCard } from '../dashboard/StatCard';
 import { formatearMoneda } from '../../lib/utils/format';
-import { listarDistritosLima } from './tarifasService';
+import { listarZonasDelivery } from './tarifasService';
 import TarifaEditModal from './TarifaEditModal';
 
 const escalonado = {
@@ -34,12 +35,12 @@ const escalonado = {
     visible: { transition: { staggerChildren: 0.06 } },
 };
 
-const tarifaDe = (distrito) => Number(distrito.tarifa_envio || 0);
+const tarifaDe = (zona) => Number(zona.tarifa || 0);
 
 // Resumen calculado solo con las tarifas reales recibidas del backend.
-function resumirTarifas(distritos) {
-    if (distritos.length === 0) return null;
-    const tarifas = distritos.map(tarifaDe);
+function resumirTarifas(zonas) {
+    if (zonas.length === 0) return null;
+    const tarifas = zonas.map(tarifaDe);
     const minima = Math.min(...tarifas);
     const maxima = Math.max(...tarifas);
     const promedio = tarifas.reduce((a, b) => a + b, 0) / tarifas.length;
@@ -47,32 +48,32 @@ function resumirTarifas(distritos) {
     return { minima, maxima, promedio, conMinima: cuantos(minima), conMaxima: cuantos(maxima) };
 }
 
-const distritosTexto = (n) => `${n} ${n === 1 ? 'distrito' : 'distritos'}`;
+const zonasTexto = (n) => `${n} ${n === 1 ? 'zona activa' : 'zonas activas'}`;
 
-function EstadoTarifa({ tarifa, actualizada }) {
-    if (actualizada) return <Badge color="primary">Actualizada</Badge>;
-    if (tarifa === 0) return <Badge color="success">Envío gratuito</Badge>;
-    return <Badge color="neutral">Vigente</Badge>;
+function EstadoTarifa({ estado, actualizada }) {
+    if (Number(estado) !== 1) return <Badge color="neutral">Inactiva</Badge>;
+    return <Badge color="primary">{actualizada ? 'Activa · actualizada' : 'Activa'}</Badge>;
 }
 
 export default function TarifasEnvioPage() {
     const { exito } = useToast();
 
-    const [distritos, setDistritos] = useState([]);
+    const [zonas, setZonas] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
     const [busqueda, setBusqueda] = useState('');
     const [orden, setOrden] = useState({ campo: 'nombre', direccion: 'asc' });
-    const [distritoEditar, setDistritoEditar] = useState(null);
+    const [zonaEditar, setZonaEditar] = useState(null);
+    const [creando, setCreando] = useState(false);
     const [actualizados, setActualizados] = useState(() => new Set());
 
     // Lee las tarifas desde PostgreSQL (vía API). `vigente` evita actualizar
     // el estado si la página se cerró antes de recibir la respuesta.
     const obtener = (vigente = () => true) =>
-        listarDistritosLima()
+        listarZonasDelivery()
             .then((lista) => {
                 if (!vigente()) return;
-                setDistritos(lista);
+                setZonas(lista);
                 setError('');
             })
             .catch((err) => {
@@ -97,21 +98,22 @@ export default function TarifasEnvioPage() {
         };
     }, []);
 
-    const resumen = useMemo(() => resumirTarifas(distritos), [distritos]);
+    const zonasActivas = useMemo(() => zonas.filter((z) => Number(z.estado) === 1), [zonas]);
+    const resumen = useMemo(() => resumirTarifas(zonasActivas), [zonasActivas]);
 
     const filas = useMemo(() => {
         const texto = busqueda.toLowerCase().trim();
-        const filtradas = distritos.filter(
+        const filtradas = zonas.filter(
             (d) => !texto || String(d.nombre || '').toLowerCase().includes(texto),
         );
         const signo = orden.direccion === 'asc' ? 1 : -1;
         return [...filtradas].sort((a, b) => {
-            if (orden.campo === 'tarifa_envio') {
+            if (orden.campo === 'tarifa') {
                 return (tarifaDe(a) - tarifaDe(b)) * signo || a.nombre.localeCompare(b.nombre, 'es');
             }
             return a.nombre.localeCompare(b.nombre, 'es') * signo;
         });
-    }, [distritos, busqueda, orden]);
+    }, [zonas, busqueda, orden]);
 
     const ordenar = (campo) =>
         setOrden((actual) => ({
@@ -122,27 +124,23 @@ export default function TarifasEnvioPage() {
     // Refleja al instante el precio guardado, sin recargar toda la tabla.
     const tarifaActualizada = (actualizado) => {
         if (!actualizado) return;
-        setDistritos((lista) =>
-            lista.map((d) =>
-                Number(d.id_distrito) === Number(actualizado.id_distrito)
-                    ? { ...d, tarifa_envio: actualizado.tarifa_envio }
-                    : d,
-            ),
-        );
-        setActualizados((previos) => new Set(previos).add(Number(actualizado.id_distrito)));
-        exito('Tarifa de envío actualizada correctamente');
+        setZonas((lista) => lista.some((z) => Number(z.id_zona) === Number(actualizado.id_zona))
+            ? lista.map((z) => Number(z.id_zona) === Number(actualizado.id_zona) ? actualizado : z)
+            : [...lista, actualizado]);
+        setActualizados((previos) => new Set(previos).add(Number(actualizado.id_zona)));
+        exito('Zona de delivery guardada correctamente');
     };
 
     const columnas = [
         {
-            titulo: 'Distrito',
+            titulo: 'Zona',
             campo: 'nombre',
             ordenable: true,
             render: (fila) => <span className="font-semibold text-slate-800">{fila.nombre}</span>,
         },
         {
             titulo: 'Tarifa actual',
-            campo: 'tarifa_envio',
+            campo: 'tarifa',
             ordenable: true,
             alineacion: 'derecha',
             render: (fila) => (
@@ -155,7 +153,7 @@ export default function TarifasEnvioPage() {
             titulo: 'Estado',
             alineacion: 'centro',
             render: (fila) => (
-                <EstadoTarifa tarifa={tarifaDe(fila)} actualizada={actualizados.has(Number(fila.id_distrito))} />
+                <EstadoTarifa estado={fila.estado} actualizada={actualizados.has(Number(fila.id_zona))} />
             ),
         },
     ];
@@ -164,11 +162,12 @@ export default function TarifasEnvioPage() {
         <div className="space-y-5">
             <PageHeader
                 titulo="Tarifas de envío"
-                descripcion="Precio del envío a domicilio por distrito de Lima. Los cambios se aplican de inmediato en la app y no alteran las ventas ya realizadas."
+                descripcion="Zonas y tarifas de delivery dentro de Pallasca. Recojo gratuito. Las compras anteriores conservan sus datos e importes originales."
                 acciones={
-                    <Button variante="secondary" onClick={cargar} cargando={cargando}>
+                    <div className="flex flex-wrap gap-2"><Button variante="secondary" onClick={cargar} cargando={cargando}>
                         <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
                     </Button>
+                    <Button onClick={() => setCreando(true)}><FaPlus /> Nueva zona</Button></div>
                 }
             />
 
@@ -185,21 +184,21 @@ export default function TarifasEnvioPage() {
                         valor={formatearMoneda(resumen.minima)}
                         icono={<FaArrowDownWideShort />}
                         color="success"
-                        detalle={`Aplicada en ${distritosTexto(resumen.conMinima)}`}
+                        detalle={`Aplicada en ${zonasTexto(resumen.conMinima)}`}
                     />
                     <StatCard
                         titulo="Tarifa promedio"
                         valor={formatearMoneda(resumen.promedio)}
                         icono={<FaScaleBalanced />}
                         color="primary"
-                        detalle={`Sobre ${distritosTexto(distritos.length)} de Lima`}
+                        detalle={`Sobre ${zonasTexto(zonasActivas.length)} de Pallasca`}
                     />
                     <StatCard
                         titulo="Tarifa máxima"
                         valor={formatearMoneda(resumen.maxima)}
                         icono={<FaArrowUpWideShort />}
                         color="info"
-                        detalle={`Aplicada en ${distritosTexto(resumen.conMaxima)}`}
+                        detalle={`Aplicada en ${zonasTexto(resumen.conMaxima)}`}
                     />
                 </motion.section>
             )}
@@ -208,8 +207,8 @@ export default function TarifasEnvioPage() {
 
             <Card>
                 <CardHeader
-                    titulo="Distritos de Lima"
-                    subtitulo="Solo el envío a domicilio usa estas tarifas; recoger en tienda no tiene costo"
+                    titulo="Zonas de delivery en Pallasca"
+                    subtitulo="Activa o inactiva la cobertura por zona. Recojo en Pallasca siempre sin costo."
                     acciones={
                         <div className="flex items-center gap-2">
                             <div className="relative">
@@ -217,10 +216,10 @@ export default function TarifasEnvioPage() {
                                     type="text"
                                     value={busqueda}
                                     onChange={(e) => setBusqueda(e.target.value)}
-                                    placeholder="Buscar distrito..."
+                                    placeholder="Buscar zona..."
                                     icono={<FaMagnifyingGlass />}
                                     className="pr-8 sm:w-64"
-                                    aria-label="Buscar distrito"
+                                    aria-label="Buscar zona"
                                 />
                                 {busqueda && (
                                     <button
@@ -242,25 +241,25 @@ export default function TarifasEnvioPage() {
                 <CardBody className="p-0">
                     {cargando ? (
                         <TableSkeleton columnas={4} filas={8} />
-                    ) : distritos.length === 0 && !error ? (
+                    ) : zonas.length === 0 && !error ? (
                         <EmptyState
-                            titulo="No hay distritos de Lima"
-                            descripcion="No se encontraron distritos con tarifa de envío."
+                            titulo="Sin zonas de delivery configuradas"
+                            descripcion="Registra una nueva zona con su tarifa para habilitar el delivery. El recojo gratuito en Pallasca ya está disponible."
                             icono={<FaTruckFast />}
                         />
                     ) : (
                         <DataTable
                             columnas={columnas}
                             filas={filas}
-                            keyExtractor={(fila) => fila.id_distrito}
+                            keyExtractor={(fila) => fila.id_zona}
                             orden={orden}
                             onOrdenar={ordenar}
-                            vacio="Ningún distrito coincide con la búsqueda"
+                            vacio="Ninguna zona coincide con la búsqueda"
                             acciones={(fila) => (
                                 <BtnAccion
                                     tipo="editar"
-                                    onClick={() => setDistritoEditar(fila)}
-                                    titulo={`Editar tarifa de ${fila.nombre}`}
+                                    onClick={() => setZonaEditar(fila)}
+                                    titulo={`Editar zona ${fila.nombre}`}
                                 >
                                     <FaPenToSquare />
                                 </BtnAccion>
@@ -271,10 +270,10 @@ export default function TarifasEnvioPage() {
             </Card>
 
             <TarifaEditModal
-                key={distritoEditar?.id_distrito ?? 'cerrado'}
-                distrito={distritoEditar}
-                abierto={Boolean(distritoEditar)}
-                onCerrar={() => setDistritoEditar(null)}
+                key={`${zonaEditar?.id_zona ?? 'nueva'}-${creando}`}
+                zona={zonaEditar}
+                abierto={creando || Boolean(zonaEditar)}
+                onCerrar={() => { setZonaEditar(null); setCreando(false); }}
                 onActualizado={tarifaActualizada}
             />
         </div>

@@ -52,7 +52,7 @@ function TarjetaLibro({ libro, indice }) {
                 <PrecioOferta libro={libro} clase="tarjeta-libro__precio" />
                 {ahorro > 0 && <p className="ahorro">Ahorras {soles(ahorro)}</p>}
                 <Stock libro={libro} />
-                <p className="entrega-linea"><FaTruckFast aria-hidden="true" /> Entrega en Lima o recojo gratis en Pallasca</p>
+                <p className="entrega-linea"><FaTruckFast aria-hidden="true" /> Delivery dentro de Pallasca o recojo gratis en Pallasca</p>
             </div>
             <Link to="/descargar" className="boton boton--compra boton--chico">
                 <FaMobileScreenButton aria-hidden="true" /> {libro.disponible ? 'Comprar en la app' : 'Reservar en la app'}
@@ -121,11 +121,11 @@ export default function CatalogoPage() {
                             <h1 id="catalogo-pagina-titulo" className="seccion__titulo">Catálogo</h1>
                             <p className="seccion__entrada">
                                 Libros físicos con precios actuales en soles. Elige el tuyo y cómpralo o resérvalo desde la app:
-                                te lo llevamos a domicilio en Lima o lo recoges sin costo en nuestra tienda de Pallasca.
+                                te lo llevamos dentro de Pallasca con tarifa por zona o lo recoges sin costo en nuestra tienda.
                             </p>
                         </div>
                         <ul className="catalogo-ventajas" aria-label="Ventajas de comprar con nosotros">
-                            <li><FaTruckFast aria-hidden="true" /> Envío a domicilio en Lima</li>
+                            <li><FaTruckFast aria-hidden="true" /> Delivery dentro de Pallasca</li>
                             <li><FaStore aria-hidden="true" /> Recojo gratis en Pallasca</li>
                             <li><FaCircleCheck aria-hidden="true" /> Pago seguro con PayU</li>
                         </ul>

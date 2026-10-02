@@ -97,7 +97,8 @@ const MODULOS = [
     ['Historial / auditoría', 'historial', 'features/historial · layout/Topbar (notificaciones)', '—'],
     ['Reportes / Resumen', 'reportes', 'features/dashboard (vía reportes/reportesService)', '—'],
     ['Favoritos', 'favoritos', '—', 'favoritos, detalle de libro'],
-    ['Ubicaciones (Lima)', 'ubicaciones', 'features/ventas/ubicacionesService', 'entrega y pago'],
+    ['Cobertura Pallasca', 'zonas-delivery', 'features/tarifas', 'entrega y pago, mis compras'],
+    ['Ubicaciones (Lima, legacy)', 'ubicaciones', 'features/ventas/ubicacionesService (legacy)', 'ApiService legacy; sin selector en checkout'],
     ['Agencias courier (legacy)', 'agencias', 'ruta redirigida; features/agencias sin ruta activa', '—'],
     ['Empresa (emisor)', 'empresa', 'features/configuracion/EmpresaPage', '—'],
     ['Reclamaciones', 'reclamaciones', 'features/reclamaciones', 'enlace al formulario público'],
@@ -296,7 +297,7 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 | Archivo | Responsabilidad |\n|---|---|
 | \`services/api_service.dart\` | Cliente **Dio** singleton. Interceptor añade \`Bearer\`; ante **401** limpia la sesión y llama a \`irALogin()\`. Normaliza errores en \`ApiException\`. Gestiona la **clave de idempotencia** del checkout y recuerda \`checkout_url\` por venta. |
 | \`services/storage_service.dart\` | Token JWT en **flutter_secure_storage**; usuario y preferencias en **shared_preferences** (migra el token legado). ⚠️ Su comentario dice que también guarda el carrito, pero no hay código que lo haga. |
-| \`services/carrito_service.dart\` | Carrito y "guardar para después" **solo en memoria** (\`ChangeNotifier\`): se pierde al cerrar la app. **Sin endpoint propio**: los ítems se envían en \`POST /api/pagos/crear-orden\`. |
+| \`services/carrito_service.dart\` | Carrito y "guardar para después" (\`ChangeNotifier\`), persistidos en SharedPreferences \`carrito_v1\` por usuario. **Sin endpoint propio**: los ítems se envían en \`POST /api/pagos/crear-orden\`. |
 | \`services/tema_controller.dart\` | Tema de color del perfil (\`ChangeNotifier\`). |
 | \`services/navigation.dart\` | \`navigatorKey\` + \`irALogin()\`. |
 
@@ -316,7 +317,7 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 | Catálogo | home, libros, detalle_libro | \`GET /api/libros\`, \`GET /api/libros/:id\` (búsqueda filtrada en local) |
 | Favoritos | favoritos, detalle_libro | \`/api/favoritos\` (GET, GET/POST/DELETE \`/:idLibro\`) |
 | Carrito | carrito (local) | — |
-| Compra + PayU | entrega_y_pago, mis_compras | \`GET /api/ubicaciones/provincias(/:id/distritos)\`, \`GET /api/agencias/activas\`, \`POST /api/pagos/crear-orden\` → abre \`checkout_url\` con **url_launcher** → \`GET /api/pagos/:orderId\`; \`GET /api/ventas/mis-ventas\`, \`GET /api/ventas/:id/pago\` |
+| Compra + PayU | entrega_y_pago, mis_compras | \`GET /api/zonas-delivery\` (activas de Pallasca), \`POST /api/pagos/crear-orden\` → abre \`checkout_url\` con **url_launcher** → \`GET /api/pagos/:orderId\`; \`GET /api/ventas/mis-ventas\`, \`GET /api/ventas/:id/pago\` |
 | Reservas | detalle_libro (crear), reservas | \`POST /api/reservas\`, \`GET /api/reservas/mis-reservas\`, \`DELETE /api/reservas/:id\` |
 | Perfil | perfil, editar_perfil, cambiar_password | \`/api/usuarios/perfil\` (GET/PUT), \`PUT /api/usuarios/foto\` (**image_picker**), \`PUT /api/usuarios/password\` |
 | 2FA | two_factor_setup/verify/disable | \`/api/auth/2fa/*\` |
@@ -362,12 +363,13 @@ ${linea('POST', '/api/auth/solicitar-reseteo')} (envía código por correo con \
 3. Comprobante: \`EmitirComprobanteModal\` → ${linea('POST', '/api/ventas/:id/comprobante')}; envío: ${linea('POST', '/api/comprobantes/:id/enviar-email')}.
 
 ## 4. Compra desde la app (Flutter, cliente) con PayU
-1. Carrito local (\`CarritoService\`) → \`EntregaYPagoScreen\` obtiene provincias/distritos y agencias activas.
-2. ${linea('POST', '/api/pagos/crear-orden')} con clave de **idempotencia**; devuelve \`checkout_url\`.
+1. Carrito local (\`CarritoService\`) → \`EntregaYPagoScreen\` obtiene zonas activas con \`GET /api/zonas-delivery\`. Solo ofrece recojo gratuito en Pallasca (\`tienda\`) o delivery local con tarifa por zona (\`domicilio\`). Sin zonas, el recojo sigue disponible.
+2. ${linea('POST', '/api/pagos/crear-orden')} con clave de **idempotencia**; delivery envía \`id_zona_delivery\`, dirección y referencia opcional. El servidor valida la zona activa y bloquea su tarifa dentro de la transacción. Guarda \`cobertura_entrega=pallasca\`, el nombre original de zona y \`costo_envio\`; total = libros + envío. No utiliza ubicaciones Lima para compras nuevas. Devuelve \`checkout_url\`.
 3. La app abre \`checkout_url\` (${linea('GET', '/api/pagos/checkout/:externalReference')}) que auto-envía el formulario a PayU.
 4. PayU notifica: ${linea('POST', '/api/pagos/webhook')}. Retorno del navegador: \`GET /api/pagos/respuesta/:externalReference\`.
 5. La app consulta ${linea('GET', '/api/pagos/:orderId')} y lista ${linea('GET', '/api/ventas/mis-ventas')}.
-6. El job \`jobs/limpieza.js\` cancela ventas abandonadas cada 5 min.
+6. El job \`jobs/limpieza.js\` revisa ventas abandonadas cada 5 min; consulta PayU antes de liberar stock y conserva pagos inciertos/pendientes.
+7. Administración: \`TarifasEnvioPage\` usa \`GET /api/zonas-delivery/todos\`, \`POST /api/zonas-delivery\`, \`PUT /api/zonas-delivery/:id\`. Se configura nombre, tarifa positiva y estado; no hay semillas ni eliminación. La migración \`032_cobertura_pallasca.sql\` agrega columnas NULL sin reescribir ventas. El panel y Flutter muestran Pallasca solo con la marca explícita; las ubicaciones, courier e importes legacy se conservan.
 
 ## 5. Reservas
 - Cliente (Flutter) crea: ${linea('POST', '/api/reservas')}; cancela: ${linea('DELETE', '/api/reservas/:id')}.
@@ -717,11 +719,12 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
     participant P as PayU (payu.service)
     participant B as Navegador (url_launcher)
     participant DB as PostgreSQL
-    F->>API: GET /api/ubicaciones/provincias(/:id/distritos), GET /api/agencias/activas
-    F->>API: POST /api/pagos/crear-orden (JWT, clave de idempotencia)
-    API->>VM: crear venta pendiente
-    VM->>DB: ventas, detalle_venta, inventario
-    API->>P: crearOrden
+    F->>API: GET /api/zonas-delivery (activas de Pallasca)
+    F->>API: POST /api/pagos/crear-orden (JWT, idempotencia, entrega y zona)
+    API->>P: crearOrden (URL local WebCheckout)
+    API->>VM: crear venta pendiente con cobertura pallasca
+    VM->>DB: Validar zona activa FOR SHARE y tarifa definitiva
+    VM->>DB: ventas, detalle_venta, inventario (total libros más envío)
     API-->>F: checkout_url
     F->>B: abrir checkout_url
     B->>API: GET /api/pagos/checkout/:externalReference

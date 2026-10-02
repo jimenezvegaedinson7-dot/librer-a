@@ -16,7 +16,7 @@ import './nosotros.css';
 // Portada con su propia imagen (hojas oscuras con brillo dorado) y el texto
 // centrado en la altura; después, lo que nos define, la tienda con su mapa,
 // los datos de la empresa y una llamada final a la app. Todo lo que se
-// afirma aquí es real: tienda en Pallasca, entrega en Lima, PayU y la app.
+// afirma aquí es real: tienda y delivery en Pallasca, PayU y la app.
 // ============================================================
 
 const CITA = 'Somos una librería con tienda frente a la Plaza de Armas de Pallasca, en Áncash. Con la app, nuestro catálogo llega a lectores de todo el Perú.';
@@ -29,8 +29,8 @@ const PILARES = [
     },
     {
         Icono: FaTruckFast,
-        titulo: 'Entrega a domicilio en Lima',
-        texto: 'Te lo llevamos a tu dirección con una tarifa por distrito que ves antes de pagar.',
+        titulo: 'Delivery dentro de Pallasca',
+        texto: 'Te lo llevamos a tu dirección en una zona activa, con la tarifa que ves antes de pagar.',
     },
     {
         Icono: FaStore,
@@ -154,7 +154,7 @@ export default function AboutSection({ legal, reducido }) {
                             <span>{legal.direccion}</span>
                         </p>
                         <p className="tienda__nota">
-                            Aquí recoges sin costo de envío los pedidos que haces en la app. Elige «Recoger en tienda» al pagar.
+                            Aquí recoges sin costo de envío los pedidos que haces en la app. Elige «Recojo en Pallasca» al pagar.
                         </p>
                         <a className="boton" href={UBICACION_TIENDA.comoLlegar} target="_blank" rel="noopener noreferrer">
                             <FaDiamondTurnRight aria-hidden="true" /> Cómo llegar

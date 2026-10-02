@@ -98,8 +98,8 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/reservas/ReservaForm.jsx` | `GET /api/libros`<br>`POST /api/reservas` |
 | `features/reservas/ReservasPage.jsx` | `GET /api/reservas`<br>`GET /api/reservas/:param` |
 | `features/reservas/reservasService.js` | `GET /api/libros` |
-| `features/tarifas/TarifaEditModal.jsx` | `PUT /api/ubicaciones/distritos/:param` |
-| `features/tarifas/TarifasEnvioPage.jsx` | `GET /api/ubicaciones/provincias`<br>`GET /api/ubicaciones/provincias/:param/distritos` |
+| `features/tarifas/TarifaEditModal.jsx` | `POST /api/zonas-delivery`<br>`PUT /api/zonas-delivery/:param` |
+| `features/tarifas/TarifasEnvioPage.jsx` | `GET /api/zonas-delivery/todos` |
 | `features/usuarios/UsuariosPage.jsx` | `GET /api/usuarios`<br>`PATCH /api/usuarios/:param` |
 | `features/ventas/EmitirComprobanteModal.jsx` | `GET /api/empresa`<br>`POST /api/comprobantes/:param/enviar-email`<br>`POST /api/ventas/:param/comprobante` |
 | `features/ventas/ReembolsoModal.jsx` | `POST /api/ventas/:param/reembolso` |
@@ -202,8 +202,8 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/reservas/reservasService.js` | `crearReserva` | `POST /api/reservas` |
 | `features/reservas/reservasService.js` | `actualizarEstadoReserva` | `PUT /api/reservas/:param/estado` |
 | `features/reservas/reservasService.js` | `listarLibrosActivos` | `GET /api/libros` (vía features/libros/librosService.js#listarLibros) |
-| `features/tarifas/tarifasService.js` | `listarDistritosLima` | `GET /api/ubicaciones/provincias`<br>`GET /api/ubicaciones/provincias/:param/distritos` |
-| `features/tarifas/tarifasService.js` | `actualizarTarifaDistrito` | `PUT /api/ubicaciones/distritos/:param` |
+| `features/tarifas/tarifasService.js` | `listarZonasDelivery` | `GET /api/zonas-delivery/todos` |
+| `features/tarifas/tarifasService.js` | `guardarZonaDelivery` | `PUT /api/zonas-delivery/:param`<br>`POST /api/zonas-delivery` |
 | `features/usuarios/usuariosService.js` | `listarUsuarios` | `GET /api/usuarios` |
 | `features/usuarios/usuariosService.js` | `actualizarUsuario` | `PATCH /api/usuarios/:param` |
 | `features/ventas/ubicacionesService.js` | `listarProvincias` | `GET /api/ubicaciones/provincias` |
@@ -263,6 +263,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `lib/roles.js`
 - `lib/storage/index.js`
 - `lib/utils/cuentas.js`
+- `lib/utils/entrega.js`
 - `lib/utils/exportarCsv.js`
 - `lib/utils/format.js`
 - `lib/utils/numeroALetras.js`

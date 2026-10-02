@@ -17,6 +17,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Ficha } from '../../components/ui/Ficha';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
+import { ubicacionEntrega } from '../../lib/utils/entrega';
 
 import { EntregaBadge, EstadoPagoBadge } from './PagoBadges';
 import { configEstadoVenta } from './pagoPresentacion';
@@ -45,7 +46,7 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Ficha color="amber" icono={<FaTruckFast />} etiqueta="Tipo de entrega">
-                    <EntregaBadge tipo={pago.tipo_entrega} />
+                    <EntregaBadge tipo={pago.tipo_entrega} venta={pago} />
                 </Ficha>
                 <Ficha color="amber" icono={<FaCreditCard />} etiqueta="Método de pago">
                     {pago.metodo_pago}{pago.referencia_pago ? ` · Op. ${pago.referencia_pago}` : ''}
@@ -58,6 +59,7 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
                         <FaMoneyBillWave /> Monto total
                     </div>
                     <p className="mt-2 text-2xl font-semibold text-slate-700">{formatearMoneda(pago.monto_total)}</p>
+                    {pago.costo_envio != null && <p className="mt-1 text-sm text-slate-600">Costo de entrega: {formatearMoneda(pago.costo_envio)}</p>}
                 </div>
 
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
@@ -87,6 +89,12 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
                     <div className="mt-3"><EstadoPagoBadge estado={pago.estado_pago} /></div>
                 </div>
             </div>
+
+            {pago.tipo_entrega === 'domicilio' && <div className="mt-4 text-sm text-slate-700">
+                <p>{ubicacionEntrega(pago)}</p><p>{pago.direccion}</p>
+                {pago.referencia && <p>Referencia: {pago.referencia}</p>}
+            </div>}
+            {pago.agencia && <p className="mt-4 text-sm text-slate-700">Agencia: {pago.agencia}</p>}
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Ficha color="amber" icono={<FaIdBadge />} etiqueta="Referencias de la venta">

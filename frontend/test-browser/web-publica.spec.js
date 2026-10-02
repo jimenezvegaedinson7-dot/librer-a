@@ -40,6 +40,19 @@ async function apiPublica(page, { falla = false, vacia = false, libros = LIBROS,
 
 const menu = (page) => page.getByRole('navigation', { name: 'Principal' });
 
+test('cobertura Pallasca: textos y SEO estático no ofrecen entrega en Lima ni nacional', async ({page}) => {
+    const html = await (await page.request.get('/')).text();
+    expect(html).not.toMatch(/entrega en Lima|domicilio en Lima|"areaServed": "PE"/);
+    expect(html).toContain('"areaServed": "Pallasca"');
+    await apiPublica(page);
+    for (const ruta of ['/', '/catalogo', '/caracteristicas', '/nosotros']) {
+        await page.goto(ruta);
+        await expect(page.locator('main')).toBeVisible();
+        expect(await page.locator('body').innerText()).not.toMatch(/\bLima\b|envíos nacionales/);
+        expect(await page.locator('meta[name="description"]').getAttribute('content')).not.toMatch(/\bLima\b/);
+    }
+});
+
 const APK_FUTURA = 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v8.0.0/libreria-8.0.0.apk';
 for (const width of [390, 1440]) {
     test(`actualización: QR visible y botón usa la última versión del servidor a ${width}px`, async ({page}) => {
@@ -229,9 +242,9 @@ test('selector de entrega: teclado y resultado anunciado', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/caracteristicas');
     const grupo = page.getByRole('radiogroup', { name: /Tipo de entrega/ });
-    await grupo.getByRole('radio', { name: /A domicilio/ }).focus();
+    await grupo.getByRole('radio', { name: /Delivery dentro de Pallasca/ }).focus();
     await page.keyboard.press('ArrowDown');
-    await expect(grupo.getByRole('radio', { name: /Recoger en tienda/ })).toHaveAttribute('aria-checked', 'true');
+    await expect(grupo.getByRole('radio', { name: /Recojo en Pallasca/ })).toHaveAttribute('aria-checked', 'true');
     await expect(page.locator('.selector-entrega__resultado')).toContainText('Pallasca');
 });
 
@@ -638,7 +651,7 @@ test('franja de beneficios: azul marino, texto marfil e iconos dorados', async (
     await expect(franja).toHaveCSS('color', 'rgb(255, 249, 239)');
     await expect(page.locator('.avisos .aviso-icono')).toHaveCount(3);
     await expect(page.locator('.avisos .aviso-icono').first()).toHaveCSS('color', 'rgb(213, 164, 71)');
-    for (const texto of ['Envío a domicilio en Lima', 'Recojo sin costo en nuestra tienda de Pallasca', 'Pago en línea seguro con PayU']) {
+    for (const texto of ['Delivery dentro de Pallasca', 'Recojo sin costo en Pallasca', 'Pago en línea seguro con PayU']) {
         await expect(page.locator('.avisos')).toContainText(texto);
     }
 });

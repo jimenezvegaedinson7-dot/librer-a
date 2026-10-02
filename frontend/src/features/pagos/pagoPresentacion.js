@@ -70,6 +70,14 @@ export function enriquecerPago(pago, venta) {
 
     return {
         ...pago,
+        cobertura_entrega: pago.cobertura_entrega ?? venta?.cobertura_entrega,
+        zona_delivery_nombre: pago.zona_delivery_nombre ?? venta?.zona_delivery_nombre,
+        costo_envio: pago.costo_envio ?? venta?.costo_envio,
+        direccion: pago.direccion ?? venta?.direccion,
+        referencia: pago.referencia ?? venta?.referencia,
+        distrito: venta?.distrito,
+        provincia: venta?.provincia,
+        agencia: venta?.agencia,
         origen,
         origen_texto: textoOrigen({ origen, id_reserva: venta?.id_reserva }),
         cliente: { ...cliente, nombre_completo: nombre, email: correo },

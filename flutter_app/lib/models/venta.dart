@@ -43,6 +43,9 @@ class Venta {
   final double? total;
   final String? estado;
   final String? tipoEntrega;
+  final String? coberturaEntrega;
+  final String? zonaDeliveryNombre;
+  final String? referencia;
   final String? direccion;
   final double? costoEnvio;
   final String? distrito;
@@ -61,6 +64,9 @@ class Venta {
     this.total,
     this.estado,
     this.tipoEntrega,
+    this.coberturaEntrega,
+    this.zonaDeliveryNombre,
+    this.referencia,
     this.direccion,
     this.costoEnvio,
     this.distrito,
@@ -82,6 +88,9 @@ class Venta {
       total: JsonUtils.asDouble(json['total']),
       estado: JsonUtils.asString(json['estado']),
       tipoEntrega: JsonUtils.asString(json['tipo_entrega']),
+      coberturaEntrega: JsonUtils.asString(json['cobertura_entrega']),
+      zonaDeliveryNombre: JsonUtils.asString(json['zona_delivery_nombre']),
+      referencia: JsonUtils.asString(json['referencia']),
       direccion: JsonUtils.asString(json['direccion']),
       costoEnvio: JsonUtils.asDouble(json['costo_envio']),
       distrito: JsonUtils.asString(json['distrito']),
@@ -101,6 +110,30 @@ class Venta {
           : const [],
     );
   }
+
+  /// Solo las compras marcadas explícitamente pertenecen a Pallasca.
+  bool get esPallasca => coberturaEntrega == 'pallasca';
+
+  String? get entregaLabel {
+    switch (tipoEntrega?.toLowerCase().trim()) {
+      case 'domicilio':
+        return esPallasca ? 'Delivery dentro de Pallasca' : 'A domicilio';
+      case 'tienda':
+        return esPallasca ? 'Recojo en Pallasca' : 'Recoger en tienda';
+      case 'agencia':
+        return 'Agencia';
+      default:
+        return null;
+    }
+  }
+
+  /// Las ubicaciones históricas se leen como fueron guardadas.
+  String get ubicacionEntrega => esPallasca
+      ? zonaDeliveryNombre ?? ''
+      : [
+          distrito,
+          provincia,
+        ].whereType<String>().where((s) => s.isNotEmpty).join(', ');
 
   /// `true` si la venta ya fue pagada.
   bool get pagada => (estado ?? '').toLowerCase().trim() == 'pagada';

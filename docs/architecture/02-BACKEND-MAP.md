@@ -9,7 +9,7 @@
 2. `helmet` (sin CSP, CORP cross-origin) → `config/cors.js` con lista `FRONTEND_ORIGINS` y patrón `FRONTEND_ORIGINS_REGEX` (regex inválida desactiva previews y conserva lista explícita) → `express.json({ limit: '1mb' })` → `baseLimiter`.
 3. Estáticos: `/uploads` → `backend/uploads` (portadas y fotos locales cuando Cloudinary no está configurado).
 4. Endpoints en línea: `GET /`, `GET /api`, `GET /api/test-db` y `GET /api/debug-egress` (ambos JWT + admin).
-5. Montaje de 21 routers bajo `/api/*` → 404 JSON → `error.middleware`.
+5. Montaje de 22 routers bajo `/api/*` → 404 JSON → `error.middleware`.
 6. `iniciarJobs()` (limpieza cada 5 min) y 3 migraciones idempotentes en línea (tabla `favoritos`; columnas `cliente_documento`/`cliente_tipo_documento` en `ventas`; `enviado_por_email`/`fecha_envio_email` en `comprobantes`).
 7. `app.listen(PORT || 3000)`.
 
@@ -38,6 +38,7 @@
 | `/api/ubicaciones` | `routes/ubicacion.routes.js` |
 | `/api/usuarios` | `routes/usuario.routes.js` |
 | `/api/ventas` | `routes/venta.routes.js` |
+| `/api/zonas-delivery` | `routes/zonaDelivery.routes.js` |
 
 ## Configuración (`src/config`)
 
@@ -236,7 +237,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `usuario.model.js#buscarPorId`<br>`venta.model.js#actualizarDatosPago`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
 | GET | `/api/pagos` | JWT + verificarPanel | controllers/pago.controller.js#listarPagosAdmin | `venta.model.js#listarPagosAdmin` | usuarios, ventas |
 | GET | `/api/pagos/resumen` | JWT + verificarPanel | inline (pago.routes.js) | `pago.model.js#listarResumen` | ventas |
-| POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `payu.service.js#crearOrden`<br>`ubicacion.model.js#esDistritoDeLima`<br>`ubicacion.model.js#existeDistrito`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#crear` | detalle_venta, distritos_lima, inventario, libros, provincias_lima, usuarios, ventas |
+| POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `payu.service.js#crearOrden`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#crear`<br>`zonaDelivery.model.js#obtenerPorId` | detalle_venta, inventario, libros, usuarios, ventas, zonas_delivery_pallasca |
 | GET | `/api/pagos/:orderId` | JWT | controllers/pago.controller.js#obtenerOrden | `payu.service.js#obtenerOrdenDiagnostico`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#actualizarDatosPago`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#buscarPorPayuOrderId`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
 
 ### /api/pedidos
@@ -314,6 +315,15 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | POST | `/api/ventas/:id/comprobante` | JWT + verificarPanel | controllers/comprobante.controller.js#generarComprobante | `comprobante.model.js#generarComprobante` | comprobantes, ventas |
 | POST | `/api/ventas/:id/reembolso` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/venta.controller.js#reembolsarVenta | `historial.model.js#crear`<br>`venta.model.js#reembolsar` | comprobantes, detalle_venta, historial_operaciones, inventario, ventas |
 
+### /api/zonas-delivery
+
+| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
+|---|---|---|---|---|---|
+| GET | `/api/zonas-delivery` | JWT | controllers/zonaDelivery.controller.js#listarZonas | `zonaDelivery.model.js#listar` | zonas_delivery_pallasca |
+| GET | `/api/zonas-delivery/todos` | JWT + rol:administrador | controllers/zonaDelivery.controller.js#listarTodasZonas | `zonaDelivery.model.js#listar` | zonas_delivery_pallasca |
+| POST | `/api/zonas-delivery` | JWT + rol:administrador | controllers/zonaDelivery.controller.js#crearZona | — | — |
+| PUT | `/api/zonas-delivery/:id` | JWT + rol:administrador | controllers/zonaDelivery.controller.js#actualizarZona | — | — |
+
 ## Modelos y tablas
 
 | Modelo | Tablas que consulta o modifica |
@@ -336,8 +346,9 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/ubicacion.model.js` | distritos_lima, provincias_lima |
 | `models/usuario.model.js` | favoritos, inventario, reservas, usuarios, ventas |
 | `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, inventario, libros, provincias_lima, usuarios, ventas |
+| `models/zonaDelivery.model.js` | zonas_delivery_pallasca |
 
-Tablas presentes en el código (18): `agencias_courier`, `anuncios`, `autores`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`. El esquema está en `backend/database/schema.sql` + 22 migraciones en `backend/database/migrations`.
+Tablas presentes en el código (19): `agencias_courier`, `anuncios`, `autores`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. El esquema está en `backend/database/schema.sql` + 22 migraciones en `backend/database/migrations`.
 
 ## Integraciones externas
 

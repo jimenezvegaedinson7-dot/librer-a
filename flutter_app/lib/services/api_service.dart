@@ -8,6 +8,7 @@ import '../models/reserva.dart';
 import '../models/ubicacion.dart';
 import '../models/usuario.dart';
 import '../models/venta.dart';
+import '../models/zona_delivery.dart';
 import '../utils/constants.dart';
 import '../utils/idempotencia.dart';
 import '../utils/json_utils.dart';
@@ -617,8 +618,8 @@ class ApiService {
   /// PayU (WebCheckout). Devuelve un [OrdenPago] con el
   /// [OrdenPago.checkoutUrl] para redirigir al checkout.
   ///
-  /// [tipoEntrega] puede ser `domicilio` (con [idDistrito] y [direccion]) o
-  /// `tienda` (recojo en tienda). El envío por agencia ya no se ofrece.
+  /// [tipoEntrega] puede ser `domicilio` (zona activa de Pallasca y dirección)
+  /// o `tienda` (recojo gratuito en Pallasca). El servidor determina la tarifa.
   ///
   /// La `idempotencia_clave` se genera UNA vez por intento de checkout y se
   /// reutiliza en los reintentos (tras un timeout, el backend responde
@@ -628,7 +629,8 @@ class ApiService {
     required List<Map<String, dynamic>> detalles,
     String? tipoEntrega,
     String? direccion,
-    int? idDistrito,
+    int? idZonaDelivery,
+    String? referencia,
     String? clienteTipoDocumento,
     String? clienteDocumento,
   }) async {
@@ -639,7 +641,8 @@ class ApiService {
             .join(','),
         tipoEntrega ?? '',
         direccion?.trim() ?? '',
-        idDistrito?.toString() ?? '',
+        idZonaDelivery?.toString() ?? '',
+        referencia?.trim() ?? '',
         clienteDocumento ?? '',
       ].join('|');
 
@@ -660,7 +663,9 @@ class ApiService {
             'tipo_entrega': tipoEntrega,
           if (direccion != null && direccion.trim().isNotEmpty)
             'direccion': direccion.trim(),
-          'id_distrito': ?idDistrito,
+          'id_zona_delivery': ?idZonaDelivery,
+          if (referencia != null && referencia.trim().isNotEmpty)
+            'referencia': referencia.trim(),
           if (clienteTipoDocumento != null && clienteTipoDocumento.isNotEmpty)
             'cliente_tipo_documento': clienteTipoDocumento,
           if (clienteDocumento != null && clienteDocumento.trim().isNotEmpty)
@@ -726,6 +731,28 @@ class ApiService {
     }
   }
 
+  /// Solo zonas activas: no se ofrecen ubicaciones Lima ni tarifas legacy.
+  Future<List<ZonaDelivery>> obtenerZonasDelivery() async {
+    try {
+      final response = await _dio.get<dynamic>(Constants.zonasDeliveryPath);
+      final data = response.data;
+      if (data is Map && data['data'] is List) {
+        return (data['data'] as List)
+            .whereType<Map>()
+            .map((e) => ZonaDelivery.fromJson(Map<String, dynamic>.from(e)))
+            .where(
+              (z) =>
+                  z.activa && z.idZona > 0 && z.tarifa.isFinite && z.tarifa > 0,
+            )
+            .toList();
+      }
+      throw const ApiException('No se pudieron cargar las zonas de delivery.');
+    } on DioException catch (e) {
+      throw _toApiException(e);
+    }
+  }
+
+  /// Ubicaciones originales conservadas para compatibilidad con el historial.
   /// Obtiene las provincias de Lima contra `GET /ubicaciones/provincias`.
   Future<List<Provincia>> obtenerProvincias() async {
     try {

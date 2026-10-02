@@ -8,6 +8,7 @@ import { Ficha } from '../../components/ui/Ficha';
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 import { textoMetodoPago, textoOrigen } from './metodosPago';
 import { correoVisible } from '../../lib/utils/cuentas';
+import { descripcionEntrega, ubicacionEntrega } from '../../lib/utils/entrega';
 
 const estados = {
     pendiente: { texto: 'Pendiente', color: 'warning' },
@@ -26,22 +27,10 @@ function descripcionCobro(venta) {
     return venta.payu_order_id ? `PayU · Orden ${venta.payu_order_id}` : 'PayU';
 }
 
-function descripcionEntrega(venta) {
-    if (venta.tipo_entrega === 'domicilio') return 'A domicilio';
-    if (venta.tipo_entrega === 'agencia') return 'Agencia courier (histórico)';
-    if (venta.tipo_entrega === 'tienda') return 'Recoger en tienda';
-    return 'Sin especificar';
-}
-
 function iconoEntrega(venta) {
     if (venta.tipo_entrega === 'domicilio') return <FaLocationDot />;
     if (venta.tipo_entrega === 'agencia') return <FaTruckFast />;
     return <FaShop />;
-}
-
-function ubicacionEntrega(venta) {
-    const partes = [venta.distrito, venta.provincia].filter(Boolean);
-    return partes.length > 0 ? partes.join(', ') : null;
 }
 
 export default function VentaViewModal({ venta, abierto, onCerrar }) {
@@ -115,6 +104,7 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                     {ubicacion && (
                         <p className="mt-1 text-xs font-semibold text-indigo-700">{ubicacion}</p>
                     )}
+                    {venta.referencia && <p className="mt-1 text-sm text-indigo-700">Referencia: {venta.referencia}</p>}
                 </div>
             )}
 
@@ -133,7 +123,7 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                         <FaMoneyBillWave /> Total
                     </div>
                     <p className="mt-2 text-2xl font-semibold text-slate-700">{formatearMoneda(venta.total)}</p>
-                    {Number(venta.costo_envio || 0) > 0 && (
+                    {(venta.cobertura_entrega === 'pallasca' || Number(venta.costo_envio || 0) > 0) && (
                         <p className="mt-1 text-xs text-slate-500">
                             Incluye envío: {formatearMoneda(venta.costo_envio)}
                         </p>

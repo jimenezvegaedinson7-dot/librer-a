@@ -4,7 +4,7 @@ import { FaDownload, FaMagnifyingGlass, FaCreditCard, FaBoxOpen } from 'react-ic
 // ============================================================
 // CÓMO COMPRAR EN 3 PASOS (+ recibir)
 // Explica el flujo real de la app: buscar, pagar con PayU y recibir en
-// Lima o recoger en Pallasca. Los pasos entran escalonados al hacer scroll.
+// Pallasca o recoger en tienda. Los pasos entran escalonados al hacer scroll.
 // ============================================================
 const PASOS = [
     {
@@ -25,7 +25,7 @@ const PASOS = [
     {
         Icono: FaBoxOpen,
         titulo: 'Recíbelo o recógelo',
-        texto: 'Te lo llevamos a domicilio en Lima, o lo recoges sin costo de envío en nuestra tienda de Pallasca.',
+        texto: 'Elige delivery dentro de Pallasca con tarifa por zona, o recojo sin costo de envío en nuestra tienda de Pallasca.',
     },
 ];
 

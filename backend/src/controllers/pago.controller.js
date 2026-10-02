@@ -2,7 +2,7 @@ const payuService = require('../services/payu.service');
 const ventaModel = require('../models/venta.model');
 const { PRECIO_FINAL_SQL } = require('../models/libro.model');
 const usuarioModel = require('../models/usuario.model');
-const ubicacionModel = require('../models/ubicacion.model');
+const zonaDeliveryModel = require('../models/zonaDelivery.model');
 const pool = require('../config/database');
 const crypto = require('crypto');
 const { validarId } = require('../utils/validaciones');
@@ -298,7 +298,8 @@ const crearOrden = async (req, res) => {
             tipo_entrega,
             direccion,
             correo_compra,
-            id_distrito,
+            id_zona_delivery,
+            referencia,
             idempotencia_clave,
             cliente_documento,
             cliente_tipo_documento
@@ -418,7 +419,7 @@ const crearOrden = async (req, res) => {
                 .json({
                     success: false,
                     mensaje:
-                        'El envío por agencia ya no está disponible. Elige envío a domicilio o recojo en tienda.'
+                        'El envío por agencia ya no está disponible. Elige delivery dentro de Pallasca o recojo gratuito en Pallasca.'
                 });
         }
 
@@ -436,33 +437,27 @@ const crearOrden = async (req, res) => {
         // Y CALCULAR COSTO DE ENVÍO
         // ========================================
         let costoEnvio = 0;
-        let distritoEntrega = null;
+        let zonaEntrega = null;
 
         if (
             tipoEntrega === 'domicilio'
         ) {
-            distritoEntrega =
-                await ubicacionModel
-                    .existeDistrito(
-                        validarId(id_distrito)
-                    );
-
-            // Solo se envía a domicilio dentro de Lima (provincia). Una app
-            // antigua podría enviar un distrito de otra provincia.
-            if (!ubicacionModel.esDistritoDeLima(distritoEntrega)) {
+            const idZona = validarId(id_zona_delivery);
+            zonaEntrega = idZona ? await zonaDeliveryModel.obtenerPorId(idZona) : null;
+            if (!zonaEntrega || Number(zonaEntrega.estado) !== 1) {
                 return res
                     .status(400)
                     .json({
                         success: false,
                         mensaje:
-                            'Selecciona un distrito válido de Lima'
+                            'Selecciona una zona activa de delivery dentro de Pallasca'
                     });
             }
 
             if (
                 !direccion ||
                 typeof direccion !== 'string' ||
-                direccion.trim().length < 5
+                direccion.trim().length < 5 || direccion.trim().length > 255
             ) {
                 return res
                     .status(400)
@@ -473,9 +468,10 @@ const crearOrden = async (req, res) => {
                     });
             }
 
-            costoEnvio = Number(
-                distritoEntrega.tarifa_envio
-            ) || 0;
+            if (referencia != null && (typeof referencia !== 'string' || referencia.trim().length > 255)) {
+                return res.status(400).json({ success: false, mensaje: 'La referencia de dirección debe ser un texto de hasta 255 caracteres' });
+            }
+            costoEnvio = Number(zonaEntrega.tarifa);
         }
 
         // ========================================
@@ -690,11 +686,6 @@ const crearOrden = async (req, res) => {
             ).toFixed(2)
         );
 
-        const shippingTitulo =
-            tipoEntrega === 'domicilio'
-                ? `Envío a domicilio (${distritoEntrega.provincia} - ${distritoEntrega.nombre})`
-                : null;
-
         // ========================================
         // CREAR ORDEN EN PAYU
         // ========================================
@@ -725,11 +716,11 @@ const crearOrden = async (req, res) => {
                     })
                 ),
                 tipo_entrega: tipoEntrega,
-                direccion: direccion || null,
-                id_distrito:
-                    tipoEntrega === 'domicilio'
-                        ? validarId(id_distrito)
-                        : null,
+                direccion: tipoEntrega === 'domicilio' ? direccion.trim() : null,
+                referencia: tipoEntrega === 'domicilio' ? (referencia?.trim() || null) : null,
+                cobertura_entrega: 'pallasca',
+                id_zona_delivery: zonaEntrega?.id_zona || null,
+                id_distrito: null,
                 id_agencia: null,
                 correo_compra:
                     correo_compra ||
@@ -864,7 +855,7 @@ const crearOrden = async (req, res) => {
             });
         }
 
-        if (error.paymentValidation) {
+        if (error.paymentValidation || error.deliveryValidation) {
             return res.status(400).json({
                 success: false,
                 mensaje

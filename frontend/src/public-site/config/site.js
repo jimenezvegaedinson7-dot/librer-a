@@ -49,16 +49,16 @@ export const NAVEGACION = [
 
 // Avisos de la barra superior (hechos reales del servicio).
 export const AVISOS = [
-    { texto: 'Envío a domicilio en Lima' },
-    { texto: 'Recojo sin costo en nuestra tienda de Pallasca' },
+    { texto: 'Delivery dentro de Pallasca' },
+    { texto: 'Recojo sin costo en Pallasca' },
     { texto: 'Pago en línea seguro con PayU' },
 ];
 
 // Título y descripción de cada página (pestaña del navegador y buscadores).
 export const PAGINAS = {
     '/': {
-        titulo: 'Librería del Saber · Libros con entrega en Lima y recojo en Pallasca',
-        descripcion: 'Explora el catálogo de Librería del Saber en la app, paga en línea con PayU y recibe tus libros en Lima o recógelos sin costo en Pallasca.',
+        titulo: 'Librería del Saber · Delivery y recojo en Pallasca',
+        descripcion: 'Explora el catálogo de Librería del Saber en la app, paga en línea con PayU y recibe tus libros con delivery dentro de Pallasca o recógelos sin costo.',
     },
     '/catalogo': {
         titulo: 'Catálogo · Librería del Saber',
@@ -70,11 +70,11 @@ export const PAGINAS = {
     },
     '/caracteristicas': {
         titulo: 'Características · Librería del Saber',
-        descripcion: 'Entrega a domicilio en Lima, recojo sin costo en Pallasca, pago con PayU y reservas desde la app.',
+        descripcion: 'Delivery dentro de Pallasca con tarifa por zona, recojo sin costo en Pallasca, pago con PayU y reservas desde la app.',
     },
     '/nosotros': {
         titulo: 'Nosotros · Librería del Saber',
-        descripcion: 'Librería con tienda frente a la Plaza de Armas de Pallasca, Áncash, y catálogo en la app para lectores de todo el Perú.',
+        descripcion: 'Librería con tienda frente a la Plaza de Armas de Pallasca, Áncash, catálogo en la app, delivery local y recojo gratuito.',
     },
     '/descargar': {
         titulo: 'Descargar la app · Librería del Saber',

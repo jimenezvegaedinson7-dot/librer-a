@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../models/ubicacion.dart';
+import '../models/zona_delivery.dart';
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
 import '../utils/app_colors.dart';
@@ -19,12 +19,12 @@ enum _TipoEntrega { domicilio, tienda }
 /// Pantalla "Entrega y pago".
 ///
 /// Se abre desde "Mi carrito" al presionar "Realizar pedido". Permite elegir
-/// el tipo de entrega (a domicilio en Lima o recoger en tienda), ingresar los
+/// el tipo de entrega (delivery en Pallasca o recojo gratuito en Pallasca), ingresar los
 /// datos de envío cuando corresponde y revisar el resumen (subtotal, envío,
 /// total). Al confirmar con [COMPRAR Y PAGAR] se crea la orden en PayU
 /// (WebCheckout) y se abre el checkout con el navegador, reutilizando
 /// la MISMA lógica existente ([ApiService.crearOrdenPago] +
-/// [launchUrl]) sin modificar la integración de pagos ni el backend.
+/// [launchUrl]) sin modificar la integración de pagos.
 class EntregaYPagoScreen extends StatefulWidget {
   const EntregaYPagoScreen({super.key});
 
@@ -35,76 +35,59 @@ class EntregaYPagoScreen extends StatefulWidget {
 class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   final _direccionController = TextEditingController();
   final _documentoController = TextEditingController();
-  _TipoEntrega _tipoEntrega = _TipoEntrega.domicilio;
+  final _referenciaController = TextEditingController();
+  _TipoEntrega _tipoEntrega = _TipoEntrega.tienda;
   String _tipoDocumento = 'DNI';
   bool _procesando = false;
-  bool _cargandoUbicaciones = false;
+  bool _cargandoZonas = false;
+  String? _errorZonas;
   bool _exito = false;
   String? _orderId;
   String? _checkoutUrl;
   double? _total;
 
-  List<Distrito> _distritos = [];
-  int? _idDistrito;
+  List<ZonaDelivery> _zonas = [];
+  int? _idZona;
 
   @override
   void initState() {
     super.initState();
-    _cargarUbicaciones();
+    _cargarZonas();
   }
 
   @override
   void dispose() {
     _direccionController.dispose();
     _documentoController.dispose();
+    _referenciaController.dispose();
     super.dispose();
   }
 
-  Future<void> _cargarUbicaciones() async {
-    setState(() => _cargandoUbicaciones = true);
+  Future<void> _cargarZonas() async {
+    setState(() {
+      _cargandoZonas = true;
+      _errorZonas = null;
+    });
     try {
-      // El envío a domicilio es solo dentro de Lima (provincia): se busca
-      // por nombre y se cargan únicamente sus distritos.
-      final provincias = await ApiService.instance.obtenerProvincias();
-      final lima = provincias
-          .where((p) => p.nombre.trim().toLowerCase() == 'lima')
-          .firstOrNull;
-      if (!mounted) return;
-      setState(() => _cargandoUbicaciones = false);
-      if (lima != null) _cargarDistritos(lima.idProvincia);
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      setState(() => _cargandoUbicaciones = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _cargandoUbicaciones = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudieron cargar los datos de envío.'),
-        ),
-      );
-    }
-  }
-
-  Future<void> _cargarDistritos(int idProvincia) async {
-    try {
-      final distritos = await ApiService.instance.obtenerDistritos(idProvincia);
+      final zonas = await ApiService.instance.obtenerZonasDelivery();
       if (!mounted) return;
       setState(() {
-        _distritos = distritos;
-        _idDistrito = _distritos.isEmpty ? null : _distritos.first.idDistrito;
+        _zonas = zonas;
+        _cargandoZonas = false;
+        if (!_zonas.any((z) => z.idZona == _idZona)) _idZona = null;
       });
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
+      setState(() {
+        _cargandoZonas = false;
+        _errorZonas = e.message;
+      });
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudieron cargar los distritos.')),
-      );
+      setState(() {
+        _cargandoZonas = false;
+        _errorZonas = 'No se pudieron cargar las zonas de delivery.';
+      });
     }
   }
 
@@ -167,7 +150,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         detalles: detalles,
         tipoEntrega: esDomicilio ? 'domicilio' : 'tienda',
         direccion: esDomicilio ? _direccionController.text.trim() : null,
-        idDistrito: esDomicilio ? _idDistrito : null,
+        idZonaDelivery: esDomicilio ? _idZona : null,
+        referencia: esDomicilio ? _referenciaController.text.trim() : null,
         clienteTipoDocumento: _tipoDocumento,
         clienteDocumento: _documentoController.text.trim(),
       );
@@ -229,8 +213,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
 
     switch (_tipoEntrega) {
       case _TipoEntrega.domicilio:
-        if (_idDistrito == null) {
-          return 'Selecciona un distrito de Lima.';
+        if (!_zonas.any((z) => z.idZona == _idZona)) {
+          return 'Selecciona una zona activa de delivery dentro de Pallasca.';
         }
         if (_direccionController.text.trim().length < 5) {
           return 'Indica una dirección de entrega válida.';
@@ -309,10 +293,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   double _costoEnvio() {
     switch (_tipoEntrega) {
       case _TipoEntrega.domicilio:
-        final distrito = _distritos
-            .where((d) => d.idDistrito == _idDistrito)
-            .firstOrNull;
-        return distrito?.tarifaEnvio ?? 0;
+        final zona = _zonas.where((z) => z.idZona == _idZona).firstOrNull;
+        return zona?.tarifa ?? 0;
       case _TipoEntrega.tienda:
         return 0;
     }
@@ -390,18 +372,18 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         _OpcionEntrega(
           seleccionado: _tipoEntrega == _TipoEntrega.domicilio,
           icon: Icons.local_shipping_outlined,
-          titulo: 'A domicilio',
-          detalle: 'Te lo llevamos a una dirección en Lima.',
-          etiqueta: 'Según distrito',
+          titulo: 'Delivery dentro de Pallasca',
+          detalle: 'Entrega en las zonas de reparto activas.',
+          etiqueta: 'Según zona',
           onTap: () => setState(() => _tipoEntrega = _TipoEntrega.domicilio),
         ),
         const SizedBox(height: 8),
         _OpcionEntrega(
           seleccionado: _tipoEntrega == _TipoEntrega.tienda,
           icon: Icons.storefront_outlined,
-          titulo: 'Recoger en tienda',
-          detalle: 'Pasa por nuestra tienda cuando quieras.',
-          etiqueta: 'Sin costo',
+          titulo: 'Recojo en Pallasca',
+          detalle: 'Recoge tu pedido en nuestra tienda.',
+          etiqueta: 'Gratis',
           onTap: () => setState(() => _tipoEntrega = _TipoEntrega.tienda),
         ),
         AnimatedSize(
@@ -430,8 +412,23 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   }
 
   Widget _buildEntregaDomicilio() {
-    if (_cargandoUbicaciones) {
+    if (_cargandoZonas) {
       return const LoadingView(message: 'Cargando opciones de envío...');
+    }
+    if (_errorZonas != null || _zonas.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _errorZonas ?? 'Aún no hay zonas de delivery activas. Puedes continuar con recojo gratuito en Pallasca.',
+          ),
+          if (_errorZonas != null)
+            TextButton(
+              onPressed: _cargarZonas,
+              child: const Text('Reintentar'),
+            ),
+        ],
+      );
     }
 
     return Column(
@@ -441,26 +438,27 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         const SizedBox(height: 12),
         DropdownButtonFormField<int>(
           style: Theme.of(context).textTheme.bodyLarge,
-          initialValue: _idDistrito,
+          initialValue: _idZona,
+          isExpanded: true,
           decoration: const InputDecoration(
-            labelText: 'Distrito',
+            labelText: 'Zona de delivery en Pallasca',
             prefixIcon: Icon(Icons.location_on_outlined),
           ),
           items: [
-            for (final d in _distritos)
+            for (final d in _zonas)
               DropdownMenuItem(
-                value: d.idDistrito,
+                value: d.idZona,
                 child: Text(
-                  '${d.nombre} · S/ ${Formats.precio(d.tarifaEnvio)}',
+                  '${d.nombre} · S/ ${Formats.precio(d.tarifa)}',
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
           ],
-          onChanged: _distritos.isEmpty
+          onChanged: _zonas.isEmpty
               ? null
               : (valor) {
                   if (valor != null) {
-                    setState(() => _idDistrito = valor);
+                    setState(() => _idZona = valor);
                   }
                 },
         ),
@@ -468,10 +466,20 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         TextField(
           controller: _direccionController,
           maxLines: 2,
+          maxLength: 255,
           decoration: const InputDecoration(
             labelText: 'Dirección',
             hintText: 'Dirección de entrega (calle, número)',
             alignLabelWithHint: true,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _referenciaController,
+          maxLength: 255,
+          decoration: const InputDecoration(
+            labelText: 'Referencia de dirección (opcional)',
+            hintText: 'Un punto cercano para ubicarte',
           ),
         ),
       ],
@@ -587,8 +595,10 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           const SizedBox(height: 6),
           _FilaResumen(
             label: 'Envío',
-            value: costoEnvio == 0
+            value: _tipoEntrega == _TipoEntrega.tienda
                 ? 'Gratis'
+                : _idZona == null
+                ? 'Selecciona una zona'
                 : 'S/ ${Formats.precio(costoEnvio)}',
           ),
           Divider(height: 22, color: AppColors.gold.withValues(alpha: 0.25)),
@@ -631,7 +641,12 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                 width: double.infinity,
                 height: 54,
                 child: FilledButton(
-                  onPressed: _procesando ? null : _realizarCompra,
+                  onPressed:
+                      _procesando ||
+                          (_tipoEntrega == _TipoEntrega.domicilio &&
+                              _idZona == null)
+                      ? null
+                      : _realizarCompra,
                   child: AnimatedSwitcher(
                     duration: Duracion.rapida,
                     child: _procesando
@@ -650,7 +665,13 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                             children: [
                               const Icon(Icons.lock_outline_rounded, size: 18),
                               const SizedBox(width: 8),
-                              const Text('Ir al pago seguro'),
+                              const Flexible(
+                                child: Text(
+                                  'Ir al pago seguro',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                               const SizedBox(width: 10),
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -1056,7 +1077,7 @@ class _NotaTienda extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Puedes recoger tu pedido en nuestra tienda sin costo de envío.',
+              'Puedes recoger tu pedido en nuestra tienda en Pallasca sin costo de envío.',
               style: Theme.of(context).textTheme.bodySmall
                   ?.copyWith(color: AppColors.textPrimary, height: 1.4),
             ),
@@ -1193,7 +1214,7 @@ class _OpcionEntrega extends StatelessWidget {
   }
 }
 
-/// Zona de reparto fija: el envío a domicilio es solo dentro de Lima.
+/// Cobertura fija: delivery exclusivo dentro de Pallasca.
 class _ZonaReparto extends StatelessWidget {
   const _ZonaReparto();
 
@@ -1216,12 +1237,14 @@ class _ZonaReparto extends StatelessWidget {
               TextSpan(
                 children: [
                   TextSpan(
-                    text: 'Lima',
+                    text: 'Pallasca',
                     style: textTheme.titleSmall?.copyWith(
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const TextSpan(text: '  ·  Repartimos solo dentro de Lima'),
+                  const TextSpan(
+                    text: '  ·  Delivery solo en las zonas activas',
+                  ),
                 ],
               ),
               style: textTheme.bodySmall?.copyWith(

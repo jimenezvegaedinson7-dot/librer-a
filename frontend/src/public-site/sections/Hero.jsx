@@ -122,7 +122,7 @@ export default function Hero({ reducido }) {
                         ))}
                     </h1>
                     <motion.p className="hero__bajada" {...aparece(0.5)}>
-                        Explora el catálogo de Librería del Saber, paga en línea con PayU y recibe tus libros en Lima
+                        Explora el catálogo de Librería del Saber, paga en línea con PayU y recibe tus libros dentro de Pallasca
                         o recógelos sin costo en nuestra tienda de Pallasca.
                     </motion.p>
                     <motion.div className="hero__acciones" {...aparece(0.65)}>

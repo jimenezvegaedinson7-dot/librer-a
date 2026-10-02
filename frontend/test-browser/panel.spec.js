@@ -228,6 +228,90 @@ function vacio(url) {
 async function apiVacia(page) {
     await page.route('http://127.0.0.1:59999/api/**', route => route.fulfill({json:vacio(route.request().url())}));
 }
+
+for (const width of [390, 1440]) {
+    test(`Pallasca: alta, edición e inactivación de zonas sin tarifas inventadas a ${width}px`, async ({page}) => {
+        await page.setViewportSize({width, height:1000});
+        const errores = []; page.on('pageerror', e => errores.push(e.message));
+        const escrituras = []; const ubicaciones = [];
+        page.on('request', r => { if (r.url().includes('/ubicaciones')) ubicaciones.push(r.url()); });
+        await sesion(page); await apiVacia(page);
+        let zonas = [];
+        await page.route('**/api/zonas-delivery**', async route => {
+            const req = route.request();
+            if (req.method() === 'GET') return route.fulfill({json:{success:true,data:zonas}});
+            const datos = req.postDataJSON(); escrituras.push(datos);
+            const zona = {id_zona:1,...datos}; zonas = [zona];
+            return route.fulfill({status:req.method()==='POST' ? 201 : 200,json:{success:true,data:zona}});
+        });
+        await page.goto('/tarifas-envio');
+        await expect(page.getByText('Sin zonas de delivery configuradas',{exact:true})).toBeVisible();
+        await page.getByRole('button',{name:'Nueva zona',exact:true}).click();
+        let modal = page.getByRole('dialog');
+        await expect(modal.getByLabel('Tarifa de delivery')).toHaveValue('');
+        await modal.getByLabel('Nombre de la zona').fill('Zona de prueba');
+        await modal.getByLabel('Tarifa de delivery').fill('7.50');
+        await modal.getByRole('button',{name:'Guardar zona',exact:true}).click();
+        await expect(modal).toHaveCount(0);
+        await expect(page.locator('tr').filter({hasText:'Zona de prueba'})).toContainText('S/ 7.50');
+        await page.getByTitle('Editar zona Zona de prueba',{exact:true}).click();
+        modal = page.getByRole('dialog');
+        await modal.getByLabel('Nombre de la zona').fill('Zona renombrada');
+        await modal.getByLabel('Tarifa de delivery').fill('11.25');
+        await modal.getByLabel('Estado de la zona').selectOption('0');
+        await modal.getByRole('button',{name:'Guardar zona',exact:true}).click();
+        await expect(modal).toHaveCount(0);
+        const fila = page.locator('tr').filter({hasText:'Zona renombrada'});
+        await expect(fila).toContainText('S/ 11.25'); await expect(fila).toContainText('Inactiva');
+        expect(escrituras).toEqual([
+            {nombre:'Zona de prueba',tarifa:7.5,estado:1}, {nombre:'Zona renombrada',tarifa:11.25,estado:0}
+        ]);
+        expect(ubicaciones).toEqual([]);
+        expect(errores).toEqual([]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await page.screenshot({path:test.info().outputPath(`zonas-pallasca-${width}.png`),fullPage:true});
+    });
+    test(`Pallasca: pedidos y ventas separan entrega local e historial Lima a ${width}px`, async ({page}) => {
+        await page.setViewportSize({width,height:1000});
+        await sesion(page); await apiVacia(page);
+        const historica = {id_venta:41,origen:'app',estado:'pagada',estado_entrega:'pendiente',tipo_entrega:'domicilio',
+            cobertura_entrega:null,total:112.5,costo_envio:12.5,direccion:'Dirección Lima original',referencia:'Referencia antigua',
+            distrito:'Distrito original',provincia:'Lima',external_reference:'historia-41',nombre_usuario:'Histórico',apellido_usuario:'Lima',
+            fecha_venta:'2026-09-01',detalles:[]};
+        const local = {...historica,id_venta:42,cobertura_entrega:'pallasca',id_zona_delivery:1,zona_delivery_nombre:'Zona al comprar',
+            total:107.5,costo_envio:7.5,direccion:'Dirección Pallasca prueba',referencia:'Referencia local',distrito:null,provincia:null,
+            external_reference:'local-42',nombre_usuario:'Local',apellido_usuario:'Pallasca'};
+        const ventas = [historica,local];
+        await page.route('**/api/ventas**', route => {
+            const id = Number(new URL(route.request().url()).pathname.split('/').pop());
+            return route.fulfill({json:{success:true,data:id ? ventas.find(v=>v.id_venta===id) : ventas}});
+        });
+        await page.route('**/api/pedidos**', route => {
+            const id = Number(new URL(route.request().url()).pathname.split('/').pop());
+            return route.fulfill({json:{success:true,data:id ? ventas.find(v=>v.id_venta===id) : ventas}});
+        });
+        await page.goto('/ventas');
+        await page.locator('tr').filter({hasText:'Histórico Lima'}).getByTitle('Ver venta',{exact:true}).click();
+        let modal=page.getByRole('dialog');
+        await expect(modal.getByText('Distrito original, Lima',{exact:true})).toBeVisible();
+        await expect(modal.getByText('Dirección Lima original',{exact:true})).toBeVisible();
+        await expect(modal.getByText('S/ 112.50',{exact:true})).toBeVisible();
+        await expect(modal.getByText(/Incluye envío: S\/ 12.50/)).toBeVisible();
+        expect(await modal.innerText()).not.toContain('Pallasca');
+        await modal.getByRole('button',{name:'Cerrar',exact:true}).last().click();
+        await page.locator('tr').filter({hasText:'Local Pallasca'}).getByTitle('Ver venta',{exact:true}).click();
+        modal=page.getByRole('dialog');
+        await expect(modal.getByText('Delivery dentro de Pallasca',{exact:true})).toBeVisible();
+        await expect(modal.getByText('Zona al comprar, Pallasca',{exact:true})).toBeVisible();
+        await expect(modal.getByText('Referencia: Referencia local',{exact:true})).toBeVisible();
+        await expect(modal.getByText('S/ 107.50',{exact:true})).toBeVisible();
+        await page.screenshot({path:test.info().outputPath(`venta-pallasca-${width}.png`),fullPage:true});
+        await modal.getByRole('button',{name:'Cerrar',exact:true}).last().click();
+        await page.goto('/pedidos');
+        await expect(page.locator('tr').filter({hasText:'Local Pallasca'})).toContainText('Zona al comprar');
+        await expect(page.locator('tr').filter({hasText:'Histórico Lima'})).toContainText('Distrito original, Lima');
+    });
+}
 for (const rol of ['cajero','cliente','anónimo']) {
     test(`URL manual todas las pantallas: ${rol} rechazado`, async ({page}) => {
         await sesion(page, rol === 'anónimo' ? null : {...admin,rol}, rol === 'anónimo' ? null : 'audit-token');

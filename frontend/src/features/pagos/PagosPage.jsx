@@ -23,6 +23,7 @@ import { BtnAccion } from '../../components/ui/Acciones';
 
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 import { exportarCsv } from '../../lib/utils/exportarCsv';
+import { descripcionEntrega } from '../../lib/utils/entrega';
 
 import { listarPagos, obtenerResumen } from './pagosService';
 import PagoViewModal from './PagoViewModal';
@@ -61,7 +62,7 @@ const columnasPagos = [
             </p>
         ),
     },
-    { titulo: 'Entrega', alineacion: 'centro', campo: 'tipo_entrega', ordenable: true, render: (fila) => <EntregaBadge tipo={fila.tipo_entrega} /> },
+    { titulo: 'Entrega', alineacion: 'centro', campo: 'tipo_entrega', ordenable: true, render: (fila) => <EntregaBadge tipo={fila.tipo_entrega} venta={fila} /> },
     {
         titulo: 'Método de pago',
         campo: 'metodo_pago',
@@ -291,7 +292,7 @@ export default function PagosPage() {
                 { titulo: 'Cliente', exportar: (f) => f.cliente?.nombre_completo || '' },
                 { titulo: 'Email', exportar: (f) => f.cliente?.email || '' },
                 { titulo: 'Origen', exportar: (f) => f.origen_texto || '' },
-                { titulo: 'Tipo de entrega', exportar: (f) => f.tipo_entrega || '' },
+                { titulo: 'Tipo de entrega', exportar: (f) => descripcionEntrega(f) },
                 { titulo: 'Método de pago', exportar: (f) => f.metodo_pago || '' },
                 { titulo: 'Monto', exportar: (f) => f.monto_total || 0 },
                 { titulo: 'Estado venta', exportar: (f) => f.estado_venta || '' },

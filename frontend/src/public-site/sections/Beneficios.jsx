@@ -6,8 +6,8 @@ import { FaTruckFast, FaStore, FaShieldHalved } from 'react-icons/fa6';
 // superior, con una línea que los explica.
 // ============================================================
 const BENEFICIOS = [
-    { Icono: FaTruckFast, titulo: 'Envío a domicilio en Lima', texto: 'Con tarifa por distrito, que ves antes de pagar.' },
-    { Icono: FaStore, titulo: 'Recojo en tienda Pallasca', texto: 'Sin costo de envío, frente a la Plaza de Armas.' },
+    { Icono: FaTruckFast, titulo: 'Delivery dentro de Pallasca', texto: 'En zonas activas, con tarifa que ves antes de pagar.' },
+    { Icono: FaStore, titulo: 'Recojo sin costo en Pallasca', texto: 'Sin costo de envío, frente a la Plaza de Armas.' },
     { Icono: FaShieldHalved, titulo: 'Pago seguro con PayU', texto: 'Tus datos de tarjeta se ingresan en PayU.' },
 ];
 

@@ -214,6 +214,16 @@ CREATE INDEX IF NOT EXISTS idx_reservas_venc_estado ON reservas (fecha_vencimien
 -- VENTAS (migraciones 003, 004, 005, 007, 008, 011, 012, 014,
 -- índice estado/fecha, y 016 idempotencia_clave)
 -- ============================================================
+-- Zonas locales: el administrador configura los nombres y precios, sin semillas.
+CREATE TABLE IF NOT EXISTS zonas_delivery_pallasca (
+    id_zona SERIAL PRIMARY KEY,
+    nombre VARCHAR(80) NOT NULL CHECK (length(btrim(nombre)) BETWEEN 1 AND 80),
+    tarifa NUMERIC(10,2) NOT NULL CHECK (tarifa > 0),
+    estado SMALLINT NOT NULL DEFAULT 1 CHECK (estado IN (0, 1))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_zonas_delivery_nombre
+    ON zonas_delivery_pallasca (lower(btrim(nombre)));
+
 CREATE TABLE IF NOT EXISTS ventas (
     id_venta SERIAL PRIMARY KEY,
     id_usuario INT NOT NULL,
@@ -233,6 +243,9 @@ CREATE TABLE IF NOT EXISTS ventas (
     payu_payer_email VARCHAR(255) NULL,
     id_distrito INT NULL,
     id_agencia INT NULL,
+    cobertura_entrega VARCHAR(20) NULL,
+    id_zona_delivery INT NULL,
+    zona_delivery_nombre VARCHAR(80) NULL,
     idempotencia_clave VARCHAR(64) NULL,
     cliente_documento VARCHAR(20) NULL,
     cliente_tipo_documento VARCHAR(10) NULL,
@@ -272,7 +285,24 @@ CREATE TABLE IF NOT EXISTS ventas (
         REFERENCES distritos_lima (id_distrito),
     CONSTRAINT fk_ventas_agencia
         FOREIGN KEY (id_agencia)
-        REFERENCES agencias_courier (id_agencia)
+        REFERENCES agencias_courier (id_agencia),
+    CONSTRAINT fk_ventas_zona_delivery
+        FOREIGN KEY (id_zona_delivery) REFERENCES zonas_delivery_pallasca(id_zona),
+    CONSTRAINT ventas_cobertura_entrega_check
+        CHECK (cobertura_entrega IS NULL OR cobertura_entrega = 'pallasca'),
+    CONSTRAINT ventas_entrega_pallasca_check CHECK (
+        cobertura_entrega IS NULL OR (
+            tipo_entrega IS NOT NULL AND id_distrito IS NULL AND id_agencia IS NULL
+            AND (
+                (tipo_entrega = 'tienda' AND costo_envio = 0
+                    AND id_zona_delivery IS NULL AND zona_delivery_nombre IS NULL
+                    AND direccion IS NULL AND referencia IS NULL)
+                OR (tipo_entrega = 'domicilio' AND costo_envio > 0
+                    AND id_zona_delivery IS NOT NULL AND zona_delivery_nombre IS NOT NULL
+                    AND direccion IS NOT NULL AND length(btrim(direccion)) >= 5)
+            )
+        )
+    )
 );
 
 CREATE INDEX IF NOT EXISTS idx_ventas_usuario ON ventas (id_usuario);
@@ -280,6 +310,7 @@ CREATE INDEX IF NOT EXISTS idx_ventas_external_reference ON ventas (external_ref
 CREATE INDEX IF NOT EXISTS idx_ventas_payu_order_id ON ventas (payu_order_id);
 CREATE INDEX IF NOT EXISTS idx_ventas_id_distrito ON ventas (id_distrito);
 CREATE INDEX IF NOT EXISTS idx_ventas_id_agencia ON ventas (id_agencia);
+CREATE INDEX IF NOT EXISTS idx_ventas_zona_delivery ON ventas (id_zona_delivery);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_ventas_usuario_idempotencia ON ventas (id_usuario, idempotencia_clave) WHERE idempotencia_clave IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_ventas_estado_fecha ON ventas (estado, fecha_venta);
 CREATE INDEX IF NOT EXISTS idx_ventas_estado_entrega ON ventas (estado_entrega);

@@ -80,7 +80,8 @@ const MIGRACIONES = [
     '028_coherencia_tipo_estado_entrega.sql',
     '029_retirar_rol_obsoleto.sql',
     '030_descuentos_y_anuncios.sql',
-    '031_libros_nuevos.sql'
+    '031_libros_nuevos.sql',
+    '032_cobertura_pallasca.sql'
 ];
 
 // En producción un fallo de migración debe detener el arranque:

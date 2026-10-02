@@ -21,7 +21,7 @@
 |---|---|
 | `services/api_service.dart` | Cliente **Dio** singleton. Interceptor añade `Bearer`; ante **401** limpia la sesión y llama a `irALogin()`. Normaliza errores en `ApiException`. Gestiona la **clave de idempotencia** del checkout y recuerda `checkout_url` por venta. |
 | `services/storage_service.dart` | Token JWT en **flutter_secure_storage**; usuario y preferencias en **shared_preferences** (migra el token legado). ⚠️ Su comentario dice que también guarda el carrito, pero no hay código que lo haga. |
-| `services/carrito_service.dart` | Carrito y "guardar para después" **solo en memoria** (`ChangeNotifier`): se pierde al cerrar la app. **Sin endpoint propio**: los ítems se envían en `POST /api/pagos/crear-orden`. |
+| `services/carrito_service.dart` | Carrito y "guardar para después" (`ChangeNotifier`), persistidos en SharedPreferences `carrito_v1` por usuario. **Sin endpoint propio**: los ítems se envían en `POST /api/pagos/crear-orden`. |
 | `services/tema_controller.dart` | Tema de color del perfil (`ChangeNotifier`). |
 | `services/navigation.dart` | `navigatorKey` + `irALogin()`. |
 
@@ -49,6 +49,7 @@
 | `quitarFavorito` | `DELETE /api/favoritos/:idLibro` |
 | `crearOrdenPago` | `POST /api/pagos/crear-orden` |
 | `obtenerOrdenPago` | `GET /api/pagos/:orderId` |
+| `obtenerZonasDelivery` | `GET /api/zonas-delivery` |
 | `obtenerProvincias` | `GET /api/ubicaciones/provincias` |
 | `obtenerDistritos` | `GET /api/ubicaciones/provincias/:idProvincia/distritos` |
 | `registrar` | `POST /api/auth/registro` |
@@ -66,7 +67,7 @@
 |---|---|---|
 | `screens/carrito_screen.dart` | `obtenerLibros` | `GET /api/libros` |
 | `screens/detalle_libro_screen.dart` | `agregarFavorito`, `crearReserva`, `esFavorito`, `obtenerDetalleLibro`, `quitarFavorito` | `POST /api/favoritos/:idLibro`<br>`POST /api/reservas`<br>`GET /api/favoritos/:idLibro`<br>`GET /api/libros/:id`<br>`DELETE /api/favoritos/:idLibro` |
-| `screens/entrega_y_pago_screen.dart` | `crearOrdenPago`, `obtenerDistritos`, `obtenerLibros`, `obtenerOrdenPago`, `obtenerProvincias` | `POST /api/pagos/crear-orden`<br>`GET /api/ubicaciones/provincias/:idProvincia/distritos`<br>`GET /api/libros`<br>`GET /api/pagos/:orderId`<br>`GET /api/ubicaciones/provincias` |
+| `screens/entrega_y_pago_screen.dart` | `crearOrdenPago`, `obtenerLibros`, `obtenerOrdenPago`, `obtenerZonasDelivery` | `POST /api/pagos/crear-orden`<br>`GET /api/libros`<br>`GET /api/pagos/:orderId`<br>`GET /api/zonas-delivery` |
 | `screens/favoritos_screen.dart` | `obtenerFavoritos`, `quitarFavorito` | `GET /api/favoritos`<br>`DELETE /api/favoritos/:idLibro` |
 | `screens/home_screen.dart` | `obtenerLibros` | `GET /api/libros` |
 | `screens/libros_screen.dart` | `obtenerLibros` | `GET /api/libros` |
@@ -95,7 +96,7 @@ Pantallas sin llamadas directas a la API: `screens/legal/politica_privacidad_scr
 | Catálogo | home, libros, detalle_libro | `GET /api/libros`, `GET /api/libros/:id` (búsqueda filtrada en local) |
 | Favoritos | favoritos, detalle_libro | `/api/favoritos` (GET, GET/POST/DELETE `/:idLibro`) |
 | Carrito | carrito (local) | — |
-| Compra + PayU | entrega_y_pago, mis_compras | `GET /api/ubicaciones/provincias(/:id/distritos)`, `GET /api/agencias/activas`, `POST /api/pagos/crear-orden` → abre `checkout_url` con **url_launcher** → `GET /api/pagos/:orderId`; `GET /api/ventas/mis-ventas`, `GET /api/ventas/:id/pago` |
+| Compra + PayU | entrega_y_pago, mis_compras | `GET /api/zonas-delivery` (activas de Pallasca), `POST /api/pagos/crear-orden` → abre `checkout_url` con **url_launcher** → `GET /api/pagos/:orderId`; `GET /api/ventas/mis-ventas`, `GET /api/ventas/:id/pago` |
 | Reservas | detalle_libro (crear), reservas | `POST /api/reservas`, `GET /api/reservas/mis-reservas`, `DELETE /api/reservas/:id` |
 | Perfil | perfil, editar_perfil, cambiar_password | `/api/usuarios/perfil` (GET/PUT), `PUT /api/usuarios/foto` (**image_picker**), `PUT /api/usuarios/password` |
 | 2FA | two_factor_setup/verify/disable | `/api/auth/2fa/*` |
@@ -105,7 +106,7 @@ Nota: la app es **solo para clientes**; `login` rechaza el rol administrador.
 
 ## Archivos
 
-**models/** — `carrito_item.dart`, `libro.dart`, `orden_pago.dart`, `reserva.dart`, `ubicacion.dart`, `usuario.dart`, `venta.dart`, `version_app.dart`
+**models/** — `carrito_item.dart`, `libro.dart`, `orden_pago.dart`, `reserva.dart`, `ubicacion.dart`, `usuario.dart`, `venta.dart`, `version_app.dart`, `zona_delivery.dart`
 
 **screens/** — `carrito_screen.dart`, `detalle_libro_screen.dart`, `entrega_y_pago_screen.dart`, `favoritos_screen.dart`, `home_screen.dart`, `legal/politica_privacidad_screen.dart`, `legal/terminos_condiciones_screen.dart`, `libros_screen.dart`, `login_screen.dart`, `mis_compras_screen.dart`, `perfil_screen.dart`, `recuperar_contrasena_screen.dart`, `reestablecer_contrasena_screen.dart`, `registro_screen.dart`, `reservas_screen.dart`, `security/cambiar_password_screen.dart`, `security/editar_perfil_screen.dart`, `security/eliminar_cuenta_screen.dart`, `security/two_factor_disable_screen.dart`, `security/two_factor_setup_screen.dart`, `security/two_factor_verify_screen.dart`, `splash_screen.dart`, `verificacion_email_screen.dart`
 

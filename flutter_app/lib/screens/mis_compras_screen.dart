@@ -244,29 +244,14 @@ class _VentaTile extends StatelessWidget {
   /// Etiqueta de la entrega tal como se realizó. `agencia` no se puede elegir
   /// al comprar (el checkout solo ofrece domicilio y tienda); solo aparece
   /// aquí para poder identificar pedidos antiguos de la base.
-  String? get _entregaLabel {
-    switch (venta.tipoEntrega?.toLowerCase().trim()) {
-      case 'domicilio':
-        return 'A domicilio';
-      case 'agencia':
-        return 'Agencia';
-      case 'tienda':
-        return 'Recoger en tienda';
-      default:
-        return null;
-    }
-  }
+  String? get _entregaLabel => venta.entregaLabel;
 
   /// Información de apoyo de la entrega: distrito/provincia (domicilio) o
   /// el nombre de la agencia (agencia).
   String get _infoEntrega {
     final tipo = venta.tipoEntrega?.toLowerCase().trim();
     if (tipo == 'domicilio') {
-      final zona = [
-        venta.distrito,
-        venta.provincia,
-      ].where((v) => v != null && v.isNotEmpty).map((v) => v!).join(', ');
-      return zona;
+      return venta.ubicacionEntrega;
     }
     if (tipo == 'agencia') return venta.agencia ?? '';
     return '';
@@ -508,6 +493,15 @@ class _DetalleVentaSheet extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: _SeguimientoPedido(estado: venta.estado),
             ),
+            const SizedBox(height: 14),
+            if (venta.entregaLabel != null)
+              Text(venta.entregaLabel!, style: textTheme.titleSmall),
+            if (venta.ubicacionEntrega.isNotEmpty) Text(venta.ubicacionEntrega),
+            if ((venta.direccion ?? '').isNotEmpty) Text(venta.direccion!),
+            if ((venta.referencia ?? '').isNotEmpty)
+              Text('Referencia: ${venta.referencia}'),
+            if ((venta.agencia ?? '').isNotEmpty)
+              Text('Agencia: ${venta.agencia}'),
             const SizedBox(height: 14),
             if (!tieneDetalle)
               Container(
