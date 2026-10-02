@@ -197,5 +197,5 @@ class Constants {
   // ---------------------------------------------------------------------------
 
   /// Ruta del logo dentro de los assets.
-  static const String logoAsset = 'assets/images/logo_libreria.png';
+  static const String logoAsset = 'assets/images/logo_web.png';
 }

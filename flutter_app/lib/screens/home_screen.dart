@@ -261,7 +261,7 @@ class _InicioTabState extends State<_InicioTab> {
                 ),
                 const SizedBox(width: 12),
                 Image.asset(
-                  'assets/logo_suerior/logo_superior.png',
+                  Constants.logoAsset,
                   width: 64,
                   height: 46,
                   fit: BoxFit.contain,

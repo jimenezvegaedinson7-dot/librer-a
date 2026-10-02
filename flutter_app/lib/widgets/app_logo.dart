@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 import '../utils/app_colors.dart';
 import '../utils/constants.dart';
 
 /// Logo reutilizable de la librería.
 ///
-/// Usa `assets/images/logo_libreria.png`. Si la imagen todavía no existe en el
+/// Usa el mismo logo oficial de la web desde [Constants.logoAsset]. Si falta en el
 /// proyecto, muestra automáticamente un placeholder elegante (libro sobre un
 /// contenedor circular) para que la app nunca se rompa.
-class AppLogo extends StatefulWidget {
+class AppLogo extends StatelessWidget {
   final double? width;
   final double? height;
   final BoxFit fit;
@@ -29,51 +28,19 @@ class AppLogo extends StatefulWidget {
   });
 
   @override
-  State<AppLogo> createState() => _AppLogoState();
-}
-
-class _AppLogoState extends State<AppLogo> {
-  bool? _assetExists;
-
-  @override
-  void initState() {
-    super.initState();
-    if (!widget.forcePlaceholder) {
-      _checkAsset();
-    }
-  }
-
-  Future<void> _checkAsset() async {
-    try {
-      await rootBundle.load(Constants.logoAsset);
-      if (mounted) setState(() => _assetExists = true);
-    } catch (_) {
-      // El asset no existe todavía; se usará el placeholder.
-      if (mounted) setState(() => _assetExists = false);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (widget.forcePlaceholder) {
-      return _Placeholder(width: widget.width, height: widget.height);
-    }
-    if (_assetExists == null) {
-      return _Placeholder(width: widget.width, height: widget.height);
-    }
-    if (!_assetExists!) {
-      return _Placeholder(width: widget.width, height: widget.height);
+    if (forcePlaceholder) {
+      return _Placeholder(width: width, height: height);
     }
 
     return Image.asset(
       Constants.logoAsset,
-      width: widget.width,
-      height: widget.height,
-      fit: widget.fit,
-      color: widget.color,
+      width: width,
+      height: height,
+      fit: fit,
+      color: color,
       colorBlendMode: BlendMode.srcIn,
-      errorBuilder: (_, _, _) =>
-          _Placeholder(width: widget.width, height: widget.height),
+      errorBuilder: (_, _, _) => _Placeholder(width: width, height: height),
     );
   }
 }
