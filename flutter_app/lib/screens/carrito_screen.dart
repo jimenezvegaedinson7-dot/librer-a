@@ -338,7 +338,12 @@ class _CarritoItemCard extends StatelessWidget {
                           Text(
                             'S/ ${Formats.precio(libro.precioCompra)} c/u',
                             style: textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                              color: libro.enOferta
+                                  ? AppColors.oferta
+                                  : AppColors.textSecondary,
+                              decoration: libro.enOferta
+                                  ? TextDecoration.underline
+                                  : TextDecoration.none,
                             ),
                           ),
                           if (libro.estado != null)
@@ -363,6 +368,8 @@ class _CarritoItemCard extends StatelessWidget {
                               key: ValueKey(item.subtotal),
                               monto: item.subtotal,
                               tamano: 18,
+                              color: libro.enOferta ? AppColors.oferta : null,
+                              subrayado: libro.enOferta,
                             ),
                           ),
                         ],

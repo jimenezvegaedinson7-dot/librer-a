@@ -68,6 +68,10 @@ class AppColors {
   /// Contenedor suave de advertencia.
   static const Color warningContainer = Color(0xFFFBF0DC);
 
+  /// Precios y porcentajes de promoción, con contraste sobre papel o portada.
+  static const Color oferta = Color(0xFFC2410C);
+  static const Color ofertaSobreOscuro = Color(0xFFFDBA74);
+
   /// Color informativo (estados neutros de proceso).
   static const Color info = Color(0xFF2F6FB3);
 

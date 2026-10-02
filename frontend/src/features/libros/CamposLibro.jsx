@@ -130,9 +130,9 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {} }) {
     const vencida = hayDescuento && fecha !== '' && fecha < hoy;
 
     return (
-        <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+        <div className="space-y-3 rounded-xl border border-orange-200 bg-orange-50/50 p-4">
             <div className="flex items-center gap-2">
-                <FaTag className="text-emerald-700" />
+                <FaTag className="text-oferta" />
                 <span className="text-sm font-semibold text-slate-800">Descuento (opcional)</span>
             </div>
 
@@ -200,12 +200,12 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {} }) {
             )}
 
             {hayDescuento && !vencida && (
-                <div className="flex flex-wrap items-center gap-2 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm">
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-800">
+                <div className="flex flex-wrap items-center gap-2 rounded-lg border border-orange-200 bg-white px-3 py-2 text-sm">
+                    <span className="descuento-resaltado rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold">
                         -{porcentajeEfectivo}%
                     </span>
                     <span className="text-slate-500 line-through">S/ {precio.toFixed(2)}</span>
-                    <span className="font-bold text-emerald-700">S/ {final.toFixed(2)}</span>
+                    <span className="descuento-resaltado font-bold">S/ {final.toFixed(2)}</span>
                     {fecha && <span className="text-xs text-slate-500">hasta el {fecha.split('-').reverse().join('/')}</span>}
                 </div>
             )}

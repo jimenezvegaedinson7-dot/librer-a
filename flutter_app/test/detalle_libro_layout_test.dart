@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:libreria_app/models/libro.dart';
 import 'package:libreria_app/screens/detalle_libro_screen.dart';
 import 'package:libreria_app/utils/app_theme.dart';
+import 'package:libreria_app/utils/app_colors.dart';
 import 'package:libreria_app/widgets/app_bottom_navigation.dart';
 import 'package:libreria_app/widgets/portadas_libro.dart';
 
@@ -35,6 +36,20 @@ void main() {
       expect(find.text('Nuevo'), findsOneWidget);
       expect(find.textContaining('100.00'), findsOneWidget);
       expect(find.textContaining('75.00'), findsWidgets);
+      final preciosOferta = tester.widgetList<RichText>(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is RichText && widget.text.toPlainText() == 'S/ 75.00',
+        ),
+      );
+      expect(preciosOferta, isNotEmpty);
+      for (final precio in preciosOferta) {
+        final importe = precio.text.getSpanForPosition(
+          const TextPosition(offset: 4),
+        );
+        expect(importe?.style?.color, AppColors.oferta);
+        expect(importe?.style?.decoration, TextDecoration.underline);
+      }
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(
         MaterialApp(

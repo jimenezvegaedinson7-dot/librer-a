@@ -21,34 +21,48 @@ class PrecioLibro extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      if (libro.enOferta)
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(
-                text: 'S/ ${Formats.precio(libro.precio)}',
-                style: const TextStyle(decoration: TextDecoration.lineThrough),
-              ),
-              TextSpan(text: ' · −${libro.porcentajeOferta}%'),
-            ],
+  Widget build(BuildContext context) {
+    final colorOferta = color != null && color!.computeLuminance() > 0.5
+        ? AppColors.ofertaSobreOscuro
+        : AppColors.oferta;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (libro.enOferta)
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: 'S/ ${Formats.precio(libro.precio)}',
+                  style: const TextStyle(
+                    decoration: TextDecoration.lineThrough,
+                  ),
+                ),
+                TextSpan(
+                  text: ' · −${libro.porcentajeOferta}%',
+                  style: TextStyle(
+                    color: colorOferta,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ],
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelSmall
+                ?.copyWith(color: color ?? AppColors.textSecondary),
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.labelSmall
-              ?.copyWith(color: color ?? AppColors.textSecondary),
+        PrecioTexto(
+          monto: libro.precioCompra,
+          tamano: tamano,
+          color: libro.enOferta ? colorOferta : color,
+          subrayado: libro.enOferta,
+          peso: peso,
         ),
-      PrecioTexto(
-        monto: libro.precioCompra,
-        tamano: tamano,
-        color: color,
-        peso: peso,
-      ),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 /// Precio con el símbolo "S/" más pequeño que el importe, para que la cifra
@@ -58,6 +72,7 @@ class PrecioTexto extends StatelessWidget {
   final double tamano;
   final Color? color;
   final FontWeight peso;
+  final bool subrayado;
 
   const PrecioTexto({
     super.key,
@@ -65,6 +80,7 @@ class PrecioTexto extends StatelessWidget {
     this.tamano = 17,
     this.color,
     this.peso = FontWeight.w700,
+    this.subrayado = false,
   });
 
   @override
@@ -79,6 +95,9 @@ class PrecioTexto extends StatelessWidget {
               fontSize: tamano * 0.66,
               fontWeight: FontWeight.w600,
               color: tinta,
+              decoration: subrayado
+                  ? TextDecoration.underline
+                  : TextDecoration.none,
             ),
           ),
           TextSpan(
@@ -87,6 +106,9 @@ class PrecioTexto extends StatelessWidget {
               fontSize: tamano,
               fontWeight: peso,
               color: tinta,
+              decoration: subrayado
+                  ? TextDecoration.underline
+                  : TextDecoration.none,
               letterSpacing: -0.3,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),

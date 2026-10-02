@@ -16,6 +16,8 @@
     --marco-texto: #dfe6dd;
     --marco-tenue: #b8c9c2;
     --verde-600: #0b5c51;
+    --oferta: #c2410c;
+    --oferta-fondo: #ffedd5;
     --salvia-100: #dfe6dd;
     --salvia-50: #f2f6f4;
     --ambar-500: #ebaa20;
@@ -459,37 +461,40 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 .libro--esqueleto .libro__tapa, .tarjeta-libro--esqueleto .tarjeta-libro__tapa { background: linear-gradient(100deg, #ececec 30%, #f7f7f7 50%, #ececec 70%) 0 0 / 300% 100%; box-shadow: none; animation: brillo 1.4s linear infinite; }
 .libro--esqueleto .libro__datos { min-height: calc(2.6rem + 1.3rem + 1.25rem + 0.65rem); }
 
-/* ---------- Precio en oferta ----------
-   Reusa el verde claro de .precio, que ya estaba aprobado. La pastilla de
-   porcentaje va en el verde oscuro para separarse del precio final sin
-   meter un cuarto color en la paleta. */
+/* ---------- Precio en oferta: naranja y subrayado ---------- */
 .precio.oferta {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
     padding: 0.15rem 0.5rem 0.15rem 0.25rem;
-    background: var(--verde-100);
+    background: var(--oferta-fondo);
+    color: var(--oferta);
 }
 .precio.oferta .oferta__pastilla {
     padding: 0.05rem 0.4rem;
     border-radius: 999px;
-    background: var(--verde-900);
-    color: var(--blanco);
+    background: var(--oferta-fondo);
+    color: var(--oferta);
     font-size: 0.6875rem;
     font-weight: 800;
     letter-spacing: 0.01em;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
 }
 /* El precio tachado no hereda el peso de la pastilla: si no, compite
    visualmente con el precio final, que es el que importa. */
 .precio.oferta .oferta__anterior {
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--verde-900);
+    color: var(--texto-2);
     opacity: 0.65;
 }
 .precio.oferta .oferta__final {
     font-weight: 800;
     font-size: 1rem;
+    color: var(--oferta);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
 }
 @keyframes brillo { to { background-position: -150% 0; } }
 .aviso { margin-top: var(--e-3); padding: var(--e-3); border: 1px solid var(--borde); border-radius: var(--r-tarjeta); color: var(--texto-2); max-width: 64ch; background: var(--blanco); }

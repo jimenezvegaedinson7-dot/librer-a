@@ -11,6 +11,9 @@ colors:
   salvia-100: "#dfe6dd"
   salvia-50: "#f2f6f4"
   ambar-500: "#ebaa20"
+  oferta: "#c2410c"
+  oferta-fondo: "#ffedd5"
+  oferta-sobre-oscuro: "#fdba74"
   blanco: "#ffffff"
   gris-50: "#f7f7f7"
   gris-100: "#f3f3f3"
@@ -159,7 +162,7 @@ Alcance: la web pública (`src/public-site/`, todo bajo la clase raíz `.sitio`,
 
 **Creative North Star: "La librería que pasa sus hojas"**
 
-Una librería comercial de barrio grande, clara y ordenada: fondos blancos y gris claro, verde oscuro para la marca y para cada acción, y un acento ámbar mínimo. La navegación se lee como la de una librería en línea real: barra de avisos en verde oscuro, cabecera blanca con buscador y un menú con separadores finos. Cada entrada del menú es una página propia con migas de pan.
+Una librería comercial de barrio grande, clara y ordenada: fondos blancos y gris claro, verde oscuro para la marca y para cada acción, y un acento ámbar mínimo. Las ofertas usan naranja y subrayado para el porcentaje y el precio final; el precio anterior permanece tachado. La navegación se lee como la de una librería en línea real: barra de avisos en verde oscuro, cabecera blanca con buscador y un menú con separadores finos. Cada entrada del menú es una página propia con migas de pan.
 
 La densidad es de comercio, no de revista: tipografía Work Sans compacta en una sola familia, tarjetas blancas con borde fino y radio pequeño, botones en píldora. El único gesto espectacular vive en el hero: un libro 3D de cuero verde, cerrado en reposo, que sigue al cursor y, con el cursor encima, se abre y pasa sus hojas una a una. Todo el movimiento es de salida suave y se apaga con `prefers-reduced-motion`.
 

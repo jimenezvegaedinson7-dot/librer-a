@@ -13,6 +13,7 @@
 
     --color-surface: #f6f3ee;
     --color-surface-50: #ffffff;
+    --color-oferta: #c2410c;
 
     /* Tinta: neutros cálidos (sustituye al slate frío en toda la app) */
     --color-primary-50: #faf8f5;
@@ -5527,3 +5528,17 @@
 .admin-shell[data-theme="dark"] .interruptor-detalle { color: #a89e91; }
 .admin-shell[data-theme="dark"] .interruptor--activo .interruptor-detalle { color: #4cc27f; }
 .admin-shell[data-theme="dark"] .envio-auto-nota { background: rgb(76 194 127 / 0.12); color: #4cc27f; }
+.descuento-resaltado {
+    color: var(--color-oferta);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+}
+
+.admin-shell[data-theme="dark"] {
+    --color-oferta: #fdba74;
+}
+
+.admin-shell[data-theme="dark"] :is(.bg-orange-100, .bg-orange-50, [class~="bg-orange-50/50"]) {
+    background-color: #431407;
+}

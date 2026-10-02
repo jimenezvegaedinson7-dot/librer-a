@@ -380,6 +380,14 @@ test('catálogo: en oferta muestra porcentaje, precio tachado y precio final', a
     await expect(tarjeta.locator('.oferta__pastilla')).toHaveText('-30%');
     await expect(tarjeta.locator('.oferta__anterior s')).toHaveText('S/ 39.90');
     await expect(tarjeta.locator('.oferta__final')).toHaveText('S/ 27.93');
+    for (const selector of ['.oferta__pastilla', '.oferta__final']) {
+        const estilo = await tarjeta.locator(selector).evaluate(el => {
+            const css = getComputedStyle(el);
+            return { color: css.color, subrayado: css.textDecorationLine };
+        });
+        expect(estilo.color).toBe('rgb(194, 65, 12)');
+        expect(estilo.subrayado).toContain('underline');
+    }
     expect(errores).toHaveLength(0);
 });
 
@@ -410,6 +418,8 @@ test('inicio: el carrusel de la portada también aplica el descuento', async ({ 
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
     await expect(page.locator('.libro .oferta__pastilla').first()).toHaveText('-30%');
+    await expect(page.locator('.libro .oferta__final').first()).toHaveCSS('color', 'rgb(194, 65, 12)');
+    await expect(page.locator('.libro .oferta__final').first()).toHaveCSS('text-decoration-line', 'underline');
     expect(errores).toHaveLength(0);
 });
 

@@ -41,11 +41,11 @@ function PrecioCelda({ fila }) {
 
     return (
         <span className="flex flex-col items-center gap-0.5">
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
+            <span className="descuento-resaltado rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-bold">
                 -{fila.descuento_porcentaje_efectivo}%
             </span>
             <span className="text-[11px] text-slate-400 line-through">{formatearMoneda(fila.precio)}</span>
-            <span className="font-bold text-emerald-700">{formatearMoneda(fila.precio_final)}</span>
+            <span className="descuento-resaltado font-bold">{formatearMoneda(fila.precio_final)}</span>
         </span>
     );
 }
@@ -441,4 +441,3 @@ export default function LibrosPage() {
         </div>
     );
 }
-

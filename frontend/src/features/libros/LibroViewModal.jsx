@@ -86,11 +86,11 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                                         Precio normal: <span className="line-through">{formatearMoneda(libro.precio)}</span>
                                     </p>
                                 )}
-                                <span className={`text-lg font-bold${vigente ? ' text-emerald-700' : ''}`}>
+                                <span className={`text-lg font-bold${vigente ? ' descuento-resaltado' : ''}`}>
                                     {formatearMoneda(vigente ? libro.precio_final : libro.precio)}
                                 </span>
                                 {vigente && Number(libro.descuento_porcentaje_efectivo) > 0 && (
-                                    <p className="text-sm font-medium text-emerald-700">
+                                    <p className="descuento-resaltado text-sm font-medium">
                                         Ahorro: {libro.descuento_porcentaje_efectivo}%
                                     </p>
                                 )}
@@ -109,14 +109,14 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
 
                     <div className="mt-4">
                         <Ficha icono={<FaTag size={16} />} etiqueta="Promoción">
-                            <Badge color={!informacionPromocion ? 'warning' : vigente ? 'success' : vencida ? 'warning' : 'neutral'}>{estadoPromocion}</Badge>
+                            <Badge color={!informacionPromocion ? 'warning' : vigente ? 'offer' : vencida ? 'warning' : 'neutral'} className={vigente ? 'descuento-resaltado' : ''}>{estadoPromocion}</Badge>
                             {!informacionPromocion ? (
                                 <p className="mt-2 text-sm font-medium text-slate-600">La API conectada no devuelve los datos de promoción. No se puede comprobar el descuento hasta actualizar el backend.</p>
                             ) : tienePromocion ? (
                                 <div className="mt-3 space-y-2 text-sm font-medium">
                                     <dl className="space-y-2">
-                                        {conPorcentaje && <div><dt className="text-slate-500">Descuento configurado</dt><dd>{libro.descuento_porcentaje}%</dd></div>}
-                                        {conOferta && <div><dt className="text-slate-500">Precio de oferta configurado</dt><dd>{formatearMoneda(libro.precio_oferta)}</dd></div>}
+                                        {conPorcentaje && <div><dt className="text-slate-500">Descuento configurado</dt><dd className="descuento-resaltado">{libro.descuento_porcentaje}%</dd></div>}
+                                        {conOferta && <div><dt className="text-slate-500">Precio de oferta configurado</dt><dd className="descuento-resaltado">{formatearMoneda(libro.precio_oferta)}</dd></div>}
                                         <div>
                                             <dt className="text-slate-500">Fin de la promoción</dt>
                                             <dd>{libro.descuento_hasta ? `${fechaPromocion(libro.descuento_hasta)} (inclusive, hora de Perú)` : 'Sin límite de fecha'}</dd>

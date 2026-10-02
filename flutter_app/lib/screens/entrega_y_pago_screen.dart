@@ -568,7 +568,12 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                   Text(
                     'S/ ${Formats.precio(item.subtotal)}',
                     style: textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: item.libro.enOferta
+                          ? AppColors.oferta
+                          : AppColors.textSecondary,
+                      decoration: item.libro.enOferta
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
                     ),
                   ),
                 ],

@@ -864,6 +864,8 @@ class _StickyBar extends StatelessWidget {
                         key: ValueKey(total),
                         monto: total,
                         tamano: 20,
+                        color: libro.enOferta ? AppColors.oferta : null,
+                        subrayado: libro.enOferta,
                       ),
                     ),
                   ],
