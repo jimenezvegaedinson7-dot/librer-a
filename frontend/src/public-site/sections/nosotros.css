@@ -1,0 +1,147 @@
+/* ============================================================
+   NOSOTROS
+   Portada con el fondo del inicio y texto centrado, pilares con
+   iconos, tienda con tarjeta flotante sobre el mapa, datos de la
+   empresa y cierre verde. Usa los tokens de public-site.css.
+   ============================================================ */
+
+/* ---------- Portada ---------- */
+.nosotros-hero {
+    display: grid;
+    align-items: center;
+    min-height: clamp(460px, 72svh, 680px);
+}
+.nosotros-hero__contenido {
+    position: relative; z-index: 1;
+    display: grid; justify-items: start; align-content: center;
+    padding-block: var(--e-5);
+}
+.nosotros-hero__titulo {
+    font-size: clamp(2.6rem, 1.6rem + 3.6vw, 4.5rem);
+    line-height: 1.02; letter-spacing: -0.025em; color: var(--blanco);
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+}
+/* Raya ámbar bajo el título, como en el resto de secciones. */
+.nosotros-hero__titulo::after {
+    content: ''; display: block; width: 64px; height: 4px; margin-top: 1.1rem;
+    border-radius: 2px; background: var(--ambar-500);
+}
+.nosotros-hero .nosotros__cita {
+    margin-top: var(--e-3);
+    max-width: 30ch;
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.875rem);
+    font-weight: 500; line-height: 1.4; color: var(--blanco);
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+}
+.nosotros-hero .nosotros__cita .palabra { opacity: 0.3; transition: opacity 260ms linear; }
+.nosotros-hero .nosotros__cita .palabra[data-leida='true'] { opacity: 1; }
+.nosotros-hero__acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: var(--e-4); }
+.nosotros-hero .boton--linea { color: var(--blanco); border-color: rgba(255, 255, 255, 0.55); background: rgba(255, 255, 255, 0.06); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+
+/* ---------- Pilares ---------- */
+.nosotros-valores { background: linear-gradient(180deg, var(--salvia-50), var(--blanco)); }
+.nosotros-valores__cabeza { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--e-4); align-items: end; }
+.nosotros-valores__cabeza .seccion__titulo { max-width: 18ch; font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.4rem); line-height: 1.12; }
+.nosotros-valores__cabeza .seccion__entrada { margin-top: 0; }
+.nosotros-pilares { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 1.8vw, 24px); margin-top: var(--e-4); }
+.nosotros-pilar {
+    position: relative; display: grid; align-content: start; gap: 0.6rem;
+    padding: 1.6rem 1.4rem 1.7rem; border-radius: 16px; background: var(--blanco);
+    border: 1px solid rgba(1, 58, 51, 0.08);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 14px 32px -22px rgba(1, 58, 51, 0.4);
+    transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida);
+    overflow: hidden;
+}
+/* Línea ámbar que se dibuja arriba al pasar el mouse. */
+.nosotros-pilar::before {
+    content: ''; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--ambar-500);
+    transform: scaleX(0); transform-origin: left; transition: transform 600ms var(--ease-salida);
+}
+.nosotros-pilar:hover { transform: translateY(-6px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 28px 44px -24px rgba(1, 58, 51, 0.5); }
+.nosotros-pilar:hover::before { transform: scaleX(1); }
+.nosotros-pilar__icono {
+    display: grid; place-items: center; width: 52px; height: 52px; border-radius: 14px;
+    background: linear-gradient(145deg, var(--verde-700), var(--verde-900)); color: var(--blanco);
+    box-shadow: 0 10px 18px -10px rgba(1, 58, 51, 0.7);
+    transition: transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nosotros-pilar__icono svg { width: 22px; height: 22px; }
+.nosotros-pilar:hover .nosotros-pilar__icono { transform: rotate(-6deg) scale(1.06); }
+.nosotros-pilar h3 { margin-top: 0.4rem; font-size: 1.0625rem; line-height: 1.3; }
+.nosotros-pilar p { font-size: 0.9375rem; line-height: 1.6; color: var(--texto-2); }
+
+/* ---------- Tienda ---------- */
+.nosotros-tienda { padding-block: var(--e-4) var(--seccion); }
+.nosotros-tienda__marco { position: relative; }
+.nosotros-tienda .tienda__mapa {
+    aspect-ratio: auto; height: clamp(380px, 46vw, 540px);
+    border-radius: 20px; border: 0;
+    box-shadow: 0 30px 60px -36px rgba(1, 58, 51, 0.55), 0 0 0 1px rgba(1, 58, 51, 0.08);
+}
+.nosotros-tienda__tarjeta {
+    position: absolute; z-index: 2; left: clamp(16px, 3vw, 40px); top: 50%; translate: 0 -50%;
+    width: min(400px, calc(100% - 32px));
+    display: grid; gap: 0.8rem; justify-items: start;
+    padding: 1.8rem 1.8rem 1.9rem; border-radius: 18px;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 26px 50px -24px rgba(0, 0, 0, 0.45);
+}
+.nosotros-tienda__tarjeta h2 { font-size: clamp(1.4rem, 1.2rem + 0.8vw, 1.875rem); color: var(--verde-900); }
+.nosotros-tienda__tarjeta .tienda__direccion { margin: 0; }
+.nosotros-tienda__tarjeta .tienda__nota { margin: 0; max-width: none; }
+.nosotros-tienda__tarjeta .boton { margin-top: 0.4rem; }
+
+/* ---------- Empresa ---------- */
+.nosotros-empresa { padding-block: 0 var(--seccion); }
+.nosotros-empresa__datos {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    border: 1px solid var(--borde); border-radius: 16px; background: var(--blanco); overflow: hidden;
+}
+.nosotros-empresa__datos li { display: flex; align-items: center; gap: 0.85rem; padding: 1.3rem 1.4rem; }
+.nosotros-empresa__datos li + li { border-left: 1px solid var(--borde); }
+.nosotros-empresa__datos svg { flex: none; width: 1.3rem; height: 1.3rem; color: var(--verde-700); }
+.nosotros-empresa__datos span { display: grid; gap: 0.15rem; min-width: 0; }
+.nosotros-empresa__datos small { font-size: 0.75rem; color: var(--texto-3); }
+.nosotros-empresa__datos strong { font-size: 0.9375rem; color: var(--texto); overflow-wrap: anywhere; }
+
+/* ---------- Cierre ---------- */
+.nosotros-cierre { padding-top: 0; }
+.nosotros-cierre__contenido {
+    position: relative; overflow: clip;
+    padding: clamp(1.8rem, 4vw, 3.2rem); border-radius: 22px;
+    box-shadow: 0 30px 60px -34px rgba(1, 58, 51, 0.7);
+    background:
+        radial-gradient(70% 120% at 100% 0%, rgba(235, 170, 32, 0.18), transparent 60%),
+        radial-gradient(60% 120% at 0% 100%, rgba(11, 92, 81, 0.9), transparent 70%),
+        var(--verde-900);
+}
+.nosotros-cierre__contenido { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); }
+.nosotros-cierre h2 { font-size: clamp(1.6rem, 1.2rem + 1.5vw, 2.5rem); line-height: 1.12; color: var(--blanco); max-width: 20ch; }
+.nosotros-cierre p { margin-top: 0.6rem; color: var(--salvia-100); max-width: 48ch; }
+.nosotros-cierre__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1023px) {
+    .nosotros-valores__cabeza { grid-template-columns: 1fr; gap: var(--e-2); }
+    .nosotros-pilares { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .nosotros-empresa__datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .nosotros-empresa__datos li:nth-child(3) { border-left: 0; }
+    .nosotros-empresa__datos li:nth-child(n + 3) { border-top: 1px solid var(--borde); }
+}
+@media (max-width: 720px) {
+    .nosotros-hero { min-height: 0; }
+    .nosotros-hero__contenido { padding-block: var(--e-5) var(--e-4); }
+    /* En móvil la tarjeta va debajo del mapa, superpuesta solo un poco. */
+    .nosotros-tienda .tienda__mapa { height: 300px; }
+    .nosotros-tienda__tarjeta { position: relative; left: auto; top: auto; translate: none; width: auto; margin: -48px 12px 0; }
+}
+@media (max-width: 560px) {
+    .nosotros-pilares { grid-template-columns: 1fr; }
+    .nosotros-empresa__datos { grid-template-columns: 1fr; }
+    .nosotros-empresa__datos li + li { border-left: 0; border-top: 1px solid var(--borde); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .nosotros-pilar:hover, .nosotros-pilar:hover .nosotros-pilar__icono { transform: none; }
+}
