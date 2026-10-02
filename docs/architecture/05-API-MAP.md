@@ -20,12 +20,12 @@ Total de endpoints registrados en el backend: **110** (incluye 4 definidos direc
 | GET | `/api/agencias/:id` | controllers/agencia.controller.js#obtenerAgencia | JWT | declarado en features/agencias/agenciasService.js#obtenerAgencia (sin uso) | — | JWT |
 | POST | `/api/agencias` | controllers/agencia.controller.js#crearAgencia | JWT + rol:administrador | features/agencias/AgenciasPage.jsx | — | JWT + admin |
 | PUT | `/api/agencias/:id` | controllers/agencia.controller.js#actualizarAgencia | JWT + rol:administrador | features/agencias/AgenciaEditModal.jsx | — | JWT + admin |
-| GET | `/api/anuncios` | controllers/anuncio.controller.js#obtenerAnuncioActivo | — | declarado en features/anuncios/anunciosService.js#obtenerAnuncioActivo (sin uso) | — | Pública |
+| GET | `/api/anuncios` | controllers/anuncio.controller.js#obtenerAnuncioActivo | — | public-site/sections/VideoSection.jsx | — | Pública |
 | GET | `/api/anuncios/todos` | controllers/anuncio.controller.js#listarAnuncios | JWT + rol:administrador | features/anuncios/AnunciosPage.jsx | — | JWT + admin |
 | POST | `/api/anuncios` | controllers/anuncio.controller.js#crearAnuncio | JWT + rol:administrador + uploadVideo(video) | features/anuncios/AnunciosPage.jsx | — | JWT + admin |
 | PUT | `/api/anuncios/:id` | controllers/anuncio.controller.js#actualizarAnuncio | JWT + rol:administrador + uploadVideo(video) | features/anuncios/AnunciosPage.jsx | — | JWT + admin |
 | DELETE | `/api/anuncios/:id` | controllers/anuncio.controller.js#eliminarAnuncio | JWT + rol:administrador | features/anuncios/AnunciosPage.jsx | — | JWT + admin |
-| GET | `/api/app/version` | controllers/app.controller.js#obtenerVersion | — | — | — | Pública |
+| GET | `/api/app/version` | controllers/app.controller.js#obtenerVersion | — | public-site/components/ActualizarApp.jsx | — | Pública |
 | POST | `/api/auth/registro` | controllers/auth.controller.js#registrar | registroLimiter | — | screens/registro_screen.dart | Pública |
 | POST | `/api/auth/login` | controllers/auth.controller.js#login | loginLimiter | features/auth/LoginPage.jsx | screens/login_screen.dart | Pública |
 | POST | `/api/auth/verificar-email` | controllers/auth.controller.js#verificarEmail | verificacionLimiter | features/auth/VerificarEmailPage.jsx | screens/verificacion_email_screen.dart | Pública |
@@ -53,7 +53,7 @@ Total de endpoints registrados en el backend: **110** (incluye 4 definidos direc
 | GET | `/api/comprobantes/:id` | controllers/comprobante.controller.js#obtenerComprobante | JWT + verificarPanel | features/comprobantes/ComprobanteViewModal.jsx | — | JWT + admin |
 | PUT | `/api/comprobantes/:id/sunat` | controllers/comprobante.controller.js#registrarSunat | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT + admin |
 | POST | `/api/comprobantes/:id/anular` | controllers/comprobante.controller.js#anularComprobante | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT + admin |
-| GET | `/api/empresa` | controllers/empresa.controller.js#obtenerEmpresa | — | features/comprobantes/ComprobanteViewModal.jsx<br>features/configuracion/EmpresaPage.jsx<br>features/reclamaciones/LibroReclamacionesPage.jsx<br>features/ventas/EmitirComprobanteModal.jsx | — | Pública |
+| GET | `/api/empresa` | controllers/empresa.controller.js#obtenerEmpresa | — | features/comprobantes/ComprobanteViewModal.jsx<br>features/configuracion/EmpresaPage.jsx<br>features/reclamaciones/LibroReclamacionesPage.jsx<br>features/ventas/EmitirComprobanteModal.jsx<br>public-site/PublicLayout.jsx | — | Pública |
 | PUT | `/api/empresa` | controllers/empresa.controller.js#actualizarEmpresa | JWT + rol:administrador | features/configuracion/EmpresaPage.jsx | — | JWT + admin |
 | GET | `/api/favoritos` | controllers/favorito.controller.js#listarMisFavoritos | JWT | — | screens/favoritos_screen.dart | JWT |
 | GET | `/api/favoritos/:idLibro` | controllers/favorito.controller.js#estadoFavorito | JWT | — | screens/detalle_libro_screen.dart | JWT |
@@ -69,7 +69,7 @@ Total de endpoints registrados en el backend: **110** (incluye 4 definidos direc
 | POST | `/api/inventario` | controllers/inventario.controller.js#crearInventario | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/inventario/InventarioForm.jsx | — | JWT + admin |
 | PUT | `/api/inventario/libro/:id/stock` | controllers/inventario.controller.js#actualizarStock | JWT + verificarRol(ROLES.ADMINISTRADOR) | — | — | JWT + admin |
 | PUT | `/api/inventario/libro/:id` | controllers/inventario.controller.js#actualizarInventario | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/inventario/InventarioEditModal.jsx | — | JWT + admin |
-| GET | `/api/libros` | controllers/libro.controller.js#obtenerLibros | — | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js<br>features/inventario/MovimientosModal.jsx<br>features/inventario/useLibros.js<br>features/libros/LibrosPage.jsx<br>features/reservas/ReservaForm.jsx<br>features/reservas/reservasService.js | screens/carrito_screen.dart<br>screens/entrega_y_pago_screen.dart<br>screens/home_screen.dart<br>screens/libros_screen.dart | Pública |
+| GET | `/api/libros` | controllers/libro.controller.js#obtenerLibros | — | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js<br>features/inventario/MovimientosModal.jsx<br>features/inventario/useLibros.js<br>features/libros/LibrosPage.jsx<br>features/reservas/ReservaForm.jsx<br>features/reservas/reservasService.js<br>public-site/PublicLayout.jsx | screens/carrito_screen.dart<br>screens/entrega_y_pago_screen.dart<br>screens/home_screen.dart<br>screens/libros_screen.dart | Pública |
 | GET | `/api/libros/:id` | controllers/libro.controller.js#obtenerLibro | — | features/libros/LibroEditModal.jsx<br>features/libros/LibroForm.jsx<br>features/libros/LibrosPage.jsx | screens/detalle_libro_screen.dart | Pública |
 | POST | `/api/libros` | controllers/libro.controller.js#crearLibro | JWT + rol:administrador + upload(portada) | features/libros/LibroForm.jsx | — | JWT + admin |
 | PUT | `/api/libros/:id` | controllers/libro.controller.js#actualizarLibro | JWT + rol:administrador + upload(portada) | features/libros/LibroEditModal.jsx | — | JWT + admin |
@@ -143,7 +143,7 @@ Total de endpoints registrados en el backend: **110** (incluye 4 definidos direc
 - `PUT /api/usuarios/foto`
 - `PUT /api/usuarios/password`
 
-## Endpoints sin cliente en el código (14)
+## Endpoints sin cliente en el código (13)
 
 Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL o desde un tercero:
 
@@ -151,7 +151,6 @@ Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL 
 - `GET /api` — Salud de la API.
 - `GET /api/test-db` — Diagnóstico de conexión a BD (solo admin).
 - `GET /api/debug-egress` — Diagnóstico manual SMTP (JWT + administrador). DNS, TCP y salida HTTPS; sin consumidor en React/Flutter.
-- `GET /api/app/version` — Posiblemente no utilizado por ningún cliente.
 - `GET /api/historial/mi-historial` — Posiblemente no utilizado por ningún cliente.
 - `POST /api/historial` — Posiblemente no utilizado por ningún cliente.
 - `PUT /api/inventario/libro/:id/stock` — Posiblemente no utilizado por ningún cliente.

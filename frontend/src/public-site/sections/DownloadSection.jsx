@@ -5,6 +5,7 @@ import { CANALES, DESCARGAS, plataformaDisponible } from '../config/downloads';
 import { usePlataforma } from '../hooks/useEntorno';
 import { fechaLarga } from '../lib/formato';
 import { gsap, useGSAP } from '../animation/scroll';
+import ActualizarApp from '../components/ActualizarApp';
 
 const PLATAFORMAS = [
     { clave: 'android', nombre: 'Android', Icono: FaAndroid },
@@ -79,6 +80,7 @@ export default function DownloadSection({ reducido }) {
                         <DownloadCard key={p.clave} {...p} destacada={plataforma === p.clave} />
                     ))}
                 </div>
+                {plataformaDisponible('android') && <ActualizarApp />}
             </div>
         </section>
     );

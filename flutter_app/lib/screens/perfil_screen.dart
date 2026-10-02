@@ -17,7 +17,6 @@ import '../utils/perfil_temas.dart';
 import '../widgets/aparecer.dart';
 import '../widgets/app_page_header.dart';
 import '../widgets/estado_chip.dart';
-import '../widgets/estanteria.dart';
 import '../widgets/presionable.dart';
 import 'login_screen.dart';
 import 'mis_compras_screen.dart';
@@ -837,115 +836,61 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
-  /// Portada del perfil con el degradado del tema elegido por el usuario.
+  /// Identidad del perfil: solo foto centrada y nombre, sin fondo propio.
   Widget _buildPortada(BuildContext context, Usuario? usuario) {
     final textTheme = Theme.of(context).textTheme;
-    final tema = _tema;
-    final tinta = tema.textColor;
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(Radios.lg),
-      child: AnimatedContainer(
-        duration: Duracion.lenta,
-        curve: Curva.suave,
-        decoration: BoxDecoration(gradient: tema.gradiente),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: IgnorePointer(
-                child: EstanteriaAnimada(
-                  key: ValueKey('estante-${tema.id}'),
-                  tinta: tinta == Colors.white ? Colors.white : AppColors.tinta,
-                  acento: AppColors.doradoClaro,
-                  opacidad: tinta == Colors.white ? 0.12 : 0.07,
-                  altoBalda: 64,
-                  semilla: 5,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
-              child: Row(
-                children: [
-                  Semantics(
-                    button: true,
-                    label: 'Cambiar foto de perfil',
-                    child: GestureDetector(
-                      onTap: _cambiarFoto,
-                      child: SizedBox(
-                        width: 92,
-                        height: 92,
-                        child: Stack(
-                          children: [
-                            Center(
-                              child: _Avatar(
-                                usuario: usuario,
-                                anillo: Colors.white.withValues(alpha: 0.9),
-                              ),
-                            ),
-                            Positioned(
-                              right: 0,
-                              bottom: 2,
-                              child: Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  color: AppColors.dorado,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.photo_camera_rounded,
-                                  size: 15,
-                                  color: AppColors.tinta,
-                                ),
-                              ),
-                            ),
-                          ],
+    return Padding(
+      key: const ValueKey('identidad-perfil'),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        children: [
+          Semantics(
+            button: true,
+            label: 'Cambiar foto de perfil',
+            child: GestureDetector(
+              onTap: _cambiarFoto,
+              child: SizedBox(
+                width: 92,
+                height: 92,
+                child: Stack(
+                  children: [
+                    Center(child: _Avatar(usuario: usuario, anillo: null)),
+                    Positioned(
+                      right: 0,
+                      bottom: 2,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: AppColors.dorado,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: const Icon(
+                          Icons.photo_camera_rounded,
+                          size: 15,
+                          color: AppColors.tinta,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          usuario?.nombreCompleto ?? 'Tu cuenta',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: textTheme.headlineSmall?.copyWith(
-                            color: tinta,
-                            height: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          usuario?.email ?? '',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: textTheme.bodySmall?.copyWith(
-                            color: tinta.withValues(alpha: 0.78),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        _PildoraPortada(
-                          texto: 'Toca la foto para actualizarla',
-                          tinta: tinta,
-                          suave: true,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            usuario?.nombreCompleto ?? 'Tu cuenta',
+            key: const ValueKey('nombre-perfil'),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.headlineSmall?.copyWith(
+              color: _profileInk,
+              height: 1.2,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1032,42 +977,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   Widget _divider() =>
       const Divider(height: 1, indent: 64, color: _profileBorder);
-}
-
-/// Píldora translúcida sobre la portada del perfil.
-class _PildoraPortada extends StatelessWidget {
-  final String texto;
-  final Color tinta;
-  final bool suave;
-
-  const _PildoraPortada({
-    required this.texto,
-    required this.tinta,
-    this.suave = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: tinta.withValues(alpha: suave ? 0.08 : 0.16),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: tinta.withValues(alpha: 0.2)),
-      ),
-      // En una sola línea: en pantallas angostas el texto se reduce.
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: Alignment.centerLeft,
-        child: Text(
-          texto,
-          maxLines: 1,
-          style: Theme.of(context).textTheme.labelSmall
-              ?.copyWith(color: tinta.withValues(alpha: suave ? 0.8 : 1)),
-        ),
-      ),
-    );
-  }
 }
 
 /// Acceso rápido del perfil (compras, reservas, favoritos).

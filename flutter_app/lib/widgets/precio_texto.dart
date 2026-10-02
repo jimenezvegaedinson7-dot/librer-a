@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../utils/app_colors.dart';
 import '../utils/formats.dart';
 import '../models/libro.dart';
+import '../utils/app_tokens.dart';
 
 /// Mantiene la tipografía del precio existente; agrega la referencia anterior
 /// únicamente cuando hay una rebaja real.
@@ -29,36 +30,53 @@ class PrecioLibro extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (libro.enOferta)
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: 'S/ ${Formats.precio(libro.precio)}',
-                  style: const TextStyle(
-                    decoration: TextDecoration.lineThrough,
-                  ),
+        if (libro.enOferta) ...[
+          Wrap(
+            spacing: 6,
+            runSpacing: 3,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colorOferta,
+                  borderRadius: BorderRadius.circular(Radios.xs),
                 ),
-                TextSpan(
-                  text: ' · −${libro.porcentajeOferta}%',
-                  style: TextStyle(
-                    color: colorOferta,
+                child: Text(
+                  libro.porcentajeOferta > 0
+                      ? '−${libro.porcentajeOferta}%'
+                      : 'Oferta',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: color != null && color!.computeLuminance() > 0.5
+                        ? AppColors.tinta
+                        : Colors.white,
                     decoration: TextDecoration.underline,
                   ),
                 ),
-              ],
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelSmall
-                ?.copyWith(color: color ?? AppColors.textSecondary),
+              ),
+              Text(
+                'S/ ${Formats.precio(libro.precio)}',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: color ?? AppColors.textSecondary,
+                  decoration: TextDecoration.lineThrough,
+                ),
+              ),
+            ],
           ),
-        PrecioTexto(
-          monto: libro.precioCompra,
-          tamano: tamano,
-          color: libro.enOferta ? colorOferta : color,
-          subrayado: libro.enOferta,
-          peso: peso,
+          const SizedBox(height: 4),
+        ],
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: PrecioTexto(
+            monto: libro.precioCompra,
+            tamano: tamano,
+            color: libro.enOferta ? colorOferta : color,
+            subrayado: libro.enOferta,
+            peso: peso,
+          ),
         ),
       ],
     );

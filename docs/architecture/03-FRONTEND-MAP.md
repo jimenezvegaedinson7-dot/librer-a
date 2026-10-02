@@ -104,6 +104,9 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/ventas/EmitirComprobanteModal.jsx` | `GET /api/empresa`<br>`POST /api/comprobantes/:param/enviar-email`<br>`POST /api/ventas/:param/comprobante` |
 | `features/ventas/ReembolsoModal.jsx` | `POST /api/ventas/:param/reembolso` |
 | `features/ventas/VentasPage.jsx` | `GET /api/ventas`<br>`GET /api/ventas/:param`<br>`PUT /api/ventas/:param/estado` |
+| `public-site/PublicLayout.jsx` | `GET /api/empresa`<br>`GET /api/libros` |
+| `public-site/components/ActualizarApp.jsx` | `GET /api/app/version` |
+| `public-site/sections/VideoSection.jsx` | `GET /api/anuncios` |
 
 ## Servicios (`features/*/*Service.js`)
 
@@ -211,6 +214,10 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/ventas/ventasService.js` | `reembolsarVenta` | `POST /api/ventas/:param/reembolso` |
 | `features/ventas/ventasService.js` | `cambiarEstadoVenta` | `PUT /api/ventas/:param/estado` |
 | `features/ventas/ventasService.js` | `listarLibros` | `GET /api/libros` (vía features/libros/librosService.js#listarLibros) |
+| `public-site/hooks/useApiPublica.js` | `useCatalogo` | `GET /api/libros` |
+| `public-site/hooks/useApiPublica.js` | `useAnuncioActivo` | `GET /api/anuncios` |
+| `public-site/hooks/useApiPublica.js` | `useEmpresa` | `GET /api/empresa` |
+| `public-site/hooks/useApiPublica.js` | `useVersionApp` | `GET /api/app/version` |
 
 ## Componentes compartidos (`components/`)
 
@@ -239,6 +246,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/Pagination.jsx` | 13 |
 | `components/ui/Spinner.jsx` | 4 |
 | `components/ui/TableSkeleton.jsx` | 17 |
+| `public-site/components/ActualizarApp.jsx` | 1 |
 | `public-site/components/CierreDescarga.jsx` | 2 |
 | `public-site/components/EtiquetasLibro.jsx` | 2 |
 | `public-site/components/Migas.jsx` | 2 |

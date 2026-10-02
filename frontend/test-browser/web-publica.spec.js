@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
+import { DESCARGAS } from '../src/public-site/config/downloads.js';
 
 // Web pública: páginas separadas (Inicio, Catálogo, Aplicación,
 // Características, Nosotros, Descargar), catálogo real (simulado aquí),
@@ -25,6 +26,8 @@ const VIDEO_PRUEBA = fs.readFileSync(path.join(path.dirname(fileURLToPath(import
 async function apiPublica(page, { falla = false, vacia = false, libros = LIBROS, anuncio = null } = {}) {
     await page.route(`${API}/libros`, (r) => (falla ? r.fulfill({ status: 503, json: {} }) : r.fulfill({ json: vacia ? [] : libros })));
     await page.route(`${API}/empresa`, (r) => r.fulfill({ json: { success: true, empresa: { razon_social: 'FLORES SALINAS SARA', nombre_comercial: 'MATIDANA', ruc: '10447545387' } } }));
+    await page.route(`${API}/app/version`, r => r.fulfill({json:{version:DESCARGAS.android.version,
+        versionCode:3, apkUrl:DESCARGAS.android.url, sha256:'a'.repeat(64)}}));
     // El video lo sube el administrador, así que por defecto no hay ninguno
     // activo. Las pruebas del video pasan uno explícito.
     await page.route(`${API}/anuncios`, (r) => r.fulfill({ json: { success: true, anuncio } }));
@@ -36,6 +39,51 @@ async function apiPublica(page, { falla = false, vacia = false, libros = LIBROS,
 }
 
 const menu = (page) => page.getByRole('navigation', { name: 'Principal' });
+
+const APK_FUTURA = 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v8.0.0/libreria-8.0.0.apk';
+for (const width of [390, 1440]) {
+    test(`actualización: QR visible y botón usa la última versión del servidor a ${width}px`, async ({page}) => {
+        await page.setViewportSize({width,height:1000});
+        await apiPublica(page);
+        let sinToken = false;
+        await page.addInitScript(() => localStorage.setItem('token','token-del-panel-no-enviar'));
+        await page.route(`${API}/app/version`, r => {
+            sinToken = !r.request().headers().authorization;
+            return r.fulfill({json:{version:'8.0.0',versionCode:80,apkUrl:APK_FUTURA,sha256:'a'.repeat(64)}});
+        });
+        await page.goto('/descargar');
+        await expect(page.getByRole('heading',{name:'¿Ya tienes la app en Android?'})).toBeVisible();
+        await expect(page.getByText('Versión disponible: 8.0.0',{exact:true})).toBeVisible();
+        const qr = page.getByAltText('Código QR para descargar la actualización más reciente de Librería');
+        await expect(qr).toBeVisible();
+        expect(await qr.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+        await expect(page.locator('a[data-actualizar-app]')).toHaveAttribute('href',APK_FUTURA);
+        expect(sinToken).toBe(true);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    });
+}
+
+test('actualización: escanear QR abre el APK más reciente, no una versión fija', async ({page}) => {
+    await apiPublica(page);
+    await page.route(`${API}/app/version`, r => r.fulfill({json:{version:'8.0.0',versionCode:80,apkUrl:APK_FUTURA,sha256:'a'.repeat(64)}}));
+    await page.route(APK_FUTURA, r => r.fulfill({body:'APK de prueba',contentType:'application/vnd.android.package-archive',
+        headers:{'Content-Disposition':'attachment; filename="libreria-8.0.0.apk"'}}));
+    const archivo = page.waitForEvent('download');
+    await page.goto('/descargar?actualizar=1',{waitUntil:'domcontentloaded'});
+    const descargado = await archivo;
+    expect(descargado.url()).toBe(APK_FUTURA);
+    expect(descargado.suggestedFilename()).toBe('libreria-8.0.0.apk');
+});
+
+test('actualización: API no disponible deja una alternativa y no inicia una descarga equivocada', async ({page}) => {
+    await apiPublica(page);
+    await page.route(`${API}/app/version`, r => r.fulfill({status:503,json:{}}));
+    let descargas=0; page.on('download',()=>descargas++);
+    await page.goto('/descargar?actualizar=1');
+    await expect(page.getByText('No pudimos consultar la última versión. Puedes descargar la versión publicada en esta página.')).toBeVisible();
+    await expect(page.locator('a[data-actualizar-app]')).toHaveAttribute('href',DESCARGAS.android.url);
+    expect(descargas).toBe(0);
+});
 
 test.use({ reducedMotion: 'reduce' });
 
@@ -139,9 +187,9 @@ test('descargar: Android real desde la configuración, iOS en preparación sin e
     await apiPublica(page);
     await page.goto('/descargar');
     const android = page.locator('a[data-descarga="android"]');
-    await expect(android).toHaveAttribute('href', /github\.com\/jimenezvegaedinson7-dot\/librer-a\/releases\/download\/v1\.0\.2\/libreria-1\.0\.2\.apk$/);
-    await expect(page.locator('main')).toContainText('53.7 MB');
-    await expect(page.locator('main')).toContainText('1.0.2');
+    await expect(android).toHaveAttribute('href', DESCARGAS.android.url);
+    await expect(page.locator('main')).toContainText(DESCARGAS.android.tamano);
+    await expect(page.locator('main')).toContainText(DESCARGAS.android.version);
     const ios = page.getByRole('article', { name: 'iPhone' });
     await expect(ios).toContainText('En preparación');
     await expect(ios.locator('a')).toHaveCount(0);

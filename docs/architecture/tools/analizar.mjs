@@ -217,12 +217,17 @@ const FRONT = `${RAIZ}/frontend/src`;
 const archivosFront = listar(FRONT, (n) => /\.(jsx?|mjs)$/.test(n));
 const normalizar = (url) => url.replace(/\$\{[^}]*\}/g, ':param').replace(/\?.*$/, '');
 const servicios = {};
-for (const p of archivosFront.filter((p) => /Service\.js$|client\.js$/.test(p))) {
+for (const p of archivosFront.filter((p) => /Service\.js$|client\.js$|useApiPublica\.js$/.test(p))) {
     const txt = leer(p);
     const fns = {};
-    for (const m of txt.matchAll(/export\s+async\s+function\s+(\w+)\s*\([^)]*\)\s*\{/g)) {
+    for (const m of txt.matchAll(/export\s+(?:async\s+)?function\s+(\w+)\s*\([^)]*\)\s*\{/g)) {
         const cuerpo = bloque(txt, txt.indexOf('{', m.index + m[0].length - 1));
         const llamadas = [...cuerpo.matchAll(/client\.(get|post|put|patch|delete)\s*\(\s*(['"`])([^'"`]+)\2/g)].map((x) => ({ method: x[1].toUpperCase(), path: `/api${normalizar(x[3])}` }));
+        // Los hooks públicos usan fetch sin JWT mediante obtener().
+        if (/useApiPublica\.js$/.test(p)) {
+            llamadas.push(...[...cuerpo.matchAll(/\bobtener\s*\(\s*(['"`])([^'"`]+)\1/g)]
+                .map(x => ({ method: 'GET', path: `/api${normalizar(x[2])}` })));
+        }
         const delega = [...cuerpo.matchAll(/(?:return\s+|await\s+)(\w+)\(/g)].map((x) => x[1]).filter((n) => n !== 'datosDe');
         fns[m[1]] = { endpoints: llamadas, delegates: delega };
     }
@@ -270,7 +275,7 @@ const usoServicios = {};
 for (const p of archivosFront) {
     const txt = leer(p);
     grafoFront[rel(p)] = importsDe(p, txt);
-    for (const m of txt.matchAll(/import\s*\{([^}]+)\}\s*from\s*'([^']+Service|[^']*\/client)'/g)) {
+    for (const m of txt.matchAll(/import\s*\{([^}]+)\}\s*from\s*'([^']+Service|[^']*\/client|[^']*\/useApiPublica)'/g)) {
         const destino = rel(path.resolve(path.dirname(p), m[2])) + '.js';
         for (const n of m[1].split(',').map((s) => s.trim().split(/\s+as\s+/)[0]).filter(Boolean)) {
             (usoServicios[rel(p)] ||= []).push(`${destino}#${n}`);

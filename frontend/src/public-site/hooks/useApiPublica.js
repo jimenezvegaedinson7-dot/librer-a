@@ -100,3 +100,26 @@ export function useEmpresa() {
 
     return legal;
 }
+
+// La actualización consulta siempre el servidor: el QR no queda atado a un
+// número de versión ni envía el token del panel a la API pública.
+export function useVersionApp() {
+    const [estado, setEstado] = useState({ cargando: true, error: false, version: null });
+    useEffect(() => {
+        const control = new AbortController();
+        obtener('/app/version', control.signal)
+            .then((version) => {
+                const url = new URL(version.apkUrl);
+                if (url.protocol !== 'https:' || url.host !== 'github.com'
+                    || !url.pathname.startsWith('/jimenezvegaedinson7-dot/librer-a/releases/download/')
+                    || String(version.apkUrl).includes('..') || !url.pathname.endsWith('.apk')
+                    || !/^\d+\.\d+\.\d+$/.test(version.version)) throw new Error('Versión no válida');
+                setEstado({ cargando: false, error: false, version });
+            })
+            .catch((e) => {
+                if (e.name !== 'AbortError') setEstado({ cargando: false, error: true, version: null });
+            });
+        return () => control.abort();
+    }, []);
+    return estado;
+}
