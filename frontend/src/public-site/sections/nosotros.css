@@ -39,8 +39,8 @@
     padding-block: var(--e-5);
 }
 .nosotros-hero__titulo {
-    font-size: clamp(2.6rem, 1.6rem + 3.6vw, 4.5rem);
-    line-height: 1.02; letter-spacing: -0.025em; color: var(--blanco);
+    font-size: var(--t-hero);
+    line-height: 1.1; letter-spacing: -0.02em; color: var(--blanco);
     text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
 }
 /* Raya ámbar bajo el título, como en el resto de secciones. */
@@ -50,9 +50,9 @@
 }
 .nosotros-hero .nosotros__cita {
     margin-top: var(--e-3);
-    max-width: 30ch;
-    font-size: clamp(1.25rem, 1rem + 1vw, 1.875rem);
-    font-weight: 500; line-height: 1.4; color: var(--blanco);
+    max-width: 40ch;
+    font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.375rem);
+    font-weight: 500; line-height: 1.55; color: var(--blanco);
     text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
 }
 .nosotros-hero .nosotros__cita .palabra { opacity: 0.3; transition: opacity 260ms linear; }
@@ -63,7 +63,7 @@
 /* ---------- Pilares ---------- */
 .nosotros-valores { background: linear-gradient(180deg, var(--salvia-50), var(--blanco)); }
 .nosotros-valores__cabeza { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--e-4); align-items: end; }
-.nosotros-valores__cabeza .seccion__titulo { max-width: 18ch; font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.4rem); line-height: 1.12; }
+.nosotros-valores__cabeza .seccion__titulo { max-width: 22ch; }
 .nosotros-valores__cabeza .seccion__entrada { margin-top: 0; }
 .nosotros-pilares { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 1.8vw, 24px); margin-top: var(--e-4); }
 .nosotros-pilar {
@@ -110,7 +110,7 @@
     border: 1px solid rgba(255, 255, 255, 0.7);
     box-shadow: 0 26px 50px -24px rgba(0, 0, 0, 0.45);
 }
-.nosotros-tienda__tarjeta h2 { font-size: clamp(1.4rem, 1.2rem + 0.8vw, 1.875rem); color: var(--verde-900); }
+.nosotros-tienda__tarjeta h2 { font-size: var(--t-h1); color: var(--verde-900); }
 .nosotros-tienda__tarjeta .tienda__direccion { margin: 0; }
 .nosotros-tienda__tarjeta .tienda__nota { margin: 0; max-width: none; }
 .nosotros-tienda__tarjeta .boton { margin-top: 0.4rem; }
@@ -140,7 +140,7 @@
         var(--verde-900);
 }
 .nosotros-cierre__contenido { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-3); }
-.nosotros-cierre h2 { font-size: clamp(1.6rem, 1.2rem + 1.5vw, 2.5rem); line-height: 1.12; color: var(--blanco); max-width: 20ch; }
+.nosotros-cierre h2 { font-size: clamp(1.5rem, 1.25rem + 0.9vw, 2rem); line-height: 1.12; color: var(--blanco); max-width: 20ch; }
 .nosotros-cierre p { margin-top: 0.6rem; color: var(--salvia-100); max-width: 48ch; }
 .nosotros-cierre__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem; }
 

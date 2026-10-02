@@ -1,11 +1,20 @@
 import { useRef } from 'react';
-import { FaMagnifyingGlass, FaBookOpen, FaCartShopping, FaHeart, FaBookmark } from 'react-icons/fa6';
+import { Link } from 'react-router-dom';
+import { FaMagnifyingGlass, FaBookOpen, FaCartShopping, FaHeart, FaBookmark, FaDownload, FaChevronRight } from 'react-icons/fa6';
 
 import imgCatalogo from '../assets/app/catalogo.webp';
 import imgInicio from '../assets/app/inicio.webp';
 import imgFicha from '../assets/app/ficha-libro.webp';
+import iconoApp from '../assets/app-icono.webp';
 import { gsap, useGSAP } from '../animation/scroll';
-import CierreDescarga from '../components/CierreDescarga';
+import './aplicacion.css';
+
+// ============================================================
+// LA APLICACIÓN
+// Portada verde profunda con el icono real de la app, el título y la
+// descarga; a la derecha, tres pantallas reales en teléfonos que se mueven
+// con el scroll. Debajo, las funciones en tarjetas.
+// ============================================================
 
 const FUNCIONES = [
     { Icono: FaMagnifyingGlass, titulo: 'Búsqueda', texto: 'Por título, autor o ISBN, con filtros por categoría.' },
@@ -32,42 +41,61 @@ export default function MobileExperience({ reducido }) {
         gsap.fromTo('.telefono--1', { yPercent: 10 }, { yPercent: -8, ease: 'none', scrollTrigger: disparo });
         gsap.fromTo('.telefono--2', { yPercent: 22, rotateY: 18, rotateZ: -4 }, { yPercent: -4, rotateY: 6, rotateZ: -2, ease: 'none', scrollTrigger: disparo });
         gsap.fromTo('.telefono--3', { yPercent: 30, rotateY: -18, rotateZ: 4 }, { yPercent: 0, rotateY: -6, rotateZ: 2, ease: 'none', scrollTrigger: disparo });
-        gsap.from('.app__lista li', {
+        gsap.from('.app-portada__texto > *', { opacity: 0, y: 24, duration: 0.9, ease: 'expo.out', stagger: 0.08 });
+        gsap.from('.app-funcion', {
             opacity: 0,
-            x: -24,
+            y: 30,
             duration: 0.9,
             ease: 'expo.out',
             stagger: 0.08,
-            scrollTrigger: { trigger: '.app__lista', start: 'top 80%' },
+            scrollTrigger: { trigger: '.app-funciones', start: 'top 82%' },
         });
     }, { scope: seccion, dependencies: [reducido] });
 
     return (
-        <section id="app" ref={seccion} className="seccion app verde-claro" aria-labelledby="app-titulo">
-            <div className="contenedor app__rejilla">
-                <div>
-                    <h1 id="app-titulo" className="seccion__titulo">Toda la librería cabe en la app</h1>
-                    <p className="seccion__entrada">
-                        Desde el inicio hasta el pago: estas son pantallas reales de la app de Librería del Saber.
-                    </p>
-                    <ul className="app__lista">
+        <div ref={seccion} className="app-pagina">
+            <section id="app" className="seccion app app-portada oscuro" aria-labelledby="app-titulo">
+                <div className="contenedor app__rejilla">
+                    <div className="app-portada__texto">
+                        <img className="icono-app icono-app--grande" src={iconoApp} alt="Icono de la app Librería del Saber" width="88" height="88" />
+                        <h1 id="app-titulo" className="app-portada__titulo">Toda la librería cabe en la app</h1>
+                        <p className="app-portada__entrada">
+                            Explora el catálogo, guarda tus favoritos, reserva y paga en línea desde tu teléfono.
+                            Estas son pantallas reales de la app de Librería del Saber.
+                        </p>
+                        <div className="app-portada__acciones">
+                            <Link to="/descargar" className="boton"><FaDownload aria-hidden="true" /> Descargar la app</Link>
+                            <Link to="/catalogo" className="enlace-mas">Ver el catálogo <FaChevronRight aria-hidden="true" /></Link>
+                        </div>
+                        <p className="app__nota">Gratis para Android · Capturas con una cuenta de demostración.</p>
+                    </div>
+
+                    <div className="app__telefonos" style={{ perspective: '1400px' }}>
+                        <Telefono clase="telefono--2" src={imgInicio} alt="Pantalla de inicio de la app con búsqueda, destacado y categorías" />
+                        <Telefono clase="telefono--3" src={imgFicha} alt="Ficha del libro 1984 con precio, ejemplares disponibles y botones Reservar y Añadir" />
+                        <Telefono clase="telefono--1" src={imgCatalogo} alt="Catálogo de la app con categorías y libros con precio" />
+                    </div>
+                </div>
+            </section>
+
+            <section className="seccion app-funciones-seccion" aria-labelledby="funciones-titulo">
+                <div className="contenedor">
+                    <h2 id="funciones-titulo" className="seccion__titulo">Todo lo que puedes hacer</h2>
+                    <p className="seccion__entrada">Cada función existe hoy en la app: nada de promesas para más adelante.</p>
+                    <ul className="app-funciones app__lista">
                         {FUNCIONES.map(({ Icono, titulo, texto }) => (
-                            <li key={titulo}>
-                                <Icono aria-hidden="true" />
+                            <li key={titulo} className="app-funcion">
+                                <span className="app-funcion__icono" aria-hidden="true"><Icono /></span>
                                 <p><b>{titulo}</b><span>{texto}</span></p>
                             </li>
                         ))}
                     </ul>
-                    <p className="app__nota">Capturas de la app Android con una cuenta de demostración.</p>
-                    <CierreDescarga />
+                    <div className="cierre-descarga">
+                        <p>La app es gratis y está disponible para Android.</p>
+                        <Link to="/descargar" className="boton"><FaDownload aria-hidden="true" /> Descargar la app</Link>
+                    </div>
                 </div>
-
-                <div className="app__telefonos" style={{ perspective: '1400px' }}>
-                    <Telefono clase="telefono--2" src={imgInicio} alt="Pantalla de inicio de la app con búsqueda, destacado y categorías" />
-                    <Telefono clase="telefono--3" src={imgFicha} alt="Ficha del libro 1984 con precio, ejemplares disponibles y botones Reservar y Añadir" />
-                    <Telefono clase="telefono--1" src={imgCatalogo} alt="Catálogo de la app con categorías y libros con precio" />
-                </div>
-            </div>
-        </section>
+            </section>
+        </div>
     );
 }

@@ -1,0 +1,81 @@
+/* ============================================================
+   DESCARGAR
+   ============================================================ */
+
+/* ---------- Portada ---------- */
+.descargar-portada {
+    position: relative; overflow: clip;
+    background:
+        radial-gradient(55% 75% at 80% 40%, rgba(31, 122, 103, 0.8), transparent 70%),
+        radial-gradient(40% 60% at 0% 0%, rgba(235, 170, 32, 0.16), transparent 70%),
+        linear-gradient(150deg, var(--verde-700), var(--verde-900) 70%);
+}
+.descargar-portada__rejilla {
+    display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--e-4); align-items: center;
+}
+.descargar-portada__texto { display: grid; justify-items: start; gap: 1.1rem; }
+.descargar-portada__titulo { font-size: var(--t-hero); line-height: 1.1; letter-spacing: -0.02em; color: var(--blanco); }
+.descargar-portada__entrada { font-size: var(--t-lead); line-height: 1.6; color: var(--salvia-100); max-width: 46ch; }
+.descargar-portada .boton--grande { min-height: 54px; padding: 0 1.8rem; font-size: 1.0625rem; }
+.descargar-portada__datos { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.descargar-portada__datos li {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.35rem 0.8rem; border-radius: 999px;
+    font-size: 0.8125rem; font-weight: 600; color: var(--blanco);
+    background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.descargar-portada__datos svg { color: var(--ambar-500); }
+.descargar-portada__seguridad { margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem; font-size: var(--t-meta); color: #b8c9c2; }
+.descargar-portada__seguridad svg { color: var(--ambar-500); flex: none; }
+/* Teléfono con la app, inclinado y con un halo ámbar detrás. */
+.descargar-portada__telefono { position: relative; display: grid; place-items: center; min-height: 440px; }
+.descargar-portada__telefono::before {
+    content: ''; position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(235, 170, 32, 0.35), transparent);
+    filter: blur(20px);
+}
+.descargar-portada__telefono .telefono {
+    position: relative; inset: auto; width: clamp(210px, 19vw, 260px); rotate: -6deg;
+    box-shadow: 0 50px 90px -40px rgba(0, 0, 0, 0.75), inset 0 0 0 1.5px rgba(255, 255, 255, 0.2);
+    animation: descargar-flotar 6s ease-in-out infinite;
+}
+@keyframes descargar-flotar { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+
+/* ---------- Tarjetas por plataforma ---------- */
+.descargar-plataformas .descarga__rejilla { margin-top: var(--e-3); align-items: stretch; }
+.descargar-plataformas .tarjeta-descarga {
+    border-radius: 18px; border-color: rgba(1, 58, 51, 0.1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 34px -24px rgba(1, 58, 51, 0.45);
+}
+.descargar-plataformas .tarjeta-descarga[data-disponible='false'] { background: rgba(255, 255, 255, 0.7); }
+.descargar-plataformas .tarjeta-descarga[data-disponible='false'] .icono-app { filter: grayscale(0.6) opacity(0.7); }
+.tarjeta-descarga__estado { display: inline-flex; align-items: center; gap: 0.35rem; }
+.tarjeta-descarga__estado svg { width: 0.95rem; height: 0.95rem; color: var(--verde-700); }
+.descargar-plataformas .tarjeta-descarga[data-disponible='true'] .tarjeta-descarga__estado { color: #007600; font-weight: 600; }
+
+/* ---------- Cómo instalar ---------- */
+.instalar { margin-top: var(--e-5); }
+.instalar h2 { display: flex; align-items: center; gap: 0.6rem; font-size: var(--t-h3); }
+.instalar h2 svg { color: var(--verde-700); }
+.instalar__pasos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 20px); margin-top: var(--e-3); }
+.instalar__paso {
+    position: relative; display: grid; gap: 0.5rem; align-content: start;
+    padding: 1.4rem 1.3rem 1.5rem; border-radius: 16px; background: var(--blanco);
+    border: 1px solid rgba(1, 58, 51, 0.08);
+}
+.instalar__numero {
+    display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;
+    background: var(--verde-700); color: var(--blanco); font-weight: 800;
+}
+.instalar__paso h3 { font-size: 1rem; }
+.instalar__paso p { font-size: 0.9375rem; line-height: 1.55; color: var(--texto-2); }
+
+@media (max-width: 1023px) {
+    .descargar-portada__rejilla { grid-template-columns: 1fr; }
+    .descargar-portada__telefono { min-height: 0; padding-bottom: var(--e-2); }
+}
+@media (max-width: 720px) {
+    .instalar__pasos { grid-template-columns: 1fr; }
+    .descargar-portada__telefono .telefono { width: 190px; }
+}
+@media (prefers-reduced-motion: reduce) { .descargar-portada__telefono .telefono { animation: none; } }
