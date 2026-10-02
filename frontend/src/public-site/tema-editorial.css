@@ -251,16 +251,6 @@
    INICIO PREMIUM
    ============================================================ */
 
-/* ---------- Hero: cifras reales del catálogo ---------- */
-.hero__cifras {
-    display: flex; flex-wrap: wrap; gap: 0; margin-top: var(--e-4);
-    border-top: 1px solid rgba(213, 164, 71, 0.35); padding-top: 1.1rem; max-width: 30rem;
-}
-.hero__cifras > div { display: grid; gap: 0.15rem; padding-right: 1.6rem; margin-right: 1.6rem; border-right: 1px solid rgba(255, 249, 239, 0.18); }
-.hero__cifras > div:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
-.hero__cifras dd { order: -1; margin: 0; font-family: var(--f-titulo); font-size: clamp(1.6rem, 1.3rem + 1vw, 2.1rem); font-weight: 600; line-height: 1; color: var(--dorado); font-variant-numeric: tabular-nums; }
-.hero__cifras dt { font-size: 0.8125rem; color: #d9cfbd; }
-
 .sitio .seccion__cabeza { border-bottom-color: #e5d8c2; }
 
 /* ---------- Carrusel: tarjeta vertical de librería ---------- */
@@ -363,7 +353,6 @@
     .libro { width: 210px; }
     .oferta-tarjeta { grid-template-columns: 100px minmax(0, 1fr); padding: 16px; }
     .ofertas__rejilla { grid-template-columns: 1fr; }
-    .hero__cifras > div { padding-right: 1rem; margin-right: 1rem; }
 }
 @media (prefers-reduced-motion: reduce) {
     .libro:hover .libro__tapa, .oferta-tarjeta:hover, .oferta-tarjeta:hover .oferta-tarjeta__tapa img,
@@ -371,3 +360,52 @@
 }
 .sitio [data-revelar] > .oferta-tarjeta { transition: opacity 800ms var(--ease-salida), transform 800ms var(--ease-salida), box-shadow var(--d-media); transition-delay: calc(var(--i, 0) * 90ms); }
 .sitio.js [data-revelar]:not([data-visto]) > .oferta-tarjeta { opacity: 0; transform: translateY(28px); }
+/* ---------- Categorías con tres libros flotantes ---------- */
+.explorar__rejilla { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.explorar__tarjeta {
+    grid-template-columns: 44px minmax(0, 1fr); grid-template-rows: auto auto; align-items: center;
+    gap: 0.9rem 0.8rem; padding: 0 18px 18px; overflow: hidden; border-radius: 18px;
+}
+.explorar__libros {
+    grid-column: 1 / -1; justify-self: stretch; margin: 0 -18px; position: relative; height: 190px;
+    background:
+        radial-gradient(60% 70% at 50% 35%, rgba(255, 249, 239, 0.95), transparent 70%),
+        linear-gradient(180deg, #f2e4cc, #e9d6b6);
+}
+/* Sombra en el suelo bajo los libros. */
+.explorar__libros::after {
+    content: ''; position: absolute; left: 20%; right: 20%; bottom: 16px; height: 14px; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(13, 41, 64, 0.3), transparent); filter: blur(3px);
+}
+.explorar__libros img {
+    position: absolute; bottom: 28px; left: 50%; width: 82px; height: 123px; object-fit: cover;
+    border-radius: 2px 5px 5px 2px; box-shadow: 0 16px 24px -12px rgba(13, 41, 64, 0.55);
+    animation: libro-flotar 5.5s ease-in-out infinite;
+    animation-delay: calc(var(--k) * -1.6s);
+    transition: rotate var(--d-media) var(--ease-salida), translate var(--d-media) var(--ease-salida);
+}
+.explorar__libros img:nth-child(1) { translate: -118% 6px; rotate: -10deg; z-index: 1; }
+.explorar__libros img:nth-child(2) { translate: -50% -6px; z-index: 3; }
+.explorar__libros img:nth-child(3) { translate: 18% 6px; rotate: 10deg; z-index: 2; }
+/* Al pasar el mouse el abanico se abre un poco. */
+.explorar__tarjeta:hover .explorar__libros img:nth-child(1) { translate: -132% 2px; rotate: -15deg; }
+.explorar__tarjeta:hover .explorar__libros img:nth-child(2) { translate: -50% -14px; }
+.explorar__tarjeta:hover .explorar__libros img:nth-child(3) { translate: 32% 2px; rotate: 15deg; }
+@keyframes libro-flotar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.explorar__tarjeta > .explorar__icono { width: 44px; height: 44px; }
+.explorar__tarjeta > .explorar__icono svg { width: 20px; height: 20px; }
+.explorar__texto strong { font-size: 1.1875rem; }
+
+@media (max-width: 1023px) { .explorar__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+    .explorar__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .explorar__tarjeta { grid-template-columns: 1fr; padding: 0 14px 14px; justify-items: start; }
+    .explorar__libros { margin: 0 -14px; }
+    .explorar__libros { height: 140px; }
+    .explorar__libros img { width: 58px; height: 87px; bottom: 22px; }
+    .explorar__tarjeta > .explorar__icono { display: none; }
+    .explorar__texto strong { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .explorar__libros img { animation: none; }
+}

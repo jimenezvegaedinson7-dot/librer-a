@@ -1,5 +1,6 @@
 import { createElement, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { portada } from '../lib/formato';
 import {
     FaChevronRight, FaArrowRight, FaBookOpen, FaFeatherPointed, FaChild, FaDragon, FaRocket,
     FaMagnifyingGlass, FaHeart, FaGhost, FaScroll, FaLandmark, FaFlask, FaPalette, FaBook,
@@ -34,7 +35,10 @@ export default function ExplorarCategorias({ catalogo }) {
         });
         return [...mapa.entries()]
             .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0], 'es'))
-            .slice(0, 8);
+            // Solo las categorías con más títulos: así cada tarjeta tiene sus
+            // tres portadas reales.
+            .filter(([, lista]) => lista.length >= 2)
+            .slice(0, 4);
     }, [libros]);
 
     if (grupos.length < 2) return null;
@@ -56,6 +60,11 @@ export default function ExplorarCategorias({ catalogo }) {
                     {grupos.map(([nombre, lista], i) => (
                         <li key={nombre} className="explorar__item" style={{ '--i': i }}>
                             <Link to={`/catalogo?categoria=${encodeURIComponent(nombre)}`} className="explorar__tarjeta">
+                                <span className="explorar__libros" aria-hidden="true">
+                                    {lista.slice(0, 3).map((l, k) => (
+                                        <img key={l.id} src={portada(l.portada, 180)} alt="" width="90" height="135" loading="lazy" decoding="async" style={{ '--k': k }} />
+                                    ))}
+                                </span>
                                 <span className="explorar__icono" aria-hidden="true">{createElement(iconoDe(nombre))}</span>
                                 <span className="explorar__texto">
                                     <strong>{nombre}<span className="explorar__cuenta">({lista.length})</span></strong>

@@ -22,7 +22,7 @@ export function InicioPage() {
     const { reducido, catalogo } = useOutletContext();
     return (
         <>
-            <Hero reducido={reducido} catalogo={catalogo} />
+            <Hero reducido={reducido} />
             <ExplorarCategorias catalogo={catalogo} />
             <BookShowcase catalogo={catalogo} reducido={reducido} />
             <OfertasDestacadas catalogo={catalogo} />
