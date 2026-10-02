@@ -194,7 +194,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 |---|---|---|---|---|---|
 | GET | `/api/favoritos` | JWT | controllers/favorito.controller.js#listarMisFavoritos | `favorito.model.js#listar` | autores, categorias, favoritos, inventario, libros |
 | GET | `/api/favoritos/:idLibro` | JWT | controllers/favorito.controller.js#estadoFavorito | `favorito.model.js#esFavorito` | favoritos |
-| POST | `/api/favoritos/:idLibro` | JWT | controllers/favorito.controller.js#agregarFavorito | `favorito.model.js#agregar`<br>`libro.model.js#obtenerPorId` | autores, categorias, favoritos, inventario, libros |
+| POST | `/api/favoritos/:idLibro` | JWT | controllers/favorito.controller.js#agregarFavorito | `favorito.model.js#agregar`<br>`libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, favoritos, inventario, libros, ventas |
 | DELETE | `/api/favoritos/:idLibro` | JWT | controllers/favorito.controller.js#quitarFavorito | `favorito.model.js#quitar` | favoritos |
 
 ### /api/historial
@@ -221,11 +221,11 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| GET | `/api/libros` | — | controllers/libro.controller.js#obtenerLibros | `libro.model.js#obtenerTodos` | autores, categorias, inventario, libros |
-| GET | `/api/libros/:id` | — | controllers/libro.controller.js#obtenerLibro | `libro.model.js#obtenerPorId` | autores, categorias, inventario, libros |
+| GET | `/api/libros` | — | controllers/libro.controller.js#obtenerLibros | `libro.model.js#obtenerTodos` | autores, categorias, detalle_venta, inventario, libros, ventas |
+| GET | `/api/libros/:id` | — | controllers/libro.controller.js#obtenerLibro | `libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | POST | `/api/libros` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#crearLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro`<br>`libro.model.js#crear`<br>`libro.model.js#eliminar` | autores, categorias, historial_operaciones, inventario, libros |
-| PUT | `/api/libros/:id` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#actualizarLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`libro.model.js#actualizar`<br>`libro.model.js#obtenerPorId` | autores, categorias, historial_operaciones, inventario, libros |
-| DELETE | `/api/libros/:id` | JWT + rol:administrador | controllers/libro.controller.js#eliminarLibro | `historial.model.js#crear`<br>`inventario.model.js#eliminarMovimientosPorLibro`<br>`inventario.model.js#eliminarPorLibro`<br>`libro.model.js#obtenerPorId`<br>`usuario.model.js#buscarPorIdConPassword` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, movimientos_inventario, reservas, usuarios |
+| PUT | `/api/libros/:id` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#actualizarLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`libro.model.js#actualizar`<br>`libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, ventas |
+| DELETE | `/api/libros/:id` | JWT + rol:administrador | controllers/libro.controller.js#eliminarLibro | `historial.model.js#crear`<br>`inventario.model.js#eliminarMovimientosPorLibro`<br>`inventario.model.js#eliminarPorLibro`<br>`libro.model.js#obtenerPorId`<br>`usuario.model.js#buscarPorIdConPassword` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, movimientos_inventario, reservas, usuarios, ventas |
 
 ### /api/pagos
 
@@ -328,7 +328,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/favorito.model.js` | autores, categorias, favoritos, inventario, libros |
 | `models/historial.model.js` | historial_operaciones, usuarios |
 | `models/inventario.model.js` | inventario, libros, movimientos_inventario, usuarios |
-| `models/libro.model.js` | autores, categorias, inventario, libros |
+| `models/libro.model.js` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | `models/pago.model.js` | ventas |
 | `models/reclamacion.model.js` | reclamaciones |
 | `models/reporte.model.js` | autores, categorias, comprobantes, detalle_venta, inventario, libros, reservas, usuarios, ventas |

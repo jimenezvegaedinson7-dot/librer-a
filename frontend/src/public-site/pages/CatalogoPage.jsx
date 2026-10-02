@@ -1,15 +1,34 @@
 import { useMemo, useState } from 'react';
 import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
-import { FaMagnifyingGlass, FaMobileScreenButton } from 'react-icons/fa6';
+import { FaMagnifyingGlass, FaMobileScreenButton, FaTruckFast, FaStore, FaCircleCheck } from 'react-icons/fa6';
 
 import Migas from '../components/Migas';
 import { PrecioOferta } from '../components/PrecioOferta';
-import { portada } from '../lib/formato';
+import { EtiquetaNuevo, EtiquetasSuperiores } from '../components/EtiquetasLibro';
+import { portada, soles } from '../lib/formato';
 
 // Sin tildes ni mayúsculas: "Garcia" encuentra "García".
 const normalizar = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
+// Orden "Destacados": primero los más vendidos, luego los agregados
+// recientemente y después el orden en que llegan de la API.
+const ORDENES = {
+    destacados: { texto: 'Destacados', fn: (a, b) => (b.masVendido - a.masVendido) || (b.esNuevo - a.esNuevo) },
+    'precio-asc': { texto: 'Precio: de menor a mayor', fn: (a, b) => a.precioFinal - b.precioFinal },
+    'precio-desc': { texto: 'Precio: de mayor a menor', fn: (a, b) => b.precioFinal - a.precioFinal },
+    descuento: { texto: 'Mayor descuento', fn: (a, b) => b.descuento - a.descuento },
+    titulo: { texto: 'Título (A-Z)', fn: (a, b) => a.titulo.localeCompare(b.titulo, 'es') },
+};
+
+// Línea de stock como en una tienda en línea, con el dato real.
+function Stock({ libro }) {
+    if (!libro.disponible) return <p className="stock stock--agotado">Agotado temporalmente. Puedes reservarlo en la app.</p>;
+    if (libro.stock > 0 && libro.stock <= 3) return <p className="stock stock--poco">Quedan solo {libro.stock} en stock</p>;
+    return <p className="stock stock--ok"><FaCircleCheck aria-hidden="true" /> En stock</p>;
+}
+
 function TarjetaLibro({ libro, indice }) {
+    const ahorro = libro.descuento > 0 ? libro.precio - libro.precioFinal : 0;
     return (
         <li className={`tarjeta-libro${libro.disponible ? '' : ' tarjeta-libro--sin-stock'}`} style={{ '--i': indice % 10 }}>
             <div className="tarjeta-libro__tapa">
@@ -23,15 +42,20 @@ function TarjetaLibro({ libro, indice }) {
                     loading="lazy"
                     decoding="async"
                 />
-                {!libro.disponible && <span className="agotado">Sin stock por ahora</span>}
-                {libro.esNuevo && <span className="libro-nuevo">Nuevo</span>}
+                <EtiquetasSuperiores libro={libro} />
+                <EtiquetaNuevo libro={libro} />
             </div>
-            {libro.categoria && <span className="categoria">{libro.categoria}</span>}
-            <h2 className="libro__titulo">{libro.titulo}</h2>
-            <p className="libro__autor">{libro.autor}</p>
-            <PrecioOferta libro={libro} clase="tarjeta-libro__precio" />
-            <Link to="/descargar" className="boton boton--linea boton--chico">
-                <FaMobileScreenButton aria-hidden="true" /> {libro.disponible ? 'Comprar en la app' : 'Ver en la app'}
+            <div className="tarjeta-libro__cuerpo">
+                <h2 className="libro__titulo">{libro.titulo}</h2>
+                <p className="libro__autor">de <span>{libro.autor}</span></p>
+                {libro.categoria && <span className="categoria">{libro.categoria}</span>}
+                <PrecioOferta libro={libro} clase="tarjeta-libro__precio" />
+                {ahorro > 0 && <p className="ahorro">Ahorras {soles(ahorro)}</p>}
+                <Stock libro={libro} />
+                <p className="entrega-linea"><FaTruckFast aria-hidden="true" /> Entrega en Lima o recojo gratis en Pallasca</p>
+            </div>
+            <Link to="/descargar" className="boton boton--compra boton--chico">
+                <FaMobileScreenButton aria-hidden="true" /> {libro.disponible ? 'Comprar en la app' : 'Reservar en la app'}
             </Link>
         </li>
     );
@@ -43,6 +67,9 @@ export default function CatalogoPage() {
     const [params, setParams] = useSearchParams();
     const q = params.get('q') || '';
     const categoria = params.get('categoria') || '';
+    const orden = ORDENES[params.get('orden')] ? params.get('orden') : 'destacados';
+    const soloOfertas = params.get('ofertas') === '1';
+    const soloStock = params.get('stock') === '1';
     const [texto, setTexto] = useState(q);
 
     // Si la búsqueda cambia desde la cabecera, el campo se actualiza.
@@ -52,16 +79,25 @@ export default function CatalogoPage() {
         setTexto(q);
     }
 
-    const categorias = useMemo(
-        () => [...new Set(libros.map((l) => l.categoria).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es')),
-        [libros],
-    );
+    // Categorías con su cantidad de libros (dato real del catálogo).
+    const categorias = useMemo(() => {
+        const cuenta = new Map();
+        libros.forEach((l) => l.categoria && cuenta.set(l.categoria, (cuenta.get(l.categoria) || 0) + 1));
+        return [...cuenta.entries()].sort((a, b) => a[0].localeCompare(b[0], 'es'));
+    }, [libros]);
+    const enOferta = useMemo(() => libros.filter((l) => l.descuento > 0).length, [libros]);
+    const conStock = useMemo(() => libros.filter((l) => l.disponible).length, [libros]);
 
     const visibles = useMemo(() => {
         const nq = normalizar(q);
-        return libros.filter((l) => (!categoria || l.categoria === categoria)
-            && (!nq || [l.titulo, l.autor, l.categoria].some((c) => normalizar(c).includes(nq))));
-    }, [libros, q, categoria]);
+        return libros
+            .filter((l) => (!categoria || l.categoria === categoria)
+                && (!soloOfertas || l.descuento > 0)
+                && (!soloStock || l.disponible)
+                && (!nq || [l.titulo, l.autor, l.categoria].some((c) => normalizar(c).includes(nq))))
+            .map((l, i) => ({ ...l, _i: i }))
+            .sort((a, b) => ORDENES[orden].fn(a, b) || a._i - b._i);
+    }, [libros, q, categoria, soloOfertas, soloStock, orden]);
 
     // Parte siempre de la URL vigente del navegador: React Router navega en
     // una transición y su copia de los parámetros puede ir un paso atrás si
@@ -72,68 +108,115 @@ export default function CatalogoPage() {
         setParams(siguiente, { replace: true });
     };
 
+    const hayFiltros = Boolean(q || categoria || soloOfertas || soloStock);
+    const limpiar = () => { setTexto(''); actualizar({ q: '', categoria: '', ofertas: '', stock: '' }); };
+
     return (
         <>
             <Migas actual="Catálogo" />
-            <section className="seccion" aria-labelledby="catalogo-pagina-titulo">
+            <section className="seccion catalogo-pagina" aria-labelledby="catalogo-pagina-titulo">
                 <div className="contenedor">
-                    <div className="seccion__cabeza">
-                        <h1 id="catalogo-pagina-titulo" className="seccion__titulo">Catálogo</h1>
-                    </div>
-                    <p className="seccion__entrada">Precios actuales en soles. La compra y la reserva se hacen desde la app.</p>
+                    <header className="catalogo-cabeza">
+                        <div>
+                            <h1 id="catalogo-pagina-titulo" className="seccion__titulo">Catálogo</h1>
+                            <p className="seccion__entrada">
+                                Libros físicos con precios actuales en soles. Elige el tuyo y cómpralo o resérvalo desde la app:
+                                te lo llevamos a domicilio en Lima o lo recoges sin costo en nuestra tienda de Pallasca.
+                            </p>
+                        </div>
+                        <ul className="catalogo-ventajas" aria-label="Ventajas de comprar con nosotros">
+                            <li><FaTruckFast aria-hidden="true" /> Envío a domicilio en Lima</li>
+                            <li><FaStore aria-hidden="true" /> Recojo gratis en Pallasca</li>
+                            <li><FaCircleCheck aria-hidden="true" /> Pago seguro con PayU</li>
+                        </ul>
+                    </header>
 
                     <div className="filtros">
                         <form className="buscador" role="search" onSubmit={(e) => { e.preventDefault(); actualizar({ q: texto.trim() }); }}>
                             <label htmlFor="buscar-catalogo" className="visualmente-oculto">Buscar por título, autor o categoría</label>
-                            <input id="buscar-catalogo" type="search" value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Título, autor o categoría" autoComplete="off" />
+                            <input id="buscar-catalogo" type="search" value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Busca por título, autor o categoría" autoComplete="off" />
                             <button type="submit" aria-label="Buscar"><FaMagnifyingGlass aria-hidden="true" /></button>
                         </form>
-                        {(q || categoria) && (
-                            <button type="button" className="boton boton--linea boton--chico" onClick={() => { setTexto(''); actualizar({ q: '', categoria: '' }); }}>
-                                Limpiar filtros
-                            </button>
-                        )}
+                        <label className="ordenar">
+                            <span>Ordenar por</span>
+                            <select value={orden} onChange={(e) => actualizar({ orden: e.target.value === 'destacados' ? '' : e.target.value })}>
+                                {Object.entries(ORDENES).map(([clave, { texto: t }]) => <option key={clave} value={clave}>{t}</option>)}
+                            </select>
+                        </label>
                     </div>
 
-                    {categorias.length > 0 && (
-                        <div className="chips" role="group" aria-label="Filtrar por categoría">
-                            <button type="button" className="chip" aria-pressed={!categoria} onClick={() => actualizar({ categoria: '' })}>Todas</button>
-                            {categorias.map((c) => (
-                                <button key={c} type="button" className="chip" aria-pressed={categoria === c} onClick={() => actualizar({ categoria: categoria === c ? '' : c })}>{c}</button>
-                            ))}
-                        </div>
-                    )}
+                    <div className="catalogo-cuerpo">
+                        <aside className="catalogo-lateral" aria-label="Filtros del catálogo">
+                            {categorias.length > 0 && (
+                                <div className="filtro-bloque">
+                                    <h2>Categorías</h2>
+                                    <div className="chips" role="group" aria-label="Filtrar por categoría">
+                                        <button type="button" className="chip" aria-pressed={!categoria} onClick={() => actualizar({ categoria: '' })}>
+                                            Todas <span className="chip__cuenta">{libros.length}</span>
+                                        </button>
+                                        {categorias.map(([c, n]) => (
+                                            <button key={c} type="button" className="chip" aria-pressed={categoria === c} onClick={() => actualizar({ categoria: categoria === c ? '' : c })}>
+                                                {c} <span className="chip__cuenta">{n}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {libros.length > 0 && (
+                                <div className="filtro-bloque">
+                                    <h2>Mostrar</h2>
+                                    <label className="casilla">
+                                        <input type="checkbox" checked={soloOfertas} onChange={(e) => actualizar({ ofertas: e.target.checked ? '1' : '' })} />
+                                        Solo ofertas <span className="chip__cuenta">{enOferta}</span>
+                                    </label>
+                                    <label className="casilla">
+                                        <input type="checkbox" checked={soloStock} onChange={(e) => actualizar({ stock: e.target.checked ? '1' : '' })} />
+                                        Solo con stock <span className="chip__cuenta">{conStock}</span>
+                                    </label>
+                                </div>
+                            )}
+                            {hayFiltros && (
+                                <button type="button" className="boton boton--linea boton--chico" onClick={limpiar}>
+                                    Limpiar filtros
+                                </button>
+                            )}
+                        </aside>
 
-                    {error ? (
-                        <p className="aviso" role="status">
-                            El catálogo no se pudo cargar en este momento. Puedes verlo completo en la app.{' '}
-                            <Link className="subrayado enlace-texto" to="/descargar">Descargar la app</Link>
-                        </p>
-                    ) : (
-                        <>
-                            <p className="resultado" role="status" aria-live="polite">
-                                {cargando ? 'Cargando libros…' : `${visibles.length} ${visibles.length === 1 ? 'libro' : 'libros'}`}
-                            </p>
-                            {!cargando && visibles.length === 0 ? (
-                                <p className="aviso">
-                                    {libros.length === 0
-                                        ? 'Estamos actualizando el catálogo. Mientras tanto, puedes explorarlo en la app.'
-                                        : 'No encontramos libros con esos filtros. Prueba con otra búsqueda o categoría.'}
+                        <div className="catalogo-resultados">
+                            {error ? (
+                                <p className="aviso" role="status">
+                                    El catálogo no se pudo cargar en este momento. Puedes verlo completo en la app.{' '}
+                                    <Link className="subrayado enlace-texto" to="/descargar">Descargar la app</Link>
                                 </p>
                             ) : (
-                                <ul className="rejilla-libros" data-revelar="" aria-busy={cargando}>
-                                    {cargando
-                                        ? Array.from({ length: 10 }, (_, i) => (
-                                            <li className="tarjeta-libro tarjeta-libro--esqueleto" key={i} aria-hidden="true">
-                                                <div className="tarjeta-libro__tapa" />
-                                                <div style={{ height: '7.5rem' }} />
-                                            </li>
-                                        ))
-                                        : visibles.map((l, i) => <TarjetaLibro key={l.id} libro={l} indice={i} />)}
-                                </ul>
+                                <>
+                                    <p className="resultado" role="status" aria-live="polite">
+                                        {cargando
+                                            ? 'Cargando libros…'
+                                            : <><strong>{`${visibles.length} ${visibles.length === 1 ? 'libro' : 'libros'}`}</strong>{q && <> para «{q}»</>}{categoria && <> en {categoria}</>}</>}
+                                    </p>
+                                    {!cargando && visibles.length === 0 ? (
+                                        <p className="aviso">
+                                            {libros.length === 0
+                                                ? 'Estamos actualizando el catálogo. Mientras tanto, puedes explorarlo en la app.'
+                                                : 'No encontramos libros con esos filtros. Prueba con otra búsqueda o categoría.'}
+                                        </p>
+                                    ) : (
+                                        <ul className="rejilla-libros" data-revelar="" aria-busy={cargando}>
+                                            {cargando
+                                                ? Array.from({ length: 10 }, (_, i) => (
+                                                    <li className="tarjeta-libro tarjeta-libro--esqueleto" key={i} aria-hidden="true">
+                                                        <div className="tarjeta-libro__tapa" />
+                                                        <div style={{ height: '7.5rem' }} />
+                                                    </li>
+                                                ))
+                                                : visibles.map((l, i) => <TarjetaLibro key={l.id} libro={l} indice={i} />)}
+                                        </ul>
+                                    )}
+                                </>
                             )}
-                        </>
-                    )}
+                        </div>
+                    </div>
                 </div>
             </section>
         </>

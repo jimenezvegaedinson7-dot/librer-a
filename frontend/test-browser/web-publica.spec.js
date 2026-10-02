@@ -514,3 +514,69 @@ test('cada variante de botón conserva un texto legible', async ({ page }) => {
     expect(colores.blanco.fondo).toBe('rgb(255, 255, 255)');
     expect(colores.blanco.texto).toBe('rgb(0, 77, 67)');
 });
+
+// ============================================================
+// CATÁLOGO ESTILO TIENDA: etiquetas reales, orden y filtros
+// ============================================================
+test('catálogo: "Más vendido" solo en los libros que la API marca', async ({ page }) => {
+    const libros = LIBROS.map((l, i) => ({ ...l, mas_vendido: i === 2 ? 1 : 0 }));
+    await apiPublica(page, { libros });
+    await page.goto('/catalogo');
+    await expect(page.locator('.etiqueta-top')).toHaveCount(1);
+    // En orden "Destacados" el más vendido va primero.
+    await expect(page.locator('.rejilla-libros .tarjeta-libro').first()).toContainText('Libro de prueba 3');
+    await expect(page.locator('.rejilla-libros .tarjeta-libro').first().locator('.etiqueta-top')).toHaveText('Más vendido');
+});
+
+test('catálogo: ordenar por precio y filtrar ofertas y stock', async ({ page }) => {
+    const libros = LIBROS.map((l, i) => ({ ...l, precio: String(10 + i),
+        ...(i === 5 ? { descuento_vigente: 1, precio_final: '5.00', descuento_porcentaje_efectivo: 67 } : {}) }));
+    await apiPublica(page, { libros });
+    await page.goto('/catalogo');
+    const tarjetas = page.locator('.rejilla-libros .tarjeta-libro');
+
+    await page.getByLabel('Ordenar por').selectOption('precio-asc');
+    await expect(page).toHaveURL(/orden=precio-asc/);
+    await expect(tarjetas.first()).toContainText('Libro de prueba 6'); // la oferta a S/ 5.00
+    await expect(tarjetas.first().locator('.ahorro')).toHaveText('Ahorras S/ 10.00');
+
+    await page.getByLabel('Ordenar por').selectOption('precio-desc');
+    await expect(tarjetas.first()).toContainText('Libro de prueba 13');
+
+    await page.getByLabel(/Solo ofertas/).click();
+    await expect(page.getByLabel(/Solo ofertas/)).toBeChecked();
+    await expect(tarjetas).toHaveCount(1);
+    await page.getByLabel(/Solo ofertas/).click();
+    await expect(page.getByLabel(/Solo ofertas/)).not.toBeChecked();
+
+    await page.getByLabel(/Solo con stock/).click();
+    await expect(page.getByLabel(/Solo con stock/)).toBeChecked();
+    await expect(tarjetas).toHaveCount(12);
+    await expect(page.getByText('Sin stock por ahora')).toHaveCount(0);
+
+    await page.getByRole('button', { name: 'Limpiar filtros' }).click();
+    await expect(tarjetas).toHaveCount(13);
+});
+
+test('catálogo: botón de compra amarillo de tienda y stock real en la tarjeta', async ({ page }) => {
+    const libros = LIBROS.map((l, i) => ({ ...l, stock: i === 1 ? 2 : l.stock }));
+    await apiPublica(page, { libros });
+    await page.goto('/catalogo');
+    const boton = page.locator('.tarjeta-libro .boton--compra').first();
+    await expect(boton).toHaveCSS('background-color', 'rgb(255, 216, 20)');
+    await expect(page.locator('.stock--poco')).toHaveCount(1);
+    await expect(page.locator('.stock--poco')).toHaveText('Quedan solo 2 en stock');
+    await expect(page.locator('.tarjeta-libro--sin-stock .boton--compra')).toContainText('Reservar en la app');
+});
+
+test('inicio: explora por categoría y cómo comprar', async ({ page }) => {
+    await apiPublica(page);
+    await page.goto('/');
+    await page.waitForSelector('#precarga', { state: 'detached' });
+    const tarjetas = page.locator('.explorar__tarjeta');
+    await expect(tarjetas).toHaveCount(3);
+    await expect(page.locator('.paso')).toHaveCount(4);
+    await tarjetas.first().click();
+    await expect(page).toHaveURL(/\/catalogo\?categoria=/);
+});
+

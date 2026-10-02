@@ -4,6 +4,7 @@ import { FaArrowLeft, FaArrowRight, FaChevronRight } from 'react-icons/fa6';
 
 import { PrecioOferta } from '../components/PrecioOferta';
 import { portada } from '../lib/formato';
+import { EtiquetaNuevo } from '../components/EtiquetasLibro';
 
 function Libro({ libro, indice }) {
     return (
@@ -19,7 +20,8 @@ function Libro({ libro, indice }) {
                     loading="lazy"
                     decoding="async"
                 />
-                {libro.esNuevo && <span className="libro-nuevo">Nuevo</span>}
+                {libro.masVendido && <span className="etiquetas-libro"><span className="etiqueta-top">Más vendido</span></span>}
+                <EtiquetaNuevo libro={libro} />
             </div>
             <div className="libro__datos">
                 <h3 className="libro__titulo">{libro.titulo}</h3>

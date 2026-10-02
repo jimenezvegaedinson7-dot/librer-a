@@ -303,6 +303,12 @@ Al final de las páginas que explican la app (Aplicación, Características): ba
 ### Promos del inicio
 Tres tarjetas de radio 8px (verde, blanca con borde, verde encuadernación). Cuando llevan captura de la app, el texto ocupa como máximo el 58% del ancho (66% en móvil) y queda por encima de la imagen: la captura nunca tapa texto.
 
+### Catálogo estilo tienda
+Cabecera con texto de venta y tres ventajas reales (envío en Lima, recojo gratis, PayU); buscador y "Ordenar por" (Destacados, precio, mayor descuento, título); columna lateral con categorías y su cantidad, "Solo ofertas" y "Solo con stock" (en móvil pasan a una fila desplazable). Tarjeta de producto: etiquetas en cinta con muesca sobre la portada ("Más vendido" naranja #c45500 = top 3 en unidades de ventas pagadas o entregadas; "Agregado recientemente" verde = creado en los últimos 30 días; "Sin stock por ahora"), título que pasa a naranja al pasar el mouse, autor en azul enlace (#007185), precio, "Ahorras S/ X" en rojo #b12704, línea de stock ("En stock" verde #007600, "Quedan solo N" con N ≤ 3), línea de entrega y botón de compra amarillo de tienda (#ffd814, borde #fcd200, texto #0f1111). Ninguna etiqueta se inventa.
+
+### Inicio: categorías y pasos
+"Explora por categoría": mosaicos con tres portadas en abanico que se abren al pasar el mouse, nombre y número de títulos; llevan al catálogo filtrado. "Comprar un libro es así de simple": cuatro pasos numerados unidos por una línea punteada, que entran escalonados (los números con un pequeño rebote).
+
 ### Mapa de la tienda
 En Nosotros, bloque con ancla `#tienda` (destino del enlace "Nuestra tienda" de la cabecera y del cajón móvil): título en verde, dirección con icono de ubicación, nota de recojo y botón chico "Cómo llegar"; a la derecha, mapa embebido de Google Maps (Plaza de Armas de Pallasca) en marco de tarjeta: borde gris filete, radio 8px, sombra de tarjeta, 16:10 (4:3 en móvil). Carga diferida.
 

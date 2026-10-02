@@ -240,6 +240,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/Spinner.jsx` | 4 |
 | `components/ui/TableSkeleton.jsx` | 17 |
 | `public-site/components/CierreDescarga.jsx` | 2 |
+| `public-site/components/EtiquetasLibro.jsx` | 2 |
 | `public-site/components/Migas.jsx` | 2 |
 | `public-site/components/Precarga.jsx` | 1 |
 | `public-site/components/PrecioOferta.jsx` | 2 |

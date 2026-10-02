@@ -42,6 +42,8 @@ export function useCatalogo(limite = null) {
                             portada: l.portada,
                             disponible: Number(l.stock) > 0,
                             esNuevo: Number(l.es_nuevo) === 1,
+                            masVendido: Number(l.mas_vendido) === 1,
+                            stock: Math.max(0, Number(l.stock) || 0),
                         };
                     });
                 setEstado({ cargando: false, error: false, libros });

@@ -5,6 +5,8 @@ import Hero from '../sections/Hero';
 import BookShowcase from '../sections/BookShowcase';
 import Promos from '../sections/Promos';
 import VideoSection from '../sections/VideoSection';
+import ExplorarCategorias from '../sections/ExplorarCategorias';
+import ComoComprar from '../sections/ComoComprar';
 import MobileExperience from '../sections/MobileExperience';
 import FeatureStory from '../sections/FeatureStory';
 import DownloadSection from '../sections/DownloadSection';
@@ -19,7 +21,9 @@ export function InicioPage() {
         <>
             <Hero reducido={reducido} />
             <BookShowcase catalogo={catalogo} reducido={reducido} />
+            <ExplorarCategorias catalogo={catalogo} />
             <VideoSection />
+            <ComoComprar />
             <Promos />
         </>
     );

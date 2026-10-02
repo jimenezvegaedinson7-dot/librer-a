@@ -108,6 +108,8 @@ const obtenerTodos = async () => {
 
                 c.nombre AS categoria,
 
+                CASE WHEN top.id_libro IS NULL THEN 0 ELSE 1 END AS mas_vendido,
+
                 ${PRECIO_FINAL_SQL}
 
             FROM libros l
@@ -120,6 +122,22 @@ const obtenerTodos = async () => {
 
             LEFT JOIN inventario i
                 ON l.id_libro = i.id_libro
+
+            -- Los 3 libros con más unidades vendidas (ventas pagadas o
+            -- entregadas). Solo alimenta la etiqueta "Más vendido": las
+            -- cantidades no salen de la base.
+            LEFT JOIN (
+                SELECT dv.id_libro
+                FROM detalle_venta dv
+                INNER JOIN ventas v
+                    ON v.id_venta = dv.id_venta
+                WHERE v.estado IN ('pagada', 'entregada')
+                GROUP BY dv.id_libro
+                HAVING SUM(dv.cantidad) > 0
+                ORDER BY SUM(dv.cantidad) DESC, dv.id_libro
+                LIMIT 3
+            ) top
+                ON top.id_libro = l.id_libro
         ) base
 
         ORDER BY base.id_libro DESC
@@ -169,6 +187,8 @@ const obtenerPorId = async (id) => {
 
                 c.nombre AS categoria,
 
+                CASE WHEN top.id_libro IS NULL THEN 0 ELSE 1 END AS mas_vendido,
+
                 ${PRECIO_FINAL_SQL}
 
             FROM libros l
@@ -181,6 +201,21 @@ const obtenerPorId = async (id) => {
 
             LEFT JOIN inventario i
                 ON l.id_libro = i.id_libro
+            -- Los 3 libros con más unidades vendidas (ventas pagadas o
+            -- entregadas). Solo alimenta la etiqueta "Más vendido": las
+            -- cantidades no salen de la base.
+            LEFT JOIN (
+                SELECT dv.id_libro
+                FROM detalle_venta dv
+                INNER JOIN ventas v
+                    ON v.id_venta = dv.id_venta
+                WHERE v.estado IN ('pagada', 'entregada')
+                GROUP BY dv.id_libro
+                HAVING SUM(dv.cantidad) > 0
+                ORDER BY SUM(dv.cantidad) DESC, dv.id_libro
+                LIMIT 3
+            ) top
+                ON top.id_libro = l.id_libro
 
             WHERE l.id_libro = ?
         ) base

@@ -109,6 +109,24 @@ test('promociones: HTTP, precio cobrado, favoritos, novedades y anuncios', async
             assert.equal(existente.id_venta, orden.id_venta);
             assert.equal(Number(existente.total), 45);
         });
+        await t.test('"Más vendido" sale de ventas pagadas o entregadas, no de pendientes', async () => {
+            const vendido = await crear();
+            const pendiente = await crear();
+            const venta = async (estado, idLibro, cantidad) => {
+                const [v] = await pool.query(`INSERT INTO ventas (id_usuario, total, costo_envio, estado, estado_entrega, tipo_entrega, origen, fecha_venta)
+                    VALUES (?, ?, 0, ?, 'pendiente', 'tienda', 'app', CURRENT_TIMESTAMP) RETURNING id_venta`, [ids.usuarios[1], cantidad * 100, estado]);
+                await pool.query('INSERT INTO detalle_venta (id_venta, id_libro, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, 100, ?)',
+                    [v[0].id_venta, idLibro, cantidad, cantidad * 100]);
+            };
+            await venta('pagada', vendido, 500);
+            await venta('pendiente', pendiente, 900);
+            const listado = (await (await pedir('/libros')).json()).data;
+            assert.equal(listado.find((l) => l.id_libro === vendido).mas_vendido, 1);
+            assert.equal(listado.find((l) => l.id_libro === pendiente).mas_vendido, 0);
+            assert.equal((await detalle(vendido)).mas_vendido, 1);
+            // La cantidad vendida no se publica: solo la etiqueta.
+            assert.equal(Object.keys(listado[0]).some((k) => /unidades|vendidas|cantidad/.test(k)), false);
+        });
         await t.test('anuncios CRUD real, autorización, archivo y contraseña', async () => {
             const video = readFileSync(path.resolve(__dirname, '../../frontend/test-browser/fixtures/anuncio.webm'));
             const subir = async (titulo, tipo = 'video/webm', contenido = video) => {

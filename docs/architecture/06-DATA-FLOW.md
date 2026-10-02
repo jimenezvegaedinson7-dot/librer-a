@@ -44,7 +44,7 @@
 - El job cancela reservas vencidas cada 5 min (`reservaModel.cancelarVencidas`).
 
 ## 6. Catálogo e inventario
-- Lectura pública compartida: `GET /api/libros` → `libro.model.js#obtenerTodos` → tablas: autores, categorias, inventario, libros.
+- Lectura pública compartida: `GET /api/libros` → `libro.model.js#obtenerTodos` → tablas: autores, categorias, detalle_venta, inventario, libros, ventas.
 - Alta de libro (React): `POST /api/libros` → `autor.model.js#obtenerPorId`, `categoria.model.js#obtenerPorId`, `historial.model.js#crear`, `inventario.model.js#crear`, `inventario.model.js#obtenerPorLibro`, `libro.model.js#crear`, `libro.model.js#eliminar` → tablas: autores, categorias, historial_operaciones, inventario, libros (multer + Cloudinary/disco).
 - Inventario (React): `PUT /api/inventario/libro/:id` → `historial.model.js#crear`, `inventario.model.js#actualizar`, `inventario.model.js#obtenerPorLibro` → tablas: historial_operaciones, inventario, libros; kardex: `GET /api/inventario/movimientos` → `inventario.model.js#listarMovimientos` → tablas: libros, movimientos_inventario, usuarios.
 
