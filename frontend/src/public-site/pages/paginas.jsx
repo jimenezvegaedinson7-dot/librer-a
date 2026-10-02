@@ -9,6 +9,7 @@ import ExplorarCategorias from '../sections/ExplorarCategorias';
 import ComoComprar from '../sections/ComoComprar';
 import BandaCatalogo from '../sections/BandaCatalogo';
 import Beneficios from '../sections/Beneficios';
+import OfertasDestacadas from '../sections/OfertasDestacadas';
 import MobileExperience from '../sections/MobileExperience';
 import FeatureStory from '../sections/FeatureStory';
 import DownloadSection from '../sections/DownloadSection';
@@ -21,9 +22,10 @@ export function InicioPage() {
     const { reducido, catalogo } = useOutletContext();
     return (
         <>
-            <Hero reducido={reducido} />
+            <Hero reducido={reducido} catalogo={catalogo} />
             <ExplorarCategorias catalogo={catalogo} />
             <BookShowcase catalogo={catalogo} reducido={reducido} />
+            <OfertasDestacadas catalogo={catalogo} />
             <BandaCatalogo catalogo={catalogo} />
             <VideoSection />
             <ComoComprar />

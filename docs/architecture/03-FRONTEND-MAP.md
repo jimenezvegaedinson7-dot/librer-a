@@ -251,7 +251,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/components/EtiquetasLibro.jsx` | 2 |
 | `public-site/components/Migas.jsx` | 2 |
 | `public-site/components/Precarga.jsx` | 1 |
-| `public-site/components/PrecioOferta.jsx` | 2 |
+| `public-site/components/PrecioOferta.jsx` | 3 |
 | `public-site/components/PublicFooter.jsx` | 1 |
 | `public-site/components/PublicHeader.jsx` | 1 |
 

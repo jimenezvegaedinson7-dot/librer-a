@@ -9,6 +9,7 @@ import { EtiquetaNuevo } from '../components/EtiquetasLibro';
 function Libro({ libro, indice }) {
     return (
         <li className="libro" style={{ '--i': indice }}>
+            <div className="libro__escenario">
             <div className="libro__tapa">
                 <img
                     src={portada(libro.portada, 320)}
@@ -23,11 +24,12 @@ function Libro({ libro, indice }) {
                 {libro.masVendido && <span className="etiquetas-libro"><span className="etiqueta-top">Más vendido</span></span>}
                 <EtiquetaNuevo libro={libro} />
             </div>
+            </div>
             <div className="libro__datos">
+                {libro.categoria && <span className="libro__categoria">{libro.categoria}</span>}
                 <h3 className="libro__titulo">{libro.titulo}</h3>
                 <p className="libro__autor">{libro.autor}</p>
                 <p className="libro__pie">
-                    <span>{libro.categoria}</span>
                     <PrecioOferta libro={libro} />
                 </p>
                 <Link to="/descargar" className="boton boton--compra boton--chico libro__comprar" aria-label={`${libro.disponible ? 'Comprar' : 'Reservar'} «${libro.titulo}» en la app`}>
@@ -43,7 +45,11 @@ function Libro({ libro, indice }) {
 export default function BookShowcase({ catalogo, reducido }) {
     const { cargando, error, libros } = catalogo;
     const ventana = useRef(null);
-    const muestra = libros.slice(0, 12);
+    // Primero los más vendidos y los recién agregados (datos reales).
+    const muestra = libros
+        .map((l, i) => ({ ...l, _i: i }))
+        .sort((a, b) => (b.masVendido - a.masVendido) || (b.esNuevo - a.esNuevo) || a._i - b._i)
+        .slice(0, 12);
 
     const desplazar = (sentido) => {
         const el = ventana.current;

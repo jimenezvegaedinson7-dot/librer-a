@@ -18,7 +18,10 @@ const poster1200 = '/hero/libro-3d-1200.webp';
 
 const LINEAS = ['Una librería de verdad,', 'ahora en tu teléfono.'];
 
-export default function Hero({ reducido }) {
+export default function Hero({ reducido, catalogo }) {
+    const libros = catalogo?.libros || [];
+    const totalCategorias = new Set(libros.map((l) => l.categoria).filter(Boolean)).size;
+    const enOferta = libros.filter((l) => l.descuento > 0).length;
     const seccion = useRef(null);
     const escena = useRef(null);
     const puntero = useRef({ x: 0, y: 0 });
@@ -133,6 +136,13 @@ export default function Hero({ reducido }) {
                             Ver el catálogo
                         </Link>
                     </motion.div>
+                    {libros.length > 0 && (
+                        <motion.dl className="hero__cifras" {...aparece(0.8)}>
+                            <div><dt>Libros disponibles</dt><dd>{libros.length}</dd></div>
+                            {totalCategorias > 0 && <div><dt>Categorías</dt><dd>{totalCategorias}</dd></div>}
+                            {enOferta > 0 && <div><dt>En oferta</dt><dd>{enOferta}</dd></div>}
+                        </motion.dl>
+                    )}
                 </div>
 
                 <div ref={escena} className="hero__escena">
