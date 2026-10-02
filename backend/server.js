@@ -126,7 +126,8 @@ app.get('/', (req, res) => {
 // ===============================
 app.get('/api', (req, res) => {
     res.json({
-        mensaje: 'API de Librería funcionando correctamente'
+        mensaje: 'API de Librería funcionando correctamente',
+        capacidades: { descuentos_libros: true, anuncios_video: true, libros_nuevos: true }
     });
 });
 

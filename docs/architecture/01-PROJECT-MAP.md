@@ -1,6 +1,6 @@
 # Mapa del proyecto C:\libreria
 
-> Generado desde el código real el 2026-10-01 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-02 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Visión general
@@ -13,11 +13,11 @@
 
 Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `backups/`, scripts `*.ps1` de utilidades locales.
 
-## Cifras (análisis 2026-10-01)
+## Cifras (análisis 2026-10-02)
 
-- Backend: **125** archivos JS (incluye tests y scripts) · **110** endpoints · 21 routers · 22 controladores · 18 modelos · 16 tablas.
-- Frontend: **170** archivos JS/JSX · 32 rutas · 24 archivos de servicio.
-- Flutter: **68** archivos Dart · 30 métodos en ApiService · 20 pantallas/widgets con llamadas a la API.
+- Backend: **126** archivos JS (incluye tests y scripts) · **110** endpoints · 21 routers · 22 controladores · 18 modelos · 16 tablas.
+- Frontend: **171** archivos JS/JSX · 32 rutas · 24 archivos de servicio.
+- Flutter: **68** archivos Dart · 30 métodos en ApiService · 21 pantallas/widgets con llamadas a la API.
 
 ## Módulos de negocio
 

@@ -24,6 +24,7 @@ function TarjetaLibro({ libro, indice }) {
                     decoding="async"
                 />
                 {!libro.disponible && <span className="agotado">Sin stock por ahora</span>}
+                {libro.esNuevo && <span className="libro-nuevo">Nuevo</span>}
             </div>
             {libro.categoria && <span className="categoria">{libro.categoria}</span>}
             <h2 className="libro__titulo">{libro.titulo}</h2>

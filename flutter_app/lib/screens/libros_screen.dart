@@ -14,6 +14,7 @@ import '../widgets/loading_view.dart';
 import '../widgets/precio_texto.dart';
 import '../widgets/portadas_libro.dart';
 import '../widgets/presionable.dart';
+import '../widgets/estado_chip.dart';
 import 'carrito_screen.dart';
 import 'detalle_libro_screen.dart';
 
@@ -113,6 +114,7 @@ class _LibrosScreenState extends State<LibrosScreen> {
 
     try {
       final libros = await ApiService.instance.obtenerLibros();
+      CarritoService.instance.actualizarCatalogo(libros);
 
       if (!mounted) return;
 
@@ -233,11 +235,11 @@ class _LibrosScreenState extends State<LibrosScreen> {
         break;
 
       case _Orden.precioMenor:
-        filtrados.sort((a, b) => (a.precio ?? 0).compareTo(b.precio ?? 0));
+        filtrados.sort((a, b) => a.precioCompra.compareTo(b.precioCompra));
         break;
 
       case _Orden.precioMayor:
-        filtrados.sort((a, b) => (b.precio ?? 0).compareTo(a.precio ?? 0));
+        filtrados.sort((a, b) => b.precioCompra.compareTo(a.precioCompra));
         break;
     }
 
@@ -943,7 +945,20 @@ class _LibroGridCard extends StatelessWidget {
                   Positioned(
                     left: 8,
                     top: 8,
-                    child: _StockBadge(disponible: disponible, stock: stock),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _StockBadge(disponible: disponible, stock: stock),
+                        if (libro.mostrarNuevo) ...[
+                          const SizedBox(height: 4),
+                          const EstadoChip(
+                            texto: 'Nuevo',
+                            tono: TonoEstado.marca,
+                            conPunto: false,
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                   Positioned(
                     left: 12,
@@ -955,8 +970,8 @@ class _LibroGridCard extends StatelessWidget {
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.only(bottom: 6),
-                            child: PrecioTexto(
-                              monto: libro.precio,
+                            child: PrecioLibro(
+                              libro: libro,
                               tamano: 18,
                               color: Colors.white,
                             ),

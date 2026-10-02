@@ -39,6 +39,26 @@ const menu = (page) => page.getByRole('navigation', { name: 'Principal' });
 
 test.use({ reducedMotion: 'reduce' });
 
+for (const width of [390, 1440]) {
+    test(`Nuevo: catálogo e inicio con libros recientes a ${width}px`, async ({page}) => {
+        await page.setViewportSize({width, height: 900});
+        const errores = []; page.on('pageerror', e => errores.push(e.message));
+        const libros = LIBROS.map((libro, i) => ({...libro, es_nuevo: i === 0 ? 1 : 0,
+            stock: i === 0 ? 0 : libro.stock}));
+        await apiPublica(page, {libros});
+        await page.goto('/catalogo');
+        await expect(page.locator('.libro-nuevo')).toHaveCount(1);
+        await expect(page.locator('.libro-nuevo')).toBeVisible();
+        const nuevo = await page.locator('.libro-nuevo').boundingBox();
+        const agotado = await page.locator('.tarjeta-libro').first().locator('.agotado').boundingBox();
+        expect(nuevo.y).toBeGreaterThanOrEqual(agotado.y + agotado.height);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+        await page.goto('/');
+        await expect(page.locator('.libro-nuevo')).toHaveCount(1);
+        expect(errores).toEqual([]);
+    });
+}
+
 test('inicio: web pública con metadatos, menú de páginas y sin errores', async ({ page }) => {
     const errores = [];
     page.on('pageerror', (e) => errores.push(e.message));

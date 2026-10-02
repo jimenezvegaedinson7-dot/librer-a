@@ -737,3 +737,15 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
     .boton:hover, .tarjeta-libro:hover { transform: none; }
     .tarjeta-libro:hover .tarjeta-libro__tapa img { transform: none; }
 }
+.sitio .libro-nuevo {
+    position: absolute;
+    bottom: 0.6rem;
+    left: 0.6rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.3rem;
+    background: #004d43;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 2;
+}

@@ -54,6 +54,28 @@ class CarritoService extends ChangeNotifier {
   /// `true` si el carrito está vacío.
   bool get vacio => _items.isEmpty;
 
+  /// Recarga precio y stock sin modificar las cantidades elegidas.
+  bool actualizarCatalogo(List<Libro> catalogo) {
+    final porId = {for (final libro in catalogo) libro.idLibro: libro};
+    var cambio = false;
+    for (var i = 0; i < _items.length; i++) {
+      final item = _items[i];
+      final fresco = porId[item.libro.idLibro];
+      if (fresco == null) continue;
+      cambio |= item.precioCentimos != (fresco.precioCompra * 100).round();
+      _items[i] = CarritoItem(libro: fresco, cantidad: item.cantidad);
+    }
+    for (var i = 0; i < _guardados.length; i++) {
+      final item = _guardados[i];
+      final fresco = porId[item.libro.idLibro];
+      if (fresco != null) {
+        _guardados[i] = CarritoItem(libro: fresco, cantidad: item.cantidad);
+      }
+    }
+    _cambio();
+    return cambio;
+  }
+
   /// Índice de un ítem por id de libro, o -1.
   int _indexDeLibro(int idLibro) {
     return _items.indexWhere((item) => item.libro.idLibro == idLibro);

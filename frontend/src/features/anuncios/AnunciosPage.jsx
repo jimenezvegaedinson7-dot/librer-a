@@ -64,6 +64,19 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
     const [video, setVideo] = useState(null);
     const [error, setError] = useState('');
     const [guardando, setGuardando] = useState(false);
+    const [vistaPrevia, setVistaPrevia] = useState(null);
+    const previewRef = useRef(null);
+    const enviandoRef = useRef(false);
+    useEffect(() => {
+        return () => { if (previewRef.current) URL.revokeObjectURL(previewRef.current); };
+    }, []);
+
+    const asignarVideo = (archivo) => {
+        if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+        previewRef.current = archivo ? URL.createObjectURL(archivo) : null;
+        setVistaPrevia(previewRef.current);
+        setVideo(archivo);
+    };
 
     // Al elegir un archivo se muestra la vista previa, y cancelar
     // devuelve el input a vacío para poder resubir el mismo archivo.
@@ -72,17 +85,18 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
         if (!archivo) return;
         const problema = revisarArchivo(archivo);
         setError(problema);
-        setVideo(problema ? null : archivo);
+        asignarVideo(problema ? null : archivo);
         if (problema) e.target.value = '';
     };
 
     const quitarVideo = () => {
-        setVideo(null);
+        asignarVideo(null);
         if (inputRef.current) inputRef.current.value = '';
     };
 
     const enviar = async (e) => {
         e.preventDefault();
+        if (enviandoRef.current) return;
         if (!titulo.trim()) {
             setError('Escribe un título para el anuncio');
             return;
@@ -94,6 +108,7 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
         }
 
         try {
+            enviandoRef.current = true;
             setGuardando(true);
             setError('');
             const res = esEdicion
@@ -105,6 +120,7 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
         } catch (err) {
             setError(err.response?.data?.mensaje || 'No se pudo guardar el anuncio');
         } finally {
+            enviandoRef.current = false;
             setGuardando(false);
         }
     };
@@ -134,7 +150,7 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
                         setTitulo(e.target.value);
                         setError('');
                     }}
-                    placeholder="Ej. Promotion de temporada"
+                    placeholder="Ej. Promoción de temporada"
                     maxLength={200}
                     requerido
                 />
@@ -169,7 +185,7 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
                 {video && (
                     <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-900">
                         <video
-                            src={URL.createObjectURL(video)}
+                            src={vistaPrevia || undefined}
                             controls
                             muted
                             playsInline
@@ -197,7 +213,7 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
     );
 }
 
-const columnas = [
+const columnas = (enPortada) => [
     {
         titulo: 'Anuncio',
         render: (f) => (
@@ -360,7 +376,7 @@ export default function AnunciosPage() {
                     )}
                     {!cargando && !error && lista.length > 0 && (
                         <DataTable
-                            columnas={columnas}
+                            columnas={columnas(enPortada)}
                             filas={lista}
                             keyExtractor={(f) => f.id_anuncio}
                             acciones={(f) => (

@@ -1,4 +1,5 @@
 const pool = require('../config/database');
+const { PRECIO_FINAL_SQL, CAMPOS_DESCUENTO } = require('./libro.model');
 
 // ========================================
 // AGREGAR FAVORITO
@@ -51,6 +52,7 @@ const esFavorito = async (idUsuario, idLibro) => {
 // ========================================
 const listar = async (idUsuario) => {
     const [rows] = await pool.query(`
+        SELECT base.*, ${CAMPOS_DESCUENTO} FROM (
         SELECT
             l.id_libro,
             l.titulo,
@@ -75,7 +77,13 @@ const listar = async (idUsuario) => {
 
             l.id_categoria,
             c.nombre AS categoria,
-            l.estado
+            l.estado,
+            l.creado_en,
+            l.descuento_porcentaje,
+            l.precio_oferta,
+            TO_CHAR(l.descuento_hasta, 'YYYY-MM-DD') AS descuento_hasta,
+            ${PRECIO_FINAL_SQL},
+            f.fecha AS favorito_fecha
 
         FROM favoritos f
 
@@ -93,7 +101,8 @@ const listar = async (idUsuario) => {
 
         WHERE f.id_usuario = ?
 
-        ORDER BY f.fecha DESC, l.id_libro DESC
+        ) base
+        ORDER BY base.favorito_fecha DESC, base.id_libro DESC
     `, [idUsuario]);
 
     return rows;

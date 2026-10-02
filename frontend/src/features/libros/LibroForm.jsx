@@ -134,7 +134,7 @@ export default function LibroForm({ onLibroCreado }) {
             setMensaje(respuesta?.mensaje || 'Libro registrado correctamente');
             if (onLibroCreado) await onLibroCreado();
         } catch (err) {
-            setError(err.response?.data?.mensaje || 'Error al registrar el libro');
+            setError(err.mensajeUsuario || err.response?.data?.mensaje || 'Error al registrar el libro');
         } finally {
             setGuardando(false);
         }

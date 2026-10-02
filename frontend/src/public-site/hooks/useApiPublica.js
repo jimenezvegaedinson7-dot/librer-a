@@ -41,6 +41,7 @@ export function useCatalogo(limite = null) {
                             descuento: enOferta ? Number(l.descuento_porcentaje_efectivo) : 0,
                             portada: l.portada,
                             disponible: Number(l.stock) > 0,
+                            esNuevo: Number(l.es_nuevo) === 1,
                         };
                     });
                 setEstado({ cargando: false, error: false, libros });

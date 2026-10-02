@@ -19,6 +19,7 @@ function Libro({ libro, indice }) {
                     loading="lazy"
                     decoding="async"
                 />
+                {libro.esNuevo && <span className="libro-nuevo">Nuevo</span>}
             </div>
             <div className="libro__datos">
                 <h3 className="libro__titulo">{libro.titulo}</h3>

@@ -114,12 +114,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   /// se confirma (ver [_verificarPago]). Si el usuario vuelve sin pagar, el
   /// carrito y la orden pendiente se conservan para poder continuar.
   Future<void> _realizarCompra() async {
+    if (_procesando) return;
     final carrito = CarritoService.instance;
-
-    final detalles = <Map<String, dynamic>>[];
-    for (final item in carrito.items) {
-      detalles.add({'id_libro': item.libro.idLibro, 'cantidad': item.cantidad});
-    }
 
     final error = _validarEntrega();
     if (error != null) {
@@ -130,6 +126,39 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
 
     setState(() => _procesando = true);
     try {
+      // Se renuevan las promociones antes de confirmar; el servidor sigue
+      // determinando y guardando el importe definitivo del pedido.
+      final catalogo = await ApiService.instance.obtenerLibros();
+      if (!mounted) return;
+      final cambioPrecio = carrito.actualizarCatalogo(catalogo);
+      final porId = {for (final libro in catalogo) libro.idLibro: libro};
+      if (carrito.vacio) throw const ApiException('El carrito está vacío.');
+      for (final item in carrito.items) {
+        final fresco = porId[item.libro.idLibro];
+        if (fresco == null ||
+            !fresco.esActivo ||
+            (fresco.stock ?? 0) < item.cantidad) {
+          throw ApiException(
+            'Revisa el carrito: ${item.libro.titulo} ya no tiene las unidades solicitadas.',
+          );
+        }
+      }
+      if (cambioPrecio) {
+        ApiService.instance.limpiarIdempotencia();
+        setState(() => _procesando = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Actualizamos los precios del carrito. Revisa el total y vuelve a confirmar la compra.',
+            ),
+          ),
+        );
+        return;
+      }
+      final detalles = [
+        for (final item in carrito.items)
+          {'id_libro': item.libro.idLibro, 'cantidad': item.cantidad},
+      ];
       final esDomicilio = _tipoEntrega == _TipoEntrega.domicilio;
 
       // Crea la orden de pago en PayU (backend calcula el total con

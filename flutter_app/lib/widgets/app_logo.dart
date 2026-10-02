@@ -13,6 +13,7 @@ class AppLogo extends StatefulWidget {
   final double? width;
   final double? height;
   final BoxFit fit;
+  final Color? color;
 
   /// Si es `true`, muestra el placeholder aunque exista la imagen (útil para
   /// previsualizar el diseño o en pantallas oscuras).
@@ -23,6 +24,7 @@ class AppLogo extends StatefulWidget {
     this.width,
     this.height,
     this.fit = BoxFit.contain,
+    this.color,
     this.forcePlaceholder = false,
   });
 
@@ -68,6 +70,8 @@ class _AppLogoState extends State<AppLogo> {
       width: widget.width,
       height: widget.height,
       fit: widget.fit,
+      color: widget.color,
+      colorBlendMode: BlendMode.srcIn,
       errorBuilder: (_, _, _) =>
           _Placeholder(width: widget.width, height: widget.height),
     );

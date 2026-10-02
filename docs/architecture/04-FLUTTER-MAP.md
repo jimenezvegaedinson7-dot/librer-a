@@ -1,6 +1,6 @@
 # Mapa de la app Flutter (Android / clientes)
 
-> Generado desde el código real el 2026-10-01 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-02 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque y navegación
@@ -64,8 +64,9 @@
 
 | Pantalla / widget | Métodos | Endpoints |
 |---|---|---|
+| `screens/carrito_screen.dart` | `obtenerLibros` | `GET /api/libros` |
 | `screens/detalle_libro_screen.dart` | `agregarFavorito`, `crearReserva`, `esFavorito`, `obtenerDetalleLibro`, `quitarFavorito` | `POST /api/favoritos/:idLibro`<br>`POST /api/reservas`<br>`GET /api/favoritos/:idLibro`<br>`GET /api/libros/:id`<br>`DELETE /api/favoritos/:idLibro` |
-| `screens/entrega_y_pago_screen.dart` | `crearOrdenPago`, `obtenerDistritos`, `obtenerOrdenPago`, `obtenerProvincias` | `POST /api/pagos/crear-orden`<br>`GET /api/ubicaciones/provincias/:idProvincia/distritos`<br>`GET /api/pagos/:orderId`<br>`GET /api/ubicaciones/provincias` |
+| `screens/entrega_y_pago_screen.dart` | `crearOrdenPago`, `obtenerDistritos`, `obtenerLibros`, `obtenerOrdenPago`, `obtenerProvincias` | `POST /api/pagos/crear-orden`<br>`GET /api/ubicaciones/provincias/:idProvincia/distritos`<br>`GET /api/libros`<br>`GET /api/pagos/:orderId`<br>`GET /api/ubicaciones/provincias` |
 | `screens/favoritos_screen.dart` | `obtenerFavoritos`, `quitarFavorito` | `GET /api/favoritos`<br>`DELETE /api/favoritos/:idLibro` |
 | `screens/home_screen.dart` | `obtenerLibros` | `GET /api/libros` |
 | `screens/libros_screen.dart` | `obtenerLibros` | `GET /api/libros` |
@@ -85,7 +86,7 @@
 | `screens/splash_screen.dart` | `obtenerPerfil` | `GET /api/usuarios/perfil` |
 | `screens/verificacion_email_screen.dart` | `reenviarCodigo`, `verificarEmail` | `POST /api/auth/reenviar-codigo`<br>`POST /api/auth/verificar-email` |
 
-Pantallas sin llamadas directas a la API: `screens/carrito_screen.dart`, `screens/legal/politica_privacidad_screen.dart`, `screens/legal/terminos_condiciones_screen.dart` (carrito local, documentos legales, etc.).
+Pantallas sin llamadas directas a la API: `screens/legal/politica_privacidad_screen.dart`, `screens/legal/terminos_condiciones_screen.dart` (carrito local, documentos legales, etc.).
 
 ## Funcionalidades clave
 

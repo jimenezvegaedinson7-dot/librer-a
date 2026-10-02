@@ -170,7 +170,7 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
             if (onActualizado) await onActualizado();
             onCerrar();
         } catch (err) {
-            setError(err.response?.data?.mensaje || 'Error al actualizar el libro');
+            setError(err.mensajeUsuario || err.response?.data?.mensaje || 'Error al actualizar el libro');
         } finally {
             setGuardando(false);
         }

@@ -4,8 +4,56 @@ import 'package:libreria_app/models/libro.dart';
 import 'package:libreria_app/screens/detalle_libro_screen.dart';
 import 'package:libreria_app/utils/app_theme.dart';
 import 'package:libreria_app/widgets/app_bottom_navigation.dart';
+import 'package:libreria_app/widgets/portadas_libro.dart';
 
 void main() {
+  for (final ancho in [320.0, 390.0]) {
+    testWidgets('precio rebajado y Nuevo conservan la ficha a $ancho px', (
+      tester,
+    ) async {
+      tester.view.physicalSize = Size(ancho, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final libro = Libro(
+        titulo: 'Libro recién agregado',
+        precio: 100,
+        precioFinal: 75,
+        descuentoVigente: true,
+        stock: 4,
+        estado: true,
+        esNuevo: true,
+        creadoEn: DateTime.now().subtract(const Duration(days: 1)),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          home: DetalleLibroScreen(libro: libro),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('Nuevo'), findsOneWidget);
+      expect(find.textContaining('100.00'), findsOneWidget);
+      expect(find.textContaining('75.00'), findsWidgets);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.light(),
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                height: 430,
+                child: LibroSuelto(libro: libro, ancho: 140),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('Nuevo'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets('la ficha se maqueta en ancho móvil sin excepciones', (
     tester,
   ) async {

@@ -8,12 +8,35 @@ import { Ficha } from '../../components/ui/Ficha';
 import { construirUrlArchivo } from '../../lib/utils/url';
 import { formatearMoneda } from '../../lib/utils/format';
 import { StockBadge } from './libroUi';
+import { soportaPromociones } from './promocion';
+
+// descuento_hasta es un DATE, no un instante: UTC conserva el día guardado
+// aunque el navegador esté en Perú u otra zona horaria.
+function fechaPromocion(fecha) {
+    const dia = String(fecha || '').slice(0, 10);
+    const fechaUtc = new Date(`${dia}T00:00:00Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dia) || Number.isNaN(fechaUtc.getTime())) return 'Fecha no válida';
+    return fechaUtc.toLocaleDateString('es-PE', {
+        timeZone: 'UTC', day: '2-digit', month: 'long', year: 'numeric',
+    });
+}
 
 export default function LibroViewModal({ libro, abierto, onCerrar }) {
     if (!abierto || !libro) return null;
 
     const activo = Number(libro.estado) === 1;
+    const informacionPromocion = soportaPromociones(libro);
     const urlPortada = construirUrlArchivo(libro.portada);
+    const conPorcentaje = Number(libro.descuento_porcentaje) > 0;
+    const conOferta = libro.precio_oferta !== null && libro.precio_oferta !== undefined && libro.precio_oferta !== '';
+    const tienePromocion = conPorcentaje || conOferta || Number(libro.descuento_vigente) === 1;
+    const vigente = Number(libro.descuento_vigente) === 1 && Number.isFinite(Number(libro.precio_final))
+        && Number(libro.precio_final) < Number(libro.precio);
+    const hoyEnLima = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
+    const vencida = tienePromocion && !vigente && libro.descuento_hasta
+        && String(libro.descuento_hasta).slice(0, 10) < hoyEnLima;
+    const estadoPromocion = !informacionPromocion ? 'Información no disponible' : !tienePromocion ? 'Sin descuento'
+        : vigente ? 'Descuento vigente' : vencida ? 'Descuento vencido' : 'Sin rebaja vigente';
 
     return (
         <Modal abierto={abierto} titulo="Detalle del libro" subtitulo="Información registrada en el sistema" onCerrar={onCerrar} grande>
@@ -56,8 +79,22 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                     <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <Ficha color="blue" icono={<FaUser size={16} />} etiqueta="Autor">{libro.autor || 'No registrado'}</Ficha>
                         <Ficha color="blue" icono={<FaTag size={16} />} etiqueta="Categoría">{libro.categoria || 'No registrada'}</Ficha>
-                        <Ficha color="blue" icono={<FaMoneyBillWave size={16} />} etiqueta="Precio">
-                            <span className="text-lg font-bold">{formatearMoneda(libro.precio)}</span>
+                        <Ficha color="blue" icono={<FaMoneyBillWave size={16} />} etiqueta="Precio actual">
+                            <div className="space-y-1">
+                                {vigente && (
+                                    <p className="text-sm font-medium text-slate-500">
+                                        Precio normal: <span className="line-through">{formatearMoneda(libro.precio)}</span>
+                                    </p>
+                                )}
+                                <span className={`text-lg font-bold${vigente ? ' text-emerald-700' : ''}`}>
+                                    {formatearMoneda(vigente ? libro.precio_final : libro.precio)}
+                                </span>
+                                {vigente && Number(libro.descuento_porcentaje_efectivo) > 0 && (
+                                    <p className="text-sm font-medium text-emerald-700">
+                                        Ahorro: {libro.descuento_porcentaje_efectivo}%
+                                    </p>
+                                )}
+                            </div>
                         </Ficha>
                         <Ficha color="blue" icono={<FaBoxesStacked size={16} />} etiqueta="Stock">
                             <div className="flex items-center gap-2">
@@ -67,6 +104,30 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                                 </span>
                                 <span className="ml-auto"><StockBadge stock={libro.stock} stockMinimo={libro.stock_minimo} /></span>
                             </div>
+                        </Ficha>
+                    </div>
+
+                    <div className="mt-4">
+                        <Ficha icono={<FaTag size={16} />} etiqueta="Promoción">
+                            <Badge color={!informacionPromocion ? 'warning' : vigente ? 'success' : vencida ? 'warning' : 'neutral'}>{estadoPromocion}</Badge>
+                            {!informacionPromocion ? (
+                                <p className="mt-2 text-sm font-medium text-slate-600">La API conectada no devuelve los datos de promoción. No se puede comprobar el descuento hasta actualizar el backend.</p>
+                            ) : tienePromocion ? (
+                                <div className="mt-3 space-y-2 text-sm font-medium">
+                                    <dl className="space-y-2">
+                                        {conPorcentaje && <div><dt className="text-slate-500">Descuento configurado</dt><dd>{libro.descuento_porcentaje}%</dd></div>}
+                                        {conOferta && <div><dt className="text-slate-500">Precio de oferta configurado</dt><dd>{formatearMoneda(libro.precio_oferta)}</dd></div>}
+                                        <div>
+                                            <dt className="text-slate-500">Fin de la promoción</dt>
+                                            <dd>{libro.descuento_hasta ? `${fechaPromocion(libro.descuento_hasta)} (inclusive, hora de Perú)` : 'Sin límite de fecha'}</dd>
+                                        </div>
+                                    </dl>
+                                    {conOferta && conPorcentaje && <p className="text-slate-600">El precio de oferta tiene prioridad sobre el porcentaje.</p>}
+                                    {vencida && <p className="text-slate-600">La promoción terminó. Actualmente se cobra el precio normal.</p>}
+                                </div>
+                            ) : (
+                                <p className="mt-2 text-sm font-medium text-slate-600">Este libro no tiene una promoción configurada.</p>
+                            )}
                         </Ficha>
                     </div>
 

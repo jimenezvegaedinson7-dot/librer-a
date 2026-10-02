@@ -147,7 +147,11 @@ class _SplashScreenState extends State<SplashScreen> {
                             color: Colors.white.withValues(alpha: 0.08),
                           ),
                           child: const Center(
-                            child: AppLogo(width: 104, height: 104),
+                            child: AppLogo(
+                              width: 104,
+                              height: 104,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),

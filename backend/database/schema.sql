@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS libros (
     id_categoria INT NOT NULL,
     estado SMALLINT NOT NULL DEFAULT 1,
     -- Promoción opcional. Los tres campos en NULL = sin descuento.
+    creado_en TIMESTAMPTZ NULL DEFAULT CURRENT_TIMESTAMP,
     descuento_porcentaje SMALLINT NULL,
     precio_oferta NUMERIC(10,2) NULL,
     descuento_hasta DATE NULL,

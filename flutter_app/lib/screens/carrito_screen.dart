@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/carrito_item.dart';
 import '../services/carrito_service.dart';
+import '../services/api_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_tokens.dart';
 import '../utils/constants.dart';
@@ -37,10 +38,35 @@ class CarritoScreen extends StatefulWidget {
 }
 
 class _CarritoScreenState extends State<CarritoScreen> {
-  void _irAPago() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const EntregaYPagoScreen()));
+  bool _actualizando = false;
+  Future<void> _irAPago() async {
+    if (_actualizando) return;
+    _actualizando = true;
+    try {
+      final catalogo = await ApiService.instance.obtenerLibros();
+      CarritoService.instance.actualizarCatalogo(catalogo);
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => const EntregaYPagoScreen()),
+      );
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No se pudieron actualizar los precios. Inténtalo de nuevo.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      _actualizando = false;
+    }
   }
 
   @override
@@ -310,7 +336,7 @@ class _CarritoItemCard extends StatelessWidget {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Text(
-                            'S/ ${Formats.precio(libro.precio)} c/u',
+                            'S/ ${Formats.precio(libro.precioCompra)} c/u',
                             style: textTheme.bodySmall?.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -464,7 +490,7 @@ class _GuardadoCard extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 6),
-                PrecioTexto(monto: libro.precio, tamano: 15),
+                PrecioLibro(libro: libro, tamano: 15),
                 const SizedBox(height: 4),
                 Row(
                   children: [

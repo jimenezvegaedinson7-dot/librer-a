@@ -334,6 +334,12 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
               texto: disponible ? 'Envío inmediato' : 'Sin existencias',
               tono: disponible ? TonoEstado.exito : TonoEstado.peligro,
             ),
+            if (_libro.mostrarNuevo)
+              const EstadoChip(
+                texto: 'Nuevo',
+                tono: TonoEstado.marca,
+                conPunto: false,
+              ),
           ],
         ),
         const SizedBox(height: 12),
@@ -388,8 +394,8 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    PrecioTexto(
-                      monto: _libro.precio,
+                    PrecioLibro(
+                      libro: _libro,
                       tamano: 28,
                       peso: FontWeight.w700,
                     ),
@@ -825,7 +831,7 @@ class _StickyBar extends StatelessWidget {
     final compact = MediaQuery.sizeOf(context).width < 390;
     final disponible =
         libro.esActivo && libro.hayStock && libro.idLibro != null;
-    final total = (libro.precio ?? 0) * cantidad;
+    final total = (libro.precioCompra * 100).round() * cantidad / 100;
 
     return Container(
       decoration: BoxDecoration(
@@ -864,69 +870,81 @@ class _StickyBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Presionable(
-                habilitado: disponible && !reservando,
-                child: OutlinedButton(
-                  onPressed: disponible && !reservando ? onReservar : null,
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(0, 50),
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    side: BorderSide(
-                      color: AppColors.primary.withValues(alpha: 0.5),
+              Flexible(
+                flex: 2,
+                child: Presionable(
+                  habilitado: disponible && !reservando,
+                  child: OutlinedButton(
+                    onPressed: disponible && !reservando ? onReservar : null,
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 50),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      side: BorderSide(
+                        color: AppColors.primary.withValues(alpha: 0.5),
+                      ),
                     ),
+                    child: reservando
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (!compact) ...[
+                                  const Icon(
+                                    Icons.event_available_outlined,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 6),
+                                ],
+                                const Text('Reservar'),
+                              ],
+                            ),
+                          ),
                   ),
-                  child: reservando
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (!compact) ...[
-                              const Icon(
-                                Icons.event_available_outlined,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 6),
-                            ],
-                            const Text('Reservar'),
-                          ],
-                        ),
                 ),
               ),
               const SizedBox(width: 8),
-              Presionable(
-                habilitado: disponible && !reservando,
-                child: AnimatedContainer(
-                  duration: Duracion.rapida,
-                  child: FilledButton(
-                    onPressed: disponible && !reservando ? onAdd : null,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: agregado
-                          ? AppColors.success
-                          : AppColors.primary,
-                      minimumSize: const Size(0, 50),
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    child: AnimatedSwitcher(
-                      duration: Duracion.rapida,
-                      transitionBuilder: (child, anim) =>
-                          ScaleTransition(scale: anim, child: child),
-                      child: Row(
-                        key: ValueKey(agregado),
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            agregado
-                                ? Icons.check_rounded
-                                : Icons.add_shopping_cart_rounded,
-                            size: 18,
+              Flexible(
+                flex: 2,
+                child: Presionable(
+                  habilitado: disponible && !reservando,
+                  child: AnimatedContainer(
+                    duration: Duracion.rapida,
+                    child: FilledButton(
+                      onPressed: disponible && !reservando ? onAdd : null,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: agregado
+                            ? AppColors.success
+                            : AppColors.primary,
+                        minimumSize: const Size(0, 50),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                      ),
+                      child: AnimatedSwitcher(
+                        duration: Duracion.rapida,
+                        transitionBuilder: (child, anim) =>
+                            ScaleTransition(scale: anim, child: child),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            key: ValueKey(agregado),
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                agregado
+                                    ? Icons.check_rounded
+                                    : Icons.add_shopping_cart_rounded,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(agregado ? 'Añadido' : 'Añadir'),
+                            ],
                           ),
-                          const SizedBox(width: 6),
-                          Text(agregado ? 'Añadido' : 'Añadir'),
-                        ],
+                        ),
                       ),
                     ),
                   ),

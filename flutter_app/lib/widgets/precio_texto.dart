@@ -3,6 +3,53 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../utils/app_colors.dart';
 import '../utils/formats.dart';
+import '../models/libro.dart';
+
+/// Mantiene la tipografía del precio existente; agrega la referencia anterior
+/// únicamente cuando hay una rebaja real.
+class PrecioLibro extends StatelessWidget {
+  final Libro libro;
+  final double tamano;
+  final Color? color;
+  final FontWeight peso;
+  const PrecioLibro({
+    super.key,
+    required this.libro,
+    this.tamano = 17,
+    this.color,
+    this.peso = FontWeight.w700,
+  });
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      if (libro.enOferta)
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: 'S/ ${Formats.precio(libro.precio)}',
+                style: const TextStyle(decoration: TextDecoration.lineThrough),
+              ),
+              TextSpan(text: ' · −${libro.porcentajeOferta}%'),
+            ],
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.labelSmall
+              ?.copyWith(color: color ?? AppColors.textSecondary),
+        ),
+      PrecioTexto(
+        monto: libro.precioCompra,
+        tamano: tamano,
+        color: color,
+        peso: peso,
+      ),
+    ],
+  );
+}
 
 /// Precio con el símbolo "S/" más pequeño que el importe, para que la cifra
 /// sea lo primero que se lea (patrón comercial).

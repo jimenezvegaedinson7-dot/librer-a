@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/libro.dart';
 import '../services/api_service.dart';
+import '../services/carrito_service.dart';
 import '../services/storage_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
@@ -157,6 +158,7 @@ class _InicioTabState extends State<_InicioTab> {
     });
     try {
       final libros = await ApiService.instance.obtenerLibros();
+      CarritoService.instance.actualizarCatalogo(libros);
       if (mounted) {
         // Solo se muestran libros activos en las novedades.
         setState(

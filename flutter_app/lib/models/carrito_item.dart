@@ -10,7 +10,7 @@ class CarritoItem {
   CarritoItem({required this.libro, this.cantidad = 1});
 
   /// Precio unitario en céntimos (evita errores de redondeo con decimales).
-  int get precioCentimos => ((libro.precio ?? 0) * 100).round();
+  int get precioCentimos => (libro.precioCompra * 100).round();
 
   /// Subtotal del ítem en céntimos (precio unitario × cantidad).
   int get subtotalCentimos => precioCentimos * cantidad;

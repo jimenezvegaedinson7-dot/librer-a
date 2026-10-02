@@ -61,7 +61,10 @@ const COLUMNAS_DESCUENTO = `
 // Solo las columnas derivadas. Las tres crudas de la promoción viajan en el
 // subselect interior, porque precio_final se evalúa sobre ellas.
 const CAMPOS_DESCUENTO = `
-    ${COLUMNAS_DESCUENTO}
+    ${COLUMNAS_DESCUENTO},
+    CASE WHEN base.creado_en <= NOW()
+        AND base.creado_en > NOW() - INTERVAL '30 days'
+        THEN 1 ELSE 0 END AS es_nuevo
 `;
 
 // ========================================
@@ -84,6 +87,8 @@ const obtenerTodos = async () => {
                 l.id_autor,
                 l.id_categoria,
                 l.estado,
+
+                l.creado_en,
 
                 l.descuento_porcentaje,
                 l.precio_oferta,
@@ -143,6 +148,8 @@ const obtenerPorId = async (id) => {
                 l.id_autor,
                 l.id_categoria,
                 l.estado,
+
+                l.creado_en,
 
                 l.descuento_porcentaje,
                 l.precio_oferta,
@@ -242,7 +249,8 @@ const crear = async (libro) => {
 // Los descuentos salen del bloque COALESCE a propósito. COALESCE(?, col)
 // salta el campo cuando llega null, y quitar un descuento ES escribir
 // null: con COALESCE sería imposible retirar una promoción una vez puesta.
-// Por eso van aparte, donde undefined = no tocar y null = limpiar.
+// Se añaden dinámicamente al mismo UPDATE: undefined = no tocar,
+// null = limpiar, sin dejar estados intermedios entre precio y oferta.
 // ========================================
 const actualizar = async (id, libro) => {
     const {
@@ -257,6 +265,17 @@ const actualizar = async (id, libro) => {
         estado
     } = libro;
 
+    // Precio y promoción se cambian atómicamente: el CHECK de oferta se
+    // evalúa sobre la fila final, nunca sobre un estado intermedio inválido.
+    const camposDescuento = [];
+    const valoresDescuento = [];
+    for (const campo of ['descuento_porcentaje', 'precio_oferta', 'descuento_hasta']) {
+        if (libro[campo] !== undefined) {
+            camposDescuento.push(`${campo} = ?`);
+            valoresDescuento.push(libro[campo]);
+        }
+    }
+
     const [resultado] = await pool.query(`
         UPDATE libros
         SET
@@ -269,6 +288,7 @@ const actualizar = async (id, libro) => {
             id_autor = COALESCE(?, id_autor),
             id_categoria = COALESCE(?, id_categoria),
             estado = COALESCE(?, estado)
+            ${camposDescuento.length ? `, ${camposDescuento.join(', ')}` : ''}
         WHERE id_libro = ?
     `, [
         titulo ?? null,
@@ -280,6 +300,7 @@ const actualizar = async (id, libro) => {
         id_autor ?? null,
         id_categoria ?? null,
         estado ?? null,
+        ...valoresDescuento,
         id
     ]);
 
@@ -287,64 +308,7 @@ const actualizar = async (id, libro) => {
         return 0;
     }
 
-    await actualizarDescuentos(id, libro);
-
     return resultado.affectedRows;
-};
-
-// ========================================
-// ACTUALIZAR DESCUENTOS
-// Query aparte para poder distinguir "no tocar" de "poner en null".
-// Solo escribe: toda la validación vive en el controlador, y repetirla
-// aquí es justo cómo una oferta inválida se acepta por un camino y se
-// rechaza por el otro.
-// ========================================
-const actualizarDescuentos = async (id, libro) => {
-    const {
-        descuento_porcentaje,
-        precio_oferta,
-        descuento_hasta
-    } = libro;
-
-    const algunoViene =
-        descuento_porcentaje !== undefined ||
-        precio_oferta !== undefined ||
-        descuento_hasta !== undefined;
-
-    if (!algunoViene) {
-        return;
-    }
-
-    const campos = [];
-    const valores = [];
-
-    if (descuento_porcentaje !== undefined) {
-        campos.push('descuento_porcentaje = ?');
-        valores.push(descuento_porcentaje);
-    }
-
-    if (precio_oferta !== undefined) {
-        campos.push('precio_oferta = ?');
-        valores.push(precio_oferta);
-    }
-
-    if (descuento_hasta !== undefined) {
-        campos.push('descuento_hasta = ?');
-        valores.push(descuento_hasta);
-    }
-
-    if (!campos.length) {
-        return;
-    }
-
-    await pool.query(
-        `
-        UPDATE libros
-        SET ${campos.join(', ')}
-        WHERE id_libro = ?
-    `,
-        [...valores, id]
-    );
 };
 
 // ========================================
@@ -364,6 +328,7 @@ const eliminar = async (id) => {
 // ========================================
 module.exports = {
     PRECIO_FINAL_SQL,
+    CAMPOS_DESCUENTO,
     obtenerTodos,
     obtenerPorId,
     crear,

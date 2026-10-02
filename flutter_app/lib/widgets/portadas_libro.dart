@@ -7,6 +7,7 @@ import '../utils/constants.dart';
 import 'book_cover.dart';
 import 'precio_texto.dart';
 import 'presionable.dart';
+import 'estado_chip.dart';
 
 // Portadas "sueltas" (sin tarjeta) con aspecto de libro, compartidas por
 // Inicio, Catálogo, Favoritos y Reservas.
@@ -218,6 +219,16 @@ class LibroSuelto extends StatelessWidget {
                       ),
                       if (accesorio != null)
                         Positioned(top: 6, right: 6, child: accesorio!),
+                      if (libro.mostrarNuevo)
+                        const Positioned(
+                          left: 8,
+                          bottom: 8,
+                          child: EstadoChip(
+                            texto: 'Nuevo',
+                            tono: TonoEstado.marca,
+                            conPunto: false,
+                          ),
+                        ),
                       if (!disponible)
                         Positioned(
                           left: 8,
@@ -263,7 +274,7 @@ class LibroSuelto extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  PrecioTexto(monto: libro.precio, tamano: 16),
+                  PrecioLibro(libro: libro, tamano: 16),
                 ],
               ),
             ),

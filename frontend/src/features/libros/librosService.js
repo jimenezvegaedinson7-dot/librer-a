@@ -1,4 +1,5 @@
 import client from '../../lib/api/client';
+import { soportaPromociones, coincidePromocion, errorPromocion, MENSAJE_API_SIN_PROMOCIONES } from './promocion';
 
 function datosDe(res) {
     return Array.isArray(res?.data) ? res.data : [];
@@ -23,6 +24,12 @@ function agregarDescuentos(datos, formulario) {
 }
 
 export async function crearLibro(formulario, imagen) {
+    // El backend anterior aceptaba el formulario pero omitía la promoción.
+    // Comprobar la capacidad antes del POST evita crear un libro incompleto.
+    const api = await client.get('');
+    if (api?.capacidades?.descuentos_libros !== true) {
+        throw errorPromocion(MENSAJE_API_SIN_PROMOCIONES);
+    }
     const datos = new FormData();
     datos.append('titulo', formulario.titulo);
     datos.append('isbn', formulario.isbn || '');
@@ -32,10 +39,19 @@ export async function crearLibro(formulario, imagen) {
     datos.append('id_categoria', formulario.id_categoria);
     agregarDescuentos(datos, formulario);
     if (imagen) datos.append('portada', imagen);
-    return client.post('/libros', datos);
+    const respuesta = await client.post('/libros', datos);
+    const guardado = await obtenerLibro(respuesta.id_libro);
+    if (!coincidePromocion(guardado, formulario)) {
+        throw errorPromocion('El libro se creó, pero el servidor no confirmó la promoción. Revisa su detalle antes de volver a registrarlo.');
+    }
+    return respuesta;
 }
 
 export async function actualizarLibro(id, formulario, imagen) {
+    const anterior = await obtenerLibro(id);
+    if (!soportaPromociones(anterior)) {
+        throw errorPromocion(MENSAJE_API_SIN_PROMOCIONES);
+    }
     const datos = new FormData();
     datos.append('titulo', formulario.titulo);
     datos.append('isbn', formulario.isbn || '');
@@ -46,7 +62,12 @@ export async function actualizarLibro(id, formulario, imagen) {
     datos.append('estado', formulario.estado);
     agregarDescuentos(datos, formulario);
     if (imagen) datos.append('portada', imagen);
-    return client.put(`/libros/${id}`, datos);
+    const respuesta = await client.put(`/libros/${id}`, datos);
+    const guardado = await obtenerLibro(id);
+    if (!coincidePromocion(guardado, formulario)) {
+        throw errorPromocion('El servidor respondió, pero el descuento no quedó guardado como lo enviaste. Revisa el detalle del libro.');
+    }
+    return respuesta;
 }
 
 export async function eliminarLibro(id, password) {

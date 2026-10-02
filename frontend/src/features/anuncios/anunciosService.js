@@ -7,7 +7,7 @@ import client from '../../lib/api/client';
 
 export async function listarAnuncios() {
     const res = await client.get('/anuncios/todos');
-    return Array.isArray(res?.data) ? res.data : [];
+    return Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : []);
 }
 
 export async function obtenerAnuncioActivo() {

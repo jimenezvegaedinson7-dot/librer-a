@@ -1,5 +1,6 @@
 const payuService = require('../services/payu.service');
 const ventaModel = require('../models/venta.model');
+const { PRECIO_FINAL_SQL } = require('../models/libro.model');
 const usuarioModel = require('../models/usuario.model');
 const ubicacionModel = require('../models/ubicacion.model');
 const pool = require('../config/database');
@@ -559,12 +560,14 @@ const crearOrden = async (req, res) => {
             const [libros] =
                 await pool.query(`
                     SELECT
-                        id_libro,
-                        titulo,
-                        precio,
-                        estado
-                    FROM libros
-                    WHERE id_libro = ?
+                        l.id_libro,
+                        l.titulo,
+                        l.precio,
+                        l.stock,
+                        l.estado,
+                        ${PRECIO_FINAL_SQL}
+                    FROM libros l
+                    WHERE l.id_libro = ?
                     LIMIT 1
                 `, [id_libro]);
 
@@ -587,7 +590,7 @@ const crearOrden = async (req, res) => {
             }
 
             const precioUnitario =
-                Number(libro.precio);
+                Number(libro.precio_final);
 
             if (
                 !Number.isFinite(precioUnitario) ||
@@ -786,6 +789,17 @@ const crearOrden = async (req, res) => {
         }
 
         // ========================================
+        // La transacción de venta es la fuente definitiva: precio, correo,
+        // respuesta a Flutter y formulario de PayU usan la misma instantánea,
+        // incluso si la promoción cambió durante la creación del pedido.
+        total = Number(ventaCreada.total);
+        costoEnvio = Number(ventaCreada.costo_envio);
+        orderItems.splice(0, orderItems.length, ...ventaCreada.detalles.map((detalle) => ({
+            title: detalle.titulo,
+            unit_price: Number(detalle.precio_unitario).toFixed(2),
+            quantity: detalle.cantidad
+        })));
+
         // CORREO DE PEDIDO CREADO (fire-and-forget)
         // ========================================
         notificarOrdenCreada({

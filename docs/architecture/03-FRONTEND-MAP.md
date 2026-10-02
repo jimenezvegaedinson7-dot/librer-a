@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel administrativo
 
-> Generado desde el código real el 2026-10-01 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-02 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -85,8 +85,8 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/inventario/MovimientosModal.jsx` | `GET /api/inventario/movimientos`<br>`GET /api/libros` |
 | `features/inventario/useLibros.js` | `GET /api/libros` |
 | `features/layout/PerfilAdministrador.jsx` | `GET /api/usuarios/perfil`<br>`POST /api/auth/2fa/confirm`<br>`POST /api/auth/2fa/disable`<br>`POST /api/auth/2fa/setup`<br>`PUT /api/usuarios/foto`<br>`PUT /api/usuarios/password`<br>`PUT /api/usuarios/perfil` |
-| `features/libros/LibroEditModal.jsx` | `GET /api/autores`<br>`GET /api/categorias`<br>`PUT /api/libros/:param` |
-| `features/libros/LibroForm.jsx` | `POST /api/libros` |
+| `features/libros/LibroEditModal.jsx` | `GET /api/autores`<br>`GET /api/categorias`<br>`GET /api/libros/:param`<br>`PUT /api/libros/:param` |
+| `features/libros/LibroForm.jsx` | `GET /api/libros/:param`<br>`POST /api/libros` |
 | `features/libros/LibrosPage.jsx` | `DELETE /api/libros/:param`<br>`GET /api/inventario`<br>`GET /api/libros`<br>`GET /api/libros/:param` |
 | `features/libros/useCatalogo.js` | `GET /api/autores`<br>`GET /api/categorias` |
 | `features/notificaciones/notificacionesService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/pagos`<br>`GET /api/reservas` |
@@ -170,8 +170,8 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/inventario/inventarioService.js` | `listarLibros` | `GET /api/libros` (vía features/libros/librosService.js#listarLibros) |
 | `features/libros/librosService.js` | `listarLibros` | `GET /api/libros` |
 | `features/libros/librosService.js` | `obtenerLibro` | `GET /api/libros/:param` |
-| `features/libros/librosService.js` | `crearLibro` | `POST /api/libros` |
-| `features/libros/librosService.js` | `actualizarLibro` | `PUT /api/libros/:param` |
+| `features/libros/librosService.js` | `crearLibro` | `POST /api/libros`<br>`GET /api/libros/:param` (vía features/libros/librosService.js#obtenerLibro) |
+| `features/libros/librosService.js` | `actualizarLibro` | `PUT /api/libros/:param`<br>`GET /api/libros/:param` (vía features/libros/librosService.js#obtenerLibro)<br>`GET /api/libros/:param` (vía features/libros/librosService.js#obtenerLibro) |
 | `features/libros/librosService.js` | `eliminarLibro` | `DELETE /api/libros/:param` |
 | `features/libros/librosService.js` | `listarAutores` | `GET /api/autores` |
 | `features/libros/librosService.js` | `listarCategorias` | `GET /api/categorias` |
