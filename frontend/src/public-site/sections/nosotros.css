@@ -7,10 +7,32 @@
 
 /* ---------- Portada ---------- */
 .nosotros-hero {
+    position: relative; overflow: clip; isolation: isolate;
     display: grid;
     align-items: center;
+    padding: 0;
     min-height: clamp(460px, 72svh, 680px);
+    background: #070707;
 }
+/* Imagen propia de Nosotros: hojas oscuras con filo dorado a la derecha y
+   un espacio liso a la izquierda donde va el texto. Entra con un leve zoom. */
+.nosotros-hero__fondo {
+    position: absolute; inset: 0; z-index: 0;
+    background: var(--fondo-nosotros) right center / cover no-repeat;
+    animation: nosotros-zoom 2.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.nosotros-hero__fondo::after {
+    content: ''; position: absolute; inset: 0;
+    background:
+        linear-gradient(90deg, rgba(5, 5, 5, 0.72) 0%, rgba(5, 5, 5, 0.35) 45%, transparent 75%),
+        radial-gradient(60% 80% at 80% 40%, rgba(235, 170, 32, 0.10), transparent 70%);
+}
+@keyframes nosotros-zoom { from { transform: scale(1.08); opacity: 0.4; } to { transform: none; opacity: 1; } }
+@media (max-width: 720px) {
+    .nosotros-hero__fondo { background-image: var(--fondo-nosotros-movil); background-position: 70% center; }
+    .nosotros-hero__fondo::after { background: linear-gradient(180deg, rgba(5, 5, 5, 0.55), rgba(5, 5, 5, 0.8)); }
+}
+@media (prefers-reduced-motion: reduce) { .nosotros-hero__fondo { animation: none; } }
 .nosotros-hero__contenido {
     position: relative; z-index: 1;
     display: grid; justify-items: start; align-content: center;

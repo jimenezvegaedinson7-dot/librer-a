@@ -5,14 +5,15 @@ import {
     FaStore, FaTruckFast, FaChevronRight, FaBuilding, FaFileSignature,
 } from 'react-icons/fa6';
 
-import HeroFondo from './HeroFondo';
+import fondoNosotros from '../../assets/fondo_web/nosotros-web.webp';
+import fondoNosotrosMovil from '../../assets/fondo_web/nosotros-web-1024.webp';
 import { SITIO, UBICACION_TIENDA } from '../config/site';
 import { gsap, useGSAP } from '../animation/scroll';
 import './nosotros.css';
 
 // ============================================================
 // NOSOTROS
-// Portada con el mismo fondo del inicio (foto, velo y cristal) y el texto
+// Portada con su propia imagen (hojas oscuras con brillo dorado) y el texto
 // centrado en la altura; después, lo que nos define, la tienda con su mapa,
 // los datos de la empresa y una llamada final a la app. Todo lo que se
 // afirma aquí es real: tienda en Pallasca, entrega en Lima, PayU y la app.
@@ -84,9 +85,13 @@ export default function AboutSection({ legal, reducido }) {
 
     return (
         <div id="nosotros" ref={seccion} className="nosotros">
-            {/* Portada: el mismo fondo del inicio, texto centrado en la altura. */}
-            <section className="seccion hero oscuro nosotros-hero" aria-labelledby="nosotros-titulo">
-                <HeroFondo />
+            {/* Portada: imagen propia de Nosotros, texto centrado en la altura. */}
+            <section
+                className="seccion oscuro nosotros-hero"
+                aria-labelledby="nosotros-titulo"
+                style={{ '--fondo-nosotros': `url(${fondoNosotros})`, '--fondo-nosotros-movil': `url(${fondoNosotrosMovil})` }}
+            >
+                <div className="nosotros-hero__fondo" aria-hidden="true" />
                 <div className="contenedor nosotros-hero__contenido">
                     <h1 id="nosotros-titulo" className="nosotros-hero__titulo">Nosotros</h1>
                     <p className="nosotros__cita">
