@@ -40,17 +40,18 @@ export default function FavoritosPage() {
                 {error && <p role="alert" className="compra-error">{error}</p>}
                 {cargando ? <p role="status">Cargando favoritos…</p> : !libros.length ? <div className="compra-vacio"><FaHeartCrack aria-hidden="true"/><p>Todavía no tienes favoritos. Abre un libro y pulsa «Agregar a favoritos».</p><Link className="boton boton--compra" to="/catalogo">Explorar catálogo</Link></div>
                     : <ul className="favoritos-lista">{libros.map((l) => <li key={l.id} className="favorito">
-                        <Link to={`/libro/${l.id}`} className="favorito__portada" aria-label={`Ver ${l.titulo}`}><PortadaLibro libro={l} /></Link>
+                        <div className="favorito__tapa">
+                            <Link to={`/libro/${l.id}`} className="favorito__portada" aria-label={`Ver ${l.titulo}`}><PortadaLibro libro={l} /></Link>
+                            {l.descuento > 0 && <span className="favorito__oferta">-{l.descuento}%</span>}
+                            <button type="button" className="favorito__quitar" disabled={quitando === l.id} onClick={() => quitar(l)} aria-label={`Quitar ${l.titulo} de favoritos`} title="Quitar de favoritos">
+                                {quitando === l.id ? <FaHeartCrack aria-hidden="true" /> : <FaHeart aria-hidden="true" />}</button>
+                        </div>
                         <div className="favorito__cuerpo">
                             <h2><Link to={`/libro/${l.id}`}>{l.titulo}</Link></h2>
                             {l.autor && <p className="favorito__autor">{l.autor}</p>}
-                            <p className="favorito__precio"><strong>{soles(l.precioFinal)}</strong>{l.descuento > 0 && <> <s>{soles(l.precio)}</s> <span className="favorito__oferta">-{l.descuento}%</span></>}</p>
+                            <p className="favorito__precio"><strong>{soles(l.precioFinal)}</strong>{l.descuento > 0 && <s>{soles(l.precio)}</s>}</p>
                             <p className={`favorito__stock${l.disponible ? '' : ' favorito__stock--agotado'}`}>{l.disponible ? `${l.stock} ${l.stock === 1 ? 'ejemplar disponible' : 'ejemplares disponibles'}` : 'Agotado por ahora'}</p>
-                            <div className="favorito__acciones">
-                                {l.disponible && <ComprarLibro libro={l} />}
-                                <button type="button" className="enlace-texto favorito__quitar" disabled={quitando === l.id} onClick={() => quitar(l)} aria-label={`Quitar ${l.titulo} de favoritos`}>
-                                    <FaHeartCrack aria-hidden="true" /> {quitando === l.id ? 'Quitando…' : 'Quitar'}</button>
-                            </div>
+                            {l.disponible && <div className="favorito__acciones"><ComprarLibro libro={l} /></div>}
                         </div>
                     </li>)}</ul>}
             </>}

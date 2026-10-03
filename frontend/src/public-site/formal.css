@@ -510,26 +510,38 @@
 .sitio .compra-registro__titulo a { color: var(--tinta); text-decoration: none; font-weight: 600; }
 .sitio .compra-registro__titulo a:hover { text-decoration: underline; }
 
-/* Mis favoritos: tarjetas con portada, precio, stock y acciones. */
-.sitio .favoritos-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 16px; margin: 20px 0 0; padding: 0; list-style: none; }
-.sitio .favorito { display: flex; gap: 16px; padding: 16px; border: 1px solid var(--linea); border-radius: 12px; background: var(--blanco); }
-.sitio .favorito__portada { flex: none; width: 96px; border-radius: 6px; overflow: hidden; box-shadow: 0 6px 14px -8px rgba(13, 41, 64, 0.45); }
-.sitio .favorito__portada .ficha-portada, .sitio .favorito__portada img, .sitio .favorito__portada .ficha-portada-vacia { display: block; width: 96px; height: 144px; object-fit: cover; }
-.sitio .favorito__cuerpo { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
-.sitio .favorito h2 { margin: 0; font-size: 1rem; line-height: 1.3; }
+/* Mis favoritos: rejilla de libros como en el catálogo, portada 2:3 arriba. */
+.sitio .favoritos-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 20px; margin: 24px 0 0; padding: 0; list-style: none; }
+.sitio .favorito { display: flex; flex-direction: column; border: 1px solid var(--linea); border-radius: 12px; background: var(--blanco); overflow: hidden; transition: box-shadow 0.2s ease, transform 0.2s ease; }
+.sitio .favorito:hover { box-shadow: 0 14px 28px -18px rgba(13, 41, 64, 0.45); transform: translateY(-2px); }
+.sitio .favorito__tapa { position: relative; padding: 16px 16px 0; background: #f6f4f0; }
+.sitio .favorito__portada { display: block; width: 72%; margin: 0 auto; aspect-ratio: 2 / 3; border-radius: 4px; overflow: hidden; box-shadow: 0 12px 20px -12px rgba(13, 41, 64, 0.55); transform: translateY(8px); }
+.sitio .favorito__portada .ficha-portada, .sitio .favorito__portada img, .sitio .favorito__portada .ficha-portada-vacia { display: block; width: 100%; height: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
+.sitio .favorito__oferta { position: absolute; top: 12px; left: 12px; padding: 2px 8px; border-radius: 999px; background: #b12704; color: #fff; font-size: 0.75rem; font-weight: 700; }
+.sitio .favorito__quitar { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--blanco); color: #c0392b; box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.35); cursor: pointer; transition: transform 0.15s ease; }
+.sitio .favorito__quitar:hover { transform: scale(1.08); }
+.sitio .favorito__quitar svg { width: 16px; height: 16px; }
+.sitio .favorito__cuerpo { display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 22px 14px 14px; }
+.sitio .favorito__cuerpo > p, .sitio .favorito__cuerpo > h2 { margin: 0; }
+.sitio .favorito h2 { font-size: 0.9375rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .sitio .favorito h2 a { color: var(--tinta); text-decoration: none; }
 .sitio .favorito h2 a:hover { text-decoration: underline; }
-.sitio .favorito__autor { margin: 0; font-size: 0.875rem; color: var(--texto-2); }
-.sitio .favorito__precio { margin: 4px 0 0; color: var(--tinta); }
-.sitio .favorito__precio s { color: var(--texto-3); font-size: 0.875rem; }
-.sitio .favorito__oferta { color: #b12704; font-size: 0.8125rem; font-weight: 700; }
-.sitio .favorito__stock { margin: 0; font-size: 0.8125rem; color: #1e7a3c; }
+.sitio .favorito__autor { font-size: 0.8125rem; color: var(--texto-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sitio .favorito__precio { display: flex; align-items: baseline; gap: 8px; margin-top: 4px !important; color: var(--tinta); }
+.sitio .favorito__precio s { color: var(--texto-3); font-size: 0.8125rem; }
+.sitio .favorito__stock { font-size: 0.75rem; color: #1e7a3c; }
 .sitio .favorito__stock--agotado { color: var(--texto-3); }
-.sitio .favorito__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: auto; padding-top: 8px; }
-.sitio .favorito__quitar { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--texto-2); }
-.sitio .favorito__quitar svg { color: #c0392b; }
-.sitio .favorito__cuerpo > p, .sitio .favorito__cuerpo > h2 { margin: 0; }
-.sitio .favorito__cuerpo { gap: 6px; }
-.sitio .favorito__acciones .compra-libro { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0; }
-.sitio .favorito__acciones .compra-libro .boton { width: auto; margin: 0; white-space: nowrap; }
+.sitio .favorito__acciones { margin-top: auto; padding-top: 10px; }
+.sitio .favorito__acciones .compra-libro { display: block; margin: 0; }
+.sitio .favorito__acciones .compra-libro .boton { width: 100%; margin: 0; white-space: nowrap; }
+.sitio .favorito__acciones .compra-libro > a { display: none; }
+@media (max-width: 520px) {
+    .sitio .favoritos-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .sitio .favorito__tapa { padding: 12px 12px 0; }
+    .sitio .favorito__portada { width: 80%; }
+    .sitio .favorito__cuerpo { padding: 18px 10px 10px; }
+    .sitio .favorito__acciones .compra-libro .boton { font-size: 0.75rem; padding-inline: 0.5rem; }
+}
 .sitio .favoritos__volver { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; font-size: 0.875rem; }
+.sitio .favorito .favorito__acciones .compra-libro { display: flex; flex-direction: column; align-items: stretch; width: 100%; padding: 0; }
+.sitio .favorito .favorito__acciones .compra-libro .boton { display: inline-flex; justify-content: center; width: 100%; max-width: none; overflow: visible; }
