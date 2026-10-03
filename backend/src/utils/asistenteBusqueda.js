@@ -1,6 +1,6 @@
 const normalizar = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
     .replace(/[^a-z0-9/.,]/g,' ').replace(/\s+/g,' ').trim();
-const VACIAS = new Set(('a al algo algun alguna algunos algunas autor autores autora barato baratos barata baratas busca buscar busco caros caro categoria categorias como con cual cuales cuanto cuantos de del el en es esta estan este estos hay la las libro libros lo los mas me menos mi muestra muestrame necesito otro otros otra otras para parecido parecidos por precio precios puede puedes que quiero recomienda recomiendame s sin solo sol soles stock su tengo tiene tienes tienen titulo titulos todos un una uno vale ver y de cuanto cuesta cuestan disponibles disponible economico economicos terror romantico romantica romanticos romance miedo infantil infantiles ninos nina ninas jovenes juvenil debajo hasta entre maximo presupuesto sus baratos grabieles ofrece ofreces quedan ejemplares oferta ofertas descuento descuentos sinopsis descripcion trata').split(' '));
+const VACIAS = new Set(('a al algo algun alguna algunos algunas autor autores autora barato baratos barata baratas busca buscar busco caros caro categoria categorias como con cual cuales cuanto cuantos de del el en es esta estan este estos hay la las libro libros lo los mas me menos mi muestra muestrame necesito otro otros otra otras para parecido parecidos por precio precios puede puedes que quiero recomienda recomiendame s sin solo sol soles stock su tengo tiene tienes tienen titulo titulos todos un una uno vale ver y de cuanto cuesta cuestan disponibles disponible economico economicos terror romantico romantica romanticos romance miedo infantil infantiles ninos nina ninas jovenes juvenil debajo hasta entre maximo presupuesto sus baratos grabieles ofrece ofreces quedan ejemplares oferta ofertas descuento descuentos sinopsis descripcion trata relacionado relacionados relacionada relacionadas obra obras escrito escritos escrita escritas escribio escritor escritora escritores leer quisiera gustaria mismo misma tendras tendran tenes venden vendes ofrecen hola buenas buenos tardes dias noches').split(' '));
 const GENEROS = [
     {patron:/\b(terror|miedo|asust|horror)\w*\b/,palabras:['terror','horror','miedo']},
     {patron:/\b(romantic|romance|amor)\w*\b/,palabras:['romance','romantica','romantico','amor']},
@@ -51,7 +51,7 @@ function interpretar(mensaje,previo={}) {
     const minimo=rango?Number(rango[1].replace(',','.')):undefined;
     const maximo=rango?Number(rango[2].replace(',','.')):max?Number(max[1].replace(',','.')):undefined;
     const otro=/\b(otro|otra|otros|otras)\b|uno mas\b/.test(q) && !/mas barato|mas caro/.test(q);
-    const similar=/\b(parecido|parecida|similar|similares)\b/.test(q);
+    const similar=/\b(parecido|parecida|similar|similares)\b|mismo autor|misma autora/.test(q);
     const barato=/\b(barato|baratos|barata|baratas|economico|economicos)\b|cuesta menos/.test(q);
     const caro=/\b(caro|caros|cara|caras)\b/.test(q);
     const superlativo=/el mas barato|el mas caro|cual .*mas (barato|caro)|cual cuesta menos/.test(q);

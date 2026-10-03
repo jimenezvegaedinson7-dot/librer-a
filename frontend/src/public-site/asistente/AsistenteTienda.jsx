@@ -5,7 +5,7 @@ import IconoIA from './IconoIA';
 import { clienteApi } from '../tienda/clienteApi';
 import { listaLibros, libroComercial } from '../tienda/libroComercial';
 import ComprarLibro from '../tienda/ComprarLibro';
-import { analizarConsulta, responderConsulta } from './respuestasAsistente';
+import { analizarConsulta, responderConsulta, separarSaludo } from './respuestasAsistente';
 import { soles, urlPortada } from '../lib/formato';
 import './asistente.css';
 
@@ -77,6 +77,17 @@ export default function AsistenteTienda({ legal }) {
     const idActual = Number(/^\/libro\/(\d+)$/.exec(pathname)?.[1]) || undefined;
     useEffect(()=>{montado.current=true;return()=>{montado.current=false;};},[]);
     useEffect(()=>{if(abierto)campo.current?.focus();},[abierto]);
+    // En pantallas pequeñas, tocar fuera del chat lo cierra y vuelve al icono.
+    const raiz=useRef(null);
+    useEffect(()=>{
+        if(!abierto)return undefined;
+        const alTocar=e=>{
+            if(!window.matchMedia('(max-width: 760px)').matches || raiz.current?.contains(e.target))return;
+            setAbierto(false);
+        };
+        document.addEventListener('pointerdown',alTocar);
+        return()=>document.removeEventListener('pointerdown',alTocar);
+    },[abierto]);
     useEffect(()=>{if(abierto)bajar();},[mensajes,ocupado,abierto,escritos,bajar]);
     function cerrar(){setAbierto(false);boton.current?.focus();}
     function agregar(mensaje){setMensajes(prev=>[...prev.slice(-29),{...mensaje,id:siguiente.current++}]);}
@@ -94,19 +105,24 @@ export default function AsistenteTienda({ legal }) {
             if(falta>0)await new Promise(r=>setTimeout(r,falta));
             if(montado.current)agregar({...mensaje,nuevo:!movimientoReducido()});
         };
+        // «Hola, ¿tienen libros de…?»: se devuelve el saludo y se atiende el resto.
+        const {saludo,resto}=separarSaludo(consulta);
+        const pedido=saludo?(resto || consulta):consulta;
+        const conSaludo=m=>saludo?{...m,texto:`${saludo} ${m.texto}`}:m;
         try {
-            const plan=analizarConsulta(consulta);
+            if(saludo && !resto){await responder({autor:'asistente',texto:`${saludo} Soy el asistente de la librería. Puedo buscar libros por título, autor o categoría, decirte precios y stock, mostrarte ofertas y orientarte sobre la ubicación de la tienda, la entrega y cómo comprar. ¿Qué buscas hoy?`});return;}
+            const plan=analizarConsulta(pedido);
             let libros=[];
             let consultado=null;
             if(plan.tipo==='catalogo'){
                 try {
-                    const json=await clienteApi.asistente({mensaje:consulta,...(contextoServidor.current?{contexto:contextoServidor.current}:{}),...(idActual?{id_libro:idActual}:{})});
+                    const json=await clienteApi.asistente({mensaje:pedido,...(contextoServidor.current?{contexto:contextoServidor.current}:{}),...(idActual?{id_libro:idActual}:{})});
                     if(typeof json.data?.mensaje!=='string' || !Array.isArray(json.data.libros))throw new Error('Respuesta no válida');
                     if(!montado.current)return;
                     contextoServidor.current=json.data.contexto || '';
                     const respuesta={autor:'asistente',texto:json.data.mensaje,libros:json.data.libros.map(libroComercial),
                         motivos:Object.fromEntries(json.data.libros.map(l=>[l.id_libro,l.motivo])),opciones:json.data.opciones || [],consultado:new Date()};
-                    setFecha(respuesta.consultado);await responder(respuesta);return;
+                    setFecha(respuesta.consultado);await responder(conSaludo(respuesta));return;
                 } catch(error) {
                     // Compatibilidad mientras el nuevo endpoint aun no se publique.
                     // Otros fallos no se ocultan ni se convierten en datos inventados.
@@ -119,9 +135,9 @@ export default function AsistenteTienda({ legal }) {
                 if(montado.current)setFecha(consultado);
             }
             if(!montado.current)return;
-            const respuesta=responderConsulta(consulta,{libros,legal,contexto:contexto.current,idActual});
+            const respuesta=responderConsulta(pedido,{libros,legal,contexto:contexto.current,idActual});
             if(plan.tipo==='catalogo')contexto.current=respuesta.contexto || [];
-            await responder({...respuesta,autor:'asistente',consultado});
+            await responder(conSaludo({...respuesta,autor:'asistente',consultado}));
         } catch(error) {
             if(error.status===400){contextoServidor.current='';contexto.current=[];}
             if(montado.current)await responder({autor:'asistente',texto:error.status===429?'Has realizado muchas consultas. Espera un momento y vuelve a intentar.'
@@ -133,7 +149,7 @@ export default function AsistenteTienda({ legal }) {
         }
     }
     function reiniciar(){if(bloqueo.current)return;setMensajes([bienvenida]);setEscritos(new Set());contexto.current=[];contextoServidor.current='';setFecha(null);setPregunta('');campo.current?.focus();}
-    return <div className="asistente-tienda">
+    return <div ref={raiz} className="asistente-tienda">
         <button ref={boton} type="button" className="asistente-abrir" aria-label="Abrir asistente de la librería"
             aria-expanded={abierto} aria-controls="asistente-panel" onClick={()=>abierto?cerrar():setAbierto(true)}>
             <span className="asistente-abrir__icono"><IconoIA pensando={ocupado}/></span>

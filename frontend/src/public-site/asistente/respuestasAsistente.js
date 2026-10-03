@@ -9,7 +9,7 @@ export const normalizarConsulta = texto => String(texto || '').normalize('NFD').
 const TEMAS = [
     ['horario', /\b(horario|horarios|abren|cierran|abierto|cerrado)\b/],
     ['entrega', /\b(delivery|envio|envios|entrega|entregas|recojo|recoger|reparto|domicilio|lima)\b/],
-    ['ubicacion', /\b(direccion|ubicacion|ubicada|ubicado|local|llegar|pallasca)\b|donde (?:esta|estan|queda|quedan)/],
+    ['ubicacion', /\b(direccion|ubicacion|ubicaciones|ubicada|ubicado|ubicados|ubican|local|llegar|llego|pallasca|mapa|sucursal|sucursales)\b|donde (?:esta|estan|queda|quedan|se encuentra|se encuentran|los encuentro|las encuentro|atienden|ubican|venden)|tienda fisica|en que (?:lugar|parte|ciudad|zona)|de donde son|puedo (?:ir|visitar)/],
     ['contacto', /\b(contacto|telefono|telefonos|whatsapp|correo|contactar)\b/],
     ['reclamos', /\b(reclamo|reclamos|reclamacion|reclamaciones|queja|devolucion|devoluciones)\b/],
     ['pedidos', /\b(pedido|pedidos|mis compras|mi compra|orden|ordenes|seguimiento)\b/],
@@ -26,14 +26,27 @@ const TEMAS = [
     ['moneda', /\b(moneda|dolares)\b|precios en soles/]
 ];
 
+// Saludo al inicio del mensaje: «hola», «buenas tardes, ¿qué tal?»… Se
+// separa para contestar el saludo y atender lo que venga después.
+const SALUDO = /^(?:(?:buenas tardes|buenas noches|buenos dias|buen dia|buenas|hola+|holi|hey|ey|alo|saludos|que tal|como estas|como esta|como te va|hi|hello|disculpa|disculpe|oye|oiga)(?:\s+(?:a todos|amigo|amiga|asistente|senor|senora|joven))?\b[\s,.]*)+/;
+export function separarSaludo(pregunta) {
+    const q = normalizarConsulta(pregunta);
+    const m = SALUDO.exec(q);
+    if (!m) return {saludo:null,resto:q};
+    const saludo = /buenas tardes/.test(m[0]) ? '¡Buenas tardes!' : /buenas noches/.test(m[0]) ? '¡Buenas noches!'
+        : /buen(?:os)? dias?/.test(m[0]) ? '¡Buenos días!' : '¡Hola!';
+    return {saludo,resto:q.slice(m[0].length).trim()};
+}
+
 export function analizarConsulta(pregunta) {
     const q = normalizarConsulta(pregunta);
     if (!q || q.length > 400) return {tipo:'fuera'};
     if (/ignora.*(?:instrucciones|reglas)|olvida.*(?:instrucciones|reglas)|(?:revela|muestra|dame).*(?:token|jwt|credenciales|api key|clave secreta)/.test(q)) return {tipo:'fuera'};
     if (/\b(ropa|camisa|camiseta|pantalon|zapatos|zapatillas|vestido|clima|futbol|receta|recetas|programacion)\b/.test(q)) return {tipo:'fuera'};
-    if (/\b(ciencia|fisica|quimica|gravedad|fotosintesis|matematicas)\b/.test(q)
+    if (/\b(ciencia|fisica|quimica|gravedad|fotosintesis|matematicas)\b/.test(q) && !/tienda fisica/.test(q)
         && !/\b(libro|libros|catalogo|titulo|categoria|novela|novelas)\b/.test(q)) return {tipo:'fuera'};
-    if (/^(hola|buenos dias|buenas tardes|buenas noches|gracias|muchas gracias|ayuda|que puedes hacer|en que me puedes ayudar)[ .]*$/.test(q)) return {tipo:'ayuda'};
+    if (/^(hola|buenos dias|buenas tardes|buenas noches|ayuda|que puedes hacer|en que me puedes ayudar|que haces|quien eres|como funcionas)[ .]*$/.test(q)) return {tipo:'ayuda'};
+    if (/^(gracias|muchas gracias|ok|okay|vale|perfecto|genial|listo|chau|adios|hasta luego)\b/.test(q) && q.split(' ').length <= 4) return {tipo:'cortesia'};
     // «Dónde está mi pedido» no es una consulta de ubicación de la tienda.
     if (/\b(pedido|pedidos|mis compras|mi compra|orden|ordenes|seguimiento)\b/.test(q)) return {tipo:'informacion',tema:'pedidos'};
     for (const [tema, patron] of TEMAS) if (patron.test(q)) return {tipo:'informacion',tema};
@@ -71,7 +84,7 @@ export function informacionTienda(tema, legal = LEGAL_RESPALDO) {
     return respuestas[tema] || {texto:ALCANCE_ASISTENTE};
 }
 
-const VACIAS = new Set(('a al algo algun alguna algunos algunas ante autor autora autores buscar busco cada categoria categorias como con consultar cual cuales cuanto cuantos cuesta cuestan de del descripcion detalle detalles dime disponible disponibles el ella ellos en es ese esta estan este estos exacto hay hola informa informacion interesa la las lectura lecturas libro libros lo los mas me menor menos mi mis muestra muestrame necesito nombre nos oferta ofertas o para por precio precios puede puedes que quiero recomienda recomiendame saber se sin sinopsis sobre soles sol stock su sus tengo tienes tienen tiene titulo titulos todo todos tu un una unidades vale valen ver vigente y ya bajo hasta presupuesto maximo entre novedades vendidos paginas editorial idioma edicion portada quedan ejemplares comprar solo favor encontrar barato baratos barata baratas economico economicos caro caros cara caras').split(' '));
+const VACIAS = new Set(('a al algo algun alguna algunos algunas ante autor autora autores buscar busco cada categoria categorias como con consultar cual cuales cuanto cuantos cuesta cuestan de del descripcion detalle detalles dime disponible disponibles el ella ellos en es ese esta estan este estos exacto hay hola informa informacion interesa la las lectura lecturas libro libros lo los mas me menor menos mi mis muestra muestrame necesito nombre nos oferta ofertas o para por precio precios puede puedes que quiero recomienda recomiendame saber se sin sinopsis sobre soles sol stock su sus tengo tienes tienen tiene titulo titulos todo todos tu un una unidades vale valen ver vigente y ya bajo hasta presupuesto maximo entre novedades vendidos paginas editorial idioma edicion portada quedan ejemplares comprar solo favor encontrar barato baratos barata baratas economico economicos caro caros cara caras relacionado relacionados relacionada relacionadas obra obras escrito escritos escrita escritas escribio escribe escritor escritora escritores leer quisiera gustaria otros otras otro otra mismo misma tendras tendran tenes tendrias venden vendes ofrecen ofreces').split(' '));
 function presupuesto(q) {
     const rango = /entre\s+(?:s\/\s*)?(\d+(?:[.,]\d{1,2})?)\s+y\s+(?:s\/\s*)?(\d+(?:[.,]\d{1,2})?)/.exec(q);
     if (rango) return {min:Number(rango[1].replace(',','.')),max:Number(rango[2].replace(',','.')),valores:[rango[1],rango[2]]};
@@ -94,6 +107,12 @@ export function responderCatalogo(pregunta, libros, {contexto = [], idActual} = 
     if (isbn) candidatos = activos.filter(l => String(l.isbn || '').replace(/[-\s]/g,'') === isbn);
     else if (/este libro|este titulo|libro actual/.test(q)) candidatos = activos.filter(l => l.id === Number(idActual));
     else if (exactos.length) candidatos = exactos;
+    else if (/mismo autor|misma autora|de (?:este|ese) autor|del autor de (?:este|ese)/.test(q) && (contexto.length || idActual)) {
+        // «Otros libros del mismo autor»: el del libro de la conversación o de la ficha abierta.
+        const base = activos.filter(l => contexto.includes(l.id) || l.id === Number(idActual));
+        const autores = new Set(base.map(l => normalizarConsulta(l.autor)).filter(Boolean));
+        candidatos = activos.filter(l => autores.has(normalizarConsulta(l.autor)) && !base.some(b => b.id === l.id));
+    }
     else if (!tokens.length && contexto.length && /^(?:y )?(?:el )?(?:precio|stock|cuanto|quedan|autor|isbn|sinopsis|descripcion)/.test(q)
         && !/todos|catalogo|ofertas/.test(q)) candidatos = activos.filter(l => contexto.includes(l.id));
     else candidatos = activos.filter(l => {
@@ -129,6 +148,7 @@ export function responderCatalogo(pregunta, libros, {contexto = [], idActual} = 
 export function responderConsulta(pregunta, {libros = [],legal,contexto,idActual} = {}) {
     const plan = analizarConsulta(pregunta);
     if (plan.tipo === 'fuera') return {texto:ALCANCE_ASISTENTE,contexto:[]};
+    if (plan.tipo === 'cortesia') return {texto:'Con gusto. Si necesitas algo más de la librería, aquí estoy.',contexto:[]};
     if (plan.tipo === 'ayuda') return {texto:'Hola. Puedo buscar libros de este catálogo, consultar precios y stock, mostrar ofertas y orientarte sobre entrega, pagos y compras. Escribe un título, un autor o lo que necesitas saber de la tienda.',contexto:[]};
     if (plan.tipo === 'informacion') return {...informacionTienda(plan.tema,legal),contexto:[]};
     return responderCatalogo(pregunta,libros,{contexto,idActual});

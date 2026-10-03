@@ -121,3 +121,24 @@ test('endpoint sin Gemini mantiene tarjetas locales y stock agotado, sin inventa
     await expect(ultima(chat)).toContainText('Agotado en el catálogo consultado');
     await expect(ultima(chat).getByRole('button',{name:'Agregar 1984 al carrito',exact:true})).toBeDisabled();
 });
+test('saludos: responde el saludo y atiende la pregunta que viene después',async({page})=>{
+    await preparar(page);const chat=await abrir(page);
+    await preguntar(chat,'Hola, buenas tardes');await expect(ultima(chat)).toContainText('¡Buenas tardes!');await expect(ultima(chat)).toContainText('asistente de la librería');
+    await preguntar(chat,'hola, ¿tienen libros de García Márquez?');await expect(ultima(chat)).toContainText('¡Hola!');await expect(ultima(chat)).toContainText(base.titulo);
+    await preguntar(chat,'gracias');await expect(ultima(chat)).toContainText('Con gusto');
+});
+test('ubicación y libros de un autor con distintas formas de preguntar',async({page})=>{
+    await preparar(page);const chat=await abrir(page);
+    for(const pregunta of ['¿Dónde se encuentran?','¿Tienen tienda física?','¿Cómo llego a la librería?']){
+        await preguntar(chat,pregunta);await expect(ultima(chat)).toContainText('dirección publicada');
+    }
+    for(const pregunta of ['obras de Gabriel García Márquez','libros relacionados a García Márquez','escritos por Gabriel García Márquez']){
+        await preguntar(chat,pregunta);await expect(ultima(chat)).toContainText(base.titulo);await expect(ultima(chat)).not.toContainText('1984');
+    }
+});
+test('en pantallas pequeñas tocar fuera del chat lo cierra y vuelve al icono',async({page})=>{
+    await page.setViewportSize({width:390,height:844});await preparar(page);const chat=await abrir(page);
+    await chat.getByLabel('Tu pregunta sobre la librería',{exact:true}).click();await expect(chat).toHaveCount(1);
+    await page.mouse.click(30,30);await expect(chat).toHaveCount(0);
+    await expect(page.getByRole('button',{name:'Abrir asistente de la librería',exact:true})).toBeVisible();
+});
