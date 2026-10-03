@@ -14,3 +14,10 @@
 .sitio .anuncios-inicio :is(a,button):focus-visible, .sitio .anuncios-inicio:focus-visible { outline: 2px solid var(--marino-700); outline-offset: -3px; }
 @keyframes banner-aparecer { from { opacity: .4; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .sitio .anuncios-inicio__marco img { animation: none; } }
+/* "Ver ahora" dentro del banner cuando tiene un libro vinculado. */
+.sitio .anuncios-inicio__marco > a { position: relative; }
+.sitio .anuncios-inicio__ver { position: absolute; left: clamp(14px, 4vw, 56px); bottom: clamp(14px, 3.5vw, 40px); display: inline-flex; align-items: center; gap: 8px; padding: clamp(8px, 1vw, 12px) clamp(14px, 1.8vw, 24px); border-radius: 999px; background: var(--blanco); color: var(--marino-900); font-size: clamp(0.75rem, 0.7rem + 0.3vw, 1rem); font-weight: 700; box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.6); transition: background 0.2s ease, transform 0.2s ease; }
+.sitio .anuncios-inicio__ver svg { transition: translate 0.2s ease; }
+.sitio .anuncios-inicio__marco > a:hover .anuncios-inicio__ver { background: var(--marino-900); color: var(--blanco); transform: translateY(-1px); }
+@media (max-width: 480px) { .sitio .anuncios-inicio__ver { left: 12px; bottom: 10px; padding: 6px 12px; gap: 6px; } }
+.sitio .anuncios-inicio__marco > a:hover .anuncios-inicio__ver svg { translate: 3px 0; }

@@ -75,16 +75,27 @@ test('error y archivo roto permiten reintentar sin restaurar el libro fijo',asyn
     control.lista=imagenes;await page.getByRole('button',{name:'Reintentar anuncios',exact:true}).click();await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
     await expect(page.locator('.hero__poster')).toHaveCount(0);
 });
-test('rotación automática, pausa al pasar el mouse y movimiento reducido',async({page})=>{
+test('cambia solo: con el mouse encima, tras pulsar un punto y con movimiento reducido',async({page})=>{
     await page.emulateMedia({reducedMotion:'no-preference'});await page.clock.install();await preparar(page);await page.goto('/');await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
-    await page.mouse.move(0,0);await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
-    // Con el mouse encima se detiene; al salir sigue.
-    await page.getByAltText('Banner de prueba 2').hover();await page.clock.fastForward(12000);await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
-    await page.mouse.move(0,0);await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
+    await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
+    // Con el mouse encima sigue cambiando.
+    await page.getByAltText('Banner de prueba 2').hover();await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
+    // Pulsar un punto no lo deja detenido.
+    await page.getByRole('button',{name:'Mostrar anuncio 2',exact:true}).click();await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
+    await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
+    // Con movimiento reducido también cambia (sin transición).
     await page.emulateMedia({reducedMotion:'reduce'});
-    // Espera a que la página registre el cambio antes de adelantar el reloj.
     await expect.poll(()=>page.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);await page.waitForTimeout(300);
-    await page.clock.fastForward(12000);await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
+    await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
+});
+test('el banner con libro vinculado muestra "Ver ahora" y lleva a la ficha',async({page})=>{
+    await page.emulateMedia({reducedMotion:'reduce'});await preparar(page);await page.goto('/');
+    const carrusel=page.getByRole('region',{name:'Anuncios de la librería',exact:true});
+    const enlace=carrusel.getByRole('link',{name:'Ver libro: Banner de prueba 1',exact:true});
+    await expect(enlace.getByText('Ver ahora')).toBeVisible();await expect(enlace).toHaveAttribute('href','/libro/1');
+    // El banner sin libro no muestra el botón.
+    await carrusel.getByRole('button',{name:'Mostrar anuncio 2',exact:true}).click();await expect(carrusel.getByAltText('Banner de prueba 2')).toBeVisible();
+    await expect(carrusel.getByText('Ver ahora')).toHaveCount(0);
 });
 for(const ancho of [390,1440])test(`panel ${ancho}px: subir, editar, ordenar, ocultar y eliminar banners`,async({page})=>{
     await page.setViewportSize({width:ancho,height:1000});const errores=[];page.on('pageerror',e=>errores.push(e.message));const control=await preparar(page,{panel:true});

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FaArrowRight } from 'react-icons/fa6';
 import useCarrusel from '../hooks/useCarrusel';
 import { urlPortada } from '../lib/formato';
 import './carrusel-inicio.css';
 
-export default function Hero({reducido}){
+export default function Hero(){
     const {imagenes:data,cargando,error,reintentar}=useCarrusel();
-    const [indice,setIndice]=useState(0),[hover,setHover]=useState(false),[foco,setFoco]=useState(false);
+    const [indice,setIndice]=useState(0),[foco,setFoco]=useState(false);
     const [oculto,setOculto]=useState(()=>typeof document!=='undefined' && document.hidden),[fallidas,setFallidas]=useState([]);
     const imagenes=useMemo(()=>{const ids=new Set();return data.filter(l=>{
         const id=Number(l.id_imagen);if(!Number.isInteger(id) || id<1 || ids.has(id) || fallidas.includes(id))return false;
@@ -17,10 +18,12 @@ export default function Hero({reducido}){
     const cambiar=paso=>setIndice(v=>imagenes.length?(v+paso+imagenes.length)%imagenes.length:0);
     useEffect(()=>{const escuchar=()=>setOculto(document.hidden);document.addEventListener('visibilitychange',escuchar);return()=>document.removeEventListener('visibilitychange',escuchar);},[]);
     useEffect(()=>{
-        if(imagenes.length<2 || reducido || hover || foco || oculto || cargando)return undefined;
+        // Cambia solo, también con movimiento reducido (ahí sin transición).
+        // Solo se detiene si se recorre con el teclado o la pestaña no se ve.
+        if(imagenes.length<2 || foco || oculto || cargando)return undefined;
         const id=setInterval(()=>setIndice(v=>(v+1)%imagenes.length),6000);
         return()=>clearInterval(id);
-    },[imagenes.length,reducido,hover,foco,oculto,cargando,indice]);
+    },[imagenes.length,foco,oculto,cargando,indice]);
     useEffect(()=>{
         if(imagenes.length<2)return;
         const proxima=new Image();proxima.src=urlPortada(imagenes[(actual+1)%imagenes.length].imagen_url,1800);
@@ -29,8 +32,7 @@ export default function Hero({reducido}){
     const noImagen=!cargando && !error && !imagenes.length;
     const inicioPuntos=Math.max(0,Math.min(actual-1,imagenes.length-3));
     return <section className="anuncios-inicio" aria-label="Anuncios de la librería" aria-roledescription="carrusel" tabIndex={0}
-        onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)}
-        onFocusCapture={()=>setFoco(true)} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setFoco(false);}}
+        onFocusCapture={e=>{if(e.target.matches(':focus-visible'))setFoco(true);}} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setFoco(false);}}
         onKeyDown={e=>{if(imagenes.length>1 && ['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();cambiar(e.key==='ArrowRight'?1:-1);}}}>
         <h1 className="sr-only">Libros y anuncios de Librería del Saber</h1>
         <div className="anuncios-inicio__marco">
@@ -41,6 +43,7 @@ export default function Hero({reducido}){
                 :<>{imagen.id_libro?<Link to={`/libro/${Number(imagen.id_libro)}`} aria-label={`Ver libro: ${imagen.titulo}`}>
                     <img key={imagen.id_imagen} src={urlPortada(imagen.imagen_url,1800)} alt={imagen.titulo || 'Anuncio de la librería'} width="1600" height="600" fetchPriority="high"
                         onError={()=>setFallidas(v=>[...v,Number(imagen.id_imagen)])}/>
+                    <span className="anuncios-inicio__ver" aria-hidden="true">Ver ahora <FaArrowRight/></span>
                 </Link>:<img key={imagen.id_imagen} src={urlPortada(imagen.imagen_url,1800)} alt={imagen.titulo || 'Anuncio de la librería'} width="1600" height="600" fetchPriority="high"
                     onError={()=>setFallidas(v=>[...v,Number(imagen.id_imagen)])}/>}
                 </>}
