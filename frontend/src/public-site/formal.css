@@ -545,3 +545,32 @@
 .sitio .favoritos__volver { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; font-size: 0.875rem; }
 .sitio .favorito .favorito__acciones .compra-libro { display: flex; flex-direction: column; align-items: stretch; width: 100%; padding: 0; }
 .sitio .favorito .favorito__acciones .compra-libro .boton { display: inline-flex; justify-content: center; width: 100%; max-width: none; overflow: visible; }
+
+/* Mis compras ordenado: ancho contenido, libros a la izquierda con portada
+   y precio, entrega en un panel lateral y el desglose en el pie. */
+.sitio .mis-compras { max-width: 1040px; }
+.sitio .mis-compras .compra-registro__cuerpo { grid-template-columns: minmax(0, 1fr) 280px; gap: 20px 28px; align-items: start; padding: 18px 22px; }
+.sitio .mis-compras .compra-registro .compra-registro__libros li { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px 0; }
+.sitio .mis-compras .compra-registro__portada, .sitio .mis-compras .compra-registro__portada .ficha-portada { width: 56px; }
+.sitio .mis-compras .compra-registro__portada img, .sitio .mis-compras .compra-registro__portada .ficha-portada-vacia { width: 56px; height: 84px; }
+.sitio .mis-compras .compra-registro__titulo { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sitio .mis-compras .compra-registro__titulo a { font-size: 0.9375rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.sitio .mis-compras .compra-registro__titulo small { font-size: 0.8125rem; color: var(--texto-3); }
+.sitio .mis-compras .compra-registro__subtotal { font-weight: 600; color: var(--tinta); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sitio .mis-compras .compra-registro__entrega { gap: 12px; padding: 14px 16px; border-radius: 10px; background: #f7f6f2; }
+.sitio .mis-compras .compra-registro__pie { justify-content: space-between; align-items: center; background: #fafaf8; }
+.sitio .mis-compras .compra-registro__importes { display: flex; flex-wrap: wrap; gap: 6px 26px; margin: 0; }
+.sitio .mis-compras .compra-registro__importes > div { display: flex; flex-direction: column; gap: 2px; }
+.sitio .mis-compras .compra-registro__importes dt { font-size: 0.75rem; color: var(--texto-3); }
+.sitio .mis-compras .compra-registro__importes dd { margin: 0; font-size: 0.9375rem; color: var(--tinta); font-variant-numeric: tabular-nums; }
+.sitio .mis-compras .compra-registro__importes .compra-registro__total dd strong { font-size: 1.125rem; }
+.sitio .mis-compras .compra-registro__pie .compra-acciones { margin: 0; }
+@media (max-width: 760px) {
+    .sitio .mis-compras .compra-registro__cuerpo { grid-template-columns: minmax(0, 1fr); padding: 14px 16px; }
+    .sitio .mis-compras .compra-registro header, .sitio .mis-compras .compra-registro__pie { padding-inline: 16px; }
+    .sitio .mis-compras .compra-registro .compra-registro__libros li { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 12px; }
+    .sitio .mis-compras .compra-registro__portada, .sitio .mis-compras .compra-registro__portada .ficha-portada { width: 48px; }
+    .sitio .mis-compras .compra-registro__portada img, .sitio .mis-compras .compra-registro__portada .ficha-portada-vacia { width: 48px; height: 72px; }
+    .sitio .mis-compras .compra-registro__importes { width: 100%; justify-content: space-between; }
+    .sitio .mis-compras .compra-registro__entrega { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+}

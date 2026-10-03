@@ -55,7 +55,9 @@ export default function MisComprasPage() {
                         <div className="compra-registro__cuerpo">
                             <ul className="compra-registro__libros">{(v.detalle || []).map(i=><li key={i.id_libro}>
                                 <Link to={`/libro/${Number(i.id_libro)}`} className="compra-registro__portada" aria-label={`Ver ${i.titulo}`}><PortadaLibro key={conPortada(i).portada || 'sin'} libro={conPortada(i)} mini/></Link>
-                                <span className="compra-registro__titulo"><Link to={`/libro/${Number(i.id_libro)}`}>{i.titulo}</Link> <small>× {i.cantidad}</small></span><span>{soles(i.subtotal)}</span></li>)}</ul>
+                                <div className="compra-registro__titulo"><Link to={`/libro/${Number(i.id_libro)}`}>{i.titulo}</Link>
+                                    <small>Cantidad: {i.cantidad}{Number(i.precio_unitario)>0 && <> · {soles(i.precio_unitario)} c/u</>}</small></div>
+                                <span className="compra-registro__subtotal">{soles(i.subtotal)}</span></li>)}</ul>
                             <dl className="compra-registro__entrega">
                                 <div><dt>Entrega</dt><dd>{descripcionEntrega(v)}</dd></div>
                                 <div><dt>Estado de la entrega</dt><dd>{entrega[v.estado_entrega] || v.estado_entrega || 'Pendiente'}</dd></div>
@@ -64,7 +66,11 @@ export default function MisComprasPage() {
                             </dl>
                         </div>
                         <footer className="compra-registro__pie">
-                            <p>Costo de entrega: {soles(v.costo_envio)}</p><p className="compra-registro__total">Total: <strong>{soles(v.total)}</strong></p>
+                            <dl className="compra-registro__importes">
+                                <div><dt>Libros</dt><dd>{soles((v.detalle || []).reduce((s,i)=>s+Number(i.subtotal || 0),0))}</dd></div>
+                                <div><dt>Costo de entrega</dt><dd>{soles(v.costo_envio)}</dd></div>
+                                <div className="compra-registro__total"><dt>Total</dt><dd><strong>{soles(v.total)}</strong></dd></div>
+                            </dl>
                             {v.estado==='pendiente' && v.external_reference && <div className="compra-acciones">
                                 <button className="boton boton--compra boton--chico" disabled={ocupado} onClick={()=>continuar(v)} aria-label={`Continuar pago de compra #${v.id_venta}`}>Continuar el pago</button>
                                 <button className="boton boton--linea boton--chico" disabled={ocupado} onClick={()=>verificar(v)} aria-label={`Verificar pago de compra #${v.id_venta}`}>Verificar pago</button></div>}
