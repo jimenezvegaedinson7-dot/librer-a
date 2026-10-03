@@ -1,10 +1,11 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaArrowRight, FaChevronRight, FaMobileScreenButton } from 'react-icons/fa6';
+import { FaArrowLeft, FaArrowRight, FaChevronRight } from 'react-icons/fa6';
 
 import { PrecioOferta } from '../components/PrecioOferta';
 import { portada } from '../lib/formato';
 import { EtiquetaNuevo } from '../components/EtiquetasLibro';
+import ComprarLibro from '../tienda/ComprarLibro';
 
 function Libro({ libro, indice }) {
     return (
@@ -32,9 +33,7 @@ function Libro({ libro, indice }) {
                 <p className="libro__pie">
                     <PrecioOferta libro={libro} />
                 </p>
-                <Link to="/descargar" className="boton boton--compra boton--chico libro__comprar" aria-label={`${libro.disponible ? 'Comprar' : 'Reservar'} «${libro.titulo}» en la app`}>
-                    <FaMobileScreenButton aria-hidden="true" /> {libro.disponible ? 'Comprar en la app' : 'Reservar en la app'}
-                </Link>
+                <ComprarLibro libro={libro}/>
             </div>
         </li>
     );
@@ -77,7 +76,7 @@ export default function BookShowcase({ catalogo, reducido }) {
                         )}
                     </div>
                 </div>
-                <p className="seccion__entrada">Precios actuales. En la app puedes ver la sinopsis, el stock y comprar.</p>
+                <p className="seccion__entrada">Precios y stock actuales. Consulta la ficha y compra desde la web o la app.</p>
             </div>
 
             {error || (!cargando && muestra.length === 0) ? (

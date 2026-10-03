@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel administrativo
 
-> Generado desde el código real el 2026-10-02 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-03 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -25,6 +25,11 @@
 | `/caracteristicas` | CaracteristicasPage | `public-site/pages/paginas.jsx` |
 | `/nosotros` | NosotrosPage | `public-site/pages/paginas.jsx` |
 | `/descargar` | DescargarPage | `public-site/pages/paginas.jsx` |
+| `/cuenta` | CuentaClientePage | `public-site/tienda/CuentaPage.jsx` |
+| `/carrito` | CarritoWebPage | `public-site/tienda/CarritoPage.jsx` |
+| `/checkout` | CheckoutWebPage | `public-site/tienda/CheckoutPage.jsx` |
+| `/mis-compras` | MisComprasWebPage | `public-site/tienda/MisComprasPage.jsx` |
+| `/libro/:id` | LibroPublicoPage | `public-site/tienda/LibroPage.jsx` |
 | `/admin/login` | LoginPage | `features/auth/LoginPage.jsx` |
 | `/admin` | Navigate | redirección: `<Navigate to="/admin/login" replace />` |
 | `/verificar-email` | VerificarEmailPage | `features/auth/VerificarEmailPage.jsx` |
@@ -107,6 +112,12 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/PublicLayout.jsx` | `GET /api/empresa`<br>`GET /api/libros` |
 | `public-site/components/ActualizarApp.jsx` | `GET /api/app/version` |
 | `public-site/sections/VideoSection.jsx` | `GET /api/anuncios` |
+| `public-site/tienda/AccionesLibro.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos/:param`<br>`POST /api/favoritos/:param` |
+| `public-site/tienda/CheckoutPage.jsx` | `GET /api/pagos/capacidades`<br>`GET /api/ventas/:param`<br>`GET /api/zonas-delivery`<br>`POST /api/pagos/crear-orden` |
+| `public-site/tienda/CuentaPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reenviar-codigo`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/registro`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-email` |
+| `public-site/tienda/LibroPage.jsx` | `GET /api/autores/:param`<br>`GET /api/libros`<br>`GET /api/libros/:param`<br>`GET /api/libros/:param/relacionados` |
+| `public-site/tienda/MisComprasPage.jsx` | `GET /api/pagos/:param`<br>`GET /api/ventas/:param/pago`<br>`GET /api/ventas/mis-ventas` |
+| `public-site/tienda/TiendaContext.jsx` | `GET /api/libros`<br>`GET /api/usuarios/perfil`<br>`GET /api/ventas/:param` |
 
 ## Servicios (`features/*/*Service.js`)
 
@@ -218,6 +229,28 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/hooks/useApiPublica.js` | `useAnuncioActivo` | `GET /api/anuncios` |
 | `public-site/hooks/useApiPublica.js` | `useEmpresa` | `GET /api/empresa` |
 | `public-site/hooks/useApiPublica.js` | `useVersionApp` | `GET /api/app/version` |
+| `public-site/tienda/clienteApi.js` | `login` | `POST /api/auth/login` |
+| `public-site/tienda/clienteApi.js` | `registro` | `POST /api/auth/registro` |
+| `public-site/tienda/clienteApi.js` | `verificarEmail` | `POST /api/auth/verificar-email` |
+| `public-site/tienda/clienteApi.js` | `reenviarCodigo` | `POST /api/auth/reenviar-codigo` |
+| `public-site/tienda/clienteApi.js` | `solicitarReseteo` | `POST /api/auth/solicitar-reseteo` |
+| `public-site/tienda/clienteApi.js` | `restablecer` | `POST /api/auth/reestablecer-contrasena` |
+| `public-site/tienda/clienteApi.js` | `verificar2fa` | `POST /api/auth/2fa/verify-login` |
+| `public-site/tienda/clienteApi.js` | `perfil` | `GET /api/usuarios/perfil` |
+| `public-site/tienda/clienteApi.js` | `catalogo` | `GET /api/libros` |
+| `public-site/tienda/clienteApi.js` | `libro` | `GET /api/libros/:param` |
+| `public-site/tienda/clienteApi.js` | `relacionados` | `GET /api/libros/:param/relacionados`<br>`GET /api/libros` (vía public-site/tienda/clienteApi.js#catalogo) |
+| `public-site/tienda/clienteApi.js` | `autor` | `GET /api/autores/:param` |
+| `public-site/tienda/clienteApi.js` | `favorito` | `GET /api/favoritos/:param` |
+| `public-site/tienda/clienteApi.js` | `agregarFavorito` | `POST /api/favoritos/:param` |
+| `public-site/tienda/clienteApi.js` | `quitarFavorito` | `DELETE /api/favoritos/:param` |
+| `public-site/tienda/clienteApi.js` | `zonas` | `GET /api/zonas-delivery` |
+| `public-site/tienda/clienteApi.js` | `capacidades` | `GET /api/pagos/capacidades` |
+| `public-site/tienda/clienteApi.js` | `crearOrden` | `POST /api/pagos/crear-orden` |
+| `public-site/tienda/clienteApi.js` | `compras` | `GET /api/ventas/mis-ventas` |
+| `public-site/tienda/clienteApi.js` | `compra` | `GET /api/ventas/:param` |
+| `public-site/tienda/clienteApi.js` | `pagoCompra` | `GET /api/ventas/:param/pago` |
+| `public-site/tienda/clienteApi.js` | `verificarPago` | `GET /api/pagos/:param` |
 
 ## Componentes compartidos (`components/`)
 
@@ -247,11 +280,12 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/Spinner.jsx` | 4 |
 | `components/ui/TableSkeleton.jsx` | 17 |
 | `public-site/components/ActualizarApp.jsx` | 1 |
+| `public-site/components/BarraMovil.jsx` | 1 |
 | `public-site/components/CierreDescarga.jsx` | 1 |
 | `public-site/components/EtiquetasLibro.jsx` | 2 |
 | `public-site/components/Migas.jsx` | 2 |
 | `public-site/components/Precarga.jsx` | 1 |
-| `public-site/components/PrecioOferta.jsx` | 3 |
+| `public-site/components/PrecioOferta.jsx` | 5 |
 | `public-site/components/PublicFooter.jsx` | 1 |
 | `public-site/components/PublicHeader.jsx` | 1 |
 

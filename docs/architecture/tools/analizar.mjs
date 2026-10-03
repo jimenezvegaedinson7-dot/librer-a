@@ -3,8 +3,9 @@
 // Normalmente se ejecuta a través de: node docs/architecture/tools/actualizar-mapa.mjs
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const RAIZ = 'C:/libreria';
+const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const leer = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
 const rel = (p) => path.relative(RAIZ, p).split(path.sep).join('/');
 const IGNORAR = new Set(['node_modules', 'build', 'dist', '.dart_tool', '.git', 'coverage', 'uploads', '.vercel', '__preview']);
@@ -217,7 +218,7 @@ const FRONT = `${RAIZ}/frontend/src`;
 const archivosFront = listar(FRONT, (n) => /\.(jsx?|mjs)$/.test(n));
 const normalizar = (url) => url.replace(/\$\{[^}]*\}/g, ':param').replace(/\?.*$/, '');
 const servicios = {};
-for (const p of archivosFront.filter((p) => /Service\.js$|client\.js$|useApiPublica\.js$/.test(p))) {
+for (const p of archivosFront.filter((p) => /Service\.js$|client\.js$|clienteApi\.js$|useApiPublica\.js$/.test(p))) {
     const txt = leer(p);
     const fns = {};
     for (const m of txt.matchAll(/export\s+(?:async\s+)?function\s+(\w+)\s*\([^)]*\)\s*\{/g)) {
@@ -230,6 +231,17 @@ for (const p of archivosFront.filter((p) => /Service\.js$|client\.js$|useApiPubl
         }
         const delega = [...cuerpo.matchAll(/(?:return\s+|await\s+)(\w+)\(/g)].map((x) => x[1]).filter((n) => n !== 'datosDe');
         fns[m[1]] = { endpoints: llamadas, delegates: delega };
+    }
+    if (/clienteApi\.js$/.test(p)) {
+        const propiedades = [...txt.matchAll(/^\s{4}(\w+):/gm)];
+        for (let i = 0; i < propiedades.length; i++) {
+            const m = propiedades[i];
+            const cuerpo = txt.slice(m.index, propiedades[i + 1]?.index ?? txt.length);
+            const llamadas = [...cuerpo.matchAll(/peticionCliente\(\s*(['"`])([^'"`]+)\1([^\n]*)/g)]
+                .map(x => ({ method: /method:\s*['"](POST|PUT|PATCH|DELETE)['"]/.exec(x[3])?.[1] || 'GET', path: `/api${normalizar(x[2])}` }));
+            const delega = [...cuerpo.matchAll(/clienteApi\.(\w+)\(/g)].map(x => x[1]);
+            fns[m[1]] = { endpoints: llamadas, delegates: delega };
+        }
     }
     for (const m of txt.matchAll(/export\s*\{([^}]+)\}/g)) for (const n of m[1].split(',').map((s) => s.trim()).filter(Boolean)) if (!fns[n]) fns[n] = { reexport: true, endpoints: [], delegates: [] };
     servicios[rel(p)] = fns;
@@ -275,6 +287,12 @@ const usoServicios = {};
 for (const p of archivosFront) {
     const txt = leer(p);
     grafoFront[rel(p)] = importsDe(p, txt);
+    for (const m of txt.matchAll(/import\s*\{[^}]*\bclienteApi\b[^}]*\}\s*from\s*'([^']+)'/g)) {
+        const destino = rel(path.resolve(path.dirname(p), m[1])) + '.js';
+        for (const llamada of txt.matchAll(/clienteApi\.(\w+)\(/g)) {
+            (usoServicios[rel(p)] ||= []).push(`${destino}#${llamada[1]}`);
+        }
+    }
     for (const m of txt.matchAll(/import\s*\{([^}]+)\}\s*from\s*'([^']+Service|[^']*\/client|[^']*\/useApiPublica)'/g)) {
         const destino = rel(path.resolve(path.dirname(p), m[2])) + '.js';
         for (const n of m[1].split(',').map((s) => s.trim().split(/\s+as\s+/)[0]).filter(Boolean)) {

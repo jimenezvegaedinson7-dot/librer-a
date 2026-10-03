@@ -1,0 +1,120 @@
+/* ============================================================
+   ESTILO FORMAL (se carga al final)
+   Referencias: Casa del Libro (tienda sobria, una sola familia, títulos
+   pequeños, mucho blanco) y Alibaba móvil (densidad y orden).
+   - Una sola familia tipográfica: Work Sans en todo, sin serif.
+   - Escala contenida: títulos de sección 20–24 px, hero hasta 40 px.
+   - Color sobrio: blanco y gris cálido de fondo, azul marino para
+     acciones, dorado solo como detalle fino.
+   ============================================================ */
+
+.sitio {
+    --f-titulo: var(--f-texto);
+
+    /* Escala tipográfica */
+    --t-hero: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+    --t-h1: clamp(1.25rem, 1.15rem + 0.45vw, 1.5rem);
+    --t-h3: 1.0625rem;
+    --t-lead: 1rem;
+    --t-cuerpo: 0.9375rem;
+    --t-menu: 0.875rem;
+    --t-meta: 0.8125rem;
+
+    /* Fondos sobrios */
+    --fondo-alt: #f6f4f0;
+    --linea: #e6e1d8;
+    background: var(--blanco);
+}
+
+/* ---------- Tipografía ---------- */
+.sitio :is(h1, h2, h3) { font-weight: 600; letter-spacing: -0.01em; }
+.sitio .hero__titulo { font-weight: 700; line-height: 1.12; max-width: 16ch; }
+.sitio .seccion__titulo { font-size: var(--t-h1); font-weight: 600; }
+.sitio .seccion__titulo::after { width: 32px; height: 2px; margin-top: 0.55rem; }
+.sitio .seccion__entrada { font-size: var(--t-cuerpo); color: var(--texto-2); }
+.sitio .marca span { font-size: 1.125rem; font-weight: 600; }
+.sitio .pie .marca span { font-size: 1.125rem; }
+.sitio .pie h2 { font-size: 0.875rem; font-weight: 600; }
+.sitio .menu a { font-weight: 500; }
+.sitio .menu a[aria-current='page'] { font-weight: 600; }
+.sitio .explorar__texto strong { font-size: 1rem; }
+.sitio .libro .libro__titulo { font-size: 0.9375rem; font-weight: 600; line-height: 1.3; min-height: 2.6em; }
+.sitio .tarjeta-libro .libro__titulo { font-size: 0.9375rem; font-weight: 600; }
+.sitio .libro__categoria { font-size: 0.6875rem; letter-spacing: 0.02em; color: var(--texto-3); }
+.sitio .oferta-tarjeta h3 { font-size: 1.0625rem; }
+.sitio .oferta-tarjeta__porcentaje { font-size: 0.875rem; font-weight: 700; }
+.sitio .banda-catalogo h2 { font-size: 1.375rem; }
+.sitio .paso h3 { font-size: 0.9375rem; }
+.sitio .paso p { font-size: 0.875rem; }
+.sitio .promo h3 { font-size: 1.125rem; }
+.sitio .tipografica { font-size: clamp(1.375rem, 1.1rem + 0.8vw, 1.75rem); }
+.sitio .nosotros-hero__titulo { font-size: var(--t-hero); }
+.sitio .nosotros-hero .nosotros__cita { font-size: 1.0625rem; font-weight: 400; }
+.sitio .nosotros-pilar h3, .sitio .instalar__paso h3 { font-size: 1rem; }
+.sitio .nosotros-cierre h2 { font-size: 1.375rem; }
+.sitio .nosotros-tienda__tarjeta h2 { font-size: 1.25rem; }
+.sitio .app-portada__titulo, .sitio .descargar-portada__titulo { font-size: var(--t-hero); }
+.sitio .ventaja h2 { font-size: 1.125rem; }
+
+/* ---------- Color: fondos ---------- */
+.sitio .verde-claro,
+.sitio .catalogo,
+.sitio .como-comprar,
+.sitio .gris { background: var(--fondo-alt); }
+.sitio .crema, .sitio .explorar, .sitio .ofertas, .sitio .catalogo-pagina { background: var(--blanco); }
+.sitio .migas { background: var(--fondo-alt); }
+.sitio .cabecera, .sitio .menu { background: var(--blanco); }
+.sitio .menu { border-bottom-color: var(--linea); }
+.sitio .explorar__libros { background: var(--fondo-alt); }
+.sitio .libro__escenario { background: var(--fondo-alt); }
+.sitio .libro, .sitio .tarjeta-libro, .sitio .explorar__tarjeta, .sitio .paso {
+    border-color: var(--linea);
+    box-shadow: 0 1px 2px rgba(17, 24, 32, 0.04);
+}
+.sitio .libro:hover, .sitio .tarjeta-libro:hover, .sitio .explorar__tarjeta:hover, .sitio .paso:hover {
+    box-shadow: 0 10px 24px -14px rgba(17, 24, 32, 0.28);
+}
+
+/* ---------- Color: botones ---------- */
+/* Acción principal en azul marino con texto blanco; el dorado queda
+   como detalle (subrayados, iconos), no como relleno de botones. */
+.sitio .boton { background: var(--marino-900); border-color: var(--marino-900); color: var(--blanco); box-shadow: none; }
+.sitio .boton:hover { background: var(--marino-700); border-color: var(--marino-700); box-shadow: 0 8px 18px -12px rgba(13, 41, 64, 0.6); }
+.sitio .boton--blanco { background: var(--blanco); border-color: var(--blanco); color: var(--marino-900); }
+.sitio .boton--blanco:hover { background: #eef1f4; border-color: #eef1f4; }
+.sitio .boton--linea { background: transparent; color: var(--marino-900); border-color: #cfd6de; }
+.sitio .boton--linea:hover { background: #f2f4f7; border-color: var(--marino-900); box-shadow: none; }
+.sitio .oscuro .boton--linea { color: var(--blanco); border-color: rgba(255, 255, 255, 0.5); }
+.sitio .oscuro .boton--linea:hover { background: rgba(255, 255, 255, 0.1); }
+.sitio .boton--compra { background: var(--marino-900); border-color: var(--marino-900); color: var(--blanco); }
+.sitio .boton--compra:hover { background: var(--marino-700); border-color: var(--marino-700); }
+.sitio .oscuro .boton:not(.boton--blanco):not(.boton--linea) { background: var(--dorado); border-color: var(--dorado); color: var(--marino-950); }
+.sitio .oferta-tarjeta .boton--compra { background: var(--dorado); border-color: var(--dorado); color: var(--marino-950); }
+.sitio .oferta-tarjeta .boton--compra:hover { background: var(--dorado-hover); border-color: var(--dorado-hover); }
+.sitio .buscador button { background: var(--marino-900); color: var(--blanco); }
+.sitio .buscador button:hover { background: var(--marino-700); }
+.sitio .enlace-mas { color: var(--marino-900); }
+
+/* ---------- Color: precios y etiquetas ---------- */
+.sitio .precio { background: none; padding: 0; color: var(--tinta); font-size: 1rem; }
+.sitio .precio.oferta { background: none; padding: 0; gap: 0.35rem; color: #b12704; }
+.sitio .precio.oferta .oferta__pastilla { background: #b12704; color: var(--blanco); text-decoration: none; padding: 0.05rem 0.35rem; border-radius: 4px; }
+.sitio .precio.oferta .oferta__final { color: #b12704; text-decoration: none; }
+.sitio .oferta-tarjeta .precio.oferta { color: var(--dorado-hover); }
+.sitio .oferta-tarjeta .precio.oferta .oferta__final { color: var(--dorado-hover); }
+.sitio .categoria { background: #f1efeb; color: var(--texto-2); }
+.sitio .ahorro { color: #b12704; }
+
+@media (max-width: 640px) {
+    .sitio { --t-cuerpo: 0.9375rem; }
+    .sitio .hero__titulo { font-size: 1.75rem; }
+    .sitio .seccion__titulo { font-size: 1.25rem; }
+    /* Dos libros por pantalla en el carrusel, como en las tiendas móviles. */
+    .sitio .catalogo__pista { gap: 10px; }
+    .sitio .libro { width: calc((100vw - 2 * var(--gutter) - 10px) / 2); border-radius: 14px; }
+    .sitio .libro__escenario { padding: 14px 0 12px; }
+    .sitio .libro__datos { padding: 10px 10px 12px; }
+    .sitio .libro .libro__titulo { font-size: 0.875rem; }
+    .sitio .libro__comprar.boton--chico { min-height: 34px; padding: 0 0.5rem; font-size: 0.75rem; }
+    .sitio .libro__comprar svg { display: none; }
+}

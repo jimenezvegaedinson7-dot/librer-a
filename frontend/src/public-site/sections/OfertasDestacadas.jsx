@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
-import { FaArrowRight, FaMobileScreenButton } from 'react-icons/fa6';
+import { FaArrowRight } from 'react-icons/fa6';
 
 import { PrecioOferta } from '../components/PrecioOferta';
 import { portada, soles } from '../lib/formato';
+import ComprarLibro from '../tienda/ComprarLibro';
 
 // ============================================================
 // OFERTAS VIGENTES
@@ -37,9 +38,7 @@ export default function OfertasDestacadas({ catalogo }) {
                                 <p className="oferta-tarjeta__autor">{libro.autor}</p>
                                 <PrecioOferta libro={libro} />
                                 <p className="oferta-tarjeta__ahorro">Ahorras {soles(libro.precio - libro.precioFinal)}</p>
-                                <Link to="/descargar" className="boton boton--compra boton--chico">
-                                    <FaMobileScreenButton aria-hidden="true" /> {libro.disponible ? 'Comprar en la app' : 'Reservar en la app'}
-                                </Link>
+                                <ComprarLibro libro={libro}/>
                             </div>
                         </li>
                     ))}
