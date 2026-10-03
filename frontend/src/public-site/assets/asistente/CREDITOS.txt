@@ -1,0 +1,9 @@
+anime-reposo.*, anime-pensar.* y anime-poster.webp
+
+Personaje: "Sakurada Fumiriya", modelo de muestra de VRoid Studio (pixiv),
+publicado por VRoid bajo licencia CC0 (dominio público):
+https://opengameart.org/content/vroid-studio-cc0-models
+
+Animado y renderizado para esta web con three.js y @pixiv/three-vrm
+(respiración, parpadeo, mirada, cabeza, saludo y gesto de pensar),
+240 x 240, sin audio, en bucle.

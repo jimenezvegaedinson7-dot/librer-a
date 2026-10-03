@@ -151,7 +151,7 @@ export default function AsistenteTienda({ legal }) {
     return <div className="asistente-tienda" data-apartado={apartado && !abierto ? '' : undefined}>
         <button ref={boton} type="button" className="asistente-abrir" aria-label="Abrir asistente de la librería"
             aria-expanded={abierto} aria-controls="asistente-panel" onClick={()=>abierto?cerrar():setAbierto(true)}>
-            <span className="asistente-abrir__icono"><IconoIA pensando={ocupado}/></span><span className="asistente-abrir__texto">Asistente</span>
+            <span className="asistente-abrir__icono"><IconoIA pensando={ocupado}/></span>
         </button>
         {abierto && <section id="asistente-panel" className="asistente-panel" role="dialog" aria-modal="false" aria-labelledby="asistente-titulo"
             onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();cerrar();}}}>
