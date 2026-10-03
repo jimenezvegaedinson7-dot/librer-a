@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { FaImages, FaPlus, FaRotate, FaArrowUp, FaArrowDown, FaEye, FaEyeSlash, FaPen, FaTrashCan } from 'react-icons/fa6';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FaCloudArrowUp, FaMagnifyingGlass, FaImages, FaPlus, FaRotate, FaArrowUp, FaArrowDown, FaEye, FaEyeSlash, FaPen, FaTrashCan } from 'react-icons/fa6';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input, Select } from '../../components/ui/Form';
@@ -14,11 +14,20 @@ import { construirUrlArchivo } from '../../lib/api/client';
 import { listarLibros } from '../libros/librosService';
 import { listarImagenesCarrusel,crearImagenCarrusel,actualizarImagenCarrusel,ordenarCarrusel,eliminarImagenCarrusel } from './carruselService';
 
+// Sin tildes ni mayúsculas: "garcia" encuentra "García".
+const normalizar=t=>String(t || '').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+
 function FormularioImagen({imagen,onCerrar,onGuardado,siguienteOrden}){
     const [titulo,setTitulo]=useState(imagen?.titulo || ''),[orden,setOrden]=useState(String(imagen?.orden ?? siguienteOrden)),[estado,setEstado]=useState(String(imagen?.estado ?? 1));
     const [idLibro,setIdLibro]=useState(String(imagen?.id_libro || '')),[archivo,setArchivo]=useState(null),[preview,setPreview]=useState('');
-    const [libros,setLibros]=useState([]),[error,setError]=useState(''),[guardando,setGuardando]=useState(false);
+    const [arrastrando,setArrastrando]=useState(false),[libros,setLibros]=useState([]),[error,setError]=useState(''),[guardando,setGuardando]=useState(false);
+    const [busqueda,setBusqueda]=useState('');
     const url=useRef(''),bloqueo=useRef(false);const {exito}=useToast();
+    const librosOrdenados=useMemo(()=>[...libros].sort((a,b)=>String(a.titulo).localeCompare(String(b.titulo),'es',{sensitivity:'base'})),[libros]);
+    const librosVisibles=useMemo(()=>{const q=normalizar(busqueda);return q?librosOrdenados.filter(l=>normalizar(`${l.titulo} ${l.autor || ''}`).includes(q)):librosOrdenados;},[librosOrdenados,busqueda]);
+    const seleccionado=libros.find(l=>String(l.id_libro)===idLibro);
+    // El libro ya elegido sigue en la lista aunque la búsqueda lo deje fuera.
+    const seleccionadoFuera=Boolean(idLibro) && !librosVisibles.some(l=>String(l.id_libro)===idLibro);
     useEffect(()=>{let activo=true;listarLibros().then(l=>{if(activo)setLibros(l.filter(b=>Number(b.estado)===1));}).catch(()=>{});return()=>{activo=false;if(url.current)URL.revokeObjectURL(url.current);};},[]);
     function elegir(e){
         const f=e.target.files?.[0];if(!f)return;
@@ -44,11 +53,25 @@ function FormularioImagen({imagen,onCerrar,onGuardado,siguienteOrden}){
             <Input label="Título del anuncio / texto alternativo" value={titulo} maxLength={200} requerido onChange={e=>setTitulo(e.target.value)} placeholder="Ej. Libro destacado de la semana"/>
             <div className="grid gap-4 sm:grid-cols-2"><Input label="Orden de aparición" type="number" min="0" max="100000" value={orden} requerido onChange={e=>setOrden(e.target.value)}/>
                 <Select label="Visibilidad" value={estado} onChange={e=>setEstado(e.target.value)}><option value="1">Activo — mostrar en inicio</option><option value="0">Inactivo — oculto</option></Select></div>
-            <Select label="Libro vinculado (opcional)" value={idLibro} onChange={e=>setIdLibro(e.target.value)}><option value="">Sin enlace a un libro</option>
-                {imagen?.id_libro && !libros.some(l=>String(l.id_libro)===idLibro) && <option value={idLibro}>Libro vinculado #{idLibro}</option>}
-                {libros.map(l=><option key={l.id_libro} value={l.id_libro}>{l.titulo}</option>)}</Select>
-            <div><label htmlFor="imagen-carrusel" className="block text-sm font-medium text-slate-700">Imagen {imagen?'(opcional para reemplazar la actual)':''}</label>
-                <input id="imagen-carrusel" type="file" accept="image/jpeg,image/png,image/webp" onChange={elegir} className="mt-2 block w-full text-sm"/>
+            {/* Con muchos libros: lista de la A a la Z y un buscador que la filtra al escribir. */}
+            <div className="space-y-2">
+                <Input label="Buscar libro para vincular" type="search" value={busqueda} onChange={e=>setBusqueda(e.target.value)} placeholder="Escribe parte del título o autor" icono={<FaMagnifyingGlass/>}/>
+                <Select label="Libro vinculado (opcional)" value={idLibro} onChange={e=>setIdLibro(e.target.value)}><option value="">Sin enlace a un libro</option>
+                    {seleccionadoFuera && <option value={idLibro}>{seleccionado?seleccionado.titulo:`Libro vinculado #${idLibro}`}</option>}
+                    {librosVisibles.map(l=><option key={l.id_libro} value={l.id_libro}>{l.titulo}{l.autor?` — ${l.autor}`:''}</option>)}</Select>
+                <p className="text-xs text-slate-500" aria-live="polite">{busqueda.trim()?`${librosVisibles.length} de ${librosOrdenados.length} libros coinciden con «${busqueda.trim()}»`:`${librosOrdenados.length} libros, ordenados de la A a la Z`}</p>
+            </div>
+            <div>
+                <p className="block text-sm font-medium text-slate-700">Imagen del banner {imagen?'(opcional: reemplaza la actual)':<span className="text-crimson-500">*</span>}</p>
+                {/* Zona de subida visible: el input nativo solo mostraba "Ningún archivo seleccionado". */}
+                <label htmlFor="imagen-carrusel" onDragOver={e=>{e.preventDefault();setArrastrando(true);}} onDragLeave={()=>setArrastrando(false)}
+                    onDrop={e=>{e.preventDefault();setArrastrando(false);const f=e.dataTransfer.files?.[0];if(f)elegir({target:{files:[f],value:''}});}}
+                    className={`mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 text-center transition focus-within:ring-2 focus-within:ring-[#004d43]/30 ${arrastrando?'border-[#004d43] bg-[#004d43]/5':'border-slate-300 bg-slate-50 hover:border-[#004d43] hover:bg-white'}`}>
+                    <FaCloudArrowUp className="h-8 w-8 text-[#004d43]" aria-hidden="true"/>
+                    <span className="text-sm font-semibold text-slate-800">{archivo?archivo.name:'Haz clic para subir la imagen o arrástrala aquí'}</span>
+                    <span className="inline-flex items-center gap-2 rounded-lg bg-[#004d43] px-4 py-2 text-sm font-medium text-white">{archivo || imagen?'Cambiar imagen':'Seleccionar imagen'}</span>
+                    <input id="imagen-carrusel" type="file" accept="image/jpeg,image/png,image/webp" onChange={elegir} className="sr-only"/>
+                </label>
                 <p className="mt-2 text-sm text-slate-600">JPG, PNG o WebP, hasta 5 MB. Recomendado: 1600 × 600 px. Incluye el anuncio en la imagen y usa texto grande para celular; no se recortará.</p></div>
             {(preview || imagen?.imagen_url) && <img src={preview || construirUrlArchivo(imagen.imagen_url)} alt="Vista previa del banner" className="aspect-[8/3] w-full rounded-lg border border-slate-200 bg-slate-50 object-contain"/>}
             {error && <Alert tipo="error">{error}</Alert>}
