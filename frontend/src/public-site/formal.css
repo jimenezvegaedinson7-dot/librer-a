@@ -449,10 +449,6 @@
 /* En el móvil, Aplicación muestra primero el título y el botón, después los teléfonos. */
 @media (max-width: 1023px) { .sitio .app-portada__texto { order: -1; } }
 
-/* Asistente: al bajar por la página el botón se aparta para no tapar contenido. */
-.sitio .asistente-tienda .asistente-abrir { transition: transform var(--d-rapida) var(--ease-salida), background var(--d-rapida), translate 0.25s ease, opacity 0.25s ease; }
-.sitio .asistente-tienda[data-apartado] .asistente-abrir:not(:focus-visible) { translate: 0 calc(100% + 32px); opacity: 0; pointer-events: none; }
-@media (prefers-reduced-motion: reduce) { .sitio .asistente-tienda .asistente-abrir { transition: opacity 0.15s; } }
 
 /* ---------- Asistente: icono de IA y efecto de pensar ---------- */
 /* Personaje anime en un círculo del mismo azul claro de su fondo. Dos

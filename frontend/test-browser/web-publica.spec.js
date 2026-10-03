@@ -351,7 +351,7 @@ test('video del inicio: el anuncio activo muestra el video y los textos del pane
     const caja = await video.boundingBox();
     const texto = await seccion.locator('.video-destacado__texto').boundingBox();
     expect(texto.x).toBeGreaterThan(caja.x + caja.width);
-    expect(Math.abs(caja.width / caja.height - 16 / 9)).toBeLessThan(0.02);
+    expect(Math.abs(caja.width / caja.height - 16 / 10)).toBeLessThan(0.02);
     expect(errores).toHaveLength(0);
 });
 
@@ -408,7 +408,7 @@ test('video del inicio: usa el fondo de la página, no uno propio', async ({ pag
     expect(fondos.seccion).not.toBe('rgb(253, 245, 228)'); // nada de ámbar
 });
 
-test('video del inicio: en escritorio el video ocupa media sección, no todo el ancho', async ({ page }) => {
+test('video del inicio: en escritorio el video ocupa cerca del 60 % de la sección, no todo el ancho', async ({ page }) => {
     await apiPublica(page, {
         anuncio: { id_anuncio: 7, titulo: 'Promo', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4' },
     });
@@ -419,15 +419,15 @@ test('video del inicio: en escritorio el video ocupa media sección, no todo el 
     await expect(video).toHaveCount(1);
     await expect(video).toHaveAttribute('src', 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4');
 
-    // Media sección: la otra mitad es para los textos.
+    // Unos tres quintos: el resto es para los textos.
     await page.setViewportSize({ width: 1366, height: 800 });
     const anchos = await page.evaluate(() => {
         const marco = document.querySelector('.video-destacado__marco');
         const contenedor = document.querySelector('.video-destacado .contenedor');
         return { marco: marco.getBoundingClientRect().width, contenedor: contenedor.getBoundingClientRect().width };
     });
-    expect(anchos.marco / anchos.contenedor).toBeGreaterThan(0.4);
-    expect(anchos.marco / anchos.contenedor).toBeLessThan(0.55);
+    expect(anchos.marco / anchos.contenedor).toBeGreaterThan(0.52);
+    expect(anchos.marco / anchos.contenedor).toBeLessThan(0.65);
 
     // El reproductor se queda aunque el video no se pueda decodificar: el
     // aviso de "llega muy pronto" sería falso, el archivo sí llegó.

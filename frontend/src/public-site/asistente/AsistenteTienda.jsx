@@ -77,21 +77,6 @@ export default function AsistenteTienda({ legal }) {
     const idActual = Number(/^\/libro\/(\d+)$/.exec(pathname)?.[1]) || undefined;
     useEffect(()=>{montado.current=true;return()=>{montado.current=false;};},[]);
     useEffect(()=>{if(abierto)campo.current?.focus();},[abierto]);
-    // El botón flotante se aparta al bajar para no tapar textos ni imágenes;
-    // vuelve al subir o cerca del inicio de la página.
-    const [apartado,setApartado] = useState(false);
-    useEffect(()=>{
-        let previo=window.scrollY;
-        const alDesplazar=()=>{
-            const y=window.scrollY;
-            if(y<160)setApartado(false);
-            else if(y>previo+6)setApartado(true);
-            else if(y<previo-6)setApartado(false);
-            previo=y;
-        };
-        window.addEventListener('scroll',alDesplazar,{passive:true});
-        return()=>window.removeEventListener('scroll',alDesplazar);
-    },[]);
     useEffect(()=>{if(abierto)bajar();},[mensajes,ocupado,abierto,escritos,bajar]);
     function cerrar(){setAbierto(false);boton.current?.focus();}
     function agregar(mensaje){setMensajes(prev=>[...prev.slice(-29),{...mensaje,id:siguiente.current++}]);}
@@ -148,7 +133,7 @@ export default function AsistenteTienda({ legal }) {
         }
     }
     function reiniciar(){if(bloqueo.current)return;setMensajes([bienvenida]);setEscritos(new Set());contexto.current=[];contextoServidor.current='';setFecha(null);setPregunta('');campo.current?.focus();}
-    return <div className="asistente-tienda" data-apartado={apartado && !abierto ? '' : undefined}>
+    return <div className="asistente-tienda">
         <button ref={boton} type="button" className="asistente-abrir" aria-label="Abrir asistente de la librería"
             aria-expanded={abierto} aria-controls="asistente-panel" onClick={()=>abierto?cerrar():setAbierto(true)}>
             <span className="asistente-abrir__icono"><IconoIA pensando={ocupado}/></span>
