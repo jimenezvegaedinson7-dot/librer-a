@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { FaPaperPlane, FaXmark, FaArrowRotateLeft } from 'react-icons/fa6';
 import IconoIA from './IconoIA';
 import { sonarPortal } from './sonidoPortal';
+import posterAvatar from '../assets/asistente/anime-poster.webp';
 import { clienteApi } from '../tienda/clienteApi';
 import { listaLibros, libroComercial } from '../tienda/libroComercial';
 import ComprarLibro from '../tienda/ComprarLibro';
@@ -16,6 +17,13 @@ const sugerencias = [
     {texto:'Ver ofertas',pregunta:'¿Qué libros están en oferta?'},
     {texto:'Entrega y recojo',pregunta:'¿Cómo funciona la entrega?'}
 ];
+
+// Pedazos del personaje para la presentación (4 x 4). Cada uno sale de un
+// punto distinto alrededor y llega a su sitio en una fracción de segundo.
+const PIEZAS = Array.from({length:16},(_,i)=>{
+    const angulo=i*137.5*Math.PI/180, distancia=110+(i%3)*30;
+    return {i,x:i%4,y:Math.floor(i/4),dx:Math.round(Math.cos(angulo)*distancia),dy:Math.round(Math.sin(angulo)*distancia),giro:(i%2?1:-1)*(40+i*7),retraso:(i%5)*0.025};
+});
 
 // Lo que "piensa" el asistente mientras consulta, como haría una persona.
 const FRASES_PENSANDO = ['Pensando…', 'Buscando en el catálogo…', 'Revisando precios y stock…', 'Preparando tu respuesta…'];
@@ -90,7 +98,8 @@ export default function AsistenteTienda({ legal }) {
         return()=>document.removeEventListener('pointerdown',alTocar);
     },[abierto]);
     useEffect(()=>{if(abierto)bajar();},[mensajes,ocupado,abierto,escritos,bajar]);
-    // Primera apertura de la visita: presentación breve con una campanilla. Las siguientes
+    // Primera apertura de la visita: el personaje se arma desde pedazos y saluda,
+    // con una campanilla. Las siguientes
     // abren directo para no cansar.
     const [intro,setIntro]=useState(false);
     const introVista=useRef(false);
@@ -100,7 +109,7 @@ export default function AsistenteTienda({ legal }) {
         introVista.current=true;
         if(primera){
             sonarPortal();
-            if(!movimientoReducido()){setIntro(true);setTimeout(()=>{if(montado.current)setIntro(false);},1450);}
+            if(!movimientoReducido()){setIntro(true);setTimeout(()=>{if(montado.current)setIntro(false);},2700);}
         }
         setAbierto(true);
     }
@@ -172,9 +181,11 @@ export default function AsistenteTienda({ legal }) {
         {abierto && <section id="asistente-panel" className={`asistente-panel${intro?' asistente-panel--portal':''}`} role="dialog" aria-modal="false" aria-labelledby="asistente-titulo"
             onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();cerrar();}}}>
             {intro && <div className="asistente-intro" aria-hidden="true">
-                <span className="asistente-intro__anillo"/>
-                <span className="asistente-intro__avatar"><IconoIA/></span>
-                <div className="asistente-intro__pie"><p className="asistente-intro__texto">Conectando con tu asistente</p><span className="asistente-intro__barra"/></div>
+                <span className="asistente-intro__avatar">
+                    <span className="asistente-intro__piezas">{PIEZAS.map(p=><i key={p.i} style={{'--px':p.x,'--py':p.y,'--dx':`${p.dx}px`,'--dy':`${p.dy}px`,'--giro':`${p.giro}deg`,'--retraso':`${p.retraso}s`,backgroundImage:`url(${posterAvatar})`}}/>)}</span>
+                    <span className="asistente-intro__vivo"><IconoIA desde={4.4}/></span>
+                </span>
+                <p className="asistente-intro__texto">¡Hola! Soy tu asistente</p>
             </div>}
             <header className="asistente-cabecera"><span className="asistente-avatar"><IconoIA pensando={ocupado}/></span><div className="asistente-cabecera__texto"><h2 id="asistente-titulo">Asistente de la librería</h2><p>Catálogo e información de la tienda</p></div>
                 <button type="button" className="asistente-icono" aria-label="Cerrar asistente" onClick={cerrar}><FaXmark aria-hidden="true"/></button>

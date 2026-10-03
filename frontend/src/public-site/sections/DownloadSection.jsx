@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { FaDownload, FaShieldHalved, FaMobileScreenButton } from 'react-icons/fa6';
+import { FaDownload, FaMobileScreenButton } from 'react-icons/fa6';
 
 import iconoApp from '../assets/app-icono.webp';
 import imgInicio from '../assets/app/inicio.webp';
@@ -117,9 +117,6 @@ export default function DownloadSection({ reducido }) {
                                 <FaDownload aria-hidden="true" /> {CANALES[android.tipo].accion}
                             </a>
                         )}
-                        <p className="descargar-portada__seguridad">
-                            <FaShieldHalved aria-hidden="true" /> Archivo firmado por Librería del Saber. Tus pagos se hacen en PayU.
-                        </p>
                     </div>
                     <div className="descargar-portada__telefono" aria-hidden="true">
                         <figure className="telefono">
