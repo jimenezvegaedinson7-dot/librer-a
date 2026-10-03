@@ -581,7 +581,12 @@
 .sitio .asistente-tienda .asistente-panel--portal { animation: portal-abrir 0.35s ease-out both; }
 @keyframes portal-abrir { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .sitio .asistente-intro { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; align-content: center; gap: 18px; overflow: hidden; pointer-events: none;
-    background: radial-gradient(circle at 50% 42%, #16385c, var(--marino-900) 70%); animation: intro-salir 2.7s ease forwards; }
+    /* Mismo fondo que las portadas de Aplicación y Descargar: arena con la estantería. */
+    background:
+        linear-gradient(180deg, rgba(233, 223, 205, 0.88) 0%, rgba(233, 223, 205, 0.6) 55%, rgba(233, 223, 205, 0.3) 100%),
+        url('./assets/estanteria-clara.svg') center bottom / auto 100% repeat-x,
+        linear-gradient(180deg, #e9dfcd 0%, #dccdb4 100%);
+    animation: intro-salir 2.7s ease forwards; }
 @keyframes intro-salir { 0%, 86% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 .sitio .asistente-intro__avatar { position: relative; width: 132px; height: 132px; }
 .sitio .asistente-intro__piezas { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); animation: intro-unir 0.6s ease forwards; }
@@ -592,7 +597,7 @@
 /* Al terminar de unirse, el cuadro se redondea y se convierte en el avatar vivo. */
 @keyframes intro-unir { 0%, 80% { clip-path: inset(-200%); } 100% { clip-path: circle(50%); opacity: 0; } }
 .sitio .asistente-intro__vivo { position: absolute; inset: 0; opacity: 0; transform: scale(0.96); animation: intro-vivo 0.25s ease 0.5s forwards; }
-.sitio .asistente-intro__vivo .icono-ia { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 14px 32px -10px rgba(0, 0, 0, 0.6); }
+.sitio .asistente-intro__vivo .icono-ia { box-shadow: 0 0 0 3px #fff, 0 14px 32px -12px rgba(40, 28, 20, 0.55); }
 @keyframes intro-vivo { to { opacity: 1; transform: none; } }
-.sitio .asistente-intro__texto { margin: 0; font-size: 1rem; font-weight: 600; color: #fff; opacity: 0; animation: intro-texto 0.4s ease 0.75s forwards; }
+.sitio .asistente-intro__texto { margin: 0; font-size: 1rem; font-weight: 600; color: var(--tinta); opacity: 0; animation: intro-texto 0.4s ease 0.75s forwards; }
 @keyframes intro-texto { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
