@@ -135,6 +135,23 @@ for (const f of fs.readdirSync(modDir)) {
     };
 }
 
+// Las integraciones aisladas pueden interponer un servicio entre controlador
+// y modelo. Detenerse en el primer modelo evita atribuir consultas de módulos
+// importados solo por constantes SQL (por ejemplo, PRECIO_FINAL_SQL).
+function tablasDeServicio(nombre, vistos = new Set()) {
+    if (vistos.has(nombre)) return [];
+    vistos.add(nombre);
+    const archivo = path.join(BACK, 'src/services', nombre);
+    if (!fs.existsSync(archivo)) return [];
+    const resultado = new Set();
+    for (const m of leer(archivo).matchAll(/require\(['"]\.\.\/(models|services)\/([\w.]+)['"]\)/g)) {
+        const destino = m[2].endsWith('.js') ? m[2] : `${m[2]}.js`;
+        const usadas = m[1] === 'models' ? modelos[destino]?.tables || [] : tablasDeServicio(destino, vistos);
+        usadas.forEach(t => resultado.add(t));
+    }
+    return [...resultado];
+}
+
 for (const f of fs.readdirSync(ctrlDir)) {
     const txt = leer(`${ctrlDir}/${f}`);
     const alias = {};
@@ -198,6 +215,7 @@ for (const f of fs.readdirSync(`${BACK}/src/routes`)) {
             const [mf, fn] = c.split('#');
             const mod = modelos[mf];
             if (mod) (mod.functions[fn] || mod.tables).forEach((t) => tablasUsadas.add(t));
+            else if (mf.includes('.service.')) tablasDeServicio(mf).forEach(t => tablasUsadas.add(t));
         }
         endpoints.push({
             method: m[1].toUpperCase(),
@@ -217,12 +235,13 @@ const FRONT = `${RAIZ}/frontend/src`;
 const archivosFront = listar(FRONT, (n) => /\.(jsx?|mjs)$/.test(n));
 const normalizar = (url) => url.replace(/\$\{[^}]*\}/g, ':param').replace(/\?.*$/, '');
 const servicios = {};
-for (const p of archivosFront.filter((p) => /Service\.js$|client\.js$|useApiPublica\.js$/.test(p))) {
+for (const p of archivosFront.filter((p) => /Service\.js$|client\.js$|clienteApi\.js$|useApiPublica\.js$|useCarrusel\.js$/.test(p))) {
     const txt = leer(p);
     const fns = {};
-    for (const m of txt.matchAll(/export\s+(?:async\s+)?function\s+(\w+)\s*\([^)]*\)\s*\{/g)) {
+    for (const m of txt.matchAll(/export\s+(?:default\s+)?(?:async\s+)?function\s+(\w+)\s*\([^)]*\)\s*\{/g)) {
         const cuerpo = bloque(txt, txt.indexOf('{', m.index + m[0].length - 1));
         const llamadas = [...cuerpo.matchAll(/client\.(get|post|put|patch|delete)\s*\(\s*(['"`])([^'"`]+)\2/g)].map((x) => ({ method: x[1].toUpperCase(), path: `/api${normalizar(x[3])}` }));
+        if (/useCarrusel\.js$/.test(p)) llamadas.push(...[...cuerpo.matchAll(/fetch\(\s*`\$\{[^}]+\}([^`]+)`/g)].map(x=>({method:'GET',path:`/api${normalizar(x[1])}`})));
         // Los hooks públicos usan fetch sin JWT mediante obtener().
         if (/useApiPublica\.js$/.test(p)) {
             llamadas.push(...[...cuerpo.matchAll(/\bobtener\s*\(\s*(['"`])([^'"`]+)\1/g)]
@@ -230,6 +249,12 @@ for (const p of archivosFront.filter((p) => /Service\.js$|client\.js$|useApiPubl
         }
         const delega = [...cuerpo.matchAll(/(?:return\s+|await\s+)(\w+)\(/g)].map((x) => x[1]).filter((n) => n !== 'datosDe');
         fns[m[1]] = { endpoints: llamadas, delegates: delega };
+    }
+    if (/clienteApi\.js$/.test(p)) {
+        for (const m of txt.matchAll(/(\w+):\s*[^\n]*?peticionCliente\(\s*(['"`])([^'"`]+)\2([^\n]*)/g)) {
+            const metodo = /method:\s*['"](POST|PUT|PATCH|DELETE)['"]/.exec(m[4])?.[1] || 'GET';
+            fns[m[1]] = { endpoints: [{method:metodo,path:`/api${normalizar(m[3])}`}], delegates:[] };
+        }
     }
     for (const m of txt.matchAll(/export\s*\{([^}]+)\}/g)) for (const n of m[1].split(',').map((s) => s.trim()).filter(Boolean)) if (!fns[n]) fns[n] = { reexport: true, endpoints: [], delegates: [] };
     servicios[rel(p)] = fns;
@@ -275,6 +300,15 @@ const usoServicios = {};
 for (const p of archivosFront) {
     const txt = leer(p);
     grafoFront[rel(p)] = importsDe(p, txt);
+    for (const m of txt.matchAll(/import\s+(\w+)\s+from\s*'([^']*\/useCarrusel)'/g)) {
+        (usoServicios[rel(p)] ||= []).push(`${rel(path.resolve(path.dirname(p),m[2]))}.js#${m[1]}`);
+    }
+    for (const m of txt.matchAll(/import\s*\{[^}]*\bclienteApi\b[^}]*\}\s*from\s*'([^']+)'/g)) {
+        const destino = rel(path.resolve(path.dirname(p),m[1])) + '.js';
+        for (const llamada of txt.matchAll(/clienteApi\.(\w+)\(/g)) {
+            (usoServicios[rel(p)] ||= []).push(`${destino}#${llamada[1]}`);
+        }
+    }
     for (const m of txt.matchAll(/import\s*\{([^}]+)\}\s*from\s*'([^']+Service|[^']*\/client|[^']*\/useApiPublica)'/g)) {
         const destino = rel(path.resolve(path.dirname(p), m[2])) + '.js';
         for (const n of m[1].split(',').map((s) => s.trim().split(/\s+as\s+/)[0]).filter(Boolean)) {

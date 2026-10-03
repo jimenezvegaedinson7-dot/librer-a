@@ -148,6 +148,10 @@ CREATE TABLE IF NOT EXISTS anuncios (
     video_url VARCHAR(500) NOT NULL,
     video_public_id VARCHAR(255) NULL,
     poster_url VARCHAR(500) NULL,
+    etiqueta VARCHAR(80) NULL,
+    descripcion VARCHAR(400) NULL,
+    boton_texto VARCHAR(40) NULL,
+    boton_enlace VARCHAR(200) NULL,
     estado SMALLINT NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -155,6 +159,20 @@ CREATE TABLE IF NOT EXISTS anuncios (
 );
 
 CREATE INDEX IF NOT EXISTS idx_anuncios_estado ON anuncios (estado, id_anuncio DESC);
+
+-- Carrusel de imágenes del inicio, gestionado desde Anuncios.
+CREATE TABLE IF NOT EXISTS carrusel_anuncios (
+    id_imagen SERIAL PRIMARY KEY,
+    titulo VARCHAR(200) NOT NULL,
+    imagen_url VARCHAR(500) NOT NULL,
+    imagen_public_id VARCHAR(255) NULL,
+    id_libro INT NULL REFERENCES libros(id_libro) ON DELETE SET NULL,
+    orden INT NOT NULL DEFAULT 0 CHECK (orden BETWEEN 0 AND 100000),
+    estado SMALLINT NOT NULL DEFAULT 1 CHECK (estado IN (0,1)),
+    creado_en TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_carrusel_visible_orden ON carrusel_anuncios (estado,orden,id_imagen);
 
 -- ============================================================
 -- INVENTARIO
@@ -250,6 +268,7 @@ CREATE TABLE IF NOT EXISTS ventas (
     cliente_documento VARCHAR(20) NULL,
     cliente_tipo_documento VARCHAR(10) NULL,
     origen VARCHAR(20) NOT NULL DEFAULT 'app',
+    canal_compra VARCHAR(10) NULL,
     metodo_pago VARCHAR(20) NULL,
     referencia_pago VARCHAR(100) NULL,
     fecha_pago TIMESTAMP NULL,
@@ -259,6 +278,8 @@ CREATE TABLE IF NOT EXISTS ventas (
     fecha_reembolso TIMESTAMP NULL,
     CONSTRAINT ventas_estado_check
         CHECK (estado IN ('pendiente', 'pagada', 'entregada', 'cancelada', 'reembolsada')),
+    CONSTRAINT ventas_canal_compra_check
+        CHECK (canal_compra IS NULL OR canal_compra IN ('app', 'web')),
     CONSTRAINT ventas_estado_entrega_check
         CHECK (estado_entrega IN ('pendiente', 'preparando', 'listo_recojo', 'en_camino', 'entregado', 'cancelado')),
     CONSTRAINT ventas_tipo_entrega_check

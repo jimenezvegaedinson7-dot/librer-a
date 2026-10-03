@@ -73,6 +73,8 @@ const esPedido = (fila) =>
 
 const FILTROS = [
     { valor: 'todos', etiqueta: 'Todos' },
+    { valor: 'web', etiqueta: 'Compras web' },
+    { valor: 'app', etiqueta: 'Compras app' },
     { valor: 'domicilio', etiqueta: 'Delivery' },
     { valor: 'tienda', etiqueta: 'Recojo en tienda' },
     { valor: 'pendiente', etiqueta: 'Pendientes' },
@@ -194,6 +196,8 @@ export default function PedidosPage() {
         const texto = busqueda.trim().toLowerCase();
 
         return pedidos.filter((p) => {
+            if (filtro === 'web' && p.canal_compra !== 'web') return false;
+            if (filtro === 'app' && p.canal_compra === 'web') return false;
             if (filtro === 'domicilio' && p.tipo_entrega !== 'domicilio') return false;
             if (filtro === 'tienda' && p.tipo_entrega !== 'tienda') return false;
 
@@ -237,6 +241,7 @@ export default function PedidosPage() {
     }, [pedidosFiltrados]);
 
     const columnas = [
+        { titulo: 'Canal', render: p => <Badge color={p.canal_compra==='web'?'primary':'neutral'}>{p.canal_compra==='web'?'Web':'App'}</Badge> },
         {
             titulo: 'N° pedido',
             campo: 'id_venta',
@@ -318,10 +323,12 @@ export default function PedidosPage() {
     const accionesFila = (p) => {
         const estado = p.estado_entrega || 'pendiente';
         const tipoValido = esTipoEntregaValido(p.tipo_entrega);
-        const destino_ = tipoValido ? siguienteEstado(p.tipo_entrega, estado) : null;
+        const pagoPendienteWeb = p.canal_compra==='web' && !['pagada','entregada'].includes(p.estado);
+        const destino_ = tipoValido && !pagoPendienteWeb ? siguienteEstado(p.tipo_entrega, estado) : null;
 
         return (
             <>
+                {pagoPendienteWeb && <Badge color="warning">Esperando pago</Badge>}
                 {!tipoValido && (
                     <span
                         className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700"
@@ -374,7 +381,7 @@ export default function PedidosPage() {
         <div className="space-y-4">
             <PageHeader
                 titulo="Pedidos"
-                descripcion="Seguimiento logístico de las ventas de la app: delivery y recojo en tienda"
+                descripcion="Pedidos de la web y la app: pagos, delivery y recojo en Pallasca"
             />
 
             <motion.section
@@ -401,7 +408,7 @@ export default function PedidosPage() {
                                     type="text"
                                     value={busqueda}
                                     onChange={(e) => setBusqueda(e.target.value)}
-                                    placeholder="Buscar pedido, cliente o distrito"
+                                    placeholder="Buscar pedido, cliente o zona"
                                     aria-label="Buscar pedidos"
                                     className="pl-9"
                                 />
@@ -489,6 +496,9 @@ export default function PedidosPage() {
 
                             <Ficha icono={<FaStore aria-hidden="true" />} etiqueta="Tipo de entrega">
                                 {descripcionEntrega(detalle)}
+                            </Ficha>
+                            <Ficha icono={<FaBoxOpen aria-hidden="true" />} etiqueta="Canal de compra">
+                                {detalle.canal_compra==='web'?'Web':'App'}
                             </Ficha>
 
                             <Ficha icono={<FaMapLocationDot aria-hidden="true" />} etiqueta="Destino">

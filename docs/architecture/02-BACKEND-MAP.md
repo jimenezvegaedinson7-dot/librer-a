@@ -1,6 +1,6 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-10-02 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-03 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
@@ -9,7 +9,7 @@
 2. `helmet` (sin CSP, CORP cross-origin) → `config/cors.js` con lista `FRONTEND_ORIGINS` y patrón `FRONTEND_ORIGINS_REGEX` (regex inválida desactiva previews y conserva lista explícita) → `express.json({ limit: '1mb' })` → `baseLimiter`.
 3. Estáticos: `/uploads` → `backend/uploads` (portadas y fotos locales cuando Cloudinary no está configurado).
 4. Endpoints en línea: `GET /`, `GET /api`, `GET /api/test-db` y `GET /api/debug-egress` (ambos JWT + admin).
-5. Montaje de 22 routers bajo `/api/*` → 404 JSON → `error.middleware`.
+5. Montaje de 23 routers bajo `/api/*` → 404 JSON → `error.middleware`.
 6. `iniciarJobs()` (limpieza cada 5 min) y 3 migraciones idempotentes en línea (tabla `favoritos`; columnas `cliente_documento`/`cliente_tipo_documento` en `ventas`; `enviado_por_email`/`fecha_envio_email` en `comprobantes`).
 7. `app.listen(PORT || 3000)`.
 
@@ -20,6 +20,7 @@
 | `/api/agencias` | `routes/agencia.routes.js` |
 | `/api/anuncios` | `routes/anuncio.routes.js` |
 | `/api/app` | `routes/app.routes.js` |
+| `/api/asistente` | `routes/asistente.routes.js` |
 | `/api/auth` | `routes/auth.routes.js` |
 | `/api/autores` | `routes/autor.routes.js` |
 | `/api/categorias` | `routes/categoria.routes.js` |
@@ -72,6 +73,9 @@
 | `utils/fileType.js` | Detección del tipo real de archivo por firma (uploads). |
 | `utils/numeroALetras.js` | Importe en letras para comprobantes. |
 | `services/payu.service.js` | Integración **PayU WebCheckout**: crear orden, formulario de checkout, consulta de orden. |
+| `services/aiAssistant.service.js` | Asistente público: búsqueda PostgreSQL tolerante, recomendaciones verificadas y fallback local. No modifica libros ni inventario. |
+| `services/geminiAssistant.service.js` | Gemini REST, una llamada como máximo con 8 libros, timeout de 8 s, salida estructurada validada y pausa ante errores/cuota. |
+| `services/asistenteContexto.service.js` | Contexto firmado temporal, 6 entradas de historial y expiración a los 20 min; sin tabla de conversaciones. |
 | `jobs/limpieza.js` | Cada 5 min: `reservaModel.cancelarVencidas()` y cancelación de ventas abandonadas (ventaModel). |
 
 ## Autenticación (JWT + 2FA)
@@ -119,6 +123,12 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/anuncios` | — | controllers/anuncio.controller.js#obtenerAnuncioActivo | — | — |
+| GET | `/api/anuncios/carrusel` | — | controllers/carrusel.controller.js#listarPublico | `carrusel.model.js#listar` | carrusel_anuncios, libros |
+| GET | `/api/anuncios/carrusel/todos` | JWT + rol:administrador | controllers/carrusel.controller.js#listarPanel | `carrusel.model.js#listar` | carrusel_anuncios, libros |
+| POST | `/api/anuncios/carrusel` | JWT + rol:administrador + recibir | controllers/carrusel.controller.js#crear | `carrusel.model.js#crear` | carrusel_anuncios |
+| PUT | `/api/anuncios/carrusel/orden` | JWT + rol:administrador | controllers/carrusel.controller.js#reordenar | `carrusel.model.js#reordenar` | carrusel_anuncios |
+| PUT | `/api/anuncios/carrusel/:id` | JWT + rol:administrador + recibir | controllers/carrusel.controller.js#actualizar | `carrusel.model.js#actualizar` | carrusel_anuncios |
+| DELETE | `/api/anuncios/carrusel/:id` | JWT + rol:administrador | controllers/carrusel.controller.js#eliminar | `carrusel.model.js#eliminar`<br>`usuario.model.js#buscarPorIdConPassword` | carrusel_anuncios, usuarios |
 | GET | `/api/anuncios/todos` | JWT + rol:administrador | controllers/anuncio.controller.js#listarAnuncios | — | — |
 | POST | `/api/anuncios` | JWT + rol:administrador + uploadVideo(video) | controllers/anuncio.controller.js#crearAnuncio | — | — |
 | PUT | `/api/anuncios/:id` | JWT + rol:administrador + uploadVideo(video) | controllers/anuncio.controller.js#actualizarAnuncio | — | — |
@@ -129,6 +139,12 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/app/version` | — | controllers/app.controller.js#obtenerVersion | — | — |
+
+### /api/asistente
+
+| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
+|---|---|---|---|---|---|
+| POST | `/api/asistente` | limite | controllers/asistente.controller.js#conversar | `aiAssistant.service.js#responder` | autores, categorias, inventario, libros |
 
 ### /api/auth
 
@@ -223,6 +239,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/libros` | — | controllers/libro.controller.js#obtenerLibros | `libro.model.js#obtenerTodos` | autores, categorias, detalle_venta, inventario, libros, ventas |
+| GET | `/api/libros/:id/relacionados` | — | controllers/libro.controller.js#obtenerRelacionados | `libro.model.js#obtenerRelacionados` | autores, categorias, inventario, libros |
 | GET | `/api/libros/:id` | — | controllers/libro.controller.js#obtenerLibro | `libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | POST | `/api/libros` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#crearLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro`<br>`libro.model.js#crear`<br>`libro.model.js#eliminar` | autores, categorias, historial_operaciones, inventario, libros |
 | PUT | `/api/libros/:id` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#actualizarLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`libro.model.js#actualizar`<br>`libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, ventas |
@@ -233,7 +250,8 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/pagos/checkout/:externalReference` | — | controllers/pago.controller.js#renderCheckoutPage | `payu.service.js#construirFormularioCheckout`<br>`venta.model.js#buscarPorReferenciaExterna` | ventas |
-| GET | `/api/pagos/respuesta/:externalReference` | — | controllers/pago.controller.js#renderRespuestaPage | — | — |
+| GET | `/api/pagos/respuesta/:externalReference` | — | controllers/pago.controller.js#renderRespuestaPage | `venta.model.js#buscarPorReferenciaExterna` | ventas |
+| GET | `/api/pagos/capacidades` | — | controllers/pago.controller.js#obtenerCapacidadesCompra | — | — |
 | POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `usuario.model.js#buscarPorId`<br>`venta.model.js#actualizarDatosPago`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
 | GET | `/api/pagos` | JWT + verificarPanel | controllers/pago.controller.js#listarPagosAdmin | `venta.model.js#listarPagosAdmin` | usuarios, ventas |
 | GET | `/api/pagos/resumen` | JWT + verificarPanel | inline (pago.routes.js) | `pago.model.js#listarResumen` | ventas |
@@ -330,7 +348,9 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 |---|---|
 | `models/agencia.model.js` | agencias_courier |
 | `models/anuncio.model.js` | anuncios |
+| `models/asistente.model.js` | autores, categorias, inventario, libros |
 | `models/autor.model.js` | autores |
+| `models/carrusel.model.js` | carrusel_anuncios, libros |
 | `models/categoria.model.js` | categorias |
 | `models/cliente.model.js` | usuarios, ventas |
 | `models/comprobante.model.js` | comprobantes, detalle_venta, libros, usuarios, ventas |
@@ -348,7 +368,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, inventario, libros, provincias_lima, usuarios, ventas |
 | `models/zonaDelivery.model.js` | zonas_delivery_pallasca |
 
-Tablas presentes en el código (19): `agencias_courier`, `anuncios`, `autores`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. El esquema está en `backend/database/schema.sql` + 22 migraciones en `backend/database/migrations`.
+Tablas presentes en el código (20): `agencias_courier`, `anuncios`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. El esquema está en `backend/database/schema.sql` + 22 migraciones en `backend/database/migrations`.
 
 ## Integraciones externas
 
@@ -358,6 +378,7 @@ Tablas presentes en el código (19): `agencias_courier`, `anuncios`, `autores`, 
 | Cloudinary | (API HTTP) | utils/cloudinary.js, upload*.middleware.js | CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET |
 | SMTP (correo) | `nodemailer`, `html-pdf-node` | utils/mailer.js | SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM, SMTP_REJECT_UNAUTHORIZED |
 | PayU (pagos) | (API HTTP) | services/payu.service.js, config/payu.js | PAYU_ACCOUNT_ID, PAYU_MERCHANT_ID, PAYU_API_LOGIN, PAYU_API_KEY, PAYU_PUBLIC_KEY, PAYU_TEST, PAYU_NOTIFICATION_URL |
+| Gemini (asistente) | REST con fetch de Node | services/geminiAssistant.service.js | GEMINI_API_KEY, GEMINI_MODEL (solo backend; configuración manual) |
 | TOTP 2FA | `otplib`, `qrcode` | controllers/auth2fa.controller.js | TWO_FACTOR_ENCRYPTION_KEY |
 | JWT | `jsonwebtoken` | auth.middleware.js, auth*.controller.js | JWT_SECRET |
 

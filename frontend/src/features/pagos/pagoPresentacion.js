@@ -70,6 +70,7 @@ export function enriquecerPago(pago, venta) {
 
     return {
         ...pago,
+        canal_compra: pago.canal_compra ?? venta?.canal_compra,
         cobertura_entrega: pago.cobertura_entrega ?? venta?.cobertura_entrega,
         zona_delivery_nombre: pago.zona_delivery_nombre ?? venta?.zona_delivery_nombre,
         costo_envio: pago.costo_envio ?? venta?.costo_envio,
@@ -79,7 +80,7 @@ export function enriquecerPago(pago, venta) {
         provincia: venta?.provincia,
         agencia: venta?.agencia,
         origen,
-        origen_texto: textoOrigen({ origen, id_reserva: venta?.id_reserva }),
+        origen_texto: textoOrigen({ origen, id_reserva: venta?.id_reserva, canal_compra: pago.canal_compra ?? venta?.canal_compra }),
         cliente: { ...cliente, nombre_completo: nombre, email: correo },
         metodo_pago: enTienda ? textoMetodoPago(venta?.metodo_pago) || 'Cobro en tienda' : 'PayU',
         referencia_pago: enTienda ? venta?.referencia_pago || null : null,

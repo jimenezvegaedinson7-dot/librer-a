@@ -30,6 +30,7 @@ const obtenerTodos = async () => {
             v.estado_entrega,
             v.tipo_entrega,
             v.cobertura_entrega,
+            v.canal_compra,
             v.id_zona_delivery,
             v.zona_delivery_nombre,
             v.direccion,
@@ -94,6 +95,7 @@ const obtenerPorId = async (id) => {
             v.estado_entrega,
             v.tipo_entrega,
             v.cobertura_entrega,
+            v.canal_compra,
             v.id_zona_delivery,
             v.zona_delivery_nombre,
             v.direccion,
@@ -182,6 +184,7 @@ const obtenerPorUsuario = async (id_usuario) => {
             v.estado_entrega,
             v.tipo_entrega,
             v.cobertura_entrega,
+            v.canal_compra,
             v.id_zona_delivery,
             v.zona_delivery_nombre,
             v.direccion,
@@ -317,6 +320,7 @@ const obtenerConFiltros = async (filtros = {}) => {
             v.estado_entrega,
             v.tipo_entrega,
             v.cobertura_entrega,
+            v.canal_compra,
             v.id_zona_delivery,
             v.zona_delivery_nombre,
             v.direccion,
@@ -455,6 +459,7 @@ const crear = async (venta, conexionExterna = null) => {
             cliente_tipo_documento,
             cliente_nombre,
             origen = 'app',
+            canal_compra,
             metodo_pago,
             referencia_pago,
             id_reserva,
@@ -710,12 +715,13 @@ const crear = async (venta, conexionExterna = null) => {
                     cliente_tipo_documento,
                     cliente_nombre,
                     origen,
+                    canal_compra,
                     metodo_pago,
                     referencia_pago,
                     fecha_pago,
                     id_reserva
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 id_usuario,
                 total,
@@ -739,6 +745,7 @@ const crear = async (venta, conexionExterna = null) => {
                 cliente_tipo_documento || null,
                 cliente_nombre || null,
                 origen,
+                canal_compra || null,
                 metodo_pago || null,
                 referencia_pago || null,
                 // Una venta que nace pagada (mostrador o reserva) se cobró ahora.
@@ -840,6 +847,7 @@ const buscarPorReferenciaExterna = async (externalReference) => {
             v.estado,
             v.total,
             v.costo_envio,
+            v.canal_compra,
             v.external_reference,
             v.payu_order_id,
             v.payu_payment_id,
@@ -863,6 +871,7 @@ const buscarPorPayuOrderId = async (preferenceId) => {
             v.estado,
             v.total,
             v.costo_envio,
+            v.canal_compra,
             v.external_reference,
             v.payu_order_id,
             v.payu_payment_id,
@@ -1066,7 +1075,9 @@ const actualizarEstadoEntrega = async (
                     id_venta,
                     estado_entrega,
                     tipo_entrega,
-                    origen
+                    origen,
+                    estado,
+                    canal_compra
                 FROM ventas
                 WHERE id_venta = ?
                 FOR UPDATE
@@ -1083,6 +1094,9 @@ const actualizarEstadoEntrega = async (
 
         if (['panel', 'reserva'].includes(venta.origen)) {
             throw Object.assign(new Error('Las ventas históricas son de solo lectura'), { status: 409 });
+        }
+        if (venta.canal_compra === 'web' && !['pagada', 'entregada'].includes(venta.estado) && nuevoEstado !== 'cancelado') {
+            throw Object.assign(new Error('El pago de esta compra web debe confirmarse antes de preparar la entrega'), { status: 409 });
         }
 
         // ========================================
@@ -1406,6 +1420,7 @@ const listarPagosAdmin = async ({
             v.tipo_entrega,
             v.fecha_venta,
             v.cobertura_entrega,
+            v.canal_compra,
             v.id_zona_delivery,
             v.zona_delivery_nombre,
             v.direccion,
@@ -1444,6 +1459,7 @@ const listarPagosAdmin = async ({
             tipo_entrega:
                 row.tipo_entrega,
             cobertura_entrega: row.cobertura_entrega,
+            canal_compra: row.canal_compra,
             id_zona_delivery: row.id_zona_delivery,
             zona_delivery_nombre: row.zona_delivery_nombre,
             direccion: row.direccion,

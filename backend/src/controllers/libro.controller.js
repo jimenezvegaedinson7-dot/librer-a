@@ -877,11 +877,26 @@ const eliminarLibro = async (req, res) => {
 };
 
 // ========================================
+// Relacionados públicos, sin datos privados ni catálogo completo.
+const obtenerRelacionados = async (req, res) => {
+    const id = validarId(req.params.id);
+    if (!id) return res.status(400).json({ success: false, mensaje: 'ID de libro inválido' });
+    try {
+        const data = await libroModel.obtenerRelacionados(id);
+        if (!data) return res.status(404).json({ success: false, mensaje: 'Libro no encontrado en el catálogo' });
+        return res.json({ success: true, data });
+    } catch (error) {
+        console.error('Error al obtener relacionados:', error.message);
+        return res.status(500).json({ success: false, mensaje: 'No se pudieron cargar los libros relacionados' });
+    }
+};
+
 // EXPORTAR CONTROLADORES
 // ========================================
 module.exports = {
     obtenerLibros,
     obtenerLibro,
+    obtenerRelacionados,
     crearLibro,
     actualizarLibro,
     eliminarLibro

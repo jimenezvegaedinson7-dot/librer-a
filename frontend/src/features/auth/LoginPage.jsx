@@ -23,7 +23,6 @@ import { esPersonalInterno, inicioPorRol } from '../../lib/roles';
 
 import fondoLogin from '../../assets/fondo-login.png';
 import logoClaro from '../../public-site/assets/logo-f-blanco-96.webp';
-import logoOscuro from '../../public-site/assets/logo-f-verde.webp';
 
 const MENSAJE_FUERA_DE_PANEL = 'Este panel es solo para administradores';
 
@@ -336,7 +335,9 @@ export default function LoginPage() {
                 >
                     {/* Marca en móvil / tablet */}
                     <div className="mb-7 flex flex-col items-center text-center lg:hidden">
-                        <img src={logoOscuro} alt="Librería del Saber" className="h-16 w-auto object-contain" />
+                        <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-mahogany-700 p-2.5">
+                            <img src={logoClaro} alt="Librería del Saber" className="h-full w-full object-contain" />
+                        </span>
                         <p className="mt-2 font-title text-lg font-semibold text-[#1c1814]">Librería del Saber</p>
                         <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#7a5c43]">Administración</p>
                     </div>
@@ -469,7 +470,7 @@ export default function LoginPage() {
                                 key={paso}
                                 aria-current={resetStep === paso ? 'step' : undefined}
                                 className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                                    resetStep >= paso ? 'bg-[#004d43]' : 'bg-[#e6e0d7]'
+                                    resetStep >= paso ? 'bg-mahogany-700' : 'bg-[#e6e0d7]'
                                 }`}
                             />
                         ))}

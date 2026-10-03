@@ -34,7 +34,7 @@ async function main() {
             PAYU_NOTIFICATION_URL: '', SMTP_HOST:'127.0.0.1', SMTP_PORT:String(correo.port), SMTP_SECURE:'false',
             SMTP_USER:'audit', SMTP_PASS:'audit', SMTP_REQUIRE_TLS:'false', MAIL_FROM:'audit@example.test', SMTP_TEST_URL:correo.url,
             RESEND_API_KEY:'', EMAIL_RESEND_API_KEY:'', BREVO_API_KEY:'',
-            CLOUDINARY_API_KEY: '', CLOUDINARY_API_SECRET: '' };
+            CLOUDINARY_API_KEY: '', CLOUDINARY_API_SECRET: '', GEMINI_API_KEY: '' };
         for (let i = 0; i < 60; i++) {
             cliente = new Client({ connectionString: env.DATABASE_URL });
             try { await cliente.connect(); break; } catch { await cliente.end().catch(() => {}); cliente = null; await new Promise(r => setTimeout(r, 500)); }

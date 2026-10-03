@@ -1,0 +1,294 @@
+/* Capa de identidad del panel. Comparte la paleta de la web y conserva
+   los colores semánticos de éxito, error, advertencias y ofertas. */
+.admin-shell {
+    --panel-fondo: var(--editorial-marfil);
+    --panel-superficie: #ffffff;
+    --panel-suave: var(--editorial-crema-claro);
+    --panel-borde: #e2d8c8;
+    --panel-texto: var(--editorial-marino-900);
+    --panel-secundario: #5c6570;
+    --panel-acento-texto: var(--editorial-dorado-tinta);
+    --brand: var(--editorial-marino-900);
+    --brand-hover: var(--editorial-marino-700);
+    --brand-soft: var(--editorial-crema);
+    --brand-text: var(--editorial-marino-900);
+    --accent: var(--editorial-dorado);
+    --accent-soft: #f5e6c4;
+    --ring: rgb(213 164 71 / 0.2);
+    --line: var(--panel-borde);
+    --table-head-bg: var(--editorial-crema);
+    --table-head-text: var(--panel-texto);
+    --table-head-line: var(--editorial-dorado-oscuro);
+    --grafico-barra: var(--editorial-marino-700);
+    --grafico-promedio: var(--editorial-dorado-oscuro);
+    --grafico-rejilla: var(--panel-borde);
+    --r-burdeos: var(--editorial-marino-700);
+    background: var(--panel-fondo);
+    color: var(--panel-texto);
+    caret-color: var(--editorial-dorado-oscuro);
+}
+
+.admin-shell[data-theme="dark"] {
+    --panel-fondo: var(--editorial-marino-950);
+    --panel-superficie: var(--editorial-marino-900);
+    --panel-suave: var(--editorial-marino-700);
+    --panel-borde: #2c4b66;
+    --panel-texto: var(--editorial-marfil);
+    --panel-secundario: #c0c8d0;
+    --panel-acento-texto: var(--editorial-dorado-hover);
+    --color-surface: var(--panel-fondo);
+    --color-surface-50: var(--panel-superficie);
+    --color-danger: #f87171;
+    --brand: var(--editorial-dorado);
+    --brand-hover: var(--editorial-dorado-hover);
+    --brand-soft: rgb(213 164 71 / 0.12);
+    --brand-text: var(--editorial-dorado-hover);
+    --accent-soft: rgb(213 164 71 / 0.12);
+    --table-head-bg: var(--editorial-marino-700);
+    --table-head-line: var(--editorial-dorado);
+    --grafico-barra: #90afc6;
+    --grafico-promedio: var(--editorial-dorado);
+    --r-burdeos: #90afc6;
+}
+
+.admin-shell[data-theme] .admin-main { background: var(--panel-fondo); }
+.admin-shell .admin-sidebar-marca {
+    background-image: none;
+    box-shadow: 4px 0 24px -12px rgb(10 31 49 / 0.35);
+}
+.admin-shell .admin-sidebar svg { color: var(--sb-ink) !important; opacity: 1; }
+.admin-shell .sidebar-scroll { scrollbar-color: var(--sb-scroll) transparent; }
+.admin-shell[data-theme] .admin-topbar {
+    background: var(--panel-fondo) !important;
+    border-color: var(--panel-borde) !important;
+    box-shadow: 0 1px 0 var(--panel-borde);
+}
+
+/* Superficies de listados, formularios, detalle y paneles del resumen. */
+.admin-shell[data-theme] :is(.card, .card-header, .detail-tile, .modal-panel,
+    .modal-header, .admin-form-card, .mini-stat, .panel-analitico, .grafico-card,
+    .notif-panel, .campo-clave, .stock-fila, .pagination-bar, .empty-state, .bg-white,
+    [class~="bg-white/80"], [class~="bg-white/90"]) {
+    background: var(--panel-superficie) !important;
+    border-color: var(--panel-borde) !important;
+}
+.admin-shell[data-theme] :is(.panel-pie, .correo-panel, .registro-card,
+    .admin-search, .bg-parchment-100, .bg-parchment-200, .bg-parchment-300,
+    .bg-slate-50, .bg-slate-100, .bg-slate-200, .grafico-stats, .segmentado) {
+    background: var(--panel-suave) !important;
+    border-color: var(--panel-borde) !important;
+}
+.admin-shell[data-theme] [class*="bg-[#f2f8f6]"] {
+    background-color: var(--accent-soft) !important;
+}
+.admin-shell[data-theme="dark"] :is(.bg-mahogany-200, .bg-mahogany-700, .bg-primary-600) {
+    background-color: var(--editorial-marino-700) !important;
+}
+.admin-shell[data-theme="dark"] :is([class*="bg-[#faf8f5]"], [class*="bg-[#f3efe9]"], [class*="bg-[#e6e0d7]"]) {
+    background-color: var(--panel-suave) !important;
+}
+.admin-shell[data-theme] .admin-search { background: var(--panel-suave) !important; }
+.admin-shell[data-theme] .admin-topbar button[class*="bg-white"] {
+    background: var(--panel-superficie) !important;
+}
+.admin-shell[data-theme] .data-table-shell thead tr {
+    background: var(--theme-tables-soft, var(--table-head-bg)) !important;
+}
+.admin-shell[data-theme] .data-table-shell thead th {
+    color: var(--theme-tables-text, var(--table-head-text)) !important;
+}
+.admin-shell[data-theme] :is(.card-header-icon, .page-header-icon) {
+    background: var(--accent-soft) !important;
+    color: var(--panel-acento-texto) !important;
+}
+.admin-shell[data-theme="dark"] :is([class*="text-[#1c1814]"], [class*="text-[#433c35]"]) {
+    color: var(--panel-texto) !important;
+}
+.admin-shell[data-theme="dark"] :is([class*="text-[#766d62]"], [class*="text-[#a39a8e]"]) {
+    color: var(--panel-secundario) !important;
+}
+.admin-shell[data-theme="dark"] .text-primary-500 { color: var(--panel-secundario) !important; }
+.admin-shell[data-theme] .segmentado-opcion { color: var(--panel-secundario); }
+.admin-shell[data-theme] .segmentado-opcion--activa {
+    background: var(--panel-superficie);
+    color: var(--panel-texto);
+    box-shadow: inset 0 0 0 1px var(--panel-borde);
+}
+.admin-shell[data-theme] .kpi-card:not(.kpi-card--destacada) {
+    background: var(--panel-superficie);
+    border-color: var(--panel-borde);
+}
+.admin-shell[data-theme] :is(.card-title, .ficha-valor, .kpi-valor, .mini-stat-valor,
+    .panel-titulo, .panel-total-cifra, .estado-nombre, .estado-cantidad,
+    .donut-cifra, .stock-titulo, .stock-cifras dd, .panel-pie-valor,
+    .registro-cifra, .notif-titulo, .notif-titulo-panel, .notif-vacio-titulo,
+    .interruptor-texto, .campo-clave-input, .field-label,
+    .text-slate-900, .text-slate-800, .text-slate-700, .text-slate-600,
+    [class*="text-[#1c1814]"], [class*="text-[#433c35]"]) {
+    color: var(--panel-texto);
+}
+.admin-shell[data-theme] :is(.card-subtitle, .kpi-label, .kpi-descripcion,
+    .mini-stat-label, .mini-stat-descripcion, .registro-detalle, .panel-subtitulo,
+    .estado-monto, .estado-porcentaje, .donut-texto, .stock-ubicacion, .panel-pie,
+    .notif-subtitulo, .notif-detalle, .notif-vacio-texto, .interruptor-detalle,
+    .text-slate-500, .text-primary-500, [class*="text-[#766d62]"], [class*="text-[#a39a8e]"]) {
+    color: var(--panel-secundario);
+}
+.admin-shell[data-theme] :is(.border-primary-200, .border-slate-200,
+    [class*="border-[#e6e0d7]"]) { border-color: var(--panel-borde); }
+.admin-shell[data-theme] :is(.text-mahogany-600, .text-gold-700,
+    [class*="text-[#0b5c51]"], .notif-accion, .notif-abrir) {
+    color: var(--panel-acento-texto) !important;
+}
+
+/* La misma acción dorada con texto marino que en la web. */
+.admin-shell[data-theme] .admin-primary-button {
+    background: var(--theme-buttons, var(--editorial-dorado)) !important;
+    border-color: var(--theme-buttons, var(--editorial-dorado-oscuro)) !important;
+    color: var(--theme-buttons-on, var(--editorial-marino-950)) !important;
+    box-shadow: 0 3px 8px -4px rgb(13 41 64 / 0.3);
+}
+.admin-shell[data-theme] .admin-primary-button:hover:not(:disabled) {
+    background: var(--theme-buttons-hover, var(--editorial-dorado-hover)) !important;
+    border-color: var(--theme-buttons-hover, var(--editorial-dorado)) !important;
+}
+.admin-shell[data-theme] .admin-secondary-button:not(.btn-confirmar):not(.btn-enviado) {
+    background: var(--panel-superficie) !important;
+    color: var(--panel-texto) !important;
+    border-color: var(--panel-borde) !important;
+}
+.admin-shell[data-theme] .admin-secondary-button:hover:not(:disabled):not(.btn-confirmar):not(.btn-enviado) {
+    background: var(--panel-suave) !important;
+    border-color: var(--editorial-dorado-oscuro) !important;
+}
+.admin-shell[data-theme] :is(.field, select.field, textarea.field, input.field) {
+    background-color: var(--panel-superficie);
+    border-color: var(--panel-borde) !important;
+    color: var(--panel-texto);
+    caret-color: var(--panel-texto);
+}
+.admin-shell[data-theme] .field::placeholder { color: var(--panel-secundario); }
+.admin-shell[data-theme] .field:focus {
+    border-color: var(--theme-inputs, var(--editorial-dorado-oscuro)) !important;
+    box-shadow: 0 0 0 3px var(--ring) !important;
+}
+.admin-shell[data-theme] .field[aria-invalid="true"] { border-color: var(--color-danger) !important; }
+.admin-shell[data-theme] :is(.campo-clave:focus-within, .admin-search:focus-within) {
+    border-color: var(--editorial-dorado-oscuro) !important;
+    box-shadow: 0 0 0 3px var(--ring);
+}
+.admin-shell[data-theme] select.field option { background: var(--panel-superficie); color: var(--panel-texto); }
+.admin-shell[data-theme] :is(.tabla-fila:hover, .notif-item:hover) { background: var(--panel-suave) !important; }
+.admin-shell[data-theme] :is(.ficha-icono, .mini-stat-icono, .registro-icono,
+    .panel-icono:not(.panel-icono--estado), .empty-state-icono, .cliente-iniciales) {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--editorial-dorado) 40%, var(--panel-borde));
+    color: var(--panel-acento-texto);
+    box-shadow: none;
+}
+.admin-shell[data-theme] :is(.pestana-icono, .zona-casilla) { background: var(--panel-suave); }
+.admin-shell[data-theme] :is(.pestana--activa .pestana-icono, .zona-casilla--marcada) {
+    background: var(--accent-soft);
+    color: var(--panel-acento-texto);
+    border-color: var(--editorial-dorado-oscuro);
+}
+.admin-shell[data-theme] :is(.pestana, .notif-filtro, .correo-filtro) { color: var(--panel-secundario); }
+.admin-shell[data-theme] :is(.pestana--activa, .pestana:hover) { color: var(--panel-texto); }
+.admin-shell .pestana::after { background: var(--editorial-dorado); }
+.admin-shell[data-theme] :is(.notif-filtro--activo, .correo-filtro--activo) {
+    background: var(--editorial-marino-700);
+    border-color: var(--editorial-marino-700);
+    color: var(--editorial-marfil);
+}
+.admin-shell[data-theme] .admin-form-card::before { background: var(--editorial-dorado); height: 1px; }
+.admin-shell[data-theme] :is(.detail-tile:hover, .card-hover:hover,
+    .dashboard-mosaico .kpi-card:hover, .dashboard-mosaico .mini-stat:hover,
+    .dashboard-mosaico .registro-card:hover, .dashboard-mosaico .grafico-card:hover) {
+    border-color: var(--editorial-dorado-oscuro);
+}
+
+/* Resumen: marino para el ingreso destacado, oro para la lectura del gráfico. */
+.admin-shell[data-theme] .kpi-card--destacada {
+    background: var(--editorial-marino-900);
+    border-color: var(--editorial-marino-700);
+    box-shadow: 0 10px 28px -14px rgb(13 41 64 / 0.4);
+}
+.admin-shell[data-theme] .kpi-card--destacada .kpi-valor { color: var(--editorial-marfil); }
+.admin-shell[data-theme] .kpi-card--destacada :is(.kpi-label, .kpi-icono) { color: var(--editorial-dorado-hover); }
+.admin-shell[data-theme] .kpi-card--destacada .kpi-descripcion { color: #eae2d3; }
+.admin-shell[data-theme] .kpi-card--destacada .kpi-icono { background: rgb(213 164 71 / 0.14); }
+.admin-shell[data-theme] .kpi-card--destacada::after { border-color: rgb(213 164 71 / 0.28); }
+.admin-shell[data-theme] .kpi-tono--gold { --kpi-tint: var(--accent-soft); --kpi-ink: var(--panel-acento-texto); }
+.admin-shell[data-theme] .onda-area { fill: var(--accent-soft); }
+.admin-shell[data-theme] .onda-base { stroke: var(--panel-borde); }
+.admin-shell[data-theme] .onda-trazo { stroke: var(--editorial-dorado); }
+.admin-shell[data-theme] :is(.kpi-trazo-punto, .onda-punto) { background: var(--editorial-dorado); box-shadow: none; }
+
+.admin-shell ::selection { background: var(--editorial-dorado-hover); color: var(--editorial-marino-950); }
+.admin-shell .modal-panel {
+    scrollbar-color: var(--editorial-dorado-oscuro) transparent;
+    scrollbar-width: thin;
+}
+
+/* Acceso administrativo: misma marca, también antes de iniciar sesión. */
+.login-page { background: var(--editorial-marfil); }
+.login-velo {
+    background: linear-gradient(120deg, rgb(10 31 49 / 0.95), rgb(13 41 64 / 0.80));
+}
+.login-tarjeta { background: var(--editorial-marfil); }
+.login-page .login-boton {
+    background: var(--editorial-dorado);
+    color: var(--editorial-marino-950);
+    box-shadow: 0 8px 20px -10px rgb(13 41 64 / 0.35);
+}
+.login-page .login-boton:hover:not(:disabled) { background: var(--editorial-dorado-hover); filter: none; }
+.login-page :is(.login-enlace, .login-input, .login-boton-secundario, [class*="text-[#1c1814]"], [class*="text-[#433c35]"]) { color: var(--editorial-marino-900); }
+.login-page .login-campo:focus-within { border-color: var(--editorial-dorado-oscuro); box-shadow: 0 0 0 3px rgb(213 164 71 / 0.2); }
+.login-page .login-campo:focus-within .login-campo-icono { color: var(--editorial-marino-900); }
+.login-page :is(button, a, input):focus-visible { outline-color: var(--editorial-dorado-oscuro); }
+
+/* Personalización: colores sólidos en las zonas elegidas, sin diluirlos. */
+html[data-color-topbar] .admin-shell .admin-topbar {
+    background: var(--theme-topbar) !important;
+    color: var(--theme-topbar-on);
+}
+html[data-color-topbar] .admin-topbar button[aria-haspopup="menu"] :is(p, svg) {
+    color: var(--theme-topbar-on) !important;
+}
+html[data-color-topbar] .admin-shell .admin-topbar button[aria-haspopup="menu"] {
+    background: transparent !important;
+}
+html[data-color-topbar] .admin-shell .admin-topbar button[aria-haspopup="menu"]:hover {
+    background: var(--theme-topbar-hover) !important;
+}
+html[data-color-tables] .admin-shell .data-table-shell thead tr {
+    background: var(--theme-tables) !important;
+}
+html[data-color-tables] .admin-shell .data-table-shell thead th {
+    color: var(--theme-tables-on) !important;
+}
+html[data-color-icons] .admin-shell :is(.ficha-icono, .page-header-icon, .card-header-icon, .mini-stat-icono, .panel-icono:not(.panel-icono--estado)) {
+    background: var(--theme-icons) !important;
+    color: var(--theme-icons-on) !important;
+    border-color: var(--theme-icons-hover);
+}
+html[data-color-modals] .admin-shell .modal-header {
+    background: var(--theme-modals) !important;
+}
+html[data-color-modals] .admin-shell .modal-header :is(h2, p) {
+    color: var(--theme-modals-on) !important;
+}
+html[data-color-modals] .admin-shell .modal-header > button { color: var(--theme-modals-on) !important; }
+html[data-color-badges] .admin-shell :is(.admin-notif-badge, .bg-mahogany-50) {
+    background: var(--theme-badges) !important;
+    color: var(--theme-badges-on) !important;
+}
+html[data-color-badges] .admin-shell .bg-mahogany-50 .bg-mahogany-500 { background: currentColor; }
+html[data-color-charts] .admin-shell { --grafico-barra: var(--theme-charts); }
+html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: var(--theme-links) !important; }
+.admin-shell .personalizacion-intensa .muestra-color-marco {
+    background: var(--muestra-acento);
+    border-color: var(--muestra-acento);
+}
+.admin-shell .personalizacion-intensa .muestra-color--activa > span:last-child { color: var(--muestra-sobre); }
+.admin-shell .personalizacion-intensa .muestra-color:focus-visible { outline: 2px solid var(--panel-texto); outline-offset: 2px; }

@@ -58,7 +58,7 @@ export const AVISOS = [
 export const PAGINAS = {
     '/': {
         titulo: 'Librería del Saber · Delivery y recojo en Pallasca',
-        descripcion: 'Explora el catálogo de Librería del Saber en la app, paga en línea con PayU y recibe tus libros con delivery dentro de Pallasca o recógelos sin costo.',
+        descripcion: 'Compra libros en la web o la app de Librería del Saber, paga en línea con PayU y elige delivery dentro de Pallasca o recojo gratuito.',
     },
     '/catalogo': {
         titulo: 'Catálogo · Librería del Saber',
@@ -80,4 +80,9 @@ export const PAGINAS = {
         titulo: 'Descargar la app · Librería del Saber',
         descripcion: 'Descarga gratis la app de Librería del Saber para Android. La versión para iPhone está en preparación.',
     },
+    '/cuenta': { titulo: 'Mi cuenta · Librería del Saber', descripcion: 'Accede a tu cuenta de cliente para comprar libros y consultar tus pedidos.' },
+    '/carrito': { titulo: 'Mi carrito · Librería del Saber', descripcion: 'Revisa tus libros, cantidades y precios antes de comprar.' },
+    '/checkout': { titulo: 'Entrega y pago · Librería del Saber', descripcion: 'Recojo gratuito o delivery en Pallasca. Pago seguro con PayU.' },
+    '/mis-compras': { titulo: 'Mis compras · Librería del Saber', descripcion: 'Consulta tus compras, pagos y estados de entrega.' },
+    '/libro': { titulo: 'Detalle del libro · Librería del Saber', descripcion: 'Consulta el precio, la descripción y el stock real del libro.' },
 };

@@ -4,6 +4,7 @@ import {
     CLAVE_CUSTOM,
     CLAVE_TEMA,
     COLORES,
+    colorSobre,
     ZONAS_IDS,
     getSidebarColors,
     ThemeContext,
@@ -34,6 +35,7 @@ export function ThemeProvider({ children }) {
         ZONAS_IDS.forEach((z) => {
             const colorId = config.zonas[z];
             if (!colorId) {
+                r.removeAttribute(`data-color-${z}`);
                 r.style.removeProperty(`--theme-${z}`);
                 r.style.removeProperty(`--theme-${z}-hover`);
                 r.style.removeProperty(`--theme-${z}-soft`);
@@ -42,11 +44,13 @@ export function ThemeProvider({ children }) {
                 return;
             }
             const c = COLORES[colorId] || COLORES.default;
-            r.style.setProperty(`--theme-${z}`, c.primary);
-            r.style.setProperty(`--theme-${z}-hover`, c.primaryHover);
+            r.setAttribute(`data-color-${z}`, colorId);
+            const botonesMarca = colorId === 'default' && z === 'buttons';
+            r.style.setProperty(`--theme-${z}`, botonesMarca ? '#d5a447' : c.primary);
+            r.style.setProperty(`--theme-${z}-hover`, botonesMarca ? '#e3b865' : c.primaryHover);
             r.style.setProperty(`--theme-${z}-soft`, c.primarySoft);
             r.style.setProperty(`--theme-${z}-text`, c.text);
-            r.style.setProperty(`--theme-${z}-on`, '#ffffff');
+            r.style.setProperty(`--theme-${z}-on`, botonesMarca ? '#0a1f31' : colorSobre(c.primary));
         });
     }, [config, tema]);
 

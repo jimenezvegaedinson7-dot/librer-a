@@ -3,7 +3,7 @@
 Monorepo con tres partes que comparten una misma API:
 
 - `backend/` — Node.js + Express + PostgreSQL (Render). Rutas `/api/*`, JWT, PayU, SMTP, Cloudinary.
-- `frontend/` — Panel administrativo React 19 + Vite + Tailwind 4 (Vercel). Solo rol `administrador`.
+- `frontend/` — React 19 + Vite + Tailwind 4 (Vercel): panel exclusivo de `administrador` y tienda web pública con compras de `cliente`. Las sesiones y carritos de clientes se guardan por separado de la sesión administrativa.
 - `flutter_app/` — App Flutter para clientes (Android). Solo rol `cliente`.
 
 ## Mapa de arquitectura (usar ANTES de explorar)

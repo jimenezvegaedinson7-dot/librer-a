@@ -47,6 +47,8 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 borderColor: colores.sidebarBorder,
                 color: colores.sidebarText,
                 '--sb-hover': colores.sidebarHover,
+                '--sb-ink': acento,
+                '--sb-scroll': colores.sidebarText,
             }}
             className={`
                 admin-sidebar ${colores.oscuro ? 'admin-sidebar-marca' : ''}
@@ -113,7 +115,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                     title={colapsado ? nombre : undefined}
                                     aria-label={colapsado ? nombre : undefined}
                                     className={({ isActive }) =>
-                                        `group relative flex items-center rounded-lg outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#f0c866]/60 ${
+                                        `group relative flex items-center rounded-lg outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[var(--sb-ink)] ${
                                             colapsado ? 'h-10 justify-center' : 'h-10 gap-3 px-3'
                                         } ${isActive ? 'sidebar-nav-active' : 'hover:bg-[var(--sb-hover)]'}`
                                     }
@@ -139,8 +141,9 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                                 strokeWidth={isActive ? 2 : 1.7}
                                                 className={`relative shrink-0 transition-[color,opacity] duration-150 ${
                                                     colapsado ? 'h-5 w-5' : 'h-[18px] w-[18px]'
-                                                } ${isActive ? '' : 'opacity-75 group-hover:opacity-100'}`}
-                                                style={{ color: isActive ? acento : undefined }}
+                                                }`}
+                                                aria-hidden="true"
+                                                style={{ color: acento }}
                                             />
                                             {!colapsado && (
                                                 <span

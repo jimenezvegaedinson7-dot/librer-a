@@ -5,24 +5,21 @@ import { MotionConfig } from 'motion/react';
 import './public-site.css';
 import './tema-editorial.css';
 import './responsive-movil.css';
-import './formal.css';
 
 import PublicHeader from './components/PublicHeader';
 import PublicFooter from './components/PublicFooter';
 import Precarga from './components/Precarga';
 import BarraMovil from './components/BarraMovil';
-import { precargaTerminada, usePrecargaTerminada } from './lib/precarga';
+import { usePrecargaTerminada } from './lib/precarga';
 import { useCatalogo, useEmpresa } from './hooks/useApiPublica';
-import { puedeUsar3D, useMovimientoReducido } from './hooks/useEntorno';
+import { useMovimientoReducido } from './hooks/useEntorno';
 import { irASeccion, ScrollTrigger, useScrollSuave } from './animation/scroll';
 import { PAGINAS, SITIO } from './config/site';
-
-// Entrada directa al inicio con 3D: la escena (three.js) empieza a
-// descargarse ya, en paralelo con la página, en lugar de esperar a que el
-// hero se monte. Es el mismo módulo que pide Hero: se descarga una vez.
-if (typeof window !== 'undefined' && window.location.pathname === '/' && !precargaTerminada() && puedeUsar3D()) {
-    import('./three/HeroScene').catch(() => {});
-}
+import { TiendaProvider } from './tienda/TiendaContext';
+import './tienda/tienda.css';
+// Va al final: el estilo formal manda sobre los demás estilos de la web.
+import './formal.css';
+import AsistenteTienda from './asistente/AsistenteTienda';
 
 // ============================================================
 // WEB PÚBLICA — layout común de las páginas (Inicio, Catálogo,
@@ -30,7 +27,7 @@ if (typeof window !== 'undefined' && window.location.pathname === '/' && !precar
 // ============================================================
 
 function metadatos(ruta) {
-    const pagina = PAGINAS[ruta] || PAGINAS['/'];
+    const pagina = PAGINAS[ruta] || (ruta.startsWith('/libro/') ? PAGINAS['/libro'] : PAGINAS['/']);
     document.title = pagina.titulo;
     document.querySelector('meta[name="description"]')?.setAttribute('content', pagina.descripcion);
     document.querySelector('link[rel="canonical"]')?.setAttribute('href', `${SITIO.url}${ruta === '/' ? '/' : ruta}`);
@@ -42,7 +39,7 @@ export default function PublicLayout() {
     const pagina = useRef(null);
     const rutaPrevia = useRef(null);
     const { pathname, hash } = useLocation();
-    const catalogo = useCatalogo();
+    const catalogo = useCatalogo(null, !pathname.startsWith('/libro/'));
     const legal = useEmpresa();
     const cargada = usePrecargaTerminada();
 
@@ -118,16 +115,19 @@ export default function PublicLayout() {
 
     return (
         <MotionConfig reducedMotion="user">
-            <div className="sitio" ref={pagina}>
+            <TiendaProvider catalogo={catalogo}><div className="sitio" ref={pagina}>
                 <a className="saltar" href="#contenido">Saltar al contenido</a>
                 <PublicHeader />
                 <main id="contenido">
-                    <Outlet context={{ reducido, catalogo, legal }} />
+                    <Outlet context={{ reducido, catalogo, legal, irArriba: () => {
+                        if(lenis.current)lenis.current.scrollTo(0,{immediate:true});else window.scrollTo(0,0);
+                    } }} />
                 </main>
                 <PublicFooter legal={legal} />
                 <BarraMovil />
                 <Precarga />
-            </div>
+                <AsistenteTienda legal={legal}/>
+            </div></TiendaProvider>
         </MotionConfig>
     );
 }

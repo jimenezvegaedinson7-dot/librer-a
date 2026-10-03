@@ -82,21 +82,21 @@ const modulo = (ruta) => {
 
 // Módulos de negocio: backend ↔ React ↔ Flutter
 const MODULOS = [
-    ['Autenticación y 2FA', 'auth', 'features/auth', 'login, registro, verificación, 2FA, recuperar/restablecer contraseña'],
+    ['Autenticación y 2FA', 'auth', 'features/auth (admin) · public-site/tienda/CuentaPage (cliente)', 'login, registro, verificación, 2FA, recuperar/restablecer contraseña'],
     ['Usuarios y perfil', 'usuarios', 'features/usuarios · layout/PerfilAdministrador', 'perfil, editar perfil, foto, contraseña'],
-    ['Libros (catálogo)', 'libros', 'features/libros', 'home, libros, detalle de libro'],
+    ['Libros (catálogo)', 'libros', 'features/libros · public-site/pages/CatalogoPage · public-site/tienda/LibroPage', 'home, libros, detalle de libro'],
     ['Autores', 'autores', 'features/autores', '—'],
     ['Categorías', 'categorias', 'features/categorias', '—'],
     ['Inventario', 'inventario', 'features/inventario', '—'],
     ['Pedidos', 'pedidos', 'features/pedidos', '—'],
     ['Reservas', 'reservas', 'features/reservas', 'detalle de libro (crear), reservas'],
-    ['Ventas', 'ventas', 'features/ventas', 'mis compras'],
-    ['Pagos (PayU)', 'pagos', 'features/pagos', 'entrega y pago, mis compras'],
+    ['Ventas', 'ventas', 'features/ventas · public-site/tienda/MisComprasPage', 'mis compras'],
+    ['Pagos (PayU)', 'pagos', 'features/pagos · public-site/tienda/CheckoutPage', 'entrega y pago, mis compras'],
     ['Comprobantes', 'comprobantes', 'features/comprobantes · ventas/EmitirComprobanteModal', '—'],
     ['Clientes', 'clientes', 'features/clientes', '—'],
     ['Historial / auditoría', 'historial', 'features/historial · layout/Topbar (notificaciones)', '—'],
     ['Reportes / Resumen', 'reportes', 'features/dashboard (vía reportes/reportesService)', '—'],
-    ['Favoritos', 'favoritos', '—', 'favoritos, detalle de libro'],
+    ['Favoritos', 'favoritos', 'public-site/tienda/AccionesLibro (cliente)', 'favoritos, detalle de libro'],
     ['Cobertura Pallasca', 'zonas-delivery', 'features/tarifas', 'entrega y pago, mis compras'],
     ['Ubicaciones (Lima, legacy)', 'ubicaciones', 'features/ventas/ubicacionesService (legacy)', 'ApiService legacy; sin selector en checkout'],
     ['Agencias courier (legacy)', 'agencias', 'ruta redirigida; features/agencias sin ruta activa', '—'],
@@ -184,6 +184,9 @@ const MODULOS = [
 | \`utils/fileType.js\` | Detección del tipo real de archivo por firma (uploads). |
 | \`utils/numeroALetras.js\` | Importe en letras para comprobantes. |
 | \`services/payu.service.js\` | Integración **PayU WebCheckout**: crear orden, formulario de checkout, consulta de orden. |
+| \`services/aiAssistant.service.js\` | Asistente público: búsqueda PostgreSQL tolerante, recomendaciones verificadas y fallback local. No modifica libros ni inventario. |
+| \`services/geminiAssistant.service.js\` | Gemini REST, una llamada como máximo con 8 libros, timeout de 8 s, salida estructurada validada y pausa ante errores/cuota. |
+| \`services/asistenteContexto.service.js\` | Contexto firmado temporal, 6 entradas de historial y expiración a los 20 min; sin tabla de conversaciones. |
 | \`jobs/limpieza.js\` | Cada 5 min: \`reservaModel.cancelarVencidas()\` y cancelación de ventas abandonadas (ventaModel). |
 
 ## Autenticación (JWT + 2FA)
@@ -215,6 +218,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Cloudinary | (API HTTP) | utils/cloudinary.js, upload*.middleware.js | CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET |
 | SMTP (correo) | \`nodemailer\`, \`html-pdf-node\` | utils/mailer.js | SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM, SMTP_REJECT_UNAUTHORIZED |
 | PayU (pagos) | (API HTTP) | services/payu.service.js, config/payu.js | PAYU_ACCOUNT_ID, PAYU_MERCHANT_ID, PAYU_API_LOGIN, PAYU_API_KEY, PAYU_PUBLIC_KEY, PAYU_TEST, PAYU_NOTIFICATION_URL |
+| Gemini (asistente) | REST con fetch de Node | services/geminiAssistant.service.js | GEMINI_API_KEY, GEMINI_MODEL (solo backend; configuración manual) |
 | TOTP 2FA | \`otplib\`, \`qrcode\` | controllers/auth2fa.controller.js | TWO_FACTOR_ENCRYPTION_KEY |
 | JWT | \`jsonwebtoken\` | auth.middleware.js, auth*.controller.js | JWT_SECRET |
 
@@ -235,16 +239,17 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
     const pkg = JSON.parse(leer('frontend/package.json'));
     const archivos = Object.keys(H.frontend.grafo);
     const conMotion = archivos.filter((f) => /from 'motion\/react'/.test(leer(f)));
-    let md = cab('Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel administrativo');
+    let md = cab('Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web');
     md += `## Arranque\n
 \`index.html\` → \`src/main.jsx\` → \`<ErrorBoundary>\` → \`routes/AppRouter.jsx\`:
 \`<ToastProvider>\` → \`<AuthProvider>\` → \`<RouterProvider>\` (react-router ${pkg.dependencies['react-router-dom']}).
 
 - **Cliente HTTP**: \`lib/api/client.js\` (axios). \`baseURL = VITE_API_URL\` (\`.env.production\` apunta a \`https://libreria-api-v9h0.onrender.com/api\`, \`.env.development\` a \`http://localhost:3000/api\`). Interceptor de petición añade \`Bearer <token>\`; el de respuesta devuelve \`response.data\` y ante **401** limpia la sesión y redirige a \`/\`.
 - **Sesión**: \`features/auth/AuthContext.jsx\` + \`lib/storage/index.js\` (\`localStorage\`: \`token\`, \`usuario\`, \`ultimoHistorialVisto\`). Solo entra \`administrador\`; perfil actualiza los datos de sesión desde la API.
+- **Cliente web**: \`public-site/tienda/TiendaContext.jsx\` y \`clienteApi.js\` mantienen sesión exclusiva de \`cliente\`, carrito por usuario/invitado e intento de compra persistente; nunca usan la sesión administrativa. \`PublicLayout\` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
 - **Guards**: \`routes/RutaProtegida.jsx\` redirige a \`/\` sin token o sin rol administrador. \`routes/RutaPorRol.jsx\` exige los roles configurados (solo administrador en el panel). Un **401** limpia sesión; un **403** muestra rechazo de permisos.
 - **Layout**: \`features/layout/AdminLayout.jsx\` (ThemeProvider, Sidebar, Topbar, Breadcrumbs, transición de página con Framer Motion).
-- **Tema**: \`components/providers/ThemeContext.jsx\` (modo claro/oscuro y colores por zona en \`localStorage\`). Estilos globales: \`src/index.css\` → \`src/styles/theme.css\` (tokens de marca, dark mode, componentes).
+- **Tema**: \`components/providers/ThemeContext.jsx\` (modo claro/oscuro y colores por zona en \`localStorage\`). \`src/index.css\` carga \`styles/paleta-editorial.css\` (marino, marfil y dorado compartidos con la web), \`styles/theme.css\` (componentes) y \`styles/panel-editorial.css\` (identidad del panel y modo oscuro). \`public-site/tema-editorial.css\` usa la misma paleta. Los iconos de navegación y búsqueda se definen juntos en \`features/layout/navConfig.js\`.
 - **Despliegue**: Vercel (\`frontend/vercel.json\` reescribe todo a \`index.html\`).
 
 ## Rutas
@@ -370,6 +375,18 @@ ${linea('POST', '/api/auth/solicitar-reseteo')} (envía código por correo con \
 5. La app consulta ${linea('GET', '/api/pagos/:orderId')} y lista ${linea('GET', '/api/ventas/mis-ventas')}.
 6. El job \`jobs/limpieza.js\` revisa ventas abandonadas cada 5 min; consulta PayU antes de liberar stock y conserva pagos inciertos/pendientes.
 7. Administración: \`TarifasEnvioPage\` usa \`GET /api/zonas-delivery/todos\`, \`POST /api/zonas-delivery\`, \`PUT /api/zonas-delivery/:id\`. Se configura nombre, tarifa positiva y estado; no hay semillas ni eliminación. La migración \`032_cobertura_pallasca.sql\` agrega columnas NULL sin reescribir ventas. El panel y Flutter muestran Pallasca solo con la marca explícita; las ubicaciones, courier e importes legacy se conservan.
+
+### Compra desde la web (React, cliente)
+- \`PublicLayout\` incorpora \`TiendaProvider\`; rutas \`/cuenta\`, \`/carrito\`, \`/checkout\`, \`/mis-compras\`, \`/libro/:id\`. Catálogo, portada y ofertas permiten agregar libros al carrito.
+- \`public-site/tienda/clienteApi.js\` usa fetch y sesión \`libreria-web-cliente-v1\`, independiente de token/usuario del panel. Revalida perfil y rol cliente. Registro y correo verificado, login/2FA y recuperación reutilizan los endpoints existentes.
+- Carrito por invitado/usuario con solo IDs y cantidades en localStorage; precios y stock desde el catálogo. Se fusiona el carrito invitado al iniciar sesión. Totales en céntimos.
+- \`GET /api/pagos/capacidades\` confirma compatibilidad del backend antes de crear compras web. Checkout envía \`canal_compra=web\` a \`POST /api/pagos/crear-orden\`; \`origen=app\` sigue identificando el ecommerce para compatibilidad. Migración \`033_canal_compra_web.sql\`: columna nullable, sin UPDATE de ventas antiguas.
+- Antes de crear se refrescan precios, stock y zonas; cambios requieren revisar y confirmar otra vez. El intento y su clave de idempotencia se persisten antes del POST, permitiendo recuperar timeouts sin duplicar ventas ni stock. El backend guarda el total definitivo; el cliente lo muestra antes de abrir el WebCheckout.
+- El retorno PayU solo informa y enlaza a \`/mis-compras\` cuando el canal es web. Nunca confirma pagos por parámetros del navegador. Consulta de pago valida propietario e importe antes de sincronizar; webhook firmado confirma pago. El carrito retira solo las cantidades realmente pagadas, verificadas por la API.
+- Panel: pedidos con filtro Web/App y canal en tabla/detalle; ventas, pagos y CSV identifican Web (PayU). Compras web pendientes de pago no pueden avanzar en logística; el modelo verifica también esta regla con el bloqueo de fila.
+- Ficha pública \`/libro/:id\`: amplía \`LibroPage\` reutilizando \`PrecioOferta\`, \`ComprarLibro\`, \`Stock\` y \`TarjetaLibro\`. Cantidad opcional en el mismo \`TiendaContext.agregar\`; Comprar ahora conduce al checkout existente. Datos técnicos disponibles: título, autor, categoría, ISBN, precio, estado y stock; descripción y biografía se conservan sin resumir.
+- Descubrimiento: \`GET /api/libros/:id/relacionados\` consulta el autor y la categoría con los índices existentes y LIMIT 8 por grupo; entrega hasta 4 relacionados, 4 títulos adicionales del autor y 4 de categoría, sin duplicados. Solo libros activos, disponibilidad real y el mismo precio SQL del catálogo. La entrada directa a una ficha no carga el catálogo completo. Autor interactivo filtra \`/catalogo?autor=:id\`.
+- Favoritos de la ficha usan GET/POST/DELETE \`/api/favoritos/:idLibro\` con la sesión cliente y ownership JWT existentes; no hay persistencia nueva. Sin sesión, Cuenta permite retorno interno al libro. Compartir usa Web Share API o copiar enlace/WhatsApp/Facebook. SEO amplía los metadatos existentes y genera Book/Product con datos reales. No modifica pagos, inventario ni migraciones.
 
 ## 5. Reservas
 - Cliente (Flutter) crea: ${linea('POST', '/api/reservas')}; cancela: ${linea('DELETE', '/api/reservas/:id')}.
@@ -505,7 +522,7 @@ Ejemplos de caminos:\n\n${H.flutter.ciclos.slice(0, 4).map((c) => `- ${c.map(cor
 | Parte | Carpeta | Stack | Usuarios | Despliegue |
 |---|---|---|---|---|
 | API | \`backend/\` | Node.js · Express 5 · PostgreSQL (\`pg\`) · JWT · PayU · SMTP · Cloudinary | ambos clientes | Render (\`libreria-api-v9h0.onrender.com\`) |
-| Panel admin | \`frontend/\` | React 19 · Vite · Tailwind 4 · axios · react-router 7 · Framer Motion (\`motion\`) | rol **administrador** | Vercel |
+| Panel y tienda web | \`frontend/\` | React 19 · Vite · Tailwind 4 · axios/fetch · react-router 7 · Framer Motion (\`motion\`) | **administrador** (panel), **cliente** (compras web) | Vercel |
 | App móvil | \`flutter_app/\` | Flutter · Dio · flutter_secure_storage · shared_preferences · url_launcher · image_picker | rol **cliente** | Android (también web/windows) |
 
 Otras carpetas: \`web/\` (build web de Flutter publicado), \`ios_swift_app/\`, \`backups/\`, scripts \`*.ps1\` de utilidades locales.
@@ -590,6 +607,11 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
         for (const m of mods) b += `    ${id(nc)} --> ${id(m)}[("${m}")]\n`;
     }
     for (const [f, m] of Object.entries(H.backend.modelos)) for (const t of m.tables) b += `    ${id(f.replace('.js', ''))} -.-> T_${t}[/"${t}"/]\n`;
+    for (const [archivo, deps] of Object.entries(H.backend.grafo)) {
+        if (!archivo.includes('/services/')) continue;
+        for (const destino of deps.filter(d => /\/(models|services)\//.test(d))) b += `    ${id(path.basename(archivo, '.js'))} --> ${id(path.basename(destino, '.js'))}\n`;
+    }
+    if (H.backend.grafo['backend/src/services/geminiAssistant.service.js']) b += '    geminiAssistant_service --> GEMINI["Gemini API (solo backend)"]\n';
     G('backend', b);
 
     let fr = 'flowchart LR\n';

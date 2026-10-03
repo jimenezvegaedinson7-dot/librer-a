@@ -1,6 +1,6 @@
 # Flujos de datos
 
-> Generado desde el código real el 2026-10-02 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-03 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arquitectura general
@@ -38,6 +38,18 @@
 5. La app consulta `GET /api/pagos/:orderId` → `payu.service.js#obtenerOrdenDiagnostico`, `usuario.model.js#buscarPorId`, `venta.model.js#actualizarDatosPago`, `venta.model.js#actualizarEstado`, `venta.model.js#buscarPorPayuOrderId`, `venta.model.js#buscarPorReferenciaExterna` → tablas: detalle_venta, inventario, usuarios, ventas y lista `GET /api/ventas/mis-ventas` → `venta.model.js#obtenerPorUsuario` → tablas: agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, ventas.
 6. El job `jobs/limpieza.js` revisa ventas abandonadas cada 5 min; consulta PayU antes de liberar stock y conserva pagos inciertos/pendientes.
 7. Administración: `TarifasEnvioPage` usa `GET /api/zonas-delivery/todos`, `POST /api/zonas-delivery`, `PUT /api/zonas-delivery/:id`. Se configura nombre, tarifa positiva y estado; no hay semillas ni eliminación. La migración `032_cobertura_pallasca.sql` agrega columnas NULL sin reescribir ventas. El panel y Flutter muestran Pallasca solo con la marca explícita; las ubicaciones, courier e importes legacy se conservan.
+
+### Compra desde la web (React, cliente)
+- `PublicLayout` incorpora `TiendaProvider`; rutas `/cuenta`, `/carrito`, `/checkout`, `/mis-compras`, `/libro/:id`. Catálogo, portada y ofertas permiten agregar libros al carrito.
+- `public-site/tienda/clienteApi.js` usa fetch y sesión `libreria-web-cliente-v1`, independiente de token/usuario del panel. Revalida perfil y rol cliente. Registro y correo verificado, login/2FA y recuperación reutilizan los endpoints existentes.
+- Carrito por invitado/usuario con solo IDs y cantidades en localStorage; precios y stock desde el catálogo. Se fusiona el carrito invitado al iniciar sesión. Totales en céntimos.
+- `GET /api/pagos/capacidades` confirma compatibilidad del backend antes de crear compras web. Checkout envía `canal_compra=web` a `POST /api/pagos/crear-orden`; `origen=app` sigue identificando el ecommerce para compatibilidad. Migración `033_canal_compra_web.sql`: columna nullable, sin UPDATE de ventas antiguas.
+- Antes de crear se refrescan precios, stock y zonas; cambios requieren revisar y confirmar otra vez. El intento y su clave de idempotencia se persisten antes del POST, permitiendo recuperar timeouts sin duplicar ventas ni stock. El backend guarda el total definitivo; el cliente lo muestra antes de abrir el WebCheckout.
+- El retorno PayU solo informa y enlaza a `/mis-compras` cuando el canal es web. Nunca confirma pagos por parámetros del navegador. Consulta de pago valida propietario e importe antes de sincronizar; webhook firmado confirma pago. El carrito retira solo las cantidades realmente pagadas, verificadas por la API.
+- Panel: pedidos con filtro Web/App y canal en tabla/detalle; ventas, pagos y CSV identifican Web (PayU). Compras web pendientes de pago no pueden avanzar en logística; el modelo verifica también esta regla con el bloqueo de fila.
+- Ficha pública `/libro/:id`: amplía `LibroPage` reutilizando `PrecioOferta`, `ComprarLibro`, `Stock` y `TarjetaLibro`. Cantidad opcional en el mismo `TiendaContext.agregar`; Comprar ahora conduce al checkout existente. Datos técnicos disponibles: título, autor, categoría, ISBN, precio, estado y stock; descripción y biografía se conservan sin resumir.
+- Descubrimiento: `GET /api/libros/:id/relacionados` consulta el autor y la categoría con los índices existentes y LIMIT 8 por grupo; entrega hasta 4 relacionados, 4 títulos adicionales del autor y 4 de categoría, sin duplicados. Solo libros activos, disponibilidad real y el mismo precio SQL del catálogo. La entrada directa a una ficha no carga el catálogo completo. Autor interactivo filtra `/catalogo?autor=:id`.
+- Favoritos de la ficha usan GET/POST/DELETE `/api/favoritos/:idLibro` con la sesión cliente y ownership JWT existentes; no hay persistencia nueva. Sin sesión, Cuenta permite retorno interno al libro. Compartir usa Web Share API o copiar enlace/WhatsApp/Facebook. SEO amplía los metadatos existentes y genera Book/Product con datos reales. No modifica pagos, inventario ni migraciones.
 
 ## 5. Reservas
 - Cliente (Flutter) crea: `POST /api/reservas` → `historial.model.js#crear`, `reserva.model.js#crear`, `reserva.model.js#fechaVencimientoDefecto`, `reserva.model.js#obtenerPorId`, `reserva.model.js#validarFechaVencimiento` → tablas: historial_operaciones, inventario, libros, reservas, usuarios; cancela: `DELETE /api/reservas/:id` → `historial.model.js#crear`, `reserva.model.js#actualizarEstado`, `reserva.model.js#obtenerPorId`, `venta.model.js#crear` → tablas: detalle_venta, historial_operaciones, inventario, libros, reservas, usuarios, ventas.

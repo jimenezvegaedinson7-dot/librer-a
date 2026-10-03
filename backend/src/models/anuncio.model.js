@@ -19,6 +19,10 @@ const obtenerTodos = async () => {
             video_url,
             video_public_id,
             poster_url,
+            etiqueta,
+            descripcion,
+            boton_texto,
+            boton_enlace,
             estado,
             created_at,
             updated_at
@@ -41,7 +45,11 @@ const obtenerActivo = async () => {
             id_anuncio,
             titulo,
             video_url,
-            poster_url
+            poster_url,
+            etiqueta,
+            descripcion,
+            boton_texto,
+            boton_enlace
         FROM anuncios
         WHERE estado = 1
         ORDER BY id_anuncio DESC
@@ -60,6 +68,10 @@ const obtenerPorId = async (id) => {
             video_url,
             video_public_id,
             poster_url,
+            etiqueta,
+            descripcion,
+            boton_texto,
+            boton_enlace,
             estado
         FROM anuncios
         WHERE id_anuncio = ?
@@ -78,15 +90,23 @@ const crear = async (datos) => {
             video_url,
             video_public_id,
             poster_url,
+            etiqueta,
+            descripcion,
+            boton_texto,
+            boton_enlace,
             estado
         )
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
         [
             datos.titulo,
             datos.videoUrl,
             datos.videoPublicId || null,
             datos.posterUrl || null,
+            datos.etiqueta || null,
+            datos.descripcion || null,
+            datos.botonTexto || null,
+            datos.botonEnlace || null,
             datos.estado ?? 1
         ]
     );
@@ -108,6 +128,10 @@ const actualizar = async (id, datos) => {
             video_url = COALESCE(?, video_url),
             video_public_id = ?,
             poster_url = ?,
+            etiqueta = ?,
+            descripcion = ?,
+            boton_texto = ?,
+            boton_enlace = ?,
             estado = ?,
             updated_at = CURRENT_TIMESTAMP
         WHERE id_anuncio = ?
@@ -117,6 +141,10 @@ const actualizar = async (id, datos) => {
             datos.videoUrl ?? null,
             datos.videoPublicId || null,
             datos.posterUrl || null,
+            datos.etiqueta || null,
+            datos.descripcion || null,
+            datos.botonTexto || null,
+            datos.botonEnlace || null,
             datos.estado ?? 1,
             id
         ]

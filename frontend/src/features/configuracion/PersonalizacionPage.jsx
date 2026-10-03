@@ -3,30 +3,30 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RotateCcw, Check, Palette, Loader2 } from 'lucide-react';
 
-import { useTema, COLORES, ZONAS_IDS, ZONAS_DEFAULT } from '../../components/providers/tema';
+import { useTema, COLORES, ZONAS_IDS, ZONAS_DEFAULT, getSidebarColors, colorSobre } from '../../components/providers/tema';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Modal } from '../../components/ui/Modal';
 
 const OPCIONES = [
-    { id: 'default', nombre: 'Predeterminado', hex: '#004d43' },
-    { id: 'azul', nombre: 'Azul', hex: '#2563eb' },
-    { id: 'indigo', nombre: 'Índigo', hex: '#4f46e5' },
-    { id: 'violeta', nombre: 'Violeta', hex: '#7c3aed' },
-    { id: 'tinto', nombre: 'Tinto', hex: '#9333ea' },
-    { id: 'cian', nombre: 'Cian', hex: '#0891b2' },
-    { id: 'esmeralda', nombre: 'Esmeralda', hex: '#059669' },
-    { id: 'lima', nombre: 'Lima', hex: '#65a30d' },
-    { id: 'turquesa', nombre: 'Turquesa', hex: '#06b6d4' },
-    { id: 'ciclum', nombre: 'Ciclum', hex: '#0ea5e9' },
-    { id: 'rosa', nombre: 'Rosa', hex: '#db2777' },
-    { id: 'coral', nombre: 'Coral', hex: '#f43f5e' },
-    { id: 'naranja', nombre: 'Naranja', hex: '#ea580c' },
-    { id: 'amarillo', nombre: 'Amarillo', hex: '#d97706' },
-    { id: 'dorado', nombre: 'Dorado', hex: '#ca8a04' },
-    { id: 'rojo', nombre: 'Rojo', hex: '#dc2626' },
-];
+    { id: 'default', nombre: 'Azul marino · web' },
+    { id: 'azul', nombre: 'Azul' },
+    { id: 'indigo', nombre: 'Índigo' },
+    { id: 'violeta', nombre: 'Violeta' },
+    { id: 'tinto', nombre: 'Tinto' },
+    { id: 'cian', nombre: 'Cian' },
+    { id: 'esmeralda', nombre: 'Esmeralda' },
+    { id: 'lima', nombre: 'Lima' },
+    { id: 'turquesa', nombre: 'Turquesa' },
+    { id: 'ciclum', nombre: 'Ciclum' },
+    { id: 'rosa', nombre: 'Rosa' },
+    { id: 'coral', nombre: 'Coral' },
+    { id: 'naranja', nombre: 'Naranja' },
+    { id: 'amarillo', nombre: 'Amarillo' },
+    { id: 'dorado', nombre: 'Dorado' },
+    { id: 'rojo', nombre: 'Rojo' },
+].map(opcion => ({ ...opcion, hex: COLORES[opcion.id].primary }));
 
 const ZONA_LABELS = {
     sidebar: 'Barra lateral',
@@ -133,7 +133,7 @@ function ModalAplicar({ colorId, abierto, onCerrar, onAplicar }) {
                     disabled={aplicando || zonas.length === 0 || aplicado}
                     aria-live="polite"
                     className="inline-flex h-10 min-w-[150px] items-center justify-center gap-2 rounded-lg px-5 text-sm font-semibold text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-                    style={{ backgroundColor: colorInfo.hex }}
+                    style={{ backgroundColor: colorInfo.hex, color: colorSobre(colorInfo.hex) }}
                 >
                     {aplicando ? <><Loader2 className="h-4 w-4 animate-spin" />Aplicando...</> : aplicado ? <><Check className="h-4 w-4" />Aplicado</> : 'Aplicar cambios'}
                 </button>
@@ -201,22 +201,22 @@ function Muestra({ titulo, children }) {
 
 export default function PersonalizacionPage() {
     const navigate = useNavigate();
-    const { config, aplicarColor, restaurarZonas, restaurarTodo } = useTema();
+    const { config, tema, aplicarColor, restaurarZonas, restaurarTodo } = useTema();
     const [seleccion, setSeleccion] = useState('default');
     const [modalAbierto, setModalAbierto] = useState(false);
     const [modalRestablecer, setModalRestablecer] = useState(false);
 
     const colorInfo = OPCIONES.find((c) => c.id === seleccion) || OPCIONES[0];
     const hex = colorInfo.hex;
-    const soft = softColor(hex, 0.10);
-    const soft2 = softColor(hex, 0.15);
-    const border = softColor(hex, 0.40);
+    const soft = hex;
+    const soft2 = hex;
+    const border = COLORES[seleccion].primaryHover;
+    const sobreColor = colorSobre(hex);
     const esMarca = seleccion === 'default';
 
-    // En "Predeterminado" la barra lateral real es tinta con acento dorado; la vista previa lo refleja.
-    const sidebarPrevia = esMarca
-        ? { fondo: '#013a33', borde: 'rgba(223,230,221,0.14)', acento: '#f0c866', activo: 'rgba(240,200,102,0.14)', texto: '#d3e0db', titulo: '#ffffff' }
-        : { fondo: soft, borde: border, acento: hex, activo: soft2, texto: '#766d62', titulo: hex };
+    const sidebar = getSidebarColors(seleccion, tema);
+    const sidebarPrevia = { fondo: sidebar.sidebarBg, borde: sidebar.sidebarBorder,
+        acento: sidebar.primary, activo: sidebar.sidebarHover, texto: sidebar.sidebarText, titulo: sidebar.brandTitle };
 
     const zonasPersonalizadas = ZONAS_IDS.filter((z) => config.zonas[z]).length;
 
@@ -231,7 +231,7 @@ export default function PersonalizacionPage() {
     };
 
     return (
-        <div className="space-y-5">
+        <div className="personalizacion-intensa space-y-5" style={{ '--muestra-acento': hex, '--muestra-sobre': sobreColor }}>
             <PageHeader
                 icono={<Palette />}
                 titulo="Personalización"
@@ -265,9 +265,9 @@ export default function PersonalizacionPage() {
                                             <span className="relative">
                                                 <span
                                                     className="flex h-10 w-10 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-105"
-                                                    style={{ backgroundColor: softColor(color.hex, 0.14) }}
+                                                    style={{ backgroundColor: color.hex }}
                                                 >
-                                                    <span className="h-6 w-6 rounded-full shadow-[inset_0_-2px_4px_rgba(0,0,0,0.18)]" style={{ backgroundColor: color.hex }} />
+                                                    <span className="h-6 w-6 rounded-full" style={{ backgroundColor: color.hex }} />
                                                 </span>
                                                 {activa && (
                                                     <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200" aria-hidden="true">
@@ -283,7 +283,7 @@ export default function PersonalizacionPage() {
 
                             {esMarca && (
                                 <p className="mt-4 rounded-lg border border-gold-200 bg-gold-50 px-3.5 py-2.5 text-[13px] text-gold-800">
-                                    <span className="font-semibold">Predeterminado</span> usa la identidad de Librería del Saber: burdeos en botones, barra lateral en tinta y acentos dorados.
+                                    <span className="font-semibold">Azul marino</span> usa tonos sólidos y contrastados. La barra lateral lleva iconos blancos, sin amarillo.
                                 </p>
                             )}
 
@@ -292,7 +292,7 @@ export default function PersonalizacionPage() {
                                     type="button"
                                     onClick={() => setModalAbierto(true)}
                                     className="inline-flex h-10 items-center justify-center gap-2 rounded-lg px-6 text-sm font-semibold text-white shadow-sm transition-[filter,transform] hover:brightness-110 active:scale-[0.98]"
-                                    style={{ backgroundColor: hex }}
+                                    style={{ backgroundColor: hex, color: sobreColor }}
                                 >
                                     <Check className="h-4 w-4" /> Aplicar
                                 </button>
@@ -318,9 +318,11 @@ export default function PersonalizacionPage() {
                                         <li
                                             key={z}
                                             className={`zona-chip flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium ${c ? '' : 'zona-chip--vacia'}`}
-                                            style={c ? { borderColor: c.primary + '40', backgroundColor: c.primarySoft, color: c.text } : undefined}
+                                            style={c ? { borderColor: c.primaryHover,
+                                                backgroundColor: z === 'sidebar' ? getSidebarColors(colorId, tema).sidebarBg : c.primary,
+                                                color: z === 'sidebar' ? getSidebarColors(colorId, tema).sidebarText : colorSobre(c.primary) } : undefined}
                                         >
-                                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c ? c.primary : undefined }} aria-hidden="true" />
+                                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c ? 'currentColor' : undefined }} aria-hidden="true" />
                                             {ZONA_LABELS[z]}
                                             <span className="sr-only">{c ? `: ${c.primary}` : ': color de la marca'}</span>
                                         </li>
@@ -340,7 +342,7 @@ export default function PersonalizacionPage() {
                                 <Muestra titulo="Barra lateral">
                                     <div className="overflow-hidden rounded-xl border" style={{ backgroundColor: sidebarPrevia.fondo, borderColor: sidebarPrevia.borde }}>
                                         <div className="px-4 pb-1 pt-3">
-                                            <p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: esMarca ? '#8a8074' : sidebarPrevia.acento }}>General</p>
+                                            <p className="text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: sidebarPrevia.texto }}>General</p>
                                         </div>
                                         <div className="space-y-0.5 px-2 pb-2">
                                             <div className="relative flex items-center gap-2 rounded-lg px-3 py-2" style={{ backgroundColor: sidebarPrevia.activo }}>
@@ -350,7 +352,7 @@ export default function PersonalizacionPage() {
                                             </div>
                                             {['Libros', 'Ventas', 'Clientes'].map((item) => (
                                                 <div key={item} className="flex items-center gap-2 rounded-lg px-3 py-2">
-                                                    <div className="h-3 w-3 rounded opacity-50" style={{ backgroundColor: sidebarPrevia.texto }} />
+                                                     <div className="h-3 w-3 rounded" style={{ backgroundColor: sidebarPrevia.texto }} />
                                                     <span className="text-xs" style={{ color: sidebarPrevia.texto }}>{item}</span>
                                                 </div>
                                             ))}
@@ -362,7 +364,7 @@ export default function PersonalizacionPage() {
                                     <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                                         <div className="flex min-w-0 items-center gap-3">
                                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg" style={{ backgroundColor: soft }}>
-                                                <div className="h-4 w-4 rounded" style={{ backgroundColor: hex }} />
+                                                <div className="h-4 w-4 rounded" style={{ backgroundColor: sobreColor }} />
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="font-title text-sm font-semibold text-slate-900">Libros</p>
@@ -371,7 +373,7 @@ export default function PersonalizacionPage() {
                                         </div>
                                         <div className="flex shrink-0 gap-2">
                                             <div className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-600">Cancelar</div>
-                                            <div className="rounded-lg px-3 py-1.5 text-[11px] font-semibold text-white" style={{ backgroundColor: hex }}>Guardar</div>
+                                             <div className="rounded-lg px-3 py-1.5 text-[11px] font-semibold" style={{ backgroundColor: hex, color: sobreColor }}>Guardar</div>
                                         </div>
                                     </div>
                                 </Muestra>
@@ -385,16 +387,16 @@ export default function PersonalizacionPage() {
                                         <table className="w-full text-xs">
                                             <thead>
                                                 <tr style={{ backgroundColor: soft }}>
-                                                    <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider" style={{ color: hex }}>Libro</th>
-                                                    <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider" style={{ color: hex }}>Autor</th>
-                                                    <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider" style={{ color: hex }}>Estado</th>
+                                                     <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider" style={{ color: sobreColor }}>Libro</th>
+                                                     <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider" style={{ color: sobreColor }}>Autor</th>
+                                                     <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider" style={{ color: sobreColor }}>Estado</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr className="border-t border-slate-100">
                                                     <td className="px-3 py-2 font-medium text-slate-700">Cien años</td>
                                                     <td className="px-3 py-2 text-slate-500">García Márquez</td>
-                                                    <td className="px-3 py-2"><span className="rounded-full px-2 py-0.5 text-[10px] font-semibold text-white" style={{ backgroundColor: hex }}>Activo</span></td>
+                                                     <td className="px-3 py-2"><span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ backgroundColor: hex, color: sobreColor }}>Activo</span></td>
                                                 </tr>
                                                 <tr className="border-t border-slate-100">
                                                     <td className="px-3 py-2 font-medium text-slate-700">Don Quijote</td>
@@ -414,8 +416,8 @@ export default function PersonalizacionPage() {
                                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                                     <Muestra titulo="Insignias">
                                         <div className="flex flex-wrap gap-1.5">
-                                            <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold text-white" style={{ backgroundColor: hex }}>Activo</span>
-                                            <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold" style={{ backgroundColor: soft2, color: hex }}>Nuevo</span>
+                                             <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold" style={{ backgroundColor: hex, color: sobreColor }}>Activo</span>
+                                             <span className="rounded-full px-2.5 py-1 text-[10px] font-semibold" style={{ backgroundColor: soft2, color: sobreColor }}>Nuevo</span>
                                             <span className="rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-semibold text-red-700">Cancelado</span>
                                         </div>
                                     </Muestra>
@@ -426,7 +428,7 @@ export default function PersonalizacionPage() {
                                                 <div
                                                     key={p}
                                                     className={`flex h-7 w-7 items-center justify-center rounded-md text-[11px] ${p === '1' ? 'font-semibold text-white' : 'text-slate-600'}`}
-                                                    style={p === '1' ? { backgroundColor: hex } : undefined}
+                                                    style={p === '1' ? { backgroundColor: hex, color: sobreColor } : undefined}
                                                 >
                                                     {p}
                                                 </div>
@@ -443,7 +445,7 @@ export default function PersonalizacionPage() {
                                         </div>
                                         <div className="flex justify-end gap-2 bg-slate-50 px-4 py-2.5">
                                             <div className="rounded-md border border-slate-200 bg-white px-3 py-1 text-[10.5px] text-slate-600">Cancelar</div>
-                                            <div className="rounded-md px-3 py-1 text-[10.5px] font-semibold text-white" style={{ backgroundColor: hex }}>Confirmar</div>
+                                             <div className="rounded-md px-3 py-1 text-[10.5px] font-semibold" style={{ backgroundColor: hex, color: sobreColor }}>Confirmar</div>
                                         </div>
                                     </div>
                                 </Muestra>
@@ -451,11 +453,11 @@ export default function PersonalizacionPage() {
                                 <Muestra titulo="Aviso">
                                     <div className="flex items-center gap-3 rounded-lg border px-3 py-2.5" style={{ borderColor: border, backgroundColor: soft }}>
                                         <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: hex }}>
-                                            <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                                            <Check className="h-3 w-3" style={{ color: sobreColor }} strokeWidth={3} />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-semibold" style={{ color: hex }}>Guardado correctamente</p>
-                                            <p className="text-[10.5px] text-slate-500">Los cambios se han aplicado</p>
+                                             <p className="text-xs font-semibold" style={{ color: sobreColor }}>Guardado correctamente</p>
+                                             <p className="text-[10.5px]" style={{ color: sobreColor }}>Los cambios se han aplicado</p>
                                         </div>
                                     </div>
                                 </Muestra>

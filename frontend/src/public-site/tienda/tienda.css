@@ -1,0 +1,62 @@
+/* Compra web: misma identidad editorial; controles nativos y foco visible. */
+.sitio .compra-pagina { padding-block: 48px 64px; min-height: 55vh; }
+.sitio .compra-pagina h1 { font-family: var(--f-titulo); font-size: clamp(28px, 4vw, 42px); color: var(--marino-900); margin-bottom: 16px; }
+.sitio .compra-pagina h2 { font-family: var(--f-titulo); font-size: 22px; color: var(--marino-900); }
+.sitio .compra-pagina p { margin-block: 10px; line-height: 1.6; }
+.sitio .compra-distribucion { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr); gap: 28px; margin-top: 28px; align-items: start; }
+.sitio .compra-resumen, .sitio .compra-registro, .sitio .cuenta-cliente { border: 1px solid var(--gris-300); border-radius: 14px; background: #fff; padding: 24px; }
+.sitio .compra-resumen { position: sticky; top: 24px; }
+.sitio .compra-resumen p { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.sitio .compra-resumen .boton { width: 100%; margin-top: 12px; }
+.sitio .compra-resumen > .enlace-texto { display: inline-block; margin-top: 16px; }
+.sitio .compra-formulario { display: grid; gap: 18px; }
+.sitio .compra-formulario label, .sitio .carrito-linea label { display: grid; gap: 8px; font-size: 14px; font-weight: 600; color: var(--marino-900); }
+.sitio .compra-formulario :is(input:not([type=radio]), select), .sitio .carrito-linea input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #a7afb8; border-radius: 8px; background: #fff; color: var(--marino-950); font: inherit; }
+.sitio .compra-formulario fieldset { display: grid; gap: 18px; border: 1px solid var(--gris-300); border-radius: 14px; padding: 24px; background: #fff; }
+.sitio .compra-formulario legend { font-weight: 600; padding-inline: 8px; }
+.sitio .compra-formulario .entrega-opcion { display: flex; gap: 12px; align-items: center; padding: 14px; border: 1px solid var(--gris-300); border-radius: 8px; cursor: pointer; }
+.sitio .entrega-opcion:has(input:checked) { border-color: var(--marino-900); background: var(--crema-claro); }
+.sitio .compra-formulario input[type=radio] { width: 18px; height: 18px; flex: none; accent-color: var(--marino-900); }
+.sitio .cuenta-cliente { max-width: 520px; margin-inline: auto; }
+.sitio .compra-acciones { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 20px; }
+.sitio .compra-error { background: #fff0f0; border: 1px solid #f0c3c3; padding: 12px; border-radius: 8px; color: #9b1c1c; }
+.sitio .compra-aviso { background: var(--crema); padding: 12px; border-radius: 8px; color: var(--marino-900); }
+.sitio .carrito-lineas, .sitio .compras-lista { display: grid; gap: 18px; }
+.sitio .carrito-linea { display: flex; align-items: start; gap: 18px; border-bottom: 1px solid var(--gris-300); padding-bottom: 20px; }
+.sitio .carrito-linea img { flex: none; width: 70px; height: 100px; object-fit: contain; }
+.sitio .carrito-linea-datos { flex: 1; min-width: 0; }
+.sitio .carrito-linea input { max-width: 100px; }
+.sitio .carrito-linea .enlace-texto { margin-top: 12px; }
+.sitio .compra-libro { display: grid; gap: 12px; padding: 0 18px 18px; }
+.sitio .compra-libro .enlace-texto { text-align: center; }
+.sitio .compra-libro .boton { white-space: normal; text-align: center; }
+.sitio .libro__datos .compra-libro, .sitio .oferta-tarjeta__datos .compra-libro { padding: 12px 0 0; }
+.sitio .libro-detalle { display: grid; grid-template-columns: minmax(180px, 300px) minmax(0, 1fr); gap: 36px; margin-top: 24px; }
+.sitio .libro-detalle > img { max-width: 100%; object-fit: contain; }
+.sitio .libro-detalle .compra-libro { padding: 20px 0; max-width: 320px; }
+.sitio .compra-registro header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.sitio .compra-registro ul { margin-block: 16px; }
+.sitio .compra-registro li { padding-block: 5px; }
+.sitio .compra-cuenta, .sitio .compra-carrito { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--marino-900); min-height: 44px; }
+.sitio .compra-cuenta svg, .sitio .compra-carrito svg { width: 19px; color: var(--dorado-oscuro); }
+.sitio .compra-notificacion { background: var(--crema); padding: 12px 24px; color: var(--marino-900); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.sitio .compra-notificacion button { min-height: 40px; font-weight: 600; }
+.sitio .compra-pagina :is(button, a, input, select):focus-visible { outline: 2px solid var(--marino-700); outline-offset: 3px; }
+.sitio .compra-pagina button:disabled, .sitio .compra-libro button:disabled { opacity: .6; cursor: not-allowed; }
+@media (max-width: 1023px) { .sitio .cabecera__acciones .cabecera__enlace { display: none; } }
+@media (max-width: 640px) {
+    .sitio .compra-pagina { padding-block: 28px 48px; }
+    .sitio .compra-distribucion, .sitio .libro-detalle { grid-template-columns: minmax(0,1fr); gap: 20px; }
+    .sitio .compra-resumen { position: static; }
+    .sitio .carrito-linea { flex-wrap: wrap; gap: 12px; }
+    .sitio .carrito-linea-datos { min-width: 160px; }
+    .sitio .compra-cuenta, .sitio .compra-carrito { font-size: 12px; gap: 4px; }
+    .sitio .compra-cuenta span, .sitio .compra-carrito span { display: none; }
+    .sitio .compra-cuenta, .sitio .compra-carrito { min-width: 32px; justify-content: center; }
+    .sitio .compra-carrito::after { content: attr(data-cantidad); font-weight: 700; }
+    .sitio .cabecera__principal { gap: 8px; }
+    .sitio .cabecera__principal .marca span { font-size: 16px; }
+    .sitio .cabecera__descarga { display: none; }
+    .sitio .cabecera__acciones { gap: 12px; flex-shrink: 0; }
+    .sitio .libro-detalle > img { max-height: 320px; margin-inline: auto; }
+}

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { FaHouse, FaBookOpen, FaStore, FaMobileScreenButton } from 'react-icons/fa6';
+import { FaHouse, FaBookOpen, FaCartShopping, FaUser } from 'react-icons/fa6';
 
 // ============================================================
 // BARRA INFERIOR EN EL CELULAR
@@ -10,8 +10,8 @@ import { FaHouse, FaBookOpen, FaStore, FaMobileScreenButton } from 'react-icons/
 const DESTINOS = [
     { ruta: '/', texto: 'Inicio', Icono: FaHouse, fin: true },
     { ruta: '/catalogo', texto: 'Catálogo', Icono: FaBookOpen },
-    { ruta: '/nosotros#tienda', texto: 'Tienda', Icono: FaStore },
-    { ruta: '/descargar', texto: 'App', Icono: FaMobileScreenButton },
+    { ruta: '/carrito', texto: 'Carrito', Icono: FaCartShopping },
+    { ruta: '/cuenta', texto: 'Mi cuenta', Icono: FaUser },
 ];
 
 export default function BarraMovil() {

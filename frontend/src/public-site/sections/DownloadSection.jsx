@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { FaDownload, FaShieldHalved, FaMobileScreenButton, FaCircleCheck } from 'react-icons/fa6';
+import { FaDownload, FaShieldHalved, FaMobileScreenButton } from 'react-icons/fa6';
 
 import iconoApp from '../assets/app-icono.webp';
 import imgInicio from '../assets/app/inicio.webp';
@@ -82,29 +82,29 @@ export default function DownloadSection({ reducido }) {
 
     useGSAP(() => {
         if (reducido) return;
-        gsap.from('.descargar-portada__texto > *', { opacity: 0, y: 24, duration: 0.9, ease: 'expo.out', stagger: 0.08 });
-        gsap.from('.descargar-portada__telefono', { opacity: 0, y: 60, rotate: 6, duration: 1.2, ease: 'expo.out', delay: 0.15 });
+        gsap.from('.descargar-portada__texto > *', { opacity: 0, y: 24, duration: 0.45, ease: 'expo.out', stagger: 0.05 });
+        gsap.from('.descargar-portada__telefono', { opacity: 0, y: 24, rotate: 3, duration: 0.45, ease: 'expo.out', delay: 0.05 });
         gsap.from('.tarjeta-descarga', {
             y: 48,
             opacity: 0,
-            duration: 1.1,
+            duration: 0.45,
             ease: 'expo.out',
-            stagger: 0.12,
+            stagger: 0.05,
             scrollTrigger: { trigger: '.descarga__rejilla', start: 'top 82%' },
         });
         gsap.from('.instalar__paso', {
             y: 30,
             opacity: 0,
-            duration: 0.9,
+            duration: 0.45,
             ease: 'expo.out',
-            stagger: 0.1,
+            stagger: 0.05,
             scrollTrigger: { trigger: '.instalar', start: 'top 82%' },
         });
     }, { scope: seccion, dependencies: [reducido] });
 
     return (
         <div id="descargar" ref={seccion} className="descargar-pagina">
-            <section className="seccion oscuro descargar-portada" aria-labelledby="descarga-titulo">
+            <section className="seccion descargar-portada" aria-labelledby="descarga-titulo">
                 <div className="contenedor descargar-portada__rejilla">
                     <div className="descargar-portada__texto">
                         <img className="icono-app icono-app--grande" src={iconoApp} alt="Icono de la app Librería del Saber" width="88" height="88" />
@@ -112,14 +112,6 @@ export default function DownloadSection({ reducido }) {
                         <p className="descargar-portada__entrada">
                             Gratis. Con ella exploras el catálogo, compras con PayU y sigues tus pedidos y reservas.
                         </p>
-                        {androidListo && (
-                            <ul className="descargar-portada__datos" aria-label="Datos de la versión para Android">
-                                <li><FaCircleCheck aria-hidden="true" /> Gratis</li>
-                                {android.version && <li>Versión {android.version}</li>}
-                                {android.tamano && <li>{android.tamano}</li>}
-                                {android.actualizado && <li>Actualizada el {fechaLarga(android.actualizado)}</li>}
-                            </ul>
-                        )}
                         {androidListo && (
                             <a className="boton boton--grande" href={android.url} rel="noopener">
                                 <FaDownload aria-hidden="true" /> {CANALES[android.tipo].accion}

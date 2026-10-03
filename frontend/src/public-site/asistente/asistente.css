@@ -1,0 +1,66 @@
+.sitio .asistente-tienda { position: fixed; right: 24px; bottom: 24px; z-index: 56; font-family: var(--f-texto); color: var(--texto); }
+.sitio .asistente-abrir { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 12px 20px; border: 1px solid var(--marino-900); border-radius: 999px; background: var(--marino-900); color: var(--blanco); font: 600 16px var(--f-texto); cursor: pointer; box-shadow: var(--sombra-tarjeta); }
+.sitio .asistente-abrir svg { width: 20px; height: 20px; }
+.sitio .asistente-abrir:hover { background: var(--marino-700); }
+.sitio .asistente-panel { position: absolute; right: 0; bottom: 64px; display: flex; flex-direction: column; width: min(400px,calc(100vw - 32px)); max-height: min(660px,calc(100dvh - 120px)); border: 1px solid var(--borde); border-radius: 12px; background: var(--blanco); box-shadow: var(--sombra-libro); overflow: hidden; animation: asistente-aparecer 180ms ease-out; }
+.sitio .asistente-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; flex: none; background: var(--marino-900); color: var(--blanco); }
+.sitio .asistente-cabecera h2 { font: 600 18px/1.3 var(--f-texto); margin: 0; color: inherit; }
+.sitio .asistente-cabecera p { font-size: 13px; line-height: 1.4; margin: 4px 0 0; color: var(--blanco); }
+.sitio .asistente-icono { display: grid; place-items: center; width: 44px; height: 44px; flex: none; border: 0; border-radius: 6px; background: transparent; color: inherit; cursor: pointer; }
+.sitio .asistente-icono:hover { background: rgba(128,128,128,.12); }
+.sitio .asistente-icono svg { width: 18px; height: 18px; }
+.sitio .asistente-conversacion { min-height: 100px; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 16px; background: var(--gris-50); scrollbar-width: thin; scrollbar-color: var(--marino-700) var(--gris-50); }
+.sitio .asistente-mensaje { background: var(--blanco); border: 1px solid var(--borde); border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.sitio .asistente-mensaje > p { margin: 4px 0 0; white-space: pre-line; }
+.sitio .asistente-quien { font-size: var(--t-meta); font-weight: 600; color: var(--marino-900); }
+.sitio .asistente-mensaje--usuario { margin-left: 36px; background: var(--marino-900); color: var(--blanco); border-color: var(--marino-900); }
+.sitio .asistente-mensaje--usuario .asistente-quien { color: var(--blanco); }
+.sitio .asistente-libros { list-style: none; padding: 0; margin: 12px 0 0; }
+.sitio .asistente-libros li { padding: 12px 0; border-top: 1px solid var(--borde); }
+.sitio .asistente-libros li:last-child { padding-bottom: 0; }
+.sitio .asistente-portada { float: left; width: 44px; height: 66px; object-fit: contain; margin: 0 10px 6px 0; }
+.sitio .asistente-libros .compra-libro { clear: both; padding: 10px 0 0; gap: 8px; }
+.sitio .asistente-libros .compra-libro .boton { min-height: 40px; font-size: 14px; }
+.sitio .asistente-motivo { font-size: 13px; color: var(--texto-2); }
+.sitio .asistente-libros a { display: inline-block; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; color: var(--marino-900); }
+.sitio .asistente-libros p { margin: 4px 0 0; }
+.sitio .asistente-libros strong { font-variant-numeric: tabular-nums; }
+.sitio .asistente-libros s { color: var(--texto-2); margin-left: 6px; }
+.sitio .asistente-oferta { display: inline-block; margin-left: 6px; color: var(--oferta); font-size: var(--t-meta); font-weight: 600; }
+.sitio .asistente-stock { font-size: 13px; }
+.sitio .asistente-mensaje .asistente-consulta { margin-top: 10px; color: var(--texto-2); font-size: var(--t-meta); }
+.sitio .asistente-enlaces { display: flex; flex-wrap: wrap; gap: 8px 12px; list-style: none; padding: 0; margin: 12px 0 0; }
+.sitio .asistente-enlaces a, .sitio .asistente-reintentar { color: var(--marino-900); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
+.sitio .asistente-reintentar { min-height: 44px; border: 0; background: transparent; cursor: pointer; padding: 6px 0; }
+.sitio .asistente-cargando { font-size: 14px; padding: 8px 0; color: var(--texto-2); }
+.sitio .asistente-sugerencias { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px 0; flex: none; }
+.sitio .asistente-sugerencias button { min-height: 36px; padding: 6px 10px; border: 1px solid var(--borde); border-radius: 999px; background: var(--blanco); color: var(--marino-900); font: 500 13px var(--f-texto); cursor: pointer; }
+.sitio .asistente-sugerencias button:hover { border-color: var(--marino-900); background: var(--gris-50); }
+.sitio .asistente-formulario { flex: none; padding: 12px 16px 0; }
+.sitio .asistente-formulario label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.sitio .asistente-formulario > div { display: flex; gap: 8px; }
+.sitio .asistente-formulario input { width: 100%; min-width: 0; height: 44px; padding: 8px 10px; border: 1px solid var(--borde); border-radius: 6px; color: var(--texto); background: var(--blanco); font: 400 16px var(--f-texto); caret-color: var(--marino-900); }
+.sitio .asistente-formulario input::placeholder { color: var(--texto-2); font-size: 14px; }
+.sitio .asistente-formulario button { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border: 1px solid var(--marino-900); border-radius: 6px; background: var(--marino-900); color: var(--blanco); cursor: pointer; }
+.sitio .asistente-formulario button:hover { background: var(--marino-700); }
+.sitio .asistente-formulario > p { font-size: var(--t-meta); line-height: 1.4; margin: 6px 0 0; color: var(--texto-2); }
+.sitio .asistente-pie { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 10px 4px 16px; font-size: var(--t-meta); color: var(--texto-2); flex: none; }
+.sitio .asistente-tienda :is(button,a,input):focus-visible { outline: 2px solid var(--marino-700); outline-offset: 3px; }
+.sitio .asistente-cabecera button:focus-visible, .sitio .asistente-abrir:focus-visible { outline-color: var(--dorado); }
+.sitio .asistente-tienda button:disabled { opacity: .55; cursor: not-allowed; }
+.sitio .asistente-tienda ::selection { background: var(--marino-900); color: var(--blanco); }
+@keyframes asistente-aparecer { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 1023px) {
+    .sitio .asistente-tienda { right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); }
+    .sitio .asistente-panel { max-height: min(660px,calc(100dvh - 176px - env(safe-area-inset-bottom))); }
+}
+@media (max-width: 480px) {
+    .sitio .asistente-tienda { right: 12px; }
+    .sitio .asistente-panel { width: calc(100vw - 24px); }
+    .sitio .asistente-abrir { min-height: 44px; padding: 10px 14px; font-size: 14px; }
+    .sitio .asistente-cabecera { padding: 10px 12px; }
+    .sitio .asistente-conversacion { padding: 12px; }
+    .sitio .asistente-sugerencias { padding: 10px 12px 0; }
+    .sitio .asistente-formulario { padding: 10px 12px 0; }
+}
+@media (prefers-reduced-motion: reduce) { .sitio .asistente-panel { animation: none; } }

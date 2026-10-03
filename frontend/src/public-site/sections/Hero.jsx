@@ -1,163 +1,59 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { FaDownload } from 'react-icons/fa6';
+import { FaChevronLeft, FaChevronRight, FaPause, FaPlay } from 'react-icons/fa6';
+import useCarrusel from '../hooks/useCarrusel';
+import { urlPortada } from '../lib/formato';
+import './carrusel-inicio.css';
 
-import { EASE } from '../config/motion';
-import HeroFondo from './HeroFondo';
-import { puedeUsar3D } from '../hooks/useEntorno';
-import { ScrollTrigger, useGSAP } from '../animation/scroll';
-import { precargaTerminada, registrarRecurso, usePrecargaTerminada } from '../lib/precarga';
-
-const HeroScene = lazy(() => import('../three/HeroScene'));
-
-// Imagen del libro en public/hero: nombre fijo para que index.html la
-// precargue desde el primer byte (es el elemento LCP del hero).
-const poster720 = '/hero/libro-3d-720.webp';
-const poster1200 = '/hero/libro-3d-1200.webp';
-
-const LINEAS = ['Una librería de verdad,', 'ahora en tu teléfono.'];
-
-export default function Hero({ reducido }) {
-    const seccion = useRef(null);
-    const escena = useRef(null);
-    const puntero = useRef({ x: 0, y: 0 });
-    const progreso = useRef(0);
-    const [usar3D, setUsar3D] = useState(false);
-    const [listo, setListo] = useState(false);
-    const [visible, setVisible] = useState(true);
-    const poster = useRef(null);
-    const libera3D = useRef(null);
-    const mostrar = usePrecargaTerminada();
-
-    // Recursos que la pantalla de carga espera antes de mostrar el hero:
-    // la imagen del libro y, si hay 3D, su primer cuadro.
-    // Se registran en un efecto de layout para que la pantalla de carga
-    // los vea en el mismo commit en que el hero se monta.
-    useLayoutEffect(() => {
-        const liberaPoster = registrarRecurso('imagen-hero');
-        const img = poster.current;
-        if (!img || img.complete) liberaPoster();
-        else {
-            img.addEventListener('load', liberaPoster, { once: true });
-            img.addEventListener('error', liberaPoster, { once: true });
-        }
-
-        libera3D.current = puedeUsar3D() ? registrarRecurso('libro-3d') : null;
-        return () => {
-            liberaPoster();
-            libera3D.current?.();
-        };
-    }, []);
-
-    // La escena se pide cuando el navegador está libre: primero el texto.
-    // Bajo la pantalla de carga no hay texto que priorizar: se pide ya.
-    useEffect(() => {
-        if (!puedeUsar3D()) return undefined;
-        const iniciar = () => {
-            const fuente = document.fonts?.load("700 92px 'Work Sans'") ?? Promise.resolve();
-            fuente.catch(() => {}).finally(() => setUsar3D(true));
-        };
-        if (!precargaTerminada()) {
-            iniciar();
-            return undefined;
-        }
-        if ('requestIdleCallback' in window) {
-            const id = window.requestIdleCallback(iniciar, { timeout: 1800 });
-            return () => window.cancelIdleCallback(id);
-        }
-        const id = setTimeout(iniciar, 700);
-        return () => clearTimeout(id);
-    }, []);
-
-    // Pausa la escena cuando el hero no se ve.
-    useEffect(() => {
-        const el = escena.current;
-        if (!el) return undefined;
-        const obs = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { rootMargin: '80px' });
-        obs.observe(el);
-        return () => obs.disconnect();
-    }, []);
-
-    useEffect(() => {
-        if (reducido) return undefined;
-        const mover = (e) => {
-            puntero.current.x = (e.clientX / window.innerWidth) * 2 - 1;
-            puntero.current.y = (e.clientY / window.innerHeight) * 2 - 1;
-        };
-        window.addEventListener('pointermove', mover, { passive: true });
-        return () => window.removeEventListener('pointermove', mover);
-    }, [reducido]);
-
-    useGSAP(() => {
-        ScrollTrigger.create({
-            trigger: seccion.current,
-            start: 'top top',
-            end: 'bottom top',
-            onUpdate: (s) => { progreso.current = s.progress; },
-        });
-    }, { scope: seccion });
-
-    const entrada = (i) => (reducido ? {} : {
-        initial: { y: '105%' },
-        animate: { y: mostrar ? '0%' : '105%' },
-        transition: { duration: 1.1, delay: 0.15 + i * 0.12, ease: EASE.salida },
-    });
-    const aparece = (retraso) => (reducido ? {} : {
-        initial: { opacity: 0, y: 14 },
-        animate: mostrar ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 },
-        transition: { duration: 0.9, delay: retraso, ease: EASE.salida },
-    });
-
-    return (
-        <section ref={seccion} className="seccion hero oscuro" aria-labelledby="hero-titulo">
-            <HeroFondo />
-            <div className="contenedor hero__rejilla">
-                <div>
-                    <h1 id="hero-titulo" className="hero__titulo">
-                        {LINEAS.map((linea, i) => (
-                            <span className="linea" key={linea}>
-                                <motion.span {...entrada(i)}>{linea}</motion.span>
-                            </span>
-                        ))}
-                    </h1>
-                    <motion.p className="hero__bajada" {...aparece(0.5)}>
-                        Explora el catálogo de Librería del Saber, paga en línea con PayU y recibe tus libros dentro de Pallasca
-                        o recógelos sin costo en nuestra tienda de Pallasca.
-                    </motion.p>
-                    <motion.div className="hero__acciones" {...aparece(0.65)}>
-                        <Link className="boton boton--blanco" to="/descargar">
-                            <FaDownload aria-hidden="true" /> Descargar la app
-                        </Link>
-                        <Link className="boton boton--linea" to="/catalogo">
-                            Ver el catálogo
-                        </Link>
-                    </motion.div>
-                </div>
-
-                <div ref={escena} className="hero__escena">
-                    <img
-                        ref={poster}
-                        className="hero__poster"
-                        src={poster720}
-                        srcSet={`${poster720} 720w, ${poster1200} 1200w`}
-                        sizes="(max-width: 1023px) 90vw, 55vw"
-                        alt="Libro cerrado encuadernado en cuero verde con el título Librería del Saber y una cinta de marcapáginas"
-                        width="720"
-                        height="422"
-                        fetchPriority="high"
-                        style={{ opacity: listo ? 0 : 1, transition: 'opacity 900ms var(--ease-salida)' }}
-                    />
-                    {usar3D && (
-                        <Suspense fallback={null}>
-                            <div style={{ position: 'absolute', inset: 0, opacity: listo ? 1 : 0, transition: 'opacity 900ms var(--ease-salida)' }}>
-                                <HeroScene puntero={puntero} progreso={progreso} activo={visible} alListo={() => { setListo(true); libera3D.current?.(); }} />
-                            </div>
-                        </Suspense>
-                    )}
-                    {usar3D && listo && <p className="hero__pista" aria-hidden="true">Toca el libro para abrirlo</p>}
-                </div>
-            </div>
-        </section>
-    );
+export default function Hero({reducido}){
+    const {imagenes:data,cargando,error,reintentar}=useCarrusel();
+    const [indice,setIndice]=useState(0),[pausado,setPausado]=useState(false),[hover,setHover]=useState(false),[foco,setFoco]=useState(false);
+    const [oculto,setOculto]=useState(()=>typeof document!=='undefined' && document.hidden),[fallidas,setFallidas]=useState([]);
+    const imagenes=useMemo(()=>{const ids=new Set();return data.filter(l=>{
+        const id=Number(l.id_imagen);if(!Number.isInteger(id) || id<1 || ids.has(id) || fallidas.includes(id))return false;
+        ids.add(id);return Boolean(urlPortada(l.imagen_url,1800));
+    });},[data,fallidas]);
+    const actual=imagenes.length?indice%imagenes.length:0;
+    const imagen=imagenes[actual];
+    const cambiar=paso=>setIndice(v=>imagenes.length?(v+paso+imagenes.length)%imagenes.length:0);
+    useEffect(()=>{const escuchar=()=>setOculto(document.hidden);document.addEventListener('visibilitychange',escuchar);return()=>document.removeEventListener('visibilitychange',escuchar);},[]);
+    useEffect(()=>{
+        if(imagenes.length<2 || reducido || pausado || hover || foco || oculto || cargando)return undefined;
+        const id=setInterval(()=>setIndice(v=>(v+1)%imagenes.length),6000);
+        return()=>clearInterval(id);
+    },[imagenes.length,reducido,pausado,hover,foco,oculto,cargando,indice]);
+    useEffect(()=>{
+        if(imagenes.length<2)return;
+        const proxima=new Image();proxima.src=urlPortada(imagenes[(actual+1)%imagenes.length].imagen_url,1800);
+    },[imagenes,actual]);
+    function intentar(){setFallidas([]);setIndice(0);reintentar();}
+    const noImagen=!cargando && !error && !imagenes.length;
+    const inicioPuntos=Math.max(0,Math.min(actual-1,imagenes.length-3));
+    return <section className="anuncios-inicio" aria-label="Anuncios de la librería" aria-roledescription="carrusel" tabIndex={0}
+        onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)}
+        onFocusCapture={()=>setFoco(true)} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setFoco(false);}}
+        onKeyDown={e=>{if(imagenes.length>1 && ['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();cambiar(e.key==='ArrowRight'?1:-1);}}}>
+        <h1 className="sr-only">Libros y anuncios de Librería del Saber</h1>
+        <div className="anuncios-inicio__marco">
+            {cargando?<div className="anuncios-inicio__vacio"><p role="status">Cargando anuncios…</p></div>
+                :error?<div className="anuncios-inicio__vacio"><p role="status">No pudimos cargar los anuncios.</p><div><button type="button" onClick={intentar}>Reintentar anuncios</button><Link to="/catalogo">Ver catálogo</Link></div></div>
+                :noImagen?<div className="anuncios-inicio__vacio"><p>{data.length?'No se pudo mostrar la imagen del anuncio.':'Sin imágenes publicadas todavía.'}</p>
+                    <div>{data.length>0 && <button type="button" onClick={intentar}>Reintentar anuncios</button>}<Link to="/catalogo">Ver catálogo</Link></div></div>
+                :<>{imagen.id_libro?<Link to={`/libro/${Number(imagen.id_libro)}`} aria-label={`Ver libro: ${imagen.titulo}`}>
+                    <img key={imagen.id_imagen} src={urlPortada(imagen.imagen_url,1800)} alt={imagen.titulo || 'Anuncio de la librería'} width="1600" height="600" fetchPriority="high"
+                        onError={()=>setFallidas(v=>[...v,Number(imagen.id_imagen)])}/>
+                </Link>:<img key={imagen.id_imagen} src={urlPortada(imagen.imagen_url,1800)} alt={imagen.titulo || 'Anuncio de la librería'} width="1600" height="600" fetchPriority="high"
+                    onError={()=>setFallidas(v=>[...v,Number(imagen.id_imagen)])}/>}
+                </>}
+        </div>
+        {!cargando && imagenes.length>1 && <div className="anuncios-inicio__controles">
+            <div className="anuncios-inicio__navegacion"><button type="button" className="anuncios-inicio__flecha" aria-label="Anuncio anterior" onClick={()=>cambiar(-1)}><FaChevronLeft aria-hidden="true"/></button>
+                <button type="button" className="anuncios-inicio__flecha" aria-label="Anuncio siguiente" onClick={()=>cambiar(1)}><FaChevronRight aria-hidden="true"/></button></div>
+            <span aria-live={pausado || foco?'polite':'off'}>{actual+1} / {imagenes.length}</span>
+            <div className="anuncios-inicio__puntos" aria-label="Elegir anuncio">{imagenes.slice(inicioPuntos,inicioPuntos+3).map((l,i)=>{
+                const n=inicioPuntos+i;return <button key={l.id_imagen} type="button" aria-label={`Mostrar anuncio ${n+1}`} aria-current={n===actual?'true':undefined} onClick={()=>setIndice(n)}><span/></button>;
+            })}</div>
+            {!reducido && <button type="button" className="anuncios-inicio__pausa" aria-label={pausado?'Reanudar carrusel':'Pausar carrusel'} aria-pressed={pausado} onClick={()=>setPausado(v=>!v)}>{pausado?<FaPlay aria-hidden="true"/>:<FaPause aria-hidden="true"/>}</button>}
+        </div>}
+    </section>;
 }

@@ -1,34 +1,19 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 export { gsap, ScrollTrigger, useGSAP };
 
-// Scroll suave con Lenis, sincronizado con ScrollTrigger (un solo reloj:
-// el ticker de GSAP). Sin Lenis con movimiento reducido: scroll nativo.
-export function useScrollSuave(activo) {
-    const lenisRef = useRef(null);
-
-    useEffect(() => {
-        if (!activo) return undefined;
-        const lenis = new Lenis({ lerp: 0.11, smoothWheel: true, syncTouch: false });
-        const tick = (tiempo) => lenis.raf(tiempo * 1000);
-        lenis.on('scroll', ScrollTrigger.update);
-        gsap.ticker.add(tick);
-        gsap.ticker.lagSmoothing(0);
-        lenisRef.current = lenis;
-        return () => {
-            gsap.ticker.remove(tick);
-            lenis.destroy();
-            lenisRef.current = null;
-        };
-    }, [activo]);
-
-    return lenisRef;
+// Scroll nativo. Lenis (scroll suave por JavaScript) se retiró: retrasaba
+// cada movimiento de la rueda y el inicio y Nosotros se sentían trabados,
+// sobre todo en equipos modestos. El hook se mantiene para no tocar a quien
+// lo usa: devuelve una referencia vacía y irASeccion cae al scroll nativo.
+// eslint-disable-next-line no-unused-vars
+export function useScrollSuave(_activo) {
+    return useRef(null);
 }
 
 // Navega a una sección y deja el foco en su título, para teclado y lectores.

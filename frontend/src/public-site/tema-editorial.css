@@ -12,16 +12,16 @@
 
 .sitio {
     /* Paleta base */
-    --marino-950: #0a1f31;
-    --marino-900: #0d2940;
-    --marino-700: #16395a;
+    --marino-950: var(--editorial-marino-950);
+    --marino-900: var(--editorial-marino-900);
+    --marino-700: var(--editorial-marino-700);
     --carbon: #111820;
-    --marfil: #fff9ef;
-    --crema: #f4ebdd;
-    --crema-claro: #faf4ea;
-    --dorado: #d5a447;
-    --dorado-hover: #e3b865;
-    --dorado-oscuro: #b8892f;
+    --marfil: var(--editorial-marfil);
+    --crema: var(--editorial-crema);
+    --crema-claro: var(--editorial-crema-claro);
+    --dorado: var(--editorial-dorado);
+    --dorado-hover: var(--editorial-dorado-hover);
+    --dorado-oscuro: var(--editorial-dorado-oscuro);
     --caramelo: #a65a32;
     --vino: #7a1725;
     --tinta: #111820;

@@ -53,6 +53,7 @@ const clienteRoutes = require('./src/routes/cliente.routes');
 const appRoutes = require('./src/routes/app.routes');
 const reclamacionRoutes = require('./src/routes/reclamacion.routes');
 const anuncioRoutes = require('./src/routes/anuncio.routes');
+const asistenteRoutes = require('./src/routes/asistente.routes');
 
 // ===============================
 // CONFIGURACIÓN DE EXPRESS
@@ -325,6 +326,7 @@ app.use(
 );
 
 app.use('/api/zonas-delivery', zonaDeliveryRoutes);
+app.use('/api/asistente', asistenteRoutes);
 
 // ===============================
 // API DE COMPROBANTES DE PAGO

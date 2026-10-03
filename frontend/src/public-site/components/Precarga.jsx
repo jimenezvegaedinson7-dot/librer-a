@@ -9,17 +9,16 @@ import { hayPendientes, marcarTerminada, precargaTerminada, suscribir } from '..
 // cuándo retirarlo, según el estado real de la carga:
 //   1. la página de la ruta ya está montada en <main>,
 //   2. fuentes listas (document.fonts.ready),
-//   3. evento load de la ventana (CSS e imágenes iniciales),
-//   4. ningún recurso registrado pendiente (fondo e imagen del hero,
-//      primer cuadro del libro 3D; ver sections/Hero.jsx).
+//   3. ningún recurso registrado pendiente (fondo e imagen del hero,
+//      el libro 3D entra después sin bloquear; ver sections/Hero.jsx).
 // Tiempo mínimo en pantalla solo para evitar un parpadeo, contado
 // desde el inicio de la navegación; tope de seguridad por si un
 // recurso nunca responde.
 // ============================================================
 
-// El logo tarda ~0.75 s en unir sus piezas: el mínimo deja verlo completo.
-const MINIMO_MS = 800;
-const TOPE_MS = 12000;
+// Mínimo corto solo para evitar un parpadeo.
+const MINIMO_MS = 350;
+const TOPE_MS = 3500;
 const SALIDA_MS = 380;
 
 let iniciada = false;
@@ -44,11 +43,6 @@ function contenidoMontado() {
     });
 }
 
-function ventanaCargada() {
-    if (document.readyState === 'complete') return Promise.resolve();
-    return new Promise((r) => window.addEventListener('load', () => r(), { once: true }));
-}
-
 function sinPendientes() {
     if (!hayPendientes()) return Promise.resolve();
     return new Promise((resolver) => {
@@ -66,7 +60,9 @@ async function listoParaMostrar() {
     // Los recursos se registran en efectos de layout del mismo commit;
     // un cuadro más deja que se registren también los de efectos normales.
     await cuadro();
-    await Promise.all([document.fonts?.ready ?? Promise.resolve(), ventanaCargada()]);
+    // Solo fuentes y recursos registrados (imagen del hero): esperar al evento
+    // load retrasaba la salida hasta que cargaba cada portada del catálogo.
+    await (document.fonts?.ready ?? Promise.resolve());
     await sinPendientes();
     await cuadro();
 }

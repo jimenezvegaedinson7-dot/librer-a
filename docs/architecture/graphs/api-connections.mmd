@@ -1,15 +1,17 @@
-%% Generado 2026-10-02 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-03 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     subgraph React
         R__api_agencias["agencias"]
         R__api_anuncios["anuncios"]
         R__api_app["app"]
+        R__api_asistente["asistente"]
         R__api_auth["auth"]
         R__api_autores["autores"]
         R__api_categorias["categorias"]
         R__api_clientes["clientes"]
         R__api_comprobantes["comprobantes"]
         R__api_empresa["empresa"]
+        R__api_favoritos["favoritos"]
         R__api_historial["historial"]
         R__api_inventario["inventario"]
         R__api_libros["libros"]
@@ -36,10 +38,12 @@ flowchart LR
     end
     E__api_agencias(("/api/agencias")) --> C_agencia_controller["agencia.controller"]
     R__api_agencias --> E__api_agencias
-    E__api_anuncios(("/api/anuncios")) --> C_anuncio_controller["anuncio.controller"]
+    E__api_anuncios(("/api/anuncios")) --> C_anuncio_controller["anuncio.controller"] & C_carrusel_controller["carrusel.controller"]
     R__api_anuncios --> E__api_anuncios
     E__api_app(("/api/app")) --> C_app_controller["app.controller"]
     R__api_app --> E__api_app
+    E__api_asistente(("/api/asistente")) --> C_asistente_controller["asistente.controller"]
+    R__api_asistente --> E__api_asistente
     E__api_auth(("/api/auth")) --> C_auth_controller["auth.controller"] & C_auth2fa_controller["auth2fa.controller"]
     R__api_auth --> E__api_auth
     F__api_auth --> E__api_auth
@@ -54,6 +58,7 @@ flowchart LR
     E__api_empresa(("/api/empresa")) --> C_empresa_controller["empresa.controller"]
     R__api_empresa --> E__api_empresa
     E__api_favoritos(("/api/favoritos")) --> C_favorito_controller["favorito.controller"]
+    R__api_favoritos --> E__api_favoritos
     F__api_favoritos --> E__api_favoritos
     E__api_historial(("/api/historial")) --> C_historial_controller["historial.controller"]
     R__api_historial --> E__api_historial
@@ -89,7 +94,9 @@ flowchart LR
     DB[("PostgreSQL")]
     C_agencia_controller --> DB
     C_anuncio_controller --> DB
+    C_carrusel_controller --> DB
     C_app_controller --> DB
+    C_asistente_controller --> DB
     C_auth_controller --> DB
     C_auth2fa_controller --> DB
     C_autor_controller --> DB

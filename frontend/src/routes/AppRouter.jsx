@@ -32,6 +32,11 @@ const AplicacionPage = lazyConReintento(() => import('../public-site/pages/pagin
 const CaracteristicasPage = lazyConReintento(() => import('../public-site/pages/paginas').then((m) => ({ default: m.CaracteristicasPage })));
 const NosotrosPage = lazyConReintento(() => import('../public-site/pages/paginas').then((m) => ({ default: m.NosotrosPage })));
 const DescargarPage = lazyConReintento(() => import('../public-site/pages/paginas').then((m) => ({ default: m.DescargarPage })));
+const CuentaClientePage = lazyConReintento(() => import('../public-site/tienda/CuentaPage'));
+const CarritoWebPage = lazyConReintento(() => import('../public-site/tienda/CarritoPage'));
+const CheckoutWebPage = lazyConReintento(() => import('../public-site/tienda/CheckoutPage'));
+const MisComprasWebPage = lazyConReintento(() => import('../public-site/tienda/MisComprasPage'));
+const LibroPublicoPage = lazyConReintento(() => import('../public-site/tienda/LibroPage'));
 
 // Páginas de la web pública: sin pantalla de carga del panel.
 const publica = (elemento) => <Suspense fallback={null}>{elemento}</Suspense>;
@@ -76,6 +81,11 @@ const router = createBrowserRouter([
             { path: '/caracteristicas', element: publica(<CaracteristicasPage />) },
             { path: '/nosotros', element: publica(<NosotrosPage />) },
             { path: '/descargar', element: publica(<DescargarPage />) },
+            { path: '/cuenta', element: publica(<CuentaClientePage />) },
+            { path: '/carrito', element: publica(<CarritoWebPage />) },
+            { path: '/checkout', element: publica(<CheckoutWebPage />) },
+            { path: '/mis-compras', element: publica(<MisComprasWebPage />) },
+            { path: '/libro/:id', element: publica(<LibroPublicoPage />) },
         ],
     },
     {

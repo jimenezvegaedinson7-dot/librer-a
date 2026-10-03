@@ -58,8 +58,8 @@ export default function AboutSection({ legal, reducido }) {
         const lectura = { avance: 0 };
         gsap.to(lectura, {
             avance: 1,
-            duration: 1.6,
-            delay: 0.3,
+            duration: 0.7,
+            delay: 0.05,
             ease: 'power1.inOut',
             onUpdate: () => {
                 const hasta = Math.round(lectura.avance * nodos.length);
@@ -68,16 +68,16 @@ export default function AboutSection({ legal, reducido }) {
         });
         gsap.from('.nosotros-pilar', {
             opacity: 0,
-            y: 36,
-            duration: 0.9,
+            y: 16,
+            duration: 0.45,
             ease: 'expo.out',
-            stagger: 0.1,
+            stagger: 0.05,
             scrollTrigger: { trigger: '.nosotros-pilares', start: 'top 82%' },
         });
         gsap.from('.nosotros-tienda__tarjeta', {
             opacity: 0,
-            x: -40,
-            duration: 1,
+            x: -16,
+            duration: 0.45,
             ease: 'expo.out',
             scrollTrigger: { trigger: '.nosotros-tienda', start: 'top 75%' },
         });

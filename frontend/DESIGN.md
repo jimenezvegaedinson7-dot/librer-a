@@ -1,6 +1,6 @@
 ---
 name: Librería del Saber — Web pública
-description: Librería comercial clara y ordenada, en verde de marca sobre fondos blancos, con un libro 3D en el hero que pasa sus hojas al acercar el cursor.
+description: Librería comercial clara y ordenada, con banners de anuncios a lo ancho del inicio, administrables desde el panel.
 colors:
   verde-900: "#033a2c"
   marco: "#033a2c"
@@ -163,11 +163,11 @@ Alcance: la web pública (`src/public-site/`, todo bajo la clase raíz `.sitio`,
 
 ## Overview
 
-**Creative North Star: "La librería que pasa sus hojas"**
+**Creative North Star: "La librería que destaca sus libros"**
 
 Una librería comercial de barrio grande, clara y ordenada: fondos blancos y gris claro, verde oscuro para la marca y para cada acción, y un acento ámbar mínimo. Las ofertas usan naranja y subrayado para el porcentaje y el precio final; el precio anterior permanece tachado. La navegación se lee como la de una librería en línea real: barra de avisos en verde oscuro, cabecera blanca con buscador y un menú con separadores finos. Cada entrada del menú es una página propia con migas de pan.
 
-La densidad es de comercio, no de revista: tipografía Work Sans compacta en una sola familia, tarjetas blancas con borde fino y radio pequeño, botones en píldora. El único gesto espectacular vive en el hero: un libro 3D de cuero verde, cerrado en reposo, que sigue al cursor y, con el cursor encima, se abre y pasa sus hojas una a una. Todo el movimiento es de salida suave y se apaga con `prefers-reduced-motion`.
+La densidad es de comercio, no de revista: tipografía Work Sans compacta en una sola familia, tarjetas blancas con borde fino y radio pequeño, botones en píldora. El inicio destaca imágenes de anuncios cargadas desde Anuncios del panel, a todo el ancho, sin texto promocional superpuesto ni libro 3D. Los banners se muestran completos; la rotación se pausa con foco, hover, pestaña oculta y movimiento reducido.
 
 La paleta es verde, blanca y gris; el ámbar es escaso a propósito. No hay marrón, burdeos ni rosa en la interfaz.
 
@@ -238,7 +238,7 @@ Los precios van en 700, 16px, negro, con cifras tabulares; los títulos de libro
 Contenedor centrado de ancho máximo 1280px con márgenes laterales fluidos (gutter de 16 a 56px). El ritmo vertical de sección es fluido (44 a 80px); dentro de las secciones la escala es 16 / 24 / 40 / 64px.
 
 - **Cabecera** en tres bandas: avisos (44px, verde oscuro con texto claro), cabecera principal blanca y pegajosa (76px: logo, buscador de hasta 640px, "Nuestra tienda", "Descargar app") y menú (44px) con separadores verticales de 1px. La cabecera gana una sombra suave al desplazarse.
-- **Hero**: rejilla 5/7 (texto a la izquierda, escena 3D a la derecha), alto mínimo min(640px, 76svh). Fondo animado propio, sin imágenes (sections/HeroFondo.jsx): degradado esmeralda luminoso (#01362f a #0a7563) con resplandores esmeralda, ámbar y turquesa, aurora que respira, tres haces de luz que barren despacio desde arriba y 14 burbujas de vidrio (7 en móvil) que suben con vaivén; un velo verde a la izquierda mantiene el texto sereno. Quieto con movimiento reducido.
+- **Inicio / carrusel**: banners a todo el ancho bajo la cabecera, proporción recomendada 1600 × 600 (8:3), `object-fit: contain` para no recortar el anuncio. Las imágenes y su contenido proceden del administrador. Flechas, indicadores y pausa cuando hay varios banners; sin controles innecesarios para uno solo. Estado vacío y error con reintento cuando corresponde. Sin escena 3D, imagen de libro fija ni precarga de Three.js.
 - **Páginas interiores**: migas de pan en banda gris, luego la sección con cabecera (título + filete) y contenido.
 - **Rejillas**: catálogo en `auto-fill` de mínimo 190px (dos columnas bajo 520px); carrusel horizontal con scroll-snap en el inicio; promos en 3 columnas; ventajas en 12 columnas alternando texto (5) y visual (6); descarga en 2 columnas; pie 2/1/1.
 - **Responsive**: bajo 1024px desaparecen el menú y los enlaces de cabecera; aparece un botón de menú que abre un cajón lateral (máx. 360px) y el buscador baja a su propia fila; las rejillas pasan a una columna. Bajo 520px el botón de descarga de la cabecera queda solo con icono.
@@ -317,8 +317,8 @@ Cabecera con texto de venta y tres ventajas reales (envío en Lima, recojo grati
 ### Mapa de la tienda
 En Nosotros, bloque con ancla `#tienda` (destino del enlace "Nuestra tienda" de la cabecera y del cajón móvil): título en verde, dirección con icono de ubicación, nota de recojo y botón chico "Cómo llegar"; a la derecha, mapa embebido de Google Maps (Plaza de Armas de Pallasca) en marco de tarjeta: borde gris filete, radio 8px, sombra de tarjeta, 16:10 (4:3 en móvil). Carga diferida.
 
-### Libro 3D del hero (signature)
-Libro de cuero verde granulado (con relieve y un leve brillo de entorno), lomo curvo y portada con filete gofrado y título "Librería del Saber" estampado en salvia; páginas de papel marfil con fibras, texto compuesto, folio y sombra del lomo. En reposo está cerrado, con la portada al frente; sigue al puntero y deja caer una cinta ámbar. Con el cursor encima se abre (≈0.5s) y, ya abierto, las hojas se pasan una por una en ráfagas cortas (65ms entre hojas, 0.26s de giro por hoja, curvadas en vuelo, pausa de 0.42s entre ráfagas); primero se levanta la hoja del ex libris. En pantallas táctiles (sin hover) aparece la pista "Toca el libro para abrirlo" (píldora verde translúcida, 13px); un toque abre el libro y otro toque, o tocar fuera, lo cierra. La parte baja del lienzo se desvanece (máscara 82% a 100%) para que la sombra de contacto no se corte en línea recta. Al retirar el cursor, las hojas en vuelo terminan su giro y el ex libris vuelve a la derecha en 0.6s y el libro se cierra. Las hojas proyectan sombra sobre las páginas. Se carga en tiempo libre, se pausa fuera de pantalla y tiene un póster WebP (720/1200) como respaldo y como versión sin 3D.
+### Carrusel de anuncios del inicio
+La sección Anuncios ofrece Carrusel de imágenes y Anuncios en video. Para el carrusel se sube un JPG, PNG o WebP de hasta 5 MB, título alternativo, orden, visibilidad y libro vinculado opcional. Las imágenes activas rotan cada 6 s, con navegación manual y pausa; con movimiento reducido se navega manualmente. No hay banners de muestra instalados ni sustitutos inventados. La imagen fija y el efecto del libro que se abre se retiraron por indicación del usuario.
 
 ### Motion
 Salida `cubic-bezier(0.16, 1, 0.3, 1)` (expo.out en GSAP), duraciones de 200ms (estados), 500ms (subrayados, sombras), 0.9–1.4s (revelados y escena). Los titulares se revelan línea a línea (1.1s, 90ms de escalonado); los libros entran subiendo 32px. Scroll suave con Lenis. Todo se reduce a 1ms con `prefers-reduced-motion`.

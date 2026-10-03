@@ -15,7 +15,7 @@ export default function PublicFooter({ legal }) {
                             <img src={logo} alt="" width="30" height="35" />
                             <span>{SITIO.nombre}</span>
                         </Link>
-                        <p className="pie__lema">Libros físicos con catálogo en la app. Delivery dentro de Pallasca y recojo sin costo en Pallasca.</p>
+                        <p className="pie__lema">Compra libros físicos desde la web o la app. Delivery dentro de Pallasca y recojo sin costo en Pallasca.</p>
                         {(correo || telefono) && (
                             <p className="pie__contacto">
                                 {correo && <a href={`mailto:${correo}`}>{correo}</a>}

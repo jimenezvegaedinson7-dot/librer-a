@@ -3,17 +3,17 @@
 /* ============================================================
    LIBRO DE RECLAMACIONES (página pública)
    Reutiliza los campos y botones del panel, pero aquí se visten con el
-   sistema de la web pública: Work Sans, verde de marca, campos blancos
+   sistema de la web pública: Work Sans, azul marino de marca, campos blancos
    con borde fino y botones en píldora. Todo queda bajo
    .reclamaciones-publica: el panel administrativo no cambia.
    ============================================================ */
 
 .reclamaciones-publica {
-    --brand: #004d43;
-    --brand-hover: #013a33;
-    --brand-soft: #f2f6f4;
-    --brand-text: #004d43;
-    --ring: rgb(0 77 67 / 0.15);
+    --brand: #0d2940;
+    --brand-hover: #16395a;
+    --brand-soft: #f2f5f8;
+    --brand-text: #0d2940;
+    --ring: rgb(13 41 64 / 0.15);
     --line: #cfcfcf;
     font-family: 'Work Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
     color: #111111;
@@ -25,7 +25,7 @@
     letter-spacing: -0.01em;
 }
 
-/* Campos: blancos, borde gris fino y foco verde, como el buscador público. */
+/* Campos: blancos, borde gris fino y foco azul marino, como el buscador público. */
 .reclamaciones-publica .field {
     border: 1px solid #cfcfcf;
     border-radius: 6px;
@@ -37,32 +37,32 @@
 .reclamaciones-publica .field::placeholder { color: #757575; }
 .reclamaciones-publica .field:hover { border-color: #9e9e9e; }
 .reclamaciones-publica .field:focus {
-    border-color: #004d43;
-    box-shadow: 0 0 0 3px rgb(0 77 67 / 0.15);
+    border-color: #0d2940;
+    box-shadow: 0 0 0 3px rgb(13 41 64 / 0.15);
 }
 .reclamaciones-publica .field-label { color: #4a4a4a; }
-.reclamaciones-publica input[type='checkbox'] { accent-color: #004d43; }
+.reclamaciones-publica input[type='checkbox'] { accent-color: #0d2940; }
 
 /* Tipo de hoja (reclamo / queja). */
 .reclamaciones-publica .venta-opcion { border-color: #cfcfcf; border-radius: 8px; }
-.reclamaciones-publica .venta-opcion:hover:not(:disabled) { border-color: #004d43; }
-.reclamaciones-publica .venta-opcion:focus-visible { outline-color: #004d43; }
+.reclamaciones-publica .venta-opcion:hover:not(:disabled) { border-color: #0d2940; }
+.reclamaciones-publica .venta-opcion:focus-visible { outline-color: #0d2940; }
 
-/* Botones en píldora, verde de marca. */
+/* Botones en píldora, azul marino de marca. */
 .reclamaciones-publica .admin-primary-button {
-    border-color: #004d43;
-    background-color: #004d43;
+    border-color: #0d2940;
+    background-color: #0d2940;
     color: #ffffff;
     border-radius: 999px;
 }
-.reclamaciones-publica .admin-primary-button:hover:not(:disabled) { border-color: #013a33; background-color: #013a33; }
+.reclamaciones-publica .admin-primary-button:hover:not(:disabled) { border-color: #16395a; background-color: #16395a; }
 .reclamaciones-publica .admin-secondary-button {
     border-color: #cfcfcf;
-    color: #004d43;
+    color: #0d2940;
     border-radius: 999px;
 }
-.reclamaciones-publica .admin-secondary-button:hover:not(:disabled) { border-color: #004d43; background-color: #f2f6f4; }
+.reclamaciones-publica .admin-secondary-button:hover:not(:disabled) { border-color: #0d2940; background-color: #f2f5f8; }
 .reclamaciones-publica :is(.admin-primary-button, .admin-secondary-button):focus-visible {
-    outline: 2px solid #004d43;
+    outline: 2px solid #0d2940;
     outline-offset: 3px;
 }

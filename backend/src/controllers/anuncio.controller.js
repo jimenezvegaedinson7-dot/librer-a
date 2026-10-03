@@ -26,12 +26,61 @@ const {
 
 const { carpetaVideos } = require('../middlewares/uploadVideo.middleware');
 
-// Solo título y estado: el video llega siempre como archivo subido. Aceptar
-// una URL en el body permitía publicar en la portada cualquier enlace.
+// Título, textos y estado: el video llega siempre como archivo subido.
+// Aceptar una URL de video en el body permitía publicar cualquier enlace.
 const CAMPOS_PERMITIDOS = new Set([
     'titulo',
+    'etiqueta',
+    'descripcion',
+    'boton_texto',
+    'boton_enlace',
     'estado'
 ]);
+
+// ========================================
+// TEXTOS QUE ACOMPAÑAN AL VIDEO EN LA PORTADA
+// Todos opcionales. Una cadena vacía los borra (la web usa sus textos
+// por defecto). El enlace del botón solo admite rutas internas de la
+// web, como /catalogo: un enlace externo en la portada no lo decide
+// un formulario.
+// ========================================
+const TEXTOS = [
+    { campo: 'etiqueta', clave: 'etiqueta', max: 80, nombre: 'La etiqueta' },
+    { campo: 'descripcion', clave: 'descripcion', max: 400, nombre: 'La descripción' },
+    { campo: 'boton_texto', clave: 'botonTexto', max: 40, nombre: 'El texto del botón' },
+    { campo: 'boton_enlace', clave: 'botonEnlace', max: 200, nombre: 'El enlace del botón' }
+];
+
+const RUTA_INTERNA = /^\/(?!\/)[A-Za-z0-9\-._~/?=&%#]*$/;
+
+// Devuelve { error } o { datos } con solo los campos que llegaron.
+const leerTextos = (body) => {
+    const datos = {};
+
+    for (const { campo, clave, max, nombre } of TEXTOS) {
+        if (body[campo] === undefined) {
+            continue;
+        }
+
+        if (typeof body[campo] !== 'string') {
+            return { error: `${nombre} no es válido` };
+        }
+
+        const valor = body[campo].trim();
+
+        if (valor.length > max) {
+            return { error: `${nombre} no puede superar los ${max} caracteres` };
+        }
+
+        if (campo === 'boton_enlace' && valor && !RUTA_INTERNA.test(valor)) {
+            return { error: 'El enlace del botón debe ser una ruta de la web, por ejemplo /catalogo' };
+        }
+
+        datos[clave] = valor || null;
+    }
+
+    return { datos };
+};
 
 const MENSAJE_SIN_VIDEO =
     'Debes subir un video para publicar el anuncio';
@@ -203,7 +252,17 @@ const crearAnuncio = async (req, res) => {
             });
         }
 
+        const textos = leerTextos(req.body);
+
+        if (textos.error) {
+            return res.status(400).json({
+                success: false,
+                mensaje: textos.error
+            });
+        }
+
         const anuncio = await crear({
+            ...textos.datos,
             titulo: titulo.trim(),
             videoUrl,
             videoPublicId: publicId,
@@ -283,6 +342,15 @@ const actualizarAnuncio = async (req, res) => {
             });
         }
 
+        const textos = leerTextos(req.body);
+
+        if (textos.error) {
+            return res.status(400).json({
+                success: false,
+                mensaje: textos.error
+            });
+        }
+
         // Si no llega video nuevo se conserva el anterior: cambiar el
         // título o pausar un anuncio no puede dejarlos sin archivo.
         // Mismo criterio que en el alta: Cloudinary resuelve la URL, y sin
@@ -308,7 +376,15 @@ const actualizarAnuncio = async (req, res) => {
         const cambioDeVideo =
             videoUrl !== existente.video_url;
 
+        // Los textos que no llegan conservan su valor: pausar un anuncio
+        // desde la tabla no puede borrar lo que se escribió en el formulario.
         const anuncio = await actualizar(id, {
+            etiqueta: existente.etiqueta,
+            descripcion: existente.descripcion,
+            botonTexto: existente.boton_texto,
+            botonEnlace: existente.boton_enlace,
+            posterUrl: existente.poster_url,
+            ...textos.datos,
             titulo: titulo === undefined
                 ? existente.titulo
                 : titulo.trim(),

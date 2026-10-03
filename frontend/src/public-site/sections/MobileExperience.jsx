@@ -38,23 +38,24 @@ export default function MobileExperience({ reducido }) {
     useGSAP(() => {
         if (reducido) return;
         const disparo = { trigger: seccion.current, start: 'top bottom', end: 'bottom top', scrub: 0.6 };
-        gsap.fromTo('.telefono--1', { yPercent: 10 }, { yPercent: -8, ease: 'none', scrollTrigger: disparo });
-        gsap.fromTo('.telefono--2', { yPercent: 22, rotateY: 18, rotateZ: -4 }, { yPercent: -4, rotateY: 6, rotateZ: -2, ease: 'none', scrollTrigger: disparo });
-        gsap.fromTo('.telefono--3', { yPercent: 30, rotateY: -18, rotateZ: 4 }, { yPercent: 0, rotateY: -6, rotateZ: 2, ease: 'none', scrollTrigger: disparo });
-        gsap.from('.app-portada__texto > *', { opacity: 0, y: 24, duration: 0.9, ease: 'expo.out', stagger: 0.08 });
+        // Solo suben desde su sitio: si bajaran, la portada (overflow: clip) los recortaría.
+        gsap.fromTo('.telefono--1', { yPercent: 0 }, { yPercent: -8, ease: 'none', scrollTrigger: disparo });
+        gsap.fromTo('.telefono--2', { yPercent: 0, rotateY: 12, rotateZ: -3 }, { yPercent: -10, rotateY: 6, rotateZ: -2, ease: 'none', scrollTrigger: disparo });
+        gsap.fromTo('.telefono--3', { yPercent: 0, rotateY: -12, rotateZ: 3 }, { yPercent: -12, rotateY: -6, rotateZ: 2, ease: 'none', scrollTrigger: disparo });
+        gsap.from('.app-portada__texto > *', { opacity: 0, y: 24, duration: 0.45, ease: 'expo.out', stagger: 0.05 });
         gsap.from('.app-funcion', {
             opacity: 0,
             y: 30,
-            duration: 0.9,
+            duration: 0.45,
             ease: 'expo.out',
-            stagger: 0.08,
+            stagger: 0.05,
             scrollTrigger: { trigger: '.app-funciones', start: 'top 82%' },
         });
     }, { scope: seccion, dependencies: [reducido] });
 
     return (
         <div ref={seccion} className="app-pagina">
-            <section id="app" className="seccion app app-portada oscuro" aria-labelledby="app-titulo">
+            <section id="app" className="seccion app app-portada" aria-labelledby="app-titulo">
                 <div className="contenedor app__rejilla">
                     <div className="app-portada__texto">
                         <img className="icono-app icono-app--grande" src={iconoApp} alt="Icono de la app Librería del Saber" width="88" height="88" />

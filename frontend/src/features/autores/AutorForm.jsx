@@ -1,4 +1,4 @@
-import { FaUserPen } from 'react-icons/fa6';
+import { Feather } from 'lucide-react';
 
 import { FormularioAlta } from '../../components/ui/FormularioAlta';
 import { Input, Textarea } from '../../components/ui/Form';
@@ -19,7 +19,7 @@ export default function AutorForm({ onAutorCreado }) {
             titulo="Registrar autor"
             subtitulo="Complete la información del nuevo autor"
             etiquetaAlta="Nuevo registro"
-            icono={<FaUserPen />}
+            icono={<Feather size={20} aria-hidden="true" />}
             botonGuardar="Guardar autor"
             formularioVacio={FORMULARIO_VACIO}
             reglas={REGLAS}

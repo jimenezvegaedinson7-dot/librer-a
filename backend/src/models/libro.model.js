@@ -358,6 +358,47 @@ const eliminar = async (id) => {
     return resultado.affectedRows;
 };
 
+// Consulta acotada para la ficha pública. Usa los índices de autor/categoría
+// existentes y exactamente el mismo precio SQL del catálogo y la compra.
+const obtenerRelacionados = async (id) => {
+    const [actuales] = await pool.query(`
+        SELECT id_libro, id_autor, id_categoria FROM libros
+        WHERE id_libro = ? AND estado = 1 LIMIT 1
+    `, [id]);
+    if (!actuales.length) return null;
+    const actual = actuales[0];
+    const candidatos = async (condicion, valores) => {
+        const [rows] = await pool.query(`
+            SELECT base.*, ${CAMPOS_DESCUENTO} FROM (
+                SELECT l.id_libro, l.titulo, l.isbn, l.precio, l.portada,
+                    l.id_autor, l.id_categoria, l.estado, l.creado_en,
+                    COALESCE(i.stock, l.stock, 0) AS stock,
+                    CONCAT(a.nombre, ' ', a.apellido) AS autor, c.nombre AS categoria,
+                    ${PRECIO_FINAL_SQL}
+                FROM libros l
+                INNER JOIN autores a ON a.id_autor = l.id_autor
+                INNER JOIN categorias c ON c.id_categoria = l.id_categoria
+                LEFT JOIN inventario i ON i.id_libro = l.id_libro
+                WHERE l.estado = 1 AND l.id_libro <> ? AND ${condicion}
+                ORDER BY (COALESCE(i.stock, l.stock, 0) > 0) DESC, l.id_libro DESC
+                LIMIT 8
+            ) base
+            ORDER BY (base.stock > 0) DESC, base.id_libro DESC
+        `, [id, ...valores]);
+        return rows;
+    };
+    const autor = await candidatos('l.id_autor = ?', [actual.id_autor]);
+    // Separar aquí evita duplicar títulos del autor en recomendaciones de categoría.
+    const categoria = await candidatos('l.id_categoria = ? AND l.id_autor <> ?', [actual.id_categoria, actual.id_autor]);
+    const relacionados = [...autor.slice(0, 4), ...categoria.slice(0, Math.max(0, 4 - autor.length))];
+    const usados = new Set(relacionados.map(l => l.id_libro));
+    return {
+        relacionados,
+        mas_autor: autor.filter(l => !usados.has(l.id_libro)).slice(0, 4),
+        interesarte: categoria.filter(l => !usados.has(l.id_libro)).slice(0, 4)
+    };
+};
+
 // ========================================
 // EXPORTAR MODELO
 // ========================================
@@ -366,6 +407,7 @@ module.exports = {
     CAMPOS_DESCUENTO,
     obtenerTodos,
     obtenerPorId,
+    obtenerRelacionados,
     crear,
     actualizar,
     eliminar

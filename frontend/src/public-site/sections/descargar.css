@@ -5,11 +5,10 @@
 /* ---------- Portada ---------- */
 .descargar-portada {
     position: relative; overflow: clip;
-    background:
-        radial-gradient(55% 75% at 80% 40%, rgba(31, 122, 103, 0.8), transparent 70%),
-        radial-gradient(40% 60% at 0% 0%, rgba(214, 168, 75, 0.16), transparent 70%),
-        linear-gradient(150deg, var(--verde-700), var(--verde-900) 70%);
+    background: linear-gradient(160deg, #10304b, #0a1f31 75%);
 }
+/* El fondo de estanterías (pantalla de carga de la app) está en formal.css,
+   compartido con la portada de Aplicación. */
 .descargar-portada__rejilla {
     display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--e-4); align-items: center;
 }
@@ -24,20 +23,20 @@
     font-size: 0.8125rem; font-weight: 600; color: var(--blanco);
     background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
-.descargar-portada__datos svg { color: var(--ambar-500); }
+.descargar-portada__datos svg { color: rgba(255, 255, 255, 0.85); }
 .descargar-portada__seguridad { margin-top: 0.4rem; display: flex; align-items: center; gap: 0.5rem; font-size: var(--t-meta); color: #b8c9c2; }
-.descargar-portada__seguridad svg { color: var(--ambar-500); flex: none; }
+.descargar-portada__seguridad svg { color: rgba(255, 255, 255, 0.75); flex: none; }
 /* Teléfono con la app, inclinado y con un halo ámbar detrás. */
 .descargar-portada__telefono { position: relative; display: grid; place-items: center; min-height: 440px; }
 .descargar-portada__telefono::before {
     content: ''; position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(214, 168, 75, 0.35), transparent);
+    background: radial-gradient(closest-side, rgba(120, 160, 200, 0.22), transparent);
     filter: blur(20px);
 }
 .descargar-portada__telefono .telefono {
     position: relative; inset: auto; width: clamp(210px, 19vw, 260px); rotate: -6deg;
     box-shadow: 0 50px 90px -40px rgba(0, 0, 0, 0.75), inset 0 0 0 1.5px rgba(255, 255, 255, 0.2);
-    animation: descargar-flotar 6s ease-in-out infinite;
+
 }
 @keyframes descargar-flotar { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
 

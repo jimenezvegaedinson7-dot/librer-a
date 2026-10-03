@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
-import { FaMagnifyingGlass, FaMobileScreenButton, FaTruckFast, FaStore, FaCircleCheck } from 'react-icons/fa6';
+import { FaMagnifyingGlass, FaTruckFast, FaStore, FaCircleCheck } from 'react-icons/fa6';
 
 import Migas from '../components/Migas';
 import { PrecioOferta } from '../components/PrecioOferta';
 import { EtiquetaNuevo, EtiquetasSuperiores } from '../components/EtiquetasLibro';
 import { portada, soles } from '../lib/formato';
+import ComprarLibro from '../tienda/ComprarLibro';
+import PortadaLibro from '../tienda/PortadaLibro';
 
 // Sin tildes ni mayúsculas: "Garcia" encuentra "García".
 const normalizar = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -21,18 +23,19 @@ const ORDENES = {
 };
 
 // Línea de stock como en una tienda en línea, con el dato real.
-function Stock({ libro }) {
+export function Stock({ libro }) {
     if (!libro.disponible) return <p className="stock stock--agotado">Agotado temporalmente. Puedes reservarlo en la app.</p>;
     if (libro.stock > 0 && libro.stock <= 3) return <p className="stock stock--poco">Quedan solo {libro.stock} en stock</p>;
     return <p className="stock stock--ok"><FaCircleCheck aria-hidden="true" /> En stock</p>;
 }
 
-function TarjetaLibro({ libro, indice }) {
+export function TarjetaLibro({ libro, indice, nivelTitulo = 'h2', portadaSegura = false }) {
+    const Titulo = nivelTitulo;
     const ahorro = libro.descuento > 0 ? libro.precio - libro.precioFinal : 0;
     return (
         <li className={`tarjeta-libro${libro.disponible ? '' : ' tarjeta-libro--sin-stock'}`} style={{ '--i': indice % 10 }}>
             <div className="tarjeta-libro__tapa">
-                <img
+                {portadaSegura ? <PortadaLibro libro={libro}/> : <img
                     src={portada(libro.portada, 320)}
                     srcSet={`${portada(libro.portada, 240)} 240w, ${portada(libro.portada, 360)} 360w, ${portada(libro.portada, 480)} 480w`}
                     sizes="(max-width: 520px) 45vw, 220px"
@@ -41,12 +44,12 @@ function TarjetaLibro({ libro, indice }) {
                     height="330"
                     loading="lazy"
                     decoding="async"
-                />
+                />}
                 <EtiquetasSuperiores libro={libro} />
                 <EtiquetaNuevo libro={libro} />
             </div>
             <div className="tarjeta-libro__cuerpo">
-                <h2 className="libro__titulo">{libro.titulo}</h2>
+                <Titulo className="libro__titulo">{libro.titulo}</Titulo>
                 <p className="libro__autor">de <span>{libro.autor}</span></p>
                 {libro.categoria && <span className="categoria">{libro.categoria}</span>}
                 <PrecioOferta libro={libro} clase="tarjeta-libro__precio" />
@@ -54,12 +57,12 @@ function TarjetaLibro({ libro, indice }) {
                 <Stock libro={libro} />
                 <p className="entrega-linea"><FaTruckFast aria-hidden="true" /> Delivery dentro de Pallasca o recojo gratis en Pallasca</p>
             </div>
-            <Link to="/descargar" className="boton boton--compra boton--chico">
-                <FaMobileScreenButton aria-hidden="true" /> {libro.disponible ? 'Comprar en la app' : 'Reservar en la app'}
-            </Link>
+            <ComprarLibro libro={libro} />
         </li>
     );
 }
+
+const POR_TANDA = 24;
 
 export default function CatalogoPage() {
     const { catalogo } = useOutletContext();
@@ -67,6 +70,8 @@ export default function CatalogoPage() {
     const [params, setParams] = useSearchParams();
     const q = params.get('q') || '';
     const categoria = params.get('categoria') || '';
+    const autorFiltro = params.get('autor') || '';
+    const autorNombre = libros.find(l => String(l.idAutor) === autorFiltro)?.autor;
     const orden = ORDENES[params.get('orden')] ? params.get('orden') : 'destacados';
     const soloOfertas = params.get('ofertas') === '1';
     const soloStock = params.get('stock') === '1';
@@ -92,12 +97,24 @@ export default function CatalogoPage() {
         const nq = normalizar(q);
         return libros
             .filter((l) => (!categoria || l.categoria === categoria)
+                && (!autorFiltro || String(l.idAutor) === autorFiltro)
                 && (!soloOfertas || l.descuento > 0)
                 && (!soloStock || l.disponible)
                 && (!nq || [l.titulo, l.autor, l.categoria].some((c) => normalizar(c).includes(nq))))
             .map((l, i) => ({ ...l, _i: i }))
             .sort((a, b) => ORDENES[orden].fn(a, b) || a._i - b._i);
-    }, [libros, q, categoria, soloOfertas, soloStock, orden]);
+    }, [libros, q, categoria, autorFiltro, soloOfertas, soloStock, orden]);
+
+    // De 24 en 24: una lista de cien portadas de golpe es lenta de cargar y de
+    // recorrer. Al cambiar un filtro se vuelve a la primera tanda.
+    const [limite, setLimite] = useState(POR_TANDA);
+    const filtros = [q, categoria, autorFiltro, soloOfertas, soloStock, orden].join('|');
+    const [filtrosPrevios, setFiltrosPrevios] = useState(filtros);
+    if (filtrosPrevios !== filtros) {
+        setFiltrosPrevios(filtros);
+        setLimite(POR_TANDA);
+    }
+    const mostrados = visibles.slice(0, limite);
 
     // Parte siempre de la URL vigente del navegador: React Router navega en
     // una transición y su copia de los parámetros puede ir un paso atrás si
@@ -108,8 +125,8 @@ export default function CatalogoPage() {
         setParams(siguiente, { replace: true });
     };
 
-    const hayFiltros = Boolean(q || categoria || soloOfertas || soloStock);
-    const limpiar = () => { setTexto(''); actualizar({ q: '', categoria: '', ofertas: '', stock: '' }); };
+    const hayFiltros = Boolean(q || categoria || autorFiltro || soloOfertas || soloStock);
+    const limpiar = () => { setTexto(''); actualizar({ q: '', categoria: '', autor: '', ofertas: '', stock: '' }); };
 
     return (
         <>
@@ -120,7 +137,7 @@ export default function CatalogoPage() {
                         <div>
                             <h1 id="catalogo-pagina-titulo" className="seccion__titulo">Catálogo</h1>
                             <p className="seccion__entrada">
-                                Libros físicos con precios actuales en soles. Elige el tuyo y cómpralo o resérvalo desde la app:
+                                Libros físicos con precios actuales en soles. Compra aquí en la web o desde nuestra app:
                                 te lo llevamos dentro de Pallasca con tarifa por zona o lo recoges sin costo en nuestra tienda.
                             </p>
                         </div>
@@ -193,7 +210,7 @@ export default function CatalogoPage() {
                                     <p className="resultado" role="status" aria-live="polite">
                                         {cargando
                                             ? 'Cargando libros…'
-                                            : <><strong>{`${visibles.length} ${visibles.length === 1 ? 'libro' : 'libros'}`}</strong>{q && <> para «{q}»</>}{categoria && <> en {categoria}</>}</>}
+                                             : <><strong>{`${visibles.length} ${visibles.length === 1 ? 'libro' : 'libros'}`}</strong>{q && <> para «{q}»</>}{categoria && <> en {categoria}</>}{autorNombre && <> de {autorNombre}</>}</>}
                                     </p>
                                     {!cargando && visibles.length === 0 ? (
                                         <p className="aviso">
@@ -210,8 +227,14 @@ export default function CatalogoPage() {
                                                         <div style={{ height: '7.5rem' }} />
                                                     </li>
                                                 ))
-                                                : visibles.map((l, i) => <TarjetaLibro key={l.id} libro={l} indice={i} />)}
+                                                : mostrados.map((l, i) => <TarjetaLibro key={l.id} libro={l} indice={i % POR_TANDA} />)}
                                         </ul>
+                                    )}
+                                    {!cargando && visibles.length > mostrados.length && (
+                                        <div className="catalogo-mas">
+                                            <p>Mostrando {mostrados.length} de {visibles.length} libros</p>
+                                            <button type="button" className="boton boton--linea" onClick={() => setLimite((n) => n + POR_TANDA)}>Ver más libros</button>
+                                        </div>
                                     )}
                                 </>
                             )}

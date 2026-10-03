@@ -181,6 +181,9 @@ const Pedido = {
             if (['panel', 'reserva'].includes(ventaActual.origen)) {
                 return res.status(409).json({ success: false, mensaje: 'Las ventas históricas son de solo lectura' });
             }
+            if (ventaActual.canal_compra === 'web' && !['pagada', 'entregada'].includes(ventaActual.estado) && estado !== 'cancelado') {
+                return res.status(409).json({ success: false, mensaje: 'El pago de esta compra web debe confirmarse antes de preparar la entrega' });
+            }
 
             // Mismo estado
             if (estadoActual === estado) {

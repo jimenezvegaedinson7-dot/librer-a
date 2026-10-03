@@ -7,6 +7,7 @@
     "start": "node server.js",
     "test": "node --test test/roles.test.js test/rutas-permisos.test.js test/cuenta-eliminada.test.js test/transiciones.test.js test/fileType.test.js test/descuentos.test.js test/crypto.test.js test/payuStatus.test.js test/comprobante.test.js test/reserva.test.js test/passwordReset.test.js test/tarifaEnvio.test.js test/appVersion.test.js test/payuMonto.test.js test/impuestos.test.js test/diasHabiles.test.js test/reclamacion.test.js test/inventario-input.test.js test/cors-http.test.js test/mailer-timeout.test.js test/libro-portada.test.js",
     "test:integration": "node test-integration/run.cjs",
+    "test:asistente": "node --test test/asistente.test.js",
     "resetear-precios": "node scripts/resetearPrecios.js",
     "resetear-precios:dry": "node scripts/resetearPrecios.js --dry-run",
     "publicar-app": "node scripts/publicarVersionApp.js"

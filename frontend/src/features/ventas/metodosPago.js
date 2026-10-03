@@ -17,5 +17,6 @@ export const textoMetodoPago = (valor) =>
 export const textoOrigen = (venta) => {
     if (venta?.origen === 'panel') return 'Mostrador';
     if (venta?.origen === 'reserva') return venta?.id_reserva ? `Reserva #${venta.id_reserva}` : 'Reserva';
+    if (venta?.canal_compra === 'web') return 'Web (PayU)';
     return 'App (PayU)';
 };

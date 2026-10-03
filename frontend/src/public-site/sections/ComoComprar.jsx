@@ -1,4 +1,4 @@
-import { FaDownload, FaMagnifyingGlass, FaCreditCard, FaBoxOpen } from 'react-icons/fa6';
+import { FaUser, FaMagnifyingGlass, FaCreditCard, FaBoxOpen } from 'react-icons/fa6';
 
 // ============================================================
 // CÓMO COMPRAR EN 3 PASOS (+ recibir)
@@ -7,19 +7,19 @@ import { FaDownload, FaMagnifyingGlass, FaCreditCard, FaBoxOpen } from 'react-ic
 // ============================================================
 const PASOS = [
     {
-        Icono: FaDownload,
-        titulo: 'Descarga la app',
-        texto: 'Es gratis y está disponible para Android. Crea tu cuenta con tu correo en menos de un minuto.',
+        Icono: FaUser,
+        titulo: 'Crea tu cuenta',
+        texto: 'Regístrate con tu correo desde la web o usa tu cuenta de la app. Verifica tu correo para comenzar.',
     },
     {
         Icono: FaMagnifyingGlass,
         titulo: 'Encuentra tu libro',
-        texto: 'Busca por título, autor o categoría, revisa la sinopsis y el stock, y guárdalo en favoritos.',
+        texto: 'Busca por título, autor o categoría, revisa el stock y agrega tus libros al carrito.',
     },
     {
         Icono: FaCreditCard,
         titulo: 'Paga seguro',
-        texto: 'Completa el pago en la ventana de PayU. Los datos de tu tarjeta nunca pasan por la app.',
+        texto: 'Confirma tu pedido y completa el pago en la ventana de PayU, desde la web o la app.',
     },
     {
         Icono: FaBoxOpen,
@@ -36,7 +36,7 @@ export default function ComoComprar() {
                     <span className="linea"><span>Comprar un libro es así de simple</span></span>
                 </h2>
                 <p className="seccion__entrada">
-                    Desde la búsqueda hasta tenerlo en tus manos, todo pasa en la app de Librería del Saber.
+                    Desde la búsqueda hasta tenerlo en tus manos, compra desde la web o la app de Librería del Saber.
                 </p>
                 <ol className="pasos" data-revelar="">
                     {PASOS.map(({ Icono, titulo, texto }, i) => (

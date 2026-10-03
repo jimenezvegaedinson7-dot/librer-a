@@ -270,10 +270,10 @@ html.lenis, html.lenis body { height: auto; }
 .linea { display: block; overflow: clip; padding-bottom: 0.12em; margin-bottom: -0.12em; }
 .linea:last-child { margin-bottom: 0; }
 .linea > span { display: block; }
-.sitio [data-revelar] .linea > span { transition: transform 1.1s var(--ease-salida); transition-delay: calc(var(--i, 0) * 90ms); }
+.sitio [data-revelar] .linea > span { transition: transform 0.5s var(--ease-salida); transition-delay: calc(var(--i, 0) * 50ms); }
 .sitio.js [data-revelar]:not([data-visto]) .linea > span { transform: translateY(112%); }
-.sitio [data-revelar] > .libro, .sitio [data-revelar] > .tarjeta-libro { transition: opacity 800ms var(--ease-salida), transform 800ms var(--ease-salida); transition-delay: calc(var(--i, 0) * 60ms); }
-.sitio.js [data-revelar]:not([data-visto]) > .libro, .sitio.js [data-revelar]:not([data-visto]) > .tarjeta-libro { opacity: 0; transform: translateY(32px); }
+.sitio [data-revelar] > .libro, .sitio [data-revelar] > .tarjeta-libro { transition: opacity 400ms var(--ease-salida), transform 400ms var(--ease-salida); transition-delay: calc(var(--i, 0) * 35ms); }
+.sitio.js [data-revelar]:not([data-visto]) > .libro, .sitio.js [data-revelar]:not([data-visto]) > .tarjeta-libro { opacity: 0; transform: translateY(16px); }
 @media (prefers-reduced-motion: reduce) {
     .sitio.js [data-revelar]:not([data-visto]) .linea > span,
     .sitio.js [data-revelar]:not([data-visto]) > .libro,
@@ -281,7 +281,7 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* ---------- Hero (Inicio) ---------- */
-/* Fondo con imagen (fondo_inicio.png) + cristal y efectos animados encima. */
+/* Fondo con imagen (fondo_inicio) y un velo para el texto; sin efectos animados. */
 .hero {
     padding: 0; overflow: clip; isolation: isolate;
     background-color: var(--verde-900);
@@ -313,88 +313,6 @@ html.lenis, html.lenis body { height: auto; }
             transparent 75%),
         radial-gradient(125% 105% at 42% 45%, transparent 44%, rgba(4, 8, 10, 0.36) 100%);
 }
-/* Cristal de la izquierda: difumina la imagen y suma un velo claro de vidrio.
-   Va bajo el ::after para que el oscurecido de contraste quede por encima. */
-.hero-fondo__panel {
-    position: absolute;
-    inset: 0;
-    -webkit-backdrop-filter: blur(18px) saturate(130%) brightness(0.94);
-    backdrop-filter: blur(18px) saturate(130%) brightness(0.94);
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.045) 34%, rgba(255, 255, 255, 0) 62%);
-    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 32%, transparent 66%);
-    mask-image: linear-gradient(90deg, #000 0%, #000 32%, transparent 66%);
-}
-
-/* While the loading screen is up the crystal stays out: the first paint of the
-   hero is the most expensive one (a full-bleed blur plus nine more) and it is
-   exactly what the user is looking at. It comes in once the load finishes. */
-.hero-fondo__prisma,
-.hero-fondo__esquirlas,
-.hero-fondo__panel { transition: opacity 700ms var(--ease-salida); }
-html[data-precarga] .hero-fondo__prisma,
-html[data-precarga] .hero-fondo__esquirlas,
-html[data-precarga] .hero-fondo__panel { opacity: 0; }
-
-/* Haces de prisma: barras finas de luz al sesgo con la luz separada en tonos,
-   como al pasar por un cristal. Tenues y desenfocadas, nunca tapan la foto. */
-.hero-fondo__prisma { position: absolute; inset: -25% -20%; }
-.hero-fondo__prisma i {
-    position: absolute;
-    top: var(--y); left: var(--x);
-    width: var(--w); height: var(--h);
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(120, 200, 255, 0.14) 20%,
-        rgba(255, 255, 255, 0.26) 48%,
-        rgba(255, 170, 210, 0.13) 68%,
-        transparent 100%);
-    filter: blur(9px);
-    transform: rotate(var(--r));
-    animation: hero-prisma var(--d) ease-in-out var(--t) infinite alternate;
-}
-@keyframes hero-prisma {
-    0% { transform: rotate(var(--r)) translate3d(0, 0, 0) scaleX(0.9); opacity: 0.3; }
-    50% { transform: rotate(var(--r)) translate3d(2.4vw, -1.6vh, 0) scaleX(1.3); opacity: 0.85; }
-    100% { transform: rotate(var(--r)) translate3d(-2.4vw, 1.6vh, 0) scaleX(1); opacity: 0.45; }
-}
-
-/* Esquirlas: cristal angular y pequeño. El contorno lo da el clip-path, que
-   rota entre formas; el borde iluminado viene del ::before. */
-.hero-fondo__esquirlas { position: absolute; inset: 0; }
-.hero-fondo__esquirlas i {
-    position: absolute;
-    top: var(--y); left: var(--x);
-    width: var(--s); height: var(--s);
-    background: linear-gradient(140deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0.05) 55%, rgba(170, 220, 255, 0.16));
-    -webkit-backdrop-filter: blur(3px) saturate(175%) brightness(1.1);
-    backdrop-filter: blur(3px) saturate(175%) brightness(1.1);
-    will-change: transform;
-    animation: hero-esquirla var(--d) ease-in-out var(--t) infinite alternate;
-}
-/* Cara iluminada: el filo que delata el grosor del cristal. */
-.hero-fondo__esquirlas i::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(150deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 44%);
-}
-@keyframes hero-esquirla {
-    0% { transform: translate3d(0, 0, 0) rotate(0deg); }
-    50% { transform: translate3d(var(--dx), var(--dy), 0) rotate(12deg); }
-    100% { transform: translate3d(calc(var(--dx) * -1), calc(var(--dy) * -0.7), 0) rotate(-8deg); }
-}
-/* Formas: se van turnando para que no se repita ninguna silueta. */
-.hero-fondo__esquirlas i:nth-child(6n+1) { clip-path: polygon(50% 0%, 100% 38%, 78% 100%, 22% 100%, 0% 38%); }
-.hero-fondo__esquirlas i:nth-child(6n+2) { clip-path: polygon(0% 0%, 100% 0%, 82% 100%, 18% 100%); }
-.hero-fondo__esquirlas i:nth-child(6n+3) { clip-path: polygon(0% 12%, 100% 0%, 100% 88%, 12% 100%); }
-.hero-fondo__esquirlas i:nth-child(6n+4) { clip-path: polygon(50% 0%, 100% 100%, 0% 100%); }
-.hero-fondo__esquirlas i:nth-child(6n+5) { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
-.hero-fondo__esquirlas i:nth-child(6n+6) { clip-path: polygon(8% 0%, 100% 22%, 74% 100%, 0% 62%); }
-/* Sin backdrop-filter la esquirla se ve plana: se refuerza el filo. */
-@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
-    .hero-fondo__esquirlas i { background: linear-gradient(140deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.04) 60%, rgba(170, 220, 255, 0.12)); }
-}
-
 @media (max-width: 1023px) {
     /* En móvil el texto arriba y el libro abajo: el velo sube desde el borde superior. */
     .hero-fondo::after {
@@ -406,18 +324,6 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
                 transparent 76%),
             radial-gradient(130% 100% at 50% 38%, transparent 40%, rgba(4, 8, 10, 0.34) 100%);
     }
-    /* Cristal más barato en móvil: el difuminado es lo más caro. */
-    .hero-fondo__panel {
-        -webkit-backdrop-filter: blur(9px) saturate(125%) brightness(0.95);
-        backdrop-filter: blur(9px) saturate(125%) brightness(0.95);
-        -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 30%, transparent 62%);
-        mask-image: linear-gradient(180deg, #000 0%, #000 30%, transparent 62%);
-    }
-    .hero-fondo__esquirlas i { -webkit-backdrop-filter: blur(2px) saturate(150%); backdrop-filter: blur(2px) saturate(150%); }
-    .hero-fondo__esquirlas i:nth-child(even) { display: none; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .hero-fondo__esquirlas i, .hero-fondo__prisma i { animation: none; }
 }
 .hero__rejilla { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: var(--e-4); min-height: min(640px, 76svh); padding-block: var(--e-4); }
 .hero__titulo { font-size: var(--t-hero); max-width: 14ch; line-height: 1.1; }
@@ -537,18 +443,24 @@ html[data-precarga] .hero-fondo__panel { opacity: 0; }
 @media (max-width: 380px) { .tarjeta-libro .boton { font-size: 0.75rem; } }
 
 /* ---------- Video de anuncios ---------- */
-/* Sin fondo propio: hereda el de toda la página. El video ocupa todo el
-   ancho del contenedor, no una columna al lado de un texto. */
-.video-destacado__marco { position: relative; width: 100%; aspect-ratio: 21 / 9; border-radius: var(--r-tarjeta); overflow: hidden; background: var(--verde-900); box-shadow: var(--sombra-tarjeta); }
+/* Dos columnas: video (16:9) a la izquierda y sus textos a la derecha,
+   centrados en vertical. En móvil, el video arriba y el texto debajo. */
+.video-destacado__rejilla { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(2.5rem, 5vw, 4.5rem); align-items: center; }
+.video-destacado__marco { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: var(--marino-950); box-shadow: 0 30px 60px -36px rgba(13, 41, 64, 0.55), 0 0 0 1px var(--linea); }
 .video-destacado__marco video { display: block; width: 100%; height: 100%; object-fit: cover; }
-/* Mientras no haya archivo, esto es lo que se ve: un aviso, no un
-   reproductor roto. */
-.video-destacado__vacio { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; padding: var(--e-3); text-align: center; color: var(--blanco); }
-.video-destacado__vacio svg { width: 2.4rem; height: 2.4rem; color: var(--ambar-500); }
-.video-destacado__vacio p { font-size: var(--t-menu); color: var(--salvia-100); max-width: 28ch; }
-@media (max-width: 700px) { .video-destacado__marco { aspect-ratio: 16 / 9; } }
-/* Sin archivo todavía: una banda baja con el aviso, no un gran bloque vacío. */
-.video-destacado__marco:has(.video-destacado__vacio) { aspect-ratio: auto; min-height: clamp(150px, 16vw, 210px); display: grid; background: linear-gradient(120deg, var(--verde-900), var(--marco)); }
+.video-destacado__texto { display: grid; justify-items: start; gap: 1rem; max-width: 34rem; }
+.video-destacado__etiqueta { display: inline-flex; align-items: center; gap: 0.6rem; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dorado-oscuro); }
+.video-destacado__etiqueta::before { content: ''; width: 1.75rem; height: 1px; background: currentColor; }
+.video-destacado__titulo { font-size: clamp(1.625rem, 1.1rem + 1.9vw, 2.5rem); font-weight: 600; line-height: 1.15; letter-spacing: -0.015em; color: var(--tinta); text-wrap: balance; }
+.video-destacado__descripcion { font-size: 1rem; line-height: 1.65; color: var(--texto-2); max-width: 46ch; }
+.video-destacado__boton { margin-top: 0.5rem; border-radius: 999px; padding-inline: 1.5rem; }
+.video-destacado__boton svg { transition: translate 0.2s ease; }
+.video-destacado__boton:hover svg { translate: 3px 0; }
+@media (max-width: 860px) {
+    .video-destacado__rejilla { grid-template-columns: 1fr; gap: 1.75rem; }
+    .video-destacado__texto { max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) { .video-destacado__boton svg { transition: none; } }
 
 /* ---------- Promociones del inicio ---------- */
 .promos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 20px); }

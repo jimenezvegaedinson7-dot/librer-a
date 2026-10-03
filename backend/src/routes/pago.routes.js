@@ -8,7 +8,8 @@ const {
     webhookPago,
     renderCheckoutPage,
     renderRespuestaPage,
-    listarPagosAdmin
+    listarPagosAdmin,
+    obtenerCapacidadesCompra
 } = require('../controllers/pago.controller');
 
 const pagoModel = require('../models/pago.model');
@@ -34,6 +35,8 @@ router.get(
     '/respuesta/:externalReference',
     renderRespuestaPage
 );
+
+router.get('/capacidades', obtenerCapacidadesCompra);
 
 // ========================================
 // WEBHOOK DE PAYU (PÚBLICO, CON RATE LIMIT)

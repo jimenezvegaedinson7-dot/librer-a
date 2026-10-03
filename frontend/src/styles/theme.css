@@ -3,7 +3,7 @@
 
 /* ========================================================
    LIBRERÍA DEL SABER — Design tokens
-   Identidad: verde de la web pública, acento ámbar, pergamino y tinta.
+   Identidad: azul marino, marfil y dorado de la web pública.
    ======================================================== */
 
 @theme {
@@ -11,7 +11,7 @@
     --font-serif: "Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif;
     --font-title: "Source Serif 4", "Iowan Old Style", Georgia, "Times New Roman", serif;
 
-    --color-surface: #f6f3ee;
+    --color-surface: var(--editorial-marfil);
     --color-surface-50: #ffffff;
     --color-oferta: #c2410c;
 
@@ -39,27 +39,27 @@
     --color-slate-900: #1c1814;
     --color-slate-950: #120f0c;
 
-    /* Verde de la web: color de marca */
-    --color-mahogany-50: #f2f8f6;
-    --color-mahogany-100: #dfeee9;
-    --color-mahogany-200: #bcdcd3;
-    --color-mahogany-300: #8cc2b4;
-    --color-mahogany-400: #4f9c89;
-    --color-mahogany-500: #1f7a67;
-    --color-mahogany-600: #0b5c51;
-    --color-mahogany-700: #004d43;
-    --color-mahogany-800: #013a33;
-    --color-mahogany-900: #012b26;
+    /* Nombres heredados; la marca ahora usa la misma escala marino de la web. */
+    --color-mahogany-50: #eef3f7;
+    --color-mahogany-100: #dce7ef;
+    --color-mahogany-200: #bed1df;
+    --color-mahogany-300: #90afc6;
+    --color-mahogany-400: #5e8ba9;
+    --color-mahogany-500: #326c92;
+    --color-mahogany-600: #245876;
+    --color-mahogany-700: var(--editorial-marino-900);
+    --color-mahogany-800: var(--editorial-marino-700);
+    --color-mahogany-900: var(--editorial-marino-950);
 
-    /* Ámbar de la web: acento */
-    --color-gold-50: #fdf8ec;
-    --color-gold-100: #fbefd2;
-    --color-gold-200: #f6dea3;
-    --color-gold-300: #f0c866;
-    --color-gold-400: #ebaa20;
-    --color-gold-500: #c98f12;
-    --color-gold-600: #a2740f;
-    --color-gold-700: #7d5a0d;
+    /* Dorado editorial: acento y acciones principales. */
+    --color-gold-50: var(--editorial-marfil);
+    --color-gold-100: #f5e6c4;
+    --color-gold-200: #eed3a0;
+    --color-gold-300: var(--editorial-dorado-hover);
+    --color-gold-400: var(--editorial-dorado);
+    --color-gold-500: var(--editorial-dorado);
+    --color-gold-600: var(--editorial-dorado-oscuro);
+    --color-gold-700: var(--editorial-dorado-tinta);
     --color-gold-800: #5a420b;
     --color-gold-900: #3b2b08;
 
@@ -76,9 +76,9 @@
 
     /* Pergamino: superficies */
     --color-parchment-50: #ffffff;
-    --color-parchment-100: #fbf9f6;
-    --color-parchment-200: #f4f0ea;
-    --color-parchment-300: #e9e3da;
+    --color-parchment-100: var(--editorial-marfil);
+    --color-parchment-200: var(--editorial-crema-claro);
+    --color-parchment-300: var(--editorial-crema);
     --color-parchment-400: #d5ccbf;
     --color-parchment-500: #a89e91;
     --color-parchment-600: #7d7367;

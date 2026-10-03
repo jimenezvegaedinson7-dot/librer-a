@@ -142,7 +142,21 @@ test('promociones: HTTP, precio cobrado, favoritos, novedades y anuncios', async
             const archivo = path.resolve(__dirname, '../uploads/videos', path.basename(anuncio.video_url));
             assert.equal(existsSync(archivo), true);
             assert.equal((await (await pedir('/anuncios')).json()).anuncio.id_anuncio, anuncio.id_anuncio);
+            // Textos junto al video: se guardan, la web pública los recibe,
+            // pausar no los borra y el botón no puede enlazar fuera de la web.
+            const textos = { etiqueta: 'Novedades', descripcion: 'Nuevos títulos cada semana.', boton_texto: 'Ver novedades', boton_enlace: '/catalogo' };
+            const conTextos = await pedir(`/anuncios/${anuncio.id_anuncio}`, admin, 'PUT', textos);
+            assert.equal(conTextos.status, 200, await conTextos.clone().text());
+            for (const enlace of ['https://externo.example', '//externo.example', 'javascript:alert(1)']) {
+                assert.equal((await pedir(`/anuncios/${anuncio.id_anuncio}`, admin, 'PUT', { boton_enlace: enlace })).status, 400);
+            }
+            assert.equal((await pedir(`/anuncios/${anuncio.id_anuncio}`, admin, 'PUT', { etiqueta: 'x'.repeat(81) })).status, 400);
+            const publico = (await (await pedir('/anuncios')).json()).anuncio;
+            for (const [campo, valor] of Object.entries(textos)) assert.equal(publico[campo], valor);
             assert.equal((await pedir(`/anuncios/${anuncio.id_anuncio}`, admin, 'PUT', { estado: 0 })).status, 200);
+            const pausado = (await (await pedir('/anuncios/todos', admin)).json()).find((a) => a.id_anuncio === anuncio.id_anuncio);
+            assert.equal(pausado.etiqueta, 'Novedades');
+            assert.equal(pausado.boton_enlace, '/catalogo');
             assert.equal((await pedir(`/anuncios/${anuncio.id_anuncio}`, admin, 'DELETE', { password: 'incorrecta' })).status, 401);
             assert.equal((await pedir(`/anuncios/${anuncio.id_anuncio}`, admin, 'DELETE', { password: clave })).status, 200);
             assert.equal(existsSync(archivo), false);

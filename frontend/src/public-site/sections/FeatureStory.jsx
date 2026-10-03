@@ -96,9 +96,9 @@ export default function FeatureStory({ reducido }) {
             gsap.from(bloque.querySelectorAll('.ventaja__texto, .ventaja__visual'), {
                 opacity: 0,
                 y: 32,
-                duration: 1,
+                duration: 0.45,
                 ease: 'expo.out',
-                stagger: 0.12,
+                stagger: 0.05,
                 scrollTrigger: { trigger: bloque, start: 'top 80%' },
             });
         });

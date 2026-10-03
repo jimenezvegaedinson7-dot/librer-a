@@ -1,6 +1,6 @@
-# Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel administrativo
+# Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web
 
-> Generado desde el código real el 2026-10-02 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-03 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -10,9 +10,10 @@
 
 - **Cliente HTTP**: `lib/api/client.js` (axios). `baseURL = VITE_API_URL` (`.env.production` apunta a `https://libreria-api-v9h0.onrender.com/api`, `.env.development` a `http://localhost:3000/api`). Interceptor de petición añade `Bearer <token>`; el de respuesta devuelve `response.data` y ante **401** limpia la sesión y redirige a `/`.
 - **Sesión**: `features/auth/AuthContext.jsx` + `lib/storage/index.js` (`localStorage`: `token`, `usuario`, `ultimoHistorialVisto`). Solo entra `administrador`; perfil actualiza los datos de sesión desde la API.
+- **Cliente web**: `public-site/tienda/TiendaContext.jsx` y `clienteApi.js` mantienen sesión exclusiva de `cliente`, carrito por usuario/invitado e intento de compra persistente; nunca usan la sesión administrativa. `PublicLayout` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
 - **Guards**: `routes/RutaProtegida.jsx` redirige a `/` sin token o sin rol administrador. `routes/RutaPorRol.jsx` exige los roles configurados (solo administrador en el panel). Un **401** limpia sesión; un **403** muestra rechazo de permisos.
 - **Layout**: `features/layout/AdminLayout.jsx` (ThemeProvider, Sidebar, Topbar, Breadcrumbs, transición de página con Framer Motion).
-- **Tema**: `components/providers/ThemeContext.jsx` (modo claro/oscuro y colores por zona en `localStorage`). Estilos globales: `src/index.css` → `src/styles/theme.css` (tokens de marca, dark mode, componentes).
+- **Tema**: `components/providers/ThemeContext.jsx` (modo claro/oscuro y colores por zona en `localStorage`). `src/index.css` carga `styles/paleta-editorial.css` (marino, marfil y dorado compartidos con la web), `styles/theme.css` (componentes) y `styles/panel-editorial.css` (identidad del panel y modo oscuro). `public-site/tema-editorial.css` usa la misma paleta. Los iconos de navegación y búsqueda se definen juntos en `features/layout/navConfig.js`.
 - **Despliegue**: Vercel (`frontend/vercel.json` reescribe todo a `index.html`).
 
 ## Rutas
@@ -25,6 +26,11 @@
 | `/caracteristicas` | CaracteristicasPage | `public-site/pages/paginas.jsx` |
 | `/nosotros` | NosotrosPage | `public-site/pages/paginas.jsx` |
 | `/descargar` | DescargarPage | `public-site/pages/paginas.jsx` |
+| `/cuenta` | CuentaClientePage | `public-site/tienda/CuentaPage.jsx` |
+| `/carrito` | CarritoWebPage | `public-site/tienda/CarritoPage.jsx` |
+| `/checkout` | CheckoutWebPage | `public-site/tienda/CheckoutPage.jsx` |
+| `/mis-compras` | MisComprasWebPage | `public-site/tienda/MisComprasPage.jsx` |
+| `/libro/:id` | LibroPublicoPage | `public-site/tienda/LibroPage.jsx` |
 | `/admin/login` | LoginPage | `features/auth/LoginPage.jsx` |
 | `/admin` | Navigate | redirección: `<Navigate to="/admin/login" replace />` |
 | `/verificar-email` | VerificarEmailPage | `features/auth/VerificarEmailPage.jsx` |
@@ -63,6 +69,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/agencias/AgenciaEditModal.jsx` | `PUT /api/agencias/:param` |
 | `features/agencias/AgenciasPage.jsx` | `GET /api/agencias`<br>`POST /api/agencias` |
 | `features/anuncios/AnunciosPage.jsx` | `DELETE /api/anuncios/:param`<br>`GET /api/anuncios/todos`<br>`POST /api/anuncios`<br>`PUT /api/anuncios/:param` |
+| `features/anuncios/CarruselPanel.jsx` | `DELETE /api/anuncios/carrusel/:param`<br>`GET /api/anuncios/carrusel/todos`<br>`GET /api/libros`<br>`POST /api/anuncios/carrusel`<br>`PUT /api/anuncios/carrusel/:param`<br>`PUT /api/anuncios/carrusel/orden` |
 | `features/auth/LoginPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/solicitar-reseteo` |
 | `features/auth/VerificarEmailPage.jsx` | `POST /api/auth/reenviar-codigo`<br>`POST /api/auth/verificar-email` |
 | `features/autores/AutorEditModal.jsx` | `PUT /api/autores/:param` |
@@ -105,8 +112,16 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/ventas/ReembolsoModal.jsx` | `POST /api/ventas/:param/reembolso` |
 | `features/ventas/VentasPage.jsx` | `GET /api/ventas`<br>`GET /api/ventas/:param`<br>`PUT /api/ventas/:param/estado` |
 | `public-site/PublicLayout.jsx` | `GET /api/empresa`<br>`GET /api/libros` |
+| `public-site/asistente/AsistenteTienda.jsx` | `GET /api/libros`<br>`POST /api/asistente` |
 | `public-site/components/ActualizarApp.jsx` | `GET /api/app/version` |
+| `public-site/sections/Hero.jsx` | `GET /api/anuncios/carrusel` |
 | `public-site/sections/VideoSection.jsx` | `GET /api/anuncios` |
+| `public-site/tienda/AccionesLibro.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos/:param`<br>`POST /api/favoritos/:param` |
+| `public-site/tienda/CheckoutPage.jsx` | `GET /api/pagos/capacidades`<br>`GET /api/ventas/:param`<br>`GET /api/zonas-delivery`<br>`POST /api/pagos/crear-orden` |
+| `public-site/tienda/CuentaPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reenviar-codigo`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/registro`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-email` |
+| `public-site/tienda/LibroPage.jsx` | `GET /api/autores/:param`<br>`GET /api/libros/:param` |
+| `public-site/tienda/MisComprasPage.jsx` | `GET /api/pagos/:param`<br>`GET /api/ventas/:param/pago`<br>`GET /api/ventas/mis-ventas` |
+| `public-site/tienda/TiendaContext.jsx` | `GET /api/libros`<br>`GET /api/usuarios/perfil`<br>`GET /api/ventas/:param` |
 
 ## Servicios (`features/*/*Service.js`)
 
@@ -122,6 +137,11 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/anuncios/anunciosService.js` | `crearAnuncio` | `POST /api/anuncios` |
 | `features/anuncios/anunciosService.js` | `actualizarAnuncio` | `PUT /api/anuncios/:param` |
 | `features/anuncios/anunciosService.js` | `eliminarAnuncio` | `DELETE /api/anuncios/:param` |
+| `features/anuncios/carruselService.js` | `listarImagenesCarrusel` | `GET /api/anuncios/carrusel/todos` |
+| `features/anuncios/carruselService.js` | `crearImagenCarrusel` | `POST /api/anuncios/carrusel` |
+| `features/anuncios/carruselService.js` | `actualizarImagenCarrusel` | `PUT /api/anuncios/carrusel/:param`<br>`PUT /api/anuncios/carrusel/:param` |
+| `features/anuncios/carruselService.js` | `ordenarCarrusel` | `PUT /api/anuncios/carrusel/orden` |
+| `features/anuncios/carruselService.js` | `eliminarImagenCarrusel` | `DELETE /api/anuncios/carrusel/:param` |
 | `features/auth/authService.js` | `login` | `POST /api/auth/login` |
 | `features/auth/authService.js` | `verificarEmail` | `POST /api/auth/verificar-email` |
 | `features/auth/authService.js` | `reenviarCodigo` | `POST /api/auth/reenviar-codigo` |
@@ -218,40 +238,64 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/hooks/useApiPublica.js` | `useAnuncioActivo` | `GET /api/anuncios` |
 | `public-site/hooks/useApiPublica.js` | `useEmpresa` | `GET /api/empresa` |
 | `public-site/hooks/useApiPublica.js` | `useVersionApp` | `GET /api/app/version` |
+| `public-site/hooks/useCarrusel.js` | `useCarrusel` | `GET /api/anuncios/carrusel` |
+| `public-site/tienda/clienteApi.js` | `login` | `POST /api/auth/login` |
+| `public-site/tienda/clienteApi.js` | `registro` | `POST /api/auth/registro` |
+| `public-site/tienda/clienteApi.js` | `verificarEmail` | `POST /api/auth/verificar-email` |
+| `public-site/tienda/clienteApi.js` | `reenviarCodigo` | `POST /api/auth/reenviar-codigo` |
+| `public-site/tienda/clienteApi.js` | `solicitarReseteo` | `POST /api/auth/solicitar-reseteo` |
+| `public-site/tienda/clienteApi.js` | `restablecer` | `POST /api/auth/reestablecer-contrasena` |
+| `public-site/tienda/clienteApi.js` | `verificar2fa` | `POST /api/auth/2fa/verify-login` |
+| `public-site/tienda/clienteApi.js` | `perfil` | `GET /api/usuarios/perfil` |
+| `public-site/tienda/clienteApi.js` | `catalogo` | `GET /api/libros` |
+| `public-site/tienda/clienteApi.js` | `asistente` | `POST /api/asistente` |
+| `public-site/tienda/clienteApi.js` | `libro` | `GET /api/libros/:param` |
+| `public-site/tienda/clienteApi.js` | `autor` | `GET /api/autores/:param` |
+| `public-site/tienda/clienteApi.js` | `favorito` | `GET /api/favoritos/:param` |
+| `public-site/tienda/clienteApi.js` | `agregarFavorito` | `POST /api/favoritos/:param` |
+| `public-site/tienda/clienteApi.js` | `quitarFavorito` | `DELETE /api/favoritos/:param` |
+| `public-site/tienda/clienteApi.js` | `zonas` | `GET /api/zonas-delivery` |
+| `public-site/tienda/clienteApi.js` | `capacidades` | `GET /api/pagos/capacidades` |
+| `public-site/tienda/clienteApi.js` | `crearOrden` | `POST /api/pagos/crear-orden` |
+| `public-site/tienda/clienteApi.js` | `compras` | `GET /api/ventas/mis-ventas` |
+| `public-site/tienda/clienteApi.js` | `compra` | `GET /api/ventas/:param` |
+| `public-site/tienda/clienteApi.js` | `pagoCompra` | `GET /api/ventas/:param/pago` |
+| `public-site/tienda/clienteApi.js` | `verificarPago` | `GET /api/pagos/:param` |
 
 ## Componentes compartidos (`components/`)
 
 | Archivo | Usado por (nº de archivos) |
 |---|---|
 | `components/providers/ThemeContext.jsx` | 1 |
-| `components/providers/ToastProvider.jsx` | 17 |
+| `components/providers/ToastProvider.jsx` | 18 |
 | `components/providers/tema.js` | 5 |
 | `components/ui/Acciones.jsx` | 15 |
-| `components/ui/Alert.jsx` | 35 |
-| `components/ui/Badge.jsx` | 23 |
-| `components/ui/Button.jsx` | 49 |
-| `components/ui/Card.jsx` | 21 |
+| `components/ui/Alert.jsx` | 36 |
+| `components/ui/Badge.jsx` | 24 |
+| `components/ui/Button.jsx` | 50 |
+| `components/ui/Card.jsx` | 22 |
 | `components/ui/Celebracion.jsx` | 2 |
 | `components/ui/ConfirmarAccion.jsx` | 4 |
-| `components/ui/ConfirmarEliminacion.jsx` | 3 |
+| `components/ui/ConfirmarEliminacion.jsx` | 4 |
 | `components/ui/DataTable.jsx` | 16 |
-| `components/ui/EmptyState.jsx` | 17 |
+| `components/ui/EmptyState.jsx` | 18 |
 | `components/ui/ErrorBoundary.jsx` | 1 |
 | `components/ui/EstadoModal.jsx` | 1 |
 | `components/ui/Ficha.jsx` | 10 |
-| `components/ui/Form.jsx` | 39 |
+| `components/ui/Form.jsx` | 40 |
 | `components/ui/FormularioAlta.jsx` | 5 |
-| `components/ui/Modal.jsx` | 30 |
+| `components/ui/Modal.jsx` | 31 |
 | `components/ui/PageHeader.jsx` | 19 |
 | `components/ui/Pagination.jsx` | 13 |
 | `components/ui/Spinner.jsx` | 4 |
-| `components/ui/TableSkeleton.jsx` | 17 |
+| `components/ui/TableSkeleton.jsx` | 18 |
 | `public-site/components/ActualizarApp.jsx` | 1 |
+| `public-site/components/BarraMovil.jsx` | 1 |
 | `public-site/components/CierreDescarga.jsx` | 1 |
 | `public-site/components/EtiquetasLibro.jsx` | 2 |
 | `public-site/components/Migas.jsx` | 2 |
 | `public-site/components/Precarga.jsx` | 1 |
-| `public-site/components/PrecioOferta.jsx` | 3 |
+| `public-site/components/PrecioOferta.jsx` | 5 |
 | `public-site/components/PublicFooter.jsx` | 1 |
 | `public-site/components/PublicHeader.jsx` | 1 |
 
@@ -273,7 +317,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `public-site/lib/formato.js`
 - `public-site/lib/precarga.js`
 
-## Framer Motion (`motion/react`) — 24 archivos
+## Framer Motion (`motion/react`) — 23 archivos
 
 - `components/providers/ToastProvider.jsx`
 - `components/ui/Celebracion.jsx`
@@ -298,7 +342,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `public-site/components/PublicHeader.jsx`
 - `public-site/PublicLayout.jsx`
 - `public-site/sections/FeatureStory.jsx`
-- `public-site/sections/Hero.jsx`
 
 ## Módulo Dashboard (Resumen)
 

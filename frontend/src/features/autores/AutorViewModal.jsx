@@ -1,4 +1,4 @@
-import { FaUser, FaFlag, FaBookOpen } from 'react-icons/fa6';
+import { FaCircleCheck, FaCirclePause, FaFlag, FaBookOpen } from 'react-icons/fa6';
 
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
@@ -21,7 +21,7 @@ export default function AutorViewModal({ autor, abierto, onCerrar }) {
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Ficha color="rose" icono={<FaFlag />} etiqueta="Nacionalidad">{autor.nacionalidad || 'No registrada'}</Ficha>
-                <Ficha color="rose" icono={activo ? <FaUser className="text-success" /> : <FaUser />} etiqueta="Estado">
+                <Ficha color="rose" icono={activo ? <FaCircleCheck className="text-success" /> : <FaCirclePause />} etiqueta="Estado">
                     <Badge color={activo ? 'success' : 'neutral'}>{activo ? 'Activo' : 'Inactivo'}</Badge>
                 </Ficha>
             </div>

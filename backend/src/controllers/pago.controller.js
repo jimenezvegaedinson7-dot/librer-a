@@ -195,6 +195,16 @@ const renderRespuestaPage = async (req, res) => {
         req.params.externalReference || ''
     ).trim();
 
+    let regreso = '<p>Puedes cerrar esta página y volver a la aplicación para verificar el estado de tu pedido.</p>';
+    try {
+        const venta = await ventaModel.buscarPorReferenciaExterna(externalReference);
+        if (venta?.canal_compra === 'web') {
+            const web = new URL(process.env.WEB_PUBLIC_URL || 'https://librer-a-zeta.vercel.app');
+            if (!['https:', 'http:'].includes(web.protocol)) throw new Error('URL web no válida');
+            regreso = `<p><a href="${escapeHtml(`${web.origin}/mis-compras?orden=${encodeURIComponent(externalReference)}`)}">Volver a mis compras en la web</a></p>`;
+        }
+    } catch (error) { console.error('No se pudo preparar el enlace de regreso:', error.message); }
+
     return res
         .status(200)
         .type('html')
@@ -204,7 +214,7 @@ const renderRespuestaPage = async (req, res) => {
 <body style="font-family:sans-serif;text-align:center;margin-top:80px;color:#333">
   <h2>Gracias por tu compra</h2>
   <p>Tu pago (referencia ${escapeHtml(externalReference)}) está siendo confirmado.</p>
-  <p>Puedes cerrar esta página y volver a la aplicación para verificar el estado de tu pedido.</p>
+  ${regreso}
 </body>
 </html>`);
 };
@@ -304,6 +314,14 @@ const crearOrden = async (req, res) => {
             cliente_documento,
             cliente_tipo_documento
         } = req.body;
+
+        const canalCompra = req.body.canal_compra ?? 'app';
+        if (!['app', 'web'].includes(canalCompra)) {
+            return res.status(400).json({ success: false, mensaje: 'El canal de compra debe ser app o web' });
+        }
+        if (canalCompra === 'web' && req.usuario.rol !== 'cliente') {
+            return res.status(403).json({ success: false, mensaje: 'Inicia sesión con una cuenta de cliente para comprar en la web' });
+        }
 
         // ========================================
         // CLAVE DE IDEMPOTENCIA (obligatoria)
@@ -719,6 +737,7 @@ const crearOrden = async (req, res) => {
                 direccion: tipoEntrega === 'domicilio' ? direccion.trim() : null,
                 referencia: tipoEntrega === 'domicilio' ? (referencia?.trim() || null) : null,
                 cobertura_entrega: 'pallasca',
+                canal_compra: canalCompra,
                 id_zona_delivery: zonaEntrega?.id_zona || null,
                 id_distrito: null,
                 id_agencia: null,
@@ -997,6 +1016,9 @@ const obtenerOrden = async (req, res) => {
                     estadoPayu.pagado ||
                     estadoPayu.cancelado
                 ) {
+                    if (estadoPayu.pagado && !montoPagoCoincide(estadoPayu.amount, ventaPago.total)) {
+                        return res.status(409).json({ success: false, mensaje: 'El importe informado por PayU no coincide con la compra. El pago no se ha confirmado.' });
+                    }
                     await aplicarEstadoPagoAVenta({
                         externalReference:
                             ventaPago.external_reference,
@@ -1578,7 +1600,11 @@ const listarPagosAdmin = async (req, res) => {
 // ========================================
 // EXPORTAR
 // ========================================
+const obtenerCapacidadesCompra = (_req, res) => res.json({ success: true, data: {
+    compras_web: true, moneda: 'PEN', cobertura: 'pallasca'
+} });
 module.exports = {
+    obtenerCapacidadesCompra,
     crearOrden,
     obtenerOrden,
     webhookPago,

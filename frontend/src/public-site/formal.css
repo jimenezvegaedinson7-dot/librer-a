@@ -88,9 +88,6 @@
 .sitio .oscuro .boton--linea:hover { background: rgba(255, 255, 255, 0.1); }
 .sitio .boton--compra { background: var(--marino-900); border-color: var(--marino-900); color: var(--blanco); }
 .sitio .boton--compra:hover { background: var(--marino-700); border-color: var(--marino-700); }
-.sitio .oscuro .boton:not(.boton--blanco):not(.boton--linea) { background: var(--dorado); border-color: var(--dorado); color: var(--marino-950); }
-.sitio .oferta-tarjeta .boton--compra { background: var(--dorado); border-color: var(--dorado); color: var(--marino-950); }
-.sitio .oferta-tarjeta .boton--compra:hover { background: var(--dorado-hover); border-color: var(--dorado-hover); }
 .sitio .buscador button { background: var(--marino-900); color: var(--blanco); }
 .sitio .buscador button:hover { background: var(--marino-700); }
 .sitio .enlace-mas { color: var(--marino-900); }
@@ -100,8 +97,6 @@
 .sitio .precio.oferta { background: none; padding: 0; gap: 0.35rem; color: #b12704; }
 .sitio .precio.oferta .oferta__pastilla { background: #b12704; color: var(--blanco); text-decoration: none; padding: 0.05rem 0.35rem; border-radius: 4px; }
 .sitio .precio.oferta .oferta__final { color: #b12704; text-decoration: none; }
-.sitio .oferta-tarjeta .precio.oferta { color: var(--dorado-hover); }
-.sitio .oferta-tarjeta .precio.oferta .oferta__final { color: var(--dorado-hover); }
 .sitio .categoria { background: #f1efeb; color: var(--texto-2); }
 .sitio .ahorro { color: #b12704; }
 
@@ -118,3 +113,343 @@
     .sitio .libro__comprar.boton--chico { min-height: 34px; padding: 0 0.5rem; font-size: 0.75rem; }
     .sitio .libro__comprar svg { display: none; }
 }
+
+/* ============================================================
+   SIN RAYAS DORADAS BAJO LOS TEXTOS
+   Los filetes dorados bajo títulos, menú y avisos se retiran: la
+   jerarquía la dan el tamaño y el peso. La página actual del menú se
+   marca con un trazo azul marino fino, no dorado.
+   ============================================================ */
+.sitio .seccion__titulo::after { content: none; }
+.sitio .seccion__cabeza { border-bottom: 0; padding-bottom: 0; }
+.sitio .menu a::after { background: var(--marino-900); height: 2px; }
+.sitio .menu a:hover::after { transform: scaleX(0); }
+.sitio .menu a[aria-current='page']::after { transform: scaleX(1); }
+.sitio .avisos::after, .sitio .avisos li::after { content: none; }
+.sitio .avisos li { animation: none; }
+.sitio .avisos li:hover { transform: none; }
+
+/* ============================================================
+   MOVIMIENTO RÁPIDO
+   Las entradas al hacer scroll duran 0,35–0,45 s con poco recorrido:
+   el contenido aparece casi al instante y el desplazamiento no se traba.
+   ============================================================ */
+@media (prefers-reduced-motion: no-preference) {
+    .sitio [data-revelar] > * { transition-duration: 400ms !important; }
+}
+.sitio [data-revelar] > .explorar__item,
+.sitio [data-revelar] > .paso,
+.sitio [data-revelar] > .oferta-tarjeta { transition-delay: calc(var(--i, 0) * 40ms); }
+.sitio.js [data-revelar]:not([data-visto]) > .explorar__item,
+.sitio.js [data-revelar]:not([data-visto]) > .paso,
+.sitio.js [data-revelar]:not([data-visto]) > .oferta-tarjeta { transform: translateY(12px); }
+
+/* ============================================================
+   CATEGORÍAS SUELTAS (inicio)
+   Sin tarjeta, sin fondo y sin iconos: tres portadas reales en abanico
+   apoyadas sobre la página, y debajo el nombre y cuántos títulos tiene.
+   ============================================================ */
+.sitio .explorar__rejilla { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(16px, 3vw, 48px); margin-top: var(--e-3); }
+.sitio .explorar__enlace { display: grid; justify-items: center; gap: 0.75rem; text-align: center; color: inherit; text-decoration: none; border-radius: 8px; }
+.sitio .explorar__enlace .explorar__libros { justify-self: stretch; margin: 0; height: 170px; background: none; }
+.sitio .explorar__enlace .explorar__libros::after { left: 24%; right: 24%; bottom: 10px; height: 10px; filter: none; background: radial-gradient(closest-side, rgba(17, 24, 32, 0.22), transparent); }
+.sitio .explorar__enlace .explorar__libros img { bottom: 18px; animation: none; box-shadow: 0 10px 18px -10px rgba(17, 24, 32, 0.5); }
+.sitio .explorar__enlace:hover .explorar__libros img:nth-child(1) { translate: -132% 2px; rotate: -15deg; }
+.sitio .explorar__enlace:hover .explorar__libros img:nth-child(2) { translate: -50% -12px; }
+.sitio .explorar__enlace:hover .explorar__libros img:nth-child(3) { translate: 32% 2px; rotate: 15deg; }
+.sitio .explorar__enlace .explorar__texto { display: grid; gap: 0.15rem; }
+.sitio .explorar__enlace .explorar__texto strong { font-size: 1rem; font-weight: 600; color: var(--tinta); }
+.sitio .explorar__enlace .explorar__cuenta { margin: 0; font-size: 0.8125rem; font-weight: 400; color: var(--texto-3); }
+.sitio .explorar__enlace:hover .explorar__texto strong { color: var(--marino-700); }
+.sitio .explorar__enlace:focus-visible { outline: 2px solid var(--marino-700); outline-offset: 4px; }
+@media (max-width: 1023px) { .sitio .explorar__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+    .sitio .explorar__rejilla { gap: 20px 12px; }
+    .sitio .explorar__enlace .explorar__libros { height: 128px; }
+    .sitio .explorar__enlace .explorar__libros img { width: 58px; height: 87px; bottom: 14px; }
+    .sitio .explorar__enlace .explorar__texto strong { font-size: 0.9375rem; }
+}
+
+/* ============================================================
+   TIENDA WEB (carrito, cuenta, entrega y pago, mis compras)
+   Página en gris cálido con paneles blancos, títulos contenidos y
+   botones a todo el ancho donde se decide la compra.
+   ============================================================ */
+.sitio .compra-pagina { padding-block: clamp(28px, 4vw, 48px) clamp(48px, 6vw, 72px); }
+.sitio main:has(> .compra-pagina) { background: var(--fondo-alt); }
+.sitio .compra-pagina h1 { font-size: var(--t-h1); font-weight: 600; margin-bottom: 4px; color: var(--tinta); letter-spacing: -0.01em; }
+.sitio .compra-pagina > p { color: var(--texto-2); font-size: var(--t-cuerpo); margin-block: 4px 0; }
+.sitio .compra-pagina h2 { font-size: 1rem; font-weight: 600; color: var(--tinta); }
+.sitio .compra-pagina > .boton { margin-top: 20px; margin-right: 10px; }
+.sitio .compra-distribucion { gap: 20px; margin-top: 24px; }
+.sitio .compra-resumen, .sitio .compra-registro, .sitio .cuenta-cliente,
+.sitio .compra-formulario fieldset { border: 1px solid var(--linea); border-radius: 12px; background: var(--blanco); box-shadow: 0 1px 2px rgba(17, 24, 32, 0.04); }
+.sitio .compra-resumen { top: 96px; padding: 22px; }
+.sitio .compra-resumen h2 { padding-bottom: 12px; margin-bottom: 4px; border-bottom: 1px solid var(--linea); }
+.sitio .compra-resumen p { font-size: 0.875rem; color: var(--texto-2); margin-block: 8px; }
+.sitio .compra-resumen p strong { color: var(--tinta); font-variant-numeric: tabular-nums; }
+.sitio .compra-resumen > .enlace-texto { display: block; text-align: center; font-size: 0.875rem; }
+.sitio .compra-formulario fieldset { padding: 22px; gap: 14px; }
+.sitio .compra-formulario legend { font-size: 1rem; padding: 0 6px; color: var(--tinta); }
+.sitio .compra-formulario label, .sitio .carrito-linea label { font-size: 0.8125rem; color: var(--texto); gap: 6px; }
+.sitio .compra-formulario :is(input:not([type=radio]), select), .sitio .carrito-linea input { border-color: #cdd3da; border-radius: 8px; font-size: 0.9375rem; transition: border-color var(--d-rapida), box-shadow var(--d-rapida); }
+.sitio .compra-formulario :is(input:not([type=radio]), select):focus, .sitio .carrito-linea input:focus { outline: none; border-color: var(--marino-900); box-shadow: 0 0 0 3px rgba(13, 41, 64, 0.12); }
+.sitio .compra-formulario .entrega-opcion { font-size: 0.9375rem; font-weight: 500; border-color: var(--linea); border-radius: 10px; transition: border-color var(--d-rapida), background var(--d-rapida); }
+.sitio .entrega-opcion:has(input:checked) { border-color: var(--marino-900); background: #f2f5f8; }
+.sitio .cuenta-cliente { max-width: 440px; padding: clamp(22px, 4vw, 32px); }
+.sitio .cuenta-cliente > p { color: var(--texto-2); font-size: 0.875rem; margin: 4px 0 18px; }
+.sitio .cuenta-cliente .compra-formulario .boton { width: 100%; margin-top: 4px; }
+.sitio .cuenta-cliente .compra-acciones { justify-content: space-between; padding-top: 16px; margin-top: 18px; border-top: 1px solid var(--linea); font-size: 0.875rem; }
+.sitio .compra-vacio { display: grid; justify-items: center; gap: 6px; margin-top: 24px; padding: clamp(32px, 6vw, 56px) 24px; text-align: center; border: 1px solid var(--linea); border-radius: 12px; background: var(--blanco); }
+.sitio .compra-vacio p { font-size: 1rem; font-weight: 600; color: var(--tinta); }
+.sitio .compra-vacio .boton { margin-top: 10px; }
+.sitio .carrito-lineas { gap: 0; padding: 4px 22px; border: 1px solid var(--linea); border-radius: 12px; background: var(--blanco); }
+.sitio .carrito-linea { padding-block: 18px; border-bottom-color: var(--linea); }
+.sitio .carrito-linea:last-child { border-bottom: 0; }
+.sitio .carrito-linea img { border-radius: 2px 4px 4px 2px; box-shadow: 0 6px 12px -8px rgba(17, 24, 32, 0.5); background: var(--fondo-alt); }
+.sitio .carrito-linea-datos p { margin-block: 2px; font-size: 0.875rem; color: var(--texto-2); }
+.sitio .carrito-linea > strong { font-size: 1rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sitio .compra-registro { padding: 20px 22px; }
+.sitio .compra-registro header { align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--linea); }
+.sitio .compra-registro header strong { font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 999px; background: #eef1f4; color: var(--marino-900); }
+.sitio .compra-registro p, .sitio .compra-registro li { font-size: 0.875rem; color: var(--texto-2); margin-block: 4px; }
+.sitio .compra-error { font-size: 0.875rem; border-radius: 8px; }
+.sitio .compra-aviso { font-size: 0.875rem; background: #f2f5f8; border: 1px solid #dfe5eb; border-radius: 8px; }
+.sitio .compra-pagina .enlace-texto { color: var(--marino-900); background: none; border: 0; padding: 0; cursor: pointer; font: inherit; font-weight: 600; text-decoration: none; }
+.sitio .compra-pagina .enlace-texto:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ============================================================
+   ASISTENTE
+   Botón compacto, panel con burbujas (asistente a la izquierda en
+   blanco, tú a la derecha en azul marino) e indicador de escritura.
+   En el teléfono el panel ocupa la parte baja como una hoja.
+   ============================================================ */
+.sitio .asistente-tienda .asistente-abrir { min-height: 46px; padding: 0 18px 0 14px; font-size: 0.875rem; gap: 8px; box-shadow: 0 10px 24px -10px rgba(13, 41, 64, 0.55); transition: transform var(--d-rapida) var(--ease-salida), background var(--d-rapida); }
+.sitio .asistente-tienda .asistente-abrir:hover { transform: translateY(-1px); }
+.sitio .asistente-tienda .asistente-abrir svg { width: 18px; height: 18px; }
+.sitio .asistente-tienda .asistente-panel { border-color: var(--linea); border-radius: 14px; box-shadow: 0 24px 60px -20px rgba(13, 41, 64, 0.45), 0 2px 6px rgba(17, 24, 32, 0.06); }
+.sitio .asistente-tienda .asistente-cabecera { padding: 12px 10px 12px 16px; }
+.sitio .asistente-tienda .asistente-cabecera h2 { font-size: 0.9375rem; font-weight: 600; }
+.sitio .asistente-tienda .asistente-cabecera p { font-size: 0.75rem; opacity: 0.8; margin-top: 2px; }
+.sitio .asistente-tienda .asistente-conversacion { display: flex; flex-direction: column; gap: 10px; padding: 16px 14px; background: var(--fondo-alt); }
+.sitio .asistente-tienda .asistente-mensaje { max-width: 88%; margin: 0; padding: 10px 12px; font-size: 0.875rem; border-color: var(--linea); border-radius: 14px 14px 14px 4px; box-shadow: 0 1px 2px rgba(17, 24, 32, 0.05); }
+.sitio .asistente-tienda .asistente-mensaje--usuario { align-self: flex-end; margin: 0; border-radius: 14px 14px 4px 14px; }
+.sitio .asistente-tienda .asistente-mensaje--asistente:has(.asistente-libros) { max-width: 100%; }
+.sitio .asistente-tienda .asistente-quien { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sitio .asistente-tienda .asistente-mensaje > p:first-of-type { margin-top: 0; }
+.sitio .asistente-tienda .asistente-libros li { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 10px; }
+.sitio .asistente-tienda .asistente-libros li > * { grid-column: 2; }
+.sitio .asistente-tienda .asistente-libros li > .asistente-portada { grid-column: 1; grid-row: 1 / span 4; float: none; margin: 0; border-radius: 2px 3px 3px 2px; box-shadow: 0 4px 10px -6px rgba(17, 24, 32, 0.5); }
+.sitio .asistente-tienda .asistente-libros .compra-libro { grid-column: 1 / -1; grid-template-columns: 1fr auto; align-items: center; }
+.sitio .asistente-tienda .asistente-libros a { text-decoration: none; font-size: 0.875rem; }
+.sitio .asistente-tienda .asistente-libros a:hover { text-decoration: underline; }
+.sitio .asistente-tienda .asistente-oferta { color: #b12704; }
+.sitio .asistente-tienda .asistente-cargando { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; font-size: 0.8125rem; background: var(--blanco); border: 1px solid var(--linea); border-radius: 14px 14px 14px 4px; }
+.sitio .asistente-tienda .asistente-cargando::before { content: ""; width: 22px; height: 6px; background: radial-gradient(circle, var(--marino-700) 2.5px, transparent 3px) 0 50% / 8px 6px repeat-x; animation: asistente-puntos 0.9s steps(4) infinite; }
+@keyframes asistente-puntos { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 -10% 0 0); } }
+.sitio .asistente-tienda .asistente-sugerencias { gap: 6px; padding: 10px 14px 0; }
+.sitio .asistente-tienda .asistente-sugerencias button { min-height: 32px; padding: 4px 12px; font-size: 0.8125rem; border-color: #d6dce3; }
+.sitio .asistente-tienda .asistente-formulario { padding: 10px 14px 0; }
+.sitio .asistente-tienda .asistente-formulario label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.sitio .asistente-tienda .asistente-formulario > div { gap: 0; border: 1px solid #cdd3da; border-radius: 999px; padding: 3px 3px 3px 14px; background: var(--blanco); transition: border-color var(--d-rapida), box-shadow var(--d-rapida); }
+.sitio .asistente-tienda .asistente-formulario > div:focus-within { border-color: var(--marino-900); box-shadow: 0 0 0 3px rgba(13, 41, 64, 0.12); }
+.sitio .asistente-tienda .asistente-formulario input { height: 38px; border: 0; padding: 0; font-size: 0.9375rem; background: transparent; }
+.sitio .asistente-tienda .asistente-formulario input:focus-visible { outline: none; }
+.sitio .asistente-tienda .asistente-formulario button { width: 38px; height: 38px; border-radius: 50%; }
+.sitio .asistente-tienda .asistente-formulario button svg { width: 15px; height: 15px; }
+.sitio .asistente-tienda .asistente-formulario > p { font-size: 0.6875rem; margin-top: 6px; padding-left: 4px; }
+.sitio .asistente-tienda .asistente-pie { font-size: 0.6875rem; padding: 0 8px 2px 18px; }
+.sitio .asistente-tienda .asistente-pie .asistente-icono { width: 36px; height: 36px; }
+@media (max-width: 480px) {
+    /* Solo el icono: no tapa el contenido ni la barra inferior. */
+    .sitio .asistente-tienda .asistente-abrir { width: 50px; height: 50px; min-height: 0; padding: 0; justify-content: center; border-radius: 50%; }
+    .sitio .asistente-tienda .asistente-abrir span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    /* Hoja sobre la barra inferior, sin taparla. */
+    .sitio .asistente-tienda .asistente-panel { position: fixed; inset: auto 0 calc(64px + env(safe-area-inset-bottom)) 0; width: 100%; max-height: calc(100dvh - 140px - env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; animation-name: asistente-hoja; }
+}
+@keyframes asistente-hoja { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sitio .asistente-tienda .asistente-cargando::before { animation: none; clip-path: none; } }
+.sitio .asistente-tienda .asistente-abrir { border-color: rgba(255, 255, 255, 0.22); }
+/* Barra inferior móvil opaca: el difuminado de fondo costaba en cada scroll. */
+@media (max-width: 767px) { .barra-movil { -webkit-backdrop-filter: none; backdrop-filter: none; background: #fffdf9; } }
+
+/* ============================================================
+   MI CUENTA, MIS COMPRAS, CREAR CUENTA Y CARRITO
+   ============================================================ */
+/* Perfil: tarjeta con iniciales y accesos en lista, como una tienda. */
+.sitio .cuenta-perfil__rejilla { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 20px; margin-top: 20px; align-items: start; }
+.sitio .cuenta-perfil__tarjeta { display: grid; justify-items: start; gap: 14px; padding: 24px; border: 1px solid var(--linea); border-radius: 12px; background: var(--blanco); }
+.sitio .cuenta-perfil__avatar { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--marino-900); color: var(--blanco); font-size: 1.125rem; font-weight: 600; letter-spacing: 0.02em; }
+.sitio .compra-pagina .cuenta-perfil__nombre { margin: 0; font-size: 1.0625rem; font-weight: 600; color: var(--tinta); }
+.sitio .compra-pagina .cuenta-perfil__correo { margin: 2px 0 0; font-size: 0.875rem; color: var(--texto-2); overflow-wrap: anywhere; }
+.sitio .compra-pagina .cuenta-perfil__salir { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; margin-top: 4px; padding-top: 14px; width: 100%; border-top: 1px solid var(--linea); font-size: 0.875rem; color: var(--texto-2); }
+.sitio .compra-pagina .cuenta-perfil__salir:hover { color: #b12704; text-decoration: none; }
+.sitio .cuenta-accesos { display: grid; border: 1px solid var(--linea); border-radius: 12px; background: var(--blanco); overflow: hidden; }
+.sitio .cuenta-acceso { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 16px 20px; color: var(--tinta); text-decoration: none; transition: background var(--d-rapida); }
+.sitio .cuenta-acceso + .cuenta-acceso { border-top: 1px solid var(--linea); }
+.sitio .cuenta-acceso:hover { background: #f8f9fa; }
+.sitio .cuenta-acceso > svg:first-child { justify-self: center; width: 20px; height: 20px; color: var(--marino-700); }
+.sitio .cuenta-acceso > svg:last-child { width: 12px; height: 12px; color: var(--texto-3); transition: transform var(--d-rapida) var(--ease-salida); }
+.sitio .cuenta-acceso:hover > svg:last-child { transform: translateX(3px); color: var(--marino-900); }
+.sitio .cuenta-acceso span { display: grid; gap: 2px; }
+.sitio .cuenta-acceso strong { font-size: 0.9375rem; font-weight: 600; }
+.sitio .cuenta-acceso small { font-size: 0.8125rem; color: var(--texto-2); }
+
+/* Crear cuenta: nombre y apellido en una fila; ayuda pequeña bajo la clave. */
+.sitio .cuenta-fila { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sitio .compra-pagina .cuenta-ayuda { margin: -8px 0 0; font-size: 0.75rem; color: var(--texto-3); }
+.sitio .cuenta-cliente .compra-formulario { gap: 14px; }
+.sitio .cuenta-cliente .compra-acciones { gap: 10px 16px; }
+
+/* Estados vacíos con icono. */
+.sitio .compra-vacio > svg { width: 30px; height: 30px; color: var(--texto-3); margin-bottom: 6px; }
+
+/* Mis compras: cabecera con acción a la derecha y pedidos tipo recibo. */
+.sitio .mis-compras__cabeza { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 20px; }
+.sitio .mis-compras__cabeza p { margin: 4px 0 0; font-size: var(--t-cuerpo); color: var(--texto-2); }
+.sitio .mis-compras .compras-lista { gap: 14px; margin-top: 20px; }
+.sitio .mis-compras .compra-registro { padding: 0; overflow: hidden; }
+.sitio .mis-compras .compra-registro header { padding: 16px 22px; border-bottom: 1px solid var(--linea); background: #fafaf8; }
+.sitio .compra-pagina .compra-registro__meta { margin: 2px 0 0; font-size: 0.8125rem; color: var(--texto-3); }
+.sitio .compra-estado { font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.65rem; border-radius: 999px; background: #eef1f4; color: var(--marino-900); white-space: nowrap; }
+.sitio .compra-registro header .compra-estado--pendiente { background: #fff4e0; color: #8a5300; }
+.sitio .compra-registro header .compra-estado--pagada { background: #e8f1fb; color: #0b4a8b; }
+.sitio .compra-registro header .compra-estado--entregada { background: #e6f4ea; color: #1b6b35; }
+.sitio .compra-registro header :is(.compra-estado--cancelada, .compra-estado--reembolsada) { background: #f3f3f3; color: #555; }
+.sitio .compra-registro__cuerpo { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px 32px; padding: 18px 22px; }
+.sitio .compra-registro .compra-registro__libros { margin: 0; padding: 0; list-style: none; }
+.sitio .compra-registro .compra-registro__libros li { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; margin: 0; border-bottom: 1px dashed var(--linea); color: var(--tinta); }
+.sitio .compra-registro__libros li:last-child { border-bottom: 0; }
+.sitio .compra-registro__libros small { color: var(--texto-3); }
+.sitio .compra-registro__libros li > span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sitio .compra-registro__entrega { display: grid; gap: 10px; margin: 0; }
+.sitio .compra-registro__entrega dt { font-size: 0.75rem; color: var(--texto-3); }
+.sitio .compra-registro__entrega dd { margin: 1px 0 0; font-size: 0.875rem; color: var(--tinta); }
+.sitio .compra-registro__pie { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 14px 22px; border-top: 1px solid var(--linea); }
+.sitio .compra-registro .compra-registro__pie p { margin: 0; }
+.sitio .compra-registro .compra-registro__total { color: var(--tinta); }
+.sitio .compra-registro__total strong { font-size: 1rem; font-variant-numeric: tabular-nums; }
+.sitio .compra-registro__pie .compra-acciones { margin: 0 0 0 auto; gap: 10px; }
+
+/* Carrito: cantidad y quitar en una fila compacta. */
+.sitio .carrito-linea h2 { font-size: 0.9375rem; }
+.sitio .carrito-linea__controles { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 10px; }
+.sitio .carrito-linea__controles label { display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--texto-2); }
+.sitio .carrito-linea .carrito-linea__controles input { width: 72px; min-height: 36px; padding: 6px 10px; text-align: center; }
+.sitio .compra-pagina .carrito-linea__quitar { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 0.8125rem; font-weight: 500; color: var(--texto-2); }
+.sitio .compra-pagina .carrito-linea__quitar:hover { color: #b12704; text-decoration: none; }
+.sitio .carrito-linea__quitar svg { width: 12px; height: 12px; }
+
+/* Entrega y pago: la leyenda se lee como título dentro del panel. */
+.sitio .compra-formulario fieldset > legend { float: left; width: 100%; padding: 0 0 12px; margin-bottom: 4px; border-bottom: 1px solid var(--linea); }
+.sitio .compra-formulario fieldset > legend + * { clear: both; }
+
+@media (max-width: 760px) {
+    .sitio .cuenta-perfil__rejilla, .sitio .compra-registro__cuerpo { grid-template-columns: minmax(0, 1fr); }
+    .sitio .compra-registro__pie .compra-acciones { margin-left: 0; width: 100%; }
+    .sitio .compra-registro__pie .compra-acciones .boton { flex: 1; }
+}
+@media (max-width: 340px) { .sitio .cuenta-fila { grid-template-columns: minmax(0, 1fr); } }
+.sitio .compra-registro__pie .boton { white-space: nowrap; padding-inline: 0.9rem; }
+/* Cabecera: cuenta y carrito al final, como en toda tienda; la cuenta en dos líneas. */
+.sitio .compra-cuenta__texto { display: grid; line-height: 1.15; }
+.sitio .compra-cuenta__texto small { font-size: 0.6875rem; font-weight: 500; color: var(--texto-3); max-width: 12ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Catálogo: de 24 en 24 con un cierre claro. */
+.sitio .catalogo-mas { display: grid; justify-items: center; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--linea); }
+.sitio .catalogo-mas p { font-size: 0.8125rem; color: var(--texto-3); }
+.sitio .catalogo-mas .boton { min-width: 220px; }
+/* Enlaces "Ver ..." sobre fondos oscuros: antes azul sobre azul, no se leían. */
+.sitio .oscuro .enlace-mas, .sitio .oscuro .enlace-mas svg { color: var(--blanco); }
+/* Portadas de Aplicación y Descargar: piedra cálida suave con la estantería de la
+   pantalla de carga de la app dibujada en tinta marrón tenue, quieta. Sin
+   fondo azul: los teléfonos y el texto oscuro son lo que se mira. */
+.sitio .app-portada, .sitio .descargar-portada { background: linear-gradient(180deg, #e9dfcd 0%, #dccdb4 100%); border-bottom: 1px solid #cdbd9f; }
+.sitio .app-portada::before, .sitio .descargar-portada::before {
+    content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 1;
+    -webkit-mask-image: none; mask-image: none;
+    background:
+        linear-gradient(90deg, rgba(233, 223, 205, 0.92) 0%, rgba(233, 223, 205, 0.7) 40%, rgba(233, 223, 205, 0.15) 72%, rgba(233, 223, 205, 0.3) 100%),
+        url('./assets/estanteria-clara.svg') center bottom / auto 100% repeat-x;
+}
+.sitio .app-portada > *, .sitio .descargar-portada > * { position: relative; z-index: 1; }
+.sitio .app-portada__titulo, .sitio .descargar-portada__titulo { color: var(--tinta); }
+.sitio .app-portada__entrada, .sitio .descargar-portada__entrada { color: var(--texto-2); }
+.sitio .app-portada .app__nota, .sitio .descargar-portada__seguridad { color: var(--texto-3); }
+.sitio .descargar-portada__seguridad svg { color: var(--marino-700); }
+.sitio .descargar-portada__telefono::before { background: radial-gradient(closest-side, rgba(74, 52, 38, 0.1), transparent); }
+.sitio .app-portada .telefono, .sitio .descargar-portada .telefono { box-shadow: 0 40px 70px -36px rgba(40, 28, 20, 0.55), 0 12px 24px -14px rgba(40, 28, 20, 0.35); }
+.sitio :is(.app-portada, .descargar-portada) .app-icono, .sitio :is(.app-portada, .descargar-portada) img[src*='app-icono'] { box-shadow: 0 10px 22px -12px rgba(40, 28, 20, 0.45), 0 0 0 1px var(--linea); }
+/* Cierres "Descargar la app": gris cálido neutro en vez de crema. */
+.sitio .cierre-descarga { background: var(--fondo-alt); border-color: var(--linea); }
+/* Funciones de la app: dos por fila también en teléfonos, más compactas. */
+@media (max-width: 460px) {
+    .sitio .app-funciones.app__lista { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .sitio .app-funciones.app__lista > * { padding: 1rem 0.9rem; }
+    .sitio .app-funciones.app__lista h3 { font-size: 0.9375rem; }
+    .sitio .app-funciones.app__lista p { font-size: 0.8125rem; }
+}
+
+/* ============================================================
+   SIN AMARILLO EN ENLACES NI ICONOS
+   Cabecera, perfil, carrito, menú y franja superior en azul marino o
+   blanco. El dorado ya no pinta enlaces ni iconos de la parte superior.
+   ============================================================ */
+.sitio .cabecera__enlace svg,
+.sitio .compra-cuenta svg,
+.sitio .compra-carrito svg { color: var(--marino-900); }
+.sitio .avisos svg { color: rgba(255, 255, 255, 0.8); }
+.sitio .menu a[data-destacado] { color: var(--marino-900); font-weight: 600; }
+.sitio .tarjeta-libro:hover .libro__titulo { color: var(--marino-700); }
+.sitio .explorar__ver { color: var(--marino-900); }
+.sitio .pie h2 { color: var(--blanco); }
+.sitio .oscuro .enlace-mas:hover { color: var(--blanco); text-decoration: underline; text-underline-offset: 3px; }
+.sitio .asistente-tienda .asistente-abrir svg { color: var(--blanco); }
+.sitio .barra-movil__enlace.active { background: #eef1f5; }
+.sitio .barra-movil__enlace.active svg { color: var(--marino-900); }
+/* Botones sobre fondos oscuros: blancos con texto azul, no dorados. */
+.sitio .oscuro .boton:not(.boton--blanco):not(.boton--linea) { background: var(--blanco); border-color: var(--blanco); color: var(--marino-900); }
+.sitio .oscuro .boton:not(.boton--blanco):not(.boton--linea):hover { background: #e9eef3; border-color: #e9eef3; }
+
+/* ============================================================
+   OFERTAS VIGENTES
+   Tarjetas claras: el azul oscuro apagaba las portadas. Fondo blanco,
+   borde fino, porcentaje en rojo de oferta y botón azul marino.
+   ============================================================ */
+.sitio .ofertas { background: var(--fondo-alt); }
+.sitio .oferta-tarjeta { background: var(--blanco); color: var(--tinta); border: 1px solid var(--linea); border-radius: 14px; box-shadow: 0 1px 2px rgba(17, 24, 32, 0.04); }
+.sitio .oferta-tarjeta:hover { transform: translateY(-3px); box-shadow: 0 16px 32px -20px rgba(17, 24, 32, 0.3); }
+.sitio .oferta-tarjeta::before { content: none; }
+.sitio .oferta-tarjeta__porcentaje { background: #b12704; color: var(--blanco); font-size: 0.8125rem; border-radius: 6px; padding: 0.2rem 0.5rem; }
+.sitio .oferta-tarjeta .libro__categoria { color: var(--texto-3); }
+.sitio .oferta-tarjeta h3 { color: var(--tinta); font-size: 1rem; font-weight: 600; }
+.sitio .oferta-tarjeta__autor { color: var(--texto-2); }
+.sitio .oferta-tarjeta .precio.oferta { background: none; }
+.sitio .oferta-tarjeta .precio.oferta .oferta__anterior { color: var(--texto-3); }
+.sitio .oferta-tarjeta .precio.oferta, .sitio .oferta-tarjeta .precio.oferta .oferta__final { color: #b12704; }
+.sitio .oferta-tarjeta__ahorro { color: #b12704; font-weight: 500; }
+.sitio .oferta-tarjeta .boton--compra { background: var(--marino-900); border-color: var(--marino-900); color: var(--blanco); }
+.sitio .oferta-tarjeta .boton--compra:hover { background: var(--marino-700); border-color: var(--marino-700); }
+.sitio .oferta-tarjeta .enlace-texto { color: var(--marino-900); }
+
+/* Aplicación y Descargar en el móvil: el velo de la estantería baja desde arriba. */
+@media (max-width: 1023px) {
+    .sitio .app-portada::before, .sitio .descargar-portada::before {
+        background:
+            linear-gradient(180deg, rgba(233, 223, 205, 0.9) 0%, rgba(233, 223, 205, 0.65) 55%, rgba(233, 223, 205, 0.3) 100%),
+            url('./assets/estanteria-clara.svg') center bottom / auto 100% repeat-x;
+    }
+}
+.sitio .pie a:hover, .sitio .pie a[aria-current='page'] { color: var(--blanco); text-decoration: underline; text-underline-offset: 3px; }
+/* Portadas de Aplicación y Descargar: el contenido arranca arriba, sin un
+   gran vacío sobre el título. */
+.sitio .app-portada, .sitio .descargar-portada { padding-block: clamp(28px, 3.5vw, 48px) clamp(36px, 4vw, 56px); }
+.sitio .app-portada .app__rejilla, .sitio .descargar-portada__rejilla { align-items: start; padding-bottom: 0; }
+.sitio .app-portada__texto, .sitio .descargar-portada__texto { padding-top: clamp(8px, 2vw, 32px); }
+.sitio .descargar-portada__telefono { min-height: 0; }
+/* En el móvil, Aplicación muestra primero el título y el botón, después los teléfonos. */
+@media (max-width: 1023px) { .sitio .app-portada__texto { order: -1; } }
+
+/* Asistente: al bajar por la página el botón se aparta para no tapar contenido. */
+.sitio .asistente-tienda .asistente-abrir { transition: transform var(--d-rapida) var(--ease-salida), background var(--d-rapida), translate 0.25s ease, opacity 0.25s ease; }
+.sitio .asistente-tienda[data-apartado] .asistente-abrir:not(:focus-visible) { translate: 0 calc(100% + 32px); opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .sitio .asistente-tienda .asistente-abrir { transition: opacity 0.15s; } }

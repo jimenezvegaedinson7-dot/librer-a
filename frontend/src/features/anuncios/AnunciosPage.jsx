@@ -4,7 +4,6 @@ import {
     FaCloudArrowUp,
     FaEye,
     FaEyeSlash,
-    FaFilm,
     FaPen,
     FaPlus,
     FaRotate,
@@ -14,7 +13,7 @@ import {
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Input, Select } from '../../components/ui/Form';
+import { Input, Select, Textarea } from '../../components/ui/Form';
 import { Alert } from '../../components/ui/Alert';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { TableSkeleton } from '../../components/ui/TableSkeleton';
@@ -25,6 +24,7 @@ import { Modal } from '../../components/ui/Modal';
 import { ConfirmarEliminacion } from '../../components/ui/ConfirmarEliminacion';
 import { useToast } from '../../components/providers/ToastProvider';
 import { formatearFecha } from '../../lib/utils/format';
+import CarruselPanel from './CarruselPanel';
 
 import {
     listarAnuncios,
@@ -61,6 +61,17 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
 
     const [titulo, setTitulo] = useState(anuncio?.titulo || '');
     const [estado, setEstado] = useState(anuncio ? String(anuncio.estado) : '1');
+    // Textos junto al video en la portada; vacíos usan los de la web.
+    const [textos, setTextos] = useState({
+        etiqueta: anuncio?.etiqueta || '',
+        descripcion: anuncio?.descripcion || '',
+        boton_texto: anuncio?.boton_texto || '',
+        boton_enlace: anuncio?.boton_enlace || '',
+    });
+    const cambiarTexto = (campo) => (e) => {
+        setTextos((t) => ({ ...t, [campo]: e.target.value }));
+        setError('');
+    };
     const [video, setVideo] = useState(null);
     const [error, setError] = useState('');
     const [guardando, setGuardando] = useState(false);
@@ -106,14 +117,19 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
             setError('Selecciona el video del anuncio');
             return;
         }
+        const enlace = textos.boton_enlace.trim();
+        if (enlace && (!enlace.startsWith('/') || enlace.startsWith('//'))) {
+            setError('El enlace del botón debe ser una ruta de la web, por ejemplo /catalogo');
+            return;
+        }
 
         try {
             enviandoRef.current = true;
             setGuardando(true);
             setError('');
             const res = esEdicion
-                ? await actualizarAnuncio(anuncio.id_anuncio, { titulo, estado, video })
-                : await crearAnuncio({ titulo, estado, video });
+                ? await actualizarAnuncio(anuncio.id_anuncio, { titulo, estado, video, ...textos })
+                : await crearAnuncio({ titulo, estado, video, ...textos });
             exito(res?.mensaje || 'Anuncio guardado');
             await onGuardado();
             onCerrar();
@@ -150,10 +166,51 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
                         setTitulo(e.target.value);
                         setError('');
                     }}
-                    placeholder="Ej. Promoción de temporada"
+                    placeholder="Ej. Una experiencia creada para quienes aman los libros"
                     maxLength={200}
                     requerido
                 />
+                <p className="-mt-2 text-xs text-slate-500">
+                    Se muestra como título grande al lado del video en la portada.
+                </p>
+
+                <fieldset className="space-y-3 rounded-lg border border-slate-200 p-4">
+                    <legend className="px-1 text-sm font-medium text-slate-700">Textos junto al video (opcionales)</legend>
+                    <Input
+                        label="Etiqueta superior"
+                        value={textos.etiqueta}
+                        onChange={cambiarTexto('etiqueta')}
+                        placeholder="Descubre nuestra librería"
+                        maxLength={80}
+                    />
+                    <Textarea
+                        label="Descripción"
+                        value={textos.descripcion}
+                        onChange={cambiarTexto('descripcion')}
+                        placeholder="Conoce nuestra librería, descubre nuestras colecciones y encuentra historias que pueden acompañarte en cada momento."
+                        maxLength={400}
+                        rows={3}
+                    />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <Input
+                            label="Texto del botón"
+                            value={textos.boton_texto}
+                            onChange={cambiarTexto('boton_texto')}
+                            placeholder="Explorar libros"
+                            maxLength={40}
+                        />
+                        <Input
+                            label="Enlace del botón"
+                            value={textos.boton_enlace}
+                            onChange={cambiarTexto('boton_enlace')}
+                            placeholder="/catalogo"
+                            maxLength={200}
+                        />
+                    </div>
+                    <p className="text-xs text-slate-500">
+                        Si dejas un campo vacío, la web usa el texto de ejemplo. El enlace debe ser una página de la web, como /catalogo o /nosotros.
+                    </p>
+                </fieldset>
 
                 <Select
                     label="Visibilidad"
@@ -251,7 +308,7 @@ const columnas = (enPortada) => [
     },
 ];
 
-export default function AnunciosPage() {
+function AnunciosVideo() {
     const { exito, error: mostrarError } = useToast();
     const [lista, setLista] = useState([]);
     const [cargando, setCargando] = useState(true);
@@ -325,11 +382,6 @@ export default function AnunciosPage() {
 
     return (
         <div className="space-y-4">
-            <PageHeader
-                titulo="Anuncios en video"
-                descripcion="El video que se reproduce en la portada de la web pública"
-                icono={<FaFilm />}
-                acciones={
                     <div className="summary-strip flex flex-wrap items-center gap-2">
                         <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm">
                             Total: <strong>{lista.length}</strong>
@@ -338,8 +390,6 @@ export default function AnunciosPage() {
                             En portada: <strong>{enPortada ? enPortada.titulo : 'ninguno'}</strong>
                         </span>
                     </div>
-                }
-            />
 
             <Alert tipo="info">
                 La portada muestra el anuncio activo más reciente. Si activas otro, reemplaza al que se está viendo.
@@ -420,4 +470,20 @@ export default function AnunciosPage() {
             />
         </div>
     );
+}
+
+export default function AnunciosPage(){
+    const [tipo,setTipo]=useState('imagenes');
+    function navegarTabs(e){if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const nuevo=tipo==='imagenes'?'videos':'imagenes';setTipo(nuevo);document.getElementById(`tab-anuncios-${nuevo}`)?.focus();}}
+    return <div className="space-y-4">
+        <PageHeader titulo="Anuncios de la web" descripcion="Carrusel de imágenes del inicio y anuncios en video" icono={<FaCloudArrowUp/>}/>
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Tipo de anuncios">
+            <button type="button" role="tab" tabIndex={tipo==='imagenes'?0:-1} onKeyDown={navegarTabs} aria-selected={tipo==='imagenes'} aria-controls="anuncios-imagenes" id="tab-anuncios-imagenes"
+                className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50" onClick={()=>setTipo('imagenes')}>Carrusel de imágenes</button>
+            <button type="button" role="tab" tabIndex={tipo==='videos'?0:-1} onKeyDown={navegarTabs} aria-selected={tipo==='videos'} aria-controls="anuncios-videos" id="tab-anuncios-videos"
+                className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50" onClick={()=>setTipo('videos')}>Anuncios en video</button>
+        </div>
+        {tipo==='imagenes'?<section role="tabpanel" id="anuncios-imagenes" aria-labelledby="tab-anuncios-imagenes"><CarruselPanel/></section>
+            :<section role="tabpanel" id="anuncios-videos" aria-labelledby="tab-anuncios-videos"><AnunciosVideo/></section>}
+    </div>;
 }

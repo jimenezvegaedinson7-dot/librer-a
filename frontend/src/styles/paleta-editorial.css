@@ -1,0 +1,13 @@
+/* Identidad compartida por la web pública y el panel administrativo. */
+:root {
+    --editorial-marino-950: #0a1f31;
+    --editorial-marino-900: #0d2940;
+    --editorial-marino-700: #16395a;
+    --editorial-marfil: #fff9ef;
+    --editorial-crema: #f4ebdd;
+    --editorial-crema-claro: #faf4ea;
+    --editorial-dorado: #d5a447;
+    --editorial-dorado-hover: #e3b865;
+    --editorial-dorado-oscuro: #b8892f;
+    --editorial-dorado-tinta: #6b4a12;
+}

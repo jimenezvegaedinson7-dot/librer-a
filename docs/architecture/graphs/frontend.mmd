@@ -1,4 +1,4 @@
-%% Generado 2026-10-02 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-03 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     paginas["/<br/>paginas"]
     CatalogoPage["/catalogo<br/>CatalogoPage"]
@@ -6,6 +6,11 @@ flowchart LR
     paginas["/caracteristicas<br/>paginas"]
     paginas["/nosotros<br/>paginas"]
     paginas["/descargar<br/>paginas"]
+    CuentaPage["/cuenta<br/>CuentaPage"]
+    CarritoPage["/carrito<br/>CarritoPage"]
+    CheckoutPage["/checkout<br/>CheckoutPage"]
+    MisComprasPage["/mis-compras<br/>MisComprasPage"]
+    LibroPage["/libro/:id<br/>LibroPage"]
     LoginPage["/admin/login<br/>LoginPage"]
     LoginPage --> authService(["authService"])
     VerificarEmailPage["/verificar-email<br/>VerificarEmailPage"]
@@ -43,6 +48,8 @@ flowchart LR
     ReclamacionesPage --> reclamacionesService(["reclamacionesService"])
     AnunciosPage["/anuncios<br/>AnunciosPage"]
     AnunciosPage --> anunciosService(["anunciosService"])
+    AnunciosPage --> librosService(["librosService"])
+    AnunciosPage --> carruselService(["carruselService"])
     TarifasEnvioPage["/tarifas-envio<br/>TarifasEnvioPage"]
     TarifasEnvioPage --> tarifasService(["tarifasService"])
     HistorialPage["/historial<br/>HistorialPage"]
@@ -52,6 +59,7 @@ flowchart LR
     PersonalizacionPage["/personalizacion<br/>PersonalizacionPage"]
     agenciasService --> _api_agencias{{"/api/agencias"}}
     anunciosService --> _api_anuncios{{"/api/anuncios"}}
+    carruselService --> _api_anuncios{{"/api/anuncios"}}
     authService --> _api_auth{{"/api/auth"}}
     perfilService --> _api_usuarios{{"/api/usuarios"}}
     autoresService --> _api_autores{{"/api/autores"}}
@@ -86,4 +94,14 @@ flowchart LR
     useApiPublica --> _api_anuncios{{"/api/anuncios"}}
     useApiPublica --> _api_empresa{{"/api/empresa"}}
     useApiPublica --> _api_app{{"/api/app"}}
+    useCarrusel --> _api_anuncios{{"/api/anuncios"}}
+    clienteApi --> _api_auth{{"/api/auth"}}
+    clienteApi --> _api_usuarios{{"/api/usuarios"}}
+    clienteApi --> _api_libros{{"/api/libros"}}
+    clienteApi --> _api_asistente{{"/api/asistente"}}
+    clienteApi --> _api_autores{{"/api/autores"}}
+    clienteApi --> _api_favoritos{{"/api/favoritos"}}
+    clienteApi --> _api_zonas_delivery{{"/api/zonas-delivery"}}
+    clienteApi --> _api_pagos{{"/api/pagos"}}
+    clienteApi --> _api_ventas{{"/api/ventas"}}
 

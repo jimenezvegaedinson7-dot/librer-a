@@ -81,7 +81,10 @@ const MIGRACIONES = [
     '029_retirar_rol_obsoleto.sql',
     '030_descuentos_y_anuncios.sql',
     '031_libros_nuevos.sql',
-    '032_cobertura_pallasca.sql'
+    '032_cobertura_pallasca.sql',
+    '033_canal_compra_web.sql',
+    '034_carrusel_anuncios.sql',
+    '035_textos_anuncio.sql'
 ];
 
 // En producción un fallo de migración debe detener el arranque:

@@ -5,6 +5,7 @@ const router = express.Router();
 const {
     obtenerLibros,
     obtenerLibro,
+    obtenerRelacionados,
     crearLibro,
     actualizarLibro,
     eliminarLibro
@@ -20,6 +21,7 @@ const upload = require('../middlewares/upload.middleware');
 
 // Obtener todos los libros
 router.get('/', obtenerLibros);
+router.get('/:id/relacionados', obtenerRelacionados);
 
 // Obtener un libro por ID
 router.get('/:id', obtenerLibro);

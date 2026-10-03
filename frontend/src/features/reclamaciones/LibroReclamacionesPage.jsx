@@ -38,7 +38,7 @@ function Seccion({ numero, titulo, children }) {
     return (
         <section className="space-y-4 border-t border-slate-200 pt-6">
             <h2 className="flex items-center gap-3 font-title text-lg font-semibold text-slate-900">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#004d43] text-sm font-bold text-white">{numero}</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0d2940] text-sm font-bold text-white">{numero}</span>
                 {titulo}
             </h2>
             {children}
@@ -93,16 +93,16 @@ export default function LibroReclamacionesPage() {
     };
 
     return (
-        <div className="reclamaciones-publica min-h-screen bg-[#f2f6f4] px-4 py-8 sm:py-12">
+        <div className="reclamaciones-publica min-h-screen bg-[#f6f4f0] px-4 py-8 sm:py-12">
             <div className="mx-auto mb-4 w-full max-w-3xl">
-                <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#004d43] hover:underline">
+                <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#0d2940] hover:underline">
                     <FaArrowLeft aria-hidden="true" /> Volver a Librería del Saber
                 </Link>
             </div>
             <main className="mx-auto w-full max-w-3xl rounded-2xl border border-[#cfcfcf] bg-white p-5 shadow-sm sm:p-8">
-                <header className="flex flex-col gap-4 border-b-2 border-[#004d43] pb-5 sm:flex-row sm:items-center sm:justify-between">
+                <header className="flex flex-col gap-4 border-b-2 border-[#0d2940] pb-5 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#004d43] text-2xl text-white" aria-hidden="true">
+                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0d2940] text-2xl text-white" aria-hidden="true">
                             <FaBookOpen />
                         </span>
                         <div>
@@ -120,7 +120,7 @@ export default function LibroReclamacionesPage() {
 
                 {registrada ? (
                     <div className="space-y-4 py-8 text-center">
-                        <FaCircleCheck className="mx-auto text-5xl text-[#004d43]" aria-hidden="true" />
+                        <FaCircleCheck className="mx-auto text-5xl text-[#0d2940]" aria-hidden="true" />
                         <h2 className="font-title text-2xl font-semibold text-slate-900">Hoja N.° {registrada.numero}</h2>
                         <p className="text-slate-700">{registrada.mensaje}</p>
                         {registrada.fecha_limite && (
