@@ -136,9 +136,25 @@ test('ubicación y libros de un autor con distintas formas de preguntar',async({
         await preguntar(chat,pregunta);await expect(ultima(chat)).toContainText(base.titulo);await expect(ultima(chat)).not.toContainText('1984');
     }
 });
-test('en pantallas pequeñas tocar fuera del chat lo cierra y vuelve al icono',async({page})=>{
-    await page.setViewportSize({width:390,height:844});await preparar(page);const chat=await abrir(page);
+for(const ancho of [390,1366])test(`${ancho}px: tocar fuera del chat lo cierra y vuelve al icono`,async({page})=>{
+    await page.setViewportSize({width:ancho,height:844});await preparar(page);const chat=await abrir(page);
     await chat.getByLabel('Tu pregunta sobre la librería',{exact:true}).click();await expect(chat).toHaveCount(1);
     await page.mouse.click(30,30);await expect(chat).toHaveCount(0);
     await expect(page.getByRole('button',{name:'Abrir asistente de la librería',exact:true})).toBeVisible();
+});
+
+test('la primera apertura muestra el portal con sonido; las siguientes abren directo',async({page})=>{
+    await page.emulateMedia({reducedMotion:'no-preference'});
+    await page.addInitScript(()=>{const O=window.AudioContext;window.__osc=0;window.AudioContext=class extends O{createOscillator(){window.__osc++;return super.createOscillator();}};});
+    await preparar(page);const boton=page.getByRole('button',{name:'Abrir asistente de la librería',exact:true});
+    await boton.click();const chat=page.getByRole('dialog',{name:'Asistente de la librería',exact:true});
+    await expect(chat.locator('.asistente-intro')).toHaveCount(1);
+    expect(await page.evaluate(()=>window.__osc)).toBeGreaterThan(0);
+    // El portal no bloquea: se puede escribir mientras se desvanece y luego desaparece.
+    await chat.getByLabel('Tu pregunta sobre la librería',{exact:true}).fill('hola');
+    await expect(chat.locator('.asistente-intro')).toHaveCount(0,{timeout:4000});
+    await chat.getByRole('button',{name:'Cerrar asistente',exact:true}).click();
+    const sonidos=await page.evaluate(()=>window.__osc);
+    await boton.click();await expect(chat).toHaveCount(1);await expect(chat.locator('.asistente-intro')).toHaveCount(0);
+    expect(await page.evaluate(()=>window.__osc)).toBe(sonidos);
 });

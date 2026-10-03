@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FaPaperPlane, FaXmark, FaArrowRotateLeft } from 'react-icons/fa6';
 import IconoIA from './IconoIA';
+import { sonarPortal } from './sonidoPortal';
 import { clienteApi } from '../tienda/clienteApi';
 import { listaLibros, libroComercial } from '../tienda/libroComercial';
 import ComprarLibro from '../tienda/ComprarLibro';
@@ -77,18 +78,32 @@ export default function AsistenteTienda({ legal }) {
     const idActual = Number(/^\/libro\/(\d+)$/.exec(pathname)?.[1]) || undefined;
     useEffect(()=>{montado.current=true;return()=>{montado.current=false;};},[]);
     useEffect(()=>{if(abierto)campo.current?.focus();},[abierto]);
-    // En pantallas pequeñas, tocar fuera del chat lo cierra y vuelve al icono.
+    // Tocar o hacer clic fuera del chat lo cierra y vuelve al icono.
     const raiz=useRef(null);
     useEffect(()=>{
         if(!abierto)return undefined;
         const alTocar=e=>{
-            if(!window.matchMedia('(max-width: 760px)').matches || raiz.current?.contains(e.target))return;
+            if(raiz.current?.contains(e.target))return;
             setAbierto(false);
         };
         document.addEventListener('pointerdown',alTocar);
         return()=>document.removeEventListener('pointerdown',alTocar);
     },[abierto]);
     useEffect(()=>{if(abierto)bajar();},[mensajes,ocupado,abierto,escritos,bajar]);
+    // Primera apertura de la visita: presentación breve con una campanilla. Las siguientes
+    // abren directo para no cansar.
+    const [intro,setIntro]=useState(false);
+    const introVista=useRef(false);
+    function abrir(){
+        let primera=!introVista.current;
+        try{primera=primera && sessionStorage.getItem('asistente-intro')!=='1';sessionStorage.setItem('asistente-intro','1');}catch{/* sin almacenamiento: solo esta visita */}
+        introVista.current=true;
+        if(primera){
+            sonarPortal();
+            if(!movimientoReducido()){setIntro(true);setTimeout(()=>{if(montado.current)setIntro(false);},1450);}
+        }
+        setAbierto(true);
+    }
     function cerrar(){setAbierto(false);boton.current?.focus();}
     function agregar(mensaje){setMensajes(prev=>[...prev.slice(-29),{...mensaje,id:siguiente.current++}]);}
     async function enviar(texto = pregunta) {
@@ -151,11 +166,16 @@ export default function AsistenteTienda({ legal }) {
     function reiniciar(){if(bloqueo.current)return;setMensajes([bienvenida]);setEscritos(new Set());contexto.current=[];contextoServidor.current='';setFecha(null);setPregunta('');campo.current?.focus();}
     return <div ref={raiz} className="asistente-tienda">
         <button ref={boton} type="button" className="asistente-abrir" aria-label="Abrir asistente de la librería"
-            aria-expanded={abierto} aria-controls="asistente-panel" onClick={()=>abierto?cerrar():setAbierto(true)}>
+            aria-expanded={abierto} aria-controls="asistente-panel" onClick={()=>abierto?cerrar():abrir()}>
             <span className="asistente-abrir__icono"><IconoIA pensando={ocupado}/></span>
         </button>
-        {abierto && <section id="asistente-panel" className="asistente-panel" role="dialog" aria-modal="false" aria-labelledby="asistente-titulo"
+        {abierto && <section id="asistente-panel" className={`asistente-panel${intro?' asistente-panel--portal':''}`} role="dialog" aria-modal="false" aria-labelledby="asistente-titulo"
             onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();cerrar();}}}>
+            {intro && <div className="asistente-intro" aria-hidden="true">
+                <span className="asistente-intro__anillo"/>
+                <span className="asistente-intro__avatar"><IconoIA/></span>
+                <div className="asistente-intro__pie"><p className="asistente-intro__texto">Conectando con tu asistente</p><span className="asistente-intro__barra"/></div>
+            </div>}
             <header className="asistente-cabecera"><span className="asistente-avatar"><IconoIA pensando={ocupado}/></span><div className="asistente-cabecera__texto"><h2 id="asistente-titulo">Asistente de la librería</h2><p>Catálogo e información de la tienda</p></div>
                 <button type="button" className="asistente-icono" aria-label="Cerrar asistente" onClick={cerrar}><FaXmark aria-hidden="true"/></button>
             </header>
