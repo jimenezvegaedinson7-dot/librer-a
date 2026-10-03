@@ -4,8 +4,9 @@ const API='http://127.0.0.1:59999/api';
 const cliente={id_usuario:2,nombre:'Cliente',apellido:'Web',email:'cliente@example.test',rol:'cliente',estado:1};
 const libro={id_libro:1,titulo:'Libro de prueba web',autor:'Autor de prueba',categoria:'Novela',precio:100,precio_final:75,descuento_vigente:1,descuento_porcentaje_efectivo:25,stock:5,estado:1,
     portada:'data:image/gif;base64,R0lGODlhAQABAAAAACw=',sinopsis:'Descripción del libro de prueba.'};
+const PORTADA='data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
 async function api(page,{rol='cliente',fallarPrimera=false}={}) {
-    const ordenes=[];let pagada=false,cancelada=false;
+    const ordenes=[],favoritosQuitados=[];let pagada=false,cancelada=false,favoritos=[{...libro,portada:PORTADA}];
     await page.addInitScript(()=>{
         localStorage.setItem('token','token-administrador');
         localStorage.setItem('usuario',JSON.stringify({id_usuario:1,nombre:'Administrador',rol:'administrador'}));
@@ -26,13 +27,15 @@ async function api(page,{rol='cliente',fallarPrimera=false}={}) {
             const envio=req.postDataJSON().tipo_entrega==='domicilio'?7.5:0;
             return route.fulfill({status:201,json:{success:true,data:{id_venta:10,order_id:'orden_web_10',total:75+envio,costo_envio:envio,checkout_url:`${API}/pagos/checkout/orden_web_10`}}});
         }
-        if(ruta==='/api/ventas/mis-ventas')return route.fulfill({json:{success:true,data:[{id_venta:10,canal_compra:'web',origen:'app',cobertura_entrega:'pallasca',tipo_entrega:'tienda',estado:cancelada?'cancelada':pagada?'pagada':'pendiente',estado_entrega:'pendiente',total:75,costo_envio:0,external_reference:'orden_web_10',detalle:[{id_libro:1,titulo:libro.titulo,cantidad:1,precio_unitario:75,subtotal:75}]}]}});
+        if(ruta==='/api/ventas/mis-ventas')return route.fulfill({json:{success:true,data:[{id_venta:10,canal_compra:'web',origen:'app',cobertura_entrega:'pallasca',tipo_entrega:'tienda',estado:cancelada?'cancelada':pagada?'pagada':'pendiente',estado_entrega:'pendiente',total:75,costo_envio:0,external_reference:'orden_web_10',detalle:[{id_libro:1,titulo:libro.titulo,portada:PORTADA,cantidad:1,precio_unitario:75,subtotal:75}]}]}});
         if(ruta==='/api/pagos/orden_web_10'){pagada=true;return route.fulfill({json:{success:true,data:{status:'APPROVED'}}});}
+        if(ruta==='/api/favoritos')return route.fulfill({json:{success:true,data:favoritos}});
+        if(ruta==='/api/favoritos/1' && req.method()==='DELETE'){favoritosQuitados.push(req.headers().authorization);favoritos=[];return route.fulfill({json:{success:true}});}
         if(ruta==='/api/anuncios')return route.fulfill({json:{success:true,anuncio:null}});
         if(ruta==='/api/app/version')return route.fulfill({json:{version:'1.0.4',versionCode:5,sha256:'a'.repeat(64),apkUrl:'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.4/libreria-1.0.4.apk'}});
         return route.fulfill({json:{success:true,data:[]}});
     });
-    return {ordenes,cancelar:()=>{cancelada=true;}};
+    return {ordenes,favoritosQuitados,cancelar:()=>{cancelada=true;}};
 }
 async function login(page) {
     await page.getByLabel('Correo electrónico',{exact:true}).fill(cliente.email);
@@ -118,4 +121,25 @@ test('pago cancelado conserva el carrito y libera el intento para una nueva comp
     await page.locator('.cabecera .compra-carrito').click();
     await page.getByRole('link',{name:'Continuar con la compra',exact:true}).click();
     await expect(page.getByRole('button',{name:'Crear pedido y continuar al pago',exact:true})).toBeVisible();
+});
+
+test('mis compras muestra la portada y favoritos se ve desde la cabecera y se puede quitar',async({page})=>{
+    const control=await api(page);await page.goto('/cuenta');await login(page);
+    await expect(page.getByRole('heading',{name:'Mi cuenta',exact:true})).toBeVisible();
+    await page.goto('/mis-compras');
+    const compra=page.locator('.compra-registro').first();
+    await expect(compra.getByAltText(`Portada de ${libro.titulo}`)).toBeVisible();
+    await expect(compra.getByRole('link',{name:`Ver ${libro.titulo}`,exact:true})).toHaveAttribute('href','/libro/1');
+    await page.getByRole('link',{name:'Mis favoritos',exact:true}).first().click();
+    await expect(page.getByRole('heading',{name:'Mis favoritos',exact:true})).toBeVisible();
+    await expect(page.getByRole('heading',{name:libro.titulo,level:2})).toBeVisible();
+    await expect(page.getByAltText(`Portada de ${libro.titulo}`)).toBeVisible();
+    await page.getByRole('button',{name:`Quitar ${libro.titulo} de favoritos`,exact:true}).click();
+    await expect(page.getByText('Todavía no tienes favoritos')).toBeVisible();
+    expect(control.favoritosQuitados).toEqual(['Bearer token-cliente']);
+});
+test('favoritos sin sesión pide ingresar',async({page})=>{
+    await api(page);await page.goto('/favoritos');
+    await expect(page.getByText('Inicia sesión para ver tus libros favoritos.')).toBeVisible();
+    await expect(page.getByRole('link',{name:'Ingresar',exact:true})).toHaveAttribute('href','/cuenta?continuar=/favoritos');
 });

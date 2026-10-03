@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { FaArrowsRotate, FaReceipt } from 'react-icons/fa6';
 import { clienteApi, checkoutSeguro } from './clienteApi';
 import { useTienda } from './TiendaContext';
+import PortadaLibro from './PortadaLibro';
 import { soles } from '../lib/formato';
 import { descripcionEntrega, ubicacionEntrega } from '../../lib/utils/entrega';
 import { formatearFecha } from '../../lib/utils/format';
@@ -48,7 +49,8 @@ export default function MisComprasPage() {
                         </header>
                         <div className="compra-registro__cuerpo">
                             <ul className="compra-registro__libros">{(v.detalle || []).map(i=><li key={i.id_libro}>
-                                <span>{i.titulo} <small>× {i.cantidad}</small></span><span>{soles(i.subtotal)}</span></li>)}</ul>
+                                <Link to={`/libro/${Number(i.id_libro)}`} className="compra-registro__portada" aria-label={`Ver ${i.titulo}`}><PortadaLibro libro={i} mini/></Link>
+                                <span className="compra-registro__titulo"><Link to={`/libro/${Number(i.id_libro)}`}>{i.titulo}</Link> <small>× {i.cantidad}</small></span><span>{soles(i.subtotal)}</span></li>)}</ul>
                             <dl className="compra-registro__entrega">
                                 <div><dt>Entrega</dt><dd>{descripcionEntrega(v)}</dd></div>
                                 <div><dt>Estado de la entrega</dt><dd>{entrega[v.estado_entrega] || v.estado_entrega || 'Pendiente'}</dd></div>

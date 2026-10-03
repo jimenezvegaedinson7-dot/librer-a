@@ -241,6 +241,7 @@ const obtenerPorUsuario = async (id_usuario) => {
             d.id_venta,
             d.id_libro,
             l.titulo,
+            l.portada,
             d.cantidad,
             d.precio_unitario,
             d.subtotal
@@ -264,6 +265,8 @@ const obtenerPorUsuario = async (id_usuario) => {
         detallePorVenta.get(detalle.id_venta).push({
             id_libro: detalle.id_libro,
             titulo: detalle.titulo,
+            // La portada permite mostrar el libro en Mis compras (web y app).
+            portada: detalle.portada || null,
             cantidad: Number(detalle.cantidad),
             precio_unitario: Number(
                 detalle.precio_unitario

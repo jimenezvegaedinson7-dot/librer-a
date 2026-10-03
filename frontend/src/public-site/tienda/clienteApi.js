@@ -56,6 +56,7 @@ export const clienteApi = {
         }
     },
     autor: id => peticionCliente(`/autores/${id}`, {autenticada:false}),
+    favoritos: () => peticionCliente('/favoritos'),
     favorito: id => peticionCliente(`/favoritos/${id}`),
     agregarFavorito: id => peticionCliente(`/favoritos/${id}`, {method:'POST'}),
     quitarFavorito: id => peticionCliente(`/favoritos/${id}`, {method:'DELETE'}),

@@ -36,6 +36,7 @@ const CuentaClientePage = lazyConReintento(() => import('../public-site/tienda/C
 const CarritoWebPage = lazyConReintento(() => import('../public-site/tienda/CarritoPage'));
 const CheckoutWebPage = lazyConReintento(() => import('../public-site/tienda/CheckoutPage'));
 const MisComprasWebPage = lazyConReintento(() => import('../public-site/tienda/MisComprasPage'));
+const FavoritosWebPage = lazyConReintento(() => import('../public-site/tienda/FavoritosPage'));
 const LibroPublicoPage = lazyConReintento(() => import('../public-site/tienda/LibroPage'));
 
 // Páginas de la web pública: sin pantalla de carga del panel.
@@ -85,6 +86,7 @@ const router = createBrowserRouter([
             { path: '/carrito', element: publica(<CarritoWebPage />) },
             { path: '/checkout', element: publica(<CheckoutWebPage />) },
             { path: '/mis-compras', element: publica(<MisComprasWebPage />) },
+            { path: '/favoritos', element: publica(<FavoritosWebPage />) },
             { path: '/libro/:id', element: publica(<LibroPublicoPage />) },
         ],
     },

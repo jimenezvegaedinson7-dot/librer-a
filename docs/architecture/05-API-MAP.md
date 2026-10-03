@@ -62,10 +62,10 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 | POST | `/api/comprobantes/:id/anular` | controllers/comprobante.controller.js#anularComprobante | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT + admin |
 | GET | `/api/empresa` | controllers/empresa.controller.js#obtenerEmpresa | — | features/comprobantes/ComprobanteViewModal.jsx<br>features/configuracion/EmpresaPage.jsx<br>features/reclamaciones/LibroReclamacionesPage.jsx<br>features/ventas/EmitirComprobanteModal.jsx<br>public-site/PublicLayout.jsx | — | Pública |
 | PUT | `/api/empresa` | controllers/empresa.controller.js#actualizarEmpresa | JWT + rol:administrador | features/configuracion/EmpresaPage.jsx | — | JWT + admin |
-| GET | `/api/favoritos` | controllers/favorito.controller.js#listarMisFavoritos | JWT | — | screens/favoritos_screen.dart | JWT |
+| GET | `/api/favoritos` | controllers/favorito.controller.js#listarMisFavoritos | JWT | public-site/tienda/FavoritosPage.jsx | screens/favoritos_screen.dart | JWT |
 | GET | `/api/favoritos/:idLibro` | controllers/favorito.controller.js#estadoFavorito | JWT | public-site/tienda/AccionesLibro.jsx | screens/detalle_libro_screen.dart | JWT |
 | POST | `/api/favoritos/:idLibro` | controllers/favorito.controller.js#agregarFavorito | JWT | public-site/tienda/AccionesLibro.jsx | screens/detalle_libro_screen.dart | JWT |
-| DELETE | `/api/favoritos/:idLibro` | controllers/favorito.controller.js#quitarFavorito | JWT | public-site/tienda/AccionesLibro.jsx | screens/detalle_libro_screen.dart<br>screens/favoritos_screen.dart | JWT |
+| DELETE | `/api/favoritos/:idLibro` | controllers/favorito.controller.js#quitarFavorito | JWT | public-site/tienda/AccionesLibro.jsx<br>public-site/tienda/FavoritosPage.jsx | screens/detalle_libro_screen.dart<br>screens/favoritos_screen.dart | JWT |
 | GET | `/api/historial/mi-historial` | controllers/historial.controller.js#obtenerMiHistorial | JWT | — | — | JWT |
 | POST | `/api/historial` | controllers/historial.controller.js#crearHistorial | JWT + rol:administrador | — | — | JWT + admin |
 | GET | `/api/historial` | controllers/historial.controller.js#obtenerHistorial | JWT + rol:administrador | features/historial/HistorialPage.jsx | — | JWT + admin |
@@ -135,7 +135,7 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 | POST | `/api/zonas-delivery` | controllers/zonaDelivery.controller.js#crearZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
 | PUT | `/api/zonas-delivery/:id` | controllers/zonaDelivery.controller.js#actualizarZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
 
-## Endpoints compartidos por React y Flutter (27)
+## Endpoints compartidos por React y Flutter (28)
 
 - `POST /api/auth/registro`
 - `POST /api/auth/login`
@@ -147,6 +147,7 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 - `POST /api/auth/2fa/setup`
 - `POST /api/auth/2fa/confirm`
 - `POST /api/auth/2fa/disable`
+- `GET /api/favoritos`
 - `GET /api/favoritos/:idLibro`
 - `POST /api/favoritos/:idLibro`
 - `DELETE /api/favoritos/:idLibro`

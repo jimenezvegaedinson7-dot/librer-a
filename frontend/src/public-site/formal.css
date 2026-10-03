@@ -499,3 +499,44 @@
     .sitio .asistente-tienda .asistente-abrir { width: 60px; height: 60px; }
     .sitio .asistente-tienda .asistente-abrir__icono { width: 60px; height: 60px; }
 }
+
+/* Mis compras: portada pequeña de cada libro, enlazada a su ficha. */
+.sitio .compra-registro .compra-registro__libros li { align-items: center; }
+.sitio .compra-registro__portada { flex: none; width: 46px; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 6px rgba(13, 41, 64, 0.18); }
+.sitio .compra-registro__portada .ficha-portada { width: 46px; }
+.sitio .compra-registro__portada img, .sitio .compra-registro__portada .ficha-portada-vacia { display: block; width: 46px; height: 69px; object-fit: cover; }
+.sitio .compra-registro__portada .ficha-portada-vacia span { display: none; }
+.sitio .compra-registro__titulo { flex: 1; min-width: 0; }
+.sitio .compra-registro__titulo a { color: var(--tinta); text-decoration: none; font-weight: 600; }
+.sitio .compra-registro__titulo a:hover { text-decoration: underline; }
+
+/* Cabecera: acceso a favoritos con el mismo estilo que el carrito. */
+.sitio .compra-favoritos { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14px; font-weight: 600; color: var(--marino-900); }
+.sitio .compra-favoritos svg { width: 18px; height: 18px; color: #c0392b; }
+@media (max-width: 760px) {
+    .sitio .compra-favoritos { min-width: 32px; justify-content: center; gap: 4px; }
+    .sitio .compra-favoritos span { display: none; }
+}
+
+/* Mis favoritos: tarjetas con portada, precio, stock y acciones. */
+.sitio .favoritos-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 16px; margin: 20px 0 0; padding: 0; list-style: none; }
+.sitio .favorito { display: flex; gap: 16px; padding: 16px; border: 1px solid var(--linea); border-radius: 12px; background: var(--blanco); }
+.sitio .favorito__portada { flex: none; width: 96px; border-radius: 6px; overflow: hidden; box-shadow: 0 6px 14px -8px rgba(13, 41, 64, 0.45); }
+.sitio .favorito__portada .ficha-portada, .sitio .favorito__portada img, .sitio .favorito__portada .ficha-portada-vacia { display: block; width: 96px; height: 144px; object-fit: cover; }
+.sitio .favorito__cuerpo { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.sitio .favorito h2 { margin: 0; font-size: 1rem; line-height: 1.3; }
+.sitio .favorito h2 a { color: var(--tinta); text-decoration: none; }
+.sitio .favorito h2 a:hover { text-decoration: underline; }
+.sitio .favorito__autor { margin: 0; font-size: 0.875rem; color: var(--texto-2); }
+.sitio .favorito__precio { margin: 4px 0 0; color: var(--tinta); }
+.sitio .favorito__precio s { color: var(--texto-3); font-size: 0.875rem; }
+.sitio .favorito__oferta { color: #b12704; font-size: 0.8125rem; font-weight: 700; }
+.sitio .favorito__stock { margin: 0; font-size: 0.8125rem; color: #1e7a3c; }
+.sitio .favorito__stock--agotado { color: var(--texto-3); }
+.sitio .favorito__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: auto; padding-top: 8px; }
+.sitio .favorito__quitar { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--texto-2); }
+.sitio .favorito__quitar svg { color: #c0392b; }
+.sitio .favorito__cuerpo > p, .sitio .favorito__cuerpo > h2 { margin: 0; }
+.sitio .favorito__cuerpo { gap: 6px; }
+.sitio .favorito__acciones .compra-libro { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0; }
+.sitio .favorito__acciones .compra-libro .boton { width: auto; margin: 0; white-space: nowrap; }

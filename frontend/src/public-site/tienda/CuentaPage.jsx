@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { FaArrowRightFromBracket, FaBookOpen, FaBoxOpen, FaCartShopping, FaChevronRight, FaMobileScreen } from 'react-icons/fa6';
+import { FaArrowRightFromBracket, FaBookOpen, FaBoxOpen, FaCartShopping, FaChevronRight, FaHeart, FaMobileScreen } from 'react-icons/fa6';
 import { clienteApi } from './clienteApi';
 import { useTienda } from './TiendaContext';
 
@@ -73,12 +73,14 @@ export default function CuentaPage() {
                 <nav className="cuenta-accesos" aria-label="Accesos de mi cuenta">
                     <Link to="/mis-compras" className="cuenta-acceso"><FaBoxOpen aria-hidden="true"/>
                         <span><strong>Mis compras</strong><small>Estado del pago y de la entrega</small></span><FaChevronRight aria-hidden="true"/></Link>
+                    <Link to="/favoritos" className="cuenta-acceso"><FaHeart aria-hidden="true"/>
+                        <span><strong>Mis favoritos</strong><small>Los libros que guardaste</small></span><FaChevronRight aria-hidden="true"/></Link>
                     <Link to="/carrito" className="cuenta-acceso" aria-label="Ver carrito"><FaCartShopping aria-hidden="true"/>
                         <span><strong>Mi carrito</strong><small>{unidades ? `${unidades} ${unidades===1?'libro':'libros'} por comprar` : 'Tu carrito está vacío'}</small></span><FaChevronRight aria-hidden="true"/></Link>
                     <Link to="/catalogo" className="cuenta-acceso"><FaBookOpen aria-hidden="true"/>
                         <span><strong>Catálogo</strong><small>Precios y stock actuales</small></span><FaChevronRight aria-hidden="true"/></Link>
                     <Link to="/descargar" className="cuenta-acceso"><FaMobileScreen aria-hidden="true"/>
-                        <span><strong>La app</strong><small>Favoritos y reservas con la misma cuenta</small></span><FaChevronRight aria-hidden="true"/></Link>
+                        <span><strong>La app</strong><small>Reservas y compras con la misma cuenta</small></span><FaChevronRight aria-hidden="true"/></Link>
                 </nav>
             </div>
         </section>;

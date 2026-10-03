@@ -30,6 +30,7 @@
 | `/carrito` | CarritoWebPage | `public-site/tienda/CarritoPage.jsx` |
 | `/checkout` | CheckoutWebPage | `public-site/tienda/CheckoutPage.jsx` |
 | `/mis-compras` | MisComprasWebPage | `public-site/tienda/MisComprasPage.jsx` |
+| `/favoritos` | FavoritosWebPage | `public-site/tienda/FavoritosPage.jsx` |
 | `/libro/:id` | LibroPublicoPage | `public-site/tienda/LibroPage.jsx` |
 | `/admin/login` | LoginPage | `features/auth/LoginPage.jsx` |
 | `/admin` | Navigate | redirección: `<Navigate to="/admin/login" replace />` |
@@ -119,6 +120,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/tienda/AccionesLibro.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos/:param`<br>`POST /api/favoritos/:param` |
 | `public-site/tienda/CheckoutPage.jsx` | `GET /api/pagos/capacidades`<br>`GET /api/ventas/:param`<br>`GET /api/zonas-delivery`<br>`POST /api/pagos/crear-orden` |
 | `public-site/tienda/CuentaPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reenviar-codigo`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/registro`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-email` |
+| `public-site/tienda/FavoritosPage.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos` |
 | `public-site/tienda/LibroPage.jsx` | `GET /api/autores/:param`<br>`GET /api/libros/:param` |
 | `public-site/tienda/MisComprasPage.jsx` | `GET /api/pagos/:param`<br>`GET /api/ventas/:param/pago`<br>`GET /api/ventas/mis-ventas` |
 | `public-site/tienda/TiendaContext.jsx` | `GET /api/libros`<br>`GET /api/usuarios/perfil`<br>`GET /api/ventas/:param` |
@@ -251,6 +253,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/tienda/clienteApi.js` | `asistente` | `POST /api/asistente` |
 | `public-site/tienda/clienteApi.js` | `libro` | `GET /api/libros/:param` |
 | `public-site/tienda/clienteApi.js` | `autor` | `GET /api/autores/:param` |
+| `public-site/tienda/clienteApi.js` | `favoritos` | `GET /api/favoritos` |
 | `public-site/tienda/clienteApi.js` | `favorito` | `GET /api/favoritos/:param` |
 | `public-site/tienda/clienteApi.js` | `agregarFavorito` | `POST /api/favoritos/:param` |
 | `public-site/tienda/clienteApi.js` | `quitarFavorito` | `DELETE /api/favoritos/:param` |
