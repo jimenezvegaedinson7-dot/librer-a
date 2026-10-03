@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHeart, FaHeartCrack } from 'react-icons/fa6';
+import { FaChevronLeft, FaHeart, FaHeartCrack } from 'react-icons/fa6';
 import { clienteApi } from './clienteApi';
 import { useTienda } from './TiendaContext';
 import { listaLibros } from './libroComercial';
@@ -32,6 +32,7 @@ export default function FavoritosPage() {
     }
 
     return <section className="compra-pagina contenedor favoritos">
+        <Link to="/cuenta" className="enlace-texto favoritos__volver"><FaChevronLeft aria-hidden="true"/> Mi cuenta</Link>
         <h1>Mis favoritos</h1>
         <p>Los libros que guardaste con el corazón, en la web o en la app.</p>
         {!t.usuario ? <div className="compra-vacio"><FaHeart aria-hidden="true"/><p>Inicia sesión para ver tus libros favoritos.</p><Link className="boton boton--compra" to="/cuenta?continuar=/favoritos">Ingresar</Link></div>

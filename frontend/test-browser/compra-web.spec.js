@@ -13,7 +13,7 @@ async function api(page,{rol='cliente',fallarPrimera=false}={}) {
     });
     await page.route(`${API}/**`,async route=>{
         const req=route.request(),ruta=new URL(req.url()).pathname;
-        if(ruta==='/api/libros')return route.fulfill({json:{success:true,data:[libro]}});
+        if(ruta==='/api/libros')return route.fulfill({json:{success:true,data:[{...libro,portada:PORTADA}]}});
         if(ruta==='/api/libros/1')return route.fulfill({json:{success:true,data:libro}});
         if(ruta==='/api/auth/login')return route.fulfill({json:{success:true,token:'token-cliente',data:{...cliente,rol}}});
         if(ruta==='/api/auth/registro')return route.fulfill({status:201,json:{success:true,requiere_verificacion_email:true,mensaje:'Revisa tu correo para verificar tu cuenta.'}});
@@ -27,7 +27,7 @@ async function api(page,{rol='cliente',fallarPrimera=false}={}) {
             const envio=req.postDataJSON().tipo_entrega==='domicilio'?7.5:0;
             return route.fulfill({status:201,json:{success:true,data:{id_venta:10,order_id:'orden_web_10',total:75+envio,costo_envio:envio,checkout_url:`${API}/pagos/checkout/orden_web_10`}}});
         }
-        if(ruta==='/api/ventas/mis-ventas')return route.fulfill({json:{success:true,data:[{id_venta:10,canal_compra:'web',origen:'app',cobertura_entrega:'pallasca',tipo_entrega:'tienda',estado:cancelada?'cancelada':pagada?'pagada':'pendiente',estado_entrega:'pendiente',total:75,costo_envio:0,external_reference:'orden_web_10',detalle:[{id_libro:1,titulo:libro.titulo,portada:PORTADA,cantidad:1,precio_unitario:75,subtotal:75}]}]}});
+        if(ruta==='/api/ventas/mis-ventas')return route.fulfill({json:{success:true,data:[{id_venta:10,canal_compra:'web',origen:'app',cobertura_entrega:'pallasca',tipo_entrega:'tienda',estado:cancelada?'cancelada':pagada?'pagada':'pendiente',estado_entrega:'pendiente',total:75,costo_envio:0,external_reference:'orden_web_10',detalle:[{id_libro:1,titulo:libro.titulo,cantidad:1,precio_unitario:75,subtotal:75}]}]}});
         if(ruta==='/api/pagos/orden_web_10'){pagada=true;return route.fulfill({json:{success:true,data:{status:'APPROVED'}}});}
         if(ruta==='/api/favoritos')return route.fulfill({json:{success:true,data:favoritos}});
         if(ruta==='/api/favoritos/1' && req.method()==='DELETE'){favoritosQuitados.push(req.headers().authorization);favoritos=[];return route.fulfill({json:{success:true}});}
@@ -123,14 +123,16 @@ test('pago cancelado conserva el carrito y libera el intento para una nueva comp
     await expect(page.getByRole('button',{name:'Crear pedido y continuar al pago',exact:true})).toBeVisible();
 });
 
-test('mis compras muestra la portada y favoritos se ve desde la cabecera y se puede quitar',async({page})=>{
+test('mis compras muestra la portada del catálogo y favoritos se abre desde Mi cuenta',async({page})=>{
     const control=await api(page);await page.goto('/cuenta');await login(page);
     await expect(page.getByRole('heading',{name:'Mi cuenta',exact:true})).toBeVisible();
     await page.goto('/mis-compras');
     const compra=page.locator('.compra-registro').first();
     await expect(compra.getByAltText(`Portada de ${libro.titulo}`)).toBeVisible();
     await expect(compra.getByRole('link',{name:`Ver ${libro.titulo}`,exact:true})).toHaveAttribute('href','/libro/1');
-    await page.getByRole('link',{name:'Mis favoritos',exact:true}).first().click();
+    // Favoritos vive dentro del perfil, no en la cabecera.
+    await expect(page.locator('header').getByRole('link',{name:/favoritos/i})).toHaveCount(0);
+    await page.goto('/cuenta');await page.getByRole('link',{name:/Mis favoritos/}).click();
     await expect(page.getByRole('heading',{name:'Mis favoritos',exact:true})).toBeVisible();
     await expect(page.getByRole('heading',{name:libro.titulo,level:2})).toBeVisible();
     await expect(page.getByAltText(`Portada de ${libro.titulo}`)).toBeVisible();

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
 import { FaArrowsRotate, FaReceipt } from 'react-icons/fa6';
 import { clienteApi, checkoutSeguro } from './clienteApi';
 import { useTienda } from './TiendaContext';
@@ -12,6 +12,11 @@ const estados={pendiente:'Pendiente de pago',pagada:'Pagada',entregada:'Entregad
 const entrega={pendiente:'Pendiente',preparando:'Preparando',listo_recojo:'Lista para recojo',en_camino:'En camino',entregado:'Entregada',cancelado:'Cancelada'};
 export default function MisComprasPage() {
     const t=useTienda(); const [params]=useSearchParams();
+    // Portada de cada libro: la que trae la compra o, si falta, la del catálogo
+    // que ya usa la tienda (incluye las portadas resueltas por ISBN).
+    const {catalogo}=useOutletContext() || {};
+    const portadas=useMemo(()=>new Map((catalogo?.libros || []).map(l=>[l.id,l.portada])),[catalogo?.libros]);
+    const conPortada=i=>({...i,portada:i.portada || portadas.get(Number(i.id_libro)) || null});
     const idUsuario=t.usuario?.id_usuario, confirmar=t.confirmarCompra;
     const [compras,setCompras]=useState([]),[error,setError]=useState(''),[mensaje,setMensaje]=useState(''),[ocupado,setOcupado]=useState(false),[cargando,setCargando]=useState(true);
     const cargar=useCallback(async () => {
@@ -49,7 +54,7 @@ export default function MisComprasPage() {
                         </header>
                         <div className="compra-registro__cuerpo">
                             <ul className="compra-registro__libros">{(v.detalle || []).map(i=><li key={i.id_libro}>
-                                <Link to={`/libro/${Number(i.id_libro)}`} className="compra-registro__portada" aria-label={`Ver ${i.titulo}`}><PortadaLibro libro={i} mini/></Link>
+                                <Link to={`/libro/${Number(i.id_libro)}`} className="compra-registro__portada" aria-label={`Ver ${i.titulo}`}><PortadaLibro key={conPortada(i).portada || 'sin'} libro={conPortada(i)} mini/></Link>
                                 <span className="compra-registro__titulo"><Link to={`/libro/${Number(i.id_libro)}`}>{i.titulo}</Link> <small>× {i.cantidad}</small></span><span>{soles(i.subtotal)}</span></li>)}</ul>
                             <dl className="compra-registro__entrega">
                                 <div><dt>Entrega</dt><dd>{descripcionEntrega(v)}</dd></div>

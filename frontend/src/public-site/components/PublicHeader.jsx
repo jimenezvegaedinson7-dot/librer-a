@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { FaBars, FaXmark, FaMagnifyingGlass, FaMobileScreenButton, FaLocationDot, FaChevronRight, FaTruckFast, FaStore, FaShieldHalved, FaCartShopping, FaUser, FaHeart } from 'react-icons/fa6';
+import { FaBars, FaXmark, FaMagnifyingGlass, FaMobileScreenButton, FaLocationDot, FaChevronRight, FaTruckFast, FaStore, FaShieldHalved, FaCartShopping, FaUser } from 'react-icons/fa6';
 
 import logo from '../assets/logo-f-verde-96.webp';
 import { AVISOS, NAVEGACION, SITIO } from '../config/site';
@@ -116,7 +116,6 @@ export default function PublicHeader() {
                         <Link to="/nosotros#tienda" className="cabecera__enlace"><FaLocationDot aria-hidden="true" /> <span className="cabecera__enlace-texto">Nuestra tienda<small>Pallasca, Áncash</small></span></Link>
                         <Link to="/descargar" className="boton boton--chico cabecera__descarga"><FaMobileScreenButton aria-hidden="true" /> <span className="cabecera__descarga-texto">Descargar la app</span></Link>
                         <Link to="/cuenta" className="compra-cuenta" aria-label="Mi cuenta"><FaUser aria-hidden="true"/><span className="compra-cuenta__texto">{tienda.usuario ? <small>Hola, {tienda.usuario.nombre}</small> : <small>Ingresa</small>}Mi cuenta</span></Link>
-                        <Link to="/favoritos" className="compra-favoritos" aria-label="Mis favoritos"><FaHeart aria-hidden="true"/><span>Favoritos</span></Link>
                         <Link to="/carrito" className="compra-carrito" data-cantidad={unidades} aria-label={`Carrito (${unidades})`}><FaCartShopping aria-hidden="true"/><span>Carrito ({unidades})</span></Link>
                     </div>
                 </div>
@@ -173,7 +172,6 @@ export default function PublicHeader() {
                             </nav>
                             <div className="cajon__pie">
                                 <Link to="/cuenta" onClick={()=>setAbierto(false)}>Mi cuenta y mis compras</Link>
-                                <Link to="/favoritos" onClick={()=>setAbierto(false)}>Mis favoritos</Link>
                                 <Link to="/carrito" onClick={()=>setAbierto(false)}>Mi carrito ({unidades})</Link>
                                 <Link to="/nosotros#tienda" onClick={() => setAbierto(false)}>Nuestra tienda en Pallasca</Link>
                             </div>
