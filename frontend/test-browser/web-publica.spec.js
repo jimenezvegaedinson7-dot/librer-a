@@ -351,7 +351,7 @@ test('video del inicio: el anuncio activo muestra el video y los textos del pane
     const caja = await video.boundingBox();
     const texto = await seccion.locator('.video-destacado__texto').boundingBox();
     expect(texto.x).toBeGreaterThan(caja.x + caja.width);
-    expect(Math.abs(caja.width / caja.height - 16 / 10)).toBeLessThan(0.02);
+    expect(Math.abs(caja.width / caja.height - 16 / 9)).toBeLessThan(0.02);
     expect(errores).toHaveLength(0);
 });
 
