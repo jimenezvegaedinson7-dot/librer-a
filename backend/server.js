@@ -20,6 +20,7 @@ const express = require('express');
 const crearCors = require('./src/config/cors');
 const helmet = require('helmet');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const pool = require('./src/config/database');
 const manejarErrores = require('./src/middlewares/error.middleware');
@@ -393,7 +394,41 @@ iniciarJobs();
 // el servicio no duplica nada.
 const { aplicarMigraciones } = require('./src/config/migraciones');
 
+// ===============================
+// MANTENIMIENTO DE UN SOLO USO
+// ===============================
+// Solo se ejecuta si la variable LIMPIAR_ISBN_FICTICIOS esta definida
+// ("dry-run" o "confirmar"). Es el mecanismo temporal usado para poner
+// isbn = NULL en los 25 libros con ISBN ficticio: se ejecuta como proceso
+// aparte para que su codigo de salida sea el del script, y si falla el
+// servidor NO arranca (fail-secure). Sin la variable, no hace nada.
+// La rama es de un solo uso: se elimina al terminar.
+async function ejecutarMantenimientoIsbn() {
+    const modo = process.env.LIMPIAR_ISBN_FICTICIOS;
+    if (!modo) return;
+
+    const argumentos = modo === 'dry-run' ? ['--dry-run'] : modo === 'confirmar' ? ['--confirmar'] : null;
+    if (!argumentos) {
+        console.error(`[mantenimiento] LIMPIAR_ISBN_FICTICIOS invalido: ${modo}`);
+        process.exit(1);
+    }
+
+    console.log(`[mantenimiento] Ejecutando limpieza de ISBN ficticios (${modo})`);
+    const r = spawnSync(
+        process.execPath,
+        [path.join(__dirname, 'scripts', 'limpiarIsbnFicticios.js'), ...argumentos],
+        { stdio: 'inherit', env: process.env }
+    );
+    if (r.status !== 0) {
+        console.error('[mantenimiento] La limpieza fallo; no se inicia el servidor.');
+        process.exit(1);
+    }
+    console.log('[mantenimiento] Limpieza terminada correctamente');
+}
+
 async function iniciar() {
+    await ejecutarMantenimientoIsbn();
+
     // En test la base ya está creada desde database/schema.sql y no
     // se toca el esquema (ver src/config/migraciones.js).
     if (process.env.NODE_ENV !== 'test') {
