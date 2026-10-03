@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaChevronLeft, FaChevronRight, FaPause, FaPlay } from 'react-icons/fa6';
 import useCarrusel from '../hooks/useCarrusel';
 import { urlPortada } from '../lib/formato';
 import './carrusel-inicio.css';
 
 export default function Hero({reducido}){
     const {imagenes:data,cargando,error,reintentar}=useCarrusel();
-    const [indice,setIndice]=useState(0),[pausado,setPausado]=useState(false),[hover,setHover]=useState(false),[foco,setFoco]=useState(false);
+    const [indice,setIndice]=useState(0),[hover,setHover]=useState(false),[foco,setFoco]=useState(false);
     const [oculto,setOculto]=useState(()=>typeof document!=='undefined' && document.hidden),[fallidas,setFallidas]=useState([]);
     const imagenes=useMemo(()=>{const ids=new Set();return data.filter(l=>{
         const id=Number(l.id_imagen);if(!Number.isInteger(id) || id<1 || ids.has(id) || fallidas.includes(id))return false;
@@ -18,10 +17,10 @@ export default function Hero({reducido}){
     const cambiar=paso=>setIndice(v=>imagenes.length?(v+paso+imagenes.length)%imagenes.length:0);
     useEffect(()=>{const escuchar=()=>setOculto(document.hidden);document.addEventListener('visibilitychange',escuchar);return()=>document.removeEventListener('visibilitychange',escuchar);},[]);
     useEffect(()=>{
-        if(imagenes.length<2 || reducido || pausado || hover || foco || oculto || cargando)return undefined;
+        if(imagenes.length<2 || reducido || hover || foco || oculto || cargando)return undefined;
         const id=setInterval(()=>setIndice(v=>(v+1)%imagenes.length),6000);
         return()=>clearInterval(id);
-    },[imagenes.length,reducido,pausado,hover,foco,oculto,cargando,indice]);
+    },[imagenes.length,reducido,hover,foco,oculto,cargando,indice]);
     useEffect(()=>{
         if(imagenes.length<2)return;
         const proxima=new Image();proxima.src=urlPortada(imagenes[(actual+1)%imagenes.length].imagen_url,1800);
@@ -47,13 +46,13 @@ export default function Hero({reducido}){
                 </>}
         </div>
         {!cargando && imagenes.length>1 && <div className="anuncios-inicio__controles">
-            <div className="anuncios-inicio__navegacion"><button type="button" className="anuncios-inicio__flecha" aria-label="Anuncio anterior" onClick={()=>cambiar(-1)}><FaChevronLeft aria-hidden="true"/></button>
-                <button type="button" className="anuncios-inicio__flecha" aria-label="Anuncio siguiente" onClick={()=>cambiar(1)}><FaChevronRight aria-hidden="true"/></button></div>
-            <span aria-live={pausado || foco?'polite':'off'}>{actual+1} / {imagenes.length}</span>
+            {/* Solo los puntos: las flechas, el contador y el botón de pausa
+                recargaban el banner. Se pausa al pasar el mouse o al enfocarlo,
+                y con el foco las flechas del teclado lo mueven. */}
+            <span className="visualmente-oculto" aria-live={foco?'polite':'off'}>Anuncio {actual+1} de {imagenes.length}</span>
             <div className="anuncios-inicio__puntos" aria-label="Elegir anuncio">{imagenes.slice(inicioPuntos,inicioPuntos+3).map((l,i)=>{
                 const n=inicioPuntos+i;return <button key={l.id_imagen} type="button" aria-label={`Mostrar anuncio ${n+1}`} aria-current={n===actual?'true':undefined} onClick={()=>setIndice(n)}><span/></button>;
             })}</div>
-            {!reducido && <button type="button" className="anuncios-inicio__pausa" aria-label={pausado?'Reanudar carrusel':'Pausar carrusel'} aria-pressed={pausado} onClick={()=>setPausado(v=>!v)}>{pausado?<FaPlay aria-hidden="true"/>:<FaPause aria-hidden="true"/>}</button>}
         </div>}
     </section>;
 }

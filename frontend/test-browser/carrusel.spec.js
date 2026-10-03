@@ -54,7 +54,9 @@ for(const ancho of [320,390,1440])test(`inicio ${ancho}px: banners completos, na
     await expect(page.locator('main canvas,.hero__poster,.hero__pista')).toHaveCount(0);
     await expect(page.locator('main')).not.toContainText('Una librería de verdad,');
     const caja=await carrusel.boundingBox();expect(caja.width).toBeGreaterThan(ancho*.95);
-    await carrusel.getByRole('button',{name:'Anuncio siguiente',exact:true}).click();await expect(carrusel.getByAltText('Banner de prueba 2')).toBeVisible();
+    await carrusel.getByRole('button',{name:'Mostrar anuncio 2',exact:true}).click();await expect(carrusel.getByAltText('Banner de prueba 2')).toBeVisible();
+    // Sin flechas, contador ni botón de pausa: solo los puntos.
+    for(const nombre of ['Anuncio siguiente','Anuncio anterior','Pausar carrusel'])await expect(carrusel.getByRole('button',{name:nombre,exact:true})).toHaveCount(0);
     await carrusel.focus();await carrusel.press('ArrowLeft');await expect(carrusel.getByAltText('Banner de prueba 1')).toBeVisible();
     expect(control.autorizacionPublica).toEqual([undefined]);expect(recursos.filter(r=>/HeroScene|libro-3d|texturas\.js/.test(r))).toEqual([]);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
@@ -63,7 +65,7 @@ for(const ancho of [320,390,1440])test(`inicio ${ancho}px: banners completos, na
 test('sin anuncios o con un solo banner no se inventan imágenes ni se muestran controles innecesarios',async({page})=>{
     const control=await preparar(page,{lista:[]});await page.goto('/');await expect(page.getByText('Sin imágenes publicadas todavía.',{exact:true})).toBeVisible();
     expect(control.lista).toHaveLength(0);control.lista=[imagenes[0]];await page.reload();
-    await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();await expect(page.getByRole('button',{name:'Anuncio siguiente',exact:true})).toHaveCount(0);
+    await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();await expect(page.getByRole('button',{name:'Mostrar anuncio 2',exact:true})).toHaveCount(0);
 });
 test('error y archivo roto permiten reintentar sin restaurar el libro fijo',async({page})=>{
     const control=await preparar(page,{fallo:true});await page.goto('/');await expect(page.getByText('No pudimos cargar los anuncios.',{exact:true})).toBeVisible();
@@ -73,12 +75,15 @@ test('error y archivo roto permiten reintentar sin restaurar el libro fijo',asyn
     control.lista=imagenes;await page.getByRole('button',{name:'Reintentar anuncios',exact:true}).click();await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
     await expect(page.locator('.hero__poster')).toHaveCount(0);
 });
-test('rotación automática, pausa y movimiento reducido',async({page})=>{
+test('rotación automática, pausa al pasar el mouse y movimiento reducido',async({page})=>{
     await page.emulateMedia({reducedMotion:'no-preference'});await page.clock.install();await preparar(page);await page.goto('/');await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
     await page.mouse.move(0,0);await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
-    await page.getByRole('button',{name:'Pausar carrusel',exact:true}).click();await page.mouse.move(0,0);await page.clock.fastForward(12000);await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
-    await page.getByRole('button',{name:'Reanudar carrusel',exact:true}).click();await page.evaluate(()=>document.activeElement.blur());await page.mouse.move(0,0);await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
-    await page.emulateMedia({reducedMotion:'reduce'});await expect(page.getByRole('button',{name:'Pausar carrusel',exact:true})).toHaveCount(0);
+    // Con el mouse encima se detiene; al salir sigue.
+    await page.getByAltText('Banner de prueba 2').hover();await page.clock.fastForward(12000);await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
+    await page.mouse.move(0,0);await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
+    await page.emulateMedia({reducedMotion:'reduce'});
+    // Espera a que la página registre el cambio antes de adelantar el reloj.
+    await expect.poll(()=>page.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);await page.waitForTimeout(300);
     await page.clock.fastForward(12000);await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
 });
 for(const ancho of [390,1440])test(`panel ${ancho}px: subir, editar, ordenar, ocultar y eliminar banners`,async({page})=>{

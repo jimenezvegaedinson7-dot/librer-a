@@ -6,18 +6,11 @@
 .sitio .anuncios-inicio__vacio p { margin: 0; font-size: 14px; color: var(--texto-2); }
 .sitio .anuncios-inicio__vacio > div { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .sitio .anuncios-inicio__vacio :is(a,button) { display: inline-flex; align-items: center; min-height: 44px; border: 0; background: transparent; padding: 4px 8px; font-size: 14px; font-weight: 600; color: var(--marino-900); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-.sitio .anuncios-inicio__navegacion { display: flex; gap: 8px; }
-.sitio .anuncios-inicio__flecha { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 6px; background: var(--marino-900); color: var(--blanco); cursor: pointer; }
-.sitio .anuncios-inicio__flecha svg { width: 18px; height: 18px; }
-.sitio .anuncios-inicio__flecha:hover, .sitio .anuncios-inicio__pausa:hover { background: var(--marino-700); }
-.sitio .anuncios-inicio__controles { display: flex; align-items: center; justify-content: space-between; width: min(100%,1280px); margin-inline: auto; padding: 4px 16px; gap: 12px; border-bottom: 1px solid var(--borde); }
-.sitio .anuncios-inicio__controles > span { font-size: 14px; min-width: 48px; font-variant-numeric: tabular-nums; }
+.sitio .anuncios-inicio__controles { display: flex; align-items: center; justify-content: center; width: min(100%,1280px); margin-inline: auto; padding: 2px 16px; }
 .sitio .anuncios-inicio__puntos { display: flex; justify-content: center; gap: 4px; }
-.sitio .anuncios-inicio__puntos button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; }
-.sitio .anuncios-inicio__puntos span { width: 10px; height: 10px; border: 1px solid var(--marino-900); border-radius: 50%; }
-.sitio .anuncios-inicio__puntos [aria-current=true] span { background: var(--marino-900); }
-.sitio .anuncios-inicio__pausa { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 6px; background: var(--marino-900); color: var(--blanco); cursor: pointer; }
+.sitio .anuncios-inicio__puntos button { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; }
+.sitio .anuncios-inicio__puntos span { width: 8px; height: 8px; border-radius: 999px; background: #c9d1db; transition: width 0.25s ease, background 0.25s ease; }
+.sitio .anuncios-inicio__puntos [aria-current=true] span { width: 22px; background: var(--marino-900); }
 .sitio .anuncios-inicio :is(a,button):focus-visible, .sitio .anuncios-inicio:focus-visible { outline: 2px solid var(--marino-700); outline-offset: -3px; }
 @keyframes banner-aparecer { from { opacity: .4; } to { opacity: 1; } }
-@media (max-width: 480px) { .sitio .anuncios-inicio__puntos { display: none; } }
 @media (prefers-reduced-motion: reduce) { .sitio .anuncios-inicio__marco img { animation: none; } }
