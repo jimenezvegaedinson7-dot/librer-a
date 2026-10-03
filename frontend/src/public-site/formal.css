@@ -263,7 +263,7 @@
 @media (max-width: 480px) {
     /* Solo el icono: no tapa el contenido ni la barra inferior. */
     .sitio .asistente-tienda .asistente-abrir { width: 50px; height: 50px; min-height: 0; padding: 0; justify-content: center; border-radius: 50%; }
-    .sitio .asistente-tienda .asistente-abrir span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .sitio .asistente-tienda .asistente-abrir__texto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     /* Hoja sobre la barra inferior, sin taparla. */
     .sitio .asistente-tienda .asistente-panel { position: fixed; inset: auto 0 calc(64px + env(safe-area-inset-bottom)) 0; width: 100%; max-height: calc(100dvh - 140px - env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; animation-name: asistente-hoja; }
 }
@@ -453,3 +453,76 @@
 .sitio .asistente-tienda .asistente-abrir { transition: transform var(--d-rapida) var(--ease-salida), background var(--d-rapida), translate 0.25s ease, opacity 0.25s ease; }
 .sitio .asistente-tienda[data-apartado] .asistente-abrir:not(:focus-visible) { translate: 0 calc(100% + 32px); opacity: 0; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .sitio .asistente-tienda .asistente-abrir { transition: opacity 0.15s; } }
+
+/* ---------- Asistente: icono de IA y efecto de pensar ---------- */
+.sitio .icono-ia { position: relative; display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 50% 28%, #ffffff, #dde6f0 70%, #c9d5e3); box-shadow: inset 0 -3px 6px rgba(13, 41, 64, 0.18), 0 2px 6px rgba(0, 0, 0, 0.25); }
+.sitio .avatar-ia { display: block; width: 100%; height: 100%; }
+.sitio .avatar-ia g { transform-box: view-box; }
+/* Reposo: respira, parpadea, mira a los lados, mueve la cabeza y saluda. */
+.sitio .avatar-ia__cuerpo { transform-origin: 50px 100px; animation: ia-respirar 3.6s ease-in-out infinite; }
+.sitio .avatar-ia__cabeza { transform-origin: 50px 60px; animation: ia-cabeza 9s ease-in-out infinite; transition: transform 0.4s ease; }
+.sitio .avatar-ia__ojos { transform-origin: 50px 40.5px; animation: ia-parpadear 4.6s infinite; }
+.sitio .avatar-ia__pupilas { animation: ia-mirar 7s ease-in-out infinite; transition: transform 0.3s ease; }
+.sitio .avatar-ia__cejas { transition: transform 0.3s ease; }
+.sitio .avatar-ia__brazo--saludo { transform-origin: 75px 77px; animation: ia-saludar 9s ease-in-out infinite; }
+.sitio .avatar-ia__brazo--pensar { transform-origin: 25px 77px; transition: transform 0.55s cubic-bezier(0.3, 1.3, 0.5, 1); }
+.sitio .avatar-ia__boca-pensar, .sitio .avatar-ia__ideas { opacity: 0; transition: opacity 0.25s ease; }
+.sitio .avatar-ia__sonrisa { transition: opacity 0.25s ease; }
+/* Pensando: cabeza ladeada, mirada arriba, mano al mentón y chispas de idea. */
+.sitio .icono-ia--pensando .avatar-ia__cabeza { animation: ia-cavilar 2.4s ease-in-out infinite; }
+.sitio .icono-ia--pensando .avatar-ia__pupilas { animation: ia-mirar-arriba 2.4s ease-in-out infinite; }
+.sitio .icono-ia--pensando .avatar-ia__cejas { transform: translateY(-1.2px); }
+.sitio .icono-ia--pensando .avatar-ia__brazo--saludo { animation: none; transform: rotate(0deg); }
+.sitio .icono-ia--pensando .avatar-ia__brazo--pensar { transform: rotate(-142deg); }
+.sitio .icono-ia--pensando .avatar-ia__sonrisa { opacity: 0; }
+.sitio .icono-ia--pensando .avatar-ia__boca-pensar { opacity: 1; }
+.sitio .icono-ia--pensando .avatar-ia__ideas { opacity: 1; }
+.sitio .icono-ia--pensando .avatar-ia__ideas > * { transform-box: fill-box; transform-origin: center; animation: ia-titilar 0.9s ease-in-out infinite; }
+.sitio .icono-ia--pensando .avatar-ia__ideas > :nth-child(2) { animation-delay: 0.3s; }
+.sitio .icono-ia--pensando .avatar-ia__ideas > :nth-child(3) { animation-delay: 0.6s; }
+@keyframes ia-respirar { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-0.8px) scaleY(1.012); } }
+@keyframes ia-cabeza { 0%, 100% { transform: rotate(0deg); } 18% { transform: rotate(-4deg) translateY(0.4px); } 40% { transform: rotate(3deg); } 52% { transform: rotate(0deg) translateY(0.8px); } 64%, 80% { transform: rotate(6deg); } 90% { transform: rotate(0deg); } }
+@keyframes ia-parpadear { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes ia-mirar { 0%, 18%, 100% { transform: translate(0, 0); } 25%, 42% { transform: translate(-1.3px, 0.2px); } 50%, 68% { transform: translate(1.3px, 0); } 75%, 92% { transform: translate(0.4px, -0.6px); } }
+@keyframes ia-saludar { 0%, 58% { transform: rotate(0deg); } 64% { transform: rotate(-162deg); } 68% { transform: rotate(-146deg); } 72% { transform: rotate(-166deg); } 76% { transform: rotate(-146deg); } 80% { transform: rotate(-162deg); } 88%, 100% { transform: rotate(0deg); } }
+@keyframes ia-cavilar { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(-10deg) translateY(-0.6px); } }
+@keyframes ia-mirar-arriba { 0%, 100% { transform: translate(1px, -1.6px); } 50% { transform: translate(-0.6px, -1.8px); } }
+@keyframes ia-titilar { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.6); } }
+
+/* Botón flotante: icono con un halo que late suave para invitar a usarlo. */
+.sitio .asistente-tienda .asistente-abrir__icono { position: relative; display: grid; place-items: center; width: 38px; height: 38px; margin: -6px 0 -6px -8px; flex: none; }
+.sitio .asistente-tienda .asistente-abrir__icono::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.5); opacity: 0; animation: ia-halo 2.8s ease-out infinite; }
+@keyframes ia-halo { 0% { transform: scale(0.6); opacity: 0.8; } 70%, 100% { transform: scale(1.5); opacity: 0; } }
+
+/* Avatar del asistente: cabecera del chat y burbuja de "pensando". */
+.sitio .asistente-avatar { display: block; width: 46px; height: 46px; flex: none; border-radius: 50%; }
+.sitio .asistente-cabecera { justify-content: flex-start; }
+.sitio .asistente-cabecera__texto { flex: 1; min-width: 0; }
+.sitio .asistente-avatar--pensando { width: 40px; height: 40px; }
+
+.sitio .asistente-pensando { display: flex; align-items: flex-end; gap: 8px; padding: 6px 0; }
+.sitio .asistente-pensando__burbuja { display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--linea); border-radius: 16px 16px 16px 4px; background: var(--blanco); font-size: 0.875rem; color: var(--texto-2); }
+.sitio .asistente-pensando__frase { animation: ia-frase 0.35s ease-out; }
+@keyframes ia-frase { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.sitio .asistente-pensando__puntos { display: inline-flex; gap: 3px; }
+.sitio .asistente-pensando__puntos i { width: 5px; height: 5px; border-radius: 50%; background: var(--marino-700); animation: ia-punto 1.2s ease-in-out infinite; }
+.sitio .asistente-pensando__puntos i:nth-child(2) { animation-delay: 0.15s; }
+.sitio .asistente-pensando__puntos i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes ia-punto { 0%, 60%, 100% { transform: translateY(0); opacity: 0.35; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+/* Respuesta que se va escribiendo y lo que aparece al terminar. */
+.sitio .asistente-cursor { display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -0.15em; background: currentColor; animation: ia-cursor 0.8s steps(2) infinite; }
+@keyframes ia-cursor { to { opacity: 0; } }
+.sitio .asistente-extras { animation: ia-frase 0.35s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+    .sitio .avatar-ia__cuerpo, .sitio .avatar-ia__cabeza, .sitio .avatar-ia__ojos, .sitio .avatar-ia__pupilas, .sitio .avatar-ia__brazo--saludo, .sitio .icono-ia--pensando .avatar-ia__ideas > *, .sitio .asistente-tienda .asistente-abrir__icono::after,
+    .sitio .asistente-pensando__frase, .sitio .asistente-pensando__puntos i, .sitio .asistente-cursor, .sitio .asistente-extras { animation: none; }
+}
+/* Móvil: botón redondo solo con el avatar 3D, un poco más grande. */
+@media (max-width: 480px) {
+    .sitio .asistente-tienda .asistente-abrir { width: 58px; height: 58px; }
+    .sitio .asistente-tienda .asistente-abrir__icono { margin: 0; width: 50px; height: 50px; }
+}
+/* El avatar ocupa su caja aunque otras reglas fijen el tamaño de los svg del botón. */
+.sitio .asistente-tienda .icono-ia .avatar-ia { width: 100%; height: 100%; color: inherit; }

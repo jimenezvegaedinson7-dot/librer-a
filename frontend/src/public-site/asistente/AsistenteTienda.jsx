@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaComments, FaPaperPlane, FaXmark, FaArrowRotateLeft } from 'react-icons/fa6';
+import { FaPaperPlane, FaXmark, FaArrowRotateLeft } from 'react-icons/fa6';
+import IconoIA from './IconoIA';
 import { clienteApi } from '../tienda/clienteApi';
 import { listaLibros, libroComercial } from '../tienda/libroComercial';
 import ComprarLibro from '../tienda/ComprarLibro';
@@ -15,12 +16,60 @@ const sugerencias = [
     {texto:'Entrega y recojo',pregunta:'¿Cómo funciona la entrega?'}
 ];
 
+// Lo que "piensa" el asistente mientras consulta, como haría una persona.
+const FRASES_PENSANDO = ['Pensando…', 'Buscando en el catálogo…', 'Revisando precios y stock…', 'Preparando tu respuesta…'];
+const ahora = () => Date.now();
+const movimientoReducido = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+// Escribe el texto poco a poco. El texto completo va oculto para lectores
+// de pantalla desde el primer momento: no tienen que oír letra por letra.
+function TextoEscrito({ texto, animar, alAvanzar, alTerminar }) {
+    const [cuantos, setCuantos] = useState(animar ? 0 : texto.length);
+    const fin = useRef(alTerminar);
+    useEffect(() => { fin.current = alTerminar; });
+    useEffect(() => {
+        if (!animar) return;
+        const paso = Math.max(1, Math.ceil(texto.length / 70));
+        const id = setInterval(() => setCuantos((c) => {
+            const siguiente = Math.min(texto.length, c + paso);
+            if (siguiente >= texto.length) { clearInterval(id); fin.current?.(); }
+            return siguiente;
+        }), 16);
+        return () => clearInterval(id);
+    }, [animar, texto]);
+    useEffect(() => { if (animar) alAvanzar?.(); }, [cuantos, animar, alAvanzar]);
+    const escribiendo = cuantos < texto.length;
+    return <p>
+        <span aria-hidden="true">{texto.slice(0, cuantos)}{escribiendo && <span className="asistente-cursor" />}</span>
+        <span className="visualmente-oculto">{texto}</span>
+    </p>;
+}
+
+function Pensando() {
+    const [frase, setFrase] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setFrase((f) => (f + 1) % FRASES_PENSANDO.length), 1100);
+        return () => clearInterval(id);
+    }, []);
+    return <div className="asistente-pensando" role="status">
+        <span className="asistente-avatar asistente-avatar--pensando"><IconoIA pensando /></span>
+        <span className="asistente-pensando__burbuja">
+            <span key={frase} className="asistente-pensando__frase" aria-hidden="true">{FRASES_PENSANDO[frase]}</span>
+            <span className="asistente-pensando__puntos" aria-hidden="true"><i /><i /><i /></span>
+            <span className="visualmente-oculto">Pensando. Consultando el catálogo.</span>
+        </span>
+    </div>;
+}
+
 export default function AsistenteTienda({ legal }) {
     const [abierto,setAbierto] = useState(false);
     const [pregunta,setPregunta] = useState('');
     const [mensajes,setMensajes] = useState([bienvenida]);
     const [ocupado,setOcupado] = useState(false);
     const [fecha,setFecha] = useState(null);
+    // Ids de respuestas nuevas que ya terminaron de escribirse.
+    const [escritos,setEscritos] = useState(()=>new Set());
+    const bajar = useCallback(()=>{if(conversacion.current)conversacion.current.scrollTop=conversacion.current.scrollHeight;},[]);
     const boton = useRef(null), campo = useRef(null), conversacion = useRef(null);
     const bloqueo = useRef(false), montado = useRef(true), siguiente = useRef(1), contexto = useRef([]);
     const contextoServidor=useRef('');
@@ -43,9 +92,7 @@ export default function AsistenteTienda({ legal }) {
         window.addEventListener('scroll',alDesplazar,{passive:true});
         return()=>window.removeEventListener('scroll',alDesplazar);
     },[]);
-    useEffect(()=>{
-        if(abierto && conversacion.current)conversacion.current.scrollTop=conversacion.current.scrollHeight;
-    },[mensajes,ocupado,abierto]);
+    useEffect(()=>{if(abierto)bajar();},[mensajes,ocupado,abierto,escritos,bajar]);
     function cerrar(){setAbierto(false);boton.current?.focus();}
     function agregar(mensaje){setMensajes(prev=>[...prev.slice(-29),{...mensaje,id:siguiente.current++}]);}
     async function enviar(texto = pregunta) {
@@ -53,6 +100,15 @@ export default function AsistenteTienda({ legal }) {
         if(!consulta || consulta.length>400 || bloqueo.current)return;
         bloqueo.current=true;setOcupado(true);setPregunta('');
         agregar({autor:'usuario',texto:consulta});
+        // Una pausa breve antes de contestar, como quien lee y piensa la
+        // pregunta. Si la consulta ya tardó, no se añade más espera.
+        const inicio=ahora();
+        const objetivo=movimientoReducido()?0:700+Math.min(800,consulta.length*12);
+        const responder=async(mensaje)=>{
+            const falta=objetivo-(ahora()-inicio);
+            if(falta>0)await new Promise(r=>setTimeout(r,falta));
+            if(montado.current)agregar({...mensaje,nuevo:!movimientoReducido()});
+        };
         try {
             const plan=analizarConsulta(consulta);
             let libros=[];
@@ -65,7 +121,7 @@ export default function AsistenteTienda({ legal }) {
                     contextoServidor.current=json.data.contexto || '';
                     const respuesta={autor:'asistente',texto:json.data.mensaje,libros:json.data.libros.map(libroComercial),
                         motivos:Object.fromEntries(json.data.libros.map(l=>[l.id_libro,l.motivo])),opciones:json.data.opciones || [],consultado:new Date()};
-                    setFecha(respuesta.consultado);agregar(respuesta);return;
+                    setFecha(respuesta.consultado);await responder(respuesta);return;
                 } catch(error) {
                     // Compatibilidad mientras el nuevo endpoint aun no se publique.
                     // Otros fallos no se ocultan ni se convierten en datos inventados.
@@ -80,10 +136,10 @@ export default function AsistenteTienda({ legal }) {
             if(!montado.current)return;
             const respuesta=responderConsulta(consulta,{libros,legal,contexto:contexto.current,idActual});
             if(plan.tipo==='catalogo')contexto.current=respuesta.contexto || [];
-            agregar({...respuesta,autor:'asistente',consultado});
+            await responder({...respuesta,autor:'asistente',consultado});
         } catch(error) {
             if(error.status===400){contextoServidor.current='';contexto.current=[];}
-            if(montado.current)agregar({autor:'asistente',texto:error.status===429?'Has realizado muchas consultas. Espera un momento y vuelve a intentar.'
+            if(montado.current)await responder({autor:'asistente',texto:error.status===429?'Has realizado muchas consultas. Espera un momento y vuelve a intentar.'
                 :error.status===400?'Necesitamos retomar la búsqueda. Dime de nuevo el título, autor o categoría; no puedo confirmar datos con un contexto inválido.'
                 :'No pude consultar el catálogo en este momento. No puedo confirmar precios ni stock sin esa consulta. Puedes reintentar.',reintentar:consulta});
         } finally {
@@ -91,20 +147,25 @@ export default function AsistenteTienda({ legal }) {
             if(montado.current){setOcupado(false);campo.current?.focus();}
         }
     }
-    function reiniciar(){if(bloqueo.current)return;setMensajes([bienvenida]);contexto.current=[];contextoServidor.current='';setFecha(null);setPregunta('');campo.current?.focus();}
+    function reiniciar(){if(bloqueo.current)return;setMensajes([bienvenida]);setEscritos(new Set());contexto.current=[];contextoServidor.current='';setFecha(null);setPregunta('');campo.current?.focus();}
     return <div className="asistente-tienda" data-apartado={apartado && !abierto ? '' : undefined}>
         <button ref={boton} type="button" className="asistente-abrir" aria-label="Abrir asistente de la librería"
             aria-expanded={abierto} aria-controls="asistente-panel" onClick={()=>abierto?cerrar():setAbierto(true)}>
-            <FaComments aria-hidden="true"/><span>Asistente</span>
+            <span className="asistente-abrir__icono"><IconoIA pensando={ocupado}/></span><span className="asistente-abrir__texto">Asistente</span>
         </button>
         {abierto && <section id="asistente-panel" className="asistente-panel" role="dialog" aria-modal="false" aria-labelledby="asistente-titulo"
             onKeyDown={e=>{if(e.key==='Escape'){e.stopPropagation();cerrar();}}}>
-            <header className="asistente-cabecera"><div><h2 id="asistente-titulo">Asistente de la librería</h2><p>Catálogo e información de la tienda</p></div>
+            <header className="asistente-cabecera"><span className="asistente-avatar"><IconoIA pensando={ocupado}/></span><div className="asistente-cabecera__texto"><h2 id="asistente-titulo">Asistente de la librería</h2><p>Catálogo e información de la tienda</p></div>
                 <button type="button" className="asistente-icono" aria-label="Cerrar asistente" onClick={cerrar}><FaXmark aria-hidden="true"/></button>
             </header>
             <div ref={conversacion} className="asistente-conversacion" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversación con el asistente">
                 {mensajes.map(m=><div key={m.id} className={`asistente-mensaje asistente-mensaje--${m.autor}`}>
-                    <span className="asistente-quien">{m.autor==='usuario'?'Tú':'Asistente'}</span><p>{m.texto}</p>
+                    <span className="asistente-quien">{m.autor==='usuario'?'Tú':'Asistente'}</span>
+                    {m.autor==='asistente'
+                        ?<TextoEscrito texto={m.texto} animar={Boolean(m.nuevo) && !escritos.has(m.id)} alAvanzar={bajar}
+                            alTerminar={()=>setEscritos(prev=>new Set(prev).add(m.id))}/>
+                        :<p>{m.texto}</p>}
+                    {(!m.nuevo || escritos.has(m.id)) && <div className="asistente-extras">
                     {m.libros?.length>0 && <ul className="asistente-libros">{m.libros.map(l=><li key={l.id}>
                         {l.portada && <img className="asistente-portada" src={urlPortada(l.portada,160)} alt={`Portada de ${l.titulo}`} width="44" height="66" loading="lazy" onError={e=>{e.currentTarget.hidden=true;}}/>}
                         <Link to={`/libro/${l.id}`} onClick={cerrar}>{l.titulo}</Link>
@@ -118,8 +179,9 @@ export default function AsistenteTienda({ legal }) {
                     {m.enlaces?.length>0 && <ul className="asistente-enlaces">{m.enlaces.map(e=><li key={e.to}><Link to={e.to} onClick={cerrar}>{e.texto}</Link></li>)}</ul>}
                     {m.consultado && <p className="asistente-consulta">Consulta: <time dateTime={m.consultado.toISOString()}>{m.consultado.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}</time></p>}
                     {m.reintentar && <button type="button" className="asistente-reintentar" disabled={ocupado} onClick={()=>enviar(m.reintentar)}>Reintentar consulta</button>}
+                    </div>}
                 </div>)}
-                {ocupado && <p className="asistente-cargando" role="status">Escribiendo… Consultando el catálogo.</p>}
+                {ocupado && <Pensando/>}
             </div>
             <div className="asistente-sugerencias" aria-label="Preguntas sugeridas">
                 {idActual && <button type="button" disabled={ocupado} onClick={()=>enviar('¿Cuál es el precio y stock de este libro?')}>Este libro</button>}
