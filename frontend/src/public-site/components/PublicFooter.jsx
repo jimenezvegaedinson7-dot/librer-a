@@ -40,19 +40,18 @@ export default function PublicFooter() {
                         <h2>La app y atención</h2>
                         <ul>
                             <li><Link to="/descargar">Descargar la app</Link></li>
+                            <li>
+                                <a className="pie__reclamaciones" href={SITIO.rutaReclamaciones}>
+                                    <img src={imgReclamaciones} alt="" width="120" height="62" loading="lazy" />
+                                    <span>Libro de Reclamaciones</span>
+                                </a>
+                            </li>
                             {terminos && <li><a href={terminos}>Términos y condiciones</a></li>}
                             {privacidad && <li><a href={privacidad}>Política de privacidad</a></li>}
                             {redes.map((r) => <li key={r.url}><a href={r.url} rel="noopener">{r.nombre}</a></li>)}
                         </ul>
                     </div>
-                </div>
-                {/* Libro de Reclamaciones y métodos de pago aceptados (reales: PayU en
-                    línea con tarjeta; Yape y Plin en la tienda). */}
-                <div className="pie__confianza">
-                    <a className="pie__reclamaciones" href={SITIO.rutaReclamaciones} aria-label="Libro de Reclamaciones">
-                        <img src={imgReclamaciones} alt="" width="120" height="62" loading="lazy" />
-                        <span>Libro de<br />Reclamaciones</span>
-                    </a>
+                    {/* Métodos de pago reales: PayU en línea con tarjeta; Yape y Plin en la tienda. */}
                     <div className="pie__pagos">
                         <h2>Métodos de pago</h2>
                         <div className="pie__pagos-grupos">
