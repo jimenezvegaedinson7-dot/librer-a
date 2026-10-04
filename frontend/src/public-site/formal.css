@@ -44,8 +44,6 @@
 .sitio .oferta-tarjeta h3 { font-size: 1.0625rem; }
 .sitio .oferta-tarjeta__porcentaje { font-size: 0.875rem; font-weight: 700; }
 .sitio .banda-catalogo h2 { font-size: 1.375rem; }
-.sitio .paso h3 { font-size: 0.9375rem; }
-.sitio .paso p { font-size: 0.875rem; }
 .sitio .promo h3 { font-size: 1.125rem; }
 .sitio .tipografica { font-size: clamp(1.375rem, 1.1rem + 0.8vw, 1.75rem); }
 .sitio .nosotros-hero__titulo { font-size: var(--t-hero); }
@@ -66,11 +64,11 @@
 .sitio .menu { border-bottom-color: var(--linea); }
 .sitio .explorar__libros { background: var(--fondo-alt); }
 .sitio .libro__escenario { background: var(--fondo-alt); }
-.sitio .libro, .sitio .tarjeta-libro, .sitio .explorar__tarjeta, .sitio .paso {
+.sitio .libro, .sitio .tarjeta-libro, .sitio .explorar__tarjeta {
     border-color: var(--linea);
     box-shadow: 0 1px 2px rgba(17, 24, 32, 0.04);
 }
-.sitio .libro:hover, .sitio .tarjeta-libro:hover, .sitio .explorar__tarjeta:hover, .sitio .paso:hover {
+.sitio .libro:hover, .sitio .tarjeta-libro:hover, .sitio .explorar__tarjeta:hover {
     box-shadow: 0 10px 24px -14px rgba(17, 24, 32, 0.28);
 }
 
@@ -137,10 +135,10 @@
     .sitio [data-revelar] > * { transition-duration: 400ms !important; }
 }
 .sitio [data-revelar] > .explorar__item,
-.sitio [data-revelar] > .paso,
+.sitio [data-revelar] > .proceso__paso,
 .sitio [data-revelar] > .oferta-tarjeta { transition-delay: calc(var(--i, 0) * 40ms); }
 .sitio.js [data-revelar]:not([data-visto]) > .explorar__item,
-.sitio.js [data-revelar]:not([data-visto]) > .paso,
+.sitio.js [data-revelar]:not([data-visto]) > .proceso__paso,
 .sitio.js [data-revelar]:not([data-visto]) > .oferta-tarjeta { transform: translateY(12px); }
 
 /* ============================================================
@@ -665,3 +663,36 @@
 @media (prefers-reduced-motion: reduce) {
     .sitio .nosotros-hero__fondo, .sitio .nosotros-hero__vidrio, .sitio .nosotros-hero__vidrio::after { transition: none; }
 }
+
+/* ---------- Cómo comprar: línea de tiempo de 4 pasos ----------
+   Sin tarjetas: número (01–04) e icono en dorado, título azul marino y
+   texto gris. Una línea fina une los iconos sin cruzar los textos.
+   Escritorio horizontal, tablet 2 × 2 y móvil vertical. */
+.sitio .proceso { --icono: 46px; --hueco: clamp(20px, 3vw, 40px); position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px var(--hueco); margin: var(--e-4) 0 0; padding: 0; list-style: none; }
+.sitio .proceso__paso { position: relative; display: grid; grid-template-areas: "numero" "icono" "titulo" "texto"; justify-items: start; align-content: start; margin: 0; padding: 0; }
+.sitio .proceso__numero { grid-area: numero; margin-bottom: 12px; font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.14em; color: var(--dorado-oscuro); line-height: 1; }
+.sitio .proceso__icono { grid-area: icono; position: relative; z-index: 1; display: grid; place-items: center; width: var(--icono); height: var(--icono); border-radius: 50%; border: 1px solid rgba(176, 138, 62, 0.45); background: var(--fondo-alt, #f6f4f0); color: var(--dorado); transition: transform 0.3s ease, color 0.3s ease, background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; }
+.sitio .proceso__icono svg { width: 18px; height: 18px; }
+/* Tramo de línea desde este icono hasta el del paso siguiente. */
+.sitio .proceso__paso::after { content: ''; position: absolute; z-index: 0; top: calc(0.8125rem + 12px + var(--icono) / 2); left: calc(var(--icono) + 10px); width: calc(100% + var(--hueco) - var(--icono) - 20px); height: 1px; background: linear-gradient(90deg, rgba(176, 138, 62, 0.55), rgba(176, 138, 62, 0.25)); }
+.sitio .proceso__paso:last-child::after { display: none; }
+.sitio .proceso__titulo { grid-area: titulo; margin: 18px 0 6px; font-size: 1.0625rem; font-weight: 600; color: var(--marino-900); }
+.sitio .proceso__texto { grid-area: texto; margin: 0; max-width: 28ch; font-size: 0.9375rem; line-height: 1.6; color: var(--texto-2); }
+.sitio .proceso__paso:hover .proceso__icono { transform: translateY(-3px); color: var(--blanco); background: var(--dorado); border-color: var(--dorado); box-shadow: 0 8px 18px -12px rgba(13, 41, 64, 0.35); }
+/* Tablet: 2 × 2; la línea solo une los pasos de cada fila. */
+@media (max-width: 1024px) {
+    .sitio .proceso { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sitio .proceso__paso:nth-child(2n)::after { display: none; }
+}
+/* Móvil: línea de tiempo vertical con el icono a la izquierda. */
+@media (max-width: 640px) {
+    .sitio .proceso { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .sitio .proceso__paso { grid-template-columns: var(--icono) minmax(0, 1fr); grid-template-areas: "icono numero" "icono titulo" "icono texto"; column-gap: 16px; justify-items: start; }
+    .sitio .proceso__icono { align-self: start; }
+    .sitio .proceso__numero { margin: 4px 0 4px; }
+    .sitio .proceso__titulo { margin: 0 0 4px; }
+    .sitio .proceso__texto { max-width: none; }
+    .sitio .proceso__paso::after, .sitio .proceso__paso:nth-child(2n)::after { display: block; top: calc(var(--icono) + 8px); left: calc(var(--icono) / 2); width: 1px; height: auto; bottom: calc(-28px + 8px); background: linear-gradient(180deg, rgba(176, 138, 62, 0.55), rgba(176, 138, 62, 0.25)); }
+    .sitio .proceso__paso:last-child::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .sitio .proceso__icono { transition: none; } .sitio .proceso__paso:hover .proceso__icono { transform: none; } }

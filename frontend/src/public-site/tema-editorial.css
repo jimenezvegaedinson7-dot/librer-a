@@ -59,7 +59,7 @@
 
 /* ---------- Títulos en serif ---------- */
 .sitio :is(.seccion__titulo, .hero__titulo, .nosotros-hero__titulo, .app-portada__titulo,
-    .descargar-portada__titulo, .promo h3, .paso h3, .explorar__texto strong,
+    .descargar-portada__titulo, .promo h3, .explorar__texto strong,
     .nosotros-pilar h3, .nosotros-tienda__tarjeta h2,
     .banda-catalogo h2, .ventaja h2, .instalar h2, .marca span) {
     font-family: var(--f-titulo);
@@ -331,17 +331,6 @@
 .explorar__tarjeta { padding: 18px; border-radius: 16px; transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida), border-color var(--d-media); }
 .explorar__tarjeta:hover { transform: translateY(-4px); border-color: rgba(213, 164, 71, 0.6); }
 
-/* ---------- Cómo comprar: cada paso en su tarjeta ---------- */
-.como-comprar { background: var(--crema); }
-.pasos::before { display: none; }
-.paso {
-    padding: 20px 18px 24px; border-radius: 18px; background: var(--blanco); border: 1px solid #ece1cf;
-    box-shadow: 0 14px 30px -26px rgba(13, 41, 64, 0.45);
-    transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida);
-}
-.paso:hover { transform: translateY(-4px); box-shadow: 0 26px 40px -28px rgba(13, 41, 64, 0.55); }
-.paso__numero { background: var(--marino-900); box-shadow: 0 0 0 6px var(--blanco), 0 10px 18px -8px rgba(13, 41, 64, 0.55); }
-.paso__icono { color: var(--dorado-oscuro); }
 
 .promo { border-radius: 18px; }
 
@@ -356,7 +345,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .libro:hover .libro__tapa, .oferta-tarjeta:hover, .oferta-tarjeta:hover .oferta-tarjeta__tapa img,
-    .explorar__tarjeta:hover, .paso:hover { transform: none; }
+    .explorar__tarjeta:hover { transform: none; }
 }
 .sitio [data-revelar] > .oferta-tarjeta { transition: opacity 800ms var(--ease-salida), transform 800ms var(--ease-salida), box-shadow var(--d-media); transition-delay: calc(var(--i, 0) * 90ms); }
 .sitio.js [data-revelar]:not([data-visto]) > .oferta-tarjeta { opacity: 0; transform: translateY(28px); }

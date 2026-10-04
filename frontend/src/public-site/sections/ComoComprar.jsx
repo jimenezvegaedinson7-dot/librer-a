@@ -1,31 +1,16 @@
 import { FaUser, FaMagnifyingGlass, FaCreditCard, FaBoxOpen } from 'react-icons/fa6';
 
 // ============================================================
-// CÓMO COMPRAR EN 3 PASOS (+ recibir)
-// Explica el flujo real de la app: buscar, pagar con PayU y recibir en
-// Pallasca o recoger en tienda. Los pasos entran escalonados al hacer scroll.
+// CÓMO COMPRAR: proceso de 4 pasos en línea de tiempo.
+// Escritorio: horizontal, una línea fina une los iconos. Tablet: 2 × 2.
+// Móvil: vertical, con la línea a la izquierda. Explica el flujo real:
+// cuenta, búsqueda, pago con PayU y delivery o recojo en Pallasca.
 // ============================================================
 const PASOS = [
-    {
-        Icono: FaUser,
-        titulo: 'Crea tu cuenta',
-        texto: 'Regístrate con tu correo desde la web o usa tu cuenta de la app. Verifica tu correo para comenzar.',
-    },
-    {
-        Icono: FaMagnifyingGlass,
-        titulo: 'Encuentra tu libro',
-        texto: 'Busca por título, autor o categoría, revisa el stock y agrega tus libros al carrito.',
-    },
-    {
-        Icono: FaCreditCard,
-        titulo: 'Paga seguro',
-        texto: 'Confirma tu pedido y completa el pago en la ventana de PayU, desde la web o la app.',
-    },
-    {
-        Icono: FaBoxOpen,
-        titulo: 'Recíbelo o recógelo',
-        texto: 'Elige delivery dentro de Pallasca con tarifa por zona, o recojo sin costo de envío en nuestra tienda de Pallasca.',
-    },
+    { Icono: FaUser, titulo: 'Crea tu cuenta', texto: 'Regístrate con tu correo y verifica tu cuenta.' },
+    { Icono: FaMagnifyingGlass, titulo: 'Encuentra tu libro', texto: 'Busca por título, autor o categoría y agrégalo al carrito.' },
+    { Icono: FaCreditCard, titulo: 'Paga seguro', texto: 'Completa tu compra de forma segura mediante PayU.' },
+    { Icono: FaBoxOpen, titulo: 'Recíbelo o recógelo', texto: 'Elige delivery o recojo según disponibilidad.' },
 ];
 
 export default function ComoComprar() {
@@ -38,13 +23,13 @@ export default function ComoComprar() {
                 <p className="seccion__entrada">
                     Desde la búsqueda hasta tenerlo en tus manos, compra desde la web o la app de Librería del Saber.
                 </p>
-                <ol className="pasos" data-revelar="">
+                <ol className="proceso" data-revelar="">
                     {PASOS.map(({ Icono, titulo, texto }, i) => (
-                        <li key={titulo} className="paso" style={{ '--i': i }}>
-                            <span className="paso__numero" aria-hidden="true">{i + 1}</span>
-                            <span className="paso__icono" aria-hidden="true"><Icono /></span>
-                            <h3>{titulo}</h3>
-                            <p>{texto}</p>
+                        <li key={titulo} className="proceso__paso" style={{ '--i': i }}>
+                            <span className="proceso__numero" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                            <span className="proceso__icono" aria-hidden="true"><Icono /></span>
+                            <h3 className="proceso__titulo">{titulo}</h3>
+                            <p className="proceso__texto">{texto}</p>
                         </li>
                     ))}
                 </ol>
