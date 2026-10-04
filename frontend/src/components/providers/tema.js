@@ -146,8 +146,8 @@ export const COLORES = {
 
 // Nombres y grupos para la página de Personalización.
 const GRUPO_COLORES = {
-    gemas: [['gema_zafiro', 'Zafiro'], ['lapislazuli', 'Lapislázuli'], ['agua_profunda', 'Agua profunda'], ['aguamarina', 'Aguamarina'],
-        ['gema_esmeralda', 'Esmeralda'], ['jade', 'Jade'], ['rubi', 'Rubí'], ['granate_gema', 'Granate'], ['amatista', 'Amatista'],
+    gemas: [['gema_zafiro', 'Zafiro pulido'], ['lapislazuli', 'Lapislázuli'], ['agua_profunda', 'Agua profunda'], ['aguamarina', 'Aguamarina'],
+        ['gema_esmeralda', 'Esmeralda pulida'], ['jade', 'Jade'], ['rubi', 'Rubí'], ['granate_gema', 'Granate pulido'], ['amatista', 'Amatista'],
         ['turmalina', 'Turmalina'], ['topacio_ahumado', 'Topacio ahumado'], ['onix', 'Ónix'], ['obsidiana', 'Obsidiana'], ['vidrio_ahumado', 'Vidrio ahumado']],
     oscuros: [['negro', 'Negro'], ['carbon', 'Carbón'], ['grafito_oscuro', 'Grafito oscuro'], ['marron_oscuro', 'Marrón oscuro'],
         ['chocolate', 'Chocolate'], ['cafe', 'Café'], ['vino_oscuro', 'Vino oscuro'], ['granate', 'Granate'], ['berenjena', 'Berenjena'],
