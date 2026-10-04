@@ -145,3 +145,16 @@ test('favoritos sin sesión pide ingresar',async({page})=>{
     await expect(page.getByText('Inicia sesión para ver tus libros favoritos.')).toBeVisible();
     await expect(page.getByRole('link',{name:'Ingresar',exact:true})).toHaveAttribute('href','/cuenta?continuar=/favoritos');
 });
+test('mi cuenta muestra los datos del cliente y sus accesos',async({page})=>{
+    await api(page);
+    const datos={...cliente,nombre:'Lucía',apellido:'Ramos',email:'lucia@example.test',telefono:'987654321',fecha_registro:'2026-08-14T10:00:00Z',email_verified_at:'2026-08-14T10:05:00Z'};
+    await page.route('**/api/usuarios/perfil',r=>r.fulfill({json:{success:true,data:datos}}));
+    await page.route('**/api/auth/login',r=>r.fulfill({json:{success:true,token:'token-cliente',data:datos}}));
+    // Tras entrar, sin otro destino, se llega directamente al perfil.
+    await page.goto('/cuenta');await login(page);await expect(page).toHaveURL(/\/cuenta$/);
+    const misDatos=page.getByRole('region',{name:'Mis datos'});
+    for(const valor of ['Lucía','Ramos','lucia@example.test','987654321','Verificado'])await expect(misDatos).toContainText(valor);
+    await expect(page.getByRole('navigation',{name:'Accesos de mi cuenta'}).getByRole('link',{name:/Mis compras/})).toHaveAttribute('href','/mis-compras');
+    await page.getByRole('button',{name:'Cerrar sesión de cliente',exact:true}).click();
+    await expect(page.getByRole('heading',{name:'Iniciar sesión',exact:true})).toBeVisible();
+});

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { FaArrowRightFromBracket, FaBookOpen, FaBoxOpen, FaCartShopping, FaChevronRight, FaHeart, FaMobileScreen } from 'react-icons/fa6';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { clienteApi } from './clienteApi';
 import { useTienda } from './TiendaContext';
+import PerfilCliente from './PerfilCliente';
 
 const titulos = {login:'Iniciar sesión',registro:'Crear cuenta',verificar:'Verifica tu correo',recuperar:'Recuperar contraseña',restablecer:'Nueva contraseña',otp:'Verificación de dos pasos'};
 export default function CuentaPage() {
@@ -10,7 +10,8 @@ export default function CuentaPage() {
     const navigate = useNavigate();
     const [params] = useSearchParams();
     const continuar = params.get('continuar') || '';
-    const destino = ['/checkout','/carrito','/mis-compras'].includes(continuar) || /^\/libro\/[1-9]\d{0,9}$/.test(continuar) ? continuar : '/mis-compras';
+    // Sin destino indicado, después de entrar se muestra el perfil (Mi cuenta).
+    const destino = ['/checkout','/carrito','/mis-compras','/favoritos'].includes(continuar) || /^\/libro\/[1-9]\d{0,9}$/.test(continuar) ? continuar : '/cuenta';
     const [modo,setModo] = useState('login');
     const [form,setForm] = useState({nombre:'',apellido:'',email:'',password:'',confirmacion:'',codigo:''});
     const [temporal,setTemporal] = useState('');
@@ -57,34 +58,7 @@ export default function CuentaPage() {
         catch(e){setError(e.message);} finally{setOcupado(false);}
     }
     if (tienda.revisando) return <section className="compra-pagina contenedor"><h1>Mi cuenta</h1><p role="status">Verificando tu sesión…</p></section>;
-    if (tienda.usuario) {
-        const {nombre='',apellido='',email}=tienda.usuario;
-        const iniciales=`${nombre.trim()[0] || ''}${apellido.trim()[0] || ''}`.toUpperCase() || '?';
-        const unidades=tienda.items.reduce((s,i)=>s+i.cantidad,0);
-        return <section className="compra-pagina contenedor cuenta-perfil">
-            <h1>Mi cuenta</h1>
-            <div className="cuenta-perfil__rejilla">
-                <div className="cuenta-perfil__tarjeta">
-                    <span className="cuenta-perfil__avatar" aria-hidden="true">{iniciales}</span>
-                    <div><p className="cuenta-perfil__nombre">Hola, {nombre} {apellido}.</p><p className="cuenta-perfil__correo">{email}</p></div>
-                    <button className="enlace-texto cuenta-perfil__salir" type="button" onClick={tienda.cerrarSesion}>
-                        <FaArrowRightFromBracket aria-hidden="true"/> Cerrar sesión de cliente</button>
-                </div>
-                <nav className="cuenta-accesos" aria-label="Accesos de mi cuenta">
-                    <Link to="/mis-compras" className="cuenta-acceso"><FaBoxOpen aria-hidden="true"/>
-                        <span><strong>Mis compras</strong><small>Estado del pago y de la entrega</small></span><FaChevronRight aria-hidden="true"/></Link>
-                    <Link to="/favoritos" className="cuenta-acceso"><FaHeart aria-hidden="true"/>
-                        <span><strong>Mis favoritos</strong><small>Los libros que guardaste</small></span><FaChevronRight aria-hidden="true"/></Link>
-                    <Link to="/carrito" className="cuenta-acceso" aria-label="Ver carrito"><FaCartShopping aria-hidden="true"/>
-                        <span><strong>Mi carrito</strong><small>{unidades ? `${unidades} ${unidades===1?'libro':'libros'} por comprar` : 'Tu carrito está vacío'}</small></span><FaChevronRight aria-hidden="true"/></Link>
-                    <Link to="/catalogo" className="cuenta-acceso"><FaBookOpen aria-hidden="true"/>
-                        <span><strong>Catálogo</strong><small>Precios y stock actuales</small></span><FaChevronRight aria-hidden="true"/></Link>
-                    <Link to="/descargar" className="cuenta-acceso"><FaMobileScreen aria-hidden="true"/>
-                        <span><strong>La app</strong><small>Reservas y compras con la misma cuenta</small></span><FaChevronRight aria-hidden="true"/></Link>
-                </nav>
-            </div>
-        </section>;
-    }
+    if (tienda.usuario) return <PerfilCliente tienda={tienda}/>;
     return <section className="compra-pagina contenedor"><div className="cuenta-cliente">
         <h1>{titulos[modo]}</h1><p>Compra desde la web con tu misma cuenta de la app.</p>
         {error && <p role="alert" className="compra-error">{error}</p>}
