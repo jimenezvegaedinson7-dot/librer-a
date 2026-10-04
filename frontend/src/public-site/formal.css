@@ -91,7 +91,8 @@
 .sitio .precio.oferta { background: none; padding: 0; gap: 0.35rem; color: #b12704; }
 .sitio .precio.oferta .oferta__pastilla { background: #b12704; color: var(--blanco); text-decoration: none; padding: 0.05rem 0.35rem; border-radius: 4px; }
 .sitio .precio.oferta .oferta__final { color: #b12704; text-decoration: none; }
-.sitio .categoria { background: #f1efeb; color: var(--texto-2); }
+/* Categoría del libro en el catálogo: texto suelto, sin caja, borde ni fondo. */
+.sitio .categoria { padding: 0; border: 0; border-radius: 0; background: none; color: var(--texto-2); }
 .sitio .ahorro { color: #b12704; }
 
 @media (max-width: 640px) {
@@ -768,9 +769,9 @@
 .sitio .categorias__todas:hover svg { transform: translateX(3px); }
 .sitio .categorias__rejilla { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 1.8vw, 26px); margin: clamp(22px, 2.6vw, 34px) 0 0; padding: 0; list-style: none; }
 .sitio .categorias__item { margin: 0; }
-.sitio .categoria { display: flex; flex-direction: column; height: 100%; padding: 14px 18px 18px; border-radius: 12px; background: #fbf9f4; border: 1px solid rgba(201, 162, 88, 0.38); box-shadow: 0 10px 28px -26px rgba(60, 45, 20, 0.45); text-decoration: none; transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease; }
-.sitio .categoria:hover { transform: translateY(-4px); border-color: rgba(201, 162, 88, 0.65); box-shadow: 0 22px 40px -28px rgba(60, 45, 20, 0.5); }
-.sitio .categoria:focus-visible { outline: 2px solid #b08a3e; outline-offset: 3px; }
+.sitio .categoria-tarjeta { display: flex; flex-direction: column; height: 100%; padding: 14px 18px 18px; border-radius: 12px; background: #fbf9f4; border: 1px solid rgba(201, 162, 88, 0.38); box-shadow: 0 10px 28px -26px rgba(60, 45, 20, 0.45); text-decoration: none; transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease; }
+.sitio .categoria-tarjeta:hover { transform: translateY(-4px); border-color: rgba(201, 162, 88, 0.65); box-shadow: 0 22px 40px -28px rgba(60, 45, 20, 0.5); }
+.sitio .categoria-tarjeta:focus-visible { outline: 2px solid #b08a3e; outline-offset: 3px; }
 .sitio .categoria__escena { position: relative; display: block; aspect-ratio: 16 / 10; }
 /* Círculo beige detrás, a la izquierda. */
 .sitio .categoria__escena::before { content: ''; position: absolute; left: 4%; top: 12%; width: 54%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(232, 218, 194, 0.75), rgba(232, 218, 194, 0.25) 70%, transparent 72%); }
@@ -783,22 +784,22 @@
 .sitio .categoria__libro:nth-child(1) { left: 2%; z-index: 3; transform: rotate(-2deg); }
 .sitio .categoria__libro:nth-child(2) { left: 31%; bottom: 8%; z-index: 2; transform: rotate(1.5deg); }
 .sitio .categoria__libro:nth-child(3) { left: 60%; bottom: 3%; width: 34%; z-index: 1; transform: rotate(4deg); }
-.sitio .categoria:hover .categoria__libro:nth-child(1) { transform: rotate(-3deg) translateY(-4px); }
-.sitio .categoria:hover .categoria__libro:nth-child(2) { transform: rotate(1deg) translateY(-7px); }
-.sitio .categoria:hover .categoria__libro:nth-child(3) { transform: rotate(5deg) translateY(-4px); }
+.sitio .categoria-tarjeta:hover .categoria__libro:nth-child(1) { transform: rotate(-3deg) translateY(-4px); }
+.sitio .categoria-tarjeta:hover .categoria__libro:nth-child(2) { transform: rotate(1deg) translateY(-7px); }
+.sitio .categoria-tarjeta:hover .categoria__libro:nth-child(3) { transform: rotate(5deg) translateY(-4px); }
 .sitio .categoria__pie { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 2px 0 6px; }
 .sitio .categoria__nombre { display: block; font-size: clamp(1.25rem, 1.1rem + 0.4vw, 1.5rem); font-weight: 500; line-height: 1.15; color: #1d2430; }
 .sitio .categoria__cuenta { display: block; margin-top: 4px; font-size: 0.9375rem; color: #85807a; }
 .sitio .categoria__flecha { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #b08a3e; color: #9a7633; transition: background 0.3s ease, color 0.3s ease; }
 .sitio .categoria__flecha svg { width: 11px; height: 11px; transition: transform 0.3s ease; }
-.sitio .categoria:hover .categoria__flecha { background: #b08a3e; color: #fff; }
-.sitio .categoria:hover .categoria__flecha svg { transform: translateX(2px); }
+.sitio .categoria-tarjeta:hover .categoria__flecha { background: #b08a3e; color: #fff; }
+.sitio .categoria-tarjeta:hover .categoria__flecha svg { transform: translateX(2px); }
 @media (max-width: 1023px) { .sitio .categorias__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) {
     .sitio .categorias__rejilla { grid-template-columns: minmax(0, 1fr); gap: 14px; }
     .sitio .categorias__todas { margin-top: 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .sitio .categoria, .sitio .categoria__libro, .sitio .categoria__flecha, .sitio .categoria__flecha svg { transition: none; }
-    .sitio .categoria:hover { transform: none; }
+    .sitio .categoria-tarjeta, .sitio .categoria__libro, .sitio .categoria__flecha, .sitio .categoria__flecha svg { transition: none; }
+    .sitio .categoria-tarjeta:hover { transform: none; }
 }

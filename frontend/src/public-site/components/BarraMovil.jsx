@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useTienda } from '../tienda/TiendaContext';
 import { FaHouse, FaBookOpen, FaCartShopping, FaUser } from 'react-icons/fa6';
 
 // ============================================================
@@ -15,9 +16,13 @@ const DESTINOS = [
 ];
 
 export default function BarraMovil() {
+    // Sin sesión y con el carrito vacío no se muestra el carrito.
+    const tienda = useTienda();
+    const verCarrito = Boolean(tienda.usuario) || tienda.items.some((i) => i.cantidad > 0);
+    const destinos = DESTINOS.filter((d) => d.ruta !== '/carrito' || verCarrito);
     return (
         <nav className="barra-movil" aria-label="Accesos rápidos">
-            {DESTINOS.map(({ ruta, texto, Icono, fin }) => (
+            {destinos.map(({ ruta, texto, Icono, fin }) => (
                 <NavLink key={ruta} to={ruta} end={fin} className="barra-movil__enlace">
                     <Icono aria-hidden="true" />
                     <span>{texto}</span>

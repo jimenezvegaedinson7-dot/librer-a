@@ -445,12 +445,11 @@ html.lenis, html.lenis body { height: auto; }
 /* ---------- Video de anuncios ---------- */
 /* Dos columnas: video (16:9) a la izquierda y sus textos a la derecha,
    centrados en vertical. En móvil, el video arriba y el texto debajo. */
-.video-destacado__rejilla { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: clamp(2rem, 4vw, 3.5rem); align-items: center; }
+.video-destacado__rejilla { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(2rem, 4vw, 3.5rem); align-items: center; }
 .video-destacado__marco { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: var(--marino-950); box-shadow: 0 30px 60px -36px rgba(13, 41, 64, 0.55), 0 0 0 1px var(--linea); }
 .video-destacado__marco video { display: block; width: 100%; height: 100%; object-fit: cover; }
 .video-destacado__texto { display: grid; justify-items: start; gap: 1rem; max-width: 34rem; }
 .video-destacado__etiqueta { display: inline-flex; align-items: center; gap: 0.6rem; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dorado-oscuro); }
-.video-destacado__etiqueta::before { content: ''; width: 1.75rem; height: 1px; background: currentColor; }
 .video-destacado__titulo { font-size: clamp(1.625rem, 1.1rem + 1.9vw, 2.5rem); font-weight: 600; line-height: 1.15; letter-spacing: -0.015em; color: var(--tinta); text-wrap: balance; }
 .video-destacado__descripcion { font-size: 1rem; line-height: 1.65; color: var(--texto-2); max-width: 46ch; }
 .video-destacado__boton { margin-top: 0.5rem; border-radius: 999px; padding-inline: 1.5rem; }

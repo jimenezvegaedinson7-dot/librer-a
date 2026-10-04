@@ -44,6 +44,8 @@ function Marca() {
 export default function PublicHeader() {
     const tienda = useTienda();
     const unidades = tienda.items.reduce((s,i)=>s+i.cantidad,0);
+    // Sin sesión y con el carrito vacío no se muestra el carrito.
+    const verCarrito = Boolean(tienda.usuario) || unidades > 0;
     const reducido = useReducedMotion();
     const { pathname, search } = useLocation();
     const [sombra, setSombra] = useState(false);
@@ -116,7 +118,7 @@ export default function PublicHeader() {
                         <Link to="/nosotros#tienda" className="cabecera__enlace"><FaLocationDot aria-hidden="true" /> <span className="cabecera__enlace-texto">Nuestra tienda<small>Pallasca, Áncash</small></span></Link>
                         <Link to="/descargar" className="boton boton--chico cabecera__descarga"><FaMobileScreenButton aria-hidden="true" /> <span className="cabecera__descarga-texto">Descargar la app</span></Link>
                         <Link to="/cuenta" className="compra-cuenta" aria-label="Mi cuenta"><FaUser aria-hidden="true"/><span className="compra-cuenta__texto">{tienda.usuario ? <small>Hola, {tienda.usuario.nombre}</small> : <small>Ingresa</small>}Mi cuenta</span></Link>
-                        <Link to="/carrito" className="compra-carrito" data-cantidad={unidades} aria-label={`Carrito (${unidades})`}><FaCartShopping aria-hidden="true"/><span>Carrito ({unidades})</span></Link>
+                        {verCarrito && <Link to="/carrito" className="compra-carrito" data-cantidad={unidades} aria-label={`Carrito (${unidades})`}><FaCartShopping aria-hidden="true"/><span>Carrito ({unidades})</span></Link>}
                     </div>
                 </div>
                 <div className="contenedor cabecera__movil">
@@ -172,7 +174,7 @@ export default function PublicHeader() {
                             </nav>
                             <div className="cajon__pie">
                                 <Link to="/cuenta" onClick={()=>setAbierto(false)}>Mi cuenta y mis compras</Link>
-                                <Link to="/carrito" onClick={()=>setAbierto(false)}>Mi carrito ({unidades})</Link>
+                                {verCarrito && <Link to="/carrito" onClick={()=>setAbierto(false)}>Mi carrito ({unidades})</Link>}
                                 <Link to="/nosotros#tienda" onClick={() => setAbierto(false)}>Nuestra tienda en Pallasca</Link>
                             </div>
                         </motion.div>

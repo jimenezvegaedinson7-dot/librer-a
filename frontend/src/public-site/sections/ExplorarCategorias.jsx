@@ -89,7 +89,7 @@ export default function ExplorarCategorias({ catalogo }) {
                 <ul className="categorias__rejilla" data-revelar="">
                     {grupos.map(([nombre, lista, muestra], i) => (
                         <li key={nombre} className="categorias__item" style={{ '--i': i }}>
-                            <Link to={`/catalogo?categoria=${encodeURIComponent(nombre)}`} className="categoria">
+                            <Link to={`/catalogo?categoria=${encodeURIComponent(nombre)}`} className="categoria-tarjeta">
                                 <span className="categoria__escena" aria-hidden="true">
                                     <svg className="categoria__adorno" viewBox="0 0 96 120" focusable="false">{adornoDe(nombre)}</svg>
                                     <span className="categoria__libros">
