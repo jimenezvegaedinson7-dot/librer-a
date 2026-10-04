@@ -662,7 +662,7 @@ test('inicio: explora por categoría y cómo comprar', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
-    const tarjetas = page.locator('.explorar__enlace');
+    const tarjetas = page.locator('.categoria');
     await expect(tarjetas).toHaveCount(3);
     // Cómo comprar: 4 pasos numerados 01–04, sin tarjetas.
     const pasos = page.locator('.proceso__paso');

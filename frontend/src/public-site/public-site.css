@@ -710,8 +710,6 @@ html.lenis, html.lenis body { height: auto; }
 
 /* ---------- Catálogo ---------- */
 .catalogo-pagina { padding-top: var(--e-4); background: linear-gradient(180deg, var(--salvia-50), var(--blanco) 320px); }
-@media (max-width: 1023px) { .explorar__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .explorar__rejilla { grid-template-columns: 1fr; } }
 .catalogo-cabeza {
     display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--e-3); align-items: end;
     padding-bottom: var(--e-3); border-bottom: 1px solid var(--borde);
@@ -781,47 +779,20 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* ---------- Inicio: explora por categoría ---------- */
-.explorar__rejilla { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 20px); margin-top: var(--e-3); }
-.explorar__tarjeta {
-    position: relative; display: grid; grid-template-columns: 116px minmax(0, 1fr) auto; align-items: center; gap: 1rem;
-    padding: 16px 18px; border-radius: 14px; background: var(--blanco);
-    border: 1px solid rgba(3, 58, 44, 0.08);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 26px -18px rgba(3, 58, 44, 0.35);
-    transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida);
-}
-.explorar__tarjeta:hover { transform: translateY(-4px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 24px 40px -22px rgba(3, 58, 44, 0.45); }
-.explorar__portadas { position: relative; height: 92px; }
-.explorar__portadas img {
-    position: absolute; bottom: 0; width: 58px; height: 87px; object-fit: cover; border-radius: 2px 5px 5px 2px;
-    box-shadow: 0 8px 14px -8px rgba(0, 0, 0, 0.5);
-    transition: transform var(--d-media) var(--ease-salida);
-}
-.explorar__portadas img:nth-child(1) { left: 0; transform: rotate(-8deg); z-index: 1; }
-.explorar__portadas img:nth-child(2) { left: 26px; z-index: 3; }
-.explorar__portadas img:nth-child(3) { left: 52px; transform: rotate(8deg); z-index: 2; }
-.explorar__tarjeta:hover .explorar__portadas img:nth-child(1) { transform: rotate(-14deg) translate(-4px, -2px); }
-.explorar__tarjeta:hover .explorar__portadas img:nth-child(2) { transform: translateY(-6px); }
-.explorar__tarjeta:hover .explorar__portadas img:nth-child(3) { transform: rotate(14deg) translate(4px, -2px); }
-.explorar__texto { display: grid; gap: 0.15rem; }
-.explorar__texto strong { font-size: 1.0625rem; color: var(--texto); }
-.explorar__texto span { font-size: 0.8125rem; color: var(--texto-3); }
-.explorar__flecha { color: var(--verde-700); transition: transform var(--d-rapida) var(--ease-salida); }
-.explorar__tarjeta:hover .explorar__flecha { transform: translateX(4px); }
 
 /* ---------- Inicio: cómo comprar ---------- */
 .como-comprar { background: var(--salvia-50); }
 
 /* Aparición escalonada de los nuevos bloques al entrar en pantalla. */
-.sitio [data-revelar] > .explorar__item, .sitio [data-revelar] > .proceso__paso {
+.sitio [data-revelar] > .categorias__item, .sitio [data-revelar] > .proceso__paso {
     transition: opacity 800ms var(--ease-salida), transform 800ms var(--ease-salida);
     transition-delay: calc(var(--i, 0) * 90ms);
 }
-.sitio.js [data-revelar]:not([data-visto]) > .explorar__item,
+.sitio.js [data-revelar]:not([data-visto]) > .categorias__item,
 .sitio.js [data-revelar]:not([data-visto]) > .proceso__paso { opacity: 0; transform: translateY(20px); }
 @media (prefers-reduced-motion: reduce) {
-    .sitio.js [data-revelar]:not([data-visto]) > .explorar__item,
+    .sitio.js [data-revelar]:not([data-visto]) > .categorias__item,
     .sitio.js [data-revelar]:not([data-visto]) > .proceso__paso { opacity: 1; transform: none; }
-    .explorar__tarjeta:hover, .explorar__tarjeta:hover .explorar__portadas img { transform: none; }
 }
 /* Precio en oferta dentro de tarjetas angostas: se acomoda en dos líneas
    antes que salirse de la tarjeta. */
