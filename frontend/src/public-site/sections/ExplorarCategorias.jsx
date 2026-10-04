@@ -83,7 +83,6 @@ export default function ExplorarCategorias({ catalogo }) {
                             Novela, poesía, historias para los más pequeños y mucho más. Elige un género y descubre los títulos
                             que tenemos disponibles hoy.
                         </p>
-                        <span className="categorias__raya" aria-hidden="true" />
                     </div>
                     <Link to="/catalogo" className="categorias__todas">Ver todas <FaChevronRight aria-hidden="true" /></Link>
                 </div>
