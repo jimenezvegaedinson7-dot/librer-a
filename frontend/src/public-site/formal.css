@@ -751,3 +751,25 @@
     .sitio .vitrina__principal:hover, .sitio .vitrina__tarjeta:hover, .sitio .vitrina__principal:hover .vitrina__telefono { transform: rotate(-5deg); }
     .sitio .vitrina__principal:hover, .sitio .vitrina__tarjeta:hover { transform: none; }
 }
+
+/* Vitrina en vidrio: sin el azul de fondo. Halos suaves detrás para que el
+   vidrio esmerilado se note; texto en azul oscuro e iconos dorados. */
+.sitio .vitrina { position: relative; isolation: isolate; }
+.sitio .vitrina::before {
+    content: ''; position: absolute; inset: -6% -2%; z-index: -1; pointer-events: none;
+    background:
+        radial-gradient(38% 60% at 18% 40%, rgba(201, 162, 88, 0.55), transparent 70%),
+        radial-gradient(34% 55% at 62% 75%, rgba(13, 41, 64, 0.32), transparent 70%),
+        radial-gradient(30% 50% at 88% 22%, rgba(201, 162, 88, 0.45), transparent 70%);
+    filter: blur(30px);
+}
+.sitio .vitrina__principal, .sitio .vitrina__tarjeta--crema, .sitio .vitrina__tarjeta--marino {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.34));
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 1px rgba(13, 41, 64, 0.06), 0 16px 34px -24px rgba(13, 41, 64, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+}
+.sitio .vitrina__principal h3, .sitio .vitrina__tarjeta--marino h3, .sitio .vitrina__tarjeta--crema h3 { color: var(--marino-900); }
+.sitio .vitrina__principal p, .sitio .vitrina__tarjeta--marino p, .sitio .vitrina__tarjeta--crema p { color: var(--texto-2); }
+.sitio .vitrina .vitrina__icono { background: rgba(201, 162, 88, 0.18); color: var(--dorado-oscuro); }
+.sitio .vitrina__telefono { box-shadow: 0 22px 44px -22px rgba(13, 41, 64, 0.55), 0 0 0 1px rgba(13, 41, 64, 0.08); }
