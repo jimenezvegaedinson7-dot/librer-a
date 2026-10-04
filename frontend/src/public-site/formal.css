@@ -803,3 +803,21 @@
     .sitio .categoria-tarjeta, .sitio .categoria__libro, .sitio .categoria__flecha, .sitio .categoria__flecha svg { transition: none; }
     .sitio .categoria-tarjeta:hover { transform: none; }
 }
+
+/* ---------- Celulares pequeños (≤ 400 px) ---------- */
+@media (max-width: 400px) {
+    /* Vitrina: celular más pequeño para dejar aire al texto; botón en una línea. */
+    .sitio .vitrina__principal { --tel: 92px; padding: 20px; padding-right: calc(var(--tel) + 26px); }
+    .sitio .vitrina__principal h3 { font-size: 1.25rem; }
+    .sitio .vitrina__principal .boton, .sitio .vitrina__tarjeta .boton { white-space: nowrap; }
+    .sitio .vitrina__telefono { right: 14px; top: 20px; border-radius: 17px; padding: 4px; }
+    .sitio .vitrina__telefono img { border-radius: 13px; }
+    /* Libros del catálogo (carrusel): botón compacto en una sola línea. */
+    .sitio .libro .boton { gap: 0.3rem; padding-inline: 0.5rem; font-size: 0.75rem; white-space: nowrap; }
+    .sitio .libro .boton svg { display: none; }
+    /* Catálogo: los botones usan todo el ancho de la tarjeta, en una línea. */
+    .sitio .tarjeta-libro .compra-libro { padding: 0; gap: 8px; }
+    .sitio .tarjeta-libro .compra-libro .boton { width: 100%; padding-inline: 0.4rem; font-size: 0.75rem; white-space: nowrap; }
+    .sitio .tarjeta-libro .compra-libro .boton svg { display: none; }
+    .sitio .tarjeta-libro .compra-libro .enlace-texto { white-space: nowrap; font-size: 0.8125rem; }
+}
