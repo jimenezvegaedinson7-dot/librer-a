@@ -12,7 +12,7 @@ import imgInicio360 from '../assets/app/inicio-360.webp';
 // ============================================================
 export default function Promos() {
     return (
-        <section className="seccion verde-claro" aria-labelledby="promos-titulo">
+        <section className="seccion vitrina-seccion" aria-labelledby="promos-titulo">
             <div className="contenedor">
                 <h2 id="promos-titulo" className="visualmente-oculto">Descubre más</h2>
                 <div className="vitrina">
@@ -29,15 +29,19 @@ export default function Promos() {
                     </article>
                     <article className="vitrina__tarjeta vitrina__tarjeta--crema">
                         <span className="vitrina__icono" aria-hidden="true"><FaTruckFast /></span>
-                        <h3>Delivery o recojo sin costo en Pallasca</h3>
-                        <p>Delivery dentro de Pallasca con tarifa por zona, o recojo gratis en nuestra tienda.</p>
-                        <Link to="/caracteristicas" className="boton boton--marca boton--chico">Ver cómo funciona <FaChevronRight aria-hidden="true" /></Link>
+                        <div className="vitrina__cuerpo">
+                            <h3>Delivery o recojo sin costo en Pallasca</h3>
+                            <p>Delivery dentro de Pallasca con tarifa por zona, o recojo gratis en nuestra tienda.</p>
+                            <Link to="/caracteristicas" className="boton boton--marca boton--chico">Ver cómo funciona <FaChevronRight aria-hidden="true" /></Link>
+                        </div>
                     </article>
                     <article className="vitrina__tarjeta vitrina__tarjeta--marino oscuro">
                         <span className="vitrina__icono" aria-hidden="true"><FaDownload /></span>
-                        <h3>Descárgala gratis</h3>
-                        <p>Disponible para Android. La versión para iPhone está en preparación.</p>
-                        <Link to="/descargar" className="boton boton--blanco boton--chico"><FaDownload aria-hidden="true" /> Descargar la app</Link>
+                        <div className="vitrina__cuerpo">
+                            <h3>Descárgala gratis</h3>
+                            <p>Disponible para Android. La versión para iPhone está en preparación.</p>
+                            <Link to="/descargar" className="boton boton--blanco boton--chico"><FaDownload aria-hidden="true" /> Descargar la app</Link>
+                        </div>
                     </article>
                 </div>
             </div>
