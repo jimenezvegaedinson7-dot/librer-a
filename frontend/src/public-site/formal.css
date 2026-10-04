@@ -821,3 +821,72 @@
     .sitio .tarjeta-libro .compra-libro .boton svg { display: none; }
     .sitio .tarjeta-libro .compra-libro .enlace-texto { white-space: nowrap; font-size: 0.8125rem; }
 }
+
+/* ============================================================
+   MI CUENTA, versión profesional (solo estilos; mismo HTML).
+   Sin sesión: tarjeta dividida con panel de marca a la izquierda y el
+   formulario a la derecha. Con sesión: cabecera de perfil en azul marino
+   y accesos en tarjetas con icono dorado.
+   ============================================================ */
+.sitio .compra-pagina:has(> .cuenta-cliente) { display: grid; place-items: center; min-height: calc(100svh - 260px); }
+.sitio .cuenta-cliente {
+    position: relative; display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr); column-gap: clamp(28px, 4vw, 52px); align-content: start;
+    width: 100%; max-width: 920px; padding: clamp(24px, 3vw, 36px); padding-left: 0; border-radius: 20px; border: 1px solid var(--linea); background: #fff;
+    box-shadow: 0 30px 60px -40px rgba(13, 41, 64, 0.45); overflow: hidden;
+}
+.sitio .cuenta-cliente > * { grid-column: 2; }
+/* Panel de marca: logo, estantería y beneficios reales. */
+.sitio .cuenta-cliente::before {
+    content: 'Tu librería, también en línea\A\A✓  Catálogo con precios y stock reales\A✓  Pago seguro con PayU\A✓  Delivery o recojo en Pallasca';
+    white-space: pre-line; grid-column: 1; grid-row: 1 / span 20; align-self: stretch; margin: calc(-1 * clamp(24px, 3vw, 36px)) 0;
+    display: flex; align-items: flex-end; padding: clamp(28px, 3.5vw, 40px); padding-top: 140px;
+    font-size: 0.9375rem; line-height: 1.7; color: rgba(255, 255, 255, 0.86);
+    background:
+        url('./assets/logo-f-blanco-96.webp') clamp(28px, 3.5vw, 40px) clamp(28px, 3.5vw, 40px) / 42px auto no-repeat,
+        linear-gradient(180deg, rgba(13, 41, 64, 0.55), rgba(10, 32, 51, 0.96) 70%),
+        url('./assets/estanteria-clara.svg') center top / auto 120% repeat-x,
+        #0d2940;
+}
+.sitio .cuenta-cliente h1 { margin: 6px 0 0; font-size: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem); letter-spacing: -0.01em; }
+.sitio .cuenta-cliente > p { margin: 6px 0 22px; font-size: 0.9375rem; }
+.sitio .cuenta-cliente .compra-formulario label { display: grid; gap: 6px; font-size: 0.8125rem; font-weight: 600; color: var(--tinta); }
+.sitio .cuenta-cliente .compra-formulario input { height: 48px; padding: 0 14px; border-radius: 10px; border: 1px solid #d9d4ca; background: #fcfbf8; font-size: 0.9375rem; transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; }
+.sitio .cuenta-cliente .compra-formulario input:focus { outline: none; border-color: var(--marino-700); background: #fff; box-shadow: 0 0 0 4px rgba(13, 41, 64, 0.1); }
+.sitio .cuenta-cliente .compra-formulario .boton { height: 50px; margin-top: 8px; border-radius: 10px; font-size: 0.9375rem; }
+.sitio .cuenta-cliente .compra-acciones { margin-top: 22px; padding-top: 18px; }
+.sitio .cuenta-cliente .compra-acciones .enlace-texto { font-size: 0.875rem; font-weight: 600; color: var(--marino-900); }
+@media (max-width: 760px) {
+    .sitio .cuenta-cliente { grid-template-columns: minmax(0, 1fr); padding-left: clamp(22px, 5vw, 32px); max-width: 520px; }
+    .sitio .cuenta-cliente > *, .sitio .cuenta-cliente::before { grid-column: 1; }
+    /* En el celular el panel pasa a ser una franja arriba, solo con el logo. */
+    .sitio .cuenta-cliente::before { content: ''; grid-row: auto; height: 96px; padding: 0; margin: calc(-1 * clamp(24px, 3vw, 36px)) calc(-1 * clamp(22px, 5vw, 32px)) 22px;
+        background-position: center, center, center top, center; background-size: 40px auto, auto, auto 140%, auto; }
+}
+
+/* Con sesión: cabecera de perfil y accesos en tarjetas. */
+.sitio .cuenta-perfil h1 { margin-bottom: 16px; }
+.sitio .cuenta-perfil__rejilla { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; margin-top: 0; }
+.sitio .cuenta-perfil__tarjeta {
+    position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px 22px;
+    padding: clamp(22px, 3vw, 32px); border: 0; border-radius: 20px; color: #fff;
+    background: radial-gradient(60% 120% at 90% 0%, rgba(201, 162, 88, 0.28), transparent 60%), linear-gradient(140deg, #0d2940, #0a2033);
+    box-shadow: 0 24px 50px -34px rgba(13, 41, 64, 0.7);
+}
+.sitio .cuenta-perfil__avatar { width: 68px; height: 68px; font-size: 1.375rem; font-weight: 700; letter-spacing: 0.04em; background: linear-gradient(135deg, #d9b56b, #b08a3e); color: #0d2940; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12); }
+.sitio .compra-pagina .cuenta-perfil__nombre { font-size: clamp(1.25rem, 1.05rem + 0.6vw, 1.5rem); color: #fff; }
+.sitio .compra-pagina .cuenta-perfil__correo { color: rgba(255, 255, 255, 0.72); }
+.sitio .compra-pagina .cuenta-perfil__salir { margin: 0; padding: 0 16px; min-height: 42px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; text-decoration: none; }
+.sitio .compra-pagina .cuenta-perfil__salir:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.sitio .cuenta-accesos { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; border: 0; background: none; overflow: visible; }
+.sitio .cuenta-acceso { grid-template-columns: 46px minmax(0, 1fr) auto; padding: 18px 18px 18px 16px; border: 1px solid var(--linea); border-radius: 16px; background: #fff; box-shadow: 0 10px 24px -22px rgba(13, 41, 64, 0.4); transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+.sitio .cuenta-acceso + .cuenta-acceso { border-top: 1px solid var(--linea); }
+.sitio .cuenta-acceso:hover { background: #fff; transform: translateY(-2px); border-color: rgba(201, 162, 88, 0.55); box-shadow: 0 18px 34px -24px rgba(13, 41, 64, 0.45); }
+.sitio .cuenta-acceso > svg:first-child { box-sizing: content-box; width: 18px; height: 18px; padding: 13px; border-radius: 50%; background: rgba(201, 162, 88, 0.16); color: var(--dorado-oscuro); }
+.sitio .cuenta-acceso strong { font-size: 1rem; color: var(--marino-900); }
+@media (max-width: 1023px) { .sitio .cuenta-accesos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+    .sitio .cuenta-perfil__tarjeta { grid-template-columns: auto minmax(0, 1fr); }
+    .sitio .compra-pagina .cuenta-perfil__salir { grid-column: 1 / -1; justify-self: start; }
+    .sitio .cuenta-accesos { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .sitio .cuenta-acceso { transition: none; } .sitio .cuenta-acceso:hover { transform: none; } }
