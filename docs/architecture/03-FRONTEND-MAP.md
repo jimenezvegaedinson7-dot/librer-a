@@ -67,8 +67,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 
 | Archivo | Endpoints |
 |---|---|
-| `features/agencias/AgenciaEditModal.jsx` | `PUT /api/agencias/:param` |
-| `features/agencias/AgenciasPage.jsx` | `GET /api/agencias`<br>`POST /api/agencias` |
 | `features/anuncios/AnunciosPage.jsx` | `DELETE /api/anuncios/:param`<br>`GET /api/anuncios/todos`<br>`POST /api/anuncios`<br>`PUT /api/anuncios/:param` |
 | `features/anuncios/CarruselPanel.jsx` | `DELETE /api/anuncios/carrusel/:param`<br>`GET /api/anuncios/carrusel/todos`<br>`GET /api/libros`<br>`POST /api/anuncios/carrusel`<br>`PUT /api/anuncios/carrusel/:param`<br>`PUT /api/anuncios/carrusel/orden` |
 | `features/auth/LoginPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/solicitar-reseteo` |
@@ -129,11 +127,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 
 | Servicio | Función | Endpoint |
 |---|---|---|
-| `features/agencias/agenciasService.js` | `listarAgencias` | `GET /api/agencias` |
-| `features/agencias/agenciasService.js` | `listarAgenciasActivas` | `GET /api/agencias/activas` |
-| `features/agencias/agenciasService.js` | `obtenerAgencia` | `GET /api/agencias/:param` |
-| `features/agencias/agenciasService.js` | `crearAgencia` | `POST /api/agencias` |
-| `features/agencias/agenciasService.js` | `actualizarAgencia` | `PUT /api/agencias/:param` |
 | `features/anuncios/anunciosService.js` | `listarAnuncios` | `GET /api/anuncios/todos` |
 | `features/anuncios/anunciosService.js` | `obtenerAnuncioActivo` | `GET /api/anuncios` |
 | `features/anuncios/anunciosService.js` | `crearAnuncio` | `POST /api/anuncios` |
@@ -228,9 +221,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/tarifas/tarifasService.js` | `guardarZonaDelivery` | `PUT /api/zonas-delivery/:param`<br>`POST /api/zonas-delivery` |
 | `features/usuarios/usuariosService.js` | `listarUsuarios` | `GET /api/usuarios` |
 | `features/usuarios/usuariosService.js` | `actualizarUsuario` | `PATCH /api/usuarios/:param` |
-| `features/ventas/ubicacionesService.js` | `listarProvincias` | `GET /api/ubicaciones/provincias` |
-| `features/ventas/ubicacionesService.js` | `listarDistritos` | `GET /api/ubicaciones/provincias/:param/distritos` |
-| `features/ventas/ubicacionesService.js` | `listarDistritosParaEnvio` | `GET /api/ubicaciones/provincias` (vía features/ventas/ubicacionesService.js#listarProvincias)<br>`GET /api/ubicaciones/provincias/:param/distritos` (vía features/ventas/ubicacionesService.js#listarDistritos) |
 | `features/ventas/ventasService.js` | `listarVentas` | `GET /api/ventas` |
 | `features/ventas/ventasService.js` | `obtenerVenta` | `GET /api/ventas/:param` |
 | `features/ventas/ventasService.js` | `reembolsarVenta` | `POST /api/ventas/:param/reembolso` |
@@ -270,28 +260,28 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | Archivo | Usado por (nº de archivos) |
 |---|---|
 | `components/providers/ThemeContext.jsx` | 1 |
-| `components/providers/ToastProvider.jsx` | 18 |
+| `components/providers/ToastProvider.jsx` | 17 |
 | `components/providers/tema.js` | 5 |
-| `components/ui/Acciones.jsx` | 15 |
-| `components/ui/Alert.jsx` | 36 |
-| `components/ui/Badge.jsx` | 24 |
-| `components/ui/Button.jsx` | 50 |
-| `components/ui/Card.jsx` | 22 |
+| `components/ui/Acciones.jsx` | 14 |
+| `components/ui/Alert.jsx` | 34 |
+| `components/ui/Badge.jsx` | 23 |
+| `components/ui/Button.jsx` | 48 |
+| `components/ui/Card.jsx` | 21 |
 | `components/ui/Celebracion.jsx` | 2 |
 | `components/ui/ConfirmarAccion.jsx` | 4 |
 | `components/ui/ConfirmarEliminacion.jsx` | 4 |
-| `components/ui/DataTable.jsx` | 16 |
-| `components/ui/EmptyState.jsx` | 18 |
+| `components/ui/DataTable.jsx` | 15 |
+| `components/ui/EmptyState.jsx` | 17 |
 | `components/ui/ErrorBoundary.jsx` | 1 |
 | `components/ui/EstadoModal.jsx` | 1 |
 | `components/ui/Ficha.jsx` | 10 |
-| `components/ui/Form.jsx` | 40 |
-| `components/ui/FormularioAlta.jsx` | 5 |
-| `components/ui/Modal.jsx` | 31 |
-| `components/ui/PageHeader.jsx` | 19 |
-| `components/ui/Pagination.jsx` | 13 |
+| `components/ui/Form.jsx` | 38 |
+| `components/ui/FormularioAlta.jsx` | 4 |
+| `components/ui/Modal.jsx` | 30 |
+| `components/ui/PageHeader.jsx` | 18 |
+| `components/ui/Pagination.jsx` | 12 |
 | `components/ui/Spinner.jsx` | 4 |
-| `components/ui/TableSkeleton.jsx` | 18 |
+| `components/ui/TableSkeleton.jsx` | 17 |
 | `public-site/components/ActualizarApp.jsx` | 1 |
 | `public-site/components/BarraMovil.jsx` | 1 |
 | `public-site/components/CierreDescarga.jsx` | 1 |

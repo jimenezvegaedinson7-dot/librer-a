@@ -58,7 +58,6 @@ flowchart LR
     EmpresaPage["/configuracion/empresa<br/>EmpresaPage"]
     EmpresaPage --> empresaService(["empresaService"])
     PersonalizacionPage["/personalizacion<br/>PersonalizacionPage"]
-    agenciasService --> _api_agencias{{"/api/agencias"}}
     anunciosService --> _api_anuncios{{"/api/anuncios"}}
     carruselService --> _api_anuncios{{"/api/anuncios"}}
     authService --> _api_auth{{"/api/auth"}}
@@ -88,7 +87,6 @@ flowchart LR
     reservasService --> _api_libros{{"/api/libros"}}
     tarifasService --> _api_zonas_delivery{{"/api/zonas-delivery"}}
     usuariosService --> _api_usuarios{{"/api/usuarios"}}
-    ubicacionesService --> _api_ubicaciones{{"/api/ubicaciones"}}
     ventasService --> _api_ventas{{"/api/ventas"}}
     ventasService --> _api_libros{{"/api/libros"}}
     useApiPublica --> _api_libros{{"/api/libros"}}

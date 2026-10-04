@@ -1,7 +1,6 @@
 %% Generado 2026-10-03 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     subgraph React
-        R__api_agencias["agencias"]
         R__api_anuncios["anuncios"]
         R__api_app["app"]
         R__api_asistente["asistente"]
@@ -20,7 +19,6 @@ flowchart LR
         R__api_reclamaciones["reclamaciones"]
         R__api_reportes["reportes"]
         R__api_reservas["reservas"]
-        R__api_ubicaciones["ubicaciones"]
         R__api_usuarios["usuarios"]
         R__api_ventas["ventas"]
         R__api_zonas_delivery["zonas-delivery"]
@@ -36,8 +34,6 @@ flowchart LR
         F__api_ventas["ventas"]
         F__api_zonas_delivery["zonas-delivery"]
     end
-    E__api_agencias(("/api/agencias")) --> C_agencia_controller["agencia.controller"]
-    R__api_agencias --> E__api_agencias
     E__api_anuncios(("/api/anuncios")) --> C_anuncio_controller["anuncio.controller"] & C_carrusel_controller["carrusel.controller"]
     R__api_anuncios --> E__api_anuncios
     E__api_app(("/api/app")) --> C_app_controller["app.controller"]
@@ -80,7 +76,6 @@ flowchart LR
     R__api_reservas --> E__api_reservas
     F__api_reservas --> E__api_reservas
     E__api_ubicaciones(("/api/ubicaciones")) --> C_ubicacion_controller["ubicacion.controller"]
-    R__api_ubicaciones --> E__api_ubicaciones
     F__api_ubicaciones --> E__api_ubicaciones
     E__api_usuarios(("/api/usuarios")) --> C_usuario_controller["usuario.controller"]
     R__api_usuarios --> E__api_usuarios

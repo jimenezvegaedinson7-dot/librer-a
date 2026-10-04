@@ -32,11 +32,9 @@ Todas las dependencias se importan en algún archivo.
 | Paquete | Versión |
 |---|---|
 | `@gsap/react` | ^2.1.2 |
-| `@react-three/fiber` | ^9.8.1 |
 | `@tailwindcss/vite` | ^4.3.3 |
 | `axios` | ^1.20.0 |
 | `gsap` | ^3.15.0 |
-| `lenis` | ^1.3.26 |
 | `lucide-react` | ^1.47.0 |
 | `motion` | ^13.4.0 |
 | `react` | ^19.2.8 |
@@ -44,7 +42,6 @@ Todas las dependencias se importan en algún archivo.
 | `react-icons` | ^5.7.0 |
 | `react-router-dom` | ^7.18.3 |
 | `tailwindcss` | ^4.3.3 |
-| `three` | ^0.186.1 |
 
 Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxlint, vite.
 
@@ -60,7 +57,7 @@ Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxl
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
 | Backend (`require`) | 149 | 343 | 0 (confirmado con **madge**: ninguno) |
-| Frontend (`import`) | 200 | 811 | 0 (confirmado con **madge**: ninguno) |
+| Frontend (`import`) | 195 | 787 | 0 (confirmado con **madge**: ninguno) |
 | Flutter (`import` relativos) | 69 | 305 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter

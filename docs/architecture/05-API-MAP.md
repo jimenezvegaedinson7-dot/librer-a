@@ -15,11 +15,11 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 | GET | `/api` | inline (server.js) | — | — | — | Pública |
 | GET | `/api/test-db` | inline (server.js) | JWT + rol:administrador | — | — | JWT + admin |
 | GET | `/api/debug-egress` | inline (server.js) | JWT + rol:administrador | — | — | JWT + admin |
-| GET | `/api/agencias/activas` | controllers/agencia.controller.js#listarAgencias | JWT | declarado en features/agencias/agenciasService.js#listarAgenciasActivas (sin uso) | — | JWT |
-| GET | `/api/agencias` | controllers/agencia.controller.js#listarTodasAgencias | JWT + rol:administrador | features/agencias/AgenciasPage.jsx | — | JWT + admin |
-| GET | `/api/agencias/:id` | controllers/agencia.controller.js#obtenerAgencia | JWT | declarado en features/agencias/agenciasService.js#obtenerAgencia (sin uso) | — | JWT |
-| POST | `/api/agencias` | controllers/agencia.controller.js#crearAgencia | JWT + rol:administrador | features/agencias/AgenciasPage.jsx | — | JWT + admin |
-| PUT | `/api/agencias/:id` | controllers/agencia.controller.js#actualizarAgencia | JWT + rol:administrador | features/agencias/AgenciaEditModal.jsx | — | JWT + admin |
+| GET | `/api/agencias/activas` | controllers/agencia.controller.js#listarAgencias | JWT | — | — | JWT |
+| GET | `/api/agencias` | controllers/agencia.controller.js#listarTodasAgencias | JWT + rol:administrador | — | — | JWT + admin |
+| GET | `/api/agencias/:id` | controllers/agencia.controller.js#obtenerAgencia | JWT | — | — | JWT |
+| POST | `/api/agencias` | controllers/agencia.controller.js#crearAgencia | JWT + rol:administrador | — | — | JWT + admin |
+| PUT | `/api/agencias/:id` | controllers/agencia.controller.js#actualizarAgencia | JWT + rol:administrador | — | — | JWT + admin |
 | GET | `/api/anuncios` | controllers/anuncio.controller.js#obtenerAnuncioActivo | — | public-site/sections/VideoSection.jsx | — | Pública |
 | GET | `/api/anuncios/carrusel` | controllers/carrusel.controller.js#listarPublico | — | public-site/sections/Hero.jsx | — | Pública |
 | GET | `/api/anuncios/carrusel/todos` | controllers/carrusel.controller.js#listarPanel | JWT + rol:administrador | features/anuncios/CarruselPanel.jsx | — | JWT + admin |
@@ -112,8 +112,8 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 | GET | `/api/reservas` | controllers/reserva.controller.js#obtenerReservas | JWT + verificarPanel | features/notificaciones/notificacionesService.js<br>features/reservas/ReservasPage.jsx | — | JWT + admin |
 | GET | `/api/reservas/:id` | controllers/reserva.controller.js#obtenerReserva | JWT | features/reservas/ReservasPage.jsx | — | JWT |
 | PUT | `/api/reservas/:id/estado` | controllers/reserva.controller.js#actualizarEstado | JWT + verificarPanel | features/reservas/ReservaEstadoModal.jsx | — | JWT + admin |
-| GET | `/api/ubicaciones/provincias` | controllers/ubicacion.controller.js#listarProvincias | JWT | declarado en features/ventas/ubicacionesService.js#listarProvincias, features/ventas/ubicacionesService.js#listarDistritosParaEnvio (sin uso) | — | JWT |
-| GET | `/api/ubicaciones/provincias/:id_provincia/distritos` | controllers/ubicacion.controller.js#listarDistritos | JWT | declarado en features/ventas/ubicacionesService.js#listarDistritos, features/ventas/ubicacionesService.js#listarDistritosParaEnvio (sin uso) | — | JWT |
+| GET | `/api/ubicaciones/provincias` | controllers/ubicacion.controller.js#listarProvincias | JWT | — | — | JWT |
+| GET | `/api/ubicaciones/provincias/:id_provincia/distritos` | controllers/ubicacion.controller.js#listarDistritos | JWT | — | — | JWT |
 | PUT | `/api/ubicaciones/distritos/:id` | controllers/ubicacion.controller.js#actualizarTarifaDistrito | JWT + rol:administrador | — | — | JWT + admin |
 | GET | `/api/usuarios` | controllers/usuario.controller.js#listarUsuarios | JWT + rol:administrador | features/usuarios/UsuariosPage.jsx | — | JWT + admin |
 | GET | `/api/usuarios/perfil` | controllers/usuario.controller.js#obtenerPerfil | JWT | features/layout/PerfilAdministrador.jsx<br>public-site/tienda/TiendaContext.jsx | screens/perfil_screen.dart<br>screens/splash_screen.dart | JWT |
@@ -135,7 +135,7 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 | POST | `/api/zonas-delivery` | controllers/zonaDelivery.controller.js#crearZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
 | PUT | `/api/zonas-delivery/:id` | controllers/zonaDelivery.controller.js#actualizarZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
 
-## Endpoints compartidos por React y Flutter (28)
+## Endpoints compartidos por React y Flutter (26)
 
 - `POST /api/auth/registro`
 - `POST /api/auth/login`
@@ -156,8 +156,6 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 - `POST /api/pagos/crear-orden`
 - `GET /api/pagos/:orderId`
 - `POST /api/reservas`
-- `GET /api/ubicaciones/provincias`
-- `GET /api/ubicaciones/provincias/:id_provincia/distritos`
 - `GET /api/usuarios/perfil`
 - `PUT /api/usuarios/perfil`
 - `PUT /api/usuarios/foto`
@@ -166,7 +164,7 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 - `GET /api/ventas/:id/pago`
 - `GET /api/zonas-delivery`
 
-## Endpoints sin cliente en el código (15)
+## Endpoints sin cliente en el código (20)
 
 Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL o desde un tercero:
 
@@ -174,6 +172,11 @@ Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL 
 - `GET /api` — Salud de la API.
 - `GET /api/test-db` — Diagnóstico de conexión a BD (solo admin).
 - `GET /api/debug-egress` — Diagnóstico manual SMTP (JWT + administrador). DNS, TCP y salida HTTPS; sin consumidor en React/Flutter.
+- `GET /api/agencias/activas` — Posiblemente no utilizado por ningún cliente.
+- `GET /api/agencias` — Posiblemente no utilizado por ningún cliente.
+- `GET /api/agencias/:id` — Posiblemente no utilizado por ningún cliente.
+- `POST /api/agencias` — Posiblemente no utilizado por ningún cliente.
+- `PUT /api/agencias/:id` — Posiblemente no utilizado por ningún cliente.
 - `GET /api/historial/mi-historial` — Posiblemente no utilizado por ningún cliente.
 - `POST /api/historial` — Posiblemente no utilizado por ningún cliente.
 - `PUT /api/inventario/libro/:id/stock` — Posiblemente no utilizado por ningún cliente.
