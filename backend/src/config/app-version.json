@@ -1,8 +1,8 @@
 {
-    "version": "1.0.4",
-    "versionCode": 5,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.4/libreria-1.0.4.apk",
-    "sha256": "447c9cf028068db30eb146e4520bf69acfb2010838283da0bb63097c30b7359b",
+    "version": "1.0.5",
+    "versionCode": 6,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.5/libreria-1.0.5.apk",
+    "sha256": "acabaaab632cdcbc386cd6318ceea47e98076e9ecdd6876967dc9f6800e6aacb",
     "obligatoria": false,
-    "notas": "Recojo gratuito en Pallasca y delivery dentro de Pallasca con tarifa por zona activa. Referencia de dirección opcional e historial de compras conservado. Pago seguro con PayU."
+    "notas": "Recuperación de compras tras cortes o reinicios, conciliación del carrito después del pago, seguimiento de entrega, reanudación de verificación de correo y avisos de portadas de referencia. Mejoras de sesiones, stock y confirmación de pagos. Conserva recojo gratuito y delivery por zonas de Pallasca."
 }
