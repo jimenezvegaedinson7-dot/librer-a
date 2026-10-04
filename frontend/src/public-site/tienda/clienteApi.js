@@ -7,48 +7,23 @@ export const leer = (clave, respaldo = null) => {
 };
 export const guardar = (clave, datos) => localStorage.setItem(clave, JSON.stringify(datos));
 
-export const firmaSesion = sesion => sesion ? `${sesion.usuario?.id_usuario}:${sesion.generacion || ''}:${sesion.token}` : 'invitado';
-export function exigirSesion(sesion) {
-    if (!sesion?.token || sesion.usuario?.rol !== 'cliente' || firmaSesion(sesion) !== firmaSesion(leer(CLAVE_CLIENTE))) {
-        const error = new Error('La cuenta cambió en otra pestaña. Revisa tu sesión antes de continuar.');
-        error.name = 'SesionCambiada';
-        throw error;
-    }
-    return sesion;
-}
-
 // Sesión exclusiva de clientes. Nunca consulta el token del panel administrativo.
-export async function peticionCliente(ruta, { method = 'GET', body, autenticada = true, sesion = leer(CLAVE_CLIENTE) } = {}) {
-    const credencial = ruta.startsWith('/auth/');
-    if (autenticada) exigirSesion(sesion);
-    const comprobar = () => {
-        if (autenticada) exigirSesion(sesion);
-        else if (credencial && firmaSesion(sesion) !== firmaSesion(leer(CLAVE_CLIENTE))) {
-            const error = new Error('La sesión cambió mientras ingresabas. Revisa la cuenta actual.');
-            error.name = 'SesionCambiada'; throw error;
-        }
-    };
-    const control = new AbortController();
-    const limite = setTimeout(() => control.abort(), 120000);
-    let res;
-    try { res = await fetch(`${env.apiUrl}${ruta}`, {
-        signal: control.signal,
+export async function peticionCliente(ruta, { method = 'GET', body, autenticada = true } = {}) {
+    const token = autenticada ? leer(CLAVE_CLIENTE)?.token : null;
+    const res = await fetch(`${env.apiUrl}${ruta}`, {
         method, headers: { Accept: 'application/json',
             ...(body ? { 'Content-Type': 'application/json' } : {}),
-            ...(autenticada ? { Authorization: `Bearer ${sesion.token}` } : {}) },
+            ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: body ? JSON.stringify(body) : undefined,
-    }); } catch (error) { comprobar(); throw error; }
-    finally { clearTimeout(limite); }
-    comprobar();
+    });
     let json;
     try { json = await res.json(); } catch {
         const error = new Error('El servidor no devolvió una respuesta válida. Inténtalo de nuevo.');
         error.status = res.status;
         throw error;
     }
-    comprobar();
     if (!res.ok || json.success === false) {
-        if (res.status === 401 && autenticada && !credencial) window.dispatchEvent(new CustomEvent('cliente-sesion-expirada', {detail: firmaSesion(sesion)}));
+        if (res.status === 401 && autenticada) window.dispatchEvent(new Event('cliente-sesion-expirada'));
         const error = new Error(json.mensaje || 'No se pudo completar la solicitud');
         error.status = res.status;
         throw error;
@@ -64,7 +39,7 @@ export const clienteApi = {
     solicitarReseteo: email => peticionCliente('/auth/solicitar-reseteo', { method: 'POST', body: {email}, autenticada: false }),
     restablecer: datos => peticionCliente('/auth/reestablecer-contrasena', { method: 'POST', body: datos, autenticada: false }),
     verificar2fa: datos => peticionCliente('/auth/2fa/verify-login', { method: 'POST', body: datos, autenticada: false }),
-    perfil: sesion => peticionCliente('/usuarios/perfil', {sesion}),
+    perfil: () => peticionCliente('/usuarios/perfil'),
     catalogo: () => peticionCliente('/libros', {autenticada: false}),
     asistente: datos => peticionCliente('/asistente', {method:'POST',body:datos,autenticada:false}),
     libro: id => peticionCliente(`/libros/${id}`, {autenticada: false}),
@@ -81,17 +56,17 @@ export const clienteApi = {
         }
     },
     autor: id => peticionCliente(`/autores/${id}`, {autenticada:false}),
-    favoritos: sesion => peticionCliente('/favoritos', {sesion}),
-    favorito: (id, sesion) => peticionCliente(`/favoritos/${id}`, {sesion}),
-    agregarFavorito: (id, sesion) => peticionCliente(`/favoritos/${id}`, {method:'POST',sesion}),
-    quitarFavorito: (id, sesion) => peticionCliente(`/favoritos/${id}`, {method:'DELETE',sesion}),
-    zonas: sesion => peticionCliente('/zonas-delivery', {sesion}),
+    favoritos: () => peticionCliente('/favoritos'),
+    favorito: id => peticionCliente(`/favoritos/${id}`),
+    agregarFavorito: id => peticionCliente(`/favoritos/${id}`, {method:'POST'}),
+    quitarFavorito: id => peticionCliente(`/favoritos/${id}`, {method:'DELETE'}),
+    zonas: () => peticionCliente('/zonas-delivery'),
     capacidades: () => peticionCliente('/pagos/capacidades', {autenticada:false}),
-    crearOrden: (datos, sesion) => peticionCliente('/pagos/crear-orden', {method:'POST',body:{...datos,canal_compra:'web'},sesion}),
-    compras: sesion => peticionCliente('/ventas/mis-ventas', {sesion}),
-    compra: (id, sesion) => peticionCliente(`/ventas/${id}`, {sesion}),
-    pagoCompra: (id, sesion) => peticionCliente(`/ventas/${id}/pago`, {sesion}),
-    verificarPago: (referencia, sesion) => peticionCliente(`/pagos/${encodeURIComponent(referencia)}`, {sesion}),
+    crearOrden: datos => peticionCliente('/pagos/crear-orden', {method:'POST',body:{...datos,canal_compra:'web'}}),
+    compras: () => peticionCliente('/ventas/mis-ventas'),
+    compra: id => peticionCliente(`/ventas/${id}`),
+    pagoCompra: id => peticionCliente(`/ventas/${id}/pago`),
+    verificarPago: referencia => peticionCliente(`/pagos/${encodeURIComponent(referencia)}`),
 };
 
 export function checkoutSeguro(url) {

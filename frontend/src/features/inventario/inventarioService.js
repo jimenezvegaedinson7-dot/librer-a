@@ -23,7 +23,11 @@ export async function crearInventario(formulario) {
 }
 
 export async function actualizarInventario(id, formulario) {
-    return client.put(`/inventario/libro/${id}`, formulario);
+    return client.put(`/inventario/libro/${id}`, {
+        stock: Number(formulario.stock),
+        stock_minimo: Number(formulario.stock_minimo),
+        ubicacion: formulario.ubicacion.trim(),
+    });
 }
 
 export async function listarMovimientos(params = {}) {

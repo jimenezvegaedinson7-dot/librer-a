@@ -8,7 +8,6 @@ import { Input } from '../../components/ui/Form';
 import { Alert } from '../../components/ui/Alert';
 
 import { actualizarInventario } from './inventarioService';
-import { cambiosInventario } from './cambiosInventario';
 import { numeroNoNegativo, validarFormulario } from '../../lib/utils/validaciones';
 
 const REGLAS = {
@@ -73,8 +72,7 @@ export default function InventarioEditModal({ inventario, abierto, onCerrar, onA
         }
         try {
             setGuardando(true);
-            const cambios = cambiosInventario(formulario, inventario);
-            if (Object.keys(cambios).length) await actualizarInventario(inventario.id_libro, cambios);
+            await actualizarInventario(inventario.id_libro, formulario);
             if (onActualizado) await onActualizado();
             onCerrar();
         } catch (err) {
