@@ -244,8 +244,8 @@ test('una portada ya registrada tiene prioridad sobre la descargada',async({page
     await expect(page.locator('.ficha-portada-principal img')).toHaveAttribute('src',imagen);
 });
 
-test('ISBN con imagen descartada conserva Sin portada y no muestra un placeholder externo',async({page})=>{
-    await preparar(page,{libro:{...principal,isbn:'9789700508900',portada:null}});await page.goto('/libro/1');
+test('ISBN sin imagen verificada ni referencia autorizada conserva Sin portada',async({page})=>{
+    await preparar(page,{libro:{...principal,isbn:'9780000000055',portada:null}});await page.goto('/libro/1');
     await expect(page.locator('.ficha-portada-principal')).toContainText('Sin portada');
     await expect(page.locator('.ficha-portada-principal img')).toHaveCount(0);
 });

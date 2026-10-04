@@ -1,4 +1,4 @@
-import portadasCatalogo from './portadasCatalogo.json';
+import { resolverPortadaLibro } from '../../lib/utils/portadasLibro';
 
 export function libroComercial(l) {
     const oferta = Number(l.descuento_vigente) === 1 && Number.isFinite(Number(l.precio_final)) && Number(l.precio_final)>0;
@@ -8,7 +8,7 @@ export function libroComercial(l) {
         isbn: l.isbn || '', estado: Number(l.estado),
         precio: Number(l.precio), precioFinal: oferta ? Number(l.precio_final) : Number(l.precio),
         descuento: oferta ? Number(l.descuento_porcentaje_efectivo) || 0 : 0,
-        portada: l.portada || portadasCatalogo[String(l.isbn || '').replace(/[-\s]/g,'')] || null,
+        portada: resolverPortadaLibro(l),
         sinopsis: l.sinopsis || l.descripcion || '',
         disponible: Number(l.estado) === 1 && Number(l.stock) > 0,
         stock: Math.max(0, Number(l.stock) || 0), esNuevo: Number(l.es_nuevo) === 1,

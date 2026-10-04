@@ -4,14 +4,7 @@
 .sitio .ficha-migas a:hover { color: var(--marino-900); text-decoration: underline; text-underline-offset: 4px; }
 .sitio .ficha-superior { display: grid; grid-template-columns: minmax(200px, 280px) minmax(0, 1fr) minmax(220px, 260px); gap: 36px; align-items: start; }
 .sitio .ficha-portada-principal { padding: 18px 16px 24px; background: var(--fondo-alt); border: 1px solid var(--linea); border-radius: 12px; }
-.sitio .ficha-portada { aspect-ratio: 2 / 3; width: 100%; position: relative; display: grid; place-items: center; }
-.sitio .ficha-portada img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 3px 6px 6px 3px; box-shadow: 0 10px 22px -12px rgb(13 41 64 / .45); transition: transform .2s ease; }
 .sitio .ficha-portada-principal:hover img { transform: translateY(-2px); }
-.sitio .ficha-portada-vacia { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 150px; padding: 16px; text-align: center; color: var(--texto-2); font-size: 13px; }
-.sitio .ficha-portada-vacia svg { width: 34px; height: 34px; }
-.sitio .ficha-portada--mini .ficha-portada-vacia { min-height: 80px; padding: 2px; font-size: 11px; }
-.sitio .ficha-portada--mini .ficha-portada-vacia svg { width: 22px; height: 22px; }
-.sitio .ficha-portada-carga { position: absolute; inset: 0; border-radius: 6px; }
 .sitio .ficha-informacion { min-width: 0; }
 .sitio .ficha-informacion h1 { font-family: var(--f-titulo); font-size: clamp(24px, 2.2vw, 32px); line-height: 1.22; margin-block: 12px 14px; overflow-wrap: anywhere; }
 .sitio .ficha-categoria { display: inline-flex; font-size: 13px; padding-bottom: 4px; border-bottom: 1px solid var(--dorado-oscuro); color: var(--texto-2); }

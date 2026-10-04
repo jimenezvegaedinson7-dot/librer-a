@@ -2,26 +2,17 @@ import { FaImage, FaTag, FaXmark } from 'react-icons/fa6';
 
 import { Input, Select, Textarea } from '../../components/ui/Form';
 import { Spinner } from '../../components/ui/Spinner';
+import PortadaCatalogo from '../../components/catalogo/PortadaCatalogo';
 
-export function SelectorPortada({ imagen, preview, portadaActual, onCambiar, onQuitar, inputRef, cargando = false }) {
+export function SelectorPortada({ imagen, preview, portadaActual, libro, onCambiar, onQuitar, inputRef, cargando = false }) {
     return (
         <div>
             <label className="field-label">Portada</label>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-[150px_1fr]">
                 <div className="relative flex h-52 items-center justify-center overflow-hidden rounded-xl border border-primary-200 bg-parchment-200">
-                    {preview || portadaActual ? (
-                        <img
-                            src={preview || portadaActual}
-                            alt="Portada del libro"
-                            className="h-full w-full object-cover"
-                        />
-                    ) : (
-                        <div className="flex flex-col items-center text-slate-500">
-                            <FaImage size={32} />
-                            <span className="mt-2 text-xs">Sin portada</span>
-                        </div>
-                    )}
+                    <PortadaCatalogo libro={libro} {...(preview?{src:preview}:libro?{}:{src:portadaActual})}
+                        alt="Portada del libro" className="h-full w-full object-contain" prioritaria/>
                     {cargando && imagen && (
                         <div className="upload-overlay absolute inset-0 flex flex-col items-center justify-center gap-2" role="status">
                             <Spinner className="text-amber-700" />

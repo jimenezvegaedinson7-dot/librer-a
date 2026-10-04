@@ -8,6 +8,7 @@ import { EtiquetaNuevo, EtiquetasSuperiores } from '../components/EtiquetasLibro
 import { portada, soles } from '../lib/formato';
 import ComprarLibro from '../tienda/ComprarLibro';
 import PortadaLibro from '../tienda/PortadaLibro';
+import { referenciaPortadaLibro, AVISO_PORTADA_REFERENCIA } from '../../lib/utils/portadasLibro';
 
 // Sin tildes ni mayúsculas: "Garcia" encuentra "García".
 const normalizar = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -29,9 +30,10 @@ export function Stock({ libro }) {
     return <p className="stock stock--ok"><FaCircleCheck aria-hidden="true" /> En stock</p>;
 }
 
-export function TarjetaLibro({ libro, indice, nivelTitulo = 'h2', portadaSegura = false }) {
+export function TarjetaLibro({ libro, indice, nivelTitulo = 'h2', portadaSegura = true }) {
     const Titulo = nivelTitulo;
     const ahorro = libro.descuento > 0 ? libro.precio - libro.precioFinal : 0;
+    const referencia = referenciaPortadaLibro(libro);
     return (
         <li className={`tarjeta-libro${libro.disponible ? '' : ' tarjeta-libro--sin-stock'}`} style={{ '--i': indice % 10 }}>
             <div className="tarjeta-libro__tapa">
@@ -40,6 +42,7 @@ export function TarjetaLibro({ libro, indice, nivelTitulo = 'h2', portadaSegura 
                     srcSet={`${portada(libro.portada, 240)} 240w, ${portada(libro.portada, 360)} 360w, ${portada(libro.portada, 480)} 480w`}
                     sizes="(max-width: 520px) 45vw, 220px"
                     alt={`Portada de ${libro.titulo}`}
+                    title={referencia?`${AVISO_PORTADA_REFERENCIA}: ${referencia.edicion}`:undefined}
                     width="220"
                     height="330"
                     loading="lazy"
@@ -49,6 +52,7 @@ export function TarjetaLibro({ libro, indice, nivelTitulo = 'h2', portadaSegura 
                 <EtiquetaNuevo libro={libro} />
             </div>
             <div className="tarjeta-libro__cuerpo">
+                {referencia && <p className="portada-referencia">{AVISO_PORTADA_REFERENCIA}</p>}
                 <Titulo className="libro__titulo">{libro.titulo}</Titulo>
                 <p className="libro__autor">de <span>{libro.autor}</span></p>
                 {libro.categoria && <span className="categoria">{libro.categoria}</span>}

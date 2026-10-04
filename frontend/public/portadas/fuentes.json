@@ -1,5 +1,5 @@
 {
-  "criterio": "ISBN exacto o ISBN-10 matematicamente equivalente; no reemplaza portadas existentes",
+  "criterio": "ISBN exacto o ISBN-10 matematicamente equivalente; cinco portadas de otras ediciones autorizadas como referencia, identificadas con referencia=true e isbnEdicion separado del ISBN del catálogo; no reemplaza portadas existentes",
   "portadas": {
     "9788497935975": {
       "archivo": "/portadas/9788497935975.jpg",
@@ -952,56 +952,116 @@
       "imagenFuente": "https://covers.openlibrary.org/b/id/2270126-L.jpg?default=false",
       "idLibro": 35,
       "titulo": "Permiso para vivir"
+    },
+    "9789580412342": {
+      "archivo": "/portadas/9789580412342.jpg",
+      "extension": "jpg",
+      "ancho": 293,
+      "alto": 500,
+      "bytes": 29714,
+      "fuente": "AbeBooks / IberLibro (ISBN exacto)",
+      "isbn": "9789580412342",
+      "tituloEdicion": "Persuasion",
+      "registro": "https://openlibrary.org/books/OL44731348M",
+      "imagenFuente": "https://pictures.abebooks.com/isbn/9789580412342-es._SL500_.jpg",
+      "idLibro": 65,
+      "titulo": "Persuasión"
+    },
+    "9789700508900": {
+      "archivo": "/portadas/9789700508900-referencia.jpg",
+      "extension": "jpg",
+      "ancho": 330,
+      "alto": 475,
+      "bytes": 25416,
+      "fuente": "Open Library",
+      "isbn": "9789700508900",
+      "referencia": true,
+      "isbnEdicion": "9788401385360",
+      "edicion": "Plaza & Janés, 1995",
+      "tituloEdicion": "La ley del amor",
+      "autor": "Laura Esquivel",
+      "registro": "https://openlibrary.org/books/OL554726M",
+      "imagenFuente": "https://covers.openlibrary.org/b/id/1046535-L.jpg?default=false",
+      "idLibro": 85,
+      "titulo": "La ley del amour"
+    },
+    "9789505470587": {
+      "archivo": "/portadas/9789505470587-referencia.jpg",
+      "extension": "jpg",
+      "ancho": 337,
+      "alto": 500,
+      "bytes": 44864,
+      "fuente": "Open Library",
+      "isbn": "9789505470587",
+      "referencia": true,
+      "isbnEdicion": "9788445008157",
+      "edicion": "Minotauro, 2021, edición ilustrada",
+      "tituloEdicion": "Cuentos inconclusos de Númenor y la Tierra Media",
+      "autor": "J.R.R. Tolkien",
+      "nota": "El ISBN del catálogo corresponde a los tomos III y IV de Sudamericana; la imagen de referencia corresponde a una edición ilustrada de la obra completa.",
+      "registro": "https://openlibrary.org/books/OL47103418M",
+      "imagenFuente": "https://covers.openlibrary.org/b/id/13478305-L.jpg?default=false",
+      "idLibro": 60,
+      "titulo": "Cuentos inconclusos"
+    },
+    "9789972606953": {
+      "archivo": "/portadas/9789972606953-referencia.jpg",
+      "extension": "jpg",
+      "ancho": 500,
+      "alto": 721,
+      "bytes": 23237,
+      "fuente": "Ediciones Copé / Petroperú",
+      "isbn": "9789972606953",
+      "referencia": true,
+      "isbnEdicion": "9789972606946",
+      "edicion": "Ediciones Copé, 2012, segunda edición aumentada y corregida",
+      "tituloEdicion": "César Vallejo, poesía completa",
+      "autor": "César Vallejo",
+      "registro": "https://cultura.petroperu.com.pe/biblioteca-virtual/cesar-vallejo-poesia-completa/",
+      "imagenFuente": "https://cultura.petroperu.com.pe/wp-content/uploads/2021/05/Vallejo-poemas-completos-WEB-1_page-0001-500x721.jpg",
+      "idLibro": 40,
+      "titulo": "Poesía completa"
+    },
+    "9788426444028": {
+      "archivo": "/portadas/9788426444028-referencia.jpg",
+      "extension": "jpg",
+      "ancho": 326,
+      "alto": 500,
+      "bytes": 36604,
+      "fuente": "Open Library",
+      "isbn": "9788426444028",
+      "referencia": true,
+      "isbnEdicion": "9788426406095",
+      "edicion": "Lumen, 2019",
+      "tituloEdicion": "En nuestro tiempo",
+      "autor": "Ernest Hemingway",
+      "registro": "https://openlibrary.org/books/OL28899709M",
+      "imagenFuente": "https://covers.openlibrary.org/b/id/13254912-L.jpg?default=false",
+      "idLibro": 43,
+      "titulo": "En nuestro tiempo"
+    },
+    "9789504906322": {
+      "archivo": "/portadas/9789504906322-referencia.jpg",
+      "extension": "jpg",
+      "ancho": 329,
+      "alto": 500,
+      "bytes": 51475,
+      "fuente": "Open Library",
+      "isbn": "9789504906322",
+      "referencia": true,
+      "isbnEdicion": "9788467058703",
+      "edicion": "Booket, 2020",
+      "tituloEdicion": "Un cadáver en la biblioteca",
+      "autor": "Agatha Christie",
+      "registro": "https://openlibrary.org/books/OL47659745M",
+      "imagenFuente": "https://covers.openlibrary.org/b/id/14286124-L.jpg?default=false",
+      "idLibro": 30,
+      "titulo": "Un cadáver en la biblioteca"
     }
   },
-  "pendientes": [
-    {
-      "id": 103,
-      "titulo": "Cuentos de tierraviva",
-      "isbn": "9786124011306",
-      "motivo": "No se encontro una portada descargable de esta edicion"
-    },
-    {
-      "id": 93,
-      "titulo": "Entremeses",
-      "isbn": "9788423906864",
-      "motivo": "No se encontro una portada descargable de esta edicion"
-    },
-    {
-      "id": 85,
-      "titulo": "La ley del amour",
-      "isbn": "9789700508900",
-      "motivo": "La imagen disponible es un placeholder, no una portada real"
-    },
-    {
-      "id": 65,
-      "titulo": "Persuasión",
-      "isbn": "9789580412342",
-      "motivo": "No se encontro una portada descargable de esta edicion"
-    },
-    {
-      "id": 60,
-      "titulo": "Cuentos inconclusos",
-      "isbn": "9789505470587",
-      "motivo": "No se encontro una portada descargable de esta edicion"
-    },
-    {
-      "id": 40,
-      "titulo": "Poesía completa",
-      "isbn": "9789972606953",
-      "motivo": "No se encontro una portada descargable de esta edicion"
-    },
-    {
-      "id": 43,
-      "titulo": "En nuestro tiempo",
-      "isbn": "9788426444028",
-      "motivo": "No se encontro una portada descargable de esta edicion"
-    },
-    {
-      "id": 30,
-      "titulo": "Un cadáver en la biblioteca",
-      "isbn": "9789504906322",
-      "motivo": "No se encontro una portada descargable de esta edicion"
-    }
-  ]
+  "pendientes": [],
+  "revisionPanel": {
+    "criterio": "Portadas compartidas por ISBN entre tienda y administración; prioridad a imágenes registradas.",
+    "fecha": "2026-10-04"
+  }
 }

@@ -28,6 +28,8 @@ import { listarInventario } from '../inventario/inventarioService';
 import LibroViewModal from './LibroViewModal';
 import LibroEditModal from './LibroEditModal';
 import LibroDeleteModal from './LibroDeleteModal';
+import PortadaCatalogo from '../../components/catalogo/PortadaCatalogo';
+import { referenciaPortadaLibro, AVISO_PORTADA_REFERENCIA } from '../../lib/utils/portadasLibro';
 
 const POR_PAGINA = 10;
 
@@ -52,7 +54,10 @@ function PrecioCelda({ fila }) {
 
 const columnasLibros = [
     { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_libro}</span> },
-    { titulo: 'Título', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo}</span> },
+    { titulo: 'Título', render: (fila) => <span className="flex items-center gap-3"><PortadaCatalogo libro={fila} mostrarTexto={false} className="h-16 w-11 shrink-0 rounded bg-slate-50 object-contain"/>
+        <span className="font-semibold text-slate-700">{fila.titulo}
+            {referenciaPortadaLibro(fila) && <span className="mt-1 block text-xs font-normal text-slate-600">{AVISO_PORTADA_REFERENCIA}</span>}
+        </span></span> },
     { titulo: 'Autor', render: (fila) => <span className="text-slate-700">{fila.autor}</span> },
     { titulo: 'Categoría', render: (fila) => <span className="text-slate-700">{fila.categoria}</span> },
     { titulo: 'Precio', alineacion: 'centro', render: (fila) => <PrecioCelda fila={fila} /> },

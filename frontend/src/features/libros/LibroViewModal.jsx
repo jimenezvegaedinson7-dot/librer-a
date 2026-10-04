@@ -1,11 +1,11 @@
-import { FaUser, FaTag, FaMoneyBillWave, FaBoxesStacked, FaImage } from 'react-icons/fa6';
+import { FaUser, FaTag, FaMoneyBillWave, FaBoxesStacked } from 'react-icons/fa6';
 
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Ficha } from '../../components/ui/Ficha';
 
-import { construirUrlArchivo } from '../../lib/utils/url';
+import PortadaCatalogo from '../../components/catalogo/PortadaCatalogo';
 import { formatearMoneda } from '../../lib/utils/format';
 import { StockBadge } from './libroUi';
 import { soportaPromociones } from './promocion';
@@ -26,7 +26,6 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
 
     const activo = Number(libro.estado) === 1;
     const informacionPromocion = soportaPromociones(libro);
-    const urlPortada = construirUrlArchivo(libro.portada);
     const conPorcentaje = Number(libro.descuento_porcentaje) > 0;
     const conOferta = libro.precio_oferta !== null && libro.precio_oferta !== undefined && libro.precio_oferta !== '';
     const tienePromocion = conPorcentaje || conOferta || Number(libro.descuento_vigente) === 1;
@@ -44,27 +43,7 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                 <div>
                     <p className="field-label">Portada</p>
                     <div className="mx-auto flex h-[250px] w-full max-w-[180px] items-center justify-center overflow-hidden rounded-xl md:max-w-none border border-primary-200 bg-parchment-200">
-                        {urlPortada ? (
-                            <img
-                                src={urlPortada}
-                                alt={`Portada de ${libro.titulo}`}
-                                className="h-full w-full object-cover"
-                                onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                    const siguiente = e.currentTarget.nextElementSibling;
-                                    if (siguiente) siguiente.style.display = 'flex';
-                                }}
-                            />
-                        ) : null}
-                        <div
-                            style={urlPortada ? { display: 'none' } : {}}
-                            className="flex h-full w-full flex-col items-center justify-center text-slate-500"
-                        >
-                            <FaImage size={38} />
-                            <span className="mt-2 text-xs font-medium">
-                                {urlPortada ? 'No se pudo cargar la portada' : 'Sin portada'}
-                            </span>
-                        </div>
+                        <PortadaCatalogo libro={libro} className="h-full w-full object-contain" prioritaria/>
                     </div>
                 </div>
 

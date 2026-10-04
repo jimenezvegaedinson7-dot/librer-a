@@ -7,7 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Form';import { Alert } from '../../components/ui/Alert';
 
 import { listarAutores, listarCategorias, actualizarLibro } from './librosService';
-import { construirUrlArchivo } from '../../lib/utils/url';
+import { urlPortadaLibro } from '../../lib/utils/portadasLibro';
 import CamposLibro, { SelectorPortada, CamposDescuento } from './CamposLibro';
 import { requerido, numeroNoNegativo, seleccionRequerida, validarFormulario } from '../../lib/utils/validaciones';
 
@@ -64,7 +64,7 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
     const [preview, setPreview] = useState(null);
     // La portada guardada no se edita aquí, solo se muestra: se deriva del
     // libro recibido en lugar de guardarse en estado.
-    const portadaActual = libro ? construirUrlArchivo(libro.portada) : null;
+    const portadaActual = libro ? urlPortadaLibro(libro) : null;
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
     const [errores, setErrores] = useState({});
@@ -207,6 +207,7 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
                     imagen={imagen}
                     preview={preview}
                     portadaActual={portadaActual}
+                    libro={libro}
                     onCambiar={manejarImagen}
                     onQuitar={cancelarNuevaImagen}
                     inputRef={inputArchivoRef}

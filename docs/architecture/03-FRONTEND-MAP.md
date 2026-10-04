@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web
 
-> Generado desde el código real el 2026-10-03 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-04 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -259,6 +259,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 
 | Archivo | Usado por (nº de archivos) |
 |---|---|
+| `components/catalogo/PortadaCatalogo.jsx` | 3 |
 | `components/providers/ThemeContext.jsx` | 1 |
 | `components/providers/ToastProvider.jsx` | 17 |
 | `components/providers/tema.js` | 5 |
@@ -304,6 +305,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `lib/utils/exportarCsv.js`
 - `lib/utils/format.js`
 - `lib/utils/numeroALetras.js`
+- `lib/utils/portadasLibro.js`
 - `lib/utils/sonido.js`
 - `lib/utils/url.js`
 - `lib/utils/validaciones.js`
