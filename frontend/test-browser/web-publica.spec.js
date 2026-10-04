@@ -590,12 +590,18 @@ test('cada variante de botón conserva un texto legible', async ({ page }) => {
             const s = getComputedStyle(e);
             return { fondo: s.backgroundColor, texto: s.color };
         };
-        return { marca: leer('.boton--marca'), blanco: leer('.boton--blanco') };
+        return { marca: leer('.boton--marca') };
     });
     expect(colores.marca.fondo).toBe('rgb(13, 41, 64)');
     expect(colores.marca.texto).toBe('rgb(255, 255, 255)');
-    expect(colores.blanco.fondo).toBe('rgb(255, 255, 255)');
-    expect(colores.blanco.texto).toBe('rgb(13, 41, 64)');
+    // El inicio ya no usa el botón blanco: se comprueba en Nosotros.
+    await page.goto('/nosotros');
+    const blanco = await page.locator('.boton--blanco').first().evaluate((e) => {
+        const s = getComputedStyle(e);
+        return { fondo: s.backgroundColor, texto: s.color };
+    });
+    expect(blanco.fondo).toBe('rgb(255, 255, 255)');
+    expect(blanco.texto).toBe('rgb(13, 41, 64)');
 });
 
 // ============================================================
