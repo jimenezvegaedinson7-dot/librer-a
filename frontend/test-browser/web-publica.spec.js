@@ -694,7 +694,9 @@ test('inicio: vitrina de la app con tarjeta grande y dos apiladas', async ({ pag
     await expect(vitrina.getByRole('link', { name: /Descargar la app/ })).toHaveAttribute('href', '/descargar');
     // Escritorio: la grande a la izquierda y las otras dos apiladas a la derecha.
     const grande = await vitrina.locator('.vitrina__principal').boundingBox();
-    const [arriba, abajo] = await Promise.all(vitrina.locator('.vitrina__tarjeta').all().then((t) => Promise.all(t.map((x) => x.boundingBox()))));
+    const tarjetas = vitrina.locator('.vitrina__tarjeta');
+    const arriba = await tarjetas.nth(0).boundingBox();
+    const abajo = await tarjetas.nth(1).boundingBox();
     expect(arriba.x).toBeGreaterThan(grande.x + grande.width - 1);
     expect(abajo.y).toBeGreaterThan(arriba.y + arriba.height - 1);
 });
