@@ -38,7 +38,7 @@ function SalesChart({
     idBase = 'ingresos',
     conMetrica = false,
 }) {
-    const [periodo, setPeriodo] = useState('dia');
+    const [periodo, setPeriodo] = useState(ventasPorDia === null ? 'mes' : 'dia');
     const [metrica, setMetrica] = useState('total');
     const [verTabla, setVerTabla] = useState(false);
     const [activo, setActivo] = useState(null);
@@ -48,12 +48,13 @@ function SalesChart({
         { id: 'mes', texto: `${meses} meses`, unidad: 'mes', actual: 'Mes actual', resto: 'Meses anteriores' },
     ];
 
+    const periodoDisponible = periodo === 'dia' && ventasPorDia === null ? 'mes' : periodo;
     const serie = useMemo(
-        () => (periodo === 'dia' ? serieDiaria(ventasPorDia, dias) : serieMensual(ventasPorMes, meses)),
-        [periodo, ventasPorDia, ventasPorMes, dias, meses],
+        () => (periodoDisponible === 'dia' ? serieDiaria(ventasPorDia, dias) : serieMensual(ventasPorMes, meses)),
+        [periodoDisponible, ventasPorDia, ventasPorMes, dias, meses],
     );
 
-    const config = periodos.find((p) => p.id === periodo);
+    const config = periodos.find((p) => p.id === periodoDisponible);
     const m = METRICAS[metrica];
     const valorDe = (d) => d[metrica];
 
@@ -110,9 +111,11 @@ function SalesChart({
                             <button
                                 key={p.id}
                                 type="button"
-                                aria-pressed={periodo === p.id}
+                                aria-pressed={periodoDisponible === p.id}
+                                disabled={p.id === 'dia' && ventasPorDia === null}
+                                title={p.id === 'dia' && ventasPorDia === null ? 'No se pudo consultar la serie diaria' : undefined}
                                 onClick={() => cambiarPeriodo(p.id)}
-                                className={`segmentado-opcion ${periodo === p.id ? 'segmentado-opcion--activa' : ''}`}
+                                className={`segmentado-opcion ${periodoDisponible === p.id ? 'segmentado-opcion--activa' : ''}`}
                             >
                                 {p.texto}
                             </button>

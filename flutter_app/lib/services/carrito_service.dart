@@ -27,6 +27,62 @@ class CarritoService extends ChangeNotifier {
   Future<void> _escritura = Future<void>.value();
 
   final List<CarritoItem> _items = [];
+  final Set<int> _ventasConciliadas = {};
+
+  Map<String, List<String>> get instantaneaUnidades => {
+    for (final item in _items) '${item.libro.idLibro}': List.of(item.unidades),
+  };
+
+  /// Retira solo las unidades que existían al crear esta venta. La marca y el
+  /// carrito se guardan en el mismo JSON para que repetir la consulta sea inocuo.
+  Future<void> conciliarVenta(int idVenta, Map<String, List<String>> compradas) async {
+    if (_ventasConciliadas.contains(idVenta)) return;
+    final ids = compradas.values.expand((e) => e).toSet();
+    void restar(List<CarritoItem> lista) {
+      for (var i = lista.length - 1; i >= 0; i--) {
+        final item = lista[i];
+        final restantes = item.unidades.where((u) => !ids.contains(u)).toList();
+        if (restantes.isEmpty) {
+          lista.removeAt(i);
+        } else {
+          lista[i] = item.copiar(cantidad: restantes.length, unidades: restantes);
+        }
+      }
+    }
+    restar(_items);
+    restar(_guardados);
+    _ventasConciliadas.add(idVenta);
+    _cambio();
+    await persistir();
+  }
+
+  /// Barrera antes de enviar una compra: las identidades deben sobrevivir al
+  /// proceso junto al carrito, no solamente al diario de checkout.
+  Future<void> persistir() async {
+    await _escritura;
+    final owner = StorageService.instance.idUsuarioActual;
+    final generacion = StorageService.instance.generacion;
+    final datos = _datos(owner);
+    final prefs = await SharedPreferences.getInstance();
+    if (generacion != StorageService.instance.generacion) {
+      throw StateError('La sesión cambió. Vuelve a intentar con tu cuenta.');
+    }
+    if (!await prefs.setString(_prefKey, jsonEncode(datos))) {
+      throw StateError('No se pudo guardar el carrito.');
+    }
+  }
+
+  Map<String, dynamic> _datos(int? owner) => {
+    'usuario': owner,
+    'items': [for (final item in _items) _itemJson(item)],
+    'guardados': [for (final item in _guardados) _itemJson(item)],
+    'ventas_conciliadas': _ventasConciliadas.toList(),
+  };
+
+  Map<String, dynamic> _itemJson(CarritoItem item) => {
+    'libro': item.libro.toJson(), 'cantidad': item.cantidad,
+    'unidades': item.unidades,
+  };
 
   /// Ítems guardados para más tarde (fuera del carrito activo).
   final List<CarritoItem> _guardados = [];
@@ -63,13 +119,13 @@ class CarritoService extends ChangeNotifier {
       final fresco = porId[item.libro.idLibro];
       if (fresco == null) continue;
       cambio |= item.precioCentimos != (fresco.precioCompra * 100).round();
-      _items[i] = CarritoItem(libro: fresco, cantidad: item.cantidad);
+      _items[i] = item.copiar(libro: fresco);
     }
     for (var i = 0; i < _guardados.length; i++) {
       final item = _guardados[i];
       final fresco = porId[item.libro.idLibro];
       if (fresco != null) {
-        _guardados[i] = CarritoItem(libro: fresco, cantidad: item.cantidad);
+        _guardados[i] = item.copiar(libro: fresco);
       }
     }
     _cambio();
@@ -88,7 +144,7 @@ class CarritoService extends ChangeNotifier {
   /// stock), para que la pantalla avise al usuario.
   int agregar(Libro libro, {int cantidad = 1}) {
     final id = libro.idLibro;
-    if (id == null || cantidad <= 0) return 0;
+    if (id == null || cantidad <= 0 || !libro.esActivo) return 0;
 
     final stock = libro.stock ?? 0;
     final index = _indexDeLibro(id);
@@ -98,7 +154,7 @@ class CarritoService extends ChangeNotifier {
 
     if (index >= 0) {
       // Se guarda el libro recibido: trae el precio y stock más recientes.
-      _items[index] = CarritoItem(libro: libro, cantidad: actual + agregables);
+      _items[index] = _items[index].copiar(libro: libro, cantidad: actual + agregables);
     } else {
       _items.add(CarritoItem(libro: libro, cantidad: agregables));
     }
@@ -156,12 +212,14 @@ class CarritoService extends ChangeNotifier {
   void vaciarSesion() {
     _items.clear();
     _guardados.clear();
+    _ventasConciliadas.clear();
     _cambio();
   }
 
   /// Restaura el carrito guardado si pertenece al usuario de la sesión
   /// actual. Se llama una vez al arrancar la app.
   Future<void> cargar() async {
+    final generacion = StorageService.instance.generacion;
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_prefKey);
@@ -169,6 +227,7 @@ class CarritoService extends ChangeNotifier {
 
       final datos = jsonDecode(raw) as Map<String, dynamic>;
       final usuario = await StorageService.instance.obtenerUsuario();
+      if (generacion != StorageService.instance.generacion) return;
       final dueno = datos['usuario'];
       if (usuario?.idUsuario == null || dueno != usuario!.idUsuario) {
         // Carrito de otra cuenta (o sin sesión): no se restaura.
@@ -182,6 +241,9 @@ class CarritoService extends ChangeNotifier {
       _guardados
         ..clear()
         ..addAll(_leerItems(datos['guardados']));
+      _ventasConciliadas
+        ..clear()
+        ..addAll((datos['ventas_conciliadas'] as List? ?? []).whereType<int>());
       notifyListeners();
     } catch (_) {
       // Datos dañados o de otra versión: se empieza con el carrito vacío.
@@ -196,6 +258,7 @@ class CarritoService extends ChangeNotifier {
           CarritoItem(
             libro: Libro.fromJson(e['libro'] as Map<String, dynamic>),
             cantidad: (e['cantidad'] as num?)?.toInt() ?? 1,
+            unidades: (e['unidades'] as List?)?.whereType<String>().toList(),
           ),
     ].where((item) => item.libro.idLibro != null && item.cantidad > 0).toList();
   }
@@ -203,28 +266,17 @@ class CarritoService extends ChangeNotifier {
   /// Notifica a la interfaz y guarda el estado en el dispositivo.
   void _cambio() {
     notifyListeners();
-    // Instantánea tomada ahora; la escritura va en cola.
-    List<Map<String, dynamic>> aJson(List<CarritoItem> l) => [
-      for (final item in l)
-        {'libro': item.libro.toJson(), 'cantidad': item.cantidad},
-    ];
-    final items = aJson(_items);
-    final guardados = aJson(_guardados);
+    // El dueño y la generación se capturan junto a los artículos, no cuando
+    // llega el turno de escribir (podría haberse autenticado otra cuenta).
+    final generacion = StorageService.instance.generacion;
+    final datos = _datos(StorageService.instance.idUsuarioActual);
     _escritura = _escritura.then((_) async {
       try {
         final prefs = await SharedPreferences.getInstance();
-        if (items.isEmpty && guardados.isEmpty) {
-          await prefs.remove(_prefKey);
-          return;
-        }
-        final usuario = await StorageService.instance.obtenerUsuario();
+        if (generacion != StorageService.instance.generacion) return;
         await prefs.setString(
           _prefKey,
-          jsonEncode({
-            'usuario': usuario?.idUsuario,
-            'items': items,
-            'guardados': guardados,
-          }),
+          jsonEncode(datos),
         );
       } catch (_) {
         // Si el guardado local falla, el carrito sigue funcionando en memoria.
@@ -242,35 +294,35 @@ class CarritoService extends ChangeNotifier {
 
   /// Devuelve un ítem guardado al carrito. Si el libro ya está en el carrito,
   /// suma las cantidades en lugar de duplicar la fila.
-  void moverAlCarrito(int idLibro) {
+  int moverAlCarrito(int idLibro) {
     final index = _guardados.indexWhere(
       (item) => item.libro.idLibro == idLibro,
     );
-    if (index < 0) return;
-
-    final item = _guardados.removeAt(index);
-    final id = item.libro.idLibro;
-    if (id == null) {
-      _cambio();
-      return;
-    }
-
-    // Sin superar el stock disponible del libro.
+    if (index < 0) return 0;
+    final item = _guardados[index];
+    if (!item.libro.esActivo) return 0;
     final stock = item.libro.stock ?? 0;
-    final enCarrito = _indexDeLibro(id);
+    final enCarrito = _indexDeLibro(idLibro);
+    final actual = enCarrito < 0 ? 0 : _items[enCarrito].cantidad;
+    final movidas = (stock - actual).clamp(0, item.cantidad);
+    if (movidas == 0) return 0;
+    final unidades = item.unidades.take(movidas).toList();
     if (enCarrito >= 0) {
-      final suma = _items[enCarrito].cantidad + item.cantidad;
       _items[enCarrito] = _items[enCarrito].copiar(
-        cantidad: stock > 0 && suma > stock ? stock : suma,
+        cantidad: actual + movidas,
+        unidades: [..._items[enCarrito].unidades, ...unidades],
       );
     } else {
-      _items.add(
-        stock > 0 && item.cantidad > stock
-            ? item.copiar(cantidad: stock)
-            : item,
-      );
+      _items.add(item.copiar(cantidad: movidas, unidades: unidades));
+    }
+    if (movidas == item.cantidad) {
+      _guardados.removeAt(index);
+    } else {
+      _guardados[index] = item.copiar(cantidad: item.cantidad - movidas,
+          unidades: item.unidades.skip(movidas).toList());
     }
     _cambio();
+    return movidas;
   }
 
   /// Quita un ítem de "Guardados para más tarde" sin agregarlo al carrito.

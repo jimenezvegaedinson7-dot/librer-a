@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/zona_delivery.dart';
+import '../models/orden_pago.dart';
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
 import '../utils/app_colors.dart';
@@ -45,6 +46,10 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   String? _orderId;
   String? _checkoutUrl;
   double? _total;
+  EstadoOrden? _estadoPago;
+  bool _restaurando = true;
+  bool _importeConfirmado = false;
+  int? _totalMostradoCentimos;
 
   List<ZonaDelivery> _zonas = [];
   int? _idZona;
@@ -53,6 +58,43 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   void initState() {
     super.initState();
     _cargarZonas();
+    _restaurarIntento();
+  }
+
+  Future<void> _restaurarIntento() async {
+    try {
+      final intento = await ApiService.instance.intentoPendiente();
+      if (intento == null) return;
+      final orden = await ApiService.instance.recuperarIntentoPendiente();
+      if (orden != null && mounted) {
+        await _mostrarOrden(orden, esperado: intento.totalMostradoCentimos);
+      }
+    } on ApiException catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('No se pudo recuperar el intento. Reintenta para resolver la misma compra.'),
+      ));
+      }
+    } finally {
+      if (mounted) setState(() => _restaurando = false);
+    }
+  }
+
+  Future<void> _mostrarOrden(OrdenPago orden, {required int esperado, bool abrir = false}) async {
+    if (!mounted) return;
+    final estado = EstadoOrden(status: orden.status, estadoVenta: orden.estadoVenta, requiereRevision: orden.requiereRevision);
+    setState(() {
+      _exito = true;
+      _orderId = orden.orderId;
+      _estadoPago = estado;
+      _checkoutUrl = estado.pagada || estado.cancelada ? null : orden.checkoutUrl;
+      _total = orden.total;
+      _importeConfirmado = orden.total != null && (orden.total! * 100).round() == esperado;
+      _procesando = false;
+    });
+    if (abrir && !estado.pagada && !estado.cancelada) await _reabrirCheckout();
   }
 
   @override
@@ -97,23 +139,39 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   /// se confirma (ver [_verificarPago]). Si el usuario vuelve sin pagar, el
   /// carrito y la orden pendiente se conservan para poder continuar.
   Future<void> _realizarCompra() async {
-    if (_procesando) return;
+    if (_procesando || _restaurando) return;
     final carrito = CarritoService.instance;
-
-    final error = _validarEntrega();
-    if (error != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error)));
-      return;
-    }
-
+    final totalVisto = _totalMostradoCentimos ?? (carrito.total * 100 + _costoEnvio() * 100).round();
     setState(() => _procesando = true);
     try {
+      // Resolver un resultado incierto ANTES de validar el carrito actual.
+      // La orden anterior puede haber descontado ya todas sus unidades.
+      final intento = await ApiService.instance.intentoPendiente();
+      if (!mounted) return;
+      if (intento != null) {
+        final orden = await ApiService.instance.recuperarIntentoPendiente();
+        if (orden != null) {
+          await _mostrarOrden(orden, esperado: intento.totalMostradoCentimos, abrir: true);
+        }
+        return;
+      }
+      final error = _validarEntrega();
+      if (error != null) throw ApiException(error);
       // Se renuevan las promociones antes de confirmar; el servidor sigue
       // determinando y guardando el importe definitivo del pedido.
       final catalogo = await ApiService.instance.obtenerLibros();
       if (!mounted) return;
-      final cambioPrecio = carrito.actualizarCatalogo(catalogo);
+      carrito.actualizarCatalogo(catalogo);
+      if (_tipoEntrega == _TipoEntrega.domicilio) {
+        final zonas = await ApiService.instance.obtenerZonasDelivery();
+        if (!mounted) return;
+        setState(() {
+          _zonas = zonas;
+          if (!zonas.any((z) => z.idZona == _idZona)) _idZona = null;
+        });
+        final errorZona = _validarEntrega();
+        if (errorZona != null) throw ApiException(errorZona);
+      }
       final porId = {for (final libro in catalogo) libro.idLibro: libro};
       if (carrito.vacio) throw const ApiException('El carrito está vacío.');
       for (final item in carrito.items) {
@@ -126,13 +184,13 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           );
         }
       }
-      if (cambioPrecio) {
-        ApiService.instance.limpiarIdempotencia();
+      final totalFresco = (carrito.total * 100).round() + (_costoEnvio() * 100).round();
+      if (totalFresco != totalVisto) {
         setState(() => _procesando = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Actualizamos los precios del carrito. Revisa el total y vuelve a confirmar la compra.',
+               'Actualizamos los precios o el envío. Revisa el total y vuelve a confirmar la compra.',
             ),
           ),
         );
@@ -154,32 +212,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         referencia: esDomicilio ? _referenciaController.text.trim() : null,
         clienteTipoDocumento: _tipoDocumento,
         clienteDocumento: _documentoController.text.trim(),
+        totalMostradoCentimos: totalFresco,
       );
-
-      final url = orden.checkoutUrl;
-      if (url != null && url.isNotEmpty) {
-        // Abrir el checkout de PayU. La limpieza del carrito solo
-        // ocurre cuando el pago se confirma, no al abrir el checkout.
-        await _abrirCheckout(url);
-        if (!mounted) return;
-
-        setState(() {
-          _exito = true;
-          _orderId = orden.orderId;
-          _checkoutUrl = url;
-          _total = orden.total;
-          _procesando = false;
-        });
-      } else {
-        // Sin checkout: no se pudo abrir el pago.
-        if (!mounted) return;
-        setState(() => _procesando = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No se pudo iniciar el pago. Inténtalo de nuevo.'),
-          ),
-        );
-      }
+      await _mostrarOrden(orden, esperado: totalFresco, abrir: true);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _procesando = false);
@@ -192,6 +227,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('No se pudo completar la compra: $e')),
       );
+    } finally {
+      if (mounted) setState(() => _procesando = false);
     }
   }
 
@@ -233,19 +270,11 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     try {
       final estado = await ApiService.instance.obtenerOrdenPago(orderId);
       if (!mounted) return;
-      setState(() => _procesando = false);
-
-      if (estado.pagada) {
-        // Pago confirmado: la compra terminó. Se limpia el carrito y se
-        // libera la clave de idempotencia para que un próximo checkout sea
-        // un intento nuevo (no reutilice la orden ya pagada).
-        CarritoService.instance.limpiar();
-        ApiService.instance.limpiarIdempotencia();
-      } else if (estado.cancelada) {
-        // El carrito se conserva para reintentar, pero una orden cancelada no
-        // debe reutilizar su clave en el siguiente checkout.
-        ApiService.instance.limpiarIdempotencia();
-      }
+      setState(() {
+        _procesando = false;
+        _estadoPago = estado;
+        if (estado.pagada || estado.cancelada) _checkoutUrl = null;
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -273,9 +302,44 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   }
 
   Future<void> _reabrirCheckout() async {
+    if (_procesando || _estadoPago?.pagada == true || _estadoPago?.cancelada == true) return;
     final url = _checkoutUrl;
-    if (url == null || url.isEmpty) return;
-    await _abrirCheckout(url);
+    if (url == null || url.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('No hay una ventana de pago disponible. Verifica esta orden en Mis compras.'),
+      ));
+      return;
+    }
+    if (!_importeConfirmado) {
+      final aceptar = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
+        title: const Text('Revisar total definitivo'),
+        content: Text('El total confirmado por la tienda es S/ ${Formats.precio(_total)}. '
+            'Revisa este importe antes de continuar a PayU.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Revisar después')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Aceptar total')),
+        ],
+      ));
+      if (aceptar != true || !mounted) return;
+      _importeConfirmado = true;
+    }
+    setState(() => _procesando = true);
+    try {
+      // Revalidar incluso una URL guardada: pudo pagarse en otro dispositivo.
+      if (_orderId != null) {
+        final estado = await ApiService.instance.obtenerOrdenPago(_orderId!);
+        if (!mounted) return;
+        if (estado.pagada || estado.cancelada) {
+          setState(() { _estadoPago = estado; _checkoutUrl = null; });
+          return;
+        }
+      }
+      await _abrirCheckout(url);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      if (mounted) setState(() => _procesando = false);
+    }
   }
 
   Future<bool> _abrirCheckout(String url) async {
@@ -302,11 +366,18 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_restaurando) {
+      return Scaffold(appBar: AppBar(title: const Text('Finalizar pedido')),
+        body: const LoadingView(message: 'Comprobando compras pendientes...'));
+    }
     if (_exito) {
       return _buildExito(context);
     }
 
     final carrito = CarritoService.instance;
+    if (!_procesando) {
+      _totalMostradoCentimos = (carrito.total * 100).round() + (_costoEnvio() * 100).round();
+    }
     if (carrito.items.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('Finalizar pedido')),
@@ -718,7 +789,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   }
 
   Widget _buildExito(BuildContext context) {
-    final conCheckout = (_checkoutUrl ?? '').isNotEmpty;
+    final terminal = _estadoPago?.pagada == true || _estadoPago?.cancelada == true;
+    final conCheckout = !terminal;
     final textTheme = Theme.of(context).textTheme;
 
     if (conCheckout) {
@@ -784,7 +856,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: _reabrirCheckout,
+                      onPressed: _procesando ? null : _reabrirCheckout,
                       icon: const Icon(Icons.open_in_new_rounded, size: 18),
                       label: const Text('Reabrir pago en PayU'),
                     ),
@@ -805,7 +877,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Compra realizada')),
+      appBar: AppBar(title: Text(_estadoPago?.requiereRevision == true ? 'Pago en revisión' : _estadoPago?.pagada == true ? 'Pago confirmado' : 'Pago no completado')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(28),
@@ -813,22 +885,24 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const _Medallon(
-                  icon: Icons.check_rounded,
-                  color: AppColors.success,
-                  fondo: AppColors.successContainer,
+                _Medallon(
+                  icon: _estadoPago?.pagada == true ? Icons.check_rounded : Icons.cancel_outlined,
+                  color: _estadoPago?.pagada == true ? AppColors.success : AppColors.warning,
+                  fondo: _estadoPago?.pagada == true ? AppColors.successContainer : AppColors.warningContainer,
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  '¡Gracias por tu compra!',
+                  _estadoPago?.requiereRevision == true ? 'Tu pago necesita revisión' : _estadoPago?.pagada == true ? '¡Pago confirmado!' : 'El pago no se completó',
                   textAlign: TextAlign.center,
                   style: textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _total != null
-                      ? 'Tu orden por S/ ${Formats.precio(_total!)} se registró correctamente.'
-                      : 'Tu orden se registró correctamente.',
+                  _estadoPago?.requiereRevision == true
+                      ? 'El servidor recibió un resultado de pago que requiere revisión de la librería. No vuelvas a pagar esta solicitud; consulta Mis compras.'
+                      : _estadoPago?.pagada == true
+                      ? 'Tu compra${_total == null ? '' : ' por S/ ${Formats.precio(_total)}'} fue confirmada.'
+                      : 'Tus libros se conservan en el carrito. Puedes revisar tu compra e iniciar un nuevo intento.',
                   textAlign: TextAlign.center,
                   style: textTheme.bodyMedium?.copyWith(
                     color: AppColors.textSecondary,

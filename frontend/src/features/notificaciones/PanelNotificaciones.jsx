@@ -39,7 +39,7 @@ function Item({ notificacion, nueva, indice, onAbrir }) {
     );
 }
 
-export default function PanelNotificaciones({ notificaciones, nuevas, cargando, onAbrir, onActualizar, onMarcarLeidas }) {
+export default function PanelNotificaciones({ notificaciones, nuevas, cargando, error, onAbrir, onActualizar, onMarcarLeidas }) {
     const [filtro, setFiltro] = useState('todas');
 
     const conteo = (tipo) => notificaciones.filter((n) => tipo === 'todas' || n.tipo === tipo).length;
@@ -94,13 +94,14 @@ export default function PanelNotificaciones({ notificaciones, nuevas, cargando, 
             </div>
 
             <div className="notif-cuerpo scrollbar-light">
+                {error && <p className="notif-vacio-texto p-4" role="alert">{error}</p>}
                 {cargando && notificaciones.length === 0 ? (
                     <div className="notif-vacio">
                         <span className="skeleton h-3 w-40" />
                         <span className="skeleton mt-3 h-3 w-56" />
                         <span className="skeleton mt-3 h-3 w-32" />
                     </div>
-                ) : visibles.length === 0 ? (
+                ) : visibles.length === 0 && !error ? (
                     <div className="notif-vacio">
                         <p className="notif-vacio-titulo">Todo en orden</p>
                         <p className="notif-vacio-texto">

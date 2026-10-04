@@ -507,7 +507,16 @@ class _GuardadoCard extends StatelessWidget {
                       color: AppColors.primary,
                       onPressed: id == null
                           ? null
-                          : () => CarritoService.instance.moverAlCarrito(id),
+                          : () {
+                              final movidas = CarritoService.instance.moverAlCarrito(id);
+                              if (movidas < item.cantidad) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(movidas == 0
+                                      ? 'Este libro no está disponible. Se conserva en Guardados.'
+                                      : 'Movimos $movidas unidades; el resto continúa en Guardados.'),
+                                ));
+                              }
+                            },
                     ),
                     const Spacer(),
                     IconButton(

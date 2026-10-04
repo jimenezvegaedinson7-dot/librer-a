@@ -268,8 +268,8 @@ const actualizarAutor = async (req, res) => {
         // ========================================
         // ACTUALIZAR
         // ========================================
-        if ((nacionalidad !== undefined && !esTextoValido(nacionalidad, 80, true)) ||
-            (biografia !== undefined && !esTextoValido(biografia, 100000, true))) {
+        if ((nacionalidad != null && !esTextoValido(nacionalidad, 80, true)) ||
+            (biografia != null && !esTextoValido(biografia, 100000, true))) {
             return res.status(400).json({ success: false, mensaje: 'Nacionalidad o biografía inválidas' });
         }
         await autorModel.actualizar(
@@ -278,30 +278,28 @@ const actualizarAutor = async (req, res) => {
                 nombre:
                     nombre !== undefined
                         ? nombre.trim()
-                        : autorExistente.nombre,
+                        : undefined,
 
                 apellido:
                     apellido !== undefined
                         ? apellido.trim()
-                        : autorExistente.apellido,
+                        : undefined,
 
                 nacionalidad:
                     nacionalidad !== undefined
-                        ? nacionalidad.trim() || null
-                        : autorExistente.nacionalidad,
+                        ? nacionalidad === null ? null : nacionalidad.trim() || null
+                        : undefined,
 
                 biografia:
                     biografia !== undefined
-                        ? biografia.trim() || null
-                        : autorExistente.biografia,
+                        ? biografia === null ? null : biografia.trim() || null
+                        : undefined,
 
                 estado:
                     estado !== undefined &&
                     estado !== ''
                         ? Number(estado)
-                        : Number(
-                            autorExistente.estado
-                        )
+                        : undefined
             }
         );
 

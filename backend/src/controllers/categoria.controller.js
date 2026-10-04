@@ -243,7 +243,7 @@ const actualizarCategoria = async (req, res) => {
         // ========================================
         // ACTUALIZAR
         // ========================================
-        if (descripcion !== undefined && !esTextoValido(descripcion, 255, true)) {
+        if (descripcion != null && !esTextoValido(descripcion, 255, true)) {
             return res.status(400).json({ success: false, mensaje: 'Descripción inválida' });
         }
         await categoriaModel.actualizar(
@@ -252,20 +252,18 @@ const actualizarCategoria = async (req, res) => {
                 nombre:
                     nombre !== undefined
                         ? nombre.trim()
-                        : categoriaExistente.nombre,
+                        : undefined,
 
                 descripcion:
                     descripcion !== undefined
-                        ? descripcion.trim() || null
-                        : categoriaExistente.descripcion,
+                        ? descripcion === null ? null : descripcion.trim() || null
+                        : undefined,
 
                 estado:
                     estado !== undefined &&
                     estado !== ''
                         ? Number(estado)
-                        : Number(
-                            categoriaExistente.estado
-                        )
+                        : undefined
             }
         );
 

@@ -6,6 +6,7 @@ import { PrecioOferta } from '../components/PrecioOferta';
 import { portada } from '../lib/formato';
 import { EtiquetaNuevo } from '../components/EtiquetasLibro';
 import ComprarLibro from '../tienda/ComprarLibro';
+import { referenciaPortadaLibro, AVISO_PORTADA_REFERENCIA } from '../../lib/utils/portadasLibro';
 
 function Libro({ libro, indice }) {
     return (
@@ -29,6 +30,7 @@ function Libro({ libro, indice }) {
             <div className="libro__datos">
                 {libro.categoria && <span className="libro__categoria">{libro.categoria}</span>}
                 <h3 className="libro__titulo">{libro.titulo}</h3>
+                {referenciaPortadaLibro(libro) && <p className="portada-referencia">{AVISO_PORTADA_REFERENCIA}</p>}
                 <p className="libro__autor">{libro.autor}</p>
                 <p className="libro__pie">
                     <PrecioOferta libro={libro} />

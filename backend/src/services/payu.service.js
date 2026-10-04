@@ -208,24 +208,29 @@ const consultarReporte = async (command, details) => {
 // Deja el estado en formato que consume extraerEstadoOrdenPayu.
 // ========================================
 const normalizarOrdenReports = (payload = {}) => {
-    const tx = payload.transactions?.[0]?.transactionResponse || {};
-    const txId = payload.transactions?.[0]?.id || null;
-    const txValue = Number(
-        payload?.additionalValues?.TX_VALUE?.value ?? 0
-    );
+    const transactions = payload.transactions || [];
+    const transaction = transactions.find(t => ['APPROVED', 'CAPTURED'].includes(t.transactionResponse?.state)) ||
+        transactions.find(t => String(t.transactionResponse?.state || '').startsWith('PENDING')) || transactions[0];
+    const tx = transaction?.transactionResponse || {};
+    const value = transaction?.additionalValues?.TX_VALUE || payload.additionalValues?.TX_VALUE;
+    const txValue = value?.value == null ? null : Number(value.value);
+    const estado = ['REFUNDED', 'CHARGED_BACK', 'CAPTURED', 'APPROVED'].includes(payload.status)
+        ? payload.status : tx.state || payload.status || null;
 
     return {
         id: payload.id ?? null,
-        status: payload.status ?? tx.state ?? null,
+        status: estado,
         referenceCode: payload.referenceCode ?? null,
         external_reference: payload.referenceCode ?? null,
         transactionResponse: {
-            state: payload.status ?? tx.state ?? null,
-            transactionId: txId,
+            state: estado,
+            transactionId: transaction?.id || tx.transactionId || null,
+            orderId: payload.id ?? null,
             referenceCode: payload.referenceCode ?? null,
             pendingReason: tx.pendingReason || null,
             responseMessage: tx.responseMessage || null,
-            value: txValue * 100,
+            value: txValue == null ? null : txValue * 100,
+            currency: value?.currency || null,
             buyer: null
         }
     };
@@ -249,7 +254,7 @@ const obtenerOrden = async (orderId) => {
         return null;
     }
 
-    return normalizarOrdenReports(payload);
+    return elegirOrdenReports(payload);
 };
 
 // ========================================
@@ -266,15 +271,7 @@ const obtenerOrdenPorReferencia = async (referenceCode) => {
     });
 
     const payload = consulta?.result?.payload;
-    const orden = Array.isArray(payload)
-        ? payload[0]
-        : payload;
-
-    if (!orden) {
-        return null;
-    }
-
-    return normalizarOrdenReports(orden);
+    return elegirOrdenReports(payload);
 };
 
 // ========================================
@@ -295,9 +292,10 @@ const obtenerPago = async (paymentId) => {
 // ========================================
 // DIAGNÓSTICO (nunca lanza; devuelve { errorFetch })
 // ========================================
-const obtenerOrdenDiagnostico = async (orderId) => {
+const obtenerOrdenDiagnostico = async (orderId, externalReference = null) => {
     try {
-        const orden = await obtenerOrden(orderId);
+        const orden = externalReference
+            ? await obtenerOrdenPorReferencia(externalReference) : await obtenerOrden(orderId);
         return orden || null;
     } catch (error) {
         const causa = error?.cause || error?.error?.cause || null;
@@ -312,6 +310,12 @@ const obtenerOrdenDiagnostico = async (orderId) => {
     }
 };
 
+const elegirOrdenReports = (payload) => {
+    const ordenes = (Array.isArray(payload) ? payload : payload ? [payload] : []).map(normalizarOrdenReports);
+    return ordenes.find(o => ['APPROVED', 'CAPTURED'].includes(o.status)) ||
+        ordenes.find(o => String(o.status || '').startsWith('PENDING')) || ordenes[0] || null;
+};
+
 module.exports = {
     crearOrden,
     construirFormularioCheckout,
@@ -319,5 +323,7 @@ module.exports = {
     obtenerOrden,
     obtenerOrdenPorReferencia,
     obtenerOrdenDiagnostico,
-    obtenerPago
+    obtenerPago,
+    normalizarOrdenReports,
+    elegirOrdenReports
 };

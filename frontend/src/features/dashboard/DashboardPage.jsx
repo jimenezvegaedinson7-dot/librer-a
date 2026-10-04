@@ -45,7 +45,7 @@ const escalonado = {
     visible: { transition: { staggerChildren: 0.06 } },
 };
 
-const formatoFecha = new Intl.DateTimeFormat('es-PE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+const formatoFecha = new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 function esArreglo(valor) {
     return Array.isArray(valor) ? valor : [];
@@ -76,7 +76,7 @@ export default function DashboardPage() {
     const [reservasPorEstado, setReservasPorEstado] = useState([]);
     const [librosMasVendidos, setLibrosMasVendidos] = useState([]);
     const [ventasPorDia, setVentasPorDia] = useState([]);
-    const [indicadores, setIndicadores] = useState({});
+    const [indicadores, setIndicadores] = useState(null);
     // null = no se pudo consultar (no se afirma que no haya stock bajo).
     const [stockBajo, setStockBajo] = useState([]);
     const [cargando, setCargando] = useState(true);
@@ -98,8 +98,8 @@ export default function DashboardPage() {
                     obtenerReservasPorEstado(),
                     obtenerLibrosMasVendidos(),
                     // Complementarios: si fallan, el resumen se muestra igual.
-                    obtenerVentasPorDia().catch(() => []),
-                    obtenerIndicadoresVentas().catch(() => ({})),
+                    obtenerVentasPorDia().catch(() => null),
+                    obtenerIndicadoresVentas().catch(() => null),
                     obtenerStockBajo().catch(() => null),
                 ]);
                 if (!activo) return;
@@ -109,8 +109,8 @@ export default function DashboardPage() {
                 setVentasPorEstado(esArreglo(ve));
                 setReservasPorEstado(esArreglo(re));
                 setLibrosMasVendidos(esArreglo(lmv));
-                setVentasPorDia(esArreglo(vd));
-                setIndicadores(ind || {});
+                setVentasPorDia(vd === null ? null : esArreglo(vd));
+                setIndicadores(ind);
                 setStockBajo(sb === null ? null : esArreglo(sb));
             } catch (err) {
                 if (activo) setError(err.response?.data?.mensaje || 'Error al cargar el resumen');
@@ -148,8 +148,8 @@ export default function DashboardPage() {
     const diario = serieDiaria(ventasPorDia, 14);
     const mensual = serieMensual(ventasPorMes, 6);
     const reservasPendientes = num(reservasPorEstado.find((r) => String(r.estado).toLowerCase() === 'pendiente')?.cantidad);
-    const vendidoHoy = num(indicadores.vendido_hoy);
-    const { mejor_mes: mejorMes, mejor_dia: mejorDia } = indicadores;
+    const vendidoHoy = indicadores === null ? null : num(indicadores.vendido_hoy);
+    const { mejor_mes: mejorMes, mejor_dia: mejorDia } = indicadores || {};
 
     const fechaTexto = formatoFecha.format(new Date());
     const fechaHoy = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
@@ -177,6 +177,7 @@ export default function DashboardPage() {
             </header>
 
             {error && <Alert tipo="error">{error}</Alert>}
+            {(indicadores === null || ventasPorDia === null) && <Alert tipo="warning">No se pudieron consultar todos los indicadores. Los datos no disponibles no representan ventas en cero. Pulsa Actualizar para reintentar.</Alert>}
 
             {/* INDICADORES */}
             <motion.section
@@ -191,25 +192,25 @@ export default function DashboardPage() {
                     valor={formatearMoneda(resumen.total_vendido)}
                     icono={<FaMoneyBillTrendUp />}
                     color="primary"
-                    detalle={vendidoHoy > 0 ? `${formatearMoneda(vendidoHoy)} vendidos hoy` : 'Sin ventas cobradas hoy'}
-                    tendencia={diario.map((d) => d.total)}
+                    detalle={vendidoHoy === null ? 'No se pudo consultar el importe de hoy' : vendidoHoy > 0 ? `${formatearMoneda(vendidoHoy)} vendidos hoy` : 'Sin ventas cobradas hoy'}
+                    tendencia={ventasPorDia === null ? undefined : diario.map((d) => d.total)}
                     etiquetaTendencia="Ingresos diarios de los últimos 14 días"
                 />
                 <StatCard
                     titulo="Ventas del mes"
-                    valor={formatearMoneda(indicadores.vendido_mes_actual)}
+                    valor={indicadores === null ? 'No disponible' : formatearMoneda(indicadores.vendido_mes_actual)}
                     icono={<FaCalendarDays />}
                     color="info"
-                    detalle={plural(num(indicadores.ventas_mes_actual), 'venta este mes', 'ventas este mes')}
+                    detalle={indicadores === null ? 'Consulta no disponible' : plural(num(indicadores.ventas_mes_actual), 'venta este mes', 'ventas este mes')}
                     tendencia={mensual.map((d) => d.total)}
                     etiquetaTendencia="Ingresos mensuales de los últimos 6 meses"
                 />
                 <StatCard
                     titulo="Ticket promedio"
-                    valor={formatearMoneda(indicadores.ticket_promedio)}
+                    valor={indicadores === null ? 'No disponible' : formatearMoneda(indicadores.ticket_promedio)}
                     icono={<FaReceipt />}
                     color="success"
-                    detalle={`Rango ${formatearMoneda(indicadores.venta_menor)} – ${formatearMoneda(indicadores.venta_mayor)}`}
+                    detalle={indicadores === null ? 'Consulta no disponible' : `Rango ${formatearMoneda(indicadores.venta_menor)} – ${formatearMoneda(indicadores.venta_mayor)}`}
                     tendencia={mensual.map((d) => (d.cantidad > 0 ? d.total / d.cantidad : 0))}
                     etiquetaTendencia="Ticket promedio por mes en los últimos 6 meses"
                 />
@@ -252,7 +253,7 @@ export default function DashboardPage() {
                     vacio={!mejorMes}
                     detalle={mejorMes
                         ? `${plural(num(mejorMes.cantidad_ventas), 'venta', 'ventas')} · ${formatearMoneda(mejorMes.total_vendido)}`
-                        : 'Aún no existen ventas cobradas.'}
+                        : indicadores === null ? 'Consulta no disponible.' : 'Aún no existen ventas cobradas.'}
                 />
                 <MejorRegistro
                     icono={<FaCalendarCheck />}
@@ -261,7 +262,7 @@ export default function DashboardPage() {
                     vacio={!mejorDia}
                     detalle={mejorDia
                         ? `${plural(num(mejorDia.cantidad_ventas), 'venta', 'ventas')} · ${formatearMoneda(mejorDia.total_vendido)}`
-                        : 'Aún no existen ventas cobradas.'}
+                        : indicadores === null ? 'Consulta no disponible.' : 'Aún no existen ventas cobradas.'}
                 />
             </motion.section>
 

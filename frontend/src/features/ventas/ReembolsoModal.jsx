@@ -4,7 +4,7 @@ import { FaRotateLeft } from 'react-icons/fa6';
 
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
-import { Textarea } from '../../components/ui/Form';
+import { Input, Textarea } from '../../components/ui/Form';
 import { Alert } from '../../components/ui/Alert';
 import { formatearMoneda } from '../../lib/utils/format';
 
@@ -17,13 +17,16 @@ import { textoMetodoPago } from './metodosPago';
 // Se monta al abrirla: cada apertura empieza con el formulario limpio.
 export default function ReembolsoModal({ venta, abierto, onCerrar, onReembolsada }) {
     const [motivo, setMotivo] = useState('');
-    const [devolverStock, setDevolverStock] = useState(true);
+    const [devolverStock, setDevolverStock] = useState(false);
+    const [referencia, setReferencia] = useState('');
+    const [evidencia, setEvidencia] = useState('');
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
 
     if (!abierto || !venta) return null;
 
-    const entregada = venta.estado === 'entregada';
+    const entregada = venta.estado === 'entregada' || ['en_camino', 'entregado'].includes(venta.estado_entrega) || (venta.origen === 'reserva' && venta.id_reserva);
+    const aprobacionTardia = venta.pago_revision_motivo === 'aprobacion_tardia';
     const esPayU = !venta.origen || venta.origen === 'app';
     const conComprobante = Number(venta.tiene_comprobante ?? 0) === 1;
 
@@ -39,7 +42,9 @@ export default function ReembolsoModal({ venta, abierto, onCerrar, onReembolsada
             setError('');
             const respuesta = await reembolsarVenta(venta.id_venta, {
                 motivo: texto,
-                devolverStock: entregada ? devolverStock : true,
+                devolverStock: !aprobacionTardia && (entregada ? devolverStock : true),
+                referencia,
+                evidencia,
             });
             if (onReembolsada) await onReembolsada(respuesta);
             onCerrar();
@@ -75,7 +80,12 @@ export default function ReembolsoModal({ venta, abierto, onCerrar, onReembolsada
                     requerido
                 />
 
-                {entregada ? (
+                <Input label="Referencia de la devolución (opcional)" value={referencia}
+                    onChange={e => setReferencia(e.target.value)} maxLength={100} disabled={guardando}/>
+                <Textarea label="Evidencia o detalle de la devolución (opcional)" value={evidencia}
+                    onChange={e => setEvidencia(e.target.value)} maxLength={500} rows="2" disabled={guardando}/>
+
+                {aprobacionTardia ? <p className="text-sm text-slate-600">El stock ya se liberó al cancelar el pedido. No se ingresará nuevamente.</p> : entregada ? (
                     <label className="flex items-start gap-3 text-sm text-slate-700">
                         <input
                             type="checkbox"

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/api_service.dart';
+import '../../services/navigation.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_tokens.dart';
 import '../../widgets/aparecer.dart';
@@ -54,9 +55,9 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Contraseña actualizada correctamente.')),
+        const SnackBar(content: Text('Contraseña actualizada. Inicia sesión nuevamente.')),
       );
-      Navigator.of(context).pop(true);
+      irALogin();
     } on ApiException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message);
     } catch (_) {

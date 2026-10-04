@@ -13,6 +13,7 @@ test('smoke HTTP de rutas públicas y administrativas', async () => {
     const email =
         `smoke-${crypto.randomUUID()}@example.test`;
     let idUsuario = null;
+    let idCliente = null;
 
     try {
         const [resultado] = await pool.query(`
@@ -73,9 +74,15 @@ test('smoke HTTP de rutas públicas y administrativas', async () => {
                 body: JSON.stringify({ items: [] })
             }
         );
-        assert.equal(sinIdempotencia.status, 400);
+        assert.equal(sinIdempotencia.status, 403, 'El administrador no compra simulando el canal app');
+        const [cliente] = await pool.query("INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES ('Cliente','CI',?,'no-login','cliente')", [`cliente-${crypto.randomUUID()}@example.test`]);
+        idCliente = cliente.insertId;
+        const intentoCliente = await fetch(`${baseUrl}/api/pagos/crear-orden`, {method: 'POST',
+            headers: {'Content-Type':'application/json',Authorization:`Bearer ${jwt.sign({id_usuario:idCliente},process.env.JWT_SECRET)}`},
+            body:JSON.stringify({items:[]})});
+        assert.equal(intentoCliente.status, 400);
         const errorIdempotencia =
-            await sinIdempotencia.json();
+            await intentoCliente.json();
         assert.match(
             errorIdempotencia.mensaje,
             /idempotencia_clave es obligatoria/i
@@ -98,6 +105,7 @@ test('smoke HTTP de rutas públicas y administrativas', async () => {
         );
         assert.equal(webhook.status, 401);
     } finally {
+        if (idCliente) await pool.query('DELETE FROM usuarios WHERE id_usuario=?', [idCliente]);
         if (idUsuario) {
             await pool.query(
                 'DELETE FROM usuarios WHERE id_usuario = ?',

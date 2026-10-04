@@ -219,21 +219,20 @@ const actualizar = async (id_libro, inventario, motivo = 'ajuste_manual') => {
             FOR UPDATE
         `, [id_libro]);
 
-        const stockAnterior = filas[0] ? filas[0].stock : null;
-
-        const [resultado] = await connection.query(`
-            UPDATE inventario
-            SET
-                stock = COALESCE(?, stock),
-                stock_minimo = COALESCE(?, stock_minimo),
-                ubicacion = COALESCE(?, ubicacion)
-            WHERE id_libro = ?
-        `, [
-            stock ?? null,
-            stock_minimo ?? null,
-            ubicacion ?? null,
-            id_libro
-        ]);
+        if (!filas[0]) { await connection.rollback(); return 0; }
+        const stockAnterior = Number(filas[0].stock);
+        if (stock !== undefined && inventario.stock_esperado !== undefined &&
+            stockAnterior !== Number(inventario.stock_esperado)) {
+            const error = new Error('El stock cambió desde que abriste el formulario. Actualiza el inventario antes de ajustar las existencias.');
+            error.status = 409;
+            throw error;
+        }
+        const campos = [], valores = [];
+        for (const campo of ['stock', 'stock_minimo', 'ubicacion']) {
+            if (inventario[campo] !== undefined) { campos.push(`${campo} = ?`); valores.push(inventario[campo]); }
+        }
+        if (!campos.length) { await connection.commit(); return 1; }
+        const [resultado] = await connection.query(`UPDATE inventario SET ${campos.join(', ')} WHERE id_libro = ?`, [...valores, id_libro]);
 
         if (filas[0] && stock !== undefined && stock !== null) {
             const nuevoStock = Number(stock);

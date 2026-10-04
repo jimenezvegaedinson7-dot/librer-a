@@ -5,9 +5,10 @@ const {
     permitirTransicion,
     permitirTransicionEntrega,
     esTipoEntregaValido,
+    esVentaHistorica,
     TIPOS_ENTREGA
 } = require('../utils/transiciones');
-const { consultarEstadoOrdenPayu } = require('../utils/payuStatus');
+const { consultarEstadoOrdenPayu, montoPagoCoincide, debeActualizarEstadoPago } = require('../utils/payuStatus');
 const { registrarMovimiento } = require('./inventario.model');
 const zonaDeliveryModel = require('./zonaDelivery.model');
 const { validarId } = require('../utils/validaciones');
@@ -18,6 +19,10 @@ const { validarId } = require('../utils/validaciones');
 const obtenerTodos = async () => {
     const [rows] = await pool.query(`
         SELECT
+            v.pago_revision_motivo,
+            v.pago_revision_fecha,
+            v.reembolso_referencia,
+            v.reembolso_evidencia,
             v.id_venta,
             v.id_usuario,
             u.nombre AS nombre_usuario,
@@ -83,6 +88,10 @@ const obtenerTodos = async () => {
 const obtenerPorId = async (id) => {
     const [ventaRows] = await pool.query(`
         SELECT
+            v.pago_revision_motivo,
+            v.pago_revision_fecha,
+            v.reembolso_referencia,
+            v.reembolso_evidencia,
             v.id_venta,
             v.id_usuario,
             u.nombre AS nombre_usuario,
@@ -148,7 +157,7 @@ const obtenerPorId = async (id) => {
         SELECT
             d.id_detalle,
             d.id_libro,
-            l.titulo,
+            COALESCE(d.titulo_snapshot, l.titulo) AS titulo,
             d.cantidad,
             d.precio_unitario,
             d.subtotal
@@ -175,6 +184,7 @@ const obtenerPorId = async (id) => {
 const obtenerPorUsuario = async (id_usuario) => {
     const [rows] = await pool.query(`
         SELECT
+            v.pago_revision_motivo,
             v.id_venta,
             v.id_usuario,
             v.fecha_venta,
@@ -240,7 +250,7 @@ const obtenerPorUsuario = async (id_usuario) => {
         SELECT
             d.id_venta,
             d.id_libro,
-            l.titulo,
+            COALESCE(d.titulo_snapshot, l.titulo) AS titulo,
             l.portada,
             d.cantidad,
             d.precio_unitario,
@@ -422,7 +432,7 @@ const agruparDetalles = (detalles) => {
             id_libro,
             cantidad
         })
-    );
+    ).sort((a, b) => a.id_libro - b.id_libro);
 };
 
 // ========================================
@@ -467,6 +477,7 @@ const crear = async (venta, conexionExterna = null) => {
             referencia_pago,
             id_reserva,
             descontar_stock = true,
+            precio_unitario_esperado,
             estado = 'pendiente'
         } = venta;
 
@@ -570,6 +581,7 @@ const crear = async (venta, conexionExterna = null) => {
                     FROM libros l
                     WHERE l.id_libro = ?
                     LIMIT 1
+                    FOR SHARE
                 `, [id_libro]);
 
             if (libros.length === 0) {
@@ -694,6 +706,13 @@ const crear = async (venta, conexionExterna = null) => {
         // ========================================
         // CREAR CABECERA DE VENTA
         // ========================================
+        if (!Number.isFinite(total) || total <= 0 || total > 99999999.99) {
+            throw Object.assign(new Error('El total de la compra debe ser mayor que cero y no superar S/ 99999999.99'), { status: 400, paymentValidation: true });
+        }
+        if (precio_unitario_esperado !== undefined && detallesProcesados.some(detalle =>
+            Math.round(Number(detalle.precio_unitario) * 100) !== Math.round(Number(precio_unitario_esperado) * 100))) {
+            throw Object.assign(new Error('El precio cambió. Revisa el importe antes de confirmar el cobro.'), { status: 409 });
+        }
         const [ventaResultado] =
             await connection.query(`
                 INSERT INTO ventas
@@ -773,15 +792,17 @@ const crear = async (venta, conexionExterna = null) => {
                     id_libro,
                     cantidad,
                     precio_unitario,
-                    subtotal
+                    subtotal,
+                    titulo_snapshot
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?)
             `, [
                 idVenta,
                 detalle.id_libro,
                 detalle.cantidad,
                 detalle.precio_unitario,
-                detalle.subtotal
+                detalle.subtotal,
+                detalle.titulo
             ]);
 
             if (!descontar_stock) {
@@ -898,25 +919,88 @@ const actualizarDatosPago = async ({
     payu_order_id,
     payu_payment_id,
     payu_payment_status,
-    payu_payer_email
+    payu_payer_email,
+    monto,
+    moneda
 }) => {
-    const [resultado] = await pool.query(`
-        UPDATE ventas
-        SET
-            payu_order_id = COALESCE(?, payu_order_id),
-            payu_payment_id = COALESCE(?, payu_payment_id),
-            payu_payment_status = COALESCE(?, payu_payment_status),
-            payu_payer_email = COALESCE(?, payu_payer_email)
-        WHERE external_reference = ?
-    `, [
-        payu_order_id ?? null,
-        payu_payment_id ?? null,
-        payu_payment_status ?? null,
-        payu_payer_email ?? null,
-        external_reference
-    ]);
+    const resultado = await aplicarPago({ externalReference: external_reference,
+        payuOrderId: payu_order_id, payuPaymentId: payu_payment_id,
+        payuPaymentStatus: payu_payment_status, payuPayerEmail: payu_payer_email,
+        monto, moneda });
+    return resultado ? 1 : 0;
+};
 
-    return resultado.affectedRows;
+// Único escritor del resultado PayU. Datos, estado, fecha y stock se confirman
+// juntos. Solo el ganador de una transición recibe `cambio_estado=true`.
+const aplicarPago = async ({ externalReference, payuOrderId, payuPaymentId,
+    payuPaymentStatus, payuPayerEmail, monto, moneda, reportedReference = externalReference }) => {
+    const status = typeof payuPaymentStatus === 'string' ? payuPaymentStatus.trim().toUpperCase() : '';
+    const aprobados = ['APPROVED', 'CAPTURED'];
+    const cancelados = ['DECLINED', 'ERROR', 'EXPIRED', 'VOIDED'];
+    const reversiones = ['REFUNDED', 'CHARGED_BACK'];
+    const pendientes = ['PENDING', 'PENDING_TRANSACTION_REVIEW', 'PENDING_TRANSACTION_CONFIRMATION'];
+    if (![...aprobados, ...cancelados, ...reversiones, ...pendientes].includes(status)) {
+        throw Object.assign(new Error('Estado de pago no reconocido'), { status: 409 });
+    }
+    if (!externalReference || reportedReference !== externalReference || moneda !== 'PEN') {
+        throw Object.assign(new Error('La referencia o moneda informada por PayU no coincide con la compra'), { status: 409 });
+    }
+    for (const id of [payuOrderId, payuPaymentId]) {
+        if (id != null && (typeof id !== 'string' && typeof id !== 'number' || String(id).length > 64)) {
+            throw Object.assign(new Error('Identificador de pago no válido'), { status: 409 });
+        }
+    }
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [rows] = await connection.query('SELECT * FROM ventas WHERE external_reference = ? FOR UPDATE', [externalReference]);
+        const venta = rows[0];
+        if (!venta) { await connection.rollback(); return null; }
+        if (!montoPagoCoincide(monto, venta.total) || Number(monto) <= 0) {
+            throw Object.assign(new Error('El importe informado por PayU no coincide con la compra'), { status: 409 });
+        }
+        if (!debeActualizarEstadoPago(venta.payu_payment_status, status)) {
+            await connection.commit();
+            return { venta, cambio_estado: false, ignorado: true };
+        }
+        const anterior = venta.estado;
+        let nuevo = anterior;
+        let revision = venta.pago_revision_motivo;
+        if (aprobados.includes(status)) {
+            if (anterior === 'pendiente') nuevo = 'pagada';
+            else if (anterior === 'cancelada') revision = 'aprobacion_tardia';
+            // Una venta ya reembolsada no revive ante un reporte de su cobro original.
+        } else if (cancelados.includes(status) && anterior === 'pendiente') {
+            nuevo = 'cancelada';
+        } else if (reversiones.includes(status) && anterior !== 'reembolsada') {
+            revision = 'reversion_payu';
+        }
+        if (nuevo === 'cancelada' && anterior === 'pendiente') {
+            const [detalles] = await connection.query('SELECT id_libro, cantidad FROM detalle_venta WHERE id_venta = ? ORDER BY id_libro', [venta.id_venta]);
+            for (const detalle of detalles) {
+                const [stocks] = await connection.query('UPDATE inventario SET stock = stock + ? WHERE id_libro = ? RETURNING stock', [detalle.cantidad, detalle.id_libro]);
+                if (!stocks[0]) throw new Error('Inventario no encontrado al cancelar el pago');
+                await registrarMovimiento(connection, { id_libro: detalle.id_libro, tipo: 'entrada', motivo: 'cancelacion_venta', cantidad: detalle.cantidad, stock_resultante: stocks[0].stock });
+            }
+        }
+        const [actualizadas] = await connection.query(`
+            UPDATE ventas SET payu_order_id = COALESCE(?, payu_order_id),
+                payu_payment_id = COALESCE(?, payu_payment_id), payu_payment_status = ?,
+                payu_payer_email = COALESCE(?, payu_payer_email), estado = ?,
+                fecha_pago = CASE WHEN ? THEN COALESCE(fecha_pago, NOW()) ELSE fecha_pago END,
+                metodo_pago = COALESCE(metodo_pago, 'payu'),
+                pago_revision_motivo = ?,
+                pago_revision_fecha = CASE WHEN ?::text IS NOT NULL THEN COALESCE(pago_revision_fecha, NOW()) ELSE NULL END
+            WHERE id_venta = ? RETURNING *
+        `, [payuOrderId == null ? null : String(payuOrderId), payuPaymentId == null ? null : String(payuPaymentId), status,
+            typeof payuPayerEmail === 'string' ? payuPayerEmail.slice(0, 255) : null, nuevo,
+            aprobados.includes(status), revision || null, revision || null, venta.id_venta]);
+        await connection.commit();
+        return { venta: actualizadas[0], cambio_estado: nuevo !== anterior, estado_anterior: anterior,
+            requiere_revision: Boolean(revision), duplicado: status === venta.payu_payment_status && nuevo === anterior };
+    } catch (error) {
+        await connection.rollback(); throw error;
+    } finally { connection.release(); }
 };
 
 // ========================================
@@ -939,7 +1023,10 @@ const actualizarEstado = async (
             await connection.query(`
                 SELECT
                     id_venta,
-                    estado
+                    estado,
+                    origen,
+                    id_reserva,
+                    payu_payment_status
                 FROM ventas
                 WHERE id_venta = ?
                 FOR UPDATE
@@ -953,6 +1040,16 @@ const actualizarEstado = async (
 
         const venta =
             ventas[0];
+
+        if (esVentaHistorica(venta)) {
+            throw Object.assign(new Error('Las ventas históricas son de solo lectura'), { status: 409 });
+        }
+        if (nuevoEstado === 'reembolsada') {
+            throw Object.assign(new Error('Usa el flujo de registro de reembolso'), { status: 400 });
+        }
+        if (nuevoEstado === 'cancelada' && ['APPROVED', 'CAPTURED'].includes(venta.payu_payment_status)) {
+            throw Object.assign(new Error('El pago ya se confirmó; registra un reembolso'), { status: 409 });
+        }
 
         // ========================================
         // MISMO ESTADO
@@ -996,6 +1093,7 @@ const actualizarEstado = async (
                         cantidad
                     FROM detalle_venta
                     WHERE id_venta = ?
+                    ORDER BY id_libro
                 `, [id]);
 
             for (
@@ -1034,9 +1132,10 @@ const actualizarEstado = async (
         const [resultado] =
             await connection.query(`
                 UPDATE ventas
-                SET estado = ?
+                SET estado = ?, fecha_pago = CASE WHEN ? = 'pagada' THEN COALESCE(fecha_pago, NOW()) ELSE fecha_pago END
                 WHERE id_venta = ?
             `, [
+                nuevoEstado,
                 nuevoEstado,
                 id
             ]);
@@ -1079,6 +1178,7 @@ const actualizarEstadoEntrega = async (
                     estado_entrega,
                     tipo_entrega,
                     origen,
+                    id_reserva,
                     estado,
                     canal_compra
                 FROM ventas
@@ -1095,11 +1195,11 @@ const actualizarEstadoEntrega = async (
         const venta =
             ventas[0];
 
-        if (['panel', 'reserva'].includes(venta.origen)) {
+        if (esVentaHistorica(venta)) {
             throw Object.assign(new Error('Las ventas históricas son de solo lectura'), { status: 409 });
         }
-        if (venta.canal_compra === 'web' && !['pagada', 'entregada'].includes(venta.estado) && nuevoEstado !== 'cancelado') {
-            throw Object.assign(new Error('El pago de esta compra web debe confirmarse antes de preparar la entrega'), { status: 409 });
+        if (!['pagada', 'entregada'].includes(venta.estado) && nuevoEstado !== 'cancelado') {
+            throw Object.assign(new Error('El pago de esta compra debe confirmarse antes de preparar la entrega'), { status: 409 });
         }
 
         // ========================================
@@ -1185,7 +1285,7 @@ const actualizarEstadoEntrega = async (
 // El dinero se devuelve por el mismo medio del cobro (en PayU, desde
 // su panel); aquí solo queda el registro.
 // ========================================
-const reembolsar = async (id, { motivo, devolverStock, idUsuario }) => {
+const reembolsar = async (id, { motivo, devolverStock, idUsuario, referencia = null, evidencia = null }) => {
     const connection =
         await pool.getConnection();
 
@@ -1193,7 +1293,7 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario }) => {
         await connection.beginTransaction();
 
         const [ventas] = await connection.query(`
-            SELECT id_venta, estado, origen
+            SELECT id_venta, estado, estado_entrega, origen, id_reserva, payu_payment_status, pago_revision_motivo
             FROM ventas
             WHERE id_venta = ?
             FOR UPDATE
@@ -1206,16 +1306,19 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario }) => {
 
         const venta = ventas[0];
 
-        if (['panel', 'reserva'].includes(venta.origen)) {
+        if (esVentaHistorica(venta)) {
             const error = new Error('Las ventas históricas son de solo lectura');
             error.status = 409;
             throw error;
         }
 
-        if (
+        const aprobacionTardia = venta.estado === 'cancelada' &&
+            ['APPROVED', 'CAPTURED'].includes(venta.payu_payment_status) &&
+            venta.pago_revision_motivo === 'aprobacion_tardia';
+        if (!aprobacionTardia && (
             !['pagada', 'entregada'].includes(venta.estado) ||
             !permitirTransicion(VENTA, venta.estado, 'reembolsada')
-        ) {
+        )) {
             const error = new Error(
                 `Solo se puede reembolsar una venta pagada o entregada (estado actual: "${venta.estado}")`
             );
@@ -1223,14 +1326,18 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario }) => {
             throw error;
         }
 
-        const reingresar =
-            venta.estado === 'pagada' || Boolean(devolverStock);
+        const yaSalio = venta.estado === 'entregada' ||
+            ['en_camino', 'entregado'].includes(venta.estado_entrega) ||
+            (venta.origen === 'reserva' && venta.id_reserva);
+        // Una aprobación tardía ya liberó stock al cancelar: nunca dos veces.
+        const reingresar = !aprobacionTardia && (!yaSalio || Boolean(devolverStock));
 
         if (reingresar) {
             const [detalles] = await connection.query(`
                 SELECT id_libro, cantidad
                 FROM detalle_venta
                 WHERE id_venta = ?
+                ORDER BY id_libro
             `, [id]);
 
             for (const detalle of detalles) {
@@ -1261,9 +1368,12 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario }) => {
             UPDATE ventas
             SET estado = 'reembolsada',
                 motivo_reembolso = ?,
-                fecha_reembolso = NOW()
+                fecha_reembolso = NOW(),
+                reembolso_referencia = ?, reembolso_evidencia = ?,
+                pago_revision_motivo = NULL, pago_revision_fecha = NULL,
+                estado_entrega = CASE WHEN estado_entrega = 'entregado' THEN estado_entrega ELSE 'cancelado' END
             WHERE id_venta = ?
-        `, [motivo, id]);
+        `, [motivo, referencia, evidencia, id]);
 
         const [anulados] = await connection.query(`
             UPDATE comprobantes
@@ -1299,6 +1409,7 @@ const obtenerDatosPago = async (id) => {
         SELECT
             id_venta,
             id_usuario,
+            fecha_pago,
             fecha_venta,
             external_reference,
             payu_order_id,
@@ -1515,7 +1626,7 @@ const listarPagosAdmin = async ({
 // ========================================
 const TAMANO_LOTE = 50;
 
-const cancelarOrdenesAbandonadas = async (minutos = 30) => {
+const cancelarOrdenesAbandonadas = async (minutos = 30, { alSincronizarPago } = {}) => {
     let canceladas = 0;
     let conPagoPendienteEnPayU = 0;
 
@@ -1587,6 +1698,16 @@ const cancelarOrdenesAbandonadas = async (minutos = 30) => {
                         `[venta] Orden PayU pagada detectada, no se cancela id=${venta.id_venta} (${estadoPayu.status || 'aprobado'})`
                     );
                     conPagoPendienteEnPayU++;
+                    const resultado = await aplicarPago({
+                        externalReference: venta.external_reference,
+                        reportedReference: estadoPayu.externalReference,
+                        payuOrderId: estadoPayu.orderId,
+                        payuPaymentId: estadoPayu.paymentId,
+                        payuPaymentStatus: estadoPayu.status,
+                        monto: estadoPayu.amount,
+                        moneda: estadoPayu.currency
+                    });
+                    if (resultado?.cambio_estado && alSincronizarPago) await alSincronizarPago(resultado);
                     continue;
                 }
 
@@ -1644,5 +1765,6 @@ module.exports = {
     obtenerDatosPago,
     listarPagosAdmin,
     cancelarOrdenesAbandonadas,
-    reembolsar
+    reembolsar,
+    aplicarPago
 };

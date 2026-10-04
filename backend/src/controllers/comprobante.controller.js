@@ -271,10 +271,10 @@ const enviarComprobanteEmail = async (req, res) => {
                 opExonerada: comprobante.op_exonerada,
                 numeroSunat: comprobante.numero_sunat,
                 items: comprobante.detalle || [],
-                empresaRazon: empresa.razon_social || comprobante.razon_social,
-                empresaRuc: empresa.ruc || comprobante.ruc,
-                empresaNombreComercial: empresa.nombre_comercial,
-                empresaDireccion: empresa.direccion,
+                empresaRazon: comprobante.razon_social ?? empresa.razon_social,
+                empresaRuc: comprobante.ruc ?? empresa.ruc,
+                empresaNombreComercial: comprobante.empresa_snapshot ? comprobante.empresa_snapshot.nombre_comercial : empresa.nombre_comercial,
+                empresaDireccion: comprobante.empresa_snapshot ? comprobante.empresa_snapshot.direccion : empresa.direccion,
                 fechaEmision: comprobante.fecha_emision
             });
 

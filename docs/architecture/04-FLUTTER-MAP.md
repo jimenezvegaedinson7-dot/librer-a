@@ -47,7 +47,13 @@
 | `esFavorito` | `GET /api/favoritos/:idLibro` |
 | `agregarFavorito` | `POST /api/favoritos/:idLibro` |
 | `quitarFavorito` | `DELETE /api/favoritos/:idLibro` |
-| `crearOrdenPago` | `POST /api/pagos/crear-orden` |
+| `crearOrdenPago` |  |
+| `_propietario` |  |
+| `intentoPendiente` |  |
+| `recuperarIntentoPendiente` |  |
+| `_prepararOrden` |  |
+| `_enviarIntento` | `POST /api/pagos/crear-orden` |
+| `_conciliarEstadoVenta` |  |
 | `obtenerOrdenPago` | `GET /api/pagos/:orderId` |
 | `obtenerZonasDelivery` | `GET /api/zonas-delivery` |
 | `obtenerProvincias` | `GET /api/ubicaciones/provincias` |
@@ -67,7 +73,7 @@
 |---|---|---|
 | `screens/carrito_screen.dart` | `obtenerLibros` | `GET /api/libros` |
 | `screens/detalle_libro_screen.dart` | `agregarFavorito`, `crearReserva`, `esFavorito`, `obtenerDetalleLibro`, `quitarFavorito` | `POST /api/favoritos/:idLibro`<br>`POST /api/reservas`<br>`GET /api/favoritos/:idLibro`<br>`GET /api/libros/:id`<br>`DELETE /api/favoritos/:idLibro` |
-| `screens/entrega_y_pago_screen.dart` | `crearOrdenPago`, `obtenerLibros`, `obtenerOrdenPago`, `obtenerZonasDelivery` | `POST /api/pagos/crear-orden`<br>`GET /api/libros`<br>`GET /api/pagos/:orderId`<br>`GET /api/zonas-delivery` |
+| `screens/entrega_y_pago_screen.dart` | `crearOrdenPago`, `intentoPendiente`, `obtenerLibros`, `obtenerOrdenPago`, `obtenerZonasDelivery`, `recuperarIntentoPendiente` | `GET /api/libros`<br>`GET /api/pagos/:orderId`<br>`GET /api/zonas-delivery` |
 | `screens/favoritos_screen.dart` | `obtenerFavoritos`, `quitarFavorito` | `GET /api/favoritos`<br>`DELETE /api/favoritos/:idLibro` |
 | `screens/home_screen.dart` | `obtenerLibros` | `GET /api/libros` |
 | `screens/libros_screen.dart` | `obtenerLibros` | `GET /api/libros` |
@@ -84,7 +90,7 @@
 | `screens/security/two_factor_disable_screen.dart` | `desactivarTwoFactor` | `POST /api/auth/2fa/disable` |
 | `screens/security/two_factor_setup_screen.dart` | `confirmarTwoFactor`, `setupTwoFactor` | `POST /api/auth/2fa/confirm`<br>`POST /api/auth/2fa/setup` |
 | `screens/security/two_factor_verify_screen.dart` | `verificarLogin2FA` | `POST /api/auth/2fa/verify-login` |
-| `screens/splash_screen.dart` | `obtenerPerfil` | `GET /api/usuarios/perfil` |
+| `screens/splash_screen.dart` | `obtenerMisVentas`, `obtenerPerfil` | `GET /api/ventas/mis-ventas`<br>`GET /api/usuarios/perfil` |
 | `screens/verificacion_email_screen.dart` | `reenviarCodigo`, `verificarEmail` | `POST /api/auth/reenviar-codigo`<br>`POST /api/auth/verificar-email` |
 
 Pantallas sin llamadas directas a la API: `screens/legal/politica_privacidad_screen.dart`, `screens/legal/terminos_condiciones_screen.dart` (carrito local, documentos legales, etc.).
@@ -110,9 +116,9 @@ Nota: la app es **solo para clientes**; `login` rechaza el rol administrador.
 
 **screens/** — `carrito_screen.dart`, `detalle_libro_screen.dart`, `entrega_y_pago_screen.dart`, `favoritos_screen.dart`, `home_screen.dart`, `legal/politica_privacidad_screen.dart`, `legal/terminos_condiciones_screen.dart`, `libros_screen.dart`, `login_screen.dart`, `mis_compras_screen.dart`, `perfil_screen.dart`, `recuperar_contrasena_screen.dart`, `reestablecer_contrasena_screen.dart`, `registro_screen.dart`, `reservas_screen.dart`, `security/cambiar_password_screen.dart`, `security/editar_perfil_screen.dart`, `security/eliminar_cuenta_screen.dart`, `security/two_factor_disable_screen.dart`, `security/two_factor_setup_screen.dart`, `security/two_factor_verify_screen.dart`, `splash_screen.dart`, `verificacion_email_screen.dart`
 
-**widgets/** — `aparecer.dart`, `app_bottom_navigation.dart`, `app_logo.dart`, `app_page_header.dart`, `book_cover.dart`, `carrito_badge.dart`, `comprobador_actualizacion.dart`, `dialogo_actualizacion.dart`, `empty_view.dart`, `error_banner.dart`, `error_view.dart`, `estado_chip.dart`, `estanteria.dart`, `formulario_cuenta.dart`, `legal_documento.dart`, `libros_grid.dart`, `loading_view.dart`, `portadas_libro.dart`, `precio_texto.dart`, `presionable.dart`, `seccion_titulo.dart`
+**widgets/** — `aparecer.dart`, `app_bottom_navigation.dart`, `app_logo.dart`, `app_page_header.dart`, `aviso_portada_referencia.dart`, `book_cover.dart`, `carrito_badge.dart`, `comprobador_actualizacion.dart`, `dialogo_actualizacion.dart`, `empty_view.dart`, `error_banner.dart`, `error_view.dart`, `estado_chip.dart`, `estanteria.dart`, `formulario_cuenta.dart`, `legal_documento.dart`, `libros_grid.dart`, `loading_view.dart`, `portadas_libro.dart`, `precio_texto.dart`, `presionable.dart`, `seccion_titulo.dart`
 
-**services/** — `actualizacion_service.dart`, `api_service.dart`, `carrito_service.dart`, `navigation.dart`, `storage_service.dart`, `tema_controller.dart`
+**services/** — `actualizacion_service.dart`, `api_service.dart`, `carrito_service.dart`, `checkout_store.dart`, `navigation.dart`, `storage_service.dart`, `tema_controller.dart`
 
 **utils/** — `app_colors.dart`, `app_theme.dart`, `app_tokens.dart`, `avatar_generator.dart`, `constants.dart`, `formats.dart`, `idempotencia.dart`, `json_utils.dart`, `perfil_temas.dart`
 

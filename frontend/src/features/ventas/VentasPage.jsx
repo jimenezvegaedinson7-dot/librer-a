@@ -22,7 +22,7 @@ import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input, Select } from '../../components/ui/Form';
 import { StatCard } from '../dashboard/StatCard';
-import { num, serieDiaria } from '../dashboard/graficoUtils';
+import { fechaLima, num, serieDiaria } from '../dashboard/graficoUtils';
 import { Alert } from '../../components/ui/Alert';
 import { Pagination } from '../../components/ui/Pagination';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -149,7 +149,7 @@ const columnasVentas = [
 ];
 
 function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, onReembolsar, puedeReembolsar }) {
-    if (fila.origen === 'panel' || fila.origen === 'reserva') {
+    if (fila.origen === 'panel' || (fila.origen === 'reserva' && !fila.id_reserva)) {
         return <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>;
     }
     const conComprobante = Number(fila.tiene_comprobante ?? 0) === 1;
@@ -157,6 +157,7 @@ function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, o
     return (
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>
+            {fila.pago_revision_motivo && <Badge color="warning">Pago en revisión</Badge>}
             {/* Única transición manual: pagada → entregada (las pendientes se cancelan solas a los 30 min). */}
             {fila.estado === 'pagada' && (
                 <BtnAccion tipo="ver" onClick={() => onConfirmarEntrega(fila)} titulo="Confirmar entrega" className="btn-confirmar">
@@ -184,7 +185,7 @@ function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, o
                 </>
             )}
             {/* Reembolsar devuelve stock y dinero: solo el administrador. */}
-            {puedeReembolsar && (fila.estado === 'pagada' || fila.estado === 'entregada') && (
+            {puedeReembolsar && (fila.estado === 'pagada' || fila.estado === 'entregada' || fila.pago_revision_motivo === 'aprobacion_tardia') && (
                 <BtnAccion tipo="eliminar" onClick={() => onReembolsar(fila)} titulo="Reembolsar venta">
                     <FaRotateLeft />
                 </BtnAccion>
@@ -316,7 +317,8 @@ const totalIngresos = ventas
     const diario = useMemo(() => {
         const porDia = new Map();
         for (const v of ventas) {
-            const clave = String(v.fecha_venta || '').slice(0, 10);
+            const fechaCobro = v.fecha_pago || v.fecha_venta;
+            const clave = fechaCobro ? fechaLima(fechaCobro) : '';
             if (!clave) continue;
             const dia = porDia.get(clave) || { fecha: clave, total_vendido: 0, cantidad_ventas: 0, registradas: 0 };
             dia.registradas += 1;

@@ -31,6 +31,8 @@ flowchart LR
     InventarioPage --> inventarioService(["inventarioService"])
     ReservasPage["/reservas<br/>ReservasPage"]
     ReservasPage --> reservasService(["reservasService"])
+    ReservasPage --> librosService(["librosService"])
+    ReservasPage --> usuariosService(["usuariosService"])
     PedidosPage["/pedidos<br/>PedidosPage"]
     PedidosPage --> pedidosService(["pedidosService"])
     VentasPage["/ventas<br/>VentasPage"]

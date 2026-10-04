@@ -2,6 +2,7 @@ const pool = require('../config/database');
 const { calcularTributos } = require('../utils/impuestos');
 const ventaModel = require('./venta.model');
 const empresaModel = require('./empresa.model');
+const { esVentaHistorica } = require('../utils/transiciones');
 
 // ========================================
 // TIPOS DE COMPROBANTE VÁLIDOS
@@ -119,7 +120,7 @@ const obtenerDetalleVenta = async (id_venta) => {
         SELECT
             d.id_detalle,
             d.id_libro,
-            l.titulo,
+            COALESCE(d.titulo_snapshot, l.titulo) AS titulo,
             d.cantidad,
             d.precio_unitario,
             d.subtotal
@@ -174,32 +175,6 @@ const generarComprobante = async ({
     // ========================================
     // VALIDAR DNI/RUC DEL CLIENTE PARA FACTURA
     // ========================================
-    const validacionCliente =
-        validarDatosClienteFactura(
-            tipoComprobante,
-            cliente_dni_ruc
-        );
-
-    if (!validacionCliente.ok) {
-        throw crearError(
-            validacionCliente.mensaje,
-            400
-        );
-    }
-
-    if (
-        tipoComprobante === 'factura' &&
-        (
-            typeof cliente_nombre !== 'string' ||
-            !cliente_nombre.trim()
-        )
-    ) {
-        throw crearError(
-            'La factura requiere el nombre o razón social del cliente',
-            400
-        );
-    }
-
     // ========================================
     // LEER VENTA (cabecera + detalles)
     // ========================================
@@ -225,7 +200,7 @@ const generarComprobante = async ({
     }
 
     // Tipo de documento: el enviado o, si falta, el guardado en la venta.
-    const tipoDocumentoCliente =
+    let tipoDocumentoCliente =
         normalizarTipoDocumentoCliente(
             tipoComprobante,
             cliente_tipo_documento || venta.cliente_tipo_documento || null
@@ -235,7 +210,7 @@ const generarComprobante = async ({
         throw crearError('La factura requiere tipo de documento RUC', 400);
     }
 
-    if (['panel', 'reserva'].includes(venta.origen)) {
+    if (esVentaHistorica(venta)) {
         throw crearError('Las ventas históricas son de solo lectura', 409);
     }
 
@@ -280,7 +255,20 @@ const generarComprobante = async ({
          cliente_dni_ruc !== null &&
          String(cliente_dni_ruc).trim() !== ''
             ? String(cliente_dni_ruc).trim()
-            : null) || venta.cliente_documento || '';
+             : null) || venta.cliente_documento || '';
+
+    const validacionCliente = validarDatosClienteFactura(tipoComprobante, dniRucFinal);
+    if (!validacionCliente.ok) throw crearError(validacionCliente.mensaje, 400);
+    if (tipoComprobante === 'factura' && !clienteNombre) {
+        throw crearError('La factura requiere el nombre o razón social del cliente', 400);
+    }
+    if (dniRucFinal) {
+        if (!tipoDocumentoCliente) {
+            tipoDocumentoCliente = /^\d{8}$/.test(dniRucFinal) ? 'DNI' : /^\d{11}$/.test(dniRucFinal) ? 'RUC' : null;
+        }
+        const patron = { DNI: /^\d{8}$/, RUC: /^\d{11}$/, CE: /^[A-Za-z0-9]{8,20}$/, PASAPORTE: /^[A-Za-z0-9]{8,20}$/ }[tipoDocumentoCliente];
+        if (!patron || !patron.test(dniRucFinal)) throw crearError('El documento del cliente no coincide con el tipo seleccionado', 400);
+    }
 
     // ========================================
     // IMPORTES REALES DE LA VENTA
@@ -444,9 +432,11 @@ const generarComprobante = async ({
                     igv,
                     total,
                     op_gravada,
-                    op_exonerada
+                    op_exonerada,
+                    empresa_snapshot,
+                    detalle_snapshot
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?::jsonb)
             `, [
                 id_venta,
                 tipoComprobante,
@@ -463,7 +453,10 @@ const generarComprobante = async ({
                 igv,
                 totalComprobante,
                 tributos.op_gravada,
-                tributos.op_exonerada
+                tributos.op_exonerada,
+                JSON.stringify({ ruc: empresa.ruc ?? null, razon_social: empresa.razon_social ?? null,
+                    nombre_comercial: empresa.nombre_comercial ?? null, direccion: empresa.direccion ?? null }),
+                JSON.stringify(detalle)
             ]);
 
         await connection.commit();
@@ -652,6 +645,8 @@ const listarComprobantes = async ({
             c.motivo_anulacion,
             c.fecha_anulacion,
             c.fecha_emision,
+            c.empresa_snapshot,
+            c.detalle_snapshot,
             v.estado AS estado_venta
         FROM comprobantes c
         INNER JOIN ventas v
@@ -851,6 +846,8 @@ const anular = async (id, { motivo, nota_credito_sunat }) => {
 const obtenerComprobante = async (id) => {
     const [cabeceras] = await pool.query(`
         SELECT
+            c.empresa_snapshot,
+            c.detalle_snapshot,
             c.id_comprobante,
             c.id_venta,
             c.tipo,
@@ -899,13 +896,16 @@ const obtenerComprobante = async (id) => {
         return null;
     }
 
-    const detalle =
-        await obtenerDetalleVenta(
-            cabeceras[0].id_venta
-        );
+    const cabecera = cabeceras[0];
+    const detalle = Array.isArray(cabecera.detalle_snapshot) ? cabecera.detalle_snapshot
+        : await obtenerDetalleVenta(cabecera.id_venta);
 
     return {
         ...cabeceras[0],
+        ...(cabecera.empresa_snapshot ? {
+            emisor_nombre_comercial: cabecera.empresa_snapshot.nombre_comercial,
+            emisor_direccion: cabecera.empresa_snapshot.direccion
+        } : {}),
         subtotal: Number(
             cabeceras[0].subtotal
         ),

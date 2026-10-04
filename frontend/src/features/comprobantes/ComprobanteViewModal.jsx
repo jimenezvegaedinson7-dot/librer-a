@@ -11,6 +11,7 @@ import { montoEnLetras } from '../../lib/utils/numeroALetras';
 
 import { obtenerComprobante } from './comprobantesService';
 import { obtenerEmpresa } from '../configuracion/empresaService';
+import { emisorHistorico } from './emisorHistorico';
 import { correoVisible } from '../../lib/utils/cuentas';
 
 const CSS_IMPRESION = `
@@ -121,12 +122,7 @@ export default function ComprobanteViewModal({
     // documento electrónico oficial.
     const tipoLabel = 'COMPROBANTE DE VENTA';
 
-    const empresaData = {
-        ruc: empresa.ruc || detalle?.ruc || '',
-        razon_social: empresa.razon_social || detalle?.razon_social || '',
-        nombre_comercial: empresa.nombre_comercial || '',
-        direccion: empresa.direccion || '',
-    };
+    const empresaData = emisorHistorico(detalle || {}, empresa);
 
     const numeroSerie = `${detalle?.serie || ''}-${String(detalle?.numero ?? '').padStart(8, '0')}`;
 

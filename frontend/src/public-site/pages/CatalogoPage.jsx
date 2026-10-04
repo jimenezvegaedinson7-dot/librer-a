@@ -25,7 +25,7 @@ const ORDENES = {
 
 // Línea de stock como en una tienda en línea, con el dato real.
 export function Stock({ libro }) {
-    if (!libro.disponible) return <p className="stock stock--agotado">Agotado temporalmente. Puedes reservarlo en la app.</p>;
+    if (!libro.disponible) return <p className="stock stock--agotado">Agotado por ahora. Las reservas requieren unidades disponibles.</p>;
     if (libro.stock > 0 && libro.stock <= 3) return <p className="stock stock--poco">Quedan solo {libro.stock} en stock</p>;
     return <p className="stock stock--ok"><FaCircleCheck aria-hidden="true" /> En stock</p>;
 }

@@ -77,31 +77,12 @@ const crear = async (autor) => {
 // ACTUALIZAR AUTOR
 // ========================================
 const actualizar = async (id, autor) => {
-    const {
-        nombre,
-        apellido,
-        nacionalidad,
-        biografia,
-        estado
-    } = autor;
-
-    const [resultado] = await pool.query(`
-        UPDATE autores
-        SET
-            nombre = COALESCE(?, nombre),
-            apellido = COALESCE(?, apellido),
-            nacionalidad = COALESCE(?, nacionalidad),
-            biografia = COALESCE(?, biografia),
-            estado = COALESCE(?, estado)
-        WHERE id_autor = ?
-    `, [
-        nombre ?? null,
-        apellido ?? null,
-        nacionalidad ?? null,
-        biografia ?? null,
-        estado ?? null,
-        id
-    ]);
+    const campos = [], valores = [];
+    for (const campo of ['nombre', 'apellido', 'nacionalidad', 'biografia', 'estado']) {
+        if (autor[campo] !== undefined) { campos.push(`${campo} = ?`); valores.push(autor[campo]); }
+    }
+    if (!campos.length) return 0;
+    const [resultado] = await pool.query(`UPDATE autores SET ${campos.join(', ')} WHERE id_autor = ?`, [...valores, id]);
 
     return resultado.affectedRows;
 };

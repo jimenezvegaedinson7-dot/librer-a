@@ -19,6 +19,8 @@ class Libro {
   final DateTime? creadoEn;
   final bool esNuevo;
   final String? portada;
+  final bool portadaEsReferencia;
+  final Map<String, dynamic>? portadaEdicionReferencia;
   final int? idAutor;
   final String? autor;
   final int? idCategoria;
@@ -39,6 +41,8 @@ class Libro {
     this.creadoEn,
     this.esNuevo = false,
     this.portada,
+    this.portadaEsReferencia = false,
+    this.portadaEdicionReferencia,
     this.idAutor,
     this.autor,
     this.idCategoria,
@@ -63,6 +67,10 @@ class Libro {
       creadoEn: DateTime.tryParse(json['creado_en']?.toString() ?? ''),
       esNuevo: JsonUtils.asBool(json['es_nuevo']) ?? false,
       portada: JsonUtils.asString(json['portada']),
+      portadaEsReferencia: JsonUtils.asBool(json['portada_es_referencia']) ?? false,
+      portadaEdicionReferencia: json['portada_edicion_referencia'] is Map
+          ? Map<String, dynamic>.unmodifiable(Map<String, dynamic>.from(json['portada_edicion_referencia']))
+          : null,
       idAutor: JsonUtils.asInt(json['id_autor']),
       autor: JsonUtils.asString(json['autor']),
       idCategoria: JsonUtils.asInt(json['id_categoria']),
@@ -139,6 +147,8 @@ class Libro {
       'creado_en': creadoEn?.toUtc().toIso8601String(),
       'es_nuevo': esNuevo,
       'portada': portada,
+      'portada_es_referencia': portadaEsReferencia,
+      'portada_edicion_referencia': portadaEdicionReferencia,
       'id_autor': idAutor,
       'autor': autor,
       'id_categoria': idCategoria,

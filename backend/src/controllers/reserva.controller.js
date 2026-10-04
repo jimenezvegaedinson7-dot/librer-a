@@ -6,6 +6,7 @@ const { validarId, esCantidadPositiva, esNumeroNoNegativo } = require('../utils/
 const { RESERVA, permitirTransicion } = require('../utils/transiciones');
 const { enviarCorreoReservaCreada } = require('../utils/mailer');
 const { esPersonalInterno } = require('../utils/roles');
+const usuarioModel = require('../models/usuario.model');
 const { conPortadaCatalogo } = require('../utils/portadasCatalogo');
 
 // ========================================
@@ -166,14 +167,23 @@ const obtenerMisReservas = async (req, res) => {
 // ========================================
 const crearReserva = async (req, res) => {
     try {
-        const id_usuario =
-            req.usuario.id_usuario;
-
+        let id_usuario = req.usuario.id_usuario;
         const {
             id_libro,
             cantidad,
             fecha_vencimiento
         } = req.body;
+
+        if (esPersonalInterno(req.usuario.rol)) {
+            const clienteId = validarId(req.body.id_usuario_cliente);
+            const cliente = clienteId ? await usuarioModel.buscarPorId(clienteId) : null;
+            if (!cliente || cliente.rol !== 'cliente' || Number(cliente.estado) !== 1 || cliente.fecha_eliminacion) {
+                return res.status(400).json({ success: false, mensaje: 'Selecciona un cliente activo para registrar la reserva' });
+            }
+            id_usuario = clienteId;
+        } else if (req.body.id_usuario_cliente != null && Number(req.body.id_usuario_cliente) !== Number(id_usuario)) {
+            return res.status(403).json({ success: false, mensaje: 'Solo puedes reservar para tu propia cuenta' });
+        }
 
         // ========================================
         // VALIDACIONES
@@ -256,7 +266,7 @@ const crearReserva = async (req, res) => {
         // HISTORIAL
         // ========================================
         await registrarHistorial({
-            id_usuario,
+            id_usuario: req.usuario.id_usuario,
             tipo_operacion: 'CREAR',
             modulo: 'reservas',
             descripcion:
@@ -270,9 +280,9 @@ const crearReserva = async (req, res) => {
             try {
                 const reserva = await reservaModel.obtenerPorId(id);
 
-                if (reserva && req.usuario.email) {
+                if (reserva && reserva.correo_usuario) {
                     await enviarCorreoReservaCreada({
-                        destinatario: req.usuario.email,
+                        destinatario: reserva.correo_usuario,
                         nombre: reserva.nombre_usuario || '',
                         idReserva: id,
                         titulo: reserva.titulo || '',
@@ -305,6 +315,8 @@ const crearReserva = async (req, res) => {
         const mensaje =
             error.message ||
             'Error al crear la reserva';
+
+        if (error.status) return res.status(error.status).json({ success: false, mensaje });
 
         if (
             mensaje.includes(
@@ -428,6 +440,10 @@ const actualizarEstado = async (req, res) => {
         let ventaCreada = null;
 
         if (estado === 'completada') {
+            if (req.body.precio_unitario_esperado !== undefined &&
+                (!esNumeroNoNegativo(req.body.precio_unitario_esperado) || Number(req.body.precio_unitario_esperado) <= 0)) {
+                return res.status(400).json({ success: false, mensaje: 'El importe confirmado debe ser un precio válido mayor que cero' });
+            }
             cobro = validarCobroTienda(
                 req.body.metodo_pago,
                 req.body.referencia_pago
@@ -463,6 +479,7 @@ const actualizarEstado = async (req, res) => {
                             metodo_pago: cobro.metodo,
                             referencia_pago: cobro.referencia,
                             descontar_stock: false,
+                            precio_unitario_esperado: req.body.precio_unitario_esperado,
                             estado: 'pagada'
                         }, connection);
                     }
@@ -510,7 +527,7 @@ const actualizarEstado = async (req, res) => {
             error
         );
 
-        return res.status(400).json({
+        return res.status(error.status || 400).json({
             success: false,
             mensaje:
                 error.message ||

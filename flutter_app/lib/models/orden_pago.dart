@@ -10,6 +10,8 @@ class OrdenPago {
   final String? checkoutUrl;
   final String? status;
   final double? total;
+  final String? estadoVenta;
+  final bool requiereRevision;
 
   const OrdenPago({
     this.idVenta,
@@ -17,6 +19,8 @@ class OrdenPago {
     this.checkoutUrl,
     this.status,
     this.total,
+    this.estadoVenta,
+    this.requiereRevision = false,
   });
 
   factory OrdenPago.fromJson(Map<String, dynamic> json) {
@@ -38,6 +42,7 @@ class OrdenPago {
       idVenta: JsonUtils.asInt(dataMap['id_venta']),
       orderId:
           JsonUtils.asString(dataMap['order_id']) ??
+          JsonUtils.asString(dataMap['external_reference']) ??
           JsonUtils.asString(dataMap['id']),
       checkoutUrl:
           JsonUtils.asString(dataMap['checkout_url']) ?? preferenciaCheckout,
@@ -45,6 +50,8 @@ class OrdenPago {
           JsonUtils.asString(dataMap['payment_status']) ??
           JsonUtils.asString(dataMap['status']),
       total: JsonUtils.asDouble(dataMap['total']),
+      estadoVenta: JsonUtils.asString(dataMap['estado_venta']) ?? JsonUtils.asString(dataMap['estado']),
+      requiereRevision: JsonUtils.asBool(dataMap['requiere_revision']) ?? false,
     );
   }
 
@@ -56,6 +63,8 @@ class OrdenPago {
       checkoutUrl: checkoutUrl ?? this.checkoutUrl,
       status: status,
       total: total,
+      estadoVenta: estadoVenta,
+      requiereRevision: requiereRevision,
     );
   }
 }
@@ -67,6 +76,8 @@ class EstadoOrden {
   final String? statusDetail;
   final double? totalAmount;
   final String? externalReference;
+  final String? estadoVenta;
+  final bool requiereRevision;
 
   const EstadoOrden({
     this.orderId,
@@ -74,6 +85,8 @@ class EstadoOrden {
     this.statusDetail,
     this.totalAmount,
     this.externalReference,
+    this.estadoVenta,
+    this.requiereRevision = false,
   });
 
   factory EstadoOrden.fromJson(Map<String, dynamic> json) {
@@ -87,15 +100,18 @@ class EstadoOrden {
       status:
           JsonUtils.asString(dataMap['payment_status']) ??
           JsonUtils.asString(dataMap['status']),
-      statusDetail: JsonUtils.asString(dataMap['status_detail']),
+      statusDetail: JsonUtils.asString(dataMap['payment_status_detail']) ?? JsonUtils.asString(dataMap['status_detail']),
       totalAmount: JsonUtils.asDouble(dataMap['total_amount']),
       externalReference: JsonUtils.asString(dataMap['external_reference']),
+      estadoVenta: JsonUtils.asString(dataMap['estado_venta']),
+      requiereRevision: JsonUtils.asBool(dataMap['requiere_revision']) ?? false,
     );
   }
 
   /// `true` cuando la orden fue aprobada (pago confirmado).
-  bool get pagada =>
-      (status ?? '').toUpperCase().trim() == 'APPROVED';
+  bool get pagada => !requiereRevision &&
+      (estadoVenta == null || const ['pagada', 'entregada'].contains(estadoVenta)) &&
+      const ['APPROVED', 'CAPTURED'].contains((status ?? '').toUpperCase().trim());
 
   /// `true` cuando la orden sigue pendiente.
   bool get pendiente =>
@@ -105,9 +121,11 @@ class EstadoOrden {
 
   /// `true` cuando la orden fue cancelada o rechazada.
   bool get cancelada =>
+      requiereRevision || const ['cancelada', 'reembolsada'].contains(estadoVenta) ||
       (status ?? '').toUpperCase().trim() == 'DECLINED' ||
       (status ?? '').toUpperCase().trim() == 'ERROR' ||
       (status ?? '').toUpperCase().trim() == 'EXPIRED' ||
       (status ?? '').toUpperCase().trim() == 'VOIDED' ||
-      (status ?? '').toUpperCase().trim() == 'REFUNDED';
+      (status ?? '').toUpperCase().trim() == 'REFUNDED' ||
+      (status ?? '').toUpperCase().trim() == 'CHARGED_BACK';
 }

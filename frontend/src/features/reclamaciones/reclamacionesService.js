@@ -11,7 +11,8 @@ export async function registrarReclamacion(hoja) {
 
 export async function listarReclamaciones(params = {}) {
     const res = await client.get('/reclamaciones', { params });
-    return Array.isArray(res?.data) ? res.data : [];
+    if (!Array.isArray(res?.data)) throw new Error('El servidor no devolvió una lista de reclamaciones válida');
+    return { reclamaciones: res.data, total: Number(res.total ?? res.data.length), paginas: Math.max(1, Number(res.paginas ?? 1)) };
 }
 
 export async function obtenerResumenReclamaciones() {

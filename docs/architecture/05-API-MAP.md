@@ -78,7 +78,7 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 | PUT | `/api/inventario/libro/:id` | controllers/inventario.controller.js#actualizarInventario | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/inventario/InventarioEditModal.jsx | — | JWT + admin |
 | GET | `/api/libros` | controllers/libro.controller.js#obtenerLibros | — | features/anuncios/CarruselPanel.jsx<br>features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js<br>features/inventario/MovimientosModal.jsx<br>features/inventario/useLibros.js<br>features/libros/LibrosPage.jsx<br>features/reservas/ReservaForm.jsx<br>features/reservas/reservasService.js<br>public-site/asistente/AsistenteTienda.jsx<br>public-site/PublicLayout.jsx<br>public-site/tienda/TiendaContext.jsx | screens/carrito_screen.dart<br>screens/entrega_y_pago_screen.dart<br>screens/home_screen.dart<br>screens/libros_screen.dart | Pública |
 | GET | `/api/libros/:id/relacionados` | controllers/libro.controller.js#obtenerRelacionados | — | — | — | Pública |
-| GET | `/api/libros/:id` | controllers/libro.controller.js#obtenerLibro | — | features/libros/LibroEditModal.jsx<br>features/libros/LibroForm.jsx<br>features/libros/LibrosPage.jsx<br>public-site/tienda/LibroPage.jsx | screens/detalle_libro_screen.dart | Pública |
+| GET | `/api/libros/:id` | controllers/libro.controller.js#obtenerLibro | — | features/libros/LibroEditModal.jsx<br>features/libros/LibroForm.jsx<br>features/libros/LibrosPage.jsx<br>features/reservas/ReservaEstadoModal.jsx<br>public-site/tienda/LibroPage.jsx | screens/detalle_libro_screen.dart | Pública |
 | POST | `/api/libros` | controllers/libro.controller.js#crearLibro | JWT + rol:administrador + upload(portada) | features/libros/LibroForm.jsx | — | JWT + admin |
 | PUT | `/api/libros/:id` | controllers/libro.controller.js#actualizarLibro | JWT + rol:administrador + upload(portada) | features/libros/LibroEditModal.jsx | — | JWT + admin |
 | DELETE | `/api/libros/:id` | controllers/libro.controller.js#eliminarLibro | JWT + rol:administrador | features/libros/LibrosPage.jsx | — | JWT + admin |
@@ -88,7 +88,7 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 | POST | `/api/pagos/webhook` | controllers/pago.controller.js#webhookPago | webhookLimit + express.urlencoded + express.json | — | — | Pública |
 | GET | `/api/pagos` | controllers/pago.controller.js#listarPagosAdmin | JWT + verificarPanel | features/notificaciones/notificacionesService.js<br>features/pagos/PagosPage.jsx | — | JWT + admin |
 | GET | `/api/pagos/resumen` | inline (pago.routes.js) | JWT + verificarPanel | features/pagos/PagosPage.jsx | — | JWT + admin |
-| POST | `/api/pagos/crear-orden` | controllers/pago.controller.js#crearOrden | JWT | public-site/tienda/CheckoutPage.jsx | screens/entrega_y_pago_screen.dart | JWT |
+| POST | `/api/pagos/crear-orden` | controllers/pago.controller.js#crearOrden | JWT | public-site/tienda/persistenciaCompra.js | — | JWT |
 | GET | `/api/pagos/:orderId` | controllers/pago.controller.js#obtenerOrden | JWT | public-site/tienda/MisComprasPage.jsx | screens/entrega_y_pago_screen.dart<br>screens/mis_compras_screen.dart | JWT |
 | GET | `/api/pedidos` | controllers/pedido.controller.js#obtenerPedidos | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT + admin |
 | GET | `/api/pedidos/usuario/:id_usuario` | controllers/pedido.controller.js#obtenerMisPedidos | JWT | — | — | JWT |
@@ -115,14 +115,14 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 | GET | `/api/ubicaciones/provincias` | controllers/ubicacion.controller.js#listarProvincias | JWT | — | — | JWT |
 | GET | `/api/ubicaciones/provincias/:id_provincia/distritos` | controllers/ubicacion.controller.js#listarDistritos | JWT | — | — | JWT |
 | PUT | `/api/ubicaciones/distritos/:id` | controllers/ubicacion.controller.js#actualizarTarifaDistrito | JWT + rol:administrador | — | — | JWT + admin |
-| GET | `/api/usuarios` | controllers/usuario.controller.js#listarUsuarios | JWT + rol:administrador | features/usuarios/UsuariosPage.jsx | — | JWT + admin |
+| GET | `/api/usuarios` | controllers/usuario.controller.js#listarUsuarios | JWT + rol:administrador | features/reservas/ReservaForm.jsx<br>features/usuarios/UsuariosPage.jsx | — | JWT + admin |
 | GET | `/api/usuarios/perfil` | controllers/usuario.controller.js#obtenerPerfil | JWT | features/layout/PerfilAdministrador.jsx<br>public-site/tienda/TiendaContext.jsx | screens/perfil_screen.dart<br>screens/splash_screen.dart | JWT |
 | PUT | `/api/usuarios/perfil` | controllers/usuario.controller.js#actualizarPerfil | JWT | features/layout/PerfilAdministrador.jsx | screens/security/editar_perfil_screen.dart | JWT |
 | PUT | `/api/usuarios/foto` | controllers/usuario.controller.js#subirFotoPerfil | JWT + uploadPerfil(foto) | features/layout/PerfilAdministrador.jsx | screens/perfil_screen.dart | JWT |
 | PUT | `/api/usuarios/password` | controllers/usuario.controller.js#cambiarPassword | JWT | features/layout/PerfilAdministrador.jsx | screens/security/cambiar_password_screen.dart | JWT |
 | DELETE | `/api/usuarios/cuenta` | controllers/usuario.controller.js#eliminarMiCuenta | JWT | — | screens/security/eliminar_cuenta_screen.dart | JWT |
 | PATCH | `/api/usuarios/:id` | controllers/usuario.controller.js#adminUpdateUsuario | JWT + rol:administrador | features/usuarios/UsuariosPage.jsx | — | JWT + admin |
-| GET | `/api/ventas/mis-ventas` | controllers/venta.controller.js#obtenerMisVentas | JWT | public-site/tienda/MisComprasPage.jsx | screens/mis_compras_screen.dart | JWT |
+| GET | `/api/ventas/mis-ventas` | controllers/venta.controller.js#obtenerMisVentas | JWT | public-site/tienda/MisComprasPage.jsx | screens/mis_compras_screen.dart<br>screens/splash_screen.dart | JWT |
 | POST | `/api/ventas` | inline (venta.routes.js) | JWT | — | — | JWT |
 | GET | `/api/ventas` | controllers/venta.controller.js#obtenerVentas | JWT + verificarPanel | features/pagos/PagosPage.jsx<br>features/ventas/VentasPage.jsx | — | JWT + admin |
 | GET | `/api/ventas/:id` | controllers/venta.controller.js#obtenerVenta | JWT | features/ventas/VentasPage.jsx<br>public-site/tienda/CheckoutPage.jsx<br>public-site/tienda/TiendaContext.jsx | — | JWT |

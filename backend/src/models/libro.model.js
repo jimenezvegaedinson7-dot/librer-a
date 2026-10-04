@@ -304,7 +304,7 @@ const actualizar = async (id, libro) => {
     // evalúa sobre la fila final, nunca sobre un estado intermedio inválido.
     const camposDescuento = [];
     const valoresDescuento = [];
-    for (const campo of ['descuento_porcentaje', 'precio_oferta', 'descuento_hasta']) {
+    for (const campo of ['descuento_porcentaje', 'precio_oferta', 'descuento_hasta', 'isbn', 'descripcion']) {
         if (libro[campo] !== undefined) {
             camposDescuento.push(`${campo} = ?`);
             valoresDescuento.push(libro[campo]);
@@ -315,8 +315,6 @@ const actualizar = async (id, libro) => {
         UPDATE libros
         SET
             titulo = COALESCE(?, titulo),
-            isbn = COALESCE(?, isbn),
-            descripcion = COALESCE(?, descripcion),
             precio = COALESCE(?, precio),
             stock = COALESCE(?, stock),
             portada = COALESCE(?, portada),
@@ -327,8 +325,6 @@ const actualizar = async (id, libro) => {
         WHERE id_libro = ?
     `, [
         titulo ?? null,
-        isbn ?? null,
-        descripcion ?? null,
         precio ?? null,
         stock ?? null,
         portada ?? null,

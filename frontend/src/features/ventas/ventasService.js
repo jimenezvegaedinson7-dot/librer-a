@@ -15,10 +15,12 @@ export async function obtenerVenta(id) {
 
 // Reembolso de una venta pagada o entregada: devuelve el stock y anula
 // su comprobante emitido.
-export async function reembolsarVenta(id, { motivo, devolverStock }) {
+export async function reembolsarVenta(id, { motivo, devolverStock, referencia, evidencia }) {
     return client.post(`/ventas/${id}/reembolso`, {
         motivo,
         devolver_stock: Boolean(devolverStock),
+        referencia_reembolso: referencia?.trim() || null,
+        evidencia_reembolso: evidencia?.trim() || null,
     });
 }
 

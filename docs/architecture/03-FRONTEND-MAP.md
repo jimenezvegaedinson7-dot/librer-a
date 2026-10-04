@@ -100,8 +100,8 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/pedidos/PedidosPage.jsx` | `GET /api/pedidos`<br>`GET /api/pedidos/:param`<br>`PUT /api/pedidos/:param/estado` |
 | `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `features/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
-| `features/reservas/ReservaEstadoModal.jsx` | `PUT /api/reservas/:param/estado` |
-| `features/reservas/ReservaForm.jsx` | `GET /api/libros`<br>`POST /api/reservas` |
+| `features/reservas/ReservaEstadoModal.jsx` | `GET /api/libros/:param`<br>`PUT /api/reservas/:param/estado` |
+| `features/reservas/ReservaForm.jsx` | `GET /api/libros`<br>`GET /api/usuarios`<br>`POST /api/reservas` |
 | `features/reservas/ReservasPage.jsx` | `GET /api/reservas`<br>`GET /api/reservas/:param` |
 | `features/reservas/reservasService.js` | `GET /api/libros` |
 | `features/tarifas/TarifaEditModal.jsx` | `POST /api/zonas-delivery`<br>`PUT /api/zonas-delivery/:param` |
@@ -116,12 +116,13 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/sections/Hero.jsx` | `GET /api/anuncios/carrusel` |
 | `public-site/sections/VideoSection.jsx` | `GET /api/anuncios` |
 | `public-site/tienda/AccionesLibro.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos/:param`<br>`POST /api/favoritos/:param` |
-| `public-site/tienda/CheckoutPage.jsx` | `GET /api/pagos/capacidades`<br>`GET /api/ventas/:param`<br>`GET /api/zonas-delivery`<br>`POST /api/pagos/crear-orden` |
+| `public-site/tienda/CheckoutPage.jsx` | `GET /api/pagos/capacidades`<br>`GET /api/ventas/:param`<br>`GET /api/zonas-delivery` |
 | `public-site/tienda/CuentaPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reenviar-codigo`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/registro`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-email` |
 | `public-site/tienda/FavoritosPage.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos` |
 | `public-site/tienda/LibroPage.jsx` | `GET /api/autores/:param`<br>`GET /api/libros/:param` |
 | `public-site/tienda/MisComprasPage.jsx` | `GET /api/pagos/:param`<br>`GET /api/ventas/:param/pago`<br>`GET /api/ventas/mis-ventas` |
 | `public-site/tienda/TiendaContext.jsx` | `GET /api/libros`<br>`GET /api/usuarios/perfil`<br>`GET /api/ventas/:param` |
+| `public-site/tienda/persistenciaCompra.js` | `POST /api/pagos/crear-orden` |
 
 ## Servicios (`features/*/*Service.js`)
 
@@ -280,7 +281,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/FormularioAlta.jsx` | 4 |
 | `components/ui/Modal.jsx` | 30 |
 | `components/ui/PageHeader.jsx` | 18 |
-| `components/ui/Pagination.jsx` | 12 |
+| `components/ui/Pagination.jsx` | 13 |
 | `components/ui/Spinner.jsx` | 4 |
 | `components/ui/TableSkeleton.jsx` | 17 |
 | `public-site/components/ActualizarApp.jsx` | 1 |

@@ -8,6 +8,7 @@ const usuarioModel = require('../models/usuario.model');
 const historialModel = require('../models/historial.model');
 const {
     esEmailValido,
+    esTextoValido,
     esEstadoValido,
     validarId
 } = require('../utils/validaciones');
@@ -200,6 +201,13 @@ const adminUpdateUsuario = async (req, res) => {
                 idUsuario
             );
 
+        if (usuario.rol !== actualizado.rol || Number(usuario.estado) !== Number(actualizado.estado)) {
+            try {
+                await historialModel.crear({ id_usuario: req.usuario.id_usuario, tipo_operacion: 'ACTUALIZAR', modulo: 'usuarios',
+                    descripcion: `Usuario #${idUsuario}: rol ${usuario.rol} → ${actualizado.rol}; estado ${usuario.estado} → ${actualizado.estado}` });
+            } catch (errorHistorial) { console.error('No se pudo registrar el historial:', errorHistorial.message); }
+        }
+
         return res.json({
             success: true,
             mensaje:
@@ -300,21 +308,17 @@ const actualizarPerfil = async (req, res) => {
         // ========================================
         // VALIDACIONES
         // ========================================
-        if (
-            !nombre ||
-            !String(nombre).trim() ||
-            !apellido ||
-            !String(apellido).trim() ||
-            !email
-        ) {
+        if ((nombre !== undefined && !esTextoValido(nombre, 80)) ||
+            (apellido !== undefined && !esTextoValido(apellido, 80)) ||
+            (telefono !== undefined && telefono !== null && !esTextoValido(telefono, 20, true))) {
             return res.status(400).json({
                 success: false,
                 mensaje:
-                    'Nombre, apellido y correo son obligatorios'
+                    'Nombre, apellido o teléfono inválidos'
             });
         }
 
-        if (!esEmailValido(email)) {
+        if (email !== undefined && !esEmailValido(email)) {
             return res.status(400).json({
                 success: false,
                 mensaje:
@@ -325,11 +329,8 @@ const actualizarPerfil = async (req, res) => {
         // ========================================
         // VERIFICAR EMAIL DUPLICADO
         // ========================================
-        const emailExiste =
-            await usuarioModel.existeEmail(
-                email.trim(),
-                idUsuario
-            );
+        const emailNormalizado = email === undefined ? undefined : email.trim().toLowerCase();
+        const emailExiste = emailNormalizado === undefined ? false : await usuarioModel.existeEmail(emailNormalizado, idUsuario);
 
         if (emailExiste) {
             return res.status(409).json({
@@ -346,17 +347,16 @@ const actualizarPerfil = async (req, res) => {
             idUsuario,
             {
                 nombre:
-                    nombre.trim(),
+                    nombre === undefined ? undefined : nombre.trim(),
 
                 apellido:
-                    apellido.trim(),
+                    apellido === undefined ? undefined : apellido.trim(),
 
                 email:
-                    email.trim(),
+                    emailNormalizado,
 
                 telefono:
-                    telefono?.trim() ||
-                    null
+                    telefono === undefined ? undefined : telefono === null ? null : telefono.trim() || null
             }
         );
 
@@ -389,6 +389,7 @@ const actualizarPerfil = async (req, res) => {
             'Error al actualizar perfil:',
             error
         );
+        if (error.code === '23505') return res.status(409).json({ success: false, mensaje: 'El correo ingresado ya está registrado' });
 
         return res.status(500).json({
             success: false,
@@ -700,7 +701,8 @@ const cambiarPassword = async (req, res) => {
         return res.json({
             success: true,
             mensaje:
-                'Contraseña actualizada correctamente'
+                'Contraseña actualizada. Inicia sesión nuevamente.',
+            sesiones_revocadas: true
         });
 
     } catch (error) {

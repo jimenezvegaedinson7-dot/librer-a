@@ -1,10 +1,12 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { EstadoModal } from '../../components/ui/EstadoModal';
 import { formatearMoneda } from '../../lib/utils/format';
 
 import { actualizarEstadoReserva } from './reservasService';
 import SelectorCobro from '../ventas/SelectorCobro';
+import { obtenerLibro } from '../libros/librosService';
+import { precioReserva } from './precioReserva';
 
 function obtenerEstadosDisponibles(estadoActual) {
     switch (estadoActual) {
@@ -42,19 +44,39 @@ export default function ReservaEstadoModal({ reserva, abierto, onCerrar, onActua
     // Se monta al abrirla (ReservasPage): el cobro empieza vacío.
     const [metodo, setMetodo] = useState('');
     const [referencia, setReferencia] = useState('');
+    const [precio, setPrecio] = useState(null);
+    const [errorPrecio, setErrorPrecio] = useState('');
+    const idLibro = reserva?.id_libro;
+    useEffect(() => {
+        if (!abierto || reserva?.estado !== 'confirmada') return undefined;
+        let vigente = true;
+        obtenerLibro(reserva.id_libro).then(libro => {
+            const actual = precioReserva(libro);
+            if (vigente) { setPrecio(actual); setErrorPrecio(''); }
+        }).catch(err => { if (vigente) setErrorPrecio(err.message || 'No se pudo consultar el importe de cobro'); });
+        return () => { vigente = false; };
+    }, [abierto, reserva?.id_libro, reserva?.estado]);
 
     // Completar exige el cobro: el backend registra la venta en la misma operación.
     const guardar = useCallback(
-        (id, estado) => {
+        async (id, estado) => {
             if (estado === 'completada' && !metodo) {
                 return Promise.reject({ response: { data: { mensaje: 'Indica cómo pagó el cliente' } } });
             }
-            return actualizarEstadoReserva(id, estado, { metodo, referencia: metodo !== 'efectivo' ? referencia.trim() : '' });
+            let esperado;
+            if (estado === 'completada') {
+                esperado = precioReserva(await obtenerLibro(idLibro));
+                if (precio === null || esperado !== precio) {
+                    setPrecio(esperado); setErrorPrecio('');
+                    throw { response: { data: { mensaje: 'El importe se actualizó. Revisa el nuevo total antes de confirmar el cobro.' } } };
+                }
+            }
+            return actualizarEstadoReserva(id, estado, { metodo, referencia: metodo !== 'efectivo' ? referencia.trim() : '', precio_unitario_esperado: esperado });
         },
-        [metodo, referencia],
+        [metodo, referencia, precio, idLibro],
     );
 
-    const importe = Number(reserva?.precio || 0) * Number(reserva?.cantidad || 0);
+    const importe = precio === null ? null : precio * Number(reserva?.cantidad || 0);
 
     return (
         <EstadoModal
@@ -72,7 +94,7 @@ export default function ReservaEstadoModal({ reserva, abierto, onCerrar, onActua
                     {reserva?.cantidad && (
                         <p className="mt-1 text-xs text-slate-500">
                             {reserva.cantidad} {Number(reserva.cantidad) === 1 ? 'unidad' : 'unidades'}
-                            {importe > 0 ? ` · ${formatearMoneda(importe)}` : ''}
+                            {importe !== null ? ` · ${formatearMoneda(importe)}` : ''}
                         </p>
                     )}
                 </div>
@@ -83,6 +105,7 @@ export default function ReservaEstadoModal({ reserva, abierto, onCerrar, onActua
             aviso={(estado) =>
                 estado === 'completada' ? (
                     <div className="space-y-2">
+                        <p className="text-sm" role="status">{errorPrecio || (importe === null ? 'Consultando el precio final vigente…' : `Importe de cobro: ${formatearMoneda(importe)}`)}</p>
                         <p className="field-label">¿Cómo pagó el cliente?</p>
                         <SelectorCobro metodo={metodo} onMetodo={setMetodo} referencia={referencia} onReferencia={setReferencia} />
                         <p className="text-xs text-slate-500">Se registrará la venta ya cobrada, a nombre del cliente de la reserva.</p>

@@ -5,32 +5,32 @@ import { clienteApi } from './clienteApi';
 import { useTienda } from './TiendaContext';
 
 export function FavoritoLibro({ libro }) {
-    const {usuario,revisando} = useTienda();
+    const {usuario,revisando,sesion,errorSesion,generacion} = useTienda();
     const [consulta,setConsulta] = useState({cargando:Boolean(usuario),favorito:false,error:''});
     const [guardando,setGuardando] = useState(false);
     const [mensaje,setMensaje] = useState('');
     const [version,setVersion] = useState(0);
     const idUsuario=usuario?.id_usuario;
     useEffect(()=>{
-        if (!idUsuario || revisando) return undefined;
+        if (!idUsuario || revisando || errorSesion) return undefined;
         let activo=true;
-        clienteApi.favorito(libro.id).then(j=>{if(activo)setConsulta({cargando:false,favorito:j.data.es_favorito===true,error:''});})
+        clienteApi.favorito(libro.id,sesion).then(j=>{if(activo)setConsulta({cargando:false,favorito:j.data.es_favorito===true,error:''});})
             .catch(e=>{if(activo)setConsulta({cargando:false,favorito:false,error:e.message});});
         return()=>{activo=false;};
-    },[libro.id,idUsuario,revisando,version]);
+    },[libro.id,idUsuario,revisando,errorSesion,generacion,version,sesion]);
     async function cambiar() {
         if (!usuario) {setMensaje('Inicia sesión para guardar este libro en tus favoritos.');return;}
-        if(guardando || consulta.cargando || revisando || consulta.error)return;
+        if(guardando || consulta.cargando || revisando || errorSesion || consulta.error)return;
         setGuardando(true);setMensaje('');
         try {
-            const j=consulta.favorito ? await clienteApi.quitarFavorito(libro.id) : await clienteApi.agregarFavorito(libro.id);
+            const j=consulta.favorito ? await clienteApi.quitarFavorito(libro.id,sesion) : await clienteApi.agregarFavorito(libro.id,sesion);
             setConsulta({cargando:false,favorito:j.data.es_favorito===true,error:''});
             setMensaje(j.mensaje);
         } catch(e) {setMensaje(e.message);} finally {setGuardando(false);}
     }
     return <div className="ficha-favorito">
         <button type="button" className={`ficha-utilidad${consulta.favorito?' ficha-utilidad--activa':''}`} aria-pressed={consulta.favorito}
-            disabled={guardando || (Boolean(usuario) && (consulta.cargando || revisando || Boolean(consulta.error)))} onClick={cambiar}>
+            disabled={guardando || (Boolean(usuario) && (consulta.cargando || revisando || Boolean(errorSesion) || Boolean(consulta.error)))} onClick={cambiar}>
             {consulta.favorito?<FaHeart aria-hidden="true"/>:<FaRegHeart aria-hidden="true"/>}
             {guardando?'Guardando…':consulta.favorito?'En favoritos':'Agregar a favoritos'}
         </button>

@@ -309,7 +309,7 @@
     .ofertas__rejilla { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .libro:hover .libro__tapa, .oferta-tarjeta:hover, .oferta-tarjeta:hover .oferta-tarjeta__tapa img,
+    .libro:hover .libro__tapa, .oferta-tarjeta:hover, .oferta-tarjeta:hover .oferta-tarjeta__tapa img { transform: none; }
 }
 .sitio [data-revelar] > .oferta-tarjeta { transition: opacity 800ms var(--ease-salida), transform 800ms var(--ease-salida), box-shadow var(--d-media); transition-delay: calc(var(--i, 0) * 90ms); }
 .sitio.js [data-revelar]:not([data-visto]) > .oferta-tarjeta { opacity: 0; transform: translateY(28px); }

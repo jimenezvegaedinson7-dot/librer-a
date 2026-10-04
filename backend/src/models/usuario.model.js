@@ -15,6 +15,7 @@ const buscarPorEmail = async (email) => {
             telefono,
             foto_perfil,
             password,
+            sesion_version,
             rol,
             estado,
             fecha_registro,
@@ -24,10 +25,10 @@ const buscarPorEmail = async (email) => {
             email_verification_code,
             email_verification_expires
         FROM usuarios
-        WHERE email = ?
+        WHERE LOWER(email) = LOWER(?)
         LIMIT 1
         `,
-        [email]
+        [String(email).trim().toLowerCase()]
     );
 
     return rows[0];
@@ -81,6 +82,7 @@ const listarConCompras = async () => {
         FROM usuarios u
         LEFT JOIN ventas v
             ON v.id_usuario = u.id_usuario
+            AND v.estado IN ('pagada', 'entregada')
         GROUP BY
             u.id_usuario,
             u.nombre,
@@ -142,6 +144,7 @@ const buscarPorIdConPassword = async (id) => {
             telefono,
             foto_perfil,
             password,
+            sesion_version,
             rol,
             estado,
             two_factor_enabled
@@ -207,12 +210,12 @@ const existeEmail = async (
         `
         SELECT id_usuario
         FROM usuarios
-        WHERE email = ?
+        WHERE LOWER(email) = LOWER(?)
         AND id_usuario <> ?
         LIMIT 1
         `,
         [
-            email,
+            String(email).trim().toLowerCase(),
             idUsuario
         ]
     );
@@ -227,34 +230,15 @@ const actualizarPerfil = async (
     idUsuario,
     usuario
 ) => {
-    const {
-        nombre,
-        apellido,
-        email,
-        telefono,
-        foto_perfil
-    } = usuario;
-
-    const [resultado] = await pool.query(
-        `
-        UPDATE usuarios
-        SET
-            nombre = COALESCE(?, nombre),
-            apellido = COALESCE(?, apellido),
-            email = COALESCE(?, email),
-            telefono = COALESCE(?, telefono),
-            foto_perfil = COALESCE(?, foto_perfil)
-        WHERE id_usuario = ?
-        `,
-        [
-            nombre ?? null,
-            apellido ?? null,
-            email ?? null,
-            telefono ?? null,
-            foto_perfil ?? null,
-            idUsuario
-        ]
-    );
+    const campos = [], valores = [];
+    for (const campo of ['nombre', 'apellido', 'email', 'telefono', 'foto_perfil']) {
+        if (usuario[campo] !== undefined) {
+            campos.push(`${campo} = ?`);
+            valores.push(campo === 'email' ? String(usuario[campo]).trim().toLowerCase() : usuario[campo]);
+        }
+    }
+    if (!campos.length) return 0;
+    const [resultado] = await pool.query(`UPDATE usuarios SET ${campos.join(', ')} WHERE id_usuario = ?`, [...valores, idUsuario]);
 
     return resultado.affectedRows;
 };
@@ -291,7 +275,7 @@ const actualizarPassword = async (
     const [resultado] = await pool.query(
         `
         UPDATE usuarios
-        SET password = ?
+        SET password = ?, sesion_version = sesion_version + 1
         WHERE id_usuario = ?
         `,
         [

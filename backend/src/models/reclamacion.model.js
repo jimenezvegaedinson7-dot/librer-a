@@ -105,7 +105,9 @@ const crear = async (datos) => {
     }
 };
 
-const listar = async ({ estado, q } = {}) => {
+const listar = async ({ estado, q, pagina = 1, porPagina = 50 } = {}) => {
+    const nPagina = Math.max(1, Math.floor(Number(pagina)) || 1);
+    const nPorPagina = Math.min(100, Math.max(1, Math.floor(Number(porPagina)) || 50));
     const condiciones = [];
     const valores = [];
 
@@ -122,21 +124,23 @@ const listar = async ({ estado, q } = {}) => {
             consumidor_nombre ILIKE ? OR
             consumidor_documento LIKE ? OR
             consumidor_email ILIKE ? OR
-            CAST(correlativo AS TEXT) LIKE ?
+            (LPAD(CAST(correlativo AS TEXT), 6, '0') || '-' || CAST(anio AS TEXT)) ILIKE ?
         )`);
         valores.push(texto, texto, texto, texto);
     }
 
     const where = condiciones.length ? `WHERE ${condiciones.join(' AND ')}` : '';
+    const [[conteo]] = await pool.query(`SELECT COUNT(*) AS total FROM reclamaciones ${where}`, valores);
+    const total = Number(conteo.total);
     const [filas] = await pool.query(`
         SELECT ${CAMPOS}
         FROM reclamaciones
         ${where}
         ORDER BY (estado = 'pendiente') DESC, fecha_limite ASC, id_reclamacion DESC
-        LIMIT 500
-    `, valores);
+        LIMIT ? OFFSET ?
+    `, [...valores, nPorPagina, (nPagina - 1) * nPorPagina]);
 
-    return filas.map(normalizar);
+    return { reclamaciones: filas.map(normalizar), total, pagina: nPagina, paginas: Math.max(1, Math.ceil(total / nPorPagina)) };
 };
 
 const resumen = async () => {

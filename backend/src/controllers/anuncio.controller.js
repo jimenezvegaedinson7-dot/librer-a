@@ -8,6 +8,7 @@ const {
 } = require('../models/anuncio.model');
 
 const bcrypt = require('bcryptjs');
+const { registrarAuditoria } = require('../utils/auditoria');
 const path = require('path');
 const fs = require('fs');
 
@@ -269,6 +270,8 @@ const crearAnuncio = async (req, res) => {
             estado: estado === undefined ? 1 : Number(estado)
         });
 
+        await registrarAuditoria(req, 'anuncios', 'CREAR', `Anuncio de video #${anuncio.id_anuncio} creado`);
+
         res.status(201).json({
             success: true,
             mensaje: 'Anuncio publicado correctamente',
@@ -401,6 +404,7 @@ const actualizarAnuncio = async (req, res) => {
             );
         }
 
+        await registrarAuditoria(req, 'anuncios', 'ACTUALIZAR', `Anuncio de video #${id} actualizado`);
         res.json({
             success: true,
             mensaje: 'Anuncio actualizado correctamente',
@@ -493,6 +497,7 @@ const eliminarAnuncio = async (req, res) => {
             existente.video_url
         );
 
+        await registrarAuditoria(req, 'anuncios', 'ELIMINAR', `Anuncio de video #${id} eliminado`);
         res.json({
             success: true,
             mensaje: 'Anuncio eliminado correctamente'

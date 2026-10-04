@@ -253,14 +253,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
   /// `GET /usuarios/perfil` ahora incluye `two_factor_enabled`; si el servidor
   /// no lo envía (respuesta anterior), se conserva el valor local.
   Future<void> _refrescarPerfil() async {
+    final generacion = StorageService.instance.generacion;
     if (mounted) setState(() => _refreshing = true);
     try {
       final perfil = await ApiService.instance.obtenerPerfil();
+      if (!mounted || generacion != StorageService.instance.generacion) return;
       final twoFaServidor = perfil.twoFactorEnabled;
       final perfilConTwoFa = perfil.copyWith(
         twoFactorEnabled: twoFaServidor ?? _twoFactorEnabled,
       );
-      await StorageService.instance.guardarUsuario(perfilConTwoFa);
+      await StorageService.instance.guardarUsuario(perfilConTwoFa, generacionEsperada: generacion);
       if (mounted) {
         setState(() {
           _usuario = perfilConTwoFa;

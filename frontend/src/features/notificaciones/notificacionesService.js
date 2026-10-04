@@ -60,9 +60,9 @@ function deReserva(reserva) {
 
 export async function obtenerNotificaciones() {
     const [stock, pagos, reservas] = await Promise.all([
-        obtenerStockBajo().catch(() => []),
-        listarPagos({ estado: 'pagada', por_pagina: 15 }).then((r) => r.pagos).catch(() => []),
-        listarReservas().catch(() => []),
+        obtenerStockBajo(),
+        listarPagos({ estado: 'pagada', por_pagina: 15 }).then((r) => r.pagos),
+        listarReservas(),
     ]);
 
     const actividad = [

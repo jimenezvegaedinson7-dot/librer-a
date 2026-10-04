@@ -8,6 +8,7 @@ import '../utils/app_tokens.dart';
 import '../utils/constants.dart';
 import '../widgets/aparecer.dart';
 import '../widgets/book_cover.dart';
+import '../widgets/aviso_portada_referencia.dart';
 import '../widgets/empty_view.dart';
 import '../widgets/error_view.dart';
 import '../widgets/loading_view.dart';
@@ -949,6 +950,10 @@ class _LibroGridCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _StockBadge(disponible: disponible, stock: stock),
+                        if (libro.portadaEsReferencia) ...[
+                          const SizedBox(height: 4),
+                          AvisoPortadaReferencia(libro: libro),
+                        ],
                         if (libro.mostrarNuevo) ...[
                           const SizedBox(height: 4),
                           const EstadoChip(

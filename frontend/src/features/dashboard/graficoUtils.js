@@ -6,27 +6,34 @@ export const num = (valor) => {
 };
 
 const pad = (n) => String(n).padStart(2, '0');
-const claveFecha = (fecha) => `${fecha.getFullYear()}-${pad(fecha.getMonth() + 1)}-${pad(fecha.getDate())}`;
+const claveFecha = (fecha) => `${fecha.getUTCFullYear()}-${pad(fecha.getUTCMonth() + 1)}-${pad(fecha.getUTCDate())}`;
+const formatoLima = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit' });
+export function fechaLima(valor) {
+    if (typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(valor)) return valor;
+    const fecha = new Date(valor);
+    return Number.isNaN(fecha.getTime()) ? '' : formatoLima.format(fecha);
+}
 
-const formatoDia = new Intl.DateTimeFormat('es-PE', { weekday: 'short', day: 'numeric', month: 'short' });
-const formatoMes = new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' });
-const formatoMesCorto = new Intl.DateTimeFormat('es-PE', { month: 'short' });
+const formatoDia = new Intl.DateTimeFormat('es-PE', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' });
+const formatoMes = new Intl.DateTimeFormat('es-PE', { timeZone: 'UTC', month: 'long', year: 'numeric' });
+const formatoMesCorto = new Intl.DateTimeFormat('es-PE', { timeZone: 'UTC', month: 'short' });
 
 const mayuscula = (texto) => texto.charAt(0).toUpperCase() + texto.slice(1);
 
 // Últimos `dias` días hasta hoy; los días sin ventas quedan en cero.
 export function serieDiaria(ventasPorDia = [], dias = 14, hoy = new Date()) {
+    const diaLima = new Date(`${fechaLima(hoy)}T00:00:00Z`);
     const porClave = new Map(
-        (Array.isArray(ventasPorDia) ? ventasPorDia : []).map((d) => [String(d.fecha).slice(0, 10), d]),
+        (Array.isArray(ventasPorDia) ? ventasPorDia : []).map((d) => [fechaLima(d.fecha), d]),
     );
     const serie = [];
     for (let i = dias - 1; i >= 0; i--) {
-        const fecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - i);
+        const fecha = new Date(Date.UTC(diaLima.getUTCFullYear(), diaLima.getUTCMonth(), diaLima.getUTCDate() - i));
         const clave = claveFecha(fecha);
         const dato = porClave.get(clave);
         serie.push({
             clave,
-            etiqueta: String(fecha.getDate()),
+            etiqueta: String(fecha.getUTCDate()),
             etiquetaLarga: mayuscula(formatoDia.format(fecha)),
             total: num(dato?.total_vendido),
             cantidad: num(dato?.cantidad_ventas),
@@ -38,13 +45,14 @@ export function serieDiaria(ventasPorDia = [], dias = 14, hoy = new Date()) {
 
 // Últimos `meses` meses hasta el actual; los meses sin ventas quedan en cero.
 export function serieMensual(ventasPorMes = [], meses = 6, hoy = new Date()) {
+    const diaLima = new Date(`${fechaLima(hoy)}T00:00:00Z`);
     const porClave = new Map(
         (Array.isArray(ventasPorMes) ? ventasPorMes : []).map((m) => [`${num(m.anio)}-${num(m.mes_numero)}`, m]),
     );
     const serie = [];
     for (let i = meses - 1; i >= 0; i--) {
-        const fecha = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-        const clave = `${fecha.getFullYear()}-${fecha.getMonth() + 1}`;
+        const fecha = new Date(Date.UTC(diaLima.getUTCFullYear(), diaLima.getUTCMonth() - i, 1));
+        const clave = `${fecha.getUTCFullYear()}-${fecha.getUTCMonth() + 1}`;
         const dato = porClave.get(clave);
         const corto = formatoMesCorto.format(fecha).replace('.', '');
         serie.push({

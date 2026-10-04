@@ -548,6 +548,8 @@ const login = async (req, res) => {
         if (!usuario.email_verified_at) {
             return res.status(403).json({
                 success: false,
+                codigo: 'EMAIL_NOT_VERIFIED',
+                requiere_verificacion_email: true,
                 mensaje: 'Debes verificar tu correo antes de iniciar sesión'
             });
         }
@@ -573,6 +575,7 @@ const login = async (req, res) => {
             const token = jwt.sign(
                 {
                     id_usuario: usuario.id_usuario,
+                    sesion_version: Number(usuario.sesion_version ?? 0),
                     rol: usuario.rol
                 },
                 process.env.JWT_SECRET,
@@ -596,6 +599,7 @@ const login = async (req, res) => {
             {
                 id_usuario: usuario.id_usuario,
                 rol: usuario.rol,
+                sesion_version: Number(usuario.sesion_version ?? 0),
                 proposito: '2fa_login'
             },
             process.env.JWT_SECRET,

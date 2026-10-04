@@ -20,6 +20,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  String? _error;
+  bool _cargando = false;
   @override
   void initState() {
     super.initState();
@@ -27,6 +29,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _init() async {
+    if (_cargando) return;
+    setState(() { _cargando = true; _error = null; });
     // Pequeña pausa para que el splash se vea de forma natural sin saltos.
     await Future<void>.delayed(const Duration(milliseconds: 400));
 
@@ -36,19 +40,29 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
+    final generacion = StorageService.instance.generacion;
     try {
       final perfil = await ApiService.instance.obtenerPerfil();
+      if (generacion != StorageService.instance.generacion || !mounted) return;
       if (perfil.esAdministrador) {
         await StorageService.instance.limpiarSesion();
         _goToLogin();
         return;
       }
-      await StorageService.instance.guardarUsuario(perfil);
+      await StorageService.instance.guardarUsuario(perfil, generacionEsperada: generacion);
+      // Recupera el resultado de compras pendientes antes de permitir otra.
+      await ApiService.instance.obtenerMisVentas();
+      if (generacion != StorageService.instance.generacion || !mounted) return;
       _goToHome();
+    } on ApiException catch (e) {
+      if (!mounted || generacion != StorageService.instance.generacion) return;
+      setState(() => _error = e.message);
     } catch (_) {
-      // Si falla (p. ej. token expirado), limpiar y enviar al login.
-      await StorageService.instance.limpiarSesion();
-      _goToLogin();
+      if (mounted && generacion == StorageService.instance.generacion) {
+        setState(() => _error = 'No pudimos comprobar tu sesión. Revisa tu conexión y reintenta.');
+      }
+    } finally {
+      if (mounted) setState(() => _cargando = false);
     }
   }
 
@@ -70,6 +84,19 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_error != null) {
+      return Scaffold(body: SafeArea(child: Center(child: Padding(
+        padding: const EdgeInsets.all(24), child: Column(
+          mainAxisSize: MainAxisSize.min, children: [
+            const AppLogo(width: 104, height: 104),
+            const SizedBox(height: 24), Text(_error!, textAlign: TextAlign.center),
+            const SizedBox(height: 16), FilledButton(
+              onPressed: _cargando ? null : _init, child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      ))));
+    }
     return Scaffold(
       body: DecoratedBox(
         decoration: BoxDecoration(

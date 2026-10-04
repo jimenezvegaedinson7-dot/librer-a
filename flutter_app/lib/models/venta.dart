@@ -42,6 +42,8 @@ class Venta {
   final String? fechaVenta;
   final double? total;
   final String? estado;
+  final String? estadoEntrega;
+  final String? pagoRevisionMotivo;
   final String? tipoEntrega;
   final String? coberturaEntrega;
   final String? zonaDeliveryNombre;
@@ -63,6 +65,8 @@ class Venta {
     this.fechaVenta,
     this.total,
     this.estado,
+    this.estadoEntrega,
+    this.pagoRevisionMotivo,
     this.tipoEntrega,
     this.coberturaEntrega,
     this.zonaDeliveryNombre,
@@ -87,6 +91,8 @@ class Venta {
       fechaVenta: JsonUtils.asString(json['fecha_venta']),
       total: JsonUtils.asDouble(json['total']),
       estado: JsonUtils.asString(json['estado']),
+      estadoEntrega: JsonUtils.asString(json['estado_entrega']),
+      pagoRevisionMotivo: JsonUtils.asString(json['pago_revision_motivo']),
       tipoEntrega: JsonUtils.asString(json['tipo_entrega']),
       coberturaEntrega: JsonUtils.asString(json['cobertura_entrega']),
       zonaDeliveryNombre: JsonUtils.asString(json['zona_delivery_nombre']),
@@ -98,6 +104,7 @@ class Venta {
       agencia: JsonUtils.asString(json['agencia']),
       correoCompra: JsonUtils.asString(json['correo_compra']),
       orderId:
+          JsonUtils.asString(json['external_reference']) ??
           JsonUtils.asString(json['payu_order_id']) ??
           JsonUtils.asString(json['order_id']),
       clienteDocumento: JsonUtils.asString(json['cliente_documento']),
@@ -137,12 +144,23 @@ class Venta {
 
   /// `true` si la venta ya fue pagada.
   bool get pagada => (estado ?? '').toLowerCase().trim() == 'pagada';
+  bool get requiereRevision => (pagoRevisionMotivo ?? '').isNotEmpty;
 
   /// `true` si la venta sigue pendiente de pago.
   bool get pendiente => (estado ?? '').toLowerCase().trim() == 'pendiente';
 
   /// `true` si la venta ya fue entregada.
   bool get entregada => (estado ?? '').toLowerCase().trim() == 'entregada';
+
+  String get entregaEstadoLabel => switch (estadoEntrega?.toLowerCase().trim()) {
+    'pendiente' => 'Entrega pendiente',
+    'preparando' => 'Preparando pedido',
+    'listo_recojo' => 'Listo para recoger',
+    'en_camino' => 'En camino',
+    'entregado' => 'Entregado',
+    'cancelado' => 'Entrega cancelada',
+    _ => '',
+  };
 
   /// Etiqueta legible del estado en español.
   String get estadoLabel {

@@ -7,8 +7,11 @@ import { Input, Select } from '../../components/ui/Form';
 
 import { crearReserva, listarLibrosActivos } from './reservasService';
 import { seleccionRequerida, cantidadPositiva } from '../../lib/utils/validaciones';
+import { useAuth } from '../auth/AuthContext';
+import { listarUsuarios } from '../usuarios/usuariosService';
+import { esCuentaEliminada } from '../../lib/utils/cuentas';
 
-const FORMULARIO_VACIO = { id_libro: '', cantidad: '1', fecha_vencimiento: '' };
+const FORMULARIO_VACIO = { id_libro: '', cantidad: '1', fecha_vencimiento: '', id_usuario_cliente: '' };
 
 const REGLAS = {
     id_libro: [(v) => seleccionRequerida(v, 'Debes seleccionar un libro')],
@@ -16,6 +19,9 @@ const REGLAS = {
 };
 
 export default function ReservaForm({ onReservaCreada }) {
+    const { usuario } = useAuth();
+    const esAdmin = usuario?.rol === 'administrador';
+    const [clientes, setClientes] = useState([]);
     const [libros, setLibros] = useState([]);
     const [cargandoLibros, setCargandoLibros] = useState(true);
     const [errorLibros, setErrorLibros] = useState('');
@@ -29,10 +35,13 @@ export default function ReservaForm({ onReservaCreada }) {
 
         (async () => {
             try {
-                const datos = await listarLibrosActivos();
-                if (vigente) setLibros(datos);
+                const [datos, cuentas] = await Promise.all([listarLibrosActivos(), esAdmin ? listarUsuarios(false) : Promise.resolve([])]);
+                if (vigente) {
+                    setLibros(datos);
+                    setClientes(cuentas.filter(c => c.rol === 'cliente' && Number(c.estado) === 1 && c.email_verified_at && !esCuentaEliminada(c)));
+                }
             } catch {
-                if (vigente) setErrorLibros('No se pudieron cargar los libros');
+                if (vigente) setErrorLibros('No se pudieron cargar los libros o clientes. Actualiza la página para intentarlo de nuevo.');
             } finally {
                 if (vigente) setCargandoLibros(false);
             }
@@ -41,7 +50,7 @@ export default function ReservaForm({ onReservaCreada }) {
         return () => {
             vigente = false;
         };
-    }, []);
+    }, [esAdmin]);
 
     return (
         <FormularioAlta
@@ -51,15 +60,20 @@ export default function ReservaForm({ onReservaCreada }) {
             icono={<FaBookmark />}
             botonGuardar="Guardar reserva"
             formularioVacio={FORMULARIO_VACIO}
-            reglas={REGLAS}
-            guardar={crearReserva}
+            reglas={esAdmin ? { ...REGLAS, id_usuario_cliente: [(v) => seleccionRequerida(v, 'Selecciona el cliente de la reserva')] } : REGLAS}
+            guardar={(formulario) => crearReserva(formulario, esAdmin)}
             mensajeExito="Reserva registrada correctamente"
             mensajeError="Error al registrar la reserva"
             onRegistrado={onReservaCreada}
             errorExterno={errorLibros}
-            deshabilitarEnvio={cargandoLibros}
+            deshabilitarEnvio={cargandoLibros || Boolean(errorLibros)}
             renderCampos={({ formulario, manejarCambio, errores }) => (
                 <div className="form-grid">
+                    {esAdmin && <Select ancho={12} label="Cliente de la reserva" name="id_usuario_cliente"
+                        value={formulario.id_usuario_cliente} onChange={manejarCambio} error={errores?.id_usuario_cliente} required disabled={cargandoLibros}>
+                        <option value="">Seleccione un cliente activo y verificado</option>
+                        {clientes.map(c => <option key={c.id_usuario} value={c.id_usuario}>{c.nombre} {c.apellido} · {c.email}</option>)}
+                    </Select>}
                         <Select
                             ancho={6}
                             label="Libro"
@@ -100,7 +114,7 @@ export default function ReservaForm({ onReservaCreada }) {
                             onChange={manejarCambio}
                         />
                         <p className="mt-2 text-xs text-primary-500">
-                            Puedes dejar este campo vacío si todavía no se ha definido una fecha límite.
+                            Si lo dejas vacío, la reserva vence en 14 días.
                         </p>
                     </div>
                 </div>

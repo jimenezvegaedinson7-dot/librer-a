@@ -16,7 +16,7 @@
 // ========================================
 
 const { cliente } = require('../config/payu');
-const { consultarReporte } = require('../services/payu.service');
+const { consultarReporte, elegirOrdenReports } = require('../services/payu.service');
 
 const ESTADOS_PAGADOS = [
     'APPROVED',
@@ -57,7 +57,7 @@ const montoPagoCoincide = (
 
     return Number.isFinite(pago) &&
         Number.isFinite(venta) &&
-        Math.abs(pago - venta) <= tolerancia;
+        Math.abs(Math.round(pago * 100) - Math.round(venta * 100)) <= Math.round(tolerancia * 100);
 };
 
 const debeActualizarEstadoPago = (
@@ -68,9 +68,10 @@ const debeActualizarEstadoPago = (
     const nuevo = normalizarEstado(estadoNuevo);
     const reversiones = ['REFUNDED', 'CHARGED_BACK'];
 
-    if (!nuevo) {
+    if (!nuevo || nuevo === 'UNKNOWN') {
         return false;
     }
+    if (reversiones.includes(actual) && !reversiones.includes(nuevo)) return false;
 
     if (reversiones.includes(nuevo)) {
         return true;
@@ -89,8 +90,8 @@ const debeActualizarEstadoPago = (
 
 const extraerEstadoOrdenPayu = (orden) => {
     const transactionResponse = orden?.transactionResponse || orden;
-    const status = transactionResponse?.state || 'UNKNOWN';
-    const amount = transactionResponse?.value ? transactionResponse.value / 100 : (orden?.amount ? orden.amount / 100 : null);
+    const status = normalizarEstado(transactionResponse?.state || orden?.status) || 'UNKNOWN';
+    const amount = transactionResponse?.value != null ? Number(transactionResponse.value) / 100 : (orden?.amount != null ? Number(orden.amount) / 100 : null);
     const paymentId = transactionResponse?.transactionId || transactionResponse?.orderId || null;
 
     const pagado = ESTADOS_PAGADOS.includes(status);
@@ -104,6 +105,9 @@ const extraerEstadoOrdenPayu = (orden) => {
         paymentStatusDetail: transactionResponse?.pendingReason || transactionResponse?.responseMessage || null,
         paymentId,
         amount,
+        currency: transactionResponse?.currency || orden?.currency || null,
+        externalReference: transactionResponse?.referenceCode || orden?.external_reference || orden?.referenceCode || null,
+        orderId: transactionResponse?.orderId || orden?.id || null,
         pagado,
         cancelado,
         pendiente
@@ -128,7 +132,7 @@ const consultarEstadoOrdenPayu = async ({
         let ordenes = [];
 
         // 1) POR ID DE ORDEN (payu_order_id)
-        if (orderId) {
+        if (orderId && !externalReference) {
             const consulta =
                 await consultarReporte('ORDER_DETAIL', {
                     orderId: Number(orderId)
@@ -163,11 +167,8 @@ const consultarEstadoOrdenPayu = async ({
             };
         }
 
-        const estados = ordenes.flatMap(orden => [orden.status,
-            ...(orden.transactions || []).map(tx => tx.transactionResponse?.state)])
-            .map(normalizarEstado).filter(Boolean);
-        const status = estados.find(estado => ESTADOS_PAGADOS.includes(estado)) ||
-            estados.find(estado => ESTADOS_PENDIENTES.includes(estado)) || estados[0];
+        const detalle = extraerEstadoOrdenPayu(elegirOrdenReports(ordenes));
+        const status = detalle.status;
         if (!status || (!ESTADOS_PAGADOS.includes(status) &&
             !ESTADOS_PENDIENTES.includes(status) && !ESTADOS_CANCELADOS.includes(status))) {
             throw new Error('PayU devolvió una orden sin estado reconocido');
@@ -178,6 +179,7 @@ const consultarEstadoOrdenPayu = async ({
 
         return {
             pagado,
+            ...detalle,
             pendiente:
                 ESTADOS_PENDIENTES.includes(status),
             status,

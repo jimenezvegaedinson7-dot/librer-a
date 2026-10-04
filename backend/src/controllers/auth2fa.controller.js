@@ -279,6 +279,9 @@ const verificarLogin = async (req, res) => {
         }
 
         // Verificar estado
+        if (Number(payload.sesion_version ?? 0) !== Number(usuario.sesion_version ?? 0)) {
+            return res.status(401).json({ success: false, mensaje: 'Tu contraseña cambió. Inicia sesión nuevamente.' });
+        }
         if (!usuario.estado) {
             return res.status(403).json({
                 success: false,
@@ -306,6 +309,7 @@ const verificarLogin = async (req, res) => {
         const token = jwt.sign(
             {
                 id_usuario: usuario.id_usuario,
+                sesion_version: Number(usuario.sesion_version ?? 0),
                 rol: usuario.rol
             },
             process.env.JWT_SECRET,

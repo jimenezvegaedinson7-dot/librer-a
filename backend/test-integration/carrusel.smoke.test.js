@@ -97,7 +97,7 @@ test('carrusel: imágenes persistidas, permisos, orden atómico y limpieza de ar
         if(libro)await pool.query('DELETE FROM libros WHERE id_libro=?',[libro]);
         if(autor)await pool.query('DELETE FROM autores WHERE id_autor=?',[autor]);
         if(categoria)await pool.query('DELETE FROM categorias WHERE id_categoria=?',[categoria]);
-        for(const id of usuarios)await pool.query('DELETE FROM usuarios WHERE id_usuario=?',[id]);
+        for(const id of usuarios){await pool.query('DELETE FROM historial_operaciones WHERE id_usuario=?',[id]);await pool.query('DELETE FROM usuarios WHERE id_usuario=?',[id]);}
         await pool.end();
     }
 });

@@ -8,6 +8,7 @@ import '../utils/app_tokens.dart';
 import '../utils/constants.dart';
 import '../widgets/aparecer.dart';
 import '../widgets/book_cover.dart';
+import '../widgets/aviso_portada_referencia.dart';
 import '../widgets/carrito_badge.dart';
 import '../widgets/estado_chip.dart';
 import '../widgets/estanteria.dart';
@@ -370,6 +371,10 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
           ),
         ],
 
+        if (_libro.portadaEsReferencia) ...[
+          const SizedBox(height: 10),
+          AvisoPortadaReferencia(libro: _libro, detallado: true),
+        ],
         const SizedBox(height: 18),
 
         // Bloque comercial: precio + cantidad.

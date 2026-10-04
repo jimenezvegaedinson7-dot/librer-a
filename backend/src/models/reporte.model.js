@@ -3,10 +3,12 @@ const pool = require('../config/database');
 // Ingresos = ventas cobradas: pagadas o ya entregadas (una venta entregada
 // sigue siendo un ingreso). Las canceladas y reembolsadas no cuentan.
 //
-// Fechas en hora de Perú: `fecha_venta` se guarda en la zona del servidor
+// Ingresos por fecha de cobro. Para históricos sin fecha_pago se conserva
+// fecha_venta como respaldo explícito, sin inventar ni reescribir su fecha.
+// Fechas en hora de Perú: los timestamps se guardan en la zona del servidor
 // (UTC en Render); sin convertir, una venta de las 8 p. m. contaría como
 // del día siguiente.
-const FECHA_LIMA = "((fecha_venta AT TIME ZONE current_setting('TimeZone')) AT TIME ZONE 'America/Lima')";
+const FECHA_LIMA = "((COALESCE(fecha_pago, fecha_venta) AT TIME ZONE current_setting('TimeZone')) AT TIME ZONE 'America/Lima')";
 const HOY_LIMA = "((NOW() AT TIME ZONE 'America/Lima')::date)";
 
 // ========================================

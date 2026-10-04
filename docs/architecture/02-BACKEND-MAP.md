@@ -203,7 +203,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/empresa` | — | controllers/empresa.controller.js#obtenerEmpresa | `empresa.model.js#obtenerEmpresa` | empresa |
-| PUT | `/api/empresa` | JWT + rol:administrador | controllers/empresa.controller.js#actualizarEmpresa | `empresa.model.js#actualizarEmpresa` | empresa |
+| PUT | `/api/empresa` | JWT + rol:administrador | controllers/empresa.controller.js#actualizarEmpresa | `empresa.model.js#actualizarEmpresa`<br>`empresa.model.js#obtenerEmpresa`<br>`historial.model.js#crear` | empresa, historial_operaciones |
 
 ### /api/favoritos
 
@@ -252,11 +252,11 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/pagos/checkout/:externalReference` | — | controllers/pago.controller.js#renderCheckoutPage | `payu.service.js#construirFormularioCheckout`<br>`venta.model.js#buscarPorReferenciaExterna` | ventas |
 | GET | `/api/pagos/respuesta/:externalReference` | — | controllers/pago.controller.js#renderRespuestaPage | `venta.model.js#buscarPorReferenciaExterna` | ventas |
 | GET | `/api/pagos/capacidades` | — | controllers/pago.controller.js#obtenerCapacidadesCompra | — | — |
-| POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `usuario.model.js#buscarPorId`<br>`venta.model.js#actualizarDatosPago`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
+| POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `usuario.model.js#buscarPorId`<br>`venta.model.js#aplicarPago`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
 | GET | `/api/pagos` | JWT + verificarPanel | controllers/pago.controller.js#listarPagosAdmin | `venta.model.js#listarPagosAdmin` | usuarios, ventas |
 | GET | `/api/pagos/resumen` | JWT + verificarPanel | inline (pago.routes.js) | `pago.model.js#listarResumen` | ventas |
 | POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `payu.service.js#crearOrden`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#crear`<br>`zonaDelivery.model.js#obtenerPorId` | detalle_venta, inventario, libros, usuarios, ventas, zonas_delivery_pallasca |
-| GET | `/api/pagos/:orderId` | JWT | controllers/pago.controller.js#obtenerOrden | `payu.service.js#obtenerOrdenDiagnostico`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#actualizarDatosPago`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#buscarPorPayuOrderId`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
+| GET | `/api/pagos/:orderId` | JWT | controllers/pago.controller.js#obtenerOrden | `payu.service.js#obtenerOrdenDiagnostico`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#aplicarPago`<br>`venta.model.js#buscarPorPayuOrderId`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
 
 ### /api/pedidos
 
@@ -294,7 +294,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/reservas/mis-reservas` | JWT | controllers/reserva.controller.js#obtenerMisReservas | `reserva.model.js#obtenerPorUsuario` | libros, reservas |
-| POST | `/api/reservas` | JWT | controllers/reserva.controller.js#crearReserva | `historial.model.js#crear`<br>`reserva.model.js#crear`<br>`reserva.model.js#fechaVencimientoDefecto`<br>`reserva.model.js#obtenerPorId`<br>`reserva.model.js#validarFechaVencimiento` | historial_operaciones, inventario, libros, reservas, usuarios |
+| POST | `/api/reservas` | JWT | controllers/reserva.controller.js#crearReserva | `historial.model.js#crear`<br>`reserva.model.js#crear`<br>`reserva.model.js#fechaVencimientoDefecto`<br>`reserva.model.js#obtenerPorId`<br>`reserva.model.js#validarFechaVencimiento`<br>`usuario.model.js#buscarPorId` | historial_operaciones, inventario, libros, reservas, usuarios |
 | DELETE | `/api/reservas/:id` | JWT | controllers/reserva.controller.js#cancelarReserva | `historial.model.js#crear`<br>`reserva.model.js#actualizarEstado`<br>`reserva.model.js#obtenerPorId`<br>`venta.model.js#crear` | detalle_venta, historial_operaciones, inventario, libros, reservas, usuarios, ventas |
 | GET | `/api/reservas` | JWT + verificarPanel | controllers/reserva.controller.js#obtenerReservas | `reserva.model.js#obtenerTodos` | libros, reservas, usuarios |
 | GET | `/api/reservas/:id` | JWT | controllers/reserva.controller.js#obtenerReserva | `reserva.model.js#obtenerPorId` | libros, reservas, usuarios |
@@ -318,7 +318,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | PUT | `/api/usuarios/foto` | JWT + uploadPerfil(foto) | controllers/usuario.controller.js#subirFotoPerfil | `usuario.model.js#actualizarFotoPerfil`<br>`usuario.model.js#buscarPorId` | usuarios |
 | PUT | `/api/usuarios/password` | JWT | controllers/usuario.controller.js#cambiarPassword | `usuario.model.js#actualizarPassword`<br>`usuario.model.js#buscarPorIdConPassword` | usuarios |
 | DELETE | `/api/usuarios/cuenta` | JWT | controllers/usuario.controller.js#eliminarMiCuenta | `historial.model.js#crear`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#eliminarCuenta` | favoritos, historial_operaciones, inventario, reservas, usuarios, ventas |
-| PATCH | `/api/usuarios/:id` | JWT + rol:administrador | controllers/usuario.controller.js#adminUpdateUsuario | `usuario.model.js#actualizarEstadoRol`<br>`usuario.model.js#buscarPorId` | usuarios |
+| PATCH | `/api/usuarios/:id` | JWT + rol:administrador | controllers/usuario.controller.js#adminUpdateUsuario | `historial.model.js#crear`<br>`usuario.model.js#actualizarEstadoRol`<br>`usuario.model.js#buscarPorId` | historial_operaciones, usuarios |
 
 ### /api/ventas
 

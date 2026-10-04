@@ -45,7 +45,6 @@ export default function LoginPage() {
     const [showResetModal, setShowResetModal] = useState(false);
     const [resetStep, setResetStep] = useState(1); // 1=email, 2=code+pass, 3=done
     const [resetEmail, setResetEmail] = useState('');
-    const [confirmEmail, setConfirmEmail] = useState('');
     const [resetCodigo, setResetCodigo] = useState('');
     const [resetPassword, setResetPassword] = useState('');
     const [resetPassword2, setResetPassword2] = useState('');
@@ -143,7 +142,6 @@ export default function LoginPage() {
         setShowResetModal(true);
         setResetStep(1);
         setResetEmail(email);
-        setConfirmEmail('');
         setResetCodigo('');
         setResetPassword('');
         setResetPassword2('');
@@ -201,10 +199,6 @@ export default function LoginPage() {
         e.preventDefault();
         if (!resetEmail.trim()) {
             setResetError('Ingresa tu correo electrónico');
-            return;
-        }
-        if (confirmEmail.trim() !== resetEmail.trim()) {
-            setResetError('Correo no coincide, intente de nuevo');
             return;
         }
         try {
@@ -490,20 +484,18 @@ export default function LoginPage() {
                             </p>
 
                             <div className="rounded-lg border border-[#e6e0d7] bg-[#faf8f5] px-4 py-3">
-                                <p className="text-xs text-[#766d62]">Correo registrado</p>
+                                <p className="text-xs text-[#766d62]">Correo de recuperación</p>
                                 <p className="mt-0.5 text-sm font-semibold text-[#1c1814]">
-                                    {resetEmail
-                                        ? resetEmail.charAt(0) + '****' + resetEmail.slice(resetEmail.indexOf('@'))
-                                        : '****@****.com'}
+                                    {resetEmail || 'Introduce el correo de tu cuenta'}
                                 </p>
                             </div>
 
-                            <Campo id="reset-email" etiqueta="Confirma tu correo electrónico" icono={<FaEnvelope />}>
+                            <Campo id="reset-email" etiqueta="Correo electrónico de tu cuenta" icono={<FaEnvelope />}>
                                 <input
                                     id="reset-email"
                                     type="email"
-                                    value={confirmEmail}
-                                    onChange={(e) => setConfirmEmail(e.target.value)}
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
                                     placeholder="Escribe tu correo completo"
                                     autoComplete="email"
                                     required

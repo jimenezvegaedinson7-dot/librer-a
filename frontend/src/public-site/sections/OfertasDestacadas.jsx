@@ -4,6 +4,7 @@ import { FaArrowRight } from 'react-icons/fa6';
 import { PrecioOferta } from '../components/PrecioOferta';
 import { portada, soles } from '../lib/formato';
 import ComprarLibro from '../tienda/ComprarLibro';
+import { referenciaPortadaLibro, AVISO_PORTADA_REFERENCIA } from '../../lib/utils/portadasLibro';
 
 // ============================================================
 // OFERTAS VIGENTES
@@ -35,6 +36,7 @@ export default function OfertasDestacadas({ catalogo }) {
                             <div className="oferta-tarjeta__datos">
                                 {libro.categoria && <span className="libro__categoria">{libro.categoria}</span>}
                                 <h3>{libro.titulo}</h3>
+                                {referenciaPortadaLibro(libro) && <p className="portada-referencia">{AVISO_PORTADA_REFERENCIA}</p>}
                                 <p className="oferta-tarjeta__autor">{libro.autor}</p>
                                 <PrecioOferta libro={libro} />
                                 <p className="oferta-tarjeta__ahorro">Ahorras {soles(libro.precio - libro.precioFinal)}</p>

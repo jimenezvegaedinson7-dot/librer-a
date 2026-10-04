@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { FaArrowUpRightFromSquare, FaBookOpen, FaEye, FaMagnifyingGlass, FaPrint, FaReply, FaRotate } from 'react-icons/fa6';
 
@@ -13,6 +13,7 @@ import { DataTable } from '../../components/ui/DataTable';
 import { Badge } from '../../components/ui/Badge';
 import { BtnAccion } from '../../components/ui/Acciones';
 import { Modal } from '../../components/ui/Modal';
+import { Pagination } from '../../components/ui/Pagination';
 import { useToast } from '../../components/providers/ToastProvider';
 import { formatearFecha, formatearMoneda } from '../../lib/utils/format';
 
@@ -160,36 +161,39 @@ export default function ReclamacionesPage() {
     const [estado, setEstado] = useState('todos');
     const [busqueda, setBusqueda] = useState('');
     const [abierta, setAbierta] = useState(null);
+    const [pagina, setPagina] = useState(1);
+    const [paginas, setPaginas] = useState(1);
+    const [total, setTotal] = useState(0);
+    const solicitud = useRef(0);
 
     const cargar = async () => {
+        const turno = ++solicitud.current;
         try {
             setCargando(true);
             setError('');
             const [datos, res] = await Promise.all([
-                listarReclamaciones({ estado: estado === 'todos' ? undefined : estado }),
+                listarReclamaciones({ estado: estado === 'todos' ? undefined : estado, q: busqueda.trim() || undefined, pagina, por_pagina: 20 }),
                 obtenerResumenReclamaciones(),
             ]);
-            setLista(datos);
+            if (turno !== solicitud.current) return;
+            setLista(datos.reclamaciones);
+            setTotal(datos.total);
+            setPaginas(datos.paginas);
+            if (pagina > datos.paginas) setPagina(datos.paginas);
             setResumen(res);
         } catch (err) {
-            setError(err.response?.data?.mensaje || 'Error al cargar el libro de reclamaciones');
+            if (turno === solicitud.current) setError(err.response?.data?.mensaje || 'Error al cargar el libro de reclamaciones');
         } finally {
-            setCargando(false);
+            if (turno === solicitud.current) setCargando(false);
         }
     };
 
     useEffect(() => {
-        cargar();
+        const timer = setTimeout(cargar, 250);
+        return () => { clearTimeout(timer); solicitud.current += 1; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [estado]);
-
-    const filtradas = useMemo(() => {
-        const texto = busqueda.trim().toLowerCase();
-        if (!texto) return lista;
-        return lista.filter((r) =>
-            [r.numero, r.consumidor_nombre, r.consumidor_documento, r.consumidor_email].some((v) => String(v || '').toLowerCase().includes(texto)),
-        );
-    }, [lista, busqueda]);
+    }, [estado, busqueda, pagina]);
+    const filtradas = lista;
 
     const urlPublica = `${window.location.origin}/libro-de-reclamaciones`;
 
@@ -210,7 +214,7 @@ export default function ReclamacionesPage() {
 
             <Card>
                 <CardHeader
-                    titulo="Hojas registradas"
+                    titulo={`Hojas registradas · ${total} resultados`}
                     subtitulo={
                         <span>
                             Formulario público:{' '}
@@ -221,8 +225,8 @@ export default function ReclamacionesPage() {
                     }
                     acciones={
                         <div className="flex flex-col gap-2 sm:flex-row">
-                            <Input value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar hoja o consumidor..." icono={<FaMagnifyingGlass />} className="sm:w-64" />
-                            <Select value={estado} onChange={(e) => setEstado(e.target.value)} className="sm:w-44" aria-label="Filtrar por estado">
+                            <Input value={busqueda} onChange={(e) => { setBusqueda(e.target.value); setPagina(1); }} placeholder="Buscar hoja o consumidor..." icono={<FaMagnifyingGlass />} className="sm:w-64" />
+                            <Select value={estado} onChange={(e) => { setEstado(e.target.value); setPagina(1); }} className="sm:w-44" aria-label="Filtrar por estado">
                                 <option value="todos">Todas</option>
                                 <option value="pendiente">Pendientes</option>
                                 <option value="vencido">Vencidas</option>
@@ -251,6 +255,7 @@ export default function ReclamacionesPage() {
                         />
                     )}
                 </CardBody>
+                {!error && <Pagination pagina={pagina} totalPaginas={paginas} onCambiarPagina={setPagina} />}
             </Card>
 
             {abierta && (

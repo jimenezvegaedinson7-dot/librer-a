@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     telefono VARCHAR(20) NULL,
     foto_perfil VARCHAR(255) NULL,
     password VARCHAR(255) NOT NULL,
+    sesion_version INTEGER NOT NULL DEFAULT 0,
     rol VARCHAR(20) NOT NULL DEFAULT 'cliente' CHECK (rol IN ('cliente', 'administrador')),
     estado SMALLINT NOT NULL DEFAULT 1,
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -37,6 +38,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 );
 
 CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios (email);
+CREATE UNIQUE INDEX IF NOT EXISTS usuarios_email_normalizado_unique ON usuarios (LOWER(email));
 CREATE INDEX IF NOT EXISTS idx_usuarios_rol ON usuarios (rol);
 
 -- ============================================================
@@ -276,6 +278,10 @@ CREATE TABLE IF NOT EXISTS ventas (
     id_reserva INT NULL,
     motivo_reembolso VARCHAR(255) NULL,
     fecha_reembolso TIMESTAMP NULL,
+    pago_revision_motivo VARCHAR(80) NULL,
+    pago_revision_fecha TIMESTAMP NULL,
+    reembolso_referencia VARCHAR(100) NULL,
+    reembolso_evidencia VARCHAR(500) NULL,
     CONSTRAINT ventas_estado_check
         CHECK (estado IN ('pendiente', 'pagada', 'entregada', 'cancelada', 'reembolsada')),
     CONSTRAINT ventas_canal_compra_check
@@ -346,6 +352,7 @@ CREATE TABLE IF NOT EXISTS detalle_venta (
     cantidad INT NOT NULL,
     precio_unitario NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     subtotal NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    titulo_snapshot VARCHAR(200) NULL,
     CONSTRAINT fk_detalle_venta
         FOREIGN KEY (id_venta)
         REFERENCES ventas (id_venta)
@@ -764,6 +771,8 @@ CREATE TABLE IF NOT EXISTS comprobantes (
     nota_credito_sunat VARCHAR(20) NULL,
     motivo_anulacion VARCHAR(255) NULL,
     fecha_anulacion TIMESTAMP NULL,
+    empresa_snapshot JSONB NULL,
+    detalle_snapshot JSONB NULL,
     UNIQUE (serie, numero),
     CONSTRAINT fk_comprobantes_venta
         FOREIGN KEY (id_venta)

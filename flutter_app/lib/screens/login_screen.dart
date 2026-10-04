@@ -12,6 +12,7 @@ import 'home_screen.dart';
 import 'recuperar_contrasena_screen.dart';
 import 'registro_screen.dart';
 import 'security/two_factor_verify_screen.dart';
+import 'verificacion_email_screen.dart';
 
 /// Pantalla de acceso con identidad editorial de la librería.
 class LoginScreen extends StatefulWidget {
@@ -54,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
+    if (_loading) return;
     FocusScope.of(context).unfocus();
     setState(() {
       _errorMessage = null;
@@ -95,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } on ApiException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message);
+      if (mounted && e.requiereVerificacion) await _openVerificar();
     } catch (_) {
       if (mounted) {
         setState(() => _errorMessage = 'Ocurrió un error. Inténtalo de nuevo.');
@@ -120,6 +123,18 @@ class _LoginScreenState extends State<LoginScreen> {
         builder: (_) => const RecuperarContrasenaScreen(),
       ),
     );
+  }
+
+  Future<void> _openVerificar() async {
+    final email = _emailController.text.trim();
+    if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
+      setState(() => _errorMessage = 'Ingresa tu correo para retomar la verificación.');
+      return;
+    }
+    final verificado = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(builder: (_) => VerificacionEmailScreen(email: email)),
+    );
+    if (mounted && verificado == true) setState(() => _errorMessage = null);
   }
 
   @override
@@ -296,6 +311,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(height: 16),
                               ErrorBanner(message: _errorMessage!),
                             ],
+                            TextButton(
+                              onPressed: _loading ? null : _openVerificar,
+                              child: const Text('Verificar mi correo o reenviar código'),
+                            ),
 
                             const SizedBox(height: 28),
                             SizedBox(

@@ -3,10 +3,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { clienteApi } from './clienteApi';
 import { useTienda } from './TiendaContext';
 import PerfilCliente from './PerfilCliente';
+import EstadoSesion from './EstadoSesion';
 
 const titulos = {login:'Iniciar sesión',registro:'Crear cuenta',verificar:'Verifica tu correo',recuperar:'Recuperar contraseña',restablecer:'Nueva contraseña',otp:'Verificación de dos pasos'};
 export default function CuentaPage() {
     const tienda = useTienda();
+    return <CuentaCliente key={tienda.generacion} tienda={tienda}/>;
+}
+function CuentaCliente({ tienda }) {
     const navigate = useNavigate();
     const [params] = useSearchParams();
     const continuar = params.get('continuar') || '';
@@ -44,7 +48,7 @@ export default function CuentaPage() {
                     respuesta=modo==='otp' ? await clienteApi.verificar2fa({two_factor_token:temporal,codigo:form.codigo})
                         : await clienteApi.login({email,password:form.password});
                     if (respuesta.requires_2fa) {setTemporal(respuesta.two_factor_token);cambiar('otp');break;}
-                    tienda.iniciarSesion(respuesta);navigate(destino,{replace:true});
+                    await tienda.iniciarSesion(respuesta);navigate(destino,{replace:true});
             }
         } catch (e) {
             setError(e.message);
@@ -57,7 +61,7 @@ export default function CuentaPage() {
         try {setMensaje((await clienteApi.reenviarCodigo(form.email.trim().toLowerCase())).mensaje);}
         catch(e){setError(e.message);} finally{setOcupado(false);}
     }
-    if (tienda.revisando) return <section className="compra-pagina contenedor"><h1>Mi cuenta</h1><p role="status">Verificando tu sesión…</p></section>;
+    if (tienda.revisando || tienda.errorSesion) return <EstadoSesion titulo="Mi cuenta"/>;
     if (tienda.usuario) return <PerfilCliente tienda={tienda}/>;
     return <section className="compra-pagina contenedor"><div className="cuenta-cliente">
         <h1>{titulos[modo]}</h1><p>Compra desde la web con tu misma cuenta de la app.</p>

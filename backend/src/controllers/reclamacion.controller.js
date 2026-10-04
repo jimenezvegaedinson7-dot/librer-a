@@ -156,11 +156,18 @@ const registrar = async (req, res) => {
 
 const listar = async (req, res) => {
     try {
-        const reclamaciones = await reclamacionModel.listar({
+        const pagina = req.query.pagina === undefined ? 1 : validarId(req.query.pagina);
+        const porPagina = req.query.por_pagina === undefined ? 50 : validarId(req.query.por_pagina);
+        if (!pagina || !porPagina || porPagina > 100 || (req.query.q !== undefined && typeof req.query.q !== 'string') ||
+            (req.query.estado !== undefined && !['todos', 'pendiente', 'respondido', 'vencido'].includes(req.query.estado))) {
+            return res.status(400).json({ success: false, mensaje: 'Filtros o paginación no válidos' });
+        }
+        const resultado = await reclamacionModel.listar({
             estado: req.query.estado,
-            q: req.query.q
+            q: req.query.q,
+            pagina, porPagina
         });
-        return res.json({ success: true, data: reclamaciones });
+        return res.json({ success: true, data: resultado.reclamaciones, total: resultado.total, pagina: resultado.pagina, paginas: resultado.paginas });
     } catch (error) {
         console.error('Error al listar reclamaciones:', error);
         return res.status(500).json({ success: false, mensaje: 'Error al listar las reclamaciones' });

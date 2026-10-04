@@ -19,7 +19,8 @@ const obtenerEstadoUsuario = async (idUsuario) => {
                 estado,
                 rol,
                 email,
-                fecha_eliminacion
+                fecha_eliminacion,
+                sesion_version
             FROM usuarios
             WHERE id_usuario = ?
             LIMIT 1
@@ -32,7 +33,8 @@ const obtenerEstadoUsuario = async (idUsuario) => {
                 estado: Number(rows[0].estado),
                 eliminada: Boolean(rows[0].fecha_eliminacion),
                 rol: rows[0].rol || null,
-                email: rows[0].email || null
+                email: rows[0].email || null,
+                versionSesion: Number(rows[0].sesion_version ?? 0)
             }
             : null;
 
@@ -44,7 +46,7 @@ const obtenerEstadoUsuario = async (idUsuario) => {
             error.message
         );
 
-        return null;
+        throw Object.assign(error, { status: 503 });
     }
 };
 
@@ -76,6 +78,17 @@ const verificarToken = async (req, res, next) => {
             process.env.JWT_SECRET
         );
 
+        // Un desafío de 2FA tiene firma válida, pero todavía no es una
+        // sesión. Solo el endpoint de verificación OTP puede consumirlo.
+        if (!decoded || typeof decoded !== 'object' ||
+            Object.prototype.hasOwnProperty.call(decoded, 'proposito')) {
+            return res.status(401).json({
+                success: false,
+                codigo: 'TOKEN_NO_ES_SESION',
+                mensaje: 'Completa la verificación de acceso antes de continuar'
+            });
+        }
+
         // ========================================
         // REVALIDAR ESTADO Y ROL CONTRA LA BD
         // El token puede tener privilegios residuales (p. ej.
@@ -104,6 +117,11 @@ const verificarToken = async (req, res, next) => {
             });
         }
 
+        if (Number(decoded.sesion_version ?? 0) !== datosUsuario.versionSesion) {
+            return res.status(401).json({ success: false, codigo: 'SESSION_REVOKED',
+                mensaje: 'Tu contraseña cambió. Inicia sesión nuevamente.' });
+        }
+
         req.usuario = {
             ...decoded,
             rol:
@@ -120,6 +138,11 @@ const verificarToken = async (req, res, next) => {
         next();
 
     } catch (error) {
+
+        if (error.status === 503) return res.status(503).json({
+            success: false,
+            mensaje: 'No se pudo comprobar tu sesión en este momento. Reintenta.'
+        });
 
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({

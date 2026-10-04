@@ -286,6 +286,8 @@ const actualizarInventario = async (req, res) => {
 
         const stockNumero = stock === undefined ? undefined : normalizarStock(stock);
         const stockMinimoNumero = stock_minimo === undefined ? undefined : normalizarStock(stock_minimo);
+        const esperado = req.body.stock_esperado === undefined ? undefined : normalizarStock(req.body.stock_esperado);
+        if (esperado === null) return res.status(400).json({ success: false, mensaje: 'El stock esperado debe ser un entero mayor o igual a 0' });
         if (ubicacion != null && !esTextoValido(ubicacion, 100, true)) {
             return res.status(400).json({ success: false, mensaje: 'Ubicación inválida' });
         }
@@ -303,12 +305,14 @@ const actualizarInventario = async (req, res) => {
             });
         }
 
-        await inventarioModel.actualizar(idLibro, {
+        const actualizado = await inventarioModel.actualizar(idLibro, {
             stock: stockNumero,
             stock_minimo: stockMinimoNumero,
-            ubicacion,
+            ubicacion: ubicacion === undefined ? undefined : ubicacion === null ? null : ubicacion.trim() || null,
+            stock_esperado: esperado,
             id_usuario
         }, 'ajuste_manual');
+        if (!actualizado) return res.status(404).json({ success: false, mensaje: 'Libro no encontrado en el inventario' });
 
         await registrarHistorial({
             id_usuario,
@@ -325,7 +329,7 @@ const actualizarInventario = async (req, res) => {
 
     } catch (error) {
         console.error('Error al actualizar inventario:', error);
-
+        if (error.status === 409) return res.status(409).json({ success: false, mensaje: error.message });
         res.status(500).json({
             success: false,
             mensaje: 'Error al actualizar el inventario'

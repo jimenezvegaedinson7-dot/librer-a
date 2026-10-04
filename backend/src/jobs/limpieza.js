@@ -41,7 +41,9 @@ const ejecutarLimpieza = async () => {
     // ========================================
     try {
         const resultado =
-            await ventaModel.cancelarOrdenesAbandonadas(30);
+            await ventaModel.cancelarOrdenesAbandonadas(30, {
+                alSincronizarPago: resultado => require('../controllers/pago.controller').notificarResultadoPago(resultado)
+            });
 
         if (resultado.canceladas > 0) {
             console.log(

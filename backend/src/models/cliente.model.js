@@ -106,7 +106,7 @@ const listarClientes = async ({
                 SUM(
                     CASE
                         WHEN v.id_venta IS NOT NULL
-                         AND v.estado <> 'cancelada'
+                          AND v.estado IN ('pagada', 'entregada')
                         THEN v.total
                         ELSE 0
                     END
@@ -116,7 +116,7 @@ const listarClientes = async ({
             COUNT(
                 DISTINCT CASE
                     WHEN v.id_venta IS NOT NULL
-                     AND v.estado <> 'cancelada'
+                      AND v.estado IN ('pagada', 'entregada')
                     THEN u.id_usuario
                 END
             ) AS con_compras
@@ -143,14 +143,14 @@ const listarClientes = async ({
             COUNT(
                 CASE
                     WHEN v.id_venta IS NOT NULL
-                     AND v.estado <> 'cancelada'
+                      AND v.estado IN ('pagada', 'entregada')
                     THEN 1
                 END
             ) AS numero_compras,
             COALESCE(
                 SUM(
                     CASE
-                        WHEN v.estado <> 'cancelada'
+                        WHEN v.estado IN ('pagada', 'entregada')
                         THEN v.total
                         ELSE 0
                     END
@@ -159,7 +159,7 @@ const listarClientes = async ({
             ) AS total_gastado,
             MAX(
                 CASE
-                    WHEN v.estado <> 'cancelada'
+                    WHEN v.estado IN ('pagada', 'entregada')
                     THEN v.fecha_venta
                 END
             ) AS ultima_compra

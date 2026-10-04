@@ -15,7 +15,7 @@ import useSeoLibro from './useSeoLibro';
 import './ficha-libro.css';
 
 function InformacionLibro({ libro }) {
-    const {items,usuario}=useTienda();
+    const {items,generacion}=useTienda();
     const [cantidad,setCantidad]=useState(1);
     const agregados=items.find(i=>i.id_libro===libro.id)?.cantidad || 0;
     const enlaceAutor=libro.idAutor?`/catalogo?autor=${libro.idAutor}`:`/catalogo?q=${encodeURIComponent(libro.autor)}`;
@@ -31,7 +31,7 @@ function InformacionLibro({ libro }) {
         </div>
         <ComprarLibro libro={libro} detalle cantidad={Number(cantidad)} onCantidadChange={setCantidad}/>
         {agregados>0 && <p className="ficha-mensaje">Ya tienes {agregados} {agregados===1?'ejemplar':'ejemplares'} de este libro en el carrito. <Link to="/carrito">Ver carrito</Link></p>}
-        <div className="ficha-herramientas"><FavoritoLibro key={`${libro.id}-${usuario?.id_usuario || 'invitado'}`} libro={libro}/><CompartirLibro libro={libro}/></div>
+        <div className="ficha-herramientas"><FavoritoLibro key={`${libro.id}-${generacion}`} libro={libro}/><CompartirLibro libro={libro}/></div>
         <section className="ficha-entrega" aria-label="Entrega disponible"><h2>Entrega disponible</h2><ul>
             <li><FaStore aria-hidden="true"/><span>Recojo en Pallasca — <strong>Gratis</strong></span></li>
             <li><FaTruckFast aria-hidden="true"/><span>Delivery dentro de Pallasca — Tarifa por zona activa</span></li>

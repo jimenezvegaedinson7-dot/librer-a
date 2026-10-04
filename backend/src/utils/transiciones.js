@@ -21,7 +21,6 @@ const VENTA = {
 
     pagada: [
         'entregada',
-        'cancelada',
         'reembolsada'
     ],
 
@@ -142,6 +141,10 @@ const ESTADO_POR_TIPO = {
 
 const TIPOS_ENTREGA = Object.keys(ESTADO_POR_TIPO);
 
+// Las reservas actuales se distinguen de las históricas por su vínculo.
+const esVentaHistorica = (venta) => venta?.origen === 'panel' ||
+    (venta?.origen === 'reserva' && !venta.id_reserva);
+
 // El typeof no es redundante: hasOwnProperty convierte la clave a string,
 // así que sin él un array como ['domicilio'] pasaba por válido.
 const esTipoEntregaValido = (tipoEntrega) =>
@@ -177,5 +180,6 @@ module.exports = {
     esTipoEntregaValido,
     permitirTransicion,
     permitirTransicionEntrega,
-    estadosValidos
+    estadosValidos,
+    esVentaHistorica
 };

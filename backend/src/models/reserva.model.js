@@ -1,6 +1,7 @@
 const pool = require('../config/database');
 const { RESERVA, permitirTransicion } = require('../utils/transiciones');
 const { registrarMovimiento } = require('./inventario.model');
+const { PRECIO_FINAL_SQL } = require('./libro.model');
 
 // ========================================
 // VALIDAR FECHA DE VENCIMIENTO DE RESERVA
@@ -154,9 +155,12 @@ const obtenerTodos = async () => {
             r.id_usuario,
             u.nombre AS nombre_usuario,
             u.apellido AS apellido_usuario,
+            u.email AS correo_usuario,
             r.id_libro,
             l.titulo,
             l.precio,
+            ${PRECIO_FINAL_SQL},
+            l.estado AS libro_estado,
             r.cantidad,
             r.fecha_reserva,
             r.fecha_vencimiento,
@@ -182,9 +186,12 @@ const obtenerPorId = async (id) => {
             r.id_usuario,
             u.nombre AS nombre_usuario,
             u.apellido AS apellido_usuario,
+            u.email AS correo_usuario,
             r.id_libro,
             l.titulo,
             l.precio,
+            ${PRECIO_FINAL_SQL},
+            l.estado AS libro_estado,
             r.cantidad,
             r.fecha_reserva,
             r.fecha_vencimiento,
@@ -277,6 +284,11 @@ const crear = async (reserva) => {
         }
 
         const stockActual = inventario[0].stock;
+
+        const [libros] = await connection.query('SELECT estado FROM libros WHERE id_libro=? FOR SHARE', [id_libro]);
+        if (!libros[0] || Number(libros[0].estado) !== 1) {
+            throw Object.assign(new Error('El libro no está disponible para reservas'), { status: 409 });
+        }
 
         if (stockActual < cantidad) {
             throw new Error(

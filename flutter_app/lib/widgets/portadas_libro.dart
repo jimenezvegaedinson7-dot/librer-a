@@ -5,6 +5,7 @@ import '../screens/detalle_libro_screen.dart';
 import '../utils/app_colors.dart';
 import '../utils/constants.dart';
 import 'book_cover.dart';
+import 'aviso_portada_referencia.dart';
 import 'precio_texto.dart';
 import 'presionable.dart';
 import 'estado_chip.dart';
@@ -97,6 +98,8 @@ class PortadaLibro extends StatelessWidget {
             fit: BoxFit.cover,
             sombra: false,
           ),
+          if (libro.portadaEsReferencia)
+            Positioned(right: 4, bottom: 4, child: AvisoPortadaReferencia(libro: libro)),
           // Lomo: sombra y brillo a la izquierda, como un libro real.
           const DecoratedBox(
             decoration: BoxDecoration(

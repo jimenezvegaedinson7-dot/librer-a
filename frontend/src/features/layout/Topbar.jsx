@@ -52,6 +52,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     const [vistas, setVistas] = useState(() => leerVistas());
     const [resaltadas, setResaltadas] = useState(() => new Set());
     const [cargandoNotif, setCargandoNotif] = useState(false);
+    const [errorNotif, setErrorNotif] = useState('');
     const [notificacionesAbiertas, setNotificacionesAbiertas] = useState(false);
 
     const [menuAbierto, setMenuAbierto] = useState(false);
@@ -81,12 +82,14 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
         try {
             setCargandoNotif(true);
             const lista = await obtenerNotificaciones();
+            setErrorNotif('');
             if (esPrimeraVez()) marcarVistas(lista.map((n) => n.clave));
             setVistas(leerVistas());
             setNotificaciones(lista);
             return lista;
         } catch {
-            return [];
+            setErrorNotif('No se pudieron consultar las notificaciones. Actualiza para reintentar; las anteriores pueden estar desactualizadas.');
+            return null;
         } finally {
             setCargandoNotif(false);
         }
@@ -145,6 +148,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
         setMenuAbierto(false);
         if (!abrir) return;
         const lista = await cargarNotificaciones();
+        if (lista === null) return;
         // Se resaltan las que eran nuevas y quedan marcadas como vistas.
         const vistasAntes = leerVistas();
         setResaltadas(new Set(lista.filter((n) => !vistasAntes.has(n.clave)).map((n) => n.clave)));
@@ -304,6 +308,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                                         notificaciones={notificaciones}
                                         nuevas={resaltadas}
                                         cargando={cargandoNotif}
+                                        error={errorNotif}
                                         onAbrir={irANotificacion}
                                         onActualizar={() => cargarNotificaciones()}
                                         onMarcarLeidas={() => setResaltadas(new Set())}

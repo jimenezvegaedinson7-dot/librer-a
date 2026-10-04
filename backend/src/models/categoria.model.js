@@ -67,25 +67,12 @@ const crear = async (categoria) => {
 // ACTUALIZAR CATEGORÍA
 // ========================================
 const actualizar = async (id, categoria) => {
-    const {
-        nombre,
-        descripcion,
-        estado
-    } = categoria;
-
-    const [resultado] = await pool.query(`
-        UPDATE categorias
-        SET
-            nombre = COALESCE(?, nombre),
-            descripcion = COALESCE(?, descripcion),
-            estado = COALESCE(?, estado)
-        WHERE id_categoria = ?
-    `, [
-        nombre ?? null,
-        descripcion ?? null,
-        estado ?? null,
-        id
-    ]);
+    const campos = [], valores = [];
+    for (const campo of ['nombre', 'descripcion', 'estado']) {
+        if (categoria[campo] !== undefined) { campos.push(`${campo} = ?`); valores.push(categoria[campo]); }
+    }
+    if (!campos.length) return 0;
+    const [resultado] = await pool.query(`UPDATE categorias SET ${campos.join(', ')} WHERE id_categoria = ?`, [...valores, id]);
 
     return resultado.affectedRows;
 };

@@ -84,7 +84,10 @@ const MIGRACIONES = [
     '032_cobertura_pallasca.sql',
     '033_canal_compra_web.sql',
     '034_carrusel_anuncios.sql',
-    '035_textos_anuncio.sql'
+    '035_textos_anuncio.sql',
+    '036_correcciones_negocio.sql',
+    '037_administracion.sql',
+    '038_version_sesion.sql'
 ];
 
 // En producción un fallo de migración debe detener el arranque:

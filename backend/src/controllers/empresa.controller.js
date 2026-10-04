@@ -1,4 +1,5 @@
 const empresaModel = require('../models/empresa.model');
+const historialModel = require('../models/historial.model');
 const { esEstadoValido, esNumeroNoNegativo, esTextoValido } = require('../utils/validaciones');
 
 // ========================================
@@ -70,7 +71,7 @@ const actualizarEmpresa = async (req, res) => {
             documento_identidad: 20, direccion: 255, sistema_emision: 50, emisor_electronico: 255,
             fecha_inscripcion: 10, fecha_inicio: 10, exoneracion_libros_hasta: 10 };
         for (const [campo, maximo] of Object.entries(largos)) {
-            if (body[campo] !== undefined && !esTextoValido(body[campo], maximo, !['ruc', 'razon_social'].includes(campo))) {
+            if (body[campo] !== undefined && !(body[campo] === null && !['ruc', 'razon_social'].includes(campo)) && !esTextoValido(body[campo], maximo, !['ruc', 'razon_social'].includes(campo))) {
                 return res.status(400).json({ success: false, mensaje: `El campo ${campo} no es válido` });
             }
         }
@@ -176,11 +177,11 @@ const actualizarEmpresa = async (req, res) => {
             }
 
             if (
-                body[campo] === undefined ||
-                body[campo] === null
+                body[campo] === undefined
             ) {
                 continue;
             }
+            if (body[campo] === null) { campos[campo] = null; continue; }
 
             const valor = String(body[campo]).trim();
 
@@ -213,10 +214,17 @@ const actualizarEmpresa = async (req, res) => {
         // ========================================
         // ACTUALIZAR
         // ========================================
+        await empresaModel.obtenerEmpresa();
         const empresa =
             await empresaModel.actualizarEmpresa(
                 campos
             );
+        if (Object.keys(campos).length) {
+            try {
+                await historialModel.crear({ id_usuario: req.usuario.id_usuario, tipo_operacion: 'ACTUALIZAR', modulo: 'empresa',
+                    descripcion: `Configuración de empresa actualizada: ${Object.keys(campos).join(', ')}` });
+            } catch (errorHistorial) { console.error('No se pudo registrar el historial:', errorHistorial.message); }
+        }
 
         return res.json({
             success: true,

@@ -3,7 +3,7 @@ const historialModel = require('../models/historial.model');
 const ubicacionModel = require('../models/ubicacion.model');
 const pool = require('../config/database');
 const { validarId } = require('../utils/validaciones');
-const { VENTA, permitirTransicion } = require('../utils/transiciones');
+const { VENTA, permitirTransicion, esVentaHistorica } = require('../utils/transiciones');
 const { PUBLIC_BASE_URL } = require('../config/payu');
 const { enviarCorreoPedidoEntregado } = require('../utils/mailer');
 const { validarCobroTienda } = require('../utils/metodosPago');
@@ -229,10 +229,17 @@ const reembolsarVenta = async (req, res) => {
 
         const id_usuario = req.usuario.id_usuario;
 
+        for (const [campo, max] of [['referencia_reembolso', 100], ['evidencia_reembolso', 500]]) {
+            if (req.body[campo] != null && (typeof req.body[campo] !== 'string' || req.body[campo].trim().length > max || /[\r\n\x00]/.test(req.body[campo]))) {
+                return res.status(400).json({ success: false, mensaje: `El campo ${campo} debe ser un texto de hasta ${max} caracteres` });
+            }
+        }
         const resultado = await ventaModel.reembolsar(idVenta, {
             motivo,
             devolverStock,
-            idUsuario: id_usuario
+            idUsuario: id_usuario,
+            referencia: req.body.referencia_reembolso?.trim() || null,
+            evidencia: req.body.evidencia_reembolso?.trim() || null
         });
 
         if (!resultado) {
@@ -258,11 +265,13 @@ const reembolsarVenta = async (req, res) => {
 
         return res.json({
             success: true,
-            mensaje: 'Venta reembolsada correctamente',
+            mensaje: 'Registro de reembolso guardado. La devolución del dinero se realiza y verifica por el medio de cobro.',
             data: {
                 id_venta: idVenta,
                 estado: 'reembolsada',
                 stock_devuelto: resultado.stock_devuelto,
+                tipo_operacion: 'registro_manual',
+                dinero_devuelto_por_api: false,
                 comprobante_anulado: comprobante
                     ? {
                         id_comprobante: comprobante.id_comprobante,
@@ -357,7 +366,7 @@ const actualizarEstadoVenta = async (req, res) => {
         const estadoActual =
             ventaActual.estado;
 
-        if (['panel', 'reserva'].includes(ventaActual.origen)) {
+        if (esVentaHistorica(ventaActual)) {
             return res.status(409).json({ success: false, mensaje: 'Las ventas históricas son de solo lectura' });
         }
 

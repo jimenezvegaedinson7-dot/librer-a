@@ -15,11 +15,12 @@ export async function obtenerReserva(id) {
     return res?.data ?? null;
 }
 
-export async function crearReserva(formulario) {
+export async function crearReserva(formulario, esAdmin = false) {
     return client.post('/reservas', {
         id_libro: Number(formulario.id_libro),
         cantidad: Number(formulario.cantidad),
         fecha_vencimiento: formulario.fecha_vencimiento || null,
+        ...(esAdmin ? { id_usuario_cliente: Number(formulario.id_usuario_cliente) } : {}),
     });
 }
 
@@ -29,6 +30,7 @@ export async function actualizarEstadoReserva(id, estado, cobro = null) {
     const cuerpo = { estado };
     if (estado === 'completada' && cobro) {
         cuerpo.metodo_pago = cobro.metodo;
+        if (cobro.precio_unitario_esperado !== undefined) cuerpo.precio_unitario_esperado = cobro.precio_unitario_esperado;
         if (cobro.referencia) cuerpo.referencia_pago = cobro.referencia;
     }
     return client.put(`/reservas/${id}/estado`, cuerpo);

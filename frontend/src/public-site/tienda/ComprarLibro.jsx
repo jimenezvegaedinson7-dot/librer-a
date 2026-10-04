@@ -16,7 +16,7 @@ export default function ComprarLibro({ libro, detalle = false, cantidad = 1, onC
             <FaCartPlus aria-hidden="true" /> {libro.disponible ? 'Agregar al carrito' : 'Agotado'}
         </button>
         {detalle ? <button type="button" className="boton boton--linea" disabled={!libro.disponible || !valida}
-            onClick={()=>{if(agregar(libro,cantidad))navigate('/checkout');}}>Comprar ahora</button>
+            onClick={async()=>{if(await agregar(libro,cantidad))navigate('/checkout');}}>Comprar ahora</button>
             : <Link className="enlace-texto" to={`/libro/${libro.id}`}>Ver detalle</Link>}
     </div>;
 }

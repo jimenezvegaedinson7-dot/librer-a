@@ -165,11 +165,9 @@ class _VentaTile extends StatelessWidget {
   /// reinició antes de pagar), se muestra un aviso.
   Future<void> _continuarPago(BuildContext context) async {
     final idVenta = venta.idVenta;
-    String? url = idVenta == null
-        ? null
-        : ApiService.instance.obtenerCheckoutUrl(idVenta);
-
-    if ((url == null || url.isEmpty) && idVenta != null) {
+    String? url;
+    // Siempre revalidar: una URL local no demuestra que siga pendiente.
+    if (idVenta != null) {
       try {
         url = await ApiService.instance.recuperarCheckoutVenta(idVenta);
       } on ApiException catch (error) {
@@ -191,7 +189,7 @@ class _VentaTile extends StatelessWidget {
           const SnackBar(
             content: Text(
               'No encontramos una ventana de pago activa para esta compra. '
-              'Inicia el pago nuevamente desde "Mi carrito".',
+               'Actualiza tus compras y verifica su estado antes de continuar.',
             ),
             duration: Duration(seconds: 3),
           ),
@@ -210,22 +208,24 @@ class _VentaTile extends StatelessWidget {
 
   Future<void> _verificarPago(BuildContext context) async {
     final orderId = venta.orderId;
-    if (orderId == null || orderId.isEmpty) return;
+    if (orderId == null || orderId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Esta compra no tiene una referencia PayU disponible.'),
+      ));
+      return;
+    }
 
     try {
       final estado = await ApiService.instance.obtenerOrdenPago(orderId);
       if (!context.mounted) return;
-      if (estado.pagada) {
-        ApiService.instance.limpiarIdempotencia(idVenta: venta.idVenta);
-        await onActualizada();
-      } else if (estado.cancelada) {
-        ApiService.instance.limpiarIdempotencia(idVenta: venta.idVenta);
-      }
+      await onActualizada();
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            estado.pagada
+            estado.requiereRevision
+                ? 'El pago necesita revisión de la librería. No vuelvas a pagarlo.'
+                : estado.pagada
                 ? 'Pago confirmado.'
                 : estado.cancelada
                 ? 'El pago fue cancelado.'
@@ -491,7 +491,7 @@ class _DetalleVentaSheet extends StatelessWidget {
             const SizedBox(height: 18),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),
-              child: _SeguimientoPedido(estado: venta.estado),
+              child: _SeguimientoPedido(venta: venta),
             ),
             const SizedBox(height: 14),
             if (venta.entregaLabel != null)
@@ -628,13 +628,13 @@ class _FilaDetalle extends StatelessWidget {
 /// Línea de seguimiento del pedido: muestra las etapas
 /// "Pedido realizado → Pago confirmado → Entregado" según el estado actual.
 class _SeguimientoPedido extends StatelessWidget {
-  final String? estado;
+  final Venta venta;
 
-  const _SeguimientoPedido({required this.estado});
+  const _SeguimientoPedido({required this.venta});
 
   @override
   Widget build(BuildContext context) {
-    final raw = (estado ?? '').toLowerCase().trim();
+    final raw = (venta.estado ?? '').toLowerCase().trim();
 
     // Reembolsada: el dinero se devolvió (venta pagada o entregada).
     if (raw == 'reembolsada') {
@@ -695,11 +695,13 @@ class _SeguimientoPedido extends StatelessWidget {
       );
     }
 
+    final entregado = venta.estadoEntrega == 'entregado' ||
+        (venta.estadoEntrega == null && raw == 'entregada');
     final completado = raw == 'entregada' || raw == 'pagada';
     final pasos = <(String, bool)>[
       ('Pedido realizado', raw == 'pendiente' || completado),
       ('Pago confirmado', raw == 'pagada' || raw == 'entregada'),
-      ('Entregado', raw == 'entregada'),
+      (venta.entregaEstadoLabel.isEmpty ? 'Entregado' : venta.entregaEstadoLabel, entregado),
     ];
 
     return Row(

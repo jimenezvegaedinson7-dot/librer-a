@@ -24,9 +24,17 @@ class StorageService {
   static final StorageService instance = StorageService._();
 
   static const FlutterSecureStorage _secure = FlutterSecureStorage();
+  int _generacion = 0;
+  int? _idUsuarioActual;
+  bool _cambiandoSesion = false;
+  bool get cambiandoSesion => _cambiandoSesion;
+  int get generacion => _generacion;
+  int? get idUsuarioActual => _idUsuarioActual;
 
   /// Guarda el token JWT en secure storage (y limpia la clave LEGACY).
   Future<void> guardarToken(String token) async {
+    _cambiandoSesion = true;
+    _generacion++;
     try {
       await _secure.write(key: Constants.secureTokenKey, value: token);
       // Si el secure storage funcionó, ya no hace falta la copia LEGACY.
@@ -93,19 +101,26 @@ class StorageService {
   }
 
   /// Guarda la información básica del usuario (NO sensible).
-  Future<void> guardarUsuario(Usuario usuario) async {
+  Future<void> guardarUsuario(Usuario usuario, {int? generacionEsperada}) async {
+    final generacion = generacionEsperada ?? _generacion;
     final prefs = await SharedPreferences.getInstance();
+    if (generacion != _generacion) return;
+    _idUsuarioActual = usuario.idUsuario;
     await prefs.setString(Constants.prefUserKey, jsonEncode(usuario.toJson()));
+    if (generacion == _generacion) _cambiandoSesion = false;
   }
 
   /// Obtiene el usuario guardado o null.
   Future<Usuario?> obtenerUsuario() async {
+    final generacion = _generacion;
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(Constants.prefUserKey);
     if (raw == null || raw.isEmpty) return null;
     try {
       final map = jsonDecode(raw) as Map<String, dynamic>;
-      return Usuario.fromJson(map);
+      final usuario = Usuario.fromJson(map);
+      if (generacion == _generacion) _idUsuarioActual = usuario.idUsuario;
+      return usuario;
     } catch (_) {
       return null;
     }
@@ -113,9 +128,13 @@ class StorageService {
 
   /// Limpia toda la sesión (token y usuario).
   Future<void> limpiarSesion() async {
+    _cambiandoSesion = true;
+    _generacion++;
+    _idUsuarioActual = null;
     await eliminarToken();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(Constants.prefUserKey);
+    _cambiandoSesion = false;
   }
 
   /// Guarda el id del tema de colores del perfil (preferencia, NO sensible).

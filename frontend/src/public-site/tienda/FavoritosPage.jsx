@@ -7,6 +7,8 @@ import { listaLibros } from './libroComercial';
 import PortadaLibro from './PortadaLibro';
 import ComprarLibro from './ComprarLibro';
 import { soles } from '../lib/formato';
+import EstadoSesion from './EstadoSesion';
+import { referenciaPortadaLibro, AVISO_PORTADA_REFERENCIA } from '../../lib/utils/portadasLibro';
 
 // ============================================================
 // MIS FAVORITOS
@@ -15,22 +17,26 @@ import { soles } from '../lib/formato';
 // ============================================================
 export default function FavoritosPage() {
     const t = useTienda();
+    return <FavoritosCliente key={t.generacion} t={t}/>;
+}
+function FavoritosCliente({ t }) {
     const idUsuario = t.usuario?.id_usuario;
     const [libros, setLibros] = useState([]), [cargando, setCargando] = useState(true), [error, setError] = useState(''), [quitando, setQuitando] = useState(null);
 
     const cargar = useCallback(async () => {
-        try { setLibros(listaLibros(await clienteApi.favoritos())); setError(''); }
+        try { setLibros(listaLibros(await clienteApi.favoritos(t.sesion))); setError(''); }
         catch (e) { setError(e.message); } finally { setCargando(false); }
-    }, []);
-    useEffect(() => { if (idUsuario && !t.revisando) Promise.resolve().then(cargar); }, [idUsuario, t.revisando, cargar]);
+    }, [t.sesion]);
+    useEffect(() => { if (idUsuario && !t.revisando && !t.errorSesion) Promise.resolve().then(cargar); }, [idUsuario, t.revisando, t.errorSesion, cargar]);
 
     async function quitar(libro) {
         if (quitando) return;
         setQuitando(libro.id); setError('');
-        try { await clienteApi.quitarFavorito(libro.id); setLibros((lista) => lista.filter((l) => l.id !== libro.id)); }
+        try { await clienteApi.quitarFavorito(libro.id,t.sesion); setLibros((lista) => lista.filter((l) => l.id !== libro.id)); }
         catch (e) { setError(e.message); } finally { setQuitando(null); }
     }
 
+    if(t.revisando || t.errorSesion)return <EstadoSesion titulo="Mis favoritos"/>;
     return <section className="compra-pagina contenedor favoritos">
         <Link to="/cuenta" className="enlace-texto favoritos__volver"><FaChevronLeft aria-hidden="true"/> Mi cuenta</Link>
         <h1>Mis favoritos</h1>
@@ -48,6 +54,7 @@ export default function FavoritosPage() {
                         </div>
                         <div className="favorito__cuerpo">
                             <h2><Link to={`/libro/${l.id}`}>{l.titulo}</Link></h2>
+                            {referenciaPortadaLibro(l) && <p className="portada-referencia">{AVISO_PORTADA_REFERENCIA}</p>}
                             {l.autor && <p className="favorito__autor">{l.autor}</p>}
                             <p className="favorito__precio"><strong>{soles(l.precioFinal)}</strong>{l.descuento > 0 && <s>{soles(l.precio)}</s>}</p>
                             <p className={`favorito__stock${l.disponible ? '' : ' favorito__stock--agotado'}`}>{l.disponible ? `${l.stock} ${l.stock === 1 ? 'ejemplar disponible' : 'ejemplares disponibles'}` : 'Agotado por ahora'}</p>

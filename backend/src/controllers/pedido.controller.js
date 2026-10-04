@@ -1,7 +1,7 @@
 const ventaModel = require('../models/venta.model');
 const historialModel = require('../models/historial.model');
 const { validarId } = require('../utils/validaciones');
-const { ENTREGA, esTipoEntregaValido, permitirTransicionEntrega } = require('../utils/transiciones');
+const { ENTREGA, esTipoEntregaValido, permitirTransicionEntrega, esVentaHistorica } = require('../utils/transiciones');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR EL PEDIDO
@@ -178,11 +178,11 @@ const Pedido = {
             const estadoActual =
                 ventaActual.estado_entrega || 'pendiente';
 
-            if (['panel', 'reserva'].includes(ventaActual.origen)) {
+            if (esVentaHistorica(ventaActual)) {
                 return res.status(409).json({ success: false, mensaje: 'Las ventas históricas son de solo lectura' });
             }
-            if (ventaActual.canal_compra === 'web' && !['pagada', 'entregada'].includes(ventaActual.estado) && estado !== 'cancelado') {
-                return res.status(409).json({ success: false, mensaje: 'El pago de esta compra web debe confirmarse antes de preparar la entrega' });
+            if (!['pagada', 'entregada'].includes(ventaActual.estado) && estado !== 'cancelado') {
+                return res.status(409).json({ success: false, mensaje: 'El pago de esta compra debe confirmarse antes de preparar la entrega' });
             }
 
             // Mismo estado

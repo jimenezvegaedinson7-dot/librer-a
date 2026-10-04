@@ -23,7 +23,7 @@ export function EstadoModal({
     guardar,
     mensajeError,
 }) {
-    const [estado, setEstado] = useState('');
+    const [estado, setEstado] = useState(() => abierto ? obtenerOpciones?.(estadoActual)?.[0]?.valor || '' : '');
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
 
@@ -61,7 +61,7 @@ export function EstadoModal({
             if (onActualizado) await onActualizado(respuesta?.mensaje);
             onCerrar();
         } catch (err) {
-            setError(err.response?.data?.mensaje || mensajeError || 'Error al actualizar el estado');
+            setError(err.response?.data?.mensaje || err.message || mensajeError || 'Error al actualizar el estado');
         } finally {
             setGuardando(false);
         }
