@@ -7,7 +7,7 @@ import {
 
 import fondoNosotros from '../../assets/fondo_web/nosotros-web.webp';
 import fondoNosotrosMovil from '../../assets/fondo_web/nosotros-web-1024.webp';
-import { SITIO, UBICACION_TIENDA } from '../config/site';
+import { UBICACION_TIENDA } from '../config/site';
 import { gsap, useGSAP } from '../animation/scroll';
 import './nosotros.css';
 
@@ -160,24 +160,6 @@ export default function AboutSection({ legal, reducido }) {
                             <FaDiamondTurnRight aria-hidden="true" /> Cómo llegar
                         </a>
                     </div>
-                </div>
-            </section>
-
-            {/* Atención al cliente. */}
-            <section className="seccion nosotros-empresa" aria-labelledby="empresa-titulo">
-                <div className="contenedor">
-                    <h2 id="empresa-titulo" className="visualmente-oculto">Atención al cliente</h2>
-                    {/* Sin razón social ni RUC en la web pública: esos datos solo
-                        figuran en el Libro de Reclamaciones, donde la norma los exige. */}
-                    <ul className="nosotros-empresa__datos">
-                        <li>
-                            <FaShieldHalved aria-hidden="true" />
-                            <span>
-                                <small>¿Algo no salió bien?</small>
-                                <a href={SITIO.rutaReclamaciones} className="enlace-texto">Libro de Reclamaciones</a>
-                            </span>
-                        </li>
-                    </ul>
                 </div>
             </section>
 

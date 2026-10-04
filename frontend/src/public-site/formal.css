@@ -601,3 +601,18 @@
 @keyframes intro-vivo { to { opacity: 1; transform: none; } }
 .sitio .asistente-intro__texto { margin: 0; font-size: 1rem; font-weight: 600; color: var(--tinta); opacity: 0; animation: intro-texto 0.4s ease 0.75s forwards; }
 @keyframes intro-texto { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Pie: Libro de Reclamaciones y métodos de pago con sus imágenes. */
+.sitio .pie__confianza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px 32px; margin-top: 28px; padding: 20px 0; border-top: 1px solid rgba(255, 255, 255, 0.12); }
+.sitio .pie__reclamaciones { display: inline-flex; align-items: center; gap: 12px; padding: 8px 14px 8px 8px; border-radius: 10px; background: #fff; color: var(--tinta); text-decoration: none; font-size: 0.8125rem; font-weight: 700; line-height: 1.2; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.sitio .pie__reclamaciones:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -10px rgba(0, 0, 0, 0.6); color: var(--tinta); text-decoration: none; }
+.sitio .pie__reclamaciones img { width: 72px; height: auto; }
+.sitio .pie__pagos h2 { margin: 0 0 8px; font-size: 0.875rem; color: #fff; }
+.sitio .pie__pagos-grupos { display: flex; flex-wrap: wrap; gap: 14px 28px; }
+.sitio .pie__pagos p { margin: 0 0 6px; font-size: 0.75rem; color: rgba(255, 255, 255, 0.7); }
+.sitio .pie__pagos ul { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.sitio .pie__pagos li { display: grid; place-items: center; height: 46px; padding: 4px; border-radius: 8px; background: #fff; overflow: hidden; }
+.sitio .pie__pagos li img { display: block; height: 38px; width: auto; border-radius: 4px; object-fit: contain; }
+@media (max-width: 520px) {
+    .sitio .pie__confianza { flex-direction: column; align-items: flex-start; }
+}
