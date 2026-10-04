@@ -11,8 +11,9 @@ import { Modal } from '../../components/ui/Modal';
 
 const OPCIONES = OPCIONES_COLOR;
 const GRUPOS = [
-    { titulo: 'Colores sólidos', opciones: OPCIONES.filter((o) => !o.degradado) },
-    { titulo: 'Degradados combinados', opciones: OPCIONES.filter((o) => o.degradado) },
+    { titulo: 'Intensos', detalle: 'Tonos vivos de paneles como Metronic, Vuexy y Materio', opciones: OPCIONES.filter((o) => o.grupo === 'intensos') },
+    { titulo: 'Degradados', detalle: 'Combinaciones de uiGradients y propias', opciones: OPCIONES.filter((o) => o.grupo === 'degradados') },
+    { titulo: 'Sobrios', detalle: 'Tonos elegantes y discretos', opciones: OPCIONES.filter((o) => o.grupo === 'sobrios') },
 ];
 
 const ZONA_LABELS = {
@@ -209,7 +210,7 @@ export default function PersonalizacionPage() {
     const zonasPersonalizadas = ZONAS_IDS.filter((z) => config.zonas[z]).length;
 
     const moverSeleccion = (e, indice, lista) => {
-        const columnas = window.innerWidth >= 1024 ? 8 : window.innerWidth >= 640 ? 5 : 4;
+        const columnas = window.innerWidth >= 1024 ? 6 : window.innerWidth >= 640 ? 4 : 3;
         const pasos = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: columnas, ArrowUp: -columnas };
         if (!(e.key in pasos)) return;
         e.preventDefault();
@@ -238,8 +239,11 @@ export default function PersonalizacionPage() {
                             <div className="space-y-5">
                             {GRUPOS.map((grupo) => (
                             <div key={grupo.titulo}>
-                            <p className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-slate-500">{grupo.titulo}</p>
-                            <div role="radiogroup" aria-label={grupo.titulo} className="grid grid-cols-4 gap-2.5 sm:grid-cols-5 lg:grid-cols-8">
+                            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">{grupo.titulo} <span className="font-normal normal-case tracking-normal text-slate-400">· {grupo.opciones.length}</span></p>
+                                <p className="text-[11px] text-slate-400">{grupo.detalle}</p>
+                            </div>
+                            <div role="radiogroup" aria-label={grupo.titulo} className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
                                 {grupo.opciones.map((color, indice) => {
                                     const activa = seleccion === color.id;
                                     return (
@@ -251,21 +255,34 @@ export default function PersonalizacionPage() {
                                             tabIndex={activa ? 0 : -1}
                                             onClick={() => setSeleccion(color.id)}
                                             onKeyDown={(e) => moverSeleccion(e, indice, grupo.opciones)}
-                                            className={`muestra-color group relative flex flex-col items-center gap-2 rounded-xl px-1.5 py-3 outline-none transition-colors ${activa ? 'muestra-color--activa' : ''}`}
+                                            className={`group relative flex flex-col gap-2 rounded-2xl p-1.5 text-left outline-none transition-all duration-200 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-slate-400 ${activa ? 'bg-white shadow-md ring-2' : 'hover:bg-white hover:shadow-sm'}`}
+                                            style={activa ? { '--tw-ring-color': color.hex } : undefined}
                                         >
-                                            {activa && <span className="muestra-color-marco absolute inset-0 rounded-xl" aria-hidden="true" />}
-                                            <span className="relative">
-                                                <span
-                                                    className="muestra-color-circulo flex h-11 w-11 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-105"
-                                                    style={{ background: color.fondo }}
-                                                />
+                                            {/* Miniatura del panel pintada con el color. */}
+                                            <span className="relative flex h-16 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm" aria-hidden="true">
+                                                <span className="h-full w-[28%] shrink-0" style={{ background: color.fondo }}>
+                                                    <span className="mx-auto mt-2 block h-1.5 w-3/5 rounded-full bg-white/70" />
+                                                    <span className="mx-auto mt-1.5 block h-1 w-1/2 rounded-full bg-white/40" />
+                                                    <span className="mx-auto mt-1 block h-1 w-1/2 rounded-full bg-white/40" />
+                                                </span>
+                                                <span className="flex flex-1 flex-col">
+                                                    <span className="h-3 w-full opacity-90" style={{ background: color.fondo }} />
+                                                    <span className="flex flex-1 flex-col justify-center gap-1 px-2">
+                                                        <span className="h-1 w-4/5 rounded-full bg-slate-200" />
+                                                        <span className="h-1 w-3/5 rounded-full bg-slate-200" />
+                                                        <span className="mt-0.5 h-2.5 w-8 rounded-full" style={{ background: color.fondo }} />
+                                                    </span>
+                                                </span>
                                                 {activa && (
-                                                    <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-200" aria-hidden="true">
+                                                    <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow ring-1 ring-slate-200">
                                                         <Check className="h-2.5 w-2.5 text-slate-900" strokeWidth={3} />
                                                     </span>
                                                 )}
                                             </span>
-                                            <span className={`relative text-[11px] font-medium ${activa ? 'text-slate-900' : 'text-slate-500'}`}>{color.nombre}</span>
+                                            <span className="flex items-center gap-1.5 px-0.5">
+                                                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color.fondo }} aria-hidden="true" />
+                                                <span className={`truncate text-[11.5px] font-medium ${activa ? 'text-slate-900' : 'text-slate-600'}`}>{color.nombre}</span>
+                                            </span>
                                         </button>
                                     );
                                 })}
