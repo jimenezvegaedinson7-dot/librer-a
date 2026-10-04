@@ -225,7 +225,8 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final wide = width >= 700;
+    final escalaTexto = MediaQuery.textScalerOf(context).scale(14) / 14;
+    final wide = width >= 700 && width >= 700 * escalaTexto;
     final esFavorito = _esFavorito ?? false;
 
     return Scaffold(
@@ -801,7 +802,7 @@ class _Card extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(title, style: Theme.of(context).textTheme.titleMedium),
+              Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium)),
             ],
           ),
           const SizedBox(height: 8),
@@ -838,6 +839,78 @@ class _StickyBar extends StatelessWidget {
         libro.esActivo && libro.hayStock && libro.idLibro != null;
     final total = (libro.precioCompra * 100).round() * cantidad / 100;
 
+    final importe = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Total', style: textTheme.labelSmall?.copyWith(color: AppColors.textTertiary)),
+        // Darle ancho natural al texto evita que PrecioTexto dibuje puntos
+        // suspensivos. Solo se reduce si ni siquiera cabe en toda la barra.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: AnimatedSwitcher(
+            duration: Duracion.rapida,
+            transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+            child: PrecioTexto(
+              key: ValueKey(total), monto: total, tamano: 20,
+              color: libro.enOferta ? AppColors.oferta : null,
+              subrayado: libro.enOferta,
+            ),
+          ),
+        ),
+      ],
+    );
+    final reservar = Presionable(
+      habilitado: disponible && !reservando,
+      child: OutlinedButton(
+        onPressed: disponible && !reservando ? onReservar : null,
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, 50),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
+        ),
+        child: reservando
+            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+            : FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  if (!compact) ...[
+                    const Icon(Icons.event_available_outlined, size: 18),
+                    const SizedBox(width: 6),
+                  ],
+                  const Text('Reservar'),
+                ]),
+              ),
+      ),
+    );
+    final anadir = Presionable(
+      habilitado: disponible && !reservando,
+      child: AnimatedContainer(
+        duration: Duracion.rapida,
+        child: FilledButton(
+          onPressed: disponible && !reservando ? onAdd : null,
+          style: FilledButton.styleFrom(
+            backgroundColor: agregado ? AppColors.success : AppColors.primary,
+            minimumSize: const Size(0, 50),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+          ),
+          child: AnimatedSwitcher(
+            duration: Duracion.rapida,
+            transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(key: ValueKey(agregado), mainAxisSize: MainAxisSize.min, children: [
+                Icon(agregado ? Icons.check_rounded : Icons.add_shopping_cart_rounded, size: 18),
+                const SizedBox(width: 6),
+                Text(agregado ? 'Añadido' : 'Añadir'),
+              ]),
+            ),
+          ),
+        ),
+      ),
+    );
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -848,116 +921,28 @@ class _StickyBar extends StatelessWidget {
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final apilar = constraints.maxWidth < 520 || MediaQuery.textScalerOf(context).scale(20) > 26;
+              if (apilar) {
+                return Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'Total',
-                      style: textTheme.labelSmall?.copyWith(
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
-                    AnimatedSwitcher(
-                      duration: Duracion.rapida,
-                      transitionBuilder: (child, anim) =>
-                          FadeTransition(opacity: anim, child: child),
-                      child: PrecioTexto(
-                        key: ValueKey(total),
-                        monto: total,
-                        tamano: 20,
-                        color: libro.enOferta ? AppColors.oferta : null,
-                        subrayado: libro.enOferta,
-                      ),
-                    ),
+                    importe,
+                    const SizedBox(height: 10),
+                    Row(children: [Expanded(child: reservar), const SizedBox(width: 8), Expanded(child: anadir)]),
                   ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                flex: 2,
-                child: Presionable(
-                  habilitado: disponible && !reservando,
-                  child: OutlinedButton(
-                    onPressed: disponible && !reservando ? onReservar : null,
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 50),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      side: BorderSide(
-                        color: AppColors.primary.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    child: reservando
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (!compact) ...[
-                                  const Icon(
-                                    Icons.event_available_outlined,
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 6),
-                                ],
-                                const Text('Reservar'),
-                              ],
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                flex: 2,
-                child: Presionable(
-                  habilitado: disponible && !reservando,
-                  child: AnimatedContainer(
-                    duration: Duracion.rapida,
-                    child: FilledButton(
-                      onPressed: disponible && !reservando ? onAdd : null,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: agregado
-                            ? AppColors.success
-                            : AppColors.primary,
-                        minimumSize: const Size(0, 50),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      child: AnimatedSwitcher(
-                        duration: Duracion.rapida,
-                        transitionBuilder: (child, anim) =>
-                            ScaleTransition(scale: anim, child: child),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Row(
-                            key: ValueKey(agregado),
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                agregado
-                                    ? Icons.check_rounded
-                                    : Icons.add_shopping_cart_rounded,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(agregado ? 'Añadido' : 'Añadir'),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+                );
+              }
+              return Row(children: [
+                Expanded(child: importe),
+                const SizedBox(width: 8),
+                Expanded(child: reservar),
+                const SizedBox(width: 8),
+                Expanded(child: anadir),
+              ]);
+            },
           ),
         ),
       ),
