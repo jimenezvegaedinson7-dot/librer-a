@@ -658,7 +658,11 @@ test('inicio: explora por categoría y cómo comprar', async ({ page }) => {
     await page.waitForSelector('#precarga', { state: 'detached' });
     const tarjetas = page.locator('.explorar__enlace');
     await expect(tarjetas).toHaveCount(3);
-    await expect(page.locator('.paso')).toHaveCount(4);
+    // Cómo comprar: 4 pasos numerados 01–04, sin tarjetas.
+    const pasos = page.locator('.proceso__paso');
+    await expect(pasos).toHaveCount(4);
+    await expect(pasos.locator('.proceso__numero')).toHaveText(['01', '02', '03', '04']);
+    await expect(pasos.nth(2)).toContainText('Paga seguro');
     await tarjetas.first().click();
     await expect(page).toHaveURL(/\/catalogo\?categoria=/);
 });
