@@ -60,7 +60,7 @@
 /* ---------- Títulos en serif ---------- */
 .sitio :is(.seccion__titulo, .hero__titulo, .nosotros-hero__titulo, .app-portada__titulo,
     .descargar-portada__titulo, .promo h3, .paso h3, .explorar__texto strong,
-    .nosotros-pilar h3, .nosotros-tienda__tarjeta h2, .nosotros-cierre h2,
+    .nosotros-pilar h3, .nosotros-tienda__tarjeta h2,
     .banda-catalogo h2, .ventaja h2, .instalar h2, .marca span) {
     font-family: var(--f-titulo);
     font-weight: 600;

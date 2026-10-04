@@ -51,7 +51,6 @@
 .sitio .nosotros-hero__titulo { font-size: var(--t-hero); }
 .sitio .nosotros-hero .nosotros__cita { font-size: 1.0625rem; font-weight: 400; }
 .sitio .nosotros-pilar h3, .sitio .instalar__paso h3 { font-size: 1rem; }
-.sitio .nosotros-cierre h2 { font-size: 1.375rem; }
 .sitio .nosotros-tienda__tarjeta h2 { font-size: 1.25rem; }
 .sitio .app-portada__titulo, .sitio .descargar-portada__titulo { font-size: var(--t-hero); }
 .sitio .ventaja h2 { font-size: 1.125rem; }
@@ -628,7 +627,7 @@
     .sitio .pie__rejilla > .pie__pagos { grid-column: 1 / -1; }
 }
 
-/* ---------- Efecto vidrio: banda del catálogo y cierre de Nosotros ----------
+/* ---------- Efecto vidrio: banda del catálogo y portada de Nosotros ----------
    Sin el velo azul: la foto se ve detrás y el contenido va en un panel de
    vidrio esmerilado (translúcido, desenfocado y con un borde fino). */
 .sitio .banda-catalogo { background: #2a2420; }
@@ -643,13 +642,26 @@
 }
 .sitio .banda-catalogo h2, .sitio .banda-catalogo p { color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
 
-.sitio .nosotros-cierre__contenido { isolation: isolate; background: var(--fondo-cierre) center / cover no-repeat, #2a2420; }
-.sitio .nosotros-cierre__contenido::before {
-    content: ''; position: absolute; inset: clamp(10px, 1.6vw, 16px); z-index: -1; border-radius: 14px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.06)), rgba(28, 22, 16, 0.32);
-    border: 1px solid rgba(255, 255, 255, 0.38);
-    box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
+/* Portada de Nosotros: efecto solo en la imagen. Un velo de vidrio suave
+   la cubre; al pasar el mouse el velo se aclara, la foto se acerca un poco
+   y la cruza un brillo. El texto queda igual que antes. */
+.sitio .nosotros-hero__fondo { transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.sitio .nosotros-hero:hover .nosotros-hero__fondo { transform: scale(1.04); }
+.sitio .nosotros-hero__vidrio {
+    position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+    -webkit-backdrop-filter: blur(3px) saturate(120%); backdrop-filter: blur(3px) saturate(120%);
+    transition: -webkit-backdrop-filter 0.6s ease, backdrop-filter 0.6s ease, background 0.6s ease;
 }
-.sitio .nosotros-cierre__contenido { padding: clamp(2rem, 4.5vw, 3.2rem); }
-.sitio .nosotros-cierre h2, .sitio .nosotros-cierre p { color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
+.sitio .nosotros-hero__vidrio::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.14) 50%, transparent 62%);
+    transform: translateX(-110%); transition: transform 1.1s ease;
+}
+.sitio .nosotros-hero:hover .nosotros-hero__vidrio { -webkit-backdrop-filter: blur(0) saturate(110%); backdrop-filter: blur(0) saturate(110%); background: transparent; }
+.sitio .nosotros-hero:hover .nosotros-hero__vidrio::after { transform: translateX(110%); }
+/* El oscurecido para leer el texto queda por encima del velo. */
+.sitio .nosotros-hero__fondo::after { z-index: 2; }
+@media (prefers-reduced-motion: reduce) {
+    .sitio .nosotros-hero__fondo, .sitio .nosotros-hero__vidrio, .sitio .nosotros-hero__vidrio::after { transition: none; }
+}

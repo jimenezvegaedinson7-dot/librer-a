@@ -1,8 +1,8 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
-    FaBookOpen, FaDiamondTurnRight, FaDownload, FaLocationDot, FaShieldHalved,
-    FaStore, FaTruckFast, FaChevronRight,
+    FaBookOpen, FaDiamondTurnRight, FaLocationDot, FaShieldHalved,
+    FaStore, FaTruckFast,
 } from 'react-icons/fa6';
 
 import fondoNosotros from '../../assets/fondo_web/nosotros-web.webp';
@@ -91,7 +91,8 @@ export default function AboutSection({ legal, reducido }) {
                 aria-labelledby="nosotros-titulo"
                 style={{ '--fondo-nosotros': `url(${fondoNosotros})`, '--fondo-nosotros-movil': `url(${fondoNosotrosMovil})` }}
             >
-                <div className="nosotros-hero__fondo" aria-hidden="true" />
+                {/* La imagen lleva un velo de vidrio suave; al pasar el mouse se aclara, se acerca y la cruza un brillo. */}
+                <div className="nosotros-hero__fondo" aria-hidden="true"><span className="nosotros-hero__vidrio" /></div>
                 <div className="contenedor nosotros-hero__contenido">
                     <h1 id="nosotros-titulo" className="nosotros-hero__titulo">Nosotros</h1>
                     <p className="nosotros__cita">
@@ -163,21 +164,6 @@ export default function AboutSection({ legal, reducido }) {
                 </div>
             </section>
 
-            {/* Llamada final. */}
-            <section className="seccion nosotros-cierre" aria-labelledby="cierre-titulo">
-                <div className="contenedor">
-                <div className="nosotros-cierre__contenido oscuro" style={{ '--fondo-cierre': `url(${fondoNosotros})` }}>
-                    <div>
-                        <h2 id="cierre-titulo">Lleva la librería en tu bolsillo</h2>
-                        <p>Descarga la app gratis, explora el catálogo completo y recibe tus libros sin salir de casa.</p>
-                    </div>
-                    <div className="nosotros-cierre__acciones">
-                        <Link to="/descargar" className="boton"><FaDownload aria-hidden="true" /> Descargar la app</Link>
-                        <Link to="/catalogo" className="enlace-mas">Ver el catálogo <FaChevronRight aria-hidden="true" /></Link>
-                    </div>
-                </div>
-                </div>
-            </section>
         </div>
     );
 }
