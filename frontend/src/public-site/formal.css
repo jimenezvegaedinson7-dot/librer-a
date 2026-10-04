@@ -627,3 +627,29 @@
     .sitio .pie__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .sitio .pie__rejilla > .pie__pagos { grid-column: 1 / -1; }
 }
+
+/* ---------- Efecto vidrio: banda del catálogo y cierre de Nosotros ----------
+   Sin el velo azul: la foto se ve detrás y el contenido va en un panel de
+   vidrio esmerilado (translúcido, desenfocado y con un borde fino). */
+.sitio .banda-catalogo { background: #2a2420; }
+.sitio .banda-catalogo__fondo { opacity: 1; }
+.sitio .banda-catalogo__fondo::after { background: rgba(0, 0, 0, 0.18); }
+.sitio .banda-catalogo__contenido {
+    padding: clamp(1.4rem, 3vw, 2.2rem) clamp(1.4rem, 3.5vw, 2.6rem); border-radius: 18px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08));
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
+}
+.sitio .banda-catalogo h2, .sitio .banda-catalogo p { color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
+
+.sitio .nosotros-cierre__contenido { isolation: isolate; background: var(--fondo-cierre) center / cover no-repeat, #2a2420; }
+.sitio .nosotros-cierre__contenido::before {
+    content: ''; position: absolute; inset: clamp(10px, 1.6vw, 16px); z-index: -1; border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.06)), rgba(28, 22, 16, 0.32);
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
+}
+.sitio .nosotros-cierre__contenido { padding: clamp(2rem, 4.5vw, 3.2rem); }
+.sitio .nosotros-cierre h2, .sitio .nosotros-cierre p { color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }

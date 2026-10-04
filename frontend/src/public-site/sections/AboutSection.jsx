@@ -166,7 +166,7 @@ export default function AboutSection({ legal, reducido }) {
             {/* Llamada final. */}
             <section className="seccion nosotros-cierre" aria-labelledby="cierre-titulo">
                 <div className="contenedor">
-                <div className="nosotros-cierre__contenido oscuro">
+                <div className="nosotros-cierre__contenido oscuro" style={{ '--fondo-cierre': `url(${fondoNosotros})` }}>
                     <div>
                         <h2 id="cierre-titulo">Lleva la librería en tu bolsillo</h2>
                         <p>Descarga la app gratis, explora el catálogo completo y recibe tus libros sin salir de casa.</p>
