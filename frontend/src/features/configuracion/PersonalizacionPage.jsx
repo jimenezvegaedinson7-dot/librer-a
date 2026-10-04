@@ -11,7 +11,8 @@ import { Modal } from '../../components/ui/Modal';
 
 const OPCIONES = OPCIONES_COLOR;
 const GRUPOS = [
-    { titulo: 'Intensos', detalle: 'Tonos vivos de paneles como Metronic, Vuexy y Materio', opciones: OPCIONES.filter((o) => o.grupo === 'intensos') },
+    { titulo: 'Oscuros', detalle: 'Negro, marrón, café, vino, azul noche y más, en tonos profundos', opciones: OPCIONES.filter((o) => o.grupo === 'oscuros') },
+    { titulo: 'Vivos', detalle: 'Tonos claros y brillantes de paneles como Metronic, Vuexy y Materio', opciones: OPCIONES.filter((o) => o.grupo === 'vivos') },
     { titulo: 'Degradados', detalle: 'Combinaciones de uiGradients y propias', opciones: OPCIONES.filter((o) => o.grupo === 'degradados') },
     { titulo: 'Sobrios', detalle: 'Tonos elegantes y discretos', opciones: OPCIONES.filter((o) => o.grupo === 'sobrios') },
 ];

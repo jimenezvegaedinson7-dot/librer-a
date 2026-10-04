@@ -48,6 +48,29 @@ export const COLORES = {
     turquesa: { primary: '#008f9c', primaryHover: '#00a6b5', primarySoft: '#caffff', text: '#00616b' },
     cian: { primary: '#007ea8', primaryHover: '#006486', primarySoft: '#d0f3ff', text: '#006486' },
     tinto: { primary: '#9f1239', primaryHover: '#7f0c2c', primarySoft: '#ffe0e9', text: '#7f0c2c' },
+    // Oscuros: tonos profundos.
+    negro: solido('#0b0b0c', '#1f1f22'),
+    carbon: solido('#1c1c1e', '#2e2e32'),
+    grafito_oscuro: solido('#23272f', '#343a45'),
+    marron_oscuro: solido('#3b2418', '#553424'),
+    chocolate: solido('#4a2c1d', '#62402c'),
+    cafe: solido('#5a3a22', '#704b2f'),
+    vino_oscuro: solido('#4a0d1f', '#651530'),
+    granate: solido('#5c1018', '#781a24'),
+    berenjena: solido('#3a1638', '#52224f'),
+    purpura_oscuro: solido('#2e1065', '#40198a'),
+    azul_noche: solido('#0b1437', '#16224f'),
+    azul_marino_oscuro: solido('#071a2c', '#0f2a44'),
+    petroleo_oscuro: solido('#062f36', '#0b434c'),
+    verde_bosque: solido('#0f2e1f', '#1a432f'),
+    verde_oliva_oscuro: solido('#2f3416', '#434a21'),
+    pizarra_oscura: solido('#1e293b', '#334155'),
+    // Degradados oscuros.
+    negro_dorado: degradado('#0b0b0c', '#3a2d12'),
+    cafe_noche: degradado('#2b1a12', '#5a3a22'),
+    vino_negro: degradado('#1a0509', '#5c1018'),
+    noche_profunda: degradado('#020617', '#1e1b4b'),
+    bosque_oscuro: degradado('#03140c', '#14532d'),
     // Sobrios.
     zafiro: { primary: '#1e4fa3', primaryHover: '#173f85', primarySoft: '#e3ebf8', text: '#173f85' },
     lavanda: { primary: '#7c6bc4', primaryHover: '#6655ad', primarySoft: '#eeebf8', text: '#54469a' },
@@ -99,7 +122,12 @@ export const COLORES = {
 
 // Nombres y grupos para la página de Personalización.
 const GRUPO_COLORES = {
-    intensos: [['celeste', 'Celeste'], ['azure', 'Azure'], ['ciclum', 'Ciclum'], ['azul', 'Azul'], ['indigo', 'Índigo'], ['lila', 'Lila'],
+    oscuros: [['negro', 'Negro'], ['carbon', 'Carbón'], ['grafito_oscuro', 'Grafito oscuro'], ['marron_oscuro', 'Marrón oscuro'],
+        ['chocolate', 'Chocolate'], ['cafe', 'Café'], ['vino_oscuro', 'Vino oscuro'], ['granate', 'Granate'], ['berenjena', 'Berenjena'],
+        ['purpura_oscuro', 'Púrpura oscuro'], ['azul_noche', 'Azul noche'], ['azul_marino_oscuro', 'Marino oscuro'], ['petroleo_oscuro', 'Petróleo oscuro'],
+        ['verde_bosque', 'Verde bosque'], ['verde_oliva_oscuro', 'Oliva oscuro'], ['pizarra_oscura', 'Pizarra oscura'],
+        ['negro_dorado', 'Negro y oro'], ['cafe_noche', 'Café y noche'], ['vino_negro', 'Vino y negro'], ['noche_profunda', 'Noche profunda'], ['bosque_oscuro', 'Bosque oscuro']],
+    vivos: [['celeste', 'Celeste'], ['azure', 'Azure'], ['ciclum', 'Ciclum'], ['azul', 'Azul'], ['indigo', 'Índigo'], ['lila', 'Lila'],
         ['violeta', 'Violeta'], ['purpura', 'Púrpura'], ['fucsia', 'Fucsia'], ['rosa', 'Rosa'], ['coral', 'Coral'], ['rojo', 'Rojo'],
         ['naranja', 'Naranja'], ['amarillo', 'Amarillo'], ['lima', 'Lima'], ['esmeralda', 'Esmeralda'], ['turquesa', 'Turquesa'], ['cian', 'Cian'], ['tinto', 'Tinto']],
     degradados: [['instagram', 'Instagram'], ['cool_blues', 'Cool Blues'], ['blue_raspberry', 'Blue Raspberry'], ['aqua_marine', 'Aqua Marine'],
