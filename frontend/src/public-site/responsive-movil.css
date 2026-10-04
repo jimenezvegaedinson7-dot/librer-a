@@ -55,12 +55,6 @@
     .oferta-tarjeta__porcentaje { font-size: 0.875rem; }
 
     /* Promos en una fila desplazable, como en las apps de tienda. */
-    .promos {
-        display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
-        margin-inline: calc(-1 * var(--gutter)); padding: 0 var(--gutter) 6px; scrollbar-width: none;
-    }
-    .promos::-webkit-scrollbar { display: none; }
-    .promo { flex: none; width: 82%; min-height: 230px; scroll-snap-align: center; }
 
     /* Pie más corto: columnas en dos. */
     .pie__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-3) var(--e-2); }

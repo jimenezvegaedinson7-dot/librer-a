@@ -680,3 +680,21 @@ test('franja de beneficios: azul marino, texto marfil e iconos dorados', async (
         await expect(page.locator('.avisos')).toContainText(texto);
     }
 });
+
+test('inicio: vitrina de la app con tarjeta grande y dos apiladas', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await apiPublica(page);
+    await page.goto('/');
+    await page.waitForSelector('#precarga', { state: 'detached' });
+    const vitrina = page.locator('.vitrina');
+    await expect(vitrina.locator('.vitrina__principal')).toContainText('Toda la librería cabe en la app');
+    await expect(vitrina.locator('.vitrina__telefono img')).toHaveCount(1);
+    await expect(vitrina.getByRole('link', { name: /Conoce la app/ })).toHaveAttribute('href', '/aplicacion');
+    await expect(vitrina.getByRole('link', { name: /Ver cómo funciona/ })).toHaveAttribute('href', '/caracteristicas');
+    await expect(vitrina.getByRole('link', { name: /Descargar la app/ })).toHaveAttribute('href', '/descargar');
+    // Escritorio: la grande a la izquierda y las otras dos apiladas a la derecha.
+    const grande = await vitrina.locator('.vitrina__principal').boundingBox();
+    const [arriba, abajo] = await Promise.all(vitrina.locator('.vitrina__tarjeta').all().then((t) => Promise.all(t.map((x) => x.boundingBox()))));
+    expect(arriba.x).toBeGreaterThan(grande.x + grande.width - 1);
+    expect(abajo.y).toBeGreaterThan(arriba.y + arriba.height - 1);
+});

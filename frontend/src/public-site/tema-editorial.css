@@ -59,7 +59,7 @@
 
 /* ---------- Títulos en serif ---------- */
 .sitio :is(.seccion__titulo, .hero__titulo, .nosotros-hero__titulo, .app-portada__titulo,
-    .descargar-portada__titulo, .promo h3, .explorar__texto strong,
+    .descargar-portada__titulo, .explorar__texto strong,
     .nosotros-pilar h3, .nosotros-tienda__tarjeta h2,
     .banda-catalogo h2, .ventaja h2, .instalar h2, .marca span) {
     font-family: var(--f-titulo);
@@ -332,7 +332,6 @@
 .explorar__tarjeta:hover { transform: translateY(-4px); border-color: rgba(213, 164, 71, 0.6); }
 
 
-.promo { border-radius: 18px; }
 
 @media (max-width: 1023px) {
     .explorar__rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); }
