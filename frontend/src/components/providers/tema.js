@@ -24,6 +24,15 @@ const degradado = (...colores) => {
     return { ...solido(medio), fondo: `linear-gradient(135deg, ${paradas})` };
 };
 
+// Gema o vidrio oscuro: degradado profundo con un brillo de luz arriba a la
+// izquierda y un reflejo diagonal, como una piedra pulida o un cristal.
+const gema = (...colores) => {
+    const base = degradado(...colores);
+    const brillo = 'radial-gradient(120% 70% at 15% 0%, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0.06) 45%, transparent 60%)';
+    const reflejo = 'linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.10) 50%, transparent 60%)';
+    return { ...base, primary: colores[1] || colores[0], fondo: `${brillo}, ${reflejo}, ${base.fondo}` };
+};
+
 // Los ids antiguos se conservan con su mismo color: lo ya guardado en cada
 // navegador se sigue viendo igual.
 export const COLORES = {
@@ -71,6 +80,21 @@ export const COLORES = {
     vino_negro: degradado('#1a0509', '#5c1018'),
     noche_profunda: degradado('#020617', '#1e1b4b'),
     bosque_oscuro: degradado('#03140c', '#14532d'),
+    // Gemas y vidrio oscuro.
+    gema_zafiro: gema('#020b2e', '#0f2f8f', '#04123f'),
+    lapislazuli: gema('#0a1640', '#1d3fa3', '#0b1a4d'),
+    agua_profunda: gema('#021a2b', '#0a5c7a', '#03253a'),
+    aguamarina: gema('#03262b', '#0b6b73', '#042f35'),
+    gema_esmeralda: gema('#02200f', '#0b6b3a', '#03291a'),
+    jade: gema('#0b2a22', '#1f6b55', '#0c3027'),
+    rubi: gema('#2a0208', '#8f0f2a', '#3a0610'),
+    granate_gema: gema('#24040c', '#6e1426', '#2e0710'),
+    amatista: gema('#1a0833', '#5b2a9e', '#220b42'),
+    turmalina: gema('#1f0626', '#7a1f6b', '#2a0a33'),
+    topacio_ahumado: gema('#1f1206', '#6b4316', '#2a1808'),
+    onix: gema('#050506', '#2a2a30', '#0b0b0e'),
+    obsidiana: gema('#03040a', '#1c2240', '#06070f'),
+    vidrio_ahumado: gema('#0e1418', '#3a4a55', '#121a20'),
     // Sobrios.
     zafiro: { primary: '#1e4fa3', primaryHover: '#173f85', primarySoft: '#e3ebf8', text: '#173f85' },
     lavanda: { primary: '#7c6bc4', primaryHover: '#6655ad', primarySoft: '#eeebf8', text: '#54469a' },
@@ -122,6 +146,9 @@ export const COLORES = {
 
 // Nombres y grupos para la página de Personalización.
 const GRUPO_COLORES = {
+    gemas: [['gema_zafiro', 'Zafiro'], ['lapislazuli', 'Lapislázuli'], ['agua_profunda', 'Agua profunda'], ['aguamarina', 'Aguamarina'],
+        ['gema_esmeralda', 'Esmeralda'], ['jade', 'Jade'], ['rubi', 'Rubí'], ['granate_gema', 'Granate'], ['amatista', 'Amatista'],
+        ['turmalina', 'Turmalina'], ['topacio_ahumado', 'Topacio ahumado'], ['onix', 'Ónix'], ['obsidiana', 'Obsidiana'], ['vidrio_ahumado', 'Vidrio ahumado']],
     oscuros: [['negro', 'Negro'], ['carbon', 'Carbón'], ['grafito_oscuro', 'Grafito oscuro'], ['marron_oscuro', 'Marrón oscuro'],
         ['chocolate', 'Chocolate'], ['cafe', 'Café'], ['vino_oscuro', 'Vino oscuro'], ['granate', 'Granate'], ['berenjena', 'Berenjena'],
         ['purpura_oscuro', 'Púrpura oscuro'], ['azul_noche', 'Azul noche'], ['azul_marino_oscuro', 'Marino oscuro'], ['petroleo_oscuro', 'Petróleo oscuro'],
