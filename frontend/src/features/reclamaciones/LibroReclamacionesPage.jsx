@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { FaArrowLeft, FaBookOpen, FaCircleCheck, FaPaperPlane } from 'react-icons/fa6';
+import { FaArrowLeft, FaCircleCheck, FaPaperPlane } from 'react-icons/fa6';
+import logoWeb from '../../public-site/assets/logo-f-verde-96.webp';
 
 import { Input, Select, Textarea } from '../../components/ui/Form';
 import { Button } from '../../components/ui/Button';
@@ -102,9 +103,7 @@ export default function LibroReclamacionesPage() {
             <main className="mx-auto w-full max-w-3xl rounded-2xl border border-[#cfcfcf] bg-white p-5 shadow-sm sm:p-8">
                 <header className="flex flex-col gap-4 border-b-2 border-[#0d2940] pb-5 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0d2940] text-2xl text-white" aria-hidden="true">
-                            <FaBookOpen />
-                        </span>
+                        <img src={logoWeb} alt="" width="48" height="56" className="h-14 w-auto" />
                         <div>
                             <h1 className="font-title text-2xl font-semibold text-slate-900">Libro de Reclamaciones</h1>
                             <p className="text-sm text-slate-600">Hoja de reclamación virtual</p>

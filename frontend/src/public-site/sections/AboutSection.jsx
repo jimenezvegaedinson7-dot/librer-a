@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
     FaBookOpen, FaDiamondTurnRight, FaDownload, FaLocationDot, FaShieldHalved,
-    FaStore, FaTruckFast, FaChevronRight, FaBuilding, FaFileSignature,
+    FaStore, FaTruckFast, FaChevronRight,
 } from 'react-icons/fa6';
 
 import fondoNosotros from '../../assets/fondo_web/nosotros-web.webp';
@@ -163,32 +163,13 @@ export default function AboutSection({ legal, reducido }) {
                 </div>
             </section>
 
-            {/* Datos de la empresa y atención. */}
+            {/* Atención al cliente. */}
             <section className="seccion nosotros-empresa" aria-labelledby="empresa-titulo">
                 <div className="contenedor">
-                    <h2 id="empresa-titulo" className="visualmente-oculto">Datos de la empresa</h2>
+                    <h2 id="empresa-titulo" className="visualmente-oculto">Atención al cliente</h2>
+                    {/* Sin razón social ni RUC en la web pública: esos datos solo
+                        figuran en el Libro de Reclamaciones, donde la norma los exige. */}
                     <ul className="nosotros-empresa__datos">
-                        <li>
-                            <FaBuilding aria-hidden="true" />
-                            <span>
-                                <small>Razón social</small>
-                                <strong>{legal.razonSocial}</strong>
-                            </span>
-                        </li>
-                        <li>
-                            <FaStore aria-hidden="true" />
-                            <span>
-                                <small>Nombre comercial</small>
-                                <strong>{legal.nombreComercial}</strong>
-                            </span>
-                        </li>
-                        <li>
-                            <FaFileSignature aria-hidden="true" />
-                            <span>
-                                <small>RUC</small>
-                                <strong>{legal.ruc}</strong>
-                            </span>
-                        </li>
                         <li>
                             <FaShieldHalved aria-hidden="true" />
                             <span>

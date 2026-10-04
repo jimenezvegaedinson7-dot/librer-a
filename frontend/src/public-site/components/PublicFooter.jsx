@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import logo from '../assets/logo-f-blanco-96.webp';
 import { NAVEGACION, SITIO } from '../config/site';
 
-export default function PublicFooter({ legal }) {
+export default function PublicFooter() {
     const { terminos, privacidad, correo, telefono, redes } = SITIO.enlaces;
 
     return (
@@ -44,7 +44,7 @@ export default function PublicFooter({ legal }) {
                     </div>
                 </div>
                 <div className="pie__legal">
-                    <p>© {new Date().getFullYear()} {SITIO.nombre} · {legal.nombreComercial} · {legal.razonSocial} · RUC {legal.ruc}</p>
+                    <p>© {new Date().getFullYear()} {SITIO.nombre}</p>
                     <a className="pie__admin" href={SITIO.rutaLoginAdmin}>Acceso administrativo</a>
                 </div>
             </div>
