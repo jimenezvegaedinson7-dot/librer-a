@@ -43,7 +43,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
         <aside
             aria-label="Navegación principal"
             style={{
-                backgroundColor: colores.sidebarBg,
+                background: colores.sidebarFondo || colores.sidebarBg,
                 borderColor: colores.sidebarBorder,
                 color: colores.sidebarText,
                 '--sb-hover': colores.sidebarHover,

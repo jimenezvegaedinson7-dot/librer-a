@@ -4,26 +4,53 @@ export const CLAVE_CUSTOM = 'libreria-theme-customization';
 export const CLAVE_TEMA = 'libreria-admin-theme';
 
 export const ZONAS_IDS = ['sidebar', 'topbar', 'buttons', 'inputs', 'tables', 'modals', 'badges', 'icons', 'links', 'charts'];
-export const ZONAS_DEFAULT = ['sidebar', 'topbar', 'buttons', 'icons'];
+// Al aplicar un color se marcan todas las zonas: así cambia todo el sistema.
+export const ZONAS_DEFAULT = [...ZONAS_IDS];
 
+// Paleta del panel. Los sólidos llevan su color; los degradados además un
+// `fondo` (linear-gradient) y un `primary` intermedio para bordes, textos y
+// el cálculo de contraste.
 export const COLORES = {
     default: { primary: '#0d2940', primaryHover: '#16395a', primarySoft: '#f4ebdd', text: '#0d2940' },
-    azul: { primary: '#0057ff', primaryHover: '#0042cc', primarySoft: '#dbe6ff', text: '#0042cc' },
-    indigo: { primary: '#4338ff', primaryHover: '#3024d4', primarySoft: '#e0ddff', text: '#3024d4' },
-    violeta: { primary: '#7c1dff', primaryHover: '#6510d8', primarySoft: '#edddff', text: '#6510d8' },
-    tinto: { primary: '#9f1239', primaryHover: '#7f0c2c', primarySoft: '#ffe0e9', text: '#7f0c2c' },
-    cian: { primary: '#007ea8', primaryHover: '#006486', primarySoft: '#d0f3ff', text: '#006486' },
-    esmeralda: { primary: '#00874b', primaryHover: '#006b3b', primarySoft: '#ccffe3', text: '#006b3b' },
-    lima: { primary: '#4c9500', primaryHover: '#61b300', primarySoft: '#e2ffc4', text: '#356800' },
-    turquesa: { primary: '#008f9c', primaryHover: '#00a6b5', primarySoft: '#caffff', text: '#00616b' },
-    ciclum: { primary: '#007ccc', primaryHover: '#1697e8', primarySoft: '#d3edff', text: '#0063a3' },
-    rosa: { primary: '#d90070', primaryHover: '#b4005d', primarySoft: '#ffdaed', text: '#b4005d' },
-    coral: { primary: '#e62b48', primaryHover: '#ff3d59', primarySoft: '#ffdae1', text: '#a8122b' },
-    naranja: { primary: '#e64900', primaryHover: '#ff681f', primarySoft: '#ffdecf', text: '#a93200' },
-    amarillo: { primary: '#f2c400', primaryHover: '#ffdb26', primarySoft: '#fff5bd', text: '#765c00' },
+    zafiro: { primary: '#1e4fa3', primaryHover: '#173f85', primarySoft: '#e3ebf8', text: '#173f85' },
+    indigo: { primary: '#4f46e5', primaryHover: '#4338ca', primarySoft: '#e8e7fc', text: '#3730a3' },
+    lavanda: { primary: '#7c6bc4', primaryHover: '#6655ad', primarySoft: '#eeebf8', text: '#54469a' },
+    ciruela: { primary: '#6d2e6b', primaryHover: '#58245a', primarySoft: '#f3e6f2', text: '#58245a' },
+    vino: { primary: '#8b1e3f', primaryHover: '#721832', primarySoft: '#f7e3e9', text: '#721832' },
+    rosa: { primary: '#c2577a', primaryHover: '#a84466', primarySoft: '#fbe9ef', text: '#9a3a5b' },
+    terracota: { primary: '#b5502b', primaryHover: '#9a4122', primarySoft: '#f9e7df', text: '#8a3a1f' },
+    cobre: { primary: '#a8643a', primaryHover: '#8e532f', primarySoft: '#f6ebe3', text: '#7a4627' },
+    ambar: { primary: '#c88a12', primaryHover: '#dca02a', primarySoft: '#fbf1dc', text: '#7a520b' },
     dorado: { primary: '#b88400', primaryHover: '#d29b08', primarySoft: '#fff0c2', text: '#725100' },
-    rojo: { primary: '#e01929', primaryHover: '#bb0e1c', primarySoft: '#ffdbdf', text: '#bb0e1c' },
+    oliva: { primary: '#6b7a2a', primaryHover: '#586523', primarySoft: '#eef1df', text: '#4c571e' },
+    bosque: { primary: '#2f6b4f', primaryHover: '#255840', primarySoft: '#e2f0e9', text: '#22513b' },
+    esmeralda: { primary: '#0f8a6a', primaryHover: '#0b7258', primarySoft: '#dcf4ec', text: '#0a6550' },
+    petroleo: { primary: '#0f5e6e', primaryHover: '#0c4c59', primarySoft: '#ddeef1', text: '#0c4c59' },
+    turquesa: { primary: '#0e9aa7', primaryHover: '#0b7f8a', primarySoft: '#d9f4f6', text: '#0a6f78' },
+    pizarra: { primary: '#475d78', primaryHover: '#3a4d64', primarySoft: '#e8edf3', text: '#3a4d64' },
+    grafito: { primary: '#374151', primaryHover: '#2b333f', primarySoft: '#eceef1', text: '#2b333f' },
+    // Degradados combinados.
+    atardecer: { primary: '#e2513f', primaryHover: '#c9402f', primarySoft: '#fde8e2', text: '#a8352a', fondo: 'linear-gradient(135deg, #f97316 0%, #db2777 100%)' },
+    aurora: { primary: '#3b6bc9', primaryHover: '#2f58a8', primarySoft: '#e3ecfa', text: '#2f4f99', fondo: 'linear-gradient(135deg, #0ea5a4 0%, #6d28d9 100%)' },
+    oceano: { primary: '#155e8c', primaryHover: '#104c72', primarySoft: '#ddeef7', text: '#104c72', fondo: 'linear-gradient(135deg, #0e7490 0%, #1e3a8a 100%)' },
+    vino_oro: { primary: '#8f3a32', primaryHover: '#76302a', primarySoft: '#f6e6e1', text: '#76302a', fondo: 'linear-gradient(135deg, #7f1d3a 0%, #b8862b 100%)' },
+    noche: { primary: '#1e2a6b', primaryHover: '#182257', primarySoft: '#e4e7f6', text: '#1e2a6b', fondo: 'linear-gradient(135deg, #0f172a 0%, #4338ca 100%)' },
+    bosque_niebla: { primary: '#165f4a', primaryHover: '#124f3e', primarySoft: '#dff0ea', text: '#124f3e', fondo: 'linear-gradient(135deg, #14532d 0%, #0f766e 100%)' },
+    durazno: { primary: '#e0614d', primaryHover: '#c9503d', primarySoft: '#fdeae5', text: '#a8402f', fondo: 'linear-gradient(135deg, #fb923c 0%, #f472b6 100%)' },
+    lavanda_cielo: { primary: '#5b6fe0', primaryHover: '#4a5bc4', primarySoft: '#e8ebfb', text: '#3e4da8', fondo: 'linear-gradient(135deg, #8b5cf6 0%, #38bdf8 100%)' },
+    marino_oro: { primary: '#0d2940', primaryHover: '#16395a', primarySoft: '#f4ebdd', text: '#0d2940', fondo: 'linear-gradient(135deg, #0d2940 0%, #0d2940 45%, #b08a3e 100%)' },
+    grafito_plata: { primary: '#374151', primaryHover: '#2b333f', primarySoft: '#eceef1', text: '#2b333f', fondo: 'linear-gradient(135deg, #1f2937 0%, #64748b 100%)' },
 };
+
+// Nombres y grupos para la página de Personalización.
+export const OPCIONES_COLOR = [
+    ['default', 'Azul marino · web'], ['zafiro', 'Zafiro'], ['indigo', 'Índigo'], ['lavanda', 'Lavanda'], ['ciruela', 'Ciruela'],
+    ['vino', 'Vino'], ['rosa', 'Rosa palo'], ['terracota', 'Terracota'], ['cobre', 'Cobre'], ['ambar', 'Ámbar'], ['dorado', 'Dorado'],
+    ['oliva', 'Oliva'], ['bosque', 'Bosque'], ['esmeralda', 'Esmeralda'], ['petroleo', 'Petróleo'], ['turquesa', 'Turquesa'],
+    ['pizarra', 'Pizarra'], ['grafito', 'Grafito'],
+    ['atardecer', 'Atardecer'], ['aurora', 'Aurora'], ['oceano', 'Océano'], ['vino_oro', 'Vino y oro'], ['noche', 'Noche'],
+    ['bosque_niebla', 'Bosque y niebla'], ['durazno', 'Durazno'], ['lavanda_cielo', 'Lavanda y cielo'], ['marino_oro', 'Marino y oro'], ['grafito_plata', 'Grafito y plata'],
+].map(([id, nombre]) => ({ id, nombre, hex: COLORES[id].primary, fondo: COLORES[id].fondo || COLORES[id].primary, degradado: Boolean(COLORES[id].fondo) }));
 
 // El texto sobre colores sólidos se calcula para mantener el contraste.
 export function colorSobre(hex) {
@@ -48,7 +75,7 @@ const SIDEBAR_MARCA = {
 export function getSidebarColors(colorId, tema) {
     const isDark = tema === 'dark';
     const c = COLORES[colorId] || COLORES.default;
-    if (!COLORES[colorId] || ['default', 'amarillo', 'dorado'].includes(colorId)) {
+    if (!COLORES[colorId] || ['default', 'dorado', 'ambar'].includes(colorId)) {
         const marca = SIDEBAR_MARCA[isDark ? 'dark' : 'light'];
         return {
             primary: '#ffffff',
@@ -67,6 +94,7 @@ export function getSidebarColors(colorId, tema) {
         primary: texto,
         primarySoft: c.primaryHover,
         sidebarBg: c.primary,
+        sidebarFondo: c.fondo || c.primary,
         sidebarBorder: texto + '40',
         sidebarText: texto,
         sidebarHover: c.primaryHover,

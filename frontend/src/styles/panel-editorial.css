@@ -143,7 +143,7 @@
 
 /* La misma acción dorada con texto marino que en la web. */
 .admin-shell[data-theme] .admin-primary-button {
-    background: var(--theme-buttons, var(--editorial-dorado)) !important;
+    background: var(--theme-buttons-fondo, var(--theme-buttons, var(--editorial-dorado))) !important;
     border-color: var(--theme-buttons, var(--editorial-dorado-oscuro)) !important;
     color: var(--theme-buttons-on, var(--editorial-marino-950)) !important;
     box-shadow: 0 3px 8px -4px rgb(13 41 64 / 0.3);
@@ -249,7 +249,7 @@
 
 /* Personalización: colores sólidos en las zonas elegidas, sin diluirlos. */
 html[data-color-topbar] .admin-shell .admin-topbar {
-    background: var(--theme-topbar) !important;
+    background: var(--theme-topbar-fondo, var(--theme-topbar)) !important;
     color: var(--theme-topbar-on);
 }
 html[data-color-topbar] .admin-topbar button[aria-haspopup="menu"] :is(p, svg) {
@@ -268,7 +268,7 @@ html[data-color-tables] .admin-shell .data-table-shell thead th {
     color: var(--theme-tables-on) !important;
 }
 html[data-color-icons] .admin-shell :is(.ficha-icono, .page-header-icon, .card-header-icon, .mini-stat-icono, .panel-icono:not(.panel-icono--estado)) {
-    background: var(--theme-icons) !important;
+    background: var(--theme-icons-fondo, var(--theme-icons)) !important;
     color: var(--theme-icons-on) !important;
     border-color: var(--theme-icons-hover);
 }
@@ -280,7 +280,7 @@ html[data-color-modals] .admin-shell .modal-header :is(h2, p) {
 }
 html[data-color-modals] .admin-shell .modal-header > button { color: var(--theme-modals-on) !important; }
 html[data-color-badges] .admin-shell :is(.admin-notif-badge, .bg-mahogany-50) {
-    background: var(--theme-badges) !important;
+    background: var(--theme-badges-fondo, var(--theme-badges)) !important;
     color: var(--theme-badges-on) !important;
 }
 html[data-color-badges] .admin-shell .bg-mahogany-50 .bg-mahogany-500 { background: currentColor; }

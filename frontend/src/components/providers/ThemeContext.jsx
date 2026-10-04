@@ -41,6 +41,7 @@ export function ThemeProvider({ children }) {
                 r.style.removeProperty(`--theme-${z}-soft`);
                 r.style.removeProperty(`--theme-${z}-text`);
                 r.style.removeProperty(`--theme-${z}-on`);
+                r.style.removeProperty(`--theme-${z}-fondo`);
                 return;
             }
             const c = COLORES[colorId] || COLORES.default;
@@ -51,6 +52,8 @@ export function ThemeProvider({ children }) {
             r.style.setProperty(`--theme-${z}-soft`, c.primarySoft);
             r.style.setProperty(`--theme-${z}-text`, c.text);
             r.style.setProperty(`--theme-${z}-on`, botonesMarca ? '#0a1f31' : colorSobre(c.primary));
+            // Fondo: el degradado si el color lo tiene; si no, el sólido.
+            r.style.setProperty(`--theme-${z}-fondo`, botonesMarca ? '#d5a447' : (c.fondo || c.primary));
         });
     }, [config, tema]);
 
