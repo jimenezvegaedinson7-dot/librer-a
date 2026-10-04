@@ -9,6 +9,7 @@ const historialModel = require('../models/historial.model');
 const usuarioModel = require('../models/usuario.model');
 const { validarId, esNumeroNoNegativo, esEstadoValido } = require('../utils/validaciones');
 const { validarDescuentos } = require('../utils/descuentos');
+const { conPortadaCatalogo } = require('../utils/portadasCatalogo');
 const {
     eliminarImagen,
     publicIdDesdeUrl
@@ -69,7 +70,7 @@ const obtenerLibros = async (req, res) => {
 
         return res.json({
             success: true,
-            data: libros
+            data: libros.map(conPortadaCatalogo)
         });
 
     } catch (error) {
@@ -115,7 +116,7 @@ const obtenerLibro = async (req, res) => {
 
         return res.json({
             success: true,
-            data: libro
+            data: conPortadaCatalogo(libro)
         });
 
     } catch (error) {
@@ -884,7 +885,9 @@ const obtenerRelacionados = async (req, res) => {
     try {
         const data = await libroModel.obtenerRelacionados(id);
         if (!data) return res.status(404).json({ success: false, mensaje: 'Libro no encontrado en el catálogo' });
-        return res.json({ success: true, data });
+        return res.json({ success: true, data: Object.fromEntries(
+            Object.entries(data).map(([grupo, libros]) => [grupo, libros.map(conPortadaCatalogo)])
+        ) });
     } catch (error) {
         console.error('Error al obtener relacionados:', error.message);
         return res.status(500).json({ success: false, mensaje: 'No se pudieron cargar los libros relacionados' });

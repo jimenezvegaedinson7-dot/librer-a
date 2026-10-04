@@ -158,3 +158,19 @@ test('referencia solo se anuncia al mostrarla: portada registrada prioritaria, f
     await expect(page.locator('.ficha-portada-principal')).toContainText('No se pudo cargar la portada');
     await expect(page.locator('.ficha-portada-principal')).not.toContainText(aviso);
 });
+
+test('portada absoluta de la API para Flutter conserva imagen y aviso en la web y el panel',async({page})=>{
+    const control=await preparar(page,{incluirReferencias:true});
+    const libro=control.libros.find(l=>l.id_libro===85);
+    const url='https://librer-a-zeta.vercel.app/portadas/9789700508900-referencia.jpg';
+    libro.portada=url;libro.portada_registrada=null;libro.portada_es_referencia=true;
+    await page.route(url,async route=>route.fulfill({response:await page.request.get('/portadas/9789700508900-referencia.jpg')}));
+    await page.goto('/libros');
+    await visible(fila(page,libro.titulo).getByAltText(`Portada de ${libro.titulo}`),/^https:\/\/librer-a-zeta\.vercel\.app\/portadas\//);
+    await expect(fila(page,libro.titulo).getByText(aviso,{exact:true})).toBeVisible();
+    await page.goto('/libro/85');
+    await visible(page.locator('.ficha-portada-principal img'),/^https:\/\/librer-a-zeta\.vercel\.app\/portadas\//);
+    await expect(page.locator('.ficha-portada-principal')).toContainText(aviso);
+    await page.goto('/catalogo');
+    await expect(page.locator('.tarjeta-libro').filter({hasText:libro.titulo}).getByText(aviso,{exact:true})).toBeVisible();
+});

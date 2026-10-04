@@ -1,6 +1,7 @@
 const libroModel = require('../models/libro.model');
 const favoritoModel = require('../models/favorito.model');
 const { validarId } = require('../utils/validaciones');
+const { conPortadaCatalogo } = require('../utils/portadasCatalogo');
 
 // ========================================
 // LISTAR MIS FAVORITOS
@@ -14,7 +15,7 @@ const listarMisFavoritos = async (req, res) => {
 
         return res.json({
             success: true,
-            data: favoritos
+            data: favoritos.map(conPortadaCatalogo)
         });
 
     } catch (error) {

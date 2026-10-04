@@ -6,6 +6,7 @@ const { validarId, esCantidadPositiva, esNumeroNoNegativo } = require('../utils/
 const { RESERVA, permitirTransicion } = require('../utils/transiciones');
 const { enviarCorreoReservaCreada } = require('../utils/mailer');
 const { esPersonalInterno } = require('../utils/roles');
+const { conPortadaCatalogo } = require('../utils/portadasCatalogo');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR RESERVAS
@@ -142,7 +143,7 @@ const obtenerMisReservas = async (req, res) => {
 
         return res.json({
             success: true,
-            data: reservas
+            data: reservas.map(conPortadaCatalogo)
         });
 
     } catch (error) {
