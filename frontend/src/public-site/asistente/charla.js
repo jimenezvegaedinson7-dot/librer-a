@@ -100,7 +100,7 @@ function charlaLocal(q) {
         return { texto: 'Lamento no haberte ayudado como esperabas. Cuéntame qué libro o información buscas y lo intento de nuevo con gusto.' };
     if (/\b(que horas? (?:es|son|tienes)|dime la hora|me (?:das|dices) la hora|la hora porfa|tienes hora|que hora)\b/.test(q)) {
         const hora = new Date().toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit' });
-        return { texto: `Son las ${hora}. ${azar(HORA_DE_LEER)}`, sugerencias: ['Recomiéndame algo', 'Ver ofertas'] };
+        return { texto: `Son las ${hora}${hora.endsWith('.') ? '' : '.'} ${azar(HORA_DE_LEER)}`, sugerencias: ['Recomiéndame algo', 'Ver ofertas'] };
     }
     if (/\b(que dia es|que fecha es|hoy que fecha|que dia es hoy)\b/.test(q))
         return { texto: `Hoy es ${new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })}. ¡Un día perfecto para estrenar un libro nuevo! 📖`, sugerencias: ['Recomiéndame algo'] };
