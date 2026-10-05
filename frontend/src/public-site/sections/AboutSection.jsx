@@ -6,7 +6,6 @@ import {
 } from 'react-icons/fa6';
 
 import fondoNosotros from '../../assets/fondo_web/nosotros-web.webp';
-import fondoNosotrosMovil from '../../assets/fondo_web/nosotros-web-1024.webp';
 import { UBICACION_TIENDA } from '../config/site';
 import { gsap, useGSAP } from '../animation/scroll';
 import './nosotros.css';
@@ -89,7 +88,7 @@ export default function AboutSection({ legal, reducido }) {
             <section
                 className="seccion oscuro nosotros-hero"
                 aria-labelledby="nosotros-titulo"
-                style={{ '--fondo-nosotros': `url(${fondoNosotros})`, '--fondo-nosotros-movil': `url(${fondoNosotrosMovil})` }}
+                style={{ '--fondo-nosotros': `url(${fondoNosotros})`, '--fondo-nosotros-movil': `url(${fondoNosotros})` }}
             >
                 {/* La imagen lleva un velo de vidrio suave; al pasar el mouse se aclara, se acerca y la cruza un brillo. */}
                 <div className="nosotros-hero__fondo" aria-hidden="true"><span className="nosotros-hero__vidrio" /></div>
