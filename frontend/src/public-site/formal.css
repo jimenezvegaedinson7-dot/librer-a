@@ -1121,3 +1121,24 @@
 @media (min-width: 1024px) {
     .sitio .categorias__item:nth-child(n + 5) { display: none; }
 }
+
+/* Portadas del inicio: indicador giratorio mientras la imagen carga y
+   aparición suave al terminar. */
+.sitio :is(.libro__tapa, .categoria__libro) img[data-cargada] { opacity: 1; }
+.sitio :is(.libro__tapa, .categoria__libro) img:not([data-cargada]) { opacity: 0; }
+.sitio :is(.libro__tapa, .categoria__libro) img { transition: opacity 0.5s ease; }
+.sitio .libro__tapa:has(> img:not([data-cargada])),
+.sitio .categoria__libro:has(> img:not([data-cargada])) { background: #efe9df; }
+.sitio .libro__tapa:has(> img:not([data-cargada]))::after,
+.sitio .categoria__libro:has(> img:not([data-cargada]))::after {
+    content: ''; position: absolute; top: 50%; left: 50%; z-index: 2;
+    width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%;
+    border: 2.5px solid rgba(13, 41, 64, 0.14); border-top-color: var(--marino-900);
+    animation: portada-giro 0.8s linear infinite;
+}
+.sitio .categoria__libro:has(> img:not([data-cargada]))::after { width: 18px; height: 18px; margin: -9px 0 0 -9px; border-width: 2px; }
+@keyframes portada-giro { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .sitio .libro__tapa:has(> img:not([data-cargada]))::after,
+    .sitio .categoria__libro:has(> img:not([data-cargada]))::after { animation-duration: 2.4s; }
+}

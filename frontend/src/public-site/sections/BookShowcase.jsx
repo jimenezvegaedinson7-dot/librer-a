@@ -6,6 +6,8 @@ import { PrecioOferta } from '../components/PrecioOferta';
 import { portada } from '../lib/formato';
 import { EtiquetaNuevo } from '../components/EtiquetasLibro';
 import ComprarLibro from '../tienda/ComprarLibro';
+import ImagenCarga from '../components/ImagenCarga';
+import { useCarruselAutomatico } from '../lib/useCarruselAutomatico';
 import { referenciaPortadaLibro, AVISO_PORTADA_REFERENCIA } from '../../lib/utils/portadasLibro';
 
 function Libro({ libro, indice }) {
@@ -13,7 +15,7 @@ function Libro({ libro, indice }) {
         <li className="libro" style={{ '--i': indice }}>
             <div className="libro__escenario">
             <div className="libro__tapa">
-                <img
+                <ImagenCarga
                     src={portada(libro.portada, 320)}
                     srcSet={`${portada(libro.portada, 220)} 220w, ${portada(libro.portada, 320)} 320w, ${portada(libro.portada, 440)} 440w`}
                     sizes="(max-width: 767px) 150px, 200px"
@@ -51,6 +53,8 @@ export default function BookShowcase({ catalogo, reducido }) {
         .map((l, i) => ({ ...l, _i: i }))
         .sort((a, b) => (b.masVendido - a.masVendido) || (b.esNuevo - a.esNuevo) || a._i - b._i)
         .slice(0, 12);
+    // Avanza solo, de uno en uno, y vuelve al inicio al llegar al final.
+    useCarruselAutomatico(ventana, { activo: !cargando && !error && muestra.length > 1 && !reducido });
 
     const desplazar = (sentido) => {
         const el = ventana.current;

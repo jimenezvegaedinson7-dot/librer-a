@@ -1,11 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { portada } from '../lib/formato';
 import { FaChevronRight } from 'react-icons/fa6';
+import ImagenCarga from '../components/ImagenCarga';
+import { useCarruselAutomatico } from '../lib/useCarruselAutomatico';
 
 // ============================================================
 // EXPLORA POR CATEGORÍA
-// Las 4 categorías con más títulos del catálogo real, en tarjetas marfil:
+// Las categorías con más títulos (4 en computadora; hasta 8 en el carrusel
+// automático de celular y tablet) del catálogo real, en tarjetas marfil:
 // tres libros de pie con las portadas reales de la categoría, un adorno
 // de línea dorada según el género, el nombre en serif, cuántos títulos
 // tiene y un botón circular. Cada una lleva al catálogo ya filtrado.
@@ -67,6 +70,9 @@ export default function ExplorarCategorias({ catalogo }) {
             .map(([nombre, lista]) => [nombre, lista, [...lista].sort((a, b) => Number(Boolean(b.portada)) - Number(Boolean(a.portada))).slice(0, 3)]);
     }, [libros]);
 
+    const rejilla = useRef(null);
+    useCarruselAutomatico(rejilla, { activo: grupos.length > 1 });
+
     if (grupos.length < 2) return null;
 
     return (
@@ -86,7 +92,7 @@ export default function ExplorarCategorias({ catalogo }) {
                     </div>
                     <Link to="/catalogo" className="categorias__todas">Ver todas <FaChevronRight aria-hidden="true" /></Link>
                 </div>
-                <ul className="categorias__rejilla" data-revelar="">
+                <ul ref={rejilla} className="categorias__rejilla" data-revelar="">
                     {grupos.map(([nombre, lista, muestra], i) => (
                         <li key={nombre} className="categorias__item" style={{ '--i': i }}>
                             <Link to={`/catalogo?categoria=${encodeURIComponent(nombre)}`} className="categoria-tarjeta">
@@ -95,7 +101,7 @@ export default function ExplorarCategorias({ catalogo }) {
                                     <span className="categoria__libros">
                                         {muestra.map((l, k) => (
                                             <span key={l.id} className="categoria__libro" style={{ '--k': k }}>
-                                                <img src={portada(l.portada, 220)} alt="" width="110" height="165" loading="lazy" decoding="async" />
+                                                <ImagenCarga src={portada(l.portada, 220)} alt="" width="110" height="165" loading="lazy" decoding="async" />
                                             </span>
                                         ))}
                                     </span>
