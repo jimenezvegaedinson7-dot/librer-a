@@ -1183,3 +1183,17 @@
     .sitio .catalogo-resultados .tarjeta-libro .compra-libro .enlace-texto { min-height: 30px; font-size: 0.8125rem; }
     .sitio .catalogo-mas { margin-top: 8px; }
 }
+/* Celular: cada tarjeta mide lo que su contenido (con o sin descuento); los
+   botones van justo debajo del precio y el carrito lleva su ícono. */
+@media (max-width: 640px) {
+    .sitio .catalogo .catalogo__pista,
+    .sitio .catalogo-resultados .rejilla-libros { align-items: start; }
+    .sitio .catalogo .libro, .sitio .catalogo-resultados .tarjeta-libro { height: auto; align-self: start; }
+    .sitio .catalogo .libro__datos, .sitio .catalogo-resultados .tarjeta-libro__cuerpo { flex: none; }
+    .sitio .catalogo .libro .compra-libro,
+    .sitio .catalogo-resultados .tarjeta-libro .compra-libro { margin-top: 0; padding-top: 8px; }
+    .sitio .catalogo .libro .compra-libro .boton,
+    .sitio .catalogo-resultados .tarjeta-libro .compra-libro .boton { margin-top: 0; gap: 6px; font-size: 0.75rem; padding-inline: 8px; }
+    .sitio .catalogo .libro .compra-libro .boton svg,
+    .sitio .catalogo-resultados .tarjeta-libro .compra-libro .boton svg { display: inline-block; width: 14px; height: 14px; flex: none; }
+}
