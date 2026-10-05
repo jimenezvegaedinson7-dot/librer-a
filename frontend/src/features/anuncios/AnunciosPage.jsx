@@ -436,7 +436,7 @@ function AnunciosVideo() {
                             acciones={(f) => (
                                 <div className="flex gap-1">
                                     <BtnAccion tipo="ver" onClick={() => cambiarEstado(f)} titulo={Number(f.estado) === 1 ? 'Ocultar' : 'Mostrar'}>
-                                        {Number(f.estado) === 1 ? <FaEye /> : <FaEyeSlash />}
+                                        {Number(f.estado) === 1 ? <FaEyeSlash /> : <FaEye />}
                                     </BtnAccion>
                                     <BtnAccion tipo="editar" onClick={() => abrirEdicion(f)} titulo="Editar">
                                         <FaPen />
