@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 // llegar al final vuelve al inicio. Se detiene mientras la persona lo usa
 // (cursor encima, foco, toque), cuando la pestaña no está visible y si el
 // sistema pide reducir el movimiento. Si todo cabe en pantalla no hace nada.
-export function useCarruselAutomatico(ref, { intervalo = 4200, duracion = 1100, activo = true } = {}) {
+export function useCarruselAutomatico(ref, { intervalo = 2600, duracion = 600, activo = true } = {}) {
     useEffect(() => {
         const el = ref.current;
         if (!el || !activo) return undefined;
