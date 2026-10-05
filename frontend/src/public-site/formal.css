@@ -1091,3 +1091,13 @@
 @media (max-width: 1023px) {
     .sitio .catalogo-lateral .casilla { gap: 6px; padding: 0 6px 0 10px; font-size: 0.8125rem; }
 }
+/* "Mostrar" en una sola fila deslizable, igual que las categorías. */
+@media (max-width: 1023px) {
+    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) {
+        display: grid; grid-auto-flow: column; grid-auto-columns: max-content; grid-template-rows: auto auto;
+        overflow-x: auto; scrollbar-width: none; gap: 8px;
+    }
+    .sitio .catalogo-lateral .filtro-bloque:nth-child(2)::-webkit-scrollbar { display: none; }
+    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) h2 { grid-row: 1; grid-column: 1 / span 2; width: auto; }
+    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) .casilla { grid-row: 2; }
+}
