@@ -67,6 +67,13 @@ const DATOS = [
     'Dato curioso: la imprenta de tipos móviles de Gutenberg, hacia 1450, permitió que los libros llegaran a muchísimas más personas.',
     'Dato curioso: el Inca Garcilaso de la Vega, autor de los «Comentarios Reales», nació en Cusco en 1539.',
 ];
+// Remate al dar la hora: siempre es buen momento para un libro.
+const HORA_DE_LEER = [
+    '¡Ya va siendo hora de comprar un libro! 📚',
+    'Y justo a esta hora… ¡un libro nuevo cae perfecto! 😄',
+    'Hora exacta para empezar un capítulo… o para llevarte un libro nuevo. 📖',
+    'Según mi reloj de lector, ya es hora de tu próxima lectura. 😉',
+];
 const ANIMO = [
     { patron: /\b(aburrid[oa]|aburro|aburre)\b/, texto: 'Un buen libro es la mejor cura contra el aburrimiento. Te muestro algunos de los más vendidos para que elijas uno:', consulta: 'mas vendidos' },
     { patron: /\b(triste|desanimad[oa]|mal dia|deprimid[oa]|baj[oa] de animo)\b/, texto: 'Siento que estés así. A veces una buena historia acompaña mucho. Mira estas novedades, quizá alguna te levante el ánimo:', consulta: 'novedades' },
@@ -91,8 +98,12 @@ function charlaLocal(q) {
         return { texto: '¡Gracias! Me alegra mucho ayudarte. 😊 ¿Buscamos tu próxima lectura?' };
     if (/\b(tonto|idiota|inutil|estupido|no sirves|malo)\b/.test(q) && q.split(' ').length <= 6)
         return { texto: 'Lamento no haberte ayudado como esperabas. Cuéntame qué libro o información buscas y lo intento de nuevo con gusto.' };
-    if (/\b(que hora es|que dia es|hoy que fecha)\b/.test(q))
-        return { texto: `Según tu dispositivo, son las ${new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })} del ${new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })}. ¡Buena hora para leer un capítulo!` };
+    if (/\b(que horas? (?:es|son|tienes)|dime la hora|me (?:das|dices) la hora|la hora porfa|tienes hora|que hora)\b/.test(q)) {
+        const hora = new Date().toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit' });
+        return { texto: `Son las ${hora}. ${azar(HORA_DE_LEER)}`, sugerencias: ['Recomiéndame algo', 'Ver ofertas'] };
+    }
+    if (/\b(que dia es|que fecha es|hoy que fecha|que dia es hoy)\b/.test(q))
+        return { texto: `Hoy es ${new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })}. ¡Un día perfecto para estrenar un libro nuevo! 📖`, sugerencias: ['Recomiéndame algo'] };
     for (const animo of ANIMO) if (animo.patron.test(q)) return { texto: animo.texto, consulta: animo.consulta };
     return null;
 }
