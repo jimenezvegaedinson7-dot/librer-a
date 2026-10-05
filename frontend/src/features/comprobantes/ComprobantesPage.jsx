@@ -14,8 +14,7 @@ import {
 } from 'react-icons/fa6';
 
 import { FaFileLines, FaFileInvoice, FaMoneyBillWave } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -382,13 +381,13 @@ export default function ComprobantesPage() {
                 descripcion="Boletas y facturas emitidas por las ventas"
                 icono={<FaReceipt />}
             />
-            <Indicadores etiqueta="Resumen de comprobantes">
-                <StatCard titulo="Comprobantes" valor={total} icono={<FaReceipt />} color="primary" detalle="Emitidos en el filtro" />
-                <StatCard titulo="Boletas" valor={resumen.boletas} icono={<FaFileLines />} color="sky" detalle="Para consumidores finales" />
-                <StatCard titulo="Facturas" valor={resumen.facturas} icono={<FaFileInvoice />} color="violet" detalle="Para empresas con RUC" />
-                <StatCard titulo="Importe emitido" valor={formatearMoneda(resumen.ingresos)} icono={<FaMoneyBillWave />} color="teal" detalle="Total facturado" />
+            <Indicadores cargando={cargando} etiqueta="Resumen de comprobantes">
+                <Indicador titulo="Comprobantes" valor={total} icono={<FaReceipt />} tono="primary" detalle="Emitidos en el filtro" />
+                <Indicador titulo="Boletas" valor={resumen.boletas} icono={<FaFileLines />} tono="sky" detalle="Para consumidores finales" de={total} />
+                <Indicador titulo="Facturas" valor={resumen.facturas} icono={<FaFileInvoice />} tono="violet" detalle="Para empresas con RUC" de={total} />
+                <Indicador titulo="Importe emitido" valor={resumen.ingresos} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Total facturado" />
                 {resumen.anulados > 0 && (
-                    <StatCard titulo="Anulados" valor={resumen.anulados} icono={<FaBan />} color="danger" detalle="Sin validez" />
+                    <Indicador titulo="Anulados" valor={resumen.anulados} icono={<FaBan />} tono="danger" detalle="Sin validez" de={total} />
                 )}
             </Indicadores>
 

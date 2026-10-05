@@ -11,8 +11,7 @@ import {
 } from 'react-icons/fa6';
 
 import { FaBullhorn, FaHouse } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -385,13 +384,13 @@ function AnunciosVideo() {
 
     return (
         <div className="space-y-4">
-            <Indicadores etiqueta="Resumen de anuncios">
-                <StatCard titulo="Anuncios" valor={lista.length} icono={<FaBullhorn />} color="primary" detalle="Creados en total" />
-                <StatCard
+            <Indicadores cargando={cargando} etiqueta="Resumen de anuncios">
+                <Indicador titulo="Anuncios" valor={lista.length} icono={<FaBullhorn />} tono="primary" detalle="Creados en total" />
+                <Indicador
                     titulo="Portada actual"
                     valor={enPortada ? 'Publicado' : 'Ninguno'}
                     icono={<FaHouse />}
-                    color={enPortada ? 'success' : 'neutral'}
+                    tono={enPortada ? 'success' : 'neutral'}
                     detalle={enPortada ? enPortada.titulo : 'Activa un anuncio para mostrarlo'}
                 />
             </Indicadores>

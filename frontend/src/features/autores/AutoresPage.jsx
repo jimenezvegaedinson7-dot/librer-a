@@ -3,8 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
 import { FaFeather, FaCircleCheck, FaBan } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -46,12 +45,12 @@ function accionesAutor(fila, { onVer, onEditar, onEliminar }) {
     );
 }
 
-function Contador({ total, activos, inactivos }) {
+function Contador({ cargando, total, activos, inactivos }) {
     return (
-        <Indicadores etiqueta="Resumen de autores">
-            <StatCard titulo="Autores" valor={total} icono={<FaFeather />} color="primary" detalle="Registrados en la librería" />
-            <StatCard titulo="Activos" valor={activos} icono={<FaCircleCheck />} color="success" detalle="Visibles en el catálogo" />
-            <StatCard titulo="Inactivos" valor={inactivos} icono={<FaBan />} color="rose" detalle="Ocultos al público" />
+        <Indicadores cargando={cargando} etiqueta="Resumen de autores">
+            <Indicador titulo="Autores" valor={total} icono={<FaFeather />} tono="primary" detalle="Registrados en la librería" />
+            <Indicador titulo="Activos" valor={activos} icono={<FaCircleCheck />} tono="success" detalle="Visibles en el catálogo" de={total} />
+            <Indicador titulo="Inactivos" valor={inactivos} icono={<FaBan />} tono="rose" detalle="Ocultos al público" de={total} />
         </Indicadores>
     );
 }
@@ -210,7 +209,7 @@ export default function AutoresPage() {
                 titulo="Autores"
                 descripcion="Administra los autores registrados en la librería"
             />
-            <Contador total={autores.length} activos={autoresActivos.length} inactivos={autoresInactivos.length} />
+            <Contador cargando={cargando} total={autores.length} activos={autoresActivos.length} inactivos={autoresInactivos.length} />
 
             <AutorForm onAutorCreado={autorCreado} />
 

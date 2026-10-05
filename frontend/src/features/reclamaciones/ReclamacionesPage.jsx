@@ -3,8 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FaArrowUpRightFromSquare, FaBookOpen, FaEye, FaMagnifyingGlass, FaPrint, FaReply, FaRotate } from 'react-icons/fa6';
 
 import { FaHourglassHalf, FaClock, FaTriangleExclamation } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -207,11 +206,11 @@ export default function ReclamacionesPage() {
                 descripcion="Reclamos y quejas de los consumidores: respóndelos en un plazo no mayor a 15 días hábiles"
                 icono={<FaBookOpen />}
             />
-            <Indicadores etiqueta="Resumen de reclamaciones">
-                <StatCard titulo="Hojas" valor={resumen.total} icono={<FaBookOpen />} color="primary" detalle="Registradas en el libro" />
-                <StatCard titulo="Pendientes" valor={resumen.pendientes} icono={<FaHourglassHalf />} color="sky" detalle="Por responder" />
-                <StatCard titulo="Por vencer" valor={resumen.por_vencer} icono={<FaClock />} color="warning" detalle="Cerca del plazo de 15 días hábiles" />
-                <StatCard titulo="Vencidas" valor={resumen.vencidos} icono={<FaTriangleExclamation />} color="danger" detalle="Fuera de plazo" />
+            <Indicadores cargando={cargando} etiqueta="Resumen de reclamaciones">
+                <Indicador titulo="Hojas" valor={resumen.total} icono={<FaBookOpen />} tono="primary" detalle="Registradas en el libro" />
+                <Indicador titulo="Pendientes" valor={resumen.pendientes} icono={<FaHourglassHalf />} tono="sky" detalle="Por responder" de={resumen.total} />
+                <Indicador titulo="Por vencer" valor={resumen.por_vencer} icono={<FaClock />} tono="warning" detalle="Cerca del plazo de 15 días hábiles" de={resumen.total} />
+                <Indicador titulo="Vencidas" valor={resumen.vencidos} icono={<FaTriangleExclamation />} tono="danger" detalle="Fuera de plazo" de={resumen.total} />
             </Indicadores>
 
             <Card>

@@ -4,8 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { FaBoxesStacked, FaClockRotateLeft, FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
 import { FaWarehouse, FaCircleCheck, FaTriangleExclamation, FaBoxOpen } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -60,13 +59,13 @@ function accionesInventario(fila, { onVer, onEditar, puedeEditar }) {
     );
 }
 
-function Contador({ total, disponibles, stockBajo, sinStock }) {
+function Contador({ cargando, total, disponibles, stockBajo, sinStock }) {
     return (
-        <Indicadores etiqueta="Resumen de inventario">
-            <StatCard titulo="Inventario" valor={total} icono={<FaWarehouse />} color="primary" detalle="Libros con stock registrado" />
-            <StatCard titulo="Disponibles" valor={disponibles} icono={<FaCircleCheck />} color="success" detalle="Con stock suficiente" />
-            <StatCard titulo="Stock bajo" valor={stockBajo} icono={<FaTriangleExclamation />} color="warning" detalle="Conviene reponer" />
-            <StatCard titulo="Sin stock" valor={sinStock} icono={<FaBoxOpen />} color="danger" detalle="Agotados" />
+        <Indicadores cargando={cargando} etiqueta="Resumen de inventario">
+            <Indicador titulo="Inventario" valor={total} icono={<FaWarehouse />} tono="primary" detalle="Libros con stock registrado" />
+            <Indicador titulo="Disponibles" valor={disponibles} icono={<FaCircleCheck />} tono="success" detalle="Con stock suficiente" de={total} />
+            <Indicador titulo="Stock bajo" valor={stockBajo} icono={<FaTriangleExclamation />} tono="warning" detalle="Conviene reponer" de={total} />
+            <Indicador titulo="Sin stock" valor={sinStock} icono={<FaBoxOpen />} tono="danger" detalle="Agotados" de={total} />
         </Indicadores>
     );
 }
@@ -209,6 +208,7 @@ const [inventarioVer, setInventarioVer] = useState(null);
                 }
             />
             <Contador
+                cargando={cargando}
                 total={inventario.length}
                 disponibles={totalDisponibles}
                 stockBajo={totalStockBajo}

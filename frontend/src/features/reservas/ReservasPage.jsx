@@ -4,8 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
 import { FaCalendarCheck, FaHourglassHalf, FaCircleCheck, FaCircleXmark, FaFlagCheckered } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -64,14 +63,14 @@ const columnasReservas = [
     },
 ];
 
-function Contador({ total, pendientes, confirmadas, canceladas, completadas }) {
+function Contador({ cargando, total, pendientes, confirmadas, canceladas, completadas }) {
     return (
-        <Indicadores etiqueta="Resumen de reservas">
-            <StatCard titulo="Reservas" valor={total} icono={<FaCalendarCheck />} color="primary" detalle="Registradas" />
-            <StatCard titulo="Pendientes" valor={pendientes} icono={<FaHourglassHalf />} color="warning" detalle="Por atender" />
-            <StatCard titulo="Confirmadas" valor={confirmadas} icono={<FaCircleCheck />} color="sky" detalle="Listas para recoger" />
-            <StatCard titulo="Canceladas" valor={canceladas} icono={<FaCircleXmark />} color="danger" detalle="Anuladas" />
-            <StatCard titulo="Completadas" valor={completadas} icono={<FaFlagCheckered />} color="success" detalle="Entregadas" />
+        <Indicadores cargando={cargando} etiqueta="Resumen de reservas">
+            <Indicador titulo="Reservas" valor={total} icono={<FaCalendarCheck />} tono="primary" detalle="Registradas" />
+            <Indicador titulo="Pendientes" valor={pendientes} icono={<FaHourglassHalf />} tono="warning" detalle="Por atender" de={total} />
+            <Indicador titulo="Confirmadas" valor={confirmadas} icono={<FaCircleCheck />} tono="sky" detalle="Listas para recoger" de={total} />
+            <Indicador titulo="Canceladas" valor={canceladas} icono={<FaCircleXmark />} tono="danger" detalle="Anuladas" de={total} />
+            <Indicador titulo="Completadas" valor={completadas} icono={<FaFlagCheckered />} tono="success" detalle="Entregadas" de={total} />
         </Indicadores>
     );
 }
@@ -185,6 +184,7 @@ export default function ReservasPage() {
                 descripcion="Administra las reservas realizadas en la librería"
             />
             <Contador
+                cargando={cargando}
                 total={reservas.length}
                 pendientes={totalPendientes}
                 confirmadas={totalConfirmadas}

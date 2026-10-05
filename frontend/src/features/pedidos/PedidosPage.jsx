@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'motion/react';
 import {
     FaArrowRight,
     FaBoxOpen,
@@ -26,7 +25,7 @@ import { BtnAccion } from '../../components/ui/Acciones';
 import { Modal } from '../../components/ui/Modal';
 import { ConfirmarAccion } from '../../components/ui/ConfirmarAccion';
 import { Ficha } from '../../components/ui/Ficha';
-import { StatCard } from '../dashboard/StatCard';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { useToast } from '../../components/providers/ToastProvider';
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 import { descripcionEntrega, esEntregaPallasca, ubicacionEntrega } from '../../lib/utils/entrega';
@@ -384,18 +383,12 @@ export default function PedidosPage() {
                 descripcion="Pedidos de la web y la app: pagos, delivery y recojo en Pallasca"
             />
 
-            <motion.section
-                aria-label="Indicadores de pedidos"
-                initial="oculto"
-                animate="visible"
-                variants={{ oculto: {}, visible: { transition: { staggerChildren: 0.06 } } }}
-                className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5"
-            >
-                <StatCard titulo="Pedidos" valor={indicadores.total} icono={<FaBoxOpen />} color="primary" detalle="En el filtro actual" />
-                <StatCard titulo="Por preparar" valor={indicadores.porHacer} icono={<FaClock />} color="warning" detalle="Pendientes o preparando" />
-                <StatCard titulo="En camino" valor={indicadores.enRuta} icono={<FaTruck />} color="info" detalle="Delivery en ruta" />
-                <StatCard titulo="Entregados" valor={indicadores.entregados} icono={<FaCircleCheck />} color="success" detalle="Completados" />
-            </motion.section>
+            <Indicadores etiqueta="Indicadores de pedidos" cargando={cargando}>
+                <Indicador titulo="Pedidos" valor={indicadores.total} icono={<FaBoxOpen />} tono="primary" detalle="En el filtro actual" />
+                <Indicador titulo="Por preparar" valor={indicadores.porHacer} icono={<FaClock />} tono="warning" detalle="Pendientes o preparando" de={indicadores.total} />
+                <Indicador titulo="En camino" valor={indicadores.enRuta} icono={<FaTruck />} tono="info" detalle="Delivery en ruta" de={indicadores.total} />
+                <Indicador titulo="Entregados" valor={indicadores.entregados} icono={<FaCircleCheck />} tono="success" detalle="Completados" de={indicadores.total} />
+            </Indicadores>
 
             <Card>
                 <CardHeader

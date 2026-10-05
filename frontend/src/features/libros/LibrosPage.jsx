@@ -3,8 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FaBook, FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
 import { FaCircleCheck, FaBan } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -82,12 +81,12 @@ function accionesLibro(fila, { onVer, onEditar, onEliminar, puedeEditar }) {
     );
 }
 
-function Contador({ total, activos, inactivos }) {
+function Contador({ cargando, total, activos, inactivos }) {
     return (
-        <Indicadores etiqueta="Resumen de libros">
-            <StatCard titulo="Libros" valor={total} icono={<FaBook />} color="primary" detalle="Títulos en el catálogo" />
-            <StatCard titulo="Activos" valor={activos} icono={<FaCircleCheck />} color="success" detalle="A la venta" />
-            <StatCard titulo="Inactivos" valor={inactivos} icono={<FaBan />} color="rose" detalle="Ocultos al público" />
+        <Indicadores cargando={cargando} etiqueta="Resumen de libros">
+            <Indicador titulo="Libros" valor={total} icono={<FaBook />} tono="primary" detalle="Títulos en el catálogo" />
+            <Indicador titulo="Activos" valor={activos} icono={<FaCircleCheck />} tono="success" detalle="A la venta" de={total} />
+            <Indicador titulo="Inactivos" valor={inactivos} icono={<FaBan />} tono="rose" detalle="Ocultos al público" de={total} />
         </Indicadores>
     );
 }
@@ -304,7 +303,7 @@ export default function LibrosPage() {
                         : 'Consulta el catálogo de la librería (solo lectura)'
                 }
             />
-            <Contador total={libros.length} activos={librosActivos.length} inactivos={librosInactivos.length} />
+            <Contador cargando={cargando} total={libros.length} activos={librosActivos.length} inactivos={librosInactivos.length} />
 
             {puedeEditarCatalogo && <LibroForm onLibroCreado={libroCreado} />}
 

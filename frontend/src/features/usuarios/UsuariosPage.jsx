@@ -12,8 +12,7 @@ import {
 } from 'react-icons/fa6';
 
 import { FaUserShield, FaUser, FaCircleCheck, FaBan } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -121,14 +120,14 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
     );
 }
 
-function Contador({ total, administradores, clientes, activos, inactivos }) {
+function Contador({ cargando, total, administradores, clientes, activos, inactivos }) {
     return (
-        <Indicadores etiqueta="Resumen de usuarios">
-            <StatCard titulo="Usuarios" valor={total} icono={<FaUsers />} color="primary" detalle="Cuentas registradas" />
-            <StatCard titulo="Administradores" valor={administradores} icono={<FaUserShield />} color="violet" detalle="Acceso al panel" />
-            <StatCard titulo="Clientes" valor={clientes} icono={<FaUser />} color="sky" detalle="Compran en web y app" />
-            <StatCard titulo="Activos" valor={activos} icono={<FaCircleCheck />} color="success" detalle="Pueden iniciar sesión" />
-            <StatCard titulo="Inactivos" valor={inactivos} icono={<FaBan />} color="rose" detalle="Acceso bloqueado" />
+        <Indicadores cargando={cargando} etiqueta="Resumen de usuarios">
+            <Indicador titulo="Usuarios" valor={total} icono={<FaUsers />} tono="primary" detalle="Cuentas registradas" />
+            <Indicador titulo="Administradores" valor={administradores} icono={<FaUserShield />} tono="violet" detalle="Acceso al panel" de={total} />
+            <Indicador titulo="Clientes" valor={clientes} icono={<FaUser />} tono="sky" detalle="Compran en web y app" de={total} />
+            <Indicador titulo="Activos" valor={activos} icono={<FaCircleCheck />} tono="success" detalle="Pueden iniciar sesión" de={total} />
+            <Indicador titulo="Inactivos" valor={inactivos} icono={<FaBan />} tono="rose" detalle="Acceso bloqueado" de={total} />
         </Indicadores>
     );
 }
@@ -324,6 +323,7 @@ export default function UsuariosPage({ incrustado = false }) {
                 />
             )}
             <Contador
+                cargando={cargando}
                 total={usuarios.length}
                 administradores={totalAdministradores}
                 clientes={totalClientes}

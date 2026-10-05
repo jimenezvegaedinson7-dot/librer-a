@@ -14,8 +14,7 @@ import {
 } from 'react-icons/fa6';
 
 import { FaPlus } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -293,11 +292,11 @@ export default function HistorialPage() {
                 }
             />
 
-            <Indicadores etiqueta="Resumen del historial">
-                <StatCard titulo="Registros" valor={totalRegistros} icono={<FaClockRotateLeft />} color="primary" detalle="Actividades en el sistema" />
-                <StatCard titulo="Creados" valor={totalCreaciones} icono={<FaPlus />} color="success" detalle="Altas de datos" />
-                <StatCard titulo="Actualizados" valor={totalActualizaciones} icono={<FaPenToSquare />} color="sky" detalle="Cambios guardados" />
-                <StatCard titulo="Eliminados" valor={totalEliminaciones} icono={<FaTrash />} color="danger" detalle="Datos borrados" />
+            <Indicadores cargando={cargando} etiqueta="Resumen del historial">
+                <Indicador titulo="Registros" valor={totalRegistros} icono={<FaClockRotateLeft />} tono="primary" detalle="Actividades en el sistema" />
+                <Indicador titulo="Creados" valor={totalCreaciones} icono={<FaPlus />} tono="success" detalle="Altas de datos" de={totalRegistros} />
+                <Indicador titulo="Actualizados" valor={totalActualizaciones} icono={<FaPenToSquare />} tono="sky" detalle="Cambios guardados" de={totalRegistros} />
+                <Indicador titulo="Eliminados" valor={totalEliminaciones} icono={<FaTrash />} tono="danger" detalle="Datos borrados" de={totalRegistros} />
             </Indicadores>
 
             <Card>

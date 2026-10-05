@@ -3,8 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
 import { FaTags, FaCircleCheck, FaBan } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -46,12 +45,12 @@ function accionesCategoria(fila, { onVer, onEditar, onEliminar }) {
     );
 }
 
-function Contador({ total, activas, inactivas }) {
+function Contador({ cargando, total, activas, inactivas }) {
     return (
-        <Indicadores etiqueta="Resumen de categorías">
-            <StatCard titulo="Categorías" valor={total} icono={<FaTags />} color="primary" detalle="Registradas en el catálogo" />
-            <StatCard titulo="Activas" valor={activas} icono={<FaCircleCheck />} color="success" detalle="Visibles en el catálogo" />
-            <StatCard titulo="Inactivas" valor={inactivas} icono={<FaBan />} color="rose" detalle="Ocultas al público" />
+        <Indicadores cargando={cargando} etiqueta="Resumen de categorías">
+            <Indicador titulo="Categorías" valor={total} icono={<FaTags />} tono="primary" detalle="Registradas en el catálogo" />
+            <Indicador titulo="Activas" valor={activas} icono={<FaCircleCheck />} tono="success" detalle="Visibles en el catálogo" de={total} />
+            <Indicador titulo="Inactivas" valor={inactivas} icono={<FaBan />} tono="rose" detalle="Ocultas al público" de={total} />
         </Indicadores>
     );
 }
@@ -208,7 +207,7 @@ export default function CategoriaPage() {
                 titulo="Categorías"
                 descripcion="Administra las categorías de los libros"
             />
-            <Contador total={categorias.length} activas={categoriasActivas.length} inactivas={categoriasInactivas.length} />
+            <Contador cargando={cargando} total={categorias.length} activas={categoriasActivas.length} inactivas={categoriasInactivas.length} />
 
             <CategoriaForm onCategoriaCreada={categoriaCreada} />
 

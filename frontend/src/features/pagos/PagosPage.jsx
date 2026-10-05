@@ -11,8 +11,7 @@ import {
 } from 'react-icons/fa6';
 
 import { FaCircleCheck, FaHourglassHalf, FaCircleXmark, FaMoneyBillWave } from 'react-icons/fa6';
-import { StatCard } from '../dashboard/StatCard';
-import { Indicadores } from '../../components/ui/Indicadores';
+import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -124,14 +123,14 @@ function accionesPago(fila, { onVer }) {
     );
 }
 
-function Contador({ total, pagados, pendientes, cancelados, ingresos }) {
+function Contador({ cargando, total, pagados, pendientes, cancelados, ingresos }) {
     return (
-        <Indicadores etiqueta="Resumen de pagos">
-            <StatCard titulo="Pagos" valor={total} icono={<FaCreditCard />} color="primary" detalle="Registrados en el filtro" />
-            <StatCard titulo="Pagados" valor={pagados} icono={<FaCircleCheck />} color="success" detalle="Cobro confirmado" />
-            <StatCard titulo="Pendientes" valor={pendientes} icono={<FaHourglassHalf />} color="warning" detalle="Esperando confirmación" />
-            <StatCard titulo="Cancelados" valor={cancelados} icono={<FaCircleXmark />} color="danger" detalle="Sin cobro" />
-            <StatCard titulo="Ingresos" valor={formatearMoneda(ingresos)} icono={<FaMoneyBillWave />} color="teal" detalle="Pagos confirmados" />
+        <Indicadores cargando={cargando} etiqueta="Resumen de pagos">
+            <Indicador titulo="Pagos" valor={total} icono={<FaCreditCard />} tono="primary" detalle="Registrados en el filtro" />
+            <Indicador titulo="Pagados" valor={pagados} icono={<FaCircleCheck />} tono="success" detalle="Cobro confirmado" de={total} />
+            <Indicador titulo="Pendientes" valor={pendientes} icono={<FaHourglassHalf />} tono="warning" detalle="Esperando confirmación" de={total} />
+            <Indicador titulo="Cancelados" valor={cancelados} icono={<FaCircleXmark />} tono="danger" detalle="Sin cobro" de={total} />
+            <Indicador titulo="Ingresos" valor={ingresos} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Pagos confirmados" />
         </Indicadores>
     );
 }
@@ -306,6 +305,7 @@ export default function PagosPage() {
                 icono={<FaCreditCard />}
             />
             <Contador
+                cargando={cargando}
                 total={total}
                 pagados={totalPagados}
                 pendientes={totalPendientes}
