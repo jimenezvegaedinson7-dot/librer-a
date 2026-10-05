@@ -235,8 +235,8 @@ for(const ancho of [390,1440])test(`portadas descargadas ${ancho}px: ficha, rela
     await expect.poll(()=>relacionada.evaluate(img=>img.complete && img.naturalWidth>0)).toBe(true);
     await page.screenshot({path:test.info().outputPath(`portadas-ficha-${ancho}.png`),fullPage:true});
     await page.goto('/catalogo');
-    await expect(page.locator('.tarjeta-libro')).toHaveCount(2);
-    await expect.poll(()=>page.locator('.tarjeta-libro img').evaluateAll(imgs=>imgs.every(img=>img.complete && img.naturalWidth>0))).toBe(true);
+    await expect(page.locator('.rejilla-libros--todos .tarjeta-libro')).toHaveCount(2);
+    await expect.poll(()=>page.locator('.rejilla-libros--todos .tarjeta-libro img').evaluateAll(imgs=>imgs.every(img=>img.complete && img.naturalWidth>0))).toBe(true);
 });
 
 test('una portada ya registrada tiene prioridad sobre la descargada',async({page})=>{

@@ -1197,3 +1197,18 @@
     .sitio .catalogo .libro .compra-libro .boton svg,
     .sitio .catalogo-resultados .tarjeta-libro .compra-libro .boton svg { display: inline-block; width: 14px; height: 14px; flex: none; }
 }
+
+/* Catálogo en celular: estantes por tema (En descuento, Agregados
+   recientemente, Más vendidos) antes de "Todos los libros". */
+.sitio .catalogo-estantes { display: none; }
+@media (max-width: 640px) {
+    .sitio .catalogo-estantes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-bottom: 6px; }
+    .sitio .catalogo-estante { min-width: 0; }
+    .sitio .catalogo-estante__cabeza { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+    .sitio .catalogo-estante h2, .sitio .catalogo-estante__todos {
+        margin: 0; font-family: var(--f-titulo); font-size: 1.0625rem; font-weight: 700; color: var(--tinta);
+    }
+    .sitio .catalogo-estante__ver { font-size: 0.8125rem; font-weight: 600; color: var(--marino-900); text-decoration: underline; text-underline-offset: 3px; }
+    .sitio .catalogo-estante .rejilla-libros { margin-top: 0; }
+    .sitio .catalogo-estante__todos { padding-top: 14px; border-top: 1px solid var(--linea); }
+}

@@ -109,10 +109,11 @@ for (const width of [390, 1440]) {
             stock: i === 0 ? 0 : libro.stock}));
         await apiPublica(page, {libros});
         await page.goto('/catalogo');
-        await expect(page.locator('.libro-nuevo')).toHaveCount(1);
-        await expect(page.locator('.libro-nuevo')).toBeVisible();
-        const nuevo = await page.locator('.libro-nuevo').boundingBox();
-        const agotado = await page.locator('.tarjeta-libro').first().locator('.agotado').boundingBox();
+        const todos = page.locator('.rejilla-libros--todos');
+        await expect(todos.locator('.libro-nuevo')).toHaveCount(1);
+        await expect(todos.locator('.libro-nuevo')).toBeVisible();
+        const nuevo = await todos.locator('.libro-nuevo').boundingBox();
+        const agotado = await todos.locator('.tarjeta-libro').first().locator('.agotado').boundingBox();
         expect(nuevo.y).toBeGreaterThanOrEqual(agotado.y + agotado.height);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
         await page.goto('/');
