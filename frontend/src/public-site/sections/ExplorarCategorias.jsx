@@ -62,7 +62,7 @@ export default function ExplorarCategorias({ catalogo }) {
         return [...mapa.entries()]
             .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0], 'es'))
             .filter(([, lista]) => lista.length >= 2)
-            .slice(0, 4)
+            .slice(0, 8)
             // Para los libros de la tarjeta se prefieren los que tienen portada.
             .map(([nombre, lista]) => [nombre, lista, [...lista].sort((a, b) => Number(Boolean(b.portada)) - Number(Boolean(a.portada))).slice(0, 3)]);
     }, [libros]);
