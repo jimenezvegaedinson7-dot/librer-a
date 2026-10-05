@@ -100,7 +100,7 @@ test('favoritos: agregar, persistir al recargar y quitar con JWT de cliente y si
 test('favorito sin sesión conserva el libro y regresa después de iniciar sesión',async({page})=>{
     await preparar(page);await page.goto('/libro/1');
     await page.getByRole('button',{name:'Agregar a favoritos',exact:true}).click();
-    await expect(page).toHaveURL(/\/libro\/1$/);await page.getByRole('link',{name:'Iniciar sesión',exact:true}).click();
+    await expect(page).toHaveURL(/\/cuenta\?continuar=%2Flibro%2F1$/);
     await page.getByLabel('Correo electrónico',{exact:true}).fill(cliente.email);
     await page.getByLabel('Contraseña',{exact:true}).fill('Prueba-12345');
     await page.getByRole('button',{name:'Entrar',exact:true}).click();await expect(page).toHaveURL(/\/libro\/1$/);

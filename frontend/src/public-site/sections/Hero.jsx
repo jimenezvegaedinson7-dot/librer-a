@@ -5,6 +5,15 @@ import useCarrusel from '../hooks/useCarrusel';
 import { urlPortada } from '../lib/formato';
 import './carrusel-inicio.css';
 
+// Anuncios al ancho real de la pantalla: un celular baja la versión de 800 px
+// en lugar de la de 1800 px.
+const ANCHOS_ANUNCIO=[800,1200,1800];
+const fuentesAnuncio=url=>ANCHOS_ANUNCIO.map(a=>`${urlPortada(url,a)} ${a}w`).join(', ');
+const anchoAnuncio=()=>{
+    const necesario=(typeof window==='undefined'?1800:window.innerWidth*(window.devicePixelRatio||1));
+    return ANCHOS_ANUNCIO.find(a=>a>=necesario)||1800;
+};
+
 export default function Hero(){
     const {imagenes:data,cargando,error,reintentar}=useCarrusel();
     const [indice,setIndice]=useState(0),[foco,setFoco]=useState(false);
@@ -26,7 +35,7 @@ export default function Hero(){
     },[imagenes.length,foco,oculto,cargando,indice]);
     useEffect(()=>{
         if(imagenes.length<2)return;
-        const proxima=new Image();proxima.src=urlPortada(imagenes[(actual+1)%imagenes.length].imagen_url,1800);
+        const proxima=new Image();proxima.src=urlPortada(imagenes[(actual+1)%imagenes.length].imagen_url,anchoAnuncio());
     },[imagenes,actual]);
     function intentar(){setFallidas([]);setIndice(0);reintentar();}
     const noImagen=!cargando && !error && !imagenes.length;
@@ -41,10 +50,10 @@ export default function Hero(){
                 :noImagen?<div className="anuncios-inicio__vacio"><p>{data.length?'No se pudo mostrar la imagen del anuncio.':'Sin imágenes publicadas todavía.'}</p>
                     <div>{data.length>0 && <button type="button" onClick={intentar}>Reintentar anuncios</button>}<Link to="/catalogo">Ver catálogo</Link></div></div>
                 :<>{imagen.id_libro?<Link to={`/libro/${Number(imagen.id_libro)}`} aria-label={`Ver libro: ${imagen.titulo}`}>
-                    <img key={imagen.id_imagen} src={urlPortada(imagen.imagen_url,1800)} alt={imagen.titulo || 'Anuncio de la librería'} width="1600" height="600" fetchPriority="high"
+                    <img key={imagen.id_imagen} src={urlPortada(imagen.imagen_url,1800)} srcSet={fuentesAnuncio(imagen.imagen_url)} sizes="100vw" alt={imagen.titulo || 'Anuncio de la librería'} width="1600" height="600" fetchPriority="high"
                         onError={()=>setFallidas(v=>[...v,Number(imagen.id_imagen)])}/>
                     <span className="anuncios-inicio__ver" aria-hidden="true">Ver ahora <FaArrowRight/></span>
-                </Link>:<img key={imagen.id_imagen} src={urlPortada(imagen.imagen_url,1800)} alt={imagen.titulo || 'Anuncio de la librería'} width="1600" height="600" fetchPriority="high"
+                </Link>:<img key={imagen.id_imagen} src={urlPortada(imagen.imagen_url,1800)} srcSet={fuentesAnuncio(imagen.imagen_url)} sizes="100vw" alt={imagen.titulo || 'Anuncio de la librería'} width="1600" height="600" fetchPriority="high"
                     onError={()=>setFallidas(v=>[...v,Number(imagen.id_imagen)])}/>}
                 </>}
         </div>

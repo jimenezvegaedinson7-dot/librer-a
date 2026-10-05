@@ -7,7 +7,8 @@
 .sitio .ficha-portada-principal:hover img { transform: translateY(-2px); }
 .sitio .ficha-informacion { min-width: 0; }
 .sitio .ficha-informacion h1 { font-family: var(--f-titulo); font-size: clamp(24px, 2.2vw, 32px); line-height: 1.22; margin-block: 12px 14px; overflow-wrap: anywhere; }
-.sitio .ficha-categoria { display: inline-flex; font-size: 13px; padding-bottom: 4px; border-bottom: 1px solid var(--dorado-oscuro); color: var(--texto-2); }
+.sitio .ficha-categoria { display: inline-flex; font-size: 13px; color: var(--texto-2); }
+.sitio .ficha-categoria:hover { text-decoration: underline; text-underline-offset: 4px; }
 .sitio .ficha-libro .ficha-autor { font-size: 16px; margin-block: 12px; }
 .sitio .ficha-autor a { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; color: var(--marino-900); }
 .sitio .ficha-libro .ficha-isbn { color: var(--texto-2); font-size: 13px; margin-bottom: 24px; }

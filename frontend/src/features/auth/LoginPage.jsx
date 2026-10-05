@@ -21,7 +21,7 @@ import { CargaCorreo, ExitoAnimado } from '../../components/ui/Celebracion';
 import { prepararSonido, sonarPagoAprobado } from '../../lib/utils/sonido';
 import { esPersonalInterno, inicioPorRol } from '../../lib/roles';
 
-import fondoLogin from '../../assets/fondo-login.png';
+import fondoLogin from '../../assets/fondo-login.webp';
 import logoClaro from '../../public-site/assets/logo-f-blanco-96.webp';
 
 const MENSAJE_FUERA_DE_PANEL = 'Este panel es solo para administradores';

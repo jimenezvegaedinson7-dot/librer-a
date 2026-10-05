@@ -9,7 +9,7 @@ import { reenviarCodigo, verificarEmail } from './authService';
 import { Input } from '../../components/ui/Form';
 import { Alert } from '../../components/ui/Alert';
 
-import fondoLogin from '../../assets/fondo-login.png';
+import fondoLogin from '../../assets/fondo-login.webp';
 import logoLibreria from '../../assets/logo-principal-oscuro.png';
 
 const SEGUNDOS_REINTENTO = 60;

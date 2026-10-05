@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaHeart, FaRegHeart, FaShareNodes, FaLink, FaWhatsapp, FaFacebook } from 'react-icons/fa6';
 import { clienteApi } from './clienteApi';
 import { useTienda } from './TiendaContext';
@@ -18,21 +18,29 @@ export function FavoritoLibro({ libro }) {
             .catch(e=>{if(activo)setConsulta({cargando:false,favorito:false,error:e.message});});
         return()=>{activo=false;};
     },[libro.id,idUsuario,revisando,errorSesion,generacion,version,sesion]);
+    const navegar = useNavigate();
+    // El corazón cambia al instante; si el servidor falla vuelve a su estado
+    // anterior y se explica el motivo.
     async function cambiar() {
-        if (!usuario) {setMensaje('Inicia sesión para guardar este libro en tus favoritos.');return;}
-        if(guardando || consulta.cargando || revisando || errorSesion || consulta.error)return;
+        if (!usuario) {navegar(`/cuenta?continuar=${encodeURIComponent(`/libro/${libro.id}`)}`);return;}
+        if(guardando || revisando || errorSesion)return;
+        const antes=consulta.favorito;
         setGuardando(true);setMensaje('');
+        setConsulta({cargando:false,favorito:!antes,error:''});
         try {
-            const j=consulta.favorito ? await clienteApi.quitarFavorito(libro.id,sesion) : await clienteApi.agregarFavorito(libro.id,sesion);
-            setConsulta({cargando:false,favorito:j.data.es_favorito===true,error:''});
+            const j=antes ? await clienteApi.quitarFavorito(libro.id,sesion) : await clienteApi.agregarFavorito(libro.id,sesion);
+            setConsulta({cargando:false,favorito:j.data?.es_favorito ?? !antes,error:''});
             setMensaje(j.mensaje);
-        } catch(e) {setMensaje(e.message);} finally {setGuardando(false);}
+        } catch(e) {
+            setConsulta({cargando:false,favorito:antes,error:''});
+            setMensaje(e.message || 'No se pudo actualizar tus favoritos. Inténtalo de nuevo.');
+        } finally {setGuardando(false);}
     }
     return <div className="ficha-favorito">
         <button type="button" className={`ficha-utilidad${consulta.favorito?' ficha-utilidad--activa':''}`} aria-pressed={consulta.favorito}
-            disabled={guardando || (Boolean(usuario) && (consulta.cargando || revisando || Boolean(errorSesion) || Boolean(consulta.error)))} onClick={cambiar}>
+            disabled={guardando || (Boolean(usuario) && (revisando || Boolean(errorSesion)))} onClick={cambiar}>
             {consulta.favorito?<FaHeart aria-hidden="true"/>:<FaRegHeart aria-hidden="true"/>}
-            {guardando?'Guardando…':consulta.favorito?'En favoritos':'Agregar a favoritos'}
+            {consulta.favorito?'En favoritos':'Agregar a favoritos'}
         </button>
         {consulta.error && usuario && <p role="alert">{consulta.error} <button type="button" className="enlace-texto" onClick={()=>setVersion(v=>v+1)}>Reintentar favoritos</button></p>}
         {mensaje && <p role="status" className="ficha-mensaje">{mensaje}

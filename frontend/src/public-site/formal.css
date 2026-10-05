@@ -927,3 +927,110 @@
     .sitio .catalogo .libro__escenario { padding: 12px 0 10px; }
     .sitio .catalogo .libro .libro__tapa { width: 82%; }
 }
+
+/* Asistente en celulares: botón y hoja más compactos para no tapar la
+   página; en pantallas muy pequeñas todo se reduce un paso más. */
+@media (max-width: 480px) {
+    .sitio .asistente-tienda .asistente-abrir,
+    .sitio .asistente-tienda .asistente-abrir__icono { width: 50px; height: 50px; }
+    .sitio .asistente-tienda .asistente-abrir__icono::before { width: 11px; height: 11px; right: 2px; bottom: 3px; }
+    .sitio .asistente-tienda .asistente-panel { max-height: min(76dvh, calc(100dvh - 140px - env(safe-area-inset-bottom))); }
+    .sitio .asistente-tienda .asistente-cabecera { padding: 10px 8px 10px 12px; gap: 10px; }
+    .sitio .asistente-tienda .asistente-avatar { width: 38px; height: 38px; }
+    .sitio .asistente-tienda .asistente-conversacion { padding: 12px 12px; }
+    .sitio .asistente-tienda .asistente-mensaje { max-width: 94%; font-size: 0.8125rem; }
+    /* Sugerencias en una sola fila deslizable. */
+    .sitio .asistente-tienda .asistente-sugerencias { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 8px 12px 0; }
+    .sitio .asistente-tienda .asistente-sugerencias::-webkit-scrollbar { display: none; }
+    .sitio .asistente-tienda .asistente-sugerencias button { flex: none; white-space: nowrap; }
+    .sitio .asistente-tienda .asistente-formulario { padding: 8px 12px 0; }
+}
+@media (max-width: 360px) {
+    .sitio .asistente-tienda { right: 10px; }
+    .sitio .asistente-tienda .asistente-abrir,
+    .sitio .asistente-tienda .asistente-abrir__icono { width: 44px; height: 44px; }
+    .sitio .asistente-tienda .asistente-cabecera h2 { font-size: 0.875rem; }
+    .sitio .asistente-tienda .asistente-cabecera p { display: none; }
+    .sitio .asistente-tienda .asistente-avatar { width: 34px; height: 34px; }
+    .sitio .asistente-tienda .asistente-formulario > p { display: none; }
+    .sitio .asistente-tienda .asistente-sugerencias button { min-height: 30px; font-size: 0.75rem; }
+}
+@media (max-width: 480px) and (max-height: 640px) {
+    .sitio .asistente-tienda .asistente-panel { max-height: calc(100dvh - 128px - env(safe-area-inset-bottom)); }
+}
+
+/* Asistente en celular: ventana flotante pequeña (no a todo el ancho), así
+   queda espacio alrededor para tocar fuera y cerrarla. */
+@media (max-width: 480px) {
+    .sitio .asistente-tienda .asistente-panel {
+        position: fixed; inset: auto 12px calc(76px + env(safe-area-inset-bottom)) auto;
+        width: min(340px, calc(100vw - 24px)); max-height: min(520px, 64dvh);
+        border-radius: 16px; animation-name: asistente-hoja;
+    }
+}
+@media (max-width: 360px) {
+    .sitio .asistente-tienda .asistente-panel { inset: auto 8px calc(72px + env(safe-area-inset-bottom)) auto; width: calc(100vw - 16px); max-height: 70dvh; }
+}
+
+/* ============================================================
+   MI CUENTA · versión formal
+   Ingreso: una sola tarjeta blanca, sin panel azul. Perfil: misma letra
+   que el resto de la web, sin brillos ni degradados, ordenado en bloques.
+   ============================================================ */
+.sitio .cuenta-cliente {
+    display: block; max-width: 440px; padding: clamp(24px, 5vw, 36px);
+    border-radius: 16px; border: 1px solid var(--linea); background: #fff; box-shadow: 0 1px 2px rgba(17, 24, 32, 0.04);
+}
+.sitio .cuenta-cliente::before {
+    content: ''; display: block; width: 44px; height: 50px; margin: 0 0 18px; padding: 0; grid-row: auto;
+    background: url('./assets/logo-f-verde-96.webp') center / contain no-repeat;
+}
+.sitio .cuenta-cliente h1 { margin: 0; font-family: var(--f-titulo); font-size: 1.5rem; font-weight: 600; color: var(--tinta); }
+.sitio .cuenta-cliente .compra-formulario input { background: #fff; border-color: #d4d8dd; }
+.sitio .cuenta-cliente .compra-formulario input:focus { border-color: var(--tinta); box-shadow: 0 0 0 3px rgba(17, 24, 32, 0.08); }
+.sitio .cuenta-cliente .compra-formulario .boton { background: var(--tinta); border-color: var(--tinta); }
+.sitio .cuenta-cliente .compra-formulario .boton:hover { background: #2b3440; border-color: #2b3440; }
+.sitio .cuenta-cliente .compra-acciones .enlace-texto { color: var(--tinta); }
+@media (max-width: 760px) {
+    .sitio .cuenta-cliente { padding: 24px 20px; }
+    .sitio .cuenta-cliente::before { height: 44px; margin: 0 0 14px; background: url('./assets/logo-f-verde-96.webp') left center / contain no-repeat; }
+}
+
+.sitio .perfil { max-width: 1040px; }
+.sitio .perfil h1 { font-family: var(--f-titulo); font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); font-weight: 600; color: var(--tinta); }
+.sitio .perfil__tarjeta, .sitio .perfil__datos, .sitio .perfil__accesos { border: 1px solid var(--linea); border-radius: 14px; background: #fff; box-shadow: none; }
+.sitio .perfil__tarjeta { background: #fff; padding: 22px 24px; }
+.sitio .perfil__tarjeta::after { content: none; }
+.sitio .perfil__avatar { background: #2f3a46; font-family: var(--f-texto); font-weight: 600; }
+.sitio .compra-pagina .perfil__nombre,
+.sitio .perfil__datos h2, .sitio .perfil__accesos h2 { font-family: var(--f-titulo); color: var(--tinta); }
+.sitio .compra-pagina .perfil__nombre { font-size: 1.25rem; }
+.sitio .perfil__datos h2, .sitio .perfil__accesos h2 { font-size: 1rem; padding-bottom: 12px; margin-bottom: 4px; border-bottom: 1px solid var(--linea); }
+.sitio .compra-pagina .perfil__desde { color: var(--texto-2); }
+.sitio .perfil__salir { border-color: var(--linea); color: var(--tinta); }
+.sitio .perfil__salir:hover { background: var(--fondo-alt); border-color: #c9ced4; }
+.sitio .perfil__datos dl > div { border-top-color: var(--linea); }
+.sitio .perfil__datos dl > div:first-child, .sitio .perfil__datos dl > div:nth-child(2) { border-top: 0; }
+.sitio .perfil__datos dt { color: var(--texto-2); letter-spacing: 0.03em; }
+.sitio .perfil__datos dd { color: var(--tinta); }
+.sitio .perfil__estado { background: var(--fondo-alt); color: var(--texto-2); }
+.sitio .perfil__acceso + .perfil__acceso { border-top-color: var(--linea); }
+.sitio .perfil__acceso:hover { background: var(--fondo-alt); }
+.sitio .perfil__acceso-icono { background: var(--fondo-alt); color: var(--tinta); border-radius: 10px; }
+.sitio .perfil__acceso strong { color: var(--tinta); }
+.sitio .perfil__acceso > svg { color: #a7aeb6; }
+.sitio .perfil__acceso:hover > svg { color: var(--tinta); }
+@media (max-width: 560px) {
+    .sitio .perfil__tarjeta { grid-template-columns: auto minmax(0, 1fr); gap: 14px; padding: 18px; }
+    .sitio .perfil__avatar { width: 56px; height: 56px; font-size: 1.125rem; }
+    .sitio .perfil__salir { grid-column: 1 / -1; justify-self: stretch; justify-content: center; }
+    .sitio .perfil__datos, .sitio .perfil__accesos { padding: 16px; }
+    .sitio .perfil__datos dl > div:nth-child(2) { border-top: 1px solid var(--linea); }
+    .sitio .perfil__acceso { grid-template-columns: 38px minmax(0, 1fr) auto; gap: 12px; padding: 12px 4px; }
+    .sitio .perfil__acceso-icono { width: 38px; height: 38px; }
+}
+.sitio .perfil__avatar { box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--linea); }
+/* Con la ventana abierta en celular, el botón redondo se oculta para no asomar. */
+@media (max-width: 480px) {
+    .sitio .asistente-tienda .asistente-abrir[aria-expanded="true"] { opacity: 0; pointer-events: none; }
+}
