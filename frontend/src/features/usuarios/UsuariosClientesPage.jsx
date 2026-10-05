@@ -4,7 +4,6 @@ import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { FaUserGroup, FaUsers } from 'react-icons/fa6';
 
-import { PageHeader } from '../../components/ui/PageHeader';
 import ClientesPage from '../clientes/ClientesPage';
 import UsuariosPage from './UsuariosPage';
 
@@ -37,11 +36,8 @@ export default function UsuariosClientesPage() {
 
     return (
         <div className="space-y-4">
-            <PageHeader
-                titulo="Usuarios"
-                descripcion="Cuentas registradas, permisos y actividad de compras de los clientes"
-                icono={<FaUsers />}
-            />
+            {/* Sin encabezado visible: las pestañas ya nombran la sección. */}
+            <h1 className="sr-only">Usuarios</h1>
 
             <div className="pestanas" role="tablist" aria-label="Vistas de usuarios">
                 {PESTANAS.map(({ id, texto, detalle, Icono }, i) => (
