@@ -1,8 +1,8 @@
 {
-    "version": "1.0.5",
-    "versionCode": 6,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.5/libreria-1.0.5.apk",
-    "sha256": "acabaaab632cdcbc386cd6318ceea47e98076e9ecdd6876967dc9f6800e6aacb",
+    "version": "1.0.6",
+    "versionCode": 7,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.6/libreria-1.0.6.apk",
+    "sha256": "83a254a5fc4e2b8580d6cc63d8fcf121eb143c3630cdbc79bc553d48b29e11ac",
     "obligatoria": false,
-    "notas": "Recuperación de compras tras cortes o reinicios, conciliación del carrito después del pago, seguimiento de entrega, reanudación de verificación de correo y avisos de portadas de referencia. Mejoras de sesiones, stock y confirmación de pagos. Conserva recojo gratuito y delivery por zonas de Pallasca."
+    "notas": "Corrige el total recortado en la ficha del libro. Adapta el precio y los botones a pantallas estrechas y texto ampliado, conservando las animaciones y el cálculo al cambiar la cantidad."
 }

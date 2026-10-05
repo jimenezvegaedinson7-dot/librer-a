@@ -10,11 +10,11 @@ export const DESCARGAS = {
     android: {
         habilitado: true,
         tipo: 'apk',
-        version: '1.0.4',
-        // APK firmado: recojo gratuito y delivery por zona dentro de Pallasca.
-        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.4/libreria-1.0.4.apk',
-        tamano: '53.7 MB',
-        actualizado: '2026-10-02',
+        version: '1.0.6',
+        // APK firmado: total completo y ficha adaptada a pantallas estrechas.
+        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.6/libreria-1.0.6.apk',
+        tamano: '53.8 MB',
+        actualizado: '2026-10-04',
     },
     ios: {
         habilitado: true,
