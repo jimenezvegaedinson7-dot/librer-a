@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import { FaArrowUpRightFromSquare, FaBookOpen, FaEye, FaMagnifyingGlass, FaPrint, FaReply, FaRotate } from 'react-icons/fa6';
 
+import { FaHourglassHalf, FaClock, FaTriangleExclamation } from 'react-icons/fa6';
+import { StatCard } from '../dashboard/StatCard';
+import { Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -203,14 +206,13 @@ export default function ReclamacionesPage() {
                 titulo="Libro de Reclamaciones"
                 descripcion="Reclamos y quejas de los consumidores: respóndelos en un plazo no mayor a 15 días hábiles"
                 icono={<FaBookOpen />}
-                acciones={
-                    <div className="summary-strip flex flex-wrap gap-2">
-                        <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm">Pendientes: <strong>{resumen.pendientes}</strong></span>
-                        <span className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">Por vencer: <strong>{resumen.por_vencer}</strong></span>
-                        <span className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">Vencidas: <strong>{resumen.vencidos}</strong></span>
-                    </div>
-                }
             />
+            <Indicadores etiqueta="Resumen de reclamaciones">
+                <StatCard titulo="Hojas" valor={resumen.total} icono={<FaBookOpen />} color="primary" detalle="Registradas en el libro" />
+                <StatCard titulo="Pendientes" valor={resumen.pendientes} icono={<FaHourglassHalf />} color="sky" detalle="Por responder" />
+                <StatCard titulo="Por vencer" valor={resumen.por_vencer} icono={<FaClock />} color="warning" detalle="Cerca del plazo de 15 días hábiles" />
+                <StatCard titulo="Vencidas" valor={resumen.vencidos} icono={<FaTriangleExclamation />} color="danger" detalle="Fuera de plazo" />
+            </Indicadores>
 
             <Card>
                 <CardHeader

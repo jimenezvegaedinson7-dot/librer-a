@@ -11,6 +11,9 @@ import {
     FaXmark,
 } from 'react-icons/fa6';
 
+import { FaUserShield, FaUser, FaCircleCheck, FaBan } from 'react-icons/fa6';
+import { StatCard } from '../dashboard/StatCard';
+import { Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -120,23 +123,13 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
 
 function Contador({ total, administradores, clientes, activos, inactivos }) {
     return (
-        <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#1c1814]">{total}</span>
-            </span>
-            <span className="rounded-xl border border-[#c7d2fe] bg-[#eef2ff] px-4 py-2.5 text-sm font-medium text-[#4f46e5] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Administradores: <span className="font-bold text-[#4f46e5]">{administradores}</span>
-            </span>
-            <span className="rounded-xl border border-[#bcdcd3] bg-[#f2f8f6] px-4 py-2.5 text-sm font-medium text-[#0b5c51] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Clientes: <span className="font-bold text-[#0b5c51]">{clientes}</span>
-            </span>
-            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Activos: <span className="font-bold text-[#15803d]">{activos}</span>
-            </span>
-            <span className="rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-2.5 text-sm font-medium text-[#e11d48] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Inactivos: <span className="font-bold text-[#e11d48]">{inactivos}</span>
-            </span>
-        </div>
+        <Indicadores etiqueta="Resumen de usuarios">
+            <StatCard titulo="Usuarios" valor={total} icono={<FaUsers />} color="primary" detalle="Cuentas registradas" />
+            <StatCard titulo="Administradores" valor={administradores} icono={<FaUserShield />} color="violet" detalle="Acceso al panel" />
+            <StatCard titulo="Clientes" valor={clientes} icono={<FaUser />} color="sky" detalle="Compran en web y app" />
+            <StatCard titulo="Activos" valor={activos} icono={<FaCircleCheck />} color="success" detalle="Pueden iniciar sesión" />
+            <StatCard titulo="Inactivos" valor={inactivos} icono={<FaBan />} color="rose" detalle="Acceso bloqueado" />
+        </Indicadores>
     );
 }
 
@@ -323,32 +316,20 @@ export default function UsuariosPage({ incrustado = false }) {
 
     return (
         <div className="space-y-4">
-            {incrustado ? (
-                <div className="flex justify-end">
-                    <Contador
-                        total={usuarios.length}
-                        administradores={totalAdministradores}
-                        clientes={totalClientes}
-                        activos={totalActivos}
-                        inactivos={totalInactivos}
-                    />
-                </div>
-            ) : (
+            {!incrustado && (
                 <PageHeader
                     titulo="Usuarios"
                     descripcion="Control de usuarios registrados en la aplicación"
                     icono={<FaUsers />}
-                    acciones={
-                    <Contador
-                        total={usuarios.length}
-                        administradores={totalAdministradores}
-                        clientes={totalClientes}
-                        activos={totalActivos}
-                        inactivos={totalInactivos}
-                    />
-                    }
                 />
             )}
+            <Contador
+                total={usuarios.length}
+                administradores={totalAdministradores}
+                clientes={totalClientes}
+                activos={totalActivos}
+                inactivos={totalInactivos}
+            />
 
             <Card>
                 <CardHeader

@@ -1643,6 +1643,10 @@
 .kpi-tono--warning { --kpi-tint: #fbf0dc; --kpi-ink: #b45309; }
 .kpi-tono--gold    { --kpi-tint: #fbefd2; --kpi-ink: #7d5a0d; }
 .kpi-tono--neutral { --kpi-tint: #f3efe9; --kpi-ink: #5c544b; }
+.kpi-tono--violet  { --kpi-tint: #efeafb; --kpi-ink: #5b3fa8; }
+.kpi-tono--teal    { --kpi-tint: #e3f3f0; --kpi-ink: #0f766e; }
+.kpi-tono--sky     { --kpi-tint: #e6f0fa; --kpi-ink: #1d5f9a; }
+.kpi-tono--rose    { --kpi-tint: #fbe9ef; --kpi-ink: #be185d; }
 
 /* Tarjeta destacada: cuero burdeos con filete dorado */
 .kpi-card--destacada {
@@ -1735,6 +1739,10 @@
 .admin-shell[data-theme="dark"] .kpi-tono--warning { --kpi-tint: rgb(251 191 36 / 0.12); --kpi-ink: #fcd34d; }
 .admin-shell[data-theme="dark"] .kpi-tono--gold    { --kpi-tint: rgb(47 156 132 / 0.14); --kpi-ink: #f0c866; }
 .admin-shell[data-theme="dark"] .kpi-tono--neutral { --kpi-tint: #2d2824; --kpi-ink: #d8cfc2; }
+.admin-shell[data-theme="dark"] .kpi-tono--violet  { --kpi-tint: rgb(167 139 250 / 0.14); --kpi-ink: #c4b5fd; }
+.admin-shell[data-theme="dark"] .kpi-tono--teal    { --kpi-tint: rgb(45 212 191 / 0.12); --kpi-ink: #5eead4; }
+.admin-shell[data-theme="dark"] .kpi-tono--sky     { --kpi-tint: rgb(96 165 250 / 0.13); --kpi-ink: #93c5fd; }
+.admin-shell[data-theme="dark"] .kpi-tono--rose    { --kpi-tint: rgb(244 114 182 / 0.13); --kpi-ink: #f9a8d4; }
 .admin-shell[data-theme="dark"] .mini-stat-icono {
     border-color: rgb(47 156 132 / 0.25);
     background: rgb(47 156 132 / 0.1);

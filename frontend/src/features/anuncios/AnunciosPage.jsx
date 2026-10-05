@@ -10,6 +10,9 @@ import {
     FaTrashCan,
 } from 'react-icons/fa6';
 
+import { FaBullhorn, FaHouse } from 'react-icons/fa6';
+import { StatCard } from '../dashboard/StatCard';
+import { Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -382,14 +385,16 @@ function AnunciosVideo() {
 
     return (
         <div className="space-y-4">
-                    <div className="summary-strip flex flex-wrap items-center gap-2">
-                        <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm">
-                            Total: <strong>{lista.length}</strong>
-                        </span>
-                        <span className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-800">
-                            En portada: <strong>{enPortada ? enPortada.titulo : 'ninguno'}</strong>
-                        </span>
-                    </div>
+            <Indicadores etiqueta="Resumen de anuncios">
+                <StatCard titulo="Anuncios" valor={lista.length} icono={<FaBullhorn />} color="primary" detalle="Creados en total" />
+                <StatCard
+                    titulo="Portada actual"
+                    valor={enPortada ? 'Publicado' : 'Ninguno'}
+                    icono={<FaHouse />}
+                    color={enPortada ? 'success' : 'neutral'}
+                    detalle={enPortada ? enPortada.titulo : 'Activa un anuncio para mostrarlo'}
+                />
+            </Indicadores>
 
             <Alert tipo="info">
                 La portada muestra el anuncio activo más reciente. Si activas otro, reemplaza al que se está viendo.

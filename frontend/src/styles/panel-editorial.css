@@ -292,3 +292,29 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
 }
 .admin-shell .personalizacion-intensa .muestra-color--activa > span:last-child { color: var(--muestra-sobre); }
 .admin-shell .personalizacion-intensa .muestra-color:focus-visible { outline: 2px solid var(--panel-texto); outline-offset: 2px; }
+
+/* Tarjetas KPI con color: filete superior, brillo del tono en la esquina e
+   icono sólido. El color sale de --kpi-ink, así cada tono se ve propio sin
+   perder la sobriedad del panel. */
+.admin-shell[data-theme] .kpi-card:not(.kpi-card--destacada) {
+    background-image:
+        radial-gradient(240px 140px at 100% 0%, color-mix(in srgb, var(--kpi-ink) 13%, transparent), transparent 72%),
+        linear-gradient(180deg, color-mix(in srgb, var(--kpi-ink) 4%, transparent), transparent 55%);
+    box-shadow: inset 0 3px 0 var(--kpi-ink), var(--shadow-card);
+}
+.admin-shell[data-theme] .kpi-card:not(.kpi-card--destacada):hover {
+    border-color: color-mix(in srgb, var(--kpi-ink) 45%, var(--panel-borde));
+    box-shadow: inset 0 3px 0 var(--kpi-ink), var(--shadow-lift);
+}
+.admin-shell[data-theme] .kpi-card:not(.kpi-card--destacada) .kpi-icono {
+    background: linear-gradient(140deg, color-mix(in srgb, var(--kpi-ink) 82%, white), var(--kpi-ink));
+    color: #ffffff;
+    box-shadow: 0 6px 14px -7px var(--kpi-ink);
+}
+.admin-shell[data-theme] .kpi-card:not(.kpi-card--destacada) .kpi-label {
+    color: color-mix(in srgb, var(--kpi-ink) 70%, var(--panel-secundario));
+}
+.admin-shell[data-theme="dark"] .kpi-card:not(.kpi-card--destacada) .kpi-icono {
+    background: var(--kpi-ink);
+    color: #14110d;
+}

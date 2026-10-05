@@ -13,6 +13,9 @@ import {
     FaCircleXmark,
 } from 'react-icons/fa6';
 
+import { FaPlus } from 'react-icons/fa6';
+import { StatCard } from '../dashboard/StatCard';
+import { Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -104,17 +107,6 @@ function formatearFecha(fecha) {
         fecha: fechaObjeto.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }),
         hora: fechaObjeto.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
     };
-}
-
-function Contador({ titulo, valor, clase = '' }) {
-    return (
-        <span
-            className={`rounded-xl border border-[#bcdcd3] bg-[#f2f8f6] px-4 py-2.5 text-sm font-medium text-[#0b5c51] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${clase}`}
-        >
-            <span className="block text-xs font-semibold opacity-80">{titulo}</span>
-            <span className="mt-0.5 block text-xl font-bold text-[#0b5c51]">{valor}</span>
-        </span>
-    );
 }
 
 function FilaHistorial({ item }) {
@@ -301,12 +293,12 @@ export default function HistorialPage() {
                 }
             />
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Contador titulo="Total de registros" valor={totalRegistros} clase="border-primary-200 bg-white text-slate-700" />
-                <Contador titulo="Registros creados" valor={totalCreaciones} clase="border-primary-200 bg-white text-slate-700" />
-                <Contador titulo="Registros actualizados" valor={totalActualizaciones} clase="border-warning/20 bg-warning-bg text-warning" />
-                <Contador titulo="Registros eliminados" valor={totalEliminaciones} clase="border-crimson-200 bg-crimson-50 text-crimson-500" />
-            </div>
+            <Indicadores etiqueta="Resumen del historial">
+                <StatCard titulo="Registros" valor={totalRegistros} icono={<FaClockRotateLeft />} color="primary" detalle="Actividades en el sistema" />
+                <StatCard titulo="Creados" valor={totalCreaciones} icono={<FaPlus />} color="success" detalle="Altas de datos" />
+                <StatCard titulo="Actualizados" valor={totalActualizaciones} icono={<FaPenToSquare />} color="sky" detalle="Cambios guardados" />
+                <StatCard titulo="Eliminados" valor={totalEliminaciones} icono={<FaTrash />} color="danger" detalle="Datos borrados" />
+            </Indicadores>
 
             <Card>
                 <CardHeader

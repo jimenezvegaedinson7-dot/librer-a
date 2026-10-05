@@ -13,6 +13,9 @@ import {
     FaXmark,
 } from 'react-icons/fa6';
 
+import { FaFileLines, FaFileInvoice, FaMoneyBillWave } from 'react-icons/fa6';
+import { StatCard } from '../dashboard/StatCard';
+import { Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -378,28 +381,16 @@ export default function ComprobantesPage() {
                 titulo="Comprobantes de pago"
                 descripcion="Boletas y facturas emitidas por las ventas"
                 icono={<FaReceipt />}
-                acciones={
-                    <div className="summary-strip flex flex-wrap gap-2">
-                        <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                            Total: <span className="font-bold text-[#1c1814]">{total}</span>
-                        </span>
-                        <span className="rounded-xl border border-[#e6e0d7] bg-[#faf8f5] px-4 py-2.5 text-sm font-medium text-[#5c544b] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                            Boletas: <span className="font-bold text-[#2c2621]">{resumen.boletas}</span>
-                        </span>
-                        <span className="rounded-xl border border-[#c7d2fe] bg-[#eef2ff] px-4 py-2.5 text-sm font-medium text-[#4f46e5] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                            Facturas: <span className="font-bold text-[#4f46e5]">{resumen.facturas}</span>
-                        </span>
-                        <span className="rounded-xl border border-[#bbf7d0] bg-[#ecfdf5] px-4 py-2.5 text-sm font-medium text-[#059669] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                            Importe emitido: <span className="font-bold text-[#059669]">{formatearMoneda(resumen.ingresos)}</span>
-                        </span>
-                        {resumen.anulados > 0 && (
-                            <span className="rounded-xl border border-[#fecaca] bg-[#fef2f2] px-4 py-2.5 text-sm font-medium text-[#b91c1c] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                                Anulados: <span className="font-bold">{resumen.anulados}</span>
-                            </span>
-                        )}
-                    </div>
-                }
             />
+            <Indicadores etiqueta="Resumen de comprobantes">
+                <StatCard titulo="Comprobantes" valor={total} icono={<FaReceipt />} color="primary" detalle="Emitidos en el filtro" />
+                <StatCard titulo="Boletas" valor={resumen.boletas} icono={<FaFileLines />} color="sky" detalle="Para consumidores finales" />
+                <StatCard titulo="Facturas" valor={resumen.facturas} icono={<FaFileInvoice />} color="violet" detalle="Para empresas con RUC" />
+                <StatCard titulo="Importe emitido" valor={formatearMoneda(resumen.ingresos)} icono={<FaMoneyBillWave />} color="teal" detalle="Total facturado" />
+                {resumen.anulados > 0 && (
+                    <StatCard titulo="Anulados" valor={resumen.anulados} icono={<FaBan />} color="danger" detalle="Sin validez" />
+                )}
+            </Indicadores>
 
             <Card>
                 <CardHeader

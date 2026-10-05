@@ -10,6 +10,9 @@ import {
     FaXmark,
 } from 'react-icons/fa6';
 
+import { FaCircleCheck, FaHourglassHalf, FaCircleXmark, FaMoneyBillWave } from 'react-icons/fa6';
+import { StatCard } from '../dashboard/StatCard';
+import { Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -123,23 +126,13 @@ function accionesPago(fila, { onVer }) {
 
 function Contador({ total, pagados, pendientes, cancelados, ingresos }) {
     return (
-        <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#1c1814]">{total}</span>
-            </span>
-            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Pagadas: <span className="font-bold text-[#15803d]">{pagados}</span>
-            </span>
-            <span className="rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2.5 text-sm font-medium text-[#d97706] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Pendientes: <span className="font-bold text-[#d97706]">{pendientes}</span>
-            </span>
-            <span className="rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-2.5 text-sm font-medium text-[#e11d48] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Cancelados: <span className="font-bold text-[#e11d48]">{cancelados}</span>
-            </span>
-            <span className="rounded-xl border border-[#bbf7d0] bg-[#ecfdf5] px-4 py-2.5 text-sm font-medium text-[#059669] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Ingresos: <span className="font-bold text-[#059669]">{formatearMoneda(ingresos)}</span>
-            </span>
-        </div>
+        <Indicadores etiqueta="Resumen de pagos">
+            <StatCard titulo="Pagos" valor={total} icono={<FaCreditCard />} color="primary" detalle="Registrados en el filtro" />
+            <StatCard titulo="Pagados" valor={pagados} icono={<FaCircleCheck />} color="success" detalle="Cobro confirmado" />
+            <StatCard titulo="Pendientes" valor={pendientes} icono={<FaHourglassHalf />} color="warning" detalle="Esperando confirmación" />
+            <StatCard titulo="Cancelados" valor={cancelados} icono={<FaCircleXmark />} color="danger" detalle="Sin cobro" />
+            <StatCard titulo="Ingresos" valor={formatearMoneda(ingresos)} icono={<FaMoneyBillWave />} color="teal" detalle="Pagos confirmados" />
+        </Indicadores>
     );
 }
 
@@ -311,15 +304,13 @@ export default function PagosPage() {
                 titulo="Pagos"
                 descripcion="Pagos de ventas realizadas en la librería"
                 icono={<FaCreditCard />}
-                acciones={
-                    <Contador
-                        total={total}
-                        pagados={totalPagados}
-                        pendientes={totalPendientes}
-                        cancelados={totalCancelados}
-                        ingresos={totalIngresos}
-                    />
-                }
+            />
+            <Contador
+                total={total}
+                pagados={totalPagados}
+                pendientes={totalPendientes}
+                cancelados={totalCancelados}
+                ingresos={totalIngresos}
             />
 
             <Card>

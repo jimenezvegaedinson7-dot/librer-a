@@ -12,6 +12,10 @@ const tonos = {
     warning: 'kpi-tono--warning',
     info: 'kpi-tono--gold',
     neutral: 'kpi-tono--neutral',
+    violet: 'kpi-tono--violet',
+    teal: 'kpi-tono--teal',
+    sky: 'kpi-tono--sky',
+    rose: 'kpi-tono--rose',
 };
 
 const entradaTarjeta = {

@@ -3,6 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 
 import { FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
+import { FaCalendarCheck, FaHourglassHalf, FaCircleCheck, FaCircleXmark, FaFlagCheckered } from 'react-icons/fa6';
+import { StatCard } from '../dashboard/StatCard';
+import { Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -63,23 +66,13 @@ const columnasReservas = [
 
 function Contador({ total, pendientes, confirmadas, canceladas, completadas }) {
     return (
-        <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#1c1814]">{total}</span>
-            </span>
-            <span className="rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-2.5 text-sm font-medium text-[#d97706] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Pendientes: <span className="font-bold text-[#d97706]">{pendientes}</span>
-            </span>
-            <span className="rounded-xl border border-[#bcdcd3] bg-[#f2f8f6] px-4 py-2.5 text-sm font-medium text-[#0b5c51] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Confirmadas: <span className="font-bold text-[#0b5c51]">{confirmadas}</span>
-            </span>
-            <span className="rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-2.5 text-sm font-medium text-[#e11d48] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Canceladas: <span className="font-bold text-[#e11d48]">{canceladas}</span>
-            </span>
-            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Completadas: <span className="font-bold text-[#15803d]">{completadas}</span>
-            </span>
-        </div>
+        <Indicadores etiqueta="Resumen de reservas">
+            <StatCard titulo="Reservas" valor={total} icono={<FaCalendarCheck />} color="primary" detalle="Registradas" />
+            <StatCard titulo="Pendientes" valor={pendientes} icono={<FaHourglassHalf />} color="warning" detalle="Por atender" />
+            <StatCard titulo="Confirmadas" valor={confirmadas} icono={<FaCircleCheck />} color="sky" detalle="Listas para recoger" />
+            <StatCard titulo="Canceladas" valor={canceladas} icono={<FaCircleXmark />} color="danger" detalle="Anuladas" />
+            <StatCard titulo="Completadas" valor={completadas} icono={<FaFlagCheckered />} color="success" detalle="Entregadas" />
+        </Indicadores>
     );
 }
 
@@ -190,15 +183,13 @@ export default function ReservasPage() {
             <PageHeader
                 titulo="Reservas"
                 descripcion="Administra las reservas realizadas en la librería"
-                acciones={
-                    <Contador
-                        total={reservas.length}
-                        pendientes={totalPendientes}
-                        confirmadas={totalConfirmadas}
-                        canceladas={totalCanceladas}
-                        completadas={totalCompletadas}
-                    />
-                }
+            />
+            <Contador
+                total={reservas.length}
+                pendientes={totalPendientes}
+                confirmadas={totalConfirmadas}
+                canceladas={totalCanceladas}
+                completadas={totalCompletadas}
             />
 
             <ReservaForm onReservaCreada={reservaCreada} />

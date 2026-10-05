@@ -3,6 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 
 import { FaBoxesStacked, FaClockRotateLeft, FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
+import { FaWarehouse, FaCircleCheck, FaTriangleExclamation, FaBoxOpen } from 'react-icons/fa6';
+import { StatCard } from '../dashboard/StatCard';
+import { Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -59,20 +62,12 @@ function accionesInventario(fila, { onVer, onEditar, puedeEditar }) {
 
 function Contador({ total, disponibles, stockBajo, sinStock }) {
     return (
-        <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#1c1814]">{total}</span>
-            </span>
-            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Disponibles: <span className="font-bold text-[#15803d]">{disponibles}</span>
-            </span>
-            <span className="rounded-xl border border-[#fed7aa] bg-[#fff7ed] px-4 py-2.5 text-sm font-medium text-[#ea580c] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Stock bajo: <span className="font-bold text-[#ea580c]">{stockBajo}</span>
-            </span>
-            <span className="rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-2.5 text-sm font-medium text-[#e11d48] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Sin stock: <span className="font-bold text-[#e11d48]">{sinStock}</span>
-            </span>
-        </div>
+        <Indicadores etiqueta="Resumen de inventario">
+            <StatCard titulo="Inventario" valor={total} icono={<FaWarehouse />} color="primary" detalle="Libros con stock registrado" />
+            <StatCard titulo="Disponibles" valor={disponibles} icono={<FaCircleCheck />} color="success" detalle="Con stock suficiente" />
+            <StatCard titulo="Stock bajo" valor={stockBajo} icono={<FaTriangleExclamation />} color="warning" detalle="Conviene reponer" />
+            <StatCard titulo="Sin stock" valor={sinStock} icono={<FaBoxOpen />} color="danger" detalle="Agotados" />
+        </Indicadores>
     );
 }
 
@@ -208,18 +203,16 @@ const [inventarioVer, setInventarioVer] = useState(null);
                         : 'Consulta el stock y la ubicación de los libros (solo lectura)'
                 }
                 acciones={
-                    <>
-                        <Contador
-                            total={inventario.length}
-                            disponibles={totalDisponibles}
-                            stockBajo={totalStockBajo}
-                            sinStock={totalSinStock}
-                        />
-                        <Button variante="secondary" onClick={() => setMovimientosAbierto(true)}>
-                            <FaClockRotateLeft /> Movimientos
-                        </Button>
-                    </>
+                    <Button variante="secondary" onClick={() => setMovimientosAbierto(true)}>
+                        <FaClockRotateLeft /> Movimientos
+                    </Button>
                 }
+            />
+            <Contador
+                total={inventario.length}
+                disponibles={totalDisponibles}
+                stockBajo={totalStockBajo}
+                sinStock={totalSinStock}
             />
 
             {puedeEditarStock && <InventarioForm onInventarioCreado={inventarioCreado} />}

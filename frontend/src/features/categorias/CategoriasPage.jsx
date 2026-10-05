@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
+import { FaTags, FaCircleCheck, FaBan } from 'react-icons/fa6';
+import { StatCard } from '../dashboard/StatCard';
+import { Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -45,17 +48,11 @@ function accionesCategoria(fila, { onVer, onEditar, onEliminar }) {
 
 function Contador({ total, activas, inactivas }) {
     return (
-        <div className="summary-strip flex flex-wrap gap-2">
-            <span className="rounded-xl border border-[#e6e0d7] bg-white px-4 py-2.5 text-sm font-medium text-[#433c35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Total: <span className="font-bold text-[#1c1814]">{total}</span>
-            </span>
-            <span className="rounded-xl border border-[#bbf7d0] bg-[#f0fdf4] px-4 py-2.5 text-sm font-medium text-[#15803d] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Activas: <span className="font-bold text-[#15803d]">{activas}</span>
-            </span>
-            <span className="rounded-xl border border-[#fecdd3] bg-[#fff1f2] px-4 py-2.5 text-sm font-medium text-[#e11d48] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                Inactivas: <span className="font-bold text-[#e11d48]">{inactivas}</span>
-            </span>
-        </div>
+        <Indicadores etiqueta="Resumen de categorías">
+            <StatCard titulo="Categorías" valor={total} icono={<FaTags />} color="primary" detalle="Registradas en el catálogo" />
+            <StatCard titulo="Activas" valor={activas} icono={<FaCircleCheck />} color="success" detalle="Visibles en el catálogo" />
+            <StatCard titulo="Inactivas" valor={inactivas} icono={<FaBan />} color="rose" detalle="Ocultas al público" />
+        </Indicadores>
     );
 }
 
@@ -210,8 +207,8 @@ export default function CategoriaPage() {
             <PageHeader
                 titulo="Categorías"
                 descripcion="Administra las categorías de los libros"
-                acciones={<Contador total={categorias.length} activas={categoriasActivas.length} inactivas={categoriasInactivas.length} />}
             />
+            <Contador total={categorias.length} activas={categoriasActivas.length} inactivas={categoriasInactivas.length} />
 
             <CategoriaForm onCategoriaCreada={categoriaCreada} />
 
