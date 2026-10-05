@@ -1142,3 +1142,44 @@
     .sitio .libro__tapa:has(> img:not([data-cargada]))::after,
     .sitio .categoria__libro:has(> img:not([data-cargada]))::after { animation-duration: 2.4s; }
 }
+
+/* ============================================================
+   Celular: tarjetas de libro más bajas, con los textos juntos.
+   Catálogo: todos los libros en un carrusel de una fila que se desliza
+   con el dedo (sin avance automático).
+   ============================================================ */
+@media (max-width: 640px) {
+    /* Inicio · Libros del catálogo */
+    .sitio .catalogo .libro__escenario { padding: 10px 0 8px; }
+    .sitio .catalogo .libro .libro__tapa { width: 72%; }
+    .sitio .catalogo .libro__datos { padding: 8px 10px 10px; gap: 2px; }
+    .sitio .catalogo .libro__categoria { font-size: 0.625rem; }
+    .sitio .catalogo .libro .libro__titulo { min-height: 0; margin: 0; font-size: 0.875rem; line-height: 1.25;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .sitio .catalogo .libro .libro__autor { margin: 0; font-size: 0.75rem; }
+    .sitio .catalogo .libro .libro__pie { margin-top: 2px; }
+    .sitio .catalogo .libro .compra-libro { margin-top: auto; padding-top: 6px; gap: 2px; }
+    .sitio .catalogo .libro .compra-libro .boton { min-height: 34px; }
+    .sitio .catalogo .libro .compra-libro .enlace-texto { min-height: 30px; padding: 0; font-size: 0.8125rem; }
+
+    /* Catálogo: carrusel de todos los libros */
+    .sitio .catalogo-resultados .rejilla-libros {
+        display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 46%; gap: 10px;
+        overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
+        margin-inline: calc(-1 * var(--gutter)); padding: 4px var(--gutter) 10px; scroll-padding-inline: var(--gutter);
+    }
+    .sitio .catalogo-resultados .rejilla-libros::-webkit-scrollbar { display: none; }
+    .sitio .catalogo-resultados .tarjeta-libro { scroll-snap-align: start; padding: 8px; }
+    .sitio .catalogo-resultados .tarjeta-libro__tapa { margin: 2px 6px 8px 2px; }
+    .sitio .catalogo-resultados .tarjeta-libro__cuerpo { gap: 2px; }
+    .sitio .catalogo-resultados .tarjeta-libro .libro__titulo { min-height: 0; margin: 0; font-size: 0.875rem; line-height: 1.25;
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .sitio .catalogo-resultados .tarjeta-libro .libro__autor { margin: 0; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sitio .catalogo-resultados .tarjeta-libro .categoria { font-size: 0.6875rem; }
+    .sitio .catalogo-resultados .tarjeta-libro .stock { margin: 2px 0 0; font-size: 0.75rem; }
+    .sitio .catalogo-resultados .tarjeta-libro .ahorro { margin: 0; font-size: 0.75rem; }
+    .sitio .catalogo-resultados .tarjeta-libro .compra-libro { padding-top: 6px; gap: 2px; }
+    .sitio .catalogo-resultados .tarjeta-libro .compra-libro .boton { min-height: 34px; }
+    .sitio .catalogo-resultados .tarjeta-libro .compra-libro .enlace-texto { min-height: 30px; font-size: 0.8125rem; }
+    .sitio .catalogo-mas { margin-top: 8px; }
+}
