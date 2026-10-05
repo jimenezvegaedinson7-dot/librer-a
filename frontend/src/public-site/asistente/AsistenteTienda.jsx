@@ -7,11 +7,12 @@ import posterAvatar from '../assets/asistente/anime-poster.webp';
 import { clienteApi } from '../tienda/clienteApi';
 import { listaLibros, libroComercial } from '../tienda/libroComercial';
 import ComprarLibro from '../tienda/ComprarLibro';
-import { analizarConsulta, responderConsulta, separarSaludo } from './respuestasAsistente';
+import { analizarConsulta, normalizarConsulta, responderConsulta, separarSaludo } from './respuestasAsistente';
+import { limpiarBusqueda, responderCharla, respuestaNoEntendi } from './charla';
 import { soles, urlPortada } from '../lib/formato';
 import './asistente.css';
 
-const bienvenida = {id:0,autor:'asistente',texto:'Hola. Te ayudo con los libros de esta librería: precios, stock, autores y ofertas. También puedo orientarte sobre entrega y cómo comprar. ¿Qué buscas?'};
+const bienvenida = {id:0,autor:'asistente',texto:'¡Hola! Soy el asistente de Librería del Saber. Te ayudo a encontrar libros, ver precios, stock y ofertas, y te recomiendo qué leer. También puedo orientarte sobre entrega y cómo comprar… o contarte un chiste de libros. ¿Qué buscas?'};
 const sugerencias = [
     {texto:'Buscar un libro',pregunta:'¿Cómo busco un libro?'},
     {texto:'Ver ofertas',pregunta:'¿Qué libros están en oferta?'},
@@ -129,22 +130,61 @@ export default function AsistenteTienda({ legal }) {
             if(falta>0)await new Promise(r=>setTimeout(r,falta));
             if(montado.current)agregar({...mensaje,nuevo:!movimientoReducido()});
         };
-        // «Hola, ¿tienen libros de…?»: se devuelve el saludo y se atiende el resto.
-        const {saludo,resto}=separarSaludo(consulta);
-        const pedido=saludo?(resto || consulta):consulta;
-        const conSaludo=m=>saludo?{...m,texto:`${saludo} ${m.texto}`}:m;
+        // «Hola, ¿cómo estás? búscame libros de…»: se contesta el saludo (y el
+        // «cómo estás») y se atiende el resto, sin muletillas como «we» o «porfa».
+        const {saludo,resto,estado}=separarSaludo(consulta);
+        const animo=estado?'¡Muy bien, gracias por preguntar! ':'';
+        const conSaludo=m=>saludo?{...m,texto:`${saludo} ${animo}${m.texto}`}:m;
+        const original=saludo?resto:consulta;
+        const limpio=limpiarBusqueda(original);
+        // Si la limpieza no quitó nada, se conserva lo que escribió la persona.
+        let pedido=limpio===normalizarConsulta(original)?original:(limpio || (saludo?'':consulta));
+        let introduccion=null;
+        const opcionesDe=lista=>(lista || []).map(t=>({texto:t,consulta:t}));
         try {
-            if(saludo && !resto){await responder({autor:'asistente',texto:`${saludo} Soy el asistente de la librería. Puedo buscar libros por título, autor o categoría, decirte precios y stock, mostrarte ofertas y orientarte sobre la ubicación de la tienda, la entrega y cómo comprar. ¿Qué buscas hoy?`});return;}
-            const plan=analizarConsulta(pedido);
+            if(saludo && !pedido){await responder({autor:'asistente',texto:`${saludo} ${animo}Soy el asistente de la librería. Puedo buscar libros por título, autor o categoría, decirte precios y stock, recomendarte lecturas, contarte un chiste o un dato curioso de libros y orientarte sobre la tienda, la entrega y cómo comprar. ¿Qué buscas hoy?`,
+                opciones:opcionesDe(['Recomiéndame algo','Cuéntame un chiste'])});return;}
+            // Charla: chistes, historias, datos curiosos, «cómo estás», ánimo…
+            const charla=responderCharla(pedido);
+            if(charla && !charla.consulta){await responder(conSaludo({autor:'asistente',texto:charla.texto,opciones:opcionesDe(charla.sugerencias)}));return;}
+            let plan=analizarConsulta(pedido);
+            if(charla?.consulta){introduccion=charla.texto;plan={tipo:'recomendacion'};}
+            if(plan.tipo==='general'){
+                // Pregunta abierta: la conversa la IA del servidor si está disponible.
+                try {
+                    const json=await clienteApi.asistente({mensaje:(saludo?resto:consulta).slice(0,400) || consulta,modo:'charla',...(contextoServidor.current?{contexto:contextoServidor.current}:{})});
+                    if(typeof json.data?.mensaje==='string' && json.data.mensaje.trim()){
+                        if(!montado.current)return;
+                        contextoServidor.current=json.data.contexto || contextoServidor.current;
+                        await responder(conSaludo({autor:'asistente',texto:json.data.mensaje}));return;
+                    }
+                } catch(error) { if(error.status===429)throw error; }
+                // Sin IA: «¿quién es Vargas Llosa?» → lo que hay de ese autor en el catálogo.
+                const nombre=/^(?:quien (?:es|fue|era)|que sabes (?:de|del|sobre)|hablame (?:de|del|sobre)|conoces a|que es)\s+(.+)$/.exec(normalizarConsulta(pedido))?.[1];
+                if(!nombre){await responder(conSaludo({autor:'asistente',texto:respuestaNoEntendi(),opciones:opcionesDe(['Recomiéndame algo','Ver ofertas','Cuéntame un chiste'])}));return;}
+                pedido=nombre;plan={tipo:'catalogo'};
+                introduccion='No tengo una biografía publicada aquí, pero esto es lo que encontré en el catálogo:';
+            }
             let libros=[];
             let consultado=null;
+            if(plan.tipo==='recomendacion'){
+                // Recomendación por ánimo: catálogo real, sin pasar por el buscador del servidor.
+                const json=await clienteApi.catalogo();
+                if(!Array.isArray(json.data))throw new Error('Catálogo no disponible');
+                libros=listaLibros(json);consultado=new Date();
+                if(montado.current)setFecha(consultado);
+                let respuesta=responderConsulta(charla.consulta,{libros,legal,contexto:[],idActual});
+                if(!respuesta.libros?.length)respuesta=responderConsulta('libros con stock',{libros,legal,contexto:[],idActual});
+                contexto.current=respuesta.contexto || [];
+                await responder(conSaludo({...respuesta,texto:respuesta.libros?.length?introduccion:respuesta.texto,autor:'asistente',consultado}));return;
+            }
             if(plan.tipo==='catalogo'){
                 try {
                     const json=await clienteApi.asistente({mensaje:pedido,...(contextoServidor.current?{contexto:contextoServidor.current}:{}),...(idActual?{id_libro:idActual}:{})});
                     if(typeof json.data?.mensaje!=='string' || !Array.isArray(json.data.libros))throw new Error('Respuesta no válida');
                     if(!montado.current)return;
                     contextoServidor.current=json.data.contexto || '';
-                    const respuesta={autor:'asistente',texto:json.data.mensaje,libros:json.data.libros.map(libroComercial),
+                    const respuesta={autor:'asistente',texto:introduccion && json.data.libros.length?introduccion:json.data.mensaje,libros:json.data.libros.map(libroComercial),
                         motivos:Object.fromEntries(json.data.libros.map(l=>[l.id_libro,l.motivo])),opciones:json.data.opciones || [],consultado:new Date()};
                     setFecha(respuesta.consultado);await responder(conSaludo(respuesta));return;
                 } catch(error) {
@@ -161,7 +201,7 @@ export default function AsistenteTienda({ legal }) {
             if(!montado.current)return;
             const respuesta=responderConsulta(pedido,{libros,legal,contexto:contexto.current,idActual});
             if(plan.tipo==='catalogo')contexto.current=respuesta.contexto || [];
-            await responder(conSaludo({...respuesta,autor:'asistente',consultado}));
+            await responder(conSaludo({...respuesta,texto:introduccion && respuesta.libros?.length?introduccion:respuesta.texto,autor:'asistente',consultado}));
         } catch(error) {
             if(error.status===400){contextoServidor.current='';contexto.current=[];}
             if(montado.current)await responder({autor:'asistente',texto:error.status===429?'Has realizado muchas consultas. Espera un momento y vuelve a intentar.'
@@ -222,9 +262,9 @@ export default function AsistenteTienda({ legal }) {
             <form className="asistente-formulario" onSubmit={e=>{e.preventDefault();enviar();}}>
                 <label htmlFor="asistente-pregunta">Tu pregunta sobre la librería</label>
                 <div><input ref={campo} id="asistente-pregunta" type="text" autoComplete="off" maxLength={400} value={pregunta}
-                    placeholder="Título, autor, precio o stock…" onChange={e=>setPregunta(e.target.value)} aria-describedby="asistente-alcance"/>
+                    placeholder="Escribe lo que buscas, como en un chat…" onChange={e=>setPregunta(e.target.value)} aria-describedby="asistente-alcance"/>
                     <button type="submit" aria-label="Enviar pregunta" disabled={ocupado || !pregunta.trim()}><FaPaperPlane aria-hidden="true"/></button></div>
-                <p id="asistente-alcance">Solo consultas sobre esta librería. Hasta 400 caracteres.</p>
+                <p id="asistente-alcance">Libros, lectura y la librería. Hasta 400 caracteres.</p>
             </form>
             <footer className="asistente-pie"><span>{fecha?`Catálogo consultado a las ${fecha.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})}`:'Datos públicos de la web'}</span>
                 <button type="button" className="asistente-icono" aria-label="Reiniciar conversación" disabled={ocupado} onClick={reiniciar}><FaArrowRotateLeft aria-hidden="true"/></button>

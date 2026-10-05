@@ -1,11 +1,20 @@
 const modelo=require('../models/asistente.model');
 const gemini=require('./geminiAssistant.service');
 const contextoService=require('./asistenteContexto.service');
-const {normalizar,coincidencias,interpretar}=require('../utils/asistenteBusqueda');
+const {normalizar,coincidencias,interpretar,fueraDeAlcance}=require('../utils/asistenteBusqueda');
 const ALCANCE='Solo puedo ayudarte con libros reales del catálogo y con la información pública de esta librería. No respondo sobre temas ajenos ni revelo información interna.';
-function crearAsistente({repositorio=modelo,proveedor=gemini.seleccionar,contextos=contextoService}={}){
-    return async function responder({mensaje,contexto,id_libro}){
+function crearAsistente({repositorio=modelo,proveedor=gemini.seleccionar,conversador=gemini.conversar,contextos=contextoService}={}){
+    return async function responder({mensaje,contexto,id_libro,modo}){
         const previo=contextos.leer(contexto);
+        // Conversación libre (charla, chistes, literatura general). Sin IA
+        // configurada devuelve un mensaje vacío y la web responde por su cuenta.
+        if(modo==='charla'){
+            if(fueraDeAlcance(normalizar(mensaje)))return {mensaje:ALCANCE,libros:[],opciones:[],contexto:contextos.firmar(previo),origen:'catalogo'};
+            const {texto}=await conversador({mensaje,historial:previo.historial || []});
+            if(!texto)return {mensaje:'',libros:[],opciones:[],contexto:contextos.firmar(previo),origen:'sin_ia'};
+            const historial=[...(previo.historial || []),{rol:'usuario',texto:mensaje.slice(0,220)},{rol:'asistente',texto:texto.slice(0,300)}].slice(-6);
+            return {mensaje:texto,libros:[],opciones:[],contexto:contextos.firmar({...previo,historial}),origen:'gemini'};
+        }
         const plan=interpretar(mensaje,previo);
         const simple=(texto,opciones=[])=>({mensaje:texto,libros:[],opciones,contexto:contextos.firmar({...previo,opciones}),origen:'catalogo'});
         if(plan.fuera)return simple(ALCANCE);

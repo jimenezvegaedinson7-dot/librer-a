@@ -109,3 +109,24 @@ test('si se retiran todos los libros durante Gemini no se afirma haber encontrad
     }})({mensaje:'Gabriel'});
     assert.equal(r.libros.length,0);assert.match(r.mensaje,/catálogo cambió/);
 });
+test('frases naturales: «búscame libros de…», «oye», «porfa» no se toman como título',()=>{
+    assert.deepEqual(interpretar('oye buscame libros de cien años porfa').tokens,['cien','anos']);
+    assert.deepEqual(interpretar('dame el libro llamado vivir para contarla').tokens,['vivir','contarla']);
+});
+test('charla: sin clave responde vacío; con IA devuelve texto limpio y nunca toca el catálogo',async()=>{
+    let consultas=0;
+    const repositorio={...repo(),buscar:async()=>{consultas++;return [];},facetas:async()=>{consultas++;return {autores,categorias};}};
+    const sinIA=crearAsistente({repositorio,conversador:async()=>({texto:null,motivo:'sin_clave'})});
+    const vacio=await sinIA({mensaje:'¿Quién fue Cervantes?',modo:'charla'});
+    assert.equal(vacio.mensaje,'');assert.equal(vacio.origen,'sin_ia');
+    const conIA=crearAsistente({repositorio,conversador:async()=>({texto:'Miguel de Cervantes escribió el Quijote.',motivo:null})});
+    const r=await conIA({mensaje:'¿Quién fue Cervantes?',modo:'charla'});
+    assert.equal(r.mensaje,'Miguel de Cervantes escribió el Quijote.');assert.equal(r.origen,'gemini');assert.deepEqual(r.libros,[]);
+    const fuera=await conIA({mensaje:'¿Qué ropa vendes?',modo:'charla'});
+    assert.match(fuera.mensaje,/Solo puedo ayudarte/);
+    assert.equal(consultas,0);
+});
+test('charla: el texto del modelo se limpia de enlaces y markdown',()=>{
+    const {limpiarTextoCharla}=require('../src/services/geminiAssistant.service');
+    assert.equal(limpiarTextoCharla('**Hola** visita https://x.com ya'),'Hola visita  ya');
+});

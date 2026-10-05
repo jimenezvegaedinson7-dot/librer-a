@@ -28,14 +28,16 @@ const TEMAS = [
 
 // Saludo al inicio del mensaje: «hola», «buenas tardes, ¿qué tal?»… Se
 // separa para contestar el saludo y atender lo que venga después.
-const SALUDO = /^(?:(?:buenas tardes|buenas noches|buenos dias|buen dia|buenas|hola+|holi|hey|ey|alo|saludos|que tal|como estas|como esta|como te va|hi|hello|disculpa|disculpe|oye|oiga)(?:\s+(?:a todos|amigo|amiga|asistente|senor|senora|joven))?\b[\s,.]*)+/;
+const SALUDO = /^(?:(?:buenas tardes|buenas noches|buenos dias|buen dia|buenas|hola+|holi|hey|ey|alo|saludos|que tal|como estas|como esta|como te va|hi|hello)(?:\s+(?:a todos|amigo|amiga|asistente|senor|senora|joven))?\b[\s,.]*)+/;
 export function separarSaludo(pregunta) {
     const q = normalizarConsulta(pregunta);
     const m = SALUDO.exec(q);
     if (!m) return {saludo:null,resto:q};
     const saludo = /buenas tardes/.test(m[0]) ? '¡Buenas tardes!' : /buenas noches/.test(m[0]) ? '¡Buenas noches!'
         : /buen(?:os)? dias?/.test(m[0]) ? '¡Buenos días!' : '¡Hola!';
-    return {saludo,resto:q.slice(m[0].length).trim()};
+    // «¿Cómo estás?» dentro del saludo merece una respuesta, no solo un hola.
+    const estado = /como esta|que tal|como te va/.test(m[0]);
+    return {saludo,resto:q.slice(m[0].length).trim(),estado};
 }
 
 export function analizarConsulta(pregunta) {
@@ -55,7 +57,9 @@ export function analizarConsulta(pregunta) {
     // no una invitacion a contestar preguntas generales.
     if (!/^(que es|que son|por que|como|explica|explicame|calcula|escribe|crea|traduce|resuelve|quien es)\b/.test(q)
         && q.split(' ').length <= 12) return {tipo:'catalogo'};
-    return {tipo:'fuera'};
+    // Preguntas generales (quién fue un autor, qué es un género, una duda de
+    // lectura): se conversan, sin inventar datos de la tienda.
+    return {tipo:'general'};
 }
 
 const enlace = (texto,to) => ({texto,to});
@@ -84,7 +88,7 @@ export function informacionTienda(tema, legal = LEGAL_RESPALDO) {
     return respuestas[tema] || {texto:ALCANCE_ASISTENTE};
 }
 
-const VACIAS = new Set(('a al algo algun alguna algunos algunas ante autor autora autores buscar busco cada categoria categorias como con consultar cual cuales cuanto cuantos cuesta cuestan de del descripcion detalle detalles dime disponible disponibles el ella ellos en es ese esta estan este estos exacto hay hola informa informacion interesa la las lectura lecturas libro libros lo los mas me menor menos mi mis muestra muestrame necesito nombre nos oferta ofertas o para por precio precios puede puedes que quiero recomienda recomiendame saber se sin sinopsis sobre soles sol stock su sus tengo tienes tienen tiene titulo titulos todo todos tu un una unidades vale valen ver vigente y ya bajo hasta presupuesto maximo entre novedades vendidos paginas editorial idioma edicion portada quedan ejemplares comprar solo favor encontrar barato baratos barata baratas economico economicos caro caros cara caras relacionado relacionados relacionada relacionadas obra obras escrito escritos escrita escritas escribio escribe escritor escritora escritores leer quisiera gustaria otros otras otro otra mismo misma tendras tendran tenes tendrias venden vendes ofrecen ofreces').split(' '));
+const VACIAS = new Set(('buscame buscarme busca encuentrame encuentra dame damelo muestrame mostrame ensename pasame consigueme quieres podrias podria puedo ayudame llamado llamada titulado titulada conoces sabes acerca a al algo algun alguna algunos algunas ante autor autora autores buscar busco cada categoria categorias como con consultar cual cuales cuanto cuantos cuesta cuestan de del descripcion detalle detalles dime disponible disponibles el ella ellos en es ese esta estan este estos exacto hay hola informa informacion interesa la las lectura lecturas libro libros lo los mas me menor menos mi mis muestra muestrame necesito nombre nos oferta ofertas o para por precio precios puede puedes que quiero recomienda recomiendame saber se sin sinopsis sobre soles sol stock su sus tengo tienes tienen tiene titulo titulos todo todos tu un una unidades vale valen ver vigente y ya bajo hasta presupuesto maximo entre novedades vendidos paginas editorial idioma edicion portada quedan ejemplares comprar solo favor encontrar barato baratos barata baratas economico economicos caro caros cara caras relacionado relacionados relacionada relacionadas obra obras escrito escritos escrita escritas escribio escribe escritor escritora escritores leer quisiera gustaria otros otras otro otra mismo misma tendras tendran tenes tendrias venden vendes ofrecen ofreces').split(' '));
 function presupuesto(q) {
     const rango = /entre\s+(?:s\/\s*)?(\d+(?:[.,]\d{1,2})?)\s+y\s+(?:s\/\s*)?(\d+(?:[.,]\d{1,2})?)/.exec(q);
     if (rango) return {min:Number(rango[1].replace(',','.')),max:Number(rango[2].replace(',','.')),valores:[rango[1],rango[2]]};
@@ -132,8 +136,8 @@ export function responderCatalogo(pregunta, libros, {contexto = [], idActual} = 
         || (caros?b.precioFinal-a.precioFinal:a.precioFinal-b.precioFinal) || a.titulo.localeCompare(b.titulo,'es'));
     if (!candidatos.length) return {texto:'No encontré un libro activo que coincida con esa consulta en el catálogo. Prueba con el título, autor o ISBN, o revisa las categorías. No puedo confirmar datos de libros que no aparecen en la web.',libros:[],enlaces:[enlace('Ver catálogo','/catalogo')],contexto:[]};
     const muestra = candidatos.slice(0,4);
-    let texto = candidatos.length > 4 ? `Encontré ${candidatos.length} títulos; te muestro los primeros 4. Estos son los precios y el stock del catálogo consultado.`
-        : 'Estos son los datos registrados en el catálogo consultado:';
+    let texto = candidatos.length > 4 ? `Encontré ${candidatos.length} títulos; te muestro los primeros 4 con su precio y stock actual.`
+        : muestra.length === 1 ? `¡Claro! Encontré «${muestra[0].titulo}» en el catálogo:` : 'Encontré estos libros en el catálogo:';
     if (/\b(sinopsis|descripcion|trata)\b/.test(q) && muestra.length === 1) {
         const sinopsis = muestra[0].sinopsis;
         texto = sinopsis ? `Descripción publicada: ${sinopsis.length>650?sinopsis.slice(0,650)+'…':sinopsis}` : 'Este libro no tiene una descripción publicada. Puedes revisar el resto de su ficha.';
