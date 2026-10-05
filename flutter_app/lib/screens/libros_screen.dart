@@ -19,13 +19,35 @@ import '../widgets/estado_chip.dart';
 import 'carrito_screen.dart';
 import 'detalle_libro_screen.dart';
 
-enum _Orden { tituloAZ, tituloZA, precioMenor, precioMayor }
+enum _Orden { tituloAZ, tituloZA, precioMenor, precioMayor, mayorDescuento }
+
+/// Filtros rápidos del catálogo; se pueden combinar.
+enum _Rapido { descuento, novedades, conStock, hasta30, de30a60, masDe60 }
+
+const Map<_Rapido, String> _nombreRapido = {
+  _Rapido.descuento: 'En descuento',
+  _Rapido.novedades: 'Novedades',
+  _Rapido.conStock: 'Con stock',
+  _Rapido.hasta30: 'Hasta S/ 30',
+  _Rapido.de30a60: 'S/ 30 a 60',
+  _Rapido.masDe60: 'Más de S/ 60',
+};
+
+const Map<_Rapido, IconData> _iconoRapido = {
+  _Rapido.descuento: Icons.local_offer_rounded,
+  _Rapido.novedades: Icons.auto_awesome_rounded,
+  _Rapido.conStock: Icons.inventory_2_rounded,
+  _Rapido.hasta30: Icons.payments_rounded,
+  _Rapido.de30a60: Icons.payments_rounded,
+  _Rapido.masDe60: Icons.payments_rounded,
+};
 
 const Map<_Orden, String> _nombreOrden = {
   _Orden.tituloAZ: 'Título A-Z',
   _Orden.tituloZA: 'Título Z-A',
   _Orden.precioMenor: 'Precio menor',
   _Orden.precioMayor: 'Precio mayor',
+  _Orden.mayorDescuento: 'Mayor descuento',
 };
 
 /// Petición desde otra pestaña para abrir el catálogo con una categoría
@@ -68,6 +90,7 @@ class _LibrosScreenState extends State<LibrosScreen> {
   bool? _disponible;
 
   _Orden _orden = _Orden.tituloAZ;
+  final Set<_Rapido> _rapidos = <_Rapido>{};
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
@@ -216,6 +239,29 @@ class _LibrosScreenState extends State<LibrosScreen> {
       });
     }
 
+    if (_rapidos.contains(_Rapido.descuento)) {
+      resultado = resultado.where((libro) => libro.enOferta);
+    }
+    if (_rapidos.contains(_Rapido.novedades)) {
+      resultado = resultado.where((libro) => libro.mostrarNuevo);
+    }
+    if (_rapidos.contains(_Rapido.conStock)) {
+      resultado = resultado.where((libro) => libro.hayStock);
+    }
+    final rangos = _rapidos.intersection({
+      _Rapido.hasta30,
+      _Rapido.de30a60,
+      _Rapido.masDe60,
+    });
+    if (rangos.isNotEmpty) {
+      resultado = resultado.where((libro) {
+        final precio = libro.precioCompra;
+        return (rangos.contains(_Rapido.hasta30) && precio <= 30) ||
+            (rangos.contains(_Rapido.de30a60) && precio > 30 && precio <= 60) ||
+            (rangos.contains(_Rapido.masDe60) && precio > 60);
+      });
+    }
+
     final filtrados = resultado.toList();
 
     switch (_orden) {
@@ -241,6 +287,12 @@ class _LibrosScreenState extends State<LibrosScreen> {
 
       case _Orden.precioMayor:
         filtrados.sort((a, b) => b.precioCompra.compareTo(a.precioCompra));
+        break;
+
+      case _Orden.mayorDescuento:
+        filtrados.sort(
+          (a, b) => b.porcentajeOferta.compareTo(a.porcentajeOferta),
+        );
         break;
     }
 
@@ -337,9 +389,11 @@ class _LibrosScreenState extends State<LibrosScreen> {
                 if (_categorias.length > 1)
                   SliverToBoxAdapter(child: _buildChips()),
 
+                SliverToBoxAdapter(child: _buildRapidos()),
+
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
                     child: _buildSortBar(filtrados.length),
                   ),
                 ),
@@ -447,6 +501,82 @@ class _LibrosScreenState extends State<LibrosScreen> {
               muestras: _muestras(categoria),
               seleccionado: _categoria == categoria,
               onTap: () => setState(() => _categoria = categoria),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Cuántos libros del catálogo cumplen un filtro rápido (para el contador).
+  int _cuentaRapido(_Rapido filtro) {
+    return _libros.where((libro) {
+      final precio = libro.precioCompra;
+      switch (filtro) {
+        case _Rapido.descuento:
+          return libro.enOferta;
+        case _Rapido.novedades:
+          return libro.mostrarNuevo;
+        case _Rapido.conStock:
+          return libro.hayStock;
+        case _Rapido.hasta30:
+          return precio <= 30;
+        case _Rapido.de30a60:
+          return precio > 30 && precio <= 60;
+        case _Rapido.masDe60:
+          return precio > 60;
+      }
+    }).length;
+  }
+
+  /// Filtros rápidos en una fila deslizable: se activan y combinan con un toque.
+  Widget _buildRapidos() {
+    return SizedBox(
+      height: 52,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+        children: [
+          for (final filtro in _Rapido.values)
+            if (_cuentaRapido(filtro) > 0)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  avatar: Icon(
+                    _iconoRapido[filtro],
+                    size: 16,
+                    color: _rapidos.contains(filtro)
+                        ? AppColors.primary
+                        : filtro == _Rapido.descuento
+                        ? AppColors.oferta
+                        : AppColors.gold,
+                  ),
+                  label: Text(
+                    '${_nombreRapido[filtro]!} · ${_cuentaRapido(filtro)}',
+                  ),
+                  selected: _rapidos.contains(filtro),
+                  showCheckmark: false,
+                  onSelected: (activo) => setState(() {
+                    activo ? _rapidos.add(filtro) : _rapidos.remove(filtro);
+                  }),
+                  selectedColor: AppColors.primaryContainer,
+                  backgroundColor: AppColors.surface,
+                  side: BorderSide(
+                    color: _rapidos.contains(filtro)
+                        ? AppColors.primary.withValues(alpha: 0.35)
+                        : AppColors.divider,
+                  ),
+                  shape: const StadiumBorder(),
+                  labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: _rapidos.contains(filtro)
+                        ? AppColors.primary
+                        : AppColors.textPrimary,
+                  ),
+                ),
+              ),
+          if (_rapidos.isNotEmpty)
+            TextButton(
+              onPressed: () => setState(_rapidos.clear),
+              child: const Text('Quitar filtros'),
             ),
         ],
       ),

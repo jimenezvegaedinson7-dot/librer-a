@@ -83,8 +83,8 @@ class PrecioLibro extends StatelessWidget {
   }
 }
 
-/// Precio con el símbolo "S/" más pequeño que el importe, para que la cifra
-/// sea lo primero que se lea (patrón comercial).
+/// Precio con el símbolo "S/" del mismo tamaño y peso que el importe, para
+/// que se lea como una sola cifra (también en las ofertas).
 class PrecioTexto extends StatelessWidget {
   final num? monto;
   final double tamano;
@@ -110,8 +110,8 @@ class PrecioTexto extends StatelessWidget {
           TextSpan(
             text: 'S/ ',
             style: GoogleFonts.inter(
-              fontSize: tamano * 0.66,
-              fontWeight: FontWeight.w600,
+              fontSize: tamano,
+              fontWeight: peso,
               color: tinta,
               decoration: subrayado
                   ? TextDecoration.underline
