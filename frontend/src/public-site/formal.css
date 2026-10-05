@@ -917,3 +917,13 @@
     .sitio .categoria-tarjeta .categoria__cuenta { font-size: 0.8125rem; }
     .sitio .categoria-tarjeta .categoria__flecha { width: 30px; height: 30px; }
 }
+
+/* Inicio · Libros del catálogo: portada más grande para que la tarjeta no
+   se vea vacía. */
+.sitio .catalogo .libro__escenario { padding: 18px 0 16px; }
+.sitio .catalogo .libro .libro__tapa { width: 78%; }
+.sitio .catalogo .libro__escenario::after { left: 14%; right: 14%; bottom: 8px; }
+@media (max-width: 640px) {
+    .sitio .catalogo .libro__escenario { padding: 12px 0 10px; }
+    .sitio .catalogo .libro .libro__tapa { width: 82%; }
+}
