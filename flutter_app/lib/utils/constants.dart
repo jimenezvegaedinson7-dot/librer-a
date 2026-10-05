@@ -192,6 +192,7 @@ class Constants {
 
   /// Clave del tema de colores personalizado del perfil.
   static const String prefTemaPerfilKey = 'perfil_tema';
+  static const String prefFondoKey = 'perfil_fondo';
 
   // ---------------------------------------------------------------------------
   // Marca / logo

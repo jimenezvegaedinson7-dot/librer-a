@@ -37,20 +37,35 @@ class AppColors {
   static const Color pergamino = Color(0xFFF1E8D8);
 
   // ---------------------------------------------------------------------------
-  // Fondos y superficies (fijos)
+  // Fondos y superficies (los elige el usuario en "Fondo y tarjetas")
+  // Valores iniciales = fondo "Marfil".
   // ---------------------------------------------------------------------------
 
-  /// Fondo general: marfil cálido.
-  static const Color background = Color(0xFFF6F1E9);
+  static Color _background = const Color(0xFFF6F1E9);
+  static Color _surface = const Color(0xFFFFFFFF);
+  static Color _surfaceElevated = const Color(0xFFEFE7DA);
+  static Color _paper = const Color(0xFFFBF7F0);
 
-  /// Superficie de tarjetas: blanco cálido.
-  static const Color surface = Color(0xFFFFFFFF);
+  /// Fondo general de las pantallas.
+  static Color get background => _background;
+
+  /// Superficie de tarjetas.
+  static Color get surface => _surface;
 
   /// Superficie hundida (campos, pistas, placeholders).
-  static const Color surfaceElevated = Color(0xFFEFE7DA);
+  static Color get surfaceElevated => _surfaceElevated;
 
   /// Papel: fondo de portadas y zonas de lectura.
-  static const Color paper = Color(0xFFFBF7F0);
+  static Color get paper => _paper;
+
+  /// Pinta el fondo de las pantallas y el de las tarjetas. Las superficies
+  /// intermedias se derivan mezclando ambos colores.
+  static void aplicarFondo(Color fondo, Color tarjeta) {
+    _background = fondo;
+    _surface = tarjeta;
+    _surfaceElevated = Color.lerp(fondo, const Color(0xFF8A7A66), 0.08)!;
+    _paper = Color.lerp(fondo, tarjeta, 0.55)!;
+  }
 
   // ---------------------------------------------------------------------------
   // Estados semánticos (fijos)

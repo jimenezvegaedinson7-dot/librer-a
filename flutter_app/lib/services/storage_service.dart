@@ -101,7 +101,10 @@ class StorageService {
   }
 
   /// Guarda la información básica del usuario (NO sensible).
-  Future<void> guardarUsuario(Usuario usuario, {int? generacionEsperada}) async {
+  Future<void> guardarUsuario(
+    Usuario usuario, {
+    int? generacionEsperada,
+  }) async {
     final generacion = generacionEsperada ?? _generacion;
     final prefs = await SharedPreferences.getInstance();
     if (generacion != _generacion) return;
@@ -141,6 +144,18 @@ class StorageService {
   Future<void> guardarTemaPerfil(String temaId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(Constants.prefTemaPerfilKey, temaId);
+  }
+
+  /// Guarda el id del fondo de pantallas y tarjetas (preferencia, NO sensible).
+  Future<void> guardarFondo(String fondoId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(Constants.prefFondoKey, fondoId);
+  }
+
+  /// Obtiene el id del fondo elegido o null si no se configuró.
+  Future<String?> obtenerFondo() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(Constants.prefFondoKey);
   }
 
   /// Obtiene el id del tema de colores del perfil o null si no se configuró.

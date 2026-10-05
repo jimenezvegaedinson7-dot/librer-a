@@ -15,12 +15,16 @@ class PerfilTema {
   /// el tema de marca para conservar el dorado junto al burdeos).
   final Color? acento;
 
+  /// Tema de vidrio: su muestra lleva brillo y reflejo, como un cristal.
+  final bool vidrio;
+
   const PerfilTema({
     required this.id,
     required this.nombre,
     required this.inicio,
     required this.fin,
     this.acento,
+    this.vidrio = false,
   });
 
   bool get esGradiente => inicio != fin;
@@ -300,6 +304,63 @@ const List<PerfilTema> perfilTemas = [
     nombre: 'Lavanda',
     inicio: Color(0xFF7C3AED),
     fin: Color(0xFFC4B5FD),
+  ),
+  // Vidrio: tonos profundos y elegantes con brillo de cristal.
+  PerfilTema(
+    id: 'vidrio_zafiro',
+    nombre: 'Vidrio zafiro',
+    inicio: Color(0xFF0B1E5B),
+    fin: Color(0xFF3B6FD8),
+    vidrio: true,
+  ),
+  PerfilTema(
+    id: 'vidrio_esmeralda',
+    nombre: 'Vidrio esmeralda',
+    inicio: Color(0xFF053B2A),
+    fin: Color(0xFF1F9D74),
+    vidrio: true,
+  ),
+  PerfilTema(
+    id: 'vidrio_rubi',
+    nombre: 'Vidrio rubí',
+    inicio: Color(0xFF4A0716),
+    fin: Color(0xFFC0264D),
+    vidrio: true,
+  ),
+  PerfilTema(
+    id: 'vidrio_amatista',
+    nombre: 'Vidrio amatista',
+    inicio: Color(0xFF2A1052),
+    fin: Color(0xFF8B5CF6),
+    vidrio: true,
+  ),
+  PerfilTema(
+    id: 'vidrio_aguamarina',
+    nombre: 'Vidrio aguamarina',
+    inicio: Color(0xFF053440),
+    fin: Color(0xFF1FA8B8),
+    vidrio: true,
+  ),
+  PerfilTema(
+    id: 'vidrio_ambar',
+    nombre: 'Vidrio ámbar',
+    inicio: Color(0xFF3D2405),
+    fin: Color(0xFFC98A1E),
+    vidrio: true,
+  ),
+  PerfilTema(
+    id: 'vidrio_onix',
+    nombre: 'Vidrio ónix',
+    inicio: Color(0xFF0A0A0D),
+    fin: Color(0xFF4A4D57),
+    vidrio: true,
+  ),
+  PerfilTema(
+    id: 'vidrio_humo',
+    nombre: 'Vidrio humo',
+    inicio: Color(0xFF1C2630),
+    fin: Color(0xFF6B7F92),
+    vidrio: true,
   ),
 ];
 

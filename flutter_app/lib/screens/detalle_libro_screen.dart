@@ -597,7 +597,7 @@ class _EscenarioPortada extends StatelessWidget {
           : BorderRadius.zero,
       child: Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -802,7 +802,12 @@ class _Card extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium)),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -843,7 +848,10 @@ class _StickyBar extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Total', style: textTheme.labelSmall?.copyWith(color: AppColors.textTertiary)),
+        Text(
+          'Total',
+          style: textTheme.labelSmall?.copyWith(color: AppColors.textTertiary),
+        ),
         // Darle ancho natural al texto evita que PrecioTexto dibuje puntos
         // suspensivos. Solo se reduce si ni siquiera cabe en toda la barra.
         FittedBox(
@@ -851,9 +859,12 @@ class _StickyBar extends StatelessWidget {
           alignment: Alignment.centerLeft,
           child: AnimatedSwitcher(
             duration: Duracion.rapida,
-            transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+            transitionBuilder: (child, anim) =>
+                FadeTransition(opacity: anim, child: child),
             child: PrecioTexto(
-              key: ValueKey(total), monto: total, tamano: 20,
+              key: ValueKey(total),
+              monto: total,
+              tamano: 20,
               color: libro.enOferta ? AppColors.oferta : null,
               subrayado: libro.enOferta,
             ),
@@ -871,16 +882,23 @@ class _StickyBar extends StatelessWidget {
           side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
         ),
         child: reservando
-            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
             : FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  if (!compact) ...[
-                    const Icon(Icons.event_available_outlined, size: 18),
-                    const SizedBox(width: 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!compact) ...[
+                      const Icon(Icons.event_available_outlined, size: 18),
+                      const SizedBox(width: 6),
+                    ],
+                    const Text('Reservar'),
                   ],
-                  const Text('Reservar'),
-                ]),
+                ),
               ),
       ),
     );
@@ -897,14 +915,24 @@ class _StickyBar extends StatelessWidget {
           ),
           child: AnimatedSwitcher(
             duration: Duracion.rapida,
-            transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+            transitionBuilder: (child, anim) =>
+                ScaleTransition(scale: anim, child: child),
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: Row(key: ValueKey(agregado), mainAxisSize: MainAxisSize.min, children: [
-                Icon(agregado ? Icons.check_rounded : Icons.add_shopping_cart_rounded, size: 18),
-                const SizedBox(width: 6),
-                Text(agregado ? 'Añadido' : 'Añadir'),
-              ]),
+              child: Row(
+                key: ValueKey(agregado),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    agregado
+                        ? Icons.check_rounded
+                        : Icons.add_shopping_cart_rounded,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(agregado ? 'Añadido' : 'Añadir'),
+                ],
+              ),
             ),
           ),
         ),
@@ -923,7 +951,9 @@ class _StickyBar extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 12, 16, 12),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final apilar = constraints.maxWidth < 520 || MediaQuery.textScalerOf(context).scale(20) > 26;
+              final apilar =
+                  constraints.maxWidth < 520 ||
+                  MediaQuery.textScalerOf(context).scale(20) > 26;
               if (apilar) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -931,17 +961,25 @@ class _StickyBar extends StatelessWidget {
                   children: [
                     importe,
                     const SizedBox(height: 10),
-                    Row(children: [Expanded(child: reservar), const SizedBox(width: 8), Expanded(child: anadir)]),
+                    Row(
+                      children: [
+                        Expanded(child: reservar),
+                        const SizedBox(width: 8),
+                        Expanded(child: anadir),
+                      ],
+                    ),
                   ],
                 );
               }
-              return Row(children: [
-                Expanded(child: importe),
-                const SizedBox(width: 8),
-                Expanded(child: reservar),
-                const SizedBox(width: 8),
-                Expanded(child: anadir),
-              ]);
+              return Row(
+                children: [
+                  Expanded(child: importe),
+                  const SizedBox(width: 8),
+                  Expanded(child: reservar),
+                  const SizedBox(width: 8),
+                  Expanded(child: anadir),
+                ],
+              );
             },
           ),
         ),

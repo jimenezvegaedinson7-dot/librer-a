@@ -144,7 +144,6 @@ class _ReservasScreenState extends State<ReservasScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
                   child: AppPageHeader(
-                    eyebrow: 'Apartados',
                     title: 'Mis reservas',
                     subtitle: total == 0
                         ? null

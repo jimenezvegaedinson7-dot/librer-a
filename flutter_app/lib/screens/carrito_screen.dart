@@ -86,10 +86,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
                 if (widget.embedded)
                   const Padding(
                     padding: EdgeInsets.fromLTRB(20, 18, 20, 0),
-                    child: AppPageHeader(
-                      eyebrow: 'Tu pedido',
-                      title: 'Mi carrito',
-                    ),
+                    child: AppPageHeader(title: 'Mi carrito'),
                   ),
                 const Expanded(
                   child: EmptyView(
@@ -117,7 +114,6 @@ class _CarritoScreenState extends State<CarritoScreen> {
                       Padding(
                         padding: const EdgeInsets.only(left: 4, bottom: 16),
                         child: AppPageHeader(
-                          eyebrow: 'Tu pedido',
                           title: 'Mi carrito',
                           subtitle: items.isEmpty
                               ? null
@@ -508,13 +504,18 @@ class _GuardadoCard extends StatelessWidget {
                       onPressed: id == null
                           ? null
                           : () {
-                              final movidas = CarritoService.instance.moverAlCarrito(id);
+                              final movidas = CarritoService.instance
+                                  .moverAlCarrito(id);
                               if (movidas < item.cantidad) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text(movidas == 0
-                                      ? 'Este libro no está disponible. Se conserva en Guardados.'
-                                      : 'Movimos $movidas unidades; el resto continúa en Guardados.'),
-                                ));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      movidas == 0
+                                          ? 'Este libro no está disponible. Se conserva en Guardados.'
+                                          : 'Movimos $movidas unidades; el resto continúa en Guardados.',
+                                    ),
+                                  ),
+                                );
                               }
                             },
                     ),

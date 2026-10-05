@@ -428,19 +428,8 @@ class _LibrosScreenState extends State<LibrosScreen> {
         children: [
           Aparecer(
             desplazamiento: 18,
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Explorar · ',
-                    style: TextStyle(
-                      color: AppColors.gold,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const TextSpan(text: 'Catálogo'),
-                ],
-              ),
+            child: Text(
+              'Explorar catálogo',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: textTheme.headlineMedium?.copyWith(height: 1.2),

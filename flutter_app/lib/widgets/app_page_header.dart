@@ -11,6 +11,9 @@ class AppPageHeader extends StatelessWidget {
   final String? subtitle;
   final String? eyebrow;
 
+  /// Centra el título (por ejemplo en Mi perfil).
+  final bool centrado;
+
   const AppPageHeader({
     super.key,
     required this.title,
@@ -18,6 +21,7 @@ class AppPageHeader extends StatelessWidget {
     this.trailing,
     this.subtitle,
     this.eyebrow,
+    this.centrado = false,
   });
 
   @override
@@ -30,9 +34,14 @@ class AppPageHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Con el título centrado se reserva a la izquierda el mismo
+          // espacio que ocupa el trailing, para que quede al centro real.
+          if (centrado && trailing != null) const SizedBox(width: 34),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: centrado
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
               children: [
                 Text.rich(
                   TextSpan(
@@ -50,6 +59,7 @@ class AppPageHeader extends StatelessWidget {
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  textAlign: centrado ? TextAlign.center : TextAlign.start,
                   style: textTheme.headlineMedium?.copyWith(
                     color: titleColor,
                     height: 1.2,

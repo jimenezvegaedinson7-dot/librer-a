@@ -16,6 +16,7 @@ import '../utils/constants.dart';
 import '../utils/perfil_temas.dart';
 import '../widgets/aparecer.dart';
 import '../widgets/app_page_header.dart';
+import 'fondos_screen.dart';
 import '../widgets/estado_chip.dart';
 import '../widgets/presionable.dart';
 import 'login_screen.dart';
@@ -262,7 +263,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
       final perfilConTwoFa = perfil.copyWith(
         twoFactorEnabled: twoFaServidor ?? _twoFactorEnabled,
       );
-      await StorageService.instance.guardarUsuario(perfilConTwoFa, generacionEsperada: generacion);
+      await StorageService.instance.guardarUsuario(
+        perfilConTwoFa,
+        generacionEsperada: generacion,
+      );
       if (mounted) {
         setState(() {
           _usuario = perfilConTwoFa;
@@ -645,8 +649,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
             children: [
               AppPageHeader(
-                eyebrow: 'Tu cuenta',
                 title: 'Mi perfil',
+                centrado: true,
                 trailing: AnimatedSwitcher(
                   duration: Duracion.rapida,
                   child: _refreshing
@@ -732,6 +736,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ),
               const SizedBox(height: 10),
               _buildCarruselColores(),
+              const SizedBox(height: 10),
+              // Enlace a la pantalla de fondo y tarjetas (con vista previa).
+              _profileCard(
+                child: _actionTile(
+                  context,
+                  icon: Icons.format_paint_outlined,
+                  label: 'Fondo y tarjetas',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const FondosScreen(),
+                    ),
+                  ),
+                ),
+              ),
 
               const SizedBox(height: 24),
 
@@ -1279,6 +1297,22 @@ class _TemaSwatch extends StatelessWidget {
             ),
           ],
         ),
+        foregroundDecoration: tema?.vidrio == true
+            ? const BoxDecoration(
+                shape: BoxShape.circle,
+                // Brillo de cristal arriba a la izquierda.
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0x66FFFFFF),
+                    Color(0x00FFFFFF),
+                    Color(0x14FFFFFF),
+                  ],
+                  stops: [0, 0.5, 1],
+                ),
+              )
+            : null,
         child: seleccionado
             ? Icon(Icons.check_rounded, size: 18, color: colorCheck)
             : esPersonalizado
