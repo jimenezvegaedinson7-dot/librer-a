@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
 
-/// Encabezado de página: antetítulo dorado opcional, título serif y subtítulo.
+/// Encabezado de página: antetítulo dorado opcional y título serif en una
+/// sola línea ("Paso 2 de 3 · Entrega y pago"), con subtítulo debajo.
 class AppPageHeader extends StatelessWidget {
   final String title;
   final Color? titleColor;
@@ -23,44 +24,54 @@ class AppPageHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (eyebrow != null) ...[
-                Text(
-                  eyebrow!.toUpperCase(),
-                  style: textTheme.labelSmall?.copyWith(
-                    color: AppColors.gold,
-                    letterSpacing: 1.4,
-                    fontWeight: FontWeight.w700,
+    // Un poco más abajo, separado del borde superior de la pantalla.
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      if (eyebrow != null)
+                        TextSpan(
+                          text: '${eyebrow!} · ',
+                          style: TextStyle(
+                            color: AppColors.gold,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      TextSpan(text: title),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.headlineMedium?.copyWith(
+                    color: titleColor,
+                    height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 4),
-              ],
-              Text(
-                title,
-                style: textTheme.headlineLarge?.copyWith(color: titleColor),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  subtitle!,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color:
-                        titleColor?.withValues(alpha: 0.8) ??
-                        AppColors.textSecondary,
+                if (subtitle != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color:
+                          titleColor?.withValues(alpha: 0.8) ??
+                          AppColors.textSecondary,
+                    ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
-        if (trailing != null) ...[const SizedBox(width: 12), trailing!],
-      ],
+          if (trailing != null) ...[const SizedBox(width: 12), trailing!],
+        ],
+      ),
     );
   }
 }

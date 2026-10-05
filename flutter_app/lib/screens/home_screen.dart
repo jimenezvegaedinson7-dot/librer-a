@@ -226,7 +226,7 @@ class _InicioTabState extends State<_InicioTab> {
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 16, 0),
+      padding: const EdgeInsets.fromLTRB(20, 28, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -236,27 +236,30 @@ class _InicioTabState extends State<_InicioTab> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _saludo.toUpperCase(),
-                        style: textTheme.labelSmall?.copyWith(
-                          color: AppColors.gold,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.6,
+                  // Saludo y nombre en una sola línea: "Buenas noches, Lucía".
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '$_saludo, ',
+                          style: TextStyle(
+                            color: AppColors.gold,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.nombreCliente.trim().isEmpty
-                            ? 'Te damos la bienvenida'
-                            : widget.nombreCliente,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: textTheme.headlineLarge?.copyWith(height: 1.15),
-                      ),
-                    ],
+                        TextSpan(
+                          text: widget.nombreCliente.trim().isEmpty
+                              ? 'te damos la bienvenida'
+                              : widget.nombreCliente
+                                    .trim()
+                                    .split(RegExp(r'\s+'))
+                                    .first,
+                        ),
+                      ],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: textTheme.headlineMedium?.copyWith(height: 1.2),
                   ),
                 ),
                 const SizedBox(width: 12),

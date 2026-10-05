@@ -368,26 +368,28 @@ class _LibrosScreenState extends State<LibrosScreen> {
   Widget _buildHeader() {
     final textTheme = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Aparecer(
             desplazamiento: 18,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'EXPLORAR',
-                  style: textTheme.labelSmall?.copyWith(
-                    color: AppColors.gold,
-                    letterSpacing: 1.6,
-                    fontWeight: FontWeight.w700,
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'Explorar · ',
+                    style: TextStyle(
+                      color: AppColors.gold,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text('Catálogo', style: textTheme.headlineLarge),
-              ],
+                  const TextSpan(text: 'Catálogo'),
+                ],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: textTheme.headlineMedium?.copyWith(height: 1.2),
             ),
           ),
           const SizedBox(height: 16),
