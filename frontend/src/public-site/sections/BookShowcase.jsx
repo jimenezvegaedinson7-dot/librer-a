@@ -43,13 +43,16 @@ function Libro({ libro, indice }) {
     );
 }
 
-// Carrusel del inicio: una muestra del catálogo real y el enlace a la
-// página completa.
+// Carrusel del inicio: libros recomendados del catálogo real y el enlace a
+// la página completa.
 export default function BookShowcase({ catalogo, reducido }) {
     const { cargando, error, libros } = catalogo;
     const ventana = useRef(null);
-    // Primero los más vendidos y los recién agregados (datos reales).
+    // Recomendados: más vendidos y recién agregados primero (datos reales).
+    // Los libros en descuento tienen su propio estante en el catálogo; aquí
+    // no se mezclan para que todas las tarjetas tengan la misma medida.
     const muestra = libros
+        .filter((l) => !(l.descuento > 0))
         .map((l, i) => ({ ...l, _i: i }))
         .sort((a, b) => (b.masVendido - a.masVendido) || (b.esNuevo - a.esNuevo) || a._i - b._i)
         .slice(0, 12);
@@ -66,7 +69,7 @@ export default function BookShowcase({ catalogo, reducido }) {
             <div className="contenedor">
                 <div className="seccion__cabeza">
                     <h2 id="catalogo-titulo" className="seccion__titulo" data-revelar="">
-                        <span className="linea"><span>Libros del catálogo</span></span>
+                        <span className="linea"><span>Libros recomendados</span></span>
                     </h2>
                     <div className="catalogo__controles">
                         <Link to="/catalogo" className="enlace-mas">Ver todo el catálogo <FaChevronRight aria-hidden="true" /></Link>

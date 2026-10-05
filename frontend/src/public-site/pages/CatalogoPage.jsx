@@ -87,8 +87,11 @@ function useEsCelular() {
 function Estantes({ libros }) {
     const estantes = useMemo(() => {
         const descuento = libros.filter((l) => l.descuento > 0).sort((a, b) => b.descuento - a.descuento);
-        const recientes = [...libros].sort((a, b) => (b.esNuevo - a.esNuevo) || (b.id - a.id));
-        const vendidos = libros.filter((l) => l.masVendido);
+        // Sin descuento en los demás estantes: así cada estante tiene tarjetas
+        // de la misma medida (las de oferta llevan más datos).
+        const sinDescuento = libros.filter((l) => !(l.descuento > 0));
+        const recientes = [...sinDescuento].sort((a, b) => (b.esNuevo - a.esNuevo) || (b.id - a.id));
+        const vendidos = sinDescuento.filter((l) => l.masVendido);
         return [
             { id: 'descuento', titulo: 'En descuento', lista: descuento, enlace: '/catalogo?ofertas=1' },
             { id: 'recientes', titulo: 'Agregados recientemente', lista: recientes },

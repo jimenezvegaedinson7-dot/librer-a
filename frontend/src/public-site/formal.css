@@ -1212,3 +1212,15 @@
     .sitio .catalogo-estante .rejilla-libros { margin-top: 0; }
     .sitio .catalogo-estante__todos { padding-top: 14px; border-top: 1px solid var(--linea); }
 }
+/* Celular: dentro de cada carrusel todas las tarjetas tienen la misma
+   altura; los botones quedan alineados abajo. Cada estante agrupa libros
+   parecidos (con o sin descuento), así no quedan huecos. */
+@media (max-width: 640px) {
+    .sitio .catalogo .catalogo__pista,
+    .sitio .catalogo-resultados .rejilla-libros { align-items: stretch; }
+    .sitio .catalogo .libro, .sitio .catalogo-resultados .tarjeta-libro { align-self: stretch; height: auto; }
+    .sitio .catalogo .libro__datos,
+    .sitio .catalogo-resultados .tarjeta-libro__cuerpo { flex: 1 1 auto; display: flex; flex-direction: column; }
+    .sitio .catalogo .libro .compra-libro,
+    .sitio .catalogo-resultados .tarjeta-libro .compra-libro { margin-top: auto; }
+}

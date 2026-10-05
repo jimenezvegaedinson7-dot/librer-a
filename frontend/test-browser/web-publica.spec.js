@@ -497,14 +497,16 @@ test('catálogo: sin descuento no hay precio tachado en ninguna tarjeta', async 
     await expect(page.locator('.rejilla-libros .oferta__anterior')).toHaveCount(0);
 });
 
-test('inicio: el carrusel de la portada también aplica el descuento', async ({ page }) => {
+test('inicio: Libros recomendados no mezcla libros en descuento', async ({ page }) => {
     const errores = [];
     page.on('pageerror', (e) => errores.push(String(e)));
     await apiPublica(page, { libros: [enOferta, ...LIBROS.slice(1)] });
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
-    await expect(page.locator('.libro .oferta__pastilla').first()).toHaveText('-30%');
-    await expect(page.locator('.libro .oferta__final').first()).toHaveCSS('color', 'rgb(177, 39, 4)');
+    await expect(page.getByRole('heading', { name: 'Libros recomendados' })).toBeVisible();
+    await expect(page.locator('.libro').first()).toBeVisible();
+    await expect(page.locator('.libro .oferta__pastilla')).toHaveCount(0);
+    await expect(page.locator('.libro', { hasText: enOferta.titulo })).toHaveCount(0);
     expect(errores).toHaveLength(0);
 });
 
