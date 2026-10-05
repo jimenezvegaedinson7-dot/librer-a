@@ -1,6 +1,37 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci",
+  "outputDirectory": "dist",
+  "redirects": [
+    {
+      "source": "/mis-compras",
+      "has": [{ "type": "host", "value": "librer-a-zeta.vercel.app" }],
+      "destination": "https://libreria.my/mis-compras",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://libreria-api-v9h0.onrender.com/api/:path*" },
+    { "source": "/uploads/:path*", "destination": "https://libreria-api-v9h0.onrender.com/uploads/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "private, no-store" },
+        { "key": "CDN-Cache-Control", "value": "no-store" },
+        { "key": "Vercel-CDN-Cache-Control", "value": "no-store" },
+        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+      ]
+    },
+    {
+      "source": "/uploads/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "private, no-store" },
+        { "key": "x-vercel-enable-rewrite-caching", "value": "0" }
+      ]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
