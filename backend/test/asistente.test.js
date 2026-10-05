@@ -130,3 +130,11 @@ test('charla: el texto del modelo se limpia de enlaces y markdown',()=>{
     const {limpiarTextoCharla}=require('../src/services/geminiAssistant.service');
     assert.equal(limpiarTextoCharla('**Hola** visita https://x.com ya'),'Hola visita  ya');
 });
+test('memoria: solo guarda campos conocidos y acotados, sin texto libre',()=>{
+    const {sanearMemoria}=require('../src/utils/asistenteMemoria');
+    const m=sanearMemoria({apodo:'Lucía',categorias:{Novela:3,'<script>':2,Terror:-1},autores:{'Gabriel García Márquez':5},
+        vistos:[1,2,2,'x',3],visitas:4,ultimaBusqueda:'novelas de amor',conversacion:'texto largo',token:'abc'});
+    assert.deepEqual(m,{apodo:'Lucía',categorias:{Novela:3},autores:{'Gabriel García Márquez':5},vistos:[1,2,3],visitas:4,ultimaBusqueda:'novelas de amor'});
+    assert.deepEqual(sanearMemoria(null),{categorias:{},autores:{},vistos:[],visitas:0});
+    assert.equal(sanearMemoria({apodo:'x'.repeat(80)}).apodo,undefined);
+});

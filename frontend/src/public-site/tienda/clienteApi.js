@@ -82,6 +82,10 @@ export const clienteApi = {
     },
     autor: id => peticionCliente(`/autores/${id}`, {autenticada:false}),
     favoritos: sesion => peticionCliente('/favoritos', {sesion}),
+    // Memoria del asistente: lo que aprendió de este cliente.
+    memoriaAsistente: sesion => peticionCliente('/asistente/memoria', {sesion}),
+    guardarMemoriaAsistente: (datos, sesion) => peticionCliente('/asistente/memoria', {method:'PUT',body:{datos},sesion}),
+    borrarMemoriaAsistente: sesion => peticionCliente('/asistente/memoria', {method:'DELETE',sesion}),
     favorito: (id, sesion) => peticionCliente(`/favoritos/${id}`, {sesion}),
     agregarFavorito: (id, sesion) => peticionCliente(`/favoritos/${id}`, {method:'POST',sesion}),
     quitarFavorito: (id, sesion) => peticionCliente(`/favoritos/${id}`, {method:'DELETE',sesion}),

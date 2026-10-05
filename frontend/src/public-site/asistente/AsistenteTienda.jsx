@@ -8,7 +8,8 @@ import { clienteApi } from '../tienda/clienteApi';
 import { listaLibros, libroComercial } from '../tienda/libroComercial';
 import ComprarLibro from '../tienda/ComprarLibro';
 import { analizarConsulta, normalizarConsulta, responderConsulta, separarSaludo } from './respuestasAsistente';
-import { limpiarBusqueda, responderCharla, respuestaNoEntendi } from './charla';
+import { empujon, limpiarBusqueda, responderCharla, respuestaNoEntendi, saludoDelMomento } from './charla';
+import { useMemoriaAsistente } from './useMemoriaAsistente';
 import { soles, urlPortada } from '../lib/formato';
 import './asistente.css';
 
@@ -83,6 +84,8 @@ export default function AsistenteTienda({ legal }) {
     const boton = useRef(null), campo = useRef(null), conversacion = useRef(null);
     const bloqueo = useRef(false), montado = useRef(true), siguiente = useRef(1), contexto = useRef([]);
     const contextoServidor=useRef('');
+    const memoria=useMemoriaAsistente();
+    const saludado=useRef(false), empujado=useRef(false);
     const {pathname} = useLocation();
     const idActual = Number(/^\/libro\/(\d+)$/.exec(pathname)?.[1]) || undefined;
     useEffect(()=>{montado.current=true;return()=>{montado.current=false;};},[]);
@@ -113,7 +116,39 @@ export default function AsistenteTienda({ legal }) {
             if(!movimientoReducido()){setIntro(true);setTimeout(()=>{if(montado.current)setIntro(false);},2700);}
         }
         setAbierto(true);
+        saludarConMemoria();
     }
+    // Saludo personal la primera vez que se abre en esta visita: por la hora,
+    // por el nombre y por lo que recuerda de sus gustos.
+    function saludarConMemoria(intentos=0){
+        if(saludado.current)return;
+        if(!memoria.lista() && intentos<10){setTimeout(()=>saludarConMemoria(intentos+1),200);return;}
+        saludado.current=true;
+        const nombre=memoria.nombre();
+        if(!memoria.logeado && !nombre)return;
+        const datos=memoria.datos();
+        const autor=memoria.autorFavorito(), categoria=memoria.categoriaFavorita();
+        const momento=saludoDelMomento().replace(/!/,nombre?`, ${nombre}!`:'!');
+        let texto;
+        const opciones=[];
+        if(datos.visitas>0 && (autor || datos.ultimaBusqueda)){
+            texto=`${momento} Qué gusto verte de nuevo. 😊 ${datos.ultimaBusqueda?`La última vez buscaste «${datos.ultimaBusqueda}». `:''}¿Seguimos por ahí o te recomiendo algo según tus gustos?`;
+            if(autor)opciones.push({texto:`Más de ${autor}`,consulta:`Libros de ${autor}`});
+            if(categoria)opciones.push({texto:`Libros de ${categoria}`,consulta:`Libros de ${categoria}`});
+            opciones.push({texto:'Recomiéndame algo',consulta:'Recomiéndame algo'});
+        } else {
+            texto=`${momento} ${memoria.logeado?'Desde ahora iré aprendiendo tus gustos para recomendarte mejor cada vez que vuelvas. 📚':'¿Qué te gustaría leer hoy?'}`;
+        }
+        memoria.contarVisita();
+        agregar({autor:'asistente',texto,opciones,nuevo:!movimientoReducido()});
+    }
+    // Si abre el chat y no escribe nada, el asistente le habla una sola vez.
+    useEffect(()=>{
+        if(!abierto || empujado.current || ocupado || mensajes.some(m=>m.autor==='usuario'))return undefined;
+        const t=setTimeout(()=>{empujado.current=true;agregar({autor:'asistente',texto:empujon(),nuevo:!movimientoReducido(),
+            opciones:[{texto:'Recomiéndame algo',consulta:'Recomiéndame algo'},{texto:'Dato curioso',consulta:'Dame un dato curioso'}]});},28000);
+        return()=>clearTimeout(t);
+    },[abierto,ocupado,mensajes]);
     function cerrar(){setAbierto(false);boton.current?.focus();}
     function agregar(mensaje){setMensajes(prev=>[...prev.slice(-29),{...mensaje,id:siguiente.current++}]);}
     async function enviar(texto = pregunta) {
@@ -144,8 +179,15 @@ export default function AsistenteTienda({ legal }) {
         try {
             if(saludo && !pedido){await responder({autor:'asistente',texto:`${saludo} ${animo}Soy el asistente de la librería. Puedo buscar libros por título, autor o categoría, decirte precios y stock, recomendarte lecturas, contarte un chiste o un dato curioso de libros y orientarte sobre la tienda, la entrega y cómo comprar. ¿Qué buscas hoy?`,
                 opciones:opcionesDe(['Recomiéndame algo','Cuéntame un chiste'])});return;}
+            // «Olvida lo que sabes de mí»: borra la memoria de este cliente.
+            if(/\b(olvida|borra|elimina)\b.*\b(sabes de mi|mis gustos|mi memoria|memoria|todo de mi|lo que sabes)\b/.test(normalizarConsulta(pedido))){
+                await memoria.olvidar();
+                await responder({autor:'asistente',texto:'Listo, olvidé tus gustos y tu nombre. Empezamos de cero cuando quieras. 🧹'});return;
+            }
             // Charla: chistes, historias, datos curiosos, «cómo estás», ánimo…
-            const charla=responderCharla(pedido);
+            // La charla se lee sobre la frase completa («recomiéndame algo»), no sobre la búsqueda limpia.
+            const charla=responderCharla(original,{nombre:memoria.nombre()}) || responderCharla(pedido,{nombre:memoria.nombre()});
+            if(charla?.recordar?.nombre)memoria.recordar({apodo:charla.recordar.nombre});
             if(charla && !charla.consulta){await responder(conSaludo({autor:'asistente',texto:charla.texto,opciones:opcionesDe(charla.sugerencias)}));return;}
             let plan=analizarConsulta(pedido);
             if(charla?.consulta){introduccion=charla.texto;plan={tipo:'recomendacion'};}
@@ -173,7 +215,19 @@ export default function AsistenteTienda({ legal }) {
                 if(!Array.isArray(json.data))throw new Error('Catálogo no disponible');
                 libros=listaLibros(json);consultado=new Date();
                 if(montado.current)setFecha(consultado);
-                let respuesta=responderConsulta(charla.consulta,{libros,legal,contexto:[],idActual});
+                let respuesta=null;
+                // Con gustos aprendidos: libros de su autor o categoría favorita que aún no vio.
+                const autor=memoria.autorFavorito(), categoria=memoria.categoriaFavorita();
+                const vistos=new Set(memoria.datos().vistos || []);
+                for(const [tipo,valor] of [['autor',autor],['categoria',categoria]]){
+                    if(respuesta || !valor)continue;
+                    const elegidos=libros.filter(l=>l.stock>0 && !vistos.has(l.id) && (tipo==='autor'?l.autor===valor:l.categoria===valor)).slice(0,4);
+                    if(elegidos.length){
+                        introduccion=tipo==='autor'?`Como te gustan los libros de ${valor}, creo que estos te van a encantar:`:`Sé que te gusta ${valor}, así que te elegí estos:`;
+                        respuesta={texto:introduccion,libros:elegidos,contexto:elegidos.map(l=>l.id),enlaces:[{texto:'Ver catálogo completo',to:'/catalogo'}]};
+                    }
+                }
+                if(!respuesta)respuesta=responderConsulta(charla.consulta,{libros,legal,contexto:[],idActual});
                 if(!respuesta.libros?.length)respuesta=responderConsulta('libros con stock',{libros,legal,contexto:[],idActual});
                 contexto.current=respuesta.contexto || [];
                 await responder(conSaludo({...respuesta,texto:respuesta.libros?.length?introduccion:respuesta.texto,autor:'asistente',consultado}));return;
@@ -186,6 +240,7 @@ export default function AsistenteTienda({ legal }) {
                     contextoServidor.current=json.data.contexto || '';
                     const respuesta={autor:'asistente',texto:introduccion && json.data.libros.length?introduccion:json.data.mensaje,libros:json.data.libros.map(libroComercial),
                         motivos:Object.fromEntries(json.data.libros.map(l=>[l.id_libro,l.motivo])),opciones:json.data.opciones || [],consultado:new Date()};
+                    if(respuesta.libros.length)memoria.aprenderBusqueda(respuesta.libros,pedido);
                     setFecha(respuesta.consultado);await responder(conSaludo(respuesta));return;
                 } catch(error) {
                     // Compatibilidad mientras el nuevo endpoint aun no se publique.
@@ -201,6 +256,7 @@ export default function AsistenteTienda({ legal }) {
             if(!montado.current)return;
             const respuesta=responderConsulta(pedido,{libros,legal,contexto:contexto.current,idActual});
             if(plan.tipo==='catalogo')contexto.current=respuesta.contexto || [];
+            if(plan.tipo==='catalogo' && respuesta.libros?.length)memoria.aprenderBusqueda(respuesta.libros,pedido);
             await responder(conSaludo({...respuesta,texto:introduccion && respuesta.libros?.length?introduccion:respuesta.texto,autor:'asistente',consultado}));
         } catch(error) {
             if(error.status===400){contextoServidor.current='';contexto.current=[];}
@@ -212,7 +268,7 @@ export default function AsistenteTienda({ legal }) {
             if(montado.current){setOcupado(false);campo.current?.focus();}
         }
     }
-    function reiniciar(){if(bloqueo.current)return;setMensajes([bienvenida]);setEscritos(new Set());contexto.current=[];contextoServidor.current='';setFecha(null);setPregunta('');campo.current?.focus();}
+    function reiniciar(){if(bloqueo.current)return;saludado.current=false;setMensajes([bienvenida]);setEscritos(new Set());contexto.current=[];contextoServidor.current='';setFecha(null);setPregunta('');campo.current?.focus();}
     return <div ref={raiz} className="asistente-tienda">
         <button ref={boton} type="button" className="asistente-abrir" aria-label="Abrir asistente de la librería"
             aria-expanded={abierto} aria-controls="asistente-panel" onClick={()=>abierto?cerrar():abrir()}>
@@ -240,7 +296,7 @@ export default function AsistenteTienda({ legal }) {
                     {(!m.nuevo || escritos.has(m.id)) && <div className="asistente-extras">
                     {m.libros?.length>0 && <ul className="asistente-libros">{m.libros.map(l=><li key={l.id}>
                         {l.portada && <img className="asistente-portada" src={urlPortada(l.portada,160)} alt={`Portada de ${l.titulo}`} width="44" height="66" loading="lazy" onError={e=>{e.currentTarget.hidden=true;}}/>}
-                        <Link to={`/libro/${l.id}`} onClick={cerrar}>{l.titulo}</Link>
+                        <Link to={`/libro/${l.id}`} onClick={()=>{memoria.aprenderVisto(l);cerrar();}}>{l.titulo}</Link>
                         {l.autor && <p>{l.autor}</p>}
                         <p><strong>{soles(l.precioFinal)}</strong>{l.descuento>0 && <> <s>{soles(l.precio)}</s><span className="asistente-oferta">Oferta -{l.descuento}%</span></>}</p>
                         <p className="asistente-stock">{l.stock>0?`${l.stock} ${l.stock===1?'ejemplar disponible':'ejemplares disponibles'}`:'Agotado en el catálogo consultado'}</p>

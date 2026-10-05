@@ -68,6 +68,20 @@ const SENTENCIAS_BASE = [
             ALTER TABLE comprobantes ADD COLUMN IF NOT EXISTS enviado_por_email BOOLEAN DEFAULT FALSE;
             ALTER TABLE comprobantes ADD COLUMN IF NOT EXISTS fecha_envio_email TIMESTAMP NULL;
         `
+    },
+    {
+        // Lo que el asistente aprende de cada cliente (apodo y gustos).
+        nombre: 'asistente_memoria',
+        sql: `
+            CREATE TABLE IF NOT EXISTS asistente_memoria (
+                id_usuario  INT PRIMARY KEY,
+                datos       JSONB NOT NULL DEFAULT '{}'::jsonb,
+                actualizado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_asistente_memoria_usuario
+                    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+                    ON DELETE CASCADE
+            );
+        `
     }
 ];
 

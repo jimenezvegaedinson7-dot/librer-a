@@ -81,8 +81,57 @@ const ANIMO = [
     { patron: /\b(regalo|regalar|cumpleanos|obsequio)\b/, texto: 'Un libro siempre es un gran regalo. Te muestro algunas opciones; si me dices para quién es (niño, joven, adulto) o qué le gusta, afino la búsqueda:', consulta: 'mas vendidos' },
 ];
 
-function charlaLocal(q) {
+// ---------- Personalidad ----------
+const RISAS = ['😄 ¡Me alegra sacarte una sonrisa!', '¡Jaja! Sabía que ese te iba a gustar. 😁', '😂 Tengo más donde vino ese… ¿otro?', '¡Esa risa me dio energía para buscar diez libros más! 😄'];
+const GRACIAS = ['¡Con gusto{n}! Para eso estoy. 📚', '¡De nada{n}! Con gusto te ayudo cuando quieras.', '¡Con gusto{n}! Me encanta ayudar a encontrar buenas lecturas. 😊'];
+const ADIOS = ['¡Hasta pronto{n}! Que tengas una gran lectura. 📖', '¡Chau{n}! Aquí te espero con más libros. 👋', '¡Nos vemos{n}! Recuerda: un capítulo antes de dormir nunca falla. 😉'];
+const DORMIR = ['¡Que descanses{n}! 🌙 Un par de páginas antes de dormir y sueños de novela.', '¡Buenas noches{n}! Si no tienes qué leer antes de dormir, mañana te recomiendo algo. 😴'];
+const FAVORITOS = [
+    'Si tuviera que elegir uno… «El Principito». Cada vez que lo leo descubro algo nuevo. ¿Y el tuyo cuál es?',
+    'Me encantan las novelas que te atrapan desde la primera página. Últimamente ando enganchado con García Márquez. ¿Qué te gusta leer a ti?',
+    '¡Pregunta difícil! Es como elegir entre tus hijos… pero «Cien años de soledad» siempre está en mi lista. ¿Tienes alguno favorito?',
+];
+const nombreBonito = (t) => t.split(' ').slice(0, 2).map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+const conNombre = (texto, nombre) => texto.replace('{n}', nombre ? `, ${nombre}` : '');
+
+function personalidad(q, memoria = {}) {
+    const nombre = memoria.nombre;
+    const m = /^(?:me llamo|mi nombre es|puedes llamarme|llamame)\s+([a-z]{2,20}(?:\s+[a-z]{2,20})?)$/.exec(q);
+    if (m) {
+        const n = nombreBonito(m[1]);
+        return { texto: `¡Mucho gusto, ${n}! 😊 Me encanta conocer a nuevos lectores. ¿Qué te gustaría leer hoy?`, recordar: { nombre: n }, sugerencias: ['Recomiéndame algo', 'Cuéntame un chiste'] };
+    }
+    if (/\b(como me llamo|sabes (?:como me llamo|mi nombre)|te acuerdas de mi|recuerdas mi nombre)\b/.test(q))
+        return { texto: nombre ? `¡Claro que me acuerdo! Eres ${nombre}. 😄` : 'Todavía no me lo has dicho… ¿cómo te llamas? Dime «me llamo…» y no lo olvido.' };
+    if (/^(?:gracias|muchas gracias|mil gracias|te pasaste|grax|thanks)\b/.test(q)) return { texto: conNombre(azar(GRACIAS), nombre) };
+    if (/\b(me voy a dormir|ya me voy a dormir|buenas noches me voy|hasta manana)\b/.test(q)) return { texto: conNombre(azar(DORMIR), nombre) };
+    if (/^(?:chau|chao|adios|hasta luego|nos vemos|bye|me voy)\b/.test(q)) return { texto: conNombre(azar(ADIOS), nombre) };
+    if (/\b(tu libro favorito|que te gusta leer|que lees|que estas leyendo|cual es tu favorito|te gusta leer)\b/.test(q)) return { texto: azar(FAVORITOS) };
+    if (/\b(de donde eres|donde vives|donde estas)\b/.test(q))
+        return { texto: 'Vivo dentro de la web de Librería del Saber, entre estantes de Pallasca, Áncash. 🏔️ Es un lugar tranquilo… y lleno de buenas historias.' };
+    if (/\b(cuantos anos tienes|tu edad|que edad tienes)\b/.test(q))
+        return { texto: 'Soy joven en años, pero viejo en lecturas. 📚 Digamos que tengo tantos años como páginas he leído… ¡y ya perdí la cuenta!' };
+    if (/\b(estas vivo|eres real|tienes sentimientos|sientes|tienes corazon|eres humano)\b/.test(q))
+        return { texto: 'Soy un asistente virtual, pero te confieso algo: cada vez que alguien encuentra su libro ideal, siento algo parecido a la alegría. 😊' };
+    if (/^(?:estas ahi|sigues ahi|hay alguien|me escuchas|me lees|holaa+|alo)\b/.test(q))
+        return { texto: `¡Aquí estoy${nombre ? `, ${nombre}` : ''}! 👋 Siempre atento. ¿Qué buscamos?` };
+    if (/\b(que haces|que estas haciendo|en que andas)\b/.test(q))
+        return { texto: 'Ordenando estantes imaginarios y esperando que alguien me pida un buen libro… ¿serás tú? 😄' };
+    if (/\b(cantas|bailas|sabes cantar|sabes bailar)\b/.test(q))
+        return { texto: 'Cantar no es lo mío… pero recito sinopsis como nadie. 🎤📚 ¿Te busco una?' };
+    if (/\b(eres (?:bonito|lindo|guapo|tierno|chevere|bacan)|que lindo|me gustas)\b/.test(q))
+        return { texto: '¡Ay, me sonrojé! ☺️ Pero los verdaderamente bonitos son los libros del catálogo. ¿Te muestro alguno?' };
+    if (/^(?:si|claro|dale|ya|bueno|obvio|por supuesto)$/.test(q))
+        return { texto: '¡Genial! Dime un título, un autor o un tema y lo busco. También puedo recomendarte algo según tu ánimo.', sugerencias: ['Recomiéndame algo', 'Ver ofertas'] };
+    if (/^(?:no|nada|no gracias|ninguno)$/.test(q))
+        return { texto: '¡Está bien! Aquí estaré cuando quieras buscar tu próxima lectura. 📖' };
+    return null;
+}
+
+function charlaLocal(q, memoria) {
     if (!q) return null;
+    const propio = personalidad(q, memoria);
+    if (propio) return propio;
     if (/^(?:como (?:estas|esta|te va|andas|vas|te encuentras|amaneciste)|que tal|todo bien|que (?:hay|cuentas|haces)|como va todo)\b/.test(q))
         return { texto: `${azar(ESTADO)} ¿En qué libro te ayudo hoy?` };
     if (/\b(quien eres|que eres|como te llamas|tu nombre|eres (?:un )?(?:robot|bot|humano|persona|ia|inteligencia artificial)|con quien hablo)\b/.test(q))
@@ -98,7 +147,8 @@ function charlaLocal(q) {
         return { texto: '¡Gracias! Me alegra mucho ayudarte. 😊 ¿Buscamos tu próxima lectura?' };
     if (/\b(tonto|idiota|inutil|estupido|no sirves|malo)\b/.test(q) && q.split(' ').length <= 6)
         return { texto: 'Lamento no haberte ayudado como esperabas. Cuéntame qué libro o información buscas y lo intento de nuevo con gusto.' };
-    if (/\b(que horas? (?:es|son|tienes)|dime la hora|me (?:das|dices) la hora|la hora porfa|tienes hora|que hora)\b/.test(q)) {
+    // «¿Qué hora es?» (no «¿a qué hora abren?», que es el horario de la tienda).
+    if (/\b(que horas? (?:es|son)|dime la hora|me (?:das|dices) la hora|la hora porfa|tienes hora)\b/.test(q) && !/\b(abren|cierran|atienden|horario|a que hora)\b/.test(q)) {
         const hora = new Date().toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit' });
         return { texto: `Son las ${hora}${hora.endsWith('.') ? '' : '.'} ${azar(HORA_DE_LEER)}`, sugerencias: ['Recomiéndame algo', 'Ver ofertas'] };
     }
@@ -114,7 +164,11 @@ function charlaLocal(q) {
  *  - { texto, consulta }                   texto + búsqueda en el catálogo
  *  - null                                  no es charla: seguir con el catálogo
  */
-export function responderCharla(pregunta) {
+export function responderCharla(pregunta, memoria = {}) {
+    const crudo = normalizarConsulta(pregunta);
+    // Risas: «jaja», «jeje», «xd»… (se revisan antes de quitar muletillas).
+    if (/^(?:(?:ja|je|ji|jo)+[as]*|xd+|lol|jsjs+|ajaj+a*)(?:\s+(?:ja|je|xd)+)*$/.test(crudo) || /^[\s😂🤣😄😆😁]+$/u.test(String(pregunta).trim()))
+        return { texto: azar(RISAS), sugerencias: ['Otro chiste', 'Recomiéndame algo'] };
     const q = quitarRelleno(pregunta);
     // «Otro chiste» / «otra historia» / «otro dato»
     if (/^(?:otro|otra|uno mas|una mas)\s+(?:chiste|historia|cuento|dato(?: curioso)?)$/.test(q)) {
@@ -122,7 +176,17 @@ export function responderCharla(pregunta) {
         if (/dato/.test(q)) return { texto: azar(DATOS), sugerencias: ['Otro dato curioso'] };
         return { texto: azar(HISTORIAS), sugerencias: ['Otra historia', 'Libros de cuentos'] };
     }
-    return charlaLocal(q);
+    const respuesta = charlaLocal(q, memoria);
+    // El nombre se guarda como lo escribió la persona (con tildes y mayúscula).
+    if (respuesta?.recordar?.nombre) {
+        const m = /(?:me llamo|mi nombre es|puedes llamarme|ll[aá]mame)\s+(\p{L}{2,20}(?:\s+\p{L}{2,20})?)/iu.exec(String(pregunta));
+        if (m) {
+            const n = m[1].split(/\s+/).map((p) => p.charAt(0).toLocaleUpperCase('es') + p.slice(1).toLocaleLowerCase('es')).join(' ');
+            respuesta.texto = respuesta.texto.replace(respuesta.recordar.nombre, n);
+            respuesta.recordar.nombre = n;
+        }
+    }
+    return respuesta;
 }
 
 // Respuesta amable cuando no se entiende la frase y no hay IA disponible.
@@ -131,3 +195,20 @@ export const NO_ENTENDI = [
     'Creo que se me escapó lo que quisiste decir. Prueba con algo como «libros de Vargas Llosa», «ofertas» o «cuéntame un chiste».',
 ];
 export const respuestaNoEntendi = () => azar(NO_ENTENDI);
+
+// Saludo según la hora del día de quien visita.
+export function saludoDelMomento(fecha = new Date()) {
+    const h = fecha.getHours();
+    if (h < 5) return '¡Hola, lector nocturno! 🌙';
+    if (h < 12) return '¡Buenos días! ☀️';
+    if (h < 19) return '¡Buenas tardes!';
+    return '¡Buenas noches! 🌙';
+}
+
+// Si la persona abre el chat y no escribe, el asistente la anima una vez.
+export const EMPUJONES = [
+    '¿Sigues por ahí? 👀 Si no sabes qué leer, dime cómo te sientes y te recomiendo algo.',
+    'Psst… 📚 ¿Te cuento un dato curioso de libros mientras decides?',
+    'Aquí sigo, sin prisa. Puedes escribirme como a un amigo: «búscame algo de misterio», «qué me recomiendas»…',
+];
+export const empujon = () => azar(EMPUJONES);
