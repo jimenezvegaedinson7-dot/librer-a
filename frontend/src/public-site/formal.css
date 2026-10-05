@@ -896,3 +896,24 @@
     .sitio .perfil__datos dl { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { .sitio .perfil__acceso, .sitio .perfil__acceso > svg, .sitio .perfil__salir { transition: none; } }
+
+/* ---------- Pulido final (Impeccable) ---------- */
+/* Superficies del navegador con la paleta: cursor y barra de desplazamiento. */
+.sitio { caret-color: var(--marino-900); scrollbar-color: #c9bfae transparent; }
+/* Ritmo vertical: el carrusel de libros no deja un hueco extra bajo las tarjetas. */
+.sitio .catalogo__pista { padding-bottom: 18px; }
+/* Aplicación: la franja de descarga se separa de las tarjetas de funciones. */
+.sitio .app-funciones-seccion .cierre-descarga { margin-top: clamp(24px, 3vw, 36px); }
+/* Pie: logos de pago un poco más grandes y legibles. */
+.sitio .pie__pagos li img { height: 46px; }
+/* Celular: categorías en dos columnas, más compactas. */
+@media (max-width: 520px) {
+    .sitio .categorias__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .sitio .categoria-tarjeta { padding: 8px 8px 12px; }
+    .sitio .categoria-tarjeta .categoria__adorno { display: none; }
+    .sitio .categoria-tarjeta .categoria__libros { left: 4%; }
+    .sitio .categoria-tarjeta .categoria__pie { padding: 10px 2px 0 4px; gap: 6px; }
+    .sitio .categoria-tarjeta .categoria__nombre { font-size: 1.0625rem; }
+    .sitio .categoria-tarjeta .categoria__cuenta { font-size: 0.8125rem; }
+    .sitio .categoria-tarjeta .categoria__flecha { width: 30px; height: 30px; }
+}
