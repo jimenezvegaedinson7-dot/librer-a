@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { FaArrowUpRightFromSquare, FaBookOpen, FaEye, FaMagnifyingGlass, FaPrint, FaReply, FaRotate } from 'react-icons/fa6';
+import { FaArrowUpRightFromSquare, FaBook, FaEye, FaMagnifyingGlass, FaPrint, FaReply, FaRotate } from 'react-icons/fa6';
 
 import { FaHourglassHalf, FaClock, FaTriangleExclamation } from 'react-icons/fa6';
 import { Indicador, Indicadores } from '../../components/ui/Indicadores';
@@ -204,10 +204,10 @@ export default function ReclamacionesPage() {
             <PageHeader
                 titulo="Libro de Reclamaciones"
                 descripcion="Reclamos y quejas de los consumidores: respóndelos en un plazo no mayor a 15 días hábiles"
-                icono={<FaBookOpen />}
+                icono={<FaBook />}
             />
             <Indicadores cargando={cargando} etiqueta="Resumen de reclamaciones">
-                <Indicador titulo="Hojas" valor={resumen.total} icono={<FaBookOpen />} tono="primary" detalle="Registradas en el libro" />
+                <Indicador titulo="Hojas" valor={resumen.total} icono={<FaBook />} tono="primary" detalle="Registradas en el libro" />
                 <Indicador titulo="Pendientes" valor={resumen.pendientes} icono={<FaHourglassHalf />} tono="sky" detalle="Por responder" de={resumen.total} />
                 <Indicador titulo="Por vencer" valor={resumen.por_vencer} icono={<FaClock />} tono="warning" detalle="Cerca del plazo de 15 días hábiles" de={resumen.total} />
                 <Indicador titulo="Vencidas" valor={resumen.vencidos} icono={<FaTriangleExclamation />} tono="danger" detalle="Fuera de plazo" de={resumen.total} />
@@ -241,7 +241,7 @@ export default function ReclamacionesPage() {
                     {cargando && <TableSkeleton columnas={5} filas={5} />}
                     {!cargando && error && <div className="p-4"><Alert tipo="error">{error}</Alert></div>}
                     {!cargando && !error && filtradas.length === 0 && (
-                        <EmptyState titulo="Sin hojas" descripcion="No hay hojas de reclamación con este filtro." icono={<FaBookOpen />} />
+                        <EmptyState titulo="Sin hojas" descripcion="No hay hojas de reclamación con este filtro." icono={<FaBook />} />
                     )}
                     {!cargando && !error && filtradas.length > 0 && (
                         <DataTable

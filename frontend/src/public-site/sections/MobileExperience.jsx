@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaMagnifyingGlass, FaBookOpen, FaCartShopping, FaHeart, FaBookmark, FaDownload, FaChevronRight } from 'react-icons/fa6';
+import { FaMagnifyingGlass, FaBook, FaCartShopping, FaHeart, FaBookmark, FaDownload, FaChevronRight } from 'react-icons/fa6';
 
 import imgCatalogo from '../assets/app/catalogo.webp';
 import imgInicio from '../assets/app/inicio.webp';
@@ -18,7 +18,7 @@ import './aplicacion.css';
 
 const FUNCIONES = [
     { Icono: FaMagnifyingGlass, titulo: 'Búsqueda', texto: 'Por título, autor o ISBN, con filtros por categoría.' },
-    { Icono: FaBookOpen, titulo: 'Ficha de cada libro', texto: 'Portada, sinopsis, precio y ejemplares disponibles.' },
+    { Icono: FaBook, titulo: 'Ficha de cada libro', texto: 'Portada, sinopsis, precio y ejemplares disponibles.' },
     { Icono: FaCartShopping, titulo: 'Carrito y pago en línea', texto: 'Paga con PayU y sigue tus compras desde la app.' },
     { Icono: FaHeart, titulo: 'Favoritos', texto: 'Guarda los libros que quieres leer después.' },
     { Icono: FaBookmark, titulo: 'Reservas', texto: 'Aparta un libro desde su ficha y cancélalo si cambias de idea.' },

@@ -4,11 +4,10 @@ import { animate, useReducedMotion } from 'motion/react';
 
 import { formatearMoneda } from '../../lib/utils/format';
 
-// Fila de indicadores de cada módulo. Diseño propio (distinto al dashboard):
-// tarjetas compactas con medidor de proporción en el borde inferior.
-// Mientras la página carga, las tarjetas muestran un barrido de luz y el
-// medidor en espera; al llegar los datos, la cifra cuenta hasta su valor y el
-// medidor se llena con la parte que representa del total.
+// Fila de indicadores de cada módulo: tarjetas compactas con el acabado de
+// "Total vendido" en distintos colores. Mientras la página carga muestran un
+// barrido de luz; al llegar los datos la cifra cuenta hasta su valor y aparece
+// el porcentaje que representa del total.
 
 const ContextoIndicadores = createContext({ cargando: false });
 
@@ -76,13 +75,12 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
     const cifra = useCifraAnimada(numero ?? valor, !cargando);
 
     const conProporcion = numero !== null && Number(de) > 0;
-    const proporcion = conProporcion ? Math.min(1, Math.max(0, numero / Number(de))) : 1;
-    const porcentaje = Math.round(proporcion * 100);
+    const porcentaje = conProporcion ? Math.round(Math.min(1, Math.max(0, numero / Number(de))) * 100) : 0;
 
     return (
         <article
-            className={`indicador indicador--${tono} ${cargando ? 'indicador--cargando' : ''}`}
-            style={{ '--orden': orden, '--proporcion': cargando ? 0 : proporcion }}
+            className={`indicador joya ${tono === 'primary' ? '' : `joya--${tono}`} ${cargando ? 'indicador--cargando' : ''}`}
+            style={{ '--orden': orden }}
         >
             <div className="indicador-cabecera">
                 <span className="indicador-icono" aria-hidden="true">{icono}</span>
@@ -99,7 +97,6 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
                 </div>
             )}
             {detalle && <p className="indicador-detalle" title={typeof detalle === 'string' ? detalle : undefined}>{detalle}</p>}
-            <span className="indicador-medidor" aria-hidden="true"><span /></span>
             {cargando && <span className="sr-only">Cargando {titulo}</span>}
         </article>
     );

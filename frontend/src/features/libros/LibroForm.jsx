@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { FaBookOpen, FaFloppyDisk, FaRotateLeft } from 'react-icons/fa6';
+import { FaBook, FaFloppyDisk, FaRotateLeft } from 'react-icons/fa6';
 
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -145,7 +145,7 @@ export default function LibroForm({ onLibroCreado }) {
             <CardHeader
                 titulo="Registrar libro"
                 subtitulo="Complete la información del nuevo libro"
-                icono={<FaBookOpen />}
+                icono={<FaBook />}
                 acciones={
                     <span className="rounded-full border border-primary-200 bg-primary-50 px-3 py-1 text-xs font-semibold text-slate-600">
                         Nuevo libro

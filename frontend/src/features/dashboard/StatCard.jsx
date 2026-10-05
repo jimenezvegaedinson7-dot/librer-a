@@ -4,18 +4,19 @@ import { motion, useReducedMotion } from 'motion/react';
 
 import { Anillo, OndaDecorativa, TendenciaViva } from './Decoraciones';
 
-// Tonos semánticos; "primary" es la tarjeta destacada en burdeos de marca.
+// Todas las tarjetas llevan el acabado de "Total vendido"; el tono solo
+// cambia su color (clases joya--* en panel-editorial.css).
 const tonos = {
-    primary: 'kpi-card--destacada',
-    success: 'kpi-tono--success',
-    danger: 'kpi-tono--danger',
-    warning: 'kpi-tono--warning',
-    info: 'kpi-tono--gold',
-    neutral: 'kpi-tono--neutral',
-    violet: 'kpi-tono--violet',
-    teal: 'kpi-tono--teal',
-    sky: 'kpi-tono--sky',
-    rose: 'kpi-tono--rose',
+    primary: '',
+    success: 'joya--success',
+    danger: 'joya--danger',
+    warning: 'joya--warning',
+    info: 'joya--info',
+    neutral: 'joya--neutral',
+    violet: 'joya--violet',
+    teal: 'joya--teal',
+    sky: 'joya--sky',
+    rose: 'joya--rose',
 };
 
 const entradaTarjeta = {
@@ -28,7 +29,7 @@ const estatica = { oculto: { opacity: 1 }, visible: { opacity: 1 } };
 
 export function StatCard({ titulo, valor, icono, color = 'primary', descripcion, detalle, tendencia, etiquetaTendencia, medidor }) {
     const reducirMovimiento = useReducedMotion();
-    const tono = tonos[color] || tonos.neutral;
+    const tono = tonos[color] ?? tonos.neutral;
     const [activa, setActiva] = useState(false);
 
     return (
@@ -36,7 +37,7 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion,
             variants={reducirMovimiento ? estatica : entradaTarjeta}
             onHoverStart={() => setActiva(true)}
             onHoverEnd={() => setActiva(false)}
-            className={`kpi-card ${tono}`}
+            className={`kpi-card kpi-card--destacada joya ${tono}`}
         >
             <div className="flex items-start justify-between gap-3">
                 <p className="kpi-label">{titulo}</p>

@@ -200,7 +200,7 @@ export default function DashboardPage() {
                     titulo="Ventas del mes"
                     valor={indicadores === null ? 'No disponible' : formatearMoneda(indicadores.vendido_mes_actual)}
                     icono={<FaCalendarDays />}
-                    color="info"
+                    color="violet"
                     detalle={indicadores === null ? 'Consulta no disponible' : plural(num(indicadores.ventas_mes_actual), 'venta este mes', 'ventas este mes')}
                     tendencia={mensual.map((d) => d.total)}
                     etiquetaTendencia="Ingresos mensuales de los últimos 6 meses"

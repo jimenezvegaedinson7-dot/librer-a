@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { FaBookOpen, FaRankingStar } from 'react-icons/fa6';
+import { FaBook, FaRankingStar } from 'react-icons/fa6';
 
 import { construirUrlArchivo } from '../../lib/utils/url';
 import { formatearMoneda } from '../../lib/utils/format';
@@ -13,7 +13,7 @@ function PortadaLibro({ portada }) {
     if (!url || error) {
         return (
             <div className="flex h-full w-full items-center justify-center bg-[#f3efe9]">
-                <FaBookOpen className="text-[10px] text-[#a39a8e]" aria-hidden="true" />
+                <FaBook className="text-[10px] text-[#a39a8e]" aria-hidden="true" />
             </div>
         );
     }
@@ -55,7 +55,7 @@ function TopBooks({ libros = [], limite = 5 }) {
             {lista.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
                     <span className="ficha-icono mb-3 flex h-12 w-12 items-center justify-center rounded-full" aria-hidden="true">
-                        <FaBookOpen />
+                        <FaBook />
                     </span>
                     <p className="font-title text-[16px] font-semibold text-[#1c1814]">Aún no hay ventas</p>
                     <p className="mt-1 text-[13px] text-[#766d62]">El ranking aparecerá con las primeras ventas cobradas.</p>

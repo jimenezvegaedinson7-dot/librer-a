@@ -58,7 +58,7 @@ for (const ancho of [390, 1440]) {
             await expect(menu).toHaveCSS('background-color',tema === 'dark' ? 'rgb(10, 31, 49)' : 'rgb(13, 41, 64)');
             await expect(menu.locator('a[href="/autores"] svg')).toHaveCSS('color','rgb(255, 255, 255)');
             for (const [ruta, icono] of [
-                ['/dashboard','layout-dashboard'], ['/libros','book-open'], ['/autores','feather'],
+                ['/dashboard','layout-dashboard'], ['/libros','book'], ['/autores','feather'],
                 ['/categorias','tags'], ['/inventario','boxes'], ['/pedidos','package'],
                 ['/ventas','shopping-bag'], ['/pagos','credit-card'], ['/comprobantes','receipt-text'],
                 ['/tarifas-envio','truck'], ['/usuarios','users'], ['/anuncios','film'],
@@ -77,7 +77,7 @@ for (const ancho of [390, 1440]) {
             await page.screenshot({path:test.info().outputPath(`detalle-${tema}-${ancho}.png`),fullPage:true});
             await modal.getByRole('button',{name:'Cerrar',exact:true}).last().click();
             await page.goto('/dashboard');
-            await expect(page.locator('.kpi-card--destacada')).toHaveCSS('background-color','rgb(13, 41, 64)');
+            await expect(page.locator('.kpi-card--destacada').first()).toHaveCSS('background-color','rgb(13, 41, 64)');
             await expect(page.locator('.kpi-card').last()).toHaveCSS('opacity','1');
             await expect(page.locator('.mini-stat').last()).toHaveCSS('opacity','1');
             await page.screenshot({path:test.info().outputPath(`resumen-${tema}-${ancho}.png`),fullPage:true});

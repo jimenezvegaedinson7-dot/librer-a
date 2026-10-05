@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
-    FaBookOpen, FaDiamondTurnRight, FaLocationDot, FaShieldHalved,
+    FaBook, FaDiamondTurnRight, FaLocationDot, FaShieldHalved,
     FaStore, FaTruckFast,
 } from 'react-icons/fa6';
 
@@ -23,7 +23,7 @@ const CITA = 'Somos una librería con tienda frente a la Plaza de Armas de Palla
 
 const PILARES = [
     {
-        Icono: FaBookOpen,
+        Icono: FaBook,
         titulo: 'Libros físicos de verdad',
         texto: 'Cada título del catálogo es un libro que tenemos en tienda, con su portada, su precio en soles y su stock real.',
     },
@@ -105,7 +105,7 @@ export default function AboutSection({ legal, reducido }) {
                     </p>
                     <div className="nosotros-hero__acciones">
                         <Link to="/catalogo" className="boton boton--blanco">
-                            <FaBookOpen aria-hidden="true" /> Ver el catálogo
+                            <FaBook aria-hidden="true" /> Ver el catálogo
                         </Link>
                         <a href="#tienda" className="boton boton--linea">
                             <FaLocationDot aria-hidden="true" /> Visítanos en Pallasca

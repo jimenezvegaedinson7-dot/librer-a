@@ -1,4 +1,4 @@
-import { FaBookOpen, FaArrowRight } from 'react-icons/fa6';
+import { FaBook, FaArrowRight } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 
 function RecentBooks({ libros = [], stockBajo = [] }) {
@@ -40,7 +40,7 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
             <div className="flex items-center justify-between px-6 py-5">
                 <div className="flex items-center gap-3.5">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f2f8f6]">
-                        <FaBookOpen className="text-[18px] text-[#0b5c51]" />
+                        <FaBook className="text-[18px] text-[#0b5c51]" />
                     </div>
                     <div>
                         <h3 className="font-title text-[18px] font-semibold text-[#1c1814]">
@@ -65,7 +65,7 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
             {librosRecientes.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-14 text-center">
                     <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f2f8f6]">
-                        <FaBookOpen className="text-[20px] text-[#0b5c51]/40" />
+                        <FaBook className="text-[20px] text-[#0b5c51]/40" />
                     </div>
                     <p className="text-[14px] font-semibold text-[#1c1814]">No hay libros registrados</p>
                     <p className="mt-1 text-[13px] text-[#766d62]">Los últimos libros agregados aparecerán aquí.</p>

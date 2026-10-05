@@ -1,4 +1,4 @@
-import { FaCircleCheck, FaCirclePause, FaFlag, FaBookOpen } from 'react-icons/fa6';
+import { FaCircleCheck, FaCirclePause, FaFlag, FaBook } from 'react-icons/fa6';
 
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
@@ -28,7 +28,7 @@ export default function AutorViewModal({ autor, abierto, onCerrar }) {
 
             <div className="mt-5">
                 <div className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700">
-                    <FaBookOpen /> Biografía
+                    <FaBook /> Biografía
                 </div>
                 <div className="min-h-[110px] rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
                     <p className="text-sm leading-6 text-primary-500">

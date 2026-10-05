@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useTienda } from '../tienda/TiendaContext';
-import { FaHouse, FaBookOpen, FaCartShopping, FaUser } from 'react-icons/fa6';
+import { FaHouse, FaBook, FaCartShopping, FaUser } from 'react-icons/fa6';
 
 // ============================================================
 // BARRA INFERIOR EN EL CELULAR
@@ -10,7 +10,7 @@ import { FaHouse, FaBookOpen, FaCartShopping, FaUser } from 'react-icons/fa6';
 // ============================================================
 const DESTINOS = [
     { ruta: '/', texto: 'Inicio', Icono: FaHouse, fin: true },
-    { ruta: '/catalogo', texto: 'Catálogo', Icono: FaBookOpen },
+    { ruta: '/catalogo', texto: 'Catálogo', Icono: FaBook },
     { ruta: '/carrito', texto: 'Carrito', Icono: FaCartShopping },
     { ruta: '/cuenta', texto: 'Mi cuenta', Icono: FaUser },
 ];
