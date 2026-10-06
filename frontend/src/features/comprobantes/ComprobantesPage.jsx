@@ -182,7 +182,9 @@ export default function ComprobantesPage() {
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
 
-    const [resumen, setResumen] = useState({ boletas: 0, facturas: 0, ingresos: 0 });
+    const [resumen, setResumen] = useState(null);
+    const [cargandoResumen, setCargandoResumen] = useState(true);
+    const [errorResumen, setErrorResumen] = useState('');
 
     const [busqueda, setBusqueda] = useState('');
     const [busquedaAplicada, setBusquedaAplicada] = useState('');
@@ -237,6 +239,8 @@ export default function ComprobantesPage() {
     }, [busquedaAplicada, filtroTipo, filtroEnvio, filtroEstado, paginaActual]);
 
     const cargarResumen = async () => {
+        setCargandoResumen(true);
+        setErrorResumen('');
         try {
             const datos = await obtenerResumen();
             setResumen({
@@ -246,7 +250,10 @@ export default function ComprobantesPage() {
                 anulados: Number(datos.anulados || 0),
             });
         } catch {
-            setResumen({ boletas: 0, facturas: 0, ingresos: 0, anulados: 0 });
+            setResumen(null);
+            setErrorResumen('No se pudo cargar el resumen de comprobantes. Pulsa Actualizar para reintentar.');
+        } finally {
+            setCargandoResumen(false);
         }
         try {
             const pendientes = await listarComprobantes({ envio: 'pendiente', por_pagina: 100 });
@@ -371,6 +378,7 @@ export default function ComprobantesPage() {
     };
 
     const hayFiltros = Boolean(busquedaAplicada) || filtroTipo !== 'todos' || filtroEnvio !== 'todos' || filtroEstado !== 'todos';
+    const referencia = hayFiltros || error ? undefined : total;
 
     const comprobanteActualizado = async (comprobante, mensaje) => {
         exito(mensaje);
@@ -386,15 +394,16 @@ export default function ComprobantesPage() {
                 descripcion="Boletas y facturas emitidas por las ventas"
                 icono={<FaReceipt />}
             />
-            <Indicadores cargando={cargando} etiqueta="Resumen de comprobantes">
-                <Indicador titulo="Comprobantes" valor={total} icono={<FaReceipt />} tono="primary" detalle="Emitidos en el filtro" />
-                <Indicador titulo="Boletas" valor={resumen.boletas} icono={<FaFileLines />} tono="sky" detalle="Para consumidores finales" de={total} />
-                <Indicador titulo="Facturas" valor={resumen.facturas} icono={<FaFileInvoice />} tono="violet" detalle="Para empresas con RUC" de={total} />
-                <Indicador titulo="Importe emitido" valor={resumen.ingresos} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Ventas · últimos 14 días" serie={ventasDiarias} />
-                {resumen.anulados > 0 && (
-                    <Indicador titulo="Anulados" valor={resumen.anulados} icono={<FaBan />} tono="danger" detalle="Sin validez" de={total} />
+            <Indicadores cargando={cargando || cargandoResumen} etiqueta="Resumen de comprobantes">
+                <Indicador titulo="Comprobantes" valor={error ? 'No disponible' : total} icono={<FaReceipt />} tono="primary" detalle="Emitidos en el filtro" />
+                <Indicador titulo="Boletas" valor={resumen?.boletas ?? 'No disponible'} icono={<FaFileLines />} tono="sky" detalle={hayFiltros ? 'Consumidores finales · global' : 'Para consumidores finales'} de={referencia} />
+                <Indicador titulo="Facturas" valor={resumen?.facturas ?? 'No disponible'} icono={<FaFileInvoice />} tono="violet" detalle={hayFiltros ? 'Empresas con RUC · global' : 'Para empresas con RUC'} de={referencia} />
+                <Indicador titulo="Importe emitido" valor={resumen?.ingresos ?? 'No disponible'} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Ventas · últimos 14 días" serie={ventasDiarias} />
+                {resumen?.anulados > 0 && (
+                    <Indicador titulo="Anulados" valor={resumen.anulados} icono={<FaBan />} tono="danger" detalle={hayFiltros ? 'Sin validez · global' : 'Sin validez'} de={referencia} />
                 )}
             </Indicadores>
+            {errorResumen && <Alert tipo="error">{errorResumen}</Alert>}
 
             <Card>
                 <CardHeader

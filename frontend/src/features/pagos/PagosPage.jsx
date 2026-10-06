@@ -124,14 +124,14 @@ function accionesPago(fila, { onVer }) {
     );
 }
 
-function Contador({ cargando, total, pagados, pendientes, cancelados, ingresos }) {
+function Contador({ cargando, total, pagados, pendientes, cancelados, ingresos, referencia, hayFiltros }) {
     const ventasDiarias = useVentasDiarias();
     return (
         <Indicadores cargando={cargando} etiqueta="Resumen de pagos">
             <Indicador titulo="Pagos" valor={total} icono={<FaCreditCard />} tono="primary" detalle="Registrados en el filtro" />
-            <Indicador titulo="Pagados" valor={pagados} icono={<FaCircleCheck />} tono="success" detalle="Cobro confirmado" de={total} />
-            <Indicador titulo="Pendientes" valor={pendientes} icono={<FaHourglassHalf />} tono="warning" detalle="Esperando confirmación" de={total} />
-            <Indicador titulo="Cancelados" valor={cancelados} icono={<FaCircleXmark />} tono="danger" detalle="Sin cobro" de={total} />
+            <Indicador titulo="Pagados" valor={pagados} icono={<FaCircleCheck />} tono="success" detalle={hayFiltros ? 'Cobro confirmado · global' : 'Cobro confirmado'} de={referencia} />
+            <Indicador titulo="Pendientes" valor={pendientes} icono={<FaHourglassHalf />} tono="warning" detalle={hayFiltros ? 'Esperando confirmación · global' : 'Esperando confirmación'} de={referencia} />
+            <Indicador titulo="Cancelados" valor={cancelados} icono={<FaCircleXmark />} tono="danger" detalle={hayFiltros ? 'Sin cobro · global' : 'Sin cobro'} de={referencia} />
             <Indicador titulo="Ingresos" valor={ingresos} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Ventas · últimos 14 días" serie={ventasDiarias} />
         </Indicadores>
     );
@@ -144,7 +144,9 @@ export default function PagosPage() {
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
 
-    const [resumen, setResumen] = useState({ pagado: 0, pendiente: 0, cancelado: 0, ingresos: 0 });
+    const [resumen, setResumen] = useState(null);
+    const [cargandoResumen, setCargandoResumen] = useState(true);
+    const [errorResumen, setErrorResumen] = useState('');
 
     const [busqueda, setBusqueda] = useState('');
     const [busquedaAplicada, setBusquedaAplicada] = useState('');
@@ -215,6 +217,8 @@ export default function PagosPage() {
     }, [busquedaAplicada, filtroEstado, paginaActual]);
 
     const cargarResumen = async () => {
+        setCargandoResumen(true);
+        setErrorResumen('');
         try {
             const datos = await obtenerResumen();
             setResumen({
@@ -224,7 +228,10 @@ export default function PagosPage() {
                 ingresos: Number(datos.ingresos || 0),
             });
         } catch {
-            setResumen({ pagado: 0, pendiente: 0, cancelado: 0, ingresos: 0 });
+            setResumen(null);
+            setErrorResumen('No se pudo cargar el resumen de pagos. Pulsa Actualizar para reintentar.');
+        } finally {
+            setCargandoResumen(false);
         }
     };
 
@@ -272,10 +279,13 @@ export default function PagosPage() {
         return copia;
     }, [pagos, orden, ventasPorId]);
 
-    const totalPagados = resumen.pagado;
-    const totalPendientes = resumen.pendiente;
-    const totalCancelados = resumen.cancelado;
-    const totalIngresos = resumen.ingresos;
+    const totalPagados = resumen?.pagado ?? 'No disponible';
+    const totalPendientes = resumen?.pendiente ?? 'No disponible';
+    const totalCancelados = resumen?.cancelado ?? 'No disponible';
+    const totalIngresos = resumen?.ingresos ?? 'No disponible';
+    const hayFiltros = Boolean(busquedaAplicada.trim()) || filtroEstado !== 'todos';
+    // El resumen es global; el total de la lista puede estar filtrado.
+    const referencia = hayFiltros || error ? undefined : total;
 
     const exportar = () => {
         exportarCsv({
@@ -307,13 +317,16 @@ export default function PagosPage() {
                 icono={<FaCreditCard />}
             />
             <Contador
-                cargando={cargando}
-                total={total}
+                cargando={cargando || cargandoResumen}
+                total={error ? 'No disponible' : total}
                 pagados={totalPagados}
                 pendientes={totalPendientes}
                 cancelados={totalCancelados}
                 ingresos={totalIngresos}
+                referencia={referencia}
+                hayFiltros={hayFiltros}
             />
+            {errorResumen && <Alert tipo="error">{errorResumen}</Alert>}
 
             <Card>
                 <CardHeader

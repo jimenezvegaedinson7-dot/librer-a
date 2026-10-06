@@ -23,16 +23,22 @@ const columnas = {
 // «clientes» y «activos»). Se toman en orden hasta completar el total.
 function partesDe(hijos) {
     const total = Number(hijos[0]?.props.valor);
+    if (!Number.isFinite(total) || total <= 0) return [];
     const partes = [];
     let suma = 0;
     for (const h of hijos.slice(1)) {
+        if (Number(h.props.de) !== total) continue;
         const valor = Number(h.props.valor);
-        if (!(Number(h.props.de) > 0) || !Number.isFinite(valor)) continue;
-        if (Number.isFinite(total) && suma + valor > total) break;
+        // Una parte no disponible no equivale a cero; no dibujar un reparto
+        // incompleto que aparentaría conocer los estados que faltan.
+        if (h.props.valor == null || !Number.isFinite(valor) || valor < 0) return [];
+        if (suma + valor > total) break;
         suma += valor;
         partes.push({ titulo: h.props.titulo, valor, tono: h.props.tono || 'neutral' });
     }
-    return partes.length > 1 ? partes : [];
+    if (partes.length < 2) return [];
+    if (suma < total) partes.push({ titulo: 'Otros', valor: total - suma, tono: 'neutral' });
+    return partes;
 }
 
 export function Indicadores({ etiqueta, cargando = false, children }) {
@@ -152,7 +158,7 @@ function Composicion({ partes }) {
                 ))}
             </div>
             <ul className="grafico-composicion__leyenda">
-                {partes.slice(0, 4).map((p) => (
+                {partes.map((p) => (
                     <li key={p.titulo}><i style={{ background: ACENTOS[p.tono] || ACENTOS.neutral }} />{p.titulo} <b>{p.valor}</b></li>
                 ))}
             </ul>
@@ -172,10 +178,12 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
     const numero = typeof valor === 'number' ? valor : Number.isFinite(Number(valor)) && valor !== '' && valor !== null ? Number(valor) : null;
     const cifra = useCifraAnimada(numero ?? valor, !cargando);
 
-    const conProporcion = numero !== null && Number(de) > 0;
+    const conProporcion = numero !== null && Number.isFinite(numero) && numero >= 0
+        && Number.isFinite(Number(de)) && Number(de) > 0 && numero <= Number(de);
     const proporcion = conProporcion ? Math.min(1, Math.max(0, numero / Number(de))) : 0;
     const porcentaje = Math.round(proporcion * 100);
-    const conSerie = Array.isArray(serie) && serie.length > 1 && serie.some((v) => v > 0);
+    const conSerie = numero !== null && Array.isArray(serie) && serie.length > 1
+        && serie.every((v) => Number.isFinite(v) && v >= 0) && serie.some((v) => v > 0);
     const estilo = grafico || ESTILOS[(Math.max(orden, 1) - 1) % ESTILOS.length];
     const lateral = conProporcion && !conSerie && estilo === 'anillo';
     // Al pasar el mouse el gráfico se vuelve a dibujar (cambiar la clave
@@ -198,16 +206,16 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
                         <span className="indicador-esqueleto" aria-hidden="true" />
                     ) : (
                         <div className="indicador-cifras">
-                            <p className="indicador-valor">{formatear(cifra, formato)}</p>
+                            <p className={`indicador-valor${numero === null ? ' indicador-valor--texto' : ''}`}>{formatear(cifra, formato)}</p>
                             {conProporcion && (
                                 <span key={`p${vuelta}`} className="indicador-porcentaje" title={`${porcentaje} % del total`}>{porcentaje}%</span>
                             )}
                         </div>
                     )}
-                    {detalle && <p className="indicador-detalle" title={typeof detalle === 'string' ? detalle : undefined}>{detalle}</p>}
                 </div>
                 {lateral && !cargando && <div key={`l${vuelta}`} className="indicador-lateral"><Anillo p={proporcion} /></div>}
             </div>
+            {detalle && <p className="indicador-detalle" title={typeof detalle === 'string' ? detalle : undefined}>{detalle}</p>}
             {!cargando && (conSerie || (conProporcion && !lateral) || composicion?.length > 0) && (
                 <div key={`g${vuelta}`} className="indicador-grafico">
                     {conSerie ? <Linea serie={serie} />
