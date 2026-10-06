@@ -2,7 +2,7 @@
  "generated": "2026-10-06",
  "howToUse": "Buscar por \"file\", \"module\" o \"endpoints\". Verificar siempre el archivo real antes de modificar.",
  "stats": {
-  "backendFiles": 165,
+  "backendFiles": 166,
   "frontendFiles": 210,
   "flutterFiles": 73,
   "endpoints": 126
