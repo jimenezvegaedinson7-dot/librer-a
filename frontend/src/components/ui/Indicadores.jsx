@@ -207,12 +207,23 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
     const conSerie = Array.isArray(serie) && serie.length > 1 && serie.some((v) => v > 0);
     const estilo = grafico || ESTILOS[(Math.max(orden, 1) - 1) % ESTILOS.length];
     const lateral = conProporcion && !conSerie && ['anillo', 'medidor'].includes(estilo);
+    // Al pasar el mouse el gráfico se vuelve a dibujar (cambiar la clave
+    // reinicia sus animaciones) y un reflejo de luz sigue al cursor.
+    const [vuelta, setVuelta] = useState(0);
+    const moverLuz = (e) => {
+        const caja = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--luz-x', `${e.clientX - caja.left}px`);
+        e.currentTarget.style.setProperty('--luz-y', `${e.clientY - caja.top}px`);
+    };
 
     return (
         <article
             className={`indicador joya ${tono === 'primary' ? '' : `joya--${tono}`} ${cargando ? 'indicador--cargando' : ''}`}
             style={{ '--orden': orden }}
+            onPointerEnter={(e) => { if (e.pointerType === 'mouse' && !cargando) setVuelta((v) => v + 1); }}
+            onPointerMove={moverLuz}
         >
+            <span className="indicador-luz" aria-hidden="true" />
             <div className="indicador-cabecera">
                 <span className="indicador-icono" aria-hidden="true">{icono}</span>
                 <p className="indicador-titulo">{titulo}</p>
@@ -225,16 +236,16 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
                         <div className="indicador-cifras">
                             <p className="indicador-valor">{formatear(cifra, formato)}</p>
                             {conProporcion && (
-                                <span className="indicador-porcentaje" title={`${porcentaje} % del total`}>{porcentaje}%</span>
+                                <span key={`p${vuelta}`} className="indicador-porcentaje" title={`${porcentaje} % del total`}>{porcentaje}%</span>
                             )}
                         </div>
                     )}
                     {detalle && <p className="indicador-detalle" title={typeof detalle === 'string' ? detalle : undefined}>{detalle}</p>}
                 </div>
-                {lateral && !cargando && <div className="indicador-lateral">{estilo === 'anillo' ? <Anillo p={proporcion} /> : <Medidor p={proporcion} />}</div>}
+                {lateral && !cargando && <div key={`l${vuelta}`} className="indicador-lateral">{estilo === 'anillo' ? <Anillo p={proporcion} /> : <Medidor p={proporcion} />}</div>}
             </div>
             {!cargando && (conSerie || (conProporcion && !lateral) || composicion?.length > 0) && (
-                <div className="indicador-grafico">
+                <div key={`g${vuelta}`} className="indicador-grafico">
                     {conSerie ? <Linea serie={serie} />
                         : conProporcion ? (estilo === 'columnas' ? <Columnas p={proporcion} /> : estilo === 'puntos' ? <Puntos p={proporcion} /> : <Escala p={proporcion} />)
                         : <Composicion partes={composicion} />}

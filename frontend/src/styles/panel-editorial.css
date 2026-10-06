@@ -557,3 +557,34 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
     .grafico-anillo { width: 38px; height: 38px; }
     .grafico-medidor { width: 38px; height: 24px; }
 }
+
+/* ========================================
+   Efectos al pasar el mouse (como en el dashboard), en todas las secciones:
+   la tarjeta sube, una luz sigue al cursor y el gráfico se vuelve a dibujar.
+   ======================================== */
+.indicador { --luz-x: 50%; --luz-y: 0%; transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease; }
+.indicador:hover { transform: translateY(-4px); }
+.indicador-luz {
+    position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+    background: radial-gradient(260px circle at var(--luz-x) var(--luz-y), color-mix(in srgb, var(--joya-acento) 22%, transparent), transparent 55%);
+    transition: opacity 0.35s ease;
+}
+.indicador:hover .indicador-luz { opacity: 1; }
+.indicador:hover .indicador-icono { transform: scale(1.08) rotate(-4deg); }
+.indicador-icono { transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
+
+/* Tarjetas tipo dashboard fuera del dashboard (Ventas, Tarifas…). */
+.admin-shell[data-theme] .kpi-card--destacada.joya { --luz-x: 50%; --luz-y: 0%; transition: translate 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease; }
+.admin-shell[data-theme] .kpi-card--destacada.joya:hover { translate: 0 -4px; }
+.admin-shell[data-theme] .kpi-card--destacada.joya::before {
+    content: ''; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+    background: radial-gradient(320px circle at var(--luz-x) var(--luz-y), color-mix(in srgb, var(--joya-acento) 20%, transparent), transparent 55%);
+    transition: opacity 0.35s ease;
+}
+.admin-shell[data-theme] .kpi-card--destacada.joya:hover::before { opacity: 1; }
+.admin-shell[data-theme] .kpi-card--destacada.joya > * { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+    .indicador:hover, .admin-shell[data-theme] .kpi-card--destacada.joya:hover { transform: none; translate: none; }
+    .indicador:hover .indicador-icono { transform: none; }
+}
