@@ -40,6 +40,9 @@ import { AnularComprobanteModal, RegistrarSunatModal } from './ComprobanteSunatM
 import { useRol } from '../auth/useRol';
 
 const POR_PAGINA = 10;
+// Ajuste visual temporal: conserva los datos y la lógica SUNAT,
+// pero oculta el registro y el aviso de falta de número mientras no se use.
+const MOSTRAR_REGISTRO_SUNAT = false;
 
 function formatearSerieNumero(comprobante) {
     const serie = String(comprobante?.serie ?? '');
@@ -63,7 +66,7 @@ const columnasComprobantes = [
                 {fila.estado === 'anulado' && (
                     <span className="ml-2 align-middle"><Badge color="danger">Anulado</Badge></span>
                 )}
-                <span className="mt-0.5 block text-[11px] text-slate-500">
+                {(fila.numero_sunat || fila.nota_credito_sunat || fila.estado === 'anulado' || MOSTRAR_REGISTRO_SUNAT) && <span className="mt-0.5 block text-[11px] text-slate-500">
                     {[
                         fila.numero_sunat ? `SUNAT ${fila.numero_sunat}` : null,
                         fila.nota_credito_sunat ? `Nota de crédito ${fila.nota_credito_sunat}` : null,
@@ -73,7 +76,7 @@ const columnasComprobantes = [
                         (fila.estado === 'anulado'
                             ? 'Sin nota de crédito registrada'
                             : <span className="text-amber-700">Falta N.° SUNAT</span>)}
-                </span>
+                </span>}
             </p>
         ),
     },
@@ -154,7 +157,7 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando,
                 )}
             </BtnAccion>
             {/* Registrar SUNAT y anular invalidan el comprobante: solo el administrador. */}
-            {puedeRegistrarSunat && (
+            {MOSTRAR_REGISTRO_SUNAT && puedeRegistrarSunat && (
                 <BtnAccion
                     tipo="ver"
                     onClick={() => onSunat(fila)}
