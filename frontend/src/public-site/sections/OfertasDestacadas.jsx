@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaArrowRight, FaArrowLeft, FaPause, FaPlay } from 'react-icons/fa6';
+import { FaArrowRight, FaArrowLeft } from 'react-icons/fa6';
 import { useCarruselAutomatico } from '../lib/useCarruselAutomatico';
 
 import { PrecioOferta } from '../components/PrecioOferta';
@@ -15,12 +15,12 @@ import { referenciaPortadaLibro, AVISO_PORTADA_REFERENCIA } from '../../lib/util
 // ============================================================
 export default function OfertasDestacadas({ catalogo }) {
     const pista = useRef(null);
-    const [pausado, setPausado] = useState(false);
     const ofertas = (catalogo?.libros || [])
         .filter((l) => l.descuento > 0 && l.precioFinal < l.precio)
         .sort((a, b) => b.descuento - a.descuento)
         .slice(0, 12);
-    useCarruselAutomatico(pista, { activo: !pausado && ofertas.length > 1 });
+    // Avanza solo y se detiene al pasar el mouse, enfocarlo o tocarlo (sin botón de pausa).
+    useCarruselAutomatico(pista, { activo: ofertas.length > 1 });
     const desplazar = sentido => pista.current?.scrollBy({ left: sentido * pista.current.clientWidth * 0.7,
         behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 
@@ -35,7 +35,6 @@ export default function OfertasDestacadas({ catalogo }) {
                         <Link to="/catalogo?ofertas=1" className="enlace-mas">Ver todas las ofertas <FaArrowRight aria-hidden="true" /></Link>
                         <button type="button" className="boton boton--linea boton--icono" aria-label="Ofertas anteriores" aria-controls="ofertas-lista" onClick={() => desplazar(-1)}><FaArrowLeft aria-hidden="true" /></button>
                         <button type="button" className="boton boton--linea boton--icono" aria-label="Siguientes ofertas" aria-controls="ofertas-lista" onClick={() => desplazar(1)}><FaArrowRight aria-hidden="true" /></button>
-                        <button type="button" className="boton boton--linea boton--icono" aria-label={pausado ? 'Reanudar ofertas' : 'Pausar ofertas'} aria-pressed={pausado} onClick={() => setPausado(!pausado)}>{pausado ? <FaPlay aria-hidden="true" /> : <FaPause aria-hidden="true" />}</button>
                     </div>
                 </div>
                 <ul ref={pista} id="ofertas-lista" className="ofertas__rejilla ofertas__carrusel" tabIndex={0} aria-label="Ofertas vigentes, carrusel desplazable" data-revelar="">

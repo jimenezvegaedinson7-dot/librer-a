@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
-import { FaMagnifyingGlass, FaTruckFast, FaStore, FaCircleCheck, FaPause, FaPlay } from 'react-icons/fa6';
-import { useCarruselAutomatico } from '../lib/useCarruselAutomatico';
+import { FaMagnifyingGlass, FaTruckFast, FaStore, FaCircleCheck } from 'react-icons/fa6';
 
 import Migas from '../components/Migas';
 import { PrecioOferta } from '../components/PrecioOferta';
@@ -26,7 +25,7 @@ const ORDENES = {
 
 // Línea de stock como en una tienda en línea, con el dato real.
 export function Stock({ libro }) {
-    if (!libro.disponible) return <p className="stock stock--agotado">Agotado por ahora. Las reservas requieren unidades disponibles.</p>;
+    if (!libro.disponible) return <p className="stock stock--agotado">Agotado por ahora.</p>;
     if (libro.stock > 0 && libro.stock <= 3) return <p className="stock stock--poco">Quedan solo {libro.stock} en stock</p>;
     return <p className="stock stock--ok"><FaCircleCheck aria-hidden="true" /> En stock</p>;
 }
@@ -85,19 +84,14 @@ function useEsCelular() {
     return celular;
 }
 
+// Cada estante se desliza con el dedo; no avanza solo ni lleva botón de pausa.
 function Estante({ estante: e }) {
-    const pista = useRef(null);
-    const [pausado, setPausado] = useState(false);
-    useCarruselAutomatico(pista, { activo: !pausado });
     return <section className="catalogo-estante" aria-labelledby={`estante-${e.id}`}>
         <div className="catalogo-estante__cabeza">
             <h2 id={`estante-${e.id}`}>{e.titulo}</h2>
-            <div className="catalogo__controles">
-                {e.enlace && <Link to={e.enlace} className="catalogo-estante__ver">Ver todos</Link>}
-                <button type="button" className="boton boton--linea boton--icono" aria-label={`${pausado ? 'Reanudar' : 'Pausar'} ${e.titulo}`} aria-pressed={pausado} onClick={() => setPausado(!pausado)}>{pausado ? <FaPlay aria-hidden="true" /> : <FaPause aria-hidden="true" />}</button>
-            </div>
+            {e.enlace && <Link to={e.enlace} className="catalogo-estante__ver">Ver todos</Link>}
         </div>
-        <ul ref={pista} className="rejilla-libros" tabIndex={0} aria-label={`Carrusel ${e.titulo}`}>
+        <ul className="rejilla-libros" tabIndex={0} aria-label={`Carrusel ${e.titulo}`}>
             {e.lista.map((l, i) => <TarjetaLibro key={l.id} libro={l} indice={i} nivelTitulo="h3" />)}
         </ul>
     </section>;
