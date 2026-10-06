@@ -42,13 +42,16 @@ test('correcciones comerciales: invariantes transaccionales y documentos', async
             await pool.query('INSERT INTO inventario(id_libro,stock) VALUES (?,100)', [l.insertId]);
         }
         const crear = async (extra = {}) => {
+            const { estado, ...datos } = extra;
             const v = await ventas.crear({ id_usuario: ids.usuarios[1], detalles: [{ id_libro: ids.libros[0], cantidad: 1 }], tipo_entrega: 'tienda',
-                canal_compra: 'app', external_reference: randomUUID(), ...extra });
+                canal_compra: 'app', external_reference: randomUUID(), ...datos });
+            if (estado === 'pagada') await ventas.aplicarPago({ externalReference: (await fila(v.id_venta)).external_reference,
+                payuOrderId: randomUUID(), payuPaymentId: randomUUID(), payuPaymentStatus: 'APPROVED', monto: v.total, moneda: 'PEN' });
             ids.ventas.push(v.id_venta); return v.id_venta;
         };
         await t.test('BC01: venta pagada no se cancela bajo bloqueo ni devuelve stock', async () => {
             const id = await crear({ estado: 'pagada' }); const antes = await stock(ids.libros[0]);
-            await assert.rejects(ventas.actualizarEstado(id, 'cancelada'), /No se puede cambiar/);
+            await assert.rejects(ventas.actualizarEstado(id, 'cancelada'), e => e.status === 409);
             assert.equal((await fila(id)).estado, 'pagada'); assert.equal(await stock(ids.libros[0]), antes);
         });
         await t.test('BC02: app pendiente/cancelada/reembolsada no avanza en logística', async () => {
@@ -62,9 +65,11 @@ test('correcciones comerciales: invariantes transaccionales y documentos', async
             const id = await crear({ estado: 'pagada' });
             for (const estado of ['preparando', 'listo_recojo', 'entregado']) await ventas.actualizarEstadoEntrega(id, estado);
             const antes = await stock(ids.libros[0]);
-            const resultado = await ventas.reembolsar(id, { motivo: 'Devolución solo monetaria', devolverStock: false });
+            await ventas.reembolsar(id, { accion: 'solicitar', motivo: 'Devolución solo monetaria', idUsuario: ids.usuarios[0] });
+            const resultado = await ventas.reembolsar(id, { motivo: 'Devolución solo monetaria', devolverStock: false,
+                idUsuario: ids.usuarios[0], referencia: `refund-${id}`, evidencia: 'Comprobante PayU verificado en panel del proveedor' });
             assert.equal(resultado.stock_devuelto, false); assert.equal(await stock(ids.libros[0]), antes);
-            await assert.rejects(ventas.reembolsar(id, { motivo: 'Segundo intento', devolverStock: true }), e => e.status === 400);
+            await assert.rejects(ventas.reembolsar(id, { motivo: 'Segundo intento', devolverStock: true }), e => e.status === 409);
         });
         await t.test('BC15: carritos inversos adquieren bloqueos en orden determinista', async () => {
             const a = ids.libros.map(id_libro => ({ id_libro, cantidad: 1 }));
@@ -107,32 +112,29 @@ test('correcciones comerciales: invariantes transaccionales y documentos', async
             const recuperado = await pedir('/pagos/webhook', null, 'POST', body); assert.equal(recuperado.status, 200);
             assert.equal((await fila(id)).estado, 'pagada');
         });
-        await t.test('reserva administrativa pertenece al cliente y el cliente no puede suplantar titular', async () => {
+        await t.test('reserva administrativa y suplantación no crean nuevas operaciones', async () => {
             const r = await pedir('/reservas', tokens[0], 'POST', { id_libro: ids.libros[0], cantidad: 1, id_usuario_cliente: ids.usuarios[1] });
-            assert.equal(r.status, 201); const j = await r.json(); ids.reservas.push(j.id_reserva);
-            assert.equal(j.id_usuario, ids.usuarios[1]);
-            assert.equal((await pedir('/reservas', tokens[1], 'POST', { id_libro: ids.libros[0], cantidad: 1, id_usuario_cliente: ids.usuarios[2] })).status, 403);
-            assert.equal((await pedir('/reservas', tokens[0], 'POST', { id_libro: ids.libros[0], cantidad: 1 })).status, 400);
+            assert.equal(r.status, 405);
+            assert.equal((await pedir('/reservas', tokens[1], 'POST', { id_libro: ids.libros[0], cantidad: 1, id_usuario_cliente: ids.usuarios[2] })).status, 405);
+            assert.equal((await pedir('/reservas', tokens[0], 'POST', { id_libro: ids.libros[0], cantidad: 1 })).status, 405);
         });
         await t.test('BC08: un libro inactivo no permite apartar stock', async () => {
             const antes = await stock(ids.libros[1]);
             await pool.query('UPDATE libros SET estado=0 WHERE id_libro=?', [ids.libros[1]]);
-            await assert.rejects(reservas.crear({ id_usuario: ids.usuarios[1], id_libro: ids.libros[1], cantidad: 1 }), e => e.status === 409);
+            await assert.rejects(reservas.crear({ id_usuario: ids.usuarios[1], id_libro: ids.libros[1], cantidad: 1 }), e => e.status === 405);
             assert.equal(await stock(ids.libros[1]), antes);
             await pool.query('UPDATE libros SET estado=1 WHERE id_libro=?', [ids.libros[1]]);
         });
-        await t.test('reserva cobra promoción vigente, rechaza cotización obsoleta y permite boleta nueva', async () => {
-            const r = await reservas.crear({ id_usuario: ids.usuarios[1], id_libro: ids.libros[0], cantidad: 1 }); ids.reservas.push(r);
-            await reservas.actualizarEstado(r, 'confirmada');
+        await t.test('reserva histórica no cobra promociones ni genera comprobante nuevo', async () => {
+            const [registro] = await pool.query("INSERT INTO reservas(id_usuario,id_libro,cantidad,estado) VALUES (?,?,1,'confirmada')", [ids.usuarios[1], ids.libros[0]]);
+            const r = registro.insertId; ids.reservas.push(r);
             await pool.query('UPDATE libros SET descuento_porcentaje=20 WHERE id_libro=?', [ids.libros[0]]);
             const antes = await stock(ids.libros[0]);
             const obsoleto = await pedir(`/reservas/${r}/estado`, tokens[0], 'PUT', { estado: 'completada', metodo_pago: 'efectivo', precio_unitario_esperado: 10 });
             assert.equal(obsoleto.status, 409); assert.equal((await reservas.obtenerPorId(r)).estado, 'confirmada');
             const bien = await pedir(`/reservas/${r}/estado`, tokens[0], 'PUT', { estado: 'completada', metodo_pago: 'efectivo', precio_unitario_esperado: 8 });
-            assert.equal(bien.status, 200); const v = (await bien.json()).data; ids.ventas.push(v.id_venta);
-            assert.equal(Number(v.total), 8); assert.equal(await stock(ids.libros[0]), antes);
-            const boleta = await comprobantes.generarComprobante({ id_venta: v.id_venta, tipo: 'boleta' });
-            assert.ok(boleta.id_comprobante);
+            assert.equal(bien.status, 409); assert.equal(await stock(ids.libros[0]), antes);
+            assert.equal((await reservas.obtenerPorId(r)).estado, 'confirmada');
             await pool.query('UPDATE libros SET descuento_porcentaje=NULL WHERE id_libro=?', [ids.libros[0]]);
         });
         await t.test('comprobante conserva emisor y títulos; factura usa el RUC guardado', async () => {

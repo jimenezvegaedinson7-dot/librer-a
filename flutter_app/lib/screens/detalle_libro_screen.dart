@@ -34,7 +34,6 @@ class DetalleLibroScreen extends StatefulWidget {
 class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
   late Libro _libro;
   int _cantidad = 1;
-  int _reservando = 0;
   bool _sinopsisCompleta = false;
   bool? _esFavorito;
   bool _favoritoCambiando = false;
@@ -170,58 +169,6 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
     });
   }
 
-  /// Crea la reserva contra `POST /reservas`, con protección contra el doble
-  /// toque y validación de que el libro esté activo y tenga stock.
-  Future<void> _reservar() async {
-    if (_reservando > 0) return;
-
-    if (!_libro.esActivo) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Este libro no está disponible para reservar.'),
-        ),
-      );
-      return;
-    }
-    if ((_libro.stock ?? 0) <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Este libro no tiene stock disponible.')),
-      );
-      return;
-    }
-    final id = _libro.idLibro;
-    if (id == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo identificar el libro.')),
-      );
-      return;
-    }
-
-    setState(() => _reservando += 1);
-
-    try {
-      await ApiService.instance.crearReserva(idLibro: id, cantidad: _cantidad);
-      if (!mounted) return;
-      setState(() => _cantidad = 1);
-      await _refrescarLibro();
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reserva realizada correctamente.')),
-      );
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.message)));
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo realizar la reserva.')),
-      );
-    } finally {
-      if (mounted) setState(() => _reservando -= 1);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -272,10 +219,8 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
       bottomNavigationBar: _StickyBar(
         libro: _libro,
         cantidad: _cantidad,
-        reservando: _reservando > 0,
         agregado: _agregado,
         onAdd: _agregarAlCarrito,
-        onReservar: _reservar,
       ),
     );
   }
@@ -818,28 +763,23 @@ class _Card extends StatelessWidget {
   }
 }
 
-/// Barra inferior fija con total, reserva y compra.
+/// Barra inferior fija con total y compra PayU desde el carrito.
 class _StickyBar extends StatelessWidget {
   final Libro libro;
   final int cantidad;
-  final bool reservando;
   final bool agregado;
   final VoidCallback onAdd;
-  final VoidCallback onReservar;
 
   const _StickyBar({
     required this.libro,
     required this.cantidad,
-    required this.reservando,
     required this.agregado,
     required this.onAdd,
-    required this.onReservar,
   });
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final compact = MediaQuery.sizeOf(context).width < 390;
     final disponible =
         libro.esActivo && libro.hayStock && libro.idLibro != null;
     final total = (libro.precioCompra * 100).round() * cantidad / 100;
@@ -872,42 +812,12 @@ class _StickyBar extends StatelessWidget {
         ),
       ],
     );
-    final reservar = Presionable(
-      habilitado: disponible && !reservando,
-      child: OutlinedButton(
-        onPressed: disponible && !reservando ? onReservar : null,
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 50),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          side: BorderSide(color: AppColors.primary.withValues(alpha: 0.5)),
-        ),
-        child: reservando
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!compact) ...[
-                      const Icon(Icons.event_available_outlined, size: 18),
-                      const SizedBox(width: 6),
-                    ],
-                    const Text('Reservar'),
-                  ],
-                ),
-              ),
-      ),
-    );
     final anadir = Presionable(
-      habilitado: disponible && !reservando,
+      habilitado: disponible,
       child: AnimatedContainer(
         duration: Duracion.rapida,
         child: FilledButton(
-          onPressed: disponible && !reservando ? onAdd : null,
+          onPressed: disponible ? onAdd : null,
           style: FilledButton.styleFrom(
             backgroundColor: agregado ? AppColors.success : AppColors.primary,
             minimumSize: const Size(0, 50),
@@ -961,21 +871,13 @@ class _StickyBar extends StatelessWidget {
                   children: [
                     importe,
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(child: reservar),
-                        const SizedBox(width: 8),
-                        Expanded(child: anadir),
-                      ],
-                    ),
+                    Row(children: [Expanded(child: anadir)]),
                   ],
                 );
               }
               return Row(
                 children: [
                   Expanded(child: importe),
-                  const SizedBox(width: 8),
-                  Expanded(child: reservar),
                   const SizedBox(width: 8),
                   Expanded(child: anadir),
                 ],

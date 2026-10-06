@@ -89,9 +89,7 @@ router.get(
     obtenerPagoVenta
 );
 
-// Actualizar estado de una venta.
-// La máquina de transiciones ya impide cancelar una venta pagada
-// (exige Reembolsar) y marcar como pagada una pendiente (solo PayU).
+// Retirada: responde 409. Entregas exclusivamente desde Pedidos.
 router.put(
     '/:id/estado',
     verificarPanel,
@@ -109,8 +107,8 @@ router.post(
 // SOLO ADMINISTRADOR
 // ========================================
 
-// Reembolsar una venta pagada o entregada
-// (devuelve stock y anula el comprobante emitido)
+// Solicitar devolución PayU o confirmar documentalmente la devolución externa.
+// Solo confirmar con evidencia puede afectar stock y comprobante.
 router.post(
     '/:id/reembolso',
     verificarRol(ROLES.ADMINISTRADOR),

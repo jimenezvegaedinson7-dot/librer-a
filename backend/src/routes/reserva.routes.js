@@ -26,7 +26,7 @@ router.use(verificarToken);
 // Obtener mis propias reservas
 router.get('/mis-reservas', obtenerMisReservas);
 
-// Crear una reserva
+// Contrato retirado: siempre 405, incluso para clientes antiguos.
 router.post('/', crearReserva);
 
 // Cancelar mi reserva (solo el dueño)
@@ -50,7 +50,7 @@ router.get(
 );
 
 // Actualizar estado de una reserva
-// (confirmar, completar —exige método de cobro— o cancelar)
+// Solo cancelar una reserva histórica activa; cualquier cobro se rechaza.
 router.put(
     '/:id/estado',
     verificarPanel,

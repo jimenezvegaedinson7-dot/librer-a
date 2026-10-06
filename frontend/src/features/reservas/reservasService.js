@@ -1,7 +1,5 @@
 import client from '../../lib/api/client';
 
-import { listarLibros } from '../libros/librosService';
-
 function datosDe(res) {
     return Array.isArray(res?.data) ? res.data : [];
 }
@@ -15,28 +13,7 @@ export async function obtenerReserva(id) {
     return res?.data ?? null;
 }
 
-export async function crearReserva(formulario, esAdmin = false) {
-    return client.post('/reservas', {
-        id_libro: Number(formulario.id_libro),
-        cantidad: Number(formulario.cantidad),
-        fecha_vencimiento: formulario.fecha_vencimiento || null,
-        ...(esAdmin ? { id_usuario_cliente: Number(formulario.id_usuario_cliente) } : {}),
-    });
-}
-
-// Al completar (el cliente recogió y pagó) se envía cómo pagó: el
-// backend registra la venta ya cobrada.
-export async function actualizarEstadoReserva(id, estado, cobro = null) {
-    const cuerpo = { estado };
-    if (estado === 'completada' && cobro) {
-        cuerpo.metodo_pago = cobro.metodo;
-        if (cobro.precio_unitario_esperado !== undefined) cuerpo.precio_unitario_esperado = cobro.precio_unitario_esperado;
-        if (cobro.referencia) cuerpo.referencia_pago = cobro.referencia;
-    }
-    return client.put(`/reservas/${id}/estado`, cuerpo);
-}
-
-export async function listarLibrosActivos() {
-    const lista = await listarLibros();
-    return lista.filter((libro) => Number(libro.estado) === 1);
+export async function actualizarEstadoReserva(id, estado) {
+    if (estado !== 'cancelada') throw new Error('Las reservas históricas solo permiten cancelación');
+    return client.put(`/reservas/${id}/estado`, { estado });
 }

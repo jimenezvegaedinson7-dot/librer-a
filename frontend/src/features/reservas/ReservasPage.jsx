@@ -22,7 +22,6 @@ import { BtnAccion } from '../../components/ui/Acciones';
 import { formatearFecha } from '../../lib/utils/format';
 
 import { listarReservas, obtenerReserva } from './reservasService';
-import ReservaForm from './ReservaForm';
 import ReservaViewModal from './ReservaViewModal';
 import ReservaEstadoModal from './ReservaEstadoModal';
 
@@ -160,11 +159,6 @@ export default function ReservasPage() {
         }
     };
 
-    const reservaCreada = async () => {
-        await cargarReservas();
-        exito('Reserva registrada correctamente');
-    };
-
     const reservaActualizada = async (mensaje) => {
         await cargarReservas();
         exito(mensaje || 'Estado de reserva actualizado correctamente');
@@ -181,7 +175,7 @@ export default function ReservasPage() {
         <div className="space-y-4">
             <PageHeader
                 titulo="Reservas"
-                descripcion="Administra las reservas realizadas en la librería"
+                descripcion="Consulta histórica y cancelación de reservas activas"
             />
             <Contador
                 cargando={cargando}
@@ -192,7 +186,7 @@ export default function ReservasPage() {
                 completadas={totalCompletadas}
             />
 
-            <ReservaForm onReservaCreada={reservaCreada} />
+            <Alert tipo="info">No se crean nuevas reservas ni se registran cobros. Puedes consultar el historial y cancelar reservas activas para liberar stock.</Alert>
 
             <Card>
                 <CardHeader
@@ -248,7 +242,7 @@ export default function ReservasPage() {
             {!cargando && !error && reservas.length === 0 && (
                 <EmptyState
                     titulo="No hay reservas registradas"
-                    descripcion="Registra una nueva reserva utilizando el formulario."
+                    descripcion="No hay reservas históricas para consultar."
                     icono={<FaMagnifyingGlass />}
                 />
             )}
@@ -319,4 +313,3 @@ acciones={(reserva) => {
         </div>
     );
 }
-

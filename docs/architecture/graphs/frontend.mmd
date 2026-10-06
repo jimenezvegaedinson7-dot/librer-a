@@ -31,8 +31,6 @@ flowchart LR
     InventarioPage --> inventarioService(["inventarioService"])
     ReservasPage["/reservas<br/>ReservasPage"]
     ReservasPage --> reservasService(["reservasService"])
-    ReservasPage --> librosService(["librosService"])
-    ReservasPage --> usuariosService(["usuariosService"])
     PedidosPage["/pedidos<br/>PedidosPage"]
     PedidosPage --> pedidosService(["pedidosService"])
     VentasPage["/ventas<br/>VentasPage"]
@@ -86,7 +84,6 @@ flowchart LR
     reportesService --> _api_reportes{{"/api/reportes"}}
     reportesService --> _api_inventario{{"/api/inventario"}}
     reservasService --> _api_reservas{{"/api/reservas"}}
-    reservasService --> _api_libros{{"/api/libros"}}
     tarifasService --> _api_zonas_delivery{{"/api/zonas-delivery"}}
     usuariosService --> _api_usuarios{{"/api/usuarios"}}
     ventasService --> _api_ventas{{"/api/ventas"}}

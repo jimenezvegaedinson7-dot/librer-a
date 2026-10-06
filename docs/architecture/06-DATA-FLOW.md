@@ -25,10 +25,11 @@
 ## 2. Recuperar contraseña
 `POST /api/auth/solicitar-reseteo` → `usuario.model.js#buscarPorEmail`, `usuario.model.js#guardarCodigoVerificacion` → tablas: usuarios (envía código por correo con `utils/mailer`) → `POST /api/auth/reestablecer-contrasena` → `usuario.model.js#actualizarPassword`, `usuario.model.js#buscarPorEmail`, `usuario.model.js#limpiarCodigoVerificacion` → tablas: usuarios.
 
-## 3. Venta desde el panel (React, administrador)
-1. `VentaForm` → `POST /api/ventas` → inline (venta.routes.js) → tablas: —.
-2. Cambio de estado: `VentaEstadoModal` → `PUT /api/ventas/:id/estado` → `historial.model.js#crear`, `venta.model.js#actualizarEstado`, `venta.model.js#obtenerPorId` → tablas: agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas (transiciones validadas en `utils/transiciones.js`; al entregar se envía correo).
+## 3. Gestión comercial y logística (React, administrador)
+1. `POST /api/ventas` está retirado (405); las ventas nuevas nacen pendientes desde checkout PayU. No se crean ventas de panel o reserva ni cobros manuales.
+2. `PUT /api/ventas/:id/estado` está bloqueado (409). Solo `PUT /api/pedidos/:id/estado` avanza logística; la transición final sincroniza `estado=entregada` con `estado_entrega=entregado` bajo bloqueo y notifica una vez, sin modificar pago ni inventario.
 3. Comprobante: `EmitirComprobanteModal` → `POST /api/ventas/:id/comprobante` → `comprobante.model.js#generarComprobante` → tablas: comprobantes, ventas; envío: `POST /api/comprobantes/:id/enviar-email` → `comprobante.model.js#obtenerComprobante`, `empresa.model.js#obtenerEmpresa` → tablas: comprobantes, empresa, usuarios, ventas.
+4. Devoluciones: `POST /api/ventas/:id/reembolso` valida pago PayU e identificadores de la propia venta bajo bloqueo. `accion=solicitar` registra `estado_reembolso=pendiente_verificacion` sin efectos; `accion=confirmar` exige referencia, evidencia y responsable. Solo entonces confirma documentalmente, cambia a reembolsada y modifica stock/comprobante/historial en la misma transacción. No ejecuta un refund automático. Migración 040 agrega campos NULL sin reescribir históricos.
 
 ## 4. Compra desde la app (Flutter, cliente) con PayU
 1. Carrito local (`CarritoService`) → `EntregaYPagoScreen` obtiene zonas activas con `GET /api/zonas-delivery`. Solo ofrece recojo gratuito en Pallasca (`tienda`) o delivery local con tarifa por zona (`domicilio`). Sin zonas, el recojo sigue disponible.
@@ -51,9 +52,10 @@
 - Descubrimiento: `GET /api/libros/:id/relacionados` consulta el autor y la categoría con los índices existentes y LIMIT 8 por grupo; entrega hasta 4 relacionados, 4 títulos adicionales del autor y 4 de categoría, sin duplicados. Solo libros activos, disponibilidad real y el mismo precio SQL del catálogo. La entrada directa a una ficha no carga el catálogo completo. Autor interactivo filtra `/catalogo?autor=:id`.
 - Favoritos de la ficha usan GET/POST/DELETE `/api/favoritos/:idLibro` con la sesión cliente y ownership JWT existentes; no hay persistencia nueva. Sin sesión, Cuenta permite retorno interno al libro. Compartir usa Web Share API o copiar enlace/WhatsApp/Facebook. SEO amplía los metadatos existentes y genera Book/Product con datos reales. No modifica pagos, inventario ni migraciones.
 
-## 5. Reservas
-- Cliente (Flutter) crea: `POST /api/reservas` → `historial.model.js#crear`, `reserva.model.js#crear`, `reserva.model.js#fechaVencimientoDefecto`, `reserva.model.js#obtenerPorId`, `reserva.model.js#validarFechaVencimiento`, `usuario.model.js#buscarPorId` → tablas: historial_operaciones, inventario, libros, reservas, usuarios; cancela: `DELETE /api/reservas/:id` → `historial.model.js#crear`, `reserva.model.js#actualizarEstado`, `reserva.model.js#obtenerPorId`, `venta.model.js#crear` → tablas: detalle_venta, historial_operaciones, inventario, libros, reservas, usuarios, ventas.
-- Administrador (React) cambia estado: `PUT /api/reservas/:id/estado` → `historial.model.js#crear`, `reserva.model.js#actualizarEstado`, `reserva.model.js#obtenerPorId`, `venta.model.js#crear` → tablas: detalle_venta, historial_operaciones, inventario, libros, reservas, usuarios, ventas.
+## 5. Reservas históricas
+- Creación retirada: `POST /api/reservas` responde 405; completar/confirmar devuelve 409. No existen nuevas ventas origen reserva, ni cobros manuales.
+- Flutter conserva lectura histórica y cancelación: `DELETE /api/reservas/:id` → backend/src/controllers/reserva.controller.js → tablas: —.
+- React solo consulta y cancela activas: `PUT /api/reservas/:id/estado` → `historial.model.js#crear`, `reserva.model.js#actualizarEstado`, `reserva.model.js#obtenerPorId` → tablas: historial_operaciones, inventario, libros, reservas, usuarios. El modelo bloquea la reserva y libera stock una sola vez.
 - El job cancela reservas vencidas cada 5 min (`reservaModel.cancelarVencidas`).
 
 ## 6. Catálogo e inventario

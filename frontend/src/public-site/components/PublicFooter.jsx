@@ -4,7 +4,6 @@ import logo from '../assets/logo-f-blanco-96.webp';
 import imgReclamaciones from '../../assets/img_futter/libro-reclamaciones.webp';
 import imgVisaMastercard from '../../assets/img_futter/visa-mastercard.webp';
 import imgTarjetaBcp from '../../assets/img_futter/tarjeta-bcp.webp';
-import imgYapePlin from '../../assets/img_futter/yape-plin.webp';
 import { NAVEGACION, SITIO } from '../config/site';
 
 export default function PublicFooter() {
@@ -51,7 +50,7 @@ export default function PublicFooter() {
                             {redes.map((r) => <li key={r.url}><a href={r.url} rel="noopener">{r.nombre}</a></li>)}
                         </ul>
                     </div>
-                    {/* Métodos de pago reales: PayU en línea con tarjeta; Yape y Plin en la tienda. */}
+                    {/* Los pagos nuevos se procesan exclusivamente mediante PayU. */}
                     <div className="pie__pagos">
                         <h2>Métodos de pago</h2>
                         <div className="pie__pagos-grupos">
@@ -60,12 +59,6 @@ export default function PublicFooter() {
                                 <ul>
                                     <li><img src={imgVisaMastercard} alt="Visa y Mastercard" width="60" height="60" loading="lazy" /></li>
                                     <li><img src={imgTarjetaBcp} alt="Tarjeta de débito Visa" width="90" height="60" loading="lazy" /></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <p>En tienda</p>
-                                <ul>
-                                    <li><img src={imgYapePlin} alt="Yape y Plin" width="90" height="60" loading="lazy" /></li>
                                 </ul>
                             </div>
                         </div>

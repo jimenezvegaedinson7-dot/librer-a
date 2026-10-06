@@ -2,6 +2,7 @@ const ventaModel = require('../models/venta.model');
 const historialModel = require('../models/historial.model');
 const { validarId } = require('../utils/validaciones');
 const { ENTREGA, esTipoEntregaValido, permitirTransicionEntrega, esVentaHistorica } = require('../utils/transiciones');
+const { enviarCorreoPedidoEntregado } = require('../utils/mailer');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR EL PEDIDO
@@ -223,7 +224,7 @@ const Pedido = {
                 });
             }
 
-            // Actualizar solo el estado_entrega, no el estado comercial
+            // El último paso sincroniza también el estado comercial bajo bloqueo.
             const actualizado =
                 await ventaModel.actualizarEstadoEntrega(
                     idVenta,
@@ -234,6 +235,17 @@ const Pedido = {
                 return res.status(404).json({
                     success: false,
                     mensaje: 'Pedido no encontrado'
+                });
+            }
+
+            // Solo quien ganó la transición bajo FOR UPDATE notifica.
+            // Un reintento o petición concurrente se rechaza antes de llegar aquí.
+            if (estado === 'entregado') {
+                const destinatario = ventaActual.correo_compra || ventaActual.correo_usuario;
+                if (destinatario) await enviarCorreoPedidoEntregado({ destinatario,
+                    nombre: `${ventaActual.nombre_usuario || ''} ${ventaActual.apellido_usuario || ''}`.trim() || 'cliente',
+                    idVenta, tipoEntrega: ventaActual.tipo_entrega }).catch(error => {
+                    console.error('Error al notificar entrega:', error.message);
                 });
             }
 

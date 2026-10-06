@@ -89,7 +89,7 @@ const MODULOS = [
     ['Categorías', 'categorias', 'features/categorias', '—'],
     ['Inventario', 'inventario', 'features/inventario', '—'],
     ['Pedidos', 'pedidos', 'features/pedidos', '—'],
-    ['Reservas', 'reservas', 'features/reservas', 'detalle de libro (crear), reservas'],
+    ['Reservas históricas (creación retirada)', 'reservas', 'features/reservas (consulta/cancelación)', 'historial de reservas (consulta/cancelación)'],
     ['Ventas', 'ventas', 'features/ventas · public-site/tienda/MisComprasPage', 'mis compras'],
     ['Pagos (PayU)', 'pagos', 'features/pagos · public-site/tienda/CheckoutPage', 'entrega y pago, mis compras'],
     ['Comprobantes', 'comprobantes', 'features/comprobantes · ventas/EmitirComprobanteModal', '—'],
@@ -323,7 +323,7 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 | Favoritos | favoritos, detalle_libro | \`/api/favoritos\` (GET, GET/POST/DELETE \`/:idLibro\`) |
 | Carrito | carrito (local) | — |
 | Compra + PayU | entrega_y_pago, mis_compras | \`GET /api/zonas-delivery\` (activas de Pallasca), \`POST /api/pagos/crear-orden\` → abre \`checkout_url\` con **url_launcher** → \`GET /api/pagos/:orderId\`; \`GET /api/ventas/mis-ventas\`, \`GET /api/ventas/:id/pago\` |
-| Reservas | detalle_libro (crear), reservas | \`POST /api/reservas\`, \`GET /api/reservas/mis-reservas\`, \`DELETE /api/reservas/:id\` |
+| Reservas históricas | reservas (pestaña Historial), perfil | \`GET /api/reservas/mis-reservas\`, \`DELETE /api/reservas/:id\`; crear está retirado (405) |
 | Perfil | perfil, editar_perfil, cambiar_password | \`/api/usuarios/perfil\` (GET/PUT), \`PUT /api/usuarios/foto\` (**image_picker**), \`PUT /api/usuarios/password\` |
 | 2FA | two_factor_setup/verify/disable | \`/api/auth/2fa/*\` |
 | Registro y cuenta | registro, verificacion_email, recuperar/reestablecer_contrasena | \`/api/auth/{registro, verificar-email, reenviar-codigo, solicitar-reseteo, reestablecer-contrasena}\` |
@@ -362,10 +362,11 @@ Nota: la app es **solo para clientes**; \`login\` rechaza el rol administrador.
 ## 2. Recuperar contraseña
 ${linea('POST', '/api/auth/solicitar-reseteo')} (envía código por correo con \`utils/mailer\`) → ${linea('POST', '/api/auth/reestablecer-contrasena')}.
 
-## 3. Venta desde el panel (React, administrador)
-1. \`VentaForm\` → ${linea('POST', '/api/ventas')}.
-2. Cambio de estado: \`VentaEstadoModal\` → ${linea('PUT', '/api/ventas/:id/estado')} (transiciones validadas en \`utils/transiciones.js\`; al entregar se envía correo).
+## 3. Gestión comercial y logística (React, administrador)
+1. \`POST /api/ventas\` está retirado (405); las ventas nuevas nacen pendientes desde checkout PayU. No se crean ventas de panel o reserva ni cobros manuales.
+2. \`PUT /api/ventas/:id/estado\` está bloqueado (409). Solo \`PUT /api/pedidos/:id/estado\` avanza logística; la transición final sincroniza \`estado=entregada\` con \`estado_entrega=entregado\` bajo bloqueo y notifica una vez, sin modificar pago ni inventario.
 3. Comprobante: \`EmitirComprobanteModal\` → ${linea('POST', '/api/ventas/:id/comprobante')}; envío: ${linea('POST', '/api/comprobantes/:id/enviar-email')}.
+4. Devoluciones: \`POST /api/ventas/:id/reembolso\` valida pago PayU e identificadores de la propia venta bajo bloqueo. \`accion=solicitar\` registra \`estado_reembolso=pendiente_verificacion\` sin efectos; \`accion=confirmar\` exige referencia, evidencia y responsable. Solo entonces confirma documentalmente, cambia a reembolsada y modifica stock/comprobante/historial en la misma transacción. No ejecuta un refund automático. Migración 040 agrega campos NULL sin reescribir históricos.
 
 ## 4. Compra desde la app (Flutter, cliente) con PayU
 1. Carrito local (\`CarritoService\`) → \`EntregaYPagoScreen\` obtiene zonas activas con \`GET /api/zonas-delivery\`. Solo ofrece recojo gratuito en Pallasca (\`tienda\`) o delivery local con tarifa por zona (\`domicilio\`). Sin zonas, el recojo sigue disponible.
@@ -388,9 +389,10 @@ ${linea('POST', '/api/auth/solicitar-reseteo')} (envía código por correo con \
 - Descubrimiento: \`GET /api/libros/:id/relacionados\` consulta el autor y la categoría con los índices existentes y LIMIT 8 por grupo; entrega hasta 4 relacionados, 4 títulos adicionales del autor y 4 de categoría, sin duplicados. Solo libros activos, disponibilidad real y el mismo precio SQL del catálogo. La entrada directa a una ficha no carga el catálogo completo. Autor interactivo filtra \`/catalogo?autor=:id\`.
 - Favoritos de la ficha usan GET/POST/DELETE \`/api/favoritos/:idLibro\` con la sesión cliente y ownership JWT existentes; no hay persistencia nueva. Sin sesión, Cuenta permite retorno interno al libro. Compartir usa Web Share API o copiar enlace/WhatsApp/Facebook. SEO amplía los metadatos existentes y genera Book/Product con datos reales. No modifica pagos, inventario ni migraciones.
 
-## 5. Reservas
-- Cliente (Flutter) crea: ${linea('POST', '/api/reservas')}; cancela: ${linea('DELETE', '/api/reservas/:id')}.
-- Administrador (React) cambia estado: ${linea('PUT', '/api/reservas/:id/estado')}.
+## 5. Reservas históricas
+- Creación retirada: \`POST /api/reservas\` responde 405; completar/confirmar devuelve 409. No existen nuevas ventas origen reserva, ni cobros manuales.
+- Flutter conserva lectura histórica y cancelación: ${linea('DELETE', '/api/reservas/:id')}.
+- React solo consulta y cancela activas: ${linea('PUT', '/api/reservas/:id/estado')}. El modelo bloquea la reserva y libera stock una sola vez.
 - El job cancela reservas vencidas cada 5 min (\`reservaModel.cancelarVencidas\`).
 
 ## 6. Catálogo e inventario
@@ -695,19 +697,20 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
 
     G('sales-flow', `sequenceDiagram
     autonumber
-    participant P as React · VentaForm / VentasPage
+    participant P as React · VentasPage / PedidosPage
     participant V as /api/ventas (venta.controller)
     participant VM as venta.model
     participant H as historial.model
     participant CM as comprobante.model
     participant DB as PostgreSQL
-    P->>V: POST /api/ventas (JWT + admin)
-    V->>VM: crear (transacción)
-    VM->>DB: ventas, detalle_venta, inventario (transacción)
-    V->>H: crear (historial_operaciones)
-    P->>V: PUT /api/ventas/:id/estado
-    V->>VM: obtenerPorId + actualizarEstado (utils/transiciones)
-    V-->>V: correo "pedido entregado" (mailer) si corresponde
+    P->>V: POST /api/ventas o PUT estado (retirados)
+    V-->>P: 405 creación / 409 estado manual
+    P->>VM: Pedidos: transición logística válida
+    VM->>DB: FOR UPDATE + entrega y estado comercial atómicos
+    Note over P: Pedidos notifica una sola transición nueva, sin cobrar ni tocar stock
+    P->>V: POST reembolso accion solicitar o confirmar
+    V->>VM: Validar PayU + solicitud o confirmación documental
+    VM->>DB: Pendiente sin efectos / confirmado con evidencia, stock, comprobante e historial
     P->>V: POST /api/ventas/:id/comprobante
     V->>CM: generarComprobante
     CM->>DB: comprobantes
@@ -716,21 +719,20 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
 
     G('reservations-flow', `sequenceDiagram
     autonumber
-    participant F as Flutter · detalle_libro / reservas
+    participant F as Flutter · historial de reservas
     participant R as React · ReservasPage
     participant API as /api/reservas (reserva.controller)
     participant RM as reserva.model
     participant DB as PostgreSQL
     participant J as jobs/limpieza (cada 5 min)
     F->>API: POST /api/reservas (JWT)
-    API->>RM: validarFechaVencimiento + crear
-    RM->>DB: reservas, inventario
-    API-->>F: correo de reserva creada (mailer)
+    API-->>F: 405 creación retirada
     F->>API: GET /api/reservas/mis-reservas
     F->>API: DELETE /api/reservas/:id (cancelar, solo dueño)
     R->>API: GET /api/reservas (admin)
-    R->>API: PUT /api/reservas/:id/estado (admin, utils/transiciones)
-    API->>RM: actualizarEstado
+    R->>API: PUT /api/reservas/:id/estado (solo cancelar)
+    API->>RM: cancelar bajo bloqueo, stock una sola vez
+    RM->>DB: UPDATE reserva + inventario + kardex atómicos
     J->>RM: cancelarVencidas()`);
 
     G('payments-flow', `sequenceDiagram

@@ -296,12 +296,12 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| GET | `/api/reservas/mis-reservas` | JWT | controllers/reserva.controller.js#obtenerMisReservas | `reserva.model.js#obtenerPorUsuario` | libros, reservas |
-| POST | `/api/reservas` | JWT | controllers/reserva.controller.js#crearReserva | `historial.model.js#crear`<br>`reserva.model.js#crear`<br>`reserva.model.js#fechaVencimientoDefecto`<br>`reserva.model.js#obtenerPorId`<br>`reserva.model.js#validarFechaVencimiento`<br>`usuario.model.js#buscarPorId` | historial_operaciones, inventario, libros, reservas, usuarios |
-| DELETE | `/api/reservas/:id` | JWT | controllers/reserva.controller.js#cancelarReserva | `historial.model.js#crear`<br>`reserva.model.js#actualizarEstado`<br>`reserva.model.js#obtenerPorId`<br>`venta.model.js#crear` | detalle_venta, historial_operaciones, inventario, libros, reservas, usuarios, ventas |
-| GET | `/api/reservas` | JWT + verificarPanel | controllers/reserva.controller.js#obtenerReservas | `reserva.model.js#obtenerTodos` | libros, reservas, usuarios |
-| GET | `/api/reservas/:id` | JWT | controllers/reserva.controller.js#obtenerReserva | `reserva.model.js#obtenerPorId` | libros, reservas, usuarios |
-| PUT | `/api/reservas/:id/estado` | JWT + verificarPanel | controllers/reserva.controller.js#actualizarEstado | `historial.model.js#crear`<br>`reserva.model.js#actualizarEstado`<br>`reserva.model.js#obtenerPorId`<br>`venta.model.js#crear` | detalle_venta, historial_operaciones, inventario, libros, reservas, usuarios, ventas |
+| GET | `/api/reservas/mis-reservas` | JWT | controllers/reserva.controller.js#obtenerMisReservas | `reserva.model.js#obtenerPorUsuario` | inventario, libros, reservas, usuarios |
+| POST | `/api/reservas` | JWT | controllers/reserva.controller.js#crearReserva | — | — |
+| DELETE | `/api/reservas/:id` | JWT | controllers/reserva.controller.js#cancelarReserva | — | — |
+| GET | `/api/reservas` | JWT + verificarPanel | controllers/reserva.controller.js#obtenerReservas | `reserva.model.js#obtenerTodos` | inventario, libros, reservas, usuarios |
+| GET | `/api/reservas/:id` | JWT | controllers/reserva.controller.js#obtenerReserva | `reserva.model.js#obtenerPorId` | inventario, libros, reservas, usuarios |
+| PUT | `/api/reservas/:id/estado` | JWT + verificarPanel | controllers/reserva.controller.js#actualizarEstado | `historial.model.js#crear`<br>`reserva.model.js#actualizarEstado`<br>`reserva.model.js#obtenerPorId` | historial_operaciones, inventario, libros, reservas, usuarios |
 
 ### /api/ubicaciones
 
@@ -332,9 +332,9 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/ventas` | JWT + verificarPanel | controllers/venta.controller.js#obtenerVentas | `venta.model.js#obtenerTodos` | agencias_courier, comprobantes, distritos_lima, provincias_lima, usuarios, ventas |
 | GET | `/api/ventas/:id` | JWT | controllers/venta.controller.js#obtenerVenta | `venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, usuarios, ventas |
 | GET | `/api/ventas/:id/pago` | JWT | controllers/venta.controller.js#obtenerPagoVenta | `venta.model.js#obtenerDatosPago` | ventas |
-| PUT | `/api/ventas/:id/estado` | JWT + verificarPanel | controllers/venta.controller.js#actualizarEstadoVenta | `historial.model.js#crear`<br>`venta.model.js#actualizarEstado`<br>`venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
+| PUT | `/api/ventas/:id/estado` | JWT + verificarPanel | controllers/venta.controller.js#actualizarEstadoVenta | — | — |
 | POST | `/api/ventas/:id/comprobante` | JWT + verificarPanel | controllers/comprobante.controller.js#generarComprobante | `comprobante.model.js#generarComprobante` | comprobantes, ventas |
-| POST | `/api/ventas/:id/reembolso` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/venta.controller.js#reembolsarVenta | `historial.model.js#crear`<br>`venta.model.js#reembolsar` | comprobantes, detalle_venta, historial_operaciones, inventario, ventas |
+| POST | `/api/ventas/:id/reembolso` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/venta.controller.js#reembolsarVenta | `venta.model.js#reembolsar` | comprobantes, detalle_venta, historial_operaciones, inventario, ventas |
 
 ### /api/zonas-delivery
 
@@ -369,7 +369,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/reserva.model.js` | inventario, libros, reservas, usuarios |
 | `models/ubicacion.model.js` | distritos_lima, provincias_lima |
 | `models/usuario.model.js` | asistente_memoria, favoritos, inventario, reservas, usuarios, ventas |
-| `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, inventario, libros, provincias_lima, usuarios, ventas |
+| `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
 | `models/zonaDelivery.model.js` | zonas_delivery_pallasca |
 
 Tablas presentes en el código (21): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. El esquema está en `backend/database/schema.sql` + 22 migraciones en `backend/database/migrations`.

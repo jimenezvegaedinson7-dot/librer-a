@@ -43,6 +43,12 @@ test('ciencia solo como busqueda de libros; no explica la materia',()=>{
     assert.equal(analizarConsulta('Libros de ciencia').tipo,'catalogo');
     assert.match(responder('Libros de ciencia').texto,/No encontré/);
 });
+test('reservas: informa el retiro y solo conserva consulta y cancelación histórica',()=>{
+    const respuesta=responder('¿Puedo reservar un libro?');
+    assert.match(respuesta.texto,/No se crean nuevas reservas/);
+    assert.match(respuesta.texto,/reservas anteriores/);
+    assert.match(respuesta.texto,/PayU/);
+});
 test('conteos excluyen inactivos y distinguen titulos de ejemplares',()=>assert.match(responder('Stock total').texto,/3 títulos activos, 2 con stock y 13 ejemplares/));
 test('libro desconocido, metadatos ausentes y horarios no se inventan',()=>{
     assert.match(responder('Libro desconocido').texto,/No encontré/);

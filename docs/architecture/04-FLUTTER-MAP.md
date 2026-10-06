@@ -41,7 +41,7 @@
 | `eliminarCuenta` | `DELETE /api/usuarios/cuenta` |
 | `obtenerMisReservas` | `GET /api/reservas/mis-reservas` |
 | `cancelarReserva` | `DELETE /api/reservas/:id` |
-| `crearReserva` | `POST /api/reservas` |
+| `crearReserva` |  |
 | `obtenerMisVentas` | `GET /api/ventas/mis-ventas` |
 | `obtenerFavoritos` | `GET /api/favoritos` |
 | `esFavorito` | `GET /api/favoritos/:idLibro` |
@@ -72,7 +72,7 @@
 | Pantalla / widget | Métodos | Endpoints |
 |---|---|---|
 | `screens/carrito_screen.dart` | `obtenerLibros` | `GET /api/libros` |
-| `screens/detalle_libro_screen.dart` | `agregarFavorito`, `crearReserva`, `esFavorito`, `obtenerDetalleLibro`, `quitarFavorito` | `POST /api/favoritos/:idLibro`<br>`POST /api/reservas`<br>`GET /api/favoritos/:idLibro`<br>`GET /api/libros/:id`<br>`DELETE /api/favoritos/:idLibro` |
+| `screens/detalle_libro_screen.dart` | `agregarFavorito`, `esFavorito`, `obtenerDetalleLibro`, `quitarFavorito` | `POST /api/favoritos/:idLibro`<br>`GET /api/favoritos/:idLibro`<br>`GET /api/libros/:id`<br>`DELETE /api/favoritos/:idLibro` |
 | `screens/entrega_y_pago_screen.dart` | `crearOrdenPago`, `intentoPendiente`, `obtenerLibros`, `obtenerOrdenPago`, `obtenerZonasDelivery`, `recuperarIntentoPendiente` | `GET /api/libros`<br>`GET /api/pagos/:orderId`<br>`GET /api/zonas-delivery` |
 | `screens/favoritos_screen.dart` | `obtenerFavoritos`, `quitarFavorito` | `GET /api/favoritos`<br>`DELETE /api/favoritos/:idLibro` |
 | `screens/home_screen.dart` | `obtenerLibros` | `GET /api/libros` |
@@ -103,7 +103,7 @@ Pantallas sin llamadas directas a la API: `screens/fondos_screen.dart`, `screens
 | Favoritos | favoritos, detalle_libro | `/api/favoritos` (GET, GET/POST/DELETE `/:idLibro`) |
 | Carrito | carrito (local) | — |
 | Compra + PayU | entrega_y_pago, mis_compras | `GET /api/zonas-delivery` (activas de Pallasca), `POST /api/pagos/crear-orden` → abre `checkout_url` con **url_launcher** → `GET /api/pagos/:orderId`; `GET /api/ventas/mis-ventas`, `GET /api/ventas/:id/pago` |
-| Reservas | detalle_libro (crear), reservas | `POST /api/reservas`, `GET /api/reservas/mis-reservas`, `DELETE /api/reservas/:id` |
+| Reservas históricas | reservas (pestaña Historial), perfil | `GET /api/reservas/mis-reservas`, `DELETE /api/reservas/:id`; crear está retirado (405) |
 | Perfil | perfil, editar_perfil, cambiar_password | `/api/usuarios/perfil` (GET/PUT), `PUT /api/usuarios/foto` (**image_picker**), `PUT /api/usuarios/password` |
 | 2FA | two_factor_setup/verify/disable | `/api/auth/2fa/*` |
 | Registro y cuenta | registro, verificacion_email, recuperar/reestablecer_contrasena | `/api/auth/{registro, verificar-email, reenviar-codigo, solicitar-reseteo, reestablecer-contrasena}` |

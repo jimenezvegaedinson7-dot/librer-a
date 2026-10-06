@@ -283,6 +283,17 @@ CREATE TABLE IF NOT EXISTS ventas (
     pago_revision_fecha TIMESTAMP NULL,
     reembolso_referencia VARCHAR(100) NULL,
     reembolso_evidencia VARCHAR(500) NULL,
+    estado_reembolso VARCHAR(30) NULL,
+    fecha_solicitud_reembolso TIMESTAMP NULL,
+    reembolso_solicitado_por INT NULL,
+    reembolso_confirmado_por INT NULL,
+    CONSTRAINT ventas_estado_reembolso_check
+        CHECK (estado_reembolso IS NULL OR estado_reembolso IN ('pendiente_verificacion','confirmado')),
+    CONSTRAINT ventas_reembolso_confirmado_check CHECK (
+        estado_reembolso IS DISTINCT FROM 'confirmado' OR (
+            estado='reembolsada' AND fecha_reembolso IS NOT NULL AND reembolso_confirmado_por IS NOT NULL
+            AND reembolso_referencia IS NOT NULL AND length(btrim(reembolso_referencia))>=3
+            AND reembolso_evidencia IS NOT NULL AND length(btrim(reembolso_evidencia))>=10)),
     CONSTRAINT ventas_estado_check
         CHECK (estado IN ('pendiente', 'pagada', 'entregada', 'cancelada', 'reembolsada')),
     CONSTRAINT ventas_canal_compra_check
@@ -334,6 +345,8 @@ CREATE TABLE IF NOT EXISTS ventas (
 );
 
 CREATE INDEX IF NOT EXISTS idx_ventas_usuario ON ventas (id_usuario);
+CREATE INDEX IF NOT EXISTS idx_ventas_origen ON ventas (origen);
+CREATE INDEX IF NOT EXISTS idx_ventas_id_reserva ON ventas (id_reserva);
 CREATE INDEX IF NOT EXISTS idx_ventas_external_reference ON ventas (external_reference);
 CREATE INDEX IF NOT EXISTS idx_ventas_payu_order_id ON ventas (payu_order_id);
 CREATE INDEX IF NOT EXISTS idx_ventas_id_distrito ON ventas (id_distrito);

@@ -149,20 +149,20 @@ export default function FeatureStory({ reducido }) {
 
                     <article className="ventaja" data-ventaja="3">
                         <div className="ventaja__texto">
-                            <h2>Resérvalo desde su ficha</h2>
+                            <h2>Consulta tus reservas anteriores</h2>
                             <p>
-                                ¿Aún no te decides a comprarlo? Apártalo con un toque en “Reservar” y revisa tus reservas cuando
-                                quieras. Si cambias de idea, la cancelas desde la app.
+                                Conservamos el historial de tus reservas. Las que siguen activas pueden cancelarse desde la app
+                                para liberar los ejemplares. Las nuevas compras se pagan con PayU desde el carrito.
                             </p>
                             <p className="ventaja__detalle">
-                                <span><FaCalendarCheck aria-hidden="true" /> Mis reservas</span>
+                                <span><FaCalendarCheck aria-hidden="true" /> Historial de reservas</span>
                                 <span><FaXmark aria-hidden="true" /> Cancelación desde la app</span>
                             </p>
                         </div>
                         <div className="ventaja__visual">
                             <div className="ficha" style={{ maxWidth: 500, marginInline: 'auto' }}>
                                 <Recorte src={imgFicha} alt="Parte inferior de la ficha de un libro con el total y los botones Reservar y Añadir" posicion="50% 100%" proporcion="16 / 9" />
-                                <p className="ficha__pie">Captura de la app: ficha de un libro.</p>
+                                <p className="ficha__pie">Captura de una versión anterior. La creación de reservas está retirada.</p>
                             </div>
                         </div>
                     </article>

@@ -81,17 +81,17 @@ test('venta: pendiente -> entregada salta etapa y es FALSO', () => {
 // ----------------------------------------
 // RESERVA
 // ----------------------------------------
-test('reserva: pendiente -> confirmada es permitido', () => {
+test('reserva: pendiente -> confirmada está retirado', () => {
     assert.equal(
         permitirTransicion(RESERVA, 'pendiente', 'confirmada'),
-        true
+        false
     );
 });
 
-test('reserva: confirmada -> completada es permitido', () => {
+test('reserva: confirmada -> completada no genera cobros nuevos', () => {
     assert.equal(
         permitirTransicion(RESERVA, 'confirmada', 'completada'),
-        true
+        false
     );
 });
 

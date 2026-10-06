@@ -15,17 +15,14 @@ export async function obtenerVenta(id) {
 
 // Reembolso de una venta pagada o entregada: devuelve el stock y anula
 // su comprobante emitido.
-export async function reembolsarVenta(id, { motivo, devolverStock, referencia, evidencia }) {
+export async function reembolsarVenta(id, { accion, motivo, devolverStock, referencia, evidencia }) {
     return client.post(`/ventas/${id}/reembolso`, {
         motivo,
+        accion,
         devolver_stock: Boolean(devolverStock),
         referencia_reembolso: referencia?.trim() || null,
         evidencia_reembolso: evidencia?.trim() || null,
     });
-}
-
-export async function cambiarEstadoVenta(id, estado) {
-    return client.put(`/ventas/${id}/estado`, { estado });
 }
 
 export { listarLibros } from '../libros/librosService';

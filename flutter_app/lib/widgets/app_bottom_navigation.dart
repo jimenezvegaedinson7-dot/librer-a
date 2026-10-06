@@ -50,7 +50,7 @@ class AppBottomNavigation extends StatelessWidget {
       tab: AppTab.reservas,
       icon: Icons.bookmark_outline_rounded,
       activo: Icons.bookmark_rounded,
-      label: 'Reservas',
+      label: 'Historial',
     ),
     (
       tab: AppTab.perfil,

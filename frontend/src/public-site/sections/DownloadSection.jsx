@@ -110,7 +110,7 @@ export default function DownloadSection({ reducido }) {
                         <img className="icono-app icono-app--grande" src={iconoApp} alt="Icono de la app Librería del Saber" width="88" height="88" />
                         <h1 id="descarga-titulo" className="descargar-portada__titulo">Descarga la app</h1>
                         <p className="descargar-portada__entrada">
-                            Gratis. Con ella exploras el catálogo, compras con PayU y sigues tus pedidos y reservas.
+                            Gratis. Con ella exploras el catálogo, compras con PayU y sigues tus pedidos.
                         </p>
                         {androidListo && (
                             <a className="boton boton--grande" href={android.url} rel="noopener">

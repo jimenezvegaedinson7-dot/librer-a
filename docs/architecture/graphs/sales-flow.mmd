@@ -1,19 +1,20 @@
 %% Generado 2026-10-06 desde el código real (actualizar-mapa.mjs)
 sequenceDiagram
     autonumber
-    participant P as React · VentaForm / VentasPage
+    participant P as React · VentasPage / PedidosPage
     participant V as /api/ventas (venta.controller)
     participant VM as venta.model
     participant H as historial.model
     participant CM as comprobante.model
     participant DB as PostgreSQL
-    P->>V: POST /api/ventas (JWT + admin)
-    V->>VM: crear (transacción)
-    VM->>DB: ventas, detalle_venta, inventario (transacción)
-    V->>H: crear (historial_operaciones)
-    P->>V: PUT /api/ventas/:id/estado
-    V->>VM: obtenerPorId + actualizarEstado (utils/transiciones)
-    V-->>V: correo "pedido entregado" (mailer) si corresponde
+    P->>V: POST /api/ventas o PUT estado (retirados)
+    V-->>P: 405 creación / 409 estado manual
+    P->>VM: Pedidos: transición logística válida
+    VM->>DB: FOR UPDATE + entrega y estado comercial atómicos
+    Note over P: Pedidos notifica una sola transición nueva, sin cobrar ni tocar stock
+    P->>V: POST reembolso accion solicitar o confirmar
+    V->>VM: Validar PayU + solicitud o confirmación documental
+    VM->>DB: Pendiente sin efectos / confirmado con evidencia, stock, comprobante e historial
     P->>V: POST /api/ventas/:id/comprobante
     V->>CM: generarComprobante
     CM->>DB: comprobantes

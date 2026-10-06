@@ -105,7 +105,7 @@ void main() {
         expect(find.text('Tus datos'), findsOneWidget);
         expect(find.text('ana@example.test'), findsOneWidget);
         expect(find.text('Mis compras'), findsOneWidget);
-        expect(find.text('Mis reservas'), findsOneWidget);
+        expect(find.text('Reservas anteriores'), findsOneWidget);
         expect(find.text('Mis favoritos'), findsOneWidget);
         expect(tester.takeException(), isNull);
         await captura(tester, key, 'perfil-${ancho.toInt()}');

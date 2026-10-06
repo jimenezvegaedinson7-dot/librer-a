@@ -100,16 +100,14 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/pedidos/PedidosPage.jsx` | `GET /api/pedidos`<br>`GET /api/pedidos/:param`<br>`PUT /api/pedidos/:param/estado` |
 | `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `features/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
-| `features/reservas/ReservaEstadoModal.jsx` | `GET /api/libros/:param`<br>`PUT /api/reservas/:param/estado` |
-| `features/reservas/ReservaForm.jsx` | `GET /api/libros`<br>`GET /api/usuarios`<br>`POST /api/reservas` |
+| `features/reservas/ReservaEstadoModal.jsx` | `PUT /api/reservas/:param/estado` |
 | `features/reservas/ReservasPage.jsx` | `GET /api/reservas`<br>`GET /api/reservas/:param` |
-| `features/reservas/reservasService.js` | `GET /api/libros` |
 | `features/tarifas/TarifaEditModal.jsx` | `POST /api/zonas-delivery`<br>`PUT /api/zonas-delivery/:param` |
 | `features/tarifas/TarifasEnvioPage.jsx` | `GET /api/zonas-delivery/todos` |
 | `features/usuarios/UsuariosPage.jsx` | `GET /api/usuarios`<br>`PATCH /api/usuarios/:param` |
 | `features/ventas/EmitirComprobanteModal.jsx` | `GET /api/empresa`<br>`POST /api/comprobantes/:param/enviar-email`<br>`POST /api/ventas/:param/comprobante` |
 | `features/ventas/ReembolsoModal.jsx` | `POST /api/ventas/:param/reembolso` |
-| `features/ventas/VentasPage.jsx` | `GET /api/ventas`<br>`GET /api/ventas/:param`<br>`PUT /api/ventas/:param/estado` |
+| `features/ventas/VentasPage.jsx` | `GET /api/ventas`<br>`GET /api/ventas/:param` |
 | `public-site/PublicLayout.jsx` | `GET /api/empresa`<br>`GET /api/libros` |
 | `public-site/asistente/AsistenteTienda.jsx` | `GET /api/libros`<br>`POST /api/asistente` |
 | `public-site/asistente/useMemoriaAsistente.js` | `DELETE /api/asistente/memoria`<br>`GET /api/asistente/memoria`<br>`PUT /api/asistente/memoria` |
@@ -216,9 +214,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/reportes/reportesService.js` | `obtenerIndicadoresVentas` | `GET /api/reportes/indicadores-ventas` |
 | `features/reservas/reservasService.js` | `listarReservas` | `GET /api/reservas` |
 | `features/reservas/reservasService.js` | `obtenerReserva` | `GET /api/reservas/:param` |
-| `features/reservas/reservasService.js` | `crearReserva` | `POST /api/reservas` |
 | `features/reservas/reservasService.js` | `actualizarEstadoReserva` | `PUT /api/reservas/:param/estado` |
-| `features/reservas/reservasService.js` | `listarLibrosActivos` | `GET /api/libros` (vía features/libros/librosService.js#listarLibros) |
 | `features/tarifas/tarifasService.js` | `listarZonasDelivery` | `GET /api/zonas-delivery/todos` |
 | `features/tarifas/tarifasService.js` | `guardarZonaDelivery` | `PUT /api/zonas-delivery/:param`<br>`POST /api/zonas-delivery` |
 | `features/usuarios/usuariosService.js` | `listarUsuarios` | `GET /api/usuarios` |
@@ -226,7 +222,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/ventas/ventasService.js` | `listarVentas` | `GET /api/ventas` |
 | `features/ventas/ventasService.js` | `obtenerVenta` | `GET /api/ventas/:param` |
 | `features/ventas/ventasService.js` | `reembolsarVenta` | `POST /api/ventas/:param/reembolso` |
-| `features/ventas/ventasService.js` | `cambiarEstadoVenta` | `PUT /api/ventas/:param/estado` |
 | `features/ventas/ventasService.js` | `listarLibros` | `GET /api/libros` (vía features/libros/librosService.js#listarLibros) |
 | `public-site/hooks/useApiPublica.js` | `useCatalogo` | `GET /api/libros` |
 | `public-site/hooks/useApiPublica.js` | `useAnuncioActivo` | `GET /api/anuncios` |
@@ -274,15 +269,15 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/Button.jsx` | 48 |
 | `components/ui/Card.jsx` | 21 |
 | `components/ui/Celebracion.jsx` | 2 |
-| `components/ui/ConfirmarAccion.jsx` | 4 |
+| `components/ui/ConfirmarAccion.jsx` | 3 |
 | `components/ui/ConfirmarEliminacion.jsx` | 4 |
 | `components/ui/DataTable.jsx` | 15 |
 | `components/ui/EmptyState.jsx` | 17 |
 | `components/ui/ErrorBoundary.jsx` | 1 |
 | `components/ui/EstadoModal.jsx` | 1 |
 | `components/ui/Ficha.jsx` | 10 |
-| `components/ui/Form.jsx` | 38 |
-| `components/ui/FormularioAlta.jsx` | 4 |
+| `components/ui/Form.jsx` | 36 |
+| `components/ui/FormularioAlta.jsx` | 3 |
 | `components/ui/Indicadores.jsx` | 13 |
 | `components/ui/Modal.jsx` | 30 |
 | `components/ui/PageHeader.jsx` | 17 |

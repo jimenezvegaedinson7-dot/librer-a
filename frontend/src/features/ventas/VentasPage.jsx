@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import {
-    FaCheck,
     FaCircleCheck,
     FaClock,
     FaEye,
@@ -37,8 +36,7 @@ import { descripcionEntrega } from '../../lib/utils/entrega';
 import { useToast } from '../../components/providers/ToastProvider';
 import { useRol } from '../auth/useRol';
 
-import { cambiarEstadoVenta as actualizarEstadoVenta, listarVentas, obtenerVenta } from './ventasService';
-import { ConfirmarAccion } from '../../components/ui/ConfirmarAccion';
+import { listarVentas, obtenerVenta } from './ventasService';
 import ComprobanteViewModal from '../comprobantes/ComprobanteViewModal';
 import VentaViewModal from './VentaViewModal';
 import EmitirComprobanteModal from './EmitirComprobanteModal';
@@ -148,8 +146,8 @@ const columnasVentas = [
     },
 ];
 
-function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, onReembolsar, puedeReembolsar }) {
-    if (fila.origen === 'panel' || (fila.origen === 'reserva' && !fila.id_reserva)) {
+function accionesVenta(fila, { onVer, onEmitirComprobante, onReembolsar, puedeReembolsar }) {
+    if (fila.origen === 'panel' || fila.origen === 'reserva') {
         return <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>;
     }
     const conComprobante = Number(fila.tiene_comprobante ?? 0) === 1;
@@ -158,12 +156,7 @@ function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, o
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>
             {fila.pago_revision_motivo && <Badge color="warning">Pago en revisión</Badge>}
-            {/* Única transición manual: pagada → entregada (las pendientes se cancelan solas a los 30 min). */}
-            {fila.estado === 'pagada' && (
-                <BtnAccion tipo="ver" onClick={() => onConfirmarEntrega(fila)} titulo="Confirmar entrega" className="btn-confirmar">
-                    <FaCheck />
-                </BtnAccion>
-            )}
+            {fila.estado_reembolso === 'pendiente_verificacion' && <Badge color="warning">Devolución pendiente de verificación</Badge>}
             {conComprobante && (fila.estado === 'pagada' || fila.estado === 'entregada') && (
                 <span
                     className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700"
@@ -184,9 +177,8 @@ function accionesVenta(fila, { onVer, onConfirmarEntrega, onEmitirComprobante, o
                     </BtnAccion>
                 </>
             )}
-            {/* Reembolsar devuelve stock y dinero: solo el administrador. */}
-            {puedeReembolsar && (fila.estado === 'pagada' || fila.estado === 'entregada' || fila.pago_revision_motivo === 'aprobacion_tardia') && (
-                <BtnAccion tipo="eliminar" onClick={() => onReembolsar(fila)} titulo="Reembolsar venta">
+            {puedeReembolsar && fila.reembolso_elegible === true && (
+                <BtnAccion tipo="eliminar" onClick={() => onReembolsar(fila)} titulo={fila.estado_reembolso === 'pendiente_verificacion' ? 'Verificar devolución PayU' : 'Solicitar devolución PayU'}>
                     <FaRotateLeft />
                 </BtnAccion>
             )}
@@ -236,9 +228,7 @@ export default function VentasPage() {
     const [error, setError] = useState('');
 
 const [ventaVer, setVentaVer] = useState(null);
-    const [ventaEntregar, setVentaEntregar] = useState(null);
     const [ventaReembolsar, setVentaReembolsar] = useState(null);
-    const [entregando, setEntregando] = useState(false);
     const [comprobanteEmitido, setComprobanteEmitido] = useState(null);
     const [comprobanteModal, setComprobanteModal] = useState(null);
 
@@ -394,22 +384,6 @@ const totalIngresos = ventas
         }
     };
 
-    const confirmarEntrega = async () => {
-        if (!ventaEntregar) return;
-        try {
-            setEntregando(true);
-            await actualizarEstadoVenta(ventaEntregar.id_venta, 'entregada');
-            const id = ventaEntregar.id_venta;
-            setVentaEntregar(null);
-            await cargarVentas();
-            exito(`Venta #${id} marcada como entregada`);
-        } catch (err) {
-            mostrarError(err.response?.data?.mensaje || 'Error al confirmar la entrega');
-        } finally {
-            setEntregando(false);
-        }
-    };
-
     const abrirEmitirComprobante = async (venta, tipo) => {
         try {
             const ventaCompleta = await obtenerVenta(venta.id_venta);
@@ -434,7 +408,9 @@ const totalIngresos = ventas
         await cargarVentas();
         const anulado = respuesta?.data?.comprobante_anulado;
         exito(
-            `Venta #${respuesta?.data?.id_venta} reembolsada` +
+            (respuesta?.data?.estado_reembolso === 'pendiente_verificacion'
+                ? `Devolución de venta #${respuesta?.data?.id_venta} pendiente de verificación`
+                : `Devolución externa de venta #${respuesta?.data?.id_venta} confirmada documentalmente`) +
                 (anulado
                     ? `. Comprobante ${anulado.serie}-${String(anulado.numero).padStart(8, '0')} anulado: registra su nota de crédito en Comprobantes.`
                     : ''),
@@ -628,7 +604,6 @@ const totalIngresos = ventas
                             acciones={(fila) =>
                                 accionesVenta(fila, {
                                     onVer: verVenta,
-                                    onConfirmarEntrega: setVentaEntregar,
                                     onEmitirComprobante: abrirEmitirComprobante,
                                     onReembolsar: setVentaReembolsar,
                                     puedeReembolsar,
@@ -641,17 +616,6 @@ const totalIngresos = ventas
             )}
 
 <VentaViewModal venta={ventaVer} abierto={Boolean(ventaVer)} onCerrar={() => setVentaVer(null)} />
-            <ConfirmarAccion
-                abierto={Boolean(ventaEntregar)}
-                titulo="Confirmar entrega"
-                mensaje={`¿Confirmas que la venta #${ventaEntregar?.id_venta} (${formatearMoneda(ventaEntregar?.total)}) ya fue entregada al cliente?`}
-                advertencia="La venta pasará a «Entregada». Después solo podrá revertirse con un reembolso."
-                icono={<FaCheck />}
-                textoConfirmar="Sí, fue entregada"
-                onCerrar={() => setVentaEntregar(null)}
-                onConfirmar={confirmarEntrega}
-                cargando={entregando}
-            />
 <ComprobanteViewModal
                 comprobante={comprobanteEmitido}
                 abierto={Boolean(comprobanteEmitido)}

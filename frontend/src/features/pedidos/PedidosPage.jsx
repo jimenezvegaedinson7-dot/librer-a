@@ -322,12 +322,16 @@ export default function PedidosPage() {
     const accionesFila = (p) => {
         const estado = p.estado_entrega || 'pendiente';
         const tipoValido = esTipoEntregaValido(p.tipo_entrega);
+        const historico = p.origen === 'panel' || p.origen === 'reserva';
+        const devolucionPendiente = p.estado_reembolso === 'pendiente_verificacion';
         const pagoPendienteWeb = p.canal_compra==='web' && !['pagada','entregada'].includes(p.estado);
-        const destino_ = tipoValido && !pagoPendienteWeb ? siguienteEstado(p.tipo_entrega, estado) : null;
+        const destino_ = tipoValido && !pagoPendienteWeb && !historico && !devolucionPendiente ? siguienteEstado(p.tipo_entrega, estado) : null;
 
         return (
             <>
                 {pagoPendienteWeb && <Badge color="warning">Esperando pago</Badge>}
+                {historico && <Badge color="neutral">Histórico: solo consulta</Badge>}
+                {devolucionPendiente && <Badge color="warning">Devolución pendiente de verificación</Badge>}
                 {!tipoValido && (
                     <span
                         className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700"
@@ -353,7 +357,7 @@ export default function PedidosPage() {
                     </BtnAccion>
                 )}
 
-                {tipoValido && puedeCancelar(estado) && (
+                {tipoValido && !historico && !devolucionPendiente && puedeCancelar(estado) && (
                     <BtnAccion
                         tipo="eliminar"
                         titulo="Cancelar pedido"

@@ -144,7 +144,7 @@ class _ReservasScreenState extends State<ReservasScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
                   child: AppPageHeader(
-                    title: 'Mis reservas',
+                    title: 'Reservas anteriores',
                     subtitle: total == 0
                         ? null
                         : '$total ${total == 1 ? 'reserva' : 'reservas'}'
@@ -191,8 +191,8 @@ class _ReservasScreenState extends State<ReservasScreen> {
         hasScrollBody: false,
         child: EmptyView(
           icon: Icons.bookmark_outline_rounded,
-          title: 'Aún no tienes reservas',
-          message: 'Cuando reserves un libro, aparecerá aquí.',
+          title: 'No tienes reservas anteriores',
+          message: 'Aquí se conserva tu historial. Las nuevas compras se realizan con PayU desde el carrito.',
         ),
       );
     }

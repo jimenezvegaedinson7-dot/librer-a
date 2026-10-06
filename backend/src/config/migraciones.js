@@ -102,7 +102,8 @@ const MIGRACIONES = [
     '036_correcciones_negocio.sql',
     '037_administracion.sql',
     '038_version_sesion.sql',
-    '039_otp_anti_replay.sql'
+    '039_otp_anti_replay.sql',
+    '040_devoluciones_payu.sql'
 ];
 
 // En producción un fallo de migración debe detener el arranque:

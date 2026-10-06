@@ -685,7 +685,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     Expanded(
                       child: _AccesoRapido(
                         icon: Icons.bookmark_outline_rounded,
-                        label: 'Mis reservas',
+                        label: 'Reservas anteriores',
                         onTap: _misReservas,
                       ),
                     ),

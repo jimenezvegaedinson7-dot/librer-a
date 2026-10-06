@@ -12,6 +12,7 @@ const { consultarEstadoOrdenPayu, montoPagoCoincide, debeActualizarEstadoPago } 
 const { registrarMovimiento } = require('./inventario.model');
 const zonaDeliveryModel = require('./zonaDelivery.model');
 const { validarId } = require('../utils/validaciones');
+const { esReembolsoElegible } = require('../utils/devoluciones');
 
 // ========================================
 // OBTENER TODAS LAS VENTAS
@@ -23,6 +24,7 @@ const obtenerTodos = async () => {
             v.pago_revision_fecha,
             v.reembolso_referencia,
             v.reembolso_evidencia,
+            v.estado_reembolso, v.fecha_solicitud_reembolso, v.reembolso_solicitado_por, v.reembolso_confirmado_por,
             v.id_venta,
             v.id_usuario,
             u.nombre AS nombre_usuario,
@@ -79,7 +81,7 @@ const obtenerTodos = async () => {
         ORDER BY v.id_venta DESC
     `);
 
-    return rows;
+    return rows.map(venta => ({ ...venta, reembolso_elegible: esReembolsoElegible(venta) }));
 };
 
 // ========================================
@@ -92,6 +94,7 @@ const obtenerPorId = async (id) => {
             v.pago_revision_fecha,
             v.reembolso_referencia,
             v.reembolso_evidencia,
+            v.estado_reembolso, v.fecha_solicitud_reembolso, v.reembolso_solicitado_por, v.reembolso_confirmado_por,
             v.id_venta,
             v.id_usuario,
             u.nombre AS nombre_usuario,
@@ -170,6 +173,7 @@ const obtenerPorId = async (id) => {
 
     return {
         ...ventaRows[0],
+        reembolso_elegible: esReembolsoElegible(ventaRows[0]),
         detalles: detalleRows
     };
 };
@@ -185,6 +189,7 @@ const obtenerPorUsuario = async (id_usuario) => {
     const [rows] = await pool.query(`
         SELECT
             v.pago_revision_motivo,
+            v.estado_reembolso,
             v.id_venta,
             v.id_usuario,
             v.fecha_venta,
@@ -322,6 +327,7 @@ const obtenerConFiltros = async (filtros = {}) => {
     const [rows] = await pool.query(`
         SELECT
             v.id_venta,
+            v.estado_reembolso,
             v.id_usuario,
             u.nombre AS nombre_usuario,
             u.apellido AS apellido_usuario,
@@ -438,12 +444,14 @@ const agruparDetalles = (detalles) => {
 // ========================================
 // CREAR VENTA
 // ----------------------------------------
-// `conexionExterna`: si se pasa, la venta se crea dentro de esa
-// transacción (sin BEGIN/COMMIT propios). Lo usa la reserva al
-// completarse, para que reserva y venta se guarden juntas.
-// `descontar_stock: false`: el stock ya se descontó antes (reserva).
+// Una nueva venta nace pendiente y descuenta stock para un checkout PayU.
+// Las reservas históricas no llaman a este método ni registran cobros.
 // ========================================
 const crear = async (venta, conexionExterna = null) => {
+    if ((venta.origen ?? 'app') !== 'app' || venta.id_reserva != null || venta.descontar_stock === false ||
+        (venta.metodo_pago != null && venta.metodo_pago !== 'payu') || venta.referencia_pago != null || (venta.estado ?? 'pendiente') !== 'pendiente') {
+        throw Object.assign(new Error('Solo se crean ventas online pendientes mediante el flujo PayU; los cobros manuales están retirados'), { status: 409 });
+    }
     const propia = !conexionExterna;
     const connection =
         conexionExterna || await pool.getConnection();
@@ -1010,6 +1018,12 @@ const actualizarEstado = async (
     id,
     nuevoEstado
 ) => {
+    if (nuevoEstado === 'entregada') {
+        throw Object.assign(new Error('La entrega se confirma exclusivamente desde Pedidos'), { status: 409 });
+    }
+    if (nuevoEstado === 'pagada') {
+        throw Object.assign(new Error('El pago solo se confirma mediante PayU'), { status: 409 });
+    }
     const connection =
         await pool.getConnection();
 
@@ -1157,10 +1171,8 @@ const actualizarEstado = async (
 // ========================================
 // ACTUALIZAR ESTADO DE ENTREGA (módulo PEDIDOS)
 // ========================================
-// Actualiza SOLO la columna estado_entrega (estado logístico:
-// pendiente → preparando → listo_recojo/en_camino → entregado).
-// NO toca el estado comercial de la venta (`estado`), ni devuelve
-// stock ni registra movimientos: es un cambio operativo del envío.
+// Pedidos es la única fuente de entrega. El último paso sincroniza el
+// estado comercial dentro del mismo bloqueo; no toca pago ni inventario.
 const actualizarEstadoEntrega = async (
     id,
     nuevoEstado
@@ -1180,7 +1192,8 @@ const actualizarEstadoEntrega = async (
                     origen,
                     id_reserva,
                     estado,
-                    canal_compra
+                    canal_compra,
+                    estado_reembolso
                 FROM ventas
                 WHERE id_venta = ?
                 FOR UPDATE
@@ -1197,6 +1210,9 @@ const actualizarEstadoEntrega = async (
 
         if (esVentaHistorica(venta)) {
             throw Object.assign(new Error('Las ventas históricas son de solo lectura'), { status: 409 });
+        }
+        if (venta.estado_reembolso === 'pendiente_verificacion') {
+            throw Object.assign(new Error('La devolución está pendiente de verificación; no se puede avanzar la entrega'), { status: 409 });
         }
         if (!['pagada', 'entregada'].includes(venta.estado) && nuevoEstado !== 'cancelado') {
             throw Object.assign(new Error('El pago de esta compra debe confirmarse antes de preparar la entrega'), { status: 409 });
@@ -1249,9 +1265,10 @@ const actualizarEstadoEntrega = async (
         const [resultado] =
             await connection.query(`
                 UPDATE ventas
-                SET estado_entrega = ?
+                SET estado_entrega = ?, estado = CASE WHEN ? = 'entregado' THEN 'entregada' ELSE estado END
                 WHERE id_venta = ?
             `, [
+                nuevoEstado,
                 nuevoEstado,
                 id
             ]);
@@ -1271,21 +1288,14 @@ const actualizarEstadoEntrega = async (
 };
 
 // ========================================
-// REEMBOLSAR UNA VENTA PAGADA O ENTREGADA
+// DEVOLUCIÓN DOCUMENTAL DE UNA VENTA PAYU ELEGIBLE
 // ----------------------------------------
-// En una sola transacción:
-//   1. Bloquea la venta y valida la transición (pagada/entregada →
-//      reembolsada).
-//   2. Si `devolverStock`, reingresa los libros al inventario (kardex
-//      "devolucion_venta"). En una venta pagada que no salió de la
-//      tienda siempre se devuelven.
-//   3. Marca la venta como reembolsada con el motivo.
-//   4. Anula su comprobante emitido: legalmente se revierte con una
-//      nota de crédito, cuyo número de SUNAT se registra después.
-// El dinero se devuelve por el mismo medio del cobro (en PayU, desde
-// su panel); aquí solo queda el registro.
+// Solicitar registra pendiente_verificacion sin efectos comerciales.
+// Confirmar exige referencia, evidencia, responsable y solicitud previa;
+// actualiza venta, stock, comprobante e historial en la misma transacción.
+// No ejecuta ni verifica automáticamente una devolución en PayU.
 // ========================================
-const reembolsar = async (id, { motivo, devolverStock, idUsuario, referencia = null, evidencia = null }) => {
+const reembolsar = async (id, { accion = 'confirmar', motivo, devolverStock, idUsuario, referencia = null, evidencia = null }) => {
     const connection =
         await pool.getConnection();
 
@@ -1293,7 +1303,7 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario, referencia = n
         await connection.beginTransaction();
 
         const [ventas] = await connection.query(`
-            SELECT id_venta, estado, estado_entrega, origen, id_reserva, payu_payment_status, pago_revision_motivo
+            SELECT *
             FROM ventas
             WHERE id_venta = ?
             FOR UPDATE
@@ -1306,29 +1316,40 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario, referencia = n
 
         const venta = ventas[0];
 
-        if (esVentaHistorica(venta)) {
-            const error = new Error('Las ventas históricas son de solo lectura');
-            error.status = 409;
-            throw error;
+        if (!esReembolsoElegible(venta)) {
+            throw Object.assign(new Error('La venta no tiene un pago PayU elegible o ya fue reembolsada; los cobros manuales son históricos'), { status: 409 });
         }
-
-        const aprobacionTardia = venta.estado === 'cancelada' &&
-            ['APPROVED', 'CAPTURED'].includes(venta.payu_payment_status) &&
-            venta.pago_revision_motivo === 'aprobacion_tardia';
-        if (!aprobacionTardia && (
-            !['pagada', 'entregada'].includes(venta.estado) ||
-            !permitirTransicion(VENTA, venta.estado, 'reembolsada')
-        )) {
-            const error = new Error(
-                `Solo se puede reembolsar una venta pagada o entregada (estado actual: "${venta.estado}")`
-            );
-            error.status = 400;
-            throw error;
+        if (!validarId(idUsuario) || !['solicitar', 'confirmar'].includes(accion) ||
+            typeof motivo !== 'string' || motivo.trim().length < 5 || motivo.length > 255) {
+            throw Object.assign(new Error('Responsable, acción o motivo de devolución inválido'), { status: 422 });
         }
-
+        // Una referencia o transacción compartida por otra venta no es un pago
+        // inequívocamente asociado. No se aceptan identificadores del cliente.
+        const [otros] = await connection.query(`SELECT id_venta FROM ventas WHERE id_venta<>?
+            AND (external_reference=? OR payu_payment_id=? OR payu_order_id=?) LIMIT 1`,
+        [id, venta.external_reference, venta.payu_payment_id, venta.payu_order_id]);
+        if (otros.length) throw Object.assign(new Error('El pago PayU está asociado a otra venta; requiere revisión'), { status: 409 });
+        if (accion === 'solicitar') {
+            if (venta.estado_reembolso) throw Object.assign(new Error('La devolución ya tiene una solicitud'), { status: 409 });
+            await connection.query(`UPDATE ventas SET estado_reembolso='pendiente_verificacion',
+                fecha_solicitud_reembolso=NOW(), reembolso_solicitado_por=?, motivo_reembolso=? WHERE id_venta=?`,
+            [idUsuario, motivo.trim(), id]);
+            await connection.query(`INSERT INTO historial_operaciones(id_usuario,tipo_operacion,modulo,descripcion)
+                VALUES (?,'ACTUALIZAR','ventas',?)`, [idUsuario, `Devolución PayU de venta #${id} solicitada; pendiente de verificación. Motivo: ${motivo.trim()}`]);
+            await connection.commit();
+            return { estado: venta.estado, estado_reembolso: 'pendiente_verificacion', stock_devuelto: false, comprobante_anulado: null };
+        }
+        if (typeof referencia !== 'string' || referencia.trim().length < 3 || referencia.length > 100 ||
+            typeof evidencia !== 'string' || evidencia.trim().length < 10 || evidencia.length > 500 ||
+            /[\r\n\x00]/.test(referencia + evidencia)) {
+            throw Object.assign(new Error('Para confirmar exige referencia PayU (3–100 caracteres) y evidencia verificable (10–500 caracteres)'), { status: 422 });
+        }
+        if (venta.estado_reembolso !== 'pendiente_verificacion') {
+            throw Object.assign(new Error('Primero registra la solicitud de devolución pendiente de verificación'), { status: 409 });
+        }
+        const aprobacionTardia = venta.estado === 'cancelada' && venta.pago_revision_motivo === 'aprobacion_tardia';
         const yaSalio = venta.estado === 'entregada' ||
-            ['en_camino', 'entregado'].includes(venta.estado_entrega) ||
-            (venta.origen === 'reserva' && venta.id_reserva);
+            ['en_camino', 'entregado'].includes(venta.estado_entrega);
         // Una aprobación tardía ya liberó stock al cancelar: nunca dos veces.
         const reingresar = !aprobacionTardia && (!yaSalio || Boolean(devolverStock));
 
@@ -1347,11 +1368,13 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario, referencia = n
                     WHERE id_libro = ?
                 `, [detalle.cantidad, detalle.id_libro]);
 
-                const [[{ stock: stockNuevo }]] = await connection.query(`
+                const [stockRows] = await connection.query(`
                     SELECT stock
                     FROM inventario
                     WHERE id_libro = ?
                 `, [detalle.id_libro]);
+
+                if (!stockRows[0]) throw Object.assign(new Error('Inventario no encontrado; no se confirmó la devolución'), { status: 409 });
 
                 await registrarMovimiento(connection, {
                     id_libro: detalle.id_libro,
@@ -1359,7 +1382,7 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario, referencia = n
                     tipo: 'entrada',
                     motivo: 'devolucion_venta',
                     cantidad: detalle.cantidad,
-                    stock_resultante: stockNuevo
+                    stock_resultante: stockRows[0].stock
                 });
             }
         }
@@ -1370,10 +1393,11 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario, referencia = n
                 motivo_reembolso = ?,
                 fecha_reembolso = NOW(),
                 reembolso_referencia = ?, reembolso_evidencia = ?,
+                estado_reembolso = 'confirmado', reembolso_confirmado_por = ?,
                 pago_revision_motivo = NULL, pago_revision_fecha = NULL,
                 estado_entrega = CASE WHEN estado_entrega = 'entregado' THEN estado_entrega ELSE 'cancelado' END
             WHERE id_venta = ?
-        `, [motivo, referencia, evidencia, id]);
+        `, [motivo.trim(), referencia.trim(), evidencia.trim(), idUsuario, id]);
 
         const [anulados] = await connection.query(`
             UPDATE comprobantes
@@ -1385,9 +1409,14 @@ const reembolsar = async (id, { motivo, devolverStock, idUsuario, referencia = n
             RETURNING id_comprobante, serie, numero
         `, [`Reembolso de la venta: ${motivo}`, id]);
 
+        await connection.query(`INSERT INTO historial_operaciones(id_usuario,tipo_operacion,modulo,descripcion)
+            VALUES (?,'ACTUALIZAR','ventas',?)`, [idUsuario,
+            `Devolución externa PayU de venta #${id} confirmada documentalmente. Referencia: ${referencia.trim()}. Evidencia: ${evidencia.trim()}. Stock devuelto: ${reingresar}.`]);
+
         await connection.commit();
 
         return {
+            estado: 'reembolsada', estado_reembolso: 'confirmado',
             estado_anterior: venta.estado,
             stock_devuelto: reingresar,
             comprobante_anulado: anulados[0] || null

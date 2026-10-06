@@ -66,11 +66,11 @@ export const PAGINAS = {
     },
     '/aplicacion': {
         titulo: 'La aplicación · Librería del Saber',
-        descripcion: 'Busca libros, revisa su ficha, guarda favoritos, reserva y paga con PayU desde la app de Librería del Saber.',
+        descripcion: 'Busca libros, revisa su ficha, guarda favoritos y paga con PayU desde la app de Librería del Saber.',
     },
     '/caracteristicas': {
         titulo: 'Características · Librería del Saber',
-        descripcion: 'Delivery dentro de Pallasca con tarifa por zona, recojo sin costo en Pallasca, pago con PayU y reservas desde la app.',
+        descripcion: 'Delivery dentro de Pallasca con tarifa por zona, recojo sin costo en Pallasca y pago con PayU.',
     },
     '/nosotros': {
         titulo: 'Nosotros · Librería del Saber',

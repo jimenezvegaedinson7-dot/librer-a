@@ -56,8 +56,8 @@ Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxl
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 166 | 384 | 0 (confirmado con **madge**: ninguno) |
-| Frontend (`import`) | 210 | 849 | 0 (confirmado con **madge**: ninguno) |
+| Backend (`require`) | 169 | 384 | 0 (confirmado con **madge**: ninguno) |
+| Frontend (`import`) | 208 | 831 | 0 (confirmado con **madge**: ninguno) |
 | Flutter (`import` relativos) | 73 | 321 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter

@@ -1,664 +1,80 @@
 const reservaModel = require('../models/reserva.model');
-const ventaModel = require('../models/venta.model');
-const { validarCobroTienda } = require('../utils/metodosPago');
 const historialModel = require('../models/historial.model');
-const { validarId, esCantidadPositiva, esNumeroNoNegativo } = require('../utils/validaciones');
-const { RESERVA, permitirTransicion } = require('../utils/transiciones');
-const { enviarCorreoReservaCreada } = require('../utils/mailer');
+const { validarId } = require('../utils/validaciones');
 const { esPersonalInterno } = require('../utils/roles');
-const usuarioModel = require('../models/usuario.model');
 const { conPortadaCatalogo } = require('../utils/portadasCatalogo');
 
-// ========================================
-// REGISTRAR HISTORIAL SIN AFECTAR RESERVAS
-// ========================================
-const registrarHistorial = async ({
-    id_usuario,
-    tipo_operacion,
-    modulo,
-    descripcion
-}) => {
-    try {
-        await historialModel.crear({
-            id_usuario,
-            tipo_operacion,
-            modulo,
-            descripcion
-        });
+// Las reservas existentes se conservan para consulta y liberación de stock.
+// Ninguna reserva puede crear una venta ni registrar un cobro.
+const crearReserva = async (_req, res) => res.status(405).json({
+    success: false,
+    mensaje: 'La creación de reservas está retirada. Compra desde la web o la app con PayU.'
+});
 
+const obtenerReservas = async (_req, res) => {
+    try {
+        return res.json({ success: true, data: await reservaModel.obtenerTodos() });
     } catch (error) {
-        console.error(
-            'Error al registrar historial:',
-            error.message
-        );
+        console.error('Error al consultar reservas históricas:', error.message);
+        return res.status(500).json({ success: false, mensaje: 'Error al consultar las reservas' });
     }
 };
 
-// ========================================
-// OBTENER TODAS LAS RESERVAS
-// ========================================
-const obtenerReservas = async (req, res) => {
-    try {
-        const reservas =
-            await reservaModel.obtenerTodos();
-
-        return res.json({
-            success: true,
-            data: reservas
-        });
-
-    } catch (error) {
-        console.error(
-            'Error al obtener reservas:',
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al obtener las reservas',
-            error: 'Error interno del servidor'
-        });
-    }
-};
-
-// ========================================
-// OBTENER UNA RESERVA POR ID
-// ========================================
-const obtenerReserva = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const idReserva = validarId(id);
-
-        if (!idReserva) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'ID de reserva inválido'
-            });
-        }
-
-        const reserva =
-            await reservaModel.obtenerPorId(idReserva);
-
-        if (!reserva) {
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Reserva no encontrada'
-            });
-        }
-
-        // ========================================
-        // VERIFICAR PROPIETIDAD (IDOR) — dueño o personal
-        // del panel (administrador)
-        // (misma regla que DELETE /reservas/:id)
-        // ========================================
-        const esStaff =
-            esPersonalInterno(req.usuario?.rol);
-
-        if (
-            Number(reserva.id_usuario) !==
-                Number(req.usuario.id_usuario) &&
-            !esStaff
-        ) {
-            return res.status(403).json({
-                success: false,
-                mensaje:
-                    'No tienes permisos para ver esta reserva'
-            });
-        }
-
-        return res.json({
-            success: true,
-            data: reserva
-        });
-
-    } catch (error) {
-        console.error(
-            'Error al obtener reserva:',
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al obtener la reserva',
-            error: 'Error interno del servidor'
-        });
-    }
-};
-
-// ========================================
-// OBTENER RESERVAS DEL USUARIO AUTENTICADO
-// ========================================
 const obtenerMisReservas = async (req, res) => {
     try {
-        const id_usuario =
-            req.usuario.id_usuario;
-
-        const reservas =
-            await reservaModel.obtenerPorUsuario(
-                id_usuario
-            );
-
-        return res.json({
-            success: true,
-            data: reservas.map(conPortadaCatalogo)
-        });
-
+        const rows = await reservaModel.obtenerPorUsuario(req.usuario.id_usuario);
+        return res.json({ success: true, data: rows.map(conPortadaCatalogo) });
     } catch (error) {
-        console.error(
-            'Error al obtener reservas del usuario:',
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al obtener tus reservas',
-            error: 'Error interno del servidor'
-        });
+        console.error('Error al consultar reservas propias:', error.message);
+        return res.status(500).json({ success: false, mensaje: 'Error al consultar tus reservas' });
     }
 };
 
-// ========================================
-// CREAR UNA RESERVA
-// ========================================
-const crearReserva = async (req, res) => {
+const obtenerReserva = async (req, res) => {
     try {
-        let id_usuario = req.usuario.id_usuario;
-        const {
-            id_libro,
-            cantidad,
-            fecha_vencimiento
-        } = req.body;
-
-        if (esPersonalInterno(req.usuario.rol)) {
-            const clienteId = validarId(req.body.id_usuario_cliente);
-            const cliente = clienteId ? await usuarioModel.buscarPorId(clienteId) : null;
-            if (!cliente || cliente.rol !== 'cliente' || Number(cliente.estado) !== 1 || cliente.fecha_eliminacion) {
-                return res.status(400).json({ success: false, mensaje: 'Selecciona un cliente activo para registrar la reserva' });
-            }
-            id_usuario = clienteId;
-        } else if (req.body.id_usuario_cliente != null && Number(req.body.id_usuario_cliente) !== Number(id_usuario)) {
-            return res.status(403).json({ success: false, mensaje: 'Solo puedes reservar para tu propia cuenta' });
+        const id = validarId(req.params.id);
+        if (!id) return res.status(400).json({ success: false, mensaje: 'ID de reserva inválido' });
+        const reserva = await reservaModel.obtenerPorId(id);
+        if (!reserva) return res.status(404).json({ success: false, mensaje: 'Reserva no encontrada' });
+        if (Number(reserva.id_usuario) !== Number(req.usuario.id_usuario) && !esPersonalInterno(req.usuario.rol)) {
+            return res.status(403).json({ success: false, mensaje: 'No tienes permisos para ver esta reserva' });
         }
-
-        // ========================================
-        // VALIDACIONES
-        // ========================================
-        if (
-            !id_libro ||
-            cantidad === undefined
-        ) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'id_libro y cantidad son obligatorios'
-            });
-        }
-
-        const idLibroNum = validarId(id_libro);
-
-        if (!idLibroNum) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'El id del libro no es válido'
-            });
-        }
-
-        if (
-            !Number.isInteger(
-                Number(cantidad)
-            ) ||
-            Number(cantidad) <= 0
-        ) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'La cantidad debe ser un número entero'
-            });
-        }
-
-        // ========================================
-        // VALIDAR FECHA DE VENCIMIENTO (si viene)
-        // Debe ser YYYY-MM-DD entre hoy+1 y hoy+14.
-        // Si no viene, se asigna el default hoy+14
-        // (nunca se guarda NULL).
-        // ========================================
-        const validacionFecha =
-            reservaModel.validarFechaVencimiento(
-                fecha_vencimiento
-            );
-
-        if (!validacionFecha.valida) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    validacionFecha.mensaje
-            });
-        }
-
-        const fechaVencimientoFinal =
-            validacionFecha.fecha ||
-            reservaModel
-                .fechaVencimientoDefecto();
-
-        // ========================================
-        // CREAR RESERVA
-        // ========================================
-        const id =
-            await reservaModel.crear({
-                id_usuario,
-                id_libro:
-                    idLibroNum,
-
-                cantidad:
-                    Number(cantidad),
-
-                fecha_vencimiento:
-                    fechaVencimientoFinal
-            });
-
-        // ========================================
-        // HISTORIAL
-        // ========================================
-        await registrarHistorial({
-            id_usuario: req.usuario.id_usuario,
-            tipo_operacion: 'CREAR',
-            modulo: 'reservas',
-            descripcion:
-                `Reserva #${id} creada para el libro ${idLibroNum} con cantidad ${Number(cantidad)}`
-        });
-
-        // ========================================
-        // CORREO DE RESERVA CREADA (fire-and-forget)
-        // ========================================
-        (async () => {
-            try {
-                const reserva = await reservaModel.obtenerPorId(id);
-
-                if (reserva && reserva.correo_usuario) {
-                    await enviarCorreoReservaCreada({
-                        destinatario: reserva.correo_usuario,
-                        nombre: reserva.nombre_usuario || '',
-                        idReserva: id,
-                        titulo: reserva.titulo || '',
-                        cantidad: reserva.cantidad,
-                        fechaVencimiento: reserva.fecha_vencimiento
-                    });
-                }
-            } catch (errorCorreo) {
-                console.error(
-                    'No se pudo enviar el correo de reserva:',
-                    errorCorreo.message
-                );
-            }
-        })();
-
-        return res.status(201).json({
-            success: true,
-            mensaje:
-                'Reserva creada correctamente',
-            id_reserva: id,
-            id_usuario
-        });
-
+        return res.json({ success: true, data: reserva });
     } catch (error) {
-        console.error(
-            'Error al crear reserva:',
-            error
-        );
-
-        const mensaje =
-            error.message ||
-            'Error al crear la reserva';
-
-        if (error.status) return res.status(error.status).json({ success: false, mensaje });
-
-        if (
-            mensaje.includes(
-                'Stock insuficiente'
-            ) ||
-            mensaje.includes(
-                'inventario'
-            )
-        ) {
-            return res.status(400).json({
-                success: false,
-                mensaje
-            });
-        }
-
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al crear la reserva',
-            error: 'Error interno del servidor'
-        });
+        console.error('Error al consultar reserva:', error.message);
+        return res.status(500).json({ success: false, mensaje: 'Error al consultar la reserva' });
     }
 };
 
-// ========================================
-// ACTUALIZAR ESTADO DE UNA RESERVA
-// ========================================
+async function cancelar(req, res, soloPropietario) {
+    try {
+        const id = validarId(req.params.id);
+        if (!id) return res.status(400).json({ success: false, mensaje: 'ID de reserva inválido' });
+        const reserva = await reservaModel.obtenerPorId(id);
+        if (!reserva) return res.status(404).json({ success: false, mensaje: 'Reserva no encontrada' });
+        if (soloPropietario && Number(reserva.id_usuario) !== Number(req.usuario.id_usuario)) {
+            return res.status(403).json({ success: false, mensaje: 'No tienes permisos para cancelar esta reserva' });
+        }
+        const actualizado = await reservaModel.actualizarEstado(id, 'cancelada');
+        if (!actualizado) return res.status(404).json({ success: false, mensaje: 'Reserva no encontrada' });
+        await historialModel.crear({ id_usuario: req.usuario.id_usuario, tipo_operacion: 'ACTUALIZAR',
+            modulo: 'reservas', descripcion: `Reserva histórica #${id} cancelada; stock liberado.` }).catch(error => {
+            console.error('Error al registrar cancelación de reserva:', error.message);
+        });
+        return res.json({ success: true, mensaje: 'Reserva cancelada; stock liberado correctamente' });
+    } catch (error) {
+        if (error.status) return res.status(error.status).json({ success: false, mensaje: error.message });
+        console.error('Error al cancelar reserva:', error.message);
+        return res.status(500).json({ success: false, mensaje: 'Error al cancelar la reserva' });
+    }
+}
+
 const actualizarEstado = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { estado } = req.body;
-
-        const idReserva = validarId(id);
-
-        if (!idReserva) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'ID de reserva inválido'
-            });
-        }
-
-        const id_usuario =
-            req.usuario.id_usuario;
-
-        // ========================================
-        // ESTADOS PERMITIDOS
-        // ========================================
-        const estadosPermitidos = [
-            'pendiente',
-            'confirmada',
-            'cancelada',
-            'completada'
-        ];
-
-        if (
-            !estado ||
-            !estadosPermitidos.includes(
-                estado
-            )
-        ) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'Estado no válido'
-            });
-        }
-
-        // ========================================
-        // BUSCAR RESERVA ACTUAL
-        // ========================================
-        const reservaActual =
-            await reservaModel.obtenerPorId(idReserva);
-
-        if (!reservaActual) {
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Reserva no encontrada'
-            });
-        }
-
-        const estadoActual =
-            reservaActual.estado;
-
-        // ========================================
-        // EVITAR ACTUALIZAR AL MISMO ESTADO
-        // ========================================
-        if (estadoActual === estado) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    `La reserva ya se encuentra en estado "${estado}"`
-            });
-        }
-
-        // ========================================
-        // TRANSICIONES VÁLIDAS
-        // (fuente única: utils/transiciones)
-        // ========================================
-        const puedeCambiar =
-            permitirTransicion(
-                RESERVA,
-                estadoActual,
-                estado
-            );
-
-        if (!puedeCambiar) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    `No se puede cambiar una reserva de "${estadoActual}" a "${estado}"`
-            });
-        }
-
-        // ========================================
-        // COMPLETADA = EL CLIENTE RECOGIÓ Y PAGÓ EN TIENDA
-        // Se registra la venta (ya pagada) en la misma transacción,
-        // sin volver a descontar el stock que la reserva ya apartó.
-        // ========================================
-        let cobro = null;
-        let ventaCreada = null;
-
-        if (estado === 'completada') {
-            if (req.body.precio_unitario_esperado !== undefined &&
-                (!esNumeroNoNegativo(req.body.precio_unitario_esperado) || Number(req.body.precio_unitario_esperado) <= 0)) {
-                return res.status(400).json({ success: false, mensaje: 'El importe confirmado debe ser un precio válido mayor que cero' });
-            }
-            cobro = validarCobroTienda(
-                req.body.metodo_pago,
-                req.body.referencia_pago
-            );
-
-            if (!cobro.ok) {
-                return res.status(400).json({
-                    success: false,
-                    mensaje: cobro.mensaje
-                });
-            }
-        }
-
-        // ========================================
-        // ACTUALIZAR ESTADO
-        // ========================================
-        const actualizado =
-            await reservaModel.actualizarEstado(
-                idReserva,
-                estado,
-                {
-                    alCompletar: async (connection, reserva) => {
-                        ventaCreada = await ventaModel.crear({
-                            id_usuario: reserva.id_usuario,
-                            detalles: [{
-                                id_libro: reserva.id_libro,
-                                cantidad: reserva.cantidad
-                            }],
-                            tipo_entrega: 'tienda',
-                            costo_envio: 0,
-                            origen: 'reserva',
-                            id_reserva: reserva.id_reserva,
-                            metodo_pago: cobro.metodo,
-                            referencia_pago: cobro.referencia,
-                            descontar_stock: false,
-                            precio_unitario_esperado: req.body.precio_unitario_esperado,
-                            estado: 'pagada'
-                        }, connection);
-                    }
-                }
-            );
-
-        if (!actualizado) {
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Reserva no encontrada'
-            });
-        }
-
-        // ========================================
-        // HISTORIAL
-        // ========================================
-        await registrarHistorial({
-            id_usuario,
-            tipo_operacion: 'ACTUALIZAR',
-            modulo: 'reservas',
-            descripcion:
-                `Reserva #${idReserva} actualizada de "${estadoActual}" a "${estado}"` +
-                (ventaCreada
-                    ? `. Venta #${ventaCreada.id_venta} registrada por S/ ${Number(ventaCreada.total).toFixed(2)} (${cobro.metodo})`
-                    : '')
-        });
-
-        return res.json({
-            success: true,
-            mensaje: ventaCreada
-                ? `Reserva completada. Se registró la venta #${ventaCreada.id_venta}.`
-                : `Reserva actualizada a estado "${estado}" correctamente`,
-            data: ventaCreada
-                ? {
-                    id_venta: ventaCreada.id_venta,
-                    total: ventaCreada.total
-                }
-                : undefined
-        });
-
-    } catch (error) {
-        console.error(
-            'Error al actualizar reserva:',
-            error
-        );
-
-        return res.status(error.status || 400).json({
-            success: false,
-            mensaje:
-                error.message ||
-                'Error al actualizar la reserva'
-        });
-    }
+    if (req.body.estado !== 'cancelada') return res.status(409).json({
+        success: false, mensaje: 'Las reservas históricas solo admiten consulta y cancelación; no se completan ni generan ventas.'
+    });
+    return cancelar(req, res, false);
 };
+const cancelarReserva = (req, res) => cancelar(req, res, true);
 
-// ========================================
-// CANCELAR UNA RESERVA (SOLO EL DUEÑO)
-// DELETE /api/reservas/:id (token, cliente)
-// Pone la reserva en 'cancelada' y devuelve el stock.
-// ========================================
-const cancelarReserva = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        const idReserva = validarId(id);
-
-        if (!idReserva) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'ID de reserva inválido'
-            });
-        }
-
-        // ========================================
-        // BUSCAR RESERVA
-        // ========================================
-        const reserva =
-            await reservaModel.obtenerPorId(idReserva);
-
-        if (!reserva) {
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Reserva no encontrada'
-            });
-        }
-
-        // ========================================
-        // VERIFICAR PROPIEDAD (IDOR) — solo el dueño
-        // ========================================
-        if (
-            Number(reserva.id_usuario) !==
-            Number(req.usuario.id_usuario)
-        ) {
-            return res.status(403).json({
-                success: false,
-                mensaje:
-                    'No tienes permisos para cancelar esta reserva'
-            });
-        }
-
-        // ========================================
-        // ESTADOS QUE NO SE PUEDEN CANCELAR
-        // ========================================
-        if (reserva.estado === 'completada') {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'No se puede cancelar una reserva completada'
-            });
-        }
-
-        if (reserva.estado === 'cancelada') {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'La reserva ya está cancelada'
-            });
-        }
-
-        // ========================================
-        // CANCELAR + DEVOLVER STOCK
-        // ========================================
-        const actualizado =
-            await reservaModel.actualizarEstado(
-                idReserva,
-                'cancelada'
-            );
-
-        if (!actualizado) {
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Reserva no encontrada'
-            });
-        }
-
-        // ========================================
-        // HISTORIAL
-        // ========================================
-        await registrarHistorial({
-            id_usuario:
-                req.usuario.id_usuario,
-            tipo_operacion: 'ACTUALIZAR',
-            modulo: 'reservas',
-            descripcion:
-                `Reserva #${idReserva} cancelada por el cliente`
-        });
-
-        return res.json({
-            success: true,
-            mensaje:
-                'Reserva cancelada correctamente'
-        });
-
-    } catch (error) {
-        console.error(
-            'Error al cancelar reserva:',
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al cancelar la reserva',
-            error: 'Error interno del servidor'
-        });
-    }
-};
-
-// ========================================
-// EXPORTAR CONTROLADORES
-// ========================================
-module.exports = {
-    obtenerReservas,
-    obtenerReserva,
-    obtenerMisReservas,
-    crearReserva,
-    actualizarEstado,
-    cancelarReserva
-};
+module.exports = { obtenerReservas, obtenerReserva, obtenerMisReservas, crearReserva, actualizarEstado, cancelarReserva };

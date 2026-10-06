@@ -15,8 +15,8 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 
 ## Cifras (análisis 2026-10-06)
 
-- Backend: **166** archivos JS (incluye tests y scripts) · **126** endpoints · 23 routers · 25 controladores · 22 modelos · 16 tablas.
-- Frontend: **210** archivos JS/JSX · 38 rutas · 26 archivos de servicio.
+- Backend: **169** archivos JS (incluye tests y scripts) · **126** endpoints · 23 routers · 25 controladores · 22 modelos · 16 tablas.
+- Frontend: **208** archivos JS/JSX · 38 rutas · 26 archivos de servicio.
 - Flutter: **73** archivos Dart · 37 métodos en ApiService · 21 pantallas/widgets con llamadas a la API.
 
 ## Módulos de negocio
@@ -30,7 +30,7 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 | Categorías | `/api/categorias` | features/categorias | — |
 | Inventario | `/api/inventario` | features/inventario | — |
 | Pedidos | `/api/pedidos` | features/pedidos | — |
-| Reservas | `/api/reservas` | features/reservas | detalle de libro (crear), reservas |
+| Reservas históricas (creación retirada) | `/api/reservas` | features/reservas (consulta/cancelación) | historial de reservas (consulta/cancelación) |
 | Ventas | `/api/ventas` | features/ventas · public-site/tienda/MisComprasPage | mis compras |
 | Pagos (PayU) | `/api/pagos` | features/pagos · public-site/tienda/CheckoutPage | entrega y pago, mis compras |
 | Comprobantes | `/api/comprobantes` | features/comprobantes · ventas/EmitirComprobanteModal | — |

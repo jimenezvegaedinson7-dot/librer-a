@@ -11,7 +11,7 @@
 //   · Ventas LEGACY (origen 'panel' / 'reserva') siguen visibles.
 //   · Listado global de ventas            → 200
 //   · Detalle existente 200 / inexistente 404
-//   · RESERVA: crear (con stock) 201 / cancelar 200 y stock devuelto
+//   · RESERVA: crear 405 / cancelar histórica 200 y stock devuelto
 //   · PAYU: webhook duplicado → 200 {duplicado: true}
 //   · CONCURRENCIA stock=1 vía PayU → una 200 y una 400; stock 0
 //   · PEDIDOS: matriz de permisos y máquina de estados logística
@@ -571,7 +571,7 @@ test('matriz funcional del flujo comercial', async (t) => {
         // ==============================================
         // 5. RESERVA: crear 201 / cancelar 200 + stock
         // ==============================================
-        await t.test('reserva crear y cancelar', async () => {
+        await t.test('reserva: creación retirada y cancelación histórica', async () => {
             const crearReserva = await pedir(
                 '/api/reservas',
                 cliente,
@@ -579,13 +579,15 @@ test('matriz funcional del flujo comercial', async (t) => {
                 { id_libro: sembrados.libroReserva, cantidad: 1 }
             );
             const crearTexto = await crearReserva.text();
-            const reservaCuerpo = JSON.parse(crearTexto);
             assert.equal(
                 crearReserva.status,
-                201,
+                405,
                 `crear reserva devolvió ${crearReserva.status}: ${crearTexto}`
             );
-            const idReserva = reservaCuerpo.id_reserva;
+            // Simula una reserva que ya existía antes del retiro comercial.
+            const [historica] = await pool.query('INSERT INTO reservas(id_usuario,id_libro,cantidad) VALUES (?,?,1)', [sembrados.cliente, sembrados.libroReserva]);
+            await pool.query('UPDATE inventario SET stock=stock-1 WHERE id_libro=?', [sembrados.libroReserva]);
+            const idReserva = historica.insertId;
             sembrados.reservas.push(idReserva);
             assert.ok(idReserva > 0, 'la reserva debe tener un id');
 
@@ -1106,8 +1108,8 @@ test('matriz funcional del flujo comercial', async (t) => {
             const trasMover = await leerVenta(recojo);
             assert.equal(
                 trasMover.estado,
-                'pagada',
-                'mover la entrega no debe cambiar el estado comercial'
+                'entregada',
+                'la entrega final sincroniza el estado comercial'
             );
             assert.equal(
                 Number(trasMover.total),

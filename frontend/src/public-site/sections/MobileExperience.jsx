@@ -21,7 +21,7 @@ const FUNCIONES = [
     { Icono: FaBook, titulo: 'Ficha de cada libro', texto: 'Portada, sinopsis, precio y ejemplares disponibles.' },
     { Icono: FaCartShopping, titulo: 'Carrito y pago en línea', texto: 'Paga con PayU y sigue tus compras desde la app.' },
     { Icono: FaHeart, titulo: 'Favoritos', texto: 'Guarda los libros que quieres leer después.' },
-    { Icono: FaBookmark, titulo: 'Reservas', texto: 'Aparta un libro desde su ficha y cancélalo si cambias de idea.' },
+    { Icono: FaBookmark, titulo: 'Reservas anteriores', texto: 'Consulta el historial y cancela las reservas que siguen activas.' },
 ];
 
 function Telefono({ clase, src, alt }) {
@@ -61,14 +61,14 @@ export default function MobileExperience({ reducido }) {
                         <img className="icono-app icono-app--grande" src={iconoApp} alt="Icono de la app Librería del Saber" width="88" height="88" />
                         <h1 id="app-titulo" className="app-portada__titulo">Toda la librería cabe en la app</h1>
                         <p className="app-portada__entrada">
-                            Explora el catálogo, guarda tus favoritos, reserva y paga en línea desde tu teléfono.
-                            Estas son pantallas reales de la app de Librería del Saber.
+                            Explora el catálogo, guarda tus favoritos y paga en línea desde tu teléfono.
+                            Las reservas anteriores se conservan en el historial.
                         </p>
                         <div className="app-portada__acciones">
                             <Link to="/descargar" className="boton"><FaDownload aria-hidden="true" /> Descargar la app</Link>
                             <Link to="/catalogo" className="enlace-mas">Ver el catálogo <FaChevronRight aria-hidden="true" /></Link>
                         </div>
-                        <p className="app__nota">Gratis para Android · Capturas con una cuenta de demostración.</p>
+                        <p className="app__nota">Gratis para Android · Capturas de una versión anterior con una cuenta de demostración.</p>
                     </div>
 
                     <div className="app__telefonos" style={{ perspective: '1400px' }}>

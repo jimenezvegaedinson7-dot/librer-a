@@ -393,9 +393,14 @@ class ApiService {
   ///
   /// Devuelve el secreto, la URL OTPAuth y el QR (data URL base64). Requiere
   /// sesión activa.
-  Future<Map<String, dynamic>> setupTwoFactor({required String password}) async {
+  Future<Map<String, dynamic>> setupTwoFactor({
+    required String password,
+  }) async {
     try {
-      final response = await _dio.post<dynamic>(Constants.twoFactorSetupPath, data: {'password': password});
+      final response = await _dio.post<dynamic>(
+        Constants.twoFactorSetupPath,
+        data: {'password': password},
+      );
       final data = response.data;
       if (data is Map && data['data'] is Map) {
         return Map<String, dynamic>.from(data['data'] as Map);
@@ -409,7 +414,10 @@ class ApiService {
   /// Confirma (activa) el doble factor contra `POST /auth/2fa/confirm`.
   ///
   /// Requiere el [codigo] OTP de 6 dígitos generado con el secreto del setup.
-  Future<void> confirmarTwoFactor({required String codigo, required String setupToken}) async {
+  Future<void> confirmarTwoFactor({
+    required String codigo,
+    required String setupToken,
+  }) async {
     try {
       await _dio.post<dynamic>(
         Constants.twoFactorConfirmPath,
@@ -595,33 +603,15 @@ class ApiService {
     }
   }
 
-  /// Crea una reserva contra `POST /reservas`.
-  ///
-  /// Devuelve el id de la reserva creada. [fechaVencimiento] es opcional.
+  /// Compatibilidad con clientes antiguos: la creación de reservas está retirada.
   Future<int> crearReserva({
     required int idLibro,
     required int cantidad,
     String? fechaVencimiento,
   }) async {
-    try {
-      final response = await _dio.post<dynamic>(
-        Constants.reservasPath,
-        data: {
-          'id_libro': idLibro,
-          'cantidad': cantidad,
-          if (fechaVencimiento != null && fechaVencimiento.isNotEmpty)
-            'fecha_vencimiento': fechaVencimiento,
-        },
-      );
-      final data = response.data;
-      if (data is Map) {
-        final id = JsonUtils.asInt(data['id_reserva']);
-        if (id != null) return id;
-      }
-      throw const ApiException('El servidor no devolvió el id de la reserva.');
-    } on DioException catch (e) {
-      throw _toApiException(e);
-    }
+    throw const ApiException(
+      'No se crean nuevas reservas. Compra con PayU desde el carrito.',
+    );
   }
 
   /// Obtiene las compras (ventas) del cliente contra `GET /ventas/mis-ventas`.
@@ -748,10 +738,11 @@ class ApiService {
   }
 
   Future<int> _propietario() async {
-    if (StorageService.instance.cambiandoSesion)
+    if (StorageService.instance.cambiandoSesion) {
       throw const ApiException(
         'La sesión se está actualizando. Reintenta con tu cuenta actual.',
       );
+    }
     final generacion = StorageService.instance.generacion;
     final usuario = await StorageService.instance.obtenerUsuario();
     if (generacion != StorageService.instance.generacion ||
@@ -853,13 +844,15 @@ class ApiService {
         data: intento.cuerpo,
       );
       final data = response.data;
-      if (data is! Map)
+      if (data is! Map) {
         throw const ApiException(
           'No se pudo interpretar la orden. Recupera el mismo intento.',
         );
+      }
       final map = Map<String, dynamic>.from(data);
-      if (map['data'] == null && map['venta'] is Map)
+      if (map['data'] == null && map['venta'] is Map) {
         map['data'] = map['venta'];
+      }
       var orden = OrdenPago.fromJson(map);
       if (orden.idVenta == null || orden.orderId == null) {
         throw const ApiException(
