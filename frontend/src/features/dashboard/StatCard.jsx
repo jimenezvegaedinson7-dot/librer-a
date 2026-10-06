@@ -19,13 +19,6 @@ const tonos = {
     rose: 'joya--rose',
 };
 
-// Reflejo de luz que sigue al cursor (también fuera del dashboard).
-function moverLuz(e) {
-    const caja = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty('--luz-x', `${e.clientX - caja.left}px`);
-    e.currentTarget.style.setProperty('--luz-y', `${e.clientY - caja.top}px`);
-}
-
 const entradaTarjeta = {
     oculto: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } },
@@ -44,7 +37,6 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion,
             variants={reducirMovimiento ? estatica : entradaTarjeta}
             onHoverStart={() => setActiva(true)}
             onHoverEnd={() => setActiva(false)}
-            onPointerMove={moverLuz}
             className={`kpi-card kpi-card--destacada joya ${tono}`}
         >
             <div className="flex items-start justify-between gap-3">

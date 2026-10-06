@@ -95,7 +95,7 @@ const ACENTOS = {
     primary: '#e3b865', success: '#a3dcc2', danger: '#f2b6be', warning: '#f2cf92', info: '#f0d58e',
     violet: '#cdbff5', teal: '#a2e0da', sky: '#abcdef', rose: '#f2b6d1', neutral: '#e2d7c6',
 };
-const ESTILOS = ['anillo', 'columnas', 'puntos', 'medidor', 'escala'];
+const ESTILOS = ['anillo', 'segmentos', 'escala'];
 
 function Anillo({ p }) {
     const r = 15, c = 2 * Math.PI * r;
@@ -104,46 +104,17 @@ function Anillo({ p }) {
             <circle cx="20" cy="20" r={r} className="grafico-pista" />
             <circle cx="20" cy="20" r={r} className="grafico-trazo grafico-anillo__arco"
                 style={{ strokeDasharray: c, '--inicio': c, '--fin': c * (1 - p) }} />
-            <circle cx="20" cy="20" r="8" className="grafico-anillo__centro" />
         </svg>
     );
 }
 
-// Columnas: 12 barras de alturas escalonadas; se encienden tantas como la
-// parte del total que representa la tarjeta.
-function Columnas({ p }) {
-    const total = 12, llenas = Math.round(p * total);
+// Segmentos: barra en 10 tramos; cada tramo es el 10 % del total.
+function Segmentos({ p }) {
+    const llenos = Math.round(p * 10);
     return (
-        <div className="grafico-columnas" aria-hidden="true">
-            {Array.from({ length: total }, (_, i) => (
-                <span key={i} className={i < llenas ? 'llena' : ''} style={{ '--alto': `${38 + i * 5}%`, '--k': i }} />
-            ))}
+        <div className="grafico-segmentos" aria-hidden="true">
+            {Array.from({ length: 10 }, (_, i) => <span key={i} className={i < llenos ? 'lleno' : ''} style={{ '--k': i }} />)}
         </div>
-    );
-}
-
-// Puntos: 20 puntos, cada uno vale 5 % del total.
-function Puntos({ p }) {
-    const total = 20, llenos = Math.round(p * total);
-    return (
-        <div className="grafico-puntos" aria-hidden="true">
-            {Array.from({ length: total }, (_, i) => <span key={i} className={i < llenos ? 'lleno' : ''} style={{ '--k': i }} />)}
-        </div>
-    );
-}
-
-function Medidor({ p }) {
-    const largo = Math.PI * 16;
-    return (
-        <svg className="grafico-medidor" viewBox="0 0 40 24" aria-hidden="true">
-            <path d="M4 20 A16 16 0 0 1 36 20" className="grafico-pista" />
-            <path d="M4 20 A16 16 0 0 1 36 20" className="grafico-trazo grafico-medidor__arco"
-                style={{ strokeDasharray: largo, '--inicio': largo, '--fin': largo * (1 - p) }} />
-            <g className="grafico-medidor__aguja" style={{ '--giro': `${-90 + 180 * p}deg` }}>
-                <line x1="20" y1="20" x2="20" y2="7" />
-                <circle cx="20" cy="20" r="2.2" />
-            </g>
-        </svg>
     );
 }
 
@@ -191,7 +162,7 @@ function Composicion({ partes }) {
 
 /**
  * @param {number[]} [serie]  valores en el tiempo (dibuja una línea).
- * @param {'anillo'|'columnas'|'puntos'|'medidor'|'escala'} [grafico]  estilo para la parte del total.
+ * @param {'anillo'|'segmentos'|'escala'} [grafico]  estilo para la parte del total.
  * @param {string} tono  primary | success | danger | warning | info | neutral | violet | teal | sky | rose
  * @param {number} [de]  total de referencia: muestra el porcentaje y llena el medidor.
  * @param {'numero'|'moneda'} [formato]
@@ -206,24 +177,17 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
     const porcentaje = Math.round(proporcion * 100);
     const conSerie = Array.isArray(serie) && serie.length > 1 && serie.some((v) => v > 0);
     const estilo = grafico || ESTILOS[(Math.max(orden, 1) - 1) % ESTILOS.length];
-    const lateral = conProporcion && !conSerie && ['anillo', 'medidor'].includes(estilo);
+    const lateral = conProporcion && !conSerie && estilo === 'anillo';
     // Al pasar el mouse el gráfico se vuelve a dibujar (cambiar la clave
-    // reinicia sus animaciones) y un reflejo de luz sigue al cursor.
+    // reinicia sus animaciones).
     const [vuelta, setVuelta] = useState(0);
-    const moverLuz = (e) => {
-        const caja = e.currentTarget.getBoundingClientRect();
-        e.currentTarget.style.setProperty('--luz-x', `${e.clientX - caja.left}px`);
-        e.currentTarget.style.setProperty('--luz-y', `${e.clientY - caja.top}px`);
-    };
 
     return (
         <article
             className={`indicador joya ${tono === 'primary' ? '' : `joya--${tono}`} ${cargando ? 'indicador--cargando' : ''}`}
             style={{ '--orden': orden }}
             onPointerEnter={(e) => { if (e.pointerType === 'mouse' && !cargando) setVuelta((v) => v + 1); }}
-            onPointerMove={moverLuz}
         >
-            <span className="indicador-luz" aria-hidden="true" />
             <div className="indicador-cabecera">
                 <span className="indicador-icono" aria-hidden="true">{icono}</span>
                 <p className="indicador-titulo">{titulo}</p>
@@ -242,12 +206,12 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
                     )}
                     {detalle && <p className="indicador-detalle" title={typeof detalle === 'string' ? detalle : undefined}>{detalle}</p>}
                 </div>
-                {lateral && !cargando && <div key={`l${vuelta}`} className="indicador-lateral">{estilo === 'anillo' ? <Anillo p={proporcion} /> : <Medidor p={proporcion} />}</div>}
+                {lateral && !cargando && <div key={`l${vuelta}`} className="indicador-lateral"><Anillo p={proporcion} /></div>}
             </div>
             {!cargando && (conSerie || (conProporcion && !lateral) || composicion?.length > 0) && (
                 <div key={`g${vuelta}`} className="indicador-grafico">
                     {conSerie ? <Linea serie={serie} />
-                        : conProporcion ? (estilo === 'columnas' ? <Columnas p={proporcion} /> : estilo === 'puntos' ? <Puntos p={proporcion} /> : <Escala p={proporcion} />)
+                        : conProporcion ? (estilo === 'segmentos' ? <Segmentos p={proporcion} /> : <Escala p={proporcion} />)
                         : <Composicion partes={composicion} />}
                 </div>
             )}
