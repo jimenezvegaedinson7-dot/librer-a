@@ -487,7 +487,7 @@ const totalIngresos = ventas
                     icono={<FaClock />}
                     color="warning"
                     detalle={porCobrar > 0 ? `${formatearMoneda(porCobrar)} por cobrar` : 'Nada por cobrar'}
-                    medidor={{ valor: totalPendientes, total: ventas.length, etiqueta: 'Ventas pendientes sobre el total' }}
+                    medidor={{ valor: totalPendientes, total: ventas.length, etiqueta: 'Ventas pendientes sobre el total', leyenda: 'de las ventas registradas está pendiente de pago' }}
                 />
                 <StatCard
                     titulo="Ticket promedio"
@@ -495,6 +495,8 @@ const totalIngresos = ventas
                     icono={<FaCircleCheck />}
                     color="success"
                     detalle={`${totalPagadas} pagadas · ${totalEntregadas} entregadas`}
+                    tendencia={diario.map((d) => (d.cantidad > 0 ? d.total / d.cantidad : 0))}
+                    etiquetaTendencia="Ticket promedio por día en los últimos 14 días"
                 />
             </motion.section>
 
