@@ -7,6 +7,7 @@ import {
     FaBell,
     FaChevronDown,
     FaGear,
+    FaGlobe,
     FaMagnifyingGlass,
     FaMoon,
     FaRightFromBracket,
@@ -364,6 +365,13 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                                         >
                                             <FaGear className="text-sm" /> Configuración
                                         </button>
+                                        <a
+                                            href="/"
+                                            onClick={(e) => { e.preventDefault(); setMenuAbierto(false); navigate('/'); }}
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#766d62] transition hover:bg-[#faf8f5] hover:text-[#1c1814]"
+                                        >
+                                            <FaGlobe className="text-sm" /> Ir a la página principal
+                                        </a>
                                     </div>
                                     <div className="border-t border-[#f3efe9] py-1.5">
                                         <button

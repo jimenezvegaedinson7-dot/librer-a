@@ -360,7 +360,8 @@ test('sidebar admin: todos los links activos resuelven URL y pantalla', async ({
     await sesion(page); await apiVacia(page); await page.goto('/dashboard');
     const sidebar = page.getByRole('complementary', {name:'Navegación principal'});
     await expect(sidebar).toBeVisible();
-    const hrefs = await sidebar.locator('a').evaluateAll(as => as.map(a => a.getAttribute('href')));
+    const hrefs = await sidebar.locator('nav a').evaluateAll(as => as.map(a => a.getAttribute('href')));
+    await expect(sidebar.getByRole('link', {name:'Volver a la página principal'})).toHaveAttribute('href', '/');
     expect(hrefs.sort()).toEqual([...rutas].sort());
     for (const ruta of hrefs) {
         await sidebar.locator(`a[href="${ruta}"]`).click();

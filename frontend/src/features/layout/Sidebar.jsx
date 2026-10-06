@@ -1,6 +1,6 @@
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 
-import { X } from 'lucide-react';
+import { ArrowLeft, Globe, X } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useMemo } from 'react';
 
@@ -167,19 +167,23 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 style={{ borderTopColor: colores.sidebarBorder }}
                 className={`shrink-0 border-t ${colapsado ? 'px-2 py-3.5' : 'px-5 py-3.5'}`}
             >
-                {colapsado ? (
-                    <div className="flex justify-center">
-                        <span className="h-1 w-6 rounded-full" style={{ backgroundColor: acento, opacity: 0.35 }} />
-                    </div>
-                ) : (
-                    <div className="flex items-center gap-2.5">
-                        <span className="h-px flex-1" style={{ backgroundColor: acento, opacity: 0.25 }} />
-                        <p style={{ color: colores.sidebarSection }} className="text-[10px] font-semibold uppercase tracking-[0.16em]">
-                            Sistema de gestión
-                        </p>
-                        <span className="h-px flex-1" style={{ backgroundColor: acento, opacity: 0.25 }} />
-                    </div>
-                )}
+                {/* Volver a la web pública (la sesión del panel se mantiene). */}
+                <Link
+                    to="/"
+                    title="Volver a la página principal"
+                    aria-label="Volver a la página principal"
+                    style={{ color: colores.sidebarText, borderColor: colores.sidebarBorder }}
+                    className={`group flex items-center rounded-lg border transition hover:bg-white/10 ${colapsado ? 'h-10 justify-center' : 'gap-2.5 px-3 py-2.5'}`}
+                >
+                    {colapsado ? (
+                        <Globe size={17} aria-hidden="true" />
+                    ) : (
+                        <>
+                            <ArrowLeft size={16} aria-hidden="true" className="transition-transform group-hover:-translate-x-0.5" />
+                            <span className="whitespace-nowrap text-[13px] font-medium">Página principal</span>
+                        </>
+                    )}
+                </Link>
             </div>
         </aside>
     );
