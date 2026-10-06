@@ -17,8 +17,7 @@ export default function AutorForm({ onAutorCreado }) {
     return (
         <FormularioAlta
             titulo="Registrar autor"
-            subtitulo="Complete la información del nuevo autor"
-            etiquetaAlta="Nuevo registro"
+            subtitulo="Introduce el nombre y apellido. Puedes añadir más información después."
             icono={<Feather size={20} aria-hidden="true" />}
             botonGuardar="Guardar autor"
             formularioVacio={FORMULARIO_VACIO}
@@ -28,43 +27,57 @@ export default function AutorForm({ onAutorCreado }) {
             mensajeError="Error al registrar el autor"
             onRegistrado={onAutorCreado}
             renderCampos={({ formulario, manejarCambio, errores }) => (
-                <div className="form-grid">
+                <div className="space-y-4">
+                    <div className="form-grid">
                         <Input
-                            ancho={4}
+                            ancho={6}
                             label="Nombre"
+                            aria-label="Nombre"
                             name="nombre"
                             value={formulario.nombre}
                             onChange={manejarCambio}
                             error={errores?.nombre}
                             placeholder="Ej. Gabriel"
                             required
+                            requerido
                         />
                         <Input
-                            ancho={4}
+                            ancho={6}
                             label="Apellido"
+                            aria-label="Apellido"
                             name="apellido"
                             value={formulario.apellido}
                             onChange={manejarCambio}
                             error={errores?.apellido}
                             placeholder="Ej. García Márquez"
                             required
+                            requerido
                         />
-                    <Input
-                        ancho={4}
-                        label="Nacionalidad"
-                        name="nacionalidad"
-                        value={formulario.nacionalidad}
-                        onChange={manejarCambio}
-                        placeholder="Ej. Colombiana"
-                    />
-                    <Textarea
-                        label="Biografía"
-                        name="biografia"
-                        value={formulario.biografia}
-                        onChange={manejarCambio}
-                        placeholder="Escriba una breve biografía del autor"
-                        rows="4"
-                    />
+                    </div>
+                    <details className="rounded-lg border border-primary-200 bg-parchment-100 p-4">
+                        <summary className="cursor-pointer text-sm font-semibold text-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-500">
+                            Información adicional <span className="font-normal text-slate-500">(opcional)</span>
+                        </summary>
+                        <div className="form-grid mt-4">
+                            <Input
+                                ancho={12}
+                                label="Nacionalidad"
+                                name="nacionalidad"
+                                value={formulario.nacionalidad}
+                                onChange={manejarCambio}
+                                placeholder="Ej. Colombiana"
+                            />
+                            <Textarea
+                                ancho={12}
+                                label="Biografía"
+                                name="biografia"
+                                value={formulario.biografia}
+                                onChange={manejarCambio}
+                                placeholder="Una breve presentación del autor"
+                                rows="3"
+                            />
+                        </div>
+                    </details>
                 </div>
             )}
         />
