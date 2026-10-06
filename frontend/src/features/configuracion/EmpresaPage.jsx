@@ -5,7 +5,7 @@ import { FaBuilding, FaFloppyDisk, FaRotate } from 'react-icons/fa6';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Input, Select, Textarea } from '../../components/ui/Form';
+import { Input, Textarea } from '../../components/ui/Form';
 import { Alert } from '../../components/ui/Alert';
 
 import { useToast } from '../../components/providers/ToastProvider';
@@ -17,8 +17,6 @@ const FORMULARIO_VACIO = {
     ruc: '',
     razon_social: '',
     nombre_comercial: '',
-    tipo_documento: 'DNI',
-    documento_identidad: '',
     direccion: '',
     aplica_igv: false,
     libros_exonerados: true,
@@ -49,7 +47,6 @@ const REGLAS = {
         },
     ],
     razon_social: [(v) => requerido(v, 'La razón social')],
-    documento_identidad: [(v) => requerido(v, 'El documento de identidad')],
 };
 
 function SkeletonFormulario() {
@@ -58,8 +55,8 @@ function SkeletonFormulario() {
             <CardHeader titulo="Datos de la empresa" subtitulo="Información del emisor de comprobantes" />
             <CardBody>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2" role="status" aria-label="Cargando datos de la empresa">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className={i === 5 ? 'md:col-span-2' : ''}>
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className={i >= 2 ? 'md:col-span-2' : ''}>
                             <div className="skeleton mb-2 h-2.5 w-28" />
                             <div className="skeleton h-10 !rounded-lg" />
                         </div>
@@ -117,8 +114,6 @@ export default function EmpresaPage() {
                     ruc: String(datos.ruc ?? ''),
                     razon_social: String(datos.razon_social ?? ''),
                     nombre_comercial: String(datos.nombre_comercial ?? ''),
-                    tipo_documento: String(datos.tipo_documento ?? 'DNI'),
-                    documento_identidad: String(datos.documento_identidad ?? ''),
                     direccion: String(datos.direccion ?? ''),
                     aplica_igv: Number(datos.aplica_igv) === 1,
                     libros_exonerados: Number(datos.libros_exonerados ?? 1) === 1,
@@ -158,7 +153,11 @@ export default function EmpresaPage() {
         try {
             setGuardando(true);
             setError('');
-            await actualizarEmpresa(formulario);
+            // PUT acepta actualizaciones parciales: los metadatos antiguos
+            // que ya no se editan aquí se conservan sin reenviarlos ni borrarlos.
+            await actualizarEmpresa({ ...formulario,
+                aplica_igv: formulario.aplica_igv ? 1 : 0,
+                libros_exonerados: formulario.libros_exonerados ? 1 : 0 });
             exito('Datos de la empresa actualizados correctamente');
         } catch (err) {
             setError(err.response?.data?.mensaje || 'Error al guardar los datos de la empresa');
@@ -218,7 +217,7 @@ export default function EmpresaPage() {
                                 />
 
                                 <Input
-                                    ancho={6}
+                                    ancho={12}
                                     label="Nombre comercial"
                                     name="nombre_comercial"
                                     value={formulario.nombre_comercial}
@@ -226,29 +225,8 @@ export default function EmpresaPage() {
                                     placeholder="Ej. Librería El Rincón del Lector"
                                 />
 
-                                <Select
-                                    ancho={3}
-                                    label="Tipo de documento"
-                                    name="tipo_documento"
-                                    value={formulario.tipo_documento}
-                                    onChange={manejarCambio}
-                                >
-                                    <option value="DNI">DNI</option>
-                                    <option value="RUC">RUC</option>
-                                    <option value="CE">Carné de extranjería</option>
-                                </Select>
-                                <Input
-                                    ancho={3}
-                                    label="Número de documento"
-                                    placeholder="DNI o CE"
-                                    name="documento_identidad"
-                                    value={formulario.documento_identidad}
-                                    onChange={manejarCambio}
-                                    error={errores?.documento_identidad}
-                                    required
-                                />
-
                                 <Textarea
+                                    ancho={12}
                                     label="Dirección"
                                     name="direccion"
                                     value={formulario.direccion}

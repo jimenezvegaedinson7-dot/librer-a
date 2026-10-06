@@ -56,8 +56,8 @@ Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxl
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 169 | 384 | 0 (confirmado con **madge**: ninguno) |
-| Frontend (`import`) | 208 | 831 | 0 (confirmado con **madge**: ninguno) |
+| Backend (`require`) | 170 | 385 | 0 (confirmado con **madge**: ninguno) |
+| Frontend (`import`) | 207 | 830 | 0 (confirmado con **madge**: ninguno) |
 | Flutter (`import` relativos) | 73 | 321 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter
@@ -78,4 +78,4 @@ Ejemplos de caminos:
 - Flutter: ninguno.
 - React: funciones de servicio no importadas: `agenciasService#obtenerAgencia`, `ubicacionesService#listarProvincias`/`listarDistritos` (se usan solo internamente por `listarDistritosParaEnvio`).
 - Backend: endpoints `GET /api/historial/mi-historial`, `POST /api/historial`, `PUT /api/inventario/libro/:id/stock` sin consumidor React/Flutter; `GET /api/debug-egress` es diagnóstico manual protegido.
-- Estilos: `frontend/src/styles/theme.css` conserva clases de la antigua página Reportes (`reporte-card`, `reporte-grafico`, `reporte-tooltip`, `reporte-encabezado`) que ya no usa ningún componente.
+- Estilos: las reglas de la antigua página Reportes sin consumidores se retiraron. `tabla-reporte`, `reporte-barra`, `reporte-puesto` y `reporte-contador` se conservan porque los usan Dashboard y Ventas.

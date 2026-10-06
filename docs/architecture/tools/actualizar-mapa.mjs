@@ -440,7 +440,7 @@ Ejemplos de caminos:\n\n${H.flutter.ciclos.slice(0, 4).map((c) => `- ${c.map(cor
 - Flutter: ${H.posiblesNoUsados.flutter.map((f) => `\`${corto(f)}\` (ningún archivo lo importa)`).join(', ') || 'ninguno'}.
 - React: funciones de servicio no importadas: \`agenciasService#obtenerAgencia\`, \`ubicacionesService#listarProvincias\`/\`listarDistritos\` (se usan solo internamente por \`listarDistritosParaEnvio\`).
 - Backend: ${depsBackendSinUso.length ? `dependencias ${listaDeps(depsBackendSinUso)}; ` : ''}endpoints \`GET /api/historial/mi-historial\`, \`POST /api/historial\`, \`PUT /api/inventario/libro/:id/stock\` sin consumidor React/Flutter; \`GET /api/debug-egress\` es diagnóstico manual protegido.
-- Estilos: \`frontend/src/styles/theme.css\` conserva clases de la antigua página Reportes (\`reporte-card\`, \`reporte-grafico\`, \`reporte-tooltip\`, \`reporte-encabezado\`) que ya no usa ningún componente.
+- Estilos: las reglas de la antigua página Reportes sin consumidores se retiraron. \`tabla-reporte\`, \`reporte-barra\`, \`reporte-puesto\` y \`reporte-contador\` se conservan porque los usan Dashboard y Ventas.
 `;
     escribir('07-DEPENDENCIES.md', md);
 }

@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { cambiosInventario } from '../src/features/inventario/cambiosInventario.js';
 import { emisorHistorico } from '../src/features/comprobantes/emisorHistorico.js';
-import { precioReserva } from '../src/features/reservas/precioReserva.js';
 import { es401DeCredencial } from '../src/features/auth/erroresSesion.js';
 const previo = { stock: 10, stock_minimo: 5, ubicacion: 'A' };
 test('cambiar ubicación no reenvía stock leído al abrir', () => {
@@ -19,12 +18,6 @@ test('un comprobante conserva el emisor histórico incluso con valores vacíos',
     const antiguo = { ruc: '11111111111', razon_social: 'Anterior', emisor_nombre_comercial: '', emisor_direccion: 'Dirección histórica' };
     const actual = { ruc: '22222222222', razon_social: 'Actual', nombre_comercial: 'Marca actual', direccion: 'Nueva' };
     assert.deepEqual(emisorHistorico(antiguo, actual), { ruc: '11111111111', razon_social: 'Anterior', nombre_comercial: '', direccion: 'Dirección histórica' });
-});
-test('reserva muestra precio final, admite cero y nunca inventa precio de lista', () => {
-    assert.equal(precioReserva({ estado: 1, precio: 100, precio_final: '80.00' }), 80);
-    assert.equal(precioReserva({ estado: 1, precio_final: 0 }), 0);
-    assert.throws(() => precioReserva({ estado: 1, precio: 100 }));
-    assert.throws(() => precioReserva({ estado: 0, precio_final: 80 }));
 });
 test('contraseña de borrado errónea no vence sesión; token inválido sí', () => {
     const error = (url, mensaje, method = 'delete') => ({ config: { url, method }, response: { data: { mensaje } } });

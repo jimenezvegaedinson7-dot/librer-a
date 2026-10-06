@@ -30,7 +30,7 @@ export const navPrincipal = [
     { nombre: 'Dashboard', ruta: '/dashboard', icono: LayoutDashboard, descripcion: 'Resumen ecommerce, estadísticas y reportes', seccion: 'General', roles: [ROLES.ADMINISTRADOR] },
 
     // --- Catálogo ---
-    { nombre: 'Libros', ruta: '/libros', icono: Book, descripcion: 'Gestión de libros', seccion: 'Catálogo', roles: [ROLES.ADMINISTRADOR], soloLectura: true },
+    { nombre: 'Libros', ruta: '/libros', icono: Book, descripcion: 'Gestión de libros', seccion: 'Catálogo', roles: [ROLES.ADMINISTRADOR] },
     { nombre: 'Autores', ruta: '/autores', icono: Feather, descripcion: 'Gestión de autores', seccion: 'Catálogo', roles: [ROLES.ADMINISTRADOR] },
     { nombre: 'Categorías', ruta: '/categorias', icono: Tags, descripcion: 'Gestión de categorías', seccion: 'Catálogo', roles: [ROLES.ADMINISTRADOR] },
 

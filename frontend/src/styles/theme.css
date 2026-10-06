@@ -2332,45 +2332,6 @@
     --r-verde: #6ee7b7;
 }
 
-.reporte-card {
-    position: relative;
-    overflow: hidden;
-    border: 1px solid #e6e0d7;
-    border-radius: 0.875rem;
-    background: #ffffff;
-    padding: 1.125rem 1.25rem;
-    box-shadow: var(--shadow-card);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.reporte-card:hover {
-    border-color: #8cc2b4;
-    box-shadow: var(--shadow-lift);
-}
-
-.reporte-card--destacado {
-    padding: 1.375rem 1.5rem;
-    background:
-        radial-gradient(420px 160px at 100% 0%, rgb(185 141 62 / 0.08), transparent 70%),
-        #ffffff;
-}
-
-.admin-shell[data-theme="dark"] .reporte-card {
-    border-color: #2d2824;
-    background: #1d1a17;
-    box-shadow: none;
-}
-
-.admin-shell[data-theme="dark"] .reporte-card:hover {
-    border-color: #5c4a2c;
-}
-
-.admin-shell[data-theme="dark"] .reporte-card--destacado {
-    background:
-        radial-gradient(420px 160px at 100% 0%, rgb(47 156 132 / 0.08), transparent 70%),
-        #1d1a17;
-}
-
 /* Barras: crecen desde la base al montar */
 @keyframes barra-crecer {
     from { transform: scaleY(0); }
@@ -2381,27 +2342,6 @@
     transform-origin: bottom;
     animation: barra-crecer 0.6s var(--ease-out-quart) both;
     animation-delay: calc(var(--barra-i, 0) * 28ms + 120ms);
-}
-
-.reporte-grafico {
-    background:
-        linear-gradient(180deg, rgb(250 248 245 / 0.9), rgb(250 248 245 / 0.4));
-}
-
-.admin-shell[data-theme="dark"] .reporte-grafico {
-    border-color: #2d2824;
-    background: #1a1714;
-}
-
-.reporte-tooltip {
-    background: #1c1814;
-    color: #fffaf0;
-    box-shadow: 0 8px 20px -8px rgb(0 0 0 / 0.4);
-}
-
-.admin-shell[data-theme="dark"] .reporte-tooltip {
-    background: #f5f0e8;
-    color: #1c1814;
 }
 
 /* Tablas de reporte: mismo lenguaje que DataTable */
