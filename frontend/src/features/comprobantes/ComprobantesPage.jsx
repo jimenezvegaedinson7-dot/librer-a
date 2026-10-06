@@ -14,6 +14,7 @@ import {
 } from 'react-icons/fa6';
 
 import { FaFileLines, FaFileInvoice, FaMoneyBillWave } from 'react-icons/fa6';
+import { useVentasDiarias } from '../reportes/useVentasDiarias';
 import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
@@ -374,6 +375,7 @@ export default function ComprobantesPage() {
         return comprobante;
     };
 
+    const ventasDiarias = useVentasDiarias();
     return (
         <div className="space-y-4">
             <PageHeader
@@ -385,7 +387,7 @@ export default function ComprobantesPage() {
                 <Indicador titulo="Comprobantes" valor={total} icono={<FaReceipt />} tono="primary" detalle="Emitidos en el filtro" />
                 <Indicador titulo="Boletas" valor={resumen.boletas} icono={<FaFileLines />} tono="sky" detalle="Para consumidores finales" de={total} />
                 <Indicador titulo="Facturas" valor={resumen.facturas} icono={<FaFileInvoice />} tono="violet" detalle="Para empresas con RUC" de={total} />
-                <Indicador titulo="Importe emitido" valor={resumen.ingresos} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Total facturado" />
+                <Indicador titulo="Importe emitido" valor={resumen.ingresos} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Ventas · últimos 14 días" serie={ventasDiarias} />
                 {resumen.anulados > 0 && (
                     <Indicador titulo="Anulados" valor={resumen.anulados} icono={<FaBan />} tono="danger" detalle="Sin validez" de={total} />
                 )}

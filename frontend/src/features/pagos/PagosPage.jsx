@@ -11,6 +11,7 @@ import {
 } from 'react-icons/fa6';
 
 import { FaCircleCheck, FaHourglassHalf, FaCircleXmark, FaMoneyBillWave } from 'react-icons/fa6';
+import { useVentasDiarias } from '../reportes/useVentasDiarias';
 import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
@@ -124,13 +125,14 @@ function accionesPago(fila, { onVer }) {
 }
 
 function Contador({ cargando, total, pagados, pendientes, cancelados, ingresos }) {
+    const ventasDiarias = useVentasDiarias();
     return (
         <Indicadores cargando={cargando} etiqueta="Resumen de pagos">
             <Indicador titulo="Pagos" valor={total} icono={<FaCreditCard />} tono="primary" detalle="Registrados en el filtro" />
             <Indicador titulo="Pagados" valor={pagados} icono={<FaCircleCheck />} tono="success" detalle="Cobro confirmado" de={total} />
             <Indicador titulo="Pendientes" valor={pendientes} icono={<FaHourglassHalf />} tono="warning" detalle="Esperando confirmación" de={total} />
             <Indicador titulo="Cancelados" valor={cancelados} icono={<FaCircleXmark />} tono="danger" detalle="Sin cobro" de={total} />
-            <Indicador titulo="Ingresos" valor={ingresos} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Pagos confirmados" />
+            <Indicador titulo="Ingresos" valor={ingresos} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Ventas · últimos 14 días" serie={ventasDiarias} />
         </Indicadores>
     );
 }

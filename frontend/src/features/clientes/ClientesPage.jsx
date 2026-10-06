@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { FaEye, FaFileCsv, FaMagnifyingGlass, FaRotate, FaUserGroup, FaXmark } from 'react-icons/fa6';
 
 import { FaMoneyBillWave, FaCartShopping } from 'react-icons/fa6';
+import { useVentasDiarias } from '../reportes/useVentasDiarias';
 import { Indicador, Indicadores } from '../../components/ui/Indicadores';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
@@ -64,10 +65,11 @@ function accionesCliente(fila, { onVer }) {
 }
 
 function Contador({ cargando, total, totalComprado, conCompras }) {
+    const ventasDiarias = useVentasDiarias();
     return (
         <Indicadores cargando={cargando} etiqueta="Resumen de clientes">
             <Indicador titulo="Clientes" valor={total} icono={<FaUserGroup />} tono="primary" detalle="Registrados" />
-            <Indicador titulo="Total comprado" valor={totalComprado} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Suma de sus compras" />
+            <Indicador titulo="Total comprado" valor={totalComprado} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Ventas · últimos 14 días" serie={ventasDiarias} />
             <Indicador titulo="Con compras" valor={conCompras} icono={<FaCartShopping />} tono="violet" detalle="Compraron al menos una vez" de={total} />
         </Indicadores>
     );
