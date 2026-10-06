@@ -1,4 +1,4 @@
-%% Generado 2026-10-04 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-06 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     libro_routes["/api/libros<br/>libro.routes"]
     libro_routes --> libro_controller["libro.controller"]
@@ -52,6 +52,7 @@ flowchart LR
     agencia_controller --> agencia_model[("agencia.model")]
     anuncio_controller --> usuario_model[("usuario.model")]
     asistente_controller --> aiAssistant_service[("aiAssistant.service")]
+    asistente_controller --> asistenteMemoria_model[("asistenteMemoria.model")]
     auth_controller --> usuario_model[("usuario.model")]
     auth2fa_controller --> usuario_model[("usuario.model")]
     autor_controller --> historial_model[("historial.model")]
@@ -107,6 +108,7 @@ flowchart LR
     asistente_model -.-> T_categorias[/"categorias"/]
     asistente_model -.-> T_inventario[/"inventario"/]
     asistente_model -.-> T_libros[/"libros"/]
+    asistenteMemoria_model -.-> T_asistente_memoria[/"asistente_memoria"/]
     autor_model -.-> T_autores[/"autores"/]
     carrusel_model -.-> T_carrusel_anuncios[/"carrusel_anuncios"/]
     carrusel_model -.-> T_libros[/"libros"/]
@@ -153,6 +155,7 @@ flowchart LR
     reserva_model -.-> T_usuarios[/"usuarios"/]
     ubicacion_model -.-> T_distritos_lima[/"distritos_lima"/]
     ubicacion_model -.-> T_provincias_lima[/"provincias_lima"/]
+    usuario_model -.-> T_asistente_memoria[/"asistente_memoria"/]
     usuario_model -.-> T_favoritos[/"favoritos"/]
     usuario_model -.-> T_inventario[/"inventario"/]
     usuario_model -.-> T_reservas[/"reservas"/]

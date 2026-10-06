@@ -16,12 +16,12 @@ export async function verificarLoginOtp({ two_factor_token, codigo }) {
     return client.post('/auth/2fa/verify-login', { two_factor_token, codigo });
 }
 
-export async function setup2fa() {
-    return client.post('/auth/2fa/setup');
+export async function setup2fa(password) {
+    return client.post('/auth/2fa/setup', { password });
 }
 
-export async function confirmar2fa(codigo) {
-    return client.post('/auth/2fa/confirm', { codigo });
+export async function confirmar2fa(codigo, setupToken) {
+    return client.post('/auth/2fa/confirm', { codigo, setup_token: setupToken });
 }
 
 export async function desactivar2fa({ password, codigo }) {

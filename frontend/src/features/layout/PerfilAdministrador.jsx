@@ -118,6 +118,7 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
     const [passwordGuardada, setPasswordGuardada] = useState(false);
 
     const [setupInfo, setSetupInfo] = useState(null);
+    const [passwordSetup, setPasswordSetup] = useState('');
     const [configurando2FA, setConfigurando2FA] = useState(false);
     const [codigoConfirmar, setCodigoConfirmar] = useState('');
     const [confirmando2FA, setConfirmando2FA] = useState(false);
@@ -154,6 +155,7 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
         setPreviewFoto(null);
         setFotoSeleccionada(null);
         setSetupInfo(null);
+        setPasswordSetup('');
         setCodigoConfirmar('');
         setCodigoDesactivar('');
         setPasswordDesactivar('');
@@ -252,8 +254,9 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
     const iniciarConfiguracion2FA = async () => {
         try {
             setConfigurando2FA(true);
-            const respuesta = await setup2fa();
+            const respuesta = await setup2fa(passwordSetup);
             setSetupInfo(respuesta?.data || null);
+            setPasswordSetup('');
             setCodigoConfirmar('');
         } catch (error) {
             toast.error(error.response?.data?.mensaje || 'Error al iniciar la configuración del doble factor');
@@ -270,7 +273,7 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
         }
         try {
             setConfirmando2FA(true);
-            const respuesta = await confirmar2fa(codigoConfirmar);
+            const respuesta = await confirmar2fa(codigoConfirmar, setupInfo?.setup_token);
             setSetupInfo(null);
             setCodigoConfirmar('');
             await refrescarPerfil2FA();
@@ -469,9 +472,11 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                         </div>
 
                         {!setupInfo && !estado2FA && (
-                            <Button icono={<FaShieldHalved />} cargando={configurando2FA} onClick={iniciarConfiguracion2FA}>
-                                Activar doble factor
-                            </Button>
+                            <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); iniciarConfiguracion2FA(); }}>
+                                <Input label="Contraseña actual para activar 2FA" type="password" autoComplete="current-password"
+                                    value={passwordSetup} onChange={(e) => setPasswordSetup(e.target.value)} required />
+                                <Button type="submit" icono={<FaShieldHalved />} cargando={configurando2FA}>Activar doble factor</Button>
+                            </form>
                         )}
 
                         {setupInfo && !estado2FA && (

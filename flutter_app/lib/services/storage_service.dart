@@ -24,6 +24,14 @@ class StorageService {
   static final StorageService instance = StorageService._();
 
   static const FlutterSecureStorage _secure = FlutterSecureStorage();
+  static const String _sesionInvalidaKey = 'auth_session_invalid';
+  bool _sesionInvalida = false;
+  Future<void> _colaCredencial = Future.value();
+  Future<T> _serializarCredencial<T>(Future<T> Function() accion) {
+    final operacion = _colaCredencial.then((_) => accion());
+    _colaCredencial = operacion.then<void>((_) {}, onError: (Object _) {});
+    return operacion;
+  }
   int _generacion = 0;
   int? _idUsuarioActual;
   bool _cambiandoSesion = false;
@@ -32,20 +40,32 @@ class StorageService {
   int? get idUsuarioActual => _idUsuarioActual;
 
   /// Guarda el token JWT en secure storage (y limpia la clave LEGACY).
-  Future<void> guardarToken(String token) async {
+  Future<void> guardarToken(String token) => _serializarCredencial(() => _guardarToken(token));
+
+  Future<void> _guardarToken(String token) async {
     _cambiandoSesion = true;
     _generacion++;
+    _idUsuarioActual = null;
+    _sesionInvalida = true;
+    final prefs = await SharedPreferences.getInstance();
+    if (!await prefs.setBool(_sesionInvalidaKey, true)) {
+      throw StateError('No se pudo proteger el cambio de sesión.');
+    }
+    await prefs.remove(Constants.prefUserKey);
+    await prefs.remove(Constants.prefTokenKey);
     try {
       await _secure.write(key: Constants.secureTokenKey, value: token);
-      // Si el secure storage funcionó, ya no hace falta la copia LEGACY.
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(Constants.prefTokenKey);
+      if (!await prefs.setBool(_sesionInvalidaKey, false)) {
+        throw StateError('No se pudo confirmar la sesión guardada.');
+      }
+      _sesionInvalida = false;
     } catch (_) {
-      // Plataforma sin soporte de secure storage: se mantiene el respaldo en
-      // shared_preferences para no romper la sesión (obtenerToken lo migra
-      // cuando el entorno vuelva a permitirlo).
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(Constants.prefTokenKey, token);
+      // Fallar cerrado: nunca mezclar un usuario nuevo con un JWT anterior,
+      // ni guardar una credencial nueva en preferencias sin cifrar.
+      try {
+        await _secure.delete(key: Constants.secureTokenKey);
+      } catch (_) { /* El marcador persistente bloquea una credencial residual. */ }
+      throw StateError('No se pudo guardar la sesión de forma segura. Intenta nuevamente.');
     }
   }
 
@@ -54,24 +74,38 @@ class StorageService {
   /// Lee primero del secure storage. Si no está, busca un token LEGACY en
   /// shared_preferences y lo migra (copia al secure + borra de prefs) para no
   /// desloguear a usuarios con sesiones anteriores.
-  Future<String?> obtenerToken() async {
+  Future<String?> obtenerToken() => _serializarCredencial(_obtenerToken);
+
+  Future<String?> _obtenerToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_sesionInvalida || prefs.getBool(_sesionInvalidaKey) == true) return null;
+    final legado = prefs.getString(Constants.prefTokenKey);
     try {
       final token = await _secure.read(key: Constants.secureTokenKey);
-      if (token != null && token.isNotEmpty) return token;
+      if (token != null && token.isNotEmpty) {
+        // Las versiones anteriores pudieron conservar dos cuentas distintas.
+        // No se adivina cuál es la válida: exigir un login nuevo.
+        if (legado != null && legado.isNotEmpty && legado != token) {
+          _generacion++;
+          _idUsuarioActual = null;
+          await _eliminarToken();
+          await prefs.remove(Constants.prefUserKey);
+          return null;
+        }
+        return token;
+      }
     } catch (_) {
       // Se continúa con el flujo LEGACY si el secure storage falla.
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    final legado = prefs.getString(Constants.prefTokenKey);
+    if (_sesionInvalida || prefs.getBool(_sesionInvalidaKey) == true) return null;
     if (legado == null || legado.isEmpty) return null;
 
     try {
       await _secure.write(key: Constants.secureTokenKey, value: legado);
       await prefs.remove(Constants.prefTokenKey);
     } catch (_) {
-      // Sin soporte de secure storage: se devuelve el token LEGACY igualmente
-      // para conservar la sesión.
+      return null;
     }
     return legado;
   }
@@ -90,13 +124,17 @@ class StorageService {
   Future<bool> comprobarSesion() => tieneSesion();
 
   /// Elimina el token JWT (secure storage + clave LEGACY de prefs).
-  Future<void> eliminarToken() async {
+  Future<void> eliminarToken() => _serializarCredencial(_eliminarToken);
+
+  Future<void> _eliminarToken() async {
+    _sesionInvalida = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_sesionInvalidaKey, true);
     try {
       await _secure.delete(key: Constants.secureTokenKey);
     } catch (_) {
       // Se sigue con la limpieza de prefs aunque el secure storage falle.
     }
-    final prefs = await SharedPreferences.getInstance();
     await prefs.remove(Constants.prefTokenKey);
   }
 
@@ -107,10 +145,15 @@ class StorageService {
   }) async {
     final generacion = generacionEsperada ?? _generacion;
     final prefs = await SharedPreferences.getInstance();
-    if (generacion != _generacion) return;
-    _idUsuarioActual = usuario.idUsuario;
-    await prefs.setString(Constants.prefUserKey, jsonEncode(usuario.toJson()));
-    if (generacion == _generacion) _cambiandoSesion = false;
+    if (generacion != _generacion || _sesionInvalida || prefs.getBool(_sesionInvalidaKey) == true) return;
+    if (!await prefs.setString(Constants.prefUserKey, jsonEncode(usuario.toJson()))) {
+      await limpiarSesion();
+      throw StateError('No se pudo guardar el usuario de la sesión.');
+    }
+    if (generacion == _generacion) {
+      _idUsuarioActual = usuario.idUsuario;
+      _cambiandoSesion = false;
+    }
   }
 
   /// Obtiene el usuario guardado o null.

@@ -2,6 +2,7 @@ const otplib = require('otplib');
 const QRCode = require('qrcode');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const usuarioModel = require('../models/usuario.model');
 const { cifrar, descifrar } = require('../utils/crypto');
@@ -12,10 +13,8 @@ const { validarId } = require('../utils/validaciones');
 // ========================================
 // Nota (otplib v13): la opción legacy `window` ya no se aplica, por lo que
 // la tolerancia temporal se configura con `epochTolerance` (en segundos).
-// 90s equivale a aceptar el código del período actual (30s) y ±1 período,
-// equivalente a la antigua `window: 1`.
-// Ventana total: [-90s, +90s] alrededor del instante actual.
-const TOTP_WINDOW = 90;
+// Período actual de 30s y ±1 período. El paso aceptado se consume en BD.
+const TOTP_WINDOW = 30;
 
 // ========================================
 // GENERAR NOMBRE DE APLICACIÓN PARA OTPAUTH
@@ -47,10 +46,10 @@ const verificarTOTP = (codigo, secreto) => {
             epochTolerance: TOTP_WINDOW
         });
 
-        return resultado.valid === true;
+        return resultado.valid === true && Number.isSafeInteger(resultado.timeStep) ? resultado : null;
     } catch (error) {
         console.error('Error al verificar TOTP:', error.message);
-        return false;
+        return null;
     }
 };
 
@@ -81,7 +80,11 @@ const setup = async (req, res) => {
     try {
         const idUsuario = req.usuario.id_usuario;
 
-        const usuario = await usuarioModel.buscarPorId(idUsuario);
+        const { password } = req.body || {};
+        if (typeof password !== 'string' || !password) {
+            return res.status(400).json({ success: false, mensaje: 'Confirma tu contraseña actual para activar el doble factor' });
+        }
+        const usuario = await usuarioModel.buscarPorIdConPassword(idUsuario);
 
         if (!usuario) {
             return res.status(404).json({
@@ -101,14 +104,24 @@ const setup = async (req, res) => {
             });
         }
 
+        if (!await bcrypt.compare(password, usuario.password)) {
+            return res.status(400).json({ success: false, mensaje: 'La contraseña actual es incorrecta' });
+        }
+
         // Generar secreto TOTP (Base32)
         const secreto = otplib.generateSecret();
 
         // Guardar secreto provisional (cifrado)
-        await usuarioModel.guardarSecreto2FA(
+        const guardado = await usuarioModel.guardarSecreto2FA(
             idUsuario,
-            cifrar(secreto)
+            cifrar(secreto),
+            Number(usuario.sesion_version ?? 0)
         );
+        if (!guardado) return res.status(409).json({ success: false, mensaje: 'La sesión o la configuración cambió. Intenta nuevamente.' });
+        const setupToken = jwt.sign({ id_usuario: idUsuario, proposito: '2fa_setup',
+            sesion_version: Number(usuario.sesion_version ?? 0),
+            secreto_hash: crypto.createHash('sha256').update(secreto).digest('hex') },
+            process.env.JWT_SECRET, { expiresIn: '5m' });
 
         // Generar otpauth URL
         const otpauthUrl = otplib.generateURI({
@@ -125,6 +138,7 @@ const setup = async (req, res) => {
             mensaje: 'Escanea el código QR con Google Authenticator',
             data: {
                 secret: secreto,
+                setup_token: setupToken,
                 otpauth_url: otpauthUrl,
                 qr: qrCode,
                 app: getAppName(),
@@ -150,7 +164,13 @@ const setup = async (req, res) => {
 const confirmar = async (req, res) => {
     try {
         const idUsuario = req.usuario.id_usuario;
-        const { codigo } = req.body;
+        const { codigo, setup_token: setupToken } = req.body;
+        let autorizacion;
+        try { autorizacion = jwt.verify(setupToken, process.env.JWT_SECRET); }
+        catch { return res.status(400).json({ success: false, mensaje: 'Confirma nuevamente tu contraseña para iniciar la configuración' }); }
+        if (autorizacion.proposito !== '2fa_setup' || Number(autorizacion.id_usuario) !== Number(idUsuario)) {
+            return res.status(400).json({ success: false, mensaje: 'La autorización de configuración no es válida' });
+        }
 
         if (!esCodigoValido(codigo)) {
             return res.status(400).json({
@@ -182,8 +202,13 @@ const confirmar = async (req, res) => {
             });
         }
 
-        // Validar OTP
-        if (!verificarTOTP(codigo, usuario.secreto)) {
+        // La prueba de contraseña está vinculada a este secreto y versión.
+        if (Number(autorizacion.sesion_version) !== Number(usuario.sesion_version ?? 0) ||
+            autorizacion.secreto_hash !== crypto.createHash('sha256').update(usuario.secreto).digest('hex')) {
+            return res.status(409).json({ success: false, mensaje: 'La configuración cambió. Confirma tu contraseña nuevamente.' });
+        }
+        const otp = verificarTOTP(codigo, usuario.secreto);
+        if (!otp) {
             return res.status(400).json({
                 success: false,
                 mensaje: 'El código OTP es incorrecto o ha expirado'
@@ -191,10 +216,13 @@ const confirmar = async (req, res) => {
         }
 
         // Activar 2FA de forma definitiva
-        await usuarioModel.activar2FA(
+        const activado = await usuarioModel.activar2FA(
             idUsuario,
-            cifrar(usuario.secreto)
+            usuario.secretoCifrado,
+            otp.timeStep,
+            Number(usuario.sesion_version ?? 0)
         );
+        if (!activado) return res.status(409).json({ success: false, mensaje: 'La configuración cambió. Intenta nuevamente.' });
 
         return res.json({
             success: true,
@@ -297,8 +325,9 @@ const verificarLogin = async (req, res) => {
             });
         }
 
-        // Validar OTP
-        if (!verificarTOTP(codigo, usuario.secreto)) {
+        // Validar y consumir OTP antes de emitir una sesión.
+        const otp = verificarTOTP(codigo, usuario.secreto);
+        if (!otp || !await usuarioModel.consumirOtp2FA(idUsuario, usuario.secretoCifrado, otp.timeStep, Number(usuario.sesion_version ?? 0))) {
             return res.status(400).json({
                 success: false,
                 mensaje: 'El código OTP es incorrecto o ha expirado'
@@ -404,7 +433,8 @@ const desactivar = async (req, res) => {
             });
         }
 
-        if (!verificarTOTP(codigo, secreto)) {
+        const otp = verificarTOTP(codigo, secreto);
+        if (!otp || !await usuarioModel.consumirOtp2FA(idUsuario, secretoCifrado, otp.timeStep, Number(usuario.sesion_version ?? 0))) {
             return res.status(400).json({
                 success: false,
                 mensaje: 'El código OTP es incorrecto o ha expirado'
@@ -441,6 +471,7 @@ const buscarUsuarioConSecreto = async (idUsuario) => {
 
     return {
         ...usuarioConPassword,
+        secretoCifrado,
         secreto: descifrar(secretoCifrado)
     };
 };

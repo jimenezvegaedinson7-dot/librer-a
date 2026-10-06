@@ -1,9 +1,9 @@
 # Mapa de API
 
-> Generado desde el código real el 2026-10-04 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-06 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
-Total de endpoints registrados en el backend: **123** (incluye 4 definidos directamente en `server.js`).
+Total de endpoints registrados en el backend: **126** (incluye 4 definidos directamente en `server.js`).
 
 - **Auth**: `Pública` = sin JWT · `JWT` = requiere `Authorization: Bearer` · `JWT + admin` = además rol `administrador`.
 - **React / Flutter**: archivos que llaman al endpoint (directamente o a través de su servicio). `—` = ningún cliente lo usa.
@@ -33,6 +33,9 @@ Total de endpoints registrados en el backend: **123** (incluye 4 definidos direc
 | DELETE | `/api/anuncios/:id` | controllers/anuncio.controller.js#eliminarAnuncio | JWT + rol:administrador | features/anuncios/AnunciosPage.jsx | — | JWT + admin |
 | GET | `/api/app/version` | controllers/app.controller.js#obtenerVersion | — | public-site/components/ActualizarApp.jsx | — | Pública |
 | POST | `/api/asistente` | controllers/asistente.controller.js#conversar | limite | public-site/asistente/AsistenteTienda.jsx | — | Pública |
+| GET | `/api/asistente/memoria` | controllers/asistente.controller.js#obtenerMemoria | ...soloCliente | public-site/asistente/useMemoriaAsistente.js | — | Pública |
+| PUT | `/api/asistente/memoria` | controllers/asistente.controller.js#guardarMemoria | ...soloCliente | public-site/asistente/useMemoriaAsistente.js | — | Pública |
+| DELETE | `/api/asistente/memoria` | controllers/asistente.controller.js#borrarMemoria | ...soloCliente | public-site/asistente/useMemoriaAsistente.js | — | Pública |
 | POST | `/api/auth/registro` | controllers/auth.controller.js#registrar | registroLimiter | public-site/tienda/CuentaPage.jsx | screens/registro_screen.dart | Pública |
 | POST | `/api/auth/login` | controllers/auth.controller.js#login | loginLimiter | features/auth/LoginPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/login_screen.dart | Pública |
 | POST | `/api/auth/verificar-email` | controllers/auth.controller.js#verificarEmail | verificacionLimiter | features/auth/VerificarEmailPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/verificacion_email_screen.dart | Pública |

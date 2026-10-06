@@ -24,11 +24,12 @@ class TwoFactorSetupScreen extends StatefulWidget {
 }
 
 class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
-  bool _loading = true;
+  bool _loading = false;
   String? _error;
   Map<String, dynamic>? _setup;
 
   final _otpController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _confirming = false;
   bool _confirmed = false;
   String? _confirmError;
@@ -36,22 +37,27 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
   @override
   void initState() {
     super.initState();
-    _cargarSetup();
   }
 
   @override
   void dispose() {
     _otpController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _cargarSetup() async {
+    if (_passwordController.text.isEmpty) {
+      setState(() => _error = 'Ingresa tu contraseña actual.');
+      return;
+    }
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
-      final setup = await ApiService.instance.setupTwoFactor();
+      final setup = await ApiService.instance.setupTwoFactor(password: _passwordController.text);
+      _passwordController.clear();
       if (mounted) setState(() => _setup = setup);
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
@@ -75,7 +81,7 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
 
     setState(() => _confirming = true);
     try {
-      await ApiService.instance.confirmarTwoFactor(codigo: codigo);
+      await ApiService.instance.confirmarTwoFactor(codigo: codigo, setupToken: _setup?['setup_token']?.toString() ?? '');
       if (!mounted) return;
       setState(() {
         _confirmed = true;
@@ -147,6 +153,24 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
 
     if (_loading) {
       return const LoadingView(message: 'Preparando tu configuración...');
+    }
+    if (_setup == null) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text('Confirma tu contraseña', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          const Text('Para proteger tu cuenta, confirma tu contraseña antes de vincular un autenticador.'),
+          const SizedBox(height: 20),
+          TextField(controller: _passwordController, obscureText: true,
+            autofillHints: const [AutofillHints.password],
+            decoration: const InputDecoration(labelText: 'Contraseña actual'),
+            onSubmitted: (_) => _cargarSetup()),
+          if (_error != null) ...[const SizedBox(height: 12), Text(_error!, style: TextStyle(color: colorScheme.error))],
+          const SizedBox(height: 20),
+          FilledButton(onPressed: _cargarSetup, child: const Text('Continuar')),
+        ]),
+      );
     }
     if (_error != null) {
       return ErrorView(message: _error!, onRetry: _cargarSetup);

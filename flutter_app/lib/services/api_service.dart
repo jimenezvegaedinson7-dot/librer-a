@@ -56,7 +56,11 @@ class ApiException implements Exception {
   final String message;
   final int? statusCode;
   final bool requiereVerificacion;
-  const ApiException(this.message, {this.statusCode, this.requiereVerificacion = false});
+  const ApiException(
+    this.message, {
+    this.statusCode,
+    this.requiereVerificacion = false,
+  });
 
   @override
   String toString() => message;
@@ -69,31 +73,44 @@ class ApiException implements Exception {
 /// Además normaliza los errores de Dio en mensajes claros.
 class ApiService {
   ApiService._({Dio? dio}) {
-    _dio = dio ?? Dio(
-      BaseOptions(
-        baseUrl: Constants.apiBaseUrl,
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
-        headers: {'Content-Type': 'application/json'},
-      ),
-    );
+    _dio =
+        dio ??
+        Dio(
+          BaseOptions(
+            baseUrl: Constants.apiBaseUrl,
+            connectTimeout: const Duration(seconds: 15),
+            receiveTimeout: const Duration(seconds: 15),
+            headers: {'Content-Type': 'application/json'},
+          ),
+        );
 
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final generacion = StorageService.instance.generacion;
           final token = await StorageService.instance.obtenerToken();
-          if (generacion != StorageService.instance.generacion || StorageService.instance.cambiandoSesion) {
-            handler.reject(DioException(requestOptions: options,
-                type: DioExceptionType.cancel, error: 'La sesión cambió.'));
+          if (generacion != StorageService.instance.generacion ||
+              StorageService.instance.cambiandoSesion) {
+            handler.reject(
+              DioException(
+                requestOptions: options,
+                type: DioExceptionType.cancel,
+                error: 'La sesión cambió.',
+              ),
+            );
             return;
           }
           options.extra['generacionSesion'] = generacion;
           options.extra['tokenSesion'] = token;
-          options.extra['propietarioSesion'] = StorageService.instance.idUsuarioActual;
-          final publica = options.path.startsWith('/auth/') &&
-              !const ['/auth/2fa/setup', '/auth/2fa/confirm', '/auth/2fa/disable']
-                  .contains(options.path);
+          options.extra['propietarioSesion'] =
+              StorageService.instance.idUsuarioActual;
+          final publica =
+              options.path.startsWith('/auth/') &&
+              !const [
+                '/auth/2fa/setup',
+                '/auth/2fa/confirm',
+                '/auth/2fa/disable',
+              ].contains(options.path);
           if (!publica && token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -102,8 +119,13 @@ class ApiService {
         onResponse: (response, handler) {
           if (response.requestOptions.extra['generacionSesion'] !=
               StorageService.instance.generacion) {
-            handler.reject(DioException(requestOptions: response.requestOptions,
-                type: DioExceptionType.cancel, error: 'La sesión cambió.'));
+            handler.reject(
+              DioException(
+                requestOptions: response.requestOptions,
+                type: DioExceptionType.cancel,
+                error: 'La sesión cambió.',
+              ),
+            );
             return;
           }
           handler.next(response);
@@ -116,16 +138,22 @@ class ApiService {
           if (error.response?.statusCode == 401) {
             final options = error.requestOptions;
             final data = error.response?.data;
-            final mensaje = data is Map ? (data['mensaje'] ?? data['message'] ?? '').toString() : '';
+            final mensaje = data is Map
+                ? (data['mensaje'] ?? data['message'] ?? '').toString()
+                : '';
             final credencialIncorrecta =
                 (options.path == Constants.cambiarPasswordPath ||
                     options.path == Constants.twoFactorDisablePath) &&
                 mensaje.toLowerCase().contains('contraseña') &&
                 mensaje.toLowerCase().contains('incorrecta');
             final token = await StorageService.instance.obtenerToken();
-            if (!credencialIncorrecta && options.headers.containsKey('Authorization') &&
-                options.extra['generacionSesion'] == StorageService.instance.generacion &&
-                options.extra['tokenSesion'] == token && token != null && token.isNotEmpty) {
+            if (!credencialIncorrecta &&
+                options.headers.containsKey('Authorization') &&
+                options.extra['generacionSesion'] ==
+                    StorageService.instance.generacion &&
+                options.extra['tokenSesion'] == token &&
+                token != null &&
+                token.isNotEmpty) {
               await StorageService.instance.limpiarSesion();
               CarritoService.instance.vaciarSesion();
               limpiarEstadoCheckout();
@@ -139,10 +167,12 @@ class ApiService {
   }
 
   static final ApiService instance = ApiService._();
+
   /// Transporte inyectado: las pruebas no acceden a la API real.
   ApiService.paraPruebas(Dio dio) : this._(dio: dio);
   @visibleForTesting
-  void usarAdaptadorPruebas(HttpClientAdapter adapter) => _dio.httpClientAdapter = adapter;
+  void usarAdaptadorPruebas(HttpClientAdapter adapter) =>
+      _dio.httpClientAdapter = adapter;
 
   late final Dio _dio;
 
@@ -226,11 +256,15 @@ class ApiService {
         final msg = data['mensaje'] ?? data['message'];
         if (msg != null && msg.toString().trim().isNotEmpty) {
           final texto = msg.toString();
-          return ApiException(texto, statusCode: status,
-              requiereVerificacion: status == 403 &&
-                  (data['codigo'] == 'EMAIL_NOT_VERIFIED' ||
-                   data['requiere_verificacion_email'] == true ||
-                   texto.toLowerCase().contains('verificar tu correo')));
+          return ApiException(
+            texto,
+            statusCode: status,
+            requiereVerificacion:
+                status == 403 &&
+                (data['codigo'] == 'EMAIL_NOT_VERIFIED' ||
+                    data['requiere_verificacion_email'] == true ||
+                    texto.toLowerCase().contains('verificar tu correo')),
+          );
         }
       }
       switch (status) {
@@ -359,9 +393,9 @@ class ApiService {
   ///
   /// Devuelve el secreto, la URL OTPAuth y el QR (data URL base64). Requiere
   /// sesión activa.
-  Future<Map<String, dynamic>> setupTwoFactor() async {
+  Future<Map<String, dynamic>> setupTwoFactor({required String password}) async {
     try {
-      final response = await _dio.post<dynamic>(Constants.twoFactorSetupPath);
+      final response = await _dio.post<dynamic>(Constants.twoFactorSetupPath, data: {'password': password});
       final data = response.data;
       if (data is Map && data['data'] is Map) {
         return Map<String, dynamic>.from(data['data'] as Map);
@@ -375,11 +409,11 @@ class ApiService {
   /// Confirma (activa) el doble factor contra `POST /auth/2fa/confirm`.
   ///
   /// Requiere el [codigo] OTP de 6 dígitos generado con el secreto del setup.
-  Future<void> confirmarTwoFactor({required String codigo}) async {
+  Future<void> confirmarTwoFactor({required String codigo, required String setupToken}) async {
     try {
       await _dio.post<dynamic>(
         Constants.twoFactorConfirmPath,
-        data: {'codigo': codigo},
+        data: {'codigo': codigo, 'setup_token': setupToken},
       );
     } on DioException catch (e) {
       throw _toApiException(e);
@@ -437,7 +471,10 @@ class ApiService {
         );
       }
       final usuario = Usuario.fromJson(map);
-      await StorageService.instance.guardarUsuario(usuario, generacionEsperada: generacion);
+      await StorageService.instance.guardarUsuario(
+        usuario,
+        generacionEsperada: generacion,
+      );
       return usuario;
     } on DioException catch (e) {
       throw _toApiException(e);
@@ -480,7 +517,10 @@ class ApiService {
         );
       }
       final usuario = Usuario.fromJson(map);
-      await StorageService.instance.guardarUsuario(usuario, generacionEsperada: generacion);
+      await StorageService.instance.guardarUsuario(
+        usuario,
+        generacionEsperada: generacion,
+      );
       return usuario;
     } on DioException catch (e) {
       throw _toApiException(e);
@@ -692,20 +732,30 @@ class ApiService {
   }) {
     if (_creando != null) return _creando!;
     final operacion = _prepararOrden(
-      detalles: detalles, tipoEntrega: tipoEntrega, direccion: direccion,
-      idZonaDelivery: idZonaDelivery, referencia: referencia,
-      clienteTipoDocumento: clienteTipoDocumento, clienteDocumento: clienteDocumento,
+      detalles: detalles,
+      tipoEntrega: tipoEntrega,
+      direccion: direccion,
+      idZonaDelivery: idZonaDelivery,
+      referencia: referencia,
+      clienteTipoDocumento: clienteTipoDocumento,
+      clienteDocumento: clienteDocumento,
       totalMostradoCentimos: totalMostradoCentimos,
     );
     _creando = operacion;
-    return operacion.whenComplete(() { if (identical(_creando, operacion)) _creando = null; });
+    return operacion.whenComplete(() {
+      if (identical(_creando, operacion)) _creando = null;
+    });
   }
 
   Future<int> _propietario() async {
-    if (StorageService.instance.cambiandoSesion) throw const ApiException('La sesión se está actualizando. Reintenta con tu cuenta actual.');
+    if (StorageService.instance.cambiandoSesion)
+      throw const ApiException(
+        'La sesión se está actualizando. Reintenta con tu cuenta actual.',
+      );
     final generacion = StorageService.instance.generacion;
     final usuario = await StorageService.instance.obtenerUsuario();
-    if (generacion != StorageService.instance.generacion || usuario?.idUsuario == null ||
+    if (generacion != StorageService.instance.generacion ||
+        usuario?.idUsuario == null ||
         !usuario!.esCliente) {
       throw const ApiException('Inicia sesión con tu cuenta de cliente.');
     }
@@ -715,8 +765,12 @@ class ApiService {
   Future<IntentoCheckout?> intentoPendiente() async {
     try {
       return await CheckoutStore.instance.activo(await _propietario());
-    } on ApiException { rethrow; } catch (_) {
-      throw const ApiException('No se pudo leer el intento anterior. Reintenta antes de crear otra compra.');
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      throw const ApiException(
+        'No se pudo leer el intento anterior. Reintenta antes de crear otra compra.',
+      );
     }
   }
 
@@ -728,13 +782,21 @@ class ApiService {
     if (intento == null) return null;
     final operacion = _enviarIntento(intento);
     _creando = operacion;
-    try { return await operacion; } finally { if (identical(_creando, operacion)) _creando = null; }
+    try {
+      return await operacion;
+    } finally {
+      if (identical(_creando, operacion)) _creando = null;
+    }
   }
 
   Future<OrdenPago> _prepararOrden({
-    required List<Map<String, dynamic>> detalles, String? tipoEntrega,
-    String? direccion, int? idZonaDelivery, String? referencia,
-    String? clienteTipoDocumento, String? clienteDocumento,
+    required List<Map<String, dynamic>> detalles,
+    String? tipoEntrega,
+    String? direccion,
+    int? idZonaDelivery,
+    String? referencia,
+    String? clienteTipoDocumento,
+    String? clienteDocumento,
     int? totalMostradoCentimos,
   }) async {
     final owner = await _propietario();
@@ -754,18 +816,25 @@ class ApiService {
     cuerpo['idempotencia_clave'] = generarClaveIdempotencia();
     final carrito = CarritoService.instance;
     final intento = IntentoCheckout(
-      propietario: owner, fingerprint: fingerprint, cuerpo: cuerpo,
+      propietario: owner,
+      fingerprint: fingerprint,
+      cuerpo: cuerpo,
       unidades: carrito.instantaneaUnidades,
-      totalMostradoCentimos: totalMostradoCentimos ?? (carrito.total * 100).round(),
+      totalMostradoCentimos:
+          totalMostradoCentimos ?? (carrito.total * 100).round(),
     );
     try {
       await carrito.persistir();
       await CheckoutStore.instance.guardar(intento);
     } catch (_) {
-      throw const ApiException('No se pudo guardar el intento. No enviamos la compra; vuelve a intentar.');
+      throw const ApiException(
+        'No se pudo guardar el intento. No enviamos la compra; vuelve a intentar.',
+      );
     }
     if (generacion != StorageService.instance.generacion) {
-      throw const ApiException('La sesión cambió. Recupera la compra con su cuenta original.');
+      throw const ApiException(
+        'La sesión cambió. Recupera la compra con su cuenta original.',
+      );
     }
     return _enviarIntento(intento);
   }
@@ -779,32 +848,62 @@ class ApiService {
       throw const ApiException('La sesión cambió. Vuelve a intentar.');
     }
     try {
-      final response = await _dio.post<dynamic>('${Constants.pagosPath}/crear-orden',
-          data: intento.cuerpo);
+      final response = await _dio.post<dynamic>(
+        '${Constants.pagosPath}/crear-orden',
+        data: intento.cuerpo,
+      );
       final data = response.data;
-      if (data is! Map) throw const ApiException('No se pudo interpretar la orden. Recupera el mismo intento.');
+      if (data is! Map)
+        throw const ApiException(
+          'No se pudo interpretar la orden. Recupera el mismo intento.',
+        );
       final map = Map<String, dynamic>.from(data);
-      if (map['data'] == null && map['venta'] is Map) map['data'] = map['venta'];
+      if (map['data'] == null && map['venta'] is Map)
+        map['data'] = map['venta'];
       var orden = OrdenPago.fromJson(map);
       if (orden.idVenta == null || orden.orderId == null) {
-        throw const ApiException('La respuesta está incompleta. Recupera el mismo intento.');
+        throw const ApiException(
+          'La respuesta está incompleta. Recupera el mismo intento.',
+        );
       }
-       final estado = EstadoOrden(status: orden.status, estadoVenta: orden.estadoVenta, requiereRevision: orden.requiereRevision);
-      if (!estado.pagada && !estado.cancelada && (orden.checkoutUrl ?? '').isEmpty &&
+      final estado = EstadoOrden(
+        status: orden.status,
+        estadoVenta: orden.estadoVenta,
+        requiereRevision: orden.requiereRevision,
+      );
+      if (!estado.pagada &&
+          !estado.cancelada &&
+          (orden.checkoutUrl ?? '').isEmpty &&
           intento.checkoutUrl != null) {
         orden = orden.copyWith(checkoutUrl: intento.checkoutUrl);
       }
       // Conciliar primero. Si se interrumpe, el intento sigue abierto y la
       // repetición conserva las identidades y la marca de venta del carrito.
       if (estado.pagada) {
-        await CarritoService.instance.conciliarVenta(orden.idVenta!, intento.unidades);
+        await CarritoService.instance.conciliarVenta(
+          orden.idVenta!,
+          intento.unidades,
+        );
       }
-      await CheckoutStore.instance.guardar(intento.actualizar(
-        idVenta: orden.idVenta, referencia: orden.orderId, checkoutUrl: orden.checkoutUrl,
-        estado: estado.requiereRevision ? 'REVISION' : estado.estadoVenta == 'reembolsada' ? 'REFUNDED' : estado.cancelada ? 'DECLINED' : orden.status ?? 'PENDING', total: orden.total,
-      ));
+      await CheckoutStore.instance.guardar(
+        intento.actualizar(
+          idVenta: orden.idVenta,
+          referencia: orden.orderId,
+          checkoutUrl: orden.checkoutUrl,
+          estado: estado.requiereRevision
+              ? 'REVISION'
+              : estado.estadoVenta == 'reembolsada'
+              ? 'REFUNDED'
+              : estado.cancelada
+              ? 'DECLINED'
+              : orden.status ?? 'PENDING',
+          total: orden.total,
+        ),
+      );
       if (generacion != StorageService.instance.generacion) {
-        throw const ApiException('La sesión cambió. La compra queda guardada en su cuenta.');
+        throw const ApiException(
+          'La sesión cambió. La compra queda guardada en su cuenta.',
+        );
       }
       if (!estado.pagada && !estado.cancelada && orden.checkoutUrl != null) {
         _checkoutUrls[orden.idVenta!] = orden.checkoutUrl!;
@@ -815,16 +914,24 @@ class ApiService {
     } on DioException catch (e) {
       // Errores definitivos de validación, nunca 401/403, transporte o 5xx.
       if (const [400, 404, 409, 422].contains(e.response?.statusCode)) {
-        await CheckoutStore.instance.guardar(intento.actualizar(estado: 'REJECTED_REQUEST'));
+        await CheckoutStore.instance.guardar(
+          intento.actualizar(estado: 'REJECTED_REQUEST'),
+        );
       }
       throw _toApiException(e);
     }
   }
 
   Future<void> _conciliarEstadoVenta(Venta venta) async {
-    final status = venta.requiereRevision ? 'REVISION' : venta.pagada || venta.entregada ? 'APPROVED' :
-        venta.estado == 'cancelada' ? 'DECLINED' :
-        venta.estado == 'reembolsada' ? 'REFUNDED' : null;
+    final status = venta.requiereRevision
+        ? 'REVISION'
+        : venta.pagada || venta.entregada
+        ? 'APPROVED'
+        : venta.estado == 'cancelada'
+        ? 'DECLINED'
+        : venta.estado == 'reembolsada'
+        ? 'REFUNDED'
+        : null;
     if (status == null) return;
     final owner = await _propietario();
     final generacion = StorageService.instance.generacion;
@@ -833,9 +940,14 @@ class ApiService {
       if (intento.idVenta == venta.idVenta ||
           (intento.referencia != null && intento.referencia == venta.orderId)) {
         if (status == 'APPROVED' && venta.idVenta != null) {
-          await CarritoService.instance.conciliarVenta(venta.idVenta!, intento.unidades);
+          await CarritoService.instance.conciliarVenta(
+            venta.idVenta!,
+            intento.unidades,
+          );
         }
-        await CheckoutStore.instance.guardar(intento.actualizar(estado: status));
+        await CheckoutStore.instance.guardar(
+          intento.actualizar(estado: status),
+        );
         _checkoutUrls.remove(venta.idVenta);
       }
     }
@@ -857,11 +969,25 @@ class ApiService {
           final generacion = StorageService.instance.generacion;
           for (final intento in await CheckoutStore.instance.leer(owner)) {
             if (generacion != StorageService.instance.generacion) break;
-            if (intento.referencia == orderId || intento.referencia == estado.externalReference) {
+            if (intento.referencia == orderId ||
+                intento.referencia == estado.externalReference) {
               if (estado.pagada && intento.idVenta != null) {
-                await CarritoService.instance.conciliarVenta(intento.idVenta!, intento.unidades);
+                await CarritoService.instance.conciliarVenta(
+                  intento.idVenta!,
+                  intento.unidades,
+                );
               }
-              await CheckoutStore.instance.guardar(intento.actualizar(estado: estado.requiereRevision ? 'REVISION' : estado.estadoVenta == 'reembolsada' ? 'REFUNDED' : estado.cancelada ? 'DECLINED' : estado.status));
+              await CheckoutStore.instance.guardar(
+                intento.actualizar(
+                  estado: estado.requiereRevision
+                      ? 'REVISION'
+                      : estado.estadoVenta == 'reembolsada'
+                      ? 'REFUNDED'
+                      : estado.cancelada
+                      ? 'DECLINED'
+                      : estado.status,
+                ),
+              );
               _checkoutUrls.remove(intento.idVenta);
             }
           }

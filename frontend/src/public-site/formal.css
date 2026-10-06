@@ -1224,3 +1224,17 @@
     .sitio .catalogo .libro .compra-libro,
     .sitio .catalogo-resultados .tarjeta-libro .compra-libro { margin-top: auto; }
 }
+
+/* Ofertas: un único estante con tarjetas de la misma altura. */
+.sitio .ofertas__carrusel {
+    display: grid; grid-template-columns: none; grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 32px) / 3); gap: 16px; align-items: stretch;
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+    padding: 4px 0 14px; scrollbar-width: thin;
+}
+.sitio .ofertas__carrusel .oferta-tarjeta { scroll-snap-align: start; height: auto; align-self: stretch; }
+.sitio .ofertas__carrusel .oferta-tarjeta__datos { display: flex; flex-direction: column; }
+.sitio .ofertas__carrusel .compra-libro { margin-top: auto; }
+.sitio .catalogo-estante .boton--icono { min-width: 44px; min-height: 44px; }
+@media (max-width: 1023px) { .sitio .ofertas__carrusel { grid-auto-columns: calc((100% - 16px) / 2); } }
+@media (max-width: 640px) { .sitio .ofertas__carrusel { grid-auto-columns: 88%; } }

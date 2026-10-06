@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 
-import { clienteApi } from '../tienda/clienteApi';
+import { clienteApi, firmaSesion } from '../tienda/clienteApi';
 import { useTienda } from '../tienda/TiendaContext';
 
 // ============================================================
@@ -27,33 +27,51 @@ export function useMemoriaAsistente() {
     const memoria = useRef(vacia());
     const cargada = useRef(false);
     const temporizador = useRef(null);
-    const sesionActual = useRef(sesion);
-    useEffect(() => { sesionActual.current = sesion; }, [sesion]);
+    const identidad = idUsuario ? firmaSesion(sesion) : 'invitado';
+    const propietario = useRef(null);
+    // Invalidar al confirmar el render, antes de temporizadores y efectos de
+    // red, sin modificar refs durante renders concurrentes descartables.
+    useLayoutEffect(() => {
+        if (propietario.current?.identidad === identidad) return;
+        clearTimeout(temporizador.current);
+        propietario.current = { identidad, sesion, idUsuario, guardar: false };
+        memoria.current = vacia();
+        cargada.current = false;
+    }, [idUsuario, identidad, sesion]);
 
     useEffect(() => {
+        clearTimeout(temporizador.current);
+        const actual = propietario.current;
         cargada.current = false;
         memoria.current = vacia();
-        if (!idUsuario) { memoria.current = leerLocal(); cargada.current = true; return undefined; }
+        if (!idUsuario) { memoria.current = leerLocal(); cargada.current = true; actual.guardar = true; return () => clearTimeout(temporizador.current); }
         let activo = true;
-        clienteApi.memoriaAsistente(sesionActual.current)
-            .then((j) => { if (activo) memoria.current = { ...vacia(), ...(j.data || {}) }; })
-            .catch(() => { /* sin memoria guardada: se empieza de cero */ })
-            .finally(() => { if (activo) cargada.current = true; });
-        return () => { activo = false; };
-    }, [idUsuario]);
+        clienteApi.memoriaAsistente(actual.sesion)
+            .then((j) => { if (activo && propietario.current === actual) { memoria.current = { ...vacia(), ...(j.data || {}) }; actual.guardar = true; } })
+            .catch(() => { /* Una lectura fallida no autoriza a sobrescribir la memoria del servidor. */ })
+            .finally(() => { if (activo && propietario.current === actual) cargada.current = true; });
+        return () => { activo = false; clearTimeout(temporizador.current); };
+    }, [idUsuario, identidad]);
 
     useEffect(() => () => clearTimeout(temporizador.current), []);
 
     // Guarda con una pequeña espera para juntar varios aprendizajes seguidos.
     const guardar = useCallback(() => {
         clearTimeout(temporizador.current);
+        const actual = propietario.current;
+        if (!cargada.current || !actual.guardar || actual.identidad !== identidad) return;
+        const datos = structuredClone(memoria.current);
         temporizador.current = setTimeout(() => {
-            if (idUsuario) clienteApi.guardarMemoriaAsistente(memoria.current, sesionActual.current).catch(() => {});
-            else guardarLocal(memoria.current);
+            if (propietario.current !== actual) return;
+            if (actual.idUsuario) clienteApi.guardarMemoriaAsistente(datos, actual.sesion).catch(() => {});
+            else guardarLocal(datos);
         }, 1200);
-    }, [idUsuario]);
+    }, [identidad]);
 
-    const cambiar = useCallback((fn) => { memoria.current = fn(memoria.current); guardar(); }, [guardar]);
+    const cambiar = useCallback((fn) => {
+        if (!cargada.current || propietario.current?.identidad !== identidad) return;
+        memoria.current = fn(memoria.current); guardar();
+    }, [guardar, identidad]);
 
     return {
         logeado: Boolean(idUsuario),
@@ -81,7 +99,7 @@ export function useMemoriaAsistente() {
         olvidar: async () => {
             clearTimeout(temporizador.current);
             memoria.current = vacia();
-            if (idUsuario) await clienteApi.borrarMemoriaAsistente(sesionActual.current).catch(() => {});
+            if (idUsuario) await clienteApi.borrarMemoriaAsistente(propietario.current.sesion).catch(() => {});
             else guardarLocal(memoria.current);
         },
     };

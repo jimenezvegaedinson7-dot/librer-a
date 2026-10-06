@@ -153,7 +153,7 @@ test('cada sección es una página: título, URL canónica y foco en su h1', asy
         await expect(page).toHaveURL(new RegExp(`${ruta}$`));
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(h1);
         await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
-        await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://librer-a-zeta.vercel.app${ruta}`);
+        await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://libreria.my${ruta}`);
         await expect(menu(page).getByRole('link', { name: enlace, exact: true })).toHaveAttribute('aria-current', 'page');
     }
 });

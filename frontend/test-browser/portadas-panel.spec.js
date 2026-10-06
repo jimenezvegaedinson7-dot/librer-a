@@ -35,7 +35,7 @@ async function preparar(page,{manual=false,incluirReferencias=false}={}){
     });
     return control;
 }
-async function visible(img,patron){await expect(img).toHaveAttribute('src',patron);await expect.poll(()=>img.evaluate(i=>i.complete && i.naturalWidth>0)).toBe(true);}
+async function visible(img,patron){await img.scrollIntoViewIfNeeded();await expect(img).toHaveAttribute('src',patron);await expect.poll(()=>img.evaluate(i=>i.complete && i.naturalWidth>0)).toBe(true);}
 const fila=(page,titulo)=>page.getByRole('row').filter({hasText:titulo});
 
 for(const ancho of [390,1440])test(`panel ${ancho}px: portada por ISBN visible en listado, detalle y edición`,async({page})=>{
@@ -85,7 +85,7 @@ for(const ancho of [390,1440])test(`cinco referencias ${ancho}px: panel, ficha y
     // Primera ruta pública: el componente compartido no depende del CSS
     // cargado al visitar previamente /libro/:id.
     await page.goto('/catalogo');
-    const inicial=page.locator('.tarjeta-libro').filter({has:page.getByRole('heading',{name:'Cuentos inconclusos',exact:true})});
+    const inicial=page.locator('.rejilla-libros--todos .tarjeta-libro').filter({has:page.getByRole('heading',{name:'Cuentos inconclusos',exact:true})});
     await visible(inicial.locator('img'),/9789505470587-referencia\.jpg$/);
     await expect(inicial.locator('img')).toHaveCSS('object-fit','contain');
     await expect(inicial.locator('.ficha-portada')).toHaveCSS('display','grid');
@@ -128,7 +128,7 @@ for(const ancho of [390,1440])test(`cinco referencias ${ancho}px: panel, ficha y
         if(ref.idLibro===60)await page.screenshot({path:test.info().outputPath(`referencia-ficha-${ancho}.png`),fullPage:true});
     }
     await page.goto('/catalogo');
-    const tarjetas=page.locator('.tarjeta-libro');
+    const tarjetas=page.locator('.rejilla-libros--todos .tarjeta-libro');
     await visible(tarjetas.filter({has:page.getByRole('heading',{name:'Muerte en el Nilo',exact:true})}).locator('img'),/9788477511212\.jpg$/);
     await expect(tarjetas.filter({has:page.getByRole('heading',{name:'Libro de prueba sin edición',exact:true})})).toContainText('Sin portada');
     for(const ref of referencias){

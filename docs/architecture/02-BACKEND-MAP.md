@@ -1,6 +1,6 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-10-04 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-06 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
@@ -145,6 +145,9 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | POST | `/api/asistente` | limite | controllers/asistente.controller.js#conversar | `aiAssistant.service.js#responder` | autores, categorias, inventario, libros |
+| GET | `/api/asistente/memoria` | ...soloCliente | controllers/asistente.controller.js#obtenerMemoria | `asistenteMemoria.model.js#obtener` | asistente_memoria |
+| PUT | `/api/asistente/memoria` | ...soloCliente | controllers/asistente.controller.js#guardarMemoria | `asistenteMemoria.model.js#guardar` | asistente_memoria |
+| DELETE | `/api/asistente/memoria` | ...soloCliente | controllers/asistente.controller.js#borrarMemoria | `asistenteMemoria.model.js#borrar` | asistente_memoria |
 
 ### /api/auth
 
@@ -156,10 +159,10 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | POST | `/api/auth/reenviar-codigo` | verificacionLimiter | controllers/auth.controller.js#reenviarCodigo | `usuario.model.js#buscarPorEmail`<br>`usuario.model.js#guardarCodigoVerificacion` | usuarios |
 | POST | `/api/auth/solicitar-reseteo` | verificacionLimiter | controllers/auth.controller.js#solicitarReseteo | `usuario.model.js#buscarPorEmail`<br>`usuario.model.js#guardarCodigoVerificacion` | usuarios |
 | POST | `/api/auth/reestablecer-contrasena` | verificacionLimiter | controllers/auth.controller.js#reestablecerContrasena | `usuario.model.js#actualizarPassword`<br>`usuario.model.js#buscarPorEmail`<br>`usuario.model.js#limpiarCodigoVerificacion` | usuarios |
-| POST | `/api/auth/2fa/verify-login` | twoFaLimiter | controllers/auth2fa.controller.js#verificarLogin | `usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |
-| POST | `/api/auth/2fa/setup` | JWT + twoFaLimiter | controllers/auth2fa.controller.js#setup | `usuario.model.js#buscarPorId`<br>`usuario.model.js#guardarSecreto2FA` | usuarios |
+| POST | `/api/auth/2fa/verify-login` | twoFaLimiter | controllers/auth2fa.controller.js#verificarLogin | `usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#consumirOtp2FA`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |
+| POST | `/api/auth/2fa/setup` | JWT + twoFaLimiter | controllers/auth2fa.controller.js#setup | `usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#guardarSecreto2FA` | usuarios |
 | POST | `/api/auth/2fa/confirm` | JWT + twoFaLimiter | controllers/auth2fa.controller.js#confirmar | `usuario.model.js#activar2FA`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |
-| POST | `/api/auth/2fa/disable` | JWT + twoFaLimiter | controllers/auth2fa.controller.js#desactivar | `usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#desactivar2FA`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |
+| POST | `/api/auth/2fa/disable` | JWT + twoFaLimiter | controllers/auth2fa.controller.js#desactivar | `usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#consumirOtp2FA`<br>`usuario.model.js#desactivar2FA`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |
 
 ### /api/autores
 
@@ -317,7 +320,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | PUT | `/api/usuarios/perfil` | JWT | controllers/usuario.controller.js#actualizarPerfil | `usuario.model.js#actualizarPerfil`<br>`usuario.model.js#buscarPorId`<br>`usuario.model.js#existeEmail` | usuarios |
 | PUT | `/api/usuarios/foto` | JWT + uploadPerfil(foto) | controllers/usuario.controller.js#subirFotoPerfil | `usuario.model.js#actualizarFotoPerfil`<br>`usuario.model.js#buscarPorId` | usuarios |
 | PUT | `/api/usuarios/password` | JWT | controllers/usuario.controller.js#cambiarPassword | `usuario.model.js#actualizarPassword`<br>`usuario.model.js#buscarPorIdConPassword` | usuarios |
-| DELETE | `/api/usuarios/cuenta` | JWT | controllers/usuario.controller.js#eliminarMiCuenta | `historial.model.js#crear`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#eliminarCuenta` | favoritos, historial_operaciones, inventario, reservas, usuarios, ventas |
+| DELETE | `/api/usuarios/cuenta` | JWT | controllers/usuario.controller.js#eliminarMiCuenta | `historial.model.js#crear`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#eliminarCuenta` | asistente_memoria, favoritos, historial_operaciones, inventario, reservas, usuarios, ventas |
 | PATCH | `/api/usuarios/:id` | JWT + rol:administrador | controllers/usuario.controller.js#adminUpdateUsuario | `historial.model.js#crear`<br>`usuario.model.js#actualizarEstadoRol`<br>`usuario.model.js#buscarPorId` | historial_operaciones, usuarios |
 
 ### /api/ventas
@@ -349,6 +352,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/agencia.model.js` | agencias_courier |
 | `models/anuncio.model.js` | anuncios |
 | `models/asistente.model.js` | autores, categorias, inventario, libros |
+| `models/asistenteMemoria.model.js` | asistente_memoria |
 | `models/autor.model.js` | autores |
 | `models/carrusel.model.js` | carrusel_anuncios, libros |
 | `models/categoria.model.js` | categorias |
@@ -364,11 +368,11 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/reporte.model.js` | autores, categorias, comprobantes, detalle_venta, inventario, libros, reservas, usuarios, ventas |
 | `models/reserva.model.js` | inventario, libros, reservas, usuarios |
 | `models/ubicacion.model.js` | distritos_lima, provincias_lima |
-| `models/usuario.model.js` | favoritos, inventario, reservas, usuarios, ventas |
+| `models/usuario.model.js` | asistente_memoria, favoritos, inventario, reservas, usuarios, ventas |
 | `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, inventario, libros, provincias_lima, usuarios, ventas |
 | `models/zonaDelivery.model.js` | zonas_delivery_pallasca |
 
-Tablas presentes en el código (20): `agencias_courier`, `anuncios`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. El esquema está en `backend/database/schema.sql` + 22 migraciones en `backend/database/migrations`.
+Tablas presentes en el código (21): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. El esquema está en `backend/database/schema.sql` + 22 migraciones en `backend/database/migrations`.
 
 ## Integraciones externas
 

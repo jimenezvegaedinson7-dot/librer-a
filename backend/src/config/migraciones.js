@@ -101,7 +101,8 @@ const MIGRACIONES = [
     '035_textos_anuncio.sql',
     '036_correcciones_negocio.sql',
     '037_administracion.sql',
-    '038_version_sesion.sql'
+    '038_version_sesion.sql',
+    '039_otp_anti_replay.sql'
 ];
 
 // En producción un fallo de migración debe detener el arranque:

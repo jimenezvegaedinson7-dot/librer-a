@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     two_factor_enabled SMALLINT NOT NULL DEFAULT 0,
     two_factor_secret TEXT NULL,
+    two_factor_last_step BIGINT NULL,
     email_verification_code VARCHAR(255) NULL,
     email_verification_expires TIMESTAMP NULL,
     email_verified_at TIMESTAMP NULL,

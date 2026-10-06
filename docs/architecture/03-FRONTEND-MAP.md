@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web
 
-> Generado desde el código real el 2026-10-04 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-06 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -112,6 +112,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/ventas/VentasPage.jsx` | `GET /api/ventas`<br>`GET /api/ventas/:param`<br>`PUT /api/ventas/:param/estado` |
 | `public-site/PublicLayout.jsx` | `GET /api/empresa`<br>`GET /api/libros` |
 | `public-site/asistente/AsistenteTienda.jsx` | `GET /api/libros`<br>`POST /api/asistente` |
+| `public-site/asistente/useMemoriaAsistente.js` | `DELETE /api/asistente/memoria`<br>`GET /api/asistente/memoria`<br>`PUT /api/asistente/memoria` |
 | `public-site/components/ActualizarApp.jsx` | `GET /api/app/version` |
 | `public-site/sections/Hero.jsx` | `GET /api/anuncios/carrusel` |
 | `public-site/sections/VideoSection.jsx` | `GET /api/anuncios` |
@@ -245,6 +246,9 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/tienda/clienteApi.js` | `libro` | `GET /api/libros/:param` |
 | `public-site/tienda/clienteApi.js` | `autor` | `GET /api/autores/:param` |
 | `public-site/tienda/clienteApi.js` | `favoritos` | `GET /api/favoritos` |
+| `public-site/tienda/clienteApi.js` | `memoriaAsistente` | `GET /api/asistente/memoria` |
+| `public-site/tienda/clienteApi.js` | `guardarMemoriaAsistente` | `PUT /api/asistente/memoria` |
+| `public-site/tienda/clienteApi.js` | `borrarMemoriaAsistente` | `DELETE /api/asistente/memoria` |
 | `public-site/tienda/clienteApi.js` | `favorito` | `GET /api/favoritos/:param` |
 | `public-site/tienda/clienteApi.js` | `agregarFavorito` | `POST /api/favoritos/:param` |
 | `public-site/tienda/clienteApi.js` | `quitarFavorito` | `DELETE /api/favoritos/:param` |
@@ -279,8 +283,9 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/Ficha.jsx` | 10 |
 | `components/ui/Form.jsx` | 38 |
 | `components/ui/FormularioAlta.jsx` | 4 |
+| `components/ui/Indicadores.jsx` | 13 |
 | `components/ui/Modal.jsx` | 30 |
-| `components/ui/PageHeader.jsx` | 18 |
+| `components/ui/PageHeader.jsx` | 17 |
 | `components/ui/Pagination.jsx` | 13 |
 | `components/ui/Spinner.jsx` | 4 |
 | `components/ui/TableSkeleton.jsx` | 17 |
@@ -288,6 +293,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/components/BarraMovil.jsx` | 1 |
 | `public-site/components/CierreDescarga.jsx` | 1 |
 | `public-site/components/EtiquetasLibro.jsx` | 2 |
+| `public-site/components/ImagenCarga.jsx` | 2 |
 | `public-site/components/Migas.jsx` | 2 |
 | `public-site/components/Precarga.jsx` | 1 |
 | `public-site/components/PrecioOferta.jsx` | 5 |
@@ -312,12 +318,14 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `lib/utils/validaciones.js`
 - `public-site/lib/formato.js`
 - `public-site/lib/precarga.js`
+- `public-site/lib/useCarruselAutomatico.js`
 
 ## Framer Motion (`motion/react`) — 23 archivos
 
 - `components/providers/ToastProvider.jsx`
 - `components/ui/Celebracion.jsx`
 - `components/ui/EmptyState.jsx`
+- `components/ui/Indicadores.jsx`
 - `components/ui/Modal.jsx`
 - `features/auth/LoginPage.jsx`
 - `features/auth/VerificarEmailPage.jsx`
@@ -331,7 +339,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `features/layout/PerfilAdministrador.jsx`
 - `features/layout/Sidebar.jsx`
 - `features/notificaciones/PanelNotificaciones.jsx`
-- `features/pedidos/PedidosPage.jsx`
 - `features/tarifas/TarifasEnvioPage.jsx`
 - `features/usuarios/UsuariosClientesPage.jsx`
 - `features/ventas/VentasPage.jsx`

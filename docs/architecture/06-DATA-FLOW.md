@@ -1,6 +1,6 @@
 # Flujos de datos
 
-> Generado desde el código real el 2026-10-04 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-06 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arquitectura general
@@ -18,7 +18,7 @@
 ## 1. Login (React y Flutter)
 1. Cliente → `POST /api/auth/login` → `usuario.model.js#buscarPorEmail` → tablas: usuarios.
 2. Sin 2FA: respuesta `{ token (24 h), data }`. React guarda en `localStorage` (AuthContext); Flutter en **flutter_secure_storage**.
-3. Con 2FA: respuesta `{ requires_2fa, two_factor_token (5 min) }` → `POST /api/auth/2fa/verify-login` → `usuario.model.js#buscarPorIdConPassword`, `usuario.model.js#obtenerSecreto2FA` → tablas: usuarios.
+3. Con 2FA: respuesta `{ requires_2fa, two_factor_token (5 min) }` → `POST /api/auth/2fa/verify-login` → `usuario.model.js#buscarPorIdConPassword`, `usuario.model.js#consumirOtp2FA`, `usuario.model.js#obtenerSecreto2FA` → tablas: usuarios.
 4. React exige `rol === 'administrador'`; Flutter rechaza administradores.
 5. Cualquier 401 posterior: React limpia sesión y va a `/`; Flutter limpia sesión y `irALogin()`.
 

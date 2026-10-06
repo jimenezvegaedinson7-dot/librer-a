@@ -8,11 +8,22 @@ export function useCarruselAutomatico(ref, { intervalo = 2600, duracion = 600, a
     useEffect(() => {
         const el = ref.current;
         if (!el || !activo) return undefined;
-        if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+        const movimiento = window.matchMedia?.('(prefers-reduced-motion: reduce)');
 
-        let pausado = false;
-        let reanudar = null;
+        let cursorDentro = false;
+        let focoDentro = false;
+        let pausaHasta = 0;
         let cuadro = null;
+        let ajusteOriginal = null;
+        const pausado = () => cursorDentro || focoDentro || Date.now() < pausaHasta || document.hidden || movimiento?.matches;
+        const detener = () => {
+            cancelAnimationFrame(cuadro);
+            cuadro = null;
+            if (ajusteOriginal !== null) {
+                el.style.scrollSnapType = ajusteOriginal;
+                ajusteOriginal = null;
+            }
+        };
 
         const paso = () => {
             const items = el.querySelectorAll(':scope > li, :scope > ul > li');
@@ -26,7 +37,8 @@ export function useCarruselAutomatico(ref, { intervalo = 2600, duracion = 600, a
             const inicio = el.scrollLeft;
             const distancia = destino - inicio;
             if (Math.abs(distancia) < 1) return;
-            const ajuste = el.style.scrollSnapType;
+            detener();
+            ajusteOriginal = el.style.scrollSnapType;
             el.style.scrollSnapType = 'none';
             const comienzo = performance.now();
             const tiempo = Math.abs(destino) < 1 ? duracion * 1.4 : duracion;
@@ -34,41 +46,46 @@ export function useCarruselAutomatico(ref, { intervalo = 2600, duracion = 600, a
                 const t = Math.min(1, (ahora - comienzo) / tiempo);
                 const curva = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
                 el.scrollLeft = inicio + distancia * curva;
-                if (t < 1 && !pausado) cuadro = requestAnimationFrame(avanzar);
-                else el.style.scrollSnapType = ajuste;
+                if (t < 1 && !pausado()) cuadro = requestAnimationFrame(avanzar);
+                else detener();
             };
             cuadro = requestAnimationFrame(avanzar);
         };
 
         const tic = () => {
-            if (pausado || document.hidden) return;
+            if (pausado()) return;
             const maximo = el.scrollWidth - el.clientWidth;
             if (maximo <= 4) return;
             if (el.scrollLeft >= maximo - 4) ir(0);
             else ir(Math.min(maximo, el.scrollLeft + paso()));
         };
 
-        const pausar = () => { pausado = true; clearTimeout(reanudar); cancelAnimationFrame(cuadro); };
-        const continuar = (espera = 0) => { clearTimeout(reanudar); reanudar = setTimeout(() => { pausado = false; }, espera); };
-        const alSalir = () => continuar();
-        const alTocar = () => { pausar(); continuar(6000); };
-        const alPerderFoco = (e) => { if (!el.contains(e.relatedTarget)) continuar(); };
+        const pausar = () => { cursorDentro = true; detener(); };
+        const alSalir = () => { cursorDentro = false; };
+        const alTocar = () => { pausaHasta = Date.now() + 6000; detener(); };
+        const alFoco = () => { focoDentro = true; detener(); };
+        const alPerderFoco = (e) => { focoDentro = el.contains(e.relatedTarget); };
+        const alEntorno = () => { if (pausado()) detener(); };
 
         const reloj = setInterval(tic, intervalo);
         el.addEventListener('pointerenter', pausar);
         el.addEventListener('pointerleave', alSalir);
         el.addEventListener('touchstart', alTocar, { passive: true });
         el.addEventListener('wheel', alTocar, { passive: true });
-        el.addEventListener('focusin', pausar);
+        el.addEventListener('focusin', alFoco);
         el.addEventListener('focusout', alPerderFoco);
+        document.addEventListener('visibilitychange', alEntorno);
+        movimiento?.addEventListener?.('change', alEntorno);
         return () => {
-            clearInterval(reloj); clearTimeout(reanudar); cancelAnimationFrame(cuadro);
+            clearInterval(reloj); detener();
             el.removeEventListener('pointerenter', pausar);
             el.removeEventListener('pointerleave', alSalir);
             el.removeEventListener('touchstart', alTocar);
             el.removeEventListener('wheel', alTocar);
-            el.removeEventListener('focusin', pausar);
+            el.removeEventListener('focusin', alFoco);
             el.removeEventListener('focusout', alPerderFoco);
+            document.removeEventListener('visibilitychange', alEntorno);
+            movimiento?.removeEventListener?.('change', alEntorno);
         };
     }, [ref, intervalo, duracion, activo]);
 }

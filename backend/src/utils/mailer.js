@@ -15,7 +15,7 @@
 
 const nodemailer = require('nodemailer');
 const { resolve4 } = require('dns').promises;
-const htmlPdfNode = require('html-pdf-node');
+const { generarPdfDesdeHtml } = require('./pdf');
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || 'jimenezvegaedinson7@gmail.com';
@@ -162,17 +162,6 @@ async function obtenerTransporter() {
 // ============================================================
 // GENERAR PDF DESDE HTML
 // ============================================================
-async function generarPdfDesdeHtml(htmlContent, filename) {
-    const file = { content: htmlContent };
-    const options = {
-        format: 'A4',
-        margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' },
-        printBackground: true,
-    };
-    const pdfBuffer = await htmlPdfNode.generatePdf(file, options);
-    return pdfBuffer;
-}
-
 // ============================================================
 // ENVIAR CORREO
 // Devuelve { enviado: boolean, consola: boolean }

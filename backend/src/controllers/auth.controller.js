@@ -397,6 +397,8 @@ const solicitarReseteo = async (req, res) => {
 // correo del usuario es la prueba de control de la cuenta.
 // ========================================
 const reestablecerContrasena = async (req, res) => {
+    const rechazoCodigo = () => res.status(400).json({ success: false,
+        mensaje: 'El correo o código no es válido o ha expirado. Solicita un código nuevo.' });
     try {
 
         const {
@@ -436,34 +438,22 @@ const reestablecerContrasena = async (req, res) => {
             await usuarioModel.buscarPorEmail(emailNormalizado);
 
         if (!usuario) {
-            return res.status(404).json({
-                success: false,
-                mensaje: 'No se encontró un usuario con ese correo'
-            });
+            return rechazoCodigo();
         }
 
         if (!usuario.email_verified_at) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'La cuenta no está verificada. Verifica tu correo primero.'
-            });
+            return rechazoCodigo();
         }
 
         // Debe existir un código pendiente
         if (!usuario.email_verification_code || !usuario.email_verification_expires) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'No hay un código pendiente. Solicita uno nuevo.'
-            });
+            return rechazoCodigo();
         }
 
         // Verificar expiración
         const expira = new Date(usuario.email_verification_expires);
         if (expira < new Date()) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'El código ha expirado. Solicita uno nuevo.'
-            });
+            return rechazoCodigo();
         }
 
         // Comparar el código (hash)
@@ -471,10 +461,7 @@ const reestablecerContrasena = async (req, res) => {
             await bcrypt.compare(String(codigo), usuario.email_verification_code);
 
         if (!codigoCorrecto) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'El código es incorrecto'
-            });
+            return rechazoCodigo();
         }
 
         // Actualizar contraseña y limpiar el código usado.

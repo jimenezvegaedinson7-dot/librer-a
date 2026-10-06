@@ -1,6 +1,6 @@
 # Dependencias
 
-> Generado desde el código real el 2026-10-04 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-06 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Paquetes npm
@@ -15,15 +15,15 @@
 | `express` | ^5.2.1 |
 | `express-rate-limit` | ^8.7.0 |
 | `helmet` | ^8.3.0 |
-| `html-pdf-node` | ^1.0.8 |
 | `jsonwebtoken` | ^9.0.3 |
-| `multer` | ^2.3.0 |
-| `nodemailer` | ^9.1.1 |
+| `multer` | ^2.4.0 |
+| `nodemailer` | ^10.0.15 |
 | `otplib` | ^13.5.0 |
 | `pg` | ^8.23.0 |
+| `playwright` | ^1.63.0 |
 | `qrcode` | ^1.5.4 |
 
-Dev: nodemon.
+Dev: .
 
 Todas las dependencias se importan en algún archivo.
 
@@ -56,9 +56,9 @@ Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxl
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 159 | 371 | 0 (confirmado con **madge**: ninguno) |
-| Frontend (`import`) | 205 | 827 | 0 (confirmado con **madge**: ninguno) |
-| Flutter (`import` relativos) | 71 | 316 | 4 caminos cíclicos |
+| Backend (`require`) | 165 | 383 | 0 (confirmado con **madge**: ninguno) |
+| Frontend (`import`) | 210 | 849 | 0 (confirmado con **madge**: ninguno) |
+| Flutter (`import` relativos) | 73 | 321 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter
 

@@ -6,7 +6,7 @@
 
 export const SITIO = {
     nombre: 'Librería del Saber',
-    url: 'https://librer-a-zeta.vercel.app',
+    url: 'https://libreria.my',
     rutaLoginAdmin: '/admin/login',
     rutaReclamaciones: '/libro-de-reclamaciones',
     enlaces: {

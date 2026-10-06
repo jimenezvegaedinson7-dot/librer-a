@@ -105,7 +105,7 @@ class Constants {
 
   /// Libro de Reclamaciones virtual (página pública del panel web).
   static const String libroReclamacionesUrl =
-      'https://librer-a-zeta.vercel.app/libro-de-reclamaciones';
+      'https://libreria.my/libro-de-reclamaciones';
 
   // ---------------------------------------------------------------------------
   // Rutas de reservas (solo cliente)

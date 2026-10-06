@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
-import { FaMagnifyingGlass, FaTruckFast, FaStore, FaCircleCheck } from 'react-icons/fa6';
+import { FaMagnifyingGlass, FaTruckFast, FaStore, FaCircleCheck, FaPause, FaPlay } from 'react-icons/fa6';
+import { useCarruselAutomatico } from '../lib/useCarruselAutomatico';
 
 import Migas from '../components/Migas';
 import { PrecioOferta } from '../components/PrecioOferta';
@@ -84,6 +85,24 @@ function useEsCelular() {
     return celular;
 }
 
+function Estante({ estante: e }) {
+    const pista = useRef(null);
+    const [pausado, setPausado] = useState(false);
+    useCarruselAutomatico(pista, { activo: !pausado });
+    return <section className="catalogo-estante" aria-labelledby={`estante-${e.id}`}>
+        <div className="catalogo-estante__cabeza">
+            <h2 id={`estante-${e.id}`}>{e.titulo}</h2>
+            <div className="catalogo__controles">
+                {e.enlace && <Link to={e.enlace} className="catalogo-estante__ver">Ver todos</Link>}
+                <button type="button" className="boton boton--linea boton--icono" aria-label={`${pausado ? 'Reanudar' : 'Pausar'} ${e.titulo}`} aria-pressed={pausado} onClick={() => setPausado(!pausado)}>{pausado ? <FaPlay aria-hidden="true" /> : <FaPause aria-hidden="true" />}</button>
+            </div>
+        </div>
+        <ul ref={pista} className="rejilla-libros" tabIndex={0} aria-label={`Carrusel ${e.titulo}`}>
+            {e.lista.map((l, i) => <TarjetaLibro key={l.id} libro={l} indice={i} nivelTitulo="h3" />)}
+        </ul>
+    </section>;
+}
+
 function Estantes({ libros }) {
     const estantes = useMemo(() => {
         const descuento = libros.filter((l) => l.descuento > 0).sort((a, b) => b.descuento - a.descuento);
@@ -101,17 +120,7 @@ function Estantes({ libros }) {
     if (!estantes.length) return null;
     return (
         <div className="catalogo-estantes">
-            {estantes.map((e) => (
-                <section key={e.id} className="catalogo-estante" aria-labelledby={`estante-${e.id}`}>
-                    <div className="catalogo-estante__cabeza">
-                        <h2 id={`estante-${e.id}`}>{e.titulo}</h2>
-                        {e.enlace && <Link to={e.enlace} className="catalogo-estante__ver">Ver todos</Link>}
-                    </div>
-                    <ul className="rejilla-libros">
-                        {e.lista.map((l, i) => <TarjetaLibro key={l.id} libro={l} indice={i} nivelTitulo="h3" />)}
-                    </ul>
-                </section>
-            ))}
+            {estantes.map((e) => <Estante key={e.id} estante={e} />)}
             <h2 className="catalogo-estante__todos">Todos los libros</h2>
         </div>
     );

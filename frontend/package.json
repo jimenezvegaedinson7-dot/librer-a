@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "test:asistente": "node --test test-unit/asistente.test.js",
+    "test:memoria": "node --test test-unit/asistente-memoria.test.js",
     "test:browser": "playwright test",
     "preview": "vite preview"
   },

@@ -292,17 +292,19 @@ const actualizarPassword = async (
 // ========================================
 const guardarSecreto2FA = async (
     idUsuario,
-    secretoCifrado
+    secretoCifrado,
+    versionSesion
 ) => {
     const [resultado] = await pool.query(
         `
         UPDATE usuarios
-        SET two_factor_secret = ?
-        WHERE id_usuario = ?
+        SET two_factor_secret = ?, two_factor_last_step = NULL
+        WHERE id_usuario = ? AND two_factor_enabled = 0 AND sesion_version = ?
         `,
         [
             secretoCifrado,
-            idUsuario
+            idUsuario,
+            versionSesion
         ]
     );
 
@@ -314,19 +316,24 @@ const guardarSecreto2FA = async (
 // ========================================
 const activar2FA = async (
     idUsuario,
-    secretoCifrado
+    secretoCifrado,
+    paso,
+    versionSesion
 ) => {
     const [resultado] = await pool.query(
         `
         UPDATE usuarios
         SET
             two_factor_enabled = 1,
-            two_factor_secret = ?
-        WHERE id_usuario = ?
+            two_factor_last_step = ?
+        WHERE id_usuario = ? AND two_factor_enabled = 0
+            AND two_factor_secret = ? AND sesion_version = ?
         `,
         [
+            paso,
+            idUsuario,
             secretoCifrado,
-            idUsuario
+            versionSesion
         ]
     );
 
@@ -344,7 +351,8 @@ const desactivar2FA = async (
         UPDATE usuarios
         SET
             two_factor_enabled = 0,
-            two_factor_secret = NULL
+            two_factor_secret = NULL,
+            two_factor_last_step = NULL
         WHERE id_usuario = ?
         `,
         [idUsuario]
@@ -370,6 +378,17 @@ const obtenerSecreto2FA = async (
     );
 
     return rows[0]?.two_factor_secret ?? null;
+};
+
+// CAS de BD: el mismo período OTP no puede consumirse por dos solicitudes.
+const consumirOtp2FA = async (idUsuario, secretoCifrado, paso, versionSesion) => {
+    const [resultado] = await pool.query(`
+        UPDATE usuarios SET two_factor_last_step = ?
+        WHERE id_usuario = ? AND two_factor_secret = ? AND two_factor_enabled = 1
+          AND sesion_version = ? AND estado = 1 AND fecha_eliminacion IS NULL
+          AND (two_factor_last_step IS NULL OR two_factor_last_step < ?)
+    `, [paso, idUsuario, secretoCifrado, versionSesion, paso]);
+    return resultado.affectedRows === 1;
 };
 
 // ========================================
@@ -572,6 +591,7 @@ module.exports = {
     activar2FA,
     desactivar2FA,
     obtenerSecreto2FA,
+    consumirOtp2FA,
     guardarCodigoVerificacion,
     marcarEmailVerificado,
     limpiarCodigoVerificacion,
