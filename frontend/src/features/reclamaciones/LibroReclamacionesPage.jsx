@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FaArrowLeft, FaCircleCheck, FaPaperPlane } from 'react-icons/fa6';
@@ -10,6 +10,8 @@ import { Alert } from '../../components/ui/Alert';
 
 import { obtenerEmpresaPublica, registrarReclamacion } from './reclamacionesService';
 import './reclamaciones-publica.css';
+import { useTienda } from '../../public-site/tienda/TiendaContext';
+import { useDatosCliente } from '../../public-site/tienda/useDatosCliente';
 
 // ============================================================
 // LIBRO DE RECLAMACIONES VIRTUAL (página pública, sin sesión)
@@ -48,12 +50,32 @@ function Seccion({ numero, titulo, children }) {
 }
 
 export default function LibroReclamacionesPage() {
+    const tienda = useTienda();
+    return <FormularioReclamaciones key={tienda.generacion} tienda={tienda} />;
+}
+
+function FormularioReclamaciones({ tienda }) {
+    const datos = useDatosCliente(tienda);
+    const editados = useRef(new Set());
     const [empresa, setEmpresa] = useState(null);
     const [hoja, setHoja] = useState(INICIAL);
     const [acepta, setAcepta] = useState(false);
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState('');
     const [registrada, setRegistrada] = useState(null);
+
+    useEffect(() => {
+        const predeterminados = { consumidor_nombre: datos.nombre, consumidor_email: datos.email,
+            consumidor_telefono: datos.telefono, consumidor_domicilio: datos.direccion,
+            consumidor_documento: datos.documento, consumidor_tipo_documento: datos.tipoDocumento };
+        setHoja(actual => {
+            const nueva = { ...actual };
+            for (const [campo, valor] of Object.entries(predeterminados)) {
+                if (valor && !editados.current.has(campo) && (!actual[campo] || actual[campo] === INICIAL[campo])) nueva[campo] = valor;
+            }
+            return nueva;
+        });
+    }, [datos]);
 
     useEffect(() => {
         let activo = true;
@@ -67,6 +89,7 @@ export default function LibroReclamacionesPage() {
 
     const cambiar = (e) => {
         const { name, value, type, checked } = e.target;
+        editados.current.add(name);
         setHoja((actual) => ({ ...actual, [name]: type === 'checkbox' ? checked : value }));
     };
 
@@ -87,7 +110,7 @@ export default function LibroReclamacionesPage() {
             setRegistrada(respuesta?.data ? { ...respuesta.data, mensaje: respuesta.mensaje } : { mensaje: respuesta?.mensaje });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {
-            setError(err.response?.data?.mensaje || 'No se pudo registrar la hoja. Inténtalo de nuevo.');
+            setError(err.response?.data?.mensaje || err.message || 'No se pudo registrar la hoja. Inténtalo de nuevo.');
         } finally {
             setEnviando(false);
         }
@@ -131,8 +154,11 @@ export default function LibroReclamacionesPage() {
                         <Button
                             variante="secondary"
                             onClick={() => {
-                                setRegistrada(null);
-                                setHoja(INICIAL);
+                                 setRegistrada(null);
+                                 editados.current.clear();
+                                 setHoja({ ...INICIAL, consumidor_nombre: datos.nombre || '', consumidor_email: datos.email || '',
+                                     consumidor_telefono: datos.telefono || '', consumidor_documento: datos.documento || '',
+                                     consumidor_domicilio: datos.direccion || '', consumidor_tipo_documento: datos.tipoDocumento || 'DNI' });
                                 setAcepta(false);
                             }}
                         >
@@ -142,6 +168,7 @@ export default function LibroReclamacionesPage() {
                 ) : (
                     <form onSubmit={enviar} className="mt-6 space-y-6" noValidate>
                         <Seccion numero="1" titulo="Identificación del consumidor">
+                            {tienda.usuario && !tienda.revisando && !tienda.errorSesion && <p className="text-sm text-slate-600">Completamos los datos disponibles de tu cuenta y tus compras. Puedes corregirlos antes de enviar.</p>}
                             <div className="form-grid">
                                 <Input ancho={12} label="Nombre completo" name="consumidor_nombre" value={hoja.consumidor_nombre} onChange={cambiar} requerido maxLength={160} />
                                 <Select ancho={4} label="Documento" name="consumidor_tipo_documento" value={hoja.consumidor_tipo_documento} onChange={cambiar}>

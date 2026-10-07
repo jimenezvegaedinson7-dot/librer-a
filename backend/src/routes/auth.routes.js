@@ -36,6 +36,8 @@ router.post('/reenviar-codigo', verificacionLimiter, authController.reenviarCodi
 // Solicitar código de reseteo (se envía por correo)
 router.post('/solicitar-reseteo', verificacionLimiter, authController.solicitarReseteo);
 
+router.post('/verificar-reseteo', verificacionLimiter, authController.verificarReseteo);
+
 // Validar código y establecer nueva contraseña
 router.post('/reestablecer-contrasena', verificacionLimiter, authController.reestablecerContrasena);
 

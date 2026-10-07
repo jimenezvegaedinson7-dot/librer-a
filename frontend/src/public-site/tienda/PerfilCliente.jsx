@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import {
     FaArrowRightFromBracket, FaBook, FaBoxOpen, FaCartShopping, FaChevronRight, FaHeart, FaMobileScreen,
-    FaCircleCheck, FaClock,
+    FaCircleCheck, FaClock, FaFileLines,
 } from 'react-icons/fa6';
 import { urlPortada } from '../lib/formato';
 
@@ -29,6 +29,7 @@ export default function PerfilCliente({ tienda }) {
         { to: '/carrito', Icono: FaCartShopping, titulo: 'Mi carrito', texto: unidades ? `${unidades} ${unidades === 1 ? 'libro' : 'libros'} por comprar` : 'Tu carrito está vacío', etiqueta: 'Ver carrito' },
         { to: '/catalogo', Icono: FaBook, titulo: 'Catálogo', texto: 'Precios y stock actuales' },
         { to: '/descargar', Icono: FaMobileScreen, titulo: 'La app', texto: 'Compras e historial con la misma cuenta' },
+        { to: '/libro-de-reclamaciones', Icono: FaFileLines, titulo: 'Libro de Reclamaciones', texto: 'Formulario con tus datos disponibles' },
     ];
 
     return (

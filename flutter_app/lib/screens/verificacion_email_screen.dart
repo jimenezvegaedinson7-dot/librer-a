@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../services/api_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/error_banner.dart';
+import '../widgets/campo_otp.dart';
+import '../widgets/confirmacion_otp.dart';
 import 'login_screen.dart';
 
 /// Pantalla de verificación de cuenta por email.
@@ -16,8 +17,9 @@ import 'login_screen.dart';
 /// registro cierra, llevando al usuario a iniciar sesión.
 class VerificacionEmailScreen extends StatefulWidget {
   final String email;
+  final ApiService? api;
 
-  const VerificacionEmailScreen({super.key, required this.email});
+  const VerificacionEmailScreen({super.key, required this.email, this.api});
 
   @override
   State<VerificacionEmailScreen> createState() =>
@@ -57,6 +59,7 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
   }
 
   Future<void> _verificar() async {
+    if (_loading || _reenviando) return;
     FocusScope.of(context).unfocus();
     setState(() {
       _errorMessage = null;
@@ -71,17 +74,18 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
 
     setState(() => _loading = true);
     try {
-      await ApiService.instance.verificarEmail(
+      await (widget.api ?? ApiService.instance).verificarEmail(
         email: widget.email,
         codigo: codigo,
       );
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Cuenta verificada! Ya puedes iniciar sesión.'),
-        ),
+      await mostrarConfirmacionOtp(
+        context,
+        titulo: 'Cuenta verificada',
+        mensaje: 'Ya puedes iniciar sesión.',
       );
+      if (!mounted) return;
       Navigator.of(context).pop(true);
     } on ApiException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message);
@@ -97,14 +101,16 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
   }
 
   Future<void> _reenviar() async {
-    if (_reenviando || _segundosReintento > 0) return;
+    if (_loading || _reenviando || _segundosReintento > 0) return;
     setState(() {
       _reenviando = true;
       _errorMessage = null;
       _infoMessage = null;
     });
     try {
-      await ApiService.instance.reenviarCodigo(email: widget.email);
+      await (widget.api ?? ApiService.instance).reenviarCodigo(
+        email: widget.email,
+      );
       if (!mounted) return;
       setState(() {
         _infoMessage = 'Se envió un nuevo código a tu correo.';
@@ -182,32 +188,10 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
                       const SizedBox(height: 28),
 
                       // Campo OTP (6 dígitos, numérico)
-                      TextFormField(
+                      CampoOtp(
                         controller: _otpController,
-                        keyboardType: TextInputType.number,
-                        textInputAction: TextInputAction.done,
-                        autofocus: true,
-                        autocorrect: false,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(6),
-                        ],
-                        style: textTheme.headlineSmall?.copyWith(
-                          letterSpacing: 8,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        decoration: _inputDecoration(
-                          label: 'Código de 6 dígitos',
-                          icon: Icons.mark_email_read_outlined,
-                        ),
-                        validator: (value) {
-                          final v = value?.trim() ?? '';
-                          if (v.length != 6) {
-                            return 'El código debe tener 6 dígitos';
-                          }
-                          return null;
-                        },
-                        onFieldSubmitted: (_) => _verificar(),
+                        enabled: !_loading && !_reenviando,
+                        onSubmitted: _verificar,
                       ),
 
                       // Mensaje de error
@@ -303,12 +287,5 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
         ),
       ),
     );
-  }
-
-  InputDecoration _inputDecoration({
-    required String label,
-    required IconData icon,
-  }) {
-    return InputDecoration(labelText: label, prefixIcon: Icon(icon));
   }
 }

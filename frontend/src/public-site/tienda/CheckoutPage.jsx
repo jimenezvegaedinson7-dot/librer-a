@@ -6,6 +6,7 @@ import { centimos } from './libroComercial';
 import { useTienda } from './TiendaContext';
 import { soles } from '../lib/formato';
 import EstadoSesion from './EstadoSesion';
+import { useDatosCliente } from './useDatosCliente';
 
 export default function CheckoutPage() {
     const t=useTienda();
@@ -13,6 +14,8 @@ export default function CheckoutPage() {
 }
 
 function CheckoutCliente({ t }) {
+    const datos = useDatosCliente(t);
+    const editados = useRef(new Set());
     const {irArriba}=useOutletContext();
     const navigate=useNavigate();
     const idUsuario=t.usuario?.id_usuario;
@@ -28,6 +31,12 @@ function CheckoutCliente({ t }) {
     const [referencia,setReferencia]=useState(previo?.cuerpo?.referencia || '');
     const [documento,setDocumento]=useState(previo?.cuerpo?.cliente_documento || '');
     const [tipoDoc,setTipoDoc]=useState(previo?.cuerpo?.cliente_tipo_documento || 'DNI');
+    useEffect(() => {
+        if (previo) return;
+        if (datos.direccion && !editados.current.has('direccion')) setDireccion(datos.direccion);
+        if (datos.documento && !editados.current.has('documento')) setDocumento(String(datos.documento));
+        if (['DNI','RUC','CE'].includes(datos.tipoDocumento) && !editados.current.has('tipoDoc')) setTipoDoc(datos.tipoDocumento);
+    }, [datos, previo]);
     const [zonas,setZonas]=useState([]);
     const [error,setError]=useState('');
     const [errorZonas,setErrorZonas]=useState('');
@@ -138,11 +147,11 @@ function CheckoutCliente({ t }) {
                     {!zonas.length && <p>No hay zonas de delivery activas. Puedes elegir recojo gratuito.</p>}
                     <label htmlFor="web-zona-delivery">Zona de delivery</label><select id="web-zona-delivery" value={zonaId} required onChange={e=>setZonaId(e.target.value)}><option value="">Selecciona una zona</option>
                         {zonas.map(z=><option key={z.id_zona} value={z.id_zona}>{z.nombre} · {soles(z.tarifa)}</option>)}</select>
-                    <label>Dirección<input required minLength={5} maxLength={255} autoComplete="street-address" value={direccion} onChange={e=>setDireccion(e.target.value)}/></label>
+                    <label>Dirección<input required minLength={5} maxLength={255} autoComplete="street-address" value={direccion} onChange={e=>{editados.current.add('direccion');setDireccion(e.target.value);}}/></label>
                     <label>Referencia de dirección (opcional)<input maxLength={255} value={referencia} onChange={e=>setReferencia(e.target.value)}/></label></>}
-                <label htmlFor="web-tipo-documento">Tipo de documento</label><select id="web-tipo-documento" value={tipoDoc} onChange={e=>setTipoDoc(e.target.value)}><option>DNI</option><option>RUC</option><option>CE</option></select>
+                <label htmlFor="web-tipo-documento">Tipo de documento</label><select id="web-tipo-documento" value={tipoDoc} onChange={e=>{editados.current.add('tipoDoc');setTipoDoc(e.target.value);}}><option>DNI</option><option>RUC</option><option>CE</option></select>
                 <label>Número de documento<input required inputMode={tipoDoc==='CE'?'text':'numeric'} maxLength={tipoDoc==='DNI'?8:tipoDoc==='RUC'?11:20}
-                    value={documento} onChange={e=>setDocumento(e.target.value)}/></label>
+                    value={documento} onChange={e=>{editados.current.add('documento');setDocumento(e.target.value);}}/></label>
             </fieldset>}</div><aside className="compra-resumen"><h2>Resumen del pedido</h2>
                 {lineas.map(i=><p key={i.id_libro}>{i.titulo || i.libro?.titulo || `Libro #${i.id_libro}`} × {i.cantidad}</p>)}
                 <p>Subtotal <strong>{Number.isFinite(subtotal)?soles(subtotal):'Se confirmará al recuperar el pedido'}</strong></p>

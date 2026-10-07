@@ -62,6 +62,7 @@ export const clienteApi = {
     verificarEmail: datos => peticionCliente('/auth/verificar-email', { method: 'POST', body: datos, autenticada: false }),
     reenviarCodigo: email => peticionCliente('/auth/reenviar-codigo', { method: 'POST', body: {email}, autenticada: false }),
     solicitarReseteo: email => peticionCliente('/auth/solicitar-reseteo', { method: 'POST', body: {email}, autenticada: false }),
+    verificarReseteo: datos => peticionCliente('/auth/verificar-reseteo', { method: 'POST', body: datos, autenticada: false }),
     restablecer: datos => peticionCliente('/auth/reestablecer-contrasena', { method: 'POST', body: datos, autenticada: false }),
     verificar2fa: datos => peticionCliente('/auth/2fa/verify-login', { method: 'POST', body: datos, autenticada: false }),
     perfil: sesion => peticionCliente('/usuarios/perfil', {sesion}),

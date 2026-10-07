@@ -61,6 +61,8 @@ const RESERVA = {
 const ENTREGA = {
     pendiente: [
         'preparando',
+        'listo_recojo',
+        'en_camino',
         'cancelado'
     ],
 

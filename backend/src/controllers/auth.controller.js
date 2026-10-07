@@ -396,6 +396,31 @@ const solicitarReseteo = async (req, res) => {
 // contraseña. No requiere JWT: la posesión del código recibido en el
 // correo del usuario es la prueba de control de la cuenta.
 // ========================================
+const huellaCodigo = codigoHash => crypto.createHash('sha256').update(codigoHash).digest('hex');
+
+// Primero verifica el OTP. El permiso temporal solo sirve para cambiar la
+// contraseña, queda vinculado al código vigente y nunca crea una sesión.
+const verificarReseteo = async (req, res) => {
+    const rechazo = () => res.status(400).json({ success: false,
+        mensaje: 'El correo o código no es válido o ha expirado. Solicita un código nuevo.' });
+    try {
+        const email = String(req.body.email || '').trim().toLowerCase();
+        const codigo = String(req.body.codigo || '');
+        if (!email || !/^\d{6}$/.test(codigo)) return rechazo();
+        const usuario = await usuarioModel.buscarPorEmail(email);
+        const restante = Math.floor((new Date(usuario?.email_verification_expires).getTime() - Date.now()) / 1000);
+        if (!usuario?.email_verified_at || !usuario.email_verification_code || !Number.isFinite(restante) || restante <= 0) return rechazo();
+        if (!await bcrypt.compare(codigo, usuario.email_verification_code)) return rechazo();
+        const reset_token = jwt.sign({ proposito: 'password_reset', id_usuario: usuario.id_usuario, email,
+            sesion_version: Number(usuario.sesion_version ?? 0), huella: huellaCodigo(usuario.email_verification_code) },
+        process.env.JWT_SECRET, { expiresIn: Math.min(restante, 300), algorithm: 'HS256' });
+        return res.json({ success: true, mensaje: 'Código verificado. Ya puedes crear una nueva contraseña.', reset_token });
+    } catch (error) {
+        console.error('Error al verificar recuperación:', error.message);
+        return res.status(500).json({ success: false, mensaje: 'No se pudo verificar el código. Inténtalo de nuevo.' });
+    }
+};
+
 const reestablecerContrasena = async (req, res) => {
     const rechazoCodigo = () => res.status(400).json({ success: false,
         mensaje: 'El correo o código no es válido o ha expirado. Solicita un código nuevo.' });
@@ -404,10 +429,11 @@ const reestablecerContrasena = async (req, res) => {
         const {
             email,
             codigo,
-            password
+            password,
+            reset_token
         } = req.body;
 
-        if (!email || !codigo || !password) {
+        if (!email || (!codigo && !reset_token) || !password) {
             return res.status(400).json({
                 success: false,
                 mensaje: 'Email, código y nueva contraseña son obligatorios'
@@ -427,7 +453,7 @@ const reestablecerContrasena = async (req, res) => {
 
         const emailNormalizado = String(email).trim().toLowerCase();
 
-        if (!/^\d{6}$/.test(String(codigo))) {
+        if (!reset_token && !/^\d{6}$/.test(String(codigo))) {
             return res.status(400).json({
                 success: false,
                 mensaje: 'El código debe tener 6 dígitos'
@@ -457,8 +483,19 @@ const reestablecerContrasena = async (req, res) => {
         }
 
         // Comparar el código (hash)
-        const codigoCorrecto =
-            await bcrypt.compare(String(codigo), usuario.email_verification_code);
+        let codigoCorrecto;
+        if (reset_token) {
+            let permiso;
+            try { permiso = jwt.verify(reset_token, process.env.JWT_SECRET, { algorithms: ['HS256'] }); }
+            catch { return rechazoCodigo(); }
+            codigoCorrecto = permiso.proposito === 'password_reset' && permiso.email === emailNormalizado
+                && Number(permiso.id_usuario) === Number(usuario.id_usuario)
+                && Number(permiso.sesion_version) === Number(usuario.sesion_version ?? 0)
+                && permiso.huella === huellaCodigo(usuario.email_verification_code);
+        } else {
+            // Compatibilidad con versiones publicadas que envían OTP y clave.
+            codigoCorrecto = await bcrypt.compare(String(codigo), usuario.email_verification_code);
+        }
 
         if (!codigoCorrecto) {
             return rechazoCodigo();
@@ -467,14 +504,13 @@ const reestablecerContrasena = async (req, res) => {
         // Actualizar contraseña y limpiar el código usado.
         const passwordHash = await bcrypt.hash(password, 10);
 
-        await usuarioModel.actualizarPassword(
+        const cambiada = await usuarioModel.actualizarPasswordConCodigo(
             usuario.id_usuario,
-            passwordHash
+            passwordHash,
+            usuario.email_verification_code,
+            Number(usuario.sesion_version ?? 0)
         );
-
-        await usuarioModel.limpiarCodigoVerificacion(
-            usuario.id_usuario
-        );
+        if (!cambiada) return rechazoCodigo();
 
         res.json({
             success: true,
@@ -619,6 +655,7 @@ module.exports = {
     verificarEmail,
     reenviarCodigo,
     solicitarReseteo,
+    verificarReseteo,
     reestablecerContrasena,
     validarPassword
 };

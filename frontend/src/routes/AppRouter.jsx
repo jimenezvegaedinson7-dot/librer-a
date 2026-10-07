@@ -24,6 +24,7 @@ import RutaProtegida from './RutaProtegida';
 import RutaPorRol from './RutaPorRol';
 import { ROLES } from '../lib/roles';
 import { CargandoPantalla } from '../components/ui/Spinner';
+import { TiendaProvider } from '../public-site/tienda/TiendaContext';
 
 const PublicLayout = lazyConReintento(() => import('../public-site/PublicLayout'));
 const InicioPage = lazyConReintento(() => import('../public-site/pages/paginas').then((m) => ({ default: m.InicioPage })));
@@ -106,7 +107,7 @@ const router = createBrowserRouter([
     {
         // Público (sin sesión): lo enlazan las apps y el login.
         path: '/libro-de-reclamaciones',
-        element: cargar(<LibroReclamacionesPage />),
+        element: cargar(<TiendaProvider catalogo={{ libros: [], cargando: false }}><LibroReclamacionesPage /></TiendaProvider>),
     },
     {
         element: (

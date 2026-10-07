@@ -17,7 +17,7 @@
 // ============================================================
 
 const ENTREGAS = {
-    pendiente: ['preparando', 'cancelado'],
+    pendiente: ['preparando', 'listo_recojo', 'en_camino', 'cancelado'],
     preparando: ['listo_recojo', 'en_camino', 'cancelado'],
     listo_recojo: ['entregado', 'cancelado'],
     en_camino: ['entregado', 'cancelado'],
@@ -83,12 +83,12 @@ export const ETIQUETA_PAGO = {
 // El botón "Cancelar" se ofrece aparte cuando la máquina lo permite.
 const SIGUIENTE = {
     domicilio: {
-        pendiente: 'preparando',
+        pendiente: 'en_camino',
         preparando: 'en_camino',
         en_camino: 'entregado',
     },
     tienda: {
-        pendiente: 'preparando',
+        pendiente: 'listo_recojo',
         preparando: 'listo_recojo',
         listo_recojo: 'entregado',
     },

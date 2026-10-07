@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -24,16 +26,42 @@ class MisComprasScreen extends StatefulWidget {
   State<MisComprasScreen> createState() => MisComprasScreenState();
 }
 
-class MisComprasScreenState extends State<MisComprasScreen> {
+class MisComprasScreenState extends State<MisComprasScreen>
+    with WidgetsBindingObserver {
   bool _loading = true;
   bool _cargando = false;
   String? _error;
   List<Venta> _ventas = const [];
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _timer = Timer.periodic(const Duration(seconds: 60), (_) {
+      if (mounted &&
+          ModalRoute.of(context)?.isCurrent == true &&
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+        _cargarVentas();
+      }
+    });
     _cargarVentas();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        mounted &&
+        ModalRoute.of(context)?.isCurrent == true) {
+      _cargarVentas();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   /// Recarga las compras desde el backend.
@@ -189,7 +217,7 @@ class _VentaTile extends StatelessWidget {
           const SnackBar(
             content: Text(
               'No encontramos una ventana de pago activa para esta compra. '
-               'Actualiza tus compras y verifica su estado antes de continuar.',
+              'Actualiza tus compras y verifica su estado antes de continuar.',
             ),
             duration: Duration(seconds: 3),
           ),
@@ -209,9 +237,11 @@ class _VentaTile extends StatelessWidget {
   Future<void> _verificarPago(BuildContext context) async {
     final orderId = venta.orderId;
     if (orderId == null || orderId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Esta compra no tiene una referencia PayU disponible.'),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Esta compra no tiene una referencia PayU disponible.'),
+        ),
+      );
       return;
     }
 
@@ -695,13 +725,19 @@ class _SeguimientoPedido extends StatelessWidget {
       );
     }
 
-    final entregado = venta.estadoEntrega == 'entregado' ||
+    final entregado =
+        venta.estadoEntrega == 'entregado' ||
         (venta.estadoEntrega == null && raw == 'entregada');
     final completado = raw == 'entregada' || raw == 'pagada';
     final pasos = <(String, bool)>[
       ('Pedido realizado', raw == 'pendiente' || completado),
       ('Pago confirmado', raw == 'pagada' || raw == 'entregada'),
-      (venta.entregaEstadoLabel.isEmpty ? 'Entregado' : venta.entregaEstadoLabel, entregado),
+      (
+        venta.entregaEstadoLabel.isEmpty
+            ? 'Entregado'
+            : venta.entregaEstadoLabel,
+        entregado,
+      ),
     ];
 
     return Row(

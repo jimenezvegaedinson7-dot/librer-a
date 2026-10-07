@@ -1,4 +1,5 @@
 import client from '../../lib/api/client';
+import { peticionCliente } from '../../public-site/tienda/clienteApi';
 
 // ============================================================
 // LIBRO DE RECLAMACIONES
@@ -6,7 +7,7 @@ import client from '../../lib/api/client';
 // ============================================================
 
 export async function registrarReclamacion(hoja) {
-    return client.post('/reclamaciones', hoja);
+    return peticionCliente('/reclamaciones', { method: 'POST', body: hoja, autenticada: false });
 }
 
 export async function listarReclamaciones(params = {}) {

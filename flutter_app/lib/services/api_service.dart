@@ -18,10 +18,10 @@ import 'storage_service.dart';
 import 'carrito_service.dart';
 import 'checkout_store.dart';
 
-/// Resultado del login con soporte para doble factor de autenticación.
+/// Resultado del login con soporte para doble factor de autenticaciÃ³n.
 ///
-/// - Si [requiere2fa] es `false`, el login terminó y la sesión quedó guardada.
-/// - Si [requiere2fa] es `true`, hay que pedir el código OTP al usuario y
+/// - Si [requiere2fa] es `false`, el login terminÃ³ y la sesiÃ³n quedÃ³ guardada.
+/// - Si [requiere2fa] es `true`, hay que pedir el cÃ³digo OTP al usuario y
 ///   llamar a [ApiService.verificarLogin2FA] con [twoFactorToken]. El token
 ///   temporal NUNCA se guarda en almacenamiento persistente: solo vive en
 ///   memoria durante el flujo.
@@ -34,13 +34,13 @@ class LoginResult {
   bool get loginCompletado => !requiere2fa;
 }
 
-/// Resultado del registro con verificación de email.
+/// Resultado del registro con verificaciÃ³n de email.
 ///
-/// - [requiereVerificacion] indica si la cuenta quedó pendiente de verificar
-///   el correo (código enviado por email). Si es `false`, la cuenta ya quedó
-///   lista (solo ocurre si el backend no usara verificación).
+/// - [requiereVerificacion] indica si la cuenta quedÃ³ pendiente de verificar
+///   el correo (cÃ³digo enviado por email). Si es `false`, la cuenta ya quedÃ³
+///   lista (solo ocurre si el backend no usara verificaciÃ³n).
 /// - [email] es el correo registrado (para precargar el login y para usar en
-///   la verificación).
+///   la verificaciÃ³n).
 class RegistroResult {
   final String email;
   final bool requiereVerificacion;
@@ -51,7 +51,7 @@ class RegistroResult {
   });
 }
 
-/// Excepción de dominio con un mensaje amigable para el usuario.
+/// ExcepciÃ³n de dominio con un mensaje amigable para el usuario.
 class ApiException implements Exception {
   final String message;
   final int? statusCode;
@@ -68,9 +68,9 @@ class ApiException implements Exception {
 
 /// Cliente HTTP centralizado basado en Dio.
 ///
-/// Configura la [baseUrl] desde [Constants] y agrega automáticamente el
-/// header `Authorization: Bearer <token>` cuando existe una sesión activa.
-/// Además normaliza los errores de Dio en mensajes claros.
+/// Configura la [baseUrl] desde [Constants] y agrega automÃ¡ticamente el
+/// header `Authorization: Bearer <token>` cuando existe una sesiÃ³n activa.
+/// AdemÃ¡s normaliza los errores de Dio en mensajes claros.
 class ApiService {
   ApiService._({Dio? dio}) {
     _dio =
@@ -95,7 +95,7 @@ class ApiService {
               DioException(
                 requestOptions: options,
                 type: DioExceptionType.cancel,
-                error: 'La sesión cambió.',
+                error: 'La sesiÃ³n cambiÃ³.',
               ),
             );
             return;
@@ -123,7 +123,7 @@ class ApiService {
               DioException(
                 requestOptions: response.requestOptions,
                 type: DioExceptionType.cancel,
-                error: 'La sesión cambió.',
+                error: 'La sesiÃ³n cambiÃ³.',
               ),
             );
             return;
@@ -131,10 +131,10 @@ class ApiService {
           handler.next(response);
         },
         onError: (error, handler) async {
-          // Si el token es inválido o expiró, limpia la sesión local una sola
-          // vez y dirige al usuario al Login. No hay reintento automático
-          // aquí (evita ciclos: tras limpiar el token, los siguientes 401 ya no
-          // encuentran sesión y no vuelven a navegar).
+          // Si el token es invÃ¡lido o expirÃ³, limpia la sesiÃ³n local una sola
+          // vez y dirige al usuario al Login. No hay reintento automÃ¡tico
+          // aquÃ­ (evita ciclos: tras limpiar el token, los siguientes 401 ya no
+          // encuentran sesiÃ³n y no vuelven a navegar).
           if (error.response?.statusCode == 401) {
             final options = error.requestOptions;
             final data = error.response?.data;
@@ -144,7 +144,7 @@ class ApiService {
             final credencialIncorrecta =
                 (options.path == Constants.cambiarPasswordPath ||
                     options.path == Constants.twoFactorDisablePath) &&
-                mensaje.toLowerCase().contains('contraseña') &&
+                mensaje.toLowerCase().contains('contraseÃ±a') &&
                 mensaje.toLowerCase().contains('incorrecta');
             final token = await StorageService.instance.obtenerToken();
             if (!credencialIncorrecta &&
@@ -184,13 +184,13 @@ class ApiService {
   /// del checkout (ver `limpiarIdempotencia`).
   Future<OrdenPago>? _creando;
 
-  /// Últimos `checkout_url` conocidos por venta (id_venta -> URL).
+  /// Ãšltimos `checkout_url` conocidos por venta (id_venta -> URL).
   ///
   /// Permite reabrir el checkout desde "Mis compras" cuando el usuario cierra
   /// el navegador sin pagar, incluso si la respuesta no incluye la URL.
   final Map<int, String> _checkoutUrls = {};
 
-  /// Devuelve el último checkout URL registrado para una venta, o null.
+  /// Devuelve el Ãºltimo checkout URL registrado para una venta, o null.
   String? obtenerCheckoutUrl(int idVenta) => _checkoutUrls[idVenta];
 
   /// Recupera desde el backend la URL de pago de una venta pendiente.
@@ -221,8 +221,8 @@ class ApiService {
 
   /// Limpia el estado de checkout en memoria: idempotencia y URLs guardadas.
   ///
-  /// Debe invocarse al cerrar sesión o al recibir un 401 para que una cuenta
-  /// distinta (o una sesión nueva) nunca reutilice la clave/URL de otra.
+  /// Debe invocarse al cerrar sesiÃ³n o al recibir un 401 para que una cuenta
+  /// distinta (o una sesiÃ³n nueva) nunca reutilice la clave/URL de otra.
   void limpiarEstadoCheckout() {
     limpiarIdempotencia();
     _checkoutUrls.clear();
@@ -235,24 +235,24 @@ class ApiService {
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.sendTimeout) {
       return const ApiException(
-        'El servidor tardó demasiado en responder. Inténtalo de nuevo.',
+        'El servidor tardÃ³ demasiado en responder. IntÃ©ntalo de nuevo.',
       );
     }
     if (e.type == DioExceptionType.connectionError) {
       return const ApiException(
-        'No se pudo conectar con el servidor. Revisa tu conexión.',
+        'No se pudo conectar con el servidor. Revisa tu conexiÃ³n.',
       );
     }
-    // Servidor caído o conexión rechazada (sin respuesta HTTP).
+    // Servidor caÃ­do o conexiÃ³n rechazada (sin respuesta HTTP).
     if (e.type == DioExceptionType.unknown && e.response == null) {
       return const ApiException(
-        'El servidor no está disponible. Inténtalo más tarde.',
+        'El servidor no estÃ¡ disponible. IntÃ©ntalo mÃ¡s tarde.',
       );
     }
     if (status != null) {
       final data = e.response?.data;
       if (data is Map) {
-        // El backend usa "mensaje"; se acepta también "message" por robustez.
+        // El backend usa "mensaje"; se acepta tambiÃ©n "message" por robustez.
         final msg = data['mensaje'] ?? data['message'];
         if (msg != null && msg.toString().trim().isNotEmpty) {
           final texto = msg.toString();
@@ -269,23 +269,25 @@ class ApiService {
       }
       switch (status) {
         case 400:
-          return const ApiException('Solicitud inválida.');
+          return const ApiException('Solicitud invÃ¡lida.');
         case 401:
           return const ApiException(
-            'Tu sesión expiró. Inicia sesión nuevamente.',
+            'Tu sesiÃ³n expirÃ³. Inicia sesiÃ³n nuevamente.',
           );
         case 403:
-          return const ApiException('No tienes permisos para esta acción.');
+          return const ApiException('No tienes permisos para esta acciÃ³n.');
         case 404:
           return const ApiException('Recurso no encontrado.');
         case 500:
         case 502:
         case 503:
-          return const ApiException('Error del servidor. Inténtalo más tarde.');
+          return const ApiException(
+            'Error del servidor. IntÃ©ntalo mÃ¡s tarde.',
+          );
       }
     }
     return const ApiException(
-      'Ocurrió un error inesperado. Inténtalo de nuevo.',
+      'OcurriÃ³ un error inesperado. IntÃ©ntalo de nuevo.',
     );
   }
 
@@ -294,7 +296,7 @@ class ApiService {
   /// Devuelve un [LoginResult]:
   /// - Si el cliente NO tiene 2FA, guarda el token y el usuario y devuelve
   ///   `requiere2fa = false`.
-  /// - Si el cliente SÍ tiene 2FA, devuelve `requiere2fa = true` junto con el
+  /// - Si el cliente SÃ tiene 2FA, devuelve `requiere2fa = true` junto con el
   ///   `twoFactorToken` temporal (solo en memoria) para verificar el OTP.
   ///
   /// Si el rol fuera administrador, lanza [ApiException] indicando que esta
@@ -311,12 +313,12 @@ class ApiService {
 
       final data = response.data ?? {};
 
-      // CASO B: el backend pide código de doble factor.
+      // CASO B: el backend pide cÃ³digo de doble factor.
       if (data['requires_2fa'] == true) {
         final tokenTemporal = (data['two_factor_token'] ?? '').toString();
         if (tokenTemporal.isEmpty) {
           throw const ApiException(
-            'El servidor no devolvió el token para verificar el código.',
+            'El servidor no devolviÃ³ el token para verificar el cÃ³digo.',
           );
         }
         return LoginResult(requiere2fa: true, twoFactorToken: tokenTemporal);
@@ -325,7 +327,7 @@ class ApiService {
       // CASO A: login normal.
       final token = (data['token'] ?? data['accessToken'] ?? '').toString();
       if (token.isEmpty) {
-        throw const ApiException('El servidor no devolvió un token válido.');
+        throw const ApiException('El servidor no devolviÃ³ un token vÃ¡lido.');
       }
 
       final usuarioData = data['data'];
@@ -335,7 +337,7 @@ class ApiService {
         );
         if (usuario.esAdministrador) {
           throw const ApiException(
-            'Esta aplicación es para clientes. El panel administrativo se encuentra en otra plataforma.',
+            'Esta aplicaciÃ³n es para clientes. El panel administrativo se encuentra en otra plataforma.',
           );
         }
         await StorageService.instance.guardarToken(token);
@@ -350,9 +352,9 @@ class ApiService {
     }
   }
 
-  /// Verifica el código OTP del doble factor contra `POST /auth/2fa/verify-login`.
+  /// Verifica el cÃ³digo OTP del doble factor contra `POST /auth/2fa/verify-login`.
   ///
-  /// Al validarse, guarda la sesión y devuelve `true`. El [twoFactorToken]
+  /// Al validarse, guarda la sesiÃ³n y devuelve `true`. El [twoFactorToken]
   /// temporal se usa solo en memoria para esta llamada y se descarta al terminar.
   Future<bool> verificarLogin2FA({
     required String twoFactorToken,
@@ -366,7 +368,7 @@ class ApiService {
       final data = response.data ?? {};
       final token = (data['token'] ?? data['accessToken'] ?? '').toString();
       if (token.isEmpty) {
-        throw const ApiException('El servidor no devolvió un token válido.');
+        throw const ApiException('El servidor no devolviÃ³ un token vÃ¡lido.');
       }
       final usuarioData = data['data'];
       if (usuarioData is Map) {
@@ -375,7 +377,7 @@ class ApiService {
         );
         if (usuario.esAdministrador) {
           throw const ApiException(
-            'Esta aplicación es para clientes. El panel administrativo se encuentra en otra plataforma.',
+            'Esta aplicaciÃ³n es para clientes. El panel administrativo se encuentra en otra plataforma.',
           );
         }
         await StorageService.instance.guardarToken(token);
@@ -389,10 +391,10 @@ class ApiService {
     }
   }
 
-  /// Inicia la configuración del doble factor contra `POST /auth/2fa/setup`.
+  /// Inicia la configuraciÃ³n del doble factor contra `POST /auth/2fa/setup`.
   ///
   /// Devuelve el secreto, la URL OTPAuth y el QR (data URL base64). Requiere
-  /// sesión activa.
+  /// sesiÃ³n activa.
   Future<Map<String, dynamic>> setupTwoFactor({
     required String password,
   }) async {
@@ -405,7 +407,9 @@ class ApiService {
       if (data is Map && data['data'] is Map) {
         return Map<String, dynamic>.from(data['data'] as Map);
       }
-      throw const ApiException('El servidor no devolvió la configuración 2FA.');
+      throw const ApiException(
+        'El servidor no devolviÃ³ la configuraciÃ³n 2FA.',
+      );
     } on DioException catch (e) {
       throw _toApiException(e);
     }
@@ -413,7 +417,7 @@ class ApiService {
 
   /// Confirma (activa) el doble factor contra `POST /auth/2fa/confirm`.
   ///
-  /// Requiere el [codigo] OTP de 6 dígitos generado con el secreto del setup.
+  /// Requiere el [codigo] OTP de 6 dÃ­gitos generado con el secreto del setup.
   Future<void> confirmarTwoFactor({
     required String codigo,
     required String setupToken,
@@ -430,7 +434,7 @@ class ApiService {
 
   /// Desactiva el doble factor contra `POST /auth/2fa/disable`.
   ///
-  /// Requiere la contraseña actual y el código OTP generado por la app.
+  /// Requiere la contraseÃ±a actual y el cÃ³digo OTP generado por la app.
   Future<void> desactivarTwoFactor({
     required String password,
     required String codigo,
@@ -475,7 +479,7 @@ class ApiService {
       }
       if (map == null) {
         throw const ApiException(
-          'El servidor no devolvió el perfil actualizado.',
+          'El servidor no devolviÃ³ el perfil actualizado.',
         );
       }
       final usuario = Usuario.fromJson(map);
@@ -492,8 +496,8 @@ class ApiService {
   /// Sube la foto de perfil contra `PUT /usuarios/foto` (multipart, campo `foto`).
   ///
   /// Devuelve el usuario actualizado. [fileName] puede terminar en
-  /// `.jpg`/`.jpeg`/`.png`/`.webp`; el backend filtra el tipo según la
-  /// extensión.
+  /// `.jpg`/`.jpeg`/`.png`/`.webp`; el backend filtra el tipo segÃºn la
+  /// extensiÃ³n.
   Future<Usuario> subirFotoPerfil({
     required Uint8List bytes,
     required String fileName,
@@ -521,7 +525,7 @@ class ApiService {
       }
       if (map == null) {
         throw const ApiException(
-          'El servidor no devolvió el perfil actualizado.',
+          'El servidor no devolviÃ³ el perfil actualizado.',
         );
       }
       final usuario = Usuario.fromJson(map);
@@ -535,7 +539,7 @@ class ApiService {
     }
   }
 
-  /// Cambia la contraseña contra `PUT /usuarios/password`.
+  /// Cambia la contraseÃ±a contra `PUT /usuarios/password`.
   Future<void> cambiarPassword({
     required String passwordActual,
     required String passwordNueva,
@@ -560,8 +564,8 @@ class ApiService {
 
   /// Elimina la cuenta del cliente (`DELETE /usuarios/cuenta`).
   ///
-  /// Una contraseña incorrecta llega como 400 (no 401): no cierra la sesión
-  /// por sí sola y se muestra el mensaje del backend.
+  /// Una contraseÃ±a incorrecta llega como 400 (no 401): no cierra la sesiÃ³n
+  /// por sÃ­ sola y se muestra el mensaje del backend.
   Future<void> eliminarCuenta({required String password}) async {
     try {
       await _dio.delete<dynamic>(
@@ -592,8 +596,8 @@ class ApiService {
   /// Cancela una reserva propia contra `DELETE /reservas/:id`.
   ///
   /// El backend cambia el estado a `cancelada` y devuelve el stock. El token
-  /// se agrega automáticamente por el interceptor. Lanza [ApiException] si la
-  /// reserva no existe (404), no es del cliente (403) o ya está completada
+  /// se agrega automÃ¡ticamente por el interceptor. Lanza [ApiException] si la
+  /// reserva no existe (404), no es del cliente (403) o ya estÃ¡ completada
   /// (400).
   Future<void> cancelarReserva(int id) async {
     try {
@@ -603,7 +607,7 @@ class ApiService {
     }
   }
 
-  /// Compatibilidad con clientes antiguos: la creación de reservas está retirada.
+  /// Compatibilidad con clientes antiguos: la creaciÃ³n de reservas estÃ¡ retirada.
   Future<int> crearReserva({
     required int idLibro,
     required int cantidad,
@@ -623,7 +627,7 @@ class ApiService {
         await recuperarIntentoPendiente();
       }
       if (generacion != StorageService.instance.generacion) {
-        throw const ApiException('La sesión cambió.');
+        throw const ApiException('La sesiÃ³n cambiÃ³.');
       }
       final response = await _dio.get<dynamic>(
         '${Constants.ventasPath}/mis-ventas',
@@ -635,7 +639,7 @@ class ApiService {
           .toList();
       for (final venta in ventas) {
         if (generacion != StorageService.instance.generacion) {
-          throw const ApiException('La sesión cambió.');
+          throw const ApiException('La sesiÃ³n cambiÃ³.');
         }
         await _conciliarEstadoVenta(venta);
       }
@@ -659,7 +663,7 @@ class ApiService {
     }
   }
 
-  /// Consulta si un libro está en favoritos contra `GET /favoritos/:id`.
+  /// Consulta si un libro estÃ¡ en favoritos contra `GET /favoritos/:id`.
   Future<bool> esFavorito(int idLibro) async {
     try {
       final response = await _dio.get<dynamic>(
@@ -703,7 +707,7 @@ class ApiService {
   /// PayU (WebCheckout). Devuelve un [OrdenPago] con el
   /// [OrdenPago.checkoutUrl] para redirigir al checkout.
   ///
-  /// [tipoEntrega] puede ser `domicilio` (zona activa de Pallasca y dirección)
+  /// [tipoEntrega] puede ser `domicilio` (zona activa de Pallasca y direcciÃ³n)
   /// o `tienda` (recojo gratuito en Pallasca). El servidor determina la tarifa.
   ///
   /// La `idempotencia_clave` se genera UNA vez por intento de checkout y se
@@ -740,7 +744,7 @@ class ApiService {
   Future<int> _propietario() async {
     if (StorageService.instance.cambiandoSesion) {
       throw const ApiException(
-        'La sesión se está actualizando. Reintenta con tu cuenta actual.',
+        'La sesiÃ³n se estÃ¡ actualizando. Reintenta con tu cuenta actual.',
       );
     }
     final generacion = StorageService.instance.generacion;
@@ -748,7 +752,7 @@ class ApiService {
     if (generacion != StorageService.instance.generacion ||
         usuario?.idUsuario == null ||
         !usuario!.esCliente) {
-      throw const ApiException('Inicia sesión con tu cuenta de cliente.');
+      throw const ApiException('Inicia sesiÃ³n con tu cuenta de cliente.');
     }
     return usuario.idUsuario!;
   }
@@ -765,7 +769,7 @@ class ApiService {
     }
   }
 
-  /// Esta recuperación no consulta stock, promociones ni zonas: repite el
+  /// Esta recuperaciÃ³n no consulta stock, promociones ni zonas: repite el
   /// cuerpo original con la clave persistida y deja que la API lo resuelva.
   Future<OrdenPago?> recuperarIntentoPendiente() async {
     if (_creando != null) return _creando!;
@@ -824,7 +828,7 @@ class ApiService {
     }
     if (generacion != StorageService.instance.generacion) {
       throw const ApiException(
-        'La sesión cambió. Recupera la compra con su cuenta original.',
+        'La sesiÃ³n cambiÃ³. Recupera la compra con su cuenta original.',
       );
     }
     return _enviarIntento(intento);
@@ -836,7 +840,7 @@ class ApiService {
       throw const ApiException('Esta compra pertenece a otra cuenta.');
     }
     if (generacion != StorageService.instance.generacion) {
-      throw const ApiException('La sesión cambió. Vuelve a intentar.');
+      throw const ApiException('La sesiÃ³n cambiÃ³. Vuelve a intentar.');
     }
     try {
       final response = await _dio.post<dynamic>(
@@ -856,7 +860,7 @@ class ApiService {
       var orden = OrdenPago.fromJson(map);
       if (orden.idVenta == null || orden.orderId == null) {
         throw const ApiException(
-          'La respuesta está incompleta. Recupera el mismo intento.',
+          'La respuesta estÃ¡ incompleta. Recupera el mismo intento.',
         );
       }
       final estado = EstadoOrden(
@@ -871,7 +875,7 @@ class ApiService {
         orden = orden.copyWith(checkoutUrl: intento.checkoutUrl);
       }
       // Conciliar primero. Si se interrumpe, el intento sigue abierto y la
-      // repetición conserva las identidades y la marca de venta del carrito.
+      // repeticiÃ³n conserva las identidades y la marca de venta del carrito.
       if (estado.pagada) {
         await CarritoService.instance.conciliarVenta(
           orden.idVenta!,
@@ -895,7 +899,7 @@ class ApiService {
       );
       if (generacion != StorageService.instance.generacion) {
         throw const ApiException(
-          'La sesión cambió. La compra queda guardada en su cuenta.',
+          'La sesiÃ³n cambiÃ³. La compra queda guardada en su cuenta.',
         );
       }
       if (!estado.pagada && !estado.cancelada && orden.checkoutUrl != null) {
@@ -905,7 +909,7 @@ class ApiService {
       }
       return orden;
     } on DioException catch (e) {
-      // Errores definitivos de validación, nunca 401/403, transporte o 5xx.
+      // Errores definitivos de validaciÃ³n, nunca 401/403, transporte o 5xx.
       if (const [400, 404, 409, 422].contains(e.response?.statusCode)) {
         await CheckoutStore.instance.guardar(
           intento.actualizar(estado: 'REJECTED_REQUEST'),
@@ -988,7 +992,7 @@ class ApiService {
         return estado;
       }
       throw const ApiException(
-        'El servidor no devolvió el estado de la orden.',
+        'El servidor no devolviÃ³ el estado de la orden.',
       );
     } on DioException catch (e) {
       throw _toApiException(e);
@@ -1030,7 +1034,7 @@ class ApiService {
             .map((e) => Provincia.fromJson(Map<String, dynamic>.from(e)))
             .toList();
       }
-      throw const ApiException('El servidor no devolvió las provincias.');
+      throw const ApiException('El servidor no devolviÃ³ las provincias.');
     } on DioException catch (e) {
       throw _toApiException(e);
     }
@@ -1050,13 +1054,13 @@ class ApiService {
             .map((e) => Distrito.fromJson(Map<String, dynamic>.from(e)))
             .toList();
       }
-      throw const ApiException('El servidor no devolvió los distritos.');
+      throw const ApiException('El servidor no devolviÃ³ los distritos.');
     } on DioException catch (e) {
       throw _toApiException(e);
     }
   }
 
-  /// Determina el Content-Type a partir de la extensión del archivo.
+  /// Determina el Content-Type a partir de la extensiÃ³n del archivo.
   String _contentTypeFor(String fileName) {
     final lower = fileName.toLowerCase();
     if (lower.endsWith('.png')) return 'image/png';
@@ -1067,11 +1071,11 @@ class ApiService {
 
   /// Registra un nuevo cliente contra `POST /auth/registro`.
   ///
-  /// El backend crea el usuario con rol cliente y envía un código de
-  /// verificación por email. Devuelve un [RegistroResult]; cuando
+  /// El backend crea el usuario con rol cliente y envÃ­a un cÃ³digo de
+  /// verificaciÃ³n por email. Devuelve un [RegistroResult]; cuando
   /// [RegistroResult.requiereVerificacion] es `true`, la pantalla debe pedir el
-  /// código a través de [verificarEmail] antes de poder iniciar sesión. No se
-  /// guarda contraseña en ningún almacenamiento.
+  /// cÃ³digo a travÃ©s de [verificarEmail] antes de poder iniciar sesiÃ³n. No se
+  /// guarda contraseÃ±a en ningÃºn almacenamiento.
   Future<RegistroResult> registrar({
     required String nombre,
     required String apellido,
@@ -1099,8 +1103,8 @@ class ApiService {
 
   /// Verifica la cuenta contra `POST /auth/verificar-email`.
   ///
-  /// Valida el [codigo] de 6 dígitos recibido por email para [email]. Al ser
-  /// correcto, la cuenta queda activa y el usuario puede iniciar sesión.
+  /// Valida el [codigo] de 6 dÃ­gitos recibido por email para [email]. Al ser
+  /// correcto, la cuenta queda activa y el usuario puede iniciar sesiÃ³n.
   Future<void> verificarEmail({
     required String email,
     required String codigo,
@@ -1115,9 +1119,9 @@ class ApiService {
     }
   }
 
-  /// Reenvía el código de verificación contra `POST /auth/reenviar-codigo`.
+  /// ReenvÃ­a el cÃ³digo de verificaciÃ³n contra `POST /auth/reenviar-codigo`.
   ///
-  /// El código llega únicamente por email; la API nunca lo devuelve.
+  /// El cÃ³digo llega Ãºnicamente por email; la API nunca lo devuelve.
   Future<void> reenviarCodigo({required String email}) async {
     try {
       await _dio.post<dynamic>(
@@ -1129,12 +1133,12 @@ class ApiService {
     }
   }
 
-  /// Solicita un código para restablecer la contraseña contra
+  /// Solicita un cÃ³digo para restablecer la contraseÃ±a contra
   /// `POST /auth/solicitar-reseteo`.
   ///
-  /// El backend siempre responde con el mismo mensaje genérico (no revela si
-  /// el correo existe). El código llega por email y hay que validarlo después
-  /// con [reestablecerContrasena]. No requiere sesión activa.
+  /// El backend siempre responde con el mismo mensaje genÃ©rico (no revela si
+  /// el correo existe). El cÃ³digo llega por email y hay que validarlo despuÃ©s
+  /// con [reestablecerContrasena]. No requiere sesiÃ³n activa.
   Future<void> solicitarReseteo({required String email}) async {
     try {
       await _dio.post<dynamic>(
@@ -1146,27 +1150,56 @@ class ApiService {
     }
   }
 
-  /// Restablece la contraseña contra `POST /auth/reestablecer-contrasena`.
+  /// Restablece la contraseÃ±a contra `POST /auth/reestablecer-contrasena`.
   ///
-  /// Valida el [codigo] de 6 dígitos recibido por email y establece la nueva
-  /// [password]. Al terminar se puede iniciar sesión con la nueva clave.
-  /// No requiere sesión activa.
+  /// Valida el [codigo] de 6 dÃ­gitos recibido por email y establece la nueva
+  /// [password]. Al terminar se puede iniciar sesiÃ³n con la nueva clave.
+  /// No requiere sesiÃ³n activa.
   Future<void> reestablecerContrasena({
     required String email,
-    required String codigo,
+    String? codigo,
+    String? resetToken,
     required String password,
   }) async {
     try {
       await _dio.post<dynamic>(
         Constants.reestablecerContrasenaPath,
-        data: {'email': email, 'codigo': codigo, 'password': password},
+        data: {
+          'email': email,
+          'codigo': codigo,
+          'reset_token': resetToken,
+          'password': password,
+        },
       );
     } on DioException catch (e) {
       throw _toApiException(e);
     }
   }
 
-  /// Obtiene el catálogo de libros desde `GET /libros`.
+  Future<String> verificarReseteo({
+    required String email,
+    required String codigo,
+  }) async {
+    try {
+      final respuesta = await _dio.post<dynamic>(
+        Constants.verificarReseteoPath,
+        data: {'email': email, 'codigo': codigo},
+      );
+      final token = respuesta.data is Map
+          ? respuesta.data['reset_token']
+          : null;
+      if (token is! String || token.isEmpty) {
+        throw const ApiException(
+          'No se pudo verificar el cÃ³digo. IntÃ©ntalo de nuevo.',
+        );
+      }
+      return token;
+    } on DioException catch (e) {
+      throw _toApiException(e);
+    }
+  }
+
+  /// Obtiene el catÃ¡logo de libros desde `GET /libros`.
   Future<List<Libro>> obtenerLibros() async {
     try {
       final response = await _dio.get<dynamic>(Constants.librosPath);
@@ -1180,10 +1213,10 @@ class ApiService {
     }
   }
 
-  /// Obtiene el detalle de un libro a través de `GET /libros/:id`.
+  /// Obtiene el detalle de un libro a travÃ©s de `GET /libros/:id`.
   ///
-  /// Permite que las pantallas recarguen información fresca desde el backend en
-  /// lugar de depender únicamente del objeto pasado por la navegación.
+  /// Permite que las pantallas recarguen informaciÃ³n fresca desde el backend en
+  /// lugar de depender Ãºnicamente del objeto pasado por la navegaciÃ³n.
   Future<Libro> obtenerDetalleLibro(int id) async {
     try {
       final response = await _dio.get<dynamic>('${Constants.librosPath}/$id');
@@ -1194,13 +1227,15 @@ class ApiService {
         }
         return Libro.fromJson(Map<String, dynamic>.from(raw));
       }
-      throw const ApiException('El servidor no devolvió el detalle del libro.');
+      throw const ApiException(
+        'El servidor no devolviÃ³ el detalle del libro.',
+      );
     } on DioException catch (e) {
       throw _toApiException(e);
     }
   }
 
-  /// Obtiene el perfil del usuario a través de `GET /usuarios/perfil`.
+  /// Obtiene el perfil del usuario a travÃ©s de `GET /usuarios/perfil`.
   Future<Usuario> obtenerPerfil() async {
     try {
       final response = await _dio.get<dynamic>(Constants.perfilPath);
@@ -1213,7 +1248,7 @@ class ApiService {
       }
       if (map == null) {
         throw const ApiException(
-          'El servidor no devolvió información del perfil.',
+          'El servidor no devolviÃ³ informaciÃ³n del perfil.',
         );
       }
       if (map.containsKey('data') && map['data'] is Map) {

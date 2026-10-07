@@ -82,6 +82,7 @@ class Constants {
   static const String verificarEmailPath = '/auth/verificar-email';
   static const String reenviarCodigoPath = '/auth/reenviar-codigo';
   static const String solicitarReseteoPath = '/auth/solicitar-reseteo';
+  static const String verificarReseteoPath = '/auth/verificar-reseteo';
   static const String reestablecerContrasenaPath =
       '/auth/reestablecer-contrasena';
   static const String librosPath = '/libros';

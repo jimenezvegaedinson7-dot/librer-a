@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     FaArrowRight,
     FaBoxOpen,
     FaCircleCheck,
     FaClock,
     FaEye,
+    FaRotate,
     FaMagnifyingGlass,
     FaMapLocationDot,
     FaStore,
@@ -16,6 +17,7 @@ import {
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Input, Select } from '../../components/ui/Form';
+import { Button } from '../../components/ui/Button';
 import { Alert } from '../../components/ui/Alert';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { TableSkeleton } from '../../components/ui/TableSkeleton';
@@ -110,42 +112,60 @@ export default function PedidosPage() {
     const [pendiente, setPendiente] = useState(null);
     const [procesando, setProcesando] = useState(false);
     const [cancelacion, setCancelacion] = useState(null);
+    const mutando = useRef(false);
+    const revisionCarga = useRef(0);
+    const consultaActiva = useRef(false);
+    const revisionDetalle = useRef(0);
+    const activo = useRef(true);
 
-    const cargarPedidos = async () => {
-        setCargando(true);
+    const cargarPedidos = async (silencioso = false, forzar = false) => {
+        if (consultaActiva.current && !forzar) return;
+        consultaActiva.current = true;
+        const revision = ++revisionCarga.current;
+        if (!silencioso) setCargando(true);
         setErrorCarga(null);
 
         try {
             const datos = await listarPedidos();
+            if (revision !== revisionCarga.current) return;
             setPedidos(Array.isArray(datos) ? datos.filter(esPedido) : []);
         } catch (e) {
+            if (revision !== revisionCarga.current) return;
             setErrorCarga(
                 e?.response?.data?.mensaje || 'No se pudieron cargar los pedidos'
             );
         } finally {
-            setCargando(false);
+            if (revision === revisionCarga.current) { consultaActiva.current = false; setCargando(false); }
         }
     };
 
+    const invalidarConsultas = () => { revisionCarga.current++; revisionDetalle.current++; };
     useEffect(() => {
+        activo.current = true;
         cargarPedidos();
+        const refrescar = () => { if (document.visibilityState === 'visible' && !mutando.current) cargarPedidos(true); };
+        const timer = setInterval(refrescar, 60000);
+        window.addEventListener('focus', refrescar);
+        return () => { activo.current = false; clearInterval(timer); window.removeEventListener('focus', refrescar); invalidarConsultas(); consultaActiva.current = false; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Abrir detalle
     const verDetalle = async (pedido) => {
+        const revision = ++revisionDetalle.current;
         setCargandoDetalle(true);
         setDetalle(pedido);
 
         try {
             const completo = await obtenerPedido(pedido.id_venta);
-            if (completo) setDetalle(completo);
+            if (completo && revision === revisionDetalle.current) setDetalle(completo);
         } catch (e) {
+            if (revision !== revisionDetalle.current) return;
             mostrarError(
                 e?.response?.data?.mensaje || 'No se pudo cargar el detalle del pedido'
             );
         } finally {
-            setCargandoDetalle(false);
+            if (revision === revisionDetalle.current) setCargandoDetalle(false);
         }
     };
 
@@ -156,37 +176,39 @@ export default function PedidosPage() {
     // salto inválido. Aquí no se toca el estado comercial: cobrar o
     // reembolsar sigue siendo cosa de Ventas.
     // ========================================
-    const confirmarCambio = async () => {
-        // El mismo manejador sirve a los dos diálogos: el de avance
-        // (pendiente) y el de cancelación (cancelacion).
-        const objetivo = pendiente || cancelacion;
-
-        if (!objetivo) return;
+    const actualizarPedido = async (objetivo) => {
+        if (!objetivo || mutando.current) return;
+        mutando.current = true;
+        const revisionAbierta = revisionDetalle.current;
 
         setProcesando(true);
 
         try {
             await cambiarEstadoPedido(objetivo.id_venta, objetivo.destino);
+            if (!activo.current) return;
             exito(`Pedido #${objetivo.id_venta} → ${ETIQUETA_ESTADO[objetivo.destino]}`);
 
             setPendiente(null);
             setCancelacion(null);
 
             // Refresca la lista y, si el detalle está abierto, el detalle.
-            await cargarPedidos();
+            await cargarPedidos(true, true);
 
-            if (detalle?.id_venta === objetivo.id_venta) {
+            if (detalle?.id_venta === objetivo.id_venta && revisionAbierta === revisionDetalle.current) {
                 const actualizado = await obtenerPedido(objetivo.id_venta);
-                setDetalle(actualizado);
+                if (activo.current && revisionAbierta === revisionDetalle.current) setDetalle(actualizado);
             }
         } catch (e) {
+            if (!activo.current) return;
             mostrarError(
                 e?.response?.data?.mensaje || 'No se pudo actualizar el estado del pedido'
             );
         } finally {
-            setProcesando(false);
+            mutando.current = false;
+            if (activo.current) setProcesando(false);
         }
     };
+    const confirmarCambio = () => actualizarPedido(pendiente || cancelacion);
 
     // ========================================
     // FILTROS Y BÚSQUEDA (en pantalla)
@@ -240,12 +262,13 @@ export default function PedidosPage() {
     }, [pedidosFiltrados]);
 
     const columnas = [
-        { titulo: 'Canal', render: p => <Badge color={p.canal_compra==='web'?'primary':'neutral'}>{p.canal_compra==='web'?'Web':'App'}</Badge> },
         {
             titulo: 'N° pedido',
             campo: 'id_venta',
             render: (p) => (
-                <span className="font-semibold text-primary-700">#{p.id_venta}</span>
+                <div><span className="font-semibold text-primary-700">#{p.id_venta}</span>
+                    <span className="ml-2"><Badge color="neutral">{p.canal_compra === 'web' ? 'Web' : 'App'}</Badge></span>
+                    <span className="block text-xs text-slate-500">{formatearFecha(p.fecha_venta)}</span></div>
             ),
         },
         {
@@ -262,14 +285,6 @@ export default function PedidosPage() {
             ),
         },
         {
-            titulo: 'Fecha',
-            render: (p) => (
-                <span className="whitespace-nowrap text-slate-600">
-                    {formatearFecha(p.fecha_venta)}
-                </span>
-            ),
-        },
-        {
             titulo: 'Total',
             alineacion: 'derecha',
             render: (p) => (
@@ -281,33 +296,17 @@ export default function PedidosPage() {
         {
             titulo: 'Pago',
             render: (p) => (
-                <Badge color={p.estado === 'pagada' || p.estado === 'entregada' ? 'success' : 'warning'}>
-                    {ETIQUETA_PAGO[p.metodo_pago] || (p.payu_order_id ? 'PayU' : 'PayU')}
+                <Badge color={COLOR_COMERCIAL[p.estado] || 'neutral'}>
+                    {p.estado === 'pagada' || p.estado === 'entregada' ? 'Confirmado · PayU' : ETIQUETA_COMERCIAL[p.estado] || p.estado}
                 </Badge>
             ),
         },
         {
             titulo: 'Entrega',
             render: (p) => (
-                <Badge color={esTipoEntregaValido(p.tipo_entrega) ? (p.tipo_entrega === 'domicilio' ? 'primary' : 'info') : 'danger'}>
+                <div><Badge color={esTipoEntregaValido(p.tipo_entrega) ? (p.tipo_entrega === 'domicilio' ? 'primary' : 'info') : 'danger'}>
                     {descripcionEntrega(p)}
-                </Badge>
-            ),
-        },
-        {
-            titulo: 'Dirección',
-            render: (p) => (
-                <div className="min-w-0 max-w-[220px]">
-                    <div className="truncate text-slate-600">{destino(p)}</div>
-                </div>
-            ),
-        },
-        {
-            titulo: 'Pago (estado)',
-            render: (p) => (
-                <Badge color={COLOR_COMERCIAL[p.estado] || 'neutral'}>
-                    {ETIQUETA_COMERCIAL[p.estado] || p.estado}
-                </Badge>
+                </Badge><p className="mt-1 max-w-[240px] text-xs text-slate-600">{destino(p)}</p></div>
             ),
         },
         {
@@ -324,12 +323,12 @@ export default function PedidosPage() {
         const tipoValido = esTipoEntregaValido(p.tipo_entrega);
         const historico = p.origen === 'panel' || p.origen === 'reserva';
         const devolucionPendiente = p.estado_reembolso === 'pendiente_verificacion';
-        const pagoPendienteWeb = p.canal_compra==='web' && !['pagada','entregada'].includes(p.estado);
-        const destino_ = tipoValido && !pagoPendienteWeb && !historico && !devolucionPendiente ? siguienteEstado(p.tipo_entrega, estado) : null;
+        const pagoConfirmado = ['pagada','entregada'].includes(p.estado);
+        const destino_ = tipoValido && pagoConfirmado && !historico && !devolucionPendiente ? siguienteEstado(p.tipo_entrega, estado) : null;
 
         return (
             <>
-                {pagoPendienteWeb && <Badge color="warning">Esperando pago</Badge>}
+                {p.estado === 'pendiente' && <Badge color="warning">Esperando pago</Badge>}
                 {historico && <Badge color="neutral">Histórico: solo consulta</Badge>}
                 {devolucionPendiente && <Badge color="warning">Devolución pendiente de verificación</Badge>}
                 {!tipoValido && (
@@ -343,24 +342,26 @@ export default function PedidosPage() {
                 )}
 
                 {destino_ && (
-                    <BtnAccion
-                        tipo="editar"
-                        titulo={`Marcar como ${ETIQUETA_ESTADO[destino_]}`}
-                        onClick={() =>
-                            setPendiente({ id_venta: p.id_venta, destino: destino_ })
-                        }
+                    <Button
+                        tamano="sm"
+                        disabled={procesando}
+                        title={`Marcar como ${ETIQUETA_ESTADO[destino_]}`}
+                        onClick={() => {
+                            const accion = { id_venta: p.id_venta, destino: destino_ };
+                            if (destino_ === 'entregado') setPendiente(accion);
+                            else actualizarPedido(accion);
+                        }}
                     >
                         <FaArrowRight aria-hidden="true" />
-                        <span className="sr-only">
-                            Pedido #{p.id_venta}: avanzar a {ETIQUETA_ESTADO[destino_]}
-                        </span>
-                    </BtnAccion>
+                        {destino_ === 'listo_recojo' ? 'Listo para recoger' : destino_ === 'en_camino' ? 'Despachar delivery' : 'Confirmar entrega'}
+                    </Button>
                 )}
 
-                {tipoValido && !historico && !devolucionPendiente && puedeCancelar(estado) && (
+                {tipoValido && !historico && !devolucionPendiente && !['cancelada','reembolsada'].includes(p.estado) && puedeCancelar(estado) && (
                     <BtnAccion
                         tipo="eliminar"
                         titulo="Cancelar pedido"
+                        disabled={procesando}
                         onClick={() => setCancelacion({ id_venta: p.id_venta, destino: 'cancelado' })}
                     >
                         <FaXmark aria-hidden="true" />
@@ -385,6 +386,7 @@ export default function PedidosPage() {
             <PageHeader
                 titulo="Pedidos"
                 descripcion="Pedidos de la web y la app: pagos, delivery y recojo en Pallasca"
+                acciones={<Button variante="secondary" onClick={() => cargarPedidos()} disabled={cargando || procesando}><FaRotate /> Actualizar pedidos</Button>}
             />
 
             <Indicadores etiqueta="Indicadores de pedidos" cargando={cargando}>
@@ -397,7 +399,7 @@ export default function PedidosPage() {
             <Card>
                 <CardHeader
                     titulo="Lista de pedidos"
-                    subtitulo="Filtra por tipo de entrega o estado logístico"
+                    subtitulo="Prepara el pedido pagado, márcalo listo o en camino y confirma la entrega. El cliente no tiene que realizar pasos de logística."
                     acciones={
                         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                             <div className="relative">
@@ -447,7 +449,7 @@ export default function PedidosPage() {
                             titulo="No hay pedidos"
                             descripcion={
                                 pedidos.length === 0
-                                    ? 'Todavía no hay ventas desde la app. Los pedidos aparecen cuando un cliente paga desde la aplicación.'
+                                    ? 'Todavía no hay compras desde la web o la app.'
                                     : 'Ningún pedido coincide con el filtro o la búsqueda.'
                             }
                         />
@@ -471,7 +473,7 @@ export default function PedidosPage() {
                 abierto={Boolean(detalle)}
                 titulo={detalle ? `Pedido #${detalle.id_venta}` : 'Pedido'}
                 subtitulo={detalle ? nombreCliente(detalle) : null}
-                onCerrar={() => setDetalle(null)}
+                onCerrar={() => { revisionDetalle.current++; setDetalle(null); setCargandoDetalle(false); }}
                 grande
             >
                 {detalle && (
@@ -545,13 +547,13 @@ export default function PedidosPage() {
                 ======================================== */}
             <ConfirmarAccion
                 abierto={Boolean(pendiente)}
-                titulo="Avanzar pedido"
+                titulo="Confirmar entrega"
                 mensaje={
                     pendiente
-                        ? `¿Marcar el pedido #${pendiente.id_venta} como "${ETIQUETA_ESTADO[pendiente.destino]}"? Solo cambia el estado de entrega: no se cobra nada ni se crea otra venta.`
+                        ? `¿El cliente recibió sus libros del pedido #${pendiente.id_venta}? Registraremos la entrega y actualizaremos su compra. No se cobrará de nuevo.`
                         : ''
                 }
-                textoConfirmar="Sí, avanzar"
+                textoConfirmar="Sí, entregar"
                 variante="primary"
                 cargando={procesando}
                 onConfirmar={confirmarCambio}

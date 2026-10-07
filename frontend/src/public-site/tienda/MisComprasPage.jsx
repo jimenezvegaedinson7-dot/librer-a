@@ -10,7 +10,7 @@ import { formatearFecha } from '../../lib/utils/format';
 import EstadoSesion from './EstadoSesion';
 
 const estados={pendiente:'Pendiente de pago',pagada:'Pagada',entregada:'Entregada',cancelada:'Cancelada',reembolsada:'Reembolsada'};
-const entrega={pendiente:'Pendiente',preparando:'Preparando',listo_recojo:'Lista para recojo',en_camino:'En camino',entregado:'Entregada',cancelado:'Cancelada'};
+const entrega={pendiente:'Preparando pedido',preparando:'Preparando pedido',listo_recojo:'Lista para recojo',en_camino:'En camino',entregado:'Entregada',cancelado:'Cancelada'};
 export default function MisComprasPage() {
     const t=useTienda();
     return <ComprasCliente key={t.generacion} t={t}/>;
@@ -34,6 +34,13 @@ function ComprasCliente({ t }) {
         catch(e){setError(e.message);} finally{setCargando(false);}
     },[confirmar,t.sesion]);
     useEffect(()=>{if(idUsuario && !t.revisando && !t.errorSesion)Promise.resolve().then(cargar);},[idUsuario,t.revisando,t.errorSesion,cargar]);
+    useEffect(() => {
+        if (!idUsuario || t.revisando || t.errorSesion) return undefined;
+        const actualizar = () => { if (document.visibilityState === 'visible' && !ocupado) cargar(); };
+        const timer = setInterval(actualizar, 60000);
+        window.addEventListener('focus', actualizar);
+        return () => { clearInterval(timer); window.removeEventListener('focus', actualizar); };
+    }, [idUsuario,t.revisando,t.errorSesion,cargar,ocupado]);
     async function verificar(v) {
         if(ocupado)return;setOcupado(true);setError('');
         try {await clienteApi.verificarPago(v.external_reference || v.payu_order_id,t.sesion);await cargar();setMensaje('Consultamos el estado del pago con el servidor.');}
@@ -71,7 +78,7 @@ function ComprasCliente({ t }) {
                                 <span className="compra-registro__subtotal">{soles(i.subtotal)}</span></li>)}</ul>
                             <dl className="compra-registro__entrega">
                                 <div><dt>Entrega</dt><dd>{descripcionEntrega(v)}</dd></div>
-                                <div><dt>Estado de la entrega</dt><dd>{entrega[v.estado_entrega] || v.estado_entrega || 'Pendiente'}</dd></div>
+                                <div><dt>Estado de la entrega</dt><dd>{v.estado === 'pendiente' ? 'Se prepara cuando se confirme tu pago' : entrega[v.estado_entrega] || v.estado_entrega || 'Preparando pedido'}</dd></div>
                                 {v.tipo_entrega==='domicilio' && (ubicacionEntrega(v) || v.direccion) && <div><dt>Dirección</dt><dd>{[v.direccion,ubicacionEntrega(v)].filter(Boolean).join(', ')}</dd></div>}
                                 {v.referencia && <div><dt>Referencia</dt><dd>{v.referencia}</dd></div>}
                             </dl>

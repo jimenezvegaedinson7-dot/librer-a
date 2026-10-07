@@ -152,15 +152,17 @@ class Venta {
   /// `true` si la venta ya fue entregada.
   bool get entregada => (estado ?? '').toLowerCase().trim() == 'entregada';
 
-  String get entregaEstadoLabel => switch (estadoEntrega?.toLowerCase().trim()) {
-    'pendiente' => 'Entrega pendiente',
-    'preparando' => 'Preparando pedido',
-    'listo_recojo' => 'Listo para recoger',
-    'en_camino' => 'En camino',
-    'entregado' => 'Entregado',
-    'cancelado' => 'Entrega cancelada',
-    _ => '',
-  };
+  String get entregaEstadoLabel =>
+      switch (estadoEntrega?.toLowerCase().trim()) {
+        'pendiente' =>
+          pendiente ? 'Se prepara al confirmar el pago' : 'Preparando pedido',
+        'preparando' => 'Preparando pedido',
+        'listo_recojo' => 'Listo para recoger',
+        'en_camino' => 'En camino',
+        'entregado' => 'Entregado',
+        'cancelado' => 'Entrega cancelada',
+        _ => '',
+      };
 
   /// Etiqueta legible del estado en español.
   String get estadoLabel {

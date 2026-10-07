@@ -232,3 +232,10 @@ test('entrega: el dominio coincide con el CHECK ventas_tipo_estado_entrega_check
         true
     );
 });
+
+test('entrega simplificada: desde pendiente puede quedar listo o despacharse según el tipo', () => {
+    assert.equal(permitirTransicionEntrega('tienda', 'pendiente', 'listo_recojo'), true);
+    assert.equal(permitirTransicionEntrega('domicilio', 'pendiente', 'en_camino'), true);
+    assert.equal(permitirTransicionEntrega('tienda', 'pendiente', 'en_camino'), false);
+    assert.equal(permitirTransicionEntrega('domicilio', 'pendiente', 'listo_recojo'), false);
+});

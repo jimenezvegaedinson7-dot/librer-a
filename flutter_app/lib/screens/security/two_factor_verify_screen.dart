@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../services/api_service.dart';
 import '../../services/carrito_service.dart';
 import '../../widgets/app_logo.dart';
+import '../../widgets/campo_otp.dart';
+import '../../widgets/confirmacion_otp.dart';
 import '../home_screen.dart';
 import '../login_screen.dart';
 
@@ -35,6 +36,7 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
   }
 
   Future<void> _verificar() async {
+    if (_loading) return;
     FocusScope.of(context).unfocus();
     setState(() => _errorMessage = null);
 
@@ -49,6 +51,12 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
       await ApiService.instance.verificarLogin2FA(
         twoFactorToken: widget.twoFactorToken,
         codigo: codigo,
+      );
+      if (!mounted) return;
+      await mostrarConfirmacionOtp(
+        context,
+        titulo: 'Acceso verificado',
+        mensaje: 'Tu cuenta está lista para continuar.',
       );
       if (!mounted) return;
       // El carrito pertenece a la sesión anterior: al completar el login con
@@ -125,32 +133,10 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
                       const SizedBox(height: 32),
 
                       // Campo OTP (6 dígitos, numérico)
-                      TextFormField(
+                      CampoOtp(
                         controller: _otpController,
-                        keyboardType: TextInputType.number,
-                        textInputAction: TextInputAction.done,
-                        autofocus: true,
-                        autocorrect: false,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(6),
-                        ],
-                        style: textTheme.headlineSmall?.copyWith(
-                          letterSpacing: 8,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        decoration: _inputDecoration(
-                          label: 'Código de 6 dígitos',
-                          icon: Icons.pin_rounded,
-                        ),
-                        validator: (value) {
-                          final v = value?.trim() ?? '';
-                          if (v.length != 6) {
-                            return 'El código debe tener 6 dígitos';
-                          }
-                          return null;
-                        },
-                        onFieldSubmitted: (_) => _verificar(),
+                        enabled: !_loading,
+                        onSubmitted: _verificar,
                       ),
 
                       // Mensaje de error
@@ -217,12 +203,5 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
         ),
       ),
     );
-  }
-
-  InputDecoration _inputDecoration({
-    required String label,
-    required IconData icon,
-  }) {
-    return InputDecoration(labelText: label, prefixIcon: Icon(icon));
   }
 }

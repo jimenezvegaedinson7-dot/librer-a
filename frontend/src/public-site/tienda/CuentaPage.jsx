@@ -5,7 +5,7 @@ import { useTienda } from './TiendaContext';
 import PerfilCliente from './PerfilCliente';
 import EstadoSesion from './EstadoSesion';
 
-const titulos = {login:'Iniciar sesión',registro:'Crear cuenta',verificar:'Verifica tu correo',recuperar:'Recuperar contraseña',restablecer:'Nueva contraseña',otp:'Verificación de dos pasos'};
+const titulos = {login:'Iniciar sesión',registro:'Crear cuenta',verificar:'Verifica tu correo',recuperar:'Recuperar contraseña',verificar_reseteo:'Verifica el código de recuperación',restablecer:'Nueva contraseña',otp:'Verificación de dos pasos'};
 export default function CuentaPage() {
     const tienda = useTienda();
     return <CuentaCliente key={tienda.generacion} tienda={tienda}/>;
@@ -15,10 +15,11 @@ function CuentaCliente({ tienda }) {
     const [params] = useSearchParams();
     const continuar = params.get('continuar') || '';
     // Sin destino indicado, después de entrar se muestra el perfil (Mi cuenta).
-    const destino = ['/checkout','/carrito','/mis-compras','/favoritos'].includes(continuar) || /^\/libro\/[1-9]\d{0,9}$/.test(continuar) ? continuar : '/cuenta';
+    const destino = ['/checkout','/carrito','/mis-compras','/favoritos','/libro-de-reclamaciones'].includes(continuar) || /^\/libro\/[1-9]\d{0,9}$/.test(continuar) ? continuar : '/cuenta';
     const [modo,setModo] = useState('login');
     const [form,setForm] = useState({nombre:'',apellido:'',email:'',password:'',confirmacion:'',codigo:''});
     const [temporal,setTemporal] = useState('');
+    const [permisoReseteo,setPermisoReseteo] = useState('');
     const [ocupado,setOcupado] = useState(false);
     const [error,setError] = useState('');
     const [mensaje,setMensaje] = useState('');
@@ -38,11 +39,15 @@ function CuentaCliente({ tienda }) {
                 case 'verificar':
                     respuesta=await clienteApi.verificarEmail({email,codigo:form.codigo});
                     cambiar('login');setMensaje(respuesta.mensaje);break;
-                case 'recuperar':
-                    respuesta=await clienteApi.solicitarReseteo(email);
-                    cambiar('restablecer');setMensaje(respuesta.mensaje);break;
-                case 'restablecer':
-                    respuesta=await clienteApi.restablecer({email,codigo:form.codigo,password:form.password});
+                 case 'recuperar':
+                     respuesta=await clienteApi.solicitarReseteo(email);
+                     setPermisoReseteo('');cambiar('verificar_reseteo');setMensaje(respuesta.mensaje);break;
+                 case 'verificar_reseteo':
+                     respuesta=await clienteApi.verificarReseteo({email,codigo:form.codigo});
+                     if (!respuesta.reset_token) throw new Error('No se pudo verificar el código. Inténtalo de nuevo.');
+                     setPermisoReseteo(respuesta.reset_token);cambiar('restablecer');setMensaje(respuesta.mensaje);break;
+                 case 'restablecer':
+                     respuesta=await clienteApi.restablecer({email,reset_token:permisoReseteo,password:form.password});
                     cambiar('login');setMensaje(respuesta.mensaje);break;
                 default:
                     respuesta=modo==='otp' ? await clienteApi.verificar2fa({two_factor_token:temporal,codigo:form.codigo})
@@ -51,7 +56,8 @@ function CuentaCliente({ tienda }) {
                     await tienda.iniciarSesion(respuesta);navigate(destino,{replace:true});
             }
         } catch (e) {
-            setError(e.message);
+             setError(e.message);
+             if (modo==='restablecer' && /ha expirado/.test(e.message)) {setPermisoReseteo('');setModo('verificar_reseteo');campo('password','');campo('confirmacion','');}
             if (modo==='login' && /verificar tu correo/i.test(e.message)) setModo('verificar');
         } finally {setOcupado(false);}
     }
@@ -70,8 +76,8 @@ function CuentaCliente({ tienda }) {
         <form onSubmit={enviar} className="compra-formulario">
             {modo==='registro' && <div className="cuenta-fila"><label>Nombre<input name="nombre" autoComplete="given-name" maxLength={100} required value={form.nombre} onChange={e=>campo('nombre',e.target.value)} /></label>
                 <label>Apellido<input name="apellido" autoComplete="family-name" maxLength={100} required value={form.apellido} onChange={e=>campo('apellido',e.target.value)} /></label></div>}
-            {modo!=='otp' && <label>Correo electrónico<input type="email" autoComplete="email" name="email" maxLength={255} required value={form.email} onChange={e=>campo('email',e.target.value)} /></label>}
-            {['verificar','restablecer','otp'].includes(modo) && <label>{modo==='otp' ? 'Código del autenticador' : 'Código de seis dígitos'}
+             {modo!=='otp' && <label>Correo electrónico<input type="email" autoComplete="email" name="email" maxLength={255} required readOnly={['verificar_reseteo','restablecer'].includes(modo)} value={form.email} onChange={e=>campo('email',e.target.value)} /></label>}
+             {['verificar','verificar_reseteo','otp'].includes(modo) && <label>{modo==='otp' ? 'Código del autenticador' : 'Código de seis dígitos'}
                 <input inputMode="numeric" autoComplete="one-time-code" name="codigo" pattern="[0-9]{6}" maxLength={6} required value={form.codigo} onChange={e=>campo('codigo',e.target.value)} /></label>}
             {['login','registro','restablecer'].includes(modo) && <label>Contraseña<input type="password" autoComplete={modo==='login'?'current-password':'new-password'} minLength={modo==='login'?undefined:8} required
                 value={form.password} onChange={e=>campo('password',e.target.value)} /></label>}

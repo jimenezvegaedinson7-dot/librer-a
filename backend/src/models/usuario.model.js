@@ -287,6 +287,20 @@ const actualizarPassword = async (
     return resultado.affectedRows;
 };
 
+// Consume el código y cambia la contraseña en una sola escritura. Un código
+// reenviado, ya usado o vencido no puede ganar una petición concurrente.
+const actualizarPasswordConCodigo = async (idUsuario, password, codigoHash, versionSesion) => {
+    const [resultado] = await pool.query(`
+        UPDATE usuarios
+        SET password = ?, sesion_version = sesion_version + 1,
+            email_verification_code = NULL, email_verification_expires = NULL
+        WHERE id_usuario = ? AND email_verification_code = ?
+            AND email_verification_expires > NOW() AND email_verified_at IS NOT NULL
+            AND sesion_version = ?
+    `, [password, idUsuario, codigoHash, versionSesion]);
+    return resultado.affectedRows;
+};
+
 // ========================================
 // GUARDAR SECRETO 2FA (TOTP)
 // ========================================
@@ -586,6 +600,7 @@ module.exports = {
     actualizarPerfil,
     actualizarFotoPerfil,
     actualizarPassword,
+    actualizarPasswordConCodigo,
     actualizarEstadoRol,
     guardarSecreto2FA,
     activar2FA,
