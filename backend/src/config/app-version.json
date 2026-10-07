@@ -1,8 +1,8 @@
 {
-    "version": "1.0.8",
-    "versionCode": 9,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.8/libreria-1.0.8.apk",
-    "sha256": "2e0f1485f24377137280b18a5ad9ed2f44cd742f3ebf0ccb4655f1416ea7fd61",
-    "obligatoria": true,
-    "notas": "Actualización de seguridad: sesiones aisladas entre cuentas, almacenamiento seguro del JWT y activación de 2FA con contraseña y protección contra códigos reutilizados. Compatible con el backend actualizado. Conserva compras, reservas y seguimiento de pedidos."
+    "version": "1.0.9",
+    "versionCode": 10,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.9/libreria-1.0.9.apk",
+    "sha256": "5a5fbed6134c6f4720d539dd3eb24f3886cd6c0d26fd5057cac64001dd16c670",
+    "obligatoria": false,
+    "notas": "Seguimiento de pedidos según la entrega (recojo en tienda o delivery), pago con PayU dentro de la app, confirmación con animación y sonido al verificar códigos y recuperación de contraseña en dos pasos."
 }
