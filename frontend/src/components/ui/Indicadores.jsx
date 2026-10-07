@@ -126,8 +126,9 @@ function Composicion({ partes, activa }) {
  * @param {string} tono  primary | success | danger | warning | info | neutral | violet | teal | sky | rose
  * @param {number} [de]  total de referencia: muestra el porcentaje y llena el medidor.
  * @param {'numero'|'moneda'} [formato]
+ * @param {string} [leyenda]  texto junto al anillo («del total»).
  */
-export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de, formato = 'numero', orden = 0, serie, composicion }) {
+export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de, formato = 'numero', orden = 0, serie, composicion, leyenda = 'del total' }) {
     const { cargando } = useContext(ContextoIndicadores);
     const numero = typeof valor === 'number' ? valor : Number.isFinite(Number(valor)) && valor !== '' && valor !== null ? Number(valor) : null;
     const cifra = useCifraAnimada(numero ?? valor, !cargando);
@@ -140,38 +141,35 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
         && serie.every((v) => Number.isFinite(v) && v >= 0);
     const [activa, setActiva] = useState(false);
 
+    // Mismo diseño que las tarjetas del Dashboard y de Ventas (StatCard):
+    // título arriba a la izquierda, ícono a la derecha, cifra, descripción y
+    // gráfico abajo. Se conservan la carga animada y el conteo de la cifra.
     return (
         <article
-            className={`indicador joya ${tono === 'primary' ? '' : `joya--${tono}`} ${cargando ? 'indicador--cargando' : ''}`}
+            className={`kpi-card kpi-card--destacada joya ${tono === 'primary' ? '' : `joya--${tono}`} indicador-tarjeta ${cargando ? 'indicador--cargando' : ''}`}
             style={{ '--orden': orden }}
             onPointerEnter={(e) => { if (e.pointerType === 'mouse') setActiva(true); }}
             onPointerLeave={() => setActiva(false)}
         >
-            <div className="indicador-cabecera">
-                <span className="indicador-icono" aria-hidden="true">{icono}</span>
-                <p className="indicador-titulo">{titulo}</p>
+            <div className="flex items-start justify-between gap-3">
+                <p className="kpi-label">{titulo}</p>
+                <span className="kpi-icono" aria-hidden="true">{icono}</span>
             </div>
-            <div className="indicador-cuerpo">
-                <div className="indicador-texto">
-                    {cargando ? (
-                        <span className="indicador-esqueleto" aria-hidden="true" />
-                    ) : (
-                        <div className="indicador-cifras">
-                            <p className={`indicador-valor${numero === null ? ' indicador-valor--texto' : ''}`}>{formatear(cifra, formato)}</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-            {detalle && <p className="indicador-detalle" title={typeof detalle === 'string' ? detalle : undefined}>{detalle}</p>}
+            {cargando ? (
+                <span className="indicador-esqueleto" aria-hidden="true" />
+            ) : (
+                <p className={`kpi-valor${numero === null ? ' indicador-valor--texto' : ''}`}>{formatear(cifra, formato)}</p>
+            )}
+            {detalle && <p className="kpi-descripcion">{detalle}</p>}
             {!cargando && (conDato || conTexto) && (
-                <div className="indicador-grafico">
+                <div className="indicador-zona">
                     {conSerie ? <TendenciaViva datos={serie} etiqueta={`Ventas de los últimos 14 días · ${titulo}`} activa={activa} />
-                        : conProporcion ? <Anillo valor={numero} total={Number(de)} etiqueta={`${titulo} sobre el total`} leyenda="del total" activa={activa} />
+                        : conProporcion ? <Anillo valor={numero} total={Number(de)} etiqueta={`${titulo} sobre el total`} leyenda={leyenda} activa={activa} />
                         : composicion?.length > 0 ? <Composicion partes={composicion} activa={activa} />
                         : <OndaDecorativa className="onda-decorativa--indicador" activa={activa} />}
                 </div>
             )}
-            {cargando && <span className="indicador-grafico indicador-grafico--esqueleto" aria-hidden="true" />}
+            {cargando && <span className="indicador-zona indicador-zona--esqueleto" aria-hidden="true" />}
             {cargando && <span className="sr-only">Cargando {titulo}</span>}
         </article>
     );

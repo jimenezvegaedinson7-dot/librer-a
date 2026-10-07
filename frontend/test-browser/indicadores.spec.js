@@ -54,12 +54,12 @@ async function preparar(page, { falloResumen = false, falloLista = false } = {})
 }
 
 function tarjeta(page, titulo) {
-    return page.locator('.indicador').filter({ has: page.locator('.indicador-titulo', { hasText: new RegExp(`^${titulo}$`) }) });
+    return page.locator('.indicador-tarjeta').filter({ has: page.locator('.kpi-label', { hasText: new RegExp(`^${titulo}$`) }) });
 }
 
 async function comprobarTextos(page) {
     await page.evaluate(() => document.fonts.ready);
-    const cortados = await page.locator('.indicador-titulo, .indicador-detalle, .indicador-valor').evaluateAll(nodos =>
+    const cortados = await page.locator('.indicador-tarjeta .kpi-label, .indicador-tarjeta .kpi-descripcion, .indicador-tarjeta .kpi-valor').evaluateAll(nodos =>
         nodos.filter(n => n.scrollWidth > n.clientWidth + 1 || n.scrollHeight > n.clientHeight + 1).map(n => n.textContent));
     expect(cortados).toEqual([]);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
@@ -96,7 +96,7 @@ for (const width of [320, 390, 1440]) {
         await page.screenshot({ path: info.outputPath('comprobantes.png'), fullPage: true });
 
         await page.goto('/usuarios');
-        await expect(tarjeta(page, 'Administradores').locator('.indicador-valor')).toHaveText('1');
+        await expect(tarjeta(page, 'Administradores').locator('.kpi-valor')).toHaveText('1');
         await comprobarTextos(page);
         await page.screenshot({ path: info.outputPath('usuarios.png'), fullPage: true });
         expect(control.errores).toEqual([]);
@@ -130,10 +130,10 @@ test('las demás secciones usan los gráficos comunes y las ondas decorativas no
         const indicadores = page.locator('.indicadores');
         await expect(indicadores).toBeVisible();
         await expect(indicadores).not.toHaveAttribute('aria-busy', 'true');
-        const tarjetas = indicadores.locator('.indicador');
+        const tarjetas = indicadores.locator('.indicador-tarjeta');
         const total = await tarjetas.count();
         expect(total).toBeGreaterThan(0);
-        await expect(tarjetas.locator('.indicador-grafico')).toHaveCount(total);
+        await expect(tarjetas.locator('.indicador-zona')).toHaveCount(total);
         for (const onda of await indicadores.locator('.onda-decorativa').all()) await expect(onda).toHaveAttribute('aria-hidden', 'true');
         await expect(indicadores.locator('.grafico-anillo, .grafico-linea, .grafico-escala, .grafico-segmentos')).toHaveCount(0);
         await comprobarTextos(page);
@@ -174,10 +174,10 @@ for (const ruta of ['/pagos', '/comprobantes']) {
         await expect(page.locator('.kpi-anillo-cifra').first()).toBeVisible();
         if (ruta === '/pagos') await page.locator('select').first().selectOption('pendiente');
         else await page.locator('select').first().selectOption('factura');
-        await expect(page.locator('.indicador').first().locator('.indicador-valor')).toHaveText('1');
-        await expect(page.locator('.indicador .kpi-anillo')).toHaveCount(0);
+        await expect(page.locator('.indicador-tarjeta').first().locator('.kpi-valor')).toHaveText('1');
+        await expect(page.locator('.indicador-tarjeta .kpi-anillo')).toHaveCount(0);
         await expect(page.locator('.grafico-composicion')).toHaveCount(0);
-        await expect(page.locator('.indicador-detalle').filter({ hasText: 'global' }).first()).toBeVisible();
+        await expect(page.locator('.indicador-tarjeta .kpi-descripcion').filter({ hasText: 'global' }).first()).toBeVisible();
     });
 
     test(`${ruta}: un 429 del resumen se muestra como no disponible y Actualizar recupera las cifras`, async ({ page }) => {
@@ -185,11 +185,11 @@ for (const ruta of ['/pagos', '/comprobantes']) {
         const control = await preparar(page, { falloResumen: true });
         await page.goto(ruta);
         await expect(page.getByText(/No se pudo cargar el resumen de/)).toBeVisible();
-        const valores = page.locator('.indicador-valor');
+        const valores = page.locator('.kpi-valor');
         await expect(valores.first()).toHaveText(ruta === '/pagos' ? '18' : '8');
         await expect(valores.nth(1)).toHaveText('No disponible');
         await expect(valores.last()).toHaveText('No disponible');
-        await expect(page.locator('.indicador .kpi-anillo, .grafico-composicion, .indicador .kpi-tendencia')).toHaveCount(0);
+        await expect(page.locator('.indicador-tarjeta .kpi-anillo, .grafico-composicion, .indicador-tarjeta .kpi-tendencia')).toHaveCount(0);
         await comprobarTextos(page);
         control.falloResumen = false;
         await page.getByRole('button', { name: 'Actualizar', exact: true }).click();
@@ -203,8 +203,8 @@ for (const ruta of ['/pagos', '/comprobantes']) {
     test(`${ruta}: lista no disponible no se presenta como cero pagos o comprobantes`, async ({ page }) => {
         await preparar(page, { falloLista: true });
         await page.goto(ruta);
-        await expect(page.locator('.indicador').first().locator('.indicador-valor')).toHaveText('No disponible');
+        await expect(page.locator('.indicador-tarjeta').first().locator('.kpi-valor')).toHaveText('No disponible');
         await expect(page.getByText('Demasiadas solicitudes')).toBeVisible();
-        await expect(page.locator('.indicador .kpi-anillo, .grafico-composicion')).toHaveCount(0);
+        await expect(page.locator('.indicador-tarjeta .kpi-anillo, .grafico-composicion')).toHaveCount(0);
     });
 }

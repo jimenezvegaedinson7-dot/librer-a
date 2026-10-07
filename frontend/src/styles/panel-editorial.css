@@ -682,3 +682,37 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
 }
 .admin-shell[data-theme] .indicador .grafico-composicion .kpi-zona { height: 1.375rem; }
 .admin-shell[data-theme] .indicador .grafico-composicion__leyenda { font-size: 0.625rem; line-height: 1.35; }
+
+/* Indicadores de módulo con el diseño de las tarjetas de Ventas/Dashboard. */
+.indicador-tarjeta .indicador-zona { margin-top: auto; }
+.indicador-tarjeta .indicador-zona--esqueleto {
+    display: block; height: 2.25rem; margin-top: 0.5rem; border-radius: 6px;
+    background: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.1) 0 8%, transparent 8% 12%);
+}
+.indicador-tarjeta .indicador-esqueleto { margin-top: 0.5rem; }
+.indicador-tarjeta.indicador--cargando::after { border: 0; inset: 0; }
+.indicador-tarjeta .onda-decorativa--indicador { display: block; width: 100%; height: 2.25rem; }
+.indicador-tarjeta .onda-area { fill: color-mix(in srgb, var(--joya-acento) 12%, transparent); }
+.admin-shell[data-theme] .indicador-tarjeta .onda-base { stroke: color-mix(in srgb, var(--joya-acento) 35%, transparent); }
+.admin-shell[data-theme] .indicador-tarjeta .onda-trazo { stroke: var(--joya-acento); }
+.indicador-tarjeta .grafico-composicion { display: grid; gap: 0.25rem; }
+.indicador-tarjeta .grafico-composicion .kpi-zona { height: 1.5rem; }
+.indicador-tarjeta .grafico-composicion .kpi-tendencia-barra:nth-child(1) { background: var(--parte-0); }
+.indicador-tarjeta .grafico-composicion .kpi-tendencia-barra:nth-child(2) { background: var(--parte-1); }
+.indicador-tarjeta .grafico-composicion .kpi-tendencia-barra:nth-child(3) { background: var(--parte-2); }
+.indicador-tarjeta .grafico-composicion .kpi-tendencia-barra:nth-child(4) { background: var(--parte-3); }
+.indicador-tarjeta .grafico-composicion .kpi-tendencia-barra:nth-child(5) { background: var(--parte-4); }
+.indicador-tarjeta .grafico-composicion__leyenda { display: flex; flex-wrap: wrap; gap: 0 0.625rem; margin: 0; padding: 0; list-style: none; font-size: 0.625rem; line-height: 1.35; color: rgb(255 250 240 / 0.78); }
+.indicador-tarjeta .grafico-composicion__leyenda li { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.indicador-tarjeta .grafico-composicion__leyenda i { width: 7px; height: 7px; border-radius: 2px; }
+.indicador-tarjeta .grafico-composicion__leyenda b { color: #fffaf0; font-weight: 700; }
+.indicador-tarjeta .indicador-valor--texto { font-size: 1.125rem; }
+.indicador-tarjeta { container-type: inline-size; }
+.indicador-tarjeta .kpi-label { min-width: 0; line-height: 1.45; }
+.indicador-tarjeta .kpi-icono { flex-shrink: 0; }
+.admin-shell[data-theme] .indicador-tarjeta .kpi-valor { line-height: 1.25; }
+/* Tarjetas muy angostas: sin ícono, para que el título entre completo. */
+@container (max-width: 175px) {
+    .indicador-tarjeta .kpi-icono { display: none; }
+    .admin-shell[data-theme] .indicador-tarjeta .kpi-label { font-size: 0.625rem; letter-spacing: 0.05em; }
+}
