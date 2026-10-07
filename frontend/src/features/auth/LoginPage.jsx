@@ -422,10 +422,6 @@ export default function LoginPage() {
                     <Link to="/" className="login-volver">
                         <FaArrowLeft className="text-[10px]" aria-hidden="true" /> Volver a la página principal
                     </Link>
-
-                    <p className="mt-6 text-center text-xs text-[#766d62]">
-                        © {new Date().getFullYear()} Librería del Saber
-                    </p>
                 </motion.section>
             </div>
 
