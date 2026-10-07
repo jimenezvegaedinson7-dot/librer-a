@@ -1,8 +1,8 @@
 {
-    "version": "1.0.11",
-    "versionCode": 12,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.11/libreria-1.0.11.apk",
-    "sha256": "a44357cc5122354ac77ff545d6521e35fe2571232873da119537bbfc734067a3",
+    "version": "1.0.12",
+    "versionCode": 13,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.12/libreria-1.0.12.apk",
+    "sha256": "49318833469fbb581ce1c9246de73eb97437f9a8871fcde1d08852f49fe3494a",
     "obligatoria": false,
-    "notas": "En la página de pago puedes deslizar hacia abajo para recargarla. Incluye los métodos de PayU sin refrescar, el seguimiento del pedido alineado y animado, y el pago dentro de la app."
+    "notas": "Las letras siguen al tema de colores que elijas, con buen contraste; los descuentos siguen en naranja. Incluye deslizar para recargar el pago y los métodos de PayU sin refrescar."
 }

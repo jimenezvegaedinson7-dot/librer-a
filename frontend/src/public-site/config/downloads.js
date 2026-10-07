@@ -10,10 +10,10 @@ export const DESCARGAS = {
     android: {
         habilitado: true,
         tipo: 'apk',
-        version: '1.0.11',
-        // APK firmado: deslizar para recargar el pago, métodos de PayU sin refrescar.
-        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.11/libreria-1.0.11.apk',
-        tamano: '55.3 MB',
+        version: '1.0.12',
+        // APK firmado: letras que siguen al tema elegido, descuentos en naranja.
+        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.12/libreria-1.0.12.apk',
+        tamano: '55.4 MB',
         actualizado: '2026-10-07',
     },
     ios: {
