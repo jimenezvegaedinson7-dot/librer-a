@@ -35,6 +35,8 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
   String? _errorMessage;
   String? _infoMessage;
   int _segundosReintento = 0;
+  int _fallos = 0;
+  bool _codigoOk = false;
   Timer? _timer;
 
   @override
@@ -79,6 +81,7 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
         codigo: codigo,
       );
       if (!mounted) return;
+      setState(() => _codigoOk = true);
 
       await mostrarConfirmacionOtp(
         context,
@@ -88,7 +91,12 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } on ApiException catch (e) {
-      if (mounted) setState(() => _errorMessage = e.message);
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.message;
+          _fallos++;
+        });
+      }
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -192,6 +200,8 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
                         controller: _otpController,
                         enabled: !_loading && !_reenviando,
                         onSubmitted: _verificar,
+                        exito: _codigoOk,
+                        fallos: _fallos,
                       ),
 
                       // Mensaje de error

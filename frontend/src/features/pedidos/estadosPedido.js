@@ -79,20 +79,128 @@ export const ETIQUETA_PAGO = {
     tarjeta: 'Tarjeta',
 };
 
-// Siguiente paso esperado del flujo, para el botón principal.
-// El botón "Cancelar" se ofrece aparte cuando la máquina lo permite.
-const SIGUIENTE = {
-    domicilio: {
-        pendiente: 'en_camino',
-        preparando: 'en_camino',
-        en_camino: 'entregado',
-    },
+// ============================================================
+// FLUJO POR TIPO DE ENTREGA
+// ------------------------------------------------------------
+// Como en las tiendas online (Shopify, Mercado Libre, Rappi): el
+// recojo y el delivery comparten la preparación, pero se separan al
+// final. Cada paso tiene su propio botón, texto y confirmación:
+//
+//   RECOJO   Pago recibido → Preparando → Listo para recoger → Recogido
+//   DELIVERY Pago recibido → Preparando → En camino → Entregado
+//
+// "listo_recojo" y "en_camino" avisan al cliente por correo y en la
+// app; por eso se confirman antes de enviarse.
+// ============================================================
+export const FLUJO = {
     tienda: {
-        pendiente: 'listo_recojo',
-        preparando: 'listo_recojo',
-        listo_recojo: 'entregado',
+        pasos: ['pendiente', 'preparando', 'listo_recojo', 'entregado'],
+        etiquetas: {
+            pendiente: 'Pago recibido',
+            preparando: 'Preparando',
+            listo_recojo: 'Listo para recoger',
+            entregado: 'Recogido',
+            cancelado: 'Cancelado',
+        },
+        acciones: {
+            pendiente: { destino: 'preparando', texto: 'Empezar preparación' },
+            preparando: {
+                destino: 'listo_recojo',
+                texto: 'Listo para recoger',
+                confirmar: {
+                    titulo: 'Avisar que está listo',
+                    mensaje: (p) => `¿Los libros del pedido #${p.id_venta} ya están separados en tienda? Avisaremos al cliente que puede pasar a recogerlos.`,
+                    boton: 'Sí, avisar al cliente',
+                },
+            },
+            listo_recojo: {
+                destino: 'entregado',
+                texto: 'Entregar al cliente',
+                confirmar: {
+                    titulo: 'Entregar en tienda',
+                    mensaje: (p) => `Antes de entregar, verifica el DNI de ${nombreTitular(p)} o el número de pedido #${p.id_venta}. ¿El cliente recibió sus libros? No se cobrará de nuevo.`,
+                    boton: 'Sí, el cliente lo recogió',
+                },
+            },
+        },
+        cancelar: {
+            listo_recojo: { texto: 'No lo recogió', mensaje: 'El pedido ya estaba separado en tienda. Cancélalo solo si el cliente no pasó a recogerlo en el plazo acordado; los libros vuelven a estar disponibles.' },
+        },
+    },
+    domicilio: {
+        pasos: ['pendiente', 'preparando', 'en_camino', 'entregado'],
+        etiquetas: {
+            pendiente: 'Pago recibido',
+            preparando: 'Preparando',
+            en_camino: 'En camino',
+            entregado: 'Entregado',
+            cancelado: 'Cancelado',
+        },
+        acciones: {
+            pendiente: { destino: 'preparando', texto: 'Empezar preparación' },
+            preparando: {
+                destino: 'en_camino',
+                texto: 'Despachar pedido',
+                confirmar: {
+                    titulo: 'Despachar delivery',
+                    mensaje: (p) => `¿El pedido #${p.id_venta} salió hacia ${p.direccion || 'la dirección del cliente'}? Avisaremos al cliente que va en camino.`,
+                    boton: 'Sí, despachar',
+                },
+            },
+            en_camino: {
+                destino: 'entregado',
+                texto: 'Confirmar entrega',
+                confirmar: {
+                    titulo: 'Confirmar entrega a domicilio',
+                    mensaje: (p) => `¿${nombreTitular(p)} recibió el pedido #${p.id_venta} en su dirección? Registraremos la entrega y actualizaremos su compra. No se cobrará de nuevo.`,
+                    boton: 'Sí, fue entregado',
+                },
+            },
+        },
+        cancelar: {
+            en_camino: { texto: 'No se pudo entregar', mensaje: 'El pedido ya salió con el repartidor. Cancélalo solo si no se pudo entregar y regresó a la tienda.' },
+        },
     },
 };
+
+const CANCELAR_BASE = {
+    texto: 'Cancelar pedido',
+    mensaje: 'La preparación se detiene y el cliente verá el pedido como cancelado.',
+};
+
+function nombreTitular(p) {
+    return [p?.nombre_usuario, p?.apellido_usuario].filter(Boolean).join(' ').trim() || 'el cliente';
+}
+
+// Acción principal del paso actual: { destino, texto, confirmar? } o null.
+export function accionSiguiente(tipoEntrega, estadoActual) {
+    return FLUJO[tipoEntrega]?.acciones[estadoActual] ?? null;
+}
+
+// Texto y advertencia del botón de cancelar en ese paso.
+export function accionCancelar(tipoEntrega, estadoActual) {
+    return { ...CANCELAR_BASE, ...(FLUJO[tipoEntrega]?.cancelar?.[estadoActual] || {}) };
+}
+
+// Etiqueta del estado según el tipo ("Recogido" en tienda, "Entregado" en delivery).
+export function etiquetaEstado(tipoEntrega, estado) {
+    return FLUJO[tipoEntrega]?.etiquetas[estado] || ETIQUETA_ESTADO[estado] || estado;
+}
+
+// Etiqueta del pedido completo: mientras el pago no se confirma, la entrega
+// aún no empieza y se dice así (no "Pago recibido").
+export function etiquetaEntregaPedido(p) {
+    const estado = p?.estado_entrega || 'pendiente';
+    if (estado === 'pendiente' && p?.estado === 'pendiente') return 'Esperando pago';
+    return etiquetaEstado(p?.tipo_entrega, estado);
+}
+
+const SIGUIENTE = Object.fromEntries(
+    Object.entries(FLUJO).map(([tipo, flujo]) => [
+        tipo,
+        Object.fromEntries(Object.entries(flujo.acciones).map(([estado, accion]) => [estado, accion.destino])),
+    ]),
+);
 
 // Réplica de ESTADO_POR_TIPO en backend/src/utils/transiciones.js.
 export const TIPOS_ENTREGA = Object.keys(SIGUIENTE);

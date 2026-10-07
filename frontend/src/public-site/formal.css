@@ -522,6 +522,18 @@
 .sitio .mis-compras .compra-registro__importes dd { margin: 0; font-size: 0.9375rem; color: var(--tinta); font-variant-numeric: tabular-nums; }
 .sitio .mis-compras .compra-registro__importes .compra-registro__total dd strong { font-size: 1.125rem; }
 .sitio .mis-compras .compra-registro__pie .compra-acciones { margin: 0; }
+/* Seguimiento del pedido: estado en palabras + pasos del tipo de entrega */
+.sitio .compra-seguimiento { margin: 0; padding: 14px 20px 16px; border-bottom: 1px solid var(--linea); }
+.sitio .compra-seguimiento__titulo { margin: 0; font-size: 0.9375rem; font-weight: 600; color: var(--tinta); }
+.sitio .compra-seguimiento__texto { margin: 2px 0 0; font-size: var(--t-meta); color: var(--texto-2); }
+.sitio .compra-seguimiento--listo .compra-seguimiento__titulo { color: var(--verde-700); }
+.sitio .compra-seguimiento--cancelado .compra-seguimiento__titulo { color: #b42318; }
+.sitio .compra-seguimiento--espera .compra-seguimiento__titulo { color: #a15c07; }
+.sitio .compra-seguimiento__pasos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 12px 0 0; padding: 0; list-style: none; }
+.sitio .compra-seguimiento__pasos li { padding-top: 8px; border-top: 3px solid var(--linea); font-size: 0.75rem; color: var(--texto-3); transition: border-color var(--d-rapida) ease, color var(--d-rapida) ease; }
+.sitio .compra-seguimiento__pasos li.es-hecho { border-color: var(--marino-700); color: var(--texto-2); }
+.sitio .compra-seguimiento__pasos li.es-actual { border-color: var(--marino-900); color: var(--tinta); font-weight: 600; }
+@media (max-width: 760px) { .sitio .compra-seguimiento { padding-inline: 16px; } }
 @media (max-width: 760px) {
     .sitio .mis-compras .compra-registro__cuerpo { grid-template-columns: minmax(0, 1fr); padding: 14px 16px; }
     .sitio .mis-compras .compra-registro header, .sitio .mis-compras .compra-registro__pie { padding-inline: 16px; }

@@ -32,7 +32,8 @@ class _ReestablecerContrasenaScreenState
       _confirmacion = TextEditingController();
   String? _permiso, _error, _info;
   bool _ocupado = false, _oculta = true, _ocultaConfirmacion = true;
-  int _segundos = 0;
+  int _segundos = 0, _fallos = 0;
+  bool _codigoOk = false;
   Timer? _timer;
   ApiService get _api => widget.api ?? ApiService.instance;
   @override
@@ -59,6 +60,7 @@ class _ReestablecerContrasenaScreenState
           codigo: _codigo.text,
         );
         if (!mounted) return;
+        setState(() => _codigoOk = true);
         await mostrarConfirmacionOtp(
           context,
           titulo: 'Código verificado',
@@ -91,8 +93,10 @@ class _ReestablecerContrasenaScreenState
       if (!mounted) return;
       setState(() {
         _error = e.message;
+        if (_permiso == null) _fallos++;
         if (_permiso != null && e.message.contains('ha expirado')) {
           _permiso = null;
+          _codigoOk = false;
           _password.clear();
           _confirmacion.clear();
         }
@@ -173,8 +177,10 @@ class _ReestablecerContrasenaScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Center(child: AppLogo(width: 84, height: 84)),
-                    const SizedBox(height: 24),
+                    const Center(child: AppLogo(width: 72, height: 72)),
+                    const SizedBox(height: 20),
+                    _PasosRecuperacion(paso: verificada ? 2 : 1),
+                    const SizedBox(height: 20),
                     Text(
                       verificada
                           ? 'Crea tu nueva contraseña'
@@ -190,63 +196,108 @@ class _ReestablecerContrasenaScreenState
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24),
-                    if (!verificada)
-                      CampoOtp(
-                        controller: _codigo,
-                        enabled: !_ocupado,
-                        onSubmitted: _continuar,
-                      )
-                    else ...[
-                      TextFormField(
-                        controller: _password,
-                        enabled: !_ocupado,
-                        obscureText: _oculta,
-                        autofillHints: const [AutofillHints.newPassword],
-                        textInputAction: TextInputAction.next,
-                        decoration: InputDecoration(
-                          labelText: 'Nueva contraseña',
-                          suffixIcon: IconButton(
-                            tooltip: 'Mostrar u ocultar contraseña',
-                            onPressed: () => setState(() => _oculta = !_oculta),
-                            icon: Icon(
-                              _oculta ? Icons.visibility_off : Icons.visibility,
-                            ),
-                          ),
+                    // Cambio de paso con deslizamiento suave.
+                    AnimatedSwitcher(
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : const Duration(milliseconds: 320),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (hijo, anim) => FadeTransition(
+                        opacity: anim,
+                        child: SlideTransition(
+                          position: Tween(
+                            begin: const Offset(0.08, 0),
+                            end: Offset.zero,
+                          ).animate(anim),
+                          child: hijo,
                         ),
-                        validator: _validarPassword,
                       ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _confirmacion,
-                        enabled: !_ocupado,
-                        obscureText: _ocultaConfirmacion,
-                        autofillHints: const [AutofillHints.newPassword],
-                        textInputAction: TextInputAction.done,
-                        decoration: InputDecoration(
-                          labelText: 'Confirmar contraseña',
-                          suffixIcon: IconButton(
-                            tooltip: 'Mostrar u ocultar confirmación',
-                            onPressed: () => setState(
-                              () => _ocultaConfirmacion = !_ocultaConfirmacion,
+                      child: !verificada
+                          ? Column(
+                              key: const ValueKey('paso-codigo'),
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                CampoOtp(
+                                  controller: _codigo,
+                                  enabled: !_ocupado,
+                                  onSubmitted: _continuar,
+                                  exito: _codigoOk,
+                                  fallos: _fallos,
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  '¿No llegó? Revisa también la carpeta de spam.',
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            )
+                          : Column(
+                              key: const ValueKey('paso-clave'),
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                TextFormField(
+                                  controller: _password,
+                                  enabled: !_ocupado,
+                                  obscureText: _oculta,
+                                  autofillHints: const [
+                                    AutofillHints.newPassword,
+                                  ],
+                                  textInputAction: TextInputAction.next,
+                                  decoration: InputDecoration(
+                                    labelText: 'Nueva contraseña',
+                                    suffixIcon: IconButton(
+                                      tooltip: 'Mostrar u ocultar contraseña',
+                                      onPressed: () =>
+                                          setState(() => _oculta = !_oculta),
+                                      icon: Icon(
+                                        _oculta
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
+                                      ),
+                                    ),
+                                  ),
+                                  validator: _validarPassword,
+                                ),
+                                const SizedBox(height: 16),
+                                TextFormField(
+                                  controller: _confirmacion,
+                                  enabled: !_ocupado,
+                                  obscureText: _ocultaConfirmacion,
+                                  autofillHints: const [
+                                    AutofillHints.newPassword,
+                                  ],
+                                  textInputAction: TextInputAction.done,
+                                  decoration: InputDecoration(
+                                    labelText: 'Confirmar contraseña',
+                                    suffixIcon: IconButton(
+                                      tooltip: 'Mostrar u ocultar confirmación',
+                                      onPressed: () => setState(
+                                        () => _ocultaConfirmacion =
+                                            !_ocultaConfirmacion,
+                                      ),
+                                      icon: Icon(
+                                        _ocultaConfirmacion
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
+                                      ),
+                                    ),
+                                  ),
+                                  validator: (v) =>
+                                      v == _password.text &&
+                                          (v ?? '').isNotEmpty
+                                      ? null
+                                      : 'Las contraseñas no coinciden',
+                                  onFieldSubmitted: (_) => _continuar(),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Al menos 8 caracteres, con una letra y un número.',
+                                ),
+                              ],
                             ),
-                            icon: Icon(
-                              _ocultaConfirmacion
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
-                          ),
-                        ),
-                        validator: (v) =>
-                            v == _password.text && (v ?? '').isNotEmpty
-                            ? null
-                            : 'Las contraseñas no coinciden',
-                        onFieldSubmitted: (_) => _continuar(),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Al menos 8 caracteres, con una letra y un número.',
-                      ),
-                    ],
+                    ),
                     if (_error != null) ...[
                       const SizedBox(height: 16),
                       ErrorBanner(message: _error!),
@@ -289,6 +340,74 @@ class _ReestablecerContrasenaScreenState
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// "Paso 1 de 2 · Código" → "Paso 2 de 2 · Contraseña": primero se
+/// confirma el código y recién después se pide la contraseña.
+class _PasosRecuperacion extends StatelessWidget {
+  final int paso;
+  const _PasosRecuperacion({required this.paso});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final duracion = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : const Duration(milliseconds: 320);
+    Widget etapa(int numero, String texto) {
+      final hecha = paso > numero;
+      final actual = paso == numero;
+      return Expanded(
+        child: Column(
+          children: [
+            AnimatedContainer(
+              duration: duracion,
+              height: 4,
+              decoration: BoxDecoration(
+                color: hecha || actual ? colors.primary : colors.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  hecha ? Icons.check_circle : Icons.circle_outlined,
+                  size: 16,
+                  color: hecha || actual ? colors.primary : colors.outline,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    texto,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      fontWeight: actual ? FontWeight.w700 : FontWeight.w500,
+                      color: hecha || actual
+                          ? colors.onSurface
+                          : colors.outline,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Semantics(
+      label: 'Paso $paso de 2',
+      child: Row(
+        children: [
+          etapa(1, 'Código'),
+          const SizedBox(width: 12),
+          etapa(2, 'Contraseña'),
+        ],
       ),
     );
   }

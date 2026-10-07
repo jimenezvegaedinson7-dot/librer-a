@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../models/venta.dart';
+import '../utils/seguimiento_pedido.dart';
 import '../services/api_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_tokens.dart';
@@ -16,6 +16,8 @@ import '../widgets/estado_chip.dart';
 import '../widgets/loading_view.dart';
 import '../widgets/precio_texto.dart';
 import '../widgets/presionable.dart';
+import '../widgets/confirmacion_otp.dart';
+import 'pago_en_app_screen.dart';
 
 /// Pantalla "Mis compras": lista las ventas del cliente desde
 /// `GET /ventas/mis-ventas`.
@@ -225,16 +227,13 @@ class _VentaTile extends StatelessWidget {
       return;
     }
 
-    final uri = Uri.parse(url);
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo abrir la ventana de pago.')),
-      );
-    }
+    // El pago se hace dentro de la app; al cerrarse se consulta el estado.
+    final resultado = await PagoEnAppScreen.abrir(context, url);
+    if (!context.mounted) return;
+    await _verificarPago(context, trasPago: resultado == ResultadoPagoEnApp.regreso);
   }
 
-  Future<void> _verificarPago(BuildContext context) async {
+  Future<void> _verificarPago(BuildContext context, {bool trasPago = false}) async {
     final orderId = venta.orderId;
     if (orderId == null || orderId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -246,8 +245,26 @@ class _VentaTile extends StatelessWidget {
     }
 
     try {
-      final estado = await ApiService.instance.obtenerOrdenPago(orderId);
+      var estado = await ApiService.instance.obtenerOrdenPago(orderId);
+      // Tras volver de PayU, la confirmación puede tardar unos segundos.
+      for (var intento = 0;
+          trasPago && intento < 4 && !estado.pagada && !estado.cancelada;
+          intento++) {
+        await Future<void>.delayed(const Duration(seconds: 2));
+        if (!context.mounted) return;
+        estado = await ApiService.instance.obtenerOrdenPago(orderId);
+      }
       if (!context.mounted) return;
+      if (estado.pagada && !estado.requiereRevision && !venta.pagada) {
+        await mostrarConfirmacionOtp(
+          context,
+          titulo: '¡Pago confirmado!',
+          mensaje: 'Tu pedido pasa a preparación. Te avisaremos en cada paso.',
+        );
+        if (!context.mounted) return;
+        await onActualizada();
+        return;
+      }
       await onActualizada();
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -411,7 +428,9 @@ class _VentaTile extends StatelessWidget {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
+                  _EstadoEnPalabras(venta: venta),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Text(
@@ -664,138 +683,194 @@ class _SeguimientoPedido extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final raw = (venta.estado ?? '').toLowerCase().trim();
-
-    // Reembolsada: el dinero se devolvió (venta pagada o entregada).
-    if (raw == 'reembolsada') {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.textSecondary.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Row(
-          children: [
-            Icon(
-              Icons.currency_exchange_rounded,
-              color: AppColors.textSecondary,
-              size: 20,
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Este pedido fue reembolsado.',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (raw == 'cancelada') {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: AppColors.error.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Row(
-          children: [
-            Icon(Icons.cancel_outlined, color: AppColors.error, size: 20),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Este pedido fue cancelado.',
-                style: TextStyle(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final entregado =
-        venta.estadoEntrega == 'entregado' ||
-        (venta.estadoEntrega == null && raw == 'entregada');
-    final completado = raw == 'entregada' || raw == 'pagada';
-    final pasos = <(String, bool)>[
-      ('Pedido realizado', raw == 'pendiente' || completado),
-      ('Pago confirmado', raw == 'pagada' || raw == 'entregada'),
-      (
-        venta.entregaEstadoLabel.isEmpty
-            ? 'Entregado'
-            : venta.entregaEstadoLabel,
-        entregado,
-      ),
-    ];
-
-    return Row(
+    final seg = SeguimientoPedido.de(venta);
+    final color = _colorTono(seg.tono);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (var i = 0; i < pasos.length; i++) ...[
-          if (i > 0)
-            Expanded(
-              child: Container(
-                height: 2,
-                margin: const EdgeInsets.only(bottom: 24),
-                color: pasos[i].$2 ? AppColors.success : AppColors.divider,
-              ),
-            ),
-          _Paso(etiqueta: pasos[i].$1, activo: pasos[i].$2),
+        if (seg.pasos.isNotEmpty) ...[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < seg.pasos.length; i++)
+                Expanded(
+                  child: _Paso(
+                    paso: seg.pasos[i],
+                    primero: i == 0,
+                    ultimo: i == seg.pasos.length - 1,
+                    tramoPrevioHecho: seg.pasos[i].hecho,
+                    tramoSiguienteHecho:
+                        i + 1 < seg.pasos.length && seg.pasos[i + 1].hecho,
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 14),
         ],
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(_iconoTono(seg.tono, venta), color: color, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      seg.titulo,
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                    if (seg.mensaje.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        seg.mensaje,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12.5,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
 }
 
-/// Círculo + etiqueta de una etapa del seguimiento.
-class _Paso extends StatelessWidget {
-  final String etiqueta;
-  final bool activo;
+Color _colorTono(TonoSeguimiento tono) => switch (tono) {
+  TonoSeguimiento.cancelado => AppColors.error,
+  TonoSeguimiento.espera => AppColors.gold,
+  TonoSeguimiento.listo => AppColors.success,
+  TonoSeguimiento.proceso => AppColors.primary,
+};
 
-  const _Paso({required this.etiqueta, required this.activo});
+IconData _iconoTono(TonoSeguimiento tono, Venta venta) {
+  if (tono == TonoSeguimiento.cancelado) return Icons.cancel_outlined;
+  if (tono == TonoSeguimiento.espera) return Icons.schedule_outlined;
+  if (tono == TonoSeguimiento.listo) return Icons.check_circle_outline;
+  final estado = venta.estadoEntrega?.toLowerCase().trim();
+  if (estado == 'en_camino') return Icons.local_shipping_outlined;
+  if (estado == 'listo_recojo') return Icons.storefront_outlined;
+  return Icons.inventory_2_outlined;
+}
+
+/// Círculo + etiqueta de una etapa, con el tramo que la une a la anterior.
+/// Ocupa una cuarta parte del ancho: cabe en pantallas de 320 px.
+class _Paso extends StatelessWidget {
+  final PasoSeguimiento paso;
+  final bool primero, ultimo, tramoPrevioHecho, tramoSiguienteHecho;
+
+  const _Paso({
+    required this.paso,
+    required this.primero,
+    required this.ultimo,
+    required this.tramoPrevioHecho,
+    required this.tramoSiguienteHecho,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final activo = paso.hecho;
     final color = activo ? AppColors.success : AppColors.textTertiary;
+    Widget tramo(bool visible, bool hecho) => Expanded(
+      child: Container(
+        height: 2,
+        color: !visible
+            ? Colors.transparent
+            : hecho
+            ? AppColors.success
+            : AppColors.divider,
+      ),
+    );
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: activo ? AppColors.success : AppColors.surface,
-            border: Border.all(color: color, width: 2),
-          ),
-          child: activo
-              ? const Icon(Icons.check_rounded, size: 15, color: Colors.white)
-              : null,
+        Row(
+          children: [
+            tramo(!primero, tramoPrevioHecho),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              width: paso.actual ? 26 : 22,
+              height: paso.actual ? 26 : 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: activo ? AppColors.success : AppColors.surface,
+                border: Border.all(color: color, width: 2),
+                boxShadow: paso.actual
+                    ? [
+                        BoxShadow(
+                          color: AppColors.success.withValues(alpha: 0.25),
+                          blurRadius: 0,
+                          spreadRadius: 4,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: activo
+                  ? const Icon(
+                      Icons.check_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    )
+                  : null,
+            ),
+            tramo(!ultimo, tramoSiguienteHecho),
+          ],
         ),
         const SizedBox(height: 6),
-        SizedBox(
-          width: 86,
+        Text(
+          paso.etiqueta,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 10.5,
+            height: 1.2,
+            fontWeight: paso.actual ? FontWeight.w700 : FontWeight.w500,
+            color: activo ? AppColors.success : AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Una línea con el estado del pedido ("Listo para recoger", "En camino"…).
+class _EstadoEnPalabras extends StatelessWidget {
+  final Venta venta;
+  const _EstadoEnPalabras({required this.venta});
+
+  @override
+  Widget build(BuildContext context) {
+    final seg = SeguimientoPedido.de(venta);
+    final color = _colorTono(seg.tono);
+    return Row(
+      children: [
+        Icon(_iconoTono(seg.tono, venta), size: 16, color: color),
+        const SizedBox(width: 6),
+        Expanded(
           child: Text(
-            etiqueta,
-            textAlign: TextAlign.center,
-            maxLines: 2,
+            seg.titulo,
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 10.5,
-              height: 1.2,
-              fontWeight: activo ? FontWeight.w700 : FontWeight.w500,
-              color: activo ? AppColors.success : AppColors.textSecondary,
+              color: color,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
             ),
           ),
         ),

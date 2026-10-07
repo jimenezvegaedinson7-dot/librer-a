@@ -2,7 +2,7 @@ const ventaModel = require('../models/venta.model');
 const historialModel = require('../models/historial.model');
 const { validarId } = require('../utils/validaciones');
 const { ENTREGA, esTipoEntregaValido, permitirTransicionEntrega, esVentaHistorica } = require('../utils/transiciones');
-const { enviarCorreoPedidoEntregado } = require('../utils/mailer');
+const { enviarCorreoAvancePedido, avisoPedido } = require('../utils/mailer');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR EL PEDIDO
@@ -240,12 +240,14 @@ const Pedido = {
 
             // Solo quien ganó la transición bajo FOR UPDATE notifica.
             // Un reintento o petición concurrente se rechaza antes de llegar aquí.
-            if (estado === 'entregado') {
+            // Avisos por tipo: listo para recoger, en camino y entregado/recogido.
+            if (avisoPedido(ventaActual.tipo_entrega, estado)) {
                 const destinatario = ventaActual.correo_compra || ventaActual.correo_usuario;
-                if (destinatario) await enviarCorreoPedidoEntregado({ destinatario,
+                const direccion = [ventaActual.direccion, ventaActual.distrito].filter(Boolean).join(', ');
+                if (destinatario) await enviarCorreoAvancePedido({ destinatario,
                     nombre: `${ventaActual.nombre_usuario || ''} ${ventaActual.apellido_usuario || ''}`.trim() || 'cliente',
-                    idVenta, tipoEntrega: ventaActual.tipo_entrega }).catch(error => {
-                    console.error('Error al notificar entrega:', error.message);
+                    idVenta, tipoEntrega: ventaActual.tipo_entrega, estado, direccion }).catch(error => {
+                    console.error('Error al notificar avance del pedido:', error.message);
                 });
             }
 

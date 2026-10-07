@@ -108,16 +108,19 @@ for (const width of [390, 1440]) {
             return route.fulfill({ json: { success: true, data: path === '/api/pedidos' ? pedidos : [] } });
         });
         await page.goto('/pedidos');
-        await expect(page.getByRole('button', { name: 'Listo para recoger', exact: true })).toHaveCount(1);
+        // Recojo en tienda: preparar → listo para recoger (avisa) → entregar.
+        await expect(page.getByRole('button', { name: 'Empezar preparación', exact: true })).toHaveCount(1);
         await expect(page.getByText('Esperando pago', { exact: true })).toBeVisible();
         await page.screenshot({ path: info.outputPath('pedidos-simplificados.png'), fullPage: true });
+        await page.getByRole('button', { name: 'Empezar preparación', exact: true }).click();
         await page.getByRole('button', { name: 'Listo para recoger', exact: true }).click();
-        await expect(page.getByRole('button', { name: 'Confirmar entrega', exact: true })).toBeVisible();
-        await expect(page.getByRole('dialog')).toHaveCount(0);
-        await page.getByRole('button', { name: 'Confirmar entrega', exact: true }).click();
-        await page.getByRole('dialog').getByRole('button', { name: 'Sí, entregar', exact: true }).click();
-        await expect(page.getByRole('button', { name: 'Confirmar entrega', exact: true })).toHaveCount(0);
-        expect(cambios).toEqual([{ estado: 'listo_recojo' }, { estado: 'entregado' }]);
+        await page.getByRole('dialog').getByRole('button', { name: 'Sí, avisar al cliente', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Entregar al cliente', exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Despachar pedido', exact: true })).toHaveCount(0);
+        await page.getByRole('button', { name: 'Entregar al cliente', exact: true }).click();
+        await page.getByRole('dialog').getByRole('button', { name: 'Sí, el cliente lo recogió', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Entregar al cliente', exact: true })).toHaveCount(0);
+        expect(cambios).toEqual([{ estado: 'preparando' }, { estado: 'listo_recojo' }, { estado: 'entregado' }]);
         expect(pedidos[0]).toMatchObject({ total: 30, estado: 'entregada', estado_entrega: 'entregado' });
         expect(pedidos[1].estado_entrega).toBe('pendiente');
     });

@@ -474,29 +474,79 @@ async function enviarCorreoPagoRechazado({
 }
 
 // ============================================================
-// CORREO: PEDIDO ENTREGADO
+// CORREOS DE AVANCE DEL PEDIDO
+// ------------------------------------------------------------
+// Cada tipo de entrega tiene su propio aviso, como en las tiendas
+// online: el recojo avisa cuando el pedido está listo en tienda y
+// el delivery cuando sale hacia la dirección del cliente.
 // ============================================================
-async function enviarCorreoPedidoEntregado({
+const AVISOS_PEDIDO = {
+    tienda: {
+        listo_recojo: {
+            titulo: 'Tu pedido está listo para recoger',
+            sello: 'Listo para recoger',
+            color: ['#eff6ff', '#1d4ed8'],
+            texto: (id) => `Tu pedido <strong>#${id}</strong> ya está separado en tienda. Acércate cuando gustes y muestra tu número de pedido y tu DNI al recogerlo.`
+        },
+        entregado: {
+            titulo: 'Recogiste tu pedido',
+            sello: '✓ Pedido recogido',
+            color: ['#ecfdf5', '#047857'],
+            texto: (id) => `Registramos que recogiste tu pedido <strong>#${id}</strong> en tienda. ¡Gracias por tu compra!`
+        }
+    },
+    domicilio: {
+        en_camino: {
+            titulo: 'Tu pedido va en camino',
+            sello: 'En camino',
+            color: ['#eef2ff', '#4338ca'],
+            texto: (id, direccion) => `Tu pedido <strong>#${id}</strong> salió de la tienda` +
+                (direccion ? ` hacia <strong>${htmlEscape(direccion)}</strong>` : '') +
+                '. Mantén tu teléfono a mano para coordinar la entrega.'
+        },
+        entregado: {
+            titulo: 'Pedido entregado',
+            sello: '✓ Pedido entregado',
+            color: ['#ecfdf5', '#047857'],
+            texto: (id) => `Tu pedido <strong>#${id}</strong> fue <strong>entregado</strong> en tu dirección. ¡Gracias por tu compra!`
+        }
+    }
+};
+
+// Devuelve el aviso de ese paso, o null si el paso no notifica.
+const avisoPedido = (tipoEntrega, estado) => AVISOS_PEDIDO[tipoEntrega]?.[estado] || null;
+
+async function enviarCorreoAvancePedido({
     destinatario,
     nombre,
     idVenta,
-    tipoEntrega
+    tipoEntrega,
+    estado,
+    direccion
 }) {
+    const aviso = avisoPedido(tipoEntrega, estado);
+    if (!aviso) return null;
+    const [fondo, tinta] = aviso.color;
     const cuerpoHtml =
         `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
-        `<p>Tu pedido <strong>#${htmlEscape(idVenta)}</strong> fue <strong>entregado</strong>. ¡Gracias por tu compra!</p>` +
+        `<p>${aviso.texto(htmlEscape(idVenta), direccion)}</p>` +
         `<div style="margin:22px 0;text-align:center">` +
-        `<span style="display:inline-block;padding:14px 28px;background:#ecfdf5;color:#047857;font-size:18px;font-weight:bold;border-radius:10px">✓ Pedido entregado</span>` +
+        `<span style="display:inline-block;padding:14px 28px;background:${fondo};color:${tinta};font-size:18px;font-weight:bold;border-radius:10px">${aviso.sello}</span>` +
         `</div>` +
         `<p style="color:#64748b;font-size:13px">Entrega: <strong>${htmlEscape(etiquetaTipoEntrega(tipoEntrega))}</strong>.</p>` +
-        `<p style="color:#64748b;font-size:13px">Si compraste como invitado o tienes dudas, responde este correo y te ayudamos.</p>`;
+        `<p style="color:#64748b;font-size:13px">Si tienes dudas, responde este correo y te ayudamos.</p>`;
 
     const { asunto, html } = plantillaBase({
-        tituloCabecera: 'Pedido entregado',
+        tituloCabecera: aviso.titulo,
         cuerpoHtml
     });
 
     return enviarCorreo({ destinatario, asunto, html });
+}
+
+// Compatibilidad: el aviso final según el tipo de entrega.
+async function enviarCorreoPedidoEntregado({ destinatario, nombre, idVenta, tipoEntrega }) {
+    return enviarCorreoAvancePedido({ destinatario, nombre, idVenta, tipoEntrega, estado: 'entregado' });
 }
 
 // ============================================================
@@ -808,6 +858,8 @@ module.exports = {
     enviarCorreoPagoRechazado,
     enviarCorreoReservaCreada,
     enviarCorreoPedidoEntregado,
+    enviarCorreoAvancePedido,
+    avisoPedido,
     enviarComprobantePorEmail,
     construirHtmlComprobante,
     smtpConfigurado,

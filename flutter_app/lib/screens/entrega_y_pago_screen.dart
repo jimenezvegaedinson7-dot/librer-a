@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../models/zona_delivery.dart';
 import '../models/orden_pago.dart';
@@ -14,6 +13,8 @@ import '../widgets/empty_view.dart';
 import '../widgets/loading_view.dart';
 import '../widgets/precio_texto.dart';
 import '../widgets/presionable.dart';
+import '../widgets/confirmacion_otp.dart';
+import 'pago_en_app_screen.dart';
 
 enum _TipoEntrega { domicilio, tienda }
 
@@ -23,9 +24,8 @@ enum _TipoEntrega { domicilio, tienda }
 /// el tipo de entrega (delivery en Pallasca o recojo gratuito en Pallasca), ingresar los
 /// datos de envío cuando corresponde y revisar el resumen (subtotal, envío,
 /// total). Al confirmar con [COMPRAR Y PAGAR] se crea la orden en PayU
-/// (WebCheckout) y se abre el checkout con el navegador, reutilizando
-/// la MISMA lógica existente ([ApiService.crearOrdenPago] +
-/// [launchUrl]) sin modificar la integración de pagos.
+/// (WebCheckout) y se abre el checkout DENTRO de la app
+/// ([PagoEnAppScreen]); al volver, el estado se confirma con la API.
 class EntregaYPagoScreen extends StatefulWidget {
   const EntregaYPagoScreen({super.key});
 
@@ -262,13 +262,24 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     }
   }
 
-  Future<void> _verificarPago() async {
+  /// Consulta el estado real del pago. Al volver de la ventana de PayU
+  /// ([trasPago]) reintenta unos segundos: la confirmación de PayU llega
+  /// al servidor con un pequeño retraso.
+  Future<void> _verificarPago({bool trasPago = false}) async {
     final orderId = _orderId;
     if (orderId == null || orderId.isEmpty) return;
 
+    final yaPagada = _estadoPago?.pagada == true;
     setState(() => _procesando = true);
     try {
-      final estado = await ApiService.instance.obtenerOrdenPago(orderId);
+      var estado = await ApiService.instance.obtenerOrdenPago(orderId);
+      for (var intento = 0;
+          trasPago && intento < 4 && !estado.pagada && !estado.cancelada;
+          intento++) {
+        await Future<void>.delayed(const Duration(seconds: 2));
+        if (!mounted) return;
+        estado = await ApiService.instance.obtenerOrdenPago(orderId);
+      }
       if (!mounted) return;
       setState(() {
         _procesando = false;
@@ -276,6 +287,15 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         if (estado.pagada || estado.cancelada) _checkoutUrl = null;
       });
 
+      if (estado.pagada && !estado.requiereRevision && !yaPagada) {
+        await mostrarConfirmacionOtp(
+          context,
+          titulo: '¡Pago confirmado!',
+          mensaje: 'Tu pedido pasa a preparación. Te avisaremos en cada paso.',
+        );
+        return;
+      }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -342,15 +362,13 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     }
   }
 
+  /// Abre el checkout dentro de la app y, al cerrarse, verifica el pago con
+  /// el servidor (cerrar la ventana nunca confirma un cobro por sí solo).
   Future<bool> _abrirCheckout(String url) async {
-    final uri = Uri.parse(url);
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo abrir la ventana de pago.')),
-      );
-    }
-    return ok;
+    final resultado = await PagoEnAppScreen.abrir(context, url);
+    if (!mounted) return true;
+    await _verificarPago(trasPago: resultado == ResultadoPagoEnApp.regreso);
+    return true;
   }
 
   /// Costo de envío según el tipo de entrega seleccionado.

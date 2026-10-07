@@ -7,10 +7,20 @@ import PortadaLibro from './PortadaLibro';
 import { soles } from '../lib/formato';
 import { descripcionEntrega, ubicacionEntrega } from '../../lib/utils/entrega';
 import { formatearFecha } from '../../lib/utils/format';
+import { seguimientoPedido } from '../../lib/utils/seguimientoPedido';
 import EstadoSesion from './EstadoSesion';
 
 const estados={pendiente:'Pendiente de pago',pagada:'Pagada',entregada:'Entregada',cancelada:'Cancelada',reembolsada:'Reembolsada'};
-const entrega={pendiente:'Preparando pedido',preparando:'Preparando pedido',listo_recojo:'Lista para recojo',en_camino:'En camino',entregado:'Entregada',cancelado:'Cancelada'};
+// Seguimiento: mismos pasos y textos que la app y los correos.
+function Seguimiento({ v }) {
+    const seg=seguimientoPedido(v);
+    return <section className={`compra-seguimiento compra-seguimiento--${seg.tono}`} aria-label={`Seguimiento de la compra #${v.id_venta}`}>
+        <p className="compra-seguimiento__titulo">{seg.titulo}</p>
+        {seg.mensaje && <p className="compra-seguimiento__texto">{seg.mensaje}</p>}
+        {seg.pasos.length>0 && <ol className="compra-seguimiento__pasos">{seg.pasos.map(p=><li key={p.clave}
+            className={p.actual?'es-actual':p.hecho?'es-hecho':undefined} aria-current={p.actual?'step':undefined}>{p.etiqueta}</li>)}</ol>}
+    </section>;
+}
 export default function MisComprasPage() {
     const t=useTienda();
     return <ComprasCliente key={t.generacion} t={t}/>;
@@ -70,6 +80,7 @@ function ComprasCliente({ t }) {
                                 <p className="compra-registro__meta">{v.fecha_venta && <>{formatearFecha(v.fecha_venta)} · </>}{v.canal_compra==='web'?'Web':'App'}</p></div>
                             <strong className={`compra-estado compra-estado--${v.estado}`}>{estados[v.estado] || v.estado}</strong>
                         </header>
+                        <Seguimiento v={v}/>
                         <div className="compra-registro__cuerpo">
                             <ul className="compra-registro__libros">{(v.detalle || []).map(i=><li key={i.id_libro}>
                                 <Link to={`/libro/${Number(i.id_libro)}`} className="compra-registro__portada" aria-label={`Ver ${i.titulo}`}><PortadaLibro key={conPortada(i).portada || 'sin'} libro={conPortada(i)} mini/></Link>
@@ -78,7 +89,6 @@ function ComprasCliente({ t }) {
                                 <span className="compra-registro__subtotal">{soles(i.subtotal)}</span></li>)}</ul>
                             <dl className="compra-registro__entrega">
                                 <div><dt>Entrega</dt><dd>{descripcionEntrega(v)}</dd></div>
-                                <div><dt>Estado de la entrega</dt><dd>{v.estado === 'pendiente' ? 'Se prepara cuando se confirme tu pago' : entrega[v.estado_entrega] || v.estado_entrega || 'Preparando pedido'}</dd></div>
                                 {v.tipo_entrega==='domicilio' && (ubicacionEntrega(v) || v.direccion) && <div><dt>Dirección</dt><dd>{[v.direccion,ubicacionEntrega(v)].filter(Boolean).join(', ')}</dd></div>}
                                 {v.referencia && <div><dt>Referencia</dt><dd>{v.referencia}</dd></div>}
                             </dl>
