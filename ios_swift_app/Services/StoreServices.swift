@@ -36,7 +36,8 @@ final class FavoritesService {
     }
 }
 
-/// Envío a domicilio (solo Lima) y pago con PayU WebCheckout.
+/// Delivery dentro de Pallasca (por zonas) o recojo en Pallasca, y pago con
+/// PayU WebCheckout dentro de la app.
 ///
 /// La clave de idempotencia se genera una vez por intento de checkout y se
 /// reutiliza en los reintentos (el backend responde `ya_existia` en lugar de
@@ -49,22 +50,17 @@ final class CheckoutService {
 
     init(client: APIClient) { self.client = client }
 
-    /// Distritos de la provincia de Lima (el reparto es solo en Lima).
-    func limaDistricts() async throws -> [District] {
-        let provinces = try await client.send(APIEndpoint<APIResponse<[Province]>>.provinces).data
-        guard let lima = provinces.first(where: {
-            $0.nombre.trimmingCharacters(in: .whitespaces).lowercased() == "lima"
-        }) else { return [] }
-        return try await client.send(
-            APIEndpoint<APIResponse<[District]>>.districts(provinceID: lima.idProvincia)
-        ).data
+    /// Zonas activas de delivery dentro de Pallasca.
+    func deliveryZones() async throws -> [DeliveryZone] {
+        try await client.send(APIEndpoint<APIResponse<[DeliveryZone]>>.deliveryZones).data.filter(\.usable)
     }
 
     func createOrder(
         items: [CartItem],
         delivery: DeliveryType,
         address: String?,
-        districtID: Int?,
+        zoneID: Int?,
+        reference: String?,
         documentType: String,
         document: String
     ) async throws -> PaymentOrder {
@@ -72,7 +68,8 @@ final class CheckoutService {
             items.map { "\($0.book.idLibro):\($0.quantity)" }.joined(separator: ","),
             delivery.rawValue,
             address?.trimmingCharacters(in: .whitespaces) ?? "",
-            districtID.map(String.init) ?? "",
+            zoneID.map(String.init) ?? "",
+            reference?.trimmingCharacters(in: .whitespaces) ?? "",
             document
         ].joined(separator: "|")
 
@@ -86,7 +83,10 @@ final class CheckoutService {
             items: items.map { CheckoutItemRequest(idLibro: $0.book.idLibro, cantidad: $0.quantity) },
             tipoEntrega: delivery.rawValue,
             direccion: delivery == .home ? address?.trimmingCharacters(in: .whitespaces) : nil,
-            idDistrito: delivery == .home ? districtID : nil,
+            idZonaDelivery: delivery == .home ? zoneID : nil,
+            referencia: delivery == .home
+                ? reference.map { $0.trimmingCharacters(in: .whitespaces) }.flatMap { $0.isEmpty ? nil : $0 }
+                : nil,
             clienteTipoDocumento: documentType,
             clienteDocumento: document.trimmingCharacters(in: .whitespaces)
         )
@@ -108,6 +108,13 @@ enum DeliveryType: String, CaseIterable, Identifiable {
     case home = "domicilio"
     case store = "tienda"
     var id: String { rawValue }
+}
+
+enum AccountFlowError: LocalizedError {
+    case message(String)
+    var errorDescription: String? {
+        switch self { case .message(let text): return text }
+    }
 }
 
 /// Registro, verificación, recuperación, perfil, contraseña y 2FA.
@@ -136,9 +143,21 @@ final class AccountService {
         _ = try await client.send(APIEndpoint<APIStatusPayload>.requestPasswordReset(.init(email: email)))
     }
 
-    func resetPassword(email: String, code: String, password: String) async throws {
+    /// Primero el servidor valida el código y devuelve el permiso…
+    func verifyPasswordReset(email: String, code: String) async throws -> String {
+        let token = try await client.send(
+            APIEndpoint<ResetTokenResponse>.verifyPasswordReset(.init(email: email, codigo: code))
+        ).resetToken
+        guard let token, !token.isEmpty else {
+            throw AccountFlowError.message("No se pudo verificar el código. Inténtalo de nuevo.")
+        }
+        return token
+    }
+
+    /// …y recién con ese permiso se guarda la nueva contraseña.
+    func resetPassword(email: String, resetToken: String, password: String) async throws {
         _ = try await client.send(
-            APIEndpoint<APIStatusPayload>.resetPassword(.init(email: email, codigo: code, password: password))
+            APIEndpoint<APIStatusPayload>.resetPassword(.init(email: email, resetToken: resetToken, password: password))
         )
     }
 

@@ -21,13 +21,16 @@ struct PurchaseListRow: View {
                 StatusBadge(status: PurchasePresentation.saleStatus(purchase.estado))
                 if let delivery = purchase.tipoEntrega, !delivery.isEmpty {
                     Label(
-                        PurchasePresentation.deliveryType(delivery).text,
-                        systemImage: "shippingbox"
+                        PurchasePresentation.deliveryLabel(delivery, coverage: purchase.coberturaEntrega),
+                        systemImage: delivery.lowercased() == "tienda" ? "storefront" : "truck.box"
                     )
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 }
             }
+
+            // Estado del pedido en palabras ("Listo para recoger", "En camino"…).
+            OrderStatusLine(tracking: OrderTracking(purchase: purchase))
 
             if let payment = purchase.payuPaymentStatus, !payment.isEmpty {
                 LabeledContent(

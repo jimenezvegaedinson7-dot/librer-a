@@ -25,6 +25,17 @@ enum PurchasePresentation {
         )
     }
 
+    /// Etiqueta de la entrega como en Flutter (`Venta.entregaLabel`).
+    static func deliveryLabel(_ type: String, coverage: String?) -> String {
+        let pallasca = coverage?.lowercased() == "pallasca"
+        switch type.trimmingCharacters(in: .whitespaces).lowercased() {
+        case "domicilio": return pallasca ? "Delivery dentro de Pallasca" : "A domicilio"
+        case "tienda": return pallasca ? "Recojo en Pallasca" : "Recoger en tienda"
+        case "agencia": return "Agencia"
+        default: return deliveryType(type).text
+        }
+    }
+
     static func paymentStatus(_ rawValue: String) -> PresentedStatus {
         present(
             rawValue,

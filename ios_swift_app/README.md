@@ -10,19 +10,23 @@ App nativa en Swift/SwiftUI para clientes, con las mismas funciones que la app F
 | Catálogo (búsqueda, categorías, orden, estado) | `Views/Store/CatalogView.swift` |
 | Detalle del libro, favorito, reservar, añadir | `Views/Store/BookDetailView.swift` |
 | Carrito (cantidades con tope de stock, guardar para después, resumen en céntimos) | `Views/Store/CartView.swift`, `Services/CartStore.swift` |
-| Entrega y pago (Lima a domicilio o recojo en tienda, DNI/RUC/CE, PayU) | `Views/Store/CheckoutView.swift` |
+| Entrega y pago (delivery por zonas de Pallasca o recojo en Pallasca, referencia, DNI/RUC/CE) | `Views/Store/CheckoutView.swift` |
+| Pago con PayU **dentro de la app** (deslizar para recargar, recarga automática de la pasarela, verificación al volver) | `Components/PaymentWebView.swift` |
+| Seguimiento por tipo de entrega (Recibido → Preparando → Listo/En camino → Recogido/Entregado) | `Utilities/OrderTracking.swift`, `Components/OrderTrackingView.swift` |
+| Código OTP en casillas (pop, temblor, verde) y celebración con sonido | `Components/OTPField.swift`, `Components/SuccessCelebration.swift` |
+| Precios en oferta, etiquetas "-20 %"/"Nuevo" y filtros rápidos | `Views/Store/StoreComponents.swift`, `Views/Store/CatalogView.swift` |
 | Favoritos | `Views/Store/FavoritesView.swift` |
-| Mis reservas (cancelar) y Mis compras (continuar pago y verificar) | `Views/Store/MyReservationsView.swift`, `Views/Purchases/` |
+| Mis reservas (cancelar) y Mis compras (seguimiento, continuar pago dentro de la app y verificar) | `Views/Store/MyReservationsView.swift`, `Views/Purchases/` |
 | Perfil, 35 temas y degradado propio (`custom_AABBCC_DDEEFF`), seguridad, legal | `Views/Account/AccountView.swift`, `Views/Account/CustomThemeSheet.swift` |
 | Foto de perfil: elegir avatar, subir imagen o tomar foto (máx. 5 MB) | `Views/Account/ProfilePhotoActions.swift` |
 | Editar perfil, cambiar contraseña, 2FA, Términos, Privacidad | `Views/Account/AccountForms.swift` |
-| Login, registro, verificar correo y recuperar contraseña (reenvío con espera de 60 s) | `Views/Authentication/LoginView.swift` |
+| Login, registro, verificar correo y recuperar contraseña (primero el código verificado por el servidor, luego la contraseña; reenvío con espera de 60 s) | `Views/Authentication/LoginView.swift` |
 | Splash, logo, estantería animada, balda de carga y pulsación | `App/RootView.swift`, `Design/Bookshelf.swift` |
 
 Diferencias deliberadas:
 
 - **Sin actualizador de APK**: en iOS las actualizaciones se distribuyen por App Store o TestFlight. `GET /api/app/version` no se usa.
-- **PayU**: la URL de pago se abre en Safari. Al volver, el usuario pulsa **Verificar pago**, que consulta `GET /api/pagos/:orderId`.
+- **PayU**: igual que Android, se paga dentro de la app (WKWebView). Al volver, la app consulta `GET /api/pagos/:orderId` unos segundos; volver de la ventana nunca confirma un pago por sí solo.
 - **Face ID / Touch ID**: bloqueo local opcional heredado de la base anterior.
 
 El carrito (`carrito_v1`, ligado al id del usuario) y el tema (`perfil_tema`) se guardan en `UserDefaults`. Ninguno de los dos contiene datos sensibles.

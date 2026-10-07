@@ -8,9 +8,47 @@ struct CartItem: Codable, Equatable, Identifiable {
     var quantity: Int
 
     var id: Int { book.idLibro }
-    var unitCents: Int { Money.cents(book.precio) }
+    /// Precio de compra vigente (con la oferta si sigue activa).
+    var unitCents: Int { Money.cents(book.precioCompra) }
     var subtotalCents: Int { unitCents * quantity }
     var subtotal: Double { Double(subtotalCents) / 100 }
+}
+
+// MARK: - Zonas de delivery (Pallasca)
+
+/// Zona de delivery local de Pallasca configurada por el administrador
+/// (`GET /api/zonas-delivery`), igual que `models/zona_delivery.dart`.
+struct DeliveryZone: Decodable, Identifiable, Hashable {
+    let idZona: Int
+    let nombre: String
+    let tarifa: Double
+    let activa: Bool
+    var id: Int { idZona }
+
+    enum CodingKeys: String, CodingKey {
+        case idZona = "id_zona"
+        case nombre
+        case tarifa
+        case estado
+    }
+
+    init(idZona: Int, nombre: String, tarifa: Double, activa: Bool = true) {
+        self.idZona = idZona
+        self.nombre = nombre
+        self.tarifa = tarifa
+        self.activa = activa
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        idZona = (try? c.decodeFlexibleIntIfPresent(forKey: .idZona)) ?? 0
+        nombre = (try? c.decodeFlexibleStringIfPresent(forKey: .nombre)) ?? ""
+        tarifa = (try? c.decodeFlexibleDoubleIfPresent(forKey: .tarifa)) ?? 0
+        activa = ((try? c.decodeFlexibleIntIfPresent(forKey: .estado)) ?? 0) == 1
+    }
+
+    /// Solo zonas activas con tarifa válida (mismo filtro que Flutter).
+    var usable: Bool { activa && idZona > 0 && tarifa.isFinite && tarifa > 0 }
 }
 
 // MARK: - Ubicaciones
@@ -70,7 +108,8 @@ struct CreateOrderRequest: Encodable {
     let items: [CheckoutItemRequest]
     let tipoEntrega: String
     let direccion: String?
-    let idDistrito: Int?
+    let idZonaDelivery: Int?
+    let referencia: String?
     let clienteTipoDocumento: String
     let clienteDocumento: String
 
@@ -79,7 +118,8 @@ struct CreateOrderRequest: Encodable {
         case items
         case tipoEntrega = "tipo_entrega"
         case direccion
-        case idDistrito = "id_distrito"
+        case idZonaDelivery = "id_zona_delivery"
+        case referencia
         case clienteTipoDocumento = "cliente_tipo_documento"
         case clienteDocumento = "cliente_documento"
     }
@@ -216,10 +256,35 @@ struct VerifyEmailRequest: Encodable {
     let codigo: String
 }
 
-struct ResetPasswordRequest: Encodable {
+/// `POST /api/auth/verificar-reseteo`: el servidor valida el código y
+/// entrega un permiso de un solo uso para cambiar la contraseña.
+struct VerifyResetRequest: Encodable {
     let email: String
     let codigo: String
+}
+
+struct ResetTokenResponse: Decodable {
+    let resetToken: String?
+
+    enum CodingKeys: String, CodingKey { case resetToken = "reset_token" }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        resetToken = try? c.decodeFlexibleStringIfPresent(forKey: .resetToken)
+    }
+}
+
+/// La nueva contraseña viaja con el permiso, nunca con el código.
+struct ResetPasswordRequest: Encodable {
+    let email: String
+    let resetToken: String
     let password: String
+
+    enum CodingKeys: String, CodingKey {
+        case email
+        case resetToken = "reset_token"
+        case password
+    }
 }
 
 struct UpdateProfileRequest: Encodable {

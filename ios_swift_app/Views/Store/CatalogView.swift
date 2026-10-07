@@ -15,6 +15,7 @@ struct CatalogView: View {
     @State private var category: String?
     @State private var availability: Availability = .all
     @State private var sort: SortOrder = .titleAZ
+    @State private var quick: QuickFilter?
     @State private var toast: ToastMessage?
     @FocusState private var searchFocused: Bool
 
@@ -24,6 +25,33 @@ struct CatalogView: View {
         case priceLow = "Precio menor"
         case priceHigh = "Precio mayor"
         var id: String { rawValue }
+    }
+
+    /// Filtros rápidos (como el catálogo de Flutter).
+    enum QuickFilter: String, CaseIterable, Identifiable {
+        case offers = "En descuento"
+        case new = "Novedades"
+        case inStock = "Con stock"
+        case upTo30 = "Hasta S/ 30"
+        var id: String { rawValue }
+
+        var symbol: String {
+            switch self {
+            case .offers: return "tag"
+            case .new: return "sparkles"
+            case .inStock: return "checkmark.circle"
+            case .upTo30: return "banknote"
+            }
+        }
+
+        func matches(_ book: Book) -> Bool {
+            switch self {
+            case .offers: return book.enOferta
+            case .new: return book.mostrarNuevo
+            case .inStock: return book.stock > 0
+            case .upTo30: return book.precioCompra <= 30
+            }
+        }
     }
 
     enum Availability: String, CaseIterable, Identifiable {
@@ -42,8 +70,8 @@ struct CatalogView: View {
         switch sort {
         case .titleAZ: list.sort { $0.titulo.localizedCaseInsensitiveCompare($1.titulo) == .orderedAscending }
         case .titleZA: list.sort { $0.titulo.localizedCaseInsensitiveCompare($1.titulo) == .orderedDescending }
-        case .priceLow: list.sort { $0.precio < $1.precio }
-        case .priceHigh: list.sort { $0.precio > $1.precio }
+        case .priceLow: list.sort { $0.precioCompra < $1.precioCompra }
+        case .priceHigh: list.sort { $0.precioCompra > $1.precioCompra }
         }
         return list
     }
@@ -55,6 +83,7 @@ struct CatalogView: View {
             let inAuthor = (book.autor ?? "").lowercased().contains(text)
             if !inTitle && !inAuthor { return false }
         }
+        if let quick, !quick.matches(book) { return false }
         if let wanted {
             let bookCategory = (book.categoria ?? "").trimmingCharacters(in: .whitespaces).lowercased()
             if bookCategory != wanted { return false }
@@ -92,7 +121,8 @@ struct CatalogView: View {
                         )
                     } else {
                         if categories.count > 1 { categoryRow }
-                        toolbarRow.padding(.top, 16)
+                        quickFilterRow.padding(.top, 14)
+                        toolbarRow.padding(.top, 12)
                         if filtered.isEmpty {
                             EmptyStateView(
                                 systemImage: "magnifyingglass",
@@ -176,6 +206,31 @@ struct CatalogView: View {
             CategoryFanItem(category: item, selected: selected, coverWidth: 46)
         }
         .buttonStyle(PressableButtonStyle())
+    }
+
+    private var quickFilterRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(QuickFilter.allCases) { filter in
+                    let selected = quick == filter
+                    Button {
+                        withAnimation(.easeOut(duration: 0.2)) { quick = selected ? nil : filter }
+                    } label: {
+                        Label(filter.rawValue, systemImage: filter.symbol)
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(selected ? .white : Brand.texto)
+                            .padding(.horizontal, 12)
+                            .frame(height: 34)
+                            .background(Capsule().fill(selected ? themeStore.theme.primary : Brand.superficie))
+                            .overlay(Capsule().stroke(selected ? themeStore.theme.primary : Brand.divisor))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(selected ? .isSelected : [])
+                }
+            }
+        }
+        .padding(.horizontal, -20)
+        .contentMargins(.horizontal, 20, for: .scrollContent)
     }
 
     private var toolbarRow: some View {
@@ -280,9 +335,10 @@ private struct CatalogCard: View {
                     .allowsHitTesting(false)
             }
             .overlay(alignment: .topLeading) { stockBadge.padding(8) }
+            .overlay(alignment: .topTrailing) { PromoBadges(book: book).padding(8) }
             .overlay(alignment: .bottom) {
                 HStack(alignment: .bottom) {
-                    PriceText(amount: book.precio, size: 18, color: .white)
+                    BookPriceView(book: book, size: 18, color: .white)
                         .padding(.bottom, 6)
                     Spacer()
                     Button {

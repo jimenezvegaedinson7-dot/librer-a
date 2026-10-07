@@ -25,6 +25,8 @@ struct LooseBookView: View {
                     }
                 if let accessory {
                     accessory.padding(6)
+                } else {
+                    PromoBadges(book: book).padding(6)
                 }
             }
             Text(book.displayTitle)
@@ -37,13 +39,59 @@ struct LooseBookView: View {
                 .foregroundStyle(Brand.textoSecundario)
                 .lineLimit(1)
                 .padding(.top, 3)
-            PriceText(amount: book.precio, size: 16)
+            BookPriceView(book: book, size: 16)
                 .padding(.top, 6)
         }
         .frame(width: width, alignment: .leading)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(book.displayTitle), de \(book.displayAuthor), \(Money.format(book.precio)) soles")
+        .accessibilityLabel("\(book.displayTitle), de \(book.displayAuthor), \(Money.format(book.precioCompra)) soles")
+    }
+}
+
+/// Precio de compra con la oferta vigente: el precio normal tachado al lado
+/// (como `precio_texto.dart` en Flutter).
+struct BookPriceView: View {
+    let book: Book
+    var size: CGFloat = 16
+    var color: Color?
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            PriceText(amount: book.precioCompra, size: size, color: book.enOferta ? (color ?? Brand.error) : color)
+            if book.enOferta {
+                Text("S/ \(Money.format(book.precio))")
+                    .font(.system(size: size * 0.62, weight: .medium))
+                    .strikethrough()
+                    .foregroundStyle((color ?? Brand.textoTerciario).opacity(color == nil ? 1 : 0.8))
+                    .accessibilityLabel("Antes \(Money.format(book.precio)) soles")
+            }
+        }
+    }
+}
+
+/// Etiquetas "-20 %" y "Nuevo" sobre la portada.
+struct PromoBadges: View {
+    let book: Book
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            if book.enOferta {
+                badge("-\(book.porcentajeOferta) %", color: Brand.error)
+            }
+            if book.mostrarNuevo {
+                badge("Nuevo", color: Brand.dorado)
+            }
+        }
+    }
+
+    private func badge(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.caption2.weight(.bold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .background(Capsule().fill(color))
     }
 }
 

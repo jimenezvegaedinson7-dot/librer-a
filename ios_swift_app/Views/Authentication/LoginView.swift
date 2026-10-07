@@ -226,6 +226,9 @@ struct VerifyEmailView: View {
     @State private var message: String?
     @State private var errorMessage: String?
     @State private var verified = false
+    @State private var codeAccepted = false
+    @State private var failures = 0
+    @State private var celebration: CelebrationContent?
 
     var body: some View {
         ScrollView {
@@ -238,8 +241,9 @@ struct VerifyEmailView: View {
                         .multilineTextAlignment(.center)
                 } else {
                     FormSection(title: "Código", systemImage: "number") {
-                        BrandField(title: "Código de 6 dígitos", systemImage: "number", text: $code,
-                                   keyboard: .numberPad, contentType: .oneTimeCode)
+                        OTPField(code: $code, enabled: !busy, success: codeAccepted, failures: failures) {
+                            Task { await verify() }
+                        }
                     }
                     if let message { Text(message).font(.subheadline).foregroundStyle(Brand.exito) }
                     if let errorMessage { ErrorBanner(message: errorMessage) }
@@ -258,11 +262,14 @@ struct VerifyEmailView: View {
         .bookshelfBackground(themeStore.theme)
         .background(Brand.fondo.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
+        .successCelebration($celebration) { _ in withAnimation { verified = true } }
     }
 
     private func verify() async {
+        guard !busy else { return }
         guard code.range(of: "^\\d{6}$", options: .regularExpression) != nil else {
             errorMessage = "Ingresa el código de 6 dígitos."
+            failures += 1
             return
         }
         busy = true
@@ -270,9 +277,11 @@ struct VerifyEmailView: View {
         do {
             try await appState.accountService.verifyEmail(email: email, code: code)
             errorMessage = nil
-            withAnimation { verified = true }
+            codeAccepted = true
+            celebrate($celebration, title: "Cuenta verificada", message: "Ya puedes iniciar sesión.")
         } catch {
             errorMessage = error.localizedDescription
+            failures += 1
         }
     }
 
@@ -291,55 +300,94 @@ struct VerifyEmailView: View {
 
 // MARK: - Recuperar contraseña
 
-/// Dos pasos, como en Flutter: pedir el código y restablecer la contraseña.
+/// Como en Flutter: correo → código verificado POR EL SERVIDOR → recién
+/// entonces la nueva contraseña. El permiso (`reset_token`) solo vive en
+/// esta pantalla.
 struct ForgotPasswordView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var themeStore: ThemeStore
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var email = ""
     @State private var codeSent = false
     @State private var code = ""
+    @State private var resetToken: String?
     @State private var password = ""
     @State private var confirm = ""
     @State private var busy = false
     @State private var errorMessage: String?
     @State private var done = false
+    @State private var codeAccepted = false
+    @State private var failures = 0
+    @State private var celebration: CelebrationContent?
+
+    private var verified: Bool { resetToken != nil }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 22) {
                 AuthHeader(
-                    logoSize: 88,
-                    title: done ? "Contraseña actualizada" : (codeSent ? "Crea una nueva contraseña" : "Recupera tu acceso"),
+                    logoSize: 72,
+                    title: done ? "Contraseña actualizada"
+                        : verified ? "Crea tu nueva contraseña"
+                        : codeSent ? "Primero verifica tu correo" : "Recupera tu acceso",
                     subtitle: done
                         ? "Contraseña actualizada. Ya puedes iniciar sesión."
-                        : (codeSent ? "Ingresa el código que enviamos a \(email)." : "Ingresa el correo de tu cuenta y te enviaremos un código.")
+                        : verified ? "Código confirmado para \(email)"
+                        : codeSent ? "Ingresa el código de 6 dígitos enviado a \(email)"
+                        : "Ingresa el correo de tu cuenta y te enviaremos un código."
                 )
+                if codeSent && !done {
+                    RecoverySteps(step: verified ? 2 : 1)
+                }
                 if !done {
-                    if codeSent {
-                        FormSection(title: "Código y contraseña", systemImage: "lock") {
-                            BrandField(title: "Código de 6 dígitos", systemImage: "number", text: $code,
-                                       keyboard: .numberPad, contentType: .oneTimeCode)
-                            BrandField(title: "Nueva contraseña", systemImage: "lock", text: $password,
-                                       secure: true, contentType: .newPassword)
-                            BrandField(title: "Confirmar contraseña", systemImage: "lock", text: $confirm,
-                                       secure: true, contentType: .newPassword)
-                            PasswordRequirements(password: password, confirmation: confirm)
-                        }
-                        ResendCodeButton(disabled: busy) { await resendCode() }
-                    } else {
-                        FormSection(title: "Tu correo", systemImage: "envelope") {
-                            BrandField(title: "Correo electrónico", systemImage: "at", text: $email,
-                                       keyboard: .emailAddress, contentType: .emailAddress)
+                    Group {
+                        if verified {
+                            FormSection(title: "Nueva contraseña", systemImage: "lock") {
+                                BrandField(title: "Nueva contraseña", systemImage: "lock", text: $password,
+                                           secure: true, contentType: .newPassword)
+                                BrandField(title: "Confirmar contraseña", systemImage: "lock", text: $confirm,
+                                           secure: true, contentType: .newPassword)
+                                PasswordRequirements(password: password, confirmation: confirm)
+                            }
+                            .transition(stepTransition)
+                        } else if codeSent {
+                            VStack(spacing: 10) {
+                                FormSection(title: "Código", systemImage: "number") {
+                                    OTPField(code: $code, enabled: !busy, success: codeAccepted, failures: failures) {
+                                        Task { await verifyCode() }
+                                    }
+                                }
+                                Text("¿No llegó? Revisa también la carpeta de spam.")
+                                    .font(.footnote)
+                                    .foregroundStyle(Brand.textoTerciario)
+                                ResendCodeButton(disabled: busy) { await resendCode() }
+                            }
+                            .transition(stepTransition)
+                        } else {
+                            FormSection(title: "Tu correo", systemImage: "envelope") {
+                                BrandField(title: "Correo electrónico", systemImage: "at", text: $email,
+                                           keyboard: .emailAddress, contentType: .emailAddress)
+                            }
                         }
                     }
                     if let errorMessage { ErrorBanner(message: errorMessage) }
                     Button {
-                        Task { codeSent ? await reset() : await sendCode() }
+                        Task {
+                            if verified { await reset() } else if codeSent { await verifyCode() } else { await sendCode() }
+                        }
                     } label: {
-                        if busy { ProgressView().tint(.white) } else { Text(codeSent ? "Restablecer contraseña" : "Enviar código") }
+                        if busy {
+                            ProgressView().tint(.white)
+                        } else {
+                            Text(verified ? "Guardar nueva contraseña" : codeSent ? "Verificar código" : "Enviar código")
+                        }
                     }
                     .buttonStyle(BrandButtonStyle())
                     .disabled(busy)
+                } else {
+                    Button("Ir a iniciar sesión") { dismiss() }
+                        .buttonStyle(BrandButtonStyle())
                 }
             }
             .padding(20)
@@ -347,6 +395,21 @@ struct ForgotPasswordView: View {
         .bookshelfBackground(themeStore.theme)
         .background(Brand.fondo.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
+        .successCelebration($celebration) { content in
+            if content.title == "Código verificado" {
+                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.32)) { code = "" }
+            } else {
+                withAnimation { done = true }
+            }
+        }
+    }
+
+    /// Cambio de paso con deslizamiento suave (como el AnimatedSwitcher de Flutter).
+    private var stepTransition: AnyTransition {
+        reduceMotion ? .opacity : .asymmetric(
+            insertion: .move(edge: .trailing).combined(with: .opacity),
+            removal: .opacity
+        )
     }
 
     private func sendCode() async {
@@ -367,6 +430,7 @@ struct ForgotPasswordView: View {
     private func resendCode() async -> Bool {
         do {
             try await appState.accountService.requestPasswordReset(email: email)
+            code = ""
             errorMessage = nil
             return true
         } catch {
@@ -375,22 +439,85 @@ struct ForgotPasswordView: View {
         }
     }
 
-    private func reset() async {
+    private func verifyCode() async {
+        guard !busy else { return }
         guard code.range(of: "^\\d{6}$", options: .regularExpression) != nil else {
             errorMessage = "Ingresa el código de 6 dígitos."
+            failures += 1
             return
         }
+        busy = true
+        defer { busy = false }
+        do {
+            let token = try await appState.accountService.verifyPasswordReset(email: email, code: code)
+            errorMessage = nil
+            codeAccepted = true
+            celebrate($celebration, title: "Código verificado", message: "Ahora crea tu nueva contraseña.")
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.32)) { resetToken = token }
+        } catch {
+            errorMessage = error.localizedDescription
+            failures += 1
+        }
+    }
+
+    private func reset() async {
+        guard let resetToken else { return }
         if let problem = Validation.passwordError(password) { errorMessage = problem; return }
         if confirm != password { errorMessage = "Las contraseñas no coinciden."; return }
         busy = true
         defer { busy = false }
         do {
-            try await appState.accountService.resetPassword(email: email, code: code, password: password)
+            try await appState.accountService.resetPassword(email: email, resetToken: resetToken, password: password)
             errorMessage = nil
-            withAnimation { done = true }
+            celebrate($celebration, title: "Contraseña actualizada",
+                      message: "Ya puedes iniciar sesión con tu nueva contraseña.")
         } catch {
             errorMessage = error.localizedDescription
+            // Un permiso vencido obliga a pedir y verificar un código nuevo.
+            if error.localizedDescription.contains("expirado") {
+                withAnimation {
+                    self.resetToken = nil
+                    codeAccepted = false
+                    code = ""
+                    password = ""
+                    confirm = ""
+                }
+            }
         }
+    }
+}
+
+/// "Paso 1 de 2 · Código" → "Paso 2 de 2 · Contraseña".
+struct RecoverySteps: View {
+    let step: Int
+
+    var body: some View {
+        HStack(spacing: 12) {
+            stage(1, "Código")
+            stage(2, "Contraseña")
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Paso \(step) de 2")
+    }
+
+    private func stage(_ number: Int, _ label: String) -> some View {
+        let done = step > number
+        let current = step == number
+        return VStack(spacing: 8) {
+            Capsule()
+                .fill(done || current ? Brand.burdeos : Brand.divisor)
+                .frame(height: 4)
+            HStack(spacing: 6) {
+                Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                    .font(.footnote)
+                    .foregroundStyle(done || current ? Brand.burdeos : Brand.textoTerciario)
+                Text(label)
+                    .font(.footnote.weight(current ? .bold : .medium))
+                    .foregroundStyle(done || current ? Brand.texto : Brand.textoTerciario)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .animation(.easeOut(duration: 0.32), value: step)
     }
 }
 

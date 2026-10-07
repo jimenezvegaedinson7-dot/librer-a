@@ -7,6 +7,12 @@ struct Purchase: Codable, Equatable, Identifiable {
     let total: Double
     let costoEnvio: Double?
     let estado: String
+    /// Estado logístico: pendiente, preparando, listo_recojo, en_camino, entregado, cancelado.
+    let estadoEntrega: String?
+    /// `pallasca` en las compras de la cobertura local.
+    let coberturaEntrega: String?
+    let zonaDeliveryNombre: String?
+    let pagoRevisionMotivo: String?
     let tipoEntrega: String?
     let direccion: String?
     let referencia: String?
@@ -35,6 +41,10 @@ struct Purchase: Codable, Equatable, Identifiable {
         case total
         case costoEnvio = "costo_envio"
         case estado
+        case estadoEntrega = "estado_entrega"
+        case coberturaEntrega = "cobertura_entrega"
+        case zonaDeliveryNombre = "zona_delivery_nombre"
+        case pagoRevisionMotivo = "pago_revision_motivo"
         case tipoEntrega = "tipo_entrega"
         case direccion
         case referencia
@@ -65,6 +75,10 @@ struct Purchase: Codable, Equatable, Identifiable {
         total = try container.decodeFlexibleDouble(forKey: .total)
         costoEnvio = try container.decodeFlexibleDoubleIfPresent(forKey: .costoEnvio)
         estado = try container.decode(String.self, forKey: .estado)
+        estadoEntrega = try? container.decodeFlexibleStringIfPresent(forKey: .estadoEntrega)
+        coberturaEntrega = try? container.decodeFlexibleStringIfPresent(forKey: .coberturaEntrega)
+        zonaDeliveryNombre = try? container.decodeFlexibleStringIfPresent(forKey: .zonaDeliveryNombre)
+        pagoRevisionMotivo = try? container.decodeFlexibleStringIfPresent(forKey: .pagoRevisionMotivo)
         tipoEntrega = try container.decodeIfPresent(String.self, forKey: .tipoEntrega)
         direccion = try container.decodeIfPresent(String.self, forKey: .direccion)
         referencia = try container.decodeIfPresent(String.self, forKey: .referencia)

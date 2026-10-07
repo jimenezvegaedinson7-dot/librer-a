@@ -85,7 +85,7 @@ struct CartView: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.book.displayTitle).lineLimit(1)
-                        Text("\(item.quantity) × S/ \(Money.format(item.book.precio))")
+                        Text("\(item.quantity) × S/ \(Money.format(item.book.precioCompra))")
                             .font(.caption)
                             .foregroundStyle(Brand.textoSecundario)
                             .monospacedDigit()
@@ -123,7 +123,7 @@ struct CartView: View {
                     BookCover(path: item.book.portada, width: 48, strongShadow: false)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(item.book.displayTitle).font(.serif(15)).lineLimit(2)
-                        PriceText(amount: item.book.precio, size: 15)
+                        BookPriceView(book: item.book, size: 15)
                     }
                     Spacer()
                     VStack(spacing: 6) {
@@ -180,7 +180,7 @@ private struct CartItemRow: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(item.book.displayTitle).font(.serif(17)).lineLimit(2)
                     Text(item.book.displayAuthor).font(.caption).foregroundStyle(Brand.textoSecundario)
-                    Text("S/ \(Money.format(item.book.precio)) c/u")
+                    Text("S/ \(Money.format(item.book.precioCompra)) c/u")
                         .font(.caption)
                         .foregroundStyle(Brand.textoSecundario)
                     HStack {

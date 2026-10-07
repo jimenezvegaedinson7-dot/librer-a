@@ -136,7 +136,7 @@ struct BookDetailView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("Precio").font(.caption.weight(.semibold)).foregroundStyle(Brand.textoTerciario)
-                PriceText(amount: book.precio, size: 30)
+                BookPriceView(book: book, size: 30)
                 Text(book.isAvailable
                      ? "\(book.stock) \(book.stock == 1 ? "ejemplar disponible" : "ejemplares disponibles")"
                      : "Agotado por ahora")
@@ -207,7 +207,7 @@ struct BookDetailView: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Total").font(.caption).foregroundStyle(Brand.textoTerciario)
-                PriceText(amount: Double(Money.cents(book.precio) * quantity) / 100, size: 20)
+                PriceText(amount: Double(Money.cents(book.precioCompra) * quantity) / 100, size: 20)
             }
             Spacer()
             Button {

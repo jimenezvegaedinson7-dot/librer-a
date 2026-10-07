@@ -85,6 +85,13 @@ extension APIEndpoint where Response == APIStatusPayload {
     }
 }
 
+extension APIEndpoint where Response == ResetTokenResponse {
+    static func verifyPasswordReset(_ body: VerifyResetRequest) -> Self {
+        .init(method: .post, pathComponents: ["api", "auth", "verificar-reseteo"],
+              body: AnyEncodable(body), requiresAuthorization: false)
+    }
+}
+
 extension APIEndpoint where Response == CreatedReservation {
     static func createReservation(_ body: CreateReservationRequest) -> Self {
         .init(method: .post, pathComponents: ["api", "reservas"], body: AnyEncodable(body))
@@ -92,6 +99,13 @@ extension APIEndpoint where Response == CreatedReservation {
 }
 
 // MARK: - Envío y pago
+
+extension APIEndpoint where Response == APIResponse<[DeliveryZone]> {
+    /// Zonas de delivery de Pallasca.
+    static var deliveryZones: Self {
+        .init(method: .get, pathComponents: ["api", "zonas-delivery"])
+    }
+}
 
 extension APIEndpoint where Response == APIResponse<[Province]> {
     static var provinces: Self {

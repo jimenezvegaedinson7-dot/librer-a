@@ -3,9 +3,10 @@ import SwiftUI
 struct PurchaseDetailView: View {
     @StateObject private var viewModel: PurchaseDetailViewModel
     @EnvironmentObject private var appState: AppState
-    @Environment(\.openURL) private var openURL
     @State private var toast: ToastMessage?
     @State private var verifying = false
+    @State private var paymentLink: PaymentLink?
+    @State private var celebration: CelebrationContent?
 
     init(
         purchaseID: Int,
@@ -35,6 +36,17 @@ struct PurchaseDetailView: View {
             await viewModel.loadInitial()
         }
         .toast($toast)
+        .sheet(item: $paymentLink) { link in
+            PaymentSheet(url: link.url) { result in
+                paymentLink = nil
+                Task {
+                    // Deja terminar el cierre de la ventana antes de celebrar.
+                    try? await Task.sleep(nanoseconds: 400_000_000)
+                    await verifyPayment(afterPayment: result == .returned)
+                }
+            }
+        }
+        .successCelebration($celebration)
     }
 
     @ViewBuilder
@@ -68,6 +80,7 @@ struct PurchaseDetailView: View {
                     )
                 }
 
+                trackingSection(purchase)
                 summarySection(purchase)
                 if viewModel.isPending {
                     pendingPaymentActions
@@ -82,6 +95,14 @@ struct PurchaseDetailView: View {
         .background(Color(uiColor: .systemGroupedBackground))
         .refreshable {
             await viewModel.reload()
+        }
+    }
+
+    /// Seguimiento por tipo de entrega (recojo o delivery), como Flutter.
+    private func trackingSection(_ purchase: Purchase) -> some View {
+        PurchaseDetailSection(title: "Seguimiento", systemImage: "point.topleft.down.to.point.bottomright.curvepath") {
+            OrderTrackingView(tracking: OrderTracking(purchase: purchase))
+                .id("\(purchase.estado)-\(purchase.estadoEntrega ?? "")")
         }
     }
 
@@ -132,12 +153,12 @@ struct PurchaseDetailView: View {
             )
             return
         }
-        openURL(url) { accepted in
-            if !accepted { toast = ToastMessage(text: "No se pudo abrir la ventana de pago.") }
-        }
+        // El pago se hace dentro de la app; al cerrarse se consulta el estado.
+        paymentLink = PaymentLink(url: url)
     }
 
-    private func verifyPayment() async {
+    /// Consulta el estado real; tras volver de PayU reintenta unos segundos.
+    private func verifyPayment(afterPayment: Bool = false) async {
         guard let orderID = viewModel.orderID else {
             toast = ToastMessage(text: "El pago aún está pendiente.")
             return
@@ -145,9 +166,21 @@ struct PurchaseDetailView: View {
         verifying = true
         defer { verifying = false }
         do {
-            let state = try await appState.checkoutService.orderState(orderID: orderID)
+            var state = try await appState.checkoutService.orderState(orderID: orderID)
+            var attempt = 0
+            while afterPayment && attempt < 4 && !state.isPaid && !state.isCancelled {
+                attempt += 1
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                state = try await appState.checkoutService.orderState(orderID: orderID)
+            }
             if state.isPaid || state.isCancelled {
                 appState.checkoutService.resetIdempotency()
+            }
+            if state.isPaid {
+                celebrate($celebration, title: "¡Pago confirmado!",
+                          message: "Tu pedido pasa a preparación. Te avisaremos en cada paso.")
+                await viewModel.reload()
+                return
             }
             toast = ToastMessage(
                 text: state.isPaid ? "Pago confirmado."
@@ -271,8 +304,11 @@ struct PurchaseDetailView: View {
             if let delivery = purchase.tipoEntrega, !delivery.isEmpty {
                 LabeledContent(
                     "Tipo",
-                    value: PurchasePresentation.deliveryType(delivery).text
+                    value: PurchasePresentation.deliveryLabel(delivery, coverage: purchase.coberturaEntrega)
                 )
+            }
+            if let zone = purchase.zonaDeliveryNombre, !zone.isEmpty {
+                LabeledContent("Zona", value: zone)
             }
             if let province = purchase.provincia, !province.isEmpty {
                 LabeledContent("Provincia", value: province)

@@ -1,23 +1,27 @@
 import SwiftUI
 
 /// Entrega y pago (paso 2 de 3), con las mismas reglas que Flutter:
-/// a domicilio solo en Lima o recojo en tienda; documento DNI/RUC/CE; pago
-/// en PayU WebCheckout abierto en el navegador y verificación al volver.
+/// delivery por zonas dentro de Pallasca o recojo gratuito en Pallasca;
+/// documento DNI/RUC/CE; pago con PayU DENTRO de la app y, al volver, el
+/// estado se confirma con la API (con celebración si se aprobó).
 struct CheckoutView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var cart: CartStore
     @EnvironmentObject private var themeStore: ThemeStore
     @EnvironmentObject private var router: StoreRouter
-    @Environment(\.openURL) private var openURL
     @Environment(\.dismiss) private var dismiss
 
     @State private var delivery: DeliveryType = .home
-    @State private var districts: [District] = []
-    @State private var districtID: Int?
+    @State private var zones: [DeliveryZone] = []
+    @State private var zoneID: Int?
     @State private var address = ""
+    @State private var reference = ""
     @State private var documentType = "DNI"
     @State private var document = ""
-    @State private var loadingDistricts = true
+    @State private var loadingZones = true
+    @State private var zonesError: String?
+    @State private var paymentLink: PaymentLink?
+    @State private var celebration: CelebrationContent?
     @State private var processing = false
     @State private var errorMessage: String?
     @State private var order: PaymentOrder?
@@ -26,7 +30,7 @@ struct CheckoutView: View {
 
     private var shipping: Double {
         guard delivery == .home else { return 0 }
-        return districts.first { $0.idDistrito == districtID }?.tarifaEnvio ?? 0
+        return zones.first { $0.idZona == zoneID }?.tarifa ?? 0
     }
 
     private var totalCents: Int { cart.totalCents + Money.cents(shipping) }
@@ -50,7 +54,19 @@ struct CheckoutView: View {
         .background(Brand.fondo.ignoresSafeArea())
         .navigationTitle("Finalizar pedido")
         .navigationBarTitleDisplayMode(.inline)
-        .task { await loadDistricts() }
+        .task { await loadZones() }
+        .sheet(item: $paymentLink) { link in
+            PaymentSheet(url: link.url) { result in
+                paymentLink = nil
+                guard let order else { return }
+                Task {
+                    // Deja terminar el cierre de la ventana antes de celebrar.
+                    try? await Task.sleep(nanoseconds: 400_000_000)
+                    await verify(order, afterPayment: result == .returned)
+                }
+            }
+        }
+        .successCelebration($celebration)
     }
 
     // MARK: Formulario
@@ -67,10 +83,10 @@ struct CheckoutView: View {
                 StepsView(current: 2)
 
                 section(number: "1", title: "Tipo de entrega") {
-                    deliveryOption(.home, icon: "truck.box", title: "A domicilio",
-                                   detail: "Te lo llevamos a una dirección en Lima.", tag: "Según distrito")
-                    deliveryOption(.store, icon: "storefront", title: "Recoger en tienda",
-                                   detail: "Pasa por nuestra tienda cuando quieras.", tag: "Sin costo")
+                    deliveryOption(.home, icon: "truck.box", title: "Delivery en Pallasca",
+                                   detail: "Te lo llevamos a tu dirección dentro de Pallasca.", tag: "Según zona")
+                    deliveryOption(.store, icon: "storefront", title: "Recojo en Pallasca",
+                                   detail: "Lo separamos y te avisamos cuando esté listo.", tag: "Gratis")
                     if delivery == .home { homeFields } else { storePickupNote }
                 }
 
@@ -102,27 +118,38 @@ struct CheckoutView: View {
     private var homeFields: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label {
-                (Text("Lima").fontWeight(.semibold) + Text("  ·  Repartimos solo dentro de Lima"))
+                (Text("Pallasca").fontWeight(.semibold) + Text("  ·  Repartimos por zonas dentro de Pallasca"))
             } icon: {
-                Image(systemName: "building.2").foregroundStyle(Brand.dorado)
+                Image(systemName: "mappin.circle").foregroundStyle(Brand.dorado)
             }
             .font(.subheadline)
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(RoundedRectangle(cornerRadius: 10).fill(Brand.papel))
 
-            if loadingDistricts {
-                ShelfLoadingView(message: "Cargando opciones de envío...")
+            if loadingZones {
+                ShelfLoadingView(message: "Cargando zonas de delivery...")
+            } else if let zonesError {
+                VStack(alignment: .leading, spacing: 8) {
+                    ErrorBanner(message: zonesError)
+                    Button("Reintentar") { Task { await loadZones(force: true) } }
+                        .font(.subheadline.weight(.semibold))
+                }
+            } else if zones.isEmpty {
+                Text("Por ahora no hay zonas de delivery activas. Puedes elegir el recojo en Pallasca.")
+                    .font(.footnote)
+                    .foregroundStyle(Brand.aviso)
             } else {
-                Picker("Distrito", selection: $districtID) {
-                    Text("Selecciona un distrito").tag(Int?.none)
-                    ForEach(districts) { d in
-                        Text("\(d.nombre) · S/ \(Money.format(d.tarifaEnvio))").tag(Int?.some(d.idDistrito))
+                Picker("Zona de delivery", selection: $zoneID) {
+                    Text("Selecciona tu zona").tag(Int?.none)
+                    ForEach(zones) { z in
+                        Text("\(z.nombre) · S/ \(Money.format(z.tarifa))").tag(Int?.some(z.idZona))
                     }
                 }
                 .pickerStyle(.navigationLink)
             }
             BrandField(title: "Dirección de entrega (calle, número)", systemImage: "mappin.and.ellipse", text: $address)
+            BrandField(title: "Referencia (opcional)", systemImage: "signpost.right", text: $reference)
         }
         .padding(.top, 4)
     }
@@ -227,7 +254,7 @@ struct CheckoutView: View {
             }
             .buttonStyle(BrandButtonStyle())
             .disabled(processing)
-            Label("Serás redirigido a PayU para completar tu pago de forma segura.", systemImage: "checkmark.shield")
+            Label("Pagarás con PayU sin salir de la app, en una conexión segura.", systemImage: "checkmark.shield")
                 .font(.caption2)
                 .foregroundStyle(Brand.textoTerciario)
         }
@@ -246,7 +273,7 @@ struct CheckoutView: View {
             Text("Tu orden por S/ \(Money.format(total)) quedó creada. Ahora solo falta pagarla en PayU para confirmarla.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Brand.textoSecundario)
-            Text("Si la ventana de pago se cerró, puedes volver a abrirla.")
+            Text("Si cerraste la ventana de pago, puedes volver a abrirla aquí mismo.")
                 .font(.footnote)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Brand.textoTerciario)
@@ -261,8 +288,8 @@ struct CheckoutView: View {
             .buttonStyle(BrandButtonStyle())
             .disabled(processing)
             if let url = order.checkoutURL.flatMap({ URL(string: $0) }) {
-                Button { openURL(url) } label: {
-                    Label("Reabrir pago en PayU", systemImage: "arrow.up.right.square")
+                Button { paymentLink = PaymentLink(url: url) } label: {
+                    Label("Continuar el pago", systemImage: "creditcard")
                 }
                 .buttonStyle(BrandButtonStyle(filled: false))
             }
@@ -302,7 +329,7 @@ struct CheckoutView: View {
 
     private var storePickupNote: some View {
         Label {
-            Text("Puedes recoger tu pedido en nuestra tienda sin costo de envío.")
+            Text("Recoges tu pedido en Pallasca sin costo. Te avisaremos cuando esté listo para recoger.")
                 .font(.footnote)
                 .foregroundStyle(Brand.texto)
         } icon: {
@@ -333,7 +360,9 @@ struct CheckoutView: View {
             return "El carné de extranjería debe tener al menos 8 caracteres."
         }
         if delivery == .home {
-            if districtID == nil { return "Selecciona un distrito de Lima." }
+            if !zones.contains(where: { $0.idZona == zoneID }) {
+                return "Selecciona una zona activa de delivery dentro de Pallasca."
+            }
             if address.trimmingCharacters(in: .whitespaces).count < 5 {
                 return "Indica una dirección de entrega válida."
             }
@@ -341,16 +370,17 @@ struct CheckoutView: View {
         return nil
     }
 
-    private func loadDistricts() async {
-        guard districts.isEmpty else { return }
-        loadingDistricts = true
+    private func loadZones(force: Bool = false) async {
+        guard zones.isEmpty || force else { return }
+        loadingZones = true
+        zonesError = nil
         do {
-            districts = try await appState.checkoutService.limaDistricts()
-            districtID = districtID ?? districts.first?.idDistrito
+            zones = try await appState.checkoutService.deliveryZones()
+            if !zones.contains(where: { $0.idZona == zoneID }) { zoneID = zones.first?.idZona }
         } catch {
-            errorMessage = error.localizedDescription
+            zonesError = "No se pudieron cargar las zonas de delivery. \(error.localizedDescription)"
         }
-        loadingDistricts = false
+        loadingZones = false
     }
 
     private func pay() async {
@@ -363,13 +393,14 @@ struct CheckoutView: View {
                 items: cart.items,
                 delivery: delivery,
                 address: address,
-                districtID: districtID,
+                zoneID: zoneID,
+                reference: reference,
                 documentType: documentType,
                 document: document
             )
             order = created
             if let url = created.checkoutURL.flatMap({ URL(string: $0) }) {
-                openURL(url)
+                paymentLink = PaymentLink(url: url)
             } else {
                 paymentMessage = "La orden se creó, pero no se recibió el enlace de pago. Puedes continuarlo desde Mis compras."
             }
@@ -378,15 +409,26 @@ struct CheckoutView: View {
         }
     }
 
-    private func verify(_ order: PaymentOrder) async {
+    /// Consulta el estado real del pago. Al volver de la ventana de PayU
+    /// (`afterPayment`) reintenta unos segundos: la confirmación de PayU
+    /// llega al servidor con un pequeño retraso.
+    private func verify(_ order: PaymentOrder, afterPayment: Bool = false) async {
         guard let orderID = order.orderID, !orderID.isEmpty else { return }
         processing = true
         defer { processing = false }
         do {
-            let state = try await appState.checkoutService.orderState(orderID: orderID)
+            var state = try await appState.checkoutService.orderState(orderID: orderID)
+            var attempt = 0
+            while afterPayment && attempt < 4 && !state.isPaid && !state.isCancelled {
+                attempt += 1
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                state = try await appState.checkoutService.orderState(orderID: orderID)
+            }
             if state.isPaid {
                 cart.clearAfterPayment()
                 appState.checkoutService.resetIdempotency()
+                celebrate($celebration, title: "¡Pago confirmado!",
+                          message: "Tu pedido pasa a preparación. Te avisaremos en cada paso.")
                 withAnimation { paid = true }
             } else if state.isCancelled {
                 appState.checkoutService.resetIdempotency()
