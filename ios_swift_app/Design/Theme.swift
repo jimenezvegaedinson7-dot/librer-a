@@ -25,8 +25,10 @@ enum Brand {
     static let tinta = Color(rgb: 0x2C2621)
     static let pergamino = Color(rgb: 0xF1E8D8)
 
-    static let fondo = Color(rgb: 0xF6F1E9)
-    static let superficie = Color.white
+    /// Fondo de pantallas y de tarjetas: los elige el cliente en
+    /// "Fondo y tarjetas" (marfil y blanco por defecto).
+    static var fondo: Color { AppBackground.active.fondo }
+    static var superficie: Color { AppBackground.active.tarjeta }
     static let papel = Color(rgb: 0xFBF7F0)
     static let texto = Color(rgb: 0x1C1814)
     static let textoSecundario = Color(rgb: 0x675E54)
@@ -141,13 +143,24 @@ struct ProfileTheme: Identifiable, Equatable {
 @MainActor
 final class ThemeStore: ObservableObject {
     @Published private(set) var theme: ProfileTheme
+    @Published private(set) var background: AppBackground
 
     private let defaults: UserDefaults
     private static let key = "perfil_tema"
+    nonisolated static let backgroundKey = "perfil_fondo"
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         theme = ProfileTheme.resolve(defaults.string(forKey: Self.key) ?? ProfileTheme.defaultID)
+        background = AppBackground.resolve(defaults.string(forKey: Self.backgroundKey))
+        AppBackground.active = background
+    }
+
+    /// Fondo de pantallas y tarjetas (preferencia no sensible).
+    func applyBackground(_ background: AppBackground) {
+        AppBackground.active = background
+        self.background = background
+        defaults.set(background.id, forKey: Self.backgroundKey)
     }
 
     func apply(_ theme: ProfileTheme) {

@@ -18,7 +18,7 @@ struct CartItem: Codable, Equatable, Identifiable {
 
 /// Zona de delivery local de Pallasca configurada por el administrador
 /// (`GET /api/zonas-delivery`), igual que `models/zona_delivery.dart`.
-struct DeliveryZone: Decodable, Identifiable, Hashable {
+struct DeliveryZone: Codable, Identifiable, Hashable {
     let idZona: Int
     let nombre: String
     let tarifa: Double
@@ -45,6 +45,14 @@ struct DeliveryZone: Decodable, Identifiable, Hashable {
         nombre = (try? c.decodeFlexibleStringIfPresent(forKey: .nombre)) ?? ""
         tarifa = (try? c.decodeFlexibleDoubleIfPresent(forKey: .tarifa)) ?? 0
         activa = ((try? c.decodeFlexibleIntIfPresent(forKey: .estado)) ?? 0) == 1
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(idZona, forKey: .idZona)
+        try c.encode(nombre, forKey: .nombre)
+        try c.encode(tarifa, forKey: .tarifa)
+        try c.encode(activa ? 1 : 0, forKey: .estado)
     }
 
     /// Solo zonas activas con tarifa válida (mismo filtro que Flutter).

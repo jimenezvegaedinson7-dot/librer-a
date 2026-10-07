@@ -56,6 +56,7 @@ struct AccountView: View {
                 case .terms: LegalDocumentView(document: .terms)
                 case .privacy: LegalDocumentView(document: .privacy)
                 case .deleteAccount: DeleteAccountView()
+                case .backgrounds: BackgroundsView()
                 }
             }
             .sheet(isPresented: $showPurchases) {
@@ -215,6 +216,27 @@ struct AccountView: View {
             }
             .background(RoundedRectangle(cornerRadius: 16).fill(Brand.superficie))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(Brand.divisor))
+
+            // Como Flutter: "Fondo y tarjetas" con vista previa.
+            NavigationLink(value: AccountRoute.backgrounds) {
+                HStack(spacing: 12) {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(themeStore.background.fondo)
+                        .overlay(RoundedRectangle(cornerRadius: 4).fill(themeStore.background.tarjeta).padding(7))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Brand.divisor))
+                        .frame(width: 36, height: 36)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Fondo y tarjetas").font(.subheadline.weight(.semibold)).foregroundStyle(Brand.texto)
+                        Text(themeStore.background.name).font(.caption).foregroundStyle(Brand.textoSecundario)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(Brand.textoTerciario)
+                }
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 16).fill(Brand.superficie))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Brand.divisor))
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -319,7 +341,7 @@ struct AccountView: View {
 }
 
 enum AccountRoute: Hashable {
-    case editProfile, changePassword, twoFactor, favorites, terms, privacy, deleteAccount
+    case editProfile, changePassword, twoFactor, favorites, terms, privacy, deleteAccount, backgrounds
 }
 
 /// Foto de perfil o iniciales.

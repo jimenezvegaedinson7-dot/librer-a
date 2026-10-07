@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Ficha del libro (mismas acciones que Flutter): cantidad, añadir al
-/// carrito, reservar y favorito. Precio y stock se refrescan del backend.
+/// carrito y favorito (como Flutter, sin reservas nuevas). Precio y stock se refrescan del backend.
 struct BookDetailView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var cart: CartStore
@@ -12,10 +12,9 @@ struct BookDetailView: View {
     @State private var quantity = 1
     @State private var isFavorite = false
     @State private var favoriteBusy = false
-    @State private var reserving = false
+    @State private var added = false
     @State private var showFullSynopsis = false
     @State private var toast: ToastMessage?
-    @State private var reservationError: String?
 
     init(book: Book) {
         _book = State(initialValue: book)
@@ -74,14 +73,6 @@ struct BookDetailView: View {
         }
         .safeAreaInset(edge: .bottom) { bottomBar }
         .toast($toast)
-        .alert("No se pudo reservar", isPresented: Binding(
-            get: { reservationError != nil },
-            set: { if !$0 { reservationError = nil } }
-        )) {
-            Button("Aceptar", role: .cancel) { }
-        } message: {
-            Text(reservationError ?? "")
-        }
         .task { await refresh() }
     }
 
@@ -210,29 +201,25 @@ struct BookDetailView: View {
                 PriceText(amount: Double(Money.cents(book.precioCompra) * quantity) / 100, size: 20)
             }
             Spacer()
+            // Como Flutter: solo se compra (las reservas nuevas están retiradas).
             Button {
-                Task { await reserve() }
-            } label: {
-                if reserving {
-                    ProgressView()
-                } else {
-                    Label("Reservar", systemImage: "calendar.badge.checkmark")
-                }
-            }
-            .buttonStyle(BrandButtonStyle(filled: false))
-            .frame(width: 130)
-            .disabled(!book.isAvailable || reserving)
-
-            Button {
-                let added = cart.add(book, quantity: quantity)
+                let count = cart.add(book, quantity: quantity)
                 toast = ToastMessage(
-                    text: CartMessages.added(added, requested: quantity, inCart: cart.quantity(of: book.idLibro))
+                    text: CartMessages.added(count, requested: quantity, inCart: cart.quantity(of: book.idLibro))
                 )
+                guard count > 0 else { return }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) { added = true }
+                Task {
+                    try? await Task.sleep(nanoseconds: 1_400_000_000)
+                    withAnimation(.easeOut(duration: 0.2)) { added = false }
+                }
             } label: {
-                Label("Añadir", systemImage: "cart.badge.plus")
+                Label(added ? "Añadido" : "Añadir", systemImage: added ? "checkmark" : "cart.badge.plus")
+                    .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(BrandButtonStyle())
-            .frame(width: 130)
+            .frame(width: 170)
             .disabled(!book.isAvailable)
         }
         .padding(.horizontal, 16)
@@ -268,20 +255,6 @@ struct BookDetailView: View {
             toast = ToastMessage(text: error.localizedDescription)
         }
         favoriteBusy = false
-    }
-
-    private func reserve() async {
-        reserving = true
-        defer { reserving = false }
-        do {
-            _ = try await appState.reservationService.createReservation(bookID: book.idLibro, quantity: quantity)
-            router.reservationsVersion += 1
-            toast = ToastMessage(
-                text: "Reserva realizada correctamente."
-            )
-        } catch {
-            reservationError = error.localizedDescription
-        }
     }
 }
 
