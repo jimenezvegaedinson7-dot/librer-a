@@ -6,14 +6,42 @@ import SwiftUI
 struct AppLogo: View {
     var width: CGFloat
     var height: CGFloat
+    /// Tinte opcional (el splash lo pinta de blanco, como Flutter).
+    var color: Color?
+
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
-        Image("Logo")
-            .resizable()
-            .interpolation(.high)
-            .scaledToFit()
-            .frame(width: width, height: height)
+        let scale = AppLogo.screenScale(regularWidth: sizeClass == .regular)
+        logo
+            .frame(width: width * scale, height: height * scale)
             .accessibilityLabel("Librería del Saber")
+    }
+
+    @ViewBuilder
+    private var logo: some View {
+        if let color {
+            Image("Logo")
+                .renderingMode(.template)
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+                .foregroundStyle(color)
+        } else {
+            Image("Logo")
+                .resizable()
+                .interpolation(.high)
+                .scaledToFit()
+        }
+    }
+
+    /// Los tamaños se pensaron para un iPhone de 390 pt de ancho: en un
+    /// iPhone SE el logo se reduce un poco, en un Pro Max crece un poco y
+    /// en iPad (o en horizontal con ancho regular) crece más, sin pasarse.
+    static func screenScale(regularWidth: Bool) -> CGFloat {
+        let shortSide = min(UIScreen.main.bounds.width, UIScreen.main.bounds.height)
+        let phone = min(max(shortSide / 390, 0.82), 1.12)
+        return regularWidth ? max(phone, 1.3) : phone
     }
 }
 

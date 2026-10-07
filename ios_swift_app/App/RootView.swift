@@ -60,7 +60,7 @@ struct SplashView: View {
             VStack(spacing: 0) {
                 Circle()
                     .fill(Color.white.opacity(0.08))
-                    .overlay(AppLogo(width: 104, height: 104))
+                    .overlay(AppLogo(width: 104, height: 104, color: .white))
                     .padding(8)
                     .overlay(Circle().stroke(Brand.doradoClaro.opacity(0.55)))
                     .frame(width: 156, height: 156)
