@@ -10,9 +10,9 @@ export const DESCARGAS = {
     android: {
         habilitado: true,
         tipo: 'apk',
-        version: '1.0.9',
-        // APK firmado: seguimiento por tipo de entrega, pago dentro de la app y OTP con confirmación.
-        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.9/libreria-1.0.9.apk',
+        version: '1.0.10',
+        // APK firmado: métodos de PayU sin refrescar y seguimiento alineado.
+        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.10/libreria-1.0.10.apk',
         tamano: '55.3 MB',
         actualizado: '2026-10-07',
     },
