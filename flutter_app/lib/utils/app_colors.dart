@@ -65,6 +65,7 @@ class AppColors {
     _surface = tarjeta;
     _surfaceElevated = Color.lerp(fondo, const Color(0xFF8A7A66), 0.08)!;
     _paper = Color.lerp(fondo, tarjeta, 0.55)!;
+    _pintarTexto();
   }
 
   // ---------------------------------------------------------------------------
@@ -103,14 +104,60 @@ class AppColors {
   static const Color onErrorContainer = Color(0xFF7A1D16);
 
   // ---------------------------------------------------------------------------
-  // Texto (fijos)
+  // Texto (sigue al tema: con "Grafito" las letras son grafito, con "Noche"
+  // casi negras; con "Librería" el marrón tinta de siempre). Los colores de
+  // estado —ofertas en naranja, error/cancelar, éxito, aviso— NO cambian.
   // ---------------------------------------------------------------------------
 
-  static const Color textPrimary = Color(0xFF1C1814);
+  static const Color _textoMarcaPrimario = Color(0xFF1C1814);
+  static const Color _textoMarcaSecundario = Color(0xFF675E54);
+  static const Color _textoMarcaTerciario = Color(0xFF9A8F82);
 
-  static const Color textSecondary = Color(0xFF675E54);
+  static Color _textPrimary = _textoMarcaPrimario;
+  static Color _textSecondary = _textoMarcaSecundario;
+  static Color _textTertiary = _textoMarcaTerciario;
 
-  static const Color textTertiary = Color(0xFF9A8F82);
+  static Color get textPrimary => _textPrimary;
+
+  static Color get textSecondary => _textSecondary;
+
+  static Color get textTertiary => _textTertiary;
+
+  /// Último tema aplicado (para recalcular el texto si cambia el fondo).
+  static PerfilTema? _temaTexto;
+
+  /// Recalcula los tonos de texto a partir del tema y del fondo actual,
+  /// garantizando contraste de lectura (≥ 10:1, 6:1 y 3.6:1).
+  static void _pintarTexto() {
+    final tema = _temaTexto;
+    if (tema == null || tema.acento != null) {
+      _textPrimary = _textoMarcaPrimario;
+      _textSecondary = _textoMarcaSecundario;
+      _textTertiary = _textoMarcaTerciario;
+      return;
+    }
+    final base = tema.colorPrincipal;
+    final fondo = _background;
+    _textPrimary = _conContraste(base, fondo, 10);
+    _textSecondary = _conContraste(Color.lerp(base, fondo, 0.30)!, fondo, 6);
+    _textTertiary = _conContraste(Color.lerp(base, fondo, 0.50)!, fondo, 3.6);
+  }
+
+  /// Oscurece [color] (mezclándolo con negro) hasta lograr el contraste
+  /// pedido contra [fondo]; conserva el matiz del tema.
+  static Color _conContraste(Color color, Color fondo, double minimo) {
+    var actual = color;
+    for (var i = 0; i < 20 && _contraste(actual, fondo) < minimo; i++) {
+      actual = Color.lerp(actual, Colors.black, 0.12)!;
+    }
+    return actual;
+  }
+
+  static double _contraste(Color a, Color b) {
+    final la = a.computeLuminance(), lb = b.computeLuminance();
+    final claro = la > lb ? la : lb, oscuro = la > lb ? lb : la;
+    return (claro + 0.05) / (oscuro + 0.05);
+  }
 
   // ---------------------------------------------------------------------------
   // Bordes y divisiones (fijos)
@@ -154,6 +201,8 @@ class AppColors {
     _tertiary = tema.colorOscuro;
     _gold = tema.colorAcento;
     _price = tema.colorPrecio;
+    _temaTexto = tema;
+    _pintarTexto();
   }
 }
 

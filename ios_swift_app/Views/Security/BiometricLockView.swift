@@ -25,7 +25,7 @@ struct BiometricLockView: View {
                         : "La biometría configurada no está disponible."
                 )
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Brand.textoSecundario)
 
                 if let message {
                     Text(message)

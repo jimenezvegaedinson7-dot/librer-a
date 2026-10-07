@@ -309,7 +309,7 @@ class _QrImage extends StatelessWidget {
         width: 220,
         height: 220,
         color: AppColors.surfaceElevated,
-        child: const Icon(
+        child: Icon(
           Icons.qr_code_2_rounded,
           size: 96,
           color: AppColors.textTertiary,
@@ -333,7 +333,7 @@ class _QrImage extends StatelessWidget {
         width: 220,
         height: 220,
         color: AppColors.surfaceElevated,
-        child: const Icon(
+        child: Icon(
           Icons.qr_code_2_rounded,
           size: 96,
           color: AppColors.textTertiary,

@@ -15,7 +15,7 @@ struct PurchaseListRow: View {
 
             Text(HomeFormatters.dateTime(purchase.fechaVenta))
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Brand.textoSecundario)
 
             HStack(spacing: 8) {
                 StatusBadge(status: PurchasePresentation.saleStatus(purchase.estado))
@@ -25,7 +25,7 @@ struct PurchaseListRow: View {
                         systemImage: delivery.lowercased() == "tienda" ? "storefront" : "truck.box"
                     )
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Brand.textoSecundario)
                 }
             }
 

@@ -30,14 +30,72 @@ enum Brand {
     static var fondo: Color { AppBackground.active.fondo }
     static var superficie: Color { AppBackground.active.tarjeta }
     static let papel = Color(rgb: 0xFBF7F0)
-    static let texto = Color(rgb: 0x1C1814)
-    static let textoSecundario = Color(rgb: 0x675E54)
-    static let textoTerciario = Color(rgb: 0x9A8F82)
+    /// Texto: sigue al tema elegido (con "Grafito" las letras son grafito,
+    /// con "Noche" casi negras; con "Librería" el marrón tinta de siempre).
+    static var texto: Color { Color(rgb: TextPalette.active.primary) }
+    static var textoSecundario: Color { Color(rgb: TextPalette.active.secondary) }
+    static var textoTerciario: Color { Color(rgb: TextPalette.active.tertiary) }
+    /// Antetítulos e iconos decorativos: dorado en "Librería", el acento del
+    /// tema en los demás (como `AppColors.gold` en Flutter).
+    static var acento: Color { Color(rgb: TextPalette.active.accent) }
     static let divisor = Color(rgb: 0xE7DFD3)
 
     static let exito = Color(rgb: 0x15803D)
     static let aviso = Color(rgb: 0xB45309)
     static let error = Color(rgb: 0xB91C1C)
+    /// Descuentos: siempre en naranja, sea cual sea el tema (como Flutter).
+    static let oferta = Color(rgb: 0xC2410C)
+    static let ofertaSobreOscuro = Color(rgb: 0xFDBA74)
+}
+
+/// Tonos de texto derivados del tema y del fondo, con contraste de lectura
+/// garantizado (≥ 10:1, 6:1 y 3.6:1). Igual que `AppColors` en Flutter.
+/// Los colores de estado (ofertas, error/cancelar, éxito, aviso) no cambian.
+struct TextPalette: Equatable {
+    let primary: UInt32
+    let secondary: UInt32
+    let tertiary: UInt32
+    let accent: UInt32
+
+    static let brand = TextPalette(primary: 0x1C1814, secondary: 0x675E54, tertiary: 0x9A8F82, accent: 0xB98D3E)
+
+    /// Paleta activa; solo la cambia `ThemeStore` (hilo principal).
+    nonisolated(unsafe) static var active = TextPalette.brand
+
+    static func make(theme: ProfileTheme, background: UInt32) -> TextPalette {
+        guard theme.accent == nil else { return .brand }
+        let base = theme.primaryRGB
+        return TextPalette(
+            primary: withContrast(base, on: background, minimum: 10),
+            secondary: withContrast(mix(base, background, 0.30), on: background, minimum: 6),
+            tertiary: withContrast(mix(base, background, 0.50), on: background, minimum: 3.6),
+            accent: withContrast(theme.accentRGB, on: background, minimum: 3.2)
+        )
+    }
+
+    /// Oscurece el color (conservando su matiz) hasta lograr el contraste.
+    static func withContrast(_ rgb: UInt32, on background: UInt32, minimum: Double) -> UInt32 {
+        var current = rgb
+        var i = 0
+        while i < 20 && contrast(current, background) < minimum {
+            current = ProfileTheme.darken(current, 0.12)
+            i += 1
+        }
+        return current
+    }
+
+    static func contrast(_ a: UInt32, _ b: UInt32) -> Double {
+        let la = ProfileTheme.luminance(a), lb = ProfileTheme.luminance(b)
+        return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+    }
+
+    static func mix(_ a: UInt32, _ b: UInt32, _ t: Double) -> UInt32 {
+        func canal(_ shift: UInt32) -> UInt32 {
+            let x = Double((a >> shift) & 0xFF), y = Double((b >> shift) & 0xFF)
+            return UInt32((x + (y - x) * t).rounded())
+        }
+        return (canal(16) << 16) | (canal(8) << 8) | canal(0)
+    }
 }
 
 // MARK: - Temas del perfil
@@ -154,16 +212,20 @@ final class ThemeStore: ObservableObject {
         theme = ProfileTheme.resolve(defaults.string(forKey: Self.key) ?? ProfileTheme.defaultID)
         background = AppBackground.resolve(defaults.string(forKey: Self.backgroundKey))
         AppBackground.active = background
+        TextPalette.active = TextPalette.make(theme: theme, background: background.background)
     }
 
     /// Fondo de pantallas y tarjetas (preferencia no sensible).
     func applyBackground(_ background: AppBackground) {
         AppBackground.active = background
+        TextPalette.active = TextPalette.make(theme: theme, background: background.background)
         self.background = background
         defaults.set(background.id, forKey: Self.backgroundKey)
     }
 
     func apply(_ theme: ProfileTheme) {
+        // Las letras cambian junto con el tema (antes de publicar el cambio).
+        TextPalette.active = TextPalette.make(theme: theme, background: background.background)
         self.theme = theme
         defaults.set(theme.id, forKey: Self.key)
     }
@@ -210,7 +272,7 @@ struct SectionTitle: View {
                     Text(eyebrow.uppercased())
                         .font(.caption.weight(.bold))
                         .kerning(1.4)
-                        .foregroundStyle(Brand.dorado)
+                        .foregroundStyle(Brand.acento)
                 }
                 Text(title)
                     .font(.serif(24))

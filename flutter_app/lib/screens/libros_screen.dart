@@ -820,7 +820,7 @@ class _ChipCategoria extends StatelessWidget {
                     height: 3,
                     width: seleccionado ? 28 : 0,
                     decoration: BoxDecoration(
-                      color: AppColors.dorado,
+                      color: AppColors.gold,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),

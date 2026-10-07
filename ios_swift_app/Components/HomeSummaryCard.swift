@@ -15,7 +15,7 @@ struct HomeSummaryCard: View {
                 .font(.title2.bold())
             Text(title)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Brand.textoSecundario)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()

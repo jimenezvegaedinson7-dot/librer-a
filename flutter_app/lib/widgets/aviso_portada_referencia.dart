@@ -25,7 +25,7 @@ class AvisoPortadaReferencia extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(color: AppColors.paper,
           borderRadius: BorderRadius.circular(4)),
-      child: const Text('Portada referencial',
+      child: Text('Portada referencial',
           style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
     ));
   }

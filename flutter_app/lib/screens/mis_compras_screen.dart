@@ -568,7 +568,7 @@ class _DetalleVentaSheet extends StatelessWidget {
                   color: AppColors.surfaceElevated.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
+                child: Text(
                   'No se pudo cargar el detalle de esta compra.',
                   style: TextStyle(color: AppColors.textSecondary),
                 ),
@@ -732,7 +732,7 @@ class _SeguimientoPedido extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         seg.mensaje,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12.5,
                           height: 1.3,

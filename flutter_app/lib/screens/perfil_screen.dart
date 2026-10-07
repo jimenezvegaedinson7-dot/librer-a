@@ -31,10 +31,11 @@ import 'security/two_factor_setup_screen.dart';
 import 'legal/politica_privacidad_screen.dart';
 import 'legal/terminos_condiciones_screen.dart';
 
-const _profileInk = Color(0xFF1C1814);
-const _profileMuted = Color(0xFF675E54);
+// Siguen al tema de colores elegido (ver AppColors).
+Color get _profileInk => AppColors.textPrimary;
+Color get _profileMuted => AppColors.textSecondary;
 const _profileBorder = Color(0xFFE7DFD3);
-const _profileSurface = Color(0xFFFFFFFF);
+Color get _profileSurface => AppColors.surface;
 const _profileSoft = Color(0xFFF1E8D8);
 
 /// Pantalla de perfil del cliente.
@@ -882,7 +883,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         width: 30,
                         height: 30,
                         decoration: BoxDecoration(
-                          color: AppColors.dorado,
+                          color: AppColors.gold,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
@@ -950,13 +951,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
         ),
         child: Icon(icon, size: 19, color: AppColors.primary),
       ),
-      title: Text(label, style: const TextStyle(color: _profileInk)),
+      title: Text(label, style: TextStyle(color: _profileInk)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           ?trailing,
           const SizedBox(width: 4),
-          const Icon(Icons.chevron_right_rounded, color: _profileMuted),
+          Icon(Icons.chevron_right_rounded, color: _profileMuted),
         ],
       ),
       onTap: onTap,
@@ -1316,7 +1317,7 @@ class _TemaSwatch extends StatelessWidget {
         child: seleccionado
             ? Icon(Icons.check_rounded, size: 18, color: colorCheck)
             : esPersonalizado
-            ? const Icon(Icons.add_rounded, size: 18, color: Color(0xFF675E54))
+            ? Icon(Icons.add_rounded, size: 18, color: AppColors.textSecondary)
             : null,
       ),
     );

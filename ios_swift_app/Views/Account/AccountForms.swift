@@ -21,7 +21,7 @@ struct FormHeader<Medallion: View>: View {
                 .overlay(Circle().stroke(Brand.dorado.opacity(0.55), lineWidth: 1.5))
                 .shadow(color: themeStore.theme.primaryDark.opacity(0.35), radius: 9, y: 8)
             Text(eyebrow.uppercased()).font(.caption.weight(.bold)).kerning(1.6)
-                .foregroundStyle(Brand.dorado).padding(.top, 10)
+                .foregroundStyle(Brand.acento).padding(.top, 10)
             Text(title).font(.serif(26)).multilineTextAlignment(.center)
             Text(subtitle).font(.subheadline).foregroundStyle(Brand.textoSecundario)
                 .multilineTextAlignment(.center)
@@ -454,7 +454,7 @@ struct LegalDocumentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("LEGAL").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.dorado)
+                    Text("LEGAL").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.acento)
                     Text(document.title).font(.serif(28))
                     Text("Actualizado el \(document.updated)").font(.caption).foregroundStyle(Brand.textoTerciario)
                 }

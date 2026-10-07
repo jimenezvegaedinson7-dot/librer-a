@@ -15,7 +15,7 @@ struct FavoritesView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("LISTA DE DESEOS").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.dorado)
+                    Text("LISTA DE DESEOS").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.acento)
                     Text("Mis favoritos").font(.serif(30))
                     if !books.isEmpty {
                         Text(books.count == 1 ? "1 libro guardado" : "\(books.count) libros guardados")

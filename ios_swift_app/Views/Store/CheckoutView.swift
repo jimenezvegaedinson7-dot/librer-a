@@ -75,7 +75,7 @@ struct CheckoutView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("PASO 2 DE 3").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.dorado)
+                    Text("PASO 2 DE 3").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.acento)
                     Text("Entrega y pago").font(.serif(28))
                     Text("Elige cómo recibir tu pedido y confirma tus datos.")
                         .font(.subheadline).foregroundStyle(Brand.textoSecundario)
@@ -120,7 +120,7 @@ struct CheckoutView: View {
             Label {
                 (Text("Pallasca").fontWeight(.semibold) + Text("  ·  Repartimos por zonas dentro de Pallasca"))
             } icon: {
-                Image(systemName: "mappin.circle").foregroundStyle(Brand.dorado)
+                Image(systemName: "mappin.circle").foregroundStyle(Brand.acento)
             }
             .font(.subheadline)
             .padding(12)

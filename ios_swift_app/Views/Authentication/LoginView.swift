@@ -588,7 +588,7 @@ struct OrnamentDivider: View {
     var body: some View {
         HStack(spacing: 12) {
             Rectangle().fill(Brand.divisor).frame(height: 1)
-            Image(systemName: "book").font(.system(size: 17)).foregroundStyle(Brand.dorado)
+            Image(systemName: "book").font(.system(size: 17)).foregroundStyle(Brand.acento)
             Rectangle().fill(Brand.divisor).frame(height: 1)
         }
         .accessibilityHidden(true)

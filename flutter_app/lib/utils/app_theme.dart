@@ -104,7 +104,7 @@ class AppTheme {
       pageTransitionsTheme: transicion,
       visualDensity: VisualDensity.standard,
 
-      iconTheme: const IconThemeData(color: AppColors.textSecondary, size: 22),
+      iconTheme: IconThemeData(color: AppColors.textSecondary, size: 22),
 
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: AppColors.primary,
@@ -128,7 +128,7 @@ class AppTheme {
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.dark,
         ),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary, size: 22),
+        iconTheme: IconThemeData(color: AppColors.textPrimary, size: 22),
         titleTextStyle: serifTitulo(
           20,
           26,

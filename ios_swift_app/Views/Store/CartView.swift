@@ -66,7 +66,7 @@ struct CartView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("TU PEDIDO").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.dorado)
+            Text("TU PEDIDO").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.acento)
             Text("Mi carrito").font(.serif(30))
             if cart.totalUnits > 0 {
                 Text(cart.totalUnits == 1 ? "1 unidad lista para comprar" : "\(cart.totalUnits) unidades listas para comprar")

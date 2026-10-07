@@ -118,4 +118,18 @@ final class ParityFlutterTests: XCTestCase {
         let effect = ShakeEffect(animatableData: 1)
         XCTAssertEqual(effect.effectValue(size: .zero).m31, 0, accuracy: 0.0001)
     }
+
+    // MARK: Colores de texto por tema
+
+    func testTextFollowsThemeWithReadableContrast() {
+        let marfil: UInt32 = 0xF6F1E9
+        XCTAssertEqual(TextPalette.make(theme: ProfileTheme.resolve("libreria"), background: marfil), .brand)
+        for id in ["grafito", "noche", "rosa", "default"] {
+            let palette = TextPalette.make(theme: ProfileTheme.resolve(id), background: marfil)
+            XCTAssertGreaterThanOrEqual(TextPalette.contrast(palette.primary, marfil), 10, id)
+            XCTAssertGreaterThanOrEqual(TextPalette.contrast(palette.secondary, marfil), 6, id)
+            XCTAssertGreaterThanOrEqual(TextPalette.contrast(palette.tertiary, marfil), 3.6, id)
+            XCTAssertNotEqual(palette.primary, TextPalette.brand.primary, id)
+        }
+    }
 }

@@ -67,7 +67,7 @@ class _EliminarCuentaScreenState extends State<EliminarCuentaScreen> {
           Expanded(
             child: Text(
               texto,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppColors.textPrimary,
                 height: 1.4,
                 fontSize: 14,

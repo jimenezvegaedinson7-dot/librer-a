@@ -78,7 +78,7 @@ struct MyReservationsView: View {
     private var header: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("APARTADOS").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.dorado)
+                Text("APARTADOS").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.acento)
                 Text("Mis reservas").font(.serif(30))
                 if !reservations.isEmpty {
                     Text("\(reservations.count) \(reservations.count == 1 ? "reserva" : "reservas") · \(activeCount) \(activeCount == 1 ? "activa" : "activas")")
@@ -168,7 +168,7 @@ private struct ReservationRow: View {
 
     private func datum(_ icon: String, _ label: String, _ value: String) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: icon).foregroundStyle(Brand.dorado)
+            Image(systemName: icon).foregroundStyle(Brand.acento)
             VStack(alignment: .leading, spacing: 0) {
                 Text(label).font(.caption2).foregroundStyle(Brand.textoTerciario)
                 Text(value).font(.caption.weight(.semibold))

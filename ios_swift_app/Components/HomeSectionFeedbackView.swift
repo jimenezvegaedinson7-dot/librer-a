@@ -19,12 +19,12 @@ struct HomeSectionFeedbackView: View {
         VStack(spacing: 10) {
             Image(systemName: systemImage)
                 .font(.title2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Brand.textoSecundario)
                 .accessibilityHidden(true)
             Text(message)
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Brand.textoSecundario)
             if let retryAction {
                 Button("Reintentar", action: retryAction)
                     .buttonStyle(.bordered)

@@ -20,7 +20,7 @@ struct AccountView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("TU CUENTA").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.dorado)
+                        Text("TU CUENTA").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.acento)
                         Text("Mi perfil").font(.serif(30))
                     }
                     .padding(.top, 16)
@@ -303,7 +303,7 @@ struct AccountView: View {
 
     private func infoRow(_ icon: String, _ label: String, _ value: String) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: icon).foregroundStyle(Brand.dorado).frame(width: 22)
+            Image(systemName: icon).foregroundStyle(Brand.acento).frame(width: 22)
             VStack(alignment: .leading, spacing: 2) {
                 Text(label).font(.caption).foregroundStyle(Brand.textoSecundario)
                 Text(value).foregroundStyle(Brand.texto)

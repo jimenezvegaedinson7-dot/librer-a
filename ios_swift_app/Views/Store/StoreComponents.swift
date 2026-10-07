@@ -58,7 +58,8 @@ struct BookPriceView: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
-            PriceText(amount: book.precioCompra, size: size, color: book.enOferta ? (color ?? Brand.error) : color)
+            PriceText(amount: book.precioCompra, size: size,
+                      color: book.enOferta ? (color == nil ? Brand.oferta : Brand.ofertaSobreOscuro) : color)
             if book.enOferta {
                 Text("S/ \(Money.format(book.precio))")
                     .font(.system(size: size * 0.62, weight: .medium))
@@ -77,7 +78,7 @@ struct PromoBadges: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: 4) {
             if book.enOferta {
-                badge("-\(book.porcentajeOferta) %", color: Brand.error)
+                badge("-\(book.porcentajeOferta) %", color: Brand.oferta)
             }
             if book.mostrarNuevo {
                 badge("Nuevo", color: Brand.dorado)

@@ -199,7 +199,7 @@ struct PurchaseDetailView: View {
         PurchaseDetailSection(title: "Productos", systemImage: "books.vertical") {
             if purchase.details.isEmpty {
                 Text("No hay productos disponibles en el detalle de esta compra.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Brand.textoSecundario)
             } else {
                 ForEach(purchase.details) { detail in
                     VStack(alignment: .leading, spacing: 5) {
@@ -242,11 +242,11 @@ struct PurchaseDetailView: View {
                     paymentDetails(presentation)
                 } else {
                     Text("No hay información de pago disponible para esta compra.")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Brand.textoSecundario)
                 }
             case .unavailable(let message):
                 Text(message)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Brand.textoSecundario)
             case .error(let message):
                 if let presentation = viewModel.paymentPresentation {
                     paymentDetails(presentation)
@@ -257,7 +257,7 @@ struct PurchaseDetailView: View {
             if let notice = viewModel.paymentNotice {
                 Text(notice)
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Brand.textoSecundario)
             }
         }
     }
@@ -330,7 +330,7 @@ struct PurchaseDetailView: View {
             }
             if !hasDeliveryInformation(purchase) {
                 Text("No hay información adicional de entrega.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Brand.textoSecundario)
             }
         }
     }
@@ -342,10 +342,10 @@ struct PurchaseDetailView: View {
                 Label("Comprobante emitido", systemImage: "checkmark.circle")
             case .some(false):
                 Text("Comprobante no emitido.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Brand.textoSecundario)
             case .none:
                 Text("Información de comprobante no disponible")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Brand.textoSecundario)
             }
         }
     }

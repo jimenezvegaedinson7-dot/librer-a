@@ -23,11 +23,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  static const _background = Color(0xFFF6F1E9);
-  static const _surface = Color(0xFFFFFFFF);
-  static const _ink = Color(0xFF1C1814);
-  static const _muted = Color(0xFF675E54);
-  static const _gold = Color(0xFFB98D3E);
+  // Siguen al tema y al fondo elegidos (ver AppColors).
+  static Color get _background => AppColors.background;
+  static Color get _surface => AppColors.surface;
+  static Color get _ink => AppColors.textPrimary;
+  static Color get _muted => AppColors.textSecondary;
+  static Color get _gold => AppColors.gold;
   static const _border = Color(0xFFE7DFD3);
 
   final _formKey = GlobalKey<FormState>();
@@ -189,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            const Row(
+                            Row(
                               children: [
                                 Expanded(child: Divider(color: _border)),
                                 Padding(
@@ -219,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               textInputAction: TextInputAction.next,
                               autocorrect: false,
                               cursorColor: _gold,
-                              style: const TextStyle(color: _ink),
+                              style: TextStyle(color: _ink),
                               inputFormatters: [
                                 FilteringTextInputFormatter.deny(RegExp(r'\s')),
                               ],
@@ -254,7 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               obscureText: _obscurePassword,
                               textInputAction: TextInputAction.done,
                               cursorColor: _gold,
-                              style: const TextStyle(color: _ink),
+                              style: TextStyle(color: _ink),
                               onFieldSubmitted: (_) => _login(),
                               decoration:
                                   _inputDecoration(
@@ -320,7 +321,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(
                               height: 56,
                               child: _loading
-                                  ? const Center(
+                                  ? Center(
                                       child: CircularProgressIndicator(
                                         color: _gold,
                                       ),
@@ -390,7 +391,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: _muted),
+      hintStyle: TextStyle(color: _muted),
       prefixIcon: Icon(icon, color: _gold, size: 21),
       filled: true,
       fillColor: _surface,
@@ -405,7 +406,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: _gold, width: 1.6),
+        borderSide: BorderSide(color: _gold, width: 1.6),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),

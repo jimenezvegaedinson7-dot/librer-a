@@ -22,7 +22,7 @@ struct SecurityView: View {
                         "Face ID o Touch ID solo desbloquea localmente una sesión existente. El JWT se valida después con el servidor."
                     )
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Brand.textoSecundario)
 
                     if let availabilityMessage = appState.biometricAvailability.message,
                        !appState.biometricAvailability.isAvailable {
@@ -61,7 +61,7 @@ struct SecurityView: View {
                 Section("Autenticación en dos pasos") {
                     HStack {
                         Label("Estado", systemImage: "lock.shield")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Brand.textoSecundario)
                         Spacer()
                         if let twoFAEnabled = appState.user?.twoFactorEnabled {
                             Text(twoFAEnabled ? "Activada" : "Desactivada")
@@ -72,7 +72,7 @@ struct SecurityView: View {
                         } else {
                             Text("Estado desconocido")
                                 .font(.body)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Brand.textoSecundario)
                         }
                     }
                 }

@@ -25,11 +25,12 @@ class RecuperarContrasenaScreen extends StatefulWidget {
 }
 
 class _RecuperarContrasenaScreenState extends State<RecuperarContrasenaScreen> {
-  static const _background = Color(0xFFF6F1E9);
-  static const _surface = Color(0xFFFFFFFF);
-  static const _ink = Color(0xFF1C1814);
-  static const _muted = Color(0xFF675E54);
-  static const _gold = Color(0xFFB98D3E);
+  // Siguen al tema y al fondo elegidos (ver AppColors).
+  static Color get _background => AppColors.background;
+  static Color get _surface => AppColors.surface;
+  static Color get _ink => AppColors.textPrimary;
+  static Color get _muted => AppColors.textSecondary;
+  static Color get _gold => AppColors.gold;
   static const _border = Color(0xFFE7DFD3);
 
   final _formKey = GlobalKey<FormState>();
@@ -86,7 +87,7 @@ class _RecuperarContrasenaScreenState extends State<RecuperarContrasenaScreen> {
         backgroundColor: _background,
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: _ink),
+        iconTheme: IconThemeData(color: _ink),
         title: Text(
           'Recuperar contraseña',
           style: textTheme.titleMedium?.copyWith(
@@ -156,7 +157,7 @@ class _RecuperarContrasenaScreenState extends State<RecuperarContrasenaScreen> {
                               textInputAction: TextInputAction.done,
                               autocorrect: false,
                               cursorColor: _gold,
-                              style: const TextStyle(color: _ink),
+                              style: TextStyle(color: _ink),
                               inputFormatters: [
                                 FilteringTextInputFormatter.deny(RegExp(r'\s')),
                               ],
@@ -187,7 +188,7 @@ class _RecuperarContrasenaScreenState extends State<RecuperarContrasenaScreen> {
                             SizedBox(
                               height: 54,
                               child: _loading
-                                  ? const Center(
+                                  ? Center(
                                       child: CircularProgressIndicator(
                                         color: _gold,
                                       ),
@@ -241,7 +242,7 @@ class _RecuperarContrasenaScreenState extends State<RecuperarContrasenaScreen> {
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(color: _muted),
+      hintStyle: TextStyle(color: _muted),
       prefixIcon: Icon(icon, color: _gold, size: 21),
       filled: true,
       fillColor: _surface,
@@ -256,7 +257,7 @@ class _RecuperarContrasenaScreenState extends State<RecuperarContrasenaScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: _gold, width: 1.6),
+        borderSide: BorderSide(color: _gold, width: 1.6),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),

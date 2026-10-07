@@ -391,7 +391,7 @@ class _Preparando extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Cargando los métodos de pago de PayU',
               style: TextStyle(color: AppColors.textSecondary),
             ),
@@ -421,7 +421,7 @@ class _ErrorCarga extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.wifi_off_rounded,
                     size: 48,
                     color: AppColors.textSecondary,

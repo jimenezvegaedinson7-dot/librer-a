@@ -154,7 +154,7 @@ struct CatalogView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("EXPLORAR")
                 .font(.caption.weight(.bold)).kerning(1.6)
-                .foregroundStyle(Brand.dorado)
+                .foregroundStyle(Brand.acento)
             Text("Catálogo").font(.serif(30)).foregroundStyle(Brand.texto)
         }
         .padding(.top, 16)
