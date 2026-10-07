@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 import '../utils/app_colors.dart';
 
@@ -36,6 +37,10 @@ class PagoEnAppScreen extends StatefulWidget {
   /// ¿Es la página a la que PayU devuelve al terminar?
   static bool esRetorno(Uri uri) => uri.path.contains('/api/pagos/respuesta/');
 
+  /// ¿Es una página de la pasarela de PayU (donde se eligen los métodos)?
+  static bool esPasarela(Uri uri) =>
+      uri.host == 'payulatam.com' || uri.host.endsWith('.payulatam.com');
+
   @override
   State<PagoEnAppScreen> createState() => _PagoEnAppScreenState();
 }
@@ -44,6 +49,10 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
   late final WebViewController _web;
   double _progreso = 0;
   bool _error = false, _terminado = false;
+
+  /// La primera carga de PayU no siempre trae los métodos de pago: se
+  /// recarga una vez sola y, mientras tanto, se muestra "Preparando pago".
+  bool _recargada = false, _preparando = true;
 
   @override
   void initState() {
@@ -56,6 +65,7 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
           onProgress: (p) {
             if (mounted) setState(() => _progreso = p / 100);
           },
+          onPageFinished: _paginaLista,
           onPageStarted: (url) {
             final uri = Uri.tryParse(url);
             if (uri != null && PagoEnAppScreen.esRetorno(uri)) {
@@ -71,6 +81,35 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
         ),
       )
       ..loadRequest(Uri.parse(widget.url));
+    _permitirCookiesPasarela();
+    // Si PayU nunca llega a cargar, no se deja la pantalla tapada.
+    Future<void>.delayed(const Duration(seconds: 15), () {
+      if (mounted && _preparando) setState(() => _preparando = false);
+    });
+  }
+
+  /// PayU guarda la sesión del pago en cookies de sus propios dominios; el
+  /// WebView de Android las bloquea por defecto y los métodos no aparecen.
+  void _permitirCookiesPasarela() {
+    final plataforma = _web.platform;
+    if (plataforma is! AndroidWebViewController) return;
+    AndroidWebViewCookieManager(
+      const PlatformWebViewCookieManagerCreationParams(),
+    ).setAcceptThirdPartyCookies(plataforma, true).catchError((_) {});
+  }
+
+  void _paginaLista(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || !mounted || !PagoEnAppScreen.esPasarela(uri)) return;
+    if (!_recargada) {
+      // Igual que refrescar a mano: la segunda carga ya muestra los métodos.
+      _recargada = true;
+      Future<void>.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) _web.reload();
+      });
+      return;
+    }
+    if (_preparando) setState(() => _preparando = false);
   }
 
   NavigationDecision _decidir(NavigationRequest pedido) {
@@ -180,10 +219,48 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
                   mode: LaunchMode.externalApplication,
                 ),
               )
-            : WebViewWidget(controller: _web),
+            : Stack(
+                children: [
+                  WebViewWidget(controller: _web),
+                  if (_preparando) const _Preparando(),
+                ],
+              ),
       ),
     );
   }
+}
+
+/// Cubre la página mientras PayU termina de cargar los métodos de pago.
+class _Preparando extends StatelessWidget {
+  const _Preparando();
+
+  @override
+  Widget build(BuildContext context) => Positioned.fill(
+    child: ColoredBox(
+      color: Colors.white,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox.square(
+              dimension: 34,
+              child: CircularProgressIndicator(strokeWidth: 3),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Preparando tu pago seguro…',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Cargando los métodos de pago de PayU',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _ErrorCarga extends StatelessWidget {

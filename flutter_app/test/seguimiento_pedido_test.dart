@@ -43,4 +43,11 @@ void main() {
     expect(PagoEnAppScreen.esRetorno(Uri.parse('https://api.example/api/pagos/respuesta/REF-1?x=1')), true);
     expect(PagoEnAppScreen.esRetorno(Uri.parse('https://checkout.payulatam.com/ppp-web-gateway-payu/')), false);
   });
+
+  test('la pasarela de PayU se reconoce para recargarla una vez', () {
+    expect(PagoEnAppScreen.esPasarela(Uri.parse('https://sandbox.checkout.payulatam.com/ppp-web-gateway-payu/')), true);
+    expect(PagoEnAppScreen.esPasarela(Uri.parse('https://checkout.payulatam.com/x')), true);
+    expect(PagoEnAppScreen.esPasarela(Uri.parse('https://payulatam.com.falso.example/x')), false);
+    expect(PagoEnAppScreen.esPasarela(Uri.parse('https://libreria-api-x8kq.onrender.com/api/pagos/checkout/R1')), false);
+  });
 }
