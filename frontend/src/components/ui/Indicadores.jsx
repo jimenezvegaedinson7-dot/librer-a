@@ -3,11 +3,12 @@ import { Children, cloneElement, createContext, isValidElement, useContext, useE
 import { animate, useReducedMotion } from 'motion/react';
 
 import { formatearMoneda } from '../../lib/utils/format';
+import { Anillo, OndaDecorativa, TendenciaViva } from '../../features/dashboard/Decoraciones';
 
 // Fila de indicadores de cada módulo: tarjetas compactas con el acabado de
 // "Total vendido" en distintos colores. Mientras la página carga muestran un
 // barrido de luz; al llegar los datos la cifra cuenta hasta su valor, aparece
-// el porcentaje del total y se dibuja un gráfico distinto en cada tarjeta.
+// el gráfico usa las mismas piezas que el Dashboard, sin modificarlo.
 
 const ContextoIndicadores = createContext({ cargando: false });
 
@@ -95,68 +96,22 @@ function formatear(valor, formato) {
 // GRÁFICOS DENTRO DE LA TARJETA
 // Todos dibujan datos reales: la parte del total que representa la tarjeta,
 // el reparto entre tarjetas o una serie (por ejemplo, actividad por día).
-// Usan el color de acento de la tarjeta y se dibujan al llegar los datos.
+// Se reutilizan los anillos, columnas y ondas del Dashboard. Las ondas son
+// decorativas; solo las proporciones, series y repartos representan datos.
 // ============================================================
 const ACENTOS = {
     primary: '#e3b865', success: '#a3dcc2', danger: '#f2b6be', warning: '#f2cf92', info: '#f0d58e',
     violet: '#cdbff5', teal: '#a2e0da', sky: '#abcdef', rose: '#f2b6d1', neutral: '#e2d7c6',
 };
-const ESTILOS = ['anillo', 'segmentos', 'escala'];
-
-function Anillo({ p }) {
-    const r = 15, c = 2 * Math.PI * r;
-    return (
-        <svg className="grafico-anillo" viewBox="0 0 40 40" aria-hidden="true">
-            <circle cx="20" cy="20" r={r} className="grafico-pista" />
-            <circle cx="20" cy="20" r={r} className="grafico-trazo grafico-anillo__arco"
-                style={{ strokeDasharray: c, '--inicio': c, '--fin': c * (1 - p) }} />
-        </svg>
-    );
-}
-
-// Segmentos: barra en 10 tramos; cada tramo es el 10 % del total.
-function Segmentos({ p }) {
-    const llenos = Math.round(p * 10);
-    return (
-        <div className="grafico-segmentos" aria-hidden="true">
-            {Array.from({ length: 10 }, (_, i) => <span key={i} className={i < llenos ? 'lleno' : ''} style={{ '--k': i }} />)}
-        </div>
-    );
-}
-
-function Escala({ p }) {
-    return (
-        <div className="grafico-escala" aria-hidden="true">
-            <span className="grafico-escala__relleno" style={{ '--p': p }} />
-            {[25, 50, 75].map((m) => <i key={m} style={{ left: `${m}%` }} />)}
-        </div>
-    );
-}
-
-function Linea({ serie }) {
-    const max = Math.max(...serie, 1), n = serie.length;
-    const x = (i) => (n === 1 ? 50 : (i / (n - 1)) * 100);
-    const y = (v) => 30 - (v / max) * 26;
-    const puntos = serie.map((v, i) => `${x(i)},${y(v)}`).join(' ');
-    return (
-        <svg className="grafico-linea" viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
-            <polygon points={`0,32 ${puntos} 100,32`} className="grafico-linea__area" />
-            <polyline points={puntos} className="grafico-linea__trazo" pathLength="1" />
-        </svg>
-    );
-}
 
 // Tarjeta principal: cómo se reparte el total entre las demás tarjetas.
-function Composicion({ partes }) {
+function Composicion({ partes, activa }) {
     const suma = partes.reduce((s, p) => s + p.valor, 0);
     if (!suma) return null;
     return (
-        <div className="grafico-composicion">
-            <div className="grafico-composicion__barra" aria-hidden="true">
-                {partes.filter((p) => p.valor > 0).map((p, i) => (
-                    <span key={p.titulo} style={{ flexGrow: p.valor, background: ACENTOS[p.tono] || ACENTOS.neutral, '--k': i }} />
-                ))}
-            </div>
+        <div className="grafico-composicion" style={Object.fromEntries(partes.map((p, i) => [`--parte-${i}`, ACENTOS[p.tono] || ACENTOS.neutral]))}>
+            <TendenciaViva datos={partes.map((p) => p.valor)} activa={activa}
+                etiqueta={`Reparto del total: ${partes.map((p) => `${p.titulo} ${p.valor}`).join(', ')}`} />
             <ul className="grafico-composicion__leyenda">
                 {partes.map((p) => (
                     <li key={p.titulo}><i style={{ background: ACENTOS[p.tono] || ACENTOS.neutral }} />{p.titulo} <b>{p.valor}</b></li>
@@ -167,34 +122,30 @@ function Composicion({ partes }) {
 }
 
 /**
- * @param {number[]} [serie]  valores en el tiempo (dibuja una línea).
- * @param {'anillo'|'segmentos'|'escala'} [grafico]  estilo para la parte del total.
+ * @param {number[]} [serie]  valores en el tiempo (columnas del Dashboard).
  * @param {string} tono  primary | success | danger | warning | info | neutral | violet | teal | sky | rose
  * @param {number} [de]  total de referencia: muestra el porcentaje y llena el medidor.
  * @param {'numero'|'moneda'} [formato]
  */
-export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de, formato = 'numero', orden = 0, serie, grafico, composicion }) {
+export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de, formato = 'numero', orden = 0, serie, composicion }) {
     const { cargando } = useContext(ContextoIndicadores);
     const numero = typeof valor === 'number' ? valor : Number.isFinite(Number(valor)) && valor !== '' && valor !== null ? Number(valor) : null;
     const cifra = useCifraAnimada(numero ?? valor, !cargando);
 
     const conProporcion = numero !== null && Number.isFinite(numero) && numero >= 0
         && Number.isFinite(Number(de)) && Number(de) > 0 && numero <= Number(de);
-    const proporcion = conProporcion ? Math.min(1, Math.max(0, numero / Number(de))) : 0;
-    const porcentaje = Math.round(proporcion * 100);
-    const conSerie = numero !== null && Array.isArray(serie) && serie.length > 1
-        && serie.every((v) => Number.isFinite(v) && v >= 0) && serie.some((v) => v > 0);
-    const estilo = grafico || ESTILOS[(Math.max(orden, 1) - 1) % ESTILOS.length];
-    const lateral = conProporcion && !conSerie && estilo === 'anillo';
-    // Al pasar el mouse el gráfico se vuelve a dibujar (cambiar la clave
-    // reinicia sus animaciones).
-    const [vuelta, setVuelta] = useState(0);
+    const conDato = numero !== null && Number.isFinite(numero);
+    const conTexto = typeof valor === 'string' && valor.trim() !== '' && valor !== 'No disponible' && valor !== '—';
+    const conSerie = conDato && Array.isArray(serie) && serie.length > 1
+        && serie.every((v) => Number.isFinite(v) && v >= 0);
+    const [activa, setActiva] = useState(false);
 
     return (
         <article
             className={`indicador joya ${tono === 'primary' ? '' : `joya--${tono}`} ${cargando ? 'indicador--cargando' : ''}`}
             style={{ '--orden': orden }}
-            onPointerEnter={(e) => { if (e.pointerType === 'mouse' && !cargando) setVuelta((v) => v + 1); }}
+            onPointerEnter={(e) => { if (e.pointerType === 'mouse') setActiva(true); }}
+            onPointerLeave={() => setActiva(false)}
         >
             <div className="indicador-cabecera">
                 <span className="indicador-icono" aria-hidden="true">{icono}</span>
@@ -207,20 +158,17 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
                     ) : (
                         <div className="indicador-cifras">
                             <p className={`indicador-valor${numero === null ? ' indicador-valor--texto' : ''}`}>{formatear(cifra, formato)}</p>
-                            {conProporcion && (
-                                <span key={`p${vuelta}`} className="indicador-porcentaje" title={`${porcentaje} % del total`}>{porcentaje}%</span>
-                            )}
                         </div>
                     )}
                 </div>
-                {lateral && !cargando && <div key={`l${vuelta}`} className="indicador-lateral"><Anillo p={proporcion} /></div>}
             </div>
             {detalle && <p className="indicador-detalle" title={typeof detalle === 'string' ? detalle : undefined}>{detalle}</p>}
-            {!cargando && (conSerie || (conProporcion && !lateral) || composicion?.length > 0) && (
-                <div key={`g${vuelta}`} className="indicador-grafico">
-                    {conSerie ? <Linea serie={serie} />
-                        : conProporcion ? (estilo === 'segmentos' ? <Segmentos p={proporcion} /> : <Escala p={proporcion} />)
-                        : <Composicion partes={composicion} />}
+            {!cargando && (conDato || conTexto) && (
+                <div className="indicador-grafico">
+                    {conSerie ? <TendenciaViva datos={serie} etiqueta={`Ventas de los últimos 14 días · ${titulo}`} activa={activa} />
+                        : conProporcion ? <Anillo valor={numero} total={Number(de)} etiqueta={`${titulo} sobre el total`} leyenda="del total" activa={activa} />
+                        : composicion?.length > 0 ? <Composicion partes={composicion} activa={activa} />
+                        : <OndaDecorativa className="onda-decorativa--indicador" activa={activa} />}
                 </div>
             )}
             {cargando && <span className="indicador-grafico indicador-grafico--esqueleto" aria-hidden="true" />}

@@ -185,6 +185,7 @@ export default function TarifasEnvioPage() {
                         icono={<FaArrowDownWideShort />}
                         color="success"
                         detalle={`Aplicada en ${zonasTexto(resumen.conMinima)}`}
+                        medidor={{ valor: resumen.conMinima, total: zonasActivas.length, etiqueta: 'Zonas con tarifa mínima sobre el total', leyenda: 'de las zonas activas usa la tarifa mínima' }}
                     />
                     <StatCard
                         titulo="Tarifa promedio"
@@ -192,6 +193,9 @@ export default function TarifasEnvioPage() {
                         icono={<FaScaleBalanced />}
                         color="primary"
                         detalle={`Sobre ${zonasTexto(zonasActivas.length)} de Pallasca`}
+                        tendencia={zonasActivas.length > 1 ? zonasActivas.map(tarifaDe) : undefined}
+                        etiquetaTendencia="Tarifas de las zonas activas de Pallasca"
+                        medidor={zonasActivas.length === 1 ? { valor: zonasActivas.length, total: zonasActivas.length, etiqueta: 'Zonas incluidas en el promedio', leyenda: 'de las zonas activas incluidas en el promedio' } : undefined}
                     />
                     <StatCard
                         titulo="Tarifa máxima"
@@ -199,6 +203,7 @@ export default function TarifasEnvioPage() {
                         icono={<FaArrowUpWideShort />}
                         color="info"
                         detalle={`Aplicada en ${zonasTexto(resumen.conMaxima)}`}
+                        medidor={{ valor: resumen.conMaxima, total: zonasActivas.length, etiqueta: 'Zonas con tarifa máxima sobre el total', leyenda: 'de las zonas activas usa la tarifa máxima' }}
                     />
                 </motion.section>
             )}
