@@ -106,6 +106,22 @@ const MIGRACIONES = [
     '040_devoluciones_payu.sql'
 ];
 
+// Migraciones de DATOS (backfills): a diferencia de las de esquema, se
+// aplican UNA sola vez y quedan registradas en migraciones_datos con la
+// cantidad de filas que cambiaron. Cada una corre en su propia transacción
+// con un bloqueo, así dos instancias del servicio no la aplican a la vez.
+const MIGRACIONES_DATOS = [
+    '041_backfill_entrega_ventas_canceladas.sql'
+];
+
+const TABLA_MIGRACIONES_DATOS = `
+    CREATE TABLE IF NOT EXISTS migraciones_datos (
+        nombre      VARCHAR(120) PRIMARY KEY,
+        aplicada_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        filas       INT NOT NULL DEFAULT 0
+    )
+`;
+
 // En producción un fallo de migración debe detener el arranque:
 // seguir sirviendo tráfico contra un esquema incompleto es peor que
 // no arrancar. En desarrollo solo se avisa, para no bloquear el
@@ -187,8 +203,51 @@ async function aplicarMigraciones(pool) {
     console.log('[bootstrap] Esquema verificado.');
 }
 
+async function aplicarMigracionesDatos(pool, {
+    lista = MIGRACIONES_DATOS,
+    leer = (archivo) => fs.readFileSync(path.join(MIGRACIONES_DIR, archivo), 'utf8'),
+    registro = console
+} = {}) {
+    await pool.query(TABLA_MIGRACIONES_DATOS);
+    const resultados = [];
+
+    for (const archivo of lista) {
+        const conexion = await pool.getConnection();
+        try {
+            await conexion.beginTransaction();
+            // Bloqueo por nombre: la otra instancia espera y luego ve el registro.
+            await conexion.pgQuery('SELECT pg_advisory_xact_lock(hashtext($1))', [archivo]);
+            const aplicada = await conexion.pgQuery('SELECT filas FROM migraciones_datos WHERE nombre = $1', [archivo]);
+            if (aplicada.rowCount > 0) {
+                await conexion.rollback();
+                resultados.push({ nombre: archivo, aplicada: false, filas: 0 });
+                continue;
+            }
+            const resultado = await conexion.pgQuery(leer(archivo));
+            const filas = resultado.rowCount ?? 0;
+            await conexion.pgQuery('INSERT INTO migraciones_datos (nombre, filas) VALUES ($1, $2)', [archivo, filas]);
+            await conexion.commit();
+            registro.log(`[bootstrap] Migración de datos ${archivo}: ${filas} filas corregidas`);
+            resultados.push({ nombre: archivo, aplicada: true, filas });
+        } catch (error) {
+            await conexion.rollback().catch(() => {});
+            const motivo = describirError(error);
+            registro.error(`[bootstrap] ERROR migración de datos ${archivo}: ${motivo}`);
+            if (esFalloFatal()) {
+                throw new Error(`Migración de datos "${archivo}" falló en producción. Detalle: ${motivo}`);
+            }
+            resultados.push({ nombre: archivo, aplicada: false, filas: 0, error: motivo });
+        } finally {
+            conexion.release();
+        }
+    }
+    return resultados;
+}
+
 module.exports = {
     aplicarMigraciones,
+    aplicarMigracionesDatos,
+    MIGRACIONES_DATOS,
     describirError,
     MIGRACIONES,
     SENTENCIAS_BASE

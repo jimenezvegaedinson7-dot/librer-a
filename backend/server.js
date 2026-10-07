@@ -393,13 +393,15 @@ iniciarJobs();
 // falla en producción el proceso termina en vez de servir contra una
 // base incompleta. Las migraciones son idempotentes, así que reiniciar
 // el servicio no duplica nada.
-const { aplicarMigraciones } = require('./src/config/migraciones');
+const { aplicarMigraciones, aplicarMigracionesDatos } = require('./src/config/migraciones');
 
 async function iniciar() {
     // En test la base ya está creada desde database/schema.sql y no
     // se toca el esquema (ver src/config/migraciones.js).
     if (process.env.NODE_ENV !== 'test') {
         await aplicarMigraciones(pool);
+        // Backfills de datos: una sola vez cada uno (registro en migraciones_datos).
+        await aplicarMigracionesDatos(pool);
     }
 
     app.listen(PORT, () => {
