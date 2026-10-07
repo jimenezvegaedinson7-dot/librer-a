@@ -6,7 +6,8 @@
 
 export const requerido = (valor, nombre = 'Este campo') => {
     const v = String(valor ?? '').trim();
-    if (!v) return `${nombre} es obligatorio`;
+    // «La razón social es obligatoria» / «El RUC es obligatorio».
+    if (!v) return `${nombre} es ${/^(la|las|una)\s/i.test(nombre) ? 'obligatoria' : 'obligatorio'}`;
     return '';
 };
 

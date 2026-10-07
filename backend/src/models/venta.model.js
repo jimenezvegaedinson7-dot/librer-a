@@ -995,13 +995,15 @@ const aplicarPago = async ({ externalReference, payuOrderId, payuPaymentId,
             UPDATE ventas SET payu_order_id = COALESCE(?, payu_order_id),
                 payu_payment_id = COALESCE(?, payu_payment_id), payu_payment_status = ?,
                 payu_payer_email = COALESCE(?, payu_payer_email), estado = ?,
+                -- Una venta cancelada no puede seguir «pendiente de preparar».
+                estado_entrega = CASE WHEN ? = 'cancelada' AND estado_entrega <> 'entregado' THEN 'cancelado' ELSE estado_entrega END,
                 fecha_pago = CASE WHEN ? THEN COALESCE(fecha_pago, NOW()) ELSE fecha_pago END,
                 metodo_pago = COALESCE(metodo_pago, 'payu'),
                 pago_revision_motivo = ?,
                 pago_revision_fecha = CASE WHEN ?::text IS NOT NULL THEN COALESCE(pago_revision_fecha, NOW()) ELSE NULL END
             WHERE id_venta = ? RETURNING *
         `, [payuOrderId == null ? null : String(payuOrderId), payuPaymentId == null ? null : String(payuPaymentId), status,
-            typeof payuPayerEmail === 'string' ? payuPayerEmail.slice(0, 255) : null, nuevo,
+            typeof payuPayerEmail === 'string' ? payuPayerEmail.slice(0, 255) : null, nuevo, nuevo,
             aprobados.includes(status), revision || null, revision || null, venta.id_venta]);
         await connection.commit();
         return { venta: actualizadas[0], cambio_estado: nuevo !== anterior, estado_anterior: anterior,
@@ -1146,9 +1148,12 @@ const actualizarEstado = async (
         const [resultado] =
             await connection.query(`
                 UPDATE ventas
-                SET estado = ?, fecha_pago = CASE WHEN ? = 'pagada' THEN COALESCE(fecha_pago, NOW()) ELSE fecha_pago END
+                SET estado = ?, fecha_pago = CASE WHEN ? = 'pagada' THEN COALESCE(fecha_pago, NOW()) ELSE fecha_pago END,
+                    -- Al cancelar la venta, la entrega también queda cancelada.
+                    estado_entrega = CASE WHEN ? = 'cancelada' AND estado_entrega <> 'entregado' THEN 'cancelado' ELSE estado_entrega END
                 WHERE id_venta = ?
             `, [
+                nuevoEstado,
                 nuevoEstado,
                 nuevoEstado,
                 id

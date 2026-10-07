@@ -166,6 +166,7 @@ export default function ReclamacionesPage() {
     const [pagina, setPagina] = useState(1);
     const [paginas, setPaginas] = useState(1);
     const [total, setTotal] = useState(0);
+    const [avisoResumen, setAvisoResumen] = useState('');
     const solicitud = useRef(0);
 
     const cargar = async () => {
@@ -173,16 +174,19 @@ export default function ReclamacionesPage() {
         try {
             setCargando(true);
             setError('');
+            // El resumen es complementario: si falla, la lista se muestra igual.
+            let resumenFallo = false;
             const [datos, res] = await Promise.all([
                 listarReclamaciones({ estado: estado === 'todos' ? undefined : estado, q: busqueda.trim() || undefined, pagina, por_pagina: 20 }),
-                obtenerResumenReclamaciones(),
+                obtenerResumenReclamaciones().catch(() => { resumenFallo = true; return null; }),
             ]);
             if (turno !== solicitud.current) return;
             setLista(datos.reclamaciones);
             setTotal(datos.total);
             setPaginas(datos.paginas);
             if (pagina > datos.paginas) setPagina(datos.paginas);
-            setResumen(res);
+            if (res) setResumen(res);
+            setAvisoResumen(resumenFallo ? 'No se pudo actualizar el resumen de arriba. La lista de hojas sí está al día.' : '');
         } catch (err) {
             if (turno === solicitud.current) setError(err.response?.data?.mensaje || 'Error al cargar el libro de reclamaciones');
         } finally {
@@ -239,6 +243,7 @@ export default function ReclamacionesPage() {
                 />
                 <CardBody className="p-0">
                     {cargando && <TableSkeleton columnas={5} filas={5} />}
+                    {avisoResumen && <div className="px-4 pt-4"><Alert tipo="warning">{avisoResumen}</Alert></div>}
                     {!cargando && error && <div className="p-4"><Alert tipo="error">{error}</Alert></div>}
                     {!cargando && !error && filtradas.length === 0 && (
                         <EmptyState titulo="Sin hojas" descripcion="No hay hojas de reclamación con este filtro." icono={<FaBook />} />

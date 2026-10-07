@@ -461,7 +461,7 @@ const totalIngresos = ventas
                 initial="oculto"
                 animate="visible"
                 variants={{ oculto: {}, visible: { transition: { staggerChildren: 0.06 } } }}
-                className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 xl:gap-5"
+                className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4 xl:gap-5"
             >
                 <StatCard
                     titulo="Ingresos cobrados"
@@ -487,7 +487,7 @@ const totalIngresos = ventas
                     icono={<FaClock />}
                     color="warning"
                     detalle={porCobrar > 0 ? `${formatearMoneda(porCobrar)} por cobrar` : 'Nada por cobrar'}
-                    medidor={{ valor: totalPendientes, total: ventas.length, etiqueta: 'Ventas pendientes sobre el total', leyenda: 'de las ventas registradas está pendiente de pago' }}
+                    medidor={{ valor: totalPendientes, total: ventas.length, etiqueta: 'Ventas pendientes sobre el total', leyenda: 'del total, pendiente de pago' }}
                 />
                 <StatCard
                     titulo="Ticket promedio"

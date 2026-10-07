@@ -90,13 +90,17 @@ export default function DashboardPage() {
             try {
                 setCargando(true);
                 setError('');
+                // Solo el resumen es indispensable. Si otro reporte falla, el
+                // Dashboard se muestra igual y avisa qué sección no cargó.
+                const fallidas = [];
+                const opcional = (promesa, nombre) => promesa.catch(() => { fallidas.push(nombre); return null; });
                 const [r, l, vm, ve, re, lmv, vd, ind, sb] = await Promise.all([
                     obtenerResumen(),
-                    obtenerLibros(),
-                    obtenerVentasPorMes(),
-                    obtenerVentasPorEstado(),
-                    obtenerReservasPorEstado(),
-                    obtenerLibrosMasVendidos(),
+                    opcional(obtenerLibros(), 'libros'),
+                    opcional(obtenerVentasPorMes(), 'ventas por mes'),
+                    opcional(obtenerVentasPorEstado(), 'ventas por estado'),
+                    opcional(obtenerReservasPorEstado(), 'reservas por estado'),
+                    opcional(obtenerLibrosMasVendidos(), 'libros más vendidos'),
                     // Complementarios: si fallan, el resumen se muestra igual.
                     obtenerVentasPorDia().catch(() => null),
                     obtenerIndicadoresVentas().catch(() => null),
@@ -112,6 +116,7 @@ export default function DashboardPage() {
                 setVentasPorDia(vd === null ? null : esArreglo(vd));
                 setIndicadores(ind);
                 setStockBajo(sb === null ? null : esArreglo(sb));
+                if (fallidas.length) setError(`No se pudo cargar: ${fallidas.join(', ')}. El resto del resumen está al día; pulsa Actualizar para reintentar.`);
             } catch (err) {
                 if (activo) setError(err.response?.data?.mensaje || 'Error al cargar el resumen');
             } finally {
