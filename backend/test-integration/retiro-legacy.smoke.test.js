@@ -9,6 +9,21 @@ const ventas = require('../src/models/venta.model');
 const reservas = require('../src/models/reserva.model');
 const comprobantes = require('../src/models/comprobante.model');
 
+// Los avisos por correo se envían en segundo plano: antes de contar se espera
+// a que el buzón de prueba deje de recibir (o a que llegue la cantidad pedida).
+const correosEnBuzon = async () => (await (await fetch(process.env.SMTP_TEST_URL)).json()).mensajes.length;
+async function correosEstables({ hasta = null, maximoMs = 8000 } = {}) {
+    let previo = await correosEnBuzon(), quietos = 0;
+    for (const inicio = Date.now(); Date.now() - inicio < maximoMs;) {
+        await new Promise(r => setTimeout(r, 150));
+        const actual = await correosEnBuzon();
+        quietos = actual === previo ? quietos + 1 : 0;
+        previo = actual;
+        if ((hasta === null || actual >= hasta) && quietos >= 4) break;
+    }
+    return previo;
+}
+
 test('retiro legacy: HTTP + PostgreSQL desechable + SMTP local', async t => {
     assert.equal(process.env.NODE_ENV, 'test');
     assert.match(process.env.DATABASE_URL, /@127\.0\.0\.1:\d+\/audit$/);
@@ -123,7 +138,7 @@ test('retiro legacy: HTTP + PostgreSQL desechable + SMTP local', async t => {
                 assert.equal((await mover(id, 'entregado')).status, 400);
                 assert.equal((await mover(id, 'preparando')).status, 200);
                 assert.equal((await mover(id, tipo === 'tienda' ? 'listo_recojo' : 'en_camino')).status, 200);
-                const correosAntes = (await (await fetch(process.env.SMTP_TEST_URL)).json()).mensajes.length;
+                const correosAntes = await correosEstables();
                 const results = await Promise.all([1, 2].map(() => mover(id, 'entregado')));
                 assert.deepEqual(results.map(v => v.status).sort(), [200, 400]);
                 const despues = await fila(id);
@@ -131,7 +146,7 @@ test('retiro legacy: HTTP + PostgreSQL desechable + SMTP local', async t => {
                 for (const campo of ['payu_payment_id', 'payu_order_id', 'payu_payment_status', 'total']) assert.equal(despues[campo], antes[campo]);
                 assert.equal(await stock(), s); assert.equal(await conteoVentas(), n);
                 assert.equal((await mover(id, 'entregado')).status, 400);
-                assert.equal((await (await fetch(process.env.SMTP_TEST_URL)).json()).mensajes.length, correosAntes + 1);
+                assert.equal(await correosEstables({ hasta: correosAntes + 1 }), correosAntes + 1);
             });
         }
         for (const extra of [{ metodo_pago: 'efectivo' }, { metodo_pago: 'yape' }, { metodo_pago: 'plin' }, { metodo_pago: 'transferencia' },
