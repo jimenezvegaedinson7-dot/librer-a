@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
     FaArrowLeft,
@@ -275,7 +275,7 @@ export default function LoginPage() {
     }[resetStep];
 
     return (
-        <main className="login-page relative min-h-screen bg-[#f7f4ef] lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(460px,0.9fr)]">
+        <main className="login-page relative min-h-screen bg-[#f7f4ef] lg:grid lg:grid-cols-2">
             {/* Panel de marca (en móvil actúa como fondo) */}
             <aside className="login-marca fixed inset-0 overflow-hidden lg:relative lg:inset-auto lg:min-h-screen">
                 <motion.div
@@ -304,11 +304,11 @@ export default function LoginPage() {
                         className="max-w-lg"
                     >
                         <span className="mb-6 block h-px w-16 bg-[#d6b896]/70" />
-                        <h2 className="font-title text-[40px] font-semibold leading-[1.1] tracking-[-0.02em] text-[#fffaf0] xl:text-[46px]">
+                        <h2 className="font-title text-[32px] font-semibold leading-[1.15] tracking-[-0.015em] text-[#fffaf0] xl:text-[36px]">
                             Cada libro en su lugar,
                             <span className="block italic text-[#e3cdb2]">cada venta en orden.</span>
                         </h2>
-                        <p className="mt-5 max-w-md text-[15px] leading-relaxed text-[#e9e0d2]/85">
+                        <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#e9e0d2]/80">
                             Gestiona catálogo, inventario, reservas y ventas desde un solo lugar.
                         </p>
                     </motion.div>
@@ -340,8 +340,7 @@ export default function LoginPage() {
                         {!twoFactorToken ? (
                             <motion.div key="login" {...transicionPaso}>
                                 <div className="mb-8">
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a5c43]">Acceso seguro</p>
-                                    <h1 className="mt-2 font-title text-[30px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814]">
+                                    <h1 className="font-title text-[26px] font-semibold leading-tight tracking-[-0.01em] text-[#1c1814]">
                                         Iniciar sesión
                                     </h1>
                                     <p className="mt-2 text-sm text-[#766d62]">
@@ -449,7 +448,11 @@ export default function LoginPage() {
                         )}
                     </AnimatePresence>
 
-                    <p className="mt-10 text-center text-xs text-[#a39a8e] lg:hidden">
+                    <Link to="/" className="login-volver">
+                        <FaArrowLeft className="text-[10px]" aria-hidden="true" /> Volver a la página principal
+                    </Link>
+
+                    <p className="mt-8 text-center text-xs text-[#a39a8e] lg:hidden">
                         © {new Date().getFullYear()} Librería del Saber
                     </p>
                 </motion.section>

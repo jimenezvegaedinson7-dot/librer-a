@@ -716,3 +716,28 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
     .indicador-tarjeta .kpi-icono { display: none; }
     .admin-shell[data-theme] .indicador-tarjeta .kpi-label { font-size: 0.625rem; letter-spacing: 0.05em; }
 }
+
+/* ========================================
+   Acceso administrativo formal
+   Mitad foto y mitad formulario; el formulario en una tarjeta blanca con
+   borde fino; botón azul marino sobrio en lugar de dorado.
+   ======================================== */
+@media (min-width: 1024px) {
+    .login-page .login-tarjeta {
+        max-width: 400px; padding: 2.5rem 2.25rem 2rem;
+        border: 1px solid #e6e0d7; border-radius: 1rem; background: #ffffff;
+        box-shadow: 0 1px 2px rgb(13 41 64 / 0.04), 0 18px 40px -28px rgb(13 41 64 / 0.25);
+    }
+}
+.login-page .login-boton {
+    background: var(--editorial-marino-900); color: #ffffff; box-shadow: none; height: 2.875rem; border-radius: 0.625rem;
+}
+.login-page .login-boton:hover:not(:disabled) { background: var(--editorial-marino-700); filter: none; }
+.login-page .login-campo { height: 2.875rem; background: #ffffff; border-radius: 0.625rem; }
+.login-page .login-campo:focus-within { border-color: var(--editorial-marino-700); box-shadow: 0 0 0 3px rgb(13 41 64 / 0.1); }
+.login-page .login-volver {
+    display: inline-flex; width: 100%; align-items: center; justify-content: center; gap: 0.5rem;
+    margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #ece6dc;
+    font-size: 0.8125rem; font-weight: 500; color: #766d62; text-decoration: none; transition: color 0.2s ease;
+}
+.login-page .login-volver:hover { color: var(--editorial-marino-900); }
