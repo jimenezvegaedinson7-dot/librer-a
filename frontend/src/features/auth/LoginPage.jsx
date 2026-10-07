@@ -320,7 +320,7 @@ export default function LoginPage() {
             </aside>
 
             {/* Formulario */}
-            <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10 sm:px-8">
+            <div className="login-lado relative z-10 flex min-h-screen items-center justify-center px-4 py-10 sm:px-8">
                 <motion.section
                     initial={reducirMovimiento ? false : { opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}

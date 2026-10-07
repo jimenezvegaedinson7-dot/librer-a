@@ -741,3 +741,31 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
     font-size: 0.8125rem; font-weight: 500; color: #766d62; text-decoration: none; transition: color 0.2s ease;
 }
 .login-page .login-volver:hover { color: var(--editorial-marino-900); }
+
+/* Acceso administrativo en computadora: foto y formulario juntos, como un
+   solo bloque centrado en la pantalla (en celular no cambia). */
+@media (min-width: 1024px) {
+    .login-page.login-page {
+        display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 440px);
+        justify-content: center; align-content: center; min-height: 100vh; padding: 48px 24px;
+        background: radial-gradient(1200px 600px at 50% 0%, #fbf7f0, #f1ebe1);
+    }
+    .login-page .login-marca {
+        position: relative; inset: auto; min-height: 0; height: 100%;
+        border-radius: 1.25rem 0 0 1.25rem; overflow: hidden;
+    }
+    .login-page .login-marca::after { display: none; }
+    .login-page .login-marca > .relative.z-10 { padding: 2.5rem; }
+    .login-page .login-marca h2 { font-size: 28px; }
+    .login-page .login-lado {
+        min-height: 560px; padding: 2.5rem 2.75rem; background: #ffffff;
+        border: 1px solid #e6e0d7; border-left: 0; border-radius: 0 1.25rem 1.25rem 0;
+        box-shadow: 0 30px 60px -40px rgb(13 41 64 / 0.35);
+    }
+    .login-page .login-lado .login-tarjeta {
+        max-width: none; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none;
+    }
+}
+@media (min-width: 1024px) {
+    .login-page .login-marca { box-shadow: 0 30px 60px -40px rgb(13 41 64 / 0.35); }
+}
