@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaArrowRight } from 'react-icons/fa6';
 import useCarrusel from '../hooks/useCarrusel';
 import { urlPortada } from '../lib/formato';
 import './carrusel-inicio.css';
@@ -52,7 +51,6 @@ export default function Hero(){
                 :<>{imagen.id_libro?<Link to={`/libro/${Number(imagen.id_libro)}`} aria-label={`Ver libro: ${imagen.titulo}`}>
                     <img key={imagen.id_imagen} src={urlPortada(imagen.imagen_url,1800)} srcSet={fuentesAnuncio(imagen.imagen_url)} sizes="100vw" alt={imagen.titulo || 'Anuncio de la librería'} width="1600" height="600" fetchPriority="high"
                         onError={()=>setFallidas(v=>[...v,Number(imagen.id_imagen)])}/>
-                    <span className="anuncios-inicio__ver" aria-hidden="true">Ver ahora <FaArrowRight/></span>
                 </Link>:<img key={imagen.id_imagen} src={urlPortada(imagen.imagen_url,1800)} srcSet={fuentesAnuncio(imagen.imagen_url)} sizes="100vw" alt={imagen.titulo || 'Anuncio de la librería'} width="1600" height="600" fetchPriority="high"
                     onError={()=>setFallidas(v=>[...v,Number(imagen.id_imagen)])}/>}
                 </>}

@@ -88,14 +88,13 @@ test('cambia solo: con el mouse encima, tras pulsar un punto y con movimiento re
     await expect.poll(()=>page.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);await page.waitForTimeout(300);
     await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
 });
-test('el banner con libro vinculado muestra "Ver ahora" y lleva a la ficha',async({page})=>{
+test('el banner con libro vinculado lleva a la ficha sin texto «Ver ahora» encima',async({page})=>{
     await page.emulateMedia({reducedMotion:'reduce'});await preparar(page);await page.goto('/');
     const carrusel=page.getByRole('region',{name:'Anuncios de la librería',exact:true});
     const enlace=carrusel.getByRole('link',{name:'Ver libro: Banner de prueba 1',exact:true});
-    await expect(enlace.getByText('Ver ahora')).toBeVisible();await expect(enlace).toHaveAttribute('href','/libro/1');
-    // El banner sin libro no muestra el botón.
-    await carrusel.getByRole('button',{name:'Mostrar anuncio 2',exact:true}).click();await expect(carrusel.getByAltText('Banner de prueba 2')).toBeVisible();
+    await expect(enlace).toHaveAttribute('href','/libro/1');
     await expect(carrusel.getByText('Ver ahora')).toHaveCount(0);
+    await enlace.click();await expect(page).toHaveURL(/\/libro\/1$/);
 });
 for(const ancho of [390,1440])test(`panel ${ancho}px: subir, editar, ordenar, ocultar y eliminar banners`,async({page})=>{
     await page.setViewportSize({width:ancho,height:1000});const errores=[];page.on('pageerror',e=>errores.push(e.message));const control=await preparar(page,{panel:true});

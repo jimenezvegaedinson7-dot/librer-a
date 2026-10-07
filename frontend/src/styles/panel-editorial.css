@@ -495,14 +495,6 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
 .grafico-medidor__aguja line { stroke: #fffaf0; stroke-width: 1.8; stroke-linecap: round; }
 .grafico-medidor__aguja circle { fill: #fffaf0; }
 
-/* Columnas */
-.grafico-columnas { display: flex; height: 100%; align-items: flex-end; gap: 3px; }
-.grafico-columnas span {
-    flex: 1; height: var(--alto); border-radius: 2px 2px 1px 1px; background: rgb(255 255 255 / 0.12);
-    transform-origin: bottom; animation: grafico-crecer 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-    animation-delay: calc(var(--orden) * 80ms + var(--k) * 35ms);
-}
-.grafico-columnas span.llena { background: linear-gradient(180deg, currentColor, color-mix(in srgb, currentColor 55%, transparent)); }
 
 /* Puntos */
 .grafico-puntos { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px 5px; height: 100%; align-content: center; }
@@ -547,7 +539,7 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
 @keyframes grafico-dibujar { from { stroke-dashoffset: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
-    .grafico-anillo__arco, .grafico-medidor__arco, .grafico-medidor__aguja, .grafico-columnas span,
+    .grafico-anillo__arco, .grafico-medidor__arco, .grafico-medidor__aguja,
     .grafico-puntos span, .grafico-escala__relleno, .grafico-linea__area, .grafico-linea__trazo,
     .grafico-composicion__barra span { animation: none; }
 }
