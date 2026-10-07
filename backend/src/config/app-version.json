@@ -1,8 +1,8 @@
 {
-    "version": "1.0.10",
-    "versionCode": 11,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.10/libreria-1.0.10.apk",
-    "sha256": "a4b99a4fffee29358b1b26237489647f5b9203032aee9902afd09eaf69b732db",
+    "version": "1.0.11",
+    "versionCode": 12,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.11/libreria-1.0.11.apk",
+    "sha256": "a44357cc5122354ac77ff545d6521e35fe2571232873da119537bbfc734067a3",
     "obligatoria": false,
-    "notas": "La pasarela de PayU dentro de la app muestra los métodos de pago sin refrescar y el seguimiento del pedido tiene sus pasos alineados con animación. Incluye lo de 1.0.9: seguimiento por tipo de entrega, pago dentro de la app y confirmación con sonido."
+    "notas": "En la página de pago puedes deslizar hacia abajo para recargarla. Incluye los métodos de PayU sin refrescar, el seguimiento del pedido alineado y animado, y el pago dentro de la app."
 }
