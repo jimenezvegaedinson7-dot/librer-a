@@ -230,10 +230,16 @@ class _VentaTile extends StatelessWidget {
     // El pago se hace dentro de la app; al cerrarse se consulta el estado.
     final resultado = await PagoEnAppScreen.abrir(context, url);
     if (!context.mounted) return;
-    await _verificarPago(context, trasPago: resultado == ResultadoPagoEnApp.regreso);
+    await _verificarPago(
+      context,
+      trasPago: resultado == ResultadoPagoEnApp.regreso,
+    );
   }
 
-  Future<void> _verificarPago(BuildContext context, {bool trasPago = false}) async {
+  Future<void> _verificarPago(
+    BuildContext context, {
+    bool trasPago = false,
+  }) async {
     final orderId = venta.orderId;
     if (orderId == null || orderId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -247,9 +253,11 @@ class _VentaTile extends StatelessWidget {
     try {
       var estado = await ApiService.instance.obtenerOrdenPago(orderId);
       // Tras volver de PayU, la confirmación puede tardar unos segundos.
-      for (var intento = 0;
-          trasPago && intento < 4 && !estado.pagada && !estado.cancelada;
-          intento++) {
+      for (
+        var intento = 0;
+        trasPago && intento < 4 && !estado.pagada && !estado.cancelada;
+        intento++
+      ) {
         await Future<void>.delayed(const Duration(seconds: 2));
         if (!context.mounted) return;
         estado = await ApiService.instance.obtenerOrdenPago(orderId);
@@ -676,6 +684,11 @@ class _FilaDetalle extends StatelessWidget {
 
 /// Línea de seguimiento del pedido: muestra las etapas
 /// "Pedido realizado → Pago confirmado → Entregado" según el estado actual.
+/// Solo para pruebas: el seguimiento de una compra, tal como en el detalle.
+@visibleForTesting
+Widget seguimientoPedidoParaPruebas(Venta venta) =>
+    _SeguimientoPedido(venta: venta);
+
 class _SeguimientoPedido extends StatelessWidget {
   final Venta venta;
 
@@ -689,22 +702,7 @@ class _SeguimientoPedido extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (seg.pasos.isNotEmpty) ...[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var i = 0; i < seg.pasos.length; i++)
-                Expanded(
-                  child: _Paso(
-                    paso: seg.pasos[i],
-                    primero: i == 0,
-                    ultimo: i == seg.pasos.length - 1,
-                    tramoPrevioHecho: seg.pasos[i].hecho,
-                    tramoSiguienteHecho:
-                        i + 1 < seg.pasos.length && seg.pasos[i + 1].hecho,
-                  ),
-                ),
-            ],
-          ),
+          _LineaPasos(pasos: seg.pasos),
           const SizedBox(height: 14),
         ],
         Container(
@@ -769,82 +767,222 @@ IconData _iconoTono(TonoSeguimiento tono, Venta venta) {
   return Icons.inventory_2_outlined;
 }
 
-/// Círculo + etiqueta de una etapa, con el tramo que la une a la anterior.
-/// Ocupa una cuarta parte del ancho: cabe en pantallas de 320 px.
-class _Paso extends StatelessWidget {
-  final PasoSeguimiento paso;
-  final bool primero, ultimo, tramoPrevioHecho, tramoSiguienteHecho;
+/// Pasos del pedido sobre una sola línea. Todos los círculos ocupan el
+/// mismo espacio (el actual se distingue por un halo, no por su tamaño),
+/// así círculos, línea y textos quedan siempre alineados. Al abrir, la
+/// línea se llena de verde y cada check aparece al alcanzarlo.
+class _LineaPasos extends StatefulWidget {
+  final List<PasoSeguimiento> pasos;
+  const _LineaPasos({required this.pasos});
 
-  const _Paso({
+  @override
+  State<_LineaPasos> createState() => _LineaPasosState();
+}
+
+class _LineaPasosState extends State<_LineaPasos>
+    with SingleTickerProviderStateMixin {
+  static const _marca = 30.0;
+  late final AnimationController _anim = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1200),
+  );
+  bool _iniciada = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_iniciada) return;
+    _iniciada = true;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _anim.value = 1;
+    } else {
+      _anim.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
+
+  double _tramo(double t, double inicio, double largo, Curve curva) =>
+      curva.transform(((t - inicio) / largo).clamp(0.0, 1.0));
+
+  @override
+  Widget build(BuildContext context) {
+    final pasos = widget.pasos;
+    final n = pasos.length;
+    final indice = pasos.lastIndexWhere((p) => p.hecho);
+    // Fracción de la línea que queda en verde (hasta el paso actual).
+    final meta = n > 1 && indice > 0 ? indice / (n - 1) : 0.0;
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (context, _) {
+        final t = _anim.value;
+        final avanceLinea = meta * _tramo(t, 0, 0.65, Curves.easeInOutCubic);
+        return Column(
+          children: [
+            SizedBox(
+              height: _marca,
+              child: LayoutBuilder(
+                builder: (context, c) {
+                  final margen = c.maxWidth / (2 * n);
+                  final largo = c.maxWidth - 2 * margen;
+                  return Stack(
+                    children: [
+                      // Línea base y su parte completada.
+                      Positioned(
+                        left: margen,
+                        width: largo,
+                        top: _marca / 2 - 1.5,
+                        height: 3,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.divider,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: margen,
+                        width: largo * avanceLinea,
+                        top: _marca / 2 - 1.5,
+                        height: 3,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          for (var i = 0; i < n; i++)
+                            Expanded(
+                              child: Center(
+                                child: _MarcaPaso(
+                                  paso: pasos[i],
+                                  // El check aparece cuando la línea lo alcanza.
+                                  aparicion: !pasos[i].hecho
+                                      ? 0
+                                      : _tramo(
+                                          t,
+                                          meta == 0
+                                              ? 0
+                                              : 0.65 * (i / (n - 1)) / meta,
+                                          0.3,
+                                          Curves.elasticOut,
+                                        ),
+                                  halo: pasos[i].actual
+                                      ? _tramo(t, 0.7, 0.3, Curves.easeOutCubic)
+                                      : 0,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final paso in pasos)
+                  Expanded(
+                    child: Text(
+                      paso.etiqueta,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        height: 1.2,
+                        fontWeight: paso.actual
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: paso.hecho
+                            ? AppColors.success
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Círculo de un paso dentro de un espacio fijo de 30 px.
+class _MarcaPaso extends StatelessWidget {
+  final PasoSeguimiento paso;
+
+  /// 0 → 1: entrada con rebote del círculo verde y su check.
+  final double aparicion;
+
+  /// 0 → 1: halo del paso actual.
+  final double halo;
+
+  const _MarcaPaso({
     required this.paso,
-    required this.primero,
-    required this.ultimo,
-    required this.tramoPrevioHecho,
-    required this.tramoSiguienteHecho,
+    required this.aparicion,
+    required this.halo,
   });
 
   @override
   Widget build(BuildContext context) {
-    final activo = paso.hecho;
-    final color = activo ? AppColors.success : AppColors.textTertiary;
-    Widget tramo(bool visible, bool hecho) => Expanded(
-      child: Container(
-        height: 2,
-        color: !visible
-            ? Colors.transparent
-            : hecho
-            ? AppColors.success
-            : AppColors.divider,
-      ),
-    );
-    return Column(
-      children: [
-        Row(
-          children: [
-            tramo(!primero, tramoPrevioHecho),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              width: paso.actual ? 26 : 22,
-              height: paso.actual ? 26 : 22,
+    return SizedBox.square(
+      dimension: 30,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (halo > 0)
+            Container(
+              width: 22 + 8 * halo,
+              height: 22 + 8 * halo,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: activo ? AppColors.success : AppColors.surface,
-                border: Border.all(color: color, width: 2),
-                boxShadow: paso.actual
-                    ? [
-                        BoxShadow(
-                          color: AppColors.success.withValues(alpha: 0.25),
-                          blurRadius: 0,
-                          spreadRadius: 4,
-                        ),
-                      ]
-                    : null,
+                color: AppColors.success.withValues(alpha: 0.18 * halo),
               ),
-              child: activo
-                  ? const Icon(
-                      Icons.check_rounded,
-                      size: 14,
-                      color: Colors.white,
-                    )
-                  : null,
             ),
-            tramo(!ultimo, tramoSiguienteHecho),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Text(
-          paso.etiqueta,
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 10.5,
-            height: 1.2,
-            fontWeight: paso.actual ? FontWeight.w700 : FontWeight.w500,
-            color: activo ? AppColors.success : AppColors.textSecondary,
+          // Base: círculo vacío (pasos pendientes y antes de la animación).
+          Container(
+            width: 22,
+            height: 22,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.surface,
+              border: Border.all(
+                color: paso.hecho ? AppColors.success : AppColors.textTertiary,
+                width: 2,
+              ),
+            ),
           ),
-        ),
-      ],
+          if (aparicion > 0)
+            Transform.scale(
+              scale: aparicion,
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.success,
+                ),
+                child: const Icon(
+                  Icons.check_rounded,
+                  size: 15,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
