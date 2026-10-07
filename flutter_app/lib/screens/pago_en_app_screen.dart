@@ -24,7 +24,10 @@ class PagoEnAppScreen extends StatefulWidget {
   final String url;
   const PagoEnAppScreen({super.key, required this.url});
 
-  static Future<ResultadoPagoEnApp> abrir(BuildContext context, String url) async {
+  static Future<ResultadoPagoEnApp> abrir(
+    BuildContext context,
+    String url,
+  ) async {
     final resultado = await Navigator.of(context).push<ResultadoPagoEnApp>(
       MaterialPageRoute(
         fullscreenDialog: true,
@@ -54,11 +57,49 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
   /// recarga una vez sola y, mientras tanto, se muestra "Preparando pago".
   bool _recargada = false, _preparando = true;
 
+  /// Deslizar hacia abajo para recargar (como Ctrl + R): distancia que el
+  /// dedo lleva arrastrada desde arriba de la página y si ya está recargando.
+  double _tiron = 0;
+  bool _recargando = false;
+  static const _umbralTiron = 90.0;
+
+  /// Detecta el gesto dentro de la página: solo cuenta si la página (y el
+  /// panel tocado) ya están arriba del todo, para no robar el scroll normal.
+  static const _scriptTiron = r'''
+(function () {
+  if (window.__libreriaTiron) return;
+  window.__libreriaTiron = true;
+  var inicio = null, distancia = 0;
+  function arriba(el) {
+    if ((window.scrollY || document.documentElement.scrollTop || 0) > 0) return false;
+    for (var n = el; n && n !== document.body && n !== document.documentElement; n = n.parentElement) {
+      if (n.scrollTop > 0) return false;
+    }
+    return true;
+  }
+  addEventListener('touchstart', function (e) {
+    inicio = e.touches.length === 1 && arriba(e.target) ? e.touches[0].clientY : null;
+    distancia = 0;
+  }, { passive: true });
+  addEventListener('touchmove', function (e) {
+    if (inicio === null) return;
+    distancia = e.touches[0].clientY - inicio;
+    if (distancia < 0) { inicio = null; RecargarPago.postMessage('cancelar'); return; }
+    RecargarPago.postMessage('tiron:' + Math.round(distancia));
+  }, { passive: true });
+  addEventListener('touchend', function () {
+    if (inicio !== null) RecargarPago.postMessage(distancia > 90 ? 'soltar' : 'cancelar');
+    inicio = null; distancia = 0;
+  }, { passive: true });
+})();
+''';
+
   @override
   void initState() {
     super.initState();
     _web = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..addJavaScriptChannel('RecargarPago', onMessageReceived: _mensajeTiron)
       ..setBackgroundColor(Colors.white)
       ..setNavigationDelegate(
         NavigationDelegate(
@@ -75,7 +116,12 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
             }
           },
           onWebResourceError: (e) {
-            if (e.isForMainFrame != false && mounted) setState(() => _error = true);
+            if (e.isForMainFrame != false && mounted) {
+              setState(() {
+                _error = true;
+                _recargando = false;
+              });
+            }
           },
           onNavigationRequest: _decidir,
         ),
@@ -98,7 +144,38 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
     ).setAcceptThirdPartyCookies(plataforma, true).catchError((_) {});
   }
 
+  void _mensajeTiron(JavaScriptMessage mensaje) {
+    if (!mounted || _recargando) return;
+    final texto = mensaje.message;
+    if (texto.startsWith('tiron:')) {
+      final valor = double.tryParse(texto.substring(6)) ?? 0;
+      setState(() => _tiron = valor.clamp(0, 160));
+    } else if (texto == 'soltar') {
+      _recargar();
+    } else if (_tiron != 0) {
+      setState(() => _tiron = 0);
+    }
+  }
+
+  /// Recarga la página de pago, como Ctrl + R.
+  void _recargar() {
+    if (_recargando || !mounted) return;
+    setState(() {
+      _recargando = true;
+      _tiron = 0;
+      _error = false;
+    });
+    _web.reload();
+    // Si la página no avisa que terminó, el indicador no queda girando.
+    Future<void>.delayed(const Duration(seconds: 12), () {
+      if (mounted && _recargando) setState(() => _recargando = false);
+    });
+  }
+
   void _paginaLista(String url) {
+    // El gesto se vuelve a instalar en cada página que se abre.
+    _web.runJavaScript(_scriptTiron).catchError((_) {});
+    if (mounted && _recargando) setState(() => _recargando = false);
     final uri = Uri.tryParse(url);
     if (uri == null || !mounted || !PagoEnAppScreen.esPasarela(uri)) return;
     if (!_recargada) {
@@ -124,7 +201,10 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
     }
     // Apps de bancos o billeteras (intent://, yape://…): se abren en su app
     // y el cliente vuelve aquí para terminar.
-    launchUrl(uri, mode: LaunchMode.externalApplication).catchError((_) => false);
+    launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    ).catchError((_) => false);
     return NavigationDecision.prevent;
   }
 
@@ -178,9 +258,20 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
             onPressed: _salir,
           ),
           titleSpacing: 0,
+          actions: [
+            IconButton(
+              tooltip: 'Recargar página de pago',
+              icon: const Icon(Icons.refresh),
+              onPressed: _recargando ? null : _recargar,
+            ),
+          ],
           title: Row(
             children: [
-              const Icon(Icons.lock_outline, size: 18, color: AppColors.success),
+              const Icon(
+                Icons.lock_outline,
+                size: 18,
+                color: AppColors.success,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Column(
@@ -189,7 +280,9 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
                     Text('Pago seguro', style: texto.titleMedium),
                     Text(
                       'PayU · conexión cifrada',
-                      style: texto.bodySmall?.copyWith(color: AppColors.textSecondary),
+                      style: texto.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -210,10 +303,7 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
         ),
         body: _error
             ? _ErrorCarga(
-                onReintentar: () {
-                  setState(() => _error = false);
-                  _web.reload();
-                },
+                onReintentar: _recargar,
                 onNavegador: () => launchUrl(
                   Uri.parse(widget.url),
                   mode: LaunchMode.externalApplication,
@@ -222,9 +312,58 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
             : Stack(
                 children: [
                   WebViewWidget(controller: _web),
+                  if (!_preparando && (_tiron > 0 || _recargando))
+                    _IndicadorTiron(
+                      avance: (_tiron / _umbralTiron).clamp(0.0, 1.0),
+                      recargando: _recargando,
+                    ),
                   if (_preparando) const _Preparando(),
                 ],
               ),
+      ),
+    );
+  }
+}
+
+/// Círculo que baja con el dedo: la flecha gira según cuánto falta para
+/// recargar y, al soltar, se vuelve una ruedita de carga.
+class _IndicadorTiron extends StatelessWidget {
+  final double avance;
+  final bool recargando;
+  const _IndicadorTiron({required this.avance, required this.recargando});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final listo = avance >= 1;
+    return Positioned(
+      top: recargando ? 20 : 8 + 52 * avance,
+      left: 0,
+      right: 0,
+      child: IgnorePointer(
+        child: Center(
+          child: Material(
+            elevation: 3,
+            shape: const CircleBorder(),
+            color: colors.surface,
+            child: SizedBox.square(
+              dimension: 40,
+              child: Padding(
+                padding: const EdgeInsets.all(9),
+                child: recargando
+                    ? const CircularProgressIndicator(strokeWidth: 2.5)
+                    : Transform.rotate(
+                        angle: avance * 3.1416 * 1.5,
+                        child: Icon(
+                          Icons.refresh,
+                          size: 22,
+                          color: listo ? colors.primary : colors.outline,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -268,35 +407,51 @@ class _ErrorCarga extends StatelessWidget {
   const _ErrorCarga({required this.onReintentar, required this.onNavegador});
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(28),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.wifi_off_rounded, size: 48, color: AppColors.textSecondary),
-          const SizedBox(height: 14),
-          Text(
-            'No se pudo cargar la página de pago',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium,
+  Widget build(BuildContext context) => RefreshIndicator(
+    // También aquí se puede deslizar hacia abajo para reintentar.
+    onRefresh: () async => onReintentar(),
+    child: LayoutBuilder(
+      builder: (context, c) => SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: c.maxHeight),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.wifi_off_rounded,
+                    size: 48,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'No se pudo cargar la página de pago',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Revisa tu conexión e inténtalo de nuevo. Si ya pagaste, verifica la compra en Mis compras antes de volver a pagar.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 18),
+                  FilledButton.icon(
+                    onPressed: onReintentar,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Reintentar'),
+                  ),
+                  TextButton(
+                    onPressed: onNavegador,
+                    child: const Text('Abrir en el navegador'),
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 6),
-          const Text(
-            'Revisa tu conexión e inténtalo de nuevo. Si ya pagaste, verifica la compra en Mis compras antes de volver a pagar.',
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 18),
-          FilledButton.icon(
-            onPressed: onReintentar,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Reintentar'),
-          ),
-          TextButton(
-            onPressed: onNavegador,
-            child: const Text('Abrir en el navegador'),
-          ),
-        ],
+        ),
       ),
     ),
   );
