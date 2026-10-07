@@ -345,8 +345,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             ),
                             const SizedBox(height: 18),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            // En pantallas angostas o con letra grande el
+                            // botón pasa a la línea siguiente (sin desborde).
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 Text(
                                   '¿Aún no tienes una cuenta?',

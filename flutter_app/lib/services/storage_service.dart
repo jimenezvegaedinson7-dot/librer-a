@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,6 +33,11 @@ class StorageService {
     _colaCredencial = operacion.then<void>((_) {}, onError: (Object _) {});
     return operacion;
   }
+
+  /// Cada prueba de widgets crea la cola dentro de su propio tiempo simulado:
+  /// un futuro creado en otra zona nunca avanzaría y bloquearía las lecturas.
+  @visibleForTesting
+  void reiniciarColaParaPruebas() => _colaCredencial = Future.value();
   int _generacion = 0;
   int? _idUsuarioActual;
   bool _cambiandoSesion = false;

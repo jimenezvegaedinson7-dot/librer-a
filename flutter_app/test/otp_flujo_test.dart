@@ -8,8 +8,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:libreria_app/services/api_service.dart';
+import 'package:libreria_app/services/storage_service.dart';
 import 'package:libreria_app/widgets/campo_otp.dart';
-import 'package:libreria_app/widgets/confirmacion_otp.dart';
 import 'package:libreria_app/screens/reestablecer_contrasena_screen.dart';
 import 'package:libreria_app/screens/verificacion_email_screen.dart';
 
@@ -99,6 +99,7 @@ void main() {
   testWidgets(
     'recuperación: servidor verifica OTP antes de mostrar las contraseñas y aparece confirmación',
     (tester) async {
+      StorageService.instance.reiniciarColaParaPruebas();
       final llamadas = <RequestOptions>[];
       final api = _api((o) async {
         llamadas.add(o);
@@ -134,20 +135,26 @@ void main() {
       await tester.tap(
         find.widgetWithText(FilledButton, 'Guardar nueva contraseña'),
       );
-      await tester.pumpAndSettle();
+      // La petición sale tras leer la sesión guardada; el aviso dura 1,1 s.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Contraseña actualizada'), findsWidgets);
       expect(llamadas.last.path, '/auth/reestablecer-contrasena');
       final lastData = llamadas.last.data as Map<String, dynamic>;
       expect(lastData['email'], 'cliente@example.invalid');
       expect(lastData['reset_token'], 'permiso-local');
       expect(lastData['password'], 'NuevaClave123');
       expect(lastData.containsKey('codigo'), true);
-      expect(find.text('Contraseña actualizada'), findsWidgets);
+      // Se termina con el aviso visible: si la prueba siguiera al login,
+      // dejaría operaciones de sesión pendientes para las pruebas siguientes.
       await tester.pumpWidget(const SizedBox());
     },
   );
   testWidgets(
     'un OTP incorrecto no muestra las contraseñas ni una confirmación de éxito',
     (tester) async {
+      StorageService.instance.reiniciarColaParaPruebas();
       final api = _api(
         (_) async =>
             _json({'success': false, 'mensaje': 'Código incorrecto'}, 400),
@@ -176,6 +183,7 @@ void main() {
   testWidgets(
     'verificar cuenta muestra la confirmación visual después de la respuesta correcta',
     (tester) async {
+      StorageService.instance.reiniciarColaParaPruebas();
       final respuesta = Completer<ResponseBody>();
       var llamadas = 0;
       final api = _api((_) {
@@ -197,7 +205,9 @@ void main() {
       await tester.tap(
         find.widgetWithText(FilledButton, 'Verificar y continuar'),
       );
+      // La petición sale tras leer la sesión guardada.
       await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
       expect(llamadas, 1);
       respuesta.complete(_json({'success': true}));
       await tester.pump();
