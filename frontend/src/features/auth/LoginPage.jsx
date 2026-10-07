@@ -275,9 +275,9 @@ export default function LoginPage() {
     }[resetStep];
 
     return (
-        <main className="login-page relative min-h-screen bg-[#f7f4ef] lg:grid lg:grid-cols-2">
-            {/* Panel de marca (en móvil actúa como fondo) */}
-            <aside className="login-marca fixed inset-0 overflow-hidden lg:relative lg:inset-auto lg:min-h-screen">
+        <main className="login-page relative min-h-screen bg-[#0d2940]">
+            {/* Foto de fondo a pantalla completa */}
+            <aside className="login-marca fixed inset-0 overflow-hidden" aria-hidden="true">
                 <motion.div
                     className="absolute inset-0 bg-cover bg-center"
                     style={{ backgroundImage: `url(${fondoLogin})` }}
@@ -288,35 +288,6 @@ export default function LoginPage() {
                 />
                 <div className="login-velo absolute inset-0" aria-hidden="true" />
 
-                <div className="relative z-10 hidden h-full flex-col justify-between p-12 xl:p-16 lg:flex">
-                    <div className="flex items-center gap-3">
-                        <img src={logoClaro} alt="" className="h-12 w-12 object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,0.45)]" />
-                        <div>
-                            <p className="font-title text-lg font-semibold leading-tight text-[#f5eedf]">Librería del Saber</p>
-                            <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#d6b896]">Administración</p>
-                        </div>
-                    </div>
-
-                    <motion.div
-                        initial={reducirMovimiento ? false : { opacity: 0, y: 14 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.7, delay: 0.15, ease: [0.25, 1, 0.5, 1] }}
-                        className="max-w-lg"
-                    >
-                        <span className="mb-6 block h-px w-16 bg-[#d6b896]/70" />
-                        <h2 className="font-title text-[32px] font-semibold leading-[1.15] tracking-[-0.015em] text-[#fffaf0] xl:text-[36px]">
-                            Cada libro en su lugar,
-                            <span className="block italic text-[#e3cdb2]">cada venta en orden.</span>
-                        </h2>
-                        <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#e9e0d2]/80">
-                            Gestiona catálogo, inventario, reservas y ventas desde un solo lugar.
-                        </p>
-                    </motion.div>
-
-                    <p className="text-xs text-[#e9e0d2]/60">
-                        © {new Date().getFullYear()} Librería del Saber · Panel de uso interno
-                    </p>
-                </div>
             </aside>
 
             {/* Formulario */}
@@ -327,8 +298,8 @@ export default function LoginPage() {
                     transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
                     className="login-tarjeta w-full min-w-0 max-w-[420px]"
                 >
-                    {/* Marca en móvil / tablet */}
-                    <div className="mb-7 flex flex-col items-center text-center lg:hidden">
+                    {/* Marca */}
+                    <div className="mb-7 flex flex-col items-center text-center">
                         <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-mahogany-700 p-2.5">
                             <img src={logoClaro} alt="Librería del Saber" className="h-full w-full object-contain" />
                         </span>
@@ -452,7 +423,7 @@ export default function LoginPage() {
                         <FaArrowLeft className="text-[10px]" aria-hidden="true" /> Volver a la página principal
                     </Link>
 
-                    <p className="mt-8 text-center text-xs text-[#a39a8e] lg:hidden">
+                    <p className="mt-6 text-center text-xs text-[#766d62]">
                         © {new Date().getFullYear()} Librería del Saber
                     </p>
                 </motion.section>

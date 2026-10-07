@@ -722,13 +722,6 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
    Mitad foto y mitad formulario; el formulario en una tarjeta blanca con
    borde fino; botón azul marino sobrio en lugar de dorado.
    ======================================== */
-@media (min-width: 1024px) {
-    .login-page .login-tarjeta {
-        max-width: 400px; padding: 2.5rem 2.25rem 2rem;
-        border: 1px solid #e6e0d7; border-radius: 1rem; background: #ffffff;
-        box-shadow: 0 1px 2px rgb(13 41 64 / 0.04), 0 18px 40px -28px rgb(13 41 64 / 0.25);
-    }
-}
 .login-page .login-boton {
     background: var(--editorial-marino-900); color: #ffffff; box-shadow: none; height: 2.875rem; border-radius: 0.625rem;
 }
@@ -742,30 +735,19 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
 }
 .login-page .login-volver:hover { color: var(--editorial-marino-900); }
 
-/* Acceso administrativo en computadora: foto y formulario juntos, como un
-   solo bloque centrado en la pantalla (en celular no cambia). */
-@media (min-width: 1024px) {
-    .login-page.login-page {
-        display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 440px);
-        justify-content: center; align-content: center; min-height: 100vh; padding: 48px 24px;
-        background: radial-gradient(1200px 600px at 50% 0%, #fbf7f0, #f1ebe1);
-    }
-    .login-page .login-marca {
-        position: relative; inset: auto; min-height: 0; height: 100%;
-        border-radius: 1.25rem 0 0 1.25rem; overflow: hidden;
-    }
-    .login-page .login-marca::after { display: none; }
-    .login-page .login-marca > .relative.z-10 { padding: 2.5rem; }
-    .login-page .login-marca h2 { font-size: 28px; }
-    .login-page .login-lado {
-        min-height: 560px; padding: 2.5rem 2.75rem; background: #ffffff;
-        border: 1px solid #e6e0d7; border-left: 0; border-radius: 0 1.25rem 1.25rem 0;
-        box-shadow: 0 30px 60px -40px rgb(13 41 64 / 0.35);
-    }
-    .login-page .login-lado .login-tarjeta {
-        max-width: none; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none;
-    }
+/* Acceso administrativo: la foto de fondo a pantalla completa y el
+   formulario centrado en una tarjeta de vidrio blanco semitransparente. */
+.login-page .login-marca::after { display: none; }
+.login-page .login-velo { background: linear-gradient(160deg, rgb(10 31 49 / 0.55), rgb(10 31 49 / 0.35) 50%, rgb(10 31 49 / 0.6)); }
+.login-page .login-tarjeta.login-tarjeta {
+    max-width: 410px; padding: 2.25rem 2rem 1.75rem;
+    border: 1px solid rgb(255 255 255 / 0.6); border-radius: 1.25rem;
+    background: rgb(255 255 255 / 0.74);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
+    box-shadow: 0 30px 70px -30px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.7);
 }
-@media (min-width: 1024px) {
-    .login-page .login-marca { box-shadow: 0 30px 60px -40px rgb(13 41 64 / 0.35); }
+.login-page .login-campo { background: rgb(255 255 255 / 0.85); border-color: rgb(13 41 64 / 0.15); }
+.login-page .login-volver { border-top-color: rgb(13 41 64 / 0.12); color: #5c544b; }
+@media (max-width: 639.98px) {
+    .login-page .login-tarjeta.login-tarjeta { padding: 2rem 1.5rem 1.5rem; }
 }
