@@ -54,6 +54,14 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   List<ZonaDelivery> _zonas = [];
   int? _idZona;
 
+  /// El cliente confirma que su dirección está dentro de Pallasca (solo se
+  /// reparte ahí). Una dirección escrita no se puede verificar en el
+  /// teléfono; sin esta confirmación el pedido a domicilio no continúa.
+  bool _dentroDePallasca = false;
+
+  /// Con una sola tarifa configurada no hay nada que elegir: se aplica sola.
+  bool get _tarifaUnica => _zonas.length == 1;
+
   @override
   void initState() {
     super.initState();
@@ -70,28 +78,46 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         await _mostrarOrden(orden, esperado: intento.totalMostradoCentimos);
       }
     } on ApiException catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('No se pudo recuperar el intento. Reintenta para resolver la misma compra.'),
-      ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No se pudo recuperar el intento. Reintenta para resolver la misma compra.',
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _restaurando = false);
     }
   }
 
-  Future<void> _mostrarOrden(OrdenPago orden, {required int esperado, bool abrir = false}) async {
+  Future<void> _mostrarOrden(
+    OrdenPago orden, {
+    required int esperado,
+    bool abrir = false,
+  }) async {
     if (!mounted) return;
-    final estado = EstadoOrden(status: orden.status, estadoVenta: orden.estadoVenta, requiereRevision: orden.requiereRevision);
+    final estado = EstadoOrden(
+      status: orden.status,
+      estadoVenta: orden.estadoVenta,
+      requiereRevision: orden.requiereRevision,
+    );
     setState(() {
       _exito = true;
       _orderId = orden.orderId;
       _estadoPago = estado;
-      _checkoutUrl = estado.pagada || estado.cancelada ? null : orden.checkoutUrl;
+      _checkoutUrl = estado.pagada || estado.cancelada
+          ? null
+          : orden.checkoutUrl;
       _total = orden.total;
-      _importeConfirmado = orden.total != null && (orden.total! * 100).round() == esperado;
+      _importeConfirmado =
+          orden.total != null && (orden.total! * 100).round() == esperado;
       _procesando = false;
     });
     if (abrir && !estado.pagada && !estado.cancelada) await _reabrirCheckout();
@@ -117,6 +143,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         _zonas = zonas;
         _cargandoZonas = false;
         if (!_zonas.any((z) => z.idZona == _idZona)) _idZona = null;
+        if (_zonas.length == 1) _idZona = _zonas.first.idZona;
       });
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -141,7 +168,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   Future<void> _realizarCompra() async {
     if (_procesando || _restaurando) return;
     final carrito = CarritoService.instance;
-    final totalVisto = _totalMostradoCentimos ?? (carrito.total * 100 + _costoEnvio() * 100).round();
+    final totalVisto =
+        _totalMostradoCentimos ??
+        (carrito.total * 100 + _costoEnvio() * 100).round();
     setState(() => _procesando = true);
     try {
       // Resolver un resultado incierto ANTES de validar el carrito actual.
@@ -151,7 +180,11 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       if (intento != null) {
         final orden = await ApiService.instance.recuperarIntentoPendiente();
         if (orden != null) {
-          await _mostrarOrden(orden, esperado: intento.totalMostradoCentimos, abrir: true);
+          await _mostrarOrden(
+            orden,
+            esperado: intento.totalMostradoCentimos,
+            abrir: true,
+          );
         }
         return;
       }
@@ -168,6 +201,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         setState(() {
           _zonas = zonas;
           if (!zonas.any((z) => z.idZona == _idZona)) _idZona = null;
+          if (zonas.length == 1) _idZona = zonas.first.idZona;
         });
         final errorZona = _validarEntrega();
         if (errorZona != null) throw ApiException(errorZona);
@@ -184,13 +218,14 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           );
         }
       }
-      final totalFresco = (carrito.total * 100).round() + (_costoEnvio() * 100).round();
+      final totalFresco =
+          (carrito.total * 100).round() + (_costoEnvio() * 100).round();
       if (totalFresco != totalVisto) {
         setState(() => _procesando = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-               'Actualizamos los precios o el envío. Revisa el total y vuelve a confirmar la compra.',
+              'Actualizamos los precios o el envío. Revisa el total y vuelve a confirmar la compra.',
             ),
           ),
         );
@@ -254,7 +289,10 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           return 'Selecciona una zona activa de delivery dentro de Pallasca.';
         }
         if (_direccionController.text.trim().length < 5) {
-          return 'Indica una dirección de entrega válida.';
+          return 'Escribe tu dirección en Pallasca (calle y número).';
+        }
+        if (!_dentroDePallasca) {
+          return 'Confirma que tu dirección está dentro de Pallasca: solo repartimos ahí.';
         }
         return null;
       case _TipoEntrega.tienda:
@@ -273,9 +311,11 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     setState(() => _procesando = true);
     try {
       var estado = await ApiService.instance.obtenerOrdenPago(orderId);
-      for (var intento = 0;
-          trasPago && intento < 4 && !estado.pagada && !estado.cancelada;
-          intento++) {
+      for (
+        var intento = 0;
+        trasPago && intento < 4 && !estado.pagada && !estado.cancelada;
+        intento++
+      ) {
         await Future<void>.delayed(const Duration(seconds: 2));
         if (!mounted) return;
         estado = await ApiService.instance.obtenerOrdenPago(orderId);
@@ -322,24 +362,43 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   }
 
   Future<void> _reabrirCheckout() async {
-    if (_procesando || _estadoPago?.pagada == true || _estadoPago?.cancelada == true) return;
+    if (_procesando ||
+        _estadoPago?.pagada == true ||
+        _estadoPago?.cancelada == true) {
+      return;
+    }
     final url = _checkoutUrl;
     if (url == null || url.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('No hay una ventana de pago disponible. Verifica esta orden en Mis compras.'),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No hay una ventana de pago disponible. Verifica esta orden en Mis compras.',
+          ),
+        ),
+      );
       return;
     }
     if (!_importeConfirmado) {
-      final aceptar = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
-        title: const Text('Revisar total definitivo'),
-        content: Text('El total confirmado por la tienda es S/ ${Formats.precio(_total)}. '
-            'Revisa este importe antes de continuar a PayU.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Revisar después')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Aceptar total')),
-        ],
-      ));
+      final aceptar = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Revisar total definitivo'),
+          content: Text(
+            'El total confirmado por la tienda es S/ ${Formats.precio(_total)}. '
+            'Revisa este importe antes de continuar a PayU.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Revisar después'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Aceptar total'),
+            ),
+          ],
+        ),
+      );
       if (aceptar != true || !mounted) return;
       _importeConfirmado = true;
     }
@@ -350,13 +409,19 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         final estado = await ApiService.instance.obtenerOrdenPago(_orderId!);
         if (!mounted) return;
         if (estado.pagada || estado.cancelada) {
-          setState(() { _estadoPago = estado; _checkoutUrl = null; });
+          setState(() {
+            _estadoPago = estado;
+            _checkoutUrl = null;
+          });
           return;
         }
       }
       await _abrirCheckout(url);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
       if (mounted) setState(() => _procesando = false);
     }
@@ -385,8 +450,10 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   @override
   Widget build(BuildContext context) {
     if (_restaurando) {
-      return Scaffold(appBar: AppBar(title: const Text('Finalizar pedido')),
-        body: const LoadingView(message: 'Comprobando compras pendientes...'));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Finalizar pedido')),
+        body: const LoadingView(message: 'Comprobando compras pendientes...'),
+      );
     }
     if (_exito) {
       return _buildExito(context);
@@ -394,7 +461,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
 
     final carrito = CarritoService.instance;
     if (!_procesando) {
-      _totalMostradoCentimos = (carrito.total * 100).round() + (_costoEnvio() * 100).round();
+      _totalMostradoCentimos =
+          (carrito.total * 100).round() + (_costoEnvio() * 100).round();
     }
     if (carrito.items.isEmpty) {
       return Scaffold(
@@ -525,40 +593,46 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       children: [
         const _ZonaReparto(),
         const SizedBox(height: 12),
-        DropdownButtonFormField<int>(
-          style: Theme.of(context).textTheme.bodyLarge,
-          initialValue: _idZona,
-          isExpanded: true,
-          decoration: const InputDecoration(
-            labelText: 'Zona de delivery en Pallasca',
-            prefixIcon: Icon(Icons.location_on_outlined),
-          ),
-          items: [
-            for (final d in _zonas)
-              DropdownMenuItem(
-                value: d.idZona,
-                child: Text(
-                  '${d.nombre} · S/ ${Formats.precio(d.tarifa)}',
-                  overflow: TextOverflow.ellipsis,
+        if (_tarifaUnica)
+          _CostoDelivery(tarifa: _zonas.first.tarifa)
+        else
+          DropdownButtonFormField<int>(
+            style: Theme.of(context).textTheme.bodyLarge,
+            initialValue: _idZona,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              labelText: 'Zona de delivery en Pallasca',
+              prefixIcon: Icon(Icons.location_on_outlined),
+            ),
+            items: [
+              for (final d in _zonas)
+                DropdownMenuItem(
+                  value: d.idZona,
+                  child: Text(
+                    '${d.nombre} · S/ ${Formats.precio(d.tarifa)}',
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-          ],
-          onChanged: _zonas.isEmpty
-              ? null
-              : (valor) {
-                  if (valor != null) {
-                    setState(() => _idZona = valor);
-                  }
-                },
-        ),
+            ],
+            onChanged: _zonas.isEmpty
+                ? null
+                : (valor) {
+                    if (valor != null) {
+                      setState(() => _idZona = valor);
+                    }
+                  },
+          ),
         const SizedBox(height: 12),
         TextField(
           controller: _direccionController,
           maxLines: 2,
           maxLength: 255,
+          textCapitalization: TextCapitalization.sentences,
+          autofillHints: const [AutofillHints.streetAddressLine1],
           decoration: const InputDecoration(
-            labelText: 'Dirección',
-            hintText: 'Dirección de entrega (calle, número)',
+            labelText: 'Tu dirección en Pallasca',
+            hintText: 'Calle o jirón, número y barrio',
+            prefixIcon: Icon(Icons.home_outlined),
             alignLabelWithHint: true,
           ),
         ),
@@ -570,6 +644,15 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
             labelText: 'Referencia de dirección (opcional)',
             hintText: 'Un punto cercano para ubicarte',
           ),
+        ),
+        CheckboxListTile(
+          value: _dentroDePallasca,
+          onChanged: (v) => setState(() => _dentroDePallasca = v ?? false),
+          contentPadding: EdgeInsets.zero,
+          dense: true,
+          controlAffinity: ListTileControlAffinity.leading,
+          title: const Text('Mi dirección está dentro de Pallasca'),
+          subtitle: const Text('Solo repartimos dentro de la ciudad.'),
         ),
       ],
     );
@@ -807,7 +890,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   }
 
   Widget _buildExito(BuildContext context) {
-    final terminal = _estadoPago?.pagada == true || _estadoPago?.cancelada == true;
+    final terminal =
+        _estadoPago?.pagada == true || _estadoPago?.cancelada == true;
     final conCheckout = !terminal;
     final textTheme = Theme.of(context).textTheme;
 
@@ -895,7 +979,15 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(_estadoPago?.requiereRevision == true ? 'Pago en revisión' : _estadoPago?.pagada == true ? 'Pago confirmado' : 'Pago no completado')),
+      appBar: AppBar(
+        title: Text(
+          _estadoPago?.requiereRevision == true
+              ? 'Pago en revisión'
+              : _estadoPago?.pagada == true
+              ? 'Pago confirmado'
+              : 'Pago no completado',
+        ),
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(28),
@@ -904,13 +996,23 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _Medallon(
-                  icon: _estadoPago?.pagada == true ? Icons.check_rounded : Icons.cancel_outlined,
-                  color: _estadoPago?.pagada == true ? AppColors.success : AppColors.warning,
-                  fondo: _estadoPago?.pagada == true ? AppColors.successContainer : AppColors.warningContainer,
+                  icon: _estadoPago?.pagada == true
+                      ? Icons.check_rounded
+                      : Icons.cancel_outlined,
+                  color: _estadoPago?.pagada == true
+                      ? AppColors.success
+                      : AppColors.warning,
+                  fondo: _estadoPago?.pagada == true
+                      ? AppColors.successContainer
+                      : AppColors.warningContainer,
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  _estadoPago?.requiereRevision == true ? 'Tu pago necesita revisión' : _estadoPago?.pagada == true ? '¡Pago confirmado!' : 'El pago no se completó',
+                  _estadoPago?.requiereRevision == true
+                      ? 'Tu pago necesita revisión'
+                      : _estadoPago?.pagada == true
+                      ? '¡Pago confirmado!'
+                      : 'El pago no se completó',
                   textAlign: TextAlign.center,
                   style: textTheme.headlineMedium,
                 ),
@@ -1304,6 +1406,44 @@ class _OpcionEntrega extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Costo único del delivery en Pallasca (cuando hay una sola tarifa).
+class _CostoDelivery extends StatelessWidget {
+  final double tarifa;
+  const _CostoDelivery({required this.tarifa});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(
+      color: AppColors.primaryContainer,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Row(
+      children: [
+        Icon(Icons.delivery_dining_outlined, color: AppColors.primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'Delivery a cualquier dirección de Pallasca',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Text(
+          'S/ ${Formats.precio(tarifa)}',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Cobertura fija: delivery exclusivo dentro de Pallasca.

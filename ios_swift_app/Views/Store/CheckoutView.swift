@@ -16,6 +16,9 @@ struct CheckoutView: View {
     @State private var zoneID: Int?
     @State private var address = ""
     @State private var reference = ""
+    /// El cliente confirma que su dirección está dentro de Pallasca (solo se
+    /// reparte ahí); sin esto el pedido a domicilio no continúa.
+    @State private var insidePallasca = false
     @State private var documentType = "DNI"
     @State private var document = ""
     @State private var loadingZones = true
@@ -139,6 +142,16 @@ struct CheckoutView: View {
                 Text("Por ahora no hay zonas de delivery activas. Puedes elegir el recojo en Pallasca.")
                     .font(.footnote)
                     .foregroundStyle(Brand.aviso)
+            } else if zones.count == 1, let zone = zones.first {
+                // Una sola tarifa: no hay nada que elegir, solo la dirección.
+                HStack {
+                    Label("Delivery a cualquier dirección de Pallasca", systemImage: "bicycle")
+                        .font(.subheadline.weight(.semibold))
+                    Spacer()
+                    PriceText(amount: zone.tarifa, size: 17)
+                }
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 10).fill(themeStore.theme.primary.opacity(0.08)))
             } else {
                 Picker("Zona de delivery", selection: $zoneID) {
                     Text("Selecciona tu zona").tag(Int?.none)
@@ -148,8 +161,15 @@ struct CheckoutView: View {
                 }
                 .pickerStyle(.navigationLink)
             }
-            BrandField(title: "Dirección de entrega (calle, número)", systemImage: "mappin.and.ellipse", text: $address)
+            BrandField(title: "Tu dirección en Pallasca (calle, número, barrio)", systemImage: "house",
+                       text: $address, contentType: .fullStreetAddress)
             BrandField(title: "Referencia (opcional)", systemImage: "signpost.right", text: $reference)
+            Toggle(isOn: $insidePallasca) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Mi dirección está dentro de Pallasca").font(.subheadline)
+                    Text("Solo repartimos dentro de la ciudad.").font(.caption).foregroundStyle(Brand.textoSecundario)
+                }
+            }
         }
         .padding(.top, 4)
     }
@@ -364,7 +384,10 @@ struct CheckoutView: View {
                 return "Selecciona una zona activa de delivery dentro de Pallasca."
             }
             if address.trimmingCharacters(in: .whitespaces).count < 5 {
-                return "Indica una dirección de entrega válida."
+                return "Escribe tu dirección en Pallasca (calle y número)."
+            }
+            if !insidePallasca {
+                return "Confirma que tu dirección está dentro de Pallasca: solo repartimos ahí."
             }
         }
         return nil
