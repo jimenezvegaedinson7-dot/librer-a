@@ -198,8 +198,9 @@ async function enviarCorreo({
         }
     }
 
-    // Canal 2: Resend (HTTPS).
-    if (resendConfigurado) {
+    // Canal 2: Resend (HTTPS). No envía adjuntos: un correo con PDF pasa al
+    // siguiente canal en vez de llegar sin su archivo.
+    if (resendConfigurado && !(attachments && attachments.length)) {
         try {
             const res = await enviarPorResend({ destinatario, asunto, html, texto });
             if (res && res.id) {
@@ -754,27 +755,58 @@ function construirHtmlComprobante({
     return { cuerpoHtml, tipoLabel, serieNumero };
 }
 
+// El correo lleva solo un mensaje breve y el comprobante en PDF adjunto
+// (no la vista completa repetida en el cuerpo). Si el PDF no se pudiera
+// generar, se envía la vista en el cuerpo para que el cliente no se quede
+// sin su comprobante.
+function cuerpoAvisoComprobante({ nombre, tipoLabel, serieNumero, archivoPdf }) {
+    return (
+        `<p>Hola${nombre ? ` <strong>${htmlEscape(nombre)}</strong>` : ''},</p>` +
+        `<p>Gracias por tu compra. Adjuntamos tu <strong>${htmlEscape(tipoLabel)} ${htmlEscape(serieNumero)}</strong> en PDF.</p>` +
+        `<div style="margin:20px 0;padding:14px 16px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;font-size:14px">` +
+        `&#128206; <strong>${htmlEscape(archivoPdf)}</strong></div>` +
+        `<p style="color:#64748b;font-size:13px">Guárdalo para tus registros. Si tienes dudas, responde este correo y te ayudamos.</p>`
+    );
+}
+
 async function enviarComprobantePorEmail(datos) {
     const { destinatario } = datos;
     const { cuerpoHtml, tipoLabel, serieNumero } =
         construirHtmlComprobante(datos);
-
-    const { asunto, html } = plantillaBase({
-        tituloCabecera: `${tipoLabel} ${serieNumero}`,
-        asunto: `${tipoLabel} ${serieNumero} \u2014 Librer\u00eda`,
-        cuerpoHtml
-    });
-
     const archivoPdf = `${serieNumero}.pdf`;
-    let attachments = null;
+    const titulo = {
+        tituloCabecera: `${tipoLabel} ${serieNumero}`,
+        asunto: `${tipoLabel} ${serieNumero} \u2014 Librer\u00eda`
+    };
+
+    let pdfBuffer = null;
     try {
-        const pdfBuffer = await generarPdfDesdeHtml(cuerpoHtml, archivoPdf);
-        attachments = [{ filename: archivoPdf, content: pdfBuffer }];
+        pdfBuffer = await generarPdfDesdeHtml(cuerpoHtml, archivoPdf);
     } catch (pdfErr) {
         console.error(`[MAIL] Error generando PDF: ${pdfErr.message}`);
     }
 
-    return enviarCorreo({ destinatario, asunto, html, attachments });
+    if (!pdfBuffer) {
+        // Respaldo: sin PDF, el comprobante va en el cuerpo del correo.
+        const { asunto, html } = plantillaBase({ ...titulo, cuerpoHtml });
+        return enviarCorreo({ destinatario, asunto, html, attachments: null });
+    }
+
+    const { asunto, html } = plantillaBase({
+        ...titulo,
+        cuerpoHtml: cuerpoAvisoComprobante({
+            nombre: datos.nombre,
+            tipoLabel,
+            serieNumero,
+            archivoPdf
+        })
+    });
+    return enviarCorreo({
+        destinatario,
+        asunto,
+        html,
+        attachments: [{ filename: archivoPdf, content: pdfBuffer }]
+    });
 }
 
 // ============================================================
