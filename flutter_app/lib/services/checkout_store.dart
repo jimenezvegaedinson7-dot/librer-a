@@ -31,42 +31,63 @@ class IntentoCheckout {
 
   String get clave => cuerpo['idempotencia_clave'] as String;
   bool get terminado => const {
-    'APPROVED', 'DECLINED', 'ERROR', 'EXPIRED', 'VOIDED', 'REFUNDED',
+    'APPROVED',
+    'DECLINED',
+    'ERROR',
+    'EXPIRED',
+    'VOIDED',
+    'REFUNDED',
     'REJECTED_REQUEST',
   }.contains(estado?.toUpperCase());
 
   IntentoCheckout actualizar({
-    int? idVenta, String? referencia, String? checkoutUrl,
-    String? estado, double? total,
+    int? idVenta,
+    String? referencia,
+    String? checkoutUrl,
+    String? estado,
+    double? total,
   }) => IntentoCheckout(
-    propietario: propietario, fingerprint: fingerprint, cuerpo: cuerpo,
-    unidades: unidades, totalMostradoCentimos: totalMostradoCentimos,
-    idVenta: idVenta ?? this.idVenta, referencia: referencia ?? this.referencia,
-    checkoutUrl: checkoutUrl ?? this.checkoutUrl, estado: estado ?? this.estado,
+    propietario: propietario,
+    fingerprint: fingerprint,
+    cuerpo: cuerpo,
+    unidades: unidades,
+    totalMostradoCentimos: totalMostradoCentimos,
+    idVenta: idVenta ?? this.idVenta,
+    referencia: referencia ?? this.referencia,
+    checkoutUrl: checkoutUrl ?? this.checkoutUrl,
+    estado: estado ?? this.estado,
     total: total ?? this.total,
   );
 
   Map<String, dynamic> toJson() => {
-    'propietario': propietario, 'fingerprint': fingerprint, 'cuerpo': cuerpo,
-    'unidades': unidades, 'total_mostrado': totalMostradoCentimos,
-    'id_venta': idVenta, 'referencia': referencia, 'checkout_url': checkoutUrl,
-    'estado': estado, 'total': total,
+    'propietario': propietario,
+    'fingerprint': fingerprint,
+    'cuerpo': cuerpo,
+    'unidades': unidades,
+    'total_mostrado': totalMostradoCentimos,
+    'id_venta': idVenta,
+    'referencia': referencia,
+    'checkout_url': checkoutUrl,
+    'estado': estado,
+    'total': total,
   };
 
-  factory IntentoCheckout.fromJson(Map<String, dynamic> json) => IntentoCheckout(
-    propietario: (json['propietario'] as num).toInt(),
-    fingerprint: json['fingerprint'] as String,
-    cuerpo: Map<String, dynamic>.from(json['cuerpo'] as Map),
-    unidades: {
-      for (final e in (json['unidades'] as Map).entries)
-        e.key.toString(): List<String>.from(e.value as List),
-    },
-    totalMostradoCentimos: (json['total_mostrado'] as num).toInt(),
-    idVenta: (json['id_venta'] as num?)?.toInt(),
-    referencia: json['referencia'] as String?,
-    checkoutUrl: json['checkout_url'] as String?,
-    estado: json['estado'] as String?, total: (json['total'] as num?)?.toDouble(),
-  );
+  factory IntentoCheckout.fromJson(Map<String, dynamic> json) =>
+      IntentoCheckout(
+        propietario: (json['propietario'] as num).toInt(),
+        fingerprint: json['fingerprint'] as String,
+        cuerpo: Map<String, dynamic>.from(json['cuerpo'] as Map),
+        unidades: {
+          for (final e in (json['unidades'] as Map).entries)
+            e.key.toString(): List<String>.from(e.value as List),
+        },
+        totalMostradoCentimos: (json['total_mostrado'] as num).toInt(),
+        idVenta: (json['id_venta'] as num?)?.toInt(),
+        referencia: json['referencia'] as String?,
+        checkoutUrl: json['checkout_url'] as String?,
+        estado: json['estado'] as String?,
+        total: (json['total'] as num?)?.toDouble(),
+      );
 }
 
 class CheckoutStore {
@@ -82,8 +103,11 @@ class CheckoutStore {
     if (raw == null) return [];
     // Un diario ilegible no se sustituye por un intento nuevo silenciosamente.
     return (jsonDecode(raw) as List)
-        .map((e) => IntentoCheckout.fromJson(Map<String, dynamic>.from(e as Map)))
-        .where((e) => e.propietario == propietario).toList();
+        .map(
+          (e) => IntentoCheckout.fromJson(Map<String, dynamic>.from(e as Map)),
+        )
+        .where((e) => e.propietario == propietario)
+        .toList();
   }
 
   Future<IntentoCheckout?> activo(int propietario) async =>
@@ -94,9 +118,14 @@ class CheckoutStore {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_key(intento.propietario));
       final lista = raw == null ? <dynamic>[] : jsonDecode(raw) as List;
-      lista.removeWhere((e) => (e['cuerpo'] as Map)['idempotencia_clave'] == intento.clave);
+      lista.removeWhere(
+        (e) => (e['cuerpo'] as Map)['idempotencia_clave'] == intento.clave,
+      );
       lista.add(intento.toJson());
-      if (!await prefs.setString(_key(intento.propietario), jsonEncode(lista))) {
+      if (!await prefs.setString(
+        _key(intento.propietario),
+        jsonEncode(lista),
+      )) {
         throw StateError('No se pudo conservar el intento de compra.');
       }
     });

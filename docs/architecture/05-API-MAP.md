@@ -1,9 +1,9 @@
 # Mapa de API
 
-> Generado desde el código real el 2026-10-07 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-08 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
-Total de endpoints registrados en el backend: **126** (incluye 4 definidos directamente en `server.js`).
+Total de endpoints registrados en el backend: **127** (incluye 4 definidos directamente en `server.js`).
 
 - **Auth**: `Pública` = sin JWT · `JWT` = requiere `Authorization: Bearer` · `JWT + admin` = además rol `administrador`.
 - **React / Flutter**: archivos que llaman al endpoint (directamente o a través de su servicio). `—` = ningún cliente lo usa.
@@ -38,9 +38,10 @@ Total de endpoints registrados en el backend: **126** (incluye 4 definidos direc
 | DELETE | `/api/asistente/memoria` | controllers/asistente.controller.js#borrarMemoria | ...soloCliente | public-site/asistente/useMemoriaAsistente.js | — | Pública |
 | POST | `/api/auth/registro` | controllers/auth.controller.js#registrar | registroLimiter | public-site/tienda/CuentaPage.jsx | screens/registro_screen.dart | Pública |
 | POST | `/api/auth/login` | controllers/auth.controller.js#login | loginLimiter | features/auth/LoginPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/login_screen.dart | Pública |
-| POST | `/api/auth/verificar-email` | controllers/auth.controller.js#verificarEmail | verificacionLimiter | features/auth/VerificarEmailPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/verificacion_email_screen.dart | Pública |
-| POST | `/api/auth/reenviar-codigo` | controllers/auth.controller.js#reenviarCodigo | verificacionLimiter | features/auth/VerificarEmailPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/verificacion_email_screen.dart | Pública |
+| POST | `/api/auth/verificar-email` | controllers/auth.controller.js#verificarEmail | verificacionLimiter | features/auth/VerificarEmailPage.jsx<br>public-site/tienda/CuentaPage.jsx | — | Pública |
+| POST | `/api/auth/reenviar-codigo` | controllers/auth.controller.js#reenviarCodigo | verificacionLimiter | features/auth/VerificarEmailPage.jsx<br>public-site/tienda/CuentaPage.jsx | — | Pública |
 | POST | `/api/auth/solicitar-reseteo` | controllers/auth.controller.js#solicitarReseteo | verificacionLimiter | features/auth/LoginPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/recuperar_contrasena_screen.dart<br>screens/reestablecer_contrasena_screen.dart | Pública |
+| POST | `/api/auth/verificar-reseteo` | controllers/auth.controller.js#verificarReseteo | verificacionLimiter | public-site/tienda/CuentaPage.jsx | screens/reestablecer_contrasena_screen.dart | Pública |
 | POST | `/api/auth/reestablecer-contrasena` | controllers/auth.controller.js#reestablecerContrasena | verificacionLimiter | features/auth/LoginPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/reestablecer_contrasena_screen.dart | Pública |
 | POST | `/api/auth/2fa/verify-login` | controllers/auth2fa.controller.js#verificarLogin | twoFaLimiter | features/auth/LoginPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/security/two_factor_verify_screen.dart | Pública |
 | POST | `/api/auth/2fa/setup` | controllers/auth2fa.controller.js#setup | JWT + twoFaLimiter | features/layout/PerfilAdministrador.jsx | screens/security/two_factor_setup_screen.dart | JWT |
@@ -97,7 +98,7 @@ Total de endpoints registrados en el backend: **126** (incluye 4 definidos direc
 | GET | `/api/pedidos/usuario/:id_usuario` | controllers/pedido.controller.js#obtenerMisPedidos | JWT | — | — | JWT |
 | GET | `/api/pedidos/:id` | controllers/pedido.controller.js#obtenerPedido | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT + admin |
 | PUT | `/api/pedidos/:id/estado` | controllers/pedido.controller.js#actualizarEstadoPedido | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT + admin |
-| POST | `/api/reclamaciones` | controllers/reclamacion.controller.js#registrar | reclamacionLimiter | features/reclamaciones/LibroReclamacionesPage.jsx | — | Pública |
+| POST | `/api/reclamaciones` | controllers/reclamacion.controller.js#registrar | reclamacionLimiter | — | screens/libro_reclamaciones_screen.dart | Pública |
 | GET | `/api/reclamaciones` | controllers/reclamacion.controller.js#listar | JWT + rol:administrador | features/reclamaciones/ReclamacionesPage.jsx | — | JWT + admin |
 | GET | `/api/reclamaciones/resumen` | controllers/reclamacion.controller.js#resumen | JWT + rol:administrador | features/reclamaciones/ReclamacionesPage.jsx | — | JWT + admin |
 | GET | `/api/reclamaciones/:id` | controllers/reclamacion.controller.js#obtener | JWT + rol:administrador | — | — | JWT + admin |
@@ -120,12 +121,12 @@ Total de endpoints registrados en el backend: **126** (incluye 4 definidos direc
 | PUT | `/api/ubicaciones/distritos/:id` | controllers/ubicacion.controller.js#actualizarTarifaDistrito | JWT + rol:administrador | — | — | JWT + admin |
 | GET | `/api/usuarios` | controllers/usuario.controller.js#listarUsuarios | JWT + rol:administrador | features/usuarios/UsuariosPage.jsx | — | JWT + admin |
 | GET | `/api/usuarios/perfil` | controllers/usuario.controller.js#obtenerPerfil | JWT | features/layout/PerfilAdministrador.jsx<br>public-site/tienda/TiendaContext.jsx | screens/perfil_screen.dart<br>screens/splash_screen.dart | JWT |
-| PUT | `/api/usuarios/perfil` | controllers/usuario.controller.js#actualizarPerfil | JWT | features/layout/PerfilAdministrador.jsx | screens/security/editar_perfil_screen.dart | JWT |
-| PUT | `/api/usuarios/foto` | controllers/usuario.controller.js#subirFotoPerfil | JWT + uploadPerfil(foto) | features/layout/PerfilAdministrador.jsx | screens/perfil_screen.dart | JWT |
+| PUT | `/api/usuarios/perfil` | controllers/usuario.controller.js#actualizarPerfil | JWT | features/layout/PerfilAdministrador.jsx<br>public-site/tienda/PerfilCliente.jsx | screens/security/editar_perfil_screen.dart | JWT |
+| PUT | `/api/usuarios/foto` | controllers/usuario.controller.js#subirFotoPerfil | JWT + uploadPerfil(foto) | features/layout/PerfilAdministrador.jsx<br>public-site/tienda/PerfilCliente.jsx | screens/perfil_screen.dart | JWT |
 | PUT | `/api/usuarios/password` | controllers/usuario.controller.js#cambiarPassword | JWT | features/layout/PerfilAdministrador.jsx | screens/security/cambiar_password_screen.dart | JWT |
 | DELETE | `/api/usuarios/cuenta` | controllers/usuario.controller.js#eliminarMiCuenta | JWT | — | screens/security/eliminar_cuenta_screen.dart | JWT |
 | PATCH | `/api/usuarios/:id` | controllers/usuario.controller.js#adminUpdateUsuario | JWT + rol:administrador | features/usuarios/UsuariosPage.jsx | — | JWT + admin |
-| GET | `/api/ventas/mis-ventas` | controllers/venta.controller.js#obtenerMisVentas | JWT | public-site/tienda/MisComprasPage.jsx | screens/mis_compras_screen.dart<br>screens/splash_screen.dart | JWT |
+| GET | `/api/ventas/mis-ventas` | controllers/venta.controller.js#obtenerMisVentas | JWT | public-site/tienda/MisComprasPage.jsx<br>public-site/tienda/useDatosCliente.js | screens/mis_compras_screen.dart<br>screens/splash_screen.dart | JWT |
 | POST | `/api/ventas` | inline (venta.routes.js) | JWT | — | — | JWT |
 | GET | `/api/ventas` | controllers/venta.controller.js#obtenerVentas | JWT + verificarPanel | features/pagos/PagosPage.jsx<br>features/ventas/VentasPage.jsx | — | JWT + admin |
 | GET | `/api/ventas/:id` | controllers/venta.controller.js#obtenerVenta | JWT | features/ventas/VentasPage.jsx<br>public-site/tienda/CheckoutPage.jsx<br>public-site/tienda/TiendaContext.jsx | — | JWT |
@@ -138,13 +139,14 @@ Total de endpoints registrados en el backend: **126** (incluye 4 definidos direc
 | POST | `/api/zonas-delivery` | controllers/zonaDelivery.controller.js#crearZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
 | PUT | `/api/zonas-delivery/:id` | controllers/zonaDelivery.controller.js#actualizarZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
 
-## Endpoints compartidos por React y Flutter (25)
+## Endpoints compartidos por React y Flutter (26)
 
 - `POST /api/auth/registro`
 - `POST /api/auth/login`
 - `POST /api/auth/verificar-email`
 - `POST /api/auth/reenviar-codigo`
 - `POST /api/auth/solicitar-reseteo`
+- `POST /api/auth/verificar-reseteo`
 - `POST /api/auth/reestablecer-contrasena`
 - `POST /api/auth/2fa/verify-login`
 - `POST /api/auth/2fa/setup`

@@ -44,6 +44,7 @@ export function analizarConsulta(pregunta) {
     const q = normalizarConsulta(pregunta);
     if (!q || q.length > 400) return {tipo:'fuera'};
     if (/ignora.*(?:instrucciones|reglas)|olvida.*(?:instrucciones|reglas)|(?:revela|muestra|dame).*(?:token|jwt|credenciales|api key|clave secreta)/.test(q)) return {tipo:'fuera'};
+    if (/^(?:resuelve|calcula)\s+\d|^(?:escribe|crea)\s+(?:un\s+)?(?:programa|codigo)\b/.test(q)) return {tipo:'fuera'};
     if (/\b(ropa|camisa|camiseta|pantalon|zapatos|zapatillas|vestido|clima|futbol|receta|recetas|programacion)\b/.test(q)) return {tipo:'fuera'};
     if (/\b(ciencia|fisica|quimica|gravedad|fotosintesis|matematicas)\b/.test(q) && !/tienda fisica/.test(q)
         && !/\b(libro|libros|catalogo|titulo|categoria|novela|novelas)\b/.test(q)) return {tipo:'fuera'};

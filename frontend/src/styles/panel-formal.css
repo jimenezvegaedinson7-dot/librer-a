@@ -61,14 +61,10 @@
 
 /* ============================================================
    ESCALA DEL PANEL
-   Todo el contenido (barra superior, páginas y modales) se ve a un 87,5 %
-   de su tamaño: letras, tarjetas, iconos y gráficos más compactos.
-   La barra lateral conserva su tamaño.
+   Las páginas y los modales se ven al 93 % de su tamaño: un poco más
+   compactos sin que las letras queden pequeñas. La barra lateral y la
+   barra superior conservan su tamaño original.
    ============================================================ */
-.admin-shell .admin-topbar,
 .admin-shell .admin-main {
-    zoom: 0.875;
+    zoom: 0.93;
 }
-/* La barra superior mantiene sus 64 px reales para alinearse con la
-   cabecera de la barra lateral (4rem ÷ 0,875). */
-.admin-shell .admin-topbar { height: calc(4rem / 0.875); }

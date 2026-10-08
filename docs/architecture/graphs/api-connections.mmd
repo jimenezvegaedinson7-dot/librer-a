@@ -1,4 +1,4 @@
-%% Generado 2026-10-07 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-08 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     subgraph React
         R__api_anuncios["anuncios"]
@@ -28,6 +28,7 @@ flowchart LR
         F__api_favoritos["favoritos"]
         F__api_libros["libros"]
         F__api_pagos["pagos"]
+        F__api_reclamaciones["reclamaciones"]
         F__api_reservas["reservas"]
         F__api_ubicaciones["ubicaciones"]
         F__api_usuarios["usuarios"]
@@ -70,6 +71,7 @@ flowchart LR
     R__api_pedidos --> E__api_pedidos
     E__api_reclamaciones(("/api/reclamaciones")) --> C_reclamacion_controller["reclamacion.controller"]
     R__api_reclamaciones --> E__api_reclamaciones
+    F__api_reclamaciones --> E__api_reclamaciones
     E__api_reportes(("/api/reportes")) --> C_reporte_controller["reporte.controller"]
     R__api_reportes --> E__api_reportes
     E__api_reservas(("/api/reservas")) --> C_reserva_controller["reserva.controller"]

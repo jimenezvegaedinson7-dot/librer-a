@@ -125,8 +125,8 @@ void main() {
       expect(llamadas.single.path, '/auth/verificar-reseteo');
       expect((llamadas.single.data as Map)['codigo'], '123456');
       expect((llamadas.single.data as Map).containsKey('password'), false);
-      await tester.pump(const Duration(milliseconds: 2500));
-      await tester.pumpAndSettle(const Duration(seconds: 6));
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle(const Duration(milliseconds: 500));
       expect(find.byType(CampoOtp), findsNothing);
       expect(find.text('Confirmar contraseña'), findsWidgets);
       expect(find.text('Nueva contraseña'), findsWidgets);
@@ -215,7 +215,7 @@ void main() {
       expect(llamadas, 1);
       respuesta.complete(_json({'success': true}));
       await tester.pump();
-      await tester.pumpAndSettle(const Duration(seconds: 6));
+      await tester.pumpAndSettle(const Duration(milliseconds: 500));
       await tester.pumpWidget(const SizedBox());
     },
   );

@@ -1,6 +1,6 @@
 # Dependencias
 
-> Generado desde el código real el 2026-10-07 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-08 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Paquetes npm
@@ -50,15 +50,15 @@ Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxl
 - **Directos**: cupertino_icons, dio, flutter, flutter_secure_storage, google_fonts, image_picker, shared_preferences, url_launcher.
 - **Dev**: flutter_launcher_icons, flutter_lints, flutter_test.
 - El resto (archive, http, crypto, *_platform_interface, plugins por plataforma…) son **transitivos**.
-- Paquetes importados en `lib/`: `crypto`, `dio`, `flutter`, `flutter_secure_storage`, `google_fonts`, `image_picker`, `package_info_plus`, `path_provider`, `shared_preferences`, `url_launcher`.
+- Paquetes importados en `lib/`: `audioplayers`, `crypto`, `dio`, `flutter`, `flutter_secure_storage`, `google_fonts`, `image_picker`, `package_info_plus`, `path_provider`, `shared_preferences`, `url_launcher`, `webview_flutter`, `webview_flutter_android`.
 
 ## Dependencias internas (imports del propio código)
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 170 | 385 | 0 (confirmado con **madge**: ninguno) |
-| Frontend (`import`) | 208 | 836 | 0 (confirmado con **madge**: ninguno) |
-| Flutter (`import` relativos) | 73 | 321 | 4 caminos cíclicos |
+| Backend (`require`) | 175 | 392 | 0 (confirmado con **madge**: ninguno) |
+| Frontend (`import`) | 210 | 851 | 0 (confirmado con **madge**: ninguno) |
+| Flutter (`import` relativos) | 79 | 346 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter
 

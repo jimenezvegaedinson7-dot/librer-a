@@ -1,4 +1,4 @@
-%% Generado 2026-10-07 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-08 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     paginas["/<br/>paginas"]
     CatalogoPage["/catalogo<br/>CatalogoPage"]
@@ -16,8 +16,6 @@ flowchart LR
     LoginPage --> authService(["authService"])
     VerificarEmailPage["/verificar-email<br/>VerificarEmailPage"]
     VerificarEmailPage --> authService(["authService"])
-    LibroReclamacionesPage["/libro-de-reclamaciones<br/>LibroReclamacionesPage"]
-    LibroReclamacionesPage --> reclamacionesService(["reclamacionesService"])
     DashboardPage["/dashboard<br/>DashboardPage"]
     DashboardPage --> dashboardService(["dashboardService"])
     LibrosPage["/libros<br/>LibrosPage"]

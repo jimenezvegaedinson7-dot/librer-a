@@ -1,6 +1,6 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-10-07 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-08 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
@@ -158,7 +158,8 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | POST | `/api/auth/verificar-email` | verificacionLimiter | controllers/auth.controller.js#verificarEmail | `usuario.model.js#buscarPorEmail`<br>`usuario.model.js#marcarEmailVerificado` | usuarios |
 | POST | `/api/auth/reenviar-codigo` | verificacionLimiter | controllers/auth.controller.js#reenviarCodigo | `usuario.model.js#buscarPorEmail`<br>`usuario.model.js#guardarCodigoVerificacion` | usuarios |
 | POST | `/api/auth/solicitar-reseteo` | verificacionLimiter | controllers/auth.controller.js#solicitarReseteo | `usuario.model.js#buscarPorEmail`<br>`usuario.model.js#guardarCodigoVerificacion` | usuarios |
-| POST | `/api/auth/reestablecer-contrasena` | verificacionLimiter | controllers/auth.controller.js#reestablecerContrasena | `usuario.model.js#actualizarPassword`<br>`usuario.model.js#buscarPorEmail`<br>`usuario.model.js#limpiarCodigoVerificacion` | usuarios |
+| POST | `/api/auth/verificar-reseteo` | verificacionLimiter | controllers/auth.controller.js#verificarReseteo | `usuario.model.js#buscarPorEmail` | usuarios |
+| POST | `/api/auth/reestablecer-contrasena` | verificacionLimiter | controllers/auth.controller.js#reestablecerContrasena | `usuario.model.js#actualizarPasswordConCodigo`<br>`usuario.model.js#buscarPorEmail` | usuarios |
 | POST | `/api/auth/2fa/verify-login` | twoFaLimiter | controllers/auth2fa.controller.js#verificarLogin | `usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#consumirOtp2FA`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |
 | POST | `/api/auth/2fa/setup` | JWT + twoFaLimiter | controllers/auth2fa.controller.js#setup | `usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#guardarSecreto2FA` | usuarios |
 | POST | `/api/auth/2fa/confirm` | JWT + twoFaLimiter | controllers/auth2fa.controller.js#confirmar | `usuario.model.js#activar2FA`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |

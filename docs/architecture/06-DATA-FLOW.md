@@ -1,6 +1,6 @@
 # Flujos de datos
 
-> Generado desde el código real el 2026-10-07 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-08 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arquitectura general
@@ -23,7 +23,7 @@
 5. Cualquier 401 posterior: React limpia sesión y va a `/`; Flutter limpia sesión y `irALogin()`.
 
 ## 2. Recuperar contraseña
-`POST /api/auth/solicitar-reseteo` → `usuario.model.js#buscarPorEmail`, `usuario.model.js#guardarCodigoVerificacion` → tablas: usuarios (envía código por correo con `utils/mailer`) → `POST /api/auth/reestablecer-contrasena` → `usuario.model.js#actualizarPassword`, `usuario.model.js#buscarPorEmail`, `usuario.model.js#limpiarCodigoVerificacion` → tablas: usuarios.
+`POST /api/auth/solicitar-reseteo` → `usuario.model.js#buscarPorEmail`, `usuario.model.js#guardarCodigoVerificacion` → tablas: usuarios (envía código por correo con `utils/mailer`) → `POST /api/auth/reestablecer-contrasena` → `usuario.model.js#actualizarPasswordConCodigo`, `usuario.model.js#buscarPorEmail` → tablas: usuarios.
 
 ## 3. Gestión comercial y logística (React, administrador)
 1. `POST /api/ventas` está retirado (405); las ventas nuevas nacen pendientes desde checkout PayU. No se crean ventas de panel o reserva ni cobros manuales.

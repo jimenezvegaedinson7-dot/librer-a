@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web
 
-> Generado desde el código real el 2026-10-07 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-08 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -35,7 +35,7 @@
 | `/admin/login` | LoginPage | `features/auth/LoginPage.jsx` |
 | `/admin` | Navigate | redirección: `<Navigate to="/admin/login" replace />` |
 | `/verificar-email` | VerificarEmailPage | `features/auth/VerificarEmailPage.jsx` |
-| `/libro-de-reclamaciones` | LibroReclamacionesPage | `features/reclamaciones/LibroReclamacionesPage.jsx` |
+| `/libro-de-reclamaciones` | TiendaProvider | — |
 | `/dashboard` | DashboardPage | `features/dashboard/DashboardPage.jsx` |
 | `/libros` | LibrosPage | `features/libros/LibrosPage.jsx` |
 | `/autores` | AutoresPage | `features/autores/AutoresPage.jsx` |
@@ -98,7 +98,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/notificaciones/notificacionesService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/pagos`<br>`GET /api/reservas` |
 | `features/pagos/PagosPage.jsx` | `GET /api/pagos`<br>`GET /api/pagos/resumen`<br>`GET /api/ventas` |
 | `features/pedidos/PedidosPage.jsx` | `GET /api/pedidos`<br>`GET /api/pedidos/:param`<br>`PUT /api/pedidos/:param/estado` |
-| `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
+| `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa` |
 | `features/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
 | `features/reportes/useVentasDiarias.js` | `GET /api/reportes/ventas-por-dia` |
 | `features/reservas/ReservaEstadoModal.jsx` | `PUT /api/reservas/:param/estado` |
@@ -117,12 +117,14 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/sections/VideoSection.jsx` | `GET /api/anuncios` |
 | `public-site/tienda/AccionesLibro.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos/:param`<br>`POST /api/favoritos/:param` |
 | `public-site/tienda/CheckoutPage.jsx` | `GET /api/pagos/capacidades`<br>`GET /api/ventas/:param`<br>`GET /api/zonas-delivery` |
-| `public-site/tienda/CuentaPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reenviar-codigo`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/registro`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-email` |
+| `public-site/tienda/CuentaPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reenviar-codigo`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/registro`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-email`<br>`POST /api/auth/verificar-reseteo` |
 | `public-site/tienda/FavoritosPage.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos` |
 | `public-site/tienda/LibroPage.jsx` | `GET /api/autores/:param`<br>`GET /api/libros/:param` |
 | `public-site/tienda/MisComprasPage.jsx` | `GET /api/pagos/:param`<br>`GET /api/ventas/:param/pago`<br>`GET /api/ventas/mis-ventas` |
+| `public-site/tienda/PerfilCliente.jsx` | `PUT /api/usuarios/foto`<br>`PUT /api/usuarios/perfil` |
 | `public-site/tienda/TiendaContext.jsx` | `GET /api/libros`<br>`GET /api/usuarios/perfil`<br>`GET /api/ventas/:param` |
 | `public-site/tienda/persistenciaCompra.js` | `POST /api/pagos/crear-orden` |
+| `public-site/tienda/useDatosCliente.js` | `GET /api/ventas/mis-ventas` |
 
 ## Servicios (`features/*/*Service.js`)
 
@@ -200,7 +202,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/pedidos/pedidosService.js` | `obtenerPedido` | `GET /api/pedidos/:param` |
 | `features/pedidos/pedidosService.js` | `listarPedidosFiltrados` | `GET /api/pedidos` |
 | `features/pedidos/pedidosService.js` | `cambiarEstadoPedido` | `PUT /api/pedidos/:param/estado` |
-| `features/reclamaciones/reclamacionesService.js` | `registrarReclamacion` | `POST /api/reclamaciones` |
 | `features/reclamaciones/reclamacionesService.js` | `listarReclamaciones` | `GET /api/reclamaciones` |
 | `features/reclamaciones/reclamacionesService.js` | `obtenerResumenReclamaciones` | `GET /api/reclamaciones/resumen` |
 | `features/reclamaciones/reclamacionesService.js` | `responderReclamacion` | `PUT /api/reclamaciones/:param/respuesta` |
@@ -234,9 +235,12 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/tienda/clienteApi.js` | `verificarEmail` | `POST /api/auth/verificar-email` |
 | `public-site/tienda/clienteApi.js` | `reenviarCodigo` | `POST /api/auth/reenviar-codigo` |
 | `public-site/tienda/clienteApi.js` | `solicitarReseteo` | `POST /api/auth/solicitar-reseteo` |
+| `public-site/tienda/clienteApi.js` | `verificarReseteo` | `POST /api/auth/verificar-reseteo` |
 | `public-site/tienda/clienteApi.js` | `restablecer` | `POST /api/auth/reestablecer-contrasena` |
 | `public-site/tienda/clienteApi.js` | `verificar2fa` | `POST /api/auth/2fa/verify-login` |
 | `public-site/tienda/clienteApi.js` | `perfil` | `GET /api/usuarios/perfil` |
+| `public-site/tienda/clienteApi.js` | `actualizarPerfil` | `PUT /api/usuarios/perfil` |
+| `public-site/tienda/clienteApi.js` | `subirFoto` | `PUT /api/usuarios/foto` |
 | `public-site/tienda/clienteApi.js` | `catalogo` | `GET /api/libros` |
 | `public-site/tienda/clienteApi.js` | `asistente` | `POST /api/asistente` |
 | `public-site/tienda/clienteApi.js` | `libro` | `GET /api/libros/:param` |
@@ -267,7 +271,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/Acciones.jsx` | 14 |
 | `components/ui/Alert.jsx` | 34 |
 | `components/ui/Badge.jsx` | 23 |
-| `components/ui/Button.jsx` | 48 |
+| `components/ui/Button.jsx` | 49 |
 | `components/ui/Card.jsx` | 21 |
 | `components/ui/Celebracion.jsx` | 2 |
 | `components/ui/ConfirmarAccion.jsx` | 3 |
@@ -309,6 +313,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `lib/utils/format.js`
 - `lib/utils/numeroALetras.js`
 - `lib/utils/portadasLibro.js`
+- `lib/utils/seguimientoPedido.js`
 - `lib/utils/sonido.js`
 - `lib/utils/url.js`
 - `lib/utils/validaciones.js`
