@@ -324,13 +324,12 @@ struct ForgotPasswordView: View {
             VStack(spacing: 22) {
                 AuthHeader(
                     logoSize: 72,
-                    title: codeSent ? "Primero verifica tu correo" : "Recupera tu acceso",
+                    title: codeSent ? "Ingresa tu código" : "Recupera tu acceso",
                     subtitle: codeSent
                         ? "Ingresa el código de 6 dígitos enviado a \(email)"
                         : "Ingresa el correo de tu cuenta y te enviaremos un código."
                 )
                 if codeSent {
-                    RecoverySteps(step: 1)
                     FormSection(title: "Código", systemImage: "number") {
                         OTPField(code: $code, enabled: !busy, success: codeAccepted, failures: failures) {
                             Task { await verifyCode() }
@@ -453,7 +452,6 @@ struct NewPasswordView: View {
             VStack(spacing: 22) {
                 AuthHeader(logoSize: 72, title: "Crea tu nueva contraseña",
                            subtitle: "Código confirmado para \(email)")
-                RecoverySteps(step: 2)
                 FormSection(title: "Nueva contraseña", systemImage: "lock") {
                     BrandField(title: "Nueva contraseña", systemImage: "lock", text: $password,
                                secure: true, contentType: .newPassword)
@@ -478,7 +476,7 @@ struct NewPasswordView: View {
         }
         .bookshelfBackground(themeStore.theme)
         .background(Brand.fondo.ignoresSafeArea())
-        .navigationTitle("Nueva contraseña")
+        .navigationTitle("Restablecer contraseña")
         .navigationBarTitleDisplayMode(.inline)
         .successCelebration($celebration) { _ in onFinished() }
     }
@@ -497,40 +495,6 @@ struct NewPasswordView: View {
             errorMessage = error.localizedDescription
             expired = error.localizedDescription.contains("expirado")
         }
-    }
-}
-
-/// "Paso 1 de 2 · Código" → "Paso 2 de 2 · Contraseña".
-struct RecoverySteps: View {
-    let step: Int
-
-    var body: some View {
-        HStack(spacing: 12) {
-            stage(1, "Código")
-            stage(2, "Contraseña")
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Paso \(step) de 2")
-    }
-
-    private func stage(_ number: Int, _ label: String) -> some View {
-        let done = step > number
-        let current = step == number
-        return VStack(spacing: 8) {
-            Capsule()
-                .fill(done || current ? Brand.burdeos : Brand.divisor)
-                .frame(height: 4)
-            HStack(spacing: 6) {
-                Image(systemName: done ? "checkmark.circle.fill" : "circle")
-                    .font(.footnote)
-                    .foregroundStyle(done || current ? Brand.burdeos : Brand.textoTerciario)
-                Text(label)
-                    .font(.footnote.weight(current ? .bold : .medium))
-                    .foregroundStyle(done || current ? Brand.texto : Brand.textoTerciario)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .animation(.easeOut(duration: 0.32), value: step)
     }
 }
 

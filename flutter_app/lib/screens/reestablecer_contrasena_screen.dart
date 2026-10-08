@@ -136,8 +136,7 @@ class _ReestablecerContrasenaScreenState
   Widget build(BuildContext context) {
     return _MarcoRecuperacion(
       tituloBarra: 'Verificar código',
-      paso: 1,
-      titulo: 'Primero verifica tu correo',
+      titulo: 'Ingresa tu código',
       subtitulo: 'Ingresa el código de 6 dígitos enviado a ${widget.email}',
       formKey: _form,
       children: [
@@ -294,8 +293,7 @@ class _NuevaContrasenaScreenState extends State<NuevaContrasenaScreen> {
   @override
   Widget build(BuildContext context) {
     return _MarcoRecuperacion(
-      tituloBarra: 'Nueva contraseña',
-      paso: 2,
+      tituloBarra: 'Restablecer contraseña',
       titulo: 'Crea tu nueva contraseña',
       subtitulo: 'Código confirmado para ${widget.email}',
       formKey: _form,
@@ -363,15 +361,14 @@ class _NuevaContrasenaScreenState extends State<NuevaContrasenaScreen> {
   }
 }
 
-/// Estructura común de las dos pantallas: logo, pasos, título y formulario.
+/// Estructura común de las dos pantallas (cada una con lo suyo): logo,
+/// título y formulario.
 class _MarcoRecuperacion extends StatelessWidget {
   final String tituloBarra, titulo, subtitulo;
-  final int paso;
   final GlobalKey<FormState> formKey;
   final List<Widget> children;
   const _MarcoRecuperacion({
     required this.tituloBarra,
-    required this.paso,
     required this.titulo,
     required this.subtitulo,
     required this.formKey,
@@ -393,9 +390,7 @@ class _MarcoRecuperacion extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Center(child: AppLogo(width: 72, height: 72)),
-                  const SizedBox(height: 20),
-                  _PasosRecuperacion(paso: paso),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   Text(
                     titulo,
                     textAlign: TextAlign.center,
@@ -438,72 +433,4 @@ class _BotonPrincipal extends StatelessWidget {
           : Text(texto),
     ),
   );
-}
-
-/// "Paso 1 de 2 · Código" → "Paso 2 de 2 · Contraseña": primero se
-/// confirma el código y recién después se pide la contraseña.
-class _PasosRecuperacion extends StatelessWidget {
-  final int paso;
-  const _PasosRecuperacion({required this.paso});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final duracion = MediaQuery.disableAnimationsOf(context)
-        ? Duration.zero
-        : const Duration(milliseconds: 320);
-    Widget etapa(int numero, String texto) {
-      final hecha = paso > numero;
-      final actual = paso == numero;
-      return Expanded(
-        child: Column(
-          children: [
-            AnimatedContainer(
-              duration: duracion,
-              height: 4,
-              decoration: BoxDecoration(
-                color: hecha || actual ? colors.primary : colors.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  hecha ? Icons.check_circle : Icons.circle_outlined,
-                  size: 16,
-                  color: hecha || actual ? colors.primary : colors.outline,
-                ),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    texto,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: actual ? FontWeight.w700 : FontWeight.w500,
-                      color: hecha || actual
-                          ? colors.onSurface
-                          : colors.outline,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Semantics(
-      label: 'Paso $paso de 2',
-      child: Row(
-        children: [
-          etapa(1, 'Código'),
-          const SizedBox(width: 12),
-          etapa(2, 'Contraseña'),
-        ],
-      ),
-    );
-  }
 }
