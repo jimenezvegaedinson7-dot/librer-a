@@ -60,23 +60,45 @@ class _FondosScreenState extends State<FondosScreen> {
                       color: AppColors.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  GridView.count(
-                    crossAxisCount: 3,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 0.82,
-                    children: [
-                      for (final fondo in fondosApp)
-                        _OpcionFondo(
-                          fondo: fondo,
-                          seleccionado: fondo.id == _seleccion.id,
-                          onTap: () => setState(() => _seleccion = fondo),
+                  const SizedBox(height: 14),
+                  for (final (titulo, conColor) in const [
+                    ('Suaves', false),
+                    ('Con color', true),
+                  ]) ...[
+                    Row(
+                      children: [
+                        Icon(
+                          conColor
+                              ? Icons.palette_outlined
+                              : Icons.light_mode_outlined,
+                          size: 18,
+                          color: AppColors.gold,
                         ),
-                    ],
-                  ),
+                        const SizedBox(width: 6),
+                        Text(titulo, style: textTheme.labelLarge),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    GridView.count(
+                      crossAxisCount: 4,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 0.7,
+                      children: [
+                        for (final fondo in fondosApp.where(
+                          (f) => f.conColor == conColor,
+                        ))
+                          _OpcionFondo(
+                            fondo: fondo,
+                            seleccionado: fondo.id == _seleccion.id,
+                            onTap: () => setState(() => _seleccion = fondo),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                  ],
                 ],
               ),
             ),
@@ -243,10 +265,10 @@ class _OpcionFondo extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 width: double.infinity,
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
                   color: fondo.fondo,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: seleccionado ? AppColors.primary : AppColors.divider,
                     width: seleccionado ? 2.5 : 1,
@@ -258,11 +280,29 @@ class _OpcionFondo extends StatelessWidget {
                       alignment: Alignment.bottomCenter,
                       child: Container(
                         height: 34,
+                        padding: const EdgeInsets.all(6),
+                        alignment: Alignment.bottomLeft,
                         decoration: BoxDecoration(
                           color: fondo.tarjeta,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: AppColors.divider.withValues(alpha: 0.7),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        // Un toque del color del tema elegido.
+                        child: Container(
+                          height: 6,
+                          width: 22,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(3),
                           ),
                         ),
                       ),

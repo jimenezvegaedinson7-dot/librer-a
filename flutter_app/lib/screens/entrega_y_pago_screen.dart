@@ -572,28 +572,21 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     if (_cargandoZonas) {
       return const LoadingView(message: 'Cargando opciones de envío...');
     }
-    if (_errorZonas != null || _zonas.isEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            _errorZonas ?? 'Aún no hay zonas de delivery activas. Puedes continuar con recojo gratuito en Pallasca.',
-          ),
-          if (_errorZonas != null)
-            TextButton(
-              onPressed: _cargarZonas,
-              child: const Text('Reintentar'),
-            ),
-        ],
-      );
-    }
+    // La dirección se pide SIEMPRE que se elige delivery; si la tarifa aún
+    // no está disponible se explica, pero el formulario no desaparece.
+    final sinTarifa = _errorZonas != null || _zonas.isEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _ZonaReparto(),
         const SizedBox(height: 12),
-        if (_tarifaUnica)
+        if (sinTarifa)
+          _AvisoSinTarifa(
+            mensaje: _errorZonas ?? 'El delivery aún no tiene tarifa activa. Puedes dejar tu dirección y elegir recojo gratuito en Pallasca mientras tanto.',
+            onReintentar: _errorZonas != null ? _cargarZonas : null,
+          )
+        else if (_tarifaUnica)
           _CostoDelivery(tarifa: _zonas.first.tarifa)
         else
           DropdownButtonFormField<int>(
@@ -1406,6 +1399,46 @@ class _OpcionEntrega extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Aviso cuando la tarifa de delivery no está disponible.
+class _AvisoSinTarifa extends StatelessWidget {
+  final String mensaje;
+  final VoidCallback? onReintentar;
+  const _AvisoSinTarifa({required this.mensaje, this.onReintentar});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+    decoration: BoxDecoration(
+      color: AppColors.warningContainer,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.info_outline, color: AppColors.warning, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(mensaje, style: const TextStyle(fontSize: 13)),
+            ),
+          ],
+        ),
+        if (onReintentar != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: onReintentar,
+              child: const Text('Reintentar'),
+            ),
+          ),
+      ],
+    ),
+  );
 }
 
 /// Costo único del delivery en Pallasca (cuando hay una sola tarifa).

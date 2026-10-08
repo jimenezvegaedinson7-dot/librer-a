@@ -13,6 +13,7 @@ import '../utils/app_colors.dart';
 import '../utils/app_tokens.dart';
 import '../utils/avatar_generator.dart';
 import '../utils/constants.dart';
+import '../utils/perfil_fondos.dart';
 import '../utils/perfil_temas.dart';
 import '../widgets/aparecer.dart';
 import '../widgets/app_page_header.dart';
@@ -56,8 +57,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
   bool _twoFactorEnabled = false;
   bool _refreshing = false;
   String _temaId = perfilTemaDefaultId;
-  int _paginaColores = 0;
-  final PageController _coloresController = PageController();
 
   PerfilTema get _tema => perfilTemaPorId(_temaId);
 
@@ -73,7 +72,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
   @override
   void dispose() {
     TemaController.instance.removeListener(_syncTema);
-    _coloresController.dispose();
     super.dispose();
   }
 
@@ -84,155 +82,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
-  /// Aplica un tema a toda la app a través del controlador global.
-  Future<void> _aplicarTema(String id) async {
-    await TemaController.instance.aplicar(id);
-    if (mounted) setState(() => _temaId = id);
-  }
-
-  /// Abre el selector para combinar dos colores y crear un degradado propio.
-  Future<void> _personalizarColores() async {
-    final resultado = await showModalBottomSheet<(Color, Color)>(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: _profileSurface,
-      isScrollControlled: true,
-      builder: (sheetContext) =>
-          _CustomThemeSheet(inicioInicial: _tema.inicio, finInicial: _tema.fin),
-    );
-    if (resultado == null || !mounted) return;
-    final id = perfilTemaIdPersonalizado(resultado.$1, fin: resultado.$2);
-    await _aplicarTema(id);
-  }
-
-  /// Carrusel de colores que solo avanza al deslizar (sin auto-reproducción)
-  /// o con las flechas e indicadores clicables.
-  Widget _buildCarruselColores() {
-    const porPagina = 4;
-    final opciones = <Widget>[
-      for (final opcion in perfilTemas)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5),
-          child: _TemaSwatch(
-            tema: opcion,
-            seleccionado: _temaId == opcion.id,
-            onTap: () => _aplicarTema(opcion.id),
-          ),
-        ),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5),
-        child: _TemaSwatch(
-          tema: _temaId.startsWith('custom_') ? _tema : null,
-          seleccionado: _temaId.startsWith('custom_'),
-          onTap: _personalizarColores,
-        ),
-      ),
-    ];
-    final paginas = (opciones.length / porPagina).ceil();
-
-    return _profileCard(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                SizedBox(
-                  width: 40,
-                  height: 46,
-                  child: Center(
-                    child: IconButton(
-                      tooltip: 'Colores anteriores',
-                      visualDensity: VisualDensity.compact,
-                      onPressed: _paginaColores > 0
-                          ? () => _irAPagina(_paginaColores - 1)
-                          : null,
-                      icon: const Icon(Icons.chevron_left_rounded, size: 26),
-                      color: AppColors.textSecondary,
-                      disabledColor: AppColors.divider,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: SizedBox(
-                    height: 46,
-                    child: PageView.builder(
-                      controller: _coloresController,
-                      // Solo avanza si el usuario desliza, usa la rueda del
-                      // ratón o pulsa flechas/indicadores.
-                      physics: const PageScrollPhysics(),
-                      itemCount: paginas,
-                      onPageChanged: (pagina) =>
-                          setState(() => _paginaColores = pagina),
-                      itemBuilder: (context, pagina) {
-                        final inicio = pagina * porPagina;
-                        final fin = (inicio + porPagina) < opciones.length
-                            ? inicio + porPagina
-                            : opciones.length;
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            for (var i = inicio; i < fin; i++) opciones[i],
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 40,
-                  height: 46,
-                  child: Center(
-                    child: IconButton(
-                      tooltip: 'Más colores',
-                      visualDensity: VisualDensity.compact,
-                      onPressed: _paginaColores < paginas - 1
-                          ? () => _irAPagina(_paginaColores + 1)
-                          : null,
-                      icon: const Icon(Icons.chevron_right_rounded, size: 26),
-                      color: AppColors.textSecondary,
-                      disabledColor: AppColors.divider,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            if (paginas > 1)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (var p = 0; p < paginas; p++)
-                    GestureDetector(
-                      onTap: () => _irAPagina(p),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        width: p == _paginaColores ? 16 : 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: p == _paginaColores
-                              ? AppColors.primary
-                              : AppColors.divider,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Anima el carrusel hasta la página [pagina].
-  void _irAPagina(int pagina) {
-    _coloresController.animateToPage(
-      pagina,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOutCubic,
-    );
+  /// Pantalla "Colores": vista previa, temas y combinación propia.
+  Future<void> _abrirColores() async {
+    await Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => const _ColoresScreen()));
+    if (mounted) setState(() => _temaId = TemaController.instance.id);
   }
 
   Future<void> _cargarLocal() async {
@@ -670,7 +524,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   children: [
                     Expanded(
                       child: _AccesoRapido(
-                        icon: Icons.receipt_long_outlined,
+                        icon: Icons.shopping_bag_outlined,
                         label: 'Mis compras',
                         onTap: _misCompras,
                       ),
@@ -678,7 +532,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _AccesoRapido(
-                        icon: Icons.bookmark_outline_rounded,
+                        icon: Icons.event_note_outlined,
                         label: 'Reservas anteriores',
                         onTap: _misReservas,
                       ),
@@ -686,7 +540,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: _AccesoRapido(
-                        icon: Icons.favorite_border_rounded,
+                        icon: Icons.favorite_outline_rounded,
                         label: 'Mis favoritos',
                         onTap: _misFavoritos,
                       ),
@@ -705,14 +559,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   children: [
                     _row(
                       context,
-                      Icons.alternate_email_rounded,
+                      Icons.mail_outline_rounded,
                       'Correo',
                       usuario?.email ?? '—',
                     ),
                     _divider(),
                     _row(
                       context,
-                      Icons.phone_outlined,
+                      Icons.call_outlined,
                       'Teléfono',
                       usuario?.telefono ?? '—',
                     ),
@@ -722,26 +576,43 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
               const SizedBox(height: 24),
 
-              // Personalización de colores
+              // Personalización: dos botones del mismo estilo.
               _sectionTitle(
                 textTheme,
-                'Personaliza tus colores',
+                'Personaliza tu app',
                 detalle: 'Se aplican a toda la aplicación.',
               ),
               const SizedBox(height: 10),
-              _buildCarruselColores(),
-              const SizedBox(height: 10),
-              // Enlace a la pantalla de fondo y tarjetas (con vista previa).
               _profileCard(
-                child: _actionTile(
-                  context,
-                  icon: Icons.format_paint_outlined,
-                  label: 'Fondo y tarjetas',
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const FondosScreen(),
+                child: Column(
+                  children: [
+                    _actionTile(
+                      context,
+                      icon: Icons.palette_outlined,
+                      label: 'Colores',
+                      detalle: _tema.nombre,
+                      trailing: _MuestraTema(tema: _tema),
+                      onTap: _abrirColores,
                     ),
-                  ),
+                    _divider(),
+                    _actionTile(
+                      context,
+                      icon: Icons.wallpaper_outlined,
+                      label: 'Fondo y tarjetas',
+                      detalle: TemaController.instance.fondo.nombre,
+                      trailing: _MuestraFondo(
+                        fondo: TemaController.instance.fondo,
+                      ),
+                      onTap: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const FondosScreen(),
+                          ),
+                        );
+                        if (mounted) setState(() {});
+                      },
+                    ),
+                  ],
                 ),
               ),
 
@@ -755,14 +626,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   children: [
                     _actionTile(
                       context,
-                      icon: Icons.edit_outlined,
+                      icon: Icons.manage_accounts_outlined,
                       label: 'Editar perfil',
                       onTap: _editarPerfil,
                     ),
                     _divider(),
                     _actionTile(
                       context,
-                      icon: Icons.lock_reset_rounded,
+                      icon: Icons.key_outlined,
                       label: 'Cambiar contraseña',
                       onTap: _cambiarPassword,
                     ),
@@ -770,8 +641,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     _actionTile(
                       context,
                       icon: _twoFactorEnabled
-                          ? Icons.shield_rounded
-                          : Icons.shield_outlined,
+                          ? Icons.verified_user_outlined
+                          : Icons.gpp_maybe_outlined,
                       label: _twoFactorEnabled
                           ? 'Desactivar doble factor'
                           : 'Activar doble factor',
@@ -799,28 +670,28 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   children: [
                     _actionTile(
                       context,
-                      icon: Icons.description_outlined,
+                      icon: Icons.gavel_outlined,
                       label: 'Términos y Condiciones',
                       onTap: _terminos,
                     ),
                     _divider(),
                     _actionTile(
                       context,
-                      icon: Icons.privacy_tip_outlined,
+                      icon: Icons.policy_outlined,
                       label: 'Política de Privacidad',
                       onTap: _privacidad,
                     ),
                     _divider(),
                     _actionTile(
                       context,
-                      icon: Icons.menu_book_outlined,
+                      icon: Icons.auto_stories_outlined,
                       label: 'Libro de Reclamaciones',
                       onTap: _libroReclamaciones,
                     ),
                     _divider(),
                     _actionTile(
                       context,
-                      icon: Icons.person_remove_outlined,
+                      icon: Icons.no_accounts_outlined,
                       label: 'Eliminar mi cuenta',
                       onTap: _eliminarCuenta,
                     ),
@@ -932,19 +803,30 @@ class _PerfilScreenState extends State<PerfilScreen> {
     required String label,
     required VoidCallback onTap,
     Widget? trailing,
+    String? detalle,
   }) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 14),
       leading: Container(
-        width: 36,
-        height: 36,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: _profileSoft,
-          borderRadius: BorderRadius.circular(Radios.sm),
+          color: AppColors.primaryContainer,
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
         ),
-        child: Icon(icon, size: 19, color: AppColors.primary),
+        child: Icon(icon, size: 20, color: AppColors.primary),
       ),
-      title: Text(label, style: TextStyle(color: _profileInk)),
+      title: Text(
+        label,
+        style: TextStyle(color: _profileInk, fontWeight: FontWeight.w600),
+      ),
+      subtitle: detalle == null
+          ? null
+          : Text(
+              detalle,
+              style: TextStyle(color: _profileMuted, fontSize: 12.5),
+            ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1232,6 +1114,263 @@ class _Iniciales extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Círculo con el degradado del tema actual (al lado del botón "Colores").
+class _MuestraTema extends StatelessWidget {
+  final PerfilTema tema;
+  const _MuestraTema({required this.tema});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 26,
+    height: 26,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: tema.gradiente,
+      border: Border.all(color: Colors.white, width: 2),
+      boxShadow: [
+        BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 4),
+      ],
+    ),
+  );
+}
+
+/// Fondo y tarjeta en miniatura (al lado de "Fondo y tarjetas").
+class _MuestraFondo extends StatelessWidget {
+  final FondoApp fondo;
+  const _MuestraFondo({required this.fondo});
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 30,
+    height: 26,
+    padding: const EdgeInsets.all(5),
+    decoration: BoxDecoration(
+      color: fondo.fondo,
+      borderRadius: BorderRadius.circular(7),
+      border: Border.all(color: AppColors.dividerStrong),
+    ),
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        color: fondo.tarjeta,
+        borderRadius: BorderRadius.circular(3),
+      ),
+    ),
+  );
+}
+
+/// Pantalla "Colores": vista previa del tema, temas clásicos, de vidrio y
+/// una combinación propia de dos colores. Se aplica al tocar.
+class _ColoresScreen extends StatefulWidget {
+  const _ColoresScreen();
+
+  @override
+  State<_ColoresScreen> createState() => _ColoresScreenState();
+}
+
+class _ColoresScreenState extends State<_ColoresScreen> {
+  String _id = TemaController.instance.id;
+  PerfilTema get _tema => TemaController.instance.tema;
+
+  Future<void> _aplicar(String id) async {
+    await TemaController.instance.aplicar(id);
+    if (mounted) setState(() => _id = id);
+  }
+
+  Future<void> _combinar() async {
+    final resultado = await showModalBottomSheet<(Color, Color)>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      builder: (_) =>
+          _CustomThemeSheet(inicioInicial: _tema.inicio, finInicial: _tema.fin),
+    );
+    if (resultado == null || !mounted) return;
+    await _aplicar(perfilTemaIdPersonalizado(resultado.$1, fin: resultado.$2));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final texto = Theme.of(context).textTheme;
+    Widget grupo(String titulo, IconData icono, List<PerfilTema> temas) =>
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icono, size: 18, color: AppColors.gold),
+                const SizedBox(width: 6),
+                Text(titulo, style: texto.labelLarge),
+              ],
+            ),
+            const SizedBox(height: 10),
+            // Cuatro columnas que ocupan todo el ancho.
+            LayoutBuilder(
+              builder: (context, c) => Wrap(
+                spacing: 12,
+                runSpacing: 14,
+                children: [
+                  for (final t in temas)
+                    SizedBox(
+                      width: (c.maxWidth - 36) / 4,
+                      child: Column(
+                        children: [
+                          _TemaSwatch(
+                            tema: t,
+                            seleccionado: _id == t.id,
+                            onTap: () => _aplicar(t.id),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            t.nombre,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: texto.labelSmall?.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: _id == t.id
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        );
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Colores')),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          children: [
+            Text('Vista previa', style: texto.titleMedium),
+            const SizedBox(height: 10),
+            _VistaPreviaTema(tema: _tema),
+            const SizedBox(height: 22),
+            grupo(
+              'Clásicos',
+              Icons.circle_outlined,
+              perfilTemas.where((t) => !t.vidrio).toList(),
+            ),
+            grupo(
+              'Vidrio',
+              Icons.auto_awesome_outlined,
+              perfilTemas.where((t) => t.vidrio).toList(),
+            ),
+            Row(
+              children: [
+                Icon(Icons.tune_rounded, size: 18, color: AppColors.gold),
+                const SizedBox(width: 6),
+                Text('Tu combinación', style: texto.labelLarge),
+              ],
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: _combinar,
+              icon: _id.startsWith('custom_')
+                  ? _MuestraTema(tema: _tema)
+                  : const Icon(Icons.add_rounded),
+              label: const Text('Combinar dos colores'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Maqueta: encabezado con el degradado, un botón y textos del tema.
+class _VistaPreviaTema extends StatelessWidget {
+  final PerfilTema tema;
+  const _VistaPreviaTema({required this.tema});
+
+  @override
+  Widget build(BuildContext context) => AnimatedContainer(
+    duration: const Duration(milliseconds: 250),
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: AppColors.dividerStrong),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(gradient: tema.gradiente),
+          child: Text(
+            tema.nombre,
+            style: TextStyle(
+              color: tema.textColor,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Así se ven tus letras',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Precios, títulos y botones',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'Comprar',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Colores disponibles para combinar en el selector personalizado.
