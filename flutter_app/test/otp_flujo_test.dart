@@ -139,7 +139,11 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
       await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('Contraseña actualizada'), findsWidgets);
+      expect(find.text('Contraseña restablecida'), findsWidgets);
+      expect(
+        find.text('Contraseña restablecida con éxito. Inicia sesión.'),
+        findsWidgets,
+      );
       expect(llamadas.last.path, '/auth/reestablecer-contrasena');
       final lastData = llamadas.last.data as Map<String, dynamic>;
       expect(lastData['email'], 'cliente@example.invalid');

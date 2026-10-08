@@ -155,12 +155,12 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                       textCapitalization: TextCapitalization.words,
                       textInputAction: TextInputAction.next,
                       decoration: _inputDecoration(
-                        label: 'Apellido',
+                        label: 'Apellidos completos',
                         icon: Icons.person_outline_rounded,
                       ),
                       validator: (value) {
                         if ((value ?? '').trim().isEmpty) {
-                          return 'Ingresa tu apellido';
+                          return 'Ingresa tus apellidos completos';
                         }
                         return null;
                       },

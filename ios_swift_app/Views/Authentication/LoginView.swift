@@ -142,7 +142,7 @@ struct RegisterView: View {
                 AuthHeader(logoSize: 92, title: "Crea tu cuenta", subtitle: "Únete a nuestra librería")
                 FormSection(title: "Tus datos", systemImage: "person.text.rectangle") {
                     BrandField(title: "Nombre", systemImage: "person", text: $name, contentType: .givenName)
-                    BrandField(title: "Apellido", systemImage: "person", text: $lastName, contentType: .familyName)
+                    BrandField(title: "Apellidos completos (paterno y materno)", systemImage: "person", text: $lastName, contentType: .familyName)
                     BrandField(title: "Correo electrónico", systemImage: "at", text: $email,
                                keyboard: .emailAddress, contentType: .emailAddress)
                 }
@@ -191,7 +191,7 @@ struct RegisterView: View {
         let n = name.trimmingCharacters(in: .whitespaces)
         let a = lastName.trimmingCharacters(in: .whitespaces)
         let e = email.trimmingCharacters(in: .whitespaces)
-        if n.isEmpty || a.isEmpty { errorMessage = "Ingresa tu nombre y apellido."; return }
+        if n.isEmpty || a.isEmpty { errorMessage = "Ingresa tu nombre y tus apellidos completos."; return }
         if !Validation.isEmail(e) { errorMessage = "Ingresa un correo válido."; return }
         if let problem = Validation.passwordError(password) { errorMessage = problem; return }
         if confirm != password { errorMessage = "Las contraseñas no coinciden."; return }
@@ -300,116 +300,87 @@ struct VerifyEmailView: View {
 
 // MARK: - Recuperar contraseña
 
-/// Como en Flutter: correo → código verificado POR EL SERVIDOR → recién
-/// entonces la nueva contraseña. El permiso (`reset_token`) solo vive en
-/// esta pantalla.
+/// Como en Flutter, en DOS pantallas separadas: aquí el correo y el código
+/// (que el servidor valida y canjea por un permiso `reset_token`); la nueva
+/// contraseña va en [NewPasswordView], que se abre aparte.
 struct ForgotPasswordView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var themeStore: ThemeStore
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var email = ""
     @State private var codeSent = false
     @State private var code = ""
-    @State private var resetToken: String?
-    @State private var password = ""
-    @State private var confirm = ""
     @State private var busy = false
     @State private var errorMessage: String?
-    @State private var done = false
     @State private var codeAccepted = false
     @State private var failures = 0
     @State private var celebration: CelebrationContent?
-
-    private var verified: Bool { resetToken != nil }
+    /// Permiso validado: abre la segunda pantalla.
+    @State private var resetToken: String?
+    @State private var pendingToken: String?
 
     var body: some View {
         ScrollView {
             VStack(spacing: 22) {
                 AuthHeader(
                     logoSize: 72,
-                    title: done ? "Contraseña actualizada"
-                        : verified ? "Crea tu nueva contraseña"
-                        : codeSent ? "Primero verifica tu correo" : "Recupera tu acceso",
-                    subtitle: done
-                        ? "Contraseña actualizada. Ya puedes iniciar sesión."
-                        : verified ? "Código confirmado para \(email)"
-                        : codeSent ? "Ingresa el código de 6 dígitos enviado a \(email)"
+                    title: codeSent ? "Primero verifica tu correo" : "Recupera tu acceso",
+                    subtitle: codeSent
+                        ? "Ingresa el código de 6 dígitos enviado a \(email)"
                         : "Ingresa el correo de tu cuenta y te enviaremos un código."
                 )
-                if codeSent && !done {
-                    RecoverySteps(step: verified ? 2 : 1)
-                }
-                if !done {
-                    Group {
-                        if verified {
-                            FormSection(title: "Nueva contraseña", systemImage: "lock") {
-                                BrandField(title: "Nueva contraseña", systemImage: "lock", text: $password,
-                                           secure: true, contentType: .newPassword)
-                                BrandField(title: "Confirmar contraseña", systemImage: "lock", text: $confirm,
-                                           secure: true, contentType: .newPassword)
-                                PasswordRequirements(password: password, confirmation: confirm)
-                            }
-                            .transition(stepTransition)
-                        } else if codeSent {
-                            VStack(spacing: 10) {
-                                FormSection(title: "Código", systemImage: "number") {
-                                    OTPField(code: $code, enabled: !busy, success: codeAccepted, failures: failures) {
-                                        Task { await verifyCode() }
-                                    }
-                                }
-                                Text("¿No llegó? Revisa también la carpeta de spam.")
-                                    .font(.footnote)
-                                    .foregroundStyle(Brand.textoTerciario)
-                                ResendCodeButton(disabled: busy) { await resendCode() }
-                            }
-                            .transition(stepTransition)
-                        } else {
-                            FormSection(title: "Tu correo", systemImage: "envelope") {
-                                BrandField(title: "Correo electrónico", systemImage: "at", text: $email,
-                                           keyboard: .emailAddress, contentType: .emailAddress)
-                            }
+                if codeSent {
+                    RecoverySteps(step: 1)
+                    FormSection(title: "Código", systemImage: "number") {
+                        OTPField(code: $code, enabled: !busy, success: codeAccepted, failures: failures) {
+                            Task { await verifyCode() }
                         }
                     }
-                    if let errorMessage { ErrorBanner(message: errorMessage) }
-                    Button {
-                        Task {
-                            if verified { await reset() } else if codeSent { await verifyCode() } else { await sendCode() }
-                        }
-                    } label: {
-                        if busy {
-                            ProgressView().tint(.white)
-                        } else {
-                            Text(verified ? "Guardar nueva contraseña" : codeSent ? "Verificar código" : "Enviar código")
-                        }
-                    }
-                    .buttonStyle(BrandButtonStyle())
-                    .disabled(busy)
+                    Text("¿No llegó? Revisa también la carpeta de spam.")
+                        .font(.footnote)
+                        .foregroundStyle(Brand.textoTerciario)
+                    ResendCodeButton(disabled: busy) { await resendCode() }
                 } else {
-                    Button("Ir a iniciar sesión") { dismiss() }
-                        .buttonStyle(BrandButtonStyle())
+                    FormSection(title: "Tu correo", systemImage: "envelope") {
+                        BrandField(title: "Correo electrónico", systemImage: "at", text: $email,
+                                   keyboard: .emailAddress, contentType: .emailAddress)
+                    }
                 }
+                if let errorMessage { ErrorBanner(message: errorMessage) }
+                Button {
+                    Task { if codeSent { await verifyCode() } else { await sendCode() } }
+                } label: {
+                    if busy { ProgressView().tint(.white) } else { Text(codeSent ? "Verificar código" : "Enviar código") }
+                }
+                .buttonStyle(BrandButtonStyle())
+                .disabled(busy)
             }
             .padding(20)
         }
         .bookshelfBackground(themeStore.theme)
         .background(Brand.fondo.ignoresSafeArea())
+        .navigationTitle(codeSent ? "Verificar código" : "Recuperar contraseña")
         .navigationBarTitleDisplayMode(.inline)
-        .successCelebration($celebration) { content in
-            if content.title == "Código verificado" {
-                withAnimation(reduceMotion ? nil : .easeOut(duration: 0.32)) { code = "" }
-            } else {
-                withAnimation { done = true }
+        .successCelebration($celebration) { _ in
+            // Tras "Código verificado", la segunda pantalla.
+            resetToken = pendingToken
+        }
+        .navigationDestination(item: $resetToken) { token in
+            NewPasswordView(email: email, resetToken: token) {
+                // Contraseña restablecida: volver al inicio de sesión.
+                resetToken = nil
+                Task {
+                    try? await Task.sleep(nanoseconds: 450_000_000)
+                    dismiss()
+                }
+            } onExpired: {
+                // Permiso vencido: se vuelve aquí a pedir un código nuevo.
+                resetToken = nil
+                codeAccepted = false
+                code = ""
+                Task { _ = await resendCode() }
             }
         }
-    }
-
-    /// Cambio de paso con deslizamiento suave (como el AnimatedSwitcher de Flutter).
-    private var stepTransition: AnyTransition {
-        reduceMotion ? .opacity : .asymmetric(
-            insertion: .move(edge: .trailing).combined(with: .opacity),
-            removal: .opacity
-        )
     }
 
     private func sendCode() async {
@@ -452,16 +423,67 @@ struct ForgotPasswordView: View {
             let token = try await appState.accountService.verifyPasswordReset(email: email, code: code)
             errorMessage = nil
             codeAccepted = true
+            pendingToken = token
             celebrate($celebration, title: "Código verificado", message: "Ahora crea tu nueva contraseña.")
-            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.32)) { resetToken = token }
         } catch {
             errorMessage = error.localizedDescription
             failures += 1
         }
     }
+}
 
-    private func reset() async {
-        guard let resetToken else { return }
+/// Segunda pantalla de la recuperación: la nueva contraseña.
+struct NewPasswordView: View {
+    let email: String
+    let resetToken: String
+    let onFinished: () -> Void
+    let onExpired: () -> Void
+
+    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var themeStore: ThemeStore
+    @State private var password = ""
+    @State private var confirm = ""
+    @State private var busy = false
+    @State private var errorMessage: String?
+    @State private var expired = false
+    @State private var celebration: CelebrationContent?
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 22) {
+                AuthHeader(logoSize: 72, title: "Crea tu nueva contraseña",
+                           subtitle: "Código confirmado para \(email)")
+                RecoverySteps(step: 2)
+                FormSection(title: "Nueva contraseña", systemImage: "lock") {
+                    BrandField(title: "Nueva contraseña", systemImage: "lock", text: $password,
+                               secure: true, contentType: .newPassword)
+                    BrandField(title: "Confirmar contraseña", systemImage: "lock", text: $confirm,
+                               secure: true, contentType: .newPassword)
+                    PasswordRequirements(password: password, confirmation: confirm)
+                }
+                if let errorMessage { ErrorBanner(message: errorMessage) }
+                Button {
+                    if expired { onExpired() } else { Task { await save() } }
+                } label: {
+                    if busy {
+                        ProgressView().tint(.white)
+                    } else {
+                        Text(expired ? "Pedir un código nuevo" : "Guardar nueva contraseña")
+                    }
+                }
+                .buttonStyle(BrandButtonStyle())
+                .disabled(busy)
+            }
+            .padding(20)
+        }
+        .bookshelfBackground(themeStore.theme)
+        .background(Brand.fondo.ignoresSafeArea())
+        .navigationTitle("Nueva contraseña")
+        .navigationBarTitleDisplayMode(.inline)
+        .successCelebration($celebration) { _ in onFinished() }
+    }
+
+    private func save() async {
         if let problem = Validation.passwordError(password) { errorMessage = problem; return }
         if confirm != password { errorMessage = "Las contraseñas no coinciden."; return }
         busy = true
@@ -469,20 +491,11 @@ struct ForgotPasswordView: View {
         do {
             try await appState.accountService.resetPassword(email: email, resetToken: resetToken, password: password)
             errorMessage = nil
-            celebrate($celebration, title: "Contraseña actualizada",
-                      message: "Ya puedes iniciar sesión con tu nueva contraseña.")
+            celebrate($celebration, title: "Contraseña restablecida",
+                      message: "Contraseña restablecida con éxito. Inicia sesión.")
         } catch {
             errorMessage = error.localizedDescription
-            // Un permiso vencido obliga a pedir y verificar un código nuevo.
-            if error.localizedDescription.contains("expirado") {
-                withAnimation {
-                    self.resetToken = nil
-                    codeAccepted = false
-                    code = ""
-                    password = ""
-                    confirm = ""
-                }
-            }
+            expired = error.localizedDescription.contains("expirado")
         }
     }
 }

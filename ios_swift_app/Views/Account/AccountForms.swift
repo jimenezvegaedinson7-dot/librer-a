@@ -104,7 +104,7 @@ struct EditProfileView: View {
 
                 FormSection(title: "Datos personales", systemImage: "person.text.rectangle") {
                     BrandField(title: "Nombre", systemImage: "person", text: $name, contentType: .givenName)
-                    BrandField(title: "Apellido", systemImage: "person", text: $lastName, contentType: .familyName)
+                    BrandField(title: "Apellidos completos", systemImage: "person", text: $lastName, contentType: .familyName)
                 }
                 FormSection(title: "Contacto", systemImage: "envelope", index: 2) {
                     BrandField(title: "Correo electrónico", systemImage: "at", text: $email,
@@ -153,7 +153,7 @@ struct EditProfileView: View {
         let a = lastName.trimmingCharacters(in: .whitespaces)
         let e = email.trimmingCharacters(in: .whitespaces)
         if n.isEmpty { errorMessage = "Ingresa tu nombre"; return }
-        if a.isEmpty { errorMessage = "Ingresa tu apellido"; return }
+        if a.isEmpty { errorMessage = "Ingresa tus apellidos completos"; return }
         if e.isEmpty { errorMessage = "Ingresa tu correo"; return }
         if !Validation.isEmail(e) { errorMessage = "Ingresa un correo válido"; return }
         errorMessage = nil

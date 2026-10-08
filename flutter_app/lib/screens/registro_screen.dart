@@ -175,18 +175,20 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Apellido
+                        // Apellidos completos (paterno y materno)
                         TextFormField(
                           controller: _apellidoController,
                           textCapitalization: TextCapitalization.words,
                           textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.familyName],
                           decoration: _inputDecoration(
-                            label: 'Apellido',
+                            label: 'Apellidos completos',
                             icon: Icons.person_outline_rounded,
+                            hint: 'Paterno y materno',
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Ingresa tu apellido';
+                              return 'Ingresa tus apellidos completos';
                             }
                             return null;
                           },
@@ -399,7 +401,12 @@ class _RegistroScreenState extends State<RegistroScreen> {
   InputDecoration _inputDecoration({
     required String label,
     required IconData icon,
+    String? hint,
   }) {
-    return InputDecoration(labelText: label, prefixIcon: Icon(icon));
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon),
+    );
   }
 }
