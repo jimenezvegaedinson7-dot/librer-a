@@ -1,8 +1,8 @@
 {
-    "version": "1.0.15",
-    "versionCode": 16,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.15/libreria-1.0.15.apk",
-    "sha256": "04dce5693ed790e1675d9350f99625f2fd5b5e5a719a2e4a3cfb32d692f01601",
+    "version": "1.0.16",
+    "versionCode": 17,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.16/libreria-1.0.16.apk",
+    "sha256": "78e2d6b93242aeb33a4db72bff9f80633aebf71f2cfb415e446cb28cf319c3d6",
     "obligatoria": false,
-    "notas": "Delivery más simple: escribes tu dirección dentro de Pallasca y confirmas que está en la ciudad. Incluye el Libro de Reclamaciones con tus datos ya completados."
+    "notas": "Recuperar contraseña en pantallas separadas (código y restablecer) y un sonido de confirmación suave, como una compra con Apple Pay."
 }

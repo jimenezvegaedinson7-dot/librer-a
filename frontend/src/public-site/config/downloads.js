@@ -10,10 +10,10 @@ export const DESCARGAS = {
     android: {
         habilitado: true,
         tipo: 'apk',
-        version: '1.0.15',
-        // APK firmado: dirección escrita por el cliente, solo dentro de Pallasca.
-        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.15/libreria-1.0.15.apk',
-        tamano: '55.5 MB',
+        version: '1.0.16',
+        // APK firmado: recuperación en pantallas separadas y sonido suave.
+        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.16/libreria-1.0.16.apk',
+        tamano: '55.6 MB',
         actualizado: '2026-10-07',
     },
     ios: {
