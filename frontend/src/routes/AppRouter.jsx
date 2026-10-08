@@ -58,7 +58,6 @@ const UsuariosPage = lazyConReintento(() => import('../features/usuarios/Usuario
 const TarifasEnvioPage = lazyConReintento(() => import('../features/tarifas/TarifasEnvioPage'));
 const HistorialPage = lazyConReintento(() => import('../features/historial/HistorialPage'));
 const EmpresaPage = lazyConReintento(() => import('../features/configuracion/EmpresaPage'));
-const PersonalizacionPage = lazyConReintento(() => import('../features/configuracion/PersonalizacionPage'));
 const LibroReclamacionesPage = lazyConReintento(() => import('../features/reclamaciones/LibroReclamacionesPage'));
 const ReclamacionesPage = lazyConReintento(() => import('../features/reclamaciones/ReclamacionesPage'));
 const AnunciosPage = lazyConReintento(() => import('../features/anuncios/AnunciosPage'));
@@ -142,7 +141,7 @@ const router = createBrowserRouter([
             { path: '/configuracion/empresa', element: para(SOLO_ADMIN, <EmpresaPage />) },
             // La personalización de tema es local al navegador: no expone
             // datos del backend, así que queda disponible para ambos roles.
-            { path: '/personalizacion', element: cargar(<PersonalizacionPage />) },
+            { path: '/personalizacion', element: <Navigate to="/dashboard" replace /> },
 
             // El envío por agencia ya no se ofrece (solo Lima): la página queda
             // oculta; se redirige para no romper enlaces guardados.

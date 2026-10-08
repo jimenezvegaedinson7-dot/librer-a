@@ -3,7 +3,7 @@ import { Children, cloneElement, createContext, isValidElement, useContext, useE
 import { animate, useReducedMotion } from 'motion/react';
 
 import { formatearMoneda } from '../../lib/utils/format';
-import { Anillo, OndaDecorativa, TendenciaViva } from '../../features/dashboard/Decoraciones';
+import { Anillo, TendenciaViva } from '../../features/dashboard/Decoraciones';
 
 // Fila de indicadores de cada módulo: tarjetas compactas con el acabado de
 // "Total vendido" en distintos colores. Mientras la página carga muestran un
@@ -136,7 +136,6 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
     const conProporcion = numero !== null && Number.isFinite(numero) && numero >= 0
         && Number.isFinite(Number(de)) && Number(de) > 0 && numero <= Number(de);
     const conDato = numero !== null && Number.isFinite(numero);
-    const conTexto = typeof valor === 'string' && valor.trim() !== '' && valor !== 'No disponible' && valor !== '—';
     const conSerie = conDato && Array.isArray(serie) && serie.length > 1
         && serie.every((v) => Number.isFinite(v) && v >= 0);
     const [activa, setActiva] = useState(false);
@@ -161,12 +160,12 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
                 <p className={`kpi-valor${numero === null ? ' indicador-valor--texto' : ''}`}>{formatear(cifra, formato)}</p>
             )}
             {detalle && <p className="kpi-descripcion">{detalle}</p>}
-            {!cargando && (conDato || conTexto) && (
+            {!cargando && (conSerie || conProporcion || composicion?.length > 0) && (
                 <div className="indicador-zona">
                     {conSerie ? <TendenciaViva datos={serie} etiqueta={`Ventas de los últimos 14 días · ${titulo}`} activa={activa} />
                         : conProporcion ? <Anillo valor={numero} total={Number(de)} etiqueta={`${titulo} sobre el total`} leyenda={leyenda} activa={activa} />
                         : composicion?.length > 0 ? <Composicion partes={composicion} activa={activa} />
-                        : <OndaDecorativa className="onda-decorativa--indicador" activa={activa} />}
+                        : null}
                 </div>
             )}
             {cargando && <span className="indicador-zona indicador-zona--esqueleto" aria-hidden="true" />}

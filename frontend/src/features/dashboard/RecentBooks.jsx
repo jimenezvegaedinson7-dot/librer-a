@@ -75,16 +75,16 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="border-y border-[#f3efe9] bg-[#faf8f5]">
-                                <th className="px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="px-4 sm:px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
                                     Libro
                                 </th>
-                                <th className="px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="px-4 sm:px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
                                     Autor
                                 </th>
-                                <th className="px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
                                     Categoría
                                 </th>
-                                <th className="px-6 py-3 text-right text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="px-4 sm:px-6 py-3 text-right text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
                                     Stock
                                 </th>
                             </tr>
@@ -100,18 +100,18 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
                                             index < librosRecientes.length - 1 ? 'border-b border-[#f3efe9]' : ''
                                         }`}
                                     >
-                                        <td className="px-6 py-4 align-middle">
+                                        <td className="px-4 sm:px-6 py-4 align-middle">
                                             <span className="text-[14px] font-medium text-[#1c1814]">
                                                 {libro.titulo || 'Sin título'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-[14px] text-[#766d62] align-middle">
+                                        <td className="px-4 sm:px-6 py-4 text-[14px] text-[#766d62] align-middle">
                                             {libro.autor || 'Sin autor'}
                                         </td>
-                                        <td className="px-6 py-4 text-[14px] text-[#766d62] align-middle">
+                                        <td className="hidden sm:table-cell px-4 sm:px-6 py-4 text-[14px] text-[#766d62] align-middle">
                                             {libro.categoria || 'Sin categoría'}
                                         </td>
-                                        <td className="px-6 py-4 text-right align-middle">
+                                        <td className="px-4 sm:px-6 py-4 text-right align-middle">
                                             <span
                                                 className={`estado-pildora ${stock.clase}`}
                                             >

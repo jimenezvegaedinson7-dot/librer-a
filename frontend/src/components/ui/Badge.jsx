@@ -18,9 +18,10 @@ const puntos = {
     info: 'bg-sky-500',
 };
 
-export function Badge({ children, color = 'neutral', className = '', punto = true }) {
+export function Badge({ children, color = 'neutral', className = '', punto = true, title }) {
     return (
         <span
+            title={title}
             className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${estilos[color]} ${className}`}
         >
             {punto && <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${puntos[color]}`} />}

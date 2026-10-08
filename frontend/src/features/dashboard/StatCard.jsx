@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import { motion, useReducedMotion } from 'motion/react';
 
-import { Anillo, OndaDecorativa, TendenciaViva } from './Decoraciones';
+import { Anillo, TendenciaViva } from './Decoraciones';
 
 // Todas las tarjetas llevan el acabado de "Total vendido"; el tono solo
 // cambia su color (clases joya--* en panel-editorial.css).
@@ -53,18 +53,14 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion,
 
 export function MiniStat({ titulo, valor, icono, descripcion }) {
     const reducirMovimiento = useReducedMotion();
-    const [activa, setActiva] = useState(false);
 
     return (
         <motion.article
             variants={reducirMovimiento ? estatica : entradaTarjeta}
-            onHoverStart={() => setActiva(true)}
-            onHoverEnd={() => setActiva(false)}
             className="mini-stat"
         >
             <div className="mini-stat-cabecera">
                 <span className="mini-stat-icono" aria-hidden="true">{icono}</span>
-                <OndaDecorativa className="onda-decorativa--mini" activa={activa} />
             </div>
             <div className="min-w-0">
                 <p className="mini-stat-label">{titulo}</p>

@@ -156,7 +156,7 @@ function accionesVenta(fila, { onVer, onEmitirComprobante, onReembolsar, puedeRe
         <>
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>
             {fila.pago_revision_motivo && <Badge color="warning">Pago en revisión</Badge>}
-            {fila.estado_reembolso === 'pendiente_verificacion' && <Badge color="warning">Devolución pendiente de verificación</Badge>}
+            {fila.estado_reembolso === 'pendiente_verificacion' && <Badge color="warning" title="Devolución pendiente de verificación">Devolución pendiente</Badge>}
             {conComprobante && (fila.estado === 'pagada' || fila.estado === 'entregada') && (
                 <span
                     className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700"

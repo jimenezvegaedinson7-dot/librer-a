@@ -225,7 +225,7 @@ export default function DashboardPage() {
                     icono={<FaCalendarCheck />}
                     color="warning"
                     detalle={reservasPendientes > 0 ? `${reservasPendientes} ${reservasPendientes === 1 ? 'pendiente' : 'pendientes'} de atender` : 'Ninguna pendiente'}
-                    medidor={{ valor: reservasPendientes, total: num(resumen.total_reservas), etiqueta: 'Reservas pendientes sobre el total', leyenda: 'del total de reservas está pendiente' }}
+                    medidor={{ valor: reservasPendientes, total: num(resumen.total_reservas), etiqueta: 'Reservas pendientes sobre el total', leyenda: 'pendientes del total' }}
                 />
             </motion.section>
 

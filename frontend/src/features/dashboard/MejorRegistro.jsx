@@ -1,8 +1,6 @@
-import { useState } from 'react';
 
 import { motion, useReducedMotion } from 'motion/react';
 
-import { OndaDecorativa } from './Decoraciones';
 
 const entrada = {
     oculto: { opacity: 0, y: 10 },
@@ -13,10 +11,8 @@ const estatica = { oculto: { opacity: 1 }, visible: { opacity: 1 } };
 
 export default function MejorRegistro({ icono, etiqueta, principal, detalle, vacio }) {
     const reducirMovimiento = useReducedMotion();
-    const [activa, setActiva] = useState(false);
     return (
-        <motion.article variants={reducirMovimiento ? estatica : entrada} onHoverStart={() => setActiva(true)} onHoverEnd={() => setActiva(false)} className="registro-card">
-            <OndaDecorativa className="onda-decorativa--registro" activa={activa} />
+        <motion.article variants={reducirMovimiento ? estatica : entrada} className="registro-card">
             <span className="registro-icono" aria-hidden="true">
                 {icono}
             </span>

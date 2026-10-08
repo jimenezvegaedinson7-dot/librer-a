@@ -39,7 +39,7 @@ async function contraste(locator) {
 }
 
 for (const ancho of [390, 1440]) {
-    for (const tema of ['light', 'dark']) {
+    for (const tema of ['light']) {
         test(`panel editorial ${tema} a ${ancho}px: marca, iconos, contraste y detalle`, async ({page}) => {
             await page.setViewportSize({width:ancho,height:1000});
             const errores=[]; page.on('pageerror', e => errores.push(e.message));
@@ -87,50 +87,3 @@ for (const ancho of [390, 1440]) {
     }
 }
 
-for (const [ancho, tema] of [[390,'light'],[1440,'dark']]) {
-    test(`apariencia intensa ${tema} a ${ancho}px: aplicar, persistir y excluir amarillo del menú`, async ({page}) => {
-        await page.setViewportSize({width:ancho,height:1000});
-        await preparar(page, tema, false);
-        const aplicar = async (nombre) => {
-            await page.goto('/personalizacion');
-            await page.getByRole('radio',{name:nombre,exact:true}).click();
-            await page.getByRole('button',{name:'Aplicar',exact:true}).click();
-            const modal=page.getByRole('dialog');
-            await modal.getByRole('checkbox',{name:'Seleccionar todo',exact:true}).check();
-            await modal.getByRole('button',{name:'Aplicar cambios',exact:true}).click();
-            await expect(modal).toHaveCount(0);
-        };
-        await aplicar('Zafiro');
-        await expect(page.locator('.admin-topbar')).toHaveCSS('background-color','rgb(30, 79, 163)');
-        await expect(page.getByRole('complementary',{name:'Navegación principal'})).toHaveCSS('background-color','rgb(30, 79, 163)');
-        await page.screenshot({path:test.info().outputPath(`apariencia-zafiro-${ancho}.png`),fullPage:true});
-        await page.goto('/autores');
-        const guardar=page.getByRole('button',{name:'Guardar autor',exact:true});
-        await expect(guardar).toHaveCSS('background-color','rgb(30, 79, 163)');
-        expect(await contraste(guardar)).toBeGreaterThanOrEqual(4.5);
-        await expect(page.locator('.data-table-shell thead tr').first()).toHaveCSS('background-color','rgb(30, 79, 163)');
-        await expect(page.locator('.data-table-shell thead th').first()).toHaveCSS('color','rgb(255, 255, 255)');
-        await page.reload();
-        await expect(guardar).toHaveCSS('background-color','rgb(30, 79, 163)');
-        await aplicar('Ámbar');
-        await page.goto('/autores');
-        await expect(guardar).toHaveCSS('background-color','rgb(200, 138, 18)');
-        expect(await contraste(guardar)).toBeGreaterThanOrEqual(4.5);
-        const menu=page.getByRole('complementary',{name:'Navegación principal'});
-        await expect(menu).toHaveCSS('background-color',tema==='dark' ? 'rgb(10, 31, 49)' : 'rgb(13, 41, 64)');
-        await expect(menu.locator('a[href="/autores"] svg')).toHaveCSS('color','rgb(255, 255, 255)');
-        const perfil=page.locator('.admin-topbar button[aria-haspopup="menu"]');
-        await perfil.hover();
-        await expect(perfil).toHaveCSS('background-color','rgb(220, 160, 42)');
-        expect(await contraste(perfil)).toBeGreaterThanOrEqual(4.5);
-        if (ancho < 1024) await page.getByRole('button',{name:'Alternar menú',exact:true}).click();
-        await page.screenshot({path:test.info().outputPath(`menu-sin-amarillo-${ancho}.png`),fullPage:true});
-        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-        // Degradado: el menú, la barra superior y los botones llevan el fondo combinado.
-        await aplicar('Aurora');
-        await page.goto('/autores');
-        await expect(page.getByRole('complementary',{name:'Navegación principal'})).toHaveCSS('background-image',/linear-gradient/);
-        await expect(page.locator('.admin-topbar')).toHaveCSS('background-image',/linear-gradient/);
-        await expect(guardar).toHaveCSS('background-image',/linear-gradient/);
-    });
-}

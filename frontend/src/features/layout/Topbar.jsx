@@ -9,9 +9,7 @@ import {
     FaGear,
     FaGlobe,
     FaMagnifyingGlass,
-    FaMoon,
     FaRightFromBracket,
-    FaSun,
     FaUser,
     FaXmark,
 } from 'react-icons/fa6';
@@ -37,14 +35,10 @@ function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
     );
 }
 
-import { Palette } from 'lucide-react';
-import { useTema } from '../../components/providers/tema';
 
 export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     const navigate = useNavigate();
     const { usuario, cerrarSesion } = useAuth();
-    const { tema, cambiarTema, getColorZona } = useTema();
-    const topbarColor = getColorZona('topbar');
 
     const [busqueda, setBusqueda] = useState('');
     const [buscadorAbierto, setBuscadorAbierto] = useState(false);
@@ -187,7 +181,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
             <header
                 className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b bg-white/80 backdrop-blur-md px-3 sm:px-4 lg:px-6"
                 style={{
-                    borderColor: topbarColor ? topbarColor.primary + '30' : '#e6e0d7',
+                    borderColor: '#e6e0d7',
                 }}
             >
                 <div className="flex w-full items-center justify-between gap-4">
@@ -262,30 +256,6 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                     {/* Acciones derecha */}
                     <div className="flex items-center gap-2">
 
-                        {/* Toggle tema */}
-                        <button
-                            type="button"
-                            onClick={cambiarTema}
-                            aria-label={tema === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
-                            aria-pressed={tema === 'dark'}
-                            title={tema === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e6e0d7] bg-white text-[#766d62] transition-all hover:border-[#d3cbbf] hover:text-[#1c1814]"
-                        >
-                            <span key={tema} className="theme-icon">
-                                {tema === 'dark' ? <FaSun className="text-sm" /> : <FaMoon className="text-sm" />}
-                            </span>
-                        </button>
-
-                        {/* Personalizar colores */}
-                        <button
-                            type="button"
-                            onClick={() => navigate('/personalizacion')}
-                            aria-label="Personalizar colores"
-                            title="Personalizar colores"
-                            className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#e6e0d7] bg-white text-[#766d62] transition-all hover:border-[#d3cbbf] hover:text-[#1c1814]"
-                        >
-                            <Palette className="h-4 w-4" />
-                        </button>
 
                         {/* Notificaciones */}
                         <div ref={notifRef} className="relative">

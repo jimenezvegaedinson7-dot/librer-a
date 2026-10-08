@@ -4,7 +4,6 @@ import { ArrowLeft, Globe, X } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useMemo } from 'react';
 
-import { useTema } from '../../components/providers/tema';
 import { useAuth } from '../auth/AuthContext';
 import logoLibreria from '../../public-site/assets/logo-f-blanco-96.webp';
 import { navPorRol } from './navConfig';
@@ -21,10 +20,20 @@ const agruparPorSeccion = (items) =>
 
 const resorte = { type: 'spring', stiffness: 420, damping: 36, mass: 0.8 };
 
+// Menú izquierdo con un único diseño: marino de la marca y texto blanco.
+const colores = {
+    primary: '#ffffff',
+    primarySoft: '#16395a',
+    sidebarBg: '#0d2940',
+    sidebarBorder: 'rgba(255, 255, 255, 0.20)',
+    sidebarText: '#ffffff',
+    sidebarHover: '#16395a',
+    sidebarSection: '#d6e5f5',
+    brandTitle: '#ffffff',
+};
+
 function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
-    const { getSidebarColores } = useTema();
     const { usuario } = useAuth();
-    const colores = getSidebarColores('sidebar');
     const reducirMovimiento = useReducedMotion();
     const acento = colores.primary || colores.sidebarText;
 
@@ -43,7 +52,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
         <aside
             aria-label="Navegación principal"
             style={{
-                background: colores.sidebarFondo || colores.sidebarBg,
+                background: colores.sidebarBg,
                 borderColor: colores.sidebarBorder,
                 color: colores.sidebarText,
                 '--sb-hover': colores.sidebarHover,
@@ -51,7 +60,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 '--sb-scroll': colores.sidebarText,
             }}
             className={`
-                admin-sidebar ${colores.oscuro ? 'admin-sidebar-marca' : ''}
+                admin-sidebar admin-sidebar-marca
                 fixed left-0 top-0 z-50
                 flex h-screen flex-col
                 border-r

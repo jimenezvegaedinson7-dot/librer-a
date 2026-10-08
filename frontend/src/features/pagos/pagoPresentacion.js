@@ -19,6 +19,8 @@ export const ESTADOS_VENTA = {
 
 export const ESTADOS_PAGO = {
     approved: { texto: 'Aprobado', color: 'success' },
+    captured: { texto: 'Cobrado', color: 'success' },
+    authorized: { texto: 'Autorizado', color: 'info' },
     pending: { texto: 'Pendiente', color: 'warning' },
     in_process: { texto: 'En proceso', color: 'warning' },
     rejected: { texto: 'Rechazado', color: 'danger' },

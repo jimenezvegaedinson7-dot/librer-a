@@ -552,7 +552,7 @@ export default function ComprobantesPage() {
                         acciones={
                             <div className="flex flex-wrap items-center gap-2">
                                 <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
-                                    {total} {total === 1 ? 'comprobante' : 'comprobantes'} · {formatearMoneda(resumen.ingresos)}
+                                    {total} {total === 1 ? 'comprobante' : 'comprobantes'}{resumen ? ` · ${formatearMoneda(resumen.ingresos)}` : ''}
                                 </span>
                             </div>
                         }

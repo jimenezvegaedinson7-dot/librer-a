@@ -419,8 +419,8 @@ export default function PedidosPage() {
         const { tipoValido, historico, devolucionPendiente } = opcionesPedido(p);
         return (
             <>
-                {historico && <Badge color="neutral">Histórico: solo consulta</Badge>}
-                {devolucionPendiente && <Badge color="warning">Devolución pendiente de verificación</Badge>}
+                {historico && <Badge color="neutral" title="Histórico: solo consulta">Histórico</Badge>}
+                {devolucionPendiente && <Badge color="warning" title="Devolución pendiente de verificación">Devolución pendiente</Badge>}
                 {!tipoValido && (
                     <span
                         className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 text-[11px] font-semibold text-amber-700"

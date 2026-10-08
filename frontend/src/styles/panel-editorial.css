@@ -28,29 +28,6 @@
     caret-color: var(--editorial-dorado-oscuro);
 }
 
-.admin-shell[data-theme="dark"] {
-    --panel-fondo: var(--editorial-marino-950);
-    --panel-superficie: var(--editorial-marino-900);
-    --panel-suave: var(--editorial-marino-700);
-    --panel-borde: #2c4b66;
-    --panel-texto: var(--editorial-marfil);
-    --panel-secundario: #c0c8d0;
-    --panel-acento-texto: var(--editorial-dorado-hover);
-    --color-surface: var(--panel-fondo);
-    --color-surface-50: var(--panel-superficie);
-    --color-danger: #f87171;
-    --brand: var(--editorial-dorado);
-    --brand-hover: var(--editorial-dorado-hover);
-    --brand-soft: rgb(213 164 71 / 0.12);
-    --brand-text: var(--editorial-dorado-hover);
-    --accent-soft: rgb(213 164 71 / 0.12);
-    --table-head-bg: var(--editorial-marino-700);
-    --table-head-line: var(--editorial-dorado);
-    --grafico-barra: #90afc6;
-    --grafico-promedio: var(--editorial-dorado);
-    --r-burdeos: #90afc6;
-}
-
 .admin-shell[data-theme] .admin-main { background: var(--panel-fondo); }
 .admin-shell .admin-sidebar-marca {
     background-image: none;
@@ -81,12 +58,6 @@
 .admin-shell[data-theme] [class*="bg-[#f2f8f6]"] {
     background-color: var(--accent-soft) !important;
 }
-.admin-shell[data-theme="dark"] :is(.bg-mahogany-200, .bg-mahogany-700, .bg-primary-600) {
-    background-color: var(--editorial-marino-700) !important;
-}
-.admin-shell[data-theme="dark"] :is([class*="bg-[#faf8f5]"], [class*="bg-[#f3efe9]"], [class*="bg-[#e6e0d7]"]) {
-    background-color: var(--panel-suave) !important;
-}
 .admin-shell[data-theme] .admin-search { background: var(--panel-suave) !important; }
 .admin-shell[data-theme] .admin-topbar button[class*="bg-white"] {
     background: var(--panel-superficie) !important;
@@ -101,13 +72,6 @@
     background: var(--accent-soft) !important;
     color: var(--panel-acento-texto) !important;
 }
-.admin-shell[data-theme="dark"] :is([class*="text-[#1c1814]"], [class*="text-[#433c35]"]) {
-    color: var(--panel-texto) !important;
-}
-.admin-shell[data-theme="dark"] :is([class*="text-[#766d62]"], [class*="text-[#a39a8e]"]) {
-    color: var(--panel-secundario) !important;
-}
-.admin-shell[data-theme="dark"] .text-primary-500 { color: var(--panel-secundario) !important; }
 .admin-shell[data-theme] .segmentado-opcion { color: var(--panel-secundario); }
 .admin-shell[data-theme] .segmentado-opcion--activa {
     background: var(--panel-superficie);
@@ -219,10 +183,6 @@
 .admin-shell[data-theme] .kpi-card--destacada .kpi-icono { background: rgb(213 164 71 / 0.14); }
 .admin-shell[data-theme] .kpi-card--destacada::after { border-color: rgb(213 164 71 / 0.28); }
 .admin-shell[data-theme] .kpi-tono--gold { --kpi-tint: var(--accent-soft); --kpi-ink: var(--panel-acento-texto); }
-.admin-shell[data-theme] .onda-area { fill: var(--accent-soft); }
-.admin-shell[data-theme] .onda-base { stroke: var(--panel-borde); }
-.admin-shell[data-theme] .onda-trazo { stroke: var(--editorial-dorado); }
-.admin-shell[data-theme] :is(.kpi-trazo-punto, .onda-punto) { background: var(--editorial-dorado); box-shadow: none; }
 
 .admin-shell ::selection { background: var(--editorial-dorado-hover); color: var(--editorial-marino-950); }
 .admin-shell .modal-panel {
@@ -248,44 +208,6 @@
 .login-page :is(button, a, input):focus-visible { outline-color: var(--editorial-dorado-oscuro); }
 
 /* Personalización: colores sólidos en las zonas elegidas, sin diluirlos. */
-html[data-color-topbar] .admin-shell .admin-topbar {
-    background: var(--theme-topbar-fondo, var(--theme-topbar)) !important;
-    color: var(--theme-topbar-on);
-}
-html[data-color-topbar] .admin-topbar button[aria-haspopup="menu"] :is(p, svg) {
-    color: var(--theme-topbar-on) !important;
-}
-html[data-color-topbar] .admin-shell .admin-topbar button[aria-haspopup="menu"] {
-    background: transparent !important;
-}
-html[data-color-topbar] .admin-shell .admin-topbar button[aria-haspopup="menu"]:hover {
-    background: var(--theme-topbar-hover) !important;
-}
-html[data-color-tables] .admin-shell .data-table-shell thead tr {
-    background: var(--theme-tables) !important;
-}
-html[data-color-tables] .admin-shell .data-table-shell thead th {
-    color: var(--theme-tables-on) !important;
-}
-html[data-color-icons] .admin-shell :is(.ficha-icono, .page-header-icon, .card-header-icon, .mini-stat-icono, .panel-icono:not(.panel-icono--estado)) {
-    background: var(--theme-icons-fondo, var(--theme-icons)) !important;
-    color: var(--theme-icons-on) !important;
-    border-color: var(--theme-icons-hover);
-}
-html[data-color-modals] .admin-shell .modal-header {
-    background: var(--theme-modals) !important;
-}
-html[data-color-modals] .admin-shell .modal-header :is(h2, p) {
-    color: var(--theme-modals-on) !important;
-}
-html[data-color-modals] .admin-shell .modal-header > button { color: var(--theme-modals-on) !important; }
-html[data-color-badges] .admin-shell :is(.admin-notif-badge, .bg-mahogany-50) {
-    background: var(--theme-badges-fondo, var(--theme-badges)) !important;
-    color: var(--theme-badges-on) !important;
-}
-html[data-color-badges] .admin-shell .bg-mahogany-50 .bg-mahogany-500 { background: currentColor; }
-html[data-color-charts] .admin-shell { --grafico-barra: var(--theme-charts); }
-html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: var(--theme-links) !important; }
 .admin-shell .personalizacion-intensa .muestra-color-marco {
     background: var(--muestra-acento);
     border-color: var(--muestra-acento);
@@ -619,19 +541,6 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
 .indicador .grafico-composicion .kpi-tendencia-barra:nth-child(4) { background: var(--parte-3); }
 .indicador .grafico-composicion .kpi-tendencia-barra:nth-child(5) { background: var(--parte-4); }
 .indicador .grafico-composicion .kpi-tendencia-barra--cero { opacity: 0.35; }
-.indicador .onda-decorativa--indicador {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: 3.5rem;
-}
-.indicador .onda-area { fill: color-mix(in srgb, var(--joya-acento) 12%, transparent); }
-.admin-shell[data-theme] .indicador .onda-base { stroke: color-mix(in srgb, var(--joya-acento) 35%, transparent); }
-.admin-shell[data-theme] .indicador .onda-trazo { stroke: var(--joya-acento); }
-.indicador .onda-punto {
-    background: var(--joya-acento);
-    box-shadow: 0 0 0 3px var(--joya-base);
-}
 
 /* ========================================
    Tarjetas compactas fuera del dashboard
@@ -649,10 +558,9 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
 .admin-shell[data-theme] .indicador .indicador-grafico--esqueleto { height: 1.5rem; margin-top: 0.5rem; }
 .admin-shell[data-theme] .indicador .kpi-zona { height: 2rem; padding-block: 0.125rem; }
 .admin-shell[data-theme] .indicador .kpi-zona--anillo { height: auto; gap: 0.5rem; }
-.admin-shell[data-theme] .indicador .kpi-anillo { height: 1.875rem; width: 1.875rem; }
-.admin-shell[data-theme] .indicador .kpi-anillo-cifra { font-size: 0.5625rem; }
+.admin-shell[data-theme] .indicador .kpi-anillo { height: 2.5rem; width: 2.5rem; }
+.admin-shell[data-theme] .indicador .kpi-anillo-cifra { font-size: 0.625rem; letter-spacing: -0.02em; }
 .admin-shell[data-theme] .indicador .kpi-anillo-leyenda { font-size: 0.6875rem; }
-.admin-shell[data-theme] .indicador .onda-decorativa--indicador { height: 2rem; }
 .admin-shell[data-theme] .indicador .grafico-composicion { gap: 0.25rem; }
 .admin-shell[data-theme] .indicador .grafico-composicion__leyenda { gap: 0 0.625rem; }
 
@@ -662,7 +570,7 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
 .admin-shell[data-theme] .kpi-card:not(.dashboard-mosaico .kpi-card) .kpi-descripcion { margin-top: 0.125rem; margin-bottom: 0.5rem; }
 .admin-shell[data-theme] .kpi-card:not(.dashboard-mosaico .kpi-card) .kpi-zona { height: 2.25rem; padding-block: 0.25rem; }
 .admin-shell[data-theme] .kpi-card:not(.dashboard-mosaico .kpi-card) .kpi-zona--anillo { height: auto; }
-.admin-shell[data-theme] .kpi-card:not(.dashboard-mosaico .kpi-card) .kpi-anillo { height: 2rem; width: 2rem; }
+.admin-shell[data-theme] .kpi-card:not(.dashboard-mosaico .kpi-card) .kpi-anillo { height: 2.5rem; width: 2.5rem; }
 /* Ícono y título en una fila salvo en tarjetas muy angostas. */
 @container (max-width: 200px) {
     .admin-shell[data-theme] .indicador .indicador-cabecera { flex-wrap: nowrap; }
@@ -683,10 +591,6 @@ html[data-color-links] .admin-shell :is(.notif-accion, .notif-abrir) { color: va
 }
 .indicador-tarjeta .indicador-esqueleto { margin-top: 0.5rem; }
 .indicador-tarjeta.indicador--cargando::after { border: 0; inset: 0; }
-.indicador-tarjeta .onda-decorativa--indicador { display: block; width: 100%; height: 2.25rem; }
-.indicador-tarjeta .onda-area { fill: color-mix(in srgb, var(--joya-acento) 12%, transparent); }
-.admin-shell[data-theme] .indicador-tarjeta .onda-base { stroke: color-mix(in srgb, var(--joya-acento) 35%, transparent); }
-.admin-shell[data-theme] .indicador-tarjeta .onda-trazo { stroke: var(--joya-acento); }
 .indicador-tarjeta .grafico-composicion { display: grid; gap: 0.25rem; }
 .indicador-tarjeta .grafico-composicion .kpi-zona { height: 1.5rem; }
 .indicador-tarjeta .grafico-composicion .kpi-tendencia-barra:nth-child(1) { background: var(--parte-0); }

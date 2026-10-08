@@ -3,17 +3,15 @@ import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 
-import { ThemeProvider } from '../../components/providers/ThemeContext';
-import { useTema } from '../../components/providers/tema';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import Breadcrumbs from './Breadcrumbs';
 import { usePaginaPanel } from '../../lib/hooks/usePaginaPanel';
 
-function AdminLayoutInner() {
+export default function AdminLayout() {
+    usePaginaPanel();
     const [sidebarAbierto, setSidebarAbierto] = useState(false);
     const [sidebarColapsado, setSidebarColapsado] = useState(false);
-    const { tema } = useTema();
     const { pathname } = useLocation();
     const reducirMovimiento = useReducedMotion();
 
@@ -24,7 +22,7 @@ function AdminLayoutInner() {
     const mlClase = sidebarColapsado ? 'lg:ml-[72px]' : 'lg:ml-[250px]';
 
     return (
-        <div data-theme={tema} className="admin-shell min-h-screen bg-surface">
+        <div data-theme="light" className="admin-shell min-h-screen bg-surface">
             <Sidebar
                 abierto={sidebarAbierto}
                 onCerrar={cerrarSidebar}
@@ -70,11 +68,3 @@ function AdminLayoutInner() {
     );
 }
 
-export default function AdminLayout() {
-    usePaginaPanel();
-    return (
-        <ThemeProvider>
-            <AdminLayoutInner />
-        </ThemeProvider>
-    );
-}

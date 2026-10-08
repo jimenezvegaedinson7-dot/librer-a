@@ -53,7 +53,7 @@
 | `/tarifas-envio` | TarifasEnvioPage | `features/tarifas/TarifasEnvioPage.jsx` |
 | `/historial` | HistorialPage | `features/historial/HistorialPage.jsx` |
 | `/configuracion/empresa` | EmpresaPage | `features/configuracion/EmpresaPage.jsx` |
-| `/personalizacion` | PersonalizacionPage | `features/configuracion/PersonalizacionPage.jsx` |
+| `/personalizacion` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `/agencias` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `/cierre-caja` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `/reportes` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
@@ -265,14 +265,12 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | Archivo | Usado por (nº de archivos) |
 |---|---|
 | `components/catalogo/PortadaCatalogo.jsx` | 3 |
-| `components/providers/ThemeContext.jsx` | 1 |
 | `components/providers/ToastProvider.jsx` | 17 |
-| `components/providers/tema.js` | 5 |
 | `components/ui/Acciones.jsx` | 14 |
 | `components/ui/Alert.jsx` | 34 |
 | `components/ui/Badge.jsx` | 23 |
-| `components/ui/Button.jsx` | 49 |
-| `components/ui/Card.jsx` | 21 |
+| `components/ui/Button.jsx` | 48 |
+| `components/ui/Card.jsx` | 20 |
 | `components/ui/Celebracion.jsx` | 2 |
 | `components/ui/ConfirmarAccion.jsx` | 3 |
 | `components/ui/ConfirmarEliminacion.jsx` | 4 |
@@ -284,8 +282,8 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/Form.jsx` | 36 |
 | `components/ui/FormularioAlta.jsx` | 3 |
 | `components/ui/Indicadores.jsx` | 13 |
-| `components/ui/Modal.jsx` | 30 |
-| `components/ui/PageHeader.jsx` | 17 |
+| `components/ui/Modal.jsx` | 29 |
+| `components/ui/PageHeader.jsx` | 16 |
 | `components/ui/Pagination.jsx` | 13 |
 | `components/ui/Spinner.jsx` | 4 |
 | `components/ui/TableSkeleton.jsx` | 17 |

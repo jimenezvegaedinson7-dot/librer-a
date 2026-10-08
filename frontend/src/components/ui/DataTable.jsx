@@ -101,7 +101,7 @@ export function DataTable({
                                 ))}
                                 {acciones && (
                                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                                        <div className="tabla-acciones flex items-center justify-center gap-1.5">{acciones(fila)}</div>
+                                        <div className="tabla-acciones flex flex-wrap items-center justify-center gap-1.5">{acciones(fila)}</div>
                                     </td>
                                 )}
                             </tr>

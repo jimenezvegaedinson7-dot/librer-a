@@ -121,7 +121,7 @@ for (const width of [390, 1440]) {
     });
 }
 
-test('las demás secciones usan los gráficos comunes y las ondas decorativas no afirman datos', async ({ page }) => {
+test('las demás secciones usan los gráficos comunes y no dibujan ondas decorativas', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 1000 });
     const control = await preparar(page);
     for (const ruta of ['/libros', '/autores', '/categorias', '/inventario', '/pedidos', '/reservas', '/historial', '/reclamaciones', '/usuarios?vista=clientes', '/anuncios']) {
@@ -133,8 +133,7 @@ test('las demás secciones usan los gráficos comunes y las ondas decorativas no
         const tarjetas = indicadores.locator('.indicador-tarjeta');
         const total = await tarjetas.count();
         expect(total).toBeGreaterThan(0);
-        await expect(tarjetas.locator('.indicador-zona')).toHaveCount(total);
-        for (const onda of await indicadores.locator('.onda-decorativa').all()) await expect(onda).toHaveAttribute('aria-hidden', 'true');
+        await expect(indicadores.locator('.onda-decorativa')).toHaveCount(0);
         await expect(indicadores.locator('.grafico-anillo, .grafico-linea, .grafico-escala, .grafico-segmentos')).toHaveCount(0);
         await comprobarTextos(page);
     }

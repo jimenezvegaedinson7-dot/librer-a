@@ -125,7 +125,7 @@ for (const width of [390, 1440]) {
             await expect(precio.locator('.text-lg')).toHaveText(caso.precio);
             if (libro.descuento_vigente) {
                 await expect(precio.locator('.line-through')).toHaveText('S/ 100.00');
-                await expect(precio.locator('.text-lg')).toHaveCSS('color', width === 390 ? 'rgb(253, 186, 116)' : 'rgb(194, 65, 12)');
+                await expect(precio.locator('.text-lg')).toHaveCSS('color', 'rgb(194, 65, 12)');
                 await expect(precio.locator('.text-lg')).toHaveCSS('text-decoration-line', 'underline');
             } else {
                 await expect(precio.locator('.line-through')).toHaveCount(0);

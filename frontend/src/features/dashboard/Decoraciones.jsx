@@ -115,25 +115,6 @@ export function Anillo({ valor, total, etiqueta, leyenda, activa }) {
     );
 }
 
-// Onda ornamental (no representa datos). Se dibuja al pasar el cursor.
-const ONDA = 'M0 34 C 14 33, 20 22, 32 24 S 50 32, 62 25 S 82 10, 96 13 S 114 8, 120 4';
-
-export function OndaDecorativa({ className = '', activa }) {
-    const reducir = useReducedMotion();
-    return (
-        <span className={`onda-decorativa ${className}`} aria-hidden="true">
-            <svg viewBox="0 0 120 40" preserveAspectRatio="none">
-                <path className="onda-area" d={`${ONDA} L 120 40 L 0 40 Z`} />
-                <path className="onda-base" d={ONDA} vectorEffect="non-scaling-stroke" />
-            </svg>
-            <motion.svg viewBox="0 0 120 40" preserveAspectRatio="none" initial="reposo" animate={activa ? 'hover' : 'reposo'} variants={variantesRevelado(reducir)}>
-                <path className="onda-trazo" d={ONDA} vectorEffect="non-scaling-stroke" />
-            </motion.svg>
-            <motion.span className="onda-punto" initial="reposo" animate={activa ? 'hover' : 'reposo'} variants={variantesPunto(reducir)} />
-        </span>
-    );
-}
-
 // Destello que recorre una barra al pasar el cursor por el panel.
 export function Destello() {
     const reducir = useReducedMotion();
