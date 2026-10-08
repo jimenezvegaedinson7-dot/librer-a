@@ -1,8 +1,8 @@
 {
-    "version": "1.0.17",
-    "versionCode": 18,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.17/libreria-1.0.17.apk",
-    "sha256": "2f1f026c9b5efefb3989ab5f072153e69e15f766bd02bd437e10b19a20827e04",
+    "version": "1.0.18",
+    "versionCode": 19,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.18/libreria-1.0.18.apk",
+    "sha256": "946ea783830ab6e05b94dcb255784e02e7c028b5364237cea9c93cd2a13ec026",
     "obligatoria": false,
-    "notas": "Campo de dirección siempre visible en el delivery, perfil más formal con los botones Colores y Fondo y tarjetas, y 28 combinaciones de fondo."
+    "notas": "Ajustes visuales: inicio y catálogo alineados, entrega más clara, botones de Mis compras en una línea y perfil más parejo."
 }

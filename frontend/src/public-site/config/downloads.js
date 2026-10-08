@@ -10,9 +10,9 @@ export const DESCARGAS = {
     android: {
         habilitado: true,
         tipo: 'apk',
-        version: '1.0.17',
-        // APK firmado: dirección siempre visible, perfil formal y más fondos.
-        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.17/libreria-1.0.17.apk',
+        version: '1.0.18',
+        // APK firmado: ajustes visuales revisados con la app en ejecución.
+        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.18/libreria-1.0.18.apk',
         tamano: '55.5 MB',
         actualizado: '2026-10-07',
     },
