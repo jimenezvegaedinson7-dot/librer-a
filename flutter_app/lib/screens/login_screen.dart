@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
+import '../services/storage_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/comprobador_actualizacion.dart';
@@ -44,7 +45,19 @@ class _LoginScreenState extends State<LoginScreen> {
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => ComprobadorActualizacion.comprobar(context),
     );
+    _cargarVerificacionPendiente();
   }
+
+  /// Correo registrado que aún no verificó su código (si lo hay).
+  String? _verificacionPendiente;
+
+  Future<void> _cargarVerificacionPendiente() async {
+    final email = await StorageService.instance.obtenerVerificacionPendiente();
+    if (mounted && email != null) {
+      setState(() => _verificacionPendiente = email);
+    }
+  }
+
   bool _loading = false;
   String? _errorMessage;
 
@@ -91,6 +104,8 @@ class _LoginScreenState extends State<LoginScreen> {
       // vacío para no mezclar datos entre usuarios.
       CarritoService.instance.vaciarSesion();
       ApiService.instance.limpiarEstadoCheckout();
+      await StorageService.instance.limpiarVerificacionPendiente();
+      if (!mounted) return;
 
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute<void>(builder: (_) => const HomeScreen()),
@@ -98,7 +113,12 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } on ApiException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message);
-      if (mounted && e.requiereVerificacion) await _openVerificar();
+      if (mounted && e.requiereVerificacion) {
+        final email = _emailController.text.trim();
+        await StorageService.instance.guardarVerificacionPendiente(email);
+        if (mounted) setState(() => _verificacionPendiente = email);
+        await _openVerificar();
+      }
     } catch (_) {
       if (mounted) {
         setState(() => _errorMessage = 'Ocurrió un error. Inténtalo de nuevo.');
@@ -127,15 +147,25 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _openVerificar() async {
-    final email = _emailController.text.trim();
+    var email = _emailController.text.trim();
+    if (email.isEmpty) email = _verificacionPendiente ?? '';
     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
-      setState(() => _errorMessage = 'Ingresa tu correo para retomar la verificación.');
+      setState(
+        () => _errorMessage = 'Ingresa tu correo para retomar la verificación.',
+      );
       return;
     }
     final verificado = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(builder: (_) => VerificacionEmailScreen(email: email)),
+      MaterialPageRoute<bool>(
+        builder: (_) => VerificacionEmailScreen(email: email),
+      ),
     );
-    if (mounted && verificado == true) setState(() => _errorMessage = null);
+    if (mounted && verificado == true) {
+      setState(() {
+        _errorMessage = null;
+        _verificacionPendiente = null;
+      });
+    }
   }
 
   @override
@@ -189,22 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 height: 1.45,
                               ),
                             ),
-                            const SizedBox(height: 24),
-                            Row(
-                              children: [
-                                Expanded(child: Divider(color: _border)),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 12),
-                                  child: Icon(
-                                    Icons.auto_stories_outlined,
-                                    color: _gold,
-                                    size: 19,
-                                  ),
-                                ),
-                                Expanded(child: Divider(color: _border)),
-                              ],
-                            ),
-                            const SizedBox(height: 28),
+                            const SizedBox(height: 32),
 
                             Text(
                               'Correo electrónico',
@@ -312,10 +327,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(height: 16),
                               ErrorBanner(message: _errorMessage!),
                             ],
-                            TextButton(
-                              onPressed: _loading ? null : _openVerificar,
-                              child: const Text('Verificar mi correo o reenviar código'),
-                            ),
+                            // Solo si la cuenta se registró y falta su código.
+                            if (_verificacionPendiente != null)
+                              TextButton(
+                                onPressed: _loading ? null : _openVerificar,
+                                child: const Text(
+                                  'Verificar mi correo o reenviar código',
+                                ),
+                              ),
 
                             const SizedBox(height: 28),
                             SizedBox(

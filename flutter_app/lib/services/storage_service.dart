@@ -46,7 +46,8 @@ class StorageService {
   int? get idUsuarioActual => _idUsuarioActual;
 
   /// Guarda el token JWT en secure storage (y limpia la clave LEGACY).
-  Future<void> guardarToken(String token) => _serializarCredencial(() => _guardarToken(token));
+  Future<void> guardarToken(String token) =>
+      _serializarCredencial(() => _guardarToken(token));
 
   Future<void> _guardarToken(String token) async {
     _cambiandoSesion = true;
@@ -70,8 +71,12 @@ class StorageService {
       // ni guardar una credencial nueva en preferencias sin cifrar.
       try {
         await _secure.delete(key: Constants.secureTokenKey);
-      } catch (_) { /* El marcador persistente bloquea una credencial residual. */ }
-      throw StateError('No se pudo guardar la sesión de forma segura. Intenta nuevamente.');
+      } catch (_) {
+        /* El marcador persistente bloquea una credencial residual. */
+      }
+      throw StateError(
+        'No se pudo guardar la sesión de forma segura. Intenta nuevamente.',
+      );
     }
   }
 
@@ -84,7 +89,9 @@ class StorageService {
 
   Future<String?> _obtenerToken() async {
     final prefs = await SharedPreferences.getInstance();
-    if (_sesionInvalida || prefs.getBool(_sesionInvalidaKey) == true) return null;
+    if (_sesionInvalida || prefs.getBool(_sesionInvalidaKey) == true) {
+      return null;
+    }
     final legado = prefs.getString(Constants.prefTokenKey);
     try {
       final token = await _secure.read(key: Constants.secureTokenKey);
@@ -104,7 +111,9 @@ class StorageService {
       // Se continúa con el flujo LEGACY si el secure storage falla.
     }
 
-    if (_sesionInvalida || prefs.getBool(_sesionInvalidaKey) == true) return null;
+    if (_sesionInvalida || prefs.getBool(_sesionInvalidaKey) == true) {
+      return null;
+    }
     if (legado == null || legado.isEmpty) return null;
 
     try {
@@ -151,8 +160,15 @@ class StorageService {
   }) async {
     final generacion = generacionEsperada ?? _generacion;
     final prefs = await SharedPreferences.getInstance();
-    if (generacion != _generacion || _sesionInvalida || prefs.getBool(_sesionInvalidaKey) == true) return;
-    if (!await prefs.setString(Constants.prefUserKey, jsonEncode(usuario.toJson()))) {
+    if (generacion != _generacion ||
+        _sesionInvalida ||
+        prefs.getBool(_sesionInvalidaKey) == true) {
+      return;
+    }
+    if (!await prefs.setString(
+      Constants.prefUserKey,
+      jsonEncode(usuario.toJson()),
+    )) {
       await limpiarSesion();
       throw StateError('No se pudo guardar el usuario de la sesión.');
     }
@@ -199,6 +215,27 @@ class StorageService {
   Future<void> guardarFondo(String fondoId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(Constants.prefFondoKey, fondoId);
+  }
+
+  static const String _verificacionPendienteKey =
+      'verificacion_pendiente_email';
+
+  /// Correo registrado que aún no verificó su código (no es sensible: solo
+  /// decide si el login ofrece "Verificar mi correo").
+  Future<void> guardarVerificacionPendiente(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_verificacionPendienteKey, email.trim());
+  }
+
+  Future<String?> obtenerVerificacionPendiente() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString(_verificacionPendienteKey);
+    return (email ?? '').isEmpty ? null : email;
+  }
+
+  Future<void> limpiarVerificacionPendiente() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_verificacionPendienteKey);
   }
 
   /// Obtiene el id del fondo elegido o null si no se configuró.

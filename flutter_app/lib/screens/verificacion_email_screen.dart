@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
+import '../services/storage_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/campo_otp.dart';
@@ -80,6 +81,7 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
         email: widget.email,
         codigo: codigo,
       );
+      await StorageService.instance.limpiarVerificacionPendiente();
       if (!mounted) return;
       setState(() => _codigoOk = true);
 

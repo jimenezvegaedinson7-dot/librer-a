@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../services/api_service.dart';
+import '../services/storage_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/error_banner.dart';
 import '../widgets/estanteria.dart';
@@ -73,6 +74,11 @@ class _RegistroScreenState extends State<RegistroScreen> {
       // Si la cuenta requiere verificación de email, mostramos la pantalla
       // de código OTP recibido por correo.
       if (resultado.requiereVerificacion) {
+        // Si cierra sin verificar, el login le ofrecerá retomarlo.
+        await StorageService.instance.guardarVerificacionPendiente(
+          resultado.email,
+        );
+        if (!mounted) return;
         final emailVerificado = await Navigator.of(context).push<bool>(
           MaterialPageRoute<bool>(
             builder: (_) => VerificacionEmailScreen(email: resultado.email),
