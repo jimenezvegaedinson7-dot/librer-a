@@ -10,9 +10,9 @@ export const DESCARGAS = {
     android: {
         habilitado: true,
         tipo: 'apk',
-        version: '1.0.12',
-        // APK firmado: letras que siguen al tema elegido, descuentos en naranja.
-        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.12/libreria-1.0.12.apk',
+        version: '1.0.13',
+        // APK firmado: sonido de pago con tarjeta, apellidos completos y recuperación en dos pantallas.
+        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.13/libreria-1.0.13.apk',
         tamano: '55.4 MB',
         actualizado: '2026-10-07',
     },

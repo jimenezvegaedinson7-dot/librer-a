@@ -1,8 +1,8 @@
 {
-    "version": "1.0.12",
-    "versionCode": 13,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.12/libreria-1.0.12.apk",
-    "sha256": "49318833469fbb581ce1c9246de73eb97437f9a8871fcde1d08852f49fe3494a",
+    "version": "1.0.13",
+    "versionCode": 14,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.13/libreria-1.0.13.apk",
+    "sha256": "907c35686f3f044ea4b4ed5bfc69d1127ba4472f2f56e15f11b129ce9ffde6e6",
     "obligatoria": false,
-    "notas": "Las letras siguen al tema de colores que elijas, con buen contraste; los descuentos siguen en naranja. Incluye deslizar para recargar el pago y los métodos de PayU sin refrescar."
+    "notas": "Sonido de confirmación como un pago con tarjeta, registro con apellidos completos y recuperar contraseña en dos pantallas (código y nueva contraseña)."
 }
