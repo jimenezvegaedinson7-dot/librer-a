@@ -1,8 +1,8 @@
 {
-    "version": "1.0.18",
-    "versionCode": 19,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.18/libreria-1.0.18.apk",
-    "sha256": "946ea783830ab6e05b94dcb255784e02e7c028b5364237cea9c93cd2a13ec026",
+    "version": "1.0.19",
+    "versionCode": 20,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.19/libreria-1.0.19.apk",
+    "sha256": "203183d7c047247de574fd62c5cb6386f007593b5aed54f26183897b4e45ad5d",
     "obligatoria": false,
-    "notas": "Ajustes visuales: inicio y catálogo alineados, entrega más clara, botones de Mis compras en una línea y perfil más parejo."
+    "notas": "Inicio de sesión más limpio: \"Verificar mi correo\" solo aparece si a tu cuenta le falta verificar el código."
 }
