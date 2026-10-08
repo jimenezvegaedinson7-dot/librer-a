@@ -1,8 +1,8 @@
 {
-    "version": "1.0.16",
-    "versionCode": 17,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.16/libreria-1.0.16.apk",
-    "sha256": "78e2d6b93242aeb33a4db72bff9f80633aebf71f2cfb415e446cb28cf319c3d6",
+    "version": "1.0.17",
+    "versionCode": 18,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.17/libreria-1.0.17.apk",
+    "sha256": "2f1f026c9b5efefb3989ab5f072153e69e15f766bd02bd437e10b19a20827e04",
     "obligatoria": false,
-    "notas": "Recuperar contraseña en pantallas separadas (código y restablecer) y un sonido de confirmación suave, como una compra con Apple Pay."
+    "notas": "Campo de dirección siempre visible en el delivery, perfil más formal con los botones Colores y Fondo y tarjetas, y 28 combinaciones de fondo."
 }
