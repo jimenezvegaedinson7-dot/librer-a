@@ -81,7 +81,7 @@ test('WEB01: otra pestaña cambia cuenta, carrito y checkout juntos',async({page
     const control=await preparar(context);await checkout(page);
     await cambiarCuenta(context);
     await expect(page.locator('.compra-cuenta')).toContainText('ClienteB');
-    await expect(page.locator('.compra-carrito')).toHaveText('Carrito (0)');
+    await expect(page.locator('.compra-carrito')).toHaveText('Carrito');
     await expect(page.getByText('Tu carrito está vacío.',{exact:true})).toBeVisible();
     expect(control.posts).toEqual([]);
     expect(await page.evaluate(()=>localStorage.getItem('token'))).toBe('admin-intacto');
@@ -167,7 +167,7 @@ test('WEB06: quitar y volver a agregar el mismo libro no deduce los nuevos ejemp
     await preparar(context,{perderPrimera:true});await checkout(page);await crear(page);
     await expect(page.getByRole('button',{name:'Recuperar mi pedido',exact:true})).toBeVisible();
     await page.locator('.compra-carrito').click();await page.getByRole('button',{name:'Quitar Libro auditoría',exact:true}).click();
-    await expect(page.locator('.compra-carrito')).toHaveText('Carrito (0)');
+    await expect(page.locator('.compra-carrito')).toHaveText('Carrito');
     await page.getByRole('link',{name:'Explorar libros',exact:true}).click();
     await page.getByRole('button',{name:'Agregar Libro auditoría al carrito',exact:true}).click();
     await expect(page.locator('.compra-carrito')).toHaveText('Carrito (1)');

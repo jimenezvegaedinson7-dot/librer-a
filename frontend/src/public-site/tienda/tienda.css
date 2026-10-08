@@ -65,7 +65,7 @@
     .sitio .compra-cuenta, .sitio .compra-carrito { font-size: 12px; gap: 4px; }
     .sitio .compra-cuenta span, .sitio .compra-carrito span { display: none; }
     .sitio .compra-cuenta, .sitio .compra-carrito { min-width: 32px; justify-content: center; }
-    .sitio .compra-carrito::after { content: attr(data-cantidad); font-weight: 700; }
+    .sitio .compra-carrito[data-cantidad]::after { content: attr(data-cantidad); font-weight: 700; }
     .sitio .cabecera__principal { gap: 8px; }
     .sitio .cabecera__principal .marca span { font-size: 16px; }
     .sitio .cabecera__descarga { display: none; }

@@ -34,9 +34,9 @@ export async function peticionCliente(ruta, { method = 'GET', body, autenticada 
     try { res = await fetch(`${env.apiUrl}${ruta}`, {
         signal: control.signal,
         method, headers: { Accept: 'application/json',
-            ...(body ? { 'Content-Type': 'application/json' } : {}),
+            ...(body && !(body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
             ...(autenticada ? { Authorization: `Bearer ${sesion.token}` } : {}) },
-        body: body ? JSON.stringify(body) : undefined,
+        body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
     }); } catch (error) { comprobar(); throw error; }
     finally { clearTimeout(limite); }
     comprobar();
@@ -67,6 +67,7 @@ export const clienteApi = {
     verificar2fa: datos => peticionCliente('/auth/2fa/verify-login', { method: 'POST', body: datos, autenticada: false }),
     perfil: sesion => peticionCliente('/usuarios/perfil', {sesion}),
     actualizarPerfil: (sesion, datos) => peticionCliente('/usuarios/perfil', {method:'PUT', body:datos, sesion}),
+    subirFoto: (sesion, archivo) => { const f = new FormData(); f.append('foto', archivo); return peticionCliente('/usuarios/foto', {method:'PUT', body:f, sesion}); },
     catalogo: () => peticionCliente('/libros', {autenticada: false}),
     asistente: datos => peticionCliente('/asistente', {method:'POST',body:datos,autenticada:false}),
     libro: id => peticionCliente(`/libros/${id}`, {autenticada: false}),

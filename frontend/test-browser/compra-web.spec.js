@@ -75,7 +75,7 @@ for(const ancho of [390,1440]) {
         await expect(page.locator('.cabecera .compra-carrito')).toHaveText('Carrito (1)');
         await page.getByRole('button',{name:'Verificar pago de compra #10',exact:true}).click();
         await expect(page.getByText('Pagada',{exact:true})).toBeVisible();
-        await expect(page.locator('.cabecera .compra-carrito')).toHaveText('Carrito (0)');
+        await expect(page.locator('.cabecera .compra-carrito')).toHaveText('Carrito');
         expect(peticiones.every(t=>!t)).toBe(true);expect(errores).toEqual([]);
         expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     });

@@ -118,7 +118,8 @@ const buscarPorId = async (id) => {
             rol,
             estado,
             fecha_registro,
-            fecha_eliminacion
+            fecha_eliminacion,
+            email_verified_at
         FROM usuarios
         WHERE id_usuario = ?
         LIMIT 1

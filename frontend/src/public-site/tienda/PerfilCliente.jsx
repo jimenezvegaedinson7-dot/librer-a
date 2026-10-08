@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     FaArrowRightFromBracket, FaBook, FaBoxOpen, FaCartShopping, FaChevronRight, FaHeart, FaMobileScreen,
-    FaCircleCheck, FaClock, FaFileLines, FaRegUser, FaRegEnvelope, FaPhone, FaRegCalendar, FaPen, FaBolt, FaIdCard,
+    FaCircleCheck, FaClock, FaFileLines, FaRegUser, FaRegEnvelope, FaPhone, FaRegCalendar, FaPen, FaBolt, FaIdCard, FaCamera,
 } from 'react-icons/fa6';
 import { urlPortada } from '../lib/formato';
 import { clienteApi } from './clienteApi';
@@ -77,7 +77,7 @@ export default function PerfilCliente({ tienda }) {
     const inicial = (nombre.trim()[0] || apellido.trim()[0] || '?').toUpperCase();
     const unidades = tienda.items.reduce((s, i) => s + i.cantidad, 0);
     const desde = fecha(registro);
-    const foto_url = foto ? urlPortada(foto, 200) : null;
+    const foto_url = foto ? urlPortada(foto, 180) : null;
 
     const accesos = [
         { to: '/mis-compras', Icono: FaBoxOpen, tono: 'ambar', img: imgCompras, titulo: 'Mis compras', texto: 'Estado del pago y de la entrega' },
@@ -86,19 +86,40 @@ export default function PerfilCliente({ tienda }) {
         { to: '/catalogo', Icono: FaBook, tono: 'azul', img: imgCatalogo, titulo: 'Catálogo', texto: 'Precios y stock actuales' },
     ];
     const terminar = (texto) => { setEditando(false); setMensaje(texto); };
+    const [foto_estado, setFotoEstado] = useState({ subiendo: false, error: '' });
+    const cambiarFoto = async (e) => {
+        const archivo = e.target.files?.[0];
+        e.target.value = '';
+        if (!archivo) return;
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(archivo.type)) { setFotoEstado({ subiendo: false, error: 'Elige una imagen JPG, PNG o WebP.' }); return; }
+        if (archivo.size > 5 * 1024 * 1024) { setFotoEstado({ subiendo: false, error: 'La imagen pesa más de 5 MB. Elige una más liviana.' }); return; }
+        setFotoEstado({ subiendo: true, error: '' });
+        try {
+            const json = await clienteApi.subirFoto(tienda.sesion, archivo);
+            if (json.data) tienda.actualizarUsuario(json.data);
+            setFotoEstado({ subiendo: false, error: '' });
+            setMensaje('Tu foto de perfil se actualizó.');
+        } catch (error) {
+            setFotoEstado({ subiendo: false, error: error.message || 'No se pudo subir la foto. Inténtalo otra vez.' });
+        }
+    };
 
     return (
         <section className="compra-pagina contenedor perfil pf">
             <h1 className="visualmente-oculto">Mi cuenta</h1>
 
             <header className="pf-tarjeta pf-hero">
-                <span className="pf-hero__avatar" aria-hidden="true">
-                    {foto_url ? <img src={foto_url} alt="" width="112" height="112" /> : inicial}
-                </span>
+                <label className="pf-hero__avatar" data-subiendo={foto_estado.subiendo || undefined} title="Cambiar foto de perfil">
+                    {foto_url ? <img src={foto_url} alt="" width="84" height="84" /> : <span className="pf-hero__inicial" aria-hidden="true">{inicial}</span>}
+                    <span className="pf-hero__camara" aria-hidden="true"><FaCamera /></span>
+                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={cambiarFoto} disabled={foto_estado.subiendo}
+                        aria-label={foto_estado.subiendo ? 'Subiendo foto de perfil' : 'Cambiar foto de perfil'} />
+                </label>
                 <div className="pf-hero__quien">
                     <p className="pf-hero__nombre">{`${nombre} ${apellido}`.trim()}</p>
                     <p className="pf-hero__correo">{email}</p>
                     {desde && <p className="pf-hero__desde"><FaRegCalendar aria-hidden="true" /> Cliente desde el {desde}</p>}
+                    {foto_estado.error && <p className="pf-hero__error" role="alert">{foto_estado.error}</p>}
                 </div>
                 <img className="pf-hero__foto" src={cabecera} alt="" width="452" height="184" />
                 <button type="button" className="pf-hero__salir" onClick={tienda.cerrarSesion} aria-label="Cerrar sesión de cliente">
