@@ -251,39 +251,55 @@ async function enviarCorreo({
     return { enviado: false, consola: true, error: ultimoError };
 }
 
+// Encabezado común de todos los correos: el logo y el nombre en texto,
+// sin franja de color ni recuadros. El logo se sirve desde la web pública.
+const LOGO_CORREO = 'https://libreria.my/logo-correo.png';
+const FUENTE_CORREO = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+function encabezadoCorreo() {
+    return (
+        `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px">` +
+        `<tr><td style="vertical-align:middle;padding-right:12px">` +
+        `<img src="${LOGO_CORREO}" width="34" height="40" alt="Librería del Saber" style="display:block;border:0;width:34px;height:40px">` +
+        `</td><td style="vertical-align:middle">` +
+        `<span style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:bold;color:#1f1f1f">Librería del Saber</span>` +
+        `</td></tr></table>`
+    );
+}
+
+function pieCorreo(texto) {
+    return (
+        `<p style="margin:32px 0 0;font-size:12px;line-height:1.5;color:#8a8a8a">` +
+        (texto ? `${texto}<br>` : '') +
+        `Librería del Saber · Pallasca, Áncash, Perú</p>`
+    );
+}
+
+// Mensaje suelto, en texto, sobre fondo blanco (sin tarjeta alrededor).
+function envolturaCorreo(contenido) {
+    return (
+        `<div style="max-width:560px;margin:0 auto;padding:24px 16px;font-family:${FUENTE_CORREO};font-size:15px;line-height:1.6;color:#1f1f1f">` +
+        contenido +
+        `</div>`
+    );
+}
+
 // ============================================================
 // CORREOS CON CÓDIGO (verificar cuenta y restablecer contraseña)
 // ------------------------------------------------------------
-// Formato sobrio, como los de los servicios grandes: fondo blanco, sin
-// cabecera de color, el nombre de la librería en texto, el código grande
-// en gris neutro y un aviso de seguridad. Funciona en Gmail, Outlook y
-// Apple Mail (tablas y estilos en línea).
+// Formato sobrio: logo y nombre arriba, texto suelto y el código grande,
+// sin cabecera de color ni recuadros.
 // ============================================================
 function plantillaCodigo({ titulo, saludo, intro, codigo, cierre }) {
-    const fuente = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
-    return (
-        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f6;padding:32px 12px">` +
-        `<tr><td align="center">` +
-        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #e5e5e5;border-radius:8px;font-family:${fuente};color:#1f1f1f">` +
-        `<tr><td style="padding:28px 32px 18px;border-bottom:1px solid #eeeeee">` +
-        `<span style="font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:bold;color:#1f1f1f">Librería del Saber</span>` +
-        `</td></tr>` +
-        `<tr><td style="padding:28px 32px 8px">` +
+    return envolturaCorreo(
+        encabezadoCorreo() +
         `<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;font-weight:600;color:#1f1f1f">${htmlEscape(titulo)}</h1>` +
-        `<p style="margin:0 0 12px;font-size:15px;line-height:1.55;color:#3c3c3c">${saludo}</p>` +
-        `<p style="margin:0 0 20px;font-size:15px;line-height:1.55;color:#3c3c3c">${intro}</p>` +
-        `<div style="margin:0 0 20px;padding:18px 0;background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;text-align:center">` +
-        `<span style="font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#111111">${htmlEscape(codigo)}</span>` +
-        `</div>` +
-        `<p style="margin:0 0 12px;font-size:14px;line-height:1.55;color:#3c3c3c">Este código vence en <strong>10 minutos</strong> y solo se puede usar una vez.</p>` +
-        `<p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:#3c3c3c">${cierre}</p>` +
-        `</td></tr>` +
-        `<tr><td style="padding:16px 32px 24px;border-top:1px solid #eeeeee;font-size:12px;line-height:1.5;color:#6b6b6b">` +
-        `Por tu seguridad, no compartas este código con nadie. Librería del Saber nunca te lo pedirá por teléfono, mensaje ni correo.` +
-        `</td></tr>` +
-        `</table>` +
-        `<p style="margin:16px 0 0;font-family:${fuente};font-size:11px;color:#9a9a9a">Librería del Saber · Pallasca, Áncash, Perú</p>` +
-        `</td></tr></table>`
+        `<p style="margin:0 0 12px">${saludo}</p>` +
+        `<p style="margin:0 0 18px">${intro}</p>` +
+        `<p style="margin:0 0 18px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#111111">${htmlEscape(codigo)}</p>` +
+        `<p style="margin:0 0 12px;font-size:14px;color:#3c3c3c">Este código vence en <strong>10 minutos</strong> y solo se puede usar una vez.</p>` +
+        `<p style="margin:0;font-size:14px;color:#3c3c3c">${cierre}</p>` +
+        pieCorreo('Por tu seguridad, no compartas este código con nadie. Librería del Saber nunca te lo pedirá por teléfono, mensaje ni correo.')
     );
 }
 
@@ -349,16 +365,12 @@ const plantillaBase = ({
     asunto,
     cuerpoHtml
 }) => {
-    const html =
-        `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">` +
-        `<div style="background:#4f46e5;color:#fff;padding:20px;text-align:center">` +
-        `<h1 style="margin:0;font-size:20px">Librería</h1>` +
-        `<p style="margin:4px 0 0;font-size:13px;opacity:.9">${htmlEscape(tituloCabecera)}</p>` +
-        `</div>` +
-        `<div style="padding:28px;color:#1e293b;font-size:15px">` +
+    const html = envolturaCorreo(
+        encabezadoCorreo() +
+        `<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;font-weight:600;color:#1f1f1f">${htmlEscape(tituloCabecera)}</h1>` +
         cuerpoHtml +
-        `</div>` +
-        `</div>`;
+        pieCorreo()
+    );
 
     return { asunto, html };
 };
@@ -446,9 +458,7 @@ async function enviarCorreoPagoConfirmado({
     const cuerpoHtml =
         `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
         `<p>¡Tu pago fue <strong>aprobado</strong>! Ya estamos preparando tu pedido <strong>#${htmlEscape(idVenta)}</strong>.</p>` +
-        `<div style="margin:22px 0;text-align:center">` +
-        `<span style="display:inline-block;padding:14px 28px;background:#ecfdf5;color:#047857;font-size:22px;font-weight:bold;border-radius:10px">${money(total)}</span>` +
-        `</div>` +
+        `<p>Total pagado: <strong style="font-size:18px">${money(total)}</strong></p>` +
         `<p style="color:#64748b;font-size:13px">Referencia del pago: <strong>${htmlEscape(externalReference || '—')}</strong>.</p>` +
         `<p style="color:#64748b;font-size:13px">Puedes revisar el estado de tu pedido en la aplicación en «Mis compras».</p>`;
 
@@ -497,13 +507,11 @@ const AVISOS_PEDIDO = {
         listo_recojo: {
             titulo: 'Tu pedido está listo para recoger',
             sello: 'Listo para recoger',
-            color: ['#eff6ff', '#1d4ed8'],
             texto: (id) => `Tu pedido <strong>#${id}</strong> ya está separado en tienda. Acércate cuando gustes y muestra tu número de pedido y tu DNI al recogerlo.`
         },
         entregado: {
             titulo: 'Recogiste tu pedido',
             sello: '✓ Pedido recogido',
-            color: ['#ecfdf5', '#047857'],
             texto: (id) => `Registramos que recogiste tu pedido <strong>#${id}</strong> en tienda. ¡Gracias por tu compra!`
         }
     },
@@ -511,7 +519,6 @@ const AVISOS_PEDIDO = {
         en_camino: {
             titulo: 'Tu pedido va en camino',
             sello: 'En camino',
-            color: ['#eef2ff', '#4338ca'],
             texto: (id, direccion) => `Tu pedido <strong>#${id}</strong> salió de la tienda` +
                 (direccion ? ` hacia <strong>${htmlEscape(direccion)}</strong>` : '') +
                 '. Mantén tu teléfono a mano para coordinar la entrega.'
@@ -519,7 +526,6 @@ const AVISOS_PEDIDO = {
         entregado: {
             titulo: 'Pedido entregado',
             sello: '✓ Pedido entregado',
-            color: ['#ecfdf5', '#047857'],
             texto: (id) => `Tu pedido <strong>#${id}</strong> fue <strong>entregado</strong> en tu dirección. ¡Gracias por tu compra!`
         }
     }
@@ -538,13 +544,10 @@ async function enviarCorreoAvancePedido({
 }) {
     const aviso = avisoPedido(tipoEntrega, estado);
     if (!aviso) return null;
-    const [fondo, tinta] = aviso.color;
     const cuerpoHtml =
         `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
         `<p>${aviso.texto(htmlEscape(idVenta), direccion)}</p>` +
-        `<div style="margin:22px 0;text-align:center">` +
-        `<span style="display:inline-block;padding:14px 28px;background:${fondo};color:${tinta};font-size:18px;font-weight:bold;border-radius:10px">${aviso.sello}</span>` +
-        `</div>` +
+        `<p>Estado: <strong>${aviso.sello}</strong></p>` +
         `<p style="color:#64748b;font-size:13px">Entrega: <strong>${htmlEscape(etiquetaTipoEntrega(tipoEntrega))}</strong>.</p>` +
         `<p style="color:#64748b;font-size:13px">Si tienes dudas, responde este correo y te ayudamos.</p>`;
 
@@ -575,10 +578,7 @@ async function enviarCorreoReservaCreada({
     const cuerpoHtml =
         `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
         `<p>Tu reserva <strong>#${htmlEscape(idReserva)}</strong> fue confirmada:</p>` +
-        `<div style="margin:18px 0;padding:16px;background:#f8fafc;border-radius:10px;text-align:center">` +
-        `<p style="margin:0;font-size:17px;font-weight:bold;color:#17181c">${htmlEscape(titulo || 'Libro')}</p>` +
-        `<p style="margin:6px 0 0;color:#64748b;font-size:13px">Cantidad reservada: <strong>${htmlEscape(cantidad)}</strong></p>` +
-        `</div>` +
+        `<p>Libro: <strong>${htmlEscape(titulo || 'Libro')}</strong><br>Cantidad reservada: <strong>${htmlEscape(cantidad)}</strong></p>` +
         `<p style="color:#64748b;font-size:13px">La reserva vence el <strong>${htmlEscape(fechaVencimiento || '—')}</strong>. ` +
         `Pasa a recoger el libro antes de esa fecha.</p>` +
         `<p style="color:#64748b;font-size:13px">Si no realizaste esta reserva, ignora este correo.</p>`;
@@ -774,8 +774,7 @@ function cuerpoAvisoComprobante({ nombre, tipoLabel, serieNumero, archivoPdf }) 
     return (
         `<p>Hola${nombre ? ` <strong>${htmlEscape(nombre)}</strong>` : ''},</p>` +
         `<p>Gracias por tu compra. Adjuntamos tu <strong>${htmlEscape(tipoLabel)} ${htmlEscape(serieNumero)}</strong> en PDF.</p>` +
-        `<div style="margin:20px 0;padding:14px 16px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;font-size:14px">` +
-        `&#128206; <strong>${htmlEscape(archivoPdf)}</strong></div>` +
+        `<p>Archivo adjunto: <strong>${htmlEscape(archivoPdf)}</strong></p>` +
         `<p style="color:#64748b;font-size:13px">Guárdalo para tus registros. Si tienes dudas, responde este correo y te ayudamos.</p>`
     );
 }
@@ -827,8 +826,8 @@ async function enviarComprobantePorEmail(datos) {
 // respuesta del proveedor.
 function htmlHojaReclamacion(r, empresa) {
     const fila = (etiqueta, valor) =>
-        `<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;background:#f8fafc;width:38%;color:#475569">${htmlEscape(etiqueta)}</td>` +
-        `<td style="padding:6px 10px;border:1px solid #e2e8f0;color:#0f172a">${htmlEscape(valor ?? '—')}</td></tr>`;
+        `<tr><td style="padding:4px 12px 4px 0;width:38%;vertical-align:top;color:#6b6b6b">${htmlEscape(etiqueta)}</td>` +
+        `<td style="padding:4px 0;vertical-align:top;color:#1f1f1f">${htmlEscape(valor ?? '—')}</td></tr>`;
     const fecha = new Date(r.fecha_registro || Date.now()).toLocaleString('es-PE', { timeZone: 'America/Lima' });
     return (
         `<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0">` +
@@ -876,8 +875,7 @@ async function enviarRespuestaReclamacion({ reclamacion, empresa }) {
         `<p>Hola <strong>${htmlEscape(r.consumidor_nombre)}</strong>,</p>` +
         `<p>Esta es nuestra respuesta a tu ${r.tipo === 'queja' ? 'queja' : 'reclamo'} ` +
         `<strong>N.° ${htmlEscape(r.numero)}</strong>:</p>` +
-        `<div style="margin:14px 0;padding:14px;border-left:4px solid #7a2530;background:#fbf7f0;white-space:pre-line">` +
-        `${htmlEscape(r.respuesta)}</div>` +
+        `<p style="white-space:pre-line">${htmlEscape(r.respuesta)}</p>` +
         `<p style="color:#64748b;font-size:13px">Tu hoja registrada:</p>` +
         htmlHojaReclamacion(r, empresa) +
         `<p style="color:#64748b;font-size:12px">Si no estás conforme, puedes acudir al INDECOPI.</p>`;

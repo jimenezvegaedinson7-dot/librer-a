@@ -52,3 +52,14 @@ test('correos con código: formales, sin cabecera de color y con el nombre escap
     assert.doesNotMatch(html, /#4f46e5|#4338ca|#eef2ff/i);
     assert.match(html, /no compartas este código/);
 });
+
+test('los correos llevan el logo arriba y el texto suelto, sin recuadros', () => {
+    const fs = require('node:fs');
+    const { plantillaCodigo } = require('../src/utils/mailer');
+    const html = plantillaCodigo({ titulo: 'Restablece tu contraseña', saludo: 'Hola,', intro: 'Código:', codigo: '123456', cierre: '.' });
+    assert.match(html, /<img src="https:\/\/libreria\.my\/logo-correo\.png"/);
+    assert.doesNotMatch(html, /border:1px solid|border-radius|background:/);
+    const fuente = fs.readFileSync(require.resolve('../src/utils/mailer'), 'utf8');
+    const avisos = fuente.slice(fuente.indexOf('const plantillaBase'), fuente.indexOf('function construirHtmlComprobante'));
+    assert.doesNotMatch(avisos, /border-radius|background:#/);
+});
