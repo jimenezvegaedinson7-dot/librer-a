@@ -66,6 +66,7 @@ export const clienteApi = {
     restablecer: datos => peticionCliente('/auth/reestablecer-contrasena', { method: 'POST', body: datos, autenticada: false }),
     verificar2fa: datos => peticionCliente('/auth/2fa/verify-login', { method: 'POST', body: datos, autenticada: false }),
     perfil: sesion => peticionCliente('/usuarios/perfil', {sesion}),
+    actualizarPerfil: (sesion, datos) => peticionCliente('/usuarios/perfil', {method:'PUT', body:datos, sesion}),
     catalogo: () => peticionCliente('/libros', {autenticada: false}),
     asistente: datos => peticionCliente('/asistente', {method:'POST',body:datos,autenticada:false}),
     libro: id => peticionCliente(`/libros/${id}`, {autenticada: false}),

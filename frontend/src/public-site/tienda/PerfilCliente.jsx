@@ -1,14 +1,23 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     FaArrowRightFromBracket, FaBook, FaBoxOpen, FaCartShopping, FaChevronRight, FaHeart, FaMobileScreen,
-    FaCircleCheck, FaClock, FaFileLines,
+    FaCircleCheck, FaClock, FaFileLines, FaRegUser, FaRegEnvelope, FaPhone, FaRegCalendar, FaPen, FaBolt, FaIdCard,
 } from 'react-icons/fa6';
 import { urlPortada } from '../lib/formato';
+import { clienteApi } from './clienteApi';
+import cabecera from '../assets/perfil/cabecera-biblioteca.webp';
+import imgCompras from '../assets/perfil/acceso-compras.webp';
+import imgFavoritos from '../assets/perfil/acceso-favoritos.webp';
+import imgCarrito from '../assets/perfil/acceso-carrito.webp';
+import imgCatalogo from '../assets/perfil/acceso-catalogo.webp';
+import './perfil.css';
 
 // ============================================================
 // PERFIL DEL CLIENTE (Mi cuenta con sesión iniciada)
-// Tarjeta del perfil con sus datos registrados y, al lado, los accesos.
-// Tonos crema y dorado; solo muestra datos que devuelve el servidor.
+// Tarjetas de vidrio sobre un fondo cálido: presentación, "Mis datos"
+// (editable: nombre, apellidos y teléfono) y accesos rápidos ilustrados.
+// Solo muestra datos que devuelve el servidor.
 // ============================================================
 const fecha = (valor) => {
     if (!valor) return null;
@@ -16,67 +25,142 @@ const fecha = (valor) => {
     return Number.isNaN(d.getTime()) ? null : d.toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
-export default function PerfilCliente({ tienda }) {
-    const { nombre = '', apellido = '', email, telefono, foto_perfil: foto, fecha_registro: registro, email_verified_at: verificado } = tienda.usuario;
-    const iniciales = `${nombre.trim()[0] || ''}${apellido.trim()[0] || ''}`.toUpperCase() || '?';
-    const unidades = tienda.items.reduce((s, i) => s + i.cantidad, 0);
-    const desde = fecha(registro);
-    const foto_url = foto ? urlPortada(foto, 160) : null;
+function Dato({ Icono, etiqueta, children }) {
+    return (
+        <div className="pf-dato">
+            <span className="pf-dato__icono" aria-hidden="true"><Icono /></span>
+            <dt>{etiqueta}</dt>
+            <dd>{children}</dd>
+        </div>
+    );
+}
 
-    const accesos = [
-        { to: '/mis-compras', Icono: FaBoxOpen, titulo: 'Mis compras', texto: 'Estado del pago y de la entrega' },
-        { to: '/favoritos', Icono: FaHeart, titulo: 'Mis favoritos', texto: 'Los libros que guardaste' },
-        { to: '/carrito', Icono: FaCartShopping, titulo: 'Mi carrito', texto: unidades ? `${unidades} ${unidades === 1 ? 'libro' : 'libros'} por comprar` : 'Tu carrito está vacío', etiqueta: 'Ver carrito' },
-        { to: '/catalogo', Icono: FaBook, titulo: 'Catálogo', texto: 'Precios y stock actuales' },
-        { to: '/descargar', Icono: FaMobileScreen, titulo: 'La app', texto: 'Compras e historial con la misma cuenta' },
-        { to: '/libro-de-reclamaciones', Icono: FaFileLines, titulo: 'Libro de Reclamaciones', texto: 'Formulario con tus datos disponibles' },
-    ];
+function EditarDatos({ tienda, alTerminar }) {
+    const u = tienda.usuario;
+    const [form, setForm] = useState({ nombre: u.nombre || '', apellido: u.apellido || '', telefono: u.telefono || '' });
+    const [estado, setEstado] = useState({ guardando: false, error: '' });
+    const cambiar = (campo) => (e) => setForm(f => ({ ...f, [campo]: e.target.value }));
+
+    const guardar = async (e) => {
+        e.preventDefault();
+        const nombre = form.nombre.trim(), apellido = form.apellido.trim(), telefono = form.telefono.trim();
+        if (!nombre || !apellido) { setEstado({ guardando: false, error: 'Escribe tu nombre y tus apellidos.' }); return; }
+        if (telefono && !/^[0-9+\s-]{6,20}$/.test(telefono)) { setEstado({ guardando: false, error: 'Revisa el teléfono: solo números, de 6 a 20 dígitos.' }); return; }
+        setEstado({ guardando: true, error: '' });
+        try {
+            const json = await clienteApi.actualizarPerfil(tienda.sesion, { nombre, apellido, telefono: telefono || null });
+            tienda.actualizarUsuario(json.data || { id_usuario: u.id_usuario, nombre, apellido, telefono: telefono || null });
+            alTerminar('Tus datos se guardaron correctamente.');
+        } catch (error) {
+            setEstado({ guardando: false, error: error.message || 'No se pudieron guardar tus datos. Inténtalo otra vez.' });
+        }
+    };
 
     return (
-        <section className="compra-pagina contenedor perfil">
-            <h1>Mi cuenta</h1>
-            <div className="perfil__rejilla">
-                <div className="perfil__columna">
-                    <div className="perfil__tarjeta">
-                        <span className="perfil__avatar" aria-hidden="true">
-                            {foto_url ? <img src={foto_url} alt="" width="76" height="76" /> : iniciales}
-                        </span>
-                        <div className="perfil__quien">
-                            <p className="perfil__nombre">{`${nombre} ${apellido}`.trim()}</p>
-                            <p className="perfil__correo">{email}</p>
-                            {desde && <p className="perfil__desde">Cliente desde el {desde}</p>}
-                        </div>
-                        <button type="button" className="perfil__salir" onClick={tienda.cerrarSesion} aria-label="Cerrar sesión de cliente">
-                            <FaArrowRightFromBracket aria-hidden="true" /> Cerrar sesión
-                        </button>
-                    </div>
+        <form className="pf-editar" onSubmit={guardar} noValidate>
+            <label>Nombre<input value={form.nombre} onChange={cambiar('nombre')} maxLength={80} autoComplete="given-name" required /></label>
+            <label>Apellidos completos<input value={form.apellido} onChange={cambiar('apellido')} maxLength={80} autoComplete="family-name" required /></label>
+            <label>Teléfono<input value={form.telefono} onChange={cambiar('telefono')} maxLength={20} inputMode="tel" autoComplete="tel" placeholder="Opcional" /></label>
+            {estado.error && <p className="pf-editar__error" role="alert">{estado.error}</p>}
+            <div className="pf-editar__acciones">
+                <button type="button" className="pf-boton pf-boton--suave" onClick={() => alTerminar('')} disabled={estado.guardando}>Cancelar</button>
+                <button type="submit" className="pf-boton pf-boton--oscuro" disabled={estado.guardando}>{estado.guardando ? 'Guardando…' : 'Guardar cambios'}</button>
+            </div>
+        </form>
+    );
+}
 
-                    <section className="perfil__datos" aria-labelledby="perfil-datos-titulo">
-                        <h2 id="perfil-datos-titulo">Mis datos</h2>
-                        <dl>
-                            <div><dt>Nombre</dt><dd>{nombre || '—'}</dd></div>
-                            <div><dt>Apellido</dt><dd>{apellido || '—'}</dd></div>
-                            <div className="perfil__dato-ancho"><dt>Correo electrónico</dt><dd>{email}
-                                {verificado
-                                    ? <span className="perfil__estado perfil__estado--ok"><FaCircleCheck aria-hidden="true" /> Verificado</span>
-                                    : <span className="perfil__estado"><FaClock aria-hidden="true" /> Sin verificar</span>}</dd></div>
-                            <div><dt>Teléfono</dt><dd>{telefono || <span className="perfil__vacio">No registrado</span>}</dd></div>
-                            {desde && <div><dt>Fecha de registro</dt><dd>{desde}</dd></div>}
-                        </dl>
-                    </section>
+export default function PerfilCliente({ tienda }) {
+    const { nombre = '', apellido = '', email, telefono, foto_perfil: foto, fecha_registro: registro, email_verified_at: verificado } = tienda.usuario;
+    const [editando, setEditando] = useState(false);
+    const [mensaje, setMensaje] = useState('');
+    const inicial = (nombre.trim()[0] || apellido.trim()[0] || '?').toUpperCase();
+    const unidades = tienda.items.reduce((s, i) => s + i.cantidad, 0);
+    const desde = fecha(registro);
+    const foto_url = foto ? urlPortada(foto, 200) : null;
+
+    const accesos = [
+        { to: '/mis-compras', Icono: FaBoxOpen, tono: 'ambar', img: imgCompras, titulo: 'Mis compras', texto: 'Estado del pago y de la entrega' },
+        { to: '/favoritos', Icono: FaHeart, tono: 'rosa', img: imgFavoritos, titulo: 'Mis favoritos', texto: 'Los libros que guardaste' },
+        { to: '/carrito', Icono: FaCartShopping, tono: 'verde', img: imgCarrito, titulo: 'Mi carrito', texto: unidades ? `${unidades} ${unidades === 1 ? 'libro' : 'libros'} por comprar` : 'Tu carrito está vacío', etiqueta: 'Ver carrito' },
+        { to: '/catalogo', Icono: FaBook, tono: 'azul', img: imgCatalogo, titulo: 'Catálogo', texto: 'Precios y stock actuales' },
+    ];
+    const terminar = (texto) => { setEditando(false); setMensaje(texto); };
+
+    return (
+        <section className="compra-pagina contenedor perfil pf">
+            <h1 className="visualmente-oculto">Mi cuenta</h1>
+
+            <header className="pf-tarjeta pf-hero">
+                <span className="pf-hero__avatar" aria-hidden="true">
+                    {foto_url ? <img src={foto_url} alt="" width="112" height="112" /> : inicial}
+                </span>
+                <div className="pf-hero__quien">
+                    <p className="pf-hero__nombre">{`${nombre} ${apellido}`.trim()}</p>
+                    <p className="pf-hero__correo">{email}</p>
+                    {desde && <p className="pf-hero__desde"><FaRegCalendar aria-hidden="true" /> Cliente desde el {desde}</p>}
                 </div>
+                <img className="pf-hero__foto" src={cabecera} alt="" width="452" height="184" />
+                <button type="button" className="pf-hero__salir" onClick={tienda.cerrarSesion} aria-label="Cerrar sesión de cliente">
+                    <FaArrowRightFromBracket aria-hidden="true" /> Cerrar sesión
+                </button>
+            </header>
 
-                <nav className="perfil__accesos" aria-label="Accesos de mi cuenta">
-                    <h2>Accesos rápidos</h2>
-                    {accesos.map(({ to, Icono, titulo, texto, etiqueta }) => (
-                        <Link key={to} to={to} className="perfil__acceso" aria-label={etiqueta}>
-                            <span className="perfil__acceso-icono" aria-hidden="true"><Icono /></span>
-                            <span><strong>{titulo}</strong><small>{texto}</small></span>
-                            <FaChevronRight aria-hidden="true" />
+            <section className="pf-tarjeta pf-seccion" aria-labelledby="perfil-datos-titulo">
+                <div className="pf-seccion__cabeza">
+                    <span className="pf-seccion__icono" aria-hidden="true"><FaRegUser /></span>
+                    <div>
+                        <h2 id="perfil-datos-titulo">Mis datos</h2>
+                        <p>Aquí puedes ver la información de tu cuenta.</p>
+                    </div>
+                    {!editando && (
+                        <button type="button" className="pf-boton pf-boton--borde" onClick={() => { setEditando(true); setMensaje(''); }}>
+                            <FaPen aria-hidden="true" /> Editar datos
+                        </button>
+                    )}
+                </div>
+                {mensaje && <p className="pf-aviso" role="status"><FaCircleCheck aria-hidden="true" /> {mensaje}</p>}
+                {editando
+                    ? <EditarDatos tienda={tienda} alTerminar={terminar} />
+                    : (
+                        <dl className="pf-datos">
+                            <Dato Icono={FaRegUser} etiqueta="Nombre">{nombre || '—'}</Dato>
+                            <Dato Icono={FaIdCard} etiqueta="Apellido">{apellido || '—'}</Dato>
+                            <Dato Icono={FaRegEnvelope} etiqueta="Correo electrónico">
+                                <span className="pf-dato__correo">{email}</span>
+                                {verificado
+                                    ? <span className="pf-estado pf-estado--ok"><FaCircleCheck aria-hidden="true" /> Verificado</span>
+                                    : <span className="pf-estado"><FaClock aria-hidden="true" /> Sin verificar</span>}
+                            </Dato>
+                            <Dato Icono={FaPhone} etiqueta="Teléfono">{telefono || <span className="pf-vacio">No registrado</span>}</Dato>
+                            {desde && <Dato Icono={FaRegCalendar} etiqueta="Fecha de registro">{desde}</Dato>}
+                        </dl>
+                    )}
+            </section>
+
+            <nav className="pf-tarjeta pf-seccion" aria-label="Accesos de mi cuenta">
+                <div className="pf-seccion__cabeza">
+                    <span className="pf-seccion__icono" aria-hidden="true"><FaBolt /></span>
+                    <div>
+                        <h2>Accesos rápidos</h2>
+                        <p>Todo lo que necesitas, en un solo lugar.</p>
+                    </div>
+                </div>
+                <div className="pf-accesos">
+                    {accesos.map(({ to, Icono, tono, img, titulo, texto, etiqueta }) => (
+                        <Link key={to} to={to} className={`pf-acceso pf-acceso--${tono}`} aria-label={etiqueta}>
+                            <span className="pf-acceso__icono" aria-hidden="true"><Icono /></span>
+                            <span className="pf-acceso__texto"><strong>{titulo}</strong><small>{texto}</small></span>
+                            <FaChevronRight className="pf-acceso__flecha" aria-hidden="true" />
+                            <img className="pf-acceso__img" src={img} alt="" width="310" height="104" loading="lazy" />
                         </Link>
                     ))}
-                </nav>
-            </div>
+                </div>
+                <div className="pf-secundarios">
+                    <Link to="/descargar"><FaMobileScreen aria-hidden="true" /> Descarga la app</Link>
+                    <Link to="/libro-de-reclamaciones"><FaFileLines aria-hidden="true" /> Libro de Reclamaciones</Link>
+                </div>
+            </nav>
         </section>
     );
 }

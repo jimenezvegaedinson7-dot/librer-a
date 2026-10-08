@@ -173,6 +173,13 @@ export function TiendaProvider({ catalogo, children }) {
         reintentarSesion:() => { setErrorSesion(''); setRevisando(true); setRevision(v => v + 1); },
         iniciarSesion,cerrarSesion,items,lineas,subtotal,libros,cargando:catalogo.cargando && !frescos,
         agregar,cantidad,quitar,refrescar,aviso,setAviso,claveIntento,versionIntento,
-        notificarIntento:() => setVersionIntento(v => v + 1),confirmarCompra}}>{children}</Contexto.Provider>;
+        notificarIntento:() => setVersionIntento(v => v + 1),confirmarCompra,
+        // Tras editar "Mis datos": se reflejan sin recargar (igual que la revalidación).
+        actualizarUsuario:(datos) => {
+            const captura = actual.current;
+            if (!captura || Number(datos?.id_usuario) !== Number(captura.usuario.id_usuario)) return;
+            const nueva = {...captura,usuario:{...captura.usuario,...datos}};
+            actual.current = nueva; setSesion(nueva);
+        }}}>{children}</Contexto.Provider>;
 }
 export function useTienda() { return useContext(Contexto); }
