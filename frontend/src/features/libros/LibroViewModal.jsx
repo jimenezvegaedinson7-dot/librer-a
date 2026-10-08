@@ -48,8 +48,8 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                 </div>
 
                 <div>
-                    <div className="border-b border-primary-200 pb-4">
-                        <h3 className="font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">{libro.titulo}</h3>
+                    <div className="border-b border-primary-200 pb-3">
+                        <h3 className="font-title text-[20px] font-semibold leading-tight text-slate-900">{libro.titulo}</h3>
                         <p className="mt-2 text-sm text-primary-500">
                             ISBN: <span className="font-medium text-slate-700">{libro.isbn || 'No registrado'}</span>
                         </p>

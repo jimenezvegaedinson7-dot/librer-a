@@ -11,9 +11,8 @@ export default function ClienteViewModal({ cliente, abierto, onCerrar }) {
 
     return (
         <Modal abierto={abierto} titulo="Detalle del cliente" subtitulo="Información del cliente y su actividad de compras" onCerrar={onCerrar}>
-            <div className="border-b border-primary-200 pb-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Cliente</p>
-                <h3 className="mt-2 font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">{cliente.nombre_completo || 'Sin nombre'}</h3>
+            <div className="border-b border-primary-200 pb-3">
+                <h3 className="font-title text-[20px] font-semibold leading-tight text-slate-900">{cliente.nombre_completo || 'Sin nombre'}</h3>
                 <p className="mt-1 text-sm text-primary-500">{cliente.email || 'Sin correo'}</p>
             </div>
 

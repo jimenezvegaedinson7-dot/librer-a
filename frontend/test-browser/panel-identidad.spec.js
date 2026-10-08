@@ -77,7 +77,8 @@ for (const ancho of [390, 1440]) {
             await page.screenshot({path:test.info().outputPath(`detalle-${tema}-${ancho}.png`),fullPage:true});
             await modal.getByRole('button',{name:'Cerrar',exact:true}).last().click();
             await page.goto('/dashboard');
-            await expect(page.locator('.kpi-card--destacada').first()).toHaveCSS('background-color','rgb(13, 41, 64)');
+            // Indicadores formales: superficie del panel (blanca en claro, marino en oscuro).
+            await expect(page.locator('.kpi-card--destacada').first()).toHaveCSS('background-color',tema === 'dark' ? 'rgb(13, 41, 64)' : 'rgb(255, 255, 255)');
             await expect(page.locator('.kpi-card').last()).toHaveCSS('opacity','1');
             await expect(page.locator('.mini-stat').last()).toHaveCSS('opacity','1');
             await page.screenshot({path:test.info().outputPath(`resumen-${tema}-${ancho}.png`),fullPage:true});

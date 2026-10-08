@@ -12,9 +12,8 @@ export default function AutorViewModal({ autor, abierto, onCerrar }) {
 
     return (
         <Modal abierto={abierto} titulo="Detalle del autor" subtitulo="Información registrada en el sistema" onCerrar={onCerrar}>
-            <div className="border-b border-primary-200 pb-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Autor</p>
-                <h3 className="mt-2 font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">
+            <div className="border-b border-primary-200 pb-3">
+                <h3 className="font-title text-[20px] font-semibold leading-tight text-slate-900">
                     {autor.nombre} {autor.apellido}
                 </h3>
             </div>

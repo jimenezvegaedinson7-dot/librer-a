@@ -14,9 +14,8 @@ export default function InventarioViewModal({ inventario, abierto, onCerrar }) {
 
     return (
         <Modal abierto={abierto} titulo="Detalle del inventario" subtitulo="Información registrada en el sistema" onCerrar={onCerrar}>
-            <div className="border-b border-primary-200 pb-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Libro</p>
-                <h3 className="mt-2 font-title text-[26px] font-semibold leading-tight tracking-[-0.015em] text-slate-900">{inventario.titulo}</h3>
+            <div className="border-b border-primary-200 pb-3">
+                <h3 className="font-title text-[20px] font-semibold leading-tight text-slate-900">{inventario.titulo}</h3>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">

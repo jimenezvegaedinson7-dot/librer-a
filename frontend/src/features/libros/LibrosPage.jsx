@@ -40,7 +40,7 @@ const POR_PAGINA = 10;
 // abrir la puerta a que el panel y la web se contradigan.
 function PrecioCelda({ fila }) {
     if (Number(fila.descuento_vigente) !== 1) {
-        return <span className="font-semibold text-slate-700">{formatearMoneda(fila.precio)}</span>;
+        return <span className="whitespace-nowrap font-semibold tabular-nums text-slate-700">{formatearMoneda(fila.precio)}</span>;
     }
 
     return (
@@ -48,8 +48,8 @@ function PrecioCelda({ fila }) {
             <span className="descuento-resaltado rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-bold">
                 -{fila.descuento_porcentaje_efectivo}%
             </span>
-            <span className="text-[11px] text-slate-400 line-through">{formatearMoneda(fila.precio)}</span>
-            <span className="descuento-resaltado font-bold">{formatearMoneda(fila.precio_final)}</span>
+            <span className="whitespace-nowrap text-[11px] text-slate-400 line-through">{formatearMoneda(fila.precio)}</span>
+            <span className="descuento-resaltado whitespace-nowrap font-bold">{formatearMoneda(fila.precio_final)}</span>
         </span>
     );
 }
