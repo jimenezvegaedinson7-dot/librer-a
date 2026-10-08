@@ -529,17 +529,20 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         _OpcionEntrega(
           seleccionado: _tipoEntrega == _TipoEntrega.domicilio,
           icon: Icons.local_shipping_outlined,
-          titulo: 'Delivery dentro de Pallasca',
-          detalle: 'Entrega en las zonas de reparto activas.',
-          etiqueta: 'Según zona',
+          titulo: 'Delivery',
+          detalle: 'Te lo llevamos a tu dirección en Pallasca.',
+          // Con una sola tarifa se muestra el precio; si no, "Según zona".
+          etiqueta: _tarifaUnica
+              ? 'S/ ${Formats.precio(_zonas.first.tarifa)}'
+              : 'Según zona',
           onTap: () => setState(() => _tipoEntrega = _TipoEntrega.domicilio),
         ),
         const SizedBox(height: 8),
         _OpcionEntrega(
           seleccionado: _tipoEntrega == _TipoEntrega.tienda,
           icon: Icons.storefront_outlined,
-          titulo: 'Recojo en Pallasca',
-          detalle: 'Recoge tu pedido en nuestra tienda.',
+          titulo: 'Recojo en tienda',
+          detalle: 'Recoge tu pedido en nuestra tienda de Pallasca.',
           etiqueta: 'Gratis',
           onTap: () => setState(() => _tipoEntrega = _TipoEntrega.tienda),
         ),
@@ -579,16 +582,16 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _ZonaReparto(),
-        const SizedBox(height: 12),
+        if (!sinTarifa && !_tarifaUnica) ...[
+          const _ZonaReparto(),
+          const SizedBox(height: 12),
+        ],
         if (sinTarifa)
           _AvisoSinTarifa(
             mensaje: _errorZonas ?? 'El delivery aún no tiene tarifa activa. Puedes dejar tu dirección y elegir recojo gratuito en Pallasca mientras tanto.',
             onReintentar: _errorZonas != null ? _cargarZonas : null,
           )
-        else if (_tarifaUnica)
-          _CostoDelivery(tarifa: _zonas.first.tarifa)
-        else
+        else if (!_tarifaUnica)
           DropdownButtonFormField<int>(
             style: Theme.of(context).textTheme.bodyLarge,
             initialValue: _idZona,
@@ -618,7 +621,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         const SizedBox(height: 12),
         TextField(
           controller: _direccionController,
-          maxLines: 2,
+          minLines: 1,
+          maxLines: 3,
           maxLength: 255,
           textCapitalization: TextCapitalization.sentences,
           autofillHints: const [AutofillHints.streetAddressLine1],
@@ -626,7 +630,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
             labelText: 'Tu dirección en Pallasca',
             hintText: 'Calle o jirón, número y barrio',
             prefixIcon: Icon(Icons.home_outlined),
-            alignLabelWithHint: true,
+            counterText: '',
           ),
         ),
         const SizedBox(height: 12),
@@ -634,8 +638,10 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           controller: _referenciaController,
           maxLength: 255,
           decoration: const InputDecoration(
-            labelText: 'Referencia de dirección (opcional)',
+            labelText: 'Referencia (opcional)',
             hintText: 'Un punto cercano para ubicarte',
+            prefixIcon: Icon(Icons.signpost_outlined),
+            counterText: '',
           ),
         ),
         CheckboxListTile(
@@ -867,7 +873,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
-                    'Serás redirigido a PayU para completar tu pago de forma segura.',
+                    'Pagarás con PayU sin salir de la app, en una conexión segura.',
                     textAlign: TextAlign.center,
                     style: textTheme.bodySmall?.copyWith(
                       color: AppColors.textTertiary,
@@ -1441,44 +1447,6 @@ class _AvisoSinTarifa extends StatelessWidget {
   );
 }
 
-/// Costo único del delivery en Pallasca (cuando hay una sola tarifa).
-class _CostoDelivery extends StatelessWidget {
-  final double tarifa;
-  const _CostoDelivery({required this.tarifa});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    decoration: BoxDecoration(
-      color: AppColors.primaryContainer,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Row(
-      children: [
-        Icon(Icons.delivery_dining_outlined, color: AppColors.primary),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'Delivery a cualquier dirección de Pallasca',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        Text(
-          'S/ ${Formats.precio(tarifa)}',
-          style: TextStyle(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 /// Cobertura fija: delivery exclusivo dentro de Pallasca.
 class _ZonaReparto extends StatelessWidget {
   const _ZonaReparto();
@@ -1507,9 +1475,7 @@ class _ZonaReparto extends StatelessWidget {
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const TextSpan(
-                    text: '  ·  Delivery solo en las zonas activas',
-                  ),
+                  const TextSpan(text: '  ·  Elige tu zona de reparto'),
                 ],
               ),
               style: textTheme.bodySmall?.copyWith(

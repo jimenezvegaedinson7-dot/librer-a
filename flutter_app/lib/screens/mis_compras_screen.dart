@@ -471,9 +471,16 @@ class _VentaTile extends StatelessWidget {
                           child: OutlinedButton(
                             onPressed: () => _verificarPago(context),
                             style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 42),
+                              minimumSize: const Size(0, 44),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                             ),
-                            child: const Text('Verificar'),
+                            // Una sola línea, centrada, en cualquier ancho.
+                            child: const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Verificar pago', maxLines: 1),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -481,9 +488,15 @@ class _VentaTile extends StatelessWidget {
                           child: FilledButton(
                             onPressed: () => _continuarPago(context),
                             style: FilledButton.styleFrom(
-                              minimumSize: const Size(0, 42),
+                              minimumSize: const Size(0, 44),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                             ),
-                            child: const Text('Continuar pago'),
+                            child: const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Continuar pago', maxLines: 1),
+                            ),
                           ),
                         ),
                       ],

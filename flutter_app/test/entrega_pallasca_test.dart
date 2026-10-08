@@ -81,8 +81,8 @@ void main() {
           ),
         );
         await tester.pump(const Duration(seconds: 1));
-        expect(find.text('Recojo en Pallasca'), findsOneWidget);
-        expect(find.text('Delivery dentro de Pallasca'), findsOneWidget);
+        expect(find.text('Recojo en tienda'), findsOneWidget);
+        expect(find.text('Delivery'), findsOneWidget);
         expect(find.text('Gratis'), findsWidgets);
         expect(find.text('Distrito'), findsNothing);
         expect(find.widgetWithText(TextField, 'Dirección'), findsNothing);

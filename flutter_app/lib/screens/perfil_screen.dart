@@ -533,7 +533,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     Expanded(
                       child: _AccesoRapido(
                         icon: Icons.event_note_outlined,
-                        label: 'Reservas anteriores',
+                        label: 'Reservas',
                         onTap: _misReservas,
                       ),
                     ),
@@ -855,7 +855,19 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget _row(BuildContext context, IconData icon, String label, String value) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-      leading: Icon(icon, color: AppColors.gold),
+      // Misma placa que las demás filas del perfil.
+      leading: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: AppColors.primaryContainer,
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.12),
+          ),
+        ),
+        child: Icon(icon, size: 20, color: AppColors.primary),
+      ),
       title: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall

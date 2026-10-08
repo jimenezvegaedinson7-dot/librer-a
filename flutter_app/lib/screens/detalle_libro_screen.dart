@@ -672,45 +672,62 @@ class _SinopsisCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
+    final estilo = textTheme.bodyMedium?.copyWith(
+      height: 1.6,
+      color: AppColors.textSecondary,
+    );
+
     return _Card(
       title: 'Sinopsis',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AnimatedSize(
-            duration: Duracion.base,
-            curve: Curva.salida,
-            alignment: Alignment.topCenter,
-            child: Text(
-              descripcion,
-              maxLines: completa ? null : 4,
-              overflow: completa ? null : TextOverflow.ellipsis,
-              style: textTheme.bodyMedium?.copyWith(
-                height: 1.6,
-                color: AppColors.textSecondary,
+      child: LayoutBuilder(
+        builder: (context, c) {
+          // "Leer más" solo si el texto realmente pasa de 4 líneas.
+          final medida = TextPainter(
+            text: TextSpan(text: descripcion, style: estilo),
+            maxLines: 4,
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+          )..layout(maxWidth: c.maxWidth);
+          final larga = medida.didExceedMaxLines;
+          medida.dispose();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AnimatedSize(
+                duration: Duracion.base,
+                curve: Curva.salida,
+                alignment: Alignment.topCenter,
+                child: Text(
+                  descripcion,
+                  maxLines: completa ? null : 4,
+                  overflow: completa ? null : TextOverflow.ellipsis,
+                  style: estilo,
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          TextButton(
-            onPressed: onToggle,
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              visualDensity: VisualDensity.compact,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(completa ? 'Leer menos' : 'Leer más'),
-                AnimatedRotation(
-                  turns: completa ? 0.5 : 0,
-                  duration: Duracion.base,
-                  child: const Icon(Icons.expand_more_rounded, size: 18),
+              if (larga) ...[
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: onToggle,
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(completa ? 'Leer menos' : 'Leer más'),
+                      AnimatedRotation(
+                        turns: completa ? 0.5 : 0,
+                        duration: Duracion.base,
+                        child: const Icon(Icons.expand_more_rounded, size: 18),
+                      ),
+                    ],
+                  ),
                 ),
               ],
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

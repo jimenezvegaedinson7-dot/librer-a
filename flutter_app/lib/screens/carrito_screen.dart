@@ -103,16 +103,17 @@ class _CarritoScreenState extends State<CarritoScreen> {
             children: [
               Expanded(
                 child: ListView(
+                  // Mismo margen (20) que el resto de pantallas.
                   padding: EdgeInsets.fromLTRB(
-                    16,
+                    20,
                     widget.embedded ? 18 : 14,
-                    16,
+                    20,
                     24,
                   ),
                   children: [
                     if (widget.embedded)
                       Padding(
-                        padding: const EdgeInsets.only(left: 4, bottom: 16),
+                        padding: const EdgeInsets.only(bottom: 16),
                         child: AppPageHeader(
                           title: 'Mi carrito',
                           subtitle: items.isEmpty

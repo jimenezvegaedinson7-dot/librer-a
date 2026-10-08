@@ -403,7 +403,6 @@ class _InicioTabState extends State<_InicioTab> {
               ),
             ),
           ],
-          const SizedBox(height: 10),
           Aparecer(
             indice: 2,
             child: _LibroCarrusel(
@@ -703,7 +702,8 @@ class _Categorias extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          // Mismo margen que los carruseles: los enlaces quedan alineados.
+          padding: const EdgeInsets.fromLTRB(20, 0, 12, 0),
           child: SeccionTitulo(
             antetitulo: 'Categorías',
             titulo: 'Explorar por categoría',
@@ -713,7 +713,8 @@ class _Categorias extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         SizedBox(
-          height: 206,
+          // Abanico (128) + nombre en hasta 2 líneas + cantidad, sin sobrante.
+          height: 196,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             clipBehavior: Clip.none,

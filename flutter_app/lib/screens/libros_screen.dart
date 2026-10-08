@@ -469,8 +469,19 @@ class _LibrosScreenState extends State<LibrosScreen> {
 
   /// Categorías como en Inicio: abanico de portadas y nombre, sin tarjeta.
   Widget _buildChips() {
+    // Alto justo: abanico (78) + nombre en 2 líneas + cantidad + marca.
+    final escala = MediaQuery.textScalerOf(context);
     return SizedBox(
-      height: 186,
+      height:
+          18 +
+          78 +
+          10 +
+          escala.scale(14) * 1.3 * 2 +
+          1 +
+          escala.scale(11) * 1.45 +
+          6 +
+          3 +
+          6,
       child: ListView(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
@@ -792,18 +803,28 @@ class _ChipCategoria extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    label,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: textTheme.titleSmall?.copyWith(
-                      color: seleccionado
-                          ? AppColors.primary
-                          : AppColors.textPrimary,
-                      fontWeight: seleccionado
-                          ? FontWeight.w700
-                          : FontWeight.w500,
+                  // El nombre ocupa siempre el alto de 2 líneas (centrado):
+                  // las cantidades quedan alineadas aunque un nombre sea largo.
+                  SizedBox(
+                    height:
+                        MediaQuery.textScalerOf(context).scale(14) * 1.3 * 2,
+                    child: Center(
+                      child: Text(
+                        label,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: textTheme.titleSmall?.copyWith(
+                          fontSize: 14,
+                          height: 1.25,
+                          color: seleccionado
+                              ? AppColors.primary
+                              : AppColors.textPrimary,
+                          fontWeight: seleccionado
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 1),
