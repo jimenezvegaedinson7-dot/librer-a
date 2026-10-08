@@ -252,69 +252,80 @@ async function enviarCorreo({
 }
 
 // ============================================================
-// CORREO DE VERIFICACIÓN DE EMAIL
+// CORREOS CON CÓDIGO (verificar cuenta y restablecer contraseña)
+// ------------------------------------------------------------
+// Formato sobrio, como los de los servicios grandes: fondo blanco, sin
+// cabecera de color, el nombre de la librería en texto, el código grande
+// en gris neutro y un aviso de seguridad. Funciona en Gmail, Outlook y
+// Apple Mail (tablas y estilos en línea).
 // ============================================================
+function plantillaCodigo({ titulo, saludo, intro, codigo, cierre }) {
+    const fuente = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+    return (
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f6f6;padding:32px 12px">` +
+        `<tr><td align="center">` +
+        `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #e5e5e5;border-radius:8px;font-family:${fuente};color:#1f1f1f">` +
+        `<tr><td style="padding:28px 32px 18px;border-bottom:1px solid #eeeeee">` +
+        `<span style="font-family:Georgia,'Times New Roman',serif;font-size:17px;font-weight:bold;color:#1f1f1f">Librería del Saber</span>` +
+        `</td></tr>` +
+        `<tr><td style="padding:28px 32px 8px">` +
+        `<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;font-weight:600;color:#1f1f1f">${htmlEscape(titulo)}</h1>` +
+        `<p style="margin:0 0 12px;font-size:15px;line-height:1.55;color:#3c3c3c">${saludo}</p>` +
+        `<p style="margin:0 0 20px;font-size:15px;line-height:1.55;color:#3c3c3c">${intro}</p>` +
+        `<div style="margin:0 0 20px;padding:18px 0;background:#f4f4f5;border:1px solid #e4e4e7;border-radius:6px;text-align:center">` +
+        `<span style="font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#111111">${htmlEscape(codigo)}</span>` +
+        `</div>` +
+        `<p style="margin:0 0 12px;font-size:14px;line-height:1.55;color:#3c3c3c">Este código vence en <strong>10 minutos</strong> y solo se puede usar una vez.</p>` +
+        `<p style="margin:0 0 24px;font-size:14px;line-height:1.55;color:#3c3c3c">${cierre}</p>` +
+        `</td></tr>` +
+        `<tr><td style="padding:16px 32px 24px;border-top:1px solid #eeeeee;font-size:12px;line-height:1.5;color:#6b6b6b">` +
+        `Por tu seguridad, no compartas este código con nadie. Librería del Saber nunca te lo pedirá por teléfono, mensaje ni correo.` +
+        `</td></tr>` +
+        `</table>` +
+        `<p style="margin:16px 0 0;font-family:${fuente};font-size:11px;color:#9a9a9a">Librería del Saber · Pallasca, Áncash, Perú</p>` +
+        `</td></tr></table>`
+    );
+}
+
 async function enviarCodigoVerificacion({ destinatario, codigo, nombre }) {
-    const asunto = 'Verifica tu cuenta en Librería';
+    const asunto = `${codigo} es tu código de verificación · Librería del Saber`;
     const texto =
         `Hola ${nombre},\n\n` +
-        `Gracias por registrarte en Librería.\n\n` +
-        `Tu código de verificación es:\n\n` +
+        `Para activar tu cuenta en Librería del Saber, ingresa este código:\n\n` +
         `${codigo}\n\n` +
-        `Ingresa este código en la aplicación para activar tu cuenta. ` +
-        `El código es válido por 10 minutos.\n\n` +
-        `Si no solicitaste esta verificación, ignora este correo.\n`;
+        `Este código vence en 10 minutos y solo se puede usar una vez.\n` +
+        `Si no creaste esta cuenta, puedes ignorar este correo.\n\n` +
+        `Por tu seguridad, no compartas este código con nadie.\n`;
 
-    const html =
-        `<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">` +
-        `<div style="background:#4f46e5;color:#fff;padding:20px;text-align:center">` +
-        `<h1 style="margin:0;font-size:20px">Librería</h1>` +
-        `<p style="margin:4px 0 0;font-size:13px;opacity:.9">Verificación de cuenta</p>` +
-        `</div>` +
-        `<div style="padding:28px;color:#1e293b;font-size:15px">` +
-        `<p>Hola <strong>${nombre}</strong>,</p>` +
-        `<p>Gracias por registrarte en Librería. Para activar tu cuenta, ingresa el siguiente código de verificación en la aplicación:</p>` +
-        `<div style="margin:22px 0;text-align:center">` +
-        `<span style="display:inline-block;padding:14px 28px;background:#eef2ff;color:#4338ca;font-size:28px;font-weight:bold;letter-spacing:8px;border-radius:10px">${codigo}</span>` +
-        `</div>` +
-        `<p style="color:#64748b;font-size:13px">El código es válido por <strong>10 minutos</strong>.</p>` +
-        `<p style="color:#64748b;font-size:13px">Si no solicitaste esta verificación, puedes ignorar este correo.</p>` +
-        `</div>` +
-        `</div>`;
+    const html = plantillaCodigo({
+        titulo: 'Verifica tu cuenta',
+        saludo: `Hola ${htmlEscape(nombre)},`,
+        intro: 'Para activar tu cuenta en Librería del Saber, ingresa este código de verificación:',
+        codigo,
+        cierre: 'Si no creaste esta cuenta, puedes ignorar este correo.'
+    });
 
     return enviarCorreo({ destinatario, asunto, html, texto });
 }
 
-// ============================================================
-// CORREO DE CÓDIGO PARA RESTABLECER CONTRASEÑA
-// ============================================================
 async function enviarCodigoReseteo({ destinatario, codigo, nombre }) {
-    const asunto = 'Restablece tu contraseña en Librería';
+    const asunto = `${codigo} es tu código para restablecer la contraseña · Librería del Saber`;
     const texto =
         `Hola ${nombre},\n\n` +
-        `Recibimos una solicitud para restablecer tu contraseña.\n\n` +
-        `Tu código de verificación es:\n\n` +
+        `Recibimos una solicitud para restablecer la contraseña de tu cuenta.\n` +
+        `Ingresa este código para continuar:\n\n` +
         `${codigo}\n\n` +
-        `Ingresa este código en la aplicación para crear una nueva contraseña. ` +
-        `El código es válido por 10 minutos.\n\n` +
-        `Si no solicitaste este cambio, ignora este correo y tu contraseña seguirá igual.\n`;
+        `Este código vence en 10 minutos y solo se puede usar una vez.\n` +
+        `Si no solicitaste este cambio, ignora este correo: tu contraseña seguirá igual.\n\n` +
+        `Por tu seguridad, no compartas este código con nadie.\n`;
 
-    const html =
-        `<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:auto;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden">` +
-        `<div style="background:#4f46e5;color:#fff;padding:20px;text-align:center">` +
-        `<h1 style="margin:0;font-size:20px">Librería</h1>` +
-        `<p style="margin:4px 0 0;font-size:13px;opacity:.9">Restablecer contraseña</p>` +
-        `</div>` +
-        `<div style="padding:28px;color:#1e293b;font-size:15px">` +
-        `<p>Hola <strong>${nombre}</strong>,</p>` +
-        `<p>Recibimos una solicitud para restablecer tu contraseña. Ingresa el siguiente código en la aplicación:</p>` +
-        `<div style="margin:22px 0;text-align:center">` +
-        `<span style="display:inline-block;padding:14px 28px;background:#eef2ff;color:#4338ca;font-size:28px;font-weight:bold;letter-spacing:8px;border-radius:10px">${codigo}</span>` +
-        `</div>` +
-        `<p style="color:#64748b;font-size:13px">El código es válido por <strong>10 minutos</strong>.</p>` +
-        `<p style="color:#64748b;font-size:13px">Si no solicitaste este cambio, ignora este correo y tu contraseña seguirá igual.</p>` +
-        `</div>` +
-        `</div>`;
+    const html = plantillaCodigo({
+        titulo: 'Restablece tu contraseña',
+        saludo: `Hola ${htmlEscape(nombre)},`,
+        intro: 'Recibimos una solicitud para restablecer la contraseña de tu cuenta. Ingresa este código para continuar:',
+        codigo,
+        cierre: 'Si no solicitaste este cambio, ignora este correo: tu contraseña seguirá igual.'
+    });
 
     return enviarCorreo({ destinatario, asunto, html, texto });
 }
@@ -885,6 +896,7 @@ module.exports = {
     generarPdfDesdeHtml,
     enviarCodigoVerificacion,
     enviarCodigoReseteo,
+    plantillaCodigo,
     enviarCorreoOrdenCreada,
     enviarCorreoPagoConfirmado,
     enviarCorreoPagoRechazado,

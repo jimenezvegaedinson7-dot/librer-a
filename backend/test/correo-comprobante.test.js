@@ -43,3 +43,12 @@ test('la plantilla de aviso no repite el detalle del comprobante', () => {
     assert.match(envio, /cuerpoAvisoComprobante\(/);
     assert.match(envio, /attachments: \[\{ filename: archivoPdf, content: pdfBuffer \}\]/);
 });
+
+test('correos con código: formales, sin cabecera de color y con el nombre escapado', () => {
+    const { plantillaCodigo } = require('../src/utils/mailer');
+    const html = plantillaCodigo({ titulo: 'Verifica tu cuenta', saludo: 'Hola &lt;Ana&gt;,', intro: 'Ingresa este código:', codigo: '482915', cierre: 'Ignóralo si no fuiste tú.' });
+    assert.match(html, /482915/);
+    assert.match(html, /Librería del Saber/);
+    assert.doesNotMatch(html, /#4f46e5|#4338ca|#eef2ff/i);
+    assert.match(html, /no compartas este código/);
+});
