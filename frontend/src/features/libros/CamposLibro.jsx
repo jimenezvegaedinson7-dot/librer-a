@@ -121,7 +121,7 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {} }) {
     const vencida = hayDescuento && fecha !== '' && fecha < hoy;
 
     return (
-        <div className="space-y-3 rounded-xl border border-primary-200 bg-white p-4">
+        <div className="space-y-3 rounded-xl border border-orange-200 bg-orange-50/50 p-4">
             <div className="flex items-center gap-2">
                 <FaTag className="text-oferta" />
                 <span className="text-sm font-semibold text-slate-800">Descuento (opcional)</span>

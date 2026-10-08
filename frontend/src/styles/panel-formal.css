@@ -1,124 +1,9 @@
 /* ============================================================
-   PANEL FORMAL
-   Última capa visual del panel administrativo: estilo sobrio de
-   software empresarial. Fondo marfil, títulos en azul marino, grises
-   para el texto, dorado solo como acento puntual y colores semánticos
-   (verde, rojo, ámbar, azul) únicamente con función.
-   Solo cambia la presentación: no toca datos, lógica ni contratos.
+   MODALES FORMALES
+   Solo afecta a los modales del panel: encabezado compacto, cuerpo con
+   desplazamiento propio y detalles como "etiqueta + valor" con líneas
+   divisorias, sin tarjetas ni cajas beige. Solo presentación.
    ============================================================ */
-
-/* ---------- Tokens: menos beige, bordes neutros ---------- */
-.admin-shell[data-theme="light"],
-.admin-shell[data-theme]:not([data-theme="dark"]) {
-    --panel-suave: #f7f5f1;
-    --panel-borde: #e3dfd7;
-    --accent-soft: #f3eee4;
-    --brand-soft: #f3f1ec;
-    --table-head-bg: #f7f5f1;
-    --table-head-text: #3b4652;
-    --table-head-line: #e3dfd7;
-    --line: #e3dfd7;
-}
-
-/* ---------- Tipografía general ---------- */
-.admin-shell[data-theme] .admin-main { font-size: 0.875rem; }
-.admin-shell[data-theme] .page-header h1 { font-size: clamp(1.375rem, 1.2rem + 0.6vw, 1.75rem); font-weight: 600; letter-spacing: -0.01em; }
-.admin-shell[data-theme] .page-header p { font-size: 0.875rem; }
-.admin-shell[data-theme] .page-header-icon:not(.card-header-icon) { width: 2.25rem; height: 2.25rem; font-size: 0.9375rem; border-radius: 0.625rem; }
-.admin-shell[data-theme] .card-title { font-size: 1rem; font-weight: 600; line-height: 1.3; }
-.admin-shell[data-theme] .card-subtitle { font-size: 0.8125rem; margin-top: 0.125rem; }
-.admin-shell[data-theme] .card-header { padding: 0.875rem 1.25rem; gap: 0.75rem; }
-.admin-shell[data-theme] :is(.card-header-icon, .panel-icono:not(.panel-icono--estado)) {
-    width: 2rem !important; height: 2rem !important; font-size: 0.8125rem; border-radius: 0.5rem;
-    box-shadow: none !important;
-}
-.admin-shell[data-theme] :is(.card-header-icon, .page-header-icon) {
-    background: var(--brand-soft) !important;
-    color: var(--panel-texto) !important;
-}
-.admin-shell[data-theme="dark"] :is(.card-header-icon, .page-header-icon) {
-    background: rgb(255 255 255 / 0.06) !important;
-    color: var(--panel-acento-texto) !important;
-}
-
-/* ---------- Tarjetas: sin sombras grandes ---------- */
-.admin-shell[data-theme] :is(.card, .admin-form-card, .panel-analitico, .grafico-card) {
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 2px rgb(13 41 64 / 0.04) !important;
-}
-
-/* ---------- Indicadores (antes tarjetas "joya" de colores) ----------
-   Superficie clara con la cifra en marino; el color semántico queda solo
-   en la etiqueta del icono y en los trazos pequeños. */
-.joya { --joya-tinta: #0d2940; }
-.joya--success { --joya-tinta: #1f7a4d; }
-.joya--danger  { --joya-tinta: #b42318; }
-.joya--warning { --joya-tinta: #b45309; }
-.joya--info    { --joya-tinta: #1d4f91; }
-.joya--violet  { --joya-tinta: #4f4590; }
-.joya--teal    { --joya-tinta: #0f6b66; }
-.joya--sky     { --joya-tinta: #1d5f8c; }
-.joya--rose    { --joya-tinta: #a3245a; }
-.joya--neutral { --joya-tinta: #5c544b; }
-.admin-shell[data-theme="dark"] .joya { --joya-tinta: var(--joya-acento); }
-
-.admin-shell[data-theme] .kpi-card--destacada.joya,
-.admin-shell[data-theme] .dashboard-mosaico .kpi-card--destacada.joya,
-.admin-shell[data-theme] .indicador {
-    --kpi-ink: var(--joya-tinta);
-    border: 1px solid var(--panel-borde);
-    border-top: 3px solid var(--joya-tinta);
-    background: var(--panel-superficie);
-    box-shadow: 0 1px 2px rgb(13 41 64 / 0.04);
-}
-.admin-shell[data-theme] .kpi-card--destacada.joya:hover,
-.admin-shell[data-theme] .dashboard-mosaico .kpi-card--destacada.joya:hover,
-.admin-shell[data-theme] .indicador:hover {
-    border-color: var(--panel-borde);
-    border-top-color: var(--joya-tinta);
-    box-shadow: 0 4px 14px -8px rgb(13 41 64 / 0.18);
-}
-.admin-shell[data-theme] .kpi-card--destacada.joya::after { content: none; }
-.admin-shell[data-theme] .kpi-card--destacada.joya .kpi-label { color: var(--panel-secundario); }
-.admin-shell[data-theme] .kpi-card--destacada.joya .kpi-icono {
-    width: 1.75rem; height: 1.75rem; font-size: 0.75rem;
-    background: color-mix(in srgb, var(--joya-tinta) 10%, transparent);
-    color: var(--joya-tinta);
-}
-.admin-shell[data-theme] .kpi-card--destacada.joya .kpi-valor { color: var(--panel-texto); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; }
-.admin-shell[data-theme] .kpi-card--destacada.joya .kpi-descripcion { color: var(--panel-secundario); font-size: 0.75rem; }
-.admin-shell[data-theme] .kpi-card--destacada.joya .kpi-trazo-punto { background: var(--joya-tinta); box-shadow: 0 0 0 3px var(--panel-superficie); }
-.admin-shell[data-theme] .kpi-card--destacada.joya .kpi-anillo-cifra { color: var(--joya-tinta); }
-.admin-shell[data-theme] .kpi-card--destacada.joya .kpi-anillo-brillo { stroke: var(--joya-tinta); }
-.admin-shell[data-theme] .kpi-card--destacada.joya .kpi-anillo-leyenda { color: var(--panel-secundario); }
-
-/* Mini indicadores y "mejores registros": planos, icono pequeño. */
-.admin-shell[data-theme] :is(.mini-stat, .registro-card) {
-    background: var(--panel-superficie) !important;
-    border-color: var(--panel-borde) !important;
-    box-shadow: 0 1px 2px rgb(13 41 64 / 0.04);
-    padding: 0.875rem 1rem;
-}
-.admin-shell[data-theme] .registro-card::after { content: none; }
-.admin-shell[data-theme] :is(.mini-stat-icono, .registro-icono) {
-    width: 2rem; height: 2rem; font-size: 0.8125rem; border-radius: 0.5rem;
-    background: var(--brand-soft) !important; color: var(--panel-texto) !important; box-shadow: none !important;
-}
-.admin-shell[data-theme="dark"] :is(.mini-stat-icono, .registro-icono) { background: rgb(255 255 255 / 0.06) !important; color: var(--panel-acento-texto) !important; }
-.admin-shell[data-theme] .mini-stat-valor { font-size: 1.375rem; font-weight: 700; }
-.admin-shell[data-theme] .registro-cifra { font-size: 1.25rem; }
-
-/* ---------- Tablas ---------- */
-.admin-shell[data-theme] .data-table-shell thead tr { background: var(--theme-tables-soft, var(--table-head-bg)) !important; }
-.admin-shell[data-theme] .data-table-shell thead th {
-    padding-top: 0.625rem; padding-bottom: 0.625rem;
-    font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.06em;
-    border-bottom: 1px solid var(--table-head-line) !important;
-}
-.admin-shell[data-theme] .data-table-shell tbody td { padding-top: 0.625rem; padding-bottom: 0.625rem; font-size: 0.8125rem; }
-.admin-shell[data-theme] .data-table-shell tbody tr:hover { background-color: rgb(13 41 64 / 0.03); }
-.admin-shell[data-theme="dark"] .data-table-shell tbody tr:hover { background-color: rgb(255 255 255 / 0.04); }
-.admin-shell[data-theme] .data-table-shell tbody td :is(button, a)[aria-label] { min-width: 2rem; min-height: 2rem; }
 
 /* ---------- Modales ---------- */
 .admin-shell .modal-panel, .modal-panel {
@@ -138,7 +23,7 @@
 /* ---------- Detalles: etiqueta y valor, sin tarjetas ----------
    Las fichas pasan a ser filas con una línea divisoria; el icono queda
    pequeño y sin cuadro de fondo. */
-.detail-tile {
+.modal-body .detail-tile {
     border: 0 !important;
     border-bottom: 1px solid var(--panel-borde, #e3dfd7) !important;
     border-radius: 0 !important;
@@ -147,15 +32,15 @@
     box-shadow: none !important;
     transform: none !important;
 }
-.detail-tile:hover { transform: none !important; box-shadow: none !important; }
-.detail-tile .ficha-icono {
+.modal-body .detail-tile:hover { transform: none !important; box-shadow: none !important; }
+.modal-body .detail-tile .ficha-icono {
     width: auto !important; height: auto !important;
     background: none !important; box-shadow: none !important;
     color: var(--panel-secundario, #6b7280) !important; font-size: 0.75rem;
 }
-.detail-tile > div:first-child { gap: 0.4rem; }
-.detail-tile > div:first-child > span:last-child { font-size: 0.6875rem; letter-spacing: 0.06em; font-weight: 700; }
-.detail-tile .ficha-valor { margin-top: 0.25rem; font-size: 0.9375rem; font-weight: 600; }
+.modal-body .detail-tile > div:first-child { gap: 0.4rem; }
+.modal-body .detail-tile > div:first-child > span:last-child { font-size: 0.6875rem; letter-spacing: 0.06em; font-weight: 700; }
+.modal-body .detail-tile .ficha-valor { margin-top: 0.25rem; font-size: 0.9375rem; font-weight: 600; }
 .modal-body .grid:has(> .detail-tile) { column-gap: 2rem; row-gap: 0.25rem; }
 
 /* Cajas beige de los modales de consulta (monto, fecha, estados…):
@@ -173,7 +58,3 @@
 .modal-body .grid:has(> [class*="bg-parchment-"][class~="border-primary-200"]) { column-gap: 2rem; row-gap: 0.25rem; }
 /* Textos largos (descripción, motivo): fondo neutro suave, sin beige. */
 .modal-body [class*="min-h-["][class*="bg-parchment-"] { background: var(--panel-suave, #f7f5f1) !important; border-color: var(--panel-borde, #e3dfd7) !important; border-radius: 0.5rem !important; }
-@media (max-width: 639px) {
-    .admin-shell[data-theme] .kpi-card--destacada.joya .kpi-valor { font-size: 1.25rem; }
-    .admin-shell[data-theme] .mini-stat-valor { font-size: 1.125rem; }
-}
