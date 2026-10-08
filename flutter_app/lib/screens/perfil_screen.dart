@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+import 'libro_reclamaciones_screen.dart';
 import '../models/usuario.dart';
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
@@ -351,18 +351,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
     await _cerrarSesion();
   }
 
+  /// Dentro de la app y con los datos de la cuenta ya completados.
   Future<void> _libroReclamaciones() async {
-    final ok = await launchUrl(
-      Uri.parse(Constants.libroReclamacionesUrl),
-      mode: LaunchMode.externalApplication,
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const LibroReclamacionesScreen()),
     );
-    if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo abrir el Libro de Reclamaciones.'),
-        ),
-      );
-    }
   }
 
   Future<void> _misCompras() async {

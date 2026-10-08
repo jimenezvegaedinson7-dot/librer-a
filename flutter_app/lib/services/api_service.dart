@@ -1199,6 +1199,27 @@ class ApiService {
     }
   }
 
+  /// Registra una hoja del Libro de Reclamaciones (`POST /reclamaciones`,
+  /// el mismo endpoint público que usa la web). Devuelve el número de hoja,
+  /// el mensaje y la fecha límite de respuesta.
+  Future<({String numero, String mensaje, String? fechaLimite})>
+  registrarReclamacion(Map<String, dynamic> hoja) async {
+    try {
+      final respuesta = await _dio.post<dynamic>('/reclamaciones', data: hoja);
+      final raw = respuesta.data;
+      final data = raw is Map && raw['data'] is Map ? raw['data'] as Map : const {};
+      return (
+        numero: '${data['numero'] ?? ''}',
+        mensaje: raw is Map
+            ? (raw['mensaje']?.toString() ?? 'Registramos tu hoja.')
+            : 'Registramos tu hoja.',
+        fechaLimite: data['fecha_limite']?.toString(),
+      );
+    } on DioException catch (e) {
+      throw _toApiException(e);
+    }
+  }
+
   /// Obtiene el catálogo de libros desde `GET /libros`.
   Future<List<Libro>> obtenerLibros() async {
     try {

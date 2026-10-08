@@ -237,6 +237,60 @@ struct CreatedReservation: Decodable {
     }
 }
 
+// MARK: - Libro de Reclamaciones
+
+/// Hoja de `POST /api/reclamaciones` (mismo contrato que la web y Flutter).
+struct ComplaintRequest: Encodable {
+    let tipo: String
+    let consumidorNombre: String
+    let consumidorTipoDocumento: String
+    let consumidorDocumento: String
+    let consumidorDomicilio: String
+    let consumidorTelefono: String
+    let consumidorEmail: String
+    let esMenor: Bool
+    let apoderadoNombre: String
+    let bienTipo: String
+    let bienDescripcion: String
+    let montoReclamado: String?
+    let idVenta: Int?
+    let detalle: String
+    let pedido: String
+
+    enum CodingKeys: String, CodingKey {
+        case tipo, detalle, pedido
+        case consumidorNombre = "consumidor_nombre"
+        case consumidorTipoDocumento = "consumidor_tipo_documento"
+        case consumidorDocumento = "consumidor_documento"
+        case consumidorDomicilio = "consumidor_domicilio"
+        case consumidorTelefono = "consumidor_telefono"
+        case consumidorEmail = "consumidor_email"
+        case esMenor = "es_menor"
+        case apoderadoNombre = "apoderado_nombre"
+        case bienTipo = "bien_tipo"
+        case bienDescripcion = "bien_descripcion"
+        case montoReclamado = "monto_reclamado"
+        case idVenta = "id_venta"
+    }
+}
+
+struct ComplaintResponse: Decodable {
+    let numero: String
+    let mensaje: String
+    let fechaLimite: String?
+
+    private enum RootKeys: String, CodingKey { case mensaje, data }
+    private enum DataKeys: String, CodingKey { case numero, fechaLimite = "fecha_limite" }
+
+    init(from decoder: Decoder) throws {
+        let root = try decoder.container(keyedBy: RootKeys.self)
+        mensaje = (try? root.decodeFlexibleStringIfPresent(forKey: .mensaje)) ?? "Registramos tu hoja."
+        let data = try? root.nestedContainer(keyedBy: DataKeys.self, forKey: .data)
+        numero = (try? data?.decodeFlexibleStringIfPresent(forKey: .numero)) ?? ""
+        fechaLimite = try? data?.decodeFlexibleStringIfPresent(forKey: .fechaLimite)
+    }
+}
+
 // MARK: - Cuenta
 
 struct EmailRequest: Encodable { let email: String }

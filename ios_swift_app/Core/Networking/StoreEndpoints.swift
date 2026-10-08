@@ -85,6 +85,14 @@ extension APIEndpoint where Response == APIStatusPayload {
     }
 }
 
+extension APIEndpoint where Response == ComplaintResponse {
+    /// Libro de Reclamaciones (público, igual que la web).
+    static func registerComplaint(_ body: ComplaintRequest) -> Self {
+        .init(method: .post, pathComponents: ["api", "reclamaciones"],
+              body: AnyEncodable(body), requiresAuthorization: false)
+    }
+}
+
 extension APIEndpoint where Response == ResetTokenResponse {
     static func verifyPasswordReset(_ body: VerifyResetRequest) -> Self {
         .init(method: .post, pathComponents: ["api", "auth", "verificar-reseteo"],

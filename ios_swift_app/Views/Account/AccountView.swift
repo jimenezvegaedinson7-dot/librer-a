@@ -57,6 +57,7 @@ struct AccountView: View {
                 case .privacy: LegalDocumentView(document: .privacy)
                 case .deleteAccount: DeleteAccountView()
                 case .backgrounds: BackgroundsView()
+                case .complaints: ComplaintsBookView()
                 }
             }
             .sheet(isPresented: $showPurchases) {
@@ -281,10 +282,8 @@ struct AccountView: View {
             Divider().padding(.leading, 60)
             linkRow("hand.raised", "Política de Privacidad", .privacy)
             Divider().padding(.leading, 60)
-            Link(destination: LegalDocument.complaintsBookURL) {
-                rowLabel("book.closed", "Libro de Reclamaciones")
-            }
-            .buttonStyle(.plain)
+            // Dentro de la app y con los datos de la cuenta ya completados.
+            linkRow("book.closed", "Libro de Reclamaciones", .complaints)
             Divider().padding(.leading, 60)
             linkRow("person.crop.circle.badge.xmark", "Eliminar mi cuenta", .deleteAccount)
         }
@@ -341,7 +340,7 @@ struct AccountView: View {
 }
 
 enum AccountRoute: Hashable {
-    case editProfile, changePassword, twoFactor, favorites, terms, privacy, deleteAccount, backgrounds
+    case editProfile, changePassword, twoFactor, favorites, terms, privacy, deleteAccount, backgrounds, complaints
 }
 
 /// Foto de perfil o iniciales.

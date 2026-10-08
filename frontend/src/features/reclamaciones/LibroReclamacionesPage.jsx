@@ -39,9 +39,9 @@ const INICIAL = {
 
 function Seccion({ numero, titulo, children }) {
     return (
-        <section className="space-y-4 border-t border-slate-200 pt-6">
-            <h2 className="flex items-center gap-3 font-title text-lg font-semibold text-slate-900">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0d2940] text-sm font-bold text-white">{numero}</span>
+        <section className="space-y-3 border-t border-slate-200 pt-4">
+            <h2 className="flex items-center gap-2.5 font-title text-base font-semibold text-slate-900">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0d2940] text-xs font-bold text-white">{numero}</span>
                 {titulo}
             </h2>
             {children}
@@ -93,6 +93,26 @@ function FormularioReclamaciones({ tienda }) {
         setHoja((actual) => ({ ...actual, [name]: type === 'checkbox' ? checked : value }));
     };
 
+    // Con sesión, el N.° de pedido se elige entre las compras propias: al
+    // elegir una se completan el bien y el monto (si no se escribieron).
+    const elegirCompra = (e) => {
+        const id = e.target.value;
+        editados.current.add('id_venta');
+        const compra = (datos.compras || []).find((v) => String(v.id_venta) === id);
+        setHoja((actual) => {
+            const nueva = { ...actual, id_venta: id };
+            if (!compra) return nueva;
+            const titulos = (compra.detalle || []).map((d) => d.titulo).filter(Boolean).join(', ');
+            if (titulos && !editados.current.has('bien_descripcion')) {
+                nueva.bien_descripcion = titulos.length > 250 ? `${titulos.slice(0, 247)}...` : titulos;
+            }
+            if (compra.total != null && !editados.current.has('monto_reclamado')) {
+                nueva.monto_reclamado = Number(compra.total).toFixed(2);
+            }
+            return nueva;
+        });
+    };
+
     const enviar = async (e) => {
         e.preventDefault();
         if (!acepta) {
@@ -117,22 +137,22 @@ function FormularioReclamaciones({ tienda }) {
     };
 
     return (
-        <div className="reclamaciones-publica min-h-screen bg-[#f6f4f0] px-4 py-8 sm:py-12">
-            <div className="mx-auto mb-4 w-full max-w-3xl">
+        <div className="reclamaciones-publica reclamaciones-compacta min-h-screen bg-[#f6f4f0] px-4 py-6 sm:py-8">
+            <div className="mx-auto mb-3 w-full max-w-2xl">
                 <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#0d2940] hover:underline">
                     <FaArrowLeft aria-hidden="true" /> Volver a Librería del Saber
                 </Link>
             </div>
-            <main className="mx-auto w-full max-w-3xl rounded-2xl border border-[#cfcfcf] bg-white p-5 shadow-sm sm:p-8">
-                <header className="flex flex-col gap-4 border-b-2 border-[#0d2940] pb-5 sm:flex-row sm:items-center sm:justify-between">
+            <main className="mx-auto w-full max-w-2xl rounded-2xl border border-[#cfcfcf] bg-white p-4 shadow-sm sm:p-6">
+                <header className="flex flex-col gap-3 border-b-2 border-[#0d2940] pb-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex items-center gap-3">
-                        <img src={logoWeb} alt="" width="48" height="56" className="h-14 w-auto" />
+                        <img src={logoWeb} alt="" width="34" height="40" className="h-10 w-auto" />
                         <div>
-                            <h1 className="font-title text-2xl font-semibold text-slate-900">Libro de Reclamaciones</h1>
-                            <p className="text-sm text-slate-600">Hoja de reclamación virtual</p>
+                            <h1 className="font-title text-xl font-semibold text-slate-900">Libro de Reclamaciones</h1>
+                            <p className="text-xs text-slate-600">Hoja de reclamación virtual</p>
                         </div>
                     </div>
-                    <div className="text-sm text-slate-700 sm:text-right">
+                    <div className="text-xs text-slate-700 sm:text-right">
                         <p className="font-semibold">{empresa?.razon_social || 'Librería del Saber'}</p>
                         {empresa?.nombre_comercial && <p>{empresa.nombre_comercial}</p>}
                         {empresa?.ruc && <p>RUC {empresa.ruc}</p>}
@@ -166,7 +186,7 @@ function FormularioReclamaciones({ tienda }) {
                         </Button>
                     </div>
                 ) : (
-                    <form onSubmit={enviar} className="mt-6 space-y-6" noValidate>
+                    <form onSubmit={enviar} className="mt-4 space-y-4" noValidate>
                         <Seccion numero="1" titulo="Identificación del consumidor">
                             {tienda.usuario && !tienda.revisando && !tienda.errorSesion && <p className="text-sm text-slate-600">Completamos los datos disponibles de tu cuenta y tus compras. Puedes corregirlos antes de enviar.</p>}
                             <div className="form-grid">
@@ -199,7 +219,18 @@ function FormularioReclamaciones({ tienda }) {
                                 </Select>
                                 <Input ancho={8} label="Descripción" name="bien_descripcion" value={hoja.bien_descripcion} onChange={cambiar} requerido maxLength={255} placeholder="Ej. Libro «Cien años de soledad»" />
                                 <Input ancho={6} label="Monto reclamado (S/)" type="number" min="0" step="0.01" name="monto_reclamado" value={hoja.monto_reclamado} onChange={cambiar} />
-                                <Input ancho={6} label="N.° de pedido (si lo tienes)" name="id_venta" value={hoja.id_venta} onChange={cambiar} inputMode="numeric" />
+                                {datos.compras?.length ? (
+                                    <Select ancho={6} label="Compra relacionada" name="id_venta" value={hoja.id_venta} onChange={elegirCompra}>
+                                        <option value="">Ninguna / otra</option>
+                                        {datos.compras.map((v) => (
+                                            <option key={v.id_venta} value={v.id_venta}>
+                                                {`N.° ${v.id_venta} · S/ ${Number(v.total || 0).toFixed(2)}${v.fecha_venta ? ` · ${new Date(v.fecha_venta).toLocaleDateString('es-PE')}` : ''}`}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                ) : (
+                                    <Input ancho={6} label="N.° de pedido (si lo tienes)" name="id_venta" value={hoja.id_venta} onChange={cambiar} inputMode="numeric" />
+                                )}
                             </div>
                         </Seccion>
 
@@ -222,11 +253,11 @@ function FormularioReclamaciones({ tienda }) {
                                     </button>
                                 ))}
                             </div>
-                            <Textarea label="Detalle" name="detalle" value={hoja.detalle} onChange={cambiar} rows="5" requerido maxLength={3000} />
-                            <Textarea label="Pedido (¿qué solicitas?)" name="pedido" value={hoja.pedido} onChange={cambiar} rows="3" requerido maxLength={2000} />
+                            <Textarea label="Detalle" name="detalle" value={hoja.detalle} onChange={cambiar} rows="4" requerido maxLength={3000} />
+                            <Textarea label="Pedido (¿qué solicitas?)" name="pedido" value={hoja.pedido} onChange={cambiar} rows="2" requerido maxLength={2000} />
                         </Seccion>
 
-                        <div className="space-y-3 border-t border-slate-200 pt-6 text-xs leading-relaxed text-slate-600">
+                        <div className="space-y-2 border-t border-slate-200 pt-4 text-xs leading-relaxed text-slate-600">
                             <p>
                                 La formulación del reclamo no impide acudir a otras vías de solución de controversias ni es requisito previo
                                 para interponer una denuncia ante el INDECOPI.
@@ -244,7 +275,7 @@ function FormularioReclamaciones({ tienda }) {
                         {error && <Alert tipo="error">{error}</Alert>}
 
                         <div className="flex justify-end">
-                            <Button type="submit" cargando={enviando} tamano="lg">
+                            <Button type="submit" cargando={enviando}>
                                 <FaPaperPlane /> {enviando ? 'Enviando...' : 'Registrar hoja'}
                             </Button>
                         </div>

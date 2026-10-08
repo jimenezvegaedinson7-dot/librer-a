@@ -22,6 +22,8 @@ struct Purchase: Codable, Equatable, Identifiable {
     let provincia: String?
     let agencia: String?
     let correoCompra: String?
+    let clienteDocumento: String?
+    let clienteTipoDocumento: String?
     let externalReference: String?
     let payuOrderID: String?
     let payuPaymentID: String?
@@ -54,6 +56,8 @@ struct Purchase: Codable, Equatable, Identifiable {
         case provincia
         case agencia
         case correoCompra = "correo_compra"
+        case clienteDocumento = "cliente_documento"
+        case clienteTipoDocumento = "cliente_tipo_documento"
         case externalReference = "external_reference"
         case payuOrderID = "payu_order_id"
         case payuPaymentID = "payu_payment_id"
@@ -88,6 +92,8 @@ struct Purchase: Codable, Equatable, Identifiable {
         provincia = try container.decodeIfPresent(String.self, forKey: .provincia)
         agencia = try container.decodeIfPresent(String.self, forKey: .agencia)
         correoCompra = try container.decodeIfPresent(String.self, forKey: .correoCompra)
+        clienteDocumento = try? container.decodeFlexibleStringIfPresent(forKey: .clienteDocumento)
+        clienteTipoDocumento = try? container.decodeFlexibleStringIfPresent(forKey: .clienteTipoDocumento)
         externalReference = try container.decodeIfPresent(String.self, forKey: .externalReference)
         payuOrderID = try container.decodeFlexibleStringIfPresent(forKey: .payuOrderID)
         payuPaymentID = try container.decodeFlexibleStringIfPresent(forKey: .payuPaymentID)

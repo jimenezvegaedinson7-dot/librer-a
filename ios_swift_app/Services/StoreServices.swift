@@ -198,6 +198,11 @@ final class AccountService {
         _ = try await client.send(APIEndpoint<APIStatusPayload>.confirmTwoFactor(.init(codigo: code)))
     }
 
+    /// Registra una hoja del Libro de Reclamaciones.
+    func registerComplaint(_ hoja: ComplaintRequest) async throws -> ComplaintResponse {
+        try await client.send(APIEndpoint<ComplaintResponse>.registerComplaint(hoja))
+    }
+
     /// `DELETE /api/usuarios/cuenta`: anonimiza la cuenta (Ley 29733).
     func deleteAccount(password: String) async throws {
         _ = try await client.send(
