@@ -1,6 +1,6 @@
 # Mapa de API
 
-> Generado desde el código real el 2026-10-08 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-09 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 Total de endpoints registrados en el backend: **127** (incluye 4 definidos directamente en `server.js`).

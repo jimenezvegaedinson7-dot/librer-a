@@ -79,3 +79,9 @@ ventas.json
 
 # Credenciales locales
 token.txt
+
+# Cerebro Graphify: se regenera solo en cada equipo (docs/architecture/tools/vigilar-grafo.mjs).
+# Solo se versiona su LEEME; las cachés de Graphify dentro de frontend/src tampoco.
+graphify-out/*
+!graphify-out/LEEME.md
+frontend/src/**/graphify-out/
