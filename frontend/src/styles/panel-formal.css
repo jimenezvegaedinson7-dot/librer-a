@@ -191,3 +191,45 @@
 .recientes .recientes-fila--linea { border-bottom: 1.5px solid #bcd3c8; }
 .recientes .recientes-fila:hover { background: #e8f3ed; }
 .recientes tbody td { color: #1f2a35 !important; }
+
+/* ============================================================
+   RESUMEN: EVOLUCIÓN DE VENTAS
+   Barras con color (azul, verde la mejor, índigo la actual), una línea
+   de tendencia turquesa con su área, un punto en cada cima y el monto
+   de cada barra visible sin pasar el mouse.
+   ============================================================ */
+.grafico-plot .grafico-barra {
+    background: linear-gradient(180deg, #5b9bd8 0%, #2f6fb3 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+.grafico-plot .grafico-barra--actual { background: linear-gradient(180deg, #7c6be0 0%, #4c3fa8 100%); }
+.grafico-plot .grafico-barra--mejor { background: linear-gradient(180deg, #34c27a 0%, #15803d 100%); }
+.grafico-plot .grafico-barra--activa { filter: brightness(1.12) saturate(1.1); }
+.grafico-plot .grafico-columna:hover { background: rgb(47 111 179 / 0.06); }
+.evolucion-tendencia { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.evolucion-tendencia-trazo { fill: none; stroke: #0d9488; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.grafico-columnas { z-index: 3; }
+.grafico-punto {
+    position: absolute; top: -5px; left: 50%; z-index: 4;
+    width: 10px; height: 10px; transform: translateX(-50%);
+    border: 2px solid #ffffff; border-radius: 50%; background: #0d9488;
+    box-shadow: 0 1px 3px rgb(13 41 64 / 0.35);
+}
+.grafico-etiqueta-valor {
+    position: absolute; bottom: calc(100% + 8px); left: 50%; z-index: 4;
+    transform: translateX(-50%);
+    font-size: 0.6875rem; font-weight: 700; font-variant-numeric: tabular-nums;
+    color: #1d4f91; white-space: nowrap; pointer-events: none;
+}
+.grafico-etiqueta-valor--clave { color: #15803d; font-size: 0.75rem; }
+.grafico-barra--actual .grafico-etiqueta-valor { color: #4c3fa8; }
+.grafico-leyenda-marca { background: #2f6fb3 !important; }
+.grafico-leyenda-marca--actual { background: #4c3fa8 !important; }
+.grafico-leyenda-marca--mejor { background: #15803d !important; }
+.grafico-leyenda-tendencia { display: inline-block; width: 1.125rem; height: 3px; border-radius: 2px; background: #0d9488; }
+@media (max-width: 640px) {
+    .grafico-etiqueta-valor:not(.grafico-etiqueta-valor--clave) { display: none; }
+}
+.grafico-etiqueta-valor { padding: 0 4px; border-radius: 4px; background: rgb(255 255 255 / 0.88); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6); }
+.grafico-columna:first-child .grafico-etiqueta-valor { left: 0; transform: none; }
+.grafico-columna:last-child .grafico-etiqueta-valor { left: auto; right: 0; transform: none; }

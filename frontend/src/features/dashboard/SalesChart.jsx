@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 
+import { motion, useReducedMotion } from 'motion/react';
 import { FaChartColumn, FaTable } from 'react-icons/fa6';
 
 import { formatearMoneda } from '../../lib/utils/format';
@@ -26,6 +27,37 @@ function Estadistica({ etiqueta, valor, detalle }) {
             <p className="grafico-stat-valor">{valor}</p>
             {detalle && <p className="grafico-stat-detalle">{detalle}</p>}
         </div>
+    );
+}
+
+// Línea de tendencia sobre las columnas: une la cima de cada barra y
+// sombrea el área de abajo. Se dibuja al aparecer (quieta con
+// "reducir movimiento") y está siempre visible, sin pasar el mouse.
+function LineaTendencia({ serie, valorDe, alto }) {
+    const reducir = useReducedMotion();
+    if (serie.length < 2) return null;
+    const puntos = serie.map((d, i) => [((i + 0.5) / serie.length) * 100, 100 - alto(valorDe(d))]);
+    const linea = puntos.map(([x, y], i) => `${i ? 'L' : 'M'} ${x.toFixed(2)} ${y.toFixed(2)}`).join(' ');
+    const area = `${linea} L ${puntos[puntos.length - 1][0].toFixed(2)} 100 L ${puntos[0][0].toFixed(2)} 100 Z`;
+    return (
+        <motion.svg
+            className="evolucion-tendencia"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            initial={reducir ? false : { clipPath: 'inset(0 100% 0 0)' }}
+            animate={{ clipPath: 'inset(0 0% 0 0)' }}
+            transition={{ duration: 1.1, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
+        >
+            <defs>
+                <linearGradient id="evolucion-area" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.28" />
+                    <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
+                </linearGradient>
+            </defs>
+            <path d={area} fill="url(#evolucion-area)" />
+            <path d={linea} className="evolucion-tendencia-trazo" vectorEffect="non-scaling-stroke" />
+        </motion.svg>
     );
 }
 
@@ -205,6 +237,8 @@ function SalesChart({
                                     </div>
                                 )}
 
+                                <LineaTendencia serie={serie} valorDe={valorDe} alto={alto} />
+
                                 <ol className="grafico-columnas" aria-label={`${m.texto} por ${config.unidad}`}>
                                     {serie.map((d, i) => {
                                         const valor = valorDe(d);
@@ -225,11 +259,14 @@ function SalesChart({
                                                 <div className="grafico-columna-zona">
                                                     {valor > 0 ? (
                                                         <span
-                                                            className={`grafico-barra reporte-barra ${d.actual ? 'grafico-barra--actual' : ''} ${conTooltip ? 'grafico-barra--activa' : ''}`}
+                                                            className={`grafico-barra reporte-barra ${d.actual ? 'grafico-barra--actual' : ''} ${esMejor ? 'grafico-barra--mejor' : ''} ${conTooltip ? 'grafico-barra--activa' : ''}`}
                                                             style={{ height: `${alto(valor)}%`, '--barra-i': Math.min(i, 16) }}
                                                         >
-                                                            {esMejor && !conTooltip && (
-                                                                <span className="grafico-etiqueta-max">{m.formato(valor)}</span>
+                                                            <span className="grafico-punto" aria-hidden="true" />
+                                                            {!conTooltip && (
+                                                                <span className={`grafico-etiqueta-valor ${esMejor || d.actual ? 'grafico-etiqueta-valor--clave' : ''}`}>
+                                                                    {esMejor || serie.length <= 14 ? m.formato(valor) : m.eje(valor)}
+                                                                </span>
                                                             )}
                                                         </span>
                                                     ) : (
@@ -270,6 +307,14 @@ function SalesChart({
                         <li className="flex items-center gap-2">
                             <span className="grafico-leyenda-marca" aria-hidden="true" />
                             {config.resto}
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <span className="grafico-leyenda-marca grafico-leyenda-marca--mejor" aria-hidden="true" />
+                            Mejor {config.unidad}
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <span className="grafico-leyenda-tendencia" aria-hidden="true" />
+                            Tendencia
                         </li>
                         <li className="flex items-center gap-2">
                             <span className="grafico-leyenda-linea" aria-hidden="true" />
