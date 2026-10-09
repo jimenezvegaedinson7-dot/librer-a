@@ -141,7 +141,7 @@ export default function LibroForm({ onLibroCreado }) {
     };
 
     return (
-        <Card>
+        <Card className="libros-form">
             <CardHeader
                 titulo="Registrar libro"
                 subtitulo="Complete la información del nuevo libro"

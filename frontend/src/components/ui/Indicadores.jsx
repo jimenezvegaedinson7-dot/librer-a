@@ -170,6 +170,7 @@ export function Indicador({ titulo, valor, icono, tono = 'neutral', detalle, de,
             )}
             {cargando && <span className="indicador-zona indicador-zona--esqueleto" aria-hidden="true" />}
             {cargando && <span className="sr-only">Cargando {titulo}</span>}
+            <span className="kpi-destello" aria-hidden="true" />
         </article>
     );
 }

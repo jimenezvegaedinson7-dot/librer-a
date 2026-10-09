@@ -93,7 +93,7 @@ function Contador({ cargando, total, activos, inactivos }) {
 
 function TablaLibros({ titulo, subtitulo, paginados, contadorLibros, pagina, totalPaginas, onCambiarPagina, color, onVer, onEditar, onEliminar, puedeEditar }) {
     return (
-        <Card>
+        <Card className="libros-tabla">
             <CardHeader
                 titulo={titulo}
                 subtitulo={subtitulo}
@@ -294,7 +294,7 @@ export default function LibrosPage() {
     const hayFiltros = busqueda || filtroEstado !== 'todos' || filtroStock !== 'todos';
 
     return (
-        <div className="space-y-4">
+        <div className="libros-pagina space-y-4">
             <PageHeader
                 titulo="Libros"
                 descripcion={
@@ -307,7 +307,7 @@ export default function LibrosPage() {
 
             {puedeEditarCatalogo && <LibroForm onLibroCreado={libroCreado} />}
 
-            <Card>
+            <Card className="libros-filtros">
                 <CardHeader
                     titulo="Catálogo de libros"
                     subtitulo="Busca y filtra los libros registrados"

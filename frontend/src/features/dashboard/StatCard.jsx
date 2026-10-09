@@ -48,6 +48,7 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion,
             {(detalle || descripcion) && <p className="kpi-descripcion">{detalle || descripcion}</p>}
             {tendencia && <TendenciaViva datos={tendencia} etiqueta={etiquetaTendencia || `Tendencia de ${titulo}`} activa={activa} />}
             {medidor && <Anillo {...medidor} activa={activa} />}
+            <span className="kpi-destello" aria-hidden="true" />
         </motion.article>
     );
 }
