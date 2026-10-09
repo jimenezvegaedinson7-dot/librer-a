@@ -233,3 +233,56 @@
 .grafico-etiqueta-valor { padding: 0 4px; border-radius: 4px; background: rgb(255 255 255 / 0.88); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6); }
 .grafico-columna:first-child .grafico-etiqueta-valor { left: 0; transform: none; }
 .grafico-columna:last-child .grafico-etiqueta-valor { left: auto; right: 0; transform: none; }
+
+/* Encabezado de "Últimos libros agregados": negro suave con brillo de
+   espejo y un destello que lo cruza al aparecer y al pasar el mouse. */
+.recientes .recientes-encabezado {
+    position: relative;
+    overflow: hidden;
+    border-radius: inherit;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 0.16) 0%, rgb(255 255 255 / 0.04) 48%, rgb(0 0 0 / 0) 52%),
+        linear-gradient(135deg, #3a3f46 0%, #23272d 55%, #1b1e23 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 -1px 0 rgb(0 0 0 / 0.35);
+}
+.recientes .recientes-encabezado::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: -40%;
+    width: 30%;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.22), transparent);
+    transform: skewX(-18deg);
+    animation: recientes-destello 1.6s cubic-bezier(0.25, 1, 0.5, 1) 0.4s 1 both;
+    pointer-events: none;
+}
+.recientes:hover .recientes-encabezado::after { animation: recientes-destello 1.2s cubic-bezier(0.25, 1, 0.5, 1) 1 both; }
+@keyframes recientes-destello { from { left: -40%; } to { left: 120%; } }
+.recientes .recientes-encabezado h3 { color: #ffffff !important; }
+.recientes .recientes-encabezado p { color: rgb(255 255 255 / 0.72) !important; }
+.recientes .recientes-encabezado > div:first-child > div:first-child {
+    background: rgb(255 255 255 / 0.12) !important;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
+}
+.recientes .recientes-encabezado > div:first-child > div:first-child svg { color: #f2d48a !important; }
+.recientes .recientes-encabezado > button {
+    border-color: rgb(255 255 255 / 0.28) !important;
+    background: rgb(255 255 255 / 0.1) !important;
+    color: #ffffff !important;
+}
+.recientes .recientes-encabezado > button:hover { background: rgb(255 255 255 / 0.2) !important; }
+.recientes .recientes-cabecera { border-top: 0; }
+@media (prefers-reduced-motion: reduce) {
+    .recientes .recientes-encabezado::after, .recientes:hover .recientes-encabezado::after { animation: none; display: none; }
+}
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado p { color: rgb(255 255 255 / 0.74) !important; }
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado h3 { color: #ffffff !important; }
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado > button {
+    border: 1px solid rgb(255 255 255 / 0.3) !important;
+    background: rgb(255 255 255 / 0.1) !important;
+    color: #ffffff !important;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.15) !important;
+}
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado > button:hover { background: rgb(255 255 255 / 0.22) !important; }
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado > button svg { color: #ffffff !important; }

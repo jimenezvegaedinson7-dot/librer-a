@@ -37,7 +37,7 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
         <section className="grafico-card recientes">
 
             {/* cabecera */}
-            <div className="flex items-center justify-between px-6 py-5">
+            <div className="recientes-encabezado flex items-center justify-between px-6 py-5">
                 <div className="flex items-center gap-3.5">
                     <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f2f8f6]">
                         <FaBook className="text-[18px] text-[#0b5c51]" />
