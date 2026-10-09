@@ -1,6 +1,8 @@
 
 import { motion, useReducedMotion } from 'motion/react';
 
+import { ColumnasMini } from './DetalleTarjeta';
+
 
 const entrada = {
     oculto: { opacity: 0, y: 10 },
@@ -9,10 +11,10 @@ const entrada = {
 
 const estatica = { oculto: { opacity: 1 }, visible: { opacity: 1 } };
 
-export default function MejorRegistro({ icono, etiqueta, principal, detalle, vacio }) {
+export default function MejorRegistro({ icono, etiqueta, principal, detalle, vacio, serie = [], etiquetaSerie, tono = 'oro' }) {
     const reducirMovimiento = useReducedMotion();
     return (
-        <motion.article variants={reducirMovimiento ? estatica : entrada} className="registro-card">
+        <motion.article variants={reducirMovimiento ? estatica : entrada} className={`registro-card registro-card--${tono}`}>
             <span className="registro-icono" aria-hidden="true">
                 {icono}
             </span>
@@ -21,6 +23,7 @@ export default function MejorRegistro({ icono, etiqueta, principal, detalle, vac
                 <p className={`registro-principal ${vacio ? 'registro-principal--vacio' : ''}`}>{principal}</p>
                 <p className="registro-detalle">{detalle}</p>
             </div>
+            {!vacio && <ColumnasMini serie={serie} etiqueta={etiquetaSerie || etiqueta} />}
         </motion.article>
     );
 }

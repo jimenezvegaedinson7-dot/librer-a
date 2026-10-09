@@ -319,7 +319,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `public-site/lib/precarga.js`
 - `public-site/lib/useCarruselAutomatico.js`
 
-## Framer Motion (`motion/react`) — 23 archivos
+## Framer Motion (`motion/react`) — 25 archivos
 
 - `components/providers/ToastProvider.jsx`
 - `components/ui/Celebracion.jsx`
@@ -330,10 +330,12 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `features/auth/VerificarEmailPage.jsx`
 - `features/dashboard/DashboardPage.jsx`
 - `features/dashboard/Decoraciones.jsx`
+- `features/dashboard/DetalleTarjeta.jsx`
 - `features/dashboard/MejorRegistro.jsx`
 - `features/dashboard/StatCard.jsx`
 - `features/dashboard/StatusDonut.jsx`
 - `features/dashboard/StockBajo.jsx`
+- `features/dashboard/useContador.js`
 - `features/layout/AdminLayout.jsx`
 - `features/layout/PerfilAdministrador.jsx`
 - `features/layout/Sidebar.jsx`

@@ -34,6 +34,7 @@ import { num, serieDiaria, serieMensual } from './graficoUtils';
 
 import { MiniStat, StatCard } from './StatCard';
 import MejorRegistro from './MejorRegistro';
+import { BarraSegmentos, BarrasTop } from './DetalleTarjeta';
 import RecentBooks from './RecentBooks';
 import SalesChart from './SalesChart';
 import StatusDonut from './StatusDonut';
@@ -155,6 +156,13 @@ export default function DashboardPage() {
     const reservasPendientes = num(reservasPorEstado.find((r) => String(r.estado).toLowerCase() === 'pendiente')?.cantidad);
     const vendidoHoy = indicadores === null ? null : num(indicadores.vendido_hoy);
     const { mejor_mes: mejorMes, mejor_dia: mejorDia } = indicadores || {};
+    // Desgloses de las tarjetas pequeñas, calculados con el catálogo cargado.
+    const librosActivos = libros.filter((l) => Number(l.estado) === 1).length;
+    const librosOcultos = libros.length - librosActivos;
+    const autoresConLibros = new Set(libros.map((l) => l.id_autor ?? l.autor).filter(Boolean)).size;
+    const porCategoria = new Map();
+    for (const l of libros) if (l.categoria) porCategoria.set(l.categoria, (porCategoria.get(l.categoria) || 0) + 1);
+    const categoriasTop = [...porCategoria].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([etiqueta, valor]) => ({ etiqueta, valor }));
 
     const fechaTexto = formatoFecha.format(new Date());
     const fechaHoy = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
@@ -237,10 +245,27 @@ export default function DashboardPage() {
                 animate="visible"
                 className="grid grid-cols-2 gap-5 xl:grid-cols-4"
             >
-                <MiniStat titulo="Libros" valor={resumen.total_libros} icono={<FaBook />} descripcion="Títulos en el catálogo" />
-                <MiniStat titulo="Autores" valor={resumen.total_autores} icono={<FaUserPen />} descripcion="Autores registrados" />
-                <MiniStat titulo="Categorías" valor={resumen.total_categorias} icono={<FaTags />} descripcion="Categorías del catálogo" />
-                <MiniStat titulo="Usuarios" valor={resumen.total_usuarios} icono={<FaUsers />} descripcion="Cuentas registradas" />
+                <MiniStat titulo="Libros" valor={resumen.total_libros} icono={<FaBook />} descripcion="Títulos en el catálogo" tono="azul">
+                    <BarraSegmentos
+                        etiqueta={`${librosActivos} libros a la venta y ${librosOcultos} ocultos`}
+                        segmentos={[{ etiqueta: 'a la venta', valor: librosActivos, tono: 'verde' }, { etiqueta: librosOcultos === 1 ? 'oculto' : 'ocultos', valor: librosOcultos, tono: 'gris' }]}
+                    />
+                </MiniStat>
+                <MiniStat titulo="Autores" valor={resumen.total_autores} icono={<FaUserPen />} descripcion="Autores registrados" tono="verde">
+                    {libros.length > 0 && <BarraSegmentos
+                        etiqueta={`${autoresConLibros} autores con libros en el catálogo`}
+                        segmentos={[{ etiqueta: 'con libros', valor: Math.min(autoresConLibros, num(resumen.total_autores)), tono: 'verde' }, { etiqueta: 'sin libros', valor: Math.max(0, num(resumen.total_autores) - autoresConLibros), tono: 'gris' }]}
+                    />}
+                </MiniStat>
+                <MiniStat titulo="Categorías" valor={resumen.total_categorias} icono={<FaTags />} descripcion="Categorías del catálogo" tono="ambar">
+                    <BarrasTop items={categoriasTop} etiqueta="Categorías con más títulos" />
+                </MiniStat>
+                <MiniStat titulo="Usuarios" valor={resumen.total_usuarios} icono={<FaUsers />} descripcion="Cuentas registradas" tono="violeta">
+                    {resumen.total_clientes !== undefined && <BarraSegmentos
+                        etiqueta={`${num(resumen.total_clientes)} clientes y ${num(resumen.total_administradores)} administradores`}
+                        segmentos={[{ etiqueta: num(resumen.total_clientes) === 1 ? 'cliente' : 'clientes', valor: num(resumen.total_clientes), tono: 'violeta' }, { etiqueta: num(resumen.total_administradores) === 1 ? 'administrador' : 'administradores', valor: num(resumen.total_administradores), tono: 'gris' }]}
+                    />}
+                </MiniStat>
             </motion.section>
 
             {/* MEJORES REGISTROS */}
@@ -254,6 +279,9 @@ export default function DashboardPage() {
                 <MejorRegistro
                     icono={<FaTrophy />}
                     etiqueta="Mejor mes registrado"
+                    tono="oro"
+                    serie={ventasPorMes === null ? [] : mensual}
+                    etiquetaSerie="Ventas cobradas de los últimos 6 meses"
                     principal={mejorMes ? `${mejorMes.mes} ${mejorMes.anio}` : 'Sin datos'}
                     vacio={!mejorMes}
                     detalle={mejorMes
@@ -263,6 +291,9 @@ export default function DashboardPage() {
                 <MejorRegistro
                     icono={<FaCalendarCheck />}
                     etiqueta="Mejor día registrado"
+                    tono="marino"
+                    serie={ventasPorDia === null ? [] : diario}
+                    etiquetaSerie="Ventas cobradas de los últimos 14 días"
                     principal={mejorDia ? formatearFechaCorta(mejorDia.fecha) : 'Sin datos'}
                     vacio={!mejorDia}
                     detalle={mejorDia

@@ -31,7 +31,10 @@ const obtenerResumenGeneral = async () => {
     `);
 
     const [[usuarios]] = await pool.query(`
-        SELECT COUNT(*) AS total_usuarios
+        SELECT
+            COUNT(*) AS total_usuarios,
+            COUNT(*) FILTER (WHERE rol = 'cliente') AS total_clientes,
+            COUNT(*) FILTER (WHERE rol = 'administrador') AS total_administradores
         FROM usuarios
     `);
 
@@ -59,6 +62,8 @@ const obtenerResumenGeneral = async () => {
         total_autores: autores.total_autores,
         total_categorias: categorias.total_categorias,
         total_usuarios: usuarios.total_usuarios,
+        total_clientes: usuarios.total_clientes,
+        total_administradores: usuarios.total_administradores,
         total_ventas: ventas.total_ventas,
         total_vendido: ventas.total_vendido,
         total_reservas: reservas.total_reservas,

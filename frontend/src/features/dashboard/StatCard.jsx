@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 
 import { Anillo, TendenciaViva } from './Decoraciones';
+import { useContador } from './useContador';
 
 // Todas las tarjetas llevan el acabado de "Total vendido"; el tono solo
 // cambia su color (clases joya--* en panel-editorial.css).
@@ -51,22 +52,29 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion,
     );
 }
 
-export function MiniStat({ titulo, valor, icono, descripcion }) {
+export function MiniStat({ titulo, valor, icono, descripcion, tono = 'azul', children }) {
     const reducirMovimiento = useReducedMotion();
+    const numero = Number(valor);
+    const contado = useContador(Number.isFinite(numero) ? numero : 0);
 
     return (
         <motion.article
             variants={reducirMovimiento ? estatica : entradaTarjeta}
-            className="mini-stat"
+            whileHover={reducirMovimiento ? undefined : { y: -3 }}
+            transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+            className={`mini-stat mini-stat--${tono}`}
         >
             <div className="mini-stat-cabecera">
                 <span className="mini-stat-icono" aria-hidden="true">{icono}</span>
+                <div className="min-w-0 text-right">
+                    <p className="mini-stat-valor">{Number.isFinite(numero) ? contado : valor}</p>
+                </div>
             </div>
             <div className="min-w-0">
                 <p className="mini-stat-label">{titulo}</p>
-                <p className="mini-stat-valor">{valor}</p>
                 {descripcion && <p className="mini-stat-descripcion">{descripcion}</p>}
             </div>
+            {children}
         </motion.article>
     );
 }

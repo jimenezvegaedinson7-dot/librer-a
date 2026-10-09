@@ -94,3 +94,75 @@
 .admin-shell :is(.field, input, textarea)::placeholder { color: #7a828c; opacity: 1; }
 .admin-shell .field-label, .admin-shell label { color: #1f2a35; }
 .admin-shell svg text { fill: #3f4a56; }
+
+/* ============================================================
+   RESUMEN: TARJETAS PEQUEÑAS Y MEJORES REGISTROS
+   Cada tarjeta tiene su tono suave y un contenido con datos reales
+   (desgloses del catálogo y columnas de ventas) que se anima al
+   aparecer. Con "reducir movimiento" todo aparece quieto.
+   ============================================================ */
+.admin-shell[data-theme] .mini-stat[class*="mini-stat--"] {
+    --tono: #1d4f91; --tono-suave: #e9f0fa;
+    display: flex; flex-direction: column; gap: 0.625rem;
+    border: 1px solid color-mix(in srgb, var(--tono) 18%, #ffffff) !important;
+    background:
+        radial-gradient(220px 120px at 100% 0%, color-mix(in srgb, var(--tono) 12%, transparent), transparent 70%),
+        linear-gradient(160deg, var(--tono-suave) 0%, #ffffff 62%) !important;
+    box-shadow: 0 1px 2px rgb(13 41 64 / 0.05), 0 12px 26px -20px color-mix(in srgb, var(--tono) 55%, transparent) !important;
+}
+.admin-shell[data-theme] .mini-stat.mini-stat--verde { --tono: #1f7a4d; --tono-suave: #e8f5ee; }
+.admin-shell[data-theme] .mini-stat.mini-stat--ambar { --tono: #b45309; --tono-suave: #fdf2e3; }
+.admin-shell[data-theme] .mini-stat.mini-stat--violeta { --tono: #5b4a9c; --tono-suave: #f0ecfa; }
+.admin-shell[data-theme] .mini-stat[class*="mini-stat--"] .mini-stat-icono {
+    background: color-mix(in srgb, var(--tono) 14%, #ffffff) !important;
+    color: var(--tono) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tono) 22%, transparent) !important;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.admin-shell[data-theme] .mini-stat[class*="mini-stat--"]:hover .mini-stat-icono { transform: rotate(-6deg) scale(1.06); }
+.admin-shell[data-theme] .mini-stat[class*="mini-stat--"] .mini-stat-valor { margin: 0; color: var(--tono) !important; font-size: 1.75rem; line-height: 1; }
+
+.mini-detalle { margin-top: auto; }
+.mini-barra { display: flex; gap: 2px; height: 0.5rem; overflow: hidden; border-radius: 999px; background: color-mix(in srgb, var(--tono, #1d4f91) 10%, #ffffff); }
+.mini-barra-tramo { display: block; height: 100%; border-radius: 999px; }
+.mini-barra-tramo--verde { background: linear-gradient(90deg, #2e9a62, #1f7a4d); }
+.mini-barra-tramo--gris { background: #b9c0c8; }
+.mini-barra-tramo--violeta { background: linear-gradient(90deg, #7a68c2, #5b4a9c); }
+.mini-leyenda { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; margin: 0.5rem 0 0; padding: 0; list-style: none; font-size: 0.75rem; color: #3f4a56; }
+.mini-leyenda li { display: inline-flex; align-items: center; gap: 0.375rem; }
+.mini-punto { width: 0.5rem; height: 0.5rem; border-radius: 50%; }
+.mini-punto--verde { background: #1f7a4d; }
+.mini-punto--gris { background: #b9c0c8; }
+.mini-punto--violeta { background: #5b4a9c; }
+.mini-top { display: grid; gap: 0.375rem; margin-bottom: 0; padding: 0; list-style: none; }
+.mini-top li { display: grid; grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr) auto; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #26313c; }
+.mini-top-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mini-top-pista { height: 0.375rem; overflow: hidden; border-radius: 999px; background: color-mix(in srgb, var(--tono, #b45309) 12%, #ffffff); }
+.mini-top-relleno { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, color-mix(in srgb, var(--tono, #b45309) 70%, #ffffff), var(--tono, #b45309)); }
+.mini-top-valor { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--tono, #b45309); }
+
+/* Mejores registros: tono oro (mes) y marino (día), con columnas reales. */
+.admin-shell[data-theme] .registro-card[class*="registro-card--"] {
+    --tono: #a0700f; --tono-suave: #fff5e1;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1rem;
+    border: 1px solid color-mix(in srgb, var(--tono) 22%, #ffffff) !important;
+    background:
+        radial-gradient(320px 150px at 100% 0%, color-mix(in srgb, var(--tono) 14%, transparent), transparent 70%),
+        linear-gradient(135deg, var(--tono-suave) 0%, #ffffff 65%) !important;
+}
+.admin-shell[data-theme] .registro-card.registro-card--marino { --tono: #1d4f91; --tono-suave: #eaf1fa; }
+.admin-shell[data-theme] .registro-card[class*="registro-card--"]::after { border-color: color-mix(in srgb, var(--tono) 22%, transparent); }
+.admin-shell[data-theme] .registro-card[class*="registro-card--"] .registro-icono {
+    background: color-mix(in srgb, var(--tono) 16%, #ffffff) !important;
+    color: var(--tono) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tono) 25%, transparent) !important;
+}
+.admin-shell[data-theme] .registro-card[class*="registro-card--"] .registro-principal { color: #0d2940; }
+.registro-columnas { display: flex; align-items: flex-end; gap: 4px; height: 3.5rem; min-width: 7rem; }
+.registro-columna { display: flex; flex: 1 1 0; align-items: flex-end; height: 100%; min-width: 6px; }
+.registro-columna-barra { display: block; width: 100%; border-radius: 3px 3px 1px 1px; background: color-mix(in srgb, var(--tono, #a0700f) 28%, #ffffff); }
+.registro-columna-barra--mejor { background: linear-gradient(180deg, color-mix(in srgb, var(--tono, #a0700f) 75%, #ffffff), var(--tono, #a0700f)); box-shadow: 0 4px 10px -4px color-mix(in srgb, var(--tono, #a0700f) 70%, transparent); }
+@media (max-width: 520px) {
+    .admin-shell[data-theme] .registro-card[class*="registro-card--"] { grid-template-columns: auto minmax(0, 1fr); }
+    .registro-columnas { grid-column: 1 / -1; min-width: 0; height: 2.75rem; }
+}
