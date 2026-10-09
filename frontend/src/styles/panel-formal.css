@@ -166,3 +166,28 @@
     .admin-shell[data-theme] .registro-card[class*="registro-card--"] { grid-template-columns: auto minmax(0, 1fr); }
     .registro-columnas { grid-column: 1 / -1; min-width: 0; height: 2.75rem; }
 }
+
+/* ============================================================
+   RESUMEN: VENTAS POR ESTADO (PASTEL 3D)
+   ============================================================ */
+.pastel3d { display: flex; justify-content: center; padding: 0.25rem 0 0.5rem; }
+.pastel3d svg { width: 100%; max-width: 17rem; height: auto; overflow: visible; }
+.pastel3d-sombra { fill: rgb(13 41 64 / 0.16); filter: blur(4px); }
+.pastel3d-porcion { cursor: pointer; }
+.pastel3d-etiqueta { fill: #ffffff !important; font-size: 11px; font-weight: 700; paint-order: stroke; stroke: rgb(0 0 0 / 0.25); stroke-width: 2px; pointer-events: none; }
+
+/* ============================================================
+   RESUMEN: ÚLTIMOS LIBROS AGREGADOS
+   Tono salvia suave y líneas marcadas para leer bien cada fila.
+   ============================================================ */
+.admin-shell[data-theme] .grafico-card.recientes {
+    border: 1px solid #c9ddd3 !important;
+    background: linear-gradient(180deg, #eef7f2 0%, #f8fbf9 34%, #ffffff 100%) !important;
+    box-shadow: 0 1px 2px rgb(13 41 64 / 0.05), 0 14px 30px -24px rgb(31 106 79 / 0.45) !important;
+}
+.recientes .recientes-cabecera { background: #dcece4; border-top: 2px solid #9fc4b3; border-bottom: 2px solid #9fc4b3; }
+.recientes .recientes-cabecera th { color: #1d4a3b !important; }
+.recientes .recientes-fila { transition: background-color 0.15s ease; }
+.recientes .recientes-fila--linea { border-bottom: 1.5px solid #bcd3c8; }
+.recientes .recientes-fila:hover { background: #e8f3ed; }
+.recientes tbody td { color: #1f2a35 !important; }

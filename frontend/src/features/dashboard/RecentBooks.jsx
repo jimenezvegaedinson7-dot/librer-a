@@ -34,7 +34,7 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
     const librosRecientes = libros.slice(0, 5);
 
     return (
-        <section className="grafico-card">
+        <section className="grafico-card recientes">
 
             {/* cabecera */}
             <div className="flex items-center justify-between px-6 py-5">
@@ -74,17 +74,17 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
                         <thead>
-                            <tr className="border-y border-[#f3efe9] bg-[#faf8f5]">
-                                <th className="px-4 sm:px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                            <tr className="recientes-cabecera">
+                                <th className="px-4 sm:px-6 py-3 text-left text-[12px] font-bold uppercase tracking-[0.05em]">
                                     Libro
                                 </th>
-                                <th className="px-4 sm:px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="px-4 sm:px-6 py-3 text-left text-[12px] font-bold uppercase tracking-[0.05em]">
                                     Autor
                                 </th>
-                                <th className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-[12px] font-bold uppercase tracking-[0.05em]">
                                     Categoría
                                 </th>
-                                <th className="px-4 sm:px-6 py-3 text-right text-[12px] font-semibold uppercase tracking-[0.03em] text-[#766d62]">
+                                <th className="px-4 sm:px-6 py-3 text-right text-[12px] font-bold uppercase tracking-[0.05em]">
                                     Stock
                                 </th>
                             </tr>
@@ -96,9 +96,7 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
                                 return (
                                     <tr
                                         key={libro.id_libro}
-                                        className={`transition-colors duration-150 hover:bg-[#faf8f5] ${
-                                            index < librosRecientes.length - 1 ? 'border-b border-[#f3efe9]' : ''
-                                        }`}
+                                        className={`recientes-fila ${index < librosRecientes.length - 1 ? 'recientes-fila--linea' : ''}`}
                                     >
                                         <td className="px-4 sm:px-6 py-4 align-middle">
                                             <span className="text-[14px] font-medium text-[#1c1814]">

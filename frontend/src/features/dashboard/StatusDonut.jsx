@@ -2,7 +2,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { FaCalendarCheck, FaCartShopping, FaCircleCheck, FaCircleXmark, FaClock, FaRotateLeft, FaTruck } from 'react-icons/fa6';
 
 import { formatearMoneda } from '../../lib/utils/format';
-import { Destello } from './Decoraciones';
+import Pastel3D from './Pastel3D';
 import { num } from './graficoUtils';
 
 // Estados como paleta de estado (validada con el validador de dataviz en claro y oscuro).
@@ -22,32 +22,6 @@ const configEstado = (estado) => {
     const texto = clave ? clave.charAt(0).toUpperCase() + clave.slice(1) : 'Otro';
     return ESTADOS[clave] || { texto, clase: 'estado--neutro', Icono: FaClock, orden: 9 };
 };
-
-// Barra 100 % apilada con escala y destello al pasar el cursor.
-function BarraEstados({ lista }) {
-    return (
-        <div>
-            <div className="estado-barra-marco">
-                <div className="estado-barra" role="img" aria-label={lista.map((i) => `${i.texto}: ${i.cantidad}`).join(', ')}>
-                    {lista.map((item, i) => (
-                        <span
-                            key={item.estado}
-                            className={`estado-segmento reporte-barra-h ${item.clase}`}
-                            style={{ flexGrow: item.cantidad, '--barra-i': i }}
-                            title={`${item.texto}: ${item.cantidad}`}
-                        />
-                    ))}
-                </div>
-                <Destello />
-            </div>
-            <div className="estado-escala" aria-hidden="true">
-                <span>0 %</span>
-                <span>50 %</span>
-                <span>100 %</span>
-            </div>
-        </div>
-    );
-}
 
 // Donut de proporciones: segmentos con separación de 1 unidad sobre 100.
 function DonutEstados({ lista, total, unidad }) {
@@ -148,7 +122,7 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas', variante 
             ) : (
                 <>
                     <div className={`panel-cuerpo flex-1 ${esDonut ? 'panel-cuerpo--donut' : ''}`}>
-                        {esDonut ? <DonutEstados lista={lista} total={total} unidad={unidad} /> : <BarraEstados lista={lista} />}
+                        {esDonut ? <DonutEstados lista={lista} total={total} unidad={unidad} /> : <Pastel3D lista={lista} total={total} />}
 
                         <ul className="estado-lista">
                             {lista.map((item) => {
