@@ -382,3 +382,59 @@
 .recientes .recientes-encabezado > div:first-child > div:first-child svg { color: #7a5432 !important; }
 .recientes .recientes-encabezado::after,
 .admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header::after { background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.55), transparent); }
+
+/* ============================================================
+   MISMO ESTILO EN TODAS LAS SECCIONES DEL PANEL
+   - Tarjetas con tabla: encabezado marrón claro con brillo de espejo,
+     columnas en salvia y líneas marcadas.
+   - Tarjetas de formularios y filtros: cabecera salvia suave.
+   ============================================================ */
+.admin-shell[data-theme] .admin-main .card:has(table) {
+    overflow: hidden;
+    border: 1px solid #c9ddd3 !important;
+    box-shadow: 0 1px 2px rgb(13 41 64 / 0.05), 0 14px 30px -24px rgb(31 106 79 / 0.4) !important;
+}
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header {
+    position: relative; overflow: hidden;
+    border-bottom: 0 !important;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 0.35) 0%, rgb(255 255 255 / 0.1) 48%, rgb(255 255 255 / 0) 52%),
+        linear-gradient(135deg, #ead9c3 0%, #dcc3a3 55%, #cfb28d 100%) !important;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5);
+}
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: -40%; width: 30%;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.55), transparent);
+    transform: skewX(-18deg); pointer-events: none;
+    animation: recientes-destello 1.6s cubic-bezier(0.25, 1, 0.5, 1) 0.4s 1 both;
+}
+.admin-shell[data-theme] .admin-main .card:has(table):hover > .card-header::after { animation: recientes-destello 1.2s cubic-bezier(0.25, 1, 0.5, 1) 1 both; }
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header .card-title { color: #3b2716 !important; }
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header .card-subtitle { color: #5e4630 !important; }
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header .card-header-icon {
+    background: rgb(255 255 255 / 0.5) !important; color: #7a5432 !important; box-shadow: inset 0 0 0 1px rgb(59 39 22 / 0.15) !important;
+}
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header :is(span, div)[class*="rounded-full"] {
+    border-color: rgb(59 39 22 / 0.28) !important; background: rgb(255 255 255 / 0.45) !important; color: #3b2716 !important;
+}
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header :is(button, a):not([class*="admin-primary-button"]) {
+    border-color: rgb(59 39 22 / 0.28) !important; background: rgb(255 255 255 / 0.5) !important; color: #3b2716 !important;
+}
+.admin-shell[data-theme] .admin-main .card:has(table) thead tr { background: #dcece4 !important; }
+.admin-shell[data-theme] .admin-main .card:has(table) thead th {
+    color: #1d4a3b !important; font-weight: 700;
+    border-top: 2px solid #9fc4b3 !important; border-bottom: 2px solid #9fc4b3 !important;
+}
+.admin-shell[data-theme] .admin-main .card:has(table) thead th button { color: #1d4a3b !important; }
+.admin-shell[data-theme] .admin-main .card:has(table) tbody > tr + tr { border-top: 1.5px solid #bcd3c8 !important; }
+.admin-shell[data-theme] .admin-main .card:has(table) tbody tr:hover { background: #e8f3ed !important; }
+
+.admin-shell[data-theme] .admin-main .card:not(:has(table)) { border-color: #c9ddd3 !important; }
+.admin-shell[data-theme] .admin-main .card:not(:has(table)) > .card-header {
+    background: linear-gradient(180deg, #eef7f2 0%, #f6faf8 100%) !important;
+    border-bottom: 1.5px solid #c9ddd3 !important;
+}
+.admin-shell[data-theme] .admin-main .card:not(:has(table)) > .card-header .card-header-icon { background: #dcece4 !important; color: #1f6a4f !important; }
+@media (prefers-reduced-motion: reduce) {
+    .admin-shell[data-theme] .admin-main .card:has(table) > .card-header::after { animation: none !important; display: none; }
+}
