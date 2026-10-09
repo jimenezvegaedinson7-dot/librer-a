@@ -25,7 +25,7 @@ export default function UsuarioViewModal({ usuario, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Ficha color="slate" icono={<FaIdBadge />} etiqueta="ID de usuario">
+                <Ficha color="slate" icono={<FaIdBadge />} etiqueta="N.º de usuario">
                     #{usuario.id_usuario}
                 </Ficha>
                 <Ficha color="slate" icono={<FaEnvelope />} etiqueta="Correo electrónico">

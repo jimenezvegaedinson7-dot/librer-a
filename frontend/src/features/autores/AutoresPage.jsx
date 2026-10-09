@@ -29,7 +29,7 @@ import AutorEditModal from './AutorEditModal';
 const POR_PAGINA = 10;
 
 const columnasAutores = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_autor}</span> },
+    { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_autor}</span> },
     { titulo: 'Autor', render: (fila) => <span className="font-semibold text-slate-700">{fila.nombre} {fila.apellido}</span> },
     { titulo: 'Nacionalidad', render: (fila) => <span className="text-slate-700">{fila.nacionalidad || 'No registrada'}</span> },
     { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },

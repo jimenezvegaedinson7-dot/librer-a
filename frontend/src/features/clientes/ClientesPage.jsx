@@ -132,7 +132,7 @@ export default function ClientesPage({ incrustado = false }) {
         exportarCsv({
             nombreArchivo: `clientes_${new Date().toISOString().slice(0, 10)}`,
             columnas: [
-                { titulo: 'ID', exportar: (f) => f.id_usuario },
+                { titulo: 'N.º', exportar: (f) => f.id_usuario },
                 { titulo: 'Cliente', exportar: (f) => f.nombre_completo || '' },
                 { titulo: 'Email', exportar: (f) => correoVisible(f.email) },
                 { titulo: 'Nº compras', exportar: (f) => f.numero_compras || 0 },
@@ -240,7 +240,7 @@ export default function ClientesPage({ incrustado = false }) {
                                     {total} {total === 1 ? 'cliente' : 'clientes'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>
-                                    <FaFileCsv /> Exportar CSV
+                                    <FaFileCsv /> Descargar para Excel
                                 </Button>
                             </div>
                         }

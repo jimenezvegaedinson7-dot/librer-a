@@ -29,7 +29,7 @@ export default function InventarioViewModal({ inventario, abierto, onCerrar }) {
 
             <div className="mt-5">
                 <div className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700">
-                    <FaBook /> ID de inventario
+                    <FaBook /> N.º de registro
                 </div>
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
                     <p className="text-sm leading-6 text-primary-500">#{inventario.id_inventario}</p>

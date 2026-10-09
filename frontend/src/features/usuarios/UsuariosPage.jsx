@@ -46,7 +46,7 @@ function rolBadge(rol) {
 }
 
 const columnasUsuarios = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_usuario}</span> },
+    { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_usuario}</span> },
     {
         titulo: 'Usuario',
         render: (fila) => (
@@ -301,7 +301,7 @@ export default function UsuariosPage({ incrustado = false }) {
         exportarCsv({
             nombreArchivo: `usuarios_${new Date().toISOString().slice(0, 10)}`,
             columnas: [
-                { titulo: 'ID', exportar: (f) => f.id_usuario },
+                { titulo: 'N.º', exportar: (f) => f.id_usuario },
                 { titulo: 'Nombre', exportar: (f) => `${f.nombre || ''} ${f.apellido || ''}`.trim() },
                 { titulo: 'Email', exportar: (f) => correoVisible(f.email) },
                 { titulo: 'Rol', exportar: (f) => etiquetaRol(f.rol) },
@@ -414,7 +414,7 @@ export default function UsuariosPage({ incrustado = false }) {
                                     {usuariosFiltrados.length} {usuariosFiltrados.length === 1 ? 'usuario' : 'usuarios'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>
-                                    <FaFileCsv /> Exportar CSV
+                                    <FaFileCsv /> Descargar para Excel
                                 </Button>
                             </div>
                         }

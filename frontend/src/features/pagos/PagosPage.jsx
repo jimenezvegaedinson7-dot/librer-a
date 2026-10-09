@@ -33,6 +33,7 @@ import PagoViewModal from './PagoViewModal';
 import { EntregaBadge, EstadoPagoBadge, EstadoVentaBadge } from './PagoBadges';
 import { configEstadoPago, enriquecerPago } from './pagoPresentacion';
 import { listarVentas } from '../ventas/ventasService';
+import { textoMetodoPago } from '../ventas/metodosPago';
 
 const POR_PAGINA = 10;
 
@@ -71,9 +72,9 @@ const columnasPagos = [
         campo: 'metodo_pago',
         render: (fila) => (
             <p className="text-sm text-slate-700">
-                <span className="whitespace-nowrap">{fila.metodo_pago}</span>
+                <span className="whitespace-nowrap">{textoMetodoPago(fila.metodo_pago)}</span>
                 <span className="block text-xs text-slate-500">
-                    {fila.origen_texto}{fila.referencia_pago ? ` · Op. ${fila.referencia_pago}` : ''}
+                    {fila.origen_texto}{fila.referencia_pago ? ` · N.º de operación ${fila.referencia_pago}` : ''}
                 </span>
             </p>
         ),
@@ -418,7 +419,7 @@ export default function PagosPage() {
                                     {total} {total === 1 ? 'pago' : 'pagos'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>
-                                    <FaFileCsv /> Exportar CSV
+                                    <FaFileCsv /> Descargar para Excel
                                 </Button>
                             </div>
                         }

@@ -90,7 +90,7 @@ function valorOrdenVenta(venta, campo) {
 }
 
 const columnasVentas = [
-    { titulo: 'ID', alineacion: 'centro', ordenable: true, campo: 'id_venta', render: (fila) => <span className="font-semibold tabular-nums text-slate-500">#{fila.id_venta}</span> },
+    { titulo: 'N.º', alineacion: 'centro', ordenable: true, campo: 'id_venta', render: (fila) => <span className="font-semibold tabular-nums text-slate-500">#{fila.id_venta}</span> },
     {
         titulo: 'Cliente',
         ordenable: true,
@@ -421,7 +421,7 @@ const totalIngresos = ventas
         exportarCsv({
             nombreArchivo: `ventas_${new Date().toISOString().slice(0, 10)}`,
             columnas: [
-                { titulo: 'ID', exportar: (f) => f.id_venta },
+                { titulo: 'N.º', exportar: (f) => f.id_venta },
                 { titulo: 'Cliente', exportar: (f) => nombreCliente(f) },
                 { titulo: 'Documento', exportar: (f) => f.cliente_documento || '' },
                 { titulo: 'Origen', exportar: (f) => textoOrigen(f) },
@@ -490,20 +490,20 @@ const totalIngresos = ventas
                     medidor={{ valor: totalPendientes, total: ventas.length, etiqueta: 'Ventas pendientes sobre el total', leyenda: 'del total, pendiente de pago' }}
                 />
                 <StatCard
-                    titulo="Ticket promedio"
+                    titulo="Promedio por venta"
                     valor={cobradas.length > 0 ? formatearMoneda(totalIngresos / cobradas.length) : '—'}
                     icono={<FaCircleCheck />}
                     color="success"
                     detalle={`${totalPagadas} pagadas · ${totalEntregadas} entregadas`}
                     tendencia={diario.map((d) => (d.cantidad > 0 ? d.total / d.cantidad : 0))}
-                    etiquetaTendencia="Ticket promedio por día en los últimos 14 días"
+                    etiquetaTendencia="Promedio por venta de cada día en los últimos 14 días"
                 />
             </motion.section>
 
             <Card>
                 <CardHeader
                     titulo="Lista de ventas"
-                    subtitulo="Busca ventas por cliente, ID o total"
+                    subtitulo="Busca por cliente, número de venta o total"
                     acciones={
                         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                             <div className="relative">
@@ -591,7 +591,7 @@ const totalIngresos = ventas
                                     {ventasFiltradas.length} {ventasFiltradas.length === 1 ? 'venta' : 'ventas'}
                                 </span>
                                 <Button variante="secondary" tamano="sm" onClick={exportar}>
-                                    <FaFileCsv /> Exportar CSV
+                                    <FaFileCsv /> Descargar para Excel
                                 </Button>
                             </div>
                         }

@@ -22,7 +22,7 @@ const estados = {
 function descripcionCobro(venta) {
     if (venta.origen === 'panel' || venta.origen === 'reserva') {
         const metodo = textoMetodoPago(venta.metodo_pago) || 'Sin registrar';
-        return venta.referencia_pago ? `${metodo} · Op. ${venta.referencia_pago}` : metodo;
+        return venta.referencia_pago ? `${metodo} · N.º de operación ${venta.referencia_pago}` : metodo;
     }
     return venta.payu_order_id ? `PayU · Orden ${venta.payu_order_id}` : 'PayU';
 }

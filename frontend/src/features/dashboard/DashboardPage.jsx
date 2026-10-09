@@ -211,13 +211,13 @@ export default function DashboardPage() {
                     etiquetaTendencia="Ingresos mensuales de los últimos 6 meses"
                 />
                 <StatCard
-                    titulo="Ticket promedio"
+                    titulo="Promedio por venta"
                     valor={indicadores === null ? 'No disponible' : formatearMoneda(indicadores.ticket_promedio)}
                     icono={<FaReceipt />}
                     color="success"
                     detalle={indicadores === null ? 'Consulta no disponible' : `Rango ${formatearMoneda(indicadores.venta_menor)} – ${formatearMoneda(indicadores.venta_mayor)}`}
                     tendencia={mensual.map((d) => (d.cantidad > 0 ? d.total / d.cantidad : 0))}
-                    etiquetaTendencia="Ticket promedio por mes en los últimos 6 meses"
+                    etiquetaTendencia="Promedio por venta de cada mes en los últimos 6 meses"
                 />
                 <StatCard
                     titulo="Reservas"

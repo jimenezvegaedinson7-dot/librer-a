@@ -67,3 +67,30 @@
 .admin-shell .admin-main {
     zoom: 0.93;
 }
+
+/* ============================================================
+   TEXTO MÁS OSCURO Y NÍTIDO
+   Los grises claros del panel (subtítulos, ayudas, etiquetas, celdas,
+   ejes y leyendas de gráficos) pasan a tonos sólidos con buen contraste
+   sobre el fondo marfil y blanco. Las tarjetas oscuras de indicadores
+   conservan sus propios colores.
+   ============================================================ */
+.admin-shell[data-theme] {
+    --panel-secundario: #3f4a56;
+}
+.admin-shell :is(.text-slate-400, .text-slate-500, .text-primary-400, .text-primary-500,
+    [class*="text-[#766d62]"], [class*="text-[#a39a8e]"],
+    .card-subtitle, .mini-stat-label, .mini-stat-descripcion, .registro-detalle,
+    .panel-subtitulo, .estado-monto, .estado-porcentaje, .donut-texto, .stock-ubicacion,
+    .panel-pie, .grafico-eje-y, .grafico-composicion__leyenda, .page-header p):not(.kpi-card--destacada *) {
+    color: #3f4a56 !important;
+}
+.admin-shell :is(.text-slate-600, .text-slate-700, [class*="text-[#433c35]"]):not(.kpi-card--destacada *) {
+    color: #26313c !important;
+}
+.admin-shell .data-table-shell thead th { color: #26313c !important; }
+.admin-shell .data-table-shell tbody td { color: #1f2a35; }
+.admin-shell :is(.field, input, textarea, select) { color: #1f2a35; }
+.admin-shell :is(.field, input, textarea)::placeholder { color: #7a828c; opacity: 1; }
+.admin-shell .field-label, .admin-shell label { color: #1f2a35; }
+.admin-shell svg text { fill: #3f4a56; }

@@ -46,7 +46,7 @@ function obtenerEstado(estado) {
 }
 
 const columnasReservas = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_reserva}</span> },
+    { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_reserva}</span> },
     { titulo: 'Usuario', render: (fila) => <span className="font-semibold text-slate-700">{fila.nombre_usuario} {fila.apellido_usuario}</span> },
     { titulo: 'Libro', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo}</span> },
     { titulo: 'Cantidad', alineacion: 'centro', render: (fila) => <span className="font-bold text-slate-700">{fila.cantidad}</span> },

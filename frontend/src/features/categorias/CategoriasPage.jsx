@@ -29,7 +29,7 @@ import CategoriaEditModal from './CategoriaEditModal';
 const POR_PAGINA = 10;
 
 const columnasCategorias = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_categoria}</span> },
+    { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_categoria}</span> },
     { titulo: 'Nombre', render: (fila) => <span className="font-semibold text-slate-700">{fila.nombre}</span> },
     { titulo: 'Descripción', render: (fila) => <span className="text-slate-700">{fila.descripcion || 'Sin descripción'}</span> },
     { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },

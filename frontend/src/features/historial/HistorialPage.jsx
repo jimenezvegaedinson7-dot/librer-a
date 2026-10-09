@@ -146,7 +146,7 @@ function TablaHistorial({ registros }) {
             <table className="min-w-full border-collapse bg-white">
                 <thead className="bg-parchment-200">
                     <tr className="border-b border-primary-200">
-                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">ID</th>
+                        <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">N.º</th>
                         <th className="border-r border-primary-200 px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-700">Usuario</th>
                         <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Acción realizada</th>
                         <th className="border-r border-primary-200 px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-700">Módulo</th>
@@ -294,7 +294,7 @@ export default function HistorialPage() {
 
             <Indicadores cargando={cargando} etiqueta="Resumen del historial">
                 <Indicador titulo="Registros" valor={totalRegistros} icono={<FaClockRotateLeft />} tono="primary" detalle="Actividades en el sistema" />
-                <Indicador titulo="Creados" valor={totalCreaciones} icono={<FaPlus />} tono="success" detalle="Altas de datos" de={totalRegistros} />
+                <Indicador titulo="Creados" valor={totalCreaciones} icono={<FaPlus />} tono="success" detalle="Registros nuevos" de={totalRegistros} />
                 <Indicador titulo="Actualizados" valor={totalActualizaciones} icono={<FaPenToSquare />} tono="sky" detalle="Cambios guardados" de={totalRegistros} />
                 <Indicador titulo="Eliminados" valor={totalEliminaciones} icono={<FaTrash />} tono="danger" detalle="Datos borrados" de={totalRegistros} />
             </Indicadores>

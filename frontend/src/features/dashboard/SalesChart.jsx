@@ -147,7 +147,7 @@ function SalesChart({
                     detalle={mejor ? mejor.etiquetaLarga : 'Sin ventas en el periodo'}
                 />
                 <Estadistica
-                    etiqueta="Ticket promedio"
+                    etiqueta="Promedio por venta"
                     valor={ventas > 0 ? formatearMoneda(total / ventas) : '—'}
                     detalle="por venta pagada"
                 />

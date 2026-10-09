@@ -21,6 +21,7 @@ import { ubicacionEntrega } from '../../lib/utils/entrega';
 
 import { EntregaBadge, EstadoPagoBadge } from './PagoBadges';
 import { configEstadoVenta } from './pagoPresentacion';
+import { textoMetodoPago } from '../ventas/metodosPago';
 
 export default function PagoViewModal({ pago, abierto, onCerrar }) {
     if (!abierto || !pago) return null;
@@ -48,7 +49,7 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
                     <EntregaBadge tipo={pago.tipo_entrega} venta={pago} />
                 </Ficha>
                 <Ficha color="amber" icono={<FaCreditCard />} etiqueta="Método de pago">
-                    {pago.metodo_pago}{pago.referencia_pago ? ` · Op. ${pago.referencia_pago}` : ''}
+                    {textoMetodoPago(pago.metodo_pago)}{pago.referencia_pago ? ` · N.º de operación ${pago.referencia_pago}` : ''}
                 </Ficha>
             </div>
 
@@ -129,7 +130,7 @@ export default function PagoViewModal({ pago, abierto, onCerrar }) {
                 ) : (
                     <Ficha color="amber" icono={<FaBarcode />} etiqueta="Cobro en tienda">
                         <div className="space-y-2">
-                            <p className="text-sm">{pago.metodo_pago}</p>
+                            <p className="text-sm">{textoMetodoPago(pago.metodo_pago)}</p>
                             <p className="text-xs font-normal text-primary-500">
                                 {pago.referencia_pago ? `N.° de operación ${pago.referencia_pago}` : 'Sin número de operación'}
                             </p>

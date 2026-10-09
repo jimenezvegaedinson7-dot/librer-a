@@ -6,6 +6,7 @@ const METODOS_PAGO_HISTORICOS = [
     { valor: 'plin', texto: 'Plin' },
     { valor: 'tarjeta', texto: 'Tarjeta (POS)' },
     { valor: 'transferencia', texto: 'Transferencia' },
+    { valor: 'payu', texto: 'PayU (pago en línea)' },
 ];
 
 export const textoMetodoPago = (valor) =>

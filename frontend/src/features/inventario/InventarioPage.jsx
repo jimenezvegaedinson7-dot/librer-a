@@ -40,7 +40,7 @@ function EstadoStock({ stock, stockMinimo }) {
 }
 
 const columnasInventario = [
-    { titulo: 'ID', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_inventario}</span> },
+    { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_inventario}</span> },
     { titulo: 'Libro', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo}</span> },
     { titulo: 'Stock', alineacion: 'centro', render: (fila) => <EstadoStock stock={fila.stock} stockMinimo={fila.stock_minimo} /> },
     { titulo: 'Stock mínimo', alineacion: 'centro', render: (fila) => <span className="font-medium text-slate-700">{Number(fila.stock_minimo)}</span> },
