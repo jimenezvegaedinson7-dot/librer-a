@@ -12,7 +12,7 @@ const { consultarEstadoOrdenPayu, montoPagoCoincide, debeActualizarEstadoPago } 
 const { registrarMovimiento } = require('./inventario.model');
 const zonaDeliveryModel = require('./zonaDelivery.model');
 const { validarId } = require('../utils/validaciones');
-const { esReembolsoElegible } = require('../utils/devoluciones');
+const { esReembolsoElegible, requiereRevisionPago } = require('../utils/devoluciones');
 
 // ========================================
 // OBTENER TODAS LAS VENTAS
@@ -328,6 +328,8 @@ const obtenerConFiltros = async (filtros = {}) => {
         SELECT
             v.id_venta,
             v.estado_reembolso,
+            v.pago_revision_motivo,
+            v.pago_revision_fecha,
             v.id_usuario,
             u.nombre AS nombre_usuario,
             u.apellido AS apellido_usuario,
@@ -384,7 +386,7 @@ const obtenerConFiltros = async (filtros = {}) => {
         ORDER BY v.id_venta DESC
     `, valores);
 
-    return rows;
+    return rows.map(venta => ({ ...venta, requiere_revision: requiereRevisionPago(venta) }));
 };
 
 // ========================================
@@ -877,6 +879,10 @@ const buscarPorReferenciaExterna = async (externalReference) => {
             v.id_venta,
             v.id_usuario,
             v.estado,
+            v.estado_reembolso,
+            v.pago_revision_motivo,
+            v.pago_revision_fecha,
+            v.fecha_pago,
             v.total,
             v.costo_envio,
             v.canal_compra,
@@ -901,6 +907,10 @@ const buscarPorPayuOrderId = async (preferenceId) => {
             v.id_venta,
             v.id_usuario,
             v.estado,
+            v.estado_reembolso,
+            v.pago_revision_motivo,
+            v.pago_revision_fecha,
+            v.fecha_pago,
             v.total,
             v.costo_envio,
             v.canal_compra,
@@ -967,6 +977,13 @@ const aplicarPago = async ({ externalReference, payuOrderId, payuPaymentId,
         if (!montoPagoCoincide(monto, venta.total) || Number(monto) <= 0) {
             throw Object.assign(new Error('El importe informado por PayU no coincide con la compra'), { status: 409 });
         }
+        // Una reversión debe pertenecer al cobro registrado, no sustituir sus
+        // identificadores por los de otro intento o transacción.
+        if (reversiones.includes(status) && [
+            [venta.payu_order_id, payuOrderId], [venta.payu_payment_id, payuPaymentId]
+        ].some(([registrado, reportado]) => registrado != null && reportado != null && String(registrado) !== String(reportado))) {
+            throw Object.assign(new Error('La reversión PayU no corresponde al cobro registrado'), { status: 409 });
+        }
         if (!debeActualizarEstadoPago(venta.payu_payment_status, status)) {
             await connection.commit();
             return { venta, cambio_estado: false, ignorado: true };
@@ -981,7 +998,9 @@ const aplicarPago = async ({ externalReference, payuOrderId, payuPaymentId,
         } else if (cancelados.includes(status) && anterior === 'pendiente') {
             nuevo = 'cancelada';
         } else if (reversiones.includes(status) && anterior !== 'reembolsada') {
-            revision = 'reversion_payu';
+            // Este antecedente también prueba que el stock se liberó al
+            // cancelar. Conservarlo permite cerrar la devolución sin reponerlo.
+            revision = revision === 'aprobacion_tardia' ? revision : 'reversion_payu';
         }
         if (nuevo === 'cancelada' && anterior === 'pendiente') {
             const [detalles] = await connection.query('SELECT id_libro, cantidad FROM detalle_venta WHERE id_venta = ? ORDER BY id_libro', [venta.id_venta]);
@@ -1177,10 +1196,12 @@ const actualizarEstado = async (
 // ACTUALIZAR ESTADO DE ENTREGA (módulo PEDIDOS)
 // ========================================
 // Pedidos es la única fuente de entrega. El último paso sincroniza el
-// estado comercial dentro del mismo bloqueo; no toca pago ni inventario.
+// estado comercial dentro del mismo bloqueo. Cancelar una compra pendiente
+// libera stock y cierra la venta; cancelar una entrega pagada no reembolsa.
 const actualizarEstadoEntrega = async (
     id,
-    nuevoEstado
+    nuevoEstado,
+    idUsuario = null
 ) => {
     const connection =
         await pool.getConnection();
@@ -1198,7 +1219,9 @@ const actualizarEstadoEntrega = async (
                     id_reserva,
                     estado,
                     canal_compra,
-                    estado_reembolso
+                    estado_reembolso,
+                    pago_revision_motivo,
+                    payu_payment_status
                 FROM ventas
                 WHERE id_venta = ?
                 FOR UPDATE
@@ -1216,8 +1239,11 @@ const actualizarEstadoEntrega = async (
         if (esVentaHistorica(venta)) {
             throw Object.assign(new Error('Las ventas históricas son de solo lectura'), { status: 409 });
         }
-        if (venta.estado_reembolso === 'pendiente_verificacion') {
+        if (nuevoEstado !== 'cancelado' && venta.estado_reembolso === 'pendiente_verificacion') {
             throw Object.assign(new Error('La devolución está pendiente de verificación; no se puede avanzar la entrega'), { status: 409 });
+        }
+        if (nuevoEstado !== 'cancelado' && requiereRevisionPago(venta)) {
+            throw Object.assign(new Error('El pago requiere revisión; no se puede avanzar la entrega'), { status: 409 });
         }
         if (!['pagada', 'entregada'].includes(venta.estado) && nuevoEstado !== 'cancelado') {
             throw Object.assign(new Error('El pago de esta compra debe confirmarse antes de preparar la entrega'), { status: 409 });
@@ -1267,14 +1293,40 @@ const actualizarEstadoEntrega = async (
             ), { status: 400 });
         }
 
+        // Una entrega cancelada sin cobrar no puede conservar un checkout
+        // pagable. El bloqueo de la venta serializa cancelación y webhook;
+        // una aprobación posterior pasa a revisión, nunca aparta stock otra vez.
+        const cancelarPendiente = nuevoEstado === 'cancelado' && venta.estado === 'pendiente';
+        if (cancelarPendiente) {
+            const [detalles] = await connection.query(`
+                SELECT id_libro, cantidad FROM detalle_venta
+                WHERE id_venta = ? ORDER BY id_libro
+            `, [id]);
+            for (const detalle of detalles) {
+                const [stocks] = await connection.query(`
+                    UPDATE inventario SET stock = stock + ?
+                    WHERE id_libro = ? RETURNING stock
+                `, [detalle.cantidad, detalle.id_libro]);
+                if (!stocks[0]) throw new Error('Inventario no encontrado al cancelar el pedido pendiente');
+                await registrarMovimiento(connection, {
+                    id_libro: detalle.id_libro, id_usuario: idUsuario, tipo: 'entrada',
+                    motivo: 'cancelacion_venta', cantidad: detalle.cantidad, stock_resultante: stocks[0].stock
+                });
+            }
+        }
+
         const [resultado] =
             await connection.query(`
                 UPDATE ventas
-                SET estado_entrega = ?, estado = CASE WHEN ? = 'entregado' THEN 'entregada' ELSE estado END
+                SET estado_entrega = ?, estado = CASE
+                    WHEN ? = 'entregado' THEN 'entregada'
+                    WHEN ? THEN 'cancelada'
+                    ELSE estado END
                 WHERE id_venta = ?
             `, [
                 nuevoEstado,
                 nuevoEstado,
+                cancelarPendiente,
                 id
             ]);
 
@@ -1354,9 +1406,12 @@ const reembolsar = async (id, { accion = 'confirmar', motivo, devolverStock, idU
         }
         const aprobacionTardia = venta.estado === 'cancelada' && venta.pago_revision_motivo === 'aprobacion_tardia';
         const yaSalio = venta.estado === 'entregada' ||
-            ['en_camino', 'entregado'].includes(venta.estado_entrega);
+            ['en_camino', 'entregado'].includes(venta.estado_entrega) ||
+            // Sin historial de despacho, un delivery pagado y luego cancelado
+            // pudo haber salido. Exigir devolución física explícita es seguro.
+            (venta.tipo_entrega === 'domicilio' && venta.estado_entrega === 'cancelado');
         // Una aprobación tardía ya liberó stock al cancelar: nunca dos veces.
-        const reingresar = !aprobacionTardia && (!yaSalio || Boolean(devolverStock));
+        const reingresar = !aprobacionTardia && (!yaSalio || devolverStock === true);
 
         if (reingresar) {
             const [detalles] = await connection.query(`
@@ -1445,6 +1500,9 @@ const obtenerDatosPago = async (id) => {
             id_usuario,
             fecha_pago,
             fecha_venta,
+            pago_revision_motivo,
+            pago_revision_fecha,
+            estado_reembolso,
             external_reference,
             payu_order_id,
             payu_payment_id,

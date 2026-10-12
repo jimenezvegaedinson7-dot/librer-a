@@ -124,7 +124,7 @@ export const FLUJO = {
             },
         },
         cancelar: {
-            listo_recojo: { texto: 'No lo recogió', mensaje: 'El pedido ya estaba separado en tienda. Cancélalo solo si el cliente no pasó a recogerlo en el plazo acordado; los libros vuelven a estar disponibles.' },
+            listo_recojo: { texto: 'No lo recogió', mensaje: 'El pedido ya estaba separado en tienda. Cancélalo solo si el cliente no pasó a recogerlo en el plazo acordado.' },
         },
     },
     domicilio: {
@@ -178,8 +178,25 @@ export function accionSiguiente(tipoEntrega, estadoActual) {
 }
 
 // Texto y advertencia del botón de cancelar en ese paso.
-export function accionCancelar(tipoEntrega, estadoActual) {
-    return { ...CANCELAR_BASE, ...(FLUJO[tipoEntrega]?.cancelar?.[estadoActual] || {}) };
+export function accionCancelar(tipoEntrega, estadoActual, estadoVenta = 'pagada', revisionPago = false) {
+    const accion = { ...CANCELAR_BASE, ...(FLUJO[tipoEntrega]?.cancelar?.[estadoActual] || {}) };
+    const efecto = estadoVenta === 'pendiente' && !revisionPago
+        ? 'La compra pendiente se cancelará, su enlace de pago se cerrará y las existencias se liberarán. Si PayU informa después un cobro, quedará pendiente de revisión.'
+        : 'Esta acción detiene la entrega; no devuelve dinero ni libera existencias. Gestiona la devolución y el reingreso de los libros desde Ventas.';
+    return { ...accion, mensaje: `${accion.mensaje} ${efecto}` };
+}
+
+// El estado comercial puede conservarse mientras se verifica una reversión.
+// No basta con que diga «pagada» para preparar o despachar el pedido.
+export function pagoEnRevision(p) {
+    return p?.requiere_revision === true || Boolean(p?.pago_revision_motivo)
+        || (p?.estado !== 'reembolsada' && p?.estado_reembolso !== 'confirmado'
+            && ['REFUNDED', 'CHARGED_BACK'].includes(p?.payu_payment_status));
+}
+
+export function etiquetaPagoPedido(p) {
+    if (pagoEnRevision(p)) return 'Pago en revisión';
+    return ['pagada', 'entregada'].includes(p?.estado) ? 'Confirmado · PayU' : ETIQUETA_COMERCIAL[p?.estado] || p?.estado;
 }
 
 // Etiqueta del estado según el tipo ("Recogido" en tienda, "Entregado" en delivery).
@@ -191,6 +208,7 @@ export function etiquetaEstado(tipoEntrega, estado) {
 // aún no empieza y se dice así (no "Pago recibido").
 export function etiquetaEntregaPedido(p) {
     const estado = p?.estado_entrega || 'pendiente';
+    if (pagoEnRevision(p) && !esFinal(estado)) return 'Entrega detenida por revisión de pago';
     if (estado === 'pendiente' && p?.estado === 'pendiente') return 'Esperando pago';
     return etiquetaEstado(p?.tipo_entrega, estado);
 }

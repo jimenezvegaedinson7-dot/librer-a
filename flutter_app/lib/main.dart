@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 
 import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
@@ -11,7 +12,13 @@ import 'utils/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  GoogleFonts.config.allowRuntimeFetching = true;
+  LicenseRegistry.addLicense(() async* {
+    for (final familia in ['Inter', 'SourceSerif4']) {
+      yield LicenseEntryWithLineBreaks([
+        familia,
+      ], await rootBundle.loadString('assets/fonts/OFL-$familia.txt'));
+    }
+  });
   // Restaura el tema de colores elegido por el usuario.
   TemaController.instance.cargar();
   // Restaura el carrito guardado antes de mostrar la app, para que nada lo
@@ -49,10 +56,10 @@ class _AppScrollBehavior extends MaterialScrollBehavior {
 
   @override
   Set<PointerDeviceKind> get dragDevices => const {
-        PointerDeviceKind.touch,
-        PointerDeviceKind.mouse,
-        PointerDeviceKind.stylus,
-        PointerDeviceKind.invertedStylus,
-        PointerDeviceKind.trackpad,
-      };
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.invertedStylus,
+    PointerDeviceKind.trackpad,
+  };
 }

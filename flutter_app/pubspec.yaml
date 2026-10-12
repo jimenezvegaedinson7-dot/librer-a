@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.19+20
+version: 1.0.20+21
 
 environment:
   sdk: ^3.13.2
@@ -39,7 +39,6 @@ dependencies:
   image_picker: ^1.1.2
   url_launcher: ^6.3.2
   flutter_secure_storage: ^11.1.0
-  google_fonts: ^8.2.1
   package_info_plus: ^10.2.1
   path_provider: ^2.1.6
   crypto: ^3.0.7
@@ -75,6 +74,35 @@ flutter:
     - assets/images/
     - assets/logo_suerior/
     - assets/sonidos/
+    - assets/fonts/OFL-Inter.txt
+    - assets/fonts/OFL-SourceSerif4.txt
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-ExtraBold.ttf
+          weight: 800
+    - family: Source Serif 4
+      fonts:
+        - asset: assets/fonts/SourceSerif4-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/SourceSerif4-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/SourceSerif4-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/SourceSerif4-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/SourceSerif4-MediumItalic.ttf
+          weight: 500
+          style: italic
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

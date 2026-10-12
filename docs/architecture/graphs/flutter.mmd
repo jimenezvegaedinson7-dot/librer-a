@@ -1,4 +1,4 @@
-%% Generado 2026-10-09 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-12 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     API(["ApiService (Dio)"])
     carrito_screen["carrito_screen"] --> API
@@ -22,14 +22,14 @@ flowchart LR
     two_factor_setup_screen["two_factor_setup_screen"] --> API
     two_factor_verify_screen["two_factor_verify_screen"] --> API
     splash_screen["splash_screen"] --> API
+    verificacion_email_screen["verificacion_email_screen"] --> API
     API --> _api_ventas{{"/api/ventas"}}
     API --> _api_auth{{"/api/auth"}}
     API --> _api_usuarios{{"/api/usuarios"}}
     API --> _api_reservas{{"/api/reservas"}}
-    API --> _api_favoritos{{"/api/favoritos"}}
     API --> _api_pagos{{"/api/pagos"}}
+    API --> _api_favoritos{{"/api/favoritos"}}
     API --> _api_zonas_delivery{{"/api/zonas-delivery"}}
-    API --> _api_ubicaciones{{"/api/ubicaciones"}}
     API --> _api_reclamaciones{{"/api/reclamaciones"}}
     API --> _api_libros{{"/api/libros"}}
     STORE(["StorageService<br/>secure storage + prefs"])

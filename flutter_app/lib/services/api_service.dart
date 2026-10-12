@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import '../models/libro.dart';
 import '../models/orden_pago.dart';
 import '../models/reserva.dart';
-import '../models/ubicacion.dart';
 import '../models/usuario.dart';
 import '../models/venta.dart';
 import '../models/zona_delivery.dart';
@@ -28,8 +27,13 @@ import 'checkout_store.dart';
 class LoginResult {
   final bool requiere2fa;
   final String? twoFactorToken;
+  final IntentoAutenticacion? intento;
 
-  const LoginResult({required this.requiere2fa, this.twoFactorToken});
+  const LoginResult({
+    required this.requiere2fa,
+    this.twoFactorToken,
+    this.intento,
+  });
 
   bool get loginCompletado => !requiere2fa;
 }
@@ -89,7 +93,11 @@ class ApiService {
         onRequest: (options, handler) async {
           final generacion = StorageService.instance.generacion;
           final token = await StorageService.instance.obtenerToken();
-          if (generacion != StorageService.instance.generacion ||
+          final intento =
+              options.extra['intentoAutenticacion'] as IntentoAutenticacion?;
+          if ((intento != null
+                  ? !intento.vigente
+                  : generacion != StorageService.instance.generacion) ||
               StorageService.instance.cambiandoSesion) {
             handler.reject(
               DioException(
@@ -117,8 +125,13 @@ class ApiService {
           handler.next(options);
         },
         onResponse: (response, handler) {
-          if (response.requestOptions.extra['generacionSesion'] !=
-              StorageService.instance.generacion) {
+          final intento =
+              response.requestOptions.extra['intentoAutenticacion']
+                  as IntentoAutenticacion?;
+          if (intento != null
+              ? !intento.vigente
+              : response.requestOptions.extra['generacionSesion'] !=
+                    StorageService.instance.generacion) {
             handler.reject(
               DioException(
                 requestOptions: response.requestOptions,
@@ -176,12 +189,8 @@ class ApiService {
 
   late final Dio _dio;
 
-  /// Clave de idempotencia del intento de checkout en curso.
-  ///
-  /// Se genera UNA vez al iniciar el checkout y se reutiliza entre reintentos
-  /// (un reintento tras timeout no debe duplicar la orden: el backend responde
-  /// `ya_existia`). Solo se libera cuando el pago termina o cambia el contenido
-  /// del checkout (ver `limpiarIdempotencia`).
+  /// Operación de checkout de la sesión actual. El diario persistente conserva
+  /// la idempotencia por propietario incluso después de cerrar sesión.
   Future<OrdenPago>? _creando;
 
   /// Últimos `checkout_url` conocidos por venta (id_venta -> URL).
@@ -213,24 +222,21 @@ class ApiService {
     }
   }
 
-  /// Libera la clave de idempotencia actual (nuevo intento de checkout).
-  void limpiarIdempotencia({int? idVenta}) {
-    // El diario solo se cierra con un estado definitivo de la API. Un logout,
-    // 401, cambio de precio o timeout no autoriza a borrar un intento incierto.
-  }
-
-  /// Limpia el estado de checkout en memoria: idempotencia y URLs guardadas.
-  ///
-  /// Debe invocarse al cerrar sesión o al recibir un 401 para que una cuenta
-  /// distinta (o una sesión nueva) nunca reutilice la clave/URL de otra.
+  /// Limpia solo la memoria de sesión. La respuesta anterior queda vinculada
+  /// a su generación y no bloquea compras de otra cuenta; su diario se conserva.
   void limpiarEstadoCheckout() {
-    limpiarIdempotencia();
+    _creando = null;
     _checkoutUrls.clear();
   }
 
   /// Convierte un [DioException] en una [ApiException] con mensaje claro.
   ApiException _toApiException(DioException e) {
     final status = e.response?.statusCode;
+    if (e.type == DioExceptionType.cancel) {
+      return const ApiException(
+        'El acceso o la sesión cambió. Vuelve a intentar.',
+      );
+    }
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.sendTimeout) {
@@ -281,9 +287,7 @@ class ApiService {
         case 500:
         case 502:
         case 503:
-          return const ApiException(
-            'Error del servidor. Inténtalo más tarde.',
-          );
+          return const ApiException('Error del servidor. Inténtalo más tarde.');
       }
     }
     return const ApiException(
@@ -304,11 +308,14 @@ class ApiService {
   Future<LoginResult> login({
     required String email,
     required String password,
+    IntentoAutenticacion? intento,
   }) async {
+    final flujo = intento ?? StorageService.instance.iniciarAutenticacion();
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         Constants.loginPath,
         data: {'email': email, 'password': password},
+        options: Options(extra: {'intentoAutenticacion': flujo}),
       );
 
       final data = response.data ?? {};
@@ -321,7 +328,11 @@ class ApiService {
             'El servidor no devolvió el token para verificar el código.',
           );
         }
-        return LoginResult(requiere2fa: true, twoFactorToken: tokenTemporal);
+        return LoginResult(
+          requiere2fa: true,
+          twoFactorToken: tokenTemporal,
+          intento: flujo,
+        );
       }
 
       // CASO A: login normal.
@@ -330,23 +341,8 @@ class ApiService {
         throw const ApiException('El servidor no devolvió un token válido.');
       }
 
-      final usuarioData = data['data'];
-      if (usuarioData is Map) {
-        final usuario = Usuario.fromJson(
-          Map<String, dynamic>.from(usuarioData),
-        );
-        if (usuario.esAdministrador) {
-          throw const ApiException(
-            'Esta aplicación es para clientes. El panel administrativo se encuentra en otra plataforma.',
-          );
-        }
-        await StorageService.instance.guardarToken(token);
-        await StorageService.instance.guardarUsuario(usuario);
-        return const LoginResult(requiere2fa: false);
-      }
-
-      await StorageService.instance.guardarToken(token);
-      return const LoginResult(requiere2fa: false);
+      await _guardarAcceso(token, data['data'], flujo);
+      return LoginResult(requiere2fa: false, intento: flujo);
     } on DioException catch (e) {
       throw _toApiException(e);
     }
@@ -359,35 +355,53 @@ class ApiService {
   Future<bool> verificarLogin2FA({
     required String twoFactorToken,
     required String codigo,
+    IntentoAutenticacion? intento,
   }) async {
+    final flujo = intento ?? StorageService.instance.iniciarAutenticacion();
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         Constants.twoFactorVerifyLoginPath,
         data: {'two_factor_token': twoFactorToken, 'codigo': codigo},
+        options: Options(extra: {'intentoAutenticacion': flujo}),
       );
       final data = response.data ?? {};
       final token = (data['token'] ?? data['accessToken'] ?? '').toString();
       if (token.isEmpty) {
         throw const ApiException('El servidor no devolvió un token válido.');
       }
-      final usuarioData = data['data'];
-      if (usuarioData is Map) {
-        final usuario = Usuario.fromJson(
-          Map<String, dynamic>.from(usuarioData),
-        );
-        if (usuario.esAdministrador) {
-          throw const ApiException(
-            'Esta aplicación es para clientes. El panel administrativo se encuentra en otra plataforma.',
-          );
-        }
-        await StorageService.instance.guardarToken(token);
-        await StorageService.instance.guardarUsuario(usuario);
-      } else {
-        await StorageService.instance.guardarToken(token);
-      }
+      await _guardarAcceso(token, data['data'], flujo);
       return true;
     } on DioException catch (e) {
       throw _toApiException(e);
+    }
+  }
+
+  Future<void> _guardarAcceso(
+    String token,
+    dynamic datosUsuario,
+    IntentoAutenticacion intento,
+  ) async {
+    final usuario = datosUsuario is Map
+        ? Usuario.fromJson(Map<String, dynamic>.from(datosUsuario))
+        : null;
+    if (usuario?.esAdministrador == true) {
+      throw const ApiException(
+        'Esta aplicación es para clientes. El panel administrativo se encuentra en otra plataforma.',
+      );
+    }
+    if (!await StorageService.instance.guardarSesionAutenticada(
+      token,
+      usuario,
+      intento,
+    )) {
+      throw const ApiException('Este intento de acceso fue cancelado.');
+    }
+    final generacion = StorageService.instance.generacion;
+    limpiarEstadoCheckout();
+    CarritoService.instance.vaciarSesion();
+    await CarritoService.instance.cargar();
+    if (!intento.vigente || generacion != StorageService.instance.generacion) {
+      throw const ApiException('Este intento de acceso fue cancelado.');
     }
   }
 
@@ -407,9 +421,7 @@ class ApiService {
       if (data is Map && data['data'] is Map) {
         return Map<String, dynamic>.from(data['data'] as Map);
       }
-      throw const ApiException(
-        'El servidor no devolvió la configuración 2FA.',
-      );
+      throw const ApiException('El servidor no devolvió la configuración 2FA.');
     } on DioException catch (e) {
       throw _toApiException(e);
     }
@@ -880,6 +892,7 @@ class ApiService {
         await CarritoService.instance.conciliarVenta(
           orden.idVenta!,
           intento.unidades,
+          propietario: intento.propietario,
         );
       }
       await CheckoutStore.instance.guardar(
@@ -940,6 +953,7 @@ class ApiService {
           await CarritoService.instance.conciliarVenta(
             venta.idVenta!,
             intento.unidades,
+            propietario: intento.propietario,
           );
         }
         await CheckoutStore.instance.guardar(
@@ -972,6 +986,7 @@ class ApiService {
                 await CarritoService.instance.conciliarVenta(
                   intento.idVenta!,
                   intento.unidades,
+                  propietario: intento.propietario,
                 );
               }
               await CheckoutStore.instance.guardar(
@@ -1015,46 +1030,6 @@ class ApiService {
             .toList();
       }
       throw const ApiException('No se pudieron cargar las zonas de delivery.');
-    } on DioException catch (e) {
-      throw _toApiException(e);
-    }
-  }
-
-  /// Ubicaciones originales conservadas para compatibilidad con el historial.
-  /// Obtiene las provincias de Lima contra `GET /ubicaciones/provincias`.
-  Future<List<Provincia>> obtenerProvincias() async {
-    try {
-      final response = await _dio.get<dynamic>(
-        '${Constants.ubicacionesPath}/provincias',
-      );
-      final data = response.data;
-      if (data is Map && data['data'] is List) {
-        return (data['data'] as List)
-            .whereType<Map>()
-            .map((e) => Provincia.fromJson(Map<String, dynamic>.from(e)))
-            .toList();
-      }
-      throw const ApiException('El servidor no devolvió las provincias.');
-    } on DioException catch (e) {
-      throw _toApiException(e);
-    }
-  }
-
-  /// Obtiene los distritos de una provincia contra
-  /// `GET /ubicaciones/provincias/:id/distritos`.
-  Future<List<Distrito>> obtenerDistritos(int idProvincia) async {
-    try {
-      final response = await _dio.get<dynamic>(
-        '${Constants.ubicacionesPath}/provincias/$idProvincia/distritos',
-      );
-      final data = response.data;
-      if (data is Map && data['data'] is List) {
-        return (data['data'] as List)
-            .whereType<Map>()
-            .map((e) => Distrito.fromJson(Map<String, dynamic>.from(e)))
-            .toList();
-      }
-      throw const ApiException('El servidor no devolvió los distritos.');
     } on DioException catch (e) {
       throw _toApiException(e);
     }
@@ -1207,7 +1182,9 @@ class ApiService {
     try {
       final respuesta = await _dio.post<dynamic>('/reclamaciones', data: hoja);
       final raw = respuesta.data;
-      final data = raw is Map && raw['data'] is Map ? raw['data'] as Map : const {};
+      final data = raw is Map && raw['data'] is Map
+          ? raw['data'] as Map
+          : const {};
       return (
         numero: '${data['numero'] ?? ''}',
         mensaje: raw is Map
@@ -1248,9 +1225,7 @@ class ApiService {
         }
         return Libro.fromJson(Map<String, dynamic>.from(raw));
       }
-      throw const ApiException(
-        'El servidor no devolvió el detalle del libro.',
-      );
+      throw const ApiException('El servidor no devolvió el detalle del libro.');
     } on DioException catch (e) {
       throw _toApiException(e);
     }

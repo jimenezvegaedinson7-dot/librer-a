@@ -18,6 +18,7 @@ const {
 const { PUBLIC_BASE_URL } = require('../config/payu');
 const { esPersonalInterno } = require('../utils/roles');
 const { TIPOS_ENTREGA } = require('../utils/transiciones');
+const { requiereRevisionPago } = require('../utils/devoluciones');
 
 // ========================================
 // CORREOS TRANSACCIONALES (fire-and-forget)
@@ -127,7 +128,7 @@ const renderCheckoutPage = async (req, res) => {
             );
         }
 
-        if (venta.estado !== 'pendiente') {
+        if (venta.estado !== 'pendiente' || requiereRevisionPago(venta) || venta.estado_reembolso) {
             return res
                 .status(200)
                 .type('html')
@@ -244,13 +245,14 @@ const eventoWebhookYaProcesado = (clave) => {
 // TIPOS DE ENTREGA SOPORTADOS
 // El dominio es 'domicilio' | 'tienda' y vive en utils/transiciones
 // para que backend, panel y app no se desincronicen.
-// El envío por agencia ya no se ofrece: solo se entrega en Lima.
+// El envío por agencia ya no se ofrece: delivery local en Pallasca o recojo.
 // ========================================
 
 // Estado operativo compatible con APK anteriores: no anunciar pagado cuando
 // el resultado monetario pertenece a un pedido cancelado pendiente de revisión.
-const estadoPublicoPago = (venta, reportado) => venta.pago_revision_motivo ? 'REVISION'
+const estadoPublicoPago = (venta, reportado) => requiereRevisionPago(venta) ? 'REVISION'
     : venta.estado === 'reembolsada' ? 'REFUNDED'
+    : venta.estado === 'cancelada' ? 'DECLINED'
     : reportado === 'CAPTURED' ? 'APPROVED' : reportado;
 
 const construirRespuestaOrdenExistente = async (venta) => {
@@ -258,7 +260,7 @@ const construirRespuestaOrdenExistente = async (venta) => {
     // auto-envía el form a PayU; sólo se reenvía mientras la venta
     // siga pendiente.
     const checkoutUrl =
-        venta.estado === 'pendiente'
+        venta.estado === 'pendiente' && !requiereRevisionPago(venta) && !venta.estado_reembolso
             ? construirCheckoutUrl(
                 venta.external_reference
             )
@@ -293,7 +295,11 @@ const construirRespuestaOrdenExistente = async (venta) => {
             checkout_url: checkoutUrl,
             status,
             estado_venta: venta.estado,
-            requiere_revision: Boolean(venta.pago_revision_motivo),
+            requiere_revision: requiereRevisionPago(venta),
+            pago_revision_motivo: venta.pago_revision_motivo || null,
+            pago_revision_fecha: venta.pago_revision_fecha || null,
+            fecha_pago: venta.fecha_pago || null,
+            estado_reembolso: venta.estado_reembolso || null,
             total: Number(venta.total || 0),
             costo_envio: Number(
                 venta.costo_envio || 0
@@ -391,7 +397,10 @@ const crearOrden = async (req, res) => {
                     correo_compra,
                     cliente_documento,
                     cliente_tipo_documento,
-                    pago_revision_motivo
+                    pago_revision_motivo,
+                    pago_revision_fecha,
+                    fecha_pago,
+                    estado_reembolso
                 FROM ventas
                 WHERE idempotencia_clave = ?
                 AND id_usuario = ?
@@ -796,7 +805,11 @@ const crearOrden = async (req, res) => {
                         payu_payer_email,
                         correo_compra,
                         cliente_documento,
-                        cliente_tipo_documento
+                        cliente_tipo_documento,
+                        pago_revision_motivo,
+                        pago_revision_fecha,
+                        fecha_pago,
+                        estado_reembolso
                     FROM ventas
                     WHERE idempotencia_clave = ?
                     AND id_usuario = ?
@@ -1029,7 +1042,8 @@ const obtenerOrden = async (req, res) => {
                 // aunque el webhook aún no haya llegado.
                 if (
                     estadoPayu.pagado ||
-                    estadoPayu.cancelado || estadoPayu.pendiente
+                    estadoPayu.cancelado || estadoPayu.pendiente ||
+                    ['REFUNDED', 'CHARGED_BACK'].includes(estadoPayu.status)
                 ) {
                     await aplicarEstadoPagoAVenta({
                         externalReference:
@@ -1086,8 +1100,10 @@ const obtenerOrden = async (req, res) => {
                 payment_id: paymentId,
                 total_amount: amount,
                 estado_venta: ventaPago.estado,
-                requiere_revision: Boolean(ventaPago.pago_revision_motivo),
+                requiere_revision: requiereRevisionPago(ventaPago),
                 pago_revision_motivo: ventaPago.pago_revision_motivo || null,
+                pago_revision_fecha: ventaPago.pago_revision_fecha || null,
+                estado_reembolso: ventaPago.estado_reembolso || null,
                 fecha_pago: ventaPago.fecha_pago || null
             }
         });

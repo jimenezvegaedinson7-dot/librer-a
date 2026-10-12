@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
 import { FaArrowsRotate, FaReceipt } from 'react-icons/fa6';
-import { clienteApi, checkoutSeguro } from './clienteApi';
+import { CLAVE_CLIENTE, clienteApi, checkoutSeguro, exigirSesion, firmaSesion, leer } from './clienteApi';
 import { useTienda } from './TiendaContext';
 import PortadaLibro from './PortadaLibro';
 import { soles } from '../lib/formato';
@@ -34,40 +34,76 @@ function ComprasCliente({ t }) {
     const conPortada=i=>({...i,portada:i.portada || portadas.get(Number(i.id_libro)) || null});
     const idUsuario=t.usuario?.id_usuario, confirmar=t.confirmarCompra;
     const [compras,setCompras]=useState([]),[error,setError]=useState(''),[mensaje,setMensaje]=useState(''),[ocupado,setOcupado]=useState(false),[cargando,setCargando]=useState(true);
-    const cargar=useCallback(async () => {
+    const activo=useRef(false),revisionCarga=useRef(0),revisionOperacion=useRef(0),mutando=useRef(false);
+    const sesionVigente=useCallback(()=>activo.current && firmaSesion(t.sesion)===firmaSesion(leer(CLAVE_CLIENTE)),[t.sesion]);
+    const cargar=useCallback(async (operacion=null) => {
+        if(!sesionVigente() || (mutando.current && operacion!==revisionOperacion.current))return false;
+        const revision=++revisionCarga.current;
+        const vigente=()=>sesionVigente() && revision===revisionCarga.current;
         try {
             const lista=(await clienteApi.compras(t.sesion)).data || [];
+            if(!vigente())return false;
             setCompras(lista);
-            for(const venta of lista)await confirmar(venta);
+            for(const venta of lista) {
+                if(!vigente())return false;
+                await confirmar(venta);
+            }
+            if(!vigente())return false;
             setError('');
+            return true;
         }
-        catch(e){setError(e.message);} finally{setCargando(false);}
-    },[confirmar,t.sesion]);
-    useEffect(()=>{if(idUsuario && !t.revisando && !t.errorSesion)Promise.resolve().then(cargar);},[idUsuario,t.revisando,t.errorSesion,cargar]);
+        catch(e){if(vigente() && e.name!=='SesionCambiada')setError(e.message);return false;}
+        finally{if(vigente())setCargando(false);}
+    },[confirmar,t.sesion,sesionVigente]);
+    useEffect(()=>{
+        activo.current=true;
+        let vigente=true;
+        Promise.resolve().then(()=>{
+            if(!vigente)return;
+            setOcupado(false);
+            if(idUsuario && !t.revisando && !t.errorSesion)cargar();
+        });
+        const invalidar=()=>{activo.current=false;revisionCarga.current++;revisionOperacion.current++;mutando.current=false;};
+        return()=>{vigente=false;invalidar();};
+    },[idUsuario,t.revisando,t.errorSesion,cargar]);
     useEffect(() => {
         if (!idUsuario || t.revisando || t.errorSesion) return undefined;
-        const actualizar = () => { if (document.visibilityState === 'visible' && !ocupado) cargar(); };
+        const actualizar = () => { if (document.visibilityState === 'visible' && !mutando.current) cargar(); };
         const timer = setInterval(actualizar, 60000);
         window.addEventListener('focus', actualizar);
         return () => { clearInterval(timer); window.removeEventListener('focus', actualizar); };
-    }, [idUsuario,t.revisando,t.errorSesion,cargar,ocupado]);
+    }, [idUsuario,t.revisando,t.errorSesion,cargar]);
     async function verificar(v) {
-        if(ocupado)return;setOcupado(true);setError('');
-        try {await clienteApi.verificarPago(v.external_reference || v.payu_order_id,t.sesion);await cargar();setMensaje('Consultamos el estado del pago con el servidor.');}
-        catch(e){setError(e.message);} finally{setOcupado(false);}
+        if(mutando.current || !sesionVigente())return;
+        mutando.current=true;const operacion=++revisionOperacion.current;revisionCarga.current++;
+        const vigente=()=>sesionVigente() && operacion===revisionOperacion.current;
+        setOcupado(true);setCargando(false);setError('');setMensaje('');
+        try {
+            await clienteApi.verificarPago(v.external_reference || v.payu_order_id,t.sesion);
+            if(!vigente())return;
+            if(await cargar(operacion) && vigente())setMensaje('Consultamos el estado del pago con el servidor.');
+        }
+        catch(e){if(vigente() && e.name!=='SesionCambiada')setError(e.message);}
+        finally{if(vigente()){mutando.current=false;setOcupado(false);}}
     }
     async function continuar(v) {
-        if(ocupado)return;setOcupado(true);setError('');
+        if(mutando.current || !sesionVigente())return;
+        mutando.current=true;const operacion=++revisionOperacion.current;revisionCarga.current++;
+        const vigente=()=>sesionVigente() && operacion===revisionOperacion.current;
+        setOcupado(true);setCargando(false);setError('');setMensaje('');
         try {const data=(await clienteApi.pagoCompra(v.id_venta,t.sesion)).data;
-            if(!data.checkout_url){await cargar();throw new Error('Esta compra ya no tiene un pago pendiente. Revisa su estado.');}
+            if(!vigente())return;
+            if(!data.checkout_url){await cargar(operacion);throw new Error('Esta compra ya no tiene un pago pendiente. Revisa su estado.');}
+            exigirSesion(t.sesion);
             window.location.assign(checkoutSeguro(data.checkout_url));
-        } catch(e){setError(e.message);setOcupado(false);}
+        } catch(e){if(vigente() && e.name!=='SesionCambiada')setError(e.message);}
+        finally{if(vigente()){mutando.current=false;setOcupado(false);}}
     }
     if(t.revisando || t.errorSesion)return <EstadoSesion titulo="Mis compras"/>;
     return <section className="compra-pagina contenedor mis-compras">
         <div className="mis-compras__cabeza"><div><h1>Mis compras</h1>
             <p>Estado del pago y de la entrega de tus pedidos hechos en la web o en la app.</p></div>
-            {t.usuario && <button className="boton boton--linea boton--chico" disabled={ocupado || cargando} onClick={cargar}>
+            {t.usuario && <button className="boton boton--linea boton--chico" disabled={ocupado || cargando} onClick={()=>cargar()}>
                 <FaArrowsRotate aria-hidden="true"/> Actualizar compras</button>}</div>
         {params.get('orden') && <p className="compra-aviso">Volviste del pago. El estado se confirma con PayU; volver a esta página no confirma el cobro.</p>}
         {!t.usuario ? <div className="compra-vacio"><FaReceipt aria-hidden="true"/><p>Inicia sesión para consultar tus compras.</p><Link className="boton boton--compra" to="/cuenta?continuar=/mis-compras">Ingresar</Link></div>

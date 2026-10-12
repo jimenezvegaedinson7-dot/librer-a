@@ -29,16 +29,9 @@ export async function obtenerPedido(id) {
     return res?.data ?? null;
 }
 
-// Filtros opcionales del backend: tipo ('domicilio' | 'tienda') y
-// estado (estado de entrega). Se usan para pedir menos filas cuando
-// el usuario ya está filtrando en pantalla.
-export async function listarPedidosFiltrados({ tipo, estado } = {}) {
-    const res = await client.get('/pedidos', { params: { tipo, estado } });
-    return datosDe(res);
-}
-
-// Avanza el estado LOGÍSTICO del pedido. No vuelve a cobrar, no crea
-// una segunda venta y no toca PayU: solo escribe estado_entrega.
+// Avanza logística sin cobrar nuevamente. Completar sincroniza la venta;
+// cancelar sin pago cierra la compra y libera stock. Una compra pagada
+// conserva dinero/existencias hasta la devolución separada desde Ventas.
 export async function cambiarEstadoPedido(id, estado) {
     return client.put(`/pedidos/${id}/estado`, { estado });
 }

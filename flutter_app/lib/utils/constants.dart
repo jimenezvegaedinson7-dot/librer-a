@@ -129,9 +129,8 @@ class Constants {
   static const String pagosPath = '/pagos';
 
   // ---------------------------------------------------------------------------
-  // Rutas de ubicaciones (Lima)
+  // Zonas activas de delivery en Pallasca
   // ---------------------------------------------------------------------------
-  static const String ubicacionesPath = '/ubicaciones';
   static const String zonasDeliveryPath = '/zonas-delivery';
 
   /// Prefijo de las rutas 2FA bajo /auth.

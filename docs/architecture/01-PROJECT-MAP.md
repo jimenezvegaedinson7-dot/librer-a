@@ -1,6 +1,6 @@
 # Mapa del proyecto C:\libreria
 
-> Generado desde el código real el 2026-10-09 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Visión general
@@ -13,11 +13,11 @@
 
 Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `backups/`, scripts `*.ps1` de utilidades locales.
 
-## Cifras (análisis 2026-10-09)
+## Cifras (análisis 2026-10-12)
 
-- Backend: **175** archivos JS (incluye tests y scripts) · **127** endpoints · 23 routers · 25 controladores · 22 modelos · 16 tablas.
+- Backend: **178** archivos JS (incluye tests y scripts) · **127** endpoints · 23 routers · 25 controladores · 22 modelos · **21 tablas en esquema canónico** (22 declaradas al incluir migraciones y arranque).
 - Frontend: **210** archivos JS/JSX · 38 rutas · 26 archivos de servicio.
-- Flutter: **79** archivos Dart · 39 métodos en ApiService · 21 pantallas/widgets con llamadas a la API.
+- Flutter: **78** archivos Dart · 38 métodos en ApiService · 22 pantallas/widgets con llamadas a la API.
 
 ## Módulos de negocio
 
@@ -39,10 +39,10 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 | Reportes / Resumen | `/api/reportes` | features/dashboard (vía reportes/reportesService) | — |
 | Favoritos | `/api/favoritos` | public-site/tienda/AccionesLibro (cliente) | favoritos, detalle de libro |
 | Cobertura Pallasca | `/api/zonas-delivery` | features/tarifas | entrega y pago, mis compras |
-| Ubicaciones (Lima, legacy) | `/api/ubicaciones` | features/ventas/ubicacionesService (legacy) | ApiService legacy; sin selector en checkout |
+| Ubicaciones (Lima, legacy) | `/api/ubicaciones` | datos de ubicación en historial | nombres conservados en Venta; sin selector ni consultas de provincias/distritos |
 | Agencias courier (legacy) | `/api/agencias` | ruta redirigida; features/agencias sin ruta activa | — |
 | Empresa (emisor) | `/api/empresa` | features/configuracion/EmpresaPage | — |
-| Reclamaciones | `/api/reclamaciones` | features/reclamaciones | enlace al formulario público |
+| Reclamaciones | `/api/reclamaciones` | features/reclamaciones (formulario público y gestión admin) | libro_reclamaciones_screen (formulario nativo) |
 
 ## Dónde buscar
 
@@ -67,7 +67,8 @@ Regenera todos los archivos a partir del código (solo lectura del código). Si 
 ## Inconsistencias detectadas (resumen)
 
 Ver detalle en `05-API-MAP.md` y `07-DEPENDENCIES.md`.
-- Ningún cliente llama a un endpoint inexistente.
+- No se detectaron endpoints declarados por clientes sin ruta correspondiente en el backend.
 - `GET /api/debug-egress` es diagnóstico manual protegido (JWT + admin), sin consumidor React/Flutter.
-- Endpoints de backend sin cliente: historial (mi-historial, POST), inventario (stock-bajo, PUT stock).
+- La memoria del asistente requiere **JWT + cliente**; el router comparte esos middlewares mediante un array.
+- Los endpoints sin consumidor detectado se detallan en `05-API-MAP.md`; stock bajo sí tiene consumidores en Dashboard y notificaciones.
 - Flutter: solo quedan ciclos de navegación entre pantallas (sin ciclo servicios ↔ pantallas).

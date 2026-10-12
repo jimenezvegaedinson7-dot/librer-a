@@ -24,6 +24,11 @@ def main():
     assert len(data['links']) == manifest['edges']
     assert sum(n['id'].startswith('endpoint:') for n in data['nodes']) == manifest['endpoints']
     assert sum(n['id'].startswith('tabla:') for n in data['nodes']) == manifest['tables']
+    index = json.loads((ROOT / 'docs/architecture/08-CODE-INDEX.json').read_text(encoding='utf-8'))
+    assert manifest['tables'] == len(index['database']['declaredTables'])
+    for method in ['GET', 'PUT', 'DELETE']:
+        endpoint = next(n for n in data['nodes'] if n.get('label') == method + ' /api/asistente/memoria')
+        assert endpoint.get('auth') == 'JWT + cliente', 'Permiso incorrecto en memoria del asistente'
     for n in data['nodes']:
         source = n.get('source_file', '')
         if source:
@@ -32,6 +37,10 @@ def main():
     graph = nx.DiGraph()
     graph.add_nodes_from(ids)
     graph.add_edges_from((e['source'], e['target']) for e in data['links'])
+    email_screen = next(n['id'] for n in data['nodes'] if n.get('source_file') == 'flutter_app/lib/screens/verificacion_email_screen.dart' and n.get('label') == 'verificacion_email_screen.dart')
+    assert graph.has_edge(email_screen, 'endpoint:POST /api/auth/verificar-email'), 'Falta verificación de email Flutter'
+    checkout_screen = next(n['id'] for n in data['nodes'] if n.get('source_file') == 'flutter_app/lib/screens/entrega_y_pago_screen.dart' and n.get('label') == 'entrega_y_pago_screen.dart')
+    assert graph.has_edge(checkout_screen, 'endpoint:POST /api/pagos/crear-orden'), 'Falta creación de orden Flutter'
     for client in ['flutter_app/lib/screens/mis_compras_screen.dart', 'frontend/src/public-site/tienda/CheckoutPage.jsx', 'frontend/src/features/pedidos/PedidosPage.jsx']:
         # Graphify consolida un nodo de archivo con su equivalente del AST;
         # su ID canónico puede cambiar, pero fuente y etiqueta se conservan.

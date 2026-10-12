@@ -15,7 +15,11 @@ export default function ReembolsoModal({ venta, abierto, onCerrar, onReembolsada
     const [error, setError] = useState('');
     if (!abierto || !venta) return null;
     const confirmar = venta.estado_reembolso === 'pendiente_verificacion';
-    const yaSalio = venta.estado === 'entregada' || ['en_camino', 'entregado'].includes(venta.estado_entrega);
+    // Una venta comercial cancelada ya liberó stock antes del cobro tardío.
+    // Cancelar solo la logística de un delivery pagado no acredita el retorno.
+    const stockYaLiberado = venta.estado === 'cancelada' || venta.pago_revision_motivo === 'aprobacion_tardia';
+    const requiereDevolucionFisica = venta.estado === 'entregada' || ['en_camino', 'entregado'].includes(venta.estado_entrega)
+        || (venta.tipo_entrega === 'domicilio' && venta.estado_entrega === 'cancelado' && venta.estado === 'pagada');
     const enviar = async event => {
         event.preventDefault();
         if (guardando) return;
@@ -25,7 +29,7 @@ export default function ReembolsoModal({ venta, abierto, onCerrar, onReembolsada
         try {
             setGuardando(true); setError('');
             const res = await reembolsarVenta(venta.id_venta, { accion: confirmar ? 'confirmar' : 'solicitar',
-                motivo, referencia, evidencia, devolverStock });
+                motivo, referencia, evidencia, devolverStock: !stockYaLiberado && devolverStock });
             await onReembolsada?.(res); onCerrar();
         } catch (err) { setError(err.response?.data?.mensaje || 'No se pudo registrar la devolución'); }
         finally { setGuardando(false); }
@@ -45,12 +49,12 @@ export default function ReembolsoModal({ venta, abierto, onCerrar, onReembolsada
                 <Textarea label="Evidencia verificable de la devolución" value={evidencia} onChange={e => setEvidencia(e.target.value)}
                     placeholder="Referencia al comprobante del proveedor, enlace o detalle que permita verificar la devolución"
                     minLength={10} maxLength={500} rows="3" requerido required disabled={guardando}/>
-                {venta.pago_revision_motivo === 'aprobacion_tardia'
+                {stockYaLiberado
                     ? <p>El stock ya se liberó al cancelar; no se ingresará nuevamente.</p>
-                    : yaSalio ? <label className="flex items-start gap-3 text-sm">
+                    : requiereDevolucionFisica ? <><p>La cancelación no acredita que los libros hayan regresado. Solo se repondrá stock si confirmas su devolución física.</p><label className="flex items-start gap-3 text-sm">
                         <input type="checkbox" checked={devolverStock} onChange={e => setDevolverStock(e.target.checked)} disabled={guardando}/>
                         El cliente devolvió los libros y están disponibles para vender.
-                    </label> : <p>Al confirmar se liberará el stock de los libros que no salieron.</p>}
+                    </label></> : <p>Al confirmar se liberará el stock de los libros que no salieron.</p>}
                 {Number(venta.tiene_comprobante) === 1 && <p>El comprobante interno se anulará al confirmar. Gestiona la nota de crédito externa en SUNAT.</p>}
             </>}
             {error && <Alert tipo="error">{error}</Alert>}

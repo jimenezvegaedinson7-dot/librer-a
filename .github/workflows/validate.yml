@@ -80,6 +80,12 @@ jobs:
       - name: Lint
         working-directory: frontend
         run: npm run lint
+      - name: Instalar Chromium para pruebas de navegador
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Regresiones de web y panel
+        working-directory: frontend
+        run: npm run test:browser
       - name: Build
         working-directory: frontend
         run: npm run build

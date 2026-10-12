@@ -1,11 +1,11 @@
-%% Generado 2026-10-09 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-12 desde el código real (actualizar-mapa.mjs)
 sequenceDiagram
     autonumber
     participant F as Flutter · entrega_y_pago
     participant API as /api/pagos (pago.controller)
     participant VM as venta.model
     participant P as PayU (payu.service)
-    participant B as Navegador (url_launcher)
+    participant B as WebView de la app / navegador web
     participant DB as PostgreSQL
     F->>API: GET /api/zonas-delivery (activas de Pallasca)
     F->>API: POST /api/pagos/crear-orden (JWT, idempotencia, entrega y zona)
@@ -18,7 +18,7 @@ sequenceDiagram
     B->>API: GET /api/pagos/checkout/:externalReference
     API-->>B: formulario auto-enviado a PayU
     P->>API: POST /api/pagos/webhook (confirmación)
-    API->>VM: actualizarDatosPago + actualizarEstado
+    API->>VM: aplicarPago (firma, importe, moneda y transición atómica)
     B->>API: GET /api/pagos/respuesta/:externalReference
     F->>API: GET /api/pagos/:orderId (estado)
     F->>API: GET /api/ventas/mis-ventas

@@ -3,8 +3,10 @@
 // Normalmente se ejecuta a través de: node docs/architecture/tools/actualizar-mapa.mjs
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { argumentos, bloque, cuerposMetodosDart, dependenciasPubspec, endpointsPeticionCliente, metodosUsadosDart, miembrosObjeto, propagarEndpoints, resolverMiddlewares, tablasDeclaradas } from './extraer-relaciones.mjs';
 
-const RAIZ = 'C:/libreria';
+const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const leer = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
 const rel = (p) => path.relative(RAIZ, p).split(path.sep).join('/');
 const IGNORAR = new Set(['node_modules', 'build', 'dist', '.dart_tool', '.git', 'coverage', 'uploads', '.vercel', '__preview']);
@@ -17,45 +19,6 @@ function listar(dir, filtro, out = []) {
         else if (filtro(e.name)) out.push(p);
     }
     return out;
-}
-
-// Extrae el texto entre el paréntesis/llave que abre en `ini` y su cierre (respetando strings y plantillas).
-function bloque(texto, ini) {
-    const abre = texto[ini];
-    const cierra = abre === '(' ? ')' : abre === '{' ? '}' : ']';
-    let prof = 0;
-    let cadena = null;
-    for (let i = ini; i < texto.length; i++) {
-        const c = texto[i];
-        if (cadena) {
-            if (c === '\\') { i++; continue; }
-            if (c === cadena) cadena = null;
-            continue;
-        }
-        if (c === '"' || c === "'" || c === '`') { cadena = c; continue; }
-        if (c === '/' && texto[i + 1] === '/') { i = texto.indexOf('\n', i); if (i < 0) break; continue; }
-        if (c === abre) prof++;
-        else if (c === cierra) { prof--; if (prof === 0) return texto.slice(ini, i + 1); }
-    }
-    return texto.slice(ini);
-}
-
-// Separa argumentos de nivel superior de una llamada "( ... )".
-function argumentos(llamada) {
-    const interior = llamada.slice(1, -1);
-    const args = [];
-    let prof = 0, actual = '', cadena = null;
-    for (let i = 0; i < interior.length; i++) {
-        const c = interior[i];
-        if (cadena) { actual += c; if (c === '\\') { actual += interior[++i]; continue; } if (c === cadena) cadena = null; continue; }
-        if (c === '"' || c === "'" || c === '`') { cadena = c; actual += c; continue; }
-        if ('({['.includes(c)) prof++;
-        if (')}]'.includes(c)) prof--;
-        if (c === ',' && prof === 0) { args.push(actual.trim()); actual = ''; continue; }
-        actual += c;
-    }
-    if (actual.trim()) args.push(actual.trim());
-    return args;
 }
 
 // Cuerpos de funciones con nombre: const X = async (...) => {...} | async function X(...) {...} | function X
@@ -74,10 +37,16 @@ function funciones(texto) {
 
 // Tablas referenciadas en SQL
 // Solo cuentan las tablas que existen en schema.sql y las migraciones (evita falsos positivos como EXTRACT(... FROM columna)).
-const DIR_MIG = 'C:/libreria/backend/database/migrations';
+const DIR_MIG = path.join(RAIZ, 'backend/database/migrations');
+const archivosMigraciones = fs.readdirSync(DIR_MIG).filter(f => f.endsWith('.sql')).map(f => path.join(DIR_MIG, f));
+const fuentesTablas = ['backend/database/schema.sql', ...archivosMigraciones.map(rel), 'backend/src/config/migraciones.js'];
+const fuentesPorTabla = {};
+for (const fuente of fuentesTablas) for (const tabla of tablasDeclaradas(leer(path.join(RAIZ, fuente)))) {
+    (fuentesPorTabla[tabla] ||= []).push(fuente);
+}
+const tablasEsquema = tablasDeclaradas(leer(path.join(RAIZ, 'backend/database/schema.sql')));
 const TABLAS_REALES = new Set(
-    [...fs.readdirSync(DIR_MIG).map((x) => `${DIR_MIG}/${x}`), 'C:/libreria/backend/database/schema.sql']
-        .flatMap((p) => [...fs.readFileSync(p, 'utf8').matchAll(/CREATE TABLE (?:IF NOT EXISTS )?([a-z_]+)/gi)].map((m) => m[1].toLowerCase())),
+    Object.keys(fuentesPorTabla),
 );
 function tablas(texto) {
     const t = new Set();
@@ -105,19 +74,10 @@ for (const m of server.matchAll(/app\.(get|post|put|delete|patch)\(\s*'([^']+)'(
         path: m[2],
         middleware: /verificarToken/.test(m[3]) ? ['JWT', ...(/verificarRol\('(\w+)'\)/.exec(m[3]) ? [`rol:${/verificarRol\('(\w+)'\)/.exec(m[3])[1]}`] : [])] : [],
         routeFile: 'backend/server.js',
+        line: server.slice(0, m.index).split('\n').length,
         controller: 'inline (server.js)',
         handler: 'inline',
     });
-}
-
-function nombreMiddleware(arg) {
-    if (arg === 'verificarToken') return 'JWT';
-    const rol = /verificarRol\('(\w+)'\)/.exec(arg);
-    if (rol) return `rol:${rol[1]}`;
-    const up = /(\w+)\.single\('(\w+)'\)/.exec(arg);
-    if (up) return `${up[1]}(${up[2]})`;
-    if (/express\.(urlencoded|json)/.test(arg)) return arg.replace(/\(.*$/, '');
-    return arg;
 }
 
 const controladores = {};
@@ -182,6 +142,7 @@ const endpoints = [...endpointsServer];
 for (const f of fs.readdirSync(`${BACK}/src/routes`)) {
     const archivo = `backend/src/routes/${f}`;
     const txt = leer(`${RAIZ}/${archivo}`);
+    const expandirMiddlewares = resolverMiddlewares(txt);
     const base = montajes[archivo] || '?';
     const ctrlDe = {};
     for (const m of txt.matchAll(/const\s+\{([^}]+)\}\s*=\s*require\('\.\.\/controllers\/([\w.]+)'\)/g)) for (const n of m[1].split(',').map((s) => s.trim()).filter(Boolean)) ctrlDe[n] = `${m[2]}.js`;
@@ -192,7 +153,7 @@ for (const f of fs.readdirSync(`${BACK}/src/routes`)) {
     while ((m = re.exec(txt))) {
         const llamada = bloque(txt, m.index + m[0].length - 1);
         const args = argumentos(llamada);
-        if (m[1] === 'use') { globales.push(...args.map(nombreMiddleware)); continue; }
+        if (m[1] === 'use') { globales.push(...expandirMiddlewares(args)); continue; }
         const ruta = args[0].replace(/^['"`]|['"`]$/g, '');
         const resto = args.slice(1);
         const ultimo = resto[resto.length - 1] || '';
@@ -220,8 +181,9 @@ for (const f of fs.readdirSync(`${BACK}/src/routes`)) {
         endpoints.push({
             method: m[1].toUpperCase(),
             path: (base + (ruta === '/' ? '' : ruta)) || base,
-            middleware: [...globales, ...resto.slice(0, -1).map(nombreMiddleware)],
+            middleware: [...new Set([...globales, ...expandirMiddlewares(resto.slice(0, -1))])],
             routeFile: archivo,
+            line: txt.slice(0, m.index).split('\n').length,
             controller: controller ? `backend/src/controllers/${controller}`.replace('backend/src/controllers/inline', 'inline') : '?',
             handler,
             calls: llamadas,
@@ -241,6 +203,7 @@ for (const p of archivosFront.filter((p) => /Service\.js$|client\.js$|clienteApi
     for (const m of txt.matchAll(/export\s+(?:default\s+)?(?:async\s+)?function\s+(\w+)\s*\([^)]*\)\s*\{/g)) {
         const cuerpo = bloque(txt, txt.indexOf('{', m.index + m[0].length - 1));
         const llamadas = [...cuerpo.matchAll(/client\.(get|post|put|patch|delete)\s*\(\s*(['"`])([^'"`]+)\2/g)].map((x) => ({ method: x[1].toUpperCase(), path: `/api${normalizar(x[3])}` }));
+        llamadas.push(...endpointsPeticionCliente(cuerpo, normalizar));
         if (/useCarrusel\.js$/.test(p)) llamadas.push(...[...cuerpo.matchAll(/fetch\(\s*`\$\{[^}]+\}([^`]+)`/g)].map(x=>({method:'GET',path:`/api${normalizar(x[1])}`})));
         // Los hooks públicos usan fetch sin JWT mediante obtener().
         if (/useApiPublica\.js$/.test(p)) {
@@ -251,9 +214,8 @@ for (const p of archivosFront.filter((p) => /Service\.js$|client\.js$|clienteApi
         fns[m[1]] = { endpoints: llamadas, delegates: delega };
     }
     if (/clienteApi\.js$/.test(p)) {
-        for (const m of txt.matchAll(/(\w+):\s*[^\n]*?peticionCliente\(\s*(['"`])([^'"`]+)\2([^\n]*)/g)) {
-            const metodo = /method:\s*['"](POST|PUT|PATCH|DELETE)['"]/.exec(m[4])?.[1] || 'GET';
-            fns[m[1]] = { endpoints: [{method:metodo,path:`/api${normalizar(m[3])}`}], delegates:[] };
+        for (const [nombre, cuerpo] of Object.entries(miembrosObjeto(txt, 'clienteApi'))) {
+            fns[nombre] = { endpoints: endpointsPeticionCliente(cuerpo, normalizar), delegates: [] };
         }
     }
     for (const m of txt.matchAll(/export\s*\{([^}]+)\}/g)) for (const n of m[1].split(',').map((s) => s.trim()).filter(Boolean)) if (!fns[n]) fns[n] = { reexport: true, endpoints: [], delegates: [] };
@@ -327,7 +289,7 @@ for (const m of router.matchAll(/const\s+(\w+)\s*=\s*lazyConReintento\(\(\)\s*=>
 const rutasFront = [];
 for (const m of router.matchAll(/path:\s*'([^']+)'\s*,\s*element:\s*([^\n]+)/g)) {
     // El primer componente que no sea un envoltorio <Suspense>.
-    const comp = /<(?!Suspense\b)(\w+)/.exec(m[2]);
+    const comp = /<(?!Suspense\b|TiendaProvider\b|RutaProtegida\b|RutaPorRol\b)(\w+)/.exec(m[2]);
     rutasFront.push({ path: m[1], element: m[2].trim().replace(/,\s*$/, ''), component: comp ? comp[1] : null, file: comp ? lazys[comp[1]] || null : null });
 }
 
@@ -348,13 +310,9 @@ const archivosDart = listar(FL, (n) => n.endsWith('.dart'));
 const constantes = {};
 for (const m of leer(`${FL}/utils/constants.dart`).matchAll(/static const String (\w+Path)\s*=\s*'([^']+)'/g)) constantes[m[1]] = m[2];
 const api = leer(`${FL}/services/api_service.dart`);
-const metodosApi = {};
-const reMet = /^\s{2}Future<[^\n]*?>\s+(\w+)\s*\(/gm;
-let mm;
-const posiciones = [];
-while ((mm = reMet.exec(api))) posiciones.push({ nombre: mm[1], ini: mm.index });
-posiciones.forEach((pos, i) => {
-    const cuerpo = api.slice(pos.ini, posiciones[i + 1]?.ini ?? api.length);
+const cuerposApi = cuerposMetodosDart(api);
+const endpointsDirectos = {};
+for (const [nombre, cuerpo] of Object.entries(cuerposApi)) {
     const llamadas = [];
     for (const c of cuerpo.matchAll(/_dio\.(get|post|put|delete|patch)<(?:[^<>]|<[^<>]*>)*>\(\s*([^,)\n]+(?:\n[^,)]*)?)/g)) {
         let expr = c[2].trim();
@@ -362,17 +320,12 @@ posiciones.forEach((pos, i) => {
         expr = expr.replace(/^'|'$/g, '').replace(/\$\{?(\w+)\}?/g, ':$1').replace(/'/g, '');
         llamadas.push({ method: c[1].toUpperCase(), path: `/api${expr.startsWith('/') ? expr : `/${expr}`}` });
     }
-    metodosApi[pos.nombre] = llamadas;
-    pos.cuerpo = cuerpo;
-});
-// Métodos que reutilizan otros métodos de ApiService (p. ej. buscarLibros -> obtenerLibros)
-for (const pos of posiciones) {
-    for (const m of pos.cuerpo.matchAll(/await\s+(\w+)\s*\(/g)) {
-        if (m[1] !== pos.nombre && metodosApi[m[1]]?.length) {
-            metodosApi[pos.nombre].push(...metodosApi[m[1]].map((e) => ({ ...e, via: m[1] })));
-        }
-    }
+    endpointsDirectos[nombre] = llamadas;
 }
+const delegadosApi = Object.fromEntries(Object.entries(cuerposApi).map(([nombre, cuerpo]) => [nombre,
+    [...new Set([...cuerpo.matchAll(/(?<![\w.])(\w+)\s*\(/g)].map(m => m[1]).filter(n => n !== nombre && Object.hasOwn(cuerposApi, n)))],
+]));
+const metodosApi = propagarEndpoints(endpointsDirectos, delegadosApi);
 
 const grafoDart = {};
 const usoApiDart = {};
@@ -385,8 +338,8 @@ for (const p of archivosDart) {
         if (fs.existsSync(destino)) imps.push(rel(destino));
     }
     grafoDart[rel(p)] = imps;
-    const metodos = new Set([...txt.matchAll(/(?:ApiService\.instance|_api|api)\s*\.\s*(\w+)\s*\(/g)].map((m) => m[1]).filter((n) => metodosApi[n]));
-    if (metodos.size) usoApiDart[rel(p)] = [...metodos].sort();
+    const metodos = metodosUsadosDart(txt, metodosApi);
+    if (metodos.length) usoApiDart[rel(p)] = metodos;
 }
 const paquetesDart = [...new Set(archivosDart.flatMap((p) => [...leer(p).matchAll(/^import\s+'package:(\w+)\//gm)].map((m) => m[1])))].filter((n) => n !== 'libreria_app').sort();
 
@@ -427,9 +380,11 @@ function noUsados(grafo, entradas) {
 
 const salida = {
     generado: new Date().toISOString(),
-    backend: { montajes, endpoints, controladores, modelos, grafo: grafoBack, ciclos: ciclos(grafoBack), archivos: Object.keys(grafoBack).length },
+    backend: { montajes, endpoints, controladores, modelos, grafo: grafoBack, ciclos: ciclos(grafoBack), archivos: Object.keys(grafoBack).length,
+        tablasEsquema, tablasDeclaradas: [...TABLAS_REALES].sort(), fuentesPorTabla, migraciones: archivosMigraciones.map(rel) },
     frontend: { rutas: rutasFront, servicios, usoServicios, endpointsPorArchivo: endpointsPorArchivoFront, grafo: grafoFront, ciclos: ciclos(grafoFront), archivos: archivosFront.length },
-    flutter: { constantes, metodosApi, usoApi: usoApiDart, grafo: grafoDart, ciclos: ciclos(grafoDart), paquetes: paquetesDart, archivos: archivosDart.length },
+    flutter: { constantes, metodosApi, usoApi: usoApiDart, grafo: grafoDart, ciclos: ciclos(grafoDart), paquetes: paquetesDart, archivos: archivosDart.length,
+        dependencias: dependenciasPubspec(leer(path.join(FL, '../pubspec.yaml')), 'dependencies'), devDependencias: dependenciasPubspec(leer(path.join(FL, '../pubspec.yaml')), 'dev_dependencies') },
     posiblesNoUsados: {
         backend: noUsados(grafoBack, ['server.js', '/test', 'test-integration', '/scripts/', 'run_migration', '_test_smtp']),
         frontend: noUsados(grafoFront, ['main.jsx']),

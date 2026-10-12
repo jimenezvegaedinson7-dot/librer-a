@@ -47,6 +47,8 @@ import {
     accionCancelar,
     etiquetaEstado,
     etiquetaEntregaPedido,
+    etiquetaPagoPedido,
+    pagoEnRevision,
     puedeCancelar,
     esFinal,
     esTipoEntregaValido,
@@ -99,6 +101,7 @@ const ICONO_DESTINO = {
 // Seguimiento visual del pedido: los pasos de su tipo de entrega con el
 // actual resaltado. Un pedido cancelado lo indica debajo.
 function Seguimiento({ pedido }) {
+    if (pagoEnRevision(pedido)) return <Alert tipo="warning">Pago en revisión. No se puede avanzar la entrega. Revisa el pago y la devolución desde Ventas.</Alert>;
     const flujo = FLUJO[pedido.tipo_entrega];
     if (!flujo) return null;
     const estado = pedido.estado_entrega || 'pendiente';
@@ -218,15 +221,24 @@ export default function PedidosPage() {
     // ========================================
     const actualizarPedido = async (objetivo) => {
         if (!objetivo || mutando.current) return;
+        // La confirmación pudo abrirse antes de que una actualización automática
+        // informara la revisión. Tampoco se envía ese avance desde un modal viejo.
+        if (objetivo.destino !== 'cancelado' && [pedidos.find(p => p.id_venta === objetivo.id_venta),
+            detalle?.id_venta === objetivo.id_venta ? detalle : null].some(pagoEnRevision)) {
+            setPendiente(null);
+            mostrarError('El pago está en revisión. Actualiza el pedido antes de avanzar la entrega.');
+            return;
+        }
         mutando.current = true;
         const revisionAbierta = revisionDetalle.current;
 
         setProcesando(true);
 
         try {
-            await cambiarEstadoPedido(objetivo.id_venta, objetivo.destino);
+            const respuesta = await cambiarEstadoPedido(objetivo.id_venta, objetivo.destino);
             if (!activo.current) return;
-            exito(`Pedido #${objetivo.id_venta} → ${etiquetaEstado(objetivo.tipo_entrega, objetivo.destino)}`);
+            exito(objetivo.destino === 'cancelado' && respuesta?.mensaje ? respuesta.mensaje
+                : `Pedido #${objetivo.id_venta} → ${etiquetaEstado(objetivo.tipo_entrega, objetivo.destino)}`);
 
             setPendiente(null);
             setCancelacion(null);
@@ -295,7 +307,7 @@ export default function PedidosPage() {
 
         return {
             total: pedidosFiltrados.length,
-            porHacer: pedidosFiltrados.filter((p) => ['pagada', 'entregada'].includes(p.estado)
+            porHacer: pedidosFiltrados.filter((p) => !pagoEnRevision(p) && ['pagada', 'entregada'].includes(p.estado)
                 && ['pendiente', 'preparando'].includes(p.estado_entrega || 'pendiente')).length,
             enRuta: porEstado('en_camino'),
             listos: porEstado('listo_recojo'),
@@ -338,8 +350,8 @@ export default function PedidosPage() {
         {
             titulo: 'Pago',
             render: (p) => (
-                <Badge color={COLOR_COMERCIAL[p.estado] || 'neutral'}>
-                    {p.estado === 'pagada' || p.estado === 'entregada' ? 'Confirmado · PayU' : ETIQUETA_COMERCIAL[p.estado] || p.estado}
+                <Badge color={pagoEnRevision(p) ? 'warning' : COLOR_COMERCIAL[p.estado] || 'neutral'}>
+                    {etiquetaPagoPedido(p)}
                 </Badge>
             ),
         },
@@ -366,13 +378,14 @@ export default function PedidosPage() {
         const tipoValido = esTipoEntregaValido(p.tipo_entrega);
         const historico = p.origen === 'panel' || p.origen === 'reserva';
         const devolucionPendiente = p.estado_reembolso === 'pendiente_verificacion';
+        const revisionPago = pagoEnRevision(p);
         const pagoConfirmado = ['pagada', 'entregada'].includes(p.estado);
         const habilitado = tipoValido && !historico && !devolucionPendiente;
         return {
             tipoValido, historico, devolucionPendiente,
-            avance: habilitado && pagoConfirmado ? accionSiguiente(p.tipo_entrega, estado) : null,
+            avance: habilitado && pagoConfirmado && !revisionPago ? accionSiguiente(p.tipo_entrega, estado) : null,
             cancelar: habilitado && !['cancelada', 'reembolsada'].includes(p.estado) && puedeCancelar(estado)
-                ? accionCancelar(p.tipo_entrega, estado) : null,
+                ? accionCancelar(p.tipo_entrega, estado, p.estado, revisionPago) : null,
         };
     };
 
@@ -574,7 +587,7 @@ export default function PedidosPage() {
                             </Ficha>
 
                             <Ficha icono={<FaCircleCheck aria-hidden="true" />} etiqueta="Pago">
-                                {ETIQUETA_PAGO[detalle.metodo_pago] || 'PayU'}
+                                {pagoEnRevision(detalle) ? 'Pago en revisión' : ETIQUETA_PAGO[detalle.metodo_pago] || 'PayU'}
                                 {detalle.fecha_pago
                                     ? ` · ${formatearFecha(detalle.fecha_pago)}`
                                     : ''}
@@ -631,7 +644,7 @@ export default function PedidosPage() {
                 titulo={cancelacion?.texto || 'Cancelar pedido'}
                 mensaje={
                     cancelacion
-                        ? `Pedido #${cancelacion.id_venta}. ${cancelacion.mensaje} Esto no genera reembolso: el dinero se devuelve con el flujo de Devoluciones.`
+                        ? `Pedido #${cancelacion.id_venta}. ${cancelacion.mensaje}`
                         : ''
                 }
                 textoConfirmar="Sí, cancelar"

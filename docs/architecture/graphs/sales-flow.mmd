@@ -1,4 +1,4 @@
-%% Generado 2026-10-09 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-12 desde el código real (actualizar-mapa.mjs)
 sequenceDiagram
     autonumber
     participant P as React · VentasPage / PedidosPage
@@ -12,6 +12,9 @@ sequenceDiagram
     P->>VM: Pedidos: transición logística válida
     VM->>DB: FOR UPDATE + entrega y estado comercial atómicos
     Note over P: Pedidos notifica una sola transición nueva, sin cobrar ni tocar stock
+    P->>VM: Cancelar pedido sin pago
+    VM->>DB: FOR UPDATE + venta cancelada + stock liberado + kardex
+    Note over VM: Entrega pagada cancelada mantiene cobro/stock hasta devolución; aprobación tardía requiere revisión
     P->>V: POST reembolso accion solicitar o confirmar
     V->>VM: Validar PayU + solicitud o confirmación documental
     VM->>DB: Pendiente sin efectos / confirmado con evidencia, stock, comprobante e historial

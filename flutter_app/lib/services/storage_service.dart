@@ -7,6 +7,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/usuario.dart';
 import '../utils/constants.dart';
 
+/// Identidad del flujo login → OTP. Abandonarlo no cambia una sesión vigente,
+/// pero impide que una respuesta de ese flujo instale credenciales después.
+class IntentoAutenticacion {
+  IntentoAutenticacion._();
+  bool _vigente = true;
+  bool get vigente => _vigente;
+}
+
 /// Servicio de almacenamiento local.
 ///
 /// Centraliza el guardado/lectura del token JWT y de la información básica del
@@ -24,7 +32,10 @@ class StorageService {
 
   static final StorageService instance = StorageService._();
 
-  static const FlutterSecureStorage _secure = FlutterSecureStorage();
+  static FlutterSecureStorage _secure = const FlutterSecureStorage();
+  @visibleForTesting
+  void usarAlmacenamientoPruebas(FlutterSecureStorage? secure) =>
+      _secure = secure ?? const FlutterSecureStorage();
   static const String _sesionInvalidaKey = 'auth_session_invalid';
   bool _sesionInvalida = false;
   Future<void> _colaCredencial = Future.value();
@@ -45,11 +56,69 @@ class StorageService {
   int get generacion => _generacion;
   int? get idUsuarioActual => _idUsuarioActual;
 
+  IntentoAutenticacion? _autenticacion;
+
+  IntentoAutenticacion iniciarAutenticacion() {
+    _autenticacion?._vigente = false;
+    return _autenticacion = IntentoAutenticacion._();
+  }
+
+  void invalidarAutenticacion(IntentoAutenticacion intento) {
+    intento._vigente = false;
+    if (identical(_autenticacion, intento)) _autenticacion = null;
+  }
+
+  /// Token y titular se instalan en una sola operación de la cola. Se comprueba
+  /// el intento también tras cada escritura: abandonar durante secure.write
+  /// no puede dejar una credencial residual ni limpiar el login posterior.
+  Future<bool> guardarSesionAutenticada(
+    String token,
+    Usuario? usuario,
+    IntentoAutenticacion intento,
+  ) => _serializarCredencial(() async {
+    if (!intento.vigente) return false;
+    try {
+      await _guardarToken(token, confirmar: false);
+      final prefs = await SharedPreferences.getInstance();
+      if (intento.vigente && usuario != null) {
+        if (!await prefs.setString(
+          Constants.prefUserKey,
+          jsonEncode(usuario.toJson()),
+        )) {
+          throw StateError('No se pudo guardar el usuario de la sesión.');
+        }
+      }
+      if (!intento.vigente) {
+        await _eliminarToken();
+        await prefs.remove(Constants.prefUserKey);
+        return false;
+      }
+      if (!await prefs.setBool(_sesionInvalidaKey, false)) {
+        throw StateError('No se pudo confirmar la sesión guardada.');
+      }
+      if (!intento.vigente) {
+        await _eliminarToken();
+        await prefs.remove(Constants.prefUserKey);
+        return false;
+      }
+      _sesionInvalida = false;
+      _idUsuarioActual = usuario?.idUsuario;
+      return true;
+    } catch (_) {
+      await _eliminarToken();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(Constants.prefUserKey);
+      rethrow;
+    } finally {
+      _cambiandoSesion = false;
+    }
+  });
+
   /// Guarda el token JWT en secure storage (y limpia la clave LEGACY).
   Future<void> guardarToken(String token) =>
       _serializarCredencial(() => _guardarToken(token));
 
-  Future<void> _guardarToken(String token) async {
+  Future<void> _guardarToken(String token, {bool confirmar = true}) async {
     _cambiandoSesion = true;
     _generacion++;
     _idUsuarioActual = null;
@@ -62,10 +131,12 @@ class StorageService {
     await prefs.remove(Constants.prefTokenKey);
     try {
       await _secure.write(key: Constants.secureTokenKey, value: token);
-      if (!await prefs.setBool(_sesionInvalidaKey, false)) {
-        throw StateError('No se pudo confirmar la sesión guardada.');
+      if (confirmar) {
+        if (!await prefs.setBool(_sesionInvalidaKey, false)) {
+          throw StateError('No se pudo confirmar la sesión guardada.');
+        }
+        _sesionInvalida = false;
       }
-      _sesionInvalida = false;
     } catch (_) {
       // Fallar cerrado: nunca mezclar un usuario nuevo con un JWT anterior,
       // ni guardar una credencial nueva en preferencias sin cifrar.
@@ -196,13 +267,19 @@ class StorageService {
 
   /// Limpia toda la sesión (token y usuario).
   Future<void> limpiarSesion() async {
+    if (_autenticacion case final intento?) invalidarAutenticacion(intento);
     _cambiandoSesion = true;
     _generacion++;
     _idUsuarioActual = null;
-    await eliminarToken();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(Constants.prefUserKey);
-    _cambiandoSesion = false;
+    await _serializarCredencial(() async {
+      try {
+        await _eliminarToken();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(Constants.prefUserKey);
+      } finally {
+        _cambiandoSesion = false;
+      }
+    });
   }
 
   /// Guarda el id del tema de colores del perfil (preferencia, NO sensible).

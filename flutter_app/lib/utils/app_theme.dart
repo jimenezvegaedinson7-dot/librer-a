@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 import 'app_tokens.dart';
@@ -24,7 +23,8 @@ class AppTheme {
     double letterSpacing = -0.2,
     FontStyle? fontStyle,
   }) {
-    return GoogleFonts.sourceSerif4(
+    return TextStyle(
+      fontFamily: fontSerif,
       fontSize: fontSize,
       fontWeight: fontWeight,
       color: color ?? AppColors.textPrimary,
@@ -43,7 +43,8 @@ class AppTheme {
       double height, {
       FontWeight w = FontWeight.w600,
       double ls = -0.3,
-    }) => GoogleFonts.sourceSerif4(
+    }) => TextStyle(
+      fontFamily: fontSerif,
       fontSize: size,
       height: height / size,
       fontWeight: w,
@@ -51,7 +52,8 @@ class AppTheme {
     );
 
     TextStyle sans(double size, double height, FontWeight w, {double ls = 0}) =>
-        GoogleFonts.inter(
+        TextStyle(
+          fontFamily: fontSans,
           fontSize: size,
           height: height / size,
           fontWeight: w,

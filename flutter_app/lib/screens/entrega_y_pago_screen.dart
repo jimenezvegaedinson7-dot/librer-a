@@ -27,7 +27,8 @@ enum _TipoEntrega { domicilio, tienda }
 /// (WebCheckout) y se abre el checkout DENTRO de la app
 /// ([PagoEnAppScreen]); al volver, el estado se confirma con la API.
 class EntregaYPagoScreen extends StatefulWidget {
-  const EntregaYPagoScreen({super.key});
+  final ApiService? api;
+  const EntregaYPagoScreen({super.key, this.api});
 
   @override
   State<EntregaYPagoScreen> createState() => _EntregaYPagoScreenState();
@@ -50,6 +51,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   bool _restaurando = true;
   bool _importeConfirmado = false;
   int? _totalMostradoCentimos;
+  ApiService get _api => widget.api ?? ApiService.instance;
 
   List<ZonaDelivery> _zonas = [];
   int? _idZona;
@@ -71,9 +73,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
 
   Future<void> _restaurarIntento() async {
     try {
-      final intento = await ApiService.instance.intentoPendiente();
+      final intento = await _api.intentoPendiente();
       if (intento == null) return;
-      final orden = await ApiService.instance.recuperarIntentoPendiente();
+      final orden = await _api.recuperarIntentoPendiente();
       if (orden != null && mounted) {
         await _mostrarOrden(orden, esperado: intento.totalMostradoCentimos);
       }
@@ -137,7 +139,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       _errorZonas = null;
     });
     try {
-      final zonas = await ApiService.instance.obtenerZonasDelivery();
+      final zonas = await _api.obtenerZonasDelivery();
       if (!mounted) return;
       setState(() {
         _zonas = zonas;
@@ -175,10 +177,10 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     try {
       // Resolver un resultado incierto ANTES de validar el carrito actual.
       // La orden anterior puede haber descontado ya todas sus unidades.
-      final intento = await ApiService.instance.intentoPendiente();
+      final intento = await _api.intentoPendiente();
       if (!mounted) return;
       if (intento != null) {
-        final orden = await ApiService.instance.recuperarIntentoPendiente();
+        final orden = await _api.recuperarIntentoPendiente();
         if (orden != null) {
           await _mostrarOrden(
             orden,
@@ -190,21 +192,27 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       }
       final error = _validarEntrega();
       if (error != null) throw ApiException(error);
+      final datos = _datosCheckout();
       // Se renuevan las promociones antes de confirmar; el servidor sigue
       // determinando y guardando el importe definitivo del pedido.
-      final catalogo = await ApiService.instance.obtenerLibros();
+      final catalogo = await _api.obtenerLibros();
       if (!mounted) return;
       carrito.actualizarCatalogo(catalogo);
-      if (_tipoEntrega == _TipoEntrega.domicilio) {
-        final zonas = await ApiService.instance.obtenerZonasDelivery();
+      if (datos.tipoEntrega == 'domicilio') {
+        final zonas = await _api.obtenerZonasDelivery();
         if (!mounted) return;
         setState(() {
           _zonas = zonas;
-          if (!zonas.any((z) => z.idZona == _idZona)) _idZona = null;
-          if (zonas.length == 1) _idZona = zonas.first.idZona;
         });
-        final errorZona = _validarEntrega();
-        if (errorZona != null) throw ApiException(errorZona);
+      }
+      // Todas las modalidades se revalidan tras las esperas. El POST usa la
+      // misma instantánea que se validó, nunca valores cambiados a mitad de compra.
+      final errorActual = _validarEntrega();
+      if (errorActual != null) throw ApiException(errorActual);
+      if (datos != _datosCheckout()) {
+        throw const ApiException(
+          'Los datos del pedido cambiaron. Revísalos y vuelve a confirmar.',
+        );
       }
       final porId = {for (final libro in catalogo) libro.idLibro: libro};
       if (carrito.vacio) throw const ApiException('El carrito está vacío.');
@@ -235,18 +243,17 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         for (final item in carrito.items)
           {'id_libro': item.libro.idLibro, 'cantidad': item.cantidad},
       ];
-      final esDomicilio = _tipoEntrega == _TipoEntrega.domicilio;
 
       // Crea la orden de pago en PayU (backend calcula el total con
       // los precios reales de la BD).
-      final orden = await ApiService.instance.crearOrdenPago(
+      final orden = await _api.crearOrdenPago(
         detalles: detalles,
-        tipoEntrega: esDomicilio ? 'domicilio' : 'tienda',
-        direccion: esDomicilio ? _direccionController.text.trim() : null,
-        idZonaDelivery: esDomicilio ? _idZona : null,
-        referencia: esDomicilio ? _referenciaController.text.trim() : null,
-        clienteTipoDocumento: _tipoDocumento,
-        clienteDocumento: _documentoController.text.trim(),
+        tipoEntrega: datos.tipoEntrega,
+        direccion: datos.direccion,
+        idZonaDelivery: datos.idZona,
+        referencia: datos.referencia,
+        clienteTipoDocumento: datos.tipoDocumento,
+        clienteDocumento: datos.documento,
         totalMostradoCentimos: totalFresco,
       );
       await _mostrarOrden(orden, esperado: totalFresco, abrir: true);
@@ -265,6 +272,28 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     } finally {
       if (mounted) setState(() => _procesando = false);
     }
+  }
+
+  ({
+    String tipoEntrega,
+    String tipoDocumento,
+    String documento,
+    String? direccion,
+    String? referencia,
+    int? idZona,
+    bool dentro,
+  })
+  _datosCheckout() {
+    final domicilio = _tipoEntrega == _TipoEntrega.domicilio;
+    return (
+      tipoEntrega: domicilio ? 'domicilio' : 'tienda',
+      tipoDocumento: _tipoDocumento,
+      documento: _documentoController.text.trim(),
+      direccion: domicilio ? _direccionController.text.trim() : null,
+      referencia: domicilio ? _referenciaController.text.trim() : null,
+      idZona: domicilio ? _idZona : null,
+      dentro: domicilio && _dentroDePallasca,
+    );
   }
 
   String? _validarEntrega() {
@@ -310,7 +339,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     final yaPagada = _estadoPago?.pagada == true;
     setState(() => _procesando = true);
     try {
-      var estado = await ApiService.instance.obtenerOrdenPago(orderId);
+      var estado = await _api.obtenerOrdenPago(orderId);
       for (
         var intento = 0;
         trasPago && intento < 4 && !estado.pagada && !estado.cancelada;
@@ -318,7 +347,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       ) {
         await Future<void>.delayed(const Duration(seconds: 2));
         if (!mounted) return;
-        estado = await ApiService.instance.obtenerOrdenPago(orderId);
+        estado = await _api.obtenerOrdenPago(orderId);
       }
       if (!mounted) return;
       setState(() {
@@ -406,7 +435,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     try {
       // Revalidar incluso una URL guardada: pudo pagarse en otro dispositivo.
       if (_orderId != null) {
-        final estado = await ApiService.instance.obtenerOrdenPago(_orderId!);
+        final estado = await _api.obtenerOrdenPago(_orderId!);
         if (!mounted) return;
         if (estado.pagada || estado.cancelada) {
           setState(() {
@@ -535,7 +564,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           etiqueta: _tarifaUnica
               ? 'S/ ${Formats.precio(_zonas.first.tarifa)}'
               : 'Según zona',
-          onTap: () => setState(() => _tipoEntrega = _TipoEntrega.domicilio),
+          onTap: _procesando
+              ? null
+              : () => setState(() => _tipoEntrega = _TipoEntrega.domicilio),
         ),
         const SizedBox(height: 8),
         _OpcionEntrega(
@@ -544,7 +575,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           titulo: 'Recojo en tienda',
           detalle: 'Recoge tu pedido en nuestra tienda de Pallasca.',
           etiqueta: 'Gratis',
-          onTap: () => setState(() => _tipoEntrega = _TipoEntrega.tienda),
+          onTap: _procesando
+              ? null
+              : () => setState(() => _tipoEntrega = _TipoEntrega.tienda),
         ),
         AnimatedSize(
           duration: Duracion.base,
@@ -589,7 +622,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         if (sinTarifa)
           _AvisoSinTarifa(
             mensaje: _errorZonas ?? 'El delivery aún no tiene tarifa activa. Puedes dejar tu dirección y elegir recojo gratuito en Pallasca mientras tanto.',
-            onReintentar: _errorZonas != null ? _cargarZonas : null,
+            onReintentar: !_procesando && _errorZonas != null
+                ? _cargarZonas
+                : null,
           )
         else if (!_tarifaUnica)
           DropdownButtonFormField<int>(
@@ -610,7 +645,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
                   ),
                 ),
             ],
-            onChanged: _zonas.isEmpty
+            onChanged: _procesando || _zonas.isEmpty
                 ? null
                 : (valor) {
                     if (valor != null) {
@@ -620,6 +655,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           ),
         const SizedBox(height: 12),
         TextField(
+          enabled: !_procesando,
           controller: _direccionController,
           minLines: 1,
           maxLines: 3,
@@ -635,6 +671,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         ),
         const SizedBox(height: 12),
         TextField(
+          enabled: !_procesando,
           controller: _referenciaController,
           maxLength: 255,
           decoration: const InputDecoration(
@@ -644,14 +681,19 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
             counterText: '',
           ),
         ),
-        CheckboxListTile(
-          value: _dentroDePallasca,
-          onChanged: (v) => setState(() => _dentroDePallasca = v ?? false),
-          contentPadding: EdgeInsets.zero,
-          dense: true,
-          controlAffinity: ListTileControlAffinity.leading,
-          title: const Text('Mi dirección está dentro de Pallasca'),
-          subtitle: const Text('Solo repartimos dentro de la ciudad.'),
+        Material(
+          type: MaterialType.transparency,
+          child: CheckboxListTile(
+            value: _dentroDePallasca,
+            onChanged: _procesando
+                ? null
+                : (v) => setState(() => _dentroDePallasca = v ?? false),
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: const Text('Mi dirección está dentro de Pallasca'),
+            subtitle: const Text('Solo repartimos dentro de la ciudad.'),
+          ),
         ),
       ],
     );
@@ -671,17 +713,20 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
               ButtonSegment(value: 'CE', label: Text('Carné ext.')),
             ],
             selected: {_tipoDocumento},
-            onSelectionChanged: (valores) {
-              final valor = valores.first;
-              setState(() {
-                _tipoDocumento = valor;
-                _documentoController.clear();
-              });
-            },
+            onSelectionChanged: _procesando
+                ? null
+                : (valores) {
+                    final valor = valores.first;
+                    setState(() {
+                      _tipoDocumento = valor;
+                      _documentoController.clear();
+                    });
+                  },
           ),
         ),
         const SizedBox(height: 12),
         TextField(
+          enabled: !_procesando,
           controller: _documentoController,
           keyboardType: TextInputType.number,
           maxLength: _tipoDocumento == 'RUC'
@@ -1288,7 +1333,7 @@ class _OpcionEntrega extends StatelessWidget {
   final String titulo;
   final String detalle;
   final String etiqueta;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _OpcionEntrega({
     required this.seleccionado,

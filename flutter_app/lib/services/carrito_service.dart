@@ -22,24 +22,52 @@ class CarritoService extends ChangeNotifier {
   static final CarritoService instance = CarritoService._();
 
   static const String _prefKey = 'carrito_v1';
+  String _key(int owner) => 'carrito_v2_$owner';
+  int? _propietarioMemoria;
+
+  // El titular se vincula a los datos en memoria, no a una lectura posterior
+  // del JWT. Incluso durante el cambio de cuenta los getters fallan cerrado.
+  void _asegurarPropietario() {
+    final owner = StorageService.instance.idUsuarioActual;
+    if (_propietarioMemoria == owner) return;
+    _items.clear();
+    _guardados.clear();
+    _ventasConciliadas.clear();
+    _propietarioMemoria = owner;
+  }
 
   /// Cola de escrituras: cada cambio se guarda en orden, sin solaparse.
   Future<void> _escritura = Future<void>.value();
 
+  @visibleForTesting
+  void reiniciarColaParaPruebas() => _escritura = Future.value();
+
   final List<CarritoItem> _items = [];
   final Set<int> _ventasConciliadas = {};
 
-  Map<String, List<String>> get instantaneaUnidades => {
-    for (final item in _items) '${item.libro.idLibro}': List.of(item.unidades),
-  };
+  Map<String, List<String>> get instantaneaUnidades {
+    _asegurarPropietario();
+    return {
+      for (final item in _items)
+        '${item.libro.idLibro}': List.of(item.unidades),
+    };
+  }
 
   /// Retira solo las unidades que existían al crear esta venta. La marca y el
   /// carrito se guardan en el mismo JSON para que repetir la consulta sea inocuo.
   Future<void> conciliarVenta(
     int idVenta,
-    Map<String, List<String>> compradas,
-  ) async {
-    if (_ventasConciliadas.contains(idVenta)) return;
+    Map<String, List<String>> compradas, {
+    int? propietario,
+  }) async {
+    _asegurarPropietario();
+    if (propietario != null && propietario != _propietarioMemoria) {
+      throw StateError('La venta pertenece a otra cuenta.');
+    }
+    if (_ventasConciliadas.contains(idVenta)) {
+      await persistir();
+      return;
+    }
     final ids = compradas.values.expand((e) => e).toSet();
     void restar(List<CarritoItem> lista) {
       for (var i = lista.length - 1; i >= 0; i--) {
@@ -66,17 +94,22 @@ class CarritoService extends ChangeNotifier {
   /// Barrera antes de enviar una compra: las identidades deben sobrevivir al
   /// proceso junto al carrito, no solamente al diario de checkout.
   Future<void> persistir() async {
-    await _escritura;
-    final owner = StorageService.instance.idUsuarioActual;
+    _asegurarPropietario();
+    final owner = _propietarioMemoria;
+    if (owner == null) return;
     final generacion = StorageService.instance.generacion;
     final datos = _datos(owner);
-    final prefs = await SharedPreferences.getInstance();
-    if (generacion != StorageService.instance.generacion) {
-      throw StateError('La sesión cambió. Vuelve a intentar con tu cuenta.');
-    }
-    if (!await prefs.setString(_prefKey, jsonEncode(datos))) {
-      throw StateError('No se pudo guardar el carrito.');
-    }
+    final operacion = _escritura.then((_) async {
+      final prefs = await SharedPreferences.getInstance();
+      if (generacion != StorageService.instance.generacion) {
+        throw StateError('La sesión cambió. Vuelve a intentar con tu cuenta.');
+      }
+      if (!await prefs.setString(_key(owner), jsonEncode(datos))) {
+        throw StateError('No se pudo guardar el carrito.');
+      }
+    });
+    _escritura = operacion.catchError((Object _) {});
+    await operacion;
   }
 
   Map<String, dynamic> _datos(int? owner) => {
@@ -96,17 +129,23 @@ class CarritoService extends ChangeNotifier {
   final List<CarritoItem> _guardados = [];
 
   /// Devuelve la lista de ítems del carrito (copia inmutable).
-  List<CarritoItem> get items => List.unmodifiable(_items);
+  List<CarritoItem> get items {
+    _asegurarPropietario();
+    return List.unmodifiable(_items);
+  }
 
   /// Devuelve los ítems guardados para más tarde (copia inmutable).
-  List<CarritoItem> get guardados => List.unmodifiable(_guardados);
+  List<CarritoItem> get guardados {
+    _asegurarPropietario();
+    return List.unmodifiable(_guardados);
+  }
 
   /// Número total de unidades agregadas.
-  int get totalUnidades => _items.fold(0, (acc, item) => acc + item.cantidad);
+  int get totalUnidades => items.fold(0, (acc, item) => acc + item.cantidad);
 
   /// Total de la compra (suma de subtotales), exacto a 2 decimales.
   double get total =>
-      _items.fold(0, (acc, item) => acc + item.subtotalCentimos) / 100;
+      items.fold(0, (acc, item) => acc + item.subtotalCentimos) / 100;
 
   /// Unidades de un libro que ya están en el carrito.
   int cantidadDe(int? idLibro) {
@@ -116,10 +155,11 @@ class CarritoService extends ChangeNotifier {
   }
 
   /// `true` si el carrito está vacío.
-  bool get vacio => _items.isEmpty;
+  bool get vacio => items.isEmpty;
 
   /// Recarga precio y stock sin modificar las cantidades elegidas.
   bool actualizarCatalogo(List<Libro> catalogo) {
+    _asegurarPropietario();
     final porId = {for (final libro in catalogo) libro.idLibro: libro};
     var cambio = false;
     for (var i = 0; i < _items.length; i++) {
@@ -142,6 +182,7 @@ class CarritoService extends ChangeNotifier {
 
   /// Índice de un ítem por id de libro, o -1.
   int _indexDeLibro(int idLibro) {
+    _asegurarPropietario();
     return _items.indexWhere((item) => item.libro.idLibro == idLibro);
   }
 
@@ -207,6 +248,7 @@ class CarritoService extends ChangeNotifier {
 
   /// Elimina por completo un libro del carrito.
   void eliminar(int idLibro) {
+    _asegurarPropietario();
     _items.removeWhere((item) => item.libro.idLibro == idLibro);
     _cambio();
   }
@@ -214,38 +256,56 @@ class CarritoService extends ChangeNotifier {
   /// Vacía el carrito por completo (p. ej. tras un pago confirmado).
   /// Los "Guardados para más tarde" se conservan.
   void limpiar() {
+    _asegurarPropietario();
     _items.clear();
     _cambio();
   }
 
-  /// Vacía carrito y guardados al iniciar o cerrar sesión, para no mezclar
-  /// datos entre cuentas en el mismo dispositivo.
+  /// Desvincula solo la memoria. Las escrituras ya capturadas conservan el
+  /// carrito de su dueño y nunca escriben un vacío al cerrar sesión.
   void vaciarSesion() {
     _items.clear();
     _guardados.clear();
     _ventasConciliadas.clear();
-    _cambio();
+    _propietarioMemoria = null;
+    notifyListeners();
   }
 
   /// Restaura el carrito guardado si pertenece al usuario de la sesión
   /// actual. Se llama una vez al arrancar la app.
   Future<void> cargar() async {
     final generacion = StorageService.instance.generacion;
+    vaciarSesion();
     try {
+      await _escritura;
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_prefKey);
-      if (raw == null || raw.isEmpty) return;
-
-      final datos = jsonDecode(raw) as Map<String, dynamic>;
       final usuario = await StorageService.instance.obtenerUsuario();
       if (generacion != StorageService.instance.generacion) return;
-      final dueno = datos['usuario'];
-      if (usuario?.idUsuario == null || dueno != usuario!.idUsuario) {
-        // Carrito de otra cuenta (o sin sesión): no se restaura.
-        await prefs.remove(_prefKey);
+      final owner = usuario?.idUsuario;
+      if (owner == null) return;
+      _propietarioMemoria = owner;
+      var raw = prefs.getString(_key(owner));
+      if (raw == null) {
+        final legado = prefs.getString(_prefKey);
+        if (legado != null) {
+          final datosLegado = jsonDecode(legado) as Map<String, dynamic>;
+          // No adoptar ni eliminar datos de otro cliente o sin dueño.
+          if (datosLegado['usuario'] == owner) {
+            if (!await prefs.setString(_key(owner), legado)) {
+              throw StateError('No se pudo migrar el carrito.');
+            }
+            await prefs.remove(_prefKey);
+            raw = legado;
+          }
+        }
+      }
+      if (raw == null ||
+          raw.isEmpty ||
+          generacion != StorageService.instance.generacion) {
         return;
       }
-
+      final datos = jsonDecode(raw) as Map<String, dynamic>;
+      if (datos['usuario'] != owner) return;
       _items
         ..clear()
         ..addAll(_leerItems(datos['items']));
@@ -276,16 +336,16 @@ class CarritoService extends ChangeNotifier {
 
   /// Notifica a la interfaz y guarda el estado en el dispositivo.
   void _cambio() {
+    // El dueño se captura junto a los artículos, antes de notificar o esperar.
+    final owner = _propietarioMemoria;
+    final datos = _datos(owner);
     notifyListeners();
-    // El dueño y la generación se capturan junto a los artículos, no cuando
-    // llega el turno de escribir (podría haberse autenticado otra cuenta).
-    final generacion = StorageService.instance.generacion;
-    final datos = _datos(StorageService.instance.idUsuarioActual);
+    if (owner == null) return;
     _escritura = _escritura.then((_) async {
       try {
         final prefs = await SharedPreferences.getInstance();
-        if (generacion != StorageService.instance.generacion) return;
-        await prefs.setString(_prefKey, jsonEncode(datos));
+        // Aunque ya haya logout, esta instantánea es exclusivamente de owner.
+        await prefs.setString(_key(owner), jsonEncode(datos));
       } catch (_) {
         // Si el guardado local falla, el carrito sigue funcionando en memoria.
       }
@@ -303,6 +363,7 @@ class CarritoService extends ChangeNotifier {
   /// Devuelve un ítem guardado al carrito. Si el libro ya está en el carrito,
   /// suma las cantidades en lugar de duplicar la fila.
   int moverAlCarrito(int idLibro) {
+    _asegurarPropietario();
     final index = _guardados.indexWhere(
       (item) => item.libro.idLibro == idLibro,
     );
@@ -337,6 +398,7 @@ class CarritoService extends ChangeNotifier {
 
   /// Quita un ítem de "Guardados para más tarde" sin agregarlo al carrito.
   void quitarDeGuardados(int idLibro) {
+    _asegurarPropietario();
     _guardados.removeWhere((item) => item.libro.idLibro == idLibro);
     _cambio();
   }

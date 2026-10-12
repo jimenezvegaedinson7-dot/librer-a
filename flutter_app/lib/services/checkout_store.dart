@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Diario local por cliente. No contiene JWT ni credenciales; el cuerpo se
@@ -94,6 +95,8 @@ class CheckoutStore {
   CheckoutStore._();
   static final instance = CheckoutStore._();
   Future<void> _cola = Future.value();
+  @visibleForTesting
+  void reiniciarColaParaPruebas() => _cola = Future.value();
   String _key(int propietario) => 'checkout_intentos_v1_$propietario';
 
   Future<List<IntentoCheckout>> leer(int propietario) async {

@@ -72,9 +72,16 @@ const auth = (e) => {
     const mw = e.middleware || [];
     if (mw.includes('rol:administrador') || mw.includes('verificarPanel') ||
         mw.includes('soloAdmin') || mw.some(m => m.includes('ROLES.ADMINISTRADOR'))) return 'JWT + admin';
+    if (mw.includes('JWT') && mw.includes('rol:cliente')) return 'JWT + cliente';
     if (mw.includes('JWT')) return 'JWT';
     return 'Pública';
 };
+const definidos = new Set(E.map(claveEp));
+const declaradosCliente = new Set([
+    ...Object.keys(reactDeclarado),
+    ...Object.keys(flutterMetodoPorEp),
+]);
+const endpointsClienteSinRuta = [...declaradosCliente].filter(k => !definidos.has(k)).sort();
 const modulo = (ruta) => {
     const m = /\/api\/([a-z-]+)/.exec(ruta);
     return m ? m[1] : 'raíz';
@@ -98,17 +105,17 @@ const MODULOS = [
     ['Reportes / Resumen', 'reportes', 'features/dashboard (vía reportes/reportesService)', '—'],
     ['Favoritos', 'favoritos', 'public-site/tienda/AccionesLibro (cliente)', 'favoritos, detalle de libro'],
     ['Cobertura Pallasca', 'zonas-delivery', 'features/tarifas', 'entrega y pago, mis compras'],
-    ['Ubicaciones (Lima, legacy)', 'ubicaciones', 'features/ventas/ubicacionesService (legacy)', 'ApiService legacy; sin selector en checkout'],
+    ['Ubicaciones (Lima, legacy)', 'ubicaciones', 'datos de ubicación en historial', 'nombres conservados en Venta; sin selector ni consultas de provincias/distritos'],
     ['Agencias courier (legacy)', 'agencias', 'ruta redirigida; features/agencias sin ruta activa', '—'],
     ['Empresa (emisor)', 'empresa', 'features/configuracion/EmpresaPage', '—'],
-    ['Reclamaciones', 'reclamaciones', 'features/reclamaciones', 'enlace al formulario público'],
+    ['Reclamaciones', 'reclamaciones', 'features/reclamaciones (formulario público y gestión admin)', 'libro_reclamaciones_screen (formulario nativo)'],
 ];
 
 // ════════════════════════ 05-API-MAP ════════════════════════
 {
     let md = cab('Mapa de API');
     md += `Total de endpoints registrados en el backend: **${E.length}** (incluye 4 definidos directamente en \`server.js\`).\n\n`;
-    md += `- **Auth**: \`Pública\` = sin JWT · \`JWT\` = requiere \`Authorization: Bearer\` · \`JWT + admin\` = además rol \`administrador\`.\n`;
+    md += `- **Auth**: \`Pública\` = sin JWT · \`JWT\` = requiere \`Authorization: Bearer\` · \`JWT + admin\` / \`JWT + cliente\` = además el rol indicado. Los arrays de middleware compartidos se expanden desde el router real.\n`;
     md += `- **React / Flutter**: archivos que llaman al endpoint (directamente o a través de su servicio). \`—\` = ningún cliente lo usa.\n`;
     md += `- Los parámetros se escriben como en el backend (\`:id\`); los clientes los construyen con interpolación.\n\n`;
     md += '| Método | Endpoint | Backend (controlador#función) | Middleware | React | Flutter | Auth |\n|---|---|---|---|---|---|---|\n';
@@ -130,7 +137,7 @@ const MODULOS = [
         'GET /api': 'Salud de la API.',
         'GET /api/test-db': 'Diagnóstico de conexión a BD (solo admin).',
         'GET /api/debug-egress': 'Diagnóstico manual SMTP (JWT + administrador). DNS, TCP y salida HTTPS; sin consumidor en React/Flutter.',
-        'GET /api/pagos/checkout/:x': 'Lo abre el navegador con la `checkout_url` que devuelve `POST /api/pagos/crear-orden` (Flutter la lanza con url_launcher).',
+        'GET /api/pagos/checkout/:x': 'Lo abre el navegador web o la WebView de Flutter con la `checkout_url` que devuelve `POST /api/pagos/crear-orden`.',
         'GET /api/pagos/respuesta/:x': 'Página de retorno (responseUrl) de PayU.',
         'POST /api/pagos/webhook': 'Confirmación de PayU (servidor a servidor).',
     };
@@ -148,8 +155,8 @@ const MODULOS = [
 3. Estáticos: \`/uploads\` → \`backend/uploads\` (portadas y fotos locales cuando Cloudinary no está configurado).
 4. Endpoints en línea: \`GET /\`, \`GET /api\`, \`GET /api/test-db\` y \`GET /api/debug-egress\` (ambos JWT + admin).
 5. Montaje de ${Object.keys(H.backend.montajes).length} routers bajo \`/api/*\` → 404 JSON → \`error.middleware\`.
-6. \`iniciarJobs()\` (limpieza cada 5 min) y 3 migraciones idempotentes en línea (tabla \`favoritos\`; columnas \`cliente_documento\`/\`cliente_tipo_documento\` en \`ventas\`; \`enviado_por_email\`/\`fecha_envio_email\` en \`comprobantes\`).
-7. \`app.listen(PORT || 3000)\`.
+6. \`iniciarJobs()\` programa limpieza cada 5 min. \`iniciar()\` espera \`aplicarMigraciones\` y \`aplicarMigracionesDatos\` antes de aceptar tráfico; en test se usa el esquema preparado por el runner. Un fallo en producción aborta el arranque.
+7. \`app.listen(PORT || 3000)\` después de comprobar el esquema. Las migraciones base e incrementales están en \`config/migraciones.js\`; los backfills se registran en \`migraciones_datos\`.
 
 ## Montaje de routers
 
@@ -174,7 +181,7 @@ const MODULOS = [
 ## Utilidades, servicios y jobs
 
 | Archivo | Responsabilidad |\n|---|---|
-| \`utils/mailer.js\` | Correo con **nodemailer** (SMTP_*): verificación, reseteo, reserva creada, pedido entregado, comprobantes (PDF con **html-pdf-node**). |
+| \`utils/mailer.js\` | Correo con **nodemailer** (SMTP_*): verificación, reseteo y avisos comerciales. Comprobantes adjuntos PDF, renderizados con **Playwright Chromium** por \`utils/pdf.js\`. |
 | \`utils/cloudinary.js\` | Subida/eliminación de imágenes en Cloudinary (CLOUDINARY_*), \`publicIdDesdeUrl\`. |
 | \`utils/crypto.js\` | Cifrado/descifrado del secreto 2FA con \`TWO_FACTOR_ENCRYPTION_KEY\`. |
 | \`utils/transiciones.js\` | Máquinas de estado permitidas de \`VENTA\` y \`RESERVA\` (\`permitirTransicion\`). |
@@ -194,7 +201,7 @@ const MODULOS = [
 - \`POST /api/auth/login\` → \`usuario.model#buscarPorEmail\` + bcrypt. Si el usuario tiene 2FA activo devuelve \`requires_2fa\` y un **\`two_factor_token\` JWT de 5 min**; si no, el **JWT de sesión (24 h)**.
 - \`POST /api/auth/2fa/verify-login\` valida el token temporal y el código TOTP (**otplib**; secreto cifrado con \`utils/crypto\`) y emite el JWT de 24 h.
 - \`/2fa/setup\` genera secreto + QR (**qrcode**), \`/2fa/confirm\` lo activa, \`/2fa/disable\` exige contraseña + código.
-- Registro con verificación de correo por código; recuperación de contraseña por código (\`solicitar-reseteo\` → \`reestablecer-contrasena\`).
+- Registro con verificación de correo por código. Recuperación en dos pasos: \`solicitar-reseteo\` → \`verificar-reseteo\` → \`reestablecer-contrasena\` con permiso \`reset_token\` de 5 min; se conserva la entrada legacy \`codigo + password\`.
 
 ## Endpoints por módulo
 
@@ -211,12 +218,13 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
     md += `\n## Modelos y tablas\n\n| Modelo | Tablas que consulta o modifica |\n|---|---|\n`;
     for (const [f, m] of Object.entries(H.backend.modelos)) md += `| \`models/${f}\` | ${m.tables.join(', ') || '—'} |\n`;
     const todas = [...new Set(Object.values(H.backend.modelos).flatMap((m) => m.tables))].sort();
-    md += `\nTablas presentes en el código (${todas.length}): ${todas.map((t) => `\`${t}\``).join(', ')}. El esquema está en \`backend/database/schema.sql\` + 22 migraciones en \`backend/database/migrations\`.\n`;
+    md += `\nTablas consultadas por los modelos (${todas.length}): ${todas.map((t) => `\`${t}\``).join(', ')}. Este subconjunto no es el total del esquema.\n\n`;
+    md += `Esquema canónico: **${H.backend.tablasEsquema.length} tablas** en \`backend/database/schema.sql\`. Declaraciones en esquema, migraciones SQL y arranque: **${H.backend.tablasDeclaradas.length} tablas**, incluidas las auxiliares de migración. Hay ${H.backend.migraciones.length} archivos SQL de migración; solo la lista explícita de \`config/migraciones.js\` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.\n`;
     md += `\n## Integraciones externas\n
 | Servicio | Paquete | Dónde | Variables de entorno (sin valores) |\n|---|---|---|---|
 | PostgreSQL | \`pg\` | config/database.js | DATABASE_URL o DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT |
 | Cloudinary | (API HTTP) | utils/cloudinary.js, upload*.middleware.js | CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET |
-| SMTP (correo) | \`nodemailer\`, \`html-pdf-node\` | utils/mailer.js | SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM, SMTP_REJECT_UNAUTHORIZED |
+| SMTP (correo) y PDF | \`nodemailer\`, \`playwright\` | utils/mailer.js, utils/pdf.js | SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM, SMTP_REJECT_UNAUTHORIZED, PDF_CHROME_PATH |
 | PayU (pagos) | (API HTTP) | services/payu.service.js, config/payu.js | PAYU_ACCOUNT_ID, PAYU_MERCHANT_ID, PAYU_API_LOGIN, PAYU_API_KEY, PAYU_PUBLIC_KEY, PAYU_TEST, PAYU_NOTIFICATION_URL |
 | Gemini (asistente) | REST con fetch de Node | services/geminiAssistant.service.js | GEMINI_API_KEY, GEMINI_MODEL (solo backend; configuración manual) |
 | TOTP 2FA | \`otplib\`, \`qrcode\` | controllers/auth2fa.controller.js | TWO_FACTOR_ENCRYPTION_KEY |
@@ -226,7 +234,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 - \`GET /api/debug-egress\` es un diagnóstico manual **JWT + admin**, con conexiones TCP acotadas y timeout HTTPS.
 ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún archivo importa**: ${listaDeps(depsBackendSinUso)}.\n` : ''}- La pasarela de pagos (\`/api/pagos\`) es **PayU**.
-- \`GET /api/test-db\` responde "Conexión con MySQL exitosa"; funciona (el adaptador devuelve \`[rows]\`), solo el texto está desactualizado.
+- \`GET /api/test-db\` verifica PostgreSQL con \`SELECT 1\`, protegido por JWT + administrador.
 - Endpoints sin cliente: ver la sección correspondiente en \`05-API-MAP.md\`.
 - Scripts auxiliares (no forman parte del servidor): \`scripts/migrarImagenesCloudinary.js\`, \`scripts/resetearPrecios.js\`, \`run_migration_021.js\`, \`_test_smtp.js\` (sin seguimiento en git).
 - Pruebas: \`test/*.test.js\` (node --test) y \`test-integration/http.smoke.test.js\`.
@@ -239,17 +247,18 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
     const pkg = JSON.parse(leer('frontend/package.json'));
     const archivos = Object.keys(H.frontend.grafo);
     const conMotion = archivos.filter((f) => /from 'motion\/react'/.test(leer(f)));
+    const personalizable = /ThemeProvider|useTema/.test(leer('frontend/src/features/layout/AdminLayout.jsx'));
     let md = cab('Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web');
     md += `## Arranque\n
 \`index.html\` → \`src/main.jsx\` → \`<ErrorBoundary>\` → \`routes/AppRouter.jsx\`:
 \`<ToastProvider>\` → \`<AuthProvider>\` → \`<RouterProvider>\` (react-router ${pkg.dependencies['react-router-dom']}).
 
-- **Cliente HTTP**: \`lib/api/client.js\` (axios). \`baseURL = VITE_API_URL\` (\`.env.production\` apunta a \`https://libreria-api-v9h0.onrender.com/api\`, \`.env.development\` a \`http://localhost:3000/api\`). Interceptor de petición añade \`Bearer <token>\`; el de respuesta devuelve \`response.data\` y ante **401** limpia la sesión y redirige a \`/\`.
+- **Cliente HTTP**: \`lib/api/client.js\` (axios). \`baseURL = VITE_API_URL\`; los valores se configuran por entorno. El interceptor añade \`Bearer <token>\`, devuelve \`response.data\` y ante **401 de sesión** limpia la sesión y redirige a \`/admin/login\`. Los 401 de credencial incorrecta se distinguen con \`erroresSesion.js\`.
 - **Sesión**: \`features/auth/AuthContext.jsx\` + \`lib/storage/index.js\` (\`localStorage\`: \`token\`, \`usuario\`, \`ultimoHistorialVisto\`). Solo entra \`administrador\`; perfil actualiza los datos de sesión desde la API.
 - **Cliente web**: \`public-site/tienda/TiendaContext.jsx\` y \`clienteApi.js\` mantienen sesión exclusiva de \`cliente\`, carrito por usuario/invitado e intento de compra persistente; nunca usan la sesión administrativa. \`PublicLayout\` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
-- **Guards**: \`routes/RutaProtegida.jsx\` redirige a \`/\` sin token o sin rol administrador. \`routes/RutaPorRol.jsx\` exige los roles configurados (solo administrador en el panel). Un **401** limpia sesión; un **403** muestra rechazo de permisos.
-- **Layout**: \`features/layout/AdminLayout.jsx\` (ThemeProvider, Sidebar, Topbar, Breadcrumbs, transición de página con Framer Motion).
-- **Tema**: \`components/providers/ThemeContext.jsx\` (modo claro/oscuro y colores por zona en \`localStorage\`). \`src/index.css\` carga \`styles/paleta-editorial.css\` (marino, marfil y dorado compartidos con la web), \`styles/theme.css\` (componentes) y \`styles/panel-editorial.css\` (identidad del panel y modo oscuro). \`public-site/tema-editorial.css\` usa la misma paleta. Los iconos de navegación y búsqueda se definen juntos en \`features/layout/navConfig.js\`.
+- **Guards**: \`routes/RutaProtegida.jsx\` redirige a \`/admin/login\` sin sesión administrativa; \`RutaPorRol.jsx\` exige los roles configurados. Un **403** muestra rechazo de permisos.
+- **Layout**: \`features/layout/AdminLayout.jsx\` (Sidebar, Topbar, Breadcrumbs, transición con Framer Motion${personalizable ? ', proveedor de tema' : ', tema claro fijo'}).
+- **Tema**: ${personalizable ? 'Proveedor de tema conectado al layout.' : 'El layout actual declara `data-theme="light"`; `/personalizacion` redirige a `/dashboard`.'} \`src/index.css\` carga \`styles/paleta-editorial.css\`, \`styles/theme.css\`, \`styles/panel-editorial.css\` y \`styles/panel-formal.css\`. La tienda usa su propio tema en \`public-site/tema-editorial.css\`. Los iconos de navegación y búsqueda se centralizan en \`features/layout/navConfig.js\`.
 - **Despliegue**: Vercel (\`frontend/vercel.json\` reescribe todo a \`index.html\`).
 
 ## Rutas
@@ -294,17 +303,20 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 
 ## Configuración de API (\`utils/constants.dart\`)
 
-- \`apiBaseUrl = serverBaseUrl + '/api'\`. Selector \`_usarApiProduccion\` (actualmente **true** → \`https://libreria-api-v9h0.onrender.com\`); en desarrollo usa \`10.0.2.2:3000\` (emulador), una IP LAN (celular) o \`localhost\`.
+- \`apiBaseUrl = serverBaseUrl + '/api'\`. Producción por defecto; \`--dart-define=API_LOCAL=true\` selecciona desarrollo, y \`API_CELULAR=true\` selecciona dispositivo físico. Hosts definidos en \`Constants\`, sin editar las pantallas.
 - Todas las rutas del backend están centralizadas como constantes \`*Path\`. Imágenes: \`buildPortadaUrl\` (\`/uploads/portadas/\`) y \`buildPerfilUrl\` (\`/uploads/perfiles/\`), o URL absoluta (Cloudinary).
 
 ## Servicios
 
 | Archivo | Responsabilidad |\n|---|---|
-| \`services/api_service.dart\` | Cliente **Dio** singleton. Interceptor añade \`Bearer\`; ante **401** limpia la sesión y llama a \`irALogin()\`. Normaliza errores en \`ApiException\`. Gestiona la **clave de idempotencia** del checkout y recuerda \`checkout_url\` por venta. |
-| \`services/storage_service.dart\` | Token JWT en **flutter_secure_storage**; usuario y preferencias en **shared_preferences** (migra el token legado). ⚠️ Su comentario dice que también guarda el carrito, pero no hay código que lo haga. |
-| \`services/carrito_service.dart\` | Carrito y "guardar para después" (\`ChangeNotifier\`), persistidos en SharedPreferences \`carrito_v1\` por usuario. **Sin endpoint propio**: los ítems se envían en \`POST /api/pagos/crear-orden\`. |
+| \`services/api_service.dart\` | Cliente **Dio** singleton. Interceptor añade \`Bearer\` y vincula cada petición a su generación de sesión. Un **401** de la sesión vigente la cierra y llama a \`irALogin()\`; una contraseña incorrecta o respuesta tardía de otra sesión no la elimina. Normaliza errores en \`ApiException\` y conserva el checkout por propietario. |
+| \`services/storage_service.dart\` | Token JWT en **flutter_secure_storage**; usuario y preferencias en **shared_preferences** (migra el token legado). Serializa cambios de credencial, mantiene la generación de sesión e invalida intentos login/2FA abandonados antes de instalar credenciales. |
+| \`services/carrito_service.dart\` | Carrito y guardados (\`ChangeNotifier\`), persistidos por titular en SharedPreferences \`carrito_v2_<id>\`. Migra \`carrito_v1\` solo si coincide el dueño; cerrar sesión limpia memoria y conserva los datos de ese cliente. **Sin endpoint propio**: los ítems se envían en \`POST /api/pagos/crear-orden\`. |
+| \`services/checkout_store.dart\` | Diario local por propietario: cuerpo e idempotencia persistidos antes del POST, para recuperar la misma compra sin duplicarla. |
 | \`services/tema_controller.dart\` | Tema de color del perfil (\`ChangeNotifier\`). |
 | \`services/navigation.dart\` | \`navigatorKey\` + \`irALogin()\`. |
+
+Fuentes Inter y Source Serif 4 empaquetadas en \`assets/fonts/\` y declaradas en \`pubspec.yaml\`; la app no descarga tipografía en ejecución. La memoria de checkout se limpia al cambiar sesión; los intentos persistidos siguen separados por propietario.
 
 ## Métodos de ApiService → endpoints
 
@@ -322,7 +334,7 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 | Catálogo | home, libros, detalle_libro | \`GET /api/libros\`, \`GET /api/libros/:id\` (búsqueda filtrada en local) |
 | Favoritos | favoritos, detalle_libro | \`/api/favoritos\` (GET, GET/POST/DELETE \`/:idLibro\`) |
 | Carrito | carrito (local) | — |
-| Compra + PayU | entrega_y_pago, mis_compras | \`GET /api/zonas-delivery\` (activas de Pallasca), \`POST /api/pagos/crear-orden\` → abre \`checkout_url\` con **url_launcher** → \`GET /api/pagos/:orderId\`; \`GET /api/ventas/mis-ventas\`, \`GET /api/ventas/:id/pago\` |
+| Compra + PayU | entrega_y_pago, mis_compras, pago_en_app | \`GET /api/zonas-delivery\`, \`POST /api/pagos/crear-orden\` → \`PagoEnAppScreen\` muestra WebCheckout con **webview_flutter** (enlaces externos con url_launcher). El retorno obliga a consultar \`GET /api/pagos/:orderId\`; también \`GET /api/ventas/mis-ventas\` y \`GET /api/ventas/:id/pago\`. |
 | Reservas históricas | reservas (pestaña Historial), perfil | \`GET /api/reservas/mis-reservas\`, \`DELETE /api/reservas/:id\`; crear está retirado (405) |
 | Perfil | perfil, editar_perfil, cambiar_password | \`/api/usuarios/perfil\` (GET/PUT), \`PUT /api/usuarios/foto\` (**image_picker**), \`PUT /api/usuarios/password\` |
 | 2FA | two_factor_setup/verify/disable | \`/api/auth/2fa/*\` |
@@ -343,35 +355,37 @@ Nota: la app es **solo para clientes**; \`login\` rechaza el rol administrador.
     let md = cab('Flujos de datos');
     md += `## Arquitectura general\n
 \`\`\`
-                PostgreSQL (16 tablas)
-                       ↑
-          Backend Node/Express (Render)
-         /api/*  ·  JWT  ·  PayU  ·  SMTP  ·  Cloudinary
-               ↗                        ↖
-   React Admin (Vercel)            Flutter Android (clientes)
-   rol administrador               rol cliente
+      Panel React       Tienda web React       Flutter Android
+      administrador     cliente / visitante    cliente
+               \\              |              /
+                  Backend Express · /api/*
+                  JWT · PayU · SMTP · Cloudinary
+                              |
+                PostgreSQL · ${H.backend.tablasEsquema.length} tablas en esquema canónico
+                + auxiliares de migración (${H.backend.tablasDeclaradas.length} declaradas en código)
 \`\`\`
 
 ## 1. Login (React y Flutter)
 1. Cliente → ${linea('POST', '/api/auth/login')}.
 2. Sin 2FA: respuesta \`{ token (24 h), data }\`. React guarda en \`localStorage\` (AuthContext); Flutter en **flutter_secure_storage**.
 3. Con 2FA: respuesta \`{ requires_2fa, two_factor_token (5 min) }\` → ${linea('POST', '/api/auth/2fa/verify-login')}.
-4. React exige \`rol === 'administrador'\`; Flutter rechaza administradores.
-5. Cualquier 401 posterior: React limpia sesión y va a \`/\`; Flutter limpia sesión y \`irALogin()\`.
+4. Panel React exige administrador; tienda React y Flutter exigen cliente. Las sesiones web están separadas.
+5. Un 401 de sesión vigente provoca cierre: el panel vuelve a \`/admin/login\`, la tienda emite \`cliente-sesion-expirada\` y Flutter usa \`irALogin()\`. Los errores de credencial incorrecta se distinguen de una sesión revocada.
 
 ## 2. Recuperar contraseña
-${linea('POST', '/api/auth/solicitar-reseteo')} (envía código por correo con \`utils/mailer\`) → ${linea('POST', '/api/auth/reestablecer-contrasena')}.
+${linea('POST', '/api/auth/solicitar-reseteo')} envía código por correo → ${linea('POST', '/api/auth/verificar-reseteo')} devuelve \`reset_token\` de 5 min → ${linea('POST', '/api/auth/reestablecer-contrasena')} acepta ese permiso y la nueva contraseña. No inicia sesión. El backend conserva \`codigo + password\` para compatibilidad con clientes antiguos.
 
 ## 3. Gestión comercial y logística (React, administrador)
 1. \`POST /api/ventas\` está retirado (405); las ventas nuevas nacen pendientes desde checkout PayU. No se crean ventas de panel o reserva ni cobros manuales.
-2. \`PUT /api/ventas/:id/estado\` está bloqueado (409). Solo \`PUT /api/pedidos/:id/estado\` avanza logística; la transición final sincroniza \`estado=entregada\` con \`estado_entrega=entregado\` bajo bloqueo y notifica una vez, sin modificar pago ni inventario.
+2. \`PUT /api/ventas/:id/estado\` está bloqueado (409). \`PUT /api/pedidos/:id/estado\` avanza logística; entregar sincroniza \`estado=entregada\` con \`estado_entrega=entregado\` bajo bloqueo, sin cobrar ni descontar stock otra vez. Cancelar sin pago cierra también la venta pendiente, deshabilita el checkout y libera stock en la misma transacción. Cancelar una entrega pagada conserva cobro y existencias hasta la devolución separada. Un cobro posterior a la cancelación queda en revisión.
+   Los pagos en revisión o revertidos bloquean preparar/despachar/entregar bajo \`FOR UPDATE\`, pero permiten detener la logística. Un delivery pagado y cancelado exige confirmación de devolución física para reponer existencias. La revisión de aprobación tardía se conserva tras una reversión para cerrar documentalmente sin doble stock.
 3. Comprobante: \`EmitirComprobanteModal\` → ${linea('POST', '/api/ventas/:id/comprobante')}; envío: ${linea('POST', '/api/comprobantes/:id/enviar-email')}.
 4. Devoluciones: \`POST /api/ventas/:id/reembolso\` valida pago PayU e identificadores de la propia venta bajo bloqueo. \`accion=solicitar\` registra \`estado_reembolso=pendiente_verificacion\` sin efectos; \`accion=confirmar\` exige referencia, evidencia y responsable. Solo entonces confirma documentalmente, cambia a reembolsada y modifica stock/comprobante/historial en la misma transacción. No ejecuta un refund automático. Migración 040 agrega campos NULL sin reescribir históricos.
 
 ## 4. Compra desde la app (Flutter, cliente) con PayU
 1. Carrito local (\`CarritoService\`) → \`EntregaYPagoScreen\` obtiene zonas activas con \`GET /api/zonas-delivery\`. Solo ofrece recojo gratuito en Pallasca (\`tienda\`) o delivery local con tarifa por zona (\`domicilio\`). Sin zonas, el recojo sigue disponible.
 2. ${linea('POST', '/api/pagos/crear-orden')} con clave de **idempotencia**; delivery envía \`id_zona_delivery\`, dirección y referencia opcional. El servidor valida la zona activa y bloquea su tarifa dentro de la transacción. Guarda \`cobertura_entrega=pallasca\`, el nombre original de zona y \`costo_envio\`; total = libros + envío. No utiliza ubicaciones Lima para compras nuevas. Devuelve \`checkout_url\`.
-3. La app abre \`checkout_url\` (${linea('GET', '/api/pagos/checkout/:externalReference')}) que auto-envía el formulario a PayU.
+3. \`PagoEnAppScreen\` abre \`checkout_url\` en WebView (${linea('GET', '/api/pagos/checkout/:externalReference')}); el formulario se envía a PayU. Cerrar o retornar de la ventana no confirma el pago: se consulta a la API.
 4. PayU notifica: ${linea('POST', '/api/pagos/webhook')}. Retorno del navegador: \`GET /api/pagos/respuesta/:externalReference\`.
 5. La app consulta ${linea('GET', '/api/pagos/:orderId')} y lista ${linea('GET', '/api/ventas/mis-ventas')}.
 6. El job \`jobs/limpieza.js\` revisa ventas abandonadas cada 5 min; consulta PayU antes de liberar stock y conserva pagos inciertos/pendientes.
@@ -401,10 +415,10 @@ ${linea('POST', '/api/auth/solicitar-reseteo')} (envía código por correo con \
 - Inventario (React): ${linea('PUT', '/api/inventario/libro/:id')}; kardex: ${linea('GET', '/api/inventario/movimientos')}.
 
 ## 7. Resumen / reportes (React)
-\`DashboardPage\` → 8 endpoints \`/api/reportes/*\` + \`GET /api/libros\` → \`reporte.model\` (consultas agregadas sobre ventas, detalle_venta, reservas, inventario, libros…).
+\`DashboardPage\` → ${E.filter(e => e.path.startsWith('/api/reportes/')).length} endpoints \`/api/reportes/*\`, catálogo e inventario de stock bajo → \`reporte.model\` y modelos correspondientes (consultas agregadas).
 
 ## 8. Auditoría
-Las operaciones de escritura registran en \`historial_operaciones\` (\`historial.model#crear\`). El panel lo lee con \`GET /api/historial\` (página Historial y notificaciones del Topbar cada 30 s).
+Las operaciones de escritura registran en \`historial_operaciones\` (\`historial.model#crear\`). Historial lo consulta con \`GET /api/historial\`. Las notificaciones del Topbar consultan pagos, reservas y stock bajo cada 60 s mientras la pestaña está visible y al volver a ella.
 `;
     escribir('06-DATA-FLOW.md', md);
 }
@@ -417,16 +431,16 @@ Las operaciones de escritura registran en \`historial_operaciones\` (\`historial
     const aristas = (g) => Object.values(g).reduce((a, l) => a + l.length, 0);
     let md = cab('Dependencias');
     md += `## Paquetes npm\n\n### Backend\n\n| Paquete | Versión |\n|---|---|\n${tabla(pb.dependencies)}\n\nDev: ${Object.keys(pb.devDependencies || {}).join(', ')}.\n\n${depsBackendSinUso.length ? `⚠️ No se importan en ningún archivo (posiblemente no utilizados): ${listaDeps(depsBackendSinUso)}.` : 'Todas las dependencias se importan en algún archivo.'}\n\n### Frontend\n\n| Paquete | Versión |\n|---|---|\n${tabla(pf.dependencies)}\n\nDev: ${Object.keys(pf.devDependencies || {}).join(', ')}.\n`;
-    md += `\n## Paquetes Flutter (\`flutter pub deps --style=compact\`)\n
-- **Directos**: cupertino_icons, dio, flutter, flutter_secure_storage, google_fonts, image_picker, shared_preferences, url_launcher.
-- **Dev**: flutter_launcher_icons, flutter_lints, flutter_test.
-- El resto (archive, http, crypto, *_platform_interface, plugins por plataforma…) son **transitivos**.
+    md += `\n## Paquetes Flutter (declarados en \`pubspec.yaml\`)\n
+- **Directos**: ${listaDeps(H.flutter.dependencias)}.
+- **Dev**: ${listaDeps(H.flutter.devDependencias)}.
+- Las dependencias transitivas completas se consultan con \`flutter pub deps --style=compact\`; no se deducen de los imports.
 - Paquetes importados en \`lib/\`: ${H.flutter.paquetes.map((p) => `\`${p}\``).join(', ')}.
 `;
     md += `\n## Dependencias internas (imports del propio código)\n
 | Proyecto | Archivos | Imports internos | Ciclos |\n|---|---|---|---|
-| Backend (\`require\`) | ${H.backend.archivos} | ${aristas(H.backend.grafo)} | ${H.backend.ciclos.length} (confirmado con **madge**: ninguno) |
-| Frontend (\`import\`) | ${H.frontend.archivos} | ${aristas(H.frontend.grafo)} | ${H.frontend.ciclos.length} (confirmado con **madge**: ninguno) |
+| Backend (\`require\`) | ${H.backend.archivos} | ${aristas(H.backend.grafo)} | ${H.backend.ciclos.length} (analizador estático de imports) |
+| Frontend (\`import\`) | ${H.frontend.archivos} | ${aristas(H.frontend.grafo)} | ${H.frontend.ciclos.length} (analizador estático de imports) |
 | Flutter (\`import\` relativos) | ${H.flutter.archivos} | ${aristas(H.flutter.grafo)} | ${H.flutter.ciclos.length} caminos cíclicos |
 
 ### Ciclos en Flutter
@@ -459,6 +473,16 @@ Ejemplos de caminos:\n\n${H.flutter.ciclos.slice(0, 4).map((c) => `- ${c.map(cor
     }
     const resp = (f) => {
         const n = path.basename(f).replace(/\.(js|jsx|dart|mjs)$/, '');
+        if (f.startsWith('flutter_app/')) {
+            if (/_screen\.dart$/.test(f)) return `Pantalla Flutter ${n}`;
+            if (/\/widgets\//.test(f)) return `Widget Flutter ${n}`;
+            if (/\/models\//.test(f)) return `Modelo de datos Flutter ${n}`;
+            if (/\/services\//.test(f)) return `Servicio Flutter ${n}`;
+            if (/\/utils\//.test(f)) return `Utilidad Flutter ${n}`;
+            return `Arranque Flutter ${n}`;
+        }
+        if (f.startsWith('frontend/src/routes/')) return `Enrutamiento y guardas React ${n}`;
+        if (f.startsWith('frontend/src/public-site/')) return /Page\.jsx$/.test(f) ? `Página de la tienda pública ${n}` : `Componente o servicio de la tienda ${n}`;
         if (f === 'backend/server.js') return 'Punto de entrada Express: middlewares globales, montaje de routers, jobs y migraciones en línea';
         if (/\/routes\//.test(f)) return `Rutas Express de ${n.replace('.routes', '')} (prefijo ${H.backend.montajes[f] || '?'})`;
         if (/\/controllers\//.test(f)) return `Controlador HTTP de ${n.replace('.controller', '')}`;
@@ -505,7 +529,12 @@ Ejemplos de caminos:\n\n${H.flutter.ciclos.slice(0, 4).map((c) => `- ${c.map(cor
     const salida = {
         generated: hoy,
         howToUse: 'Buscar por "file", "module" o "endpoints". Verificar siempre el archivo real antes de modificar.',
-        stats: { backendFiles: H.backend.archivos, frontendFiles: H.frontend.archivos, flutterFiles: H.flutter.archivos, endpoints: E.length },
+        stats: { backendFiles: H.backend.archivos, frontendFiles: H.frontend.archivos, flutterFiles: H.flutter.archivos, endpoints: E.length,
+            schemaTables: H.backend.tablasEsquema.length, declaredTables: H.backend.tablasDeclaradas.length },
+        database: { schemaFile: 'backend/database/schema.sql', schemaTables: H.backend.tablasEsquema, declaredTables: H.backend.tablasDeclaradas, tableSources: H.backend.fuentesPorTabla },
+        apiEndpoints: E.map(e => ({ ...e, auth: auth(e), reactConsumers: [...(reactPorEp[claveEp(e)] || [])], flutterConsumers: [...(flutterPorEp[claveEp(e)] || [])] })),
+        flutterApiMethods: H.flutter.metodosApi,
+        apiAudit: { unmatchedClientEndpoints: endpointsClienteSinRuta },
         routeMounts: H.backend.montajes,
         frontendRoutes: H.frontend.rutas.map((r) => ({ path: r.path, component: r.component, file: r.file })),
         files: indice,
@@ -531,7 +560,7 @@ Otras carpetas: \`web/\` (build web de Flutter publicado), \`ios_swift_app/\`, \
 
 ## Cifras (análisis ${hoy})
 
-- Backend: **${H.backend.archivos}** archivos JS (incluye tests y scripts) · **${E.length}** endpoints · ${Object.keys(H.backend.montajes).length} routers · ${Object.keys(H.backend.controladores).length} controladores · ${Object.keys(H.backend.modelos).length} modelos · 16 tablas.
+- Backend: **${H.backend.archivos}** archivos JS (incluye tests y scripts) · **${E.length}** endpoints · ${Object.keys(H.backend.montajes).length} routers · ${Object.keys(H.backend.controladores).length} controladores · ${Object.keys(H.backend.modelos).length} modelos · **${H.backend.tablasEsquema.length} tablas en esquema canónico** (${H.backend.tablasDeclaradas.length} declaradas al incluir migraciones y arranque).
 - Frontend: **${H.frontend.archivos}** archivos JS/JSX · ${H.frontend.rutas.length} rutas · ${Object.keys(H.frontend.servicios).length} archivos de servicio.
 - Flutter: **${H.flutter.archivos}** archivos Dart · ${Object.keys(H.flutter.metodosApi).length} métodos en ApiService · ${Object.keys(H.flutter.usoApi).length} pantallas/widgets con llamadas a la API.
 
@@ -564,9 +593,10 @@ Regenera todos los archivos a partir del código (solo lectura del código). Si 
 ## Inconsistencias detectadas (resumen)
 
 Ver detalle en \`05-API-MAP.md\` y \`07-DEPENDENCIES.md\`.
-- Ningún cliente llama a un endpoint inexistente.
+${endpointsClienteSinRuta.length ? `- Endpoints declarados por clientes sin ruta detectada: ${endpointsClienteSinRuta.map(e => `\`${e}\``).join(', ')}.` : '- No se detectaron endpoints declarados por clientes sin ruta correspondiente en el backend.'}
 - \`GET /api/debug-egress\` es diagnóstico manual protegido (JWT + admin), sin consumidor React/Flutter.
-${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps(depsBackendSinUso)}.\n` : ''}- Endpoints de backend sin cliente: historial (mi-historial, POST), inventario (stock-bajo, PUT stock).
+${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps(depsBackendSinUso)}.\n` : ''}- La memoria del asistente requiere **JWT + cliente**; el router comparte esos middlewares mediante un array.
+- Los endpoints sin consumidor detectado se detallan en \`05-API-MAP.md\`; stock bajo sí tiene consumidores en Dashboard y notificaciones.
 - Flutter: solo quedan ciclos de navegación entre pantallas (sin ciclo servicios ↔ pantallas).
 `;
     escribir('01-PROJECT-MAP.md', md);
@@ -578,7 +608,7 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
     const G = (n, c) => escribir(`graphs/${n}.mmd`, `%% Generado ${hoy} desde el código real (actualizar-mapa.mjs)\n${c}\n`);
 
     G('general-architecture', `flowchart TB
-    DB[("PostgreSQL · 16 tablas")]
+    DB[("PostgreSQL · ${H.backend.tablasEsquema.length} tablas del esquema<br/>${H.backend.tablasDeclaradas.length} declaradas con auxiliares")]
     subgraph API["Backend Node/Express (Render)"]
         direction TB
         MW["helmet · cors · rate limit · JWT · roles"]
@@ -594,6 +624,7 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
     C --> EXT1 & EXT2 & EXT3
     EXT1 -. webhook .-> R
     REACT["React Admin (Vercel)<br/>rol administrador"] -->|"axios + Bearer"| MW
+    TIENDA["Tienda React (Vercel)<br/>cliente / visitante"] -->|"fetch público o JWT cliente"| MW
     FLUTTER["Flutter Android<br/>rol cliente"] -->|"Dio + Bearer"| MW`);
 
     let b = 'flowchart LR\n';
@@ -692,8 +723,25 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
         V-->>V: descifrar secreto + otplib.verify
         V-->>C: token JWT (24 h)
     end
-    Note over C: React guarda en localStorage (solo rol administrador)<br/>Flutter en flutter_secure_storage (solo rol cliente)
+    Note over C: Panel y tienda React guardan sesiones separadas en localStorage<br/>Flutter guarda JWT cliente en flutter_secure_storage
     Note over C: Peticiones siguientes: Authorization Bearer → verificarToken (+ verificarRol)`);
+
+    G('password-reset-flow', `sequenceDiagram
+    autonumber
+    participant C as Cliente web / Flutter
+    participant A as /api/auth
+    participant U as usuario.model
+    participant M as SMTP
+    C->>A: POST solicitar-reseteo (email)
+    A->>U: guardar código de recuperación
+    A->>M: enviar código OTP
+    C->>A: POST verificar-reseteo (email + código)
+    A->>U: comprobar código y expiración
+    A-->>C: reset_token temporal (5 min, no es sesión)
+    C->>A: POST reestablecer-contrasena (email + reset_token + password)
+    A->>U: actualizar contraseña y versión de sesión
+    A-->>C: confirmación; volver al login
+    Note over A: Compatibilidad legacy: también acepta código + password`);
 
     G('sales-flow', `sequenceDiagram
     autonumber
@@ -708,6 +756,9 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
     P->>VM: Pedidos: transición logística válida
     VM->>DB: FOR UPDATE + entrega y estado comercial atómicos
     Note over P: Pedidos notifica una sola transición nueva, sin cobrar ni tocar stock
+    P->>VM: Cancelar pedido sin pago
+    VM->>DB: FOR UPDATE + venta cancelada + stock liberado + kardex
+    Note over VM: Entrega pagada cancelada mantiene cobro/stock hasta devolución; aprobación tardía requiere revisión
     P->>V: POST reembolso accion solicitar o confirmar
     V->>VM: Validar PayU + solicitud o confirmación documental
     VM->>DB: Pendiente sin efectos / confirmado con evidencia, stock, comprobante e historial
@@ -741,7 +792,7 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
     participant API as /api/pagos (pago.controller)
     participant VM as venta.model
     participant P as PayU (payu.service)
-    participant B as Navegador (url_launcher)
+    participant B as WebView de la app / navegador web
     participant DB as PostgreSQL
     F->>API: GET /api/zonas-delivery (activas de Pallasca)
     F->>API: POST /api/pagos/crear-orden (JWT, idempotencia, entrega y zona)
@@ -754,7 +805,7 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
     B->>API: GET /api/pagos/checkout/:externalReference
     API-->>B: formulario auto-enviado a PayU
     P->>API: POST /api/pagos/webhook (confirmación)
-    API->>VM: actualizarDatosPago + actualizarEstado
+    API->>VM: aplicarPago (firma, importe, moneda y transición atómica)
     B->>API: GET /api/pagos/respuesta/:externalReference
     F->>API: GET /api/pagos/:orderId (estado)
     F->>API: GET /api/ventas/mis-ventas

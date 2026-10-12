@@ -1,4 +1,4 @@
-%% Generado 2026-10-09 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-12 desde el código real (actualizar-mapa.mjs)
 sequenceDiagram
     autonumber
     participant C as Cliente (React / Flutter)
@@ -19,5 +19,5 @@ sequenceDiagram
         V-->>V: descifrar secreto + otplib.verify
         V-->>C: token JWT (24 h)
     end
-    Note over C: React guarda en localStorage (solo rol administrador)<br/>Flutter en flutter_secure_storage (solo rol cliente)
+    Note over C: Panel y tienda React guardan sesiones separadas en localStorage<br/>Flutter guarda JWT cliente en flutter_secure_storage
     Note over C: Peticiones siguientes: Authorization Bearer → verificarToken (+ verificarRol)

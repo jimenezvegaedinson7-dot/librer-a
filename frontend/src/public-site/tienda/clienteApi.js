@@ -30,23 +30,35 @@ export async function peticionCliente(ruta, { method = 'GET', body, autenticada 
     };
     const control = new AbortController();
     const limite = setTimeout(() => control.abort(), 120000);
-    let res;
-    try { res = await fetch(`${env.apiUrl}${ruta}`, {
-        signal: control.signal,
-        method, headers: { Accept: 'application/json',
-            ...(body && !(body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
-            ...(autenticada ? { Authorization: `Bearer ${sesion.token}` } : {}) },
-        body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
-    }); } catch (error) { comprobar(); throw error; }
-    finally { clearTimeout(limite); }
-    comprobar();
-    let json;
-    try { json = await res.json(); } catch {
-        const error = new Error('El servidor no devolvió una respuesta válida. Inténtalo de nuevo.');
-        error.status = res.status;
+    let res, json;
+    try {
+        res = await fetch(`${env.apiUrl}${ruta}`, {
+            signal: control.signal,
+            method, headers: { Accept: 'application/json',
+                ...(body && !(body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
+                ...(autenticada ? { Authorization: `Bearer ${sesion.token}` } : {}) },
+            body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
+        });
+        comprobar();
+        try { json = await res.json(); } catch (causa) {
+            comprobar();
+            if (control.signal.aborted) throw causa;
+            const error = new Error('El servidor no devolvió una respuesta válida. Inténtalo de nuevo.');
+            error.status = res.status;
+            throw error;
+        }
+        comprobar();
+    } catch (error) {
+        comprobar();
+        if (control.signal.aborted) {
+            const agotada = new Error('La solicitud tardó demasiado. Reintenta para recuperar el estado de tu solicitud.');
+            agotada.name = 'TimeoutError';
+            // Sin status de validación: un cuerpo incompleto no demuestra que
+            // el servidor rechazó la orden y debe conservarse su idempotencia.
+            throw agotada;
+        }
         throw error;
-    }
-    comprobar();
+    } finally { clearTimeout(limite); }
     if (!res.ok || json.success === false) {
         if (res.status === 401 && autenticada && !credencial) window.dispatchEvent(new CustomEvent('cliente-sesion-expirada', {detail: firmaSesion(sesion)}));
         const error = new Error(json.mensaje || 'No se pudo completar la solicitud');

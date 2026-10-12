@@ -3,6 +3,7 @@ const historialModel = require('../models/historial.model');
 const { validarId } = require('../utils/validaciones');
 const { ENTREGA, esTipoEntregaValido, permitirTransicionEntrega, esVentaHistorica } = require('../utils/transiciones');
 const { enviarCorreoAvancePedido, avisoPedido } = require('../utils/mailer');
+const { requiereRevisionPago } = require('../utils/devoluciones');
 
 // ========================================
 // REGISTRAR HISTORIAL SIN AFECTAR EL PEDIDO
@@ -182,6 +183,9 @@ const Pedido = {
             if (esVentaHistorica(ventaActual)) {
                 return res.status(409).json({ success: false, mensaje: 'Las ventas históricas son de solo lectura' });
             }
+            if (estado !== 'cancelado' && requiereRevisionPago(ventaActual)) {
+                return res.status(409).json({ success: false, mensaje: 'El pago requiere revisión; no se puede avanzar la entrega' });
+            }
             if (!['pagada', 'entregada'].includes(ventaActual.estado) && estado !== 'cancelado') {
                 return res.status(409).json({ success: false, mensaje: 'El pago de esta compra debe confirmarse antes de preparar la entrega' });
             }
@@ -228,7 +232,8 @@ const Pedido = {
             const actualizado =
                 await ventaModel.actualizarEstadoEntrega(
                     idVenta,
-                    estado
+                    estado,
+                    id_usuario
                 );
 
             if (!actualizado) {
@@ -260,12 +265,18 @@ const Pedido = {
                     `Pedido #${idVenta} actualizado de "${estadoActual}" a "${estado}"`
             });
 
+            const pedidoActual = await ventaModel.obtenerPorId(idVenta);
+            const mensaje = estado !== 'cancelado' ? 'Estado de pedido actualizado correctamente'
+                : pedidoActual?.estado === 'cancelada'
+                    ? 'Compra pendiente cancelada: enlace de pago cerrado y existencias liberadas. Cualquier cobro posterior requiere revisión.'
+                    : 'Entrega cancelada. El pago y las existencias se conservan hasta gestionar la devolución desde Ventas.';
             return res.json({
                 success: true,
-                mensaje: 'Estado de pedido actualizado correctamente',
+                mensaje,
                 data: {
                     id_venta: idVenta,
-                    estado_entrega: estado
+                    estado_entrega: pedidoActual?.estado_entrega || estado,
+                    estado: pedidoActual?.estado
                 }
             });
 

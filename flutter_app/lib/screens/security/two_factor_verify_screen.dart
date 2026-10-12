@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../services/api_service.dart';
-import '../../services/carrito_service.dart';
+import '../../services/storage_service.dart';
 import '../../widgets/app_logo.dart';
 import '../../widgets/campo_otp.dart';
 import '../../widgets/confirmacion_otp.dart';
@@ -15,8 +15,15 @@ import '../login_screen.dart';
 /// necesario para `POST /auth/2fa/verify-login`.
 class TwoFactorVerifyScreen extends StatefulWidget {
   final String twoFactorToken;
+  final IntentoAutenticacion? intento;
+  final ApiService? api;
 
-  const TwoFactorVerifyScreen({super.key, required this.twoFactorToken});
+  const TwoFactorVerifyScreen({
+    super.key,
+    required this.twoFactorToken,
+    this.intento,
+    this.api,
+  });
 
   @override
   State<TwoFactorVerifyScreen> createState() => _TwoFactorVerifyScreenState();
@@ -28,9 +35,21 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
 
   bool _loading = false;
   String? _errorMessage;
+  late final IntentoAutenticacion _intento;
+  ApiService get _api => widget.api ?? ApiService.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _intento = widget.intento ?? StorageService.instance.iniciarAutenticacion();
+  }
+
+  void _invalidarIntento() =>
+      StorageService.instance.invalidarAutenticacion(_intento);
 
   @override
   void dispose() {
+    _invalidarIntento();
     _otpController.dispose();
     super.dispose();
   }
@@ -48,9 +67,10 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
 
     setState(() => _loading = true);
     try {
-      await ApiService.instance.verificarLogin2FA(
+      await _api.verificarLogin2FA(
         twoFactorToken: widget.twoFactorToken,
         codigo: codigo,
+        intento: _intento,
       );
       if (!mounted) return;
       await mostrarConfirmacionOtp(
@@ -59,10 +79,6 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
         mensaje: 'Tu cuenta está lista para continuar.',
       );
       if (!mounted) return;
-      // El carrito pertenece a la sesión anterior: al completar el login con
-      // 2FA se empieza con el carrito vacío (no mezclar datos entre cuentas).
-      CarritoService.instance.vaciarSesion();
-      ApiService.instance.limpiarEstadoCheckout();
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute<void>(builder: (_) => const HomeScreen()),
         (route) => false,
@@ -79,8 +95,9 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
   }
 
   void _volverAlLogin() {
+    _invalidarIntento();
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute<void>(builder: (_) => const LoginScreen()),
+      MaterialPageRoute<void>(builder: (_) => LoginScreen(api: _api)),
       (route) => false,
     );
   }
@@ -90,116 +107,124 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: (constraints.maxHeight - 64).clamp(
-                    0,
-                    double.infinity,
-                  ),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _invalidarIntento();
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 32,
                 ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Center(child: AppLogo(width: 88, height: 88)),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Verificación en dos pasos',
-                        textAlign: TextAlign.center,
-                        style: textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Introduce el código de 6 dígitos de tu aplicación '
-                        'de autenticación (Google Authenticator) para '
-                        'completar el inicio de sesión.',
-                        textAlign: TextAlign.center,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Campo OTP (6 dígitos, numérico)
-                      CampoOtp(
-                        controller: _otpController,
-                        enabled: !_loading,
-                        onSubmitted: _verificar,
-                      ),
-
-                      // Mensaje de error
-                      if (_errorMessage != null) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: colorScheme.errorContainer,
-                            borderRadius: BorderRadius.circular(12),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: (constraints.maxHeight - 64).clamp(
+                      0,
+                      double.infinity,
+                    ),
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Center(child: AppLogo(width: 88, height: 88)),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Verificación en dos pasos',
+                          textAlign: TextAlign.center,
+                          style: textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.error_outline_rounded,
-                                color: colorScheme.onErrorContainer,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  _errorMessage!,
-                                  style: textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.onErrorContainer,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Introduce el código de 6 dígitos de tu aplicación '
+                          'de autenticación (Google Authenticator) para '
+                          'completar el inicio de sesión.',
+                          textAlign: TextAlign.center,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Campo OTP (6 dígitos, numérico)
+                        CampoOtp(
+                          controller: _otpController,
+                          enabled: !_loading,
+                          onSubmitted: _verificar,
+                        ),
+
+                        // Mensaje de error
+                        if (_errorMessage != null) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: colorScheme.errorContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.error_outline_rounded,
+                                  color: colorScheme.onErrorContainer,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: colorScheme.onErrorContainer,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                        ],
+
+                        const SizedBox(height: 28),
+
+                        // Botón verificar
+                        SizedBox(
+                          height: 54,
+                          child: _loading
+                              ? const Center(child: CircularProgressIndicator())
+                              : FilledButton(
+                                  onPressed: _verificar,
+                                  child: Text(
+                                    'Verificar',
+                                    style: textTheme.labelLarge?.copyWith(
+                                      color: colorScheme.onPrimary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Volver al login
+                        TextButton(
+                          onPressed: _loading ? null : _volverAlLogin,
+                          child: const Text('Volver al inicio de sesión'),
                         ),
                       ],
-
-                      const SizedBox(height: 28),
-
-                      // Botón verificar
-                      SizedBox(
-                        height: 54,
-                        child: _loading
-                            ? const Center(child: CircularProgressIndicator())
-                            : FilledButton(
-                                onPressed: _verificar,
-                                child: Text(
-                                  'Verificar',
-                                  style: textTheme.labelLarge?.copyWith(
-                                    color: colorScheme.onPrimary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Volver al login
-                      TextButton(
-                        onPressed: _loading ? null : _volverAlLogin,
-                        child: const Text('Volver al inicio de sesión'),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

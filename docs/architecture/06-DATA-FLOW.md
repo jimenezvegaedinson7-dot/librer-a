@@ -1,40 +1,42 @@
 # Flujos de datos
 
-> Generado desde el código real el 2026-10-09 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arquitectura general
 
 ```
-                PostgreSQL (16 tablas)
-                       ↑
-          Backend Node/Express (Render)
-         /api/*  ·  JWT  ·  PayU  ·  SMTP  ·  Cloudinary
-               ↗                        ↖
-   React Admin (Vercel)            Flutter Android (clientes)
-   rol administrador               rol cliente
+      Panel React       Tienda web React       Flutter Android
+      administrador     cliente / visitante    cliente
+               \              |              /
+                  Backend Express · /api/*
+                  JWT · PayU · SMTP · Cloudinary
+                              |
+                PostgreSQL · 21 tablas en esquema canónico
+                + auxiliares de migración (22 declaradas en código)
 ```
 
 ## 1. Login (React y Flutter)
 1. Cliente → `POST /api/auth/login` → `usuario.model.js#buscarPorEmail` → tablas: usuarios.
 2. Sin 2FA: respuesta `{ token (24 h), data }`. React guarda en `localStorage` (AuthContext); Flutter en **flutter_secure_storage**.
 3. Con 2FA: respuesta `{ requires_2fa, two_factor_token (5 min) }` → `POST /api/auth/2fa/verify-login` → `usuario.model.js#buscarPorIdConPassword`, `usuario.model.js#consumirOtp2FA`, `usuario.model.js#obtenerSecreto2FA` → tablas: usuarios.
-4. React exige `rol === 'administrador'`; Flutter rechaza administradores.
-5. Cualquier 401 posterior: React limpia sesión y va a `/`; Flutter limpia sesión y `irALogin()`.
+4. Panel React exige administrador; tienda React y Flutter exigen cliente. Las sesiones web están separadas.
+5. Un 401 de sesión vigente provoca cierre: el panel vuelve a `/admin/login`, la tienda emite `cliente-sesion-expirada` y Flutter usa `irALogin()`. Los errores de credencial incorrecta se distinguen de una sesión revocada.
 
 ## 2. Recuperar contraseña
-`POST /api/auth/solicitar-reseteo` → `usuario.model.js#buscarPorEmail`, `usuario.model.js#guardarCodigoVerificacion` → tablas: usuarios (envía código por correo con `utils/mailer`) → `POST /api/auth/reestablecer-contrasena` → `usuario.model.js#actualizarPasswordConCodigo`, `usuario.model.js#buscarPorEmail` → tablas: usuarios.
+`POST /api/auth/solicitar-reseteo` → `usuario.model.js#buscarPorEmail`, `usuario.model.js#guardarCodigoVerificacion` → tablas: usuarios envía código por correo → `POST /api/auth/verificar-reseteo` → `usuario.model.js#buscarPorEmail` → tablas: usuarios devuelve `reset_token` de 5 min → `POST /api/auth/reestablecer-contrasena` → `usuario.model.js#actualizarPasswordConCodigo`, `usuario.model.js#buscarPorEmail` → tablas: usuarios acepta ese permiso y la nueva contraseña. No inicia sesión. El backend conserva `codigo + password` para compatibilidad con clientes antiguos.
 
 ## 3. Gestión comercial y logística (React, administrador)
 1. `POST /api/ventas` está retirado (405); las ventas nuevas nacen pendientes desde checkout PayU. No se crean ventas de panel o reserva ni cobros manuales.
-2. `PUT /api/ventas/:id/estado` está bloqueado (409). Solo `PUT /api/pedidos/:id/estado` avanza logística; la transición final sincroniza `estado=entregada` con `estado_entrega=entregado` bajo bloqueo y notifica una vez, sin modificar pago ni inventario.
+2. `PUT /api/ventas/:id/estado` está bloqueado (409). `PUT /api/pedidos/:id/estado` avanza logística; entregar sincroniza `estado=entregada` con `estado_entrega=entregado` bajo bloqueo, sin cobrar ni descontar stock otra vez. Cancelar sin pago cierra también la venta pendiente, deshabilita el checkout y libera stock en la misma transacción. Cancelar una entrega pagada conserva cobro y existencias hasta la devolución separada. Un cobro posterior a la cancelación queda en revisión.
+   Los pagos en revisión o revertidos bloquean preparar/despachar/entregar bajo `FOR UPDATE`, pero permiten detener la logística. Un delivery pagado y cancelado exige confirmación de devolución física para reponer existencias. La revisión de aprobación tardía se conserva tras una reversión para cerrar documentalmente sin doble stock.
 3. Comprobante: `EmitirComprobanteModal` → `POST /api/ventas/:id/comprobante` → `comprobante.model.js#generarComprobante` → tablas: comprobantes, ventas; envío: `POST /api/comprobantes/:id/enviar-email` → `comprobante.model.js#obtenerComprobante`, `empresa.model.js#obtenerEmpresa` → tablas: comprobantes, empresa, usuarios, ventas.
 4. Devoluciones: `POST /api/ventas/:id/reembolso` valida pago PayU e identificadores de la propia venta bajo bloqueo. `accion=solicitar` registra `estado_reembolso=pendiente_verificacion` sin efectos; `accion=confirmar` exige referencia, evidencia y responsable. Solo entonces confirma documentalmente, cambia a reembolsada y modifica stock/comprobante/historial en la misma transacción. No ejecuta un refund automático. Migración 040 agrega campos NULL sin reescribir históricos.
 
 ## 4. Compra desde la app (Flutter, cliente) con PayU
 1. Carrito local (`CarritoService`) → `EntregaYPagoScreen` obtiene zonas activas con `GET /api/zonas-delivery`. Solo ofrece recojo gratuito en Pallasca (`tienda`) o delivery local con tarifa por zona (`domicilio`). Sin zonas, el recojo sigue disponible.
 2. `POST /api/pagos/crear-orden` → `payu.service.js#crearOrden`, `usuario.model.js#buscarPorId`, `venta.model.js#crear`, `zonaDelivery.model.js#obtenerPorId` → tablas: detalle_venta, inventario, libros, usuarios, ventas, zonas_delivery_pallasca con clave de **idempotencia**; delivery envía `id_zona_delivery`, dirección y referencia opcional. El servidor valida la zona activa y bloquea su tarifa dentro de la transacción. Guarda `cobertura_entrega=pallasca`, el nombre original de zona y `costo_envio`; total = libros + envío. No utiliza ubicaciones Lima para compras nuevas. Devuelve `checkout_url`.
-3. La app abre `checkout_url` (`GET /api/pagos/checkout/:externalReference` → `payu.service.js#construirFormularioCheckout`, `venta.model.js#buscarPorReferenciaExterna` → tablas: ventas) que auto-envía el formulario a PayU.
+3. `PagoEnAppScreen` abre `checkout_url` en WebView (`GET /api/pagos/checkout/:externalReference` → `payu.service.js#construirFormularioCheckout`, `venta.model.js#buscarPorReferenciaExterna` → tablas: ventas); el formulario se envía a PayU. Cerrar o retornar de la ventana no confirma el pago: se consulta a la API.
 4. PayU notifica: `POST /api/pagos/webhook` → `usuario.model.js#buscarPorId`, `venta.model.js#aplicarPago`, `venta.model.js#buscarPorReferenciaExterna` → tablas: detalle_venta, inventario, usuarios, ventas. Retorno del navegador: `GET /api/pagos/respuesta/:externalReference`.
 5. La app consulta `GET /api/pagos/:orderId` → `payu.service.js#obtenerOrdenDiagnostico`, `usuario.model.js#buscarPorId`, `venta.model.js#aplicarPago`, `venta.model.js#buscarPorPayuOrderId`, `venta.model.js#buscarPorReferenciaExterna` → tablas: detalle_venta, inventario, usuarios, ventas y lista `GET /api/ventas/mis-ventas` → `venta.model.js#obtenerPorUsuario` → tablas: agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, ventas.
 6. El job `jobs/limpieza.js` revisa ventas abandonadas cada 5 min; consulta PayU antes de liberar stock y conserva pagos inciertos/pendientes.
@@ -64,7 +66,7 @@
 - Inventario (React): `PUT /api/inventario/libro/:id` → `historial.model.js#crear`, `inventario.model.js#actualizar`, `inventario.model.js#obtenerPorLibro` → tablas: historial_operaciones, inventario, libros; kardex: `GET /api/inventario/movimientos` → `inventario.model.js#listarMovimientos` → tablas: libros, movimientos_inventario, usuarios.
 
 ## 7. Resumen / reportes (React)
-`DashboardPage` → 8 endpoints `/api/reportes/*` + `GET /api/libros` → `reporte.model` (consultas agregadas sobre ventas, detalle_venta, reservas, inventario, libros…).
+`DashboardPage` → 7 endpoints `/api/reportes/*`, catálogo e inventario de stock bajo → `reporte.model` y modelos correspondientes (consultas agregadas).
 
 ## 8. Auditoría
-Las operaciones de escritura registran en `historial_operaciones` (`historial.model#crear`). El panel lo lee con `GET /api/historial` (página Historial y notificaciones del Topbar cada 30 s).
+Las operaciones de escritura registran en `historial_operaciones` (`historial.model#crear`). Historial lo consulta con `GET /api/historial`. Las notificaciones del Topbar consultan pagos, reservas y stock bajo cada 60 s mientras la pestaña está visible y al volver a ella.

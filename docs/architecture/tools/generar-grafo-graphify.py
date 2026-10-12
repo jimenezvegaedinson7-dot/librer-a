@@ -55,11 +55,12 @@ def detect_scope():
     OUT.mkdir(exist_ok=True)
     words = sum(len((ROOT / rel).read_text(encoding='utf-8').split()) for rel in records)
     snapshot = {rel: hashlib.sha256((ROOT / rel).read_bytes()).hexdigest() for rel in records}
+    analysis_inputs = {rel: hashlib.sha256((ROOT / rel).read_bytes()).hexdigest() for rel in ['docs/architecture/08-CODE-INDEX.json', 'docs/architecture/05-API-MAP.md', 'backend/database/schema.sql', 'backend/src/config/migraciones.js']}
     counts = Counter(sector(rel) for rel in records)
     data = {'scan_root': str(ROOT), 'scope': list(SCOPES), 'total_files': len(records), 'total_words': words,
             'files': {'code': [str(ROOT / rel) for rel in sorted(records)]}, 'source_hashes': snapshot,
             'sector_counts': dict(counts), 'excluded': ['.env', 'credenciales', 'datos de producción', 'node_modules', 'builds', 'tests', 'medios'],
-            'mode': 'AST local + relaciones extraídas de los índices de arquitectura'}
+            'mode': 'AST local + relaciones extraídas de los índices de arquitectura', 'analysis_inputs': analysis_inputs}
     save('.graphify_detect.json', data)
     (OUT / '.graphify_python').write_text(sys.executable, encoding='utf-8')
     (OUT / '.graphify_root').write_text(str(ROOT), encoding='utf-8')
@@ -88,6 +89,9 @@ def build():
     for rel, digest in detection['source_hashes'].items():
         if hashlib.sha256((ROOT / rel).read_bytes()).hexdigest() != digest:
             raise ValueError(f'El código cambió durante la generación: {rel}. Repetir --detectar.')
+    for rel, digest in detection.get('analysis_inputs', {}).items():
+        if hashlib.sha256((ROOT / rel).read_bytes()).hexdigest() != digest:
+            raise ValueError(f'El índice de arquitectura cambió: {rel}. Repetir --detectar.')
 
     js = [ROOT / rel for rel in records if Path(rel).suffix in {'.js', '.jsx'}]
     ast = extract(js, cache_root=ROOT, root=ROOT, max_workers=2)
@@ -135,23 +139,22 @@ def build():
 
     # Endpoints: nombres de parámetros normalizados para unir web/app con API.
     api_ids = {}
-    for line_number, line in enumerate(API_MAP.read_text(encoding='utf-8').splitlines(), 1):
-        if not re.match(r'^\| (GET|POST|PUT|PATCH|DELETE) \|', line):
-            continue
-        cells = [c.strip() for c in line.strip('|').split('|')]
-        endpoint = cells[0] + ' ' + cells[1].strip('`')
+    for definition in index['apiEndpoints']:
+        endpoint = definition['method'] + ' ' + definition['path']
         key = canonical(endpoint)
-        api_id = node('endpoint:' + key, endpoint, API_MAP.relative_to(ROOT).as_posix(), 'endpoint', sector='API / Backend', auth=cells[6])
+        source = definition['routeFile']
+        location = f'L{definition.get("line", 1)}'
+        api_id = node('endpoint:' + key, endpoint, source, 'endpoint', sector='API / Backend', auth=definition['auth'])
+        nodes[api_id]['source_location'] = location
         api_ids[key] = api_id
-        controller = cells[2].split('#')[0]
-        target = 'backend/src/' + controller if controller.startswith('controllers/') else 'backend/server.js'
+        controller = definition['controller']
+        target = source if controller.startswith('inline') else controller
         if target in file_ids:
-            edge(api_id, file_ids[target], 'handled_by', 'docs/architecture/05-API-MAP.md', f'L{line_number}')
-        for cell, prefix in ((cells[4], 'frontend/src/'), (cells[5], 'flutter_app/lib/')):
-            for consumer in cell.split('<br>'):
-                candidate = prefix + consumer.strip('` ')
+            edge(api_id, file_ids[target], 'handled_by', source, location)
+        for consumer_key in ['reactConsumers', 'flutterConsumers']:
+            for candidate in definition[consumer_key]:
                 if candidate in file_ids:
-                    edge(file_ids[candidate], api_id, 'uses_api', 'docs/architecture/05-API-MAP.md', f'L{line_number}')
+                    edge(file_ids[candidate], api_id, 'uses_api', candidate)
     for rel, record in records.items():
         for endpoint in record.get('endpoints', []):
             api_id = api_ids.get(canonical(endpoint))
@@ -168,9 +171,10 @@ def build():
     # Tablas del esquema local, sin leer ninguna fila de la base de producción.
     schema_file = 'backend/database/schema.sql'
     schema = (ROOT / schema_file).read_text(encoding='utf-8')
-    tables = set(re.findall(r'CREATE TABLE (?:IF NOT EXISTS )?(\w+)', schema, re.I))
+    tables = set(index['database']['declaredTables'])
     for table in sorted(tables):
-        node('tabla:' + table, 'Tabla ' + table, schema_file, 'table', sector='Base de datos')
+        source = index['database']['tableSources'][table][0]
+        node('tabla:' + table, 'Tabla ' + table, source, 'table', sector='Base de datos')
     for rel in records:
         if not rel.startswith('backend/src/models/'):
             continue
@@ -211,9 +215,9 @@ def build():
     to_json(graph, communities, str(OUT / 'graph.json'), force=True, community_labels=labels)
     save('.graphify_labels.json', labels)
     save('.graphify_analysis.json', {'communities': communities, 'cohesion': cohesion, 'gods': gods, 'surprises': surprises, 'questions': questions})
-    save('manifest-proyecto.json', {'generated': datetime.now(timezone.utc).isoformat(), 'source_hashes': detection['source_hashes'],
+    save('manifest-proyecto.json', {'generated': datetime.now(timezone.utc).isoformat(), 'source_hashes': detection['source_hashes'], 'analysis_inputs': detection.get('analysis_inputs', {}),
                                   'files': len(records), 'nodes': graph.number_of_nodes(), 'edges': graph.number_of_edges(),
-                                  'communities': len(communities), 'endpoints': len(api_ids), 'tables': len(tables), 'inferred_excluded': inferred, 'mode': detection['mode']})
+                                  'communities': len(communities), 'endpoints': len(api_ids), 'tables': len(tables), 'schema_tables': len(index['database']['schemaTables']), 'inferred_excluded': inferred, 'mode': detection['mode']})
     cost_path = OUT / 'cost.json'
     cost = json.loads(cost_path.read_text(encoding='utf-8')) if cost_path.exists() else {'runs': [], 'total_input_tokens': 0, 'total_output_tokens': 0}
     cost['runs'].append({'date': datetime.now(timezone.utc).isoformat(), 'scope': 'proyecto', 'input_tokens': 0, 'output_tokens': 0})

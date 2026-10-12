@@ -134,7 +134,7 @@ app.get('/api', (req, res) => {
 });
 
 // ===============================
-// PRUEBA DE CONEXIÓN MYSQL
+// PRUEBA DE CONEXIÓN POSTGRESQL
 // (SOLO ADMIN: requiere JWT + rol administrador)
 // ===============================
 app.get(
@@ -148,18 +148,18 @@ app.get(
             );
 
             res.json({
-                mensaje: 'Conexión con MySQL exitosa',
+                mensaje: 'Conexión con PostgreSQL exitosa',
                 resultado: rows[0].resultado
             });
 
         } catch (error) {
             console.error(
-                'Error de MySQL:',
+                'Error de PostgreSQL:',
                 error
             );
 
             res.status(500).json({
-                mensaje: 'Error al conectar con MySQL'
+                mensaje: 'Error al conectar con PostgreSQL'
             });
         }
     }

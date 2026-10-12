@@ -1,6 +1,6 @@
 # Dependencias
 
-> Generado desde el código real el 2026-10-09 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Paquetes npm
@@ -45,20 +45,20 @@ Todas las dependencias se importan en algún archivo.
 
 Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxlint, vite.
 
-## Paquetes Flutter (`flutter pub deps --style=compact`)
+## Paquetes Flutter (declarados en `pubspec.yaml`)
 
-- **Directos**: cupertino_icons, dio, flutter, flutter_secure_storage, google_fonts, image_picker, shared_preferences, url_launcher.
-- **Dev**: flutter_launcher_icons, flutter_lints, flutter_test.
-- El resto (archive, http, crypto, *_platform_interface, plugins por plataforma…) son **transitivos**.
-- Paquetes importados en `lib/`: `audioplayers`, `crypto`, `dio`, `flutter`, `flutter_secure_storage`, `google_fonts`, `image_picker`, `package_info_plus`, `path_provider`, `shared_preferences`, `url_launcher`, `webview_flutter`, `webview_flutter_android`.
+- **Directos**: `audioplayers`, `crypto`, `cupertino_icons`, `dio`, `flutter`, `flutter_secure_storage`, `image_picker`, `package_info_plus`, `path_provider`, `shared_preferences`, `url_launcher`, `webview_flutter`, `webview_flutter_android`.
+- **Dev**: `flutter_launcher_icons`, `flutter_lints`, `flutter_test`.
+- Las dependencias transitivas completas se consultan con `flutter pub deps --style=compact`; no se deducen de los imports.
+- Paquetes importados en `lib/`: `audioplayers`, `crypto`, `dio`, `flutter`, `flutter_secure_storage`, `image_picker`, `package_info_plus`, `path_provider`, `shared_preferences`, `url_launcher`, `webview_flutter`, `webview_flutter_android`.
 
 ## Dependencias internas (imports del propio código)
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 175 | 392 | 0 (confirmado con **madge**: ninguno) |
-| Frontend (`import`) | 210 | 844 | 0 (confirmado con **madge**: ninguno) |
-| Flutter (`import` relativos) | 79 | 346 | 4 caminos cíclicos |
+| Backend (`require`) | 178 | 399 | 0 (analizador estático de imports) |
+| Frontend (`import`) | 210 | 844 | 0 (analizador estático de imports) |
+| Flutter (`import` relativos) | 78 | 344 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter
 

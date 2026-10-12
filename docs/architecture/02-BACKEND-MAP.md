@@ -1,6 +1,6 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-10-09 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
@@ -10,8 +10,8 @@
 3. Estáticos: `/uploads` → `backend/uploads` (portadas y fotos locales cuando Cloudinary no está configurado).
 4. Endpoints en línea: `GET /`, `GET /api`, `GET /api/test-db` y `GET /api/debug-egress` (ambos JWT + admin).
 5. Montaje de 23 routers bajo `/api/*` → 404 JSON → `error.middleware`.
-6. `iniciarJobs()` (limpieza cada 5 min) y 3 migraciones idempotentes en línea (tabla `favoritos`; columnas `cliente_documento`/`cliente_tipo_documento` en `ventas`; `enviado_por_email`/`fecha_envio_email` en `comprobantes`).
-7. `app.listen(PORT || 3000)`.
+6. `iniciarJobs()` programa limpieza cada 5 min. `iniciar()` espera `aplicarMigraciones` y `aplicarMigracionesDatos` antes de aceptar tráfico; en test se usa el esquema preparado por el runner. Un fallo en producción aborta el arranque.
+7. `app.listen(PORT || 3000)` después de comprobar el esquema. Las migraciones base e incrementales están en `config/migraciones.js`; los backfills se registran en `migraciones_datos`.
 
 ## Montaje de routers
 
@@ -63,7 +63,7 @@
 
 | Archivo | Responsabilidad |
 |---|---|
-| `utils/mailer.js` | Correo con **nodemailer** (SMTP_*): verificación, reseteo, reserva creada, pedido entregado, comprobantes (PDF con **html-pdf-node**). |
+| `utils/mailer.js` | Correo con **nodemailer** (SMTP_*): verificación, reseteo y avisos comerciales. Comprobantes adjuntos PDF, renderizados con **Playwright Chromium** por `utils/pdf.js`. |
 | `utils/cloudinary.js` | Subida/eliminación de imágenes en Cloudinary (CLOUDINARY_*), `publicIdDesdeUrl`. |
 | `utils/crypto.js` | Cifrado/descifrado del secreto 2FA con `TWO_FACTOR_ENCRYPTION_KEY`. |
 | `utils/transiciones.js` | Máquinas de estado permitidas de `VENTA` y `RESERVA` (`permitirTransicion`). |
@@ -83,7 +83,7 @@
 - `POST /api/auth/login` → `usuario.model#buscarPorEmail` + bcrypt. Si el usuario tiene 2FA activo devuelve `requires_2fa` y un **`two_factor_token` JWT de 5 min**; si no, el **JWT de sesión (24 h)**.
 - `POST /api/auth/2fa/verify-login` valida el token temporal y el código TOTP (**otplib**; secreto cifrado con `utils/crypto`) y emite el JWT de 24 h.
 - `/2fa/setup` genera secreto + QR (**qrcode**), `/2fa/confirm` lo activa, `/2fa/disable` exige contraseña + código.
-- Registro con verificación de correo por código; recuperación de contraseña por código (`solicitar-reseteo` → `reestablecer-contrasena`).
+- Registro con verificación de correo por código. Recuperación en dos pasos: `solicitar-reseteo` → `verificar-reseteo` → `reestablecer-contrasena` con permiso `reset_token` de 5 min; se conserva la entrada legacy `codigo + password`.
 
 ## Endpoints por módulo
 
@@ -145,9 +145,9 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | POST | `/api/asistente` | limite | controllers/asistente.controller.js#conversar | `aiAssistant.service.js#responder` | autores, categorias, inventario, libros |
-| GET | `/api/asistente/memoria` | ...soloCliente | controllers/asistente.controller.js#obtenerMemoria | `asistenteMemoria.model.js#obtener` | asistente_memoria |
-| PUT | `/api/asistente/memoria` | ...soloCliente | controllers/asistente.controller.js#guardarMemoria | `asistenteMemoria.model.js#guardar` | asistente_memoria |
-| DELETE | `/api/asistente/memoria` | ...soloCliente | controllers/asistente.controller.js#borrarMemoria | `asistenteMemoria.model.js#borrar` | asistente_memoria |
+| GET | `/api/asistente/memoria` | limiteMemoria + JWT + rol:cliente | controllers/asistente.controller.js#obtenerMemoria | `asistenteMemoria.model.js#obtener` | asistente_memoria |
+| PUT | `/api/asistente/memoria` | limiteMemoria + JWT + rol:cliente | controllers/asistente.controller.js#guardarMemoria | `asistenteMemoria.model.js#guardar` | asistente_memoria |
+| DELETE | `/api/asistente/memoria` | limiteMemoria + JWT + rol:cliente | controllers/asistente.controller.js#borrarMemoria | `asistenteMemoria.model.js#borrar` | asistente_memoria |
 
 ### /api/auth
 
@@ -199,8 +199,8 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/comprobantes/resumen` | JWT + verificarPanel | inline (comprobante.routes.js) | `comprobante.model.js#listarResumen` | comprobantes |
 | POST | `/api/comprobantes/:id/enviar-email` | JWT + verificarPanel | controllers/comprobante.controller.js#enviarComprobanteEmail | `comprobante.model.js#obtenerComprobante`<br>`empresa.model.js#obtenerEmpresa` | comprobantes, empresa, usuarios, ventas |
 | GET | `/api/comprobantes/:id` | JWT + verificarPanel | controllers/comprobante.controller.js#obtenerComprobante | `comprobante.model.js#obtenerComprobante` | comprobantes, usuarios, ventas |
-| PUT | `/api/comprobantes/:id/sunat` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/comprobante.controller.js#registrarSunat | `comprobante.model.js#registrarSunat`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
-| POST | `/api/comprobantes/:id/anular` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/comprobante.controller.js#anularComprobante | `comprobante.model.js#anular`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
+| PUT | `/api/comprobantes/:id/sunat` | JWT + rol:administrador | controllers/comprobante.controller.js#registrarSunat | `comprobante.model.js#registrarSunat`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
+| POST | `/api/comprobantes/:id/anular` | JWT + rol:administrador | controllers/comprobante.controller.js#anularComprobante | `comprobante.model.js#anular`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
 
 ### /api/empresa
 
@@ -234,9 +234,9 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/inventario/stock-bajo` | JWT + verificarPanel | controllers/inventario.controller.js#obtenerStockBajo | `inventario.model.js#obtenerStockBajo` | inventario, libros |
 | GET | `/api/inventario/movimientos` | JWT + verificarPanel | controllers/inventario.controller.js#listarMovimientos | `inventario.model.js#listarMovimientos` | libros, movimientos_inventario, usuarios |
 | GET | `/api/inventario/libro/:id` | JWT + verificarPanel | controllers/inventario.controller.js#obtenerInventarioPorLibro | `inventario.model.js#obtenerPorLibro` | inventario, libros |
-| POST | `/api/inventario` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/inventario.controller.js#crearInventario | `historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro` | historial_operaciones, inventario, libros |
-| PUT | `/api/inventario/libro/:id/stock` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/inventario.controller.js#actualizarStock | `historial.model.js#crear`<br>`inventario.model.js#actualizarStock` | historial_operaciones, inventario |
-| PUT | `/api/inventario/libro/:id` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/inventario.controller.js#actualizarInventario | `historial.model.js#crear`<br>`inventario.model.js#actualizar`<br>`inventario.model.js#obtenerPorLibro` | historial_operaciones, inventario, libros |
+| POST | `/api/inventario` | JWT + rol:administrador | controllers/inventario.controller.js#crearInventario | `historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro` | historial_operaciones, inventario, libros |
+| PUT | `/api/inventario/libro/:id/stock` | JWT + rol:administrador | controllers/inventario.controller.js#actualizarStock | `historial.model.js#crear`<br>`inventario.model.js#actualizarStock` | historial_operaciones, inventario |
+| PUT | `/api/inventario/libro/:id` | JWT + rol:administrador | controllers/inventario.controller.js#actualizarInventario | `historial.model.js#crear`<br>`inventario.model.js#actualizar`<br>`inventario.model.js#obtenerPorLibro` | historial_operaciones, inventario, libros |
 
 ### /api/libros
 
@@ -269,7 +269,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/pedidos` | JWT + verificarPanel | controllers/pedido.controller.js#obtenerPedidos | `venta.model.js#obtenerConFiltros` | agencias_courier, comprobantes, distritos_lima, provincias_lima, usuarios, ventas |
 | GET | `/api/pedidos/usuario/:id_usuario` | JWT | controllers/pedido.controller.js#obtenerMisPedidos | `venta.model.js#obtenerPorUsuario` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, ventas |
 | GET | `/api/pedidos/:id` | JWT + verificarPanel | controllers/pedido.controller.js#obtenerPedido | `venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, usuarios, ventas |
-| PUT | `/api/pedidos/:id/estado` | JWT + verificarPanel | controllers/pedido.controller.js#actualizarEstadoPedido | `historial.model.js#crear`<br>`venta.model.js#actualizarEstadoEntrega`<br>`venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, libros, provincias_lima, usuarios, ventas |
+| PUT | `/api/pedidos/:id/estado` | JWT + verificarPanel | controllers/pedido.controller.js#actualizarEstadoPedido | `historial.model.js#crear`<br>`venta.model.js#actualizarEstadoEntrega`<br>`venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
 
 ### /api/reclamaciones
 
@@ -335,7 +335,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/ventas/:id/pago` | JWT | controllers/venta.controller.js#obtenerPagoVenta | `venta.model.js#obtenerDatosPago` | ventas |
 | PUT | `/api/ventas/:id/estado` | JWT + verificarPanel | controllers/venta.controller.js#actualizarEstadoVenta | — | — |
 | POST | `/api/ventas/:id/comprobante` | JWT + verificarPanel | controllers/comprobante.controller.js#generarComprobante | `comprobante.model.js#generarComprobante` | comprobantes, ventas |
-| POST | `/api/ventas/:id/reembolso` | JWT + verificarRol(ROLES.ADMINISTRADOR) | controllers/venta.controller.js#reembolsarVenta | `venta.model.js#reembolsar` | comprobantes, detalle_venta, historial_operaciones, inventario, ventas |
+| POST | `/api/ventas/:id/reembolso` | JWT + rol:administrador | controllers/venta.controller.js#reembolsarVenta | `venta.model.js#reembolsar` | comprobantes, detalle_venta, historial_operaciones, inventario, ventas |
 
 ### /api/zonas-delivery
 
@@ -373,7 +373,9 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
 | `models/zonaDelivery.model.js` | zonas_delivery_pallasca |
 
-Tablas presentes en el código (21): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. El esquema está en `backend/database/schema.sql` + 22 migraciones en `backend/database/migrations`.
+Tablas consultadas por los modelos (21): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. Este subconjunto no es el total del esquema.
+
+Esquema canónico: **21 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **22 tablas**, incluidas las auxiliares de migración. Hay 41 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
 
 ## Integraciones externas
 
@@ -381,7 +383,7 @@ Tablas presentes en el código (21): `agencias_courier`, `anuncios`, `asistente_
 |---|---|---|---|
 | PostgreSQL | `pg` | config/database.js | DATABASE_URL o DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT |
 | Cloudinary | (API HTTP) | utils/cloudinary.js, upload*.middleware.js | CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET |
-| SMTP (correo) | `nodemailer`, `html-pdf-node` | utils/mailer.js | SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM, SMTP_REJECT_UNAUTHORIZED |
+| SMTP (correo) y PDF | `nodemailer`, `playwright` | utils/mailer.js, utils/pdf.js | SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM, SMTP_REJECT_UNAUTHORIZED, PDF_CHROME_PATH |
 | PayU (pagos) | (API HTTP) | services/payu.service.js, config/payu.js | PAYU_ACCOUNT_ID, PAYU_MERCHANT_ID, PAYU_API_LOGIN, PAYU_API_KEY, PAYU_PUBLIC_KEY, PAYU_TEST, PAYU_NOTIFICATION_URL |
 | Gemini (asistente) | REST con fetch de Node | services/geminiAssistant.service.js | GEMINI_API_KEY, GEMINI_MODEL (solo backend; configuración manual) |
 | TOTP 2FA | `otplib`, `qrcode` | controllers/auth2fa.controller.js | TWO_FACTOR_ENCRYPTION_KEY |
@@ -391,7 +393,7 @@ Tablas presentes en el código (21): `agencias_courier`, `anuncios`, `asistente_
 
 - `GET /api/debug-egress` es un diagnóstico manual **JWT + admin**, con conexiones TCP acotadas y timeout HTTPS.
 - La pasarela de pagos (`/api/pagos`) es **PayU**.
-- `GET /api/test-db` responde "Conexión con MySQL exitosa"; funciona (el adaptador devuelve `[rows]`), solo el texto está desactualizado.
+- `GET /api/test-db` verifica PostgreSQL con `SELECT 1`, protegido por JWT + administrador.
 - Endpoints sin cliente: ver la sección correspondiente en `05-API-MAP.md`.
 - Scripts auxiliares (no forman parte del servidor): `scripts/migrarImagenesCloudinary.js`, `scripts/resetearPrecios.js`, `run_migration_021.js`, `_test_smtp.js` (sin seguimiento en git).
 - Pruebas: `test/*.test.js` (node --test) y `test-integration/http.smoke.test.js`.

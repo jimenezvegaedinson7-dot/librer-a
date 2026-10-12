@@ -1,11 +1,11 @@
 # Mapa de API
 
-> Generado desde el código real el 2026-10-09 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 Total de endpoints registrados en el backend: **127** (incluye 4 definidos directamente en `server.js`).
 
-- **Auth**: `Pública` = sin JWT · `JWT` = requiere `Authorization: Bearer` · `JWT + admin` = además rol `administrador`.
+- **Auth**: `Pública` = sin JWT · `JWT` = requiere `Authorization: Bearer` · `JWT + admin` / `JWT + cliente` = además el rol indicado. Los arrays de middleware compartidos se expanden desde el router real.
 - **React / Flutter**: archivos que llaman al endpoint (directamente o a través de su servicio). `—` = ningún cliente lo usa.
 - Los parámetros se escriben como en el backend (`:id`); los clientes los construyen con interpolación.
 
@@ -33,13 +33,13 @@ Total de endpoints registrados en el backend: **127** (incluye 4 definidos direc
 | DELETE | `/api/anuncios/:id` | controllers/anuncio.controller.js#eliminarAnuncio | JWT + rol:administrador | features/anuncios/AnunciosPage.jsx | — | JWT + admin |
 | GET | `/api/app/version` | controllers/app.controller.js#obtenerVersion | — | public-site/components/ActualizarApp.jsx | — | Pública |
 | POST | `/api/asistente` | controllers/asistente.controller.js#conversar | limite | public-site/asistente/AsistenteTienda.jsx | — | Pública |
-| GET | `/api/asistente/memoria` | controllers/asistente.controller.js#obtenerMemoria | ...soloCliente | public-site/asistente/useMemoriaAsistente.js | — | Pública |
-| PUT | `/api/asistente/memoria` | controllers/asistente.controller.js#guardarMemoria | ...soloCliente | public-site/asistente/useMemoriaAsistente.js | — | Pública |
-| DELETE | `/api/asistente/memoria` | controllers/asistente.controller.js#borrarMemoria | ...soloCliente | public-site/asistente/useMemoriaAsistente.js | — | Pública |
+| GET | `/api/asistente/memoria` | controllers/asistente.controller.js#obtenerMemoria | limiteMemoria + JWT + rol:cliente | public-site/asistente/useMemoriaAsistente.js | — | JWT + cliente |
+| PUT | `/api/asistente/memoria` | controllers/asistente.controller.js#guardarMemoria | limiteMemoria + JWT + rol:cliente | public-site/asistente/useMemoriaAsistente.js | — | JWT + cliente |
+| DELETE | `/api/asistente/memoria` | controllers/asistente.controller.js#borrarMemoria | limiteMemoria + JWT + rol:cliente | public-site/asistente/useMemoriaAsistente.js | — | JWT + cliente |
 | POST | `/api/auth/registro` | controllers/auth.controller.js#registrar | registroLimiter | public-site/tienda/CuentaPage.jsx | screens/registro_screen.dart | Pública |
 | POST | `/api/auth/login` | controllers/auth.controller.js#login | loginLimiter | features/auth/LoginPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/login_screen.dart | Pública |
-| POST | `/api/auth/verificar-email` | controllers/auth.controller.js#verificarEmail | verificacionLimiter | features/auth/VerificarEmailPage.jsx<br>public-site/tienda/CuentaPage.jsx | — | Pública |
-| POST | `/api/auth/reenviar-codigo` | controllers/auth.controller.js#reenviarCodigo | verificacionLimiter | features/auth/VerificarEmailPage.jsx<br>public-site/tienda/CuentaPage.jsx | — | Pública |
+| POST | `/api/auth/verificar-email` | controllers/auth.controller.js#verificarEmail | verificacionLimiter | features/auth/VerificarEmailPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/verificacion_email_screen.dart | Pública |
+| POST | `/api/auth/reenviar-codigo` | controllers/auth.controller.js#reenviarCodigo | verificacionLimiter | features/auth/VerificarEmailPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/verificacion_email_screen.dart | Pública |
 | POST | `/api/auth/solicitar-reseteo` | controllers/auth.controller.js#solicitarReseteo | verificacionLimiter | features/auth/LoginPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/recuperar_contrasena_screen.dart<br>screens/reestablecer_contrasena_screen.dart | Pública |
 | POST | `/api/auth/verificar-reseteo` | controllers/auth.controller.js#verificarReseteo | verificacionLimiter | public-site/tienda/CuentaPage.jsx | screens/reestablecer_contrasena_screen.dart | Pública |
 | POST | `/api/auth/reestablecer-contrasena` | controllers/auth.controller.js#reestablecerContrasena | verificacionLimiter | features/auth/LoginPage.jsx<br>public-site/tienda/CuentaPage.jsx | screens/reestablecer_contrasena_screen.dart | Pública |
@@ -62,8 +62,8 @@ Total de endpoints registrados en el backend: **127** (incluye 4 definidos direc
 | GET | `/api/comprobantes/resumen` | inline (comprobante.routes.js) | JWT + verificarPanel | features/comprobantes/ComprobantesPage.jsx | — | JWT + admin |
 | POST | `/api/comprobantes/:id/enviar-email` | controllers/comprobante.controller.js#enviarComprobanteEmail | JWT + verificarPanel | features/comprobantes/ComprobantesPage.jsx<br>features/ventas/EmitirComprobanteModal.jsx | — | JWT + admin |
 | GET | `/api/comprobantes/:id` | controllers/comprobante.controller.js#obtenerComprobante | JWT + verificarPanel | features/comprobantes/ComprobanteViewModal.jsx | — | JWT + admin |
-| PUT | `/api/comprobantes/:id/sunat` | controllers/comprobante.controller.js#registrarSunat | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT + admin |
-| POST | `/api/comprobantes/:id/anular` | controllers/comprobante.controller.js#anularComprobante | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT + admin |
+| PUT | `/api/comprobantes/:id/sunat` | controllers/comprobante.controller.js#registrarSunat | JWT + rol:administrador | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT + admin |
+| POST | `/api/comprobantes/:id/anular` | controllers/comprobante.controller.js#anularComprobante | JWT + rol:administrador | features/comprobantes/ComprobanteSunatModal.jsx | — | JWT + admin |
 | GET | `/api/empresa` | controllers/empresa.controller.js#obtenerEmpresa | — | features/comprobantes/ComprobanteViewModal.jsx<br>features/configuracion/EmpresaPage.jsx<br>features/reclamaciones/LibroReclamacionesPage.jsx<br>features/ventas/EmitirComprobanteModal.jsx<br>public-site/PublicLayout.jsx | — | Pública |
 | PUT | `/api/empresa` | controllers/empresa.controller.js#actualizarEmpresa | JWT + rol:administrador | features/configuracion/EmpresaPage.jsx | — | JWT + admin |
 | GET | `/api/favoritos` | controllers/favorito.controller.js#listarMisFavoritos | JWT | public-site/tienda/FavoritosPage.jsx | screens/favoritos_screen.dart | JWT |
@@ -77,11 +77,11 @@ Total de endpoints registrados en el backend: **127** (incluye 4 definidos direc
 | GET | `/api/inventario/stock-bajo` | controllers/inventario.controller.js#obtenerStockBajo | JWT + verificarPanel | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js<br>features/notificaciones/notificacionesService.js | — | JWT + admin |
 | GET | `/api/inventario/movimientos` | controllers/inventario.controller.js#listarMovimientos | JWT + verificarPanel | features/inventario/MovimientosModal.jsx | — | JWT + admin |
 | GET | `/api/inventario/libro/:id` | controllers/inventario.controller.js#obtenerInventarioPorLibro | JWT + verificarPanel | features/inventario/InventarioPage.jsx | — | JWT + admin |
-| POST | `/api/inventario` | controllers/inventario.controller.js#crearInventario | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/inventario/InventarioForm.jsx | — | JWT + admin |
-| PUT | `/api/inventario/libro/:id/stock` | controllers/inventario.controller.js#actualizarStock | JWT + verificarRol(ROLES.ADMINISTRADOR) | — | — | JWT + admin |
-| PUT | `/api/inventario/libro/:id` | controllers/inventario.controller.js#actualizarInventario | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/inventario/InventarioEditModal.jsx | — | JWT + admin |
+| POST | `/api/inventario` | controllers/inventario.controller.js#crearInventario | JWT + rol:administrador | features/inventario/InventarioForm.jsx | — | JWT + admin |
+| PUT | `/api/inventario/libro/:id/stock` | controllers/inventario.controller.js#actualizarStock | JWT + rol:administrador | — | — | JWT + admin |
+| PUT | `/api/inventario/libro/:id` | controllers/inventario.controller.js#actualizarInventario | JWT + rol:administrador | features/inventario/InventarioEditModal.jsx | — | JWT + admin |
 | GET | `/api/libros` | controllers/libro.controller.js#obtenerLibros | — | features/anuncios/CarruselPanel.jsx<br>features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js<br>features/inventario/MovimientosModal.jsx<br>features/inventario/useLibros.js<br>features/libros/LibrosPage.jsx<br>public-site/asistente/AsistenteTienda.jsx<br>public-site/PublicLayout.jsx<br>public-site/tienda/TiendaContext.jsx | screens/carrito_screen.dart<br>screens/entrega_y_pago_screen.dart<br>screens/home_screen.dart<br>screens/libros_screen.dart | Pública |
-| GET | `/api/libros/:id/relacionados` | controllers/libro.controller.js#obtenerRelacionados | — | — | — | Pública |
+| GET | `/api/libros/:id/relacionados` | controllers/libro.controller.js#obtenerRelacionados | — | public-site/tienda/LibroPage.jsx | — | Pública |
 | GET | `/api/libros/:id` | controllers/libro.controller.js#obtenerLibro | — | features/libros/LibroEditModal.jsx<br>features/libros/LibroForm.jsx<br>features/libros/LibrosPage.jsx<br>public-site/tienda/LibroPage.jsx | screens/detalle_libro_screen.dart | Pública |
 | POST | `/api/libros` | controllers/libro.controller.js#crearLibro | JWT + rol:administrador + upload(portada) | features/libros/LibroForm.jsx | — | JWT + admin |
 | PUT | `/api/libros/:id` | controllers/libro.controller.js#actualizarLibro | JWT + rol:administrador + upload(portada) | features/libros/LibroEditModal.jsx | — | JWT + admin |
@@ -92,13 +92,13 @@ Total de endpoints registrados en el backend: **127** (incluye 4 definidos direc
 | POST | `/api/pagos/webhook` | controllers/pago.controller.js#webhookPago | webhookLimit + express.urlencoded + express.json | — | — | Pública |
 | GET | `/api/pagos` | controllers/pago.controller.js#listarPagosAdmin | JWT + verificarPanel | features/notificaciones/notificacionesService.js<br>features/pagos/PagosPage.jsx | — | JWT + admin |
 | GET | `/api/pagos/resumen` | inline (pago.routes.js) | JWT + verificarPanel | features/pagos/PagosPage.jsx | — | JWT + admin |
-| POST | `/api/pagos/crear-orden` | controllers/pago.controller.js#crearOrden | JWT | public-site/tienda/persistenciaCompra.js | — | JWT |
+| POST | `/api/pagos/crear-orden` | controllers/pago.controller.js#crearOrden | JWT | public-site/tienda/persistenciaCompra.js | screens/entrega_y_pago_screen.dart<br>screens/mis_compras_screen.dart<br>screens/splash_screen.dart | JWT |
 | GET | `/api/pagos/:orderId` | controllers/pago.controller.js#obtenerOrden | JWT | public-site/tienda/MisComprasPage.jsx | screens/entrega_y_pago_screen.dart<br>screens/mis_compras_screen.dart | JWT |
 | GET | `/api/pedidos` | controllers/pedido.controller.js#obtenerPedidos | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT + admin |
 | GET | `/api/pedidos/usuario/:id_usuario` | controllers/pedido.controller.js#obtenerMisPedidos | JWT | — | — | JWT |
 | GET | `/api/pedidos/:id` | controllers/pedido.controller.js#obtenerPedido | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT + admin |
 | PUT | `/api/pedidos/:id/estado` | controllers/pedido.controller.js#actualizarEstadoPedido | JWT + verificarPanel | features/pedidos/PedidosPage.jsx | — | JWT + admin |
-| POST | `/api/reclamaciones` | controllers/reclamacion.controller.js#registrar | reclamacionLimiter | — | screens/libro_reclamaciones_screen.dart | Pública |
+| POST | `/api/reclamaciones` | controllers/reclamacion.controller.js#registrar | reclamacionLimiter | features/reclamaciones/LibroReclamacionesPage.jsx | screens/libro_reclamaciones_screen.dart | Pública |
 | GET | `/api/reclamaciones` | controllers/reclamacion.controller.js#listar | JWT + rol:administrador | features/reclamaciones/ReclamacionesPage.jsx | — | JWT + admin |
 | GET | `/api/reclamaciones/resumen` | controllers/reclamacion.controller.js#resumen | JWT + rol:administrador | features/reclamaciones/ReclamacionesPage.jsx | — | JWT + admin |
 | GET | `/api/reclamaciones/:id` | controllers/reclamacion.controller.js#obtener | JWT + rol:administrador | — | — | JWT + admin |
@@ -133,13 +133,13 @@ Total de endpoints registrados en el backend: **127** (incluye 4 definidos direc
 | GET | `/api/ventas/:id/pago` | controllers/venta.controller.js#obtenerPagoVenta | JWT | public-site/tienda/MisComprasPage.jsx | screens/mis_compras_screen.dart | JWT |
 | PUT | `/api/ventas/:id/estado` | controllers/venta.controller.js#actualizarEstadoVenta | JWT + verificarPanel | — | — | JWT + admin |
 | POST | `/api/ventas/:id/comprobante` | controllers/comprobante.controller.js#generarComprobante | JWT + verificarPanel | features/ventas/EmitirComprobanteModal.jsx | — | JWT + admin |
-| POST | `/api/ventas/:id/reembolso` | controllers/venta.controller.js#reembolsarVenta | JWT + verificarRol(ROLES.ADMINISTRADOR) | features/ventas/ReembolsoModal.jsx | — | JWT + admin |
+| POST | `/api/ventas/:id/reembolso` | controllers/venta.controller.js#reembolsarVenta | JWT + rol:administrador | features/ventas/ReembolsoModal.jsx | — | JWT + admin |
 | GET | `/api/zonas-delivery` | controllers/zonaDelivery.controller.js#listarZonas | JWT | public-site/tienda/CheckoutPage.jsx | screens/entrega_y_pago_screen.dart | JWT |
 | GET | `/api/zonas-delivery/todos` | controllers/zonaDelivery.controller.js#listarTodasZonas | JWT + rol:administrador | features/tarifas/TarifasEnvioPage.jsx | — | JWT + admin |
 | POST | `/api/zonas-delivery` | controllers/zonaDelivery.controller.js#crearZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
 | PUT | `/api/zonas-delivery/:id` | controllers/zonaDelivery.controller.js#actualizarZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
 
-## Endpoints compartidos por React y Flutter (26)
+## Endpoints compartidos por React y Flutter (27)
 
 - `POST /api/auth/registro`
 - `POST /api/auth/login`
@@ -160,6 +160,7 @@ Total de endpoints registrados en el backend: **127** (incluye 4 definidos direc
 - `GET /api/libros/:id`
 - `POST /api/pagos/crear-orden`
 - `GET /api/pagos/:orderId`
+- `POST /api/reclamaciones`
 - `GET /api/usuarios/perfil`
 - `PUT /api/usuarios/perfil`
 - `PUT /api/usuarios/foto`
@@ -168,7 +169,7 @@ Total de endpoints registrados en el backend: **127** (incluye 4 definidos direc
 - `GET /api/ventas/:id/pago`
 - `GET /api/zonas-delivery`
 
-## Endpoints sin cliente en el código (22)
+## Endpoints sin cliente en el código (23)
 
 Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL o desde un tercero:
 
@@ -184,13 +185,14 @@ Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL 
 - `GET /api/historial/mi-historial` — Posiblemente no utilizado por ningún cliente.
 - `POST /api/historial` — Posiblemente no utilizado por ningún cliente.
 - `PUT /api/inventario/libro/:id/stock` — Posiblemente no utilizado por ningún cliente.
-- `GET /api/libros/:id/relacionados` — Posiblemente no utilizado por ningún cliente.
-- `GET /api/pagos/checkout/:externalReference` — Lo abre el navegador con la `checkout_url` que devuelve `POST /api/pagos/crear-orden` (Flutter la lanza con url_launcher).
+- `GET /api/pagos/checkout/:externalReference` — Lo abre el navegador web o la WebView de Flutter con la `checkout_url` que devuelve `POST /api/pagos/crear-orden`.
 - `GET /api/pagos/respuesta/:externalReference` — Página de retorno (responseUrl) de PayU.
 - `POST /api/pagos/webhook` — Confirmación de PayU (servidor a servidor).
 - `GET /api/pedidos/usuario/:id_usuario` — Posiblemente no utilizado por ningún cliente.
 - `GET /api/reclamaciones/:id` — Posiblemente no utilizado por ningún cliente.
 - `POST /api/reservas` — Posiblemente no utilizado por ningún cliente.
+- `GET /api/ubicaciones/provincias` — Posiblemente no utilizado por ningún cliente.
+- `GET /api/ubicaciones/provincias/:id_provincia/distritos` — Posiblemente no utilizado por ningún cliente.
 - `PUT /api/ubicaciones/distritos/:id` — Posiblemente no utilizado por ningún cliente.
 - `POST /api/ventas` — Posiblemente no utilizado por ningún cliente.
 - `PUT /api/ventas/:id/estado` — Posiblemente no utilizado por ningún cliente.

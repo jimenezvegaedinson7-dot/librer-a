@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../utils/app_colors.dart';
 import '../utils/formats.dart';
 import '../models/libro.dart';
 import '../utils/app_tokens.dart';
+import '../utils/app_theme.dart';
 
 /// Mantiene la tipografía del precio existente; agrega la referencia anterior
 /// únicamente cuando hay una rebaja real.
@@ -109,7 +109,8 @@ class PrecioTexto extends StatelessWidget {
         children: [
           TextSpan(
             text: 'S/ ',
-            style: GoogleFonts.inter(
+            style: TextStyle(
+              fontFamily: AppTheme.fontSans,
               fontSize: tamano,
               fontWeight: peso,
               color: tinta,
@@ -120,7 +121,8 @@ class PrecioTexto extends StatelessWidget {
           ),
           TextSpan(
             text: Formats.precio(monto?.toDouble()),
-            style: GoogleFonts.inter(
+            style: TextStyle(
+              fontFamily: AppTheme.fontSans,
               fontSize: tamano,
               fontWeight: peso,
               color: tinta,

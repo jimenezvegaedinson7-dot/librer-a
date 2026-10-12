@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web
 
-> Generado desde el código real el 2026-10-09 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -8,12 +8,12 @@
 `index.html` → `src/main.jsx` → `<ErrorBoundary>` → `routes/AppRouter.jsx`:
 `<ToastProvider>` → `<AuthProvider>` → `<RouterProvider>` (react-router ^7.18.3).
 
-- **Cliente HTTP**: `lib/api/client.js` (axios). `baseURL = VITE_API_URL` (`.env.production` apunta a `https://libreria-api-v9h0.onrender.com/api`, `.env.development` a `http://localhost:3000/api`). Interceptor de petición añade `Bearer <token>`; el de respuesta devuelve `response.data` y ante **401** limpia la sesión y redirige a `/`.
+- **Cliente HTTP**: `lib/api/client.js` (axios). `baseURL = VITE_API_URL`; los valores se configuran por entorno. El interceptor añade `Bearer <token>`, devuelve `response.data` y ante **401 de sesión** limpia la sesión y redirige a `/admin/login`. Los 401 de credencial incorrecta se distinguen con `erroresSesion.js`.
 - **Sesión**: `features/auth/AuthContext.jsx` + `lib/storage/index.js` (`localStorage`: `token`, `usuario`, `ultimoHistorialVisto`). Solo entra `administrador`; perfil actualiza los datos de sesión desde la API.
 - **Cliente web**: `public-site/tienda/TiendaContext.jsx` y `clienteApi.js` mantienen sesión exclusiva de `cliente`, carrito por usuario/invitado e intento de compra persistente; nunca usan la sesión administrativa. `PublicLayout` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
-- **Guards**: `routes/RutaProtegida.jsx` redirige a `/` sin token o sin rol administrador. `routes/RutaPorRol.jsx` exige los roles configurados (solo administrador en el panel). Un **401** limpia sesión; un **403** muestra rechazo de permisos.
-- **Layout**: `features/layout/AdminLayout.jsx` (ThemeProvider, Sidebar, Topbar, Breadcrumbs, transición de página con Framer Motion).
-- **Tema**: `components/providers/ThemeContext.jsx` (modo claro/oscuro y colores por zona en `localStorage`). `src/index.css` carga `styles/paleta-editorial.css` (marino, marfil y dorado compartidos con la web), `styles/theme.css` (componentes) y `styles/panel-editorial.css` (identidad del panel y modo oscuro). `public-site/tema-editorial.css` usa la misma paleta. Los iconos de navegación y búsqueda se definen juntos en `features/layout/navConfig.js`.
+- **Guards**: `routes/RutaProtegida.jsx` redirige a `/admin/login` sin sesión administrativa; `RutaPorRol.jsx` exige los roles configurados. Un **403** muestra rechazo de permisos.
+- **Layout**: `features/layout/AdminLayout.jsx` (Sidebar, Topbar, Breadcrumbs, transición con Framer Motion, tema claro fijo).
+- **Tema**: El layout actual declara `data-theme="light"`; `/personalizacion` redirige a `/dashboard`. `src/index.css` carga `styles/paleta-editorial.css`, `styles/theme.css`, `styles/panel-editorial.css` y `styles/panel-formal.css`. La tienda usa su propio tema en `public-site/tema-editorial.css`. Los iconos de navegación y búsqueda se centralizan en `features/layout/navConfig.js`.
 - **Despliegue**: Vercel (`frontend/vercel.json` reescribe todo a `index.html`).
 
 ## Rutas
@@ -35,7 +35,7 @@
 | `/admin/login` | LoginPage | `features/auth/LoginPage.jsx` |
 | `/admin` | Navigate | redirección: `<Navigate to="/admin/login" replace />` |
 | `/verificar-email` | VerificarEmailPage | `features/auth/VerificarEmailPage.jsx` |
-| `/libro-de-reclamaciones` | TiendaProvider | — |
+| `/libro-de-reclamaciones` | LibroReclamacionesPage | `features/reclamaciones/LibroReclamacionesPage.jsx` |
 | `/dashboard` | DashboardPage | `features/dashboard/DashboardPage.jsx` |
 | `/libros` | LibrosPage | `features/libros/LibrosPage.jsx` |
 | `/autores` | AutoresPage | `features/autores/AutoresPage.jsx` |
@@ -98,7 +98,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/notificaciones/notificacionesService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/pagos`<br>`GET /api/reservas` |
 | `features/pagos/PagosPage.jsx` | `GET /api/pagos`<br>`GET /api/pagos/resumen`<br>`GET /api/ventas` |
 | `features/pedidos/PedidosPage.jsx` | `GET /api/pedidos`<br>`GET /api/pedidos/:param`<br>`PUT /api/pedidos/:param/estado` |
-| `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa` |
+| `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `features/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
 | `features/reportes/useVentasDiarias.js` | `GET /api/reportes/ventas-por-dia` |
 | `features/reservas/ReservaEstadoModal.jsx` | `PUT /api/reservas/:param/estado` |
@@ -119,7 +119,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/tienda/CheckoutPage.jsx` | `GET /api/pagos/capacidades`<br>`GET /api/ventas/:param`<br>`GET /api/zonas-delivery` |
 | `public-site/tienda/CuentaPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reenviar-codigo`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/registro`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-email`<br>`POST /api/auth/verificar-reseteo` |
 | `public-site/tienda/FavoritosPage.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos` |
-| `public-site/tienda/LibroPage.jsx` | `GET /api/autores/:param`<br>`GET /api/libros/:param` |
+| `public-site/tienda/LibroPage.jsx` | `GET /api/autores/:param`<br>`GET /api/libros/:param`<br>`GET /api/libros/:param/relacionados` |
 | `public-site/tienda/MisComprasPage.jsx` | `GET /api/pagos/:param`<br>`GET /api/ventas/:param/pago`<br>`GET /api/ventas/mis-ventas` |
 | `public-site/tienda/PerfilCliente.jsx` | `PUT /api/usuarios/foto`<br>`PUT /api/usuarios/perfil` |
 | `public-site/tienda/TiendaContext.jsx` | `GET /api/libros`<br>`GET /api/usuarios/perfil`<br>`GET /api/ventas/:param` |
@@ -200,8 +200,8 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/pagos/pagosService.js` | `obtenerResumen` | `GET /api/pagos/resumen` |
 | `features/pedidos/pedidosService.js` | `listarPedidos` | `GET /api/pedidos` |
 | `features/pedidos/pedidosService.js` | `obtenerPedido` | `GET /api/pedidos/:param` |
-| `features/pedidos/pedidosService.js` | `listarPedidosFiltrados` | `GET /api/pedidos` |
 | `features/pedidos/pedidosService.js` | `cambiarEstadoPedido` | `PUT /api/pedidos/:param/estado` |
+| `features/reclamaciones/reclamacionesService.js` | `registrarReclamacion` | `POST /api/reclamaciones` |
 | `features/reclamaciones/reclamacionesService.js` | `listarReclamaciones` | `GET /api/reclamaciones` |
 | `features/reclamaciones/reclamacionesService.js` | `obtenerResumenReclamaciones` | `GET /api/reclamaciones/resumen` |
 | `features/reclamaciones/reclamacionesService.js` | `responderReclamacion` | `PUT /api/reclamaciones/:param/respuesta` |
@@ -244,6 +244,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `public-site/tienda/clienteApi.js` | `catalogo` | `GET /api/libros` |
 | `public-site/tienda/clienteApi.js` | `asistente` | `POST /api/asistente` |
 | `public-site/tienda/clienteApi.js` | `libro` | `GET /api/libros/:param` |
+| `public-site/tienda/clienteApi.js` | `relacionados` | `GET /api/libros/:param/relacionados` |
 | `public-site/tienda/clienteApi.js` | `autor` | `GET /api/autores/:param` |
 | `public-site/tienda/clienteApi.js` | `favoritos` | `GET /api/favoritos` |
 | `public-site/tienda/clienteApi.js` | `memoriaAsistente` | `GET /api/asistente/memoria` |
