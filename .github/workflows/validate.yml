@@ -47,6 +47,9 @@ jobs:
         run: npm ci
       - name: Crear base de datos
         run: PGPASSWORD=root psql -h 127.0.0.1 -U root -d libreria_db -f backend/database/schema.sql
+      - name: Instalar Chromium para comprobantes PDF
+        working-directory: backend
+        run: npx playwright install --with-deps chromium --only-shell
       - name: Pruebas unitarias
         working-directory: backend
         run: npm test
