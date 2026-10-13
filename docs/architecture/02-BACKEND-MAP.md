@@ -265,7 +265,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `usuario.model.js#buscarPorId`<br>`venta.model.js#aplicarPago`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
 | GET | `/api/pagos` | JWT + verificarPanel | controllers/pago.controller.js#listarPagosAdmin | `venta.model.js#listarPagosAdmin` | usuarios, ventas |
 | GET | `/api/pagos/resumen` | JWT + verificarPanel | inline (pago.routes.js) | `pago.model.js#listarResumen` | ventas |
-| POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `payu.service.js#crearOrden`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#crear`<br>`zonaDelivery.model.js#obtenerPorId` | detalle_venta, inventario, libros, usuarios, ventas, zonas_delivery_pallasca |
+| POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `payu.service.js#crearOrden`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#crear`<br>`zonaDelivery.model.js#resolverDeliveryCiudad` | detalle_venta, inventario, libros, usuarios, ventas, zonas_delivery_pallasca |
 | GET | `/api/pagos/:orderId` | JWT | controllers/pago.controller.js#obtenerOrden | `payu.service.js#obtenerOrdenDiagnostico`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#aplicarPago`<br>`venta.model.js#buscarPorPayuOrderId`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
 
 ### /api/pedidos
@@ -368,7 +368,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 Tablas consultadas por los modelos (20): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. Este subconjunto no es el total del esquema.
 
-Esquema canónico: **21 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **22 tablas**, incluidas las auxiliares de migración. Hay 42 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
+Esquema canónico: **21 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **22 tablas**, incluidas las auxiliares de migración. Hay 43 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
 
 ## Integraciones externas
 

@@ -11,6 +11,10 @@ class Constants {
   Constants._();
 
   static const String appName = 'Librería';
+  static const double tarifaDeliveryPallasca = 5;
+  static const String ciudadDelivery = 'Ciudad de Pallasca';
+  static const String direccionRecojo =
+      'Plaza de Armas, Jr. Marañón 161, Pallasca 02835';
 
   // ---------------------------------------------------------------------------
   // Servidor y API

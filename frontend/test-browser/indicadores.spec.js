@@ -32,10 +32,7 @@ async function preparar(page, { falloResumen = false, falloLista = false } = {})
         if (path === '/api/reclamaciones/resumen') return route.fulfill({ json: { success: true,
             data: { total: 0, pendientes: 0, vencidos: 0, por_vencer: 0 } } });
         if (path === '/api/zonas-delivery/todos') return route.fulfill({ json: { success: true, data: [
-            { id_zona: 1, nombre: 'Zona A', tarifa: 6, estado: 1 },
-            { id_zona: 2, nombre: 'Zona B', tarifa: 12, estado: 1 },
-            { id_zona: 3, nombre: 'Zona C', tarifa: 18, estado: 1 },
-            { id_zona: 4, nombre: 'Zona inactiva', tarifa: 99, estado: 0 },
+            { id_zona: 1, nombre: 'Ciudad de Pallasca', tarifa: 5, estado: 1 },
         ] } });
         if (path === '/api/pagos/resumen' || path === '/api/comprobantes/resumen') {
             if (control.falloResumen) return route.fulfill({ status: 429, json: { mensaje: 'Demasiadas solicitudes' } });
@@ -105,16 +102,14 @@ for (const width of [320, 390, 1440]) {
 }
 
 for (const width of [390, 1440]) {
-    test(`tarifas ${width}px: gráficos del Dashboard con zonas activas y precios reales`, async ({ page }, info) => {
+    test(`tarifas ${width}px: delivery único S/5 y recojo gratuito sin gráficos redundantes`, async ({ page }, info) => {
         await page.setViewportSize({ width, height: 1000 });
         const control = await preparar(page);
         await page.goto('/tarifas-envio');
-        const resumen = page.getByRole('region', { name: 'Resumen de tarifas' });
-        await expect(resumen).toBeVisible();
-        await expect(resumen.getByRole('meter', { name: 'Zonas con tarifa mínima sobre el total' })).toHaveAttribute('aria-valuenow', '1');
-        await expect(resumen.getByRole('meter', { name: 'Zonas con tarifa máxima sobre el total' })).toHaveAttribute('aria-valuemax', '3');
-        await expect(resumen.locator('.kpi-anillo-cifra')).toHaveText(['33%', '33%']);
-        await expect(resumen.getByRole('img', { name: 'Tarifas de las zonas activas de Pallasca' }).locator('.kpi-tendencia-barra')).toHaveCount(3);
+        await expect(page.getByText('S/ 5.00 fijo', { exact: true })).toBeVisible();
+        await expect(page.getByText('Gratis', { exact: true })).toBeVisible();
+        await expect(page.getByText('Plaza de Armas, Jr. Marañón 161, Pallasca 02835', { exact: true })).toBeVisible();
+        await expect(page.getByRole('meter')).toHaveCount(0);
         expect(control.errores).toEqual([]);
         expect(control.escrituras).toEqual([]);
         await page.screenshot({ path: info.outputPath('tarifas.png'), fullPage: true });
@@ -154,16 +149,14 @@ test('las columnas del Dashboard revelan su trazo al pasar el mouse en las otras
     await expect(ingresos.locator('.kpi-trazo')).toHaveCSS('opacity', '0');
 });
 
-test('tarifas: una única zona gratuita conserva gráficos válidos sin inventar una serie', async ({ page }) => {
+test('tarifas: una respuesta incompatible no inventa delivery gratuito', async ({ page }) => {
     await preparar(page);
     await page.route('**/api/zonas-delivery/todos', route => route.fulfill({ json: { success: true,
         data: [{ id_zona: 1, nombre: 'Zona gratuita', tarifa: 0, estado: 1 }] } }));
     await page.goto('/tarifas-envio');
-    const resumen = page.getByRole('region', { name: 'Resumen de tarifas' });
-    await expect(resumen.locator('.kpi-valor')).toHaveText(['S/ 0.00', 'S/ 0.00', 'S/ 0.00']);
-    await expect(resumen.locator('.kpi-anillo-cifra')).toHaveText(['100%', '100%', '100%']);
-    await expect(resumen.getByRole('meter', { name: 'Zonas incluidas en el promedio' })).toHaveAttribute('aria-valuemax', '1');
-    await expect(resumen.locator('.kpi-tendencia')).toHaveCount(0);
+    await expect(page.getByRole('alert')).toContainText('cobertura fija todavía no está disponible');
+    await expect(page.getByText('No disponible', { exact: true })).toBeVisible();
+    await expect(page.getByText('S/ 0.00', { exact: true })).toHaveCount(0);
 });
 
 for (const ruta of ['/pagos', '/comprobantes']) {

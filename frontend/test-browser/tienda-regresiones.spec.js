@@ -29,7 +29,7 @@ async function preparar(context,{sesion=true,perderPrimera=false,expirarReintent
                 json:{success:estado.perfilStatus===200,data:usuario,mensaje:'Fallo temporal del perfil'}});
             if(ruta==='/api/auth/login')return route.fulfill({json:{success:true,token:req.postDataJSON().email===b.email?'tokenB':'tokenA-renovado',data:req.postDataJSON().email===b.email?b:a}});
             if(ruta==='/api/pagos/capacidades')data={compras_web:true};
-            if(ruta==='/api/zonas-delivery')data=[{id_zona:1,nombre:'Zona original',tarifa:7.5,estado:1}];
+            if(ruta==='/api/zonas-delivery')data=[{id_zona:1,nombre:'Ciudad de Pallasca',tarifa:5,estado:1}];
             if(ruta==='/api/pagos/crear-orden') {
                 const body=req.postDataJSON();estado.posts.push({body,token:req.headers().authorization});
                 if(!estado.ventas.has(body.idempotencia_clave))estado.ventas.set(body.idempotencia_clave,{id_venta:10+estado.ventas.size,body,id_usuario:usuario.id_usuario});
@@ -123,15 +123,14 @@ test('WEB03: sin Web Locks no se envía ni reemplaza una compra ambigua',async({
 });
 test('WEB04: recuperación muestra los artículos y entrega originales, no el carrito editado',async({page,context})=>{
     const control=await preparar(context,{perderPrimera:true});await checkout(page);
-    await page.getByLabel('Delivery dentro de Pallasca — Tarifa por zona',{exact:true}).check();
-    await page.getByLabel('Zona de delivery',{exact:true}).selectOption('1');
+    await page.getByLabel('Delivery en la ciudad de Pallasca — S/5 fijo',{exact:true}).check();
     await page.getByLabel('Dirección',{exact:true}).fill('Dirección original Pallasca');
     await crear(page);await expect(page.getByRole('button',{name:'Recuperar mi pedido',exact:true})).toBeVisible();
     await page.getByRole('link',{name:'Volver al carrito',exact:true}).click();
     await page.getByRole('spinbutton').fill('3');await expect(page.locator('.compra-carrito')).toHaveText('Carrito (3)');
     await page.getByRole('link',{name:'Continuar con la compra',exact:true}).click();
     await expect(page.locator('.compra-resumen')).toContainText('Libro auditoría × 1');
-    await expect(page.locator('.compra-resumen')).toContainText('S/ 82.50');
+    await expect(page.locator('.compra-resumen')).toContainText('S/ 80.00');
     await expect(page.getByText('Dirección original Pallasca',{exact:true})).toBeVisible();
     await page.getByRole('button',{name:'Recuperar mi pedido',exact:true}).click();
     await expect(page.getByRole('heading',{name:'Tu pedido está creado',exact:true})).toBeVisible();

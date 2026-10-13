@@ -19,12 +19,12 @@ async function api(page,{rol='cliente',fallarPrimera=false}={}) {
         if(ruta==='/api/auth/registro')return route.fulfill({status:201,json:{success:true,requiere_verificacion_email:true,mensaje:'Revisa tu correo para verificar tu cuenta.'}});
         if(ruta==='/api/auth/verificar-email')return route.fulfill({json:{success:true,mensaje:'Cuenta verificada correctamente.'}});
         if(ruta==='/api/usuarios/perfil')return route.fulfill({json:{success:true,data:cliente}});
-        if(ruta==='/api/zonas-delivery')return route.fulfill({json:{success:true,data:[{id_zona:1,nombre:'Zona de prueba',tarifa:7.5,estado:1}]}});
+        if(ruta==='/api/zonas-delivery')return route.fulfill({json:{success:true,data:[{id_zona:1,nombre:'Ciudad de Pallasca',tarifa:5,estado:1}]}});
         if(ruta==='/api/pagos/capacidades')return route.fulfill({json:{success:true,data:{compras_web:true,moneda:'PEN',cobertura:'pallasca'}}});
         if(ruta==='/api/pagos/crear-orden') {
             ordenes.push({body:req.postDataJSON(),token:req.headers().authorization});
             if(fallarPrimera && ordenes.length===1)return route.abort('failed');
-            const envio=req.postDataJSON().tipo_entrega==='domicilio'?7.5:0;
+            const envio=req.postDataJSON().tipo_entrega==='domicilio'?5:0;
             return route.fulfill({status:201,json:{success:true,data:{id_venta:10,order_id:'orden_web_10',total:75+envio,costo_envio:envio,checkout_url:`${API}/pagos/checkout/orden_web_10`}}});
         }
         if(ruta==='/api/ventas/mis-ventas')return route.fulfill({json:{success:true,data:[{id_venta:10,canal_compra:'web',origen:'app',cobertura_entrega:'pallasca',tipo_entrega:'tienda',estado:cancelada?'cancelada':pagada?'pagada':'pendiente',estado_entrega:'pendiente',total:75,costo_envio:0,external_reference:'orden_web_10',detalle:[{id_libro:1,titulo:libro.titulo,cantidad:1,precio_unitario:75,subtotal:75}]}]}});
@@ -59,6 +59,7 @@ for(const ancho of [390,1440]) {
         const peticiones=[];page.on('request',r=>{if(r.url().includes('/api/libros'))peticiones.push(r.headers().authorization);});
         const control=await api(page);await hastaCheckout(page);
         await page.getByLabel('Número de documento',{exact:true}).fill('12345678');
+        await expect(page.getByText('Plaza de Armas, Jr. Marañón 161, Pallasca 02835', {exact:true})).toBeVisible();
         await expect(page.getByLabel('Dirección',{exact:true})).toHaveCount(0);
         await page.getByRole('button',{name:'Crear pedido y continuar al pago',exact:true}).click();
         await expect(page.getByRole('heading',{name:'Tu pedido está creado',exact:true})).toBeVisible();
@@ -80,13 +81,17 @@ for(const ancho of [390,1440]) {
         expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     });
 }
-test('compra web: delivery por zona y referencia; reintento conserva la clave después de un error de red',async({page})=>{
+for (const width of [390,1440]) test(`compra web ${width}px: delivery S/5 sin selector y reintento conserva la clave`,async({page})=>{
+    await page.setViewportSize({width,height:1000});
     const control=await api(page,{fallarPrimera:true});await hastaCheckout(page);
-    await page.getByLabel('Delivery dentro de Pallasca — Tarifa por zona',{exact:true}).check();
-    await page.getByLabel('Zona de delivery',{exact:true}).selectOption('1');
+    await page.getByLabel('Delivery en la ciudad de Pallasca — S/5 fijo',{exact:true}).check();
+    await expect(page.getByLabel('Zona de delivery',{exact:true})).toHaveCount(0);
     await page.getByLabel('Dirección',{exact:true}).fill('Dirección de prueba Pallasca');
     await page.getByLabel('Referencia de dirección (opcional)',{exact:true}).fill('Referencia de prueba');
     await page.getByLabel('Número de documento',{exact:true}).fill('12345678');
+    await expect(page.locator('.compra-resumen')).toContainText('S/ 5.00');
+    await expect(page.locator('.compra-resumen')).toContainText('S/ 80.00');
+    await page.screenshot({path:test.info().outputPath('checkout-delivery-fijo.png'),fullPage:true});
     await page.getByRole('button',{name:'Crear pedido y continuar al pago',exact:true}).click();
     await expect(page.getByRole('button',{name:'Recuperar mi pedido',exact:true})).toBeVisible();
     await page.reload();
@@ -94,7 +99,7 @@ test('compra web: delivery por zona y referencia; reintento conserva la clave de
     await expect(page.getByRole('heading',{name:'Tu pedido está creado',exact:true})).toBeVisible();
     expect(control.ordenes).toHaveLength(2);expect(control.ordenes[1].body).toEqual(control.ordenes[0].body);
     expect(control.ordenes[1].body).toMatchObject({tipo_entrega:'domicilio',id_zona_delivery:1,referencia:'Referencia de prueba'});
-    await expect(page.getByText('S/ 82.50',{exact:true})).toBeVisible();
+    await expect(page.getByText('S/ 80.00',{exact:true})).toBeVisible();
 });
 test('cuenta web: registro, verificación de correo y bloqueo del rol administrador',async({page})=>{
     await api(page,{rol:'administrador'});await page.goto('/cuenta');

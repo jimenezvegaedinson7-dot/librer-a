@@ -129,8 +129,8 @@ Total de endpoints registrados en el backend: **120** (incluye 4 definidos direc
 | POST | `/api/ventas/:id/reembolso` | controllers/venta.controller.js#reembolsarVenta | JWT + rol:administrador | features/ventas/ReembolsoModal.jsx | — | JWT + admin |
 | GET | `/api/zonas-delivery` | controllers/zonaDelivery.controller.js#listarZonas | JWT | public-site/tienda/CheckoutPage.jsx | screens/entrega_y_pago_screen.dart | JWT |
 | GET | `/api/zonas-delivery/todos` | controllers/zonaDelivery.controller.js#listarTodasZonas | JWT + rol:administrador | features/tarifas/TarifasEnvioPage.jsx | — | JWT + admin |
-| POST | `/api/zonas-delivery` | controllers/zonaDelivery.controller.js#crearZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
-| PUT | `/api/zonas-delivery/:id` | controllers/zonaDelivery.controller.js#actualizarZona | JWT + rol:administrador | features/tarifas/TarifaEditModal.jsx | — | JWT + admin |
+| POST | `/api/zonas-delivery` | controllers/zonaDelivery.controller.js#crearZona | JWT + rol:administrador | — | — | JWT + admin |
+| PUT | `/api/zonas-delivery/:id` | controllers/zonaDelivery.controller.js#actualizarZona | JWT + rol:administrador | — | — | JWT + admin |
 
 ## Endpoints compartidos por React y Flutter (27)
 
@@ -162,7 +162,7 @@ Total de endpoints registrados en el backend: **120** (incluye 4 definidos direc
 - `GET /api/ventas/:id/pago`
 - `GET /api/zonas-delivery`
 
-## Endpoints sin cliente en el código (22)
+## Endpoints sin cliente en el código (24)
 
 Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL o desde un tercero:
 
@@ -188,3 +188,5 @@ Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL 
 - `PUT /api/ubicaciones/distritos/:id` — Posiblemente no utilizado por ningún cliente.
 - `POST /api/ventas` — Posiblemente no utilizado por ningún cliente.
 - `PUT /api/ventas/:id/estado` — Posiblemente no utilizado por ningún cliente.
+- `POST /api/zonas-delivery` — Posiblemente no utilizado por ningún cliente.
+- `PUT /api/zonas-delivery/:id` — Posiblemente no utilizado por ningún cliente.

@@ -31,7 +31,7 @@ export default function Promos() {
                         <span className="vitrina__icono" aria-hidden="true"><FaTruckFast /></span>
                         <div className="vitrina__cuerpo">
                             <h3>Delivery o recojo sin costo en Pallasca</h3>
-                            <p>Delivery dentro de Pallasca con tarifa por zona, o recojo gratis en nuestra tienda.</p>
+                            <p>Delivery S/5 fijo dentro de la ciudad de Pallasca, o recojo gratis en nuestra tienda.</p>
                             <Link to="/caracteristicas" className="boton boton--marca boton--chico">Ver cómo funciona <FaChevronRight aria-hidden="true" /></Link>
                         </div>
                     </article>

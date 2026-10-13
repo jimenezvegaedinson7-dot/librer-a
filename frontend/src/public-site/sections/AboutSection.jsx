@@ -29,7 +29,7 @@ const PILARES = [
     {
         Icono: FaTruckFast,
         titulo: 'Delivery dentro de Pallasca',
-        texto: 'Te lo llevamos a tu dirección en una zona activa, con la tarifa que ves antes de pagar.',
+        texto: 'Te lo llevamos a tu dirección dentro de la ciudad de Pallasca por S/5 fijo.',
     },
     {
         Icono: FaStore,
@@ -43,7 +43,7 @@ const PILARES = [
     },
 ];
 
-export default function AboutSection({ legal, reducido }) {
+export default function AboutSection({ reducido }) {
     const seccion = useRef(null);
     const palabras = CITA.split(' ');
 
@@ -151,7 +151,7 @@ export default function AboutSection({ legal, reducido }) {
                         <h2 id="tienda-titulo">Nuestra tienda</h2>
                         <p className="tienda__direccion">
                             <FaLocationDot aria-hidden="true" />
-                            <span>{legal.direccion}</span>
+                            <span>{UBICACION_TIENDA.consulta}</span>
                         </p>
                         <p className="tienda__nota">
                             Aquí recoges sin costo de envío los pedidos que haces en la app. Elige «Recojo en Pallasca» al pagar.

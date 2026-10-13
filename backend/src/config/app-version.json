@@ -1,8 +1,8 @@
 {
-    "version": "1.0.21",
-    "versionCode": 22,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.21/libreria-1.0.21.apk",
-    "sha256": "965d4eda06e50f64fdce832df4f75084cf2babd62b286ba91d21ac08f9a96f28",
+    "version": "1.0.22",
+    "versionCode": 23,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.22/libreria-1.0.22.apk",
+    "sha256": "9eb49341da51b8ac2259861fe1fe1a520132e39848e0ce0269f8813b4910c175",
     "obligatoria": false,
-    "notas": "Reservas e historial de reservas eliminados. Navegación directa a Mis compras; panel, notificaciones y presentación actualizados."
+    "notas": "Delivery S/5 fijo en toda la ciudad de Pallasca y recojo gratuito en Jr. Marañón 161. Seguimiento simplificado en tres etapas, indicadores corregidos y conservación de compras anteriores."
 }

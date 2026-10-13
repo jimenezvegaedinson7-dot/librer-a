@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/zona_delivery.dart';
+import '../utils/constants.dart';
 import '../models/orden_pago.dart';
 import '../services/api_service.dart';
 import '../services/carrito_service.dart';
@@ -142,7 +143,13 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       final zonas = await _api.obtenerZonasDelivery();
       if (!mounted) return;
       setState(() {
-        _zonas = zonas;
+        _zonas = zonas
+            .where(
+              (z) =>
+                  z.nombre == Constants.ciudadDelivery &&
+                  z.tarifa == Constants.tarifaDeliveryPallasca,
+            )
+            .toList();
         _cargandoZonas = false;
         if (!_zonas.any((z) => z.idZona == _idZona)) _idZona = null;
         if (_zonas.length == 1) _idZona = _zonas.first.idZona;
@@ -157,7 +164,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       if (!mounted) return;
       setState(() {
         _cargandoZonas = false;
-        _errorZonas = 'No se pudieron cargar las zonas de delivery.';
+        _errorZonas = 'No se pudo consultar la cobertura. Reintenta o elige recojo gratuito.';
       });
     }
   }
@@ -202,7 +209,13 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         final zonas = await _api.obtenerZonasDelivery();
         if (!mounted) return;
         setState(() {
-          _zonas = zonas;
+          _zonas = zonas
+              .where(
+                (z) =>
+                    z.nombre == Constants.ciudadDelivery &&
+                    z.tarifa == Constants.tarifaDeliveryPallasca,
+              )
+              .toList();
         });
       }
       // Todas las modalidades se revalidan tras las esperas. El POST usa la
@@ -315,7 +328,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     switch (_tipoEntrega) {
       case _TipoEntrega.domicilio:
         if (!_zonas.any((z) => z.idZona == _idZona)) {
-          return 'Selecciona una zona activa de delivery dentro de Pallasca.';
+          return 'Actualiza la cobertura de delivery o elige recojo gratuito.';
         }
         if (_direccionController.text.trim().length < 5) {
           return 'Escribe tu dirección en Pallasca (calle y número).';
@@ -559,11 +572,11 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           seleccionado: _tipoEntrega == _TipoEntrega.domicilio,
           icon: Icons.local_shipping_outlined,
           titulo: 'Delivery',
-          detalle: 'Te lo llevamos a tu dirección en Pallasca.',
-          // Con una sola tarifa se muestra el precio; si no, "Según zona".
+          detalle: 'Mismo precio en toda la ciudad de Pallasca.',
+          // Una sola cobertura y tarifa para toda la ciudad.
           etiqueta: _tarifaUnica
               ? 'S/ ${Formats.precio(_zonas.first.tarifa)}'
-              : 'Según zona',
+              : 'S/5 fijo',
           onTap: _procesando
               ? null
               : () => setState(() => _tipoEntrega = _TipoEntrega.domicilio),
@@ -573,7 +586,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           seleccionado: _tipoEntrega == _TipoEntrega.tienda,
           icon: Icons.storefront_outlined,
           titulo: 'Recojo en tienda',
-          detalle: 'Recoge tu pedido en nuestra tienda de Pallasca.',
+          detalle: Constants.direccionRecojo,
           etiqueta: 'Gratis',
           onTap: _procesando
               ? null
@@ -615,43 +628,13 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!sinTarifa && !_tarifaUnica) ...[
-          const _ZonaReparto(),
-          const SizedBox(height: 12),
-        ],
+        if (!sinTarifa) ...[const _ZonaReparto(), const SizedBox(height: 12)],
         if (sinTarifa)
           _AvisoSinTarifa(
             mensaje: _errorZonas ?? 'El delivery aún no tiene tarifa activa. Puedes dejar tu dirección y elegir recojo gratuito en Pallasca mientras tanto.',
             onReintentar: !_procesando && _errorZonas != null
                 ? _cargarZonas
                 : null,
-          )
-        else if (!_tarifaUnica)
-          DropdownButtonFormField<int>(
-            style: Theme.of(context).textTheme.bodyLarge,
-            initialValue: _idZona,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Zona de delivery en Pallasca',
-              prefixIcon: Icon(Icons.location_on_outlined),
-            ),
-            items: [
-              for (final d in _zonas)
-                DropdownMenuItem(
-                  value: d.idZona,
-                  child: Text(
-                    '${d.nombre} · S/ ${Formats.precio(d.tarifa)}',
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-            ],
-            onChanged: _procesando || _zonas.isEmpty
-                ? null
-                : (valor) {
-                    if (valor != null) {
-                      setState(() => _idZona = valor);
-                    }
-                  },
           ),
         const SizedBox(height: 12),
         TextField(
@@ -692,7 +675,9 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
             dense: true,
             controlAffinity: ListTileControlAffinity.leading,
             title: const Text('Mi dirección está dentro de Pallasca'),
-            subtitle: const Text('Solo repartimos dentro de la ciudad.'),
+            subtitle: const Text(
+              'Solo dentro de la ciudad; no incluye anexos ni otros distritos.',
+            ),
           ),
         ),
       ],
@@ -814,7 +799,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
             value: _tipoEntrega == _TipoEntrega.tienda
                 ? 'Gratis'
                 : _idZona == null
-                ? 'Selecciona una zona'
+                ? 'Delivery no disponible'
                 : 'S/ ${Formats.precio(costoEnvio)}',
           ),
           Divider(height: 22, color: AppColors.gold.withValues(alpha: 0.25)),
@@ -1315,7 +1300,7 @@ class _NotaTienda extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Puedes recoger tu pedido en nuestra tienda en Pallasca sin costo de envío.',
+              'Recojo gratuito en ${Constants.direccionRecojo}.',
               style: Theme.of(context).textTheme.bodySmall
                   ?.copyWith(color: AppColors.textPrimary, height: 1.4),
             ),
@@ -1520,7 +1505,7 @@ class _ZonaReparto extends StatelessWidget {
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const TextSpan(text: '  ·  Elige tu zona de reparto'),
+                  const TextSpan(text: '  ·  S/5 fijo en toda la ciudad'),
                 ],
               ),
               style: textTheme.bodySmall?.copyWith(

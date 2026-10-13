@@ -7,6 +7,7 @@ import { useTienda } from './TiendaContext';
 import { soles } from '../lib/formato';
 import EstadoSesion from './EstadoSesion';
 import { useDatosCliente } from './useDatosCliente';
+import { DIRECCION_RECOJO, DELIVERY_CIUDAD } from '../config/site';
 
 export default function CheckoutPage() {
     const t=useTienda();
@@ -63,7 +64,11 @@ function CheckoutCliente({ t }) {
             if(!j.data?.compras_web)throw new Error('La compra web aún no está disponible en este servidor.');
             if(vigente)setDisponible(true);
         }).catch(()=>{if(vigente)setError('La compra web aún no está disponible en este servidor. Inténtalo más tarde.');});
-        clienteApi.zonas(t.sesion).then(j=>{if(vigente)setZonas(j.data || []);})
+        clienteApi.zonas(t.sesion).then(j=>{if(vigente){
+            const opciones=(j.data || []).filter(z=>z.nombre===DELIVERY_CIUDAD.nombre && Number(z.tarifa)===DELIVERY_CIUDAD.tarifa && Number(z.estado)===1);
+            setZonas(opciones);
+            setZonaId(actual => actual || String(opciones[0]?.id_zona || ''));
+        }})
             .catch(e=>{if(vigente)setErrorZonas(e.message);});
         return()=>{vigente=false;};
     },[idUsuario,t.revisando,t.errorSesion,t.sesion]);
@@ -96,7 +101,7 @@ function CheckoutCliente({ t }) {
                     const nuevas=(await clienteApi.zonas(t.sesion)).data || [];
                     const vigente=nuevas.find(z=>Number(z.id_zona)===Number(zonaId) && Number(z.estado)===1);
                     setZonas(nuevas);
-                    if(!vigente)throw new Error('Selecciona una zona de delivery activa dentro de Pallasca.');
+                     if(!vigente)throw new Error('Actualiza las opciones de entrega o elige recojo gratuito.');
                     if(centimos(vigente.tarifa)!==centimos(zona?.tarifa))throw new Error('La tarifa de delivery cambió. Revisa el resumen y vuelve a confirmar.');
                 }
                 const cuerpo={items:carrito.items.map(i=>({id_libro:i.id_libro,cantidad:i.cantidad})),tipo_entrega:tipo,
@@ -130,7 +135,7 @@ function CheckoutCliente({ t }) {
     const subtotal=recuperando ? previo.resumen?.lineas?.reduce((s,i)=>s+i.precio_centimos*i.cantidad,0)/100 : t.subtotal;
     const envioResumen=recuperando ? previo.resumen?.envio_centimos/100 : envio;
     const tipoResumen=recuperando ? previo.cuerpo.tipo_entrega : tipo;
-    return <section className="compra-pagina contenedor"><h1>Entrega y pago</h1><p>Recojo gratuito o delivery dentro de Pallasca.</p>
+    return <section className="compra-pagina contenedor"><h1>Entrega y pago</h1><p>Delivery S/5 fijo dentro de la ciudad de Pallasca o recojo gratuito.</p>
         {error && <p role="alert" className="compra-error">{error}</p>}
         {lectura.error && <p role="alert" className="compra-error">{lectura.error}</p>}
         {recuperando && <p role="status" className="compra-aviso">Recuperaremos tu solicitud anterior antes de crear otro pedido.</p>}
@@ -141,12 +146,12 @@ function CheckoutCliente({ t }) {
                 {previo.cuerpo.referencia && <p>{previo.cuerpo.referencia}</p>}
                 <p>{previo.cuerpo.cliente_tipo_documento}: {previo.cuerpo.cliente_documento}</p></>
                 : <fieldset disabled={ocupado}><legend>Cómo recibir tus libros</legend>
-                <label className="entrega-opcion"><input type="radio" name="entrega" value="tienda" checked={tipo==='tienda'} onChange={()=>setTipo('tienda')}/>Recojo en Pallasca — Gratis</label>
-                <label className="entrega-opcion"><input type="radio" name="entrega" value="domicilio" checked={tipo==='domicilio'} onChange={()=>setTipo('domicilio')}/>Delivery dentro de Pallasca — Tarifa por zona</label>
+                 <label className="entrega-opcion"><input type="radio" name="entrega" value="tienda" checked={tipo==='tienda'} onChange={()=>setTipo('tienda')}/>Recojo en Pallasca — Gratis</label>
+                 {tipo==='tienda' && <p>{DIRECCION_RECOJO}</p>}
+                 <label className="entrega-opcion"><input type="radio" name="entrega" value="domicilio" checked={tipo==='domicilio'} onChange={()=>setTipo('domicilio')}/>Delivery en la ciudad de Pallasca — S/5 fijo</label>
                 {tipo==='domicilio' && <>{errorZonas && <p role="alert">{errorZonas}</p>}
-                    {!zonas.length && <p>No hay zonas de delivery activas. Puedes elegir recojo gratuito.</p>}
-                    <label htmlFor="web-zona-delivery">Zona de delivery</label><select id="web-zona-delivery" value={zonaId} required onChange={e=>setZonaId(e.target.value)}><option value="">Selecciona una zona</option>
-                        {zonas.map(z=><option key={z.id_zona} value={z.id_zona}>{z.nombre} · {soles(z.tarifa)}</option>)}</select>
+                     {!zonas.length && <p>No está disponible el delivery. Puedes elegir recojo gratuito.</p>}
+                     <p>La tarifa es la misma para todos los barrios de la ciudad. No incluye anexos ni otros distritos.</p>
                     <label>Dirección<input required minLength={5} maxLength={255} autoComplete="street-address" value={direccion} onChange={e=>{editados.current.add('direccion');setDireccion(e.target.value);}}/></label>
                     <label>Referencia de dirección (opcional)<input maxLength={255} value={referencia} onChange={e=>setReferencia(e.target.value)}/></label></>}
                 <label htmlFor="web-tipo-documento">Tipo de documento</label><select id="web-tipo-documento" value={tipoDoc} onChange={e=>{editados.current.add('tipoDoc');setTipoDoc(e.target.value);}}><option>DNI</option><option>RUC</option><option>CE</option></select>

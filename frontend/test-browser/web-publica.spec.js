@@ -44,7 +44,9 @@ const menu = (page) => page.getByRole('navigation', { name: 'Principal' });
 test('cobertura Pallasca: textos y SEO estático no ofrecen entrega en Lima ni nacional', async ({page}) => {
     const html = await (await page.request.get('/')).text();
     expect(html).not.toMatch(/entrega en Lima|domicilio en Lima|"areaServed": "PE"/);
-    expect(html).toContain('"areaServed": "Pallasca"');
+    expect(html).toContain('"areaServed": "Ciudad de Pallasca"');
+    expect(html).toContain('"streetAddress": "Plaza de Armas, Jr. Marañón 161"');
+    expect(html).toContain('"postalCode": "02835"');
     await apiPublica(page);
     for (const ruta of ['/', '/catalogo', '/caracteristicas', '/nosotros']) {
         await page.goto(ruta);
@@ -685,7 +687,7 @@ test('franja de beneficios: azul marino, texto marfil e iconos dorados', async (
     await expect(franja).toHaveCSS('color', 'rgb(255, 249, 239)');
     await expect(page.locator('.avisos .aviso-icono')).toHaveCount(3);
     await expect(page.locator('.avisos .aviso-icono').first()).toHaveCSS('color', 'rgb(213, 164, 71)');
-    for (const texto of ['Delivery dentro de Pallasca', 'Recojo sin costo en Pallasca', 'Pago en línea seguro con PayU']) {
+    for (const texto of ['Delivery S/5 en la ciudad de Pallasca', 'Recojo sin costo en Pallasca', 'Pago en línea seguro con PayU']) {
         await expect(page.locator('.avisos')).toContainText(texto);
     }
 });

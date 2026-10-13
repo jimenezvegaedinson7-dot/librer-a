@@ -66,11 +66,11 @@ test('compra web: cuenta, canal, monto, idempotencia, propiedad y gestión de en
             for(const estado of ['listo_recojo','entregado'])assert.equal((await pedir(`/pedidos/${orden.id_venta}/estado`,tokens[0],'PUT',{estado,confirmado:true})).status,200);
             assert.equal((await pool.query('SELECT estado FROM ventas WHERE id_venta=?',[orden.id_venta]))[0][0].estado,'pagada');
         });
-        await t.test('delivery web toma tarifa BD y conserva dirección y referencia',async()=>{
+        await t.test('delivery web cobra S/5 fijo y conserva dirección y referencia',async()=>{
             const r=await pedir('/pagos/crear-orden',tokens[1],'POST',{...cuerpo,idempotencia_clave:randomUUID(),tipo_entrega:'domicilio',id_zona_delivery:zona,direccion:'Dirección de prueba Pallasca',referencia:'Referencia prueba',costo_envio:0.01});
-            assert.equal(r.status,201,await r.clone().text());const data=(await r.json()).data;assert.equal(Number(data.total),82.5);assert.equal(Number(data.costo_envio),7.5);
+            assert.equal(r.status,201,await r.clone().text());const data=(await r.json()).data;assert.equal(Number(data.total),80);assert.equal(Number(data.costo_envio),5);
             const detalle=(await (await pedir(`/ventas/${data.id_venta}`,tokens[1])).json()).data;
-            assert.equal(detalle.referencia,'Referencia prueba');assert.equal(detalle.id_zona_delivery,zona);assert.equal(detalle.canal_compra,'web');
+            assert.equal(detalle.referencia,'Referencia prueba');assert.equal(detalle.zona_delivery_nombre,'Ciudad de Pallasca');assert.equal(detalle.canal_compra,'web');
         });
         await t.test('033 es repetible y no modifica el historial',async()=>{
             const [previas]=await pool.query('SELECT * FROM ventas ORDER BY id_venta');

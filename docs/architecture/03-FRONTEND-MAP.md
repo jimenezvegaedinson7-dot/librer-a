@@ -101,7 +101,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `features/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
 | `features/reportes/useVentasDiarias.js` | `GET /api/reportes/ventas-por-dia` |
-| `features/tarifas/TarifaEditModal.jsx` | `POST /api/zonas-delivery`<br>`PUT /api/zonas-delivery/:param` |
 | `features/tarifas/TarifasEnvioPage.jsx` | `GET /api/zonas-delivery/todos` |
 | `features/usuarios/UsuariosPage.jsx` | `GET /api/usuarios`<br>`PATCH /api/usuarios/:param` |
 | `features/ventas/EmitirComprobanteModal.jsx` | `GET /api/empresa`<br>`POST /api/comprobantes/:param/enviar-email`<br>`POST /api/ventas/:param/comprobante` |
@@ -211,7 +210,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/reportes/reportesService.js` | `obtenerVentasPorDia` | `GET /api/reportes/ventas-por-dia` |
 | `features/reportes/reportesService.js` | `obtenerIndicadoresVentas` | `GET /api/reportes/indicadores-ventas` |
 | `features/tarifas/tarifasService.js` | `listarZonasDelivery` | `GET /api/zonas-delivery/todos` |
-| `features/tarifas/tarifasService.js` | `guardarZonaDelivery` | `PUT /api/zonas-delivery/:param`<br>`POST /api/zonas-delivery` |
 | `features/usuarios/usuariosService.js` | `listarUsuarios` | `GET /api/usuarios` |
 | `features/usuarios/usuariosService.js` | `actualizarUsuario` | `PATCH /api/usuarios/:param` |
 | `features/ventas/ventasService.js` | `listarVentas` | `GET /api/ventas` |
@@ -259,28 +257,28 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | Archivo | Usado por (nº de archivos) |
 |---|---|
 | `components/catalogo/PortadaCatalogo.jsx` | 3 |
-| `components/providers/ToastProvider.jsx` | 16 |
-| `components/ui/Acciones.jsx` | 13 |
-| `components/ui/Alert.jsx` | 33 |
-| `components/ui/Badge.jsx` | 22 |
-| `components/ui/Button.jsx` | 46 |
+| `components/providers/ToastProvider.jsx` | 15 |
+| `components/ui/Acciones.jsx` | 12 |
+| `components/ui/Alert.jsx` | 32 |
+| `components/ui/Badge.jsx` | 21 |
+| `components/ui/Button.jsx` | 45 |
 | `components/ui/Card.jsx` | 19 |
 | `components/ui/Celebracion.jsx` | 2 |
 | `components/ui/ConfirmarAccion.jsx` | 3 |
 | `components/ui/ConfirmarEliminacion.jsx` | 4 |
-| `components/ui/DataTable.jsx` | 14 |
-| `components/ui/EmptyState.jsx` | 16 |
+| `components/ui/DataTable.jsx` | 13 |
+| `components/ui/EmptyState.jsx` | 15 |
 | `components/ui/ErrorBoundary.jsx` | 1 |
 | `components/ui/EstadoModal.jsx` | 0 |
 | `components/ui/Ficha.jsx` | 9 |
-| `components/ui/Form.jsx` | 35 |
+| `components/ui/Form.jsx` | 33 |
 | `components/ui/FormularioAlta.jsx` | 3 |
 | `components/ui/Indicadores.jsx` | 11 |
-| `components/ui/Modal.jsx` | 28 |
+| `components/ui/Modal.jsx` | 27 |
 | `components/ui/PageHeader.jsx` | 15 |
 | `components/ui/Pagination.jsx` | 12 |
 | `components/ui/Spinner.jsx` | 4 |
-| `components/ui/TableSkeleton.jsx` | 16 |
+| `components/ui/TableSkeleton.jsx` | 15 |
 | `public-site/components/ActualizarApp.jsx` | 1 |
 | `public-site/components/BarraMovil.jsx` | 1 |
 | `public-site/components/CierreDescarga.jsx` | 1 |
@@ -314,7 +312,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `public-site/lib/precarga.js`
 - `public-site/lib/useCarruselAutomatico.js`
 
-## Framer Motion (`motion/react`) — 27 archivos
+## Framer Motion (`motion/react`) — 26 archivos
 
 - `components/providers/ToastProvider.jsx`
 - `components/ui/Celebracion.jsx`
@@ -337,7 +335,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `features/layout/PerfilAdministrador.jsx`
 - `features/layout/Sidebar.jsx`
 - `features/notificaciones/PanelNotificaciones.jsx`
-- `features/tarifas/TarifasEnvioPage.jsx`
 - `features/usuarios/UsuariosClientesPage.jsx`
 - `features/ventas/VentasPage.jsx`
 - `public-site/components/PublicHeader.jsx`

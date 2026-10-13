@@ -19,17 +19,18 @@ export const SITIO = {
 };
 
 // Respaldo de los datos legales; se actualizan con GET /api/empresa.
+export const DIRECCION_RECOJO = 'Plaza de Armas, Jr. Marañón 161, Pallasca 02835';
+export const DELIVERY_CIUDAD = { nombre: 'Ciudad de Pallasca', tarifa: 5 };
 export const LEGAL_RESPALDO = {
     nombreComercial: 'MATIDANA',
     razonSocial: 'FLORES SALINAS SARA',
     ruc: '10447545387',
-    direccion: 'Jr. Plaza de Armas s/n, frente a la Plaza Principal, Pallasca, Áncash, Perú',
+    direccion: DIRECCION_RECOJO,
 };
 
 // Ubicación de la tienda para el mapa (búsqueda pública de Google Maps,
-// sin clave de API). Se busca la Plaza de Armas de Pallasca porque la
-// dirección es "s/n, frente a la Plaza Principal".
-const CONSULTA_TIENDA = 'Plaza de Armas, Pallasca, Áncash, Perú';
+// sin clave de API). Dirección de recojo confirmada por la tienda.
+const CONSULTA_TIENDA = DIRECCION_RECOJO;
 
 export const UBICACION_TIENDA = {
     consulta: CONSULTA_TIENDA,
@@ -49,7 +50,7 @@ export const NAVEGACION = [
 
 // Avisos de la barra superior (hechos reales del servicio).
 export const AVISOS = [
-    { texto: 'Delivery dentro de Pallasca' },
+    { texto: 'Delivery S/5 en la ciudad de Pallasca' },
     { texto: 'Recojo sin costo en Pallasca' },
     { texto: 'Pago en línea seguro con PayU' },
 ];
@@ -70,7 +71,7 @@ export const PAGINAS = {
     },
     '/caracteristicas': {
         titulo: 'Características · Librería del Saber',
-        descripcion: 'Delivery dentro de Pallasca con tarifa por zona, recojo sin costo en Pallasca y pago con PayU.',
+        descripcion: 'Delivery S/5 fijo dentro de la ciudad de Pallasca, recojo gratuito en Jr. Marañón 161 y pago con PayU.',
     },
     '/nosotros': {
         titulo: 'Nosotros · Librería del Saber',

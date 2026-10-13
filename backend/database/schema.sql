@@ -237,7 +237,7 @@ CREATE INDEX IF NOT EXISTS idx_reservas_venc_estado ON reservas (fecha_vencimien
 -- VENTAS (migraciones 003, 004, 005, 007, 008, 011, 012, 014,
 -- índice estado/fecha, y 016 idempotencia_clave)
 -- ============================================================
--- Zonas locales: el administrador configura los nombres y precios, sin semillas.
+-- Cobertura única de la ciudad. Las zonas anteriores se conservan por historial.
 CREATE TABLE IF NOT EXISTS zonas_delivery_pallasca (
     id_zona SERIAL PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL CHECK (length(btrim(nombre)) BETWEEN 1 AND 80),
@@ -246,6 +246,10 @@ CREATE TABLE IF NOT EXISTS zonas_delivery_pallasca (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS uq_zonas_delivery_nombre
     ON zonas_delivery_pallasca (lower(btrim(nombre)));
+
+INSERT INTO zonas_delivery_pallasca(nombre, tarifa, estado)
+VALUES ('Ciudad de Pallasca', 5.00, 1)
+ON CONFLICT (lower(btrim(nombre))) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS ventas (
     id_venta SERIAL PRIMARY KEY,

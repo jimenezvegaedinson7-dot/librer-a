@@ -113,7 +113,8 @@ const MIGRACIONES = [
 // con un bloqueo, así dos instancias del servicio no la aplican a la vez.
 const MIGRACIONES_DATOS = [
     '041_backfill_entrega_ventas_canceladas.sql',
-    '042_purga_reservas.sql'
+    '042_purga_reservas.sql',
+    '043_delivery_fijo_pallasca.sql'
 ];
 
 const TABLA_MIGRACIONES_DATOS = `

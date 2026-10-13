@@ -232,42 +232,27 @@ async function apiVacia(page) {
 }
 
 for (const width of [390, 1440]) {
-    test(`Pallasca: alta, edición e inactivación de zonas sin tarifas inventadas a ${width}px`, async ({page}) => {
+    test(`Pallasca: tarifa fija y dirección de recojo sin edición por barrio a ${width}px`, async ({page}) => {
         await page.setViewportSize({width, height:1000});
         const errores = []; page.on('pageerror', e => errores.push(e.message));
         const escrituras = []; const ubicaciones = [];
         page.on('request', r => { if (r.url().includes('/ubicaciones')) ubicaciones.push(r.url()); });
         await sesion(page); await apiVacia(page);
-        let zonas = [];
+        const zonas = [{id_zona:1,nombre:'Ciudad de Pallasca',tarifa:5,estado:1}];
         await page.route('**/api/zonas-delivery**', async route => {
             const req = route.request();
             if (req.method() === 'GET') return route.fulfill({json:{success:true,data:zonas}});
             const datos = req.postDataJSON(); escrituras.push(datos);
-            const zona = {id_zona:1,...datos}; zonas = [zona];
-            return route.fulfill({status:req.method()==='POST' ? 201 : 200,json:{success:true,data:zona}});
+            return route.fulfill({status:409,json:{success:false,mensaje:'Tarifa fija'}});
         });
         await page.goto('/tarifas-envio');
-        await expect(page.getByText('Sin zonas de delivery configuradas',{exact:true})).toBeVisible();
-        await page.getByRole('button',{name:'Nueva zona',exact:true}).click();
-        let modal = page.getByRole('dialog');
-        await expect(modal.getByLabel('Tarifa de delivery')).toHaveValue('');
-        await modal.getByLabel('Nombre de la zona').fill('Zona de prueba');
-        await modal.getByLabel('Tarifa de delivery').fill('7.50');
-        await modal.getByRole('button',{name:'Guardar zona',exact:true}).click();
-        await expect(modal).toHaveCount(0);
-        await expect(page.locator('tr').filter({hasText:'Zona de prueba'})).toContainText('S/ 7.50');
-        await page.getByTitle('Editar zona Zona de prueba',{exact:true}).click();
-        modal = page.getByRole('dialog');
-        await modal.getByLabel('Nombre de la zona').fill('Zona renombrada');
-        await modal.getByLabel('Tarifa de delivery').fill('11.25');
-        await modal.getByLabel('Estado de la zona').selectOption('0');
-        await modal.getByRole('button',{name:'Guardar zona',exact:true}).click();
-        await expect(modal).toHaveCount(0);
-        const fila = page.locator('tr').filter({hasText:'Zona renombrada'});
-        await expect(fila).toContainText('S/ 11.25'); await expect(fila).toContainText('Inactiva');
-        expect(escrituras).toEqual([
-            {nombre:'Zona de prueba',tarifa:7.5,estado:1}, {nombre:'Zona renombrada',tarifa:11.25,estado:0}
-        ]);
+        await expect(page.getByText('S/ 5.00 fijo',{exact:true})).toBeVisible();
+        await expect(page.getByText('Gratis',{exact:true})).toBeVisible();
+        await expect(page.getByText('Plaza de Armas, Jr. Marañón 161, Pallasca 02835',{exact:true})).toBeVisible();
+        await expect(page.getByRole('button',{name:'Nueva zona',exact:true})).toHaveCount(0);
+        await page.getByRole('button',{name:'Actualizar',exact:true}).click();
+        await expect(page.getByText('S/ 5.00 fijo',{exact:true})).toBeVisible();
+        expect(escrituras).toEqual([]);
         expect(ubicaciones).toEqual([]);
         expect(errores).toEqual([]);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

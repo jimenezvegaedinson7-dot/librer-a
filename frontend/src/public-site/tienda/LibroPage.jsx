@@ -34,7 +34,7 @@ function InformacionLibro({ libro }) {
         <div className="ficha-herramientas"><FavoritoLibro key={`${libro.id}-${generacion}`} libro={libro}/><CompartirLibro libro={libro}/></div>
         <section className="ficha-entrega" aria-label="Entrega disponible"><h2>Entrega disponible</h2><ul>
             <li><FaStore aria-hidden="true"/><span>Recojo en Pallasca — <strong>Gratis</strong></span></li>
-            <li><FaTruckFast aria-hidden="true"/><span>Delivery dentro de Pallasca — Tarifa por zona activa</span></li>
+            <li><FaTruckFast aria-hidden="true"/><span>Delivery en la ciudad de Pallasca — <strong>S/5 fijo</strong></span></li>
             <li><FaShieldHalved aria-hidden="true"/><span>Pago seguro con PayU</span></li>
         </ul></section>
         {libro.sinopsis && <a className="ficha-leer-descripcion" href="#descripcion-libro">Leer la descripción completa</a>}

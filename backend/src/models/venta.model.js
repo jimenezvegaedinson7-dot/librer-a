@@ -547,10 +547,9 @@ const crear = async (venta, conexionExterna = null) => {
             if (!tipoEntregaVenta) throw new Error('Selecciona el tipo de entrega en Pallasca');
             costoEnvioVenta = 0;
             if (tipoEntregaVenta === 'domicilio') {
-                const idZona = validarId(id_zona_delivery);
-                zonaEntrega = idZona ? await zonaDeliveryModel.obtenerPorId(idZona, connection, true) : null;
+                zonaEntrega = await zonaDeliveryModel.resolverDeliveryCiudad(id_zona_delivery, connection, true);
                 if (!zonaEntrega || Number(zonaEntrega.estado) !== 1) {
-                    const error = new Error('Selecciona una zona activa de delivery dentro de Pallasca');
+                    const error = new Error('No está disponible la cobertura de la ciudad de Pallasca. Actualiza las opciones de entrega o elige recojo gratuito.');
                     error.deliveryValidation = true;
                     throw error;
                 }

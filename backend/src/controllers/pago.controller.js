@@ -3,6 +3,7 @@ const ventaModel = require('../models/venta.model');
 const { PRECIO_FINAL_SQL } = require('../models/libro.model');
 const usuarioModel = require('../models/usuario.model');
 const zonaDeliveryModel = require('../models/zonaDelivery.model');
+const { ENTREGA_PALLASCA } = require('../utils/entregaPallasca');
 const pool = require('../config/database');
 const crypto = require('crypto');
 const { validarId, esEmailValido } = require('../utils/validaciones');
@@ -489,15 +490,14 @@ const crearOrden = async (req, res) => {
         if (
             tipoEntrega === 'domicilio'
         ) {
-            const idZona = validarId(id_zona_delivery);
-            zonaEntrega = idZona ? await zonaDeliveryModel.obtenerPorId(idZona) : null;
+            zonaEntrega = await zonaDeliveryModel.resolverDeliveryCiudad(id_zona_delivery);
             if (!zonaEntrega || Number(zonaEntrega.estado) !== 1) {
                 return res
                     .status(400)
                     .json({
                         success: false,
                         mensaje:
-                            'Selecciona una zona activa de delivery dentro de Pallasca'
+                            'No está disponible la cobertura de la ciudad de Pallasca. Actualiza las opciones de entrega o elige recojo gratuito.'
                     });
             }
 
@@ -1530,7 +1530,7 @@ const listarPagosAdmin = async (req, res) => {
 // EXPORTAR
 // ========================================
 const obtenerCapacidadesCompra = (_req, res) => res.json({ success: true, data: {
-    compras_web: true, moneda: 'PEN', cobertura: 'pallasca'
+    compras_web: true, moneda: 'PEN', cobertura: 'pallasca', entrega: ENTREGA_PALLASCA
 } });
 module.exports = {
     obtenerCapacidadesCompra,

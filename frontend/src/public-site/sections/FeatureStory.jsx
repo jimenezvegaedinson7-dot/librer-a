@@ -11,14 +11,14 @@ const OPCIONES = {
     domicilio: {
         Icono: FaTruckFast,
         titulo: 'Delivery dentro de Pallasca',
-        detalle: 'Con tarifa por zona',
-        resultado: 'Elige una zona de reparto activa. Su tarifa se informa antes de pagar.',
+        detalle: 'S/5 fijo en la ciudad',
+        resultado: 'Mismo precio en toda la ciudad de Pallasca. No incluye anexos ni otros distritos.',
     },
     tienda: {
         Icono: FaStore,
         titulo: 'Recojo en Pallasca',
         detalle: 'Sin costo de envío',
-        resultado: 'Recoges en la tienda de Pallasca, frente a la Plaza de Armas.',
+        resultado: 'Recoges gratis en Plaza de Armas, Jr. Marañón 161, Pallasca 02835.',
     },
 };
 
