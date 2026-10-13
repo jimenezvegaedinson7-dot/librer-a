@@ -1,8 +1,8 @@
 {
-    "version": "1.0.20",
-    "versionCode": 21,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.20/libreria-1.0.20.apk",
-    "sha256": "94140991fd90d2f4619bb94c0b670111af29e5eedc0ffa0ede82d1d4828dbc3f",
+    "version": "1.0.21",
+    "versionCode": 22,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.21/libreria-1.0.21.apk",
+    "sha256": "965d4eda06e50f64fdce832df4f75084cf2babd62b286ba91d21ac08f9a96f28",
     "obligatoria": false,
-    "notas": "Compras y cancelaciones coordinadas, pagos en revisión, sesiones y carritos por cuenta, recuperación de intentos y fuentes sin conexión."
+    "notas": "Reservas e historial de reservas eliminados. Navegación directa a Mis compras; panel, notificaciones y presentación actualizados."
 }
