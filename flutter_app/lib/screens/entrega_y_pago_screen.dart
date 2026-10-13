@@ -147,7 +147,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
             .where(
               (z) =>
                   z.nombre == Constants.ciudadDelivery &&
-                  z.tarifa == Constants.tarifaDeliveryPallasca,
+                  z.tarifa.isFinite &&
+                  z.tarifa > 0,
             )
             .toList();
         _cargandoZonas = false;
@@ -213,7 +214,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
               .where(
                 (z) =>
                     z.nombre == Constants.ciudadDelivery &&
-                    z.tarifa == Constants.tarifaDeliveryPallasca,
+                    z.tarifa.isFinite &&
+                    z.tarifa > 0,
               )
               .toList();
         });
@@ -576,7 +578,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           // Una sola cobertura y tarifa para toda la ciudad.
           etiqueta: _tarifaUnica
               ? 'S/ ${Formats.precio(_zonas.first.tarifa)}'
-              : 'S/5 fijo',
+              : 'Consultar tarifa',
           onTap: _procesando
               ? null
               : () => setState(() => _tipoEntrega = _TipoEntrega.domicilio),
@@ -1505,7 +1507,9 @@ class _ZonaReparto extends StatelessWidget {
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  const TextSpan(text: '  ·  S/5 fijo en toda la ciudad'),
+                  const TextSpan(
+                    text: '  ·  Tarifa única por pedido en toda la ciudad',
+                  ),
                 ],
               ),
               style: textTheme.bodySmall?.copyWith(

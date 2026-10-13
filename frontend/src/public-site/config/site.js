@@ -20,7 +20,7 @@ export const SITIO = {
 
 // Respaldo de los datos legales; se actualizan con GET /api/empresa.
 export const DIRECCION_RECOJO = 'Plaza de Armas, Jr. Marañón 161, Pallasca 02835';
-export const DELIVERY_CIUDAD = { nombre: 'Ciudad de Pallasca', tarifa: 5 };
+export const DELIVERY_CIUDAD = { nombre: 'Ciudad de Pallasca' };
 export const LEGAL_RESPALDO = {
     nombreComercial: 'MATIDANA',
     razonSocial: 'FLORES SALINAS SARA',
@@ -50,7 +50,7 @@ export const NAVEGACION = [
 
 // Avisos de la barra superior (hechos reales del servicio).
 export const AVISOS = [
-    { texto: 'Delivery S/5 en la ciudad de Pallasca' },
+    { texto: 'Delivery con tarifa única en Pallasca' },
     { texto: 'Recojo sin costo en Pallasca' },
     { texto: 'Pago en línea seguro con PayU' },
 ];
@@ -71,7 +71,7 @@ export const PAGINAS = {
     },
     '/caracteristicas': {
         titulo: 'Características · Librería del Saber',
-        descripcion: 'Delivery S/5 fijo dentro de la ciudad de Pallasca, recojo gratuito en Jr. Marañón 161 y pago con PayU.',
+        descripcion: 'Delivery con tarifa única dentro de la ciudad de Pallasca, recojo gratuito en Jr. Marañón 161 y pago con PayU.',
     },
     '/nosotros': {
         titulo: 'Nosotros · Librería del Saber',

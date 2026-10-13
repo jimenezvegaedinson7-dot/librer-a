@@ -44,7 +44,7 @@ export const navPrincipal = [
     { nombre: 'Comprobantes', ruta: '/comprobantes', icono: ReceiptText, descripcion: 'Boletas y facturas emitidas', seccion: 'Operaciones', roles: [ROLES.ADMINISTRADOR] },
 
     // --- Logística ---
-    { nombre: 'Delivery y Tarifas', ruta: '/tarifas-envio', icono: Truck, descripcion: 'Delivery S/5 fijo en la ciudad de Pallasca y recojo gratuito', seccion: 'Operaciones', roles: [ROLES.ADMINISTRADOR] },
+    { nombre: 'Delivery y Tarifas', ruta: '/tarifas-envio', icono: Truck, descripcion: 'Configuración de tarifa única de delivery y punto de recojo', seccion: 'Operaciones', roles: [ROLES.ADMINISTRADOR] },
 
     // --- Administración ---
     { nombre: 'Usuarios', ruta: '/usuarios', icono: Users, descripcion: 'Cuentas, permisos y listado de clientes', seccion: 'Administración', roles: [ROLES.ADMINISTRADOR] },

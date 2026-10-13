@@ -1,8 +1,8 @@
 {
-    "version": "1.0.22",
-    "versionCode": 23,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.22/libreria-1.0.22.apk",
-    "sha256": "9eb49341da51b8ac2259861fe1fe1a520132e39848e0ce0269f8813b4910c175",
+    "version": "1.0.23",
+    "versionCode": 24,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.23/libreria-1.0.23.apk",
+    "sha256": "b784379eaa9f0014da6087016265a0ddd36b8858b41f2e9aafac720e5fd7ffa7",
     "obligatoria": false,
-    "notas": "Delivery S/5 fijo en toda la ciudad de Pallasca y recojo gratuito en Jr. Marañón 161. Seguimiento simplificado en tres etapas, indicadores corregidos y conservación de compras anteriores."
+    "notas": "Tarifa única de delivery editable por el administrador. Web y app utilizan el precio vigente del servidor, revalidan cambios antes de comprar y conservan los importes de pedidos existentes. Panel con moneda PEN, unidad de cobro, cálculo e historial de actualizaciones."
 }

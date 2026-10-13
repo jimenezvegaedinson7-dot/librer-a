@@ -38,7 +38,7 @@ void main() {
               {
                 'id_zona': 1,
                 'nombre': 'Ciudad de Pallasca',
-                'tarifa': 5,
+                'tarifa': 7.5,
                 'estado': 1,
               },
             ],
@@ -72,10 +72,11 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.byType(DropdownButtonFormField<int>), findsNothing);
         expect(
-          find.textContaining('S/5 fijo en toda la ciudad'),
+          find.textContaining('Tarifa única por pedido en toda la ciudad'),
           findsOneWidget,
         );
-        expect(find.textContaining('S/ 105.00'), findsWidgets);
+        expect(find.textContaining('S/ 107.50'), findsWidgets);
+        expect(find.textContaining('S/ 7.50'), findsWidgets);
         expect(
           find.textContaining('no incluye anexos ni otros distritos'),
           findsOneWidget,

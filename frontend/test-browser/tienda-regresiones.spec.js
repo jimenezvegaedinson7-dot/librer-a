@@ -123,7 +123,7 @@ test('WEB03: sin Web Locks no se envía ni reemplaza una compra ambigua',async({
 });
 test('WEB04: recuperación muestra los artículos y entrega originales, no el carrito editado',async({page,context})=>{
     const control=await preparar(context,{perderPrimera:true});await checkout(page);
-    await page.getByLabel('Delivery en la ciudad de Pallasca — S/5 fijo',{exact:true}).check();
+    await page.getByLabel('Delivery en la ciudad de Pallasca — S/ 5.00 por pedido',{exact:true}).check();
     await page.getByLabel('Dirección',{exact:true}).fill('Dirección original Pallasca');
     await crear(page);await expect(page.getByRole('button',{name:'Recuperar mi pedido',exact:true})).toBeVisible();
     await page.getByRole('link',{name:'Volver al carrito',exact:true}).click();

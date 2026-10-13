@@ -106,8 +106,8 @@ for (const width of [390, 1440]) {
         await page.setViewportSize({ width, height: 1000 });
         const control = await preparar(page);
         await page.goto('/tarifas-envio');
-        await expect(page.getByText('S/ 5.00 fijo', { exact: true })).toBeVisible();
-        await expect(page.getByText('Gratis', { exact: true })).toBeVisible();
+        await expect(page.getByText('S/ 5.00 por pedido', { exact: true })).toBeVisible();
+        await expect(page.getByText('Gratis · S/ 0.00', { exact: true })).toBeVisible();
         await expect(page.getByText('Plaza de Armas, Jr. Marañón 161, Pallasca 02835', { exact: true })).toBeVisible();
         await expect(page.getByRole('meter')).toHaveCount(0);
         expect(control.errores).toEqual([]);
@@ -154,7 +154,7 @@ test('tarifas: una respuesta incompatible no inventa delivery gratuito', async (
     await page.route('**/api/zonas-delivery/todos', route => route.fulfill({ json: { success: true,
         data: [{ id_zona: 1, nombre: 'Zona gratuita', tarifa: 0, estado: 1 }] } }));
     await page.goto('/tarifas-envio');
-    await expect(page.getByRole('alert')).toContainText('cobertura fija todavía no está disponible');
+    await expect(page.getByRole('alert')).toContainText('cobertura de Ciudad de Pallasca no está disponible');
     await expect(page.getByText('No disponible', { exact: true })).toBeVisible();
     await expect(page.getByText('S/ 0.00', { exact: true })).toHaveCount(0);
 });

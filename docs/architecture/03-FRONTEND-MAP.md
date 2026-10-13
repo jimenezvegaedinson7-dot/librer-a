@@ -101,7 +101,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `features/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
 | `features/reportes/useVentasDiarias.js` | `GET /api/reportes/ventas-por-dia` |
-| `features/tarifas/TarifasEnvioPage.jsx` | `GET /api/zonas-delivery/todos` |
+| `features/tarifas/TarifasEnvioPage.jsx` | `GET /api/zonas-delivery/todos`<br>`PUT /api/zonas-delivery/:param` |
 | `features/usuarios/UsuariosPage.jsx` | `GET /api/usuarios`<br>`PATCH /api/usuarios/:param` |
 | `features/ventas/EmitirComprobanteModal.jsx` | `GET /api/empresa`<br>`POST /api/comprobantes/:param/enviar-email`<br>`POST /api/ventas/:param/comprobante` |
 | `features/ventas/ReembolsoModal.jsx` | `POST /api/ventas/:param/reembolso` |
@@ -210,6 +210,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/reportes/reportesService.js` | `obtenerVentasPorDia` | `GET /api/reportes/ventas-por-dia` |
 | `features/reportes/reportesService.js` | `obtenerIndicadoresVentas` | `GET /api/reportes/indicadores-ventas` |
 | `features/tarifas/tarifasService.js` | `listarZonasDelivery` | `GET /api/zonas-delivery/todos` |
+| `features/tarifas/tarifasService.js` | `actualizarTarifaDelivery` | `PUT /api/zonas-delivery/:param` |
 | `features/usuarios/usuariosService.js` | `listarUsuarios` | `GET /api/usuarios` |
 | `features/usuarios/usuariosService.js` | `actualizarUsuario` | `PATCH /api/usuarios/:param` |
 | `features/ventas/ventasService.js` | `listarVentas` | `GET /api/ventas` |
@@ -271,7 +272,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/ErrorBoundary.jsx` | 1 |
 | `components/ui/EstadoModal.jsx` | 0 |
 | `components/ui/Ficha.jsx` | 9 |
-| `components/ui/Form.jsx` | 33 |
+| `components/ui/Form.jsx` | 34 |
 | `components/ui/FormularioAlta.jsx` | 3 |
 | `components/ui/Indicadores.jsx` | 11 |
 | `components/ui/Modal.jsx` | 27 |

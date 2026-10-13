@@ -195,7 +195,7 @@ export default function CatalogoPage() {
                             <h1 id="catalogo-pagina-titulo" className="seccion__titulo">Catálogo</h1>
                             <p className="seccion__entrada">
                                 Libros físicos con precios actuales en soles. Compra aquí en la web o desde nuestra app:
-                                te lo llevamos dentro de la ciudad de Pallasca por S/5 fijo o lo recoges sin costo en nuestra tienda.
+                                te lo llevamos dentro de la ciudad de Pallasca con una tarifa única por pedido o lo recoges sin costo en nuestra tienda.
                             </p>
                         </div>
                         <ul className="catalogo-ventajas" aria-label="Ventajas de comprar con nosotros">

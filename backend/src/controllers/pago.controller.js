@@ -1529,9 +1529,13 @@ const listarPagosAdmin = async (req, res) => {
 // ========================================
 // EXPORTAR
 // ========================================
-const obtenerCapacidadesCompra = (_req, res) => res.json({ success: true, data: {
-    compras_web: true, moneda: 'PEN', cobertura: 'pallasca', entrega: ENTREGA_PALLASCA
-} });
+const obtenerCapacidadesCompra = async (_req, res, next) => {
+    try {
+        const ciudad = (await zonaDeliveryModel.listar(true))[0];
+        return res.json({ success: true, data: { compras_web: true, moneda: 'PEN', cobertura: 'pallasca',
+            entrega: { ...ENTREGA_PALLASCA, tarifa: ciudad?.tarifa ?? null, delivery_disponible: Boolean(ciudad) } } });
+    } catch (error) { return next(error); }
+};
 module.exports = {
     obtenerCapacidadesCompra,
     crearOrden,

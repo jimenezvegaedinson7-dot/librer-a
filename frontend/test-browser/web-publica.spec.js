@@ -687,7 +687,7 @@ test('franja de beneficios: azul marino, texto marfil e iconos dorados', async (
     await expect(franja).toHaveCSS('color', 'rgb(255, 249, 239)');
     await expect(page.locator('.avisos .aviso-icono')).toHaveCount(3);
     await expect(page.locator('.avisos .aviso-icono').first()).toHaveCSS('color', 'rgb(213, 164, 71)');
-    for (const texto of ['Delivery S/5 en la ciudad de Pallasca', 'Recojo sin costo en Pallasca', 'Pago en línea seguro con PayU']) {
+    for (const texto of ['Delivery con tarifa única en Pallasca', 'Recojo sin costo en Pallasca', 'Pago en línea seguro con PayU']) {
         await expect(page.locator('.avisos')).toContainText(texto);
     }
 });

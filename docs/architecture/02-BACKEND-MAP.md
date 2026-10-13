@@ -261,7 +261,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 |---|---|---|---|---|---|
 | GET | `/api/pagos/checkout/:externalReference` | — | controllers/pago.controller.js#renderCheckoutPage | `payu.service.js#construirFormularioCheckout`<br>`venta.model.js#buscarPorReferenciaExterna` | ventas |
 | GET | `/api/pagos/respuesta/:externalReference` | — | controllers/pago.controller.js#renderRespuestaPage | `venta.model.js#buscarPorReferenciaExterna` | ventas |
-| GET | `/api/pagos/capacidades` | — | controllers/pago.controller.js#obtenerCapacidadesCompra | — | — |
+| GET | `/api/pagos/capacidades` | — | controllers/pago.controller.js#obtenerCapacidadesCompra | `zonaDelivery.model.js#listar` | zonas_delivery_pallasca |
 | POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `usuario.model.js#buscarPorId`<br>`venta.model.js#aplicarPago`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
 | GET | `/api/pagos` | JWT + verificarPanel | controllers/pago.controller.js#listarPagosAdmin | `venta.model.js#listarPagosAdmin` | usuarios, ventas |
 | GET | `/api/pagos/resumen` | JWT + verificarPanel | inline (pago.routes.js) | `pago.model.js#listarResumen` | ventas |
@@ -338,7 +338,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/zonas-delivery` | JWT | controllers/zonaDelivery.controller.js#listarZonas | `zonaDelivery.model.js#listar` | zonas_delivery_pallasca |
 | GET | `/api/zonas-delivery/todos` | JWT + rol:administrador | controllers/zonaDelivery.controller.js#listarTodasZonas | `zonaDelivery.model.js#listar` | zonas_delivery_pallasca |
 | POST | `/api/zonas-delivery` | JWT + rol:administrador | controllers/zonaDelivery.controller.js#crearZona | — | — |
-| PUT | `/api/zonas-delivery/:id` | JWT + rol:administrador | controllers/zonaDelivery.controller.js#actualizarZona | — | — |
+| PUT | `/api/zonas-delivery/:id` | JWT + rol:administrador | controllers/zonaDelivery.controller.js#actualizarZona | `zonaDelivery.model.js#actualizarTarifaCiudad` | historial_operaciones, zonas_delivery_pallasca |
 
 ## Modelos y tablas
 
@@ -364,7 +364,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/ubicacion.model.js` | distritos_lima, provincias_lima |
 | `models/usuario.model.js` | asistente_memoria, favoritos, usuarios, ventas |
 | `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
-| `models/zonaDelivery.model.js` | zonas_delivery_pallasca |
+| `models/zonaDelivery.model.js` | historial_operaciones, zonas_delivery_pallasca |
 
 Tablas consultadas por los modelos (20): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. Este subconjunto no es el total del esquema.
 

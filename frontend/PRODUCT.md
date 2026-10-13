@@ -17,7 +17,7 @@ Librería del Saber vende libros físicos mediante una tienda web y una app Andr
 
 ## Positioning
 
-Una librería física en Pallasca, Áncash, con catálogo comercial web y móvil: compra con PayU, delivery S/5 fijo dentro de la ciudad de Pallasca o recojo gratuito en Plaza de Armas, Jr. Marañón 161, Pallasca 02835. No incluye anexos ni otros distritos. El servicio de reservas está eliminado, incluido su historial.
+Una librería física en Pallasca, Áncash, con catálogo comercial web y móvil: compra con PayU, delivery con tarifa única vigente dentro de la ciudad de Pallasca o recojo gratuito en Plaza de Armas, Jr. Marañón 161, Pallasca 02835. La tarifa es editable por el administrador, se aplica por pedido y solo a compras nuevas. No incluye anexos ni otros distritos. El servicio de reservas está eliminado, incluido su historial.
 
 ## Operating Context
 
@@ -29,7 +29,7 @@ Una librería física en Pallasca, Áncash, con catálogo comercial web y móvil
 
 ## Capabilities and Constraints
 
-Funciones verificadas en el código: catálogo, ficha de libro, favoritos, carrito, compra PayU, delivery fijo S/5 en la ciudad de Pallasca sin selector de barrio, recojo gratuito, historial de compras y seguimiento. Los pedidos anteriores conservan su cobertura e importe. Registro con verificación por email, login/2FA, recuperación de contraseña en dos pasos, perfil y foto editable. La app añade eliminación de cuenta y pantallas legales.
+Funciones verificadas en el código: catálogo, ficha de libro, favoritos, carrito, compra PayU, delivery con tarifa única administrable en la ciudad de Pallasca sin selector de barrio, recojo gratuito, historial de compras y seguimiento. La tarifa vigente proviene del servidor, no de una constante S/5; se revalida antes de comprar. Los pedidos anteriores conservan su cobertura e importe. Registro con verificación por email, login/2FA, recuperación de contraseña en dos pasos, perfil y foto editable. La app añade eliminación de cuenta y pantallas legales.
 
 PayU se muestra en `PagoEnAppScreen` mediante WebView; el retorno obliga a consultar el estado del servidor. Web y app persisten el intento y su clave de idempotencia antes del POST. Precio, stock, pago y reglas de entrega se validan en el backend.
 

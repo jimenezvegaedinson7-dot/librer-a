@@ -5,7 +5,8 @@ const cliente={id_usuario:2,nombre:'Cliente',apellido:'Web',email:'cliente@examp
 const libro={id_libro:1,titulo:'Libro de prueba web',autor:'Autor de prueba',categoria:'Novela',precio:100,precio_final:75,descuento_vigente:1,descuento_porcentaje_efectivo:25,stock:5,estado:1,
     portada:'data:image/gif;base64,R0lGODlhAQABAAAAACw=',sinopsis:'Descripción del libro de prueba.'};
 const PORTADA='data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
-async function api(page,{rol='cliente',fallarPrimera=false}={}) {
+async function api(page,{rol='cliente',fallarPrimera=false,tarifa=5}={}) {
+    let tarifaVigente = tarifa;
     const ordenes=[],favoritosQuitados=[];let pagada=false,cancelada=false,favoritos=[{...libro,portada:PORTADA}];
     await page.addInitScript(()=>{
         localStorage.setItem('token','token-administrador');
@@ -19,12 +20,12 @@ async function api(page,{rol='cliente',fallarPrimera=false}={}) {
         if(ruta==='/api/auth/registro')return route.fulfill({status:201,json:{success:true,requiere_verificacion_email:true,mensaje:'Revisa tu correo para verificar tu cuenta.'}});
         if(ruta==='/api/auth/verificar-email')return route.fulfill({json:{success:true,mensaje:'Cuenta verificada correctamente.'}});
         if(ruta==='/api/usuarios/perfil')return route.fulfill({json:{success:true,data:cliente}});
-        if(ruta==='/api/zonas-delivery')return route.fulfill({json:{success:true,data:[{id_zona:1,nombre:'Ciudad de Pallasca',tarifa:5,estado:1}]}});
+        if(ruta==='/api/zonas-delivery')return route.fulfill({json:{success:true,data:[{id_zona:1,nombre:'Ciudad de Pallasca',tarifa:tarifaVigente,estado:1}]}});
         if(ruta==='/api/pagos/capacidades')return route.fulfill({json:{success:true,data:{compras_web:true,moneda:'PEN',cobertura:'pallasca'}}});
         if(ruta==='/api/pagos/crear-orden') {
             ordenes.push({body:req.postDataJSON(),token:req.headers().authorization});
             if(fallarPrimera && ordenes.length===1)return route.abort('failed');
-            const envio=req.postDataJSON().tipo_entrega==='domicilio'?5:0;
+            const envio=req.postDataJSON().tipo_entrega==='domicilio'?tarifaVigente:0;
             return route.fulfill({status:201,json:{success:true,data:{id_venta:10,order_id:'orden_web_10',total:75+envio,costo_envio:envio,checkout_url:`${API}/pagos/checkout/orden_web_10`}}});
         }
         if(ruta==='/api/ventas/mis-ventas')return route.fulfill({json:{success:true,data:[{id_venta:10,canal_compra:'web',origen:'app',cobertura_entrega:'pallasca',tipo_entrega:'tienda',estado:cancelada?'cancelada':pagada?'pagada':'pendiente',estado_entrega:'pendiente',total:75,costo_envio:0,external_reference:'orden_web_10',detalle:[{id_libro:1,titulo:libro.titulo,cantidad:1,precio_unitario:75,subtotal:75}]}]}});
@@ -35,7 +36,7 @@ async function api(page,{rol='cliente',fallarPrimera=false}={}) {
         if(ruta==='/api/app/version')return route.fulfill({json:{version:'1.0.4',versionCode:5,sha256:'a'.repeat(64),apkUrl:'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.4/libreria-1.0.4.apk'}});
         return route.fulfill({json:{success:true,data:[]}});
     });
-    return {ordenes,favoritosQuitados,cancelar:()=>{cancelada=true;}};
+    return {ordenes,favoritosQuitados,cancelar:()=>{cancelada=true;},cambiarTarifa:n=>{tarifaVigente=n;}};
 }
 async function login(page) {
     await page.getByLabel('Correo electrónico',{exact:true}).fill(cliente.email);
@@ -84,7 +85,7 @@ for(const ancho of [390,1440]) {
 for (const width of [390,1440]) test(`compra web ${width}px: delivery S/5 sin selector y reintento conserva la clave`,async({page})=>{
     await page.setViewportSize({width,height:1000});
     const control=await api(page,{fallarPrimera:true});await hastaCheckout(page);
-    await page.getByLabel('Delivery en la ciudad de Pallasca — S/5 fijo',{exact:true}).check();
+    await page.getByLabel('Delivery en la ciudad de Pallasca — S/ 5.00 por pedido',{exact:true}).check();
     await expect(page.getByLabel('Zona de delivery',{exact:true})).toHaveCount(0);
     await page.getByLabel('Dirección',{exact:true}).fill('Dirección de prueba Pallasca');
     await page.getByLabel('Referencia de dirección (opcional)',{exact:true}).fill('Referencia de prueba');
@@ -100,6 +101,22 @@ for (const width of [390,1440]) test(`compra web ${width}px: delivery S/5 sin se
     expect(control.ordenes).toHaveLength(2);expect(control.ordenes[1].body).toEqual(control.ordenes[0].body);
     expect(control.ordenes[1].body).toMatchObject({tipo_entrega:'domicilio',id_zona_delivery:1,referencia:'Referencia de prueba'});
     await expect(page.getByText('S/ 80.00',{exact:true})).toBeVisible();
+});
+test('checkout acepta tarifa S/7.50 y revalida un cambio posterior antes de crear la compra',async({page})=>{
+    const control=await api(page,{tarifa:7.5}); await hastaCheckout(page);
+    await page.getByLabel('Delivery en la ciudad de Pallasca — S/ 7.50 por pedido',{exact:true}).check();
+    await page.getByLabel('Dirección',{exact:true}).fill('Jr. Comercio 123, Pallasca');
+    await page.getByLabel('Número de documento',{exact:true}).fill('12345678');
+    await expect(page.locator('.compra-resumen')).toContainText('S/ 82.50');
+    control.cambiarTarifa(8);
+    await page.getByRole('button',{name:'Crear pedido y continuar al pago',exact:true}).click();
+    await expect(page.getByRole('alert')).toContainText('La tarifa de delivery cambió');
+    expect(control.ordenes).toEqual([]);
+    await expect(page.locator('.compra-resumen')).toContainText('S/ 83.00');
+    await page.getByRole('button',{name:'Crear pedido y continuar al pago',exact:true}).click();
+    await expect(page.getByRole('heading',{name:'Tu pedido está creado',exact:true})).toBeVisible();
+    expect(control.ordenes).toHaveLength(1);
+    await expect(page.getByText('S/ 83.00',{exact:true})).toBeVisible();
 });
 test('cuenta web: registro, verificación de correo y bloqueo del rol administrador',async({page})=>{
     await api(page,{rol:'administrador'});await page.goto('/cuenta');

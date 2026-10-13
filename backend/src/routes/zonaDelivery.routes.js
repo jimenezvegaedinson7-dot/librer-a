@@ -9,5 +9,5 @@ router.get('/', listarZonas);
 router.get('/todos', verificarRol('administrador'), listarTodasZonas);
 router.post('/', verificarRol('administrador'), crearZona);
 router.put('/:id', verificarRol('administrador'), actualizarZona);
-// Se inactivan zonas; no se eliminan las referencias de compras anteriores.
+// Solo se edita la tarifa única; se conservan las referencias históricas.
 module.exports = router;

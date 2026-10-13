@@ -67,7 +67,7 @@ const enlace = (texto,to) => ({texto,to});
 export function informacionTienda(tema, legal = LEGAL_RESPALDO) {
     const respuestas = {
         horario: {texto:'La web no publica un horario de atención. No puedo confirmar horas de apertura o cierre.',enlaces:[enlace('Ver la tienda','/nosotros#tienda')]},
-        entrega: {texto:'El delivery cuesta S/5 fijo para toda la ciudad de Pallasca; no incluye anexos ni otros distritos. También puedes recoger gratis en Plaza de Armas, Jr. Marañón 161, Pallasca 02835.',enlaces:[enlace('Entrega y pago','/checkout'),enlace('Ubicación de la tienda','/nosotros#tienda')]},
+        entrega: {texto:'El delivery tiene una tarifa única por pedido para toda la ciudad de Pallasca; el importe vigente se muestra en Entrega y pago antes de confirmar. No incluye anexos ni otros distritos. También puedes recoger gratis en Plaza de Armas, Jr. Marañón 161, Pallasca 02835.',enlaces:[enlace('Entrega y pago','/checkout'),enlace('Ubicación de la tienda','/nosotros#tienda')]},
         ubicacion: {texto:`La dirección publicada de la tienda es: ${legal.direccion || LEGAL_RESPALDO.direccion}. Puedes ver el mapa y cómo llegar en Nuestra tienda.`,enlaces:[enlace('Ver mapa y dirección','/nosotros#tienda')]},
         contacto: {texto:SITIO.enlaces.telefono || SITIO.enlaces.correo
             ? `Contacto publicado: ${[SITIO.enlaces.telefono,SITIO.enlaces.correo].filter(Boolean).join(' · ')}.`

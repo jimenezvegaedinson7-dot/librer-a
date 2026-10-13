@@ -11,7 +11,7 @@ const OPCIONES = {
     domicilio: {
         Icono: FaTruckFast,
         titulo: 'Delivery dentro de Pallasca',
-        detalle: 'S/5 fijo en la ciudad',
+        detalle: 'Tarifa única por pedido',
         resultado: 'Mismo precio en toda la ciudad de Pallasca. No incluye anexos ni otros distritos.',
     },
     tienda: {

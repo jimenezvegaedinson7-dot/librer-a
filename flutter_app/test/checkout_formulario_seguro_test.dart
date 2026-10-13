@@ -164,24 +164,25 @@ void main() {
   );
 
   testWidgets(
-    'un cambio de precio exige confirmar el nuevo total con delivery fijo S/5',
+    'una tarifa modificada por el administrador exige confirmar el nuevo total antes del POST',
     (tester) async {
-      var ordenes = 0;
+      var ordenes = 0, consultasTarifa = 0;
       Map<String, dynamic>? cuerpo;
       final api = apiLocal((o) async {
         if (o.path == '/zonas-delivery') {
+          consultasTarifa++;
           return respuestaLocal({
             'data': [
               {
                 'id_zona': 1,
                 'nombre': 'Ciudad de Pallasca',
-                'tarifa': 5,
+                'tarifa': consultasTarifa == 1 ? 5 : 7,
                 'estado': 1,
               },
             ],
           });
         }
-        if (o.path == '/libros') return respuestaLocal(catalogoLocal(32));
+        if (o.path == '/libros') return respuestaLocal(catalogoLocal());
         ordenes++;
         cuerpo = Map<String, dynamic>.from(o.data as Map);
         return respuestaLocal({

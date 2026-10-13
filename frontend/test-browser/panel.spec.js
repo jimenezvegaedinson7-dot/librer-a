@@ -246,12 +246,12 @@ for (const width of [390, 1440]) {
             return route.fulfill({status:409,json:{success:false,mensaje:'Tarifa fija'}});
         });
         await page.goto('/tarifas-envio');
-        await expect(page.getByText('S/ 5.00 fijo',{exact:true})).toBeVisible();
-        await expect(page.getByText('Gratis',{exact:true})).toBeVisible();
+        await expect(page.getByText('S/ 5.00 por pedido',{exact:true})).toBeVisible();
+        await expect(page.getByText('Gratis · S/ 0.00',{exact:true})).toBeVisible();
         await expect(page.getByText('Plaza de Armas, Jr. Marañón 161, Pallasca 02835',{exact:true})).toBeVisible();
         await expect(page.getByRole('button',{name:'Nueva zona',exact:true})).toHaveCount(0);
         await page.getByRole('button',{name:'Actualizar',exact:true}).click();
-        await expect(page.getByText('S/ 5.00 fijo',{exact:true})).toBeVisible();
+        await expect(page.getByText('S/ 5.00 por pedido',{exact:true})).toBeVisible();
         expect(escrituras).toEqual([]);
         expect(ubicaciones).toEqual([]);
         expect(errores).toEqual([]);

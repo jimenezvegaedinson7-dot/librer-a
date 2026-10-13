@@ -29,7 +29,7 @@ const PILARES = [
     {
         Icono: FaTruckFast,
         titulo: 'Delivery dentro de Pallasca',
-        texto: 'Te lo llevamos a tu dirección dentro de la ciudad de Pallasca por S/5 fijo.',
+        texto: 'Te lo llevamos a tu dirección dentro de la ciudad de Pallasca con una tarifa única por pedido, informada antes de pagar.',
     },
     {
         Icono: FaStore,

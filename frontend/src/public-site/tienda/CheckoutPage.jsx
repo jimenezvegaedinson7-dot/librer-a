@@ -65,7 +65,7 @@ function CheckoutCliente({ t }) {
             if(vigente)setDisponible(true);
         }).catch(()=>{if(vigente)setError('La compra web aún no está disponible en este servidor. Inténtalo más tarde.');});
         clienteApi.zonas(t.sesion).then(j=>{if(vigente){
-            const opciones=(j.data || []).filter(z=>z.nombre===DELIVERY_CIUDAD.nombre && Number(z.tarifa)===DELIVERY_CIUDAD.tarifa && Number(z.estado)===1);
+            const opciones=(j.data || []).filter(z=>z.nombre===DELIVERY_CIUDAD.nombre && Number.isFinite(Number(z.tarifa)) && Number(z.tarifa)>0 && Number(z.estado)===1);
             setZonas(opciones);
             setZonaId(actual => actual || String(opciones[0]?.id_zona || ''));
         }})
@@ -135,7 +135,7 @@ function CheckoutCliente({ t }) {
     const subtotal=recuperando ? previo.resumen?.lineas?.reduce((s,i)=>s+i.precio_centimos*i.cantidad,0)/100 : t.subtotal;
     const envioResumen=recuperando ? previo.resumen?.envio_centimos/100 : envio;
     const tipoResumen=recuperando ? previo.cuerpo.tipo_entrega : tipo;
-    return <section className="compra-pagina contenedor"><h1>Entrega y pago</h1><p>Delivery S/5 fijo dentro de la ciudad de Pallasca o recojo gratuito.</p>
+    return <section className="compra-pagina contenedor"><h1>Entrega y pago</h1><p>Delivery con tarifa única dentro de la ciudad de Pallasca o recojo gratuito.</p>
         {error && <p role="alert" className="compra-error">{error}</p>}
         {lectura.error && <p role="alert" className="compra-error">{lectura.error}</p>}
         {recuperando && <p role="status" className="compra-aviso">Recuperaremos tu solicitud anterior antes de crear otro pedido.</p>}
@@ -148,7 +148,7 @@ function CheckoutCliente({ t }) {
                 : <fieldset disabled={ocupado}><legend>Cómo recibir tus libros</legend>
                  <label className="entrega-opcion"><input type="radio" name="entrega" value="tienda" checked={tipo==='tienda'} onChange={()=>setTipo('tienda')}/>Recojo en Pallasca — Gratis</label>
                  {tipo==='tienda' && <p>{DIRECCION_RECOJO}</p>}
-                 <label className="entrega-opcion"><input type="radio" name="entrega" value="domicilio" checked={tipo==='domicilio'} onChange={()=>setTipo('domicilio')}/>Delivery en la ciudad de Pallasca — S/5 fijo</label>
+                 <label className="entrega-opcion"><input type="radio" name="entrega" value="domicilio" checked={tipo==='domicilio'} onChange={()=>setTipo('domicilio')}/>Delivery en la ciudad de Pallasca — {zona ? `${soles(zona.tarifa)} por pedido` : 'Consultando tarifa'}</label>
                 {tipo==='domicilio' && <>{errorZonas && <p role="alert">{errorZonas}</p>}
                      {!zonas.length && <p>No está disponible el delivery. Puedes elegir recojo gratuito.</p>}
                      <p>La tarifa es la misma para todos los barrios de la ciudad. No incluye anexos ni otros distritos.</p>

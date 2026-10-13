@@ -59,7 +59,7 @@ test('libro agotado y consulta de presupuesto muestran los datos reales',async({
 });
 test('FAQ y horarios solo usan informacion publicada y enlazan las paginas correctas',async({page})=>{
     const control=await preparar(page),chat=await abrir(page);
-    await chat.getByRole('button',{name:'Entrega y recojo',exact:true}).click();await expect(ultima(chat)).toContainText('S/5 fijo');
+    await chat.getByRole('button',{name:'Entrega y recojo',exact:true}).click();await expect(ultima(chat)).toContainText('tarifa única por pedido');
     await expect(ultima(chat)).toContainText('recoger gratis');
     await expect(ultima(chat).getByRole('link',{name:'Entrega y pago',exact:true})).toHaveAttribute('href','/checkout');
     await preguntar(chat,'A qué hora abren');await expect(ultima(chat)).toContainText('no publica un horario');

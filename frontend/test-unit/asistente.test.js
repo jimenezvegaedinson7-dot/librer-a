@@ -58,7 +58,8 @@ test('libro desconocido, metadatos ausentes y horarios no se inventan',()=>{
 test('datos de tienda se extraen de la informacion publica',()=>{
     const r=responder('Dirección de la tienda',{legal:{direccion:'Dirección publicada de prueba'}});
     assert.match(r.texto,/Dirección publicada de prueba/);
-    assert.match(responder('Cuánto cuesta el delivery').texto,/S\/5 fijo.*ciudad de Pallasca/);
+    assert.match(responder('Cuánto cuesta el delivery').texto,/tarifa única por pedido.*ciudad de Pallasca/);
+    assert.doesNotMatch(responder('Cuánto cuesta el delivery').texto,/S\/5/);
     assert.match(responder('Cómo pago con PayU').texto,/importe definitivo/);
 });
 test('pedidos privados solo remiten a la cuenta y no fingen consultar pagos',()=>{
