@@ -63,7 +63,7 @@ test('retiro legacy: HTTP + PostgreSQL desechable + SMTP local', async t => {
         }
         return v.id_venta;
     };
-    const mover = (id, estado) => http(`/pedidos/${id}/estado`, { estado }, 'PUT');
+    const mover = (id, estado) => http(`/pedidos/${id}/estado`, { estado, confirmado: true }, 'PUT');
     const solicitar = id => http(`/ventas/${id}/reembolso`, { accion: 'solicitar', motivo: 'Devolución solicitada por el cliente' });
     const confirmar = (id, extra = {}, esperado500 = false) => http(`/ventas/${id}/reembolso`, {
         accion: 'confirmar', motivo: 'Devolución verificada en panel PayU', referencia_reembolso: `refund-${id}`,
@@ -105,7 +105,7 @@ test('retiro legacy: HTTP + PostgreSQL desechable + SMTP local', async t => {
                 assert.equal((await http(`/ventas/${v.insertId}`)).status, 200);
                 const antes = await snapshot(v.insertId);
                 assert.equal((await solicitar(v.insertId)).status, 409);
-                assert.equal((await mover(v.insertId, 'preparando')).status, 409);
+                assert.equal((await mover(v.insertId, 'listo_recojo')).status, 409);
                 assert.equal((await http(`/ventas/${v.insertId}/comprobante`, { tipo: 'boleta' })).status, 409);
                 assert.deepEqual(await snapshot(v.insertId), antes);
                 await assert.rejects(ventas.crear({ origen, id_reserva: r }), e => e.status === 409);
@@ -132,16 +132,16 @@ test('retiro legacy: HTTP + PostgreSQL desechable + SMTP local', async t => {
             });
         }
         for (const tipo of ['tienda', 'domicilio']) {
-            await t.test(`Pedidos ${tipo}: entrega válida sincroniza y notifica una sola vez sin tocar cobro/stock`, async () => {
+            await t.test(`Pedidos ${tipo}: entrega válida conserva pago y notifica una sola vez sin tocar cobro/stock`, async () => {
                 const id = await crear(tipo), antes = await fila(id), s = await stock(), n = await conteoVentas();
                 assert.equal((await mover(id, 'entregado')).status, 400);
-                assert.equal((await mover(id, 'preparando')).status, 200);
+                assert.equal((await mover(id, 'preparando')).status, 400);
                 assert.equal((await mover(id, tipo === 'tienda' ? 'listo_recojo' : 'en_camino')).status, 200);
                 const correosAntes = await correosEstables();
                 const results = await Promise.all([1, 2].map(() => mover(id, 'entregado')));
                 assert.deepEqual(results.map(v => v.status).sort(), [200, 400]);
                 const despues = await fila(id);
-                assert.equal(despues.estado, 'entregada'); assert.equal(despues.estado_entrega, 'entregado');
+                assert.equal(despues.estado, 'pagada'); assert.equal(despues.estado_entrega, 'entregado');
                 for (const campo of ['payu_payment_id', 'payu_order_id', 'payu_payment_status', 'total']) assert.equal(despues[campo], antes[campo]);
                 assert.equal(await stock(), s); assert.equal(await conteoVentas(), n);
                 assert.equal((await mover(id, 'entregado')).status, 400);
@@ -175,7 +175,7 @@ test('retiro legacy: HTTP + PostgreSQL desechable + SMTP local', async t => {
             assert.equal(pendiente.venta.estado, 'pagada'); assert.equal(pendiente.venta.estado_reembolso, 'pendiente_verificacion');
             assert.equal(pendiente.venta.reembolso_solicitado_por, usuarios[0]); assert.ok(pendiente.venta.fecha_solicitud_reembolso);
             assert.equal(pendiente.stock, antes.stock); assert.deepEqual(pendiente.comprobantes, antes.comprobantes);
-            assert.equal((await mover(id, 'preparando')).status, 409);
+            assert.equal((await mover(id, 'listo_recojo')).status, 409);
             for (const extra of [{ referencia_reembolso: null }, { evidencia_reembolso: null }, { evidencia_reembolso: 'x' }]) {
                 assert.equal((await confirmar(id, extra)).status, 422);
                 assert.deepEqual(await snapshot(id), pendiente);

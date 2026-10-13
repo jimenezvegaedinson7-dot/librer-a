@@ -23,7 +23,7 @@ test.before(async () => {
     const [l]=await pool.query("INSERT INTO libros (titulo,id_autor,id_categoria,precio) VALUES ('Módulo Audit',?,?,10)",[autor,categoria]); libro=l.insertId;
     await pool.query('INSERT INTO inventario (id_libro) VALUES (?)',[libro]);
     for (let i=0;i<2;i++) {
-        const [v]=await pool.query("INSERT INTO ventas (id_usuario,estado,total,tipo_entrega,correo_compra) VALUES (?,'pagada',10,'tienda','buyer@example.test')",[cliente]); ventas.push(v.insertId);
+        const [v]=await pool.query("INSERT INTO ventas (id_usuario,estado,total,tipo_entrega,correo_compra,origen,external_reference) VALUES (?,'pagada',10,'tienda','buyer@example.test','app',?)",[cliente,crypto.randomUUID()]); ventas.push(v.insertId);
         await pool.query('INSERT INTO detalle_venta (id_venta,id_libro,cantidad,precio_unitario,subtotal) VALUES (?,?,1,10,10)',[v.insertId,libro]);
     }
 });
@@ -84,7 +84,7 @@ test('pedidos: dos avances concurrentes del mismo estado no producen 500',async 
     await pool.query("UPDATE ventas SET estado_entrega='pendiente' WHERE id_venta=?",[id]);
     const bloqueo=await pool.getConnection();
     await bloqueo.beginTransaction(); await bloqueo.query('SELECT id_venta FROM ventas WHERE id_venta=? FOR UPDATE',[id]);
-    const solicitudes=[1,2].map(() => pedir(`/api/pedidos/${id}/estado`,'PUT',{estado:'preparando'}));
+    const solicitudes=[1,2].map(() => pedir(`/api/pedidos/${id}/estado`,'PUT',{estado:'listo_recojo',confirmado:true}));
     try {
         await new Promise(r => setTimeout(r,250));
         await bloqueo.commit();

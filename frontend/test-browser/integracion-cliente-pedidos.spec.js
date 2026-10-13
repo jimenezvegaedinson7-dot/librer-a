@@ -86,7 +86,7 @@ test('recuperación web: primero verifica código y después pide la nueva contr
     expect(llamadas[2].body).toEqual({ email: cliente.email, reset_token: 'permiso-local', password: 'NuevaClave123' });
 });
 for (const width of [390, 1440]) {
-    test(`pedidos ${width}px: dos acciones claras, pago confirmado y entrega sincronizada`, async ({ page }, info) => {
+    test(`pedidos ${width}px: tres etapas con confirmación física y pago independiente`, async ({ page }, info) => {
         await page.setViewportSize({ width, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });
         await page.addInitScript(u => { localStorage.setItem('token', 'token-admin'); localStorage.setItem('usuario', JSON.stringify(u)); }, admin);
         const pedidos = [
@@ -101,27 +101,25 @@ for (const width of [390, 1440]) {
                 const pedido = pedidos.find(p => p.id_venta === Number(path.split('/')[3]));
                 if (route.request().method() === 'PUT') {
                     const body = route.request().postDataJSON(); cambios.push(body); pedido.estado_entrega = body.estado;
-                    if (body.estado === 'entregado') pedido.estado = 'entregada';
                 }
                 return route.fulfill({ json: { success: true, data: pedido } });
             }
             return route.fulfill({ json: { success: true, data: path === '/api/pedidos' ? pedidos : [] } });
         });
         await page.goto('/pedidos');
-        // Recojo en tienda: preparar → listo para recoger (avisa) → entregar.
-        await expect(page.getByRole('button', { name: 'Empezar preparación', exact: true })).toHaveCount(1);
+        // Recojo en tienda: por preparar → listo para recoger → entregado.
+        await expect(page.getByRole('button', { name: 'Empezar preparación', exact: true })).toHaveCount(0);
         await expect(page.getByText('Esperando pago', { exact: true })).toBeVisible();
         await page.screenshot({ path: info.outputPath('pedidos-simplificados.png'), fullPage: true });
-        await page.getByRole('button', { name: 'Empezar preparación', exact: true }).click();
         await page.getByRole('button', { name: 'Listo para recoger', exact: true }).click();
         await page.getByRole('dialog').getByRole('button', { name: 'Sí, avisar al cliente', exact: true }).click();
-        await expect(page.getByRole('button', { name: 'Entregar al cliente', exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Confirmar entrega', exact: true })).toBeVisible();
         await expect(page.getByRole('button', { name: 'Despachar pedido', exact: true })).toHaveCount(0);
-        await page.getByRole('button', { name: 'Entregar al cliente', exact: true }).click();
-        await page.getByRole('dialog').getByRole('button', { name: 'Sí, el cliente lo recogió', exact: true }).click();
-        await expect(page.getByRole('button', { name: 'Entregar al cliente', exact: true })).toHaveCount(0);
-        expect(cambios).toEqual([{ estado: 'preparando' }, { estado: 'listo_recojo' }, { estado: 'entregado' }]);
-        expect(pedidos[0]).toMatchObject({ total: 30, estado: 'entregada', estado_entrega: 'entregado' });
+        await page.getByRole('button', { name: 'Confirmar entrega', exact: true }).click();
+        await page.getByRole('dialog').getByRole('button', { name: 'Sí, confirmar entrega', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Confirmar entrega', exact: true })).toHaveCount(0);
+        expect(cambios).toEqual([{ estado: 'listo_recojo', confirmado: true, estado_anterior: 'pendiente' }, { estado: 'entregado', confirmado: true, estado_anterior: 'listo_recojo' }]);
+        expect(pedidos[0]).toMatchObject({ total: 30, estado: 'pagada', estado_entrega: 'entregado' });
         expect(pedidos[1].estado_entrega).toBe('pendiente');
     });
 }

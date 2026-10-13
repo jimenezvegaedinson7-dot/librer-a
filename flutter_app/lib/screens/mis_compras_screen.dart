@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 
 import '../models/venta.dart';
 import '../utils/seguimiento_pedido.dart';
@@ -24,7 +25,11 @@ import 'pago_en_app_screen.dart';
 class MisComprasScreen extends StatefulWidget {
   final bool embedded;
   final bool activa;
-  const MisComprasScreen({super.key, this.embedded = false, this.activa = true});
+  const MisComprasScreen({
+    super.key,
+    this.embedded = false,
+    this.activa = true,
+  });
 
   @override
   State<MisComprasScreen> createState() => MisComprasScreenState();
@@ -36,6 +41,8 @@ class MisComprasScreenState extends State<MisComprasScreen>
   bool _cargando = false;
   String? _error;
   List<Venta> _ventas = const [];
+  final _actualizaciones = ValueNotifier<List<Venta>>(const []);
+  bool _detalleAbierto = false;
   Timer? _timer;
 
   @override
@@ -45,7 +52,7 @@ class MisComprasScreenState extends State<MisComprasScreen>
     _timer = Timer.periodic(const Duration(seconds: 60), (_) {
       if (mounted &&
           widget.activa &&
-          ModalRoute.of(context)?.isCurrent == true &&
+          (ModalRoute.of(context)?.isCurrent == true || _detalleAbierto) &&
           WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
         _cargarVentas();
       }
@@ -64,7 +71,7 @@ class MisComprasScreenState extends State<MisComprasScreen>
     if (state == AppLifecycleState.resumed &&
         mounted &&
         widget.activa &&
-        ModalRoute.of(context)?.isCurrent == true) {
+        (ModalRoute.of(context)?.isCurrent == true || _detalleAbierto)) {
       _cargarVentas();
     }
   }
@@ -72,6 +79,7 @@ class MisComprasScreenState extends State<MisComprasScreen>
   @override
   void dispose() {
     _timer?.cancel();
+    _actualizaciones.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -93,7 +101,10 @@ class MisComprasScreenState extends State<MisComprasScreen>
     });
     try {
       final ventas = await ApiService.instance.obtenerMisVentas();
-      if (mounted) setState(() => _ventas = ventas);
+      if (mounted) {
+        setState(() => _ventas = ventas);
+        _actualizaciones.value = ventas;
+      }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.message);
     } catch (_) {
@@ -177,6 +188,10 @@ class MisComprasScreenState extends State<MisComprasScreen>
           child: _VentaTile(
             venta: _ventas[index],
             onActualizada: _cargarVentas,
+            actualizaciones: _actualizaciones,
+            onDetalleAbierto: (abierto) {
+              if (mounted) _detalleAbierto = abierto;
+            },
           ),
         ),
       ),
@@ -188,16 +203,35 @@ class MisComprasScreenState extends State<MisComprasScreen>
 class _VentaTile extends StatelessWidget {
   final Venta venta;
   final Future<void> Function() onActualizada;
+  final ValueListenable<List<Venta>> actualizaciones;
+  final void Function(bool) onDetalleAbierto;
 
-  const _VentaTile({required this.venta, required this.onActualizada});
+  const _VentaTile({
+    required this.venta,
+    required this.onActualizada,
+    required this.actualizaciones,
+    required this.onDetalleAbierto,
+  });
 
-  void _mostrarDetalle(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (_) => _DetalleVentaSheet(venta: venta),
-    );
+  Future<void> _mostrarDetalle(BuildContext context) async {
+    onDetalleAbierto(true);
+    try {
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        showDragHandle: true,
+        builder: (_) => ValueListenableBuilder<List<Venta>>(
+          valueListenable: actualizaciones,
+          builder: (_, ventas, _) => _DetalleVentaSheet(
+            venta:
+                ventas.where((v) => v.idVenta == venta.idVenta).firstOrNull ??
+                venta,
+          ),
+        ),
+      );
+    } finally {
+      onDetalleAbierto(false);
+    }
   }
 
   /// Reabre el checkout de PayU de una venta pendiente en el
@@ -277,7 +311,7 @@ class _VentaTile extends StatelessWidget {
         await mostrarConfirmacionOtp(
           context,
           titulo: '¡Pago confirmado!',
-          mensaje: 'Tu pedido pasa a preparación. Te avisaremos en cada paso.',
+          mensaje: 'Tu pago fue confirmado. El pedido queda por preparar.',
         );
         if (!context.mounted) return;
         await onActualizada();
@@ -540,6 +574,7 @@ class _DetalleVentaSheet extends StatelessWidget {
     final tieneDetalle = detalle.isNotEmpty;
 
     return SafeArea(
+      key: const ValueKey('detalle-compra'),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         child: Column(
@@ -565,7 +600,14 @@ class _DetalleVentaSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                _EstadoChip(venta: venta),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text('Pago', style: textTheme.bodySmall),
+                    const SizedBox(height: 4),
+                    _EstadoChip(venta: venta),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 18),
@@ -706,7 +748,7 @@ class _FilaDetalle extends StatelessWidget {
 }
 
 /// Línea de seguimiento del pedido: muestra las etapas
-/// "Pedido realizado → Pago confirmado → Entregado" según el estado actual.
+/// Tres etapas del método de entrega, separadas del estado del pago.
 /// Solo para pruebas: el seguimiento de una compra, tal como en el detalle.
 @visibleForTesting
 Widget seguimientoPedidoParaPruebas(Venta venta) =>
@@ -807,7 +849,7 @@ class _LineaPasosState extends State<_LineaPasos>
   static const _marca = 30.0;
   late final AnimationController _anim = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1200),
+    duration: const Duration(milliseconds: 250),
   );
   bool _iniciada = false;
 
@@ -836,7 +878,7 @@ class _LineaPasosState extends State<_LineaPasos>
   Widget build(BuildContext context) {
     final pasos = widget.pasos;
     final n = pasos.length;
-    final indice = pasos.lastIndexWhere((p) => p.hecho);
+    final indice = pasos.lastIndexWhere((p) => p.hecho || p.actual);
     // Fracción de la línea que queda en verde (hasta el paso actual).
     final meta = n > 1 && indice > 0 ? indice / (n - 1) : 0.0;
     return AnimatedBuilder(
@@ -919,7 +961,7 @@ class _LineaPasosState extends State<_LineaPasos>
                     child: Text(
                       paso.etiqueta,
                       textAlign: TextAlign.center,
-                      maxLines: 2,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 11,
@@ -927,7 +969,9 @@ class _LineaPasosState extends State<_LineaPasos>
                         fontWeight: paso.actual
                             ? FontWeight.w700
                             : FontWeight.w500,
-                        color: paso.hecho
+                        color: paso.actual
+                            ? AppColors.primary
+                            : paso.hecho
                             ? AppColors.success
                             : AppColors.textSecondary,
                       ),
@@ -982,7 +1026,11 @@ class _MarcaPaso extends StatelessWidget {
               shape: BoxShape.circle,
               color: AppColors.surface,
               border: Border.all(
-                color: paso.hecho ? AppColors.success : AppColors.textTertiary,
+                color: paso.actual
+                    ? AppColors.primary
+                    : paso.hecho
+                    ? AppColors.success
+                    : AppColors.textTertiary,
                 width: 2,
               ),
             ),
@@ -1049,11 +1097,13 @@ class _EstadoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final estadoRaw = (venta.estado ?? '').toLowerCase().trim();
-    final tono = estadoRaw == 'cancelada'
+    final tono = venta.requiereRevision
+        ? TonoEstado.aviso
+        : estadoRaw == 'cancelada'
         ? TonoEstado.peligro
         : estadoRaw == 'reembolsada'
         ? TonoEstado.neutro
-        : (estadoRaw == 'entregada' || venta.pagada)
+        : venta.pagada
         ? TonoEstado.exito
         : TonoEstado.aviso;
     return EstadoChip(texto: venta.estadoLabel, tono: tono);

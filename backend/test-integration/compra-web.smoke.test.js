@@ -49,8 +49,8 @@ test('compra web: cuenta, canal, monto, idempotencia, propiedad y gestión de en
             assert.equal((await pedir(`/ventas/${orden.id_venta}`,tokens[2])).status,403);
             assert.equal((await pedir(`/ventas/${orden.id_venta}/pago`,tokens[2])).status,403);
             assert.equal((await pedir(`/pagos/${orden.order_id}`,tokens[2])).status,403);
-            assert.equal((await pedir(`/pedidos/${orden.id_venta}/estado`,tokens[0],'PUT',{estado:'preparando'})).status,409);
-            await assert.rejects(ventaModel.actualizarEstadoEntrega(orden.id_venta,'preparando'),e=>e.status===409);
+            assert.equal((await pedir(`/pedidos/${orden.id_venta}/estado`,tokens[0],'PUT',{estado:'listo_recojo',confirmado:true})).status,409);
+            await assert.rejects(ventaModel.actualizarEstadoEntrega(orden.id_venta,'listo_recojo',null,{confirmado:true}),e=>e.status===409);
         });
         await t.test('webhook firmado confirma pago y el panel gestiona el pedido web',async()=>{
             const value='75.00',state_pol='4';
@@ -63,7 +63,8 @@ test('compra web: cuenta, canal, monto, idempotencia, propiedad y gestión de en
             assert.equal(pedidos.find(v=>v.id_venta===orden.id_venta).canal_compra,'web');
             const pagos=(await (await pedir('/pagos',tokens[0])).json()).pagos;
             assert.equal(pagos.find(v=>v.id_venta===orden.id_venta).canal_compra,'web');
-            for(const estado of ['preparando','listo_recojo','entregado'])assert.equal((await pedir(`/pedidos/${orden.id_venta}/estado`,tokens[0],'PUT',{estado})).status,200);
+            for(const estado of ['listo_recojo','entregado'])assert.equal((await pedir(`/pedidos/${orden.id_venta}/estado`,tokens[0],'PUT',{estado,confirmado:true})).status,200);
+            assert.equal((await pool.query('SELECT estado FROM ventas WHERE id_venta=?',[orden.id_venta]))[0][0].estado,'pagada');
         });
         await t.test('delivery web toma tarifa BD y conserva dirección y referencia',async()=>{
             const r=await pedir('/pagos/crear-orden',tokens[1],'POST',{...cuerpo,idempotencia_clave:randomUUID(),tipo_entrega:'domicilio',id_zona_delivery:zona,direccion:'Dirección de prueba Pallasca',referencia:'Referencia prueba',costo_envio:0.01});

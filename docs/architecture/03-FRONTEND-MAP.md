@@ -275,7 +275,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/ui/Ficha.jsx` | 9 |
 | `components/ui/Form.jsx` | 35 |
 | `components/ui/FormularioAlta.jsx` | 3 |
-| `components/ui/Indicadores.jsx` | 12 |
+| `components/ui/Indicadores.jsx` | 11 |
 | `components/ui/Modal.jsx` | 28 |
 | `components/ui/PageHeader.jsx` | 15 |
 | `components/ui/Pagination.jsx` | 12 |
@@ -301,6 +301,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `lib/storage/index.js`
 - `lib/utils/cuentas.js`
 - `lib/utils/entrega.js`
+- `lib/utils/estadoEntrega.js`
 - `lib/utils/exportarCsv.js`
 - `lib/utils/format.js`
 - `lib/utils/numeroALetras.js`

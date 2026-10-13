@@ -124,12 +124,12 @@ const sembrar = async () => {
     const [venta] = await pool.query(`
         INSERT INTO ventas
             (id_usuario, total, costo_envio, estado, estado_entrega,
-             tipo_entrega, origen, correo_compra, fecha_venta)
+             tipo_entrega, origen, correo_compra, fecha_venta, external_reference)
         VALUES
             (?, 25.50, 0.00, 'pagada', 'pendiente',
-             'domicilio', 'app', ?, CURRENT_TIMESTAMP)
+              'tienda', 'app', ?, CURRENT_TIMESTAMP, ?)
         RETURNING id_venta
-    `, [idCliente, `cliente-ped-${sufijo}@example.test`]);
+    `, [idCliente, `cliente-ped-${sufijo}@example.test`, `pedido-${sufijo}`]);
     idVenta = venta[0].id_venta;
 
     const [detalle] = await pool.query(`
@@ -261,12 +261,12 @@ test('contrato funcional de pedidos', async () => {
             `detalle inexistente devolvió ${inexistente.status}`
         );
 
-        // --- Transición válida: pendiente → preparando ---
+        // --- Transición válida: pendiente → listo_recojo ---
         const valida = await pedir(
             `/api/pedidos/${idVenta}/estado`,
             admin,
             'PUT',
-            { estado: 'preparando' }
+            { estado: 'listo_recojo', confirmado: true }
         );
         assert.equal(
             valida.status,
@@ -276,15 +276,15 @@ test('contrato funcional de pedidos', async () => {
         const validaCuerpo = await valida.json();
         assert.equal(
             validaCuerpo.data.estado_entrega,
-            'preparando'
+            'listo_recojo'
         );
 
-        // --- Transición inválida: preparando → entregado (salta etapas) ---
+        // --- Transición inválida: listo_recojo → en_camino (cruza tipos) ---
         const invalida = await pedir(
             `/api/pedidos/${idVenta}/estado`,
             admin,
             'PUT',
-            { estado: 'entregado' }
+            { estado: 'en_camino', confirmado: true }
         );
         assert.equal(
             invalida.status,
@@ -297,7 +297,7 @@ test('contrato funcional de pedidos', async () => {
             `/api/pedidos/${idVenta}/estado`,
             admin,
             'PUT',
-            { estado: 'preparando' }
+            { estado: 'listo_recojo', confirmado: true }
         );
         assert.equal(
             misma.status,
@@ -330,7 +330,7 @@ test('contrato funcional de pedidos', async () => {
         );
 
         // --- Cancelación: camino de éxito completo ---
-        // estaba en 'preparando', así que cancelar es un salto válido.
+        // Estaba listo para recoger, así que cancelar es un salto válido.
         // Antes esto no se probaba por HTTP, solo en la lógica.
         // El libro se siembra con 10 y esta venta no lo descuenta, así que
         // la foto previa es la única referencia válida para comparar.
@@ -386,7 +386,7 @@ test('contrato funcional de pedidos', async () => {
             `/api/pedidos/${idVenta}/estado`,
             admin,
             'PUT',
-            { estado: 'preparando' }
+            { estado: 'listo_recojo', confirmado: true }
         );
         assert.equal(
             desdeCancelado.status,

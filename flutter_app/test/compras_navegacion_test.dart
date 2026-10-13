@@ -8,6 +8,125 @@ import 'soporte_api_local.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  for (final tipo in ['tienda', 'domicilio']) {
+    testWidgets(
+      'Detalle abierto $tipo se sincroniza al reanudar y consultar sin adelantar entrega',
+      (tester) async {
+        await prepararAlmacenamientoLocal();
+        await iniciarSesionLocal(7);
+        var estado = 'pendiente';
+        var consultas = 0;
+        var fallar = false;
+        Future<void> esperarConsulta(int cantidad) async {
+          // Reanudar no espera la cadena asíncrona de sesión/checkout/Dio.
+          // pumpAndSettle solo espera frames, no solicitudes pendientes.
+          for (var i = 0; i < 50 && consultas < cantidad; i++) {
+            await tester.pump(const Duration(milliseconds: 20));
+          }
+          await tester.pumpAndSettle();
+          expect(consultas, cantidad);
+        }
+
+        ApiService.instance.usarAdaptadorPruebas(
+          TransporteAislado((options) async {
+            expectSync(options.path, '/ventas/mis-ventas');
+            expectSync(options.method, 'GET');
+            consultas++;
+            if (fallar) {
+              return respuestaLocal({
+                'success': false,
+                'mensaje': 'Temporalmente no disponible',
+              }, 503);
+            }
+            return respuestaLocal({
+              'success': true,
+              'data': [
+                {
+                  'id_venta': 41,
+                  'estado': 'pagada',
+                  'payu_payment_status': 'APPROVED',
+                  'estado_entrega': estado,
+                  'tipo_entrega': tipo,
+                  'total': 25,
+                },
+              ],
+            });
+          }),
+        );
+        final key = GlobalKey<MisComprasScreenState>();
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.light(),
+            home: MisComprasScreen(key: key),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Compra #41'));
+        await tester.pumpAndSettle();
+        final detalle = find.byType(BottomSheet);
+        Finder dentro(String texto) =>
+            find.descendant(of: detalle, matching: find.text(texto));
+        expect(dentro('Pago'), findsOneWidget);
+        expect(dentro('Pagada'), findsOneWidget);
+        expect(dentro('Por preparar'), findsNWidgets(2));
+        expect(
+          find.descendant(
+            of: detalle,
+            matching: find.byIcon(Icons.check_rounded),
+          ),
+          findsNothing,
+        );
+        estado = tipo == 'tienda' ? 'listo_recojo' : 'en_camino';
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await esperarConsulta(2);
+        expect(
+          dentro(tipo == 'tienda' ? 'Listo para recoger' : 'En camino'),
+          findsNWidgets(2),
+        );
+        expect(
+          dentro(tipo == 'tienda' ? 'En camino' : 'Listo para recoger'),
+          findsNothing,
+        );
+        expect(
+          find.descendant(
+            of: detalle,
+            matching: find.byIcon(Icons.check_rounded),
+          ),
+          findsOneWidget,
+        );
+        // Un error conserva el último dato real; no marca Entregado.
+        fallar = true;
+        final recarga = key.currentState!.recargar();
+        await tester.pumpAndSettle();
+        await recarga;
+        expect(
+          find.descendant(
+            of: detalle,
+            matching: find.byIcon(Icons.check_rounded),
+          ),
+          findsOneWidget,
+        );
+        fallar = false;
+        estado = 'entregado';
+        await tester.pump(const Duration(seconds: 61));
+        await esperarConsulta(4);
+        expect(dentro('Entregado'), findsNWidgets(2));
+        expect(dentro('Pagada'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: detalle,
+            matching: find.byIcon(Icons.check_rounded),
+          ),
+          findsNWidgets(3),
+        );
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
   testWidgets(
     'Compras incrustada consulta solo al activarse y conserva navegación sin historial',
     (tester) async {

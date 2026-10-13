@@ -945,9 +945,7 @@ test('matriz funcional del flujo comercial', async (t) => {
                 );
             }
 
-            // El filtro por tipo se aplica sin validar contra el dominio.
-            // Un tipo inexistente no es un error: devuelve vacío, que es lo
-            // que espera el panel al filtrar. Se fija ese contrato.
+            // Los filtros se validan contra el dominio; no se inventa una ruta.
             const filtrado = await pedir('/api/pedidos?tipo=domicilio', admin);
             assert.equal(
                 filtrado.status,
@@ -963,14 +961,10 @@ test('matriz funcional del flujo comercial', async (t) => {
             const filtroInvalido = await pedir('/api/pedidos?tipo=inventado', admin);
             assert.equal(
                 filtroInvalido.status,
-                200,
-                `un filtro desconocido no debe ser 4xx, dio ${filtroInvalido.status}`
+                400,
+                `un filtro desconocido debe rechazarse, dio ${filtroInvalido.status}`
             );
-            assert.deepEqual(
-                (await filtroInvalido.json()).data,
-                [],
-                'un tipo inexistente debe devolver una lista vacía'
-            );
+            assert.equal((await filtroInvalido.json()).success, false);
 
             const comoCajero = await pedir('/api/pedidos', cajero);
             assert.equal(
@@ -996,8 +990,8 @@ test('matriz funcional del flujo comercial', async (t) => {
 
         // ==============================================
         // 9. PEDIDOS: máquina de estados logística
-        // RECOJO:  pendiente → preparando → listo_recojo → entregado
-        // DELIVERY: pendiente → preparando → en_camino → entregado
+        // RECOJO:  pendiente → listo_recojo → entregado
+        // DELIVERY: pendiente → en_camino → entregado
         // Sin tocar pago, total ni estado comercial.
         // ==============================================
         await t.test('transiciones logísticas válidas e inválidas', async () => {
@@ -1024,16 +1018,16 @@ test('matriz funcional del flujo comercial', async (t) => {
             };
 
             const mover = (id, estado) =>
-                pedir(`/api/pedidos/${id}/estado`, admin, 'PUT', { estado });
+                pedir(`/api/pedidos/${id}/estado`, admin, 'PUT', { estado, confirmado: true });
 
             // ---------- RECOJO EN TIENDA ----------
             const recojo = await crearPedido('tienda');
 
             const r1 = await mover(recojo, 'preparando');
-            assert.equal(r1.status, 200, `pendiente → preparando: ${r1.status}`);
+            assert.equal(r1.status, 400, `el paso retirado se rechaza: ${r1.status}`);
 
             const r2 = await mover(recojo, 'listo_recojo');
-            assert.equal(r2.status, 200, `preparando → listo_recojo: ${r2.status}`);
+            assert.equal(r2.status, 200, `pendiente → listo_recojo: ${r2.status}`);
 
             const r3 = await mover(recojo, 'entregado');
             assert.equal(r3.status, 200, `listo_recojo → entregado: ${r3.status}`);
@@ -1050,10 +1044,10 @@ test('matriz funcional del flujo comercial', async (t) => {
             const delivery = await crearPedido('domicilio');
 
             const d1 = await mover(delivery, 'preparando');
-            assert.equal(d1.status, 200, `pendiente → preparando: ${d1.status}`);
+            assert.equal(d1.status, 400, `el paso retirado se rechaza: ${d1.status}`);
 
             const d2 = await mover(delivery, 'en_camino');
-            assert.equal(d2.status, 200, `preparando → en_camino: ${d2.status}`);
+            assert.equal(d2.status, 200, `pendiente → en_camino: ${d2.status}`);
 
             const d3 = await mover(delivery, 'entregado');
             assert.equal(d3.status, 200, `en_camino → entregado: ${d3.status}`);
@@ -1078,22 +1072,20 @@ test('matriz funcional del flujo comercial', async (t) => {
             // exclusivo del recojo en tienda y desde ahí el panel no
             // sabría cómo avanzar el pedido.
             const saltoRecojo = await crearPedido('domicilio');
-            await mover(saltoRecojo, 'preparando');
             const aListo = await mover(saltoRecojo, 'listo_recojo');
             assert.equal(
                 aListo.status,
                 400,
-                `preparando → listo_recojo en un delivery debe rechazarse: ${aListo.status}`
+                `pendiente → listo_recojo en un delivery debe rechazarse: ${aListo.status}`
             );
 
             // Y el recojo en tienda tampoco puede pasar por 'en_camino'.
             const saltoCamino = await crearPedido('tienda');
-            await mover(saltoCamino, 'preparando');
             const aCamino = await mover(saltoCamino, 'en_camino');
             assert.equal(
                 aCamino.status,
                 400,
-                `preparando → en_camino en un recojo debe rechazarse: ${aCamino.status}`
+                `pendiente → en_camino en un recojo debe rechazarse: ${aCamino.status}`
             );
 
             // Estado inexistente.
@@ -1108,8 +1100,8 @@ test('matriz funcional del flujo comercial', async (t) => {
             const trasMover = await leerVenta(recojo);
             assert.equal(
                 trasMover.estado,
-                'entregada',
-                'la entrega final sincroniza el estado comercial'
+                'pagada',
+                'la entrega final conserva el estado comercial'
             );
             assert.equal(
                 Number(trasMover.total),
@@ -1186,7 +1178,7 @@ test('matriz funcional del flujo comercial', async (t) => {
                 );
 
                 const r = await pedir(`/api/pedidos/${idLegacy}/estado`, admin, 'PUT', {
-                    estado: 'preparando',
+                    estado: 'en_camino', confirmado: true,
                 });
 
                 assert.equal(
@@ -1222,7 +1214,7 @@ test('matriz funcional del flujo comercial', async (t) => {
                 );
 
                 const nulo = await pedir(`/api/pedidos/${idLegacy}/estado`, admin, 'PUT', {
-                    estado: 'preparando',
+                    estado: 'en_camino', confirmado: true,
                 });
                 const cuerpoNulo = await nulo.json().catch(() => ({}));
 

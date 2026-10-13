@@ -35,10 +35,10 @@ test('venta: pendiente -> cancelada es permitido', () => {
     );
 });
 
-test('venta: pagada -> entregada es permitido', () => {
+test('venta: confirmar entrega no cambia el estado comercial pagada', () => {
     assert.equal(
         permitirTransicion(VENTA, 'pagada', 'entregada'),
-        true
+        false
     );
 });
 
@@ -81,7 +81,9 @@ test('venta: pendiente -> entregada salta etapa y es FALSO', () => {
 // ENTREGA (máquina general, sin tipo)
 // ----------------------------------------
 test('entrega: la máquina general admite ambos caminos', () => {
-    assert.equal(permitirTransicion(ENTREGA, 'pendiente', 'preparando'), true);
+    assert.equal(permitirTransicion(ENTREGA, 'pendiente', 'preparando'), false);
+    assert.equal(permitirTransicion(ENTREGA, 'pendiente', 'listo_recojo'), true);
+    assert.equal(permitirTransicion(ENTREGA, 'pendiente', 'en_camino'), true);
     assert.equal(permitirTransicion(ENTREGA, 'preparando', 'listo_recojo'), true);
     assert.equal(permitirTransicion(ENTREGA, 'preparando', 'en_camino'), true);
 });
@@ -96,13 +98,15 @@ test('entrega: entregado y cancelado son finales', () => {
 // ENTREGA consciente del tipo de entrega
 // ----------------------------------------
 test('entrega: delivery recorre en_camino', () => {
-    assert.equal(permitirTransicionEntrega('domicilio', 'pendiente', 'preparando'), true);
+    assert.equal(permitirTransicionEntrega('domicilio', 'pendiente', 'en_camino'), true);
+    assert.equal(permitirTransicionEntrega('domicilio', 'pendiente', 'preparando'), false);
     assert.equal(permitirTransicionEntrega('domicilio', 'preparando', 'en_camino'), true);
     assert.equal(permitirTransicionEntrega('domicilio', 'en_camino', 'entregado'), true);
 });
 
 test('entrega: recojo en tienda recorre listo_recojo', () => {
-    assert.equal(permitirTransicionEntrega('tienda', 'pendiente', 'preparando'), true);
+    assert.equal(permitirTransicionEntrega('tienda', 'pendiente', 'listo_recojo'), true);
+    assert.equal(permitirTransicionEntrega('tienda', 'pendiente', 'preparando'), false);
     assert.equal(permitirTransicionEntrega('tienda', 'preparando', 'listo_recojo'), true);
     assert.equal(permitirTransicionEntrega('tienda', 'listo_recojo', 'entregado'), true);
 });

@@ -19,7 +19,6 @@ const VENTA = {
     ],
 
     pagada: [
-        'entregada',
         'reembolsada'
     ],
 
@@ -36,8 +35,8 @@ const VENTA = {
 // ENTREGA (estado logístico del pedido en ventas)
 // ----------------------------------------
 // Flujo de pedidos (delivery / recojo en tienda):
-//   pendiente → preparando → listo_recojo (recojo en tienda)
-//                          → en_camino (delivery)
+//   pendiente (Por preparar) → listo_recojo (recojo en tienda)
+//                            → en_camino (delivery)
 //   listo_recojo / en_camino → entregado
 // Cualquiera puede cancelarse solo si el producto aún no salió
 // entregado. Una vez "entregado" o "cancelado", es estado final
@@ -45,7 +44,6 @@ const VENTA = {
 // ========================================
 const ENTREGA = {
     pendiente: [
-        'preparando',
         'listo_recojo',
         'en_camino',
         'cancelado'
@@ -125,6 +123,10 @@ const ESTADO_POR_TIPO = {
 };
 
 const TIPOS_ENTREGA = Object.keys(ESTADO_POR_TIPO);
+// 'preparando' se conserva para LEER registros antiguos, no como paso nuevo.
+const ESTADOS_ENTREGA_ACTUALES = Object.keys(ENTREGA).filter(estado => estado !== 'preparando');
+const normalizarEstadoEntrega = estado => estado === 'preparando' ? 'pendiente'
+    : ESTADOS_ENTREGA_ACTUALES.includes(estado) ? estado : null;
 
 // Los marcadores de origen retirado siguen siendo de solo lectura tras purgar.
 const esVentaHistorica = (venta) => venta?.origen === 'panel' ||
@@ -144,7 +146,7 @@ const esTipoEntregaValido = (tipoEntrega) =>
 // Combina la máquina general con el estado destino que admite el tipo.
 // ========================================
 const permitirTransicionEntrega = (tipoEntrega, actual, nuevo) => {
-    if (!permitirTransicion(ENTREGA, actual, nuevo)) {
+    if (!ESTADOS_ENTREGA_ACTUALES.includes(nuevo) || !permitirTransicion(ENTREGA, normalizarEstadoEntrega(actual), nuevo)) {
         return false;
     }
 
@@ -161,6 +163,8 @@ module.exports = {
     ENTREGA,
     ESTADO_POR_TIPO,
     TIPOS_ENTREGA,
+    ESTADOS_ENTREGA_ACTUALES,
+    normalizarEstadoEntrega,
     esTipoEntregaValido,
     permitirTransicion,
     permitirTransicionEntrega,

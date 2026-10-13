@@ -2,10 +2,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { avisoPedido } = require('../src/utils/mailer');
 
-test('recojo avisa "listo para recoger" y "recogido"; nunca "en camino"', () => {
+test('recojo avisa "listo para recoger" y "entregado"; nunca "en camino"', () => {
     assert.equal(avisoPedido('tienda', 'listo_recojo').titulo, 'Tu pedido está listo para recoger');
     assert.match(avisoPedido('tienda', 'listo_recojo').texto(7), /#7/);
-    assert.equal(avisoPedido('tienda', 'entregado').titulo, 'Recogiste tu pedido');
+    assert.equal(avisoPedido('tienda', 'entregado').titulo, 'Pedido entregado');
     assert.equal(avisoPedido('tienda', 'en_camino'), null);
 });
 

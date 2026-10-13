@@ -17,7 +17,8 @@ import client from '../../lib/api/client';
 // ============================================================
 
 function datosDe(res) {
-    return Array.isArray(res?.data) ? res.data : [];
+    if (!Array.isArray(res?.data)) throw new Error('Respuesta de pedidos no válida');
+    return res.data;
 }
 
 export async function listarPedidos() {
@@ -29,9 +30,11 @@ export async function obtenerPedido(id) {
     return res?.data ?? null;
 }
 
-// Avanza logística sin cobrar nuevamente. Completar sincroniza la venta;
+// Avanza logística sin cobrar nuevamente ni cambiar un pago a "entregado";
 // cancelar sin pago cierra la compra y libera stock. Una compra pagada
 // conserva dinero/existencias hasta la devolución separada desde Ventas.
-export async function cambiarEstadoPedido(id, estado) {
-    return client.put(`/pedidos/${id}/estado`, { estado });
+export async function cambiarEstadoPedido(id, estado, { confirmado = false, estadoAnterior } = {}) {
+    return client.put(`/pedidos/${id}/estado`, { estado,
+        ...(confirmado ? { confirmado: true } : {}),
+        ...(estadoAnterior !== undefined ? { estado_anterior: estadoAnterior } : {}) });
 }

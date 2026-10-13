@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-    FaBoxesPacking,
     FaBoxOpen,
     FaCircleCheck,
     FaClock,
@@ -27,7 +26,8 @@ import { BtnAccion } from '../../components/ui/Acciones';
 import { Modal } from '../../components/ui/Modal';
 import { ConfirmarAccion } from '../../components/ui/ConfirmarAccion';
 import { Ficha } from '../../components/ui/Ficha';
-import { Indicador, Indicadores } from '../../components/ui/Indicadores';
+import { seguimientoPedido } from '../../lib/utils/seguimientoPedido';
+import './pedidos.css';
 import { useToast } from '../../components/providers/ToastProvider';
 import { formatearMoneda, formatearFecha } from '../../lib/utils/format';
 import { descripcionEntrega, esEntregaPallasca, ubicacionEntrega } from '../../lib/utils/entrega';
@@ -39,10 +39,13 @@ import {
 } from './pedidosService';
 import {
     COLOR_ESTADO,
-    ETIQUETA_COMERCIAL,
     COLOR_COMERCIAL,
     ETIQUETA_PAGO,
-    FLUJO,
+    normalizarEstadoEntrega,
+    pagoConfirmadoPedido,
+    esPedidoEcommerce,
+    resumirPedidos,
+    estadoContabilizable,
     accionSiguiente,
     accionCancelar,
     etiquetaEstado,
@@ -69,13 +72,12 @@ import {
 //
 // Qué NO hace esta página
 //   No cobra, no crea ventas, no toca PayU y no modifica el estado
-//   comercial (pagada/entregada/reembolsada). Solo mueve el estado
+//   de pago (pagada/reembolsada). Solo mueve el estado
 //   logístico estado_entrega, que es lo que el backend valida.
 // ============================================================
 
 // Un pedido real es el que viene de la app con su orden de PayU.
-const esPedido = (fila) =>
-    fila?.origen === 'app' && Boolean(fila?.external_reference || fila?.payu_order_id);
+const esPedido = esPedidoEcommerce;
 
 const FILTROS = [
     { valor: 'todos', etiqueta: 'Todos' },
@@ -83,16 +85,17 @@ const FILTROS = [
     { valor: 'app', etiqueta: 'Compras app' },
     { valor: 'domicilio', etiqueta: 'Delivery' },
     { valor: 'tienda', etiqueta: 'Recojo en tienda' },
-    { valor: 'pendiente', etiqueta: 'Pendientes' },
-    { valor: 'preparando', etiqueta: 'Preparando' },
-    { valor: 'listo_recojo', etiqueta: 'Listos para recojo' },
+    { valor: 'pendiente', etiqueta: 'Por preparar' },
+    { valor: 'listo_recojo', etiqueta: 'Listos para recoger' },
     { valor: 'en_camino', etiqueta: 'En camino' },
     { valor: 'entregado', etiqueta: 'Entregados' },
+    { valor: 'sin_pago', etiqueta: 'Pendientes de pago' },
+    { valor: 'cancelado', etiqueta: 'Cancelados' },
+    { valor: 'reembolsada', etiqueta: 'Reembolsados' },
 ];
 
 // Icono del botón según el paso al que lleva.
 const ICONO_DESTINO = {
-    preparando: <FaBoxesPacking aria-hidden="true" />,
     listo_recojo: <FaStore aria-hidden="true" />,
     en_camino: <FaTruck aria-hidden="true" />,
     entregado: <FaCircleCheck aria-hidden="true" />,
@@ -101,31 +104,32 @@ const ICONO_DESTINO = {
 // Seguimiento visual del pedido: los pasos de su tipo de entrega con el
 // actual resaltado. Un pedido cancelado lo indica debajo.
 function Seguimiento({ pedido }) {
-    if (pagoEnRevision(pedido)) return <Alert tipo="warning">Pago en revisión. No se puede avanzar la entrega. Revisa el pago y la devolución desde Ventas.</Alert>;
-    const flujo = FLUJO[pedido.tipo_entrega];
-    if (!flujo) return null;
-    const estado = pedido.estado_entrega || 'pendiente';
-    const cancelado = estado === 'cancelado';
-    const sinPago = pedido.estado === 'pendiente';
-    const indice = cancelado || sinPago ? -1 : flujo.pasos.indexOf(estado);
+    const seg = seguimientoPedido(pedido);
+    if (!seg.pasos.length) return <Alert tipo={seg.tono === 'cancelado' ? 'info' : 'warning'}>{seg.titulo}. {seg.mensaje}</Alert>;
     return (
-        <ol className="grid grid-cols-4 gap-2" aria-label="Seguimiento del pedido">
-            {flujo.pasos.map((paso, i) => {
-                const hecho = i <= indice;
-                const actual = i === indice;
-                return (
-                    <li key={paso} className="flex flex-col items-center gap-1.5 text-center" aria-current={actual ? 'step' : undefined}>
-                        <span className={`h-1.5 w-full rounded-full ${hecho ? 'bg-primary-600' : 'bg-slate-200'}`} />
-                        <span className={`text-[11px] leading-tight ${actual ? 'font-semibold text-primary-700' : hecho ? 'text-slate-700' : 'text-slate-400'}`}>
-                            {flujo.etiquetas[paso]}
-                        </span>
-                    </li>
-                );
-            })}
-            {cancelado && <li className="col-span-4"><Badge color="danger">Pedido cancelado</Badge></li>}
-            {sinPago && !cancelado && <li className="col-span-4"><Badge color="warning">Esperando pago: la preparación empieza al confirmarse</Badge></li>}
-        </ol>
+        <div className="space-y-3"><ol className="pedido-seguimiento" aria-label="Seguimiento del pedido">
+            {seg.pasos.map(paso => <li key={paso.clave} className={`pedido-seguimiento__paso ${paso.hecho || paso.actual ? 'pedido-seguimiento__paso--hecho' : ''}`} aria-current={paso.actual ? 'step' : undefined}>
+                <span className="pedido-seguimiento__trazo"/><span>{paso.etiqueta}</span>
+            </li>)}
+        </ol>{seg.tono === 'espera' && <Alert tipo="warning">{seg.titulo}. {seg.mensaje}</Alert>}</div>
     );
+}
+
+function ResumenPedidos({ resumen, cargando, error }) {
+    const tarjetas = [
+        ['pendiente', 'Por preparar', 'Sin salir ni estar listos', FaClock],
+        ['listo_recojo', 'Listos para recoger', 'Disponibles en tienda', FaStore],
+        ['en_camino', 'En camino', 'Con el repartidor', FaTruck],
+        ['entregado', 'Entregados', 'Recibidos por el cliente', FaCircleCheck],
+    ];
+    return <><section className="pedidos-indicadores" aria-label="Indicadores de pedidos" aria-busy={cargando}>
+        {tarjetas.map(([estado, titulo, detalle, Icono]) => <article key={estado} className={`pedido-indicador pedido-estado--${estado}`} aria-label={titulo}>
+            <div className="pedido-indicador__cabecera"><h2 className="pedido-indicador__titulo">{titulo}</h2><span className="pedido-indicador__icono" aria-hidden="true"><Icono/></span></div>
+            {cargando ? <div className="skeleton mt-3 h-8 w-16"/> : <p className="pedido-indicador__valor">{error ? '—' : resumen.conteos[estado]}</p>}
+            <p className="pedido-indicador__detalle">{detalle}</p>
+            {!cargando && !error && <p className="pedido-indicador__proporcion">{resumen.total ? `${resumen.porcentajes[estado].toLocaleString('es-PE')}% del total` : 'Sin base para calcular porcentaje'}</p>}
+        </article>)}
+    </section><p className="pedido-resumen-nota">{cargando ? 'Consultando los pedidos...' : error ? 'Indicadores no disponibles. Actualiza para consultar los pedidos.' : <>Base del resumen: {resumen.total} {resumen.total === 1 ? 'pedido pagado y vigente' : 'pedidos pagados y vigentes'}. Se excluyen cancelaciones, reembolsos, devoluciones pendientes y pagos en revisión. El filtro de estado solo cambia la lista.</>}</p></>;
 }
 
 const nombreCliente = (p) => {
@@ -235,7 +239,7 @@ export default function PedidosPage() {
         setProcesando(true);
 
         try {
-            const respuesta = await cambiarEstadoPedido(objetivo.id_venta, objetivo.destino);
+            const respuesta = await cambiarEstadoPedido(objetivo.id_venta, objetivo.destino, { confirmado: objetivo.destino !== 'cancelado', estadoAnterior: objetivo.estadoAnterior });
             if (!activo.current) return;
             exito(objetivo.destino === 'cancelado' && respuesta?.mensaje ? respuesta.mensaje
                 : `Pedido #${objetivo.id_venta} → ${etiquetaEstado(objetivo.tipo_entrega, objetivo.destino)}`);
@@ -265,7 +269,7 @@ export default function PedidosPage() {
     // ========================================
     // FILTROS Y BÚSQUEDA (en pantalla)
     // ========================================
-    const pedidosFiltrados = useMemo(() => {
+    const pedidosEnAmbito = useMemo(() => {
         const texto = busqueda.trim().toLowerCase();
 
         return pedidos.filter((p) => {
@@ -273,13 +277,6 @@ export default function PedidosPage() {
             if (filtro === 'app' && p.canal_compra === 'web') return false;
             if (filtro === 'domicilio' && p.tipo_entrega !== 'domicilio') return false;
             if (filtro === 'tienda' && p.tipo_entrega !== 'tienda') return false;
-
-            if (
-                ['pendiente', 'preparando', 'listo_recojo', 'en_camino', 'entregado'].includes(filtro)
-                && (p.estado_entrega || 'pendiente') !== filtro
-            ) {
-                return false;
-            }
 
             if (!texto) return true;
 
@@ -297,23 +294,18 @@ export default function PedidosPage() {
                 .some((campo) => String(campo).toLowerCase().includes(texto));
         });
     }, [pedidos, filtro, busqueda]);
+    const pedidosFiltrados = useMemo(() => pedidosEnAmbito.filter(p => {
+        if (['pendiente', 'listo_recojo', 'en_camino', 'entregado'].includes(filtro)) return estadoContabilizable(p) === filtro;
+        if (filtro === 'sin_pago') return p.estado === 'pendiente';
+        if (filtro === 'cancelado') return p.estado === 'cancelada' || p.estado_entrega === 'cancelado';
+        if (filtro === 'reembolsada') return p.estado === 'reembolsada';
+        return true;
+    }), [pedidosEnAmbito, filtro]);
 
     // ========================================
     // INDICADORES
     // ========================================
-    const indicadores = useMemo(() => {
-        const porEstado = (e) =>
-            pedidosFiltrados.filter((p) => (p.estado_entrega || 'pendiente') === e).length;
-
-        return {
-            total: pedidosFiltrados.length,
-            porHacer: pedidosFiltrados.filter((p) => !pagoEnRevision(p) && ['pagada', 'entregada'].includes(p.estado)
-                && ['pendiente', 'preparando'].includes(p.estado_entrega || 'pendiente')).length,
-            enRuta: porEstado('en_camino'),
-            listos: porEstado('listo_recojo'),
-            entregados: porEstado('entregado'),
-        };
-    }, [pedidosFiltrados]);
+    const indicadores = useMemo(() => resumirPedidos(pedidosEnAmbito), [pedidosEnAmbito]);
 
     const columnas = [
         {
@@ -366,31 +358,31 @@ export default function PedidosPage() {
         {
             titulo: 'Estado entrega',
             render: (p) => {
-                const estado = p.estado_entrega || 'pendiente';
-                return <Badge color={COLOR_ESTADO[estado] || 'neutral'}>{etiquetaEntregaPedido(p)}</Badge>;
+                const estado = normalizarEstadoEntrega(p.estado_entrega);
+                return <Badge className={`pedido-estado pedido-estado--${estado}`} color={COLOR_ESTADO[estado] || 'neutral'}>{etiquetaEntregaPedido(p)}</Badge>;
             },
         },
     ];
 
     // Qué puede hacerse con el pedido ahora mismo (igual en la fila y en el detalle).
     const opcionesPedido = (p) => {
-        const estado = p.estado_entrega || 'pendiente';
+        const estado = p.estado_entrega;
         const tipoValido = esTipoEntregaValido(p.tipo_entrega);
         const historico = p.origen === 'panel' || p.origen === 'reserva' || Boolean(p.id_reserva);
         const devolucionPendiente = p.estado_reembolso === 'pendiente_verificacion';
         const revisionPago = pagoEnRevision(p);
-        const pagoConfirmado = ['pagada', 'entregada'].includes(p.estado);
+        const pagoConfirmado = pagoConfirmadoPedido(p);
         const habilitado = tipoValido && !historico && !devolucionPendiente;
         return {
             tipoValido, historico, devolucionPendiente,
             avance: habilitado && pagoConfirmado && !revisionPago ? accionSiguiente(p.tipo_entrega, estado) : null,
-            cancelar: habilitado && !['cancelada', 'reembolsada'].includes(p.estado) && puedeCancelar(estado)
+            cancelar: tipoValido && !historico && !['cancelada', 'reembolsada'].includes(p.estado) && puedeCancelar(estado)
                 ? accionCancelar(p.tipo_entrega, estado, p.estado, revisionPago) : null,
         };
     };
 
     const avanzar = (p, accion) => {
-        const objetivo = { id_venta: p.id_venta, destino: accion.destino, tipo_entrega: p.tipo_entrega };
+        const objetivo = { id_venta: p.id_venta, destino: accion.destino, tipo_entrega: p.tipo_entrega, estadoAnterior: p.estado_entrega };
         if (accion.confirmar) {
             setPendiente({ ...objetivo, titulo: accion.confirmar.titulo, mensaje: accion.confirmar.mensaje(p), boton: accion.confirmar.boton });
         } else {
@@ -399,7 +391,7 @@ export default function PedidosPage() {
     };
 
     const pedirCancelacion = (p, cancelar) =>
-        setCancelacion({ id_venta: p.id_venta, destino: 'cancelado', tipo_entrega: p.tipo_entrega, ...cancelar });
+        setCancelacion({ id_venta: p.id_venta, destino: 'cancelado', tipo_entrega: p.tipo_entrega, estadoAnterior: p.estado_entrega, ...cancelar });
 
     // Botones del paso actual: en la fila la cancelación es un icono; en el
     // detalle se muestra con su texto ("No lo recogió", "No se pudo entregar").
@@ -459,24 +451,19 @@ export default function PedidosPage() {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="pedidos-pagina space-y-4">
             <PageHeader
                 titulo="Pedidos"
                 descripcion="Pedidos de la web y la app: pagos, delivery y recojo en Pallasca"
                 acciones={<Button variante="secondary" onClick={() => cargarPedidos()} disabled={cargando || procesando}><FaRotate /> Actualizar pedidos</Button>}
             />
 
-            <Indicadores etiqueta="Indicadores de pedidos" cargando={cargando}>
-                <Indicador titulo="Por preparar" valor={indicadores.porHacer} icono={<FaClock />} tono="warning" detalle="Pagados, aún sin salir" de={indicadores.total} />
-                <Indicador titulo="Listos para recoger" valor={indicadores.listos} icono={<FaStore />} tono="primary" detalle="Esperando al cliente en tienda" de={indicadores.total} />
-                <Indicador titulo="En camino" valor={indicadores.enRuta} icono={<FaTruck />} tono="info" detalle="Delivery en ruta" de={indicadores.total} />
-                <Indicador titulo="Entregados" valor={indicadores.entregados} icono={<FaCircleCheck />} tono="success" detalle="Completados" de={indicadores.total} />
-            </Indicadores>
+            <ResumenPedidos resumen={indicadores} cargando={cargando} error={errorCarga}/>
 
-            <Card>
+            <Card className="pedido-lista">
                 <CardHeader
                     titulo="Lista de pedidos"
-                    subtitulo="Recojo: preparar → listo para recoger → entregar en tienda. Delivery: preparar → despachar → confirmar entrega. El cliente recibe cada aviso por correo y en la app."
+                    subtitulo="Por preparar → En camino o Listo para recoger → Entregado. Confirma cada avance cuando realmente ocurra."
                     acciones={
                         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                             <div className="relative">
@@ -560,14 +547,14 @@ export default function PedidosPage() {
                         <Seguimiento pedido={detalle} />
 
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <Ficha icono={<FaBoxOpen aria-hidden="true" />} etiqueta="Estado comercial">
+                            <Ficha icono={<FaBoxOpen aria-hidden="true" />} etiqueta="Estado del pago">
                                 <Badge color={COLOR_COMERCIAL[detalle.estado] || 'neutral'}>
-                                    {ETIQUETA_COMERCIAL[detalle.estado] || detalle.estado}
+                                    {etiquetaPagoPedido(detalle)}
                                 </Badge>
                             </Ficha>
 
                             <Ficha icono={<FaTruck aria-hidden="true" />} etiqueta="Estado de entrega">
-                                <Badge color={COLOR_ESTADO[detalle.estado_entrega || 'pendiente'] || 'neutral'}>
+                                <Badge className={`pedido-estado pedido-estado--${normalizarEstadoEntrega(detalle.estado_entrega)}`} color={COLOR_ESTADO[normalizarEstadoEntrega(detalle.estado_entrega)] || 'neutral'}>
                                     {etiquetaEntregaPedido(detalle)}
                                 </Badge>
                             </Ficha>
@@ -586,7 +573,7 @@ export default function PedidosPage() {
                                 {formatearMoneda(detalle.costo_envio)}
                             </Ficha>
 
-                            <Ficha icono={<FaCircleCheck aria-hidden="true" />} etiqueta="Pago">
+                            <Ficha icono={<FaCircleCheck aria-hidden="true" />} etiqueta="Método de pago">
                                 {pagoEnRevision(detalle) ? 'Pago en revisión' : ETIQUETA_PAGO[detalle.metodo_pago] || 'PayU'}
                                 {detalle.fecha_pago
                                     ? ` · ${formatearFecha(detalle.fecha_pago)}`
@@ -610,10 +597,11 @@ export default function PedidosPage() {
                             </p>
                         )}
 
-                        {esFinal(detalle.estado_entrega || 'pendiente') ? (
+                        {detalle.estado_entrega === 'preparando' && <p className="text-xs text-slate-600">El registro antiguo “preparando” pertenece al tramo Por preparar. No se ha modificado su historial.</p>}
+                        {esFinal(detalle.estado_entrega) ? (
                             <Alert tipo="info">
                                 {detalle.estado_entrega === 'entregado'
-                                    ? `Pedido ${detalle.tipo_entrega === 'tienda' ? 'recogido en tienda' : 'entregado en domicilio'}. No quedan pasos logísticos.`
+                                    ? `Pedido entregado ${detalle.tipo_entrega === 'tienda' ? 'en tienda' : 'en domicilio'}. No quedan pasos logísticos.`
                                     : 'Pedido cancelado. No quedan pasos logísticos.'}
                             </Alert>
                         ) : (

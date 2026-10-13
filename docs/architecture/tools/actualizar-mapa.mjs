@@ -195,6 +195,13 @@ const MODULOS = [
 | \`services/asistenteContexto.service.js\` | Contexto firmado temporal, 6 entradas de historial y expiración a los 20 min; sin tabla de conversaciones. |
 | \`jobs/limpieza.js\` | Cada 5 min: reconciliación PayU y cancelación de ventas abandonadas (ventaModel). |
 
+## Respaldo y recuperación
+
+- \`backend/scripts/respaldarPostgres.js\`: export PostgreSQL custom con snapshot de solo lectura, conteos por tabla, SHA-256 y lectura completa del archivo mediante \`pg_restore\`.
+- \`backend/scripts/respaldarPostgresWindows.ps1\`: conexión DPAPI del usuario y tarea diaria local, al iniciar sesión y con recuperación de ejecuciones pendientes. Requiere el equipo encendido y conexión; conserva 7 copias diarias y 4 semanas.
+- Archivos y credencial protegida en \`backups/postgresql/\`, excluidos de Git. Procedimiento y restauración en \`backend/scripts/README-respaldos.md\`.
+- La base pagada de Render proporciona PITR adicional; no se recupera sobre la base principal durante una comprobación de respaldo.
+
 ## Autenticación (JWT + 2FA)
 
 - \`POST /api/auth/login\` → \`usuario.model#buscarPorEmail\` + bcrypt. Si el usuario tiene 2FA activo devuelve \`requires_2fa\` y un **\`two_factor_token\` JWT de 5 min**; si no, el **JWT de sesión (24 h)**.
@@ -375,10 +382,11 @@ ${linea('POST', '/api/auth/solicitar-reseteo')} envía código por correo → ${
 
 ## 3. Gestión comercial y logística (React, administrador)
 1. \`POST /api/ventas\` está retirado (405); las ventas nuevas nacen pendientes desde checkout PayU. No se crean ventas de panel o reserva ni cobros manuales.
-2. \`PUT /api/ventas/:id/estado\` está bloqueado (409). \`PUT /api/pedidos/:id/estado\` avanza logística; entregar sincroniza \`estado=entregada\` con \`estado_entrega=entregado\` bajo bloqueo, sin cobrar ni descontar stock otra vez. Cancelar sin pago cierra también la venta pendiente, deshabilita el checkout y libera stock en la misma transacción. Cancelar una entrega pagada conserva cobro y existencias hasta la devolución separada. Un cobro posterior a la cancelación queda en revisión.
+2. \`PUT /api/ventas/:id/estado\` está bloqueado (409). \`PUT /api/pedidos/:id/estado\` avanza logística en tres tramos: **Por preparar → En camino (delivery) / Listo para recoger (tienda) → Entregado**. Avanzar exige \`confirmado=true\`; \`estado_anterior\` detecta confirmaciones obsoletas bajo \`FOR UPDATE\`. Estado e historial se guardan en una transacción. Entregar cambia únicamente \`estado_entrega=entregado\`, conserva \`estado=pagada\` y no cobra ni descuenta stock otra vez. \`preparando\` es un alias de lectura de \`pendiente\`, no un destino nuevo; comercial legacy \`entregada\` no infiere entrega. No se migran ni reescriben compras antiguas. Cancelar sin pago cierra también la venta pendiente, deshabilita el checkout y libera stock en la misma transacción. Cancelar una entrega pagada conserva cobro y existencias hasta la devolución separada. Un cobro posterior a la cancelación queda en revisión.
    Los pagos en revisión o revertidos bloquean preparar/despachar/entregar bajo \`FOR UPDATE\`, pero permiten detener la logística. Un delivery pagado y cancelado exige confirmación de devolución física para reponer existencias. La revisión de aprobación tardía se conserva tras una reversión para cerrar documentalmente sin doble stock.
 3. Comprobante: \`EmitirComprobanteModal\` → ${linea('POST', '/api/ventas/:id/comprobante')}; envío: ${linea('POST', '/api/comprobantes/:id/enviar-email')}.
 4. Devoluciones: \`POST /api/ventas/:id/reembolso\` valida pago PayU e identificadores de la propia venta bajo bloqueo. \`accion=solicitar\` registra \`estado_reembolso=pendiente_verificacion\` sin efectos; \`accion=confirmar\` exige referencia, evidencia y responsable. Solo entonces confirma documentalmente, cambia a reembolsada y modifica stock/comprobante/historial en la misma transacción. No ejecuta un refund automático. Migración 040 agrega campos NULL sin reescribir históricos.
+5. Indicadores: cuatro categorías exclusivas (Por preparar, Listos para recoger, En camino, Entregados). Denominador = pedidos ecommerce pagados vigentes con tipo/estado compatibles, sin cancelación, reembolso confirmado o pendiente ni pago en revisión. Cada ID cuenta una vez. Porcentaje = cantidad / denominador × 100; redondeo a una décima con reparto de restos para sumar 100%. Sin base se muestra “Sin base para calcular porcentaje”; un error no se muestra como cero. Búsqueda/tipo/canal delimitan el ámbito; el filtro de estado solo limita la lista. La API calcula lista y resumen desde una sola lectura. Panel, Mis compras web y Flutter usan el estado logístico registrado; el detalle Flutter abierto se actualiza con cada consulta real, al reanudar y cada 60 s.
 
 ## 4. Compra desde la app (Flutter, cliente) con PayU
 1. Carrito local (\`CarritoService\`) → \`EntregaYPagoScreen\` obtiene zonas activas con \`GET /api/zonas-delivery\`. Solo ofrece recojo gratuito en Pallasca (\`tienda\`) o delivery local con tarifa por zona (\`domicilio\`). Sin zonas, el recojo sigue disponible.

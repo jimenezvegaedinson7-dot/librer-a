@@ -457,7 +457,7 @@ async function enviarCorreoPagoConfirmado({
 }) {
     const cuerpoHtml =
         `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
-        `<p>¡Tu pago fue <strong>aprobado</strong>! Ya estamos preparando tu pedido <strong>#${htmlEscape(idVenta)}</strong>.</p>` +
+        `<p>El pago de tu pedido <strong>#${htmlEscape(idVenta)}</strong> fue <strong>aprobado</strong>. Tu pedido está por preparar; te avisaremos cuando esté listo para recoger o salga con el repartidor.</p>` +
         `<p>Total pagado: <strong style="font-size:18px">${money(total)}</strong></p>` +
         `<p style="color:#64748b;font-size:13px">Referencia del pago: <strong>${htmlEscape(externalReference || '—')}</strong>.</p>` +
         `<p style="color:#64748b;font-size:13px">Puedes revisar el estado de tu pedido en la aplicación en «Mis compras».</p>`;
@@ -510,8 +510,8 @@ const AVISOS_PEDIDO = {
             texto: (id) => `Tu pedido <strong>#${id}</strong> ya está separado en tienda. Acércate cuando gustes y muestra tu número de pedido y tu DNI al recogerlo.`
         },
         entregado: {
-            titulo: 'Recogiste tu pedido',
-            sello: '✓ Pedido recogido',
+            titulo: 'Pedido entregado',
+            sello: '✓ Pedido entregado',
             texto: (id) => `Registramos que recogiste tu pedido <strong>#${id}</strong> en tienda. ¡Gracias por tu compra!`
         }
     },

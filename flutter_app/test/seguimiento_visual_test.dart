@@ -27,9 +27,7 @@ Future<void> _pintar(
 
 void main() {
   for (final ancho in [320.0, 412.0]) {
-    testWidgets('los cuatro pasos quedan alineados a $ancho px', (
-      tester,
-    ) async {
+    testWidgets('los tres pasos quedan alineados a $ancho px', (tester) async {
       await _pintar(tester, {
         'id_venta': 41,
         'tipo_entrega': 'tienda',
@@ -41,7 +39,7 @@ void main() {
       final circulos = find.byWidgetPredicate(
         (w) => w is SizedBox && w.width == 30 && w.height == 30,
       );
-      expect(circulos, findsNWidgets(4));
+      expect(circulos, findsNWidgets(3));
       final centros = circulos
           .evaluate()
           .map((e) => tester.getCenter(find.byWidget(e.widget)).dy)
@@ -49,14 +47,17 @@ void main() {
       expect(centros.length, 1);
       // Las etiquetas empiezan a la misma altura.
       final tops = [
-        'Recibido',
-        'Preparando',
-        'Listo',
-        'Recogido',
-      ].map((t) => tester.getTopLeft(find.text(t)).dy).toSet();
+        'Por preparar',
+        'Listo para recoger',
+        'Entregado',
+      ].map((t) => tester.getTopLeft(find.text(t).first).dy).toSet();
       expect(tops.length, 1);
-      // Tres pasos completados muestran su check.
-      expect(find.byIcon(Icons.check_rounded), findsNWidgets(3));
+      // El tramo anterior terminó; el paso actual no se marca como completado.
+      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+      expect(find.text('Recibido'), findsNothing);
+      expect(find.text('Preparando'), findsNothing);
+      expect(find.text('Recogido'), findsNothing);
+      expect(find.text('En camino'), findsNothing);
     });
   }
 
@@ -67,8 +68,9 @@ void main() {
       'estado': 'pagada',
       'estado_entrega': 'en_camino',
     }, 360);
-    expect(find.text('En camino'), findsOneWidget);
-    expect(find.byIcon(Icons.check_rounded), findsNWidgets(3));
+    expect(find.text('En camino'), findsNWidgets(2));
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+    expect(find.text('Listo para recoger'), findsNothing);
 
     await _pintar(tester, {
       'id_venta': 8,

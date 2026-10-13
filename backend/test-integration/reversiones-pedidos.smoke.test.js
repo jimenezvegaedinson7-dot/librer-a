@@ -37,7 +37,7 @@ test('reversiones y cancelaciones: stock físico, cierre documental y contratos 
             merchant_id: process.env.PAYU_MERCHANT_ID, transaction_id: orden.tx, reference_pol: orden.payuId }, null);
         assert.equal(r.status, 200, JSON.stringify(r.body));
     };
-    const mover = (orden, estado) => pedir(`/pedidos/${orden.id_venta}/estado`, 'PUT', { estado });
+    const mover = (orden, estado) => pedir(`/pedidos/${orden.id_venta}/estado`, 'PUT', { estado, confirmado: true });
     const solicitar = orden => pedir(`/ventas/${orden.id_venta}/reembolso`, 'POST', { accion: 'solicitar', motivo: 'Devolución externa documentada' });
     const confirmar = (orden, extra = {}) => pedir(`/ventas/${orden.id_venta}/reembolso`, 'POST', { accion: 'confirmar', motivo: 'Devolución externa documentada',
         referencia_reembolso: `REF-${orden.id_venta}`, evidencia_reembolso: 'https://example.test/comprobante-devolucion', devolver_stock: false, ...extra });
@@ -86,7 +86,10 @@ test('reversiones y cancelaciones: stock físico, cierre documental y contratos 
         for (const paso of ['pendiente', 'preparando', 'en_camino']) for (const devolver of [false, true]) {
             await t.test(`delivery ${paso} → cancelado: confirmación física ${devolver} determina reingreso`, async () => {
                 const orden = await crear('domicilio'); await aprobar(orden);
-                if (paso !== 'pendiente') assert.equal((await mover(orden, paso)).status, 200);
+                // El estado retirado solo se siembra para probar compatibilidad;
+                // la API nunca lo escribe en compras nuevas.
+                if (paso === 'preparando') await pool.query("UPDATE ventas SET estado_entrega='preparando' WHERE id_venta=?", [orden.id_venta]);
+                else if (paso !== 'pendiente') assert.equal((await mover(orden, paso)).status, 200);
                 assert.equal((await mover(orden, 'cancelado')).status, 200);
                 assert.equal((await fila(orden.id_venta)).estado, 'pagada');
                 assert.equal(await stock(), 4);
@@ -119,8 +122,8 @@ test('reversiones y cancelaciones: stock físico, cierre documental y contratos 
                 assert.equal(pedido.requiere_revision, true);
                 assert.equal(pedido.estado_reembolso, null);
                 assert.equal(pedido.fecha_pago, fecha.toISOString());
-                assert.equal((await mover(orden, 'preparando')).status, 409);
-                await assert.rejects(ventas.actualizarEstadoEntrega(orden.id_venta, 'preparando', admin), e => e.status === 409);
+                assert.equal((await mover(orden, 'listo_recojo')).status, 409);
+                await assert.rejects(ventas.actualizarEstadoEntrega(orden.id_venta, 'listo_recojo', admin, { confirmado: true }), e => e.status === 409);
                 await pool.query("UPDATE ventas SET estado_entrega='listo_recojo' WHERE id_venta=?", [orden.id_venta]);
                 assert.equal((await mover(orden, 'entregado')).status, 409);
                 // También protege una fila previa sin motivo, por el estado monetario.
@@ -205,8 +208,8 @@ test('reversiones y cancelaciones: stock físico, cierre documental y contratos 
         await t.test('una revisión no monetaria también bloquea el avance sin impedir cancelación', async () => {
             const orden = await crear(); await aprobar(orden);
             await pool.query("UPDATE ventas SET pago_revision_motivo='reversion_payu' WHERE id_venta=?", [orden.id_venta]);
-            assert.equal((await mover(orden, 'preparando')).status, 409);
-            await assert.rejects(ventas.actualizarEstadoEntrega(orden.id_venta, 'preparando', admin), e => e.status === 409);
+            assert.equal((await mover(orden, 'listo_recojo')).status, 409);
+            await assert.rejects(ventas.actualizarEstadoEntrega(orden.id_venta, 'listo_recojo', admin, { confirmado: true }), e => e.status === 409);
             assert.equal((await mover(orden, 'cancelado')).status, 200);
             assert.equal(await stock(), 4);
         });
@@ -218,7 +221,7 @@ test('reversiones y cancelaciones: stock físico, cierre documental y contratos 
             try {
                 await lock.beginTransaction();
                 await lock.query('SELECT id_venta FROM ventas WHERE id_venta=? FOR UPDATE', [orden.id_venta]);
-                avance = ventas.actualizarEstadoEntrega(orden.id_venta, 'preparando', admin).then(
+                avance = ventas.actualizarEstadoEntrega(orden.id_venta, 'listo_recojo', admin, { confirmado: true }).then(
                     () => ({ aceptado: true }), error => ({ error }));
                 // Esperar al lock real en PostgreSQL, no a un retraso arbitrario.
                 let esperando = false;

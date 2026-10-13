@@ -127,10 +127,10 @@ test('las demás secciones usan los gráficos comunes y no dibujan ondas decorat
     for (const ruta of ['/libros', '/autores', '/categorias', '/inventario', '/pedidos', '/historial', '/reclamaciones', '/usuarios?vista=clientes', '/anuncios']) {
         await page.goto(ruta);
         if (ruta === '/anuncios') await page.getByRole('tab', { name: 'Anuncios en video' }).click();
-        const indicadores = page.locator('.indicadores');
+        const indicadores = page.locator(ruta === '/pedidos' ? '.pedidos-indicadores' : '.indicadores');
         await expect(indicadores).toBeVisible();
         await expect(indicadores).not.toHaveAttribute('aria-busy', 'true');
-        const tarjetas = indicadores.locator('.indicador-tarjeta');
+        const tarjetas = indicadores.locator(ruta === '/pedidos' ? '.pedido-indicador' : '.indicador-tarjeta');
         const total = await tarjetas.count();
         expect(total).toBeGreaterThan(0);
         await expect(indicadores.locator('.onda-decorativa')).toHaveCount(0);

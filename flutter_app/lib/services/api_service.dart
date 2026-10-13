@@ -893,7 +893,7 @@ class ApiService {
   Future<void> _conciliarEstadoVenta(Venta venta) async {
     final status = venta.requiereRevision
         ? 'REVISION'
-        : venta.pagada || venta.entregada
+        : venta.pagada
         ? 'APPROVED'
         : venta.estado == 'cancelada'
         ? 'DECLINED'

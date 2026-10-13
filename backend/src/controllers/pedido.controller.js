@@ -1,297 +1,78 @@
 const ventaModel = require('../models/venta.model');
-const historialModel = require('../models/historial.model');
 const { validarId } = require('../utils/validaciones');
-const { ENTREGA, esTipoEntregaValido, permitirTransicionEntrega, esVentaHistorica } = require('../utils/transiciones');
+const { ENTREGA, ESTADOS_ENTREGA_ACTUALES, esTipoEntregaValido, normalizarEstadoEntrega } = require('../utils/transiciones');
+const { resumirPedidos } = require('../utils/pedidos');
 const { enviarCorreoAvancePedido, avisoPedido } = require('../utils/mailer');
-const { requiereRevisionPago } = require('../utils/devoluciones');
 
-// ========================================
-// REGISTRAR HISTORIAL SIN AFECTAR EL PEDIDO
-// ========================================
-const registrarHistorial = async ({
-    id_usuario,
-    tipo_operacion,
-    modulo,
-    descripcion
-}) => {
-    try {
-        await historialModel.crear({
-            id_usuario,
-            tipo_operacion,
-            modulo,
-            descripcion
-        });
-
-    } catch (error) {
-        console.error(
-            'Error al registrar historial:',
-            error.message
-        );
-    }
+const fallo = (res, error, mensaje) => {
+    if (error.status >= 400 && error.status < 500) return res.status(error.status).json({ success: false, mensaje: error.message });
+    console.error(mensaje, error.message);
+    return res.status(500).json({ success: false, mensaje, error: 'Error interno del servidor' });
 };
 
 const Pedido = {
-    // ========================================
-    // OBTENER TODOS LOS PEDIDOS (ADMIN)
-    // Filtros opcionales: tipo, estado
-    // ========================================
     async obtenerPedidos(req, res) {
         try {
             const { tipo, estado } = req.query;
-
-            let where = {};
-
-            // Filtrar por tipo de entrega: 'domicilio' o 'tienda'
-            if (tipo) {
-                where.tipo_entrega = tipo;
+            if (tipo !== undefined && !esTipoEntregaValido(tipo) || estado !== undefined && (typeof estado !== 'string' || !Object.hasOwn(ENTREGA, estado))) {
+                return res.status(400).json({ success: false, mensaje: 'Filtro de pedidos no válido' });
             }
-
-            // Filtrar por estado de entrega
-            if (estado) {
-                where.estado_entrega = estado;
-            }
-
-            const pedidos =
-                await ventaModel.obtenerConFiltros(where);
-
-            return res.json({
-                success: true,
-                data: pedidos
-            });
-
-        } catch (error) {
-            console.error('Error al obtener pedidos:', error);
-            return res.status(500).json({
-                success: false,
-                mensaje: 'Error al obtener los pedidos',
-                error: 'Error interno del servidor'
-            });
-        }
+            // El estado limita la lista, no convierte su categoría en 100%.
+            // Lista y resumen salen de la misma lectura y del mismo ámbito.
+            const pedidos = await ventaModel.obtenerConFiltros({ tipo_entrega: tipo });
+            const data = estado === undefined ? pedidos : pedidos.filter(p =>
+                normalizarEstadoEntrega(p.estado_entrega) === normalizarEstadoEntrega(estado));
+            return res.json({ success: true, data, resumen: resumirPedidos(pedidos) });
+        } catch (error) { return fallo(res, error, 'Error al obtener los pedidos'); }
     },
 
-    // ========================================
-    // OBTENER PEDIDO POR ID (ADMIN)
-    // ========================================
     async obtenerPedido(req, res) {
         try {
-            const { id } = req.params;
-
-            const idVenta = validarId(id);
-
-            if (!idVenta) {
-                return res.status(400).json({
-                    success: false,
-                    mensaje: 'ID de pedido inválido'
-                });
-            }
-
-            const pedido =
-                await ventaModel.obtenerPorId(idVenta);
-
-            if (!pedido) {
-                return res.status(404).json({
-                    success: false,
-                    mensaje: 'Pedido no encontrado'
-                });
-            }
-
-            return res.json({
-                success: true,
-                data: pedido
-            });
-
-        } catch (error) {
-            console.error('Error al obtener pedido:', error);
-            return res.status(500).json({
-                success: false,
-                mensaje: 'Error al obtener el pedido',
-                error: 'Error interno del servidor'
-            });
-        }
+            const id = validarId(req.params.id);
+            if (!id) return res.status(400).json({ success: false, mensaje: 'ID de pedido inválido' });
+            const pedido = await ventaModel.obtenerPorId(id);
+            if (!pedido) return res.status(404).json({ success: false, mensaje: 'Pedido no encontrado' });
+            return res.json({ success: true, data: pedido });
+        } catch (error) { return fallo(res, error, 'Error al obtener el pedido'); }
     },
 
-    // ========================================
-    // OBTENER MIS PEDIDOS (CLIENTE)
-    // Solo los pedidos del usuario autenticado
-    // ========================================
+    // El parámetro del enlace nunca permite consultar pedidos de otra cuenta.
     async obtenerMisPedidos(req, res) {
         try {
-            const id_usuario = req.usuario.id_usuario;
-
-            const pedidos =
-                await ventaModel.obtenerPorUsuario(id_usuario);
-
-            return res.json({
-                success: true,
-                data: pedidos
-            });
-
-        } catch (error) {
-            console.error('Error al obtener mis pedidos:', error);
-            return res.status(500).json({
-                success: false,
-                mensaje: 'Error al obtener tus pedidos',
-                error: 'Error interno del servidor'
-            });
-        }
+            const pedidos = await ventaModel.obtenerPorUsuario(req.usuario.id_usuario);
+            return res.json({ success: true, data: pedidos });
+        } catch (error) { return fallo(res, error, 'Error al obtener tus pedidos'); }
     },
 
-    // ========================================
-    // ACTUALIZAR ESTADO DE PEDIDO (ADMIN)
-    // Estados permitidos: pendiente, preparando, listo_recojo, en_camino, entregado, cancelado
-    // ========================================
     async actualizarEstadoPedido(req, res) {
         try {
-            const { id } = req.params;
-            const { estado } = req.body;
-
-            const idVenta = validarId(id);
-
-            if (!idVenta) {
-                return res.status(400).json({
-                    success: false,
-                    mensaje: 'ID de pedido inválido'
-                });
+            const id = validarId(req.params.id);
+            const { estado, confirmado, estado_anterior } = req.body || {};
+            if (!id) return res.status(400).json({ success: false, mensaje: 'ID de pedido inválido' });
+            if (!ESTADOS_ENTREGA_ACTUALES.includes(estado) || estado_anterior !== undefined && (typeof estado_anterior !== 'string' || !Object.hasOwn(ENTREGA, estado_anterior))) {
+                return res.status(400).json({ success: false, mensaje: 'Estado de pedido no válido' });
             }
+            const transicion = {};
+            // Pago, tipo, finalización, confirmación e historial se validan
+            // dentro de la misma transacción y del mismo FOR UPDATE.
+            const actualizado = await ventaModel.actualizarEstadoEntrega(id, estado, req.usuario.id_usuario,
+                { confirmado: confirmado === true, estadoAnterior: estado_anterior, transicion });
+            if (!actualizado) return res.status(404).json({ success: false, mensaje: 'Pedido no encontrado' });
 
-            const id_usuario = req.usuario.id_usuario;
-
-            // Estados permitidos para el flujo de pedido
-            const estadosPermitidos = Object.keys(ENTREGA);
-
-            if (!estado || !estadosPermitidos.includes(estado)) {
-                return res.status(400).json({
-                    success: false,
-                    mensaje: 'Estado de pedido no válido'
-                });
-            }
-
-            // Buscar venta actual
-            const ventaActual =
-                await ventaModel.obtenerPorId(idVenta);
-
-            if (!ventaActual) {
-                return res.status(404).json({
-                    success: false,
-                    mensaje: 'Pedido no encontrado'
-                });
-            }
-
-            const estadoActual =
-                ventaActual.estado_entrega || 'pendiente';
-
-            if (esVentaHistorica(ventaActual)) {
-                return res.status(409).json({ success: false, mensaje: 'Las ventas históricas son de solo lectura' });
-            }
-            if (estado !== 'cancelado' && requiereRevisionPago(ventaActual)) {
-                return res.status(409).json({ success: false, mensaje: 'El pago requiere revisión; no se puede avanzar la entrega' });
-            }
-            if (!['pagada', 'entregada'].includes(ventaActual.estado) && estado !== 'cancelado') {
-                return res.status(409).json({ success: false, mensaje: 'El pago de esta compra debe confirmarse antes de preparar la entrega' });
-            }
-
-            // Mismo estado
-            if (estadoActual === estado) {
-                return res.status(400).json({
-                    success: false,
-                    mensaje:
-                        `El pedido ya se encuentra en estado "${estado}"`
-                });
-            }
-
-            // Un pedido sin tipo de entrega reconocible no se puede enrutar.
-            // El mensaje no expone el valor ni instrucciones de base de
-            // datos: el panel es una interfaz de negocio, no una consola.
-            if (!esTipoEntregaValido(ventaActual.tipo_entrega)) {
-                return res.status(409).json({
-                    success: false,
-                    mensaje:
-                        'El pedido contiene un tipo de entrega no compatible con el flujo actual. Requiere corrección de datos antes de continuar.'
-                });
-            }
-
-            // Máquina de estados de ENTREGA, consciente del tipo de
-            // entrega: un pedido a domicilio no pasa por "listo_recojo"
-            // ni uno de tienda por "en_camino", porque son estados que el
-            // panel no sabe avanzar desde ahí.
-            const puedeCambiar =
-                permitirTransicionEntrega(
-                    ventaActual.tipo_entrega,
-                    estadoActual,
-                    estado
-                );
-
-            if (!puedeCambiar) {
-                return res.status(400).json({
-                    success: false,
-                    mensaje: `No se puede cambiar el pedido de "${estadoActual}" a "${estado}"`
-                });
-            }
-
-            // El último paso sincroniza también el estado comercial bajo bloqueo.
-            const actualizado =
-                await ventaModel.actualizarEstadoEntrega(
-                    idVenta,
-                    estado,
-                    id_usuario
-                );
-
-            if (!actualizado) {
-                return res.status(404).json({
-                    success: false,
-                    mensaje: 'Pedido no encontrado'
-                });
-            }
-
-            // Solo quien ganó la transición bajo FOR UPDATE notifica.
-            // Un reintento o petición concurrente se rechaza antes de llegar aquí.
-            // Avisos por tipo: listo para recoger, en camino y entregado/recogido.
-            if (avisoPedido(ventaActual.tipo_entrega, estado)) {
-                const destinatario = ventaActual.correo_compra || ventaActual.correo_usuario;
-                const direccion = [ventaActual.direccion, ventaActual.distrito].filter(Boolean).join(', ');
-                if (destinatario) await enviarCorreoAvancePedido({ destinatario,
-                    nombre: `${ventaActual.nombre_usuario || ''} ${ventaActual.apellido_usuario || ''}`.trim() || 'cliente',
-                    idVenta, tipoEntrega: ventaActual.tipo_entrega, estado, direccion }).catch(error => {
+            if (transicion.destinatario && avisoPedido(transicion.tipo_entrega, estado)) {
+                await enviarCorreoAvancePedido({ destinatario: transicion.destinatario,
+                    nombre: transicion.nombre,
+                    idVenta: id, tipoEntrega: transicion.tipo_entrega, estado,
+                    direccion: transicion.direccion }).catch(error => {
                     console.error('Error al notificar avance del pedido:', error.message);
                 });
             }
-
-            // Registrar historial
-            await registrarHistorial({
-                id_usuario,
-                tipo_operacion: 'ACTUALIZAR',
-                modulo: 'pedidos',
-                descripcion:
-                    `Pedido #${idVenta} actualizado de "${estadoActual}" a "${estado}"`
-            });
-
-            const pedidoActual = await ventaModel.obtenerPorId(idVenta);
             const mensaje = estado !== 'cancelado' ? 'Estado de pedido actualizado correctamente'
-                : pedidoActual?.estado === 'cancelada'
+                : transicion.estado === 'cancelada'
                     ? 'Compra pendiente cancelada: enlace de pago cerrado y existencias liberadas. Cualquier cobro posterior requiere revisión.'
                     : 'Entrega cancelada. El pago y las existencias se conservan hasta gestionar la devolución desde Ventas.';
-            return res.json({
-                success: true,
-                mensaje,
-                data: {
-                    id_venta: idVenta,
-                    estado_entrega: pedidoActual?.estado_entrega || estado,
-                    estado: pedidoActual?.estado
-                }
-            });
-
-        } catch (error) {
-            console.error('Error al actualizar estado de pedido:', error);
-            if (error.status >= 400 && error.status < 500) {
-                return res.status(error.status).json({ success: false, mensaje: error.message });
-            }
-            return res.status(500).json({
-                success: false,
-                mensaje: 'Error al actualizar el estado del pedido',
-                error: 'Error interno del servidor'
-            });
-        }
-    }
+            return res.json({ success: true, mensaje, data: { id_venta: id, estado_entrega: transicion.estado_entrega, estado: transicion.estado } });
+        } catch (error) { return fallo(res, error, 'Error al actualizar el estado del pedido'); }
+    },
 };
-
 module.exports = Pedido;

@@ -45,7 +45,7 @@ for (const width of [390, 1440]) {
         await expect(page.getByRole('dialog')).not.toContainText('los libros vuelven a estar disponibles');
         await page.getByRole('dialog').getByRole('button', { name: 'Sí, cancelar', exact: true }).click();
         await expect(fila(51)).toContainText('Confirmado · PayU');
-        await expect(fila(51)).toContainText('Cancelado');
+        await expect(fila(51)).toContainText('Pedido cancelado');
         expect(cambios).toEqual([52, 51]);
         await page.evaluate(u => {
             localStorage.setItem('libreria-web-cliente-v1', JSON.stringify({ token: 'token-cliente', usuario: u, generacion: 'cliente-7' }));

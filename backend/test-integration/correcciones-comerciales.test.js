@@ -57,12 +57,12 @@ test('correcciones comerciales: invariantes transaccionales y documentos', async
             const id = await crear();
             for (const estado of ['pendiente', 'cancelada', 'reembolsada']) {
                 await pool.query('UPDATE ventas SET estado=? WHERE id_venta=?', [estado, id]);
-                await assert.rejects(ventas.actualizarEstadoEntrega(id, 'preparando'), e => e.status === 409);
+                await assert.rejects(ventas.actualizarEstadoEntrega(id, 'listo_recojo', null, { confirmado: true }), e => e.status === 409);
             }
         });
         await t.test('BC03: entrega logística no reingresa stock sin devolución física', async () => {
             const id = await crear({ estado: 'pagada' });
-            for (const estado of ['preparando', 'listo_recojo', 'entregado']) await ventas.actualizarEstadoEntrega(id, estado);
+            for (const estado of ['listo_recojo', 'entregado']) await ventas.actualizarEstadoEntrega(id, estado, ids.usuarios[0], { confirmado: true });
             const antes = await stock(ids.libros[0]);
             await ventas.reembolsar(id, { accion: 'solicitar', motivo: 'Devolución solo monetaria', idUsuario: ids.usuarios[0] });
             const resultado = await ventas.reembolsar(id, { motivo: 'Devolución solo monetaria', devolverStock: false,

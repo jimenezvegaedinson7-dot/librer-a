@@ -77,6 +77,13 @@
 | `services/asistenteContexto.service.js` | Contexto firmado temporal, 6 entradas de historial y expiración a los 20 min; sin tabla de conversaciones. |
 | `jobs/limpieza.js` | Cada 5 min: reconciliación PayU y cancelación de ventas abandonadas (ventaModel). |
 
+## Respaldo y recuperación
+
+- `backend/scripts/respaldarPostgres.js`: export PostgreSQL custom con snapshot de solo lectura, conteos por tabla, SHA-256 y lectura completa del archivo mediante `pg_restore`.
+- `backend/scripts/respaldarPostgresWindows.ps1`: conexión DPAPI del usuario y tarea diaria local, al iniciar sesión y con recuperación de ejecuciones pendientes. Requiere el equipo encendido y conexión; conserva 7 copias diarias y 4 semanas.
+- Archivos y credencial protegida en `backups/postgresql/`, excluidos de Git. Procedimiento y restauración en `backend/scripts/README-respaldos.md`.
+- La base pagada de Render proporciona PITR adicional; no se recupera sobre la base principal durante una comprobación de respaldo.
+
 ## Autenticación (JWT + 2FA)
 
 - `POST /api/auth/login` → `usuario.model#buscarPorEmail` + bcrypt. Si el usuario tiene 2FA activo devuelve `requires_2fa` y un **`two_factor_token` JWT de 5 min**; si no, el **JWT de sesión (24 h)**.
@@ -268,7 +275,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/pedidos` | JWT + verificarPanel | controllers/pedido.controller.js#obtenerPedidos | `venta.model.js#obtenerConFiltros` | agencias_courier, comprobantes, distritos_lima, provincias_lima, usuarios, ventas |
 | GET | `/api/pedidos/usuario/:id_usuario` | JWT | controllers/pedido.controller.js#obtenerMisPedidos | `venta.model.js#obtenerPorUsuario` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, ventas |
 | GET | `/api/pedidos/:id` | JWT + verificarPanel | controllers/pedido.controller.js#obtenerPedido | `venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, libros, provincias_lima, usuarios, ventas |
-| PUT | `/api/pedidos/:id/estado` | JWT + verificarPanel | controllers/pedido.controller.js#actualizarEstadoPedido | `historial.model.js#crear`<br>`venta.model.js#actualizarEstadoEntrega`<br>`venta.model.js#obtenerPorId` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
+| PUT | `/api/pedidos/:id/estado` | JWT + verificarPanel | controllers/pedido.controller.js#actualizarEstadoPedido | `venta.model.js#actualizarEstadoEntrega` | detalle_venta, historial_operaciones, inventario, usuarios, ventas |
 
 ### /api/reclamaciones
 

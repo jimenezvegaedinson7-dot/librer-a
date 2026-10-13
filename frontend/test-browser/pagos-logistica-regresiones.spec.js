@@ -54,15 +54,16 @@ for (const width of [390, 1440]) {
         await expect(fila(54).getByRole('button', { name: 'Despachar pedido', exact: true })).toBeEnabled();
         await fila(51).getByRole('button', { name: 'Ver detalle', exact: true }).click();
         const detalle = page.getByRole('dialog', { name: 'Pedido #51', exact: true });
-        await expect(detalle).toContainText('No se puede avanzar la entrega');
+        await expect(detalle).toContainText('Entrega detenida');
+        await expect(detalle).toContainText('El pago requiere revisión');
         await expect(detalle.getByRole('button', { name: 'Despachar pedido', exact: true })).toHaveCount(0);
         expect(await detalle.evaluate(e => e.scrollWidth <= e.clientWidth)).toBe(true);
         await detalle.getByRole('button', { name: 'Cancelar pedido', exact: true }).click();
         const confirmacion = page.getByRole('dialog', { name: 'Cancelar pedido', exact: true });
         await expect(confirmacion).toContainText('no devuelve dinero ni libera existencias');
         await confirmacion.getByRole('button', { name: 'Sí, cancelar', exact: true }).click();
-        await expect(fila(51)).toContainText('Cancelado');
-        expect(cambios).toEqual([{ estado: 'cancelado' }]);
+        await expect(fila(51)).toContainText('Pedido cancelado');
+        expect(cambios).toEqual([{ estado: 'cancelado', estado_anterior: 'preparando' }]);
         await expect(page.locator('.admin-shell')).toHaveAttribute('data-theme', 'light');
     });
 }
@@ -79,7 +80,7 @@ test('Pedidos: una confirmación abierta antes de la revisión no envía el avan
     await page.goto('/pedidos'); await page.getByRole('button', { name: 'Despachar pedido', exact: true }).click();
     revisado = true; await page.evaluate(() => window.dispatchEvent(new Event('focus')));
     await expect(page.locator('.data-table-shell tbody tr')).toContainText('Pago en revisión');
-    await page.getByRole('dialog').getByRole('button', { name: 'Sí, despachar', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Sí, salió el repartidor', exact: true }).click();
     await expect(page.getByText('El pago está en revisión. Actualiza el pedido antes de avanzar la entrega.', { exact: true })).toBeVisible();
     expect(cambios).toEqual([]);
 });
@@ -133,7 +134,7 @@ test('Pedidos: devoluciones REFUNDED/CHARGED_BACK cerradas no muestran revisión
         await fila.getByRole('button', { name: 'Ver detalle', exact: true }).click();
         const detalle = page.getByRole('dialog');
         await expect(detalle).not.toContainText('Pago en revisión');
-        await expect(detalle).toContainText('Pedido cancelado. No quedan pasos logísticos.');
+        await expect(detalle).toContainText('Pedido cancelado. La entrega se detuvo.');
         await detalle.getByRole('button', { name: 'Cerrar', exact: true }).click();
     }
 });

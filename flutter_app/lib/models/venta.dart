@@ -44,6 +44,9 @@ class Venta {
   final String? estado;
   final String? estadoEntrega;
   final String? pagoRevisionMotivo;
+  final String? payuPaymentStatus;
+  final String? estadoReembolso;
+  final bool revisionIndicada;
   final String? tipoEntrega;
   final String? coberturaEntrega;
   final String? zonaDeliveryNombre;
@@ -67,6 +70,9 @@ class Venta {
     this.estado,
     this.estadoEntrega,
     this.pagoRevisionMotivo,
+    this.payuPaymentStatus,
+    this.estadoReembolso,
+    this.revisionIndicada = false,
     this.tipoEntrega,
     this.coberturaEntrega,
     this.zonaDeliveryNombre,
@@ -93,6 +99,9 @@ class Venta {
       estado: JsonUtils.asString(json['estado']),
       estadoEntrega: JsonUtils.asString(json['estado_entrega']),
       pagoRevisionMotivo: JsonUtils.asString(json['pago_revision_motivo']),
+      payuPaymentStatus: JsonUtils.asString(json['payu_payment_status']),
+      estadoReembolso: JsonUtils.asString(json['estado_reembolso']),
+      revisionIndicada: json['requiere_revision'] == true,
       tipoEntrega: JsonUtils.asString(json['tipo_entrega']),
       coberturaEntrega: JsonUtils.asString(json['cobertura_entrega']),
       zonaDeliveryNombre: JsonUtils.asString(json['zona_delivery_nombre']),
@@ -143,20 +152,35 @@ class Venta {
         ].whereType<String>().where((s) => s.isNotEmpty).join(', ');
 
   /// `true` si la venta ya fue pagada.
-  bool get pagada => (estado ?? '').toLowerCase().trim() == 'pagada';
-  bool get requiereRevision => (pagoRevisionMotivo ?? '').isNotEmpty;
+  bool get pagada =>
+      ['pagada', 'entregada'].contains((estado ?? '').toLowerCase().trim()) &&
+      ((payuPaymentStatus ?? '').trim().isEmpty ||
+          [
+            'APPROVED',
+            'CAPTURED',
+          ].contains(payuPaymentStatus?.toUpperCase().trim())) &&
+      !requiereRevision &&
+      estadoReembolso != 'confirmado';
+  bool get requiereRevision =>
+      revisionIndicada ||
+      (pagoRevisionMotivo ?? '').trim().isNotEmpty ||
+      (estado != 'reembolsada' &&
+          estadoReembolso != 'confirmado' &&
+          [
+            'REFUNDED',
+            'CHARGED_BACK',
+          ].contains(payuPaymentStatus?.toUpperCase().trim()));
 
   /// `true` si la venta sigue pendiente de pago.
   bool get pendiente => (estado ?? '').toLowerCase().trim() == 'pendiente';
 
   /// `true` si la venta ya fue entregada.
-  bool get entregada => (estado ?? '').toLowerCase().trim() == 'entregada';
+  bool get entregada => estadoEntrega?.toLowerCase().trim() == 'entregado';
 
   String get entregaEstadoLabel =>
       switch (estadoEntrega?.toLowerCase().trim()) {
-        'pendiente' =>
-          pendiente ? 'Se prepara al confirmar el pago' : 'Preparando pedido',
-        'preparando' => 'Preparando pedido',
+        'pendiente' => pendiente ? 'Esperando pago' : 'Por preparar',
+        'preparando' => 'Por preparar',
         'listo_recojo' => 'Listo para recoger',
         'en_camino' => 'En camino',
         'entregado' => 'Entregado',
@@ -166,13 +190,14 @@ class Venta {
 
   /// Etiqueta legible del estado en español.
   String get estadoLabel {
+    if (requiereRevision) return 'Pago en revisión';
     switch (estado?.toLowerCase().trim()) {
       case 'pendiente':
-        return 'Pendiente';
+        return 'Pendiente de pago';
       case 'pagada':
-        return 'Pagada';
+        return pagada ? 'Pagada' : 'Pago por verificar';
       case 'entregada':
-        return 'Entregada';
+        return pagada ? 'Pagada' : 'Pago por verificar';
       case 'cancelada':
         return 'Cancelada';
       case 'reembolsada':

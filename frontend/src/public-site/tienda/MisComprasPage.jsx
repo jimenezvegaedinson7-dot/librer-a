@@ -10,7 +10,7 @@ import { formatearFecha } from '../../lib/utils/format';
 import { seguimientoPedido } from '../../lib/utils/seguimientoPedido';
 import EstadoSesion from './EstadoSesion';
 
-const estados={pendiente:'Pendiente de pago',pagada:'Pagada',entregada:'Entregada',cancelada:'Cancelada',reembolsada:'Reembolsada'};
+const estados={pendiente:'Pendiente de pago',pagada:'Pagada',entregada:'Pagada',cancelada:'Cancelada',reembolsada:'Reembolsada'};
 // Seguimiento: mismos pasos y textos que la app y los correos.
 function Seguimiento({ v }) {
     const seg=seguimientoPedido(v);

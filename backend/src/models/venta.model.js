@@ -13,6 +13,7 @@ const { registrarMovimiento } = require('./inventario.model');
 const zonaDeliveryModel = require('./zonaDelivery.model');
 const { validarId } = require('../utils/validaciones');
 const { esReembolsoElegible, requiereRevisionPago } = require('../utils/devoluciones');
+const { pagoConfirmadoPedido, esPedidoEcommerce } = require('../utils/pedidos');
 
 // ========================================
 // OBTENER TODAS LAS VENTAS
@@ -292,6 +293,7 @@ const obtenerPorUsuario = async (id_usuario) => {
 
     return rows.map((venta) => ({
         ...venta,
+        requiere_revision: requiereRevisionPago(venta),
         detalle:
             detallePorVenta.get(
                 venta.id_venta
@@ -316,8 +318,12 @@ const obtenerConFiltros = async (filtros = {}) => {
     }
 
     if (filtros.estado_entrega) {
-        condiciones.push('v.estado_entrega = ?');
-        valores.push(filtros.estado_entrega);
+        if (['pendiente', 'preparando'].includes(filtros.estado_entrega)) {
+            condiciones.push("v.estado_entrega IN ('pendiente', 'preparando')");
+        } else {
+            condiciones.push('v.estado_entrega = ?');
+            valores.push(filtros.estado_entrega);
+        }
     }
 
     const where = condiciones.length > 0
@@ -1195,13 +1201,15 @@ const actualizarEstado = async (
 // ========================================
 // ACTUALIZAR ESTADO DE ENTREGA (módulo PEDIDOS)
 // ========================================
-// Pedidos es la única fuente de entrega. El último paso sincroniza el
-// estado comercial dentro del mismo bloqueo. Cancelar una compra pendiente
+// Pedidos es la única fuente de entrega. Confirmar entrega no cambia el pago.
+// 'preparando' solo se lee como alias antiguo del tramo inicial.
+// Cancelar una compra pendiente
 // libera stock y cierra la venta; cancelar una entrega pagada no reembolsa.
 const actualizarEstadoEntrega = async (
     id,
     nuevoEstado,
-    idUsuario = null
+    idUsuario = null,
+    { confirmado = false, estadoAnterior, transicion } = {}
 ) => {
     const connection =
         await pool.getConnection();
@@ -1213,6 +1221,7 @@ const actualizarEstadoEntrega = async (
             await connection.query(`
                 SELECT
                     id_venta,
+                    id_usuario,
                     estado_entrega,
                     tipo_entrega,
                     origen,
@@ -1221,7 +1230,11 @@ const actualizarEstadoEntrega = async (
                     canal_compra,
                     estado_reembolso,
                     pago_revision_motivo,
-                    payu_payment_status
+                    payu_payment_status,
+                    external_reference,
+                    payu_order_id,
+                    correo_compra,
+                    direccion
                 FROM ventas
                 WHERE id_venta = ?
                 FOR UPDATE
@@ -1242,10 +1255,13 @@ const actualizarEstadoEntrega = async (
         if (nuevoEstado !== 'cancelado' && venta.estado_reembolso === 'pendiente_verificacion') {
             throw Object.assign(new Error('La devolución está pendiente de verificación; no se puede avanzar la entrega'), { status: 409 });
         }
+        if (!esPedidoEcommerce(venta)) {
+            throw Object.assign(new Error('La venta no corresponde a un pedido ecommerce válido'), { status: 409 });
+        }
         if (nuevoEstado !== 'cancelado' && requiereRevisionPago(venta)) {
             throw Object.assign(new Error('El pago requiere revisión; no se puede avanzar la entrega'), { status: 409 });
         }
-        if (!['pagada', 'entregada'].includes(venta.estado) && nuevoEstado !== 'cancelado') {
+        if (!pagoConfirmadoPedido(venta) && nuevoEstado !== 'cancelado') {
             throw Object.assign(new Error('El pago de esta compra debe confirmarse antes de preparar la entrega'), { status: 409 });
         }
 
@@ -1292,6 +1308,19 @@ const actualizarEstadoEntrega = async (
                 `No se puede cambiar el pedido de "${venta.estado_entrega}" a "${nuevoEstado}"`
             ), { status: 400 });
         }
+        if (estadoAnterior !== undefined && estadoAnterior !== venta.estado_entrega) {
+            throw Object.assign(new Error('El pedido cambió desde que se abrió la confirmación. Actualiza y vuelve a revisarlo.'), { status: 409 });
+        }
+        if (nuevoEstado !== 'cancelado' && confirmado !== true) {
+            throw Object.assign(new Error('Confirma explícitamente que el pedido está listo, salió con el repartidor o fue recibido, según el avance seleccionado.'), { status: 400 });
+        }
+        // Capturar el contacto en la transacción evita releer un pedido que
+        // pudo cambiar justo después de confirmar y devolver un falso 500.
+        let contacto = null;
+        if (transicion && nuevoEstado !== 'cancelado') {
+            const [usuarios] = await connection.query('SELECT nombre,apellido,email FROM usuarios WHERE id_usuario=?', [venta.id_usuario]);
+            contacto = usuarios[0];
+        }
 
         // Una entrega cancelada sin cobrar no puede conservar un checkout
         // pagable. El bloqueo de la venta serializa cancelación y webhook;
@@ -1319,18 +1348,24 @@ const actualizarEstadoEntrega = async (
             await connection.query(`
                 UPDATE ventas
                 SET estado_entrega = ?, estado = CASE
-                    WHEN ? = 'entregado' THEN 'entregada'
                     WHEN ? THEN 'cancelada'
                     ELSE estado END
                 WHERE id_venta = ?
             `, [
                 nuevoEstado,
-                nuevoEstado,
                 cancelarPendiente,
                 id
             ]);
 
+        await connection.query(`INSERT INTO historial_operaciones(id_usuario,tipo_operacion,modulo,descripcion)
+            VALUES (?,'ACTUALIZAR','pedidos',?)`, [idUsuario, `Pedido #${id} actualizado de "${venta.estado_entrega}" a "${nuevoEstado}"`]);
+
         await connection.commit();
+        if (transicion) Object.assign(transicion, { anterior: venta.estado_entrega, estado_entrega: nuevoEstado,
+            estado: cancelarPendiente ? 'cancelada' : venta.estado, tipo_entrega: venta.tipo_entrega,
+            destinatario: venta.correo_compra || contacto?.email,
+            nombre: [contacto?.nombre, contacto?.apellido].filter(Boolean).join(' ').trim() || 'cliente',
+            direccion: venta.direccion || '' });
 
         return resultado.affectedRows;
 
