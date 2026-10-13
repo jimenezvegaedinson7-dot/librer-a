@@ -1,6 +1,6 @@
 # Flujos de datos
 
-> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-13 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arquitectura general
@@ -54,11 +54,11 @@
 - Descubrimiento: `GET /api/libros/:id/relacionados` consulta el autor y la categoría con los índices existentes y LIMIT 8 por grupo; entrega hasta 4 relacionados, 4 títulos adicionales del autor y 4 de categoría, sin duplicados. Solo libros activos, disponibilidad real y el mismo precio SQL del catálogo. La entrada directa a una ficha no carga el catálogo completo. Autor interactivo filtra `/catalogo?autor=:id`.
 - Favoritos de la ficha usan GET/POST/DELETE `/api/favoritos/:idLibro` con la sesión cliente y ownership JWT existentes; no hay persistencia nueva. Sin sesión, Cuenta permite retorno interno al libro. Compartir usa Web Share API o copiar enlace/WhatsApp/Facebook. SEO amplía los metadatos existentes y genera Book/Product con datos reales. No modifica pagos, inventario ni migraciones.
 
-## 5. Reservas históricas
-- Creación retirada: `POST /api/reservas` responde 405; completar/confirmar devuelve 409. No existen nuevas ventas origen reserva, ni cobros manuales.
-- Flutter conserva lectura histórica y cancelación: `DELETE /api/reservas/:id` → backend/src/controllers/reserva.controller.js → tablas: —.
-- React solo consulta y cancela activas: `PUT /api/reservas/:id/estado` → `historial.model.js#crear`, `reserva.model.js#actualizarEstado`, `reserva.model.js#obtenerPorId` → tablas: historial_operaciones, inventario, libros, reservas, usuarios. El modelo bloquea la reserva y libera stock una sola vez.
-- El job cancela reservas vencidas cada 5 min (`reservaModel.cancelarVencidas`).
+## 5. Retiro total de Reservas
+- API, panel y Flutter no ofrecen creación, lectura ni cancelación. Los namespaces antiguos `/api/reservas` y `/api/reportes/reservas-por-estado` exigen JWT y responden 410 sin consultar datos.
+- Migración de datos `042_purga_reservas.sql`: purga reservas y su historial, libera solo apartados activos sin venta vinculada y registra el kardex en la misma transacción. Se aplica una sola vez y queda registrada en `migraciones_datos`.
+- La tabla vacía se mantiene por compatibilidad con migraciones anteriores. Los marcadores `ventas.origen`/`id_reserva` conservan la protección de ventas históricas; no se borran ventas ni comprobantes.
+- La ruta web antigua redirige al Dashboard. La pestaña móvil ahora abre Mis compras, sin llamadas al módulo retirado.
 
 ## 6. Catálogo e inventario
 - Lectura pública compartida: `GET /api/libros` → `libro.model.js#obtenerTodos` → tablas: autores, categorias, detalle_venta, inventario, libros, ventas.
@@ -66,7 +66,7 @@
 - Inventario (React): `PUT /api/inventario/libro/:id` → `historial.model.js#crear`, `inventario.model.js#actualizar`, `inventario.model.js#obtenerPorLibro` → tablas: historial_operaciones, inventario, libros; kardex: `GET /api/inventario/movimientos` → `inventario.model.js#listarMovimientos` → tablas: libros, movimientos_inventario, usuarios.
 
 ## 7. Resumen / reportes (React)
-`DashboardPage` → 7 endpoints `/api/reportes/*`, catálogo e inventario de stock bajo → `reporte.model` y modelos correspondientes (consultas agregadas).
+`DashboardPage` → 6 endpoints `/api/reportes/*`, catálogo e inventario de stock bajo → `reporte.model` y modelos correspondientes (consultas agregadas).
 
 ## 8. Auditoría
-Las operaciones de escritura registran en `historial_operaciones` (`historial.model#crear`). Historial lo consulta con `GET /api/historial`. Las notificaciones del Topbar consultan pagos, reservas y stock bajo cada 60 s mientras la pestaña está visible y al volver a ella.
+Las operaciones de escritura registran en `historial_operaciones` (`historial.model#crear`). Historial lo consulta con `GET /api/historial`. Las notificaciones del Topbar consultan pagos y stock bajo cada 60 s mientras la pestaña está visible y al volver a ella.

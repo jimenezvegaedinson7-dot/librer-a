@@ -7,7 +7,6 @@ import { haceCuanto } from './notificacionesService';
 const FILTROS = [
     { id: 'todas', texto: 'Todas' },
     { id: 'pago', texto: 'Pagos' },
-    { id: 'reserva', texto: 'Reservas' },
     { id: 'stock', texto: 'Stock' },
 ];
 
@@ -63,8 +62,8 @@ export default function PanelNotificaciones({ notificaciones, nuevas, cargando, 
                     <h3 className="notif-titulo-panel">Notificaciones</h3>
                     <p className="notif-subtitulo">
                         {cantidadNuevas > 0
-                            ? `${cantidadNuevas} ${cantidadNuevas === 1 ? 'nueva' : 'nuevas'} · pagos, reservas y stock`
-                            : 'Pagos, reservas y stock que requieren atención'}
+                            ? `${cantidadNuevas} ${cantidadNuevas === 1 ? 'nueva' : 'nuevas'} · pagos y stock`
+                            : 'Pagos y stock que requieren atención'}
                     </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
@@ -105,7 +104,7 @@ export default function PanelNotificaciones({ notificaciones, nuevas, cargando, 
                     <div className="notif-vacio">
                         <p className="notif-vacio-titulo">Todo en orden</p>
                         <p className="notif-vacio-texto">
-                            {filtro === 'todas' ? 'No hay pagos, reservas ni alertas de stock pendientes.' : 'No hay notificaciones de este tipo.'}
+                            {filtro === 'todas' ? 'No hay pagos ni alertas de stock pendientes.' : 'No hay notificaciones de este tipo.'}
                         </p>
                     </div>
                 ) : (

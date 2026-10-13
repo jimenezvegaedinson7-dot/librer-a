@@ -31,7 +31,7 @@ export default function LibroDeleteModal({ libro, abierto, eliminando, onCerrar,
                         ¿Estás seguro de que deseas eliminar el libro <span className="font-bold">"{libro.titulo}"</span>?
                     </p>
                     <p className="mt-2 text-xs leading-5 text-red-600">
-                        Si el libro tiene ventas, reservas u otros registros relacionados, el sistema no permitirá eliminarlo.
+                        Si el libro tiene ventas u otros registros relacionados, el sistema no permitirá eliminarlo.
                     </p>
                 </div>
             </div>

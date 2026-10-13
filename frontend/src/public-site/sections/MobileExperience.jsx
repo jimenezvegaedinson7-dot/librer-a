@@ -1,10 +1,9 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { FaMagnifyingGlass, FaBook, FaCartShopping, FaHeart, FaBookmark, FaDownload, FaChevronRight } from 'react-icons/fa6';
+import { FaMagnifyingGlass, FaBook, FaCartShopping, FaHeart, FaReceipt, FaDownload, FaChevronRight } from 'react-icons/fa6';
 
 import imgCatalogo from '../assets/app/catalogo.webp';
 import imgInicio from '../assets/app/inicio.webp';
-import imgFicha from '../assets/app/ficha-libro.webp';
 import iconoApp from '../assets/app-icono.webp';
 import { gsap, useGSAP } from '../animation/scroll';
 import './aplicacion.css';
@@ -12,7 +11,7 @@ import './aplicacion.css';
 // ============================================================
 // LA APLICACIÓN
 // Portada verde profunda con el icono real de la app, el título y la
-// descarga; a la derecha, tres pantallas reales en teléfonos que se mueven
+// descarga; a la derecha, recortes reales del catálogo en teléfonos que se mueven
 // con el scroll. Debajo, las funciones en tarjetas.
 // ============================================================
 
@@ -21,12 +20,12 @@ const FUNCIONES = [
     { Icono: FaBook, titulo: 'Ficha de cada libro', texto: 'Portada, sinopsis, precio y ejemplares disponibles.' },
     { Icono: FaCartShopping, titulo: 'Carrito y pago en línea', texto: 'Paga con PayU y sigue tus compras desde la app.' },
     { Icono: FaHeart, titulo: 'Favoritos', texto: 'Guarda los libros que quieres leer después.' },
-    { Icono: FaBookmark, titulo: 'Reservas anteriores', texto: 'Consulta el historial y cancela las reservas que siguen activas.' },
+    { Icono: FaReceipt, titulo: 'Mis compras', texto: 'Consulta el estado del pago y sigue la entrega de tus pedidos.' },
 ];
 
 function Telefono({ clase, src, alt }) {
     return (
-        <figure className={`telefono ${clase}`} style={{ margin: 0 }}>
+        <figure className={`telefono telefono--catalogo ${clase}`} style={{ margin: 0 }}>
             <img src={src} alt={alt} width="390" height="844" loading="lazy" decoding="async" />
         </figure>
     );
@@ -41,7 +40,6 @@ export default function MobileExperience({ reducido }) {
         // Solo suben desde su sitio: si bajaran, la portada (overflow: clip) los recortaría.
         gsap.fromTo('.telefono--1', { yPercent: 0 }, { yPercent: -8, ease: 'none', scrollTrigger: disparo });
         gsap.fromTo('.telefono--2', { yPercent: 0, rotateY: 12, rotateZ: -3 }, { yPercent: -10, rotateY: 6, rotateZ: -2, ease: 'none', scrollTrigger: disparo });
-        gsap.fromTo('.telefono--3', { yPercent: 0, rotateY: -12, rotateZ: 3 }, { yPercent: -12, rotateY: -6, rotateZ: 2, ease: 'none', scrollTrigger: disparo });
         gsap.from('.app-portada__texto > *', { opacity: 0, y: 24, duration: 0.45, ease: 'expo.out', stagger: 0.05 });
         gsap.from('.app-funcion', {
             opacity: 0,
@@ -62,18 +60,17 @@ export default function MobileExperience({ reducido }) {
                         <h1 id="app-titulo" className="app-portada__titulo">Toda la librería cabe en la app</h1>
                         <p className="app-portada__entrada">
                             Explora el catálogo, guarda tus favoritos y paga en línea desde tu teléfono.
-                            Las reservas anteriores se conservan en el historial.
+                            Consulta tus compras y sigue la entrega de tus pedidos.
                         </p>
                         <div className="app-portada__acciones">
                             <Link to="/descargar" className="boton"><FaDownload aria-hidden="true" /> Descargar la app</Link>
                             <Link to="/catalogo" className="enlace-mas">Ver el catálogo <FaChevronRight aria-hidden="true" /></Link>
                         </div>
-                        <p className="app__nota">Gratis para Android · Capturas de una versión anterior con una cuenta de demostración.</p>
+                        <p className="app__nota">Gratis para Android · Recortes del catálogo de una versión anterior con una cuenta de demostración.</p>
                     </div>
 
                     <div className="app__telefonos" style={{ perspective: '1400px' }}>
                         <Telefono clase="telefono--2" src={imgInicio} alt="Pantalla de inicio de la app con búsqueda, destacado y categorías" />
-                        <Telefono clase="telefono--3" src={imgFicha} alt="Ficha del libro 1984 con precio, ejemplares disponibles y botones Reservar y Añadir" />
                         <Telefono clase="telefono--1" src={imgCatalogo} alt="Catálogo de la app con categorías y libros con precio" />
                     </div>
                 </div>

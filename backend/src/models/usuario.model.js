@@ -509,7 +509,6 @@ const actualizarEstadoRol = async (
 // ELIMINAR CUENTA (derecho de cancelación, Ley 29733)
 // ----------------------------------------
 // En una sola transacción:
-//   - Cancela sus reservas activas y devuelve el stock.
 //   - Borra sus favoritos y el correo de sus compras.
 //   - Anonimiza la cuenta (nombre, correo, teléfono, foto, 2FA) y la
 //     desactiva: ya no puede iniciar sesión.
@@ -517,40 +516,9 @@ const actualizarEstadoRol = async (
 // comprobante guarda sus propios datos del cliente.
 // ========================================
 const eliminarCuenta = async (idUsuario, passwordAleatoriaHash) => {
-    const { registrarMovimiento } = require('./inventario.model');
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
-
-        const [reservas] = await connection.query(`
-            SELECT id_reserva, id_libro, cantidad
-            FROM reservas
-            WHERE id_usuario = ?
-              AND estado IN ('pendiente', 'confirmada')
-            FOR UPDATE
-        `, [idUsuario]);
-
-        for (const reserva of reservas) {
-            await connection.query(`
-                UPDATE inventario SET stock = stock + ? WHERE id_libro = ?
-            `, [reserva.cantidad, reserva.id_libro]);
-            const [[{ stock }]] = await connection.query(
-                'SELECT stock FROM inventario WHERE id_libro = ?',
-                [reserva.id_libro]
-            );
-            await registrarMovimiento(connection, {
-                id_libro: reserva.id_libro,
-                id_usuario: null,
-                tipo: 'entrada',
-                motivo: 'cancelacion_reserva',
-                cantidad: reserva.cantidad,
-                stock_resultante: stock
-            });
-            await connection.query(
-                "UPDATE reservas SET estado = 'cancelada' WHERE id_reserva = ?",
-                [reserva.id_reserva]
-            );
-        }
 
         await connection.query('DELETE FROM favoritos WHERE id_usuario = ?', [idUsuario]);
         await connection.query('DELETE FROM asistente_memoria WHERE id_usuario = ?', [idUsuario]);
@@ -581,7 +549,7 @@ const eliminarCuenta = async (idUsuario, passwordAleatoriaHash) => {
         `, [`eliminado-${idUsuario}@cuenta-eliminada.invalid`, passwordAleatoriaHash, idUsuario]);
 
         await connection.commit();
-        return { eliminada: filas.length > 0, reservas_canceladas: reservas.length };
+        return { eliminada: filas.length > 0 };
     } catch (error) {
         await connection.rollback();
         throw error;

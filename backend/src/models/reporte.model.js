@@ -46,11 +46,6 @@ const obtenerResumenGeneral = async () => {
         WHERE estado IN ('pagada', 'entregada')
     `);
 
-    const [[reservas]] = await pool.query(`
-        SELECT COUNT(*) AS total_reservas
-        FROM reservas
-    `);
-
     const [[stockBajo]] = await pool.query(`
         SELECT COUNT(*) AS libros_stock_bajo
         FROM inventario
@@ -66,7 +61,6 @@ const obtenerResumenGeneral = async () => {
         total_administradores: usuarios.total_administradores,
         total_ventas: ventas.total_ventas,
         total_vendido: ventas.total_vendido,
-        total_reservas: reservas.total_reservas,
         libros_stock_bajo: stockBajo.libros_stock_bajo
     };
 };
@@ -110,22 +104,6 @@ const obtenerVentasPorEstado = async () => {
             COUNT(*) AS cantidad,
             COALESCE(SUM(total), 0) AS total
         FROM ventas
-        GROUP BY estado
-        ORDER BY cantidad DESC
-    `);
-
-    return rows;
-};
-
-// ========================================
-// RESERVAS POR ESTADO
-// ========================================
-const obtenerReservasPorEstado = async () => {
-    const [rows] = await pool.query(`
-        SELECT
-            estado,
-            COUNT(*) AS cantidad
-        FROM reservas
         GROUP BY estado
         ORDER BY cantidad DESC
     `);
@@ -567,7 +545,6 @@ module.exports = {
     obtenerResumenGeneral,
     obtenerLibrosMasVendidos,
     obtenerVentasPorEstado,
-    obtenerReservasPorEstado,
     obtenerStockBajo,
     obtenerVentasPorMes,
     obtenerVentasPorDia,

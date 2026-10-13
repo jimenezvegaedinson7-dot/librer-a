@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { FaTruckFast, FaStore, FaLock, FaShieldHalved, FaCalendarCheck, FaXmark, FaHeart, FaClockRotateLeft, FaUserShield } from 'react-icons/fa6';
+import { FaTruckFast, FaStore, FaLock, FaShieldHalved, FaCartShopping, FaReceipt, FaHeart, FaClockRotateLeft, FaUserShield } from 'react-icons/fa6';
 
 import imgEntrega from '../assets/app/entrega.webp';
-import imgFicha from '../assets/app/ficha-libro.webp';
 import { EASE } from '../config/motion';
 import { gsap, useGSAP } from '../animation/scroll';
 import CierreDescarga from '../components/CierreDescarga';
@@ -149,21 +148,22 @@ export default function FeatureStory({ reducido }) {
 
                     <article className="ventaja" data-ventaja="3">
                         <div className="ventaja__texto">
-                            <h2>Consulta tus reservas anteriores</h2>
+                            <h2>Del carrito a Mis compras</h2>
                             <p>
-                                Conservamos el historial de tus reservas. Las que siguen activas pueden cancelarse desde la app
-                                para liberar los ejemplares. Las nuevas compras se pagan con PayU desde el carrito.
+                                Revisa los libros y las cantidades en el carrito, elige la entrega y paga con PayU.
+                                En Mis compras puedes consultar el estado del pago y seguir la entrega de tu pedido.
                             </p>
                             <p className="ventaja__detalle">
-                                <span><FaCalendarCheck aria-hidden="true" /> Historial de reservas</span>
-                                <span><FaXmark aria-hidden="true" /> Cancelación desde la app</span>
+                                <span><FaCartShopping aria-hidden="true" /> Carrito de libros</span>
+                                <span><FaReceipt aria-hidden="true" /> Estado de tus compras</span>
                             </p>
                         </div>
                         <div className="ventaja__visual">
-                            <div className="ficha" style={{ maxWidth: 500, marginInline: 'auto' }}>
-                                <Recorte src={imgFicha} alt="Parte inferior de la ficha de un libro con el total y los botones Reservar y Añadir" posicion="50% 100%" proporcion="16 / 9" />
-                                <p className="ficha__pie">Captura de una versión anterior. La creación de reservas está retirada.</p>
-                            </div>
+                            <p className="tipografica" aria-hidden="true" data-revelar="">
+                                <span className="linea"><span>Carrito.</span></span>
+                                <span className="linea" style={{ '--i': 1 }}><span>Pago seguro.</span></span>
+                                <span className="linea" style={{ '--i': 2 }}><span><em>Mis compras.</em></span></span>
+                            </p>
                         </div>
                     </article>
 

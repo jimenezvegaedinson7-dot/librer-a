@@ -376,7 +376,7 @@ export default function PedidosPage() {
     const opcionesPedido = (p) => {
         const estado = p.estado_entrega || 'pendiente';
         const tipoValido = esTipoEntregaValido(p.tipo_entrega);
-        const historico = p.origen === 'panel' || p.origen === 'reserva';
+        const historico = p.origen === 'panel' || p.origen === 'reserva' || Boolean(p.id_reserva);
         const devolucionPendiente = p.estado_reembolso === 'pendiente_verificacion';
         const revisionPago = pagoEnRevision(p);
         const pagoConfirmado = ['pagada', 'entregada'].includes(p.estado);

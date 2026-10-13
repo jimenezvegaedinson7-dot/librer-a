@@ -119,7 +119,7 @@ export default function DownloadSection({ reducido }) {
                         )}
                     </div>
                     <div className="descargar-portada__telefono" aria-hidden="true">
-                        <figure className="telefono">
+                        <figure className="telefono telefono--catalogo">
                             <img src={imgInicio} alt="" width="390" height="844" decoding="async" />
                         </figure>
                     </div>

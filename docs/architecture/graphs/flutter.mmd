@@ -1,4 +1,4 @@
-%% Generado 2026-10-12 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-13 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     API(["ApiService (Dio)"])
     carrito_screen["carrito_screen"] --> API
@@ -14,7 +14,6 @@ flowchart LR
     recuperar_contrasena_screen["recuperar_contrasena_screen"] --> API
     reestablecer_contrasena_screen["reestablecer_contrasena_screen"] --> API
     registro_screen["registro_screen"] --> API
-    reservas_screen["reservas_screen"] --> API
     cambiar_password_screen["cambiar_password_screen"] --> API
     editar_perfil_screen["editar_perfil_screen"] --> API
     eliminar_cuenta_screen["eliminar_cuenta_screen"] --> API
@@ -26,7 +25,6 @@ flowchart LR
     API --> _api_ventas{{"/api/ventas"}}
     API --> _api_auth{{"/api/auth"}}
     API --> _api_usuarios{{"/api/usuarios"}}
-    API --> _api_reservas{{"/api/reservas"}}
     API --> _api_pagos{{"/api/pagos"}}
     API --> _api_favoritos{{"/api/favoritos"}}
     API --> _api_zonas_delivery{{"/api/zonas-delivery"}}

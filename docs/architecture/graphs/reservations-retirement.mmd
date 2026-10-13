@@ -1,0 +1,16 @@
+%% Generado 2026-10-13 desde el código real (actualizar-mapa.mjs)
+sequenceDiagram
+    autonumber
+    participant B as Arranque del backend
+    participant M as Migración de datos 042
+    participant DB as PostgreSQL
+    participant A as APK antiguo
+    participant API as Contrato retirado
+    B->>M: aplicar una sola vez con advisory lock
+    M->>DB: bloquear reservas y ventas
+    M->>DB: liberar apartados activos sin venta, registrar kardex
+    M->>DB: borrar reservas e historial del módulo
+    M->>DB: registrar 042 y confirmar transacción
+    Note over M,DB: fallo revierte todo; ventas y comprobantes permanecen
+    A->>API: petición JWT al namespace antiguo
+    API-->>A: 410 módulo eliminado, sin datos

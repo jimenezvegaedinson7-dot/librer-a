@@ -209,7 +209,9 @@ CREATE TABLE IF NOT EXISTS movimientos_inventario (
 CREATE INDEX IF NOT EXISTS idx_mov_libro_fecha ON movimientos_inventario (id_libro, fecha_movimiento);
 
 -- ============================================================
--- RESERVAS (índice de vencimiento de la migración 014)
+-- RESERVAS: TABLA VACÍA LEGACY, SIN API NI CONSUMIDORES RUNTIME
+-- Se conserva solo para compatibilidad con migraciones antiguas.
+-- Los datos existentes se eliminan con 042_purga_reservas.sql.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS reservas (
     id_reserva SERIAL PRIMARY KEY,
@@ -276,6 +278,8 @@ CREATE TABLE IF NOT EXISTS ventas (
     referencia_pago VARCHAR(100) NULL,
     fecha_pago TIMESTAMP NULL,
     cliente_nombre VARCHAR(255) NULL,
+    -- Marcador histórico, deliberadamente sin FK a la tabla vacía reservas.
+    -- No eliminarlo ni cambiar el origen: no habilita operaciones nuevas.
     id_reserva INT NULL,
     motivo_reembolso VARCHAR(255) NULL,
     fecha_reembolso TIMESTAMP NULL,

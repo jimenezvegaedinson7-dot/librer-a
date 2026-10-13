@@ -739,25 +739,19 @@ const eliminarLibro = async (req, res) => {
         }
 
         // ========================================
-        // VERIFICAR REFERENCIAS (VENTAS / RESERVAS)
+        // VERIFICAR REFERENCIAS DE VENTAS
         // ========================================
         const [refVentas] = await pool.query(
             'SELECT COUNT(*) AS total FROM detalle_venta WHERE id_libro = ?',
             [idLibro]
         );
-        const [refReservas] = await pool.query(
-            'SELECT COUNT(*) AS total FROM reservas WHERE id_libro = ?',
-            [idLibro]
-        );
-
         if (
-            Number(refVentas[0]?.total || 0) > 0 ||
-            Number(refReservas[0]?.total || 0) > 0
+            Number(refVentas[0]?.total || 0) > 0
         ) {
             return res.status(409).json({
                 success: false,
                 mensaje:
-                    'No se puede eliminar este libro porque tiene ventas o reservas relacionadas. Puedes cambiarlo a estado Inactivo.'
+                    'No se puede eliminar este libro porque tiene ventas relacionadas. Puedes cambiarlo a estado Inactivo.'
             });
         }
 

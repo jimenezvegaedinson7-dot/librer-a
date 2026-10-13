@@ -1,4 +1,4 @@
-%% Generado 2026-10-12 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-13 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     paginas["/<br/>paginas"]
     CatalogoPage["/catalogo<br/>CatalogoPage"]
@@ -29,8 +29,6 @@ flowchart LR
     CategoriasPage --> categoriasService(["categoriasService"])
     InventarioPage["/inventario<br/>InventarioPage"]
     InventarioPage --> inventarioService(["inventarioService"])
-    ReservasPage["/reservas<br/>ReservasPage"]
-    ReservasPage --> reservasService(["reservasService"])
     PedidosPage["/pedidos<br/>PedidosPage"]
     PedidosPage --> pedidosService(["pedidosService"])
     VentasPage["/ventas<br/>VentasPage"]
@@ -82,7 +80,6 @@ flowchart LR
     reclamacionesService --> _api_empresa{{"/api/empresa"}}
     reportesService --> _api_reportes{{"/api/reportes"}}
     reportesService --> _api_inventario{{"/api/inventario"}}
-    reservasService --> _api_reservas{{"/api/reservas"}}
     tarifasService --> _api_zonas_delivery{{"/api/zonas-delivery"}}
     usuariosService --> _api_usuarios{{"/api/usuarios"}}
     ventasService --> _api_ventas{{"/api/ventas"}}

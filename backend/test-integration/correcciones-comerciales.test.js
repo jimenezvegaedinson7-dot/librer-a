@@ -3,7 +3,6 @@ const assert = require('node:assert/strict');
 const { randomUUID, createHash } = require('node:crypto');
 const pool = require('../src/config/database');
 const ventas = require('../src/models/venta.model');
-const reservas = require('../src/models/reserva.model');
 const comprobantes = require('../src/models/comprobante.model');
 const jwt = require('jsonwebtoken');
 const { readFileSync } = require('node:fs');
@@ -114,14 +113,14 @@ test('correcciones comerciales: invariantes transaccionales y documentos', async
         });
         await t.test('reserva administrativa y suplantación no crean nuevas operaciones', async () => {
             const r = await pedir('/reservas', tokens[0], 'POST', { id_libro: ids.libros[0], cantidad: 1, id_usuario_cliente: ids.usuarios[1] });
-            assert.equal(r.status, 405);
-            assert.equal((await pedir('/reservas', tokens[1], 'POST', { id_libro: ids.libros[0], cantidad: 1, id_usuario_cliente: ids.usuarios[2] })).status, 405);
-            assert.equal((await pedir('/reservas', tokens[0], 'POST', { id_libro: ids.libros[0], cantidad: 1 })).status, 405);
+            assert.equal(r.status, 410);
+            assert.equal((await pedir('/reservas', tokens[1], 'POST', { id_libro: ids.libros[0], cantidad: 1, id_usuario_cliente: ids.usuarios[2] })).status, 410);
+            assert.equal((await pedir('/reservas', tokens[0], 'POST', { id_libro: ids.libros[0], cantidad: 1 })).status, 410);
         });
         await t.test('BC08: un libro inactivo no permite apartar stock', async () => {
             const antes = await stock(ids.libros[1]);
             await pool.query('UPDATE libros SET estado=0 WHERE id_libro=?', [ids.libros[1]]);
-            await assert.rejects(reservas.crear({ id_usuario: ids.usuarios[1], id_libro: ids.libros[1], cantidad: 1 }), e => e.status === 405);
+            await assert.rejects(crear({ detalles: [{ id_libro: ids.libros[1], cantidad: 1 }] }), /se encuentra inactivo/);
             assert.equal(await stock(ids.libros[1]), antes);
             await pool.query('UPDATE libros SET estado=1 WHERE id_libro=?', [ids.libros[1]]);
         });
@@ -131,10 +130,10 @@ test('correcciones comerciales: invariantes transaccionales y documentos', async
             await pool.query('UPDATE libros SET descuento_porcentaje=20 WHERE id_libro=?', [ids.libros[0]]);
             const antes = await stock(ids.libros[0]);
             const obsoleto = await pedir(`/reservas/${r}/estado`, tokens[0], 'PUT', { estado: 'completada', metodo_pago: 'efectivo', precio_unitario_esperado: 10 });
-            assert.equal(obsoleto.status, 409); assert.equal((await reservas.obtenerPorId(r)).estado, 'confirmada');
+            assert.equal(obsoleto.status, 410); assert.equal((await pool.query('SELECT estado FROM reservas WHERE id_reserva=?',[r]))[0][0].estado, 'confirmada');
             const bien = await pedir(`/reservas/${r}/estado`, tokens[0], 'PUT', { estado: 'completada', metodo_pago: 'efectivo', precio_unitario_esperado: 8 });
-            assert.equal(bien.status, 409); assert.equal(await stock(ids.libros[0]), antes);
-            assert.equal((await reservas.obtenerPorId(r)).estado, 'confirmada');
+            assert.equal(bien.status, 410); assert.equal(await stock(ids.libros[0]), antes);
+            assert.equal((await pool.query('SELECT estado FROM reservas WHERE id_reserva=?',[r]))[0][0].estado, 'confirmada');
             await pool.query('UPDATE libros SET descuento_porcentaje=NULL WHERE id_libro=?', [ids.libros[0]]);
         });
         await t.test('comprobante conserva emisor y títulos; factura usa el RUC guardado', async () => {

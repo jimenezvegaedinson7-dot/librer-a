@@ -1,10 +1,9 @@
 import { formatearMoneda } from '../../lib/utils/format';
 import { listarPagos } from '../pagos/pagosService';
 import { obtenerStockBajo } from '../reportes/reportesService';
-import { listarReservas } from '../reservas/reservasService';
 
 // Notificaciones = solo eventos que piden atención del administrador:
-// pagos en línea aprobados, reservas pendientes y libros con stock bajo.
+// pagos en línea aprobados y libros con stock bajo.
 // Se arman con endpoints existentes; cada una lleva a su registro.
 
 const CLAVE_VISTAS = 'notificacionesVistas';
@@ -44,31 +43,15 @@ function dePago(pago) {
     };
 }
 
-function deReserva(reserva) {
-    const cliente = `${reserva.nombre_usuario || ''} ${reserva.apellido_usuario || ''}`;
-    return {
-        clave: `reserva-${reserva.id_reserva}`,
-        tipo: 'reserva',
-        tono: 'info',
-        etiqueta: 'Reserva pendiente',
-        titulo: `Reserva de ${nombreCliente(cliente)}`,
-        detalle: `${reserva.titulo || 'Libro'} · ${numero(reserva.cantidad) || 1} ud.`,
-        fecha: reserva.fecha_reserva ? new Date(reserva.fecha_reserva) : null,
-        destino: `/reservas?ver=${reserva.id_reserva}`,
-    };
-}
-
 export async function obtenerNotificaciones() {
-    const [stock, pagos, reservas] = await Promise.all([
+    const [stock, pagos] = await Promise.all([
         obtenerStockBajo(),
         listarPagos({ estado: 'pagada', por_pagina: 15 }).then((r) => r.pagos),
-        listarReservas(),
     ]);
 
     const actividad = [
         // Solo pagos en línea: los cobros que registra el propio admin no se notifican.
         ...pagos.filter((p) => p.metodo_pago === 'payu' && p.external_reference).map(dePago),
-        ...reservas.filter((r) => String(r.estado).toLowerCase() === 'pendiente').slice(0, 15).map(deReserva),
     ].sort((a, b) => (b.fecha?.getTime() || 0) - (a.fecha?.getTime() || 0));
 
     const inventario = stock.map(deStock).sort((a, b) => (a.tono === 'peligro' ? -1 : 0) - (b.tono === 'peligro' ? -1 : 0));

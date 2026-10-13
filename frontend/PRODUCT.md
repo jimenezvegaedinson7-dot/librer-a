@@ -17,7 +17,7 @@ Librería del Saber vende libros físicos mediante una tienda web y una app Andr
 
 ## Positioning
 
-Una librería física en Pallasca, Áncash, con catálogo comercial web y móvil: compra con PayU, delivery dentro de zonas activas de Pallasca o recojo gratuito. Las reservas se conservan únicamente como historial consultable y cancelable.
+Una librería física en Pallasca, Áncash, con catálogo comercial web y móvil: compra con PayU, delivery dentro de zonas activas de Pallasca o recojo gratuito. El servicio de reservas está eliminado, incluido su historial.
 
 ## Operating Context
 
@@ -33,7 +33,11 @@ Funciones verificadas en el código: catálogo, ficha de libro, favoritos, carri
 
 PayU se muestra en `PagoEnAppScreen` mediante WebView; el retorno obliga a consultar el estado del servidor. Web y app persisten el intento y su clave de idempotencia antes del POST. Precio, stock, pago y reglas de entrega se validan en el backend.
 
-Reservas nuevas y ventas manuales están retiradas; sus rutas históricas siguen ofreciendo consulta o cancelación según el contrato. Lima y courier permanecen para compatibilidad de registros antiguos, no para checkout nuevo.
+Reservas está eliminado: no hay pantalla, menú, notificaciones, reportes ni consulta/cancelación histórica. La URL antigua `/reservas` redirige al Dashboard. Las compras siguen usando reserva transaccional de stock e idempotencia durante el checkout; esa operación de inventario no es el servicio eliminado.
+
+Las ventas manuales están retiradas. En Ventas y Pagos, `origen='reserva'` e `id_reserva` solo son marcadores de protección de ventas antiguas de solo lectura, etiquetadas como «Venta histórica» sin enlaces ni números de reservas. Lima y courier permanecen para compatibilidad de ventas antiguas, no para checkout nuevo.
+
+La comunicación pública y el asistente orientan al carrito, PayU y Mis compras. Se retira la captura de ficha con «Reservar»; las capturas existentes de catálogo/inicio se encuadran sin la barra de navegación antigua. No se generan capturas nuevas.
 
 No se declaran capacidades comerciales sin evidencia. En este contexto no se afirma publicación en Play Store, notificaciones push o distribución pública iOS. La web sí permite comprar.
 

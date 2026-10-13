@@ -18,7 +18,7 @@ import 'carrito_screen.dart';
 
 /// Ficha del libro: portada sobre pergamino, datos comerciales (precio,
 /// disponibilidad y cantidad), sinopsis expandible, ficha técnica y barra
-/// inferior fija con total, reserva y compra.
+/// inferior fija con total y acción para añadir al carrito.
 class DetalleLibroScreen extends StatefulWidget {
   final Libro libro;
 

@@ -1,7 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const ventas = require('../src/models/venta.model');
-const reservas = require('../src/models/reserva.model');
 const { esReembolsoElegible } = require('../src/utils/devoluciones');
 const { esVentaHistorica } = require('../src/utils/transiciones');
 const { validarCobroTienda } = require('../src/utils/metodosPago');
@@ -18,9 +17,11 @@ for (const origen of ['panel', 'reserva']) {
         await assert.rejects(ventas.crear({ origen, id_reserva: 1 }), e => e.status === 409);
     });
 }
-test('modelo: reservas no se crean ni se completan', async () => {
-    await assert.rejects(reservas.crear({}), e => e.status === 405);
-    await assert.rejects(reservas.actualizarEstado(1, 'completada', { alCompletar: () => assert.fail('No se invoca el cobro') }), e => e.status === 409);
+test('el marcador de origen retirado no habilita cobros aunque el registro de reserva ya no exista', async () => {
+    assert.equal(esVentaHistorica({ origen: 'app', id_reserva: 123 }), true);
+    assert.equal(esReembolsoElegible({ origen: 'app', id_reserva: 123, metodo_pago: 'payu', estado: 'pagada',
+        external_reference: 'ref', payu_order_id: 'orden', payu_payment_id: 'tx', payu_payment_status: 'APPROVED' }), false);
+    await assert.rejects(ventas.crear({ origen: 'app', id_reserva: 123 }), e => e.status === 409);
 });
 test('modelo: estado pagada no se crea ni se confirma manualmente', async () => {
     await assert.rejects(ventas.crear({ estado: 'pagada' }), e => e.status === 409);

@@ -22,7 +22,6 @@ import '../widgets/estado_chip.dart';
 import '../widgets/presionable.dart';
 import 'login_screen.dart';
 import 'mis_compras_screen.dart';
-import 'reservas_screen.dart';
 import 'favoritos_screen.dart';
 import 'security/cambiar_password_screen.dart';
 import 'security/editar_perfil_screen.dart';
@@ -215,12 +214,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Future<void> _misCompras() async {
     await Navigator.of(context).push<void>(
       MaterialPageRoute<void>(builder: (_) => const MisComprasScreen()),
-    );
-  }
-
-  Future<void> _misReservas() async {
-    await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(builder: (_) => const ReservasScreen()),
     );
   }
 
@@ -527,14 +520,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                         icon: Icons.shopping_bag_outlined,
                         label: 'Mis compras',
                         onTap: _misCompras,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _AccesoRapido(
-                        icon: Icons.event_note_outlined,
-                        label: 'Reservas',
-                        onTap: _misReservas,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -887,7 +872,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
       const Divider(height: 1, indent: 64, color: _profileBorder);
 }
 
-/// Acceso rápido del perfil (compras, reservas, favoritos).
+/// Acceso rápido del perfil (compras y favoritos).
 class _AccesoRapido extends StatelessWidget {
   final IconData icon;
   final String label;

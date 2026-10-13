@@ -19,7 +19,6 @@ import {
     obtenerResumen,
     obtenerLibros,
     obtenerLibrosMasVendidos,
-    obtenerReservasPorEstado,
     obtenerVentasPorEstado,
     obtenerVentasPorMes,
     obtenerVentasPorDia,
@@ -74,7 +73,6 @@ export default function DashboardPage() {
     const [libros, setLibros] = useState([]);
     const [ventasPorMes, setVentasPorMes] = useState([]);
     const [ventasPorEstado, setVentasPorEstado] = useState([]);
-    const [reservasPorEstado, setReservasPorEstado] = useState([]);
     const [librosMasVendidos, setLibrosMasVendidos] = useState([]);
     const [ventasPorDia, setVentasPorDia] = useState([]);
     const [indicadores, setIndicadores] = useState(null);
@@ -95,12 +93,11 @@ export default function DashboardPage() {
                 // Dashboard se muestra igual y avisa qué sección no cargó.
                 const fallidas = [];
                 const opcional = (promesa, nombre) => promesa.catch(() => { fallidas.push(nombre); return null; });
-                const [r, l, vm, ve, re, lmv, vd, ind, sb] = await Promise.all([
+                const [r, l, vm, ve, lmv, vd, ind, sb] = await Promise.all([
                     obtenerResumen(),
                     opcional(obtenerLibros(), 'libros'),
                     opcional(obtenerVentasPorMes(), 'ventas por mes'),
                     opcional(obtenerVentasPorEstado(), 'ventas por estado'),
-                    opcional(obtenerReservasPorEstado(), 'reservas por estado'),
                     opcional(obtenerLibrosMasVendidos(), 'libros más vendidos'),
                     // Complementarios: si fallan, el resumen se muestra igual.
                     obtenerVentasPorDia().catch(() => null),
@@ -112,7 +109,6 @@ export default function DashboardPage() {
                 setLibros(esArreglo(l));
                 setVentasPorMes(esArreglo(vm));
                 setVentasPorEstado(esArreglo(ve));
-                setReservasPorEstado(esArreglo(re));
                 setLibrosMasVendidos(esArreglo(lmv));
                 setVentasPorDia(vd === null ? null : esArreglo(vd));
                 setIndicadores(ind);
@@ -134,8 +130,8 @@ export default function DashboardPage() {
         return (
             <div className="space-y-6" role="status" aria-label="Cargando resumen">
                 <div className="skeleton h-24 w-72 max-w-full" />
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-[172px] !rounded-[0.875rem]" />)}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    {Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton h-[172px] !rounded-[0.875rem]" />)}
                 </div>
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,1fr)]">
                     <div className="skeleton h-[520px] !rounded-[0.875rem]" />
@@ -153,7 +149,6 @@ export default function DashboardPage() {
 
     const diario = serieDiaria(ventasPorDia, 14);
     const mensual = serieMensual(ventasPorMes, 6);
-    const reservasPendientes = num(reservasPorEstado.find((r) => String(r.estado).toLowerCase() === 'pendiente')?.cantidad);
     const vendidoHoy = indicadores === null ? null : num(indicadores.vendido_hoy);
     const { mejor_mes: mejorMes, mejor_dia: mejorDia } = indicadores || {};
     // Desgloses de las tarjetas pequeñas, calculados con el catálogo cargado.
@@ -198,7 +193,7 @@ export default function DashboardPage() {
                 variants={escalonado}
                 initial="oculto"
                 animate="visible"
-                className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4"
+                className="grid grid-cols-1 gap-5 sm:grid-cols-3"
             >
                 <StatCard
                     titulo="Total vendido"
@@ -226,14 +221,6 @@ export default function DashboardPage() {
                     detalle={indicadores === null ? 'Consulta no disponible' : `Rango ${formatearMoneda(indicadores.venta_menor)} – ${formatearMoneda(indicadores.venta_mayor)}`}
                     tendencia={mensual.map((d) => (d.cantidad > 0 ? d.total / d.cantidad : 0))}
                     etiquetaTendencia="Promedio por venta de cada mes en los últimos 6 meses"
-                />
-                <StatCard
-                    titulo="Reservas"
-                    valor={num(resumen.total_reservas)}
-                    icono={<FaCalendarCheck />}
-                    color="warning"
-                    detalle={reservasPendientes > 0 ? `${reservasPendientes} ${reservasPendientes === 1 ? 'pendiente' : 'pendientes'} de atender` : 'Ninguna pendiente'}
-                    medidor={{ valor: reservasPendientes, total: num(resumen.total_reservas), etiqueta: 'Reservas pendientes sobre el total', leyenda: 'pendientes del total' }}
                 />
             </motion.section>
 
@@ -316,11 +303,10 @@ export default function DashboardPage() {
                 <TopBooks libros={librosMasVendidos} />
             </section>
 
-            {/* ESTADOS E INVENTARIO: tres piezas del mismo alto */}
-            <section aria-label="Estados operativos e inventario" className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                <StatusDonut titulo="Ventas por estado" subtitulo="Todas las ventas registradas" datos={ventasPorEstado} tipo="ventas" />
-                <StatusDonut titulo="Reservas por estado" subtitulo="Todas las reservas registradas" datos={reservasPorEstado} tipo="reservas" variante="donut" />
-                <div className="md:col-span-2 xl:col-span-1">
+            {/* ESTADOS E INVENTARIO */}
+            <section aria-label="Estados operativos e inventario" className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <StatusDonut titulo="Ventas por estado" subtitulo="Todas las ventas registradas" datos={ventasPorEstado} />
+                <div>
                     <StockBajo items={stockBajo} />
                 </div>
             </section>

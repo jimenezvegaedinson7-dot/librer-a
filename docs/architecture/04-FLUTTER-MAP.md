@@ -1,6 +1,6 @@
 # Mapa de la app Flutter (Android / clientes)
 
-> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-13 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque y navegación
@@ -43,9 +43,6 @@ Fuentes Inter y Source Serif 4 empaquetadas en `assets/fonts/` y declaradas en `
 | `subirFotoPerfil` | `PUT /api/usuarios/foto` |
 | `cambiarPassword` | `PUT /api/usuarios/password` |
 | `eliminarCuenta` | `DELETE /api/usuarios/cuenta` |
-| `obtenerMisReservas` | `GET /api/reservas/mis-reservas` |
-| `cancelarReserva` | `DELETE /api/reservas/:id` |
-| `crearReserva` |  |
 | `obtenerMisVentas` | `GET /api/ventas/mis-ventas`<br>`POST /api/pagos/crear-orden` (vía `recuperarIntentoPendiente`) |
 | `obtenerFavoritos` | `GET /api/favoritos` |
 | `esFavorito` | `GET /api/favoritos/:idLibro` |
@@ -88,7 +85,6 @@ Fuentes Inter y Source Serif 4 empaquetadas en `assets/fonts/` y declaradas en `
 | `screens/recuperar_contrasena_screen.dart` | `solicitarReseteo` | `POST /api/auth/solicitar-reseteo` |
 | `screens/reestablecer_contrasena_screen.dart` | `reestablecerContrasena`, `solicitarReseteo`, `verificarReseteo` | `POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-reseteo` |
 | `screens/registro_screen.dart` | `registrar` | `POST /api/auth/registro` |
-| `screens/reservas_screen.dart` | `cancelarReserva`, `obtenerMisReservas` | `DELETE /api/reservas/:id`<br>`GET /api/reservas/mis-reservas` |
 | `screens/security/cambiar_password_screen.dart` | `cambiarPassword` | `PUT /api/usuarios/password` |
 | `screens/security/editar_perfil_screen.dart` | `actualizarPerfil` | `PUT /api/usuarios/perfil` |
 | `screens/security/eliminar_cuenta_screen.dart` | `eliminarCuenta` | `DELETE /api/usuarios/cuenta` |
@@ -108,7 +104,6 @@ Pantallas sin llamadas directas a la API: `screens/fondos_screen.dart`, `screens
 | Favoritos | favoritos, detalle_libro | `/api/favoritos` (GET, GET/POST/DELETE `/:idLibro`) |
 | Carrito | carrito (local) | — |
 | Compra + PayU | entrega_y_pago, mis_compras, pago_en_app | `GET /api/zonas-delivery`, `POST /api/pagos/crear-orden` → `PagoEnAppScreen` muestra WebCheckout con **webview_flutter** (enlaces externos con url_launcher). El retorno obliga a consultar `GET /api/pagos/:orderId`; también `GET /api/ventas/mis-ventas` y `GET /api/ventas/:id/pago`. |
-| Reservas históricas | reservas (pestaña Historial), perfil | `GET /api/reservas/mis-reservas`, `DELETE /api/reservas/:id`; crear está retirado (405) |
 | Perfil | perfil, editar_perfil, cambiar_password | `/api/usuarios/perfil` (GET/PUT), `PUT /api/usuarios/foto` (**image_picker**), `PUT /api/usuarios/password` |
 | 2FA | two_factor_setup/verify/disable | `/api/auth/2fa/*` |
 | Registro y cuenta | registro, verificacion_email, recuperar/reestablecer_contrasena | `/api/auth/{registro, verificar-email, reenviar-codigo, solicitar-reseteo, reestablecer-contrasena}` |
@@ -117,9 +112,9 @@ Nota: la app es **solo para clientes**; `login` rechaza el rol administrador.
 
 ## Archivos
 
-**models/** — `carrito_item.dart`, `libro.dart`, `orden_pago.dart`, `reserva.dart`, `usuario.dart`, `venta.dart`, `version_app.dart`, `zona_delivery.dart`
+**models/** — `carrito_item.dart`, `libro.dart`, `orden_pago.dart`, `usuario.dart`, `venta.dart`, `version_app.dart`, `zona_delivery.dart`
 
-**screens/** — `carrito_screen.dart`, `detalle_libro_screen.dart`, `entrega_y_pago_screen.dart`, `favoritos_screen.dart`, `fondos_screen.dart`, `home_screen.dart`, `legal/politica_privacidad_screen.dart`, `legal/terminos_condiciones_screen.dart`, `libro_reclamaciones_screen.dart`, `libros_screen.dart`, `login_screen.dart`, `mis_compras_screen.dart`, `pago_en_app_screen.dart`, `perfil_screen.dart`, `recuperar_contrasena_screen.dart`, `reestablecer_contrasena_screen.dart`, `registro_screen.dart`, `reservas_screen.dart`, `security/cambiar_password_screen.dart`, `security/editar_perfil_screen.dart`, `security/eliminar_cuenta_screen.dart`, `security/two_factor_disable_screen.dart`, `security/two_factor_setup_screen.dart`, `security/two_factor_verify_screen.dart`, `splash_screen.dart`, `verificacion_email_screen.dart`
+**screens/** — `carrito_screen.dart`, `detalle_libro_screen.dart`, `entrega_y_pago_screen.dart`, `favoritos_screen.dart`, `fondos_screen.dart`, `home_screen.dart`, `legal/politica_privacidad_screen.dart`, `legal/terminos_condiciones_screen.dart`, `libro_reclamaciones_screen.dart`, `libros_screen.dart`, `login_screen.dart`, `mis_compras_screen.dart`, `pago_en_app_screen.dart`, `perfil_screen.dart`, `recuperar_contrasena_screen.dart`, `reestablecer_contrasena_screen.dart`, `registro_screen.dart`, `security/cambiar_password_screen.dart`, `security/editar_perfil_screen.dart`, `security/eliminar_cuenta_screen.dart`, `security/two_factor_disable_screen.dart`, `security/two_factor_setup_screen.dart`, `security/two_factor_verify_screen.dart`, `splash_screen.dart`, `verificacion_email_screen.dart`
 
 **widgets/** — `aparecer.dart`, `app_bottom_navigation.dart`, `app_logo.dart`, `app_page_header.dart`, `aviso_portada_referencia.dart`, `book_cover.dart`, `campo_otp.dart`, `carrito_badge.dart`, `comprobador_actualizacion.dart`, `confirmacion_otp.dart`, `dialogo_actualizacion.dart`, `empty_view.dart`, `error_banner.dart`, `error_view.dart`, `estado_chip.dart`, `estanteria.dart`, `formulario_cuenta.dart`, `legal_documento.dart`, `libros_grid.dart`, `loading_view.dart`, `portadas_libro.dart`, `precio_texto.dart`, `presionable.dart`, `seccion_titulo.dart`
 

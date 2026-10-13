@@ -6,7 +6,6 @@ const {
     obtenerResumenGeneral,
     obtenerLibrosMasVendidos,
     obtenerVentasPorEstado,
-    obtenerReservasPorEstado,
     obtenerVentasPorMes,
     obtenerVentasPorDia,
     obtenerIndicadoresVentas
@@ -46,12 +45,11 @@ router.get(
 );
 
 // ========================================
-// RESERVAS POR ESTADO
+// CONTRATO RETIRADO: SIN CONSULTAS NI ESTADÍSTICAS DE RESERVAS
 // ========================================
-router.get(
+router.use(
     '/reservas-por-estado',
-    verificarPanel,
-    obtenerReservasPorEstado
+    (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' })
 );
 
 // ============================================================

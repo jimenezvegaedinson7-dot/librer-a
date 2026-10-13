@@ -1,9 +1,9 @@
 # Mapa de API
 
-> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-13 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
-Total de endpoints registrados en el backend: **127** (incluye 4 definidos directamente en `server.js`).
+Total de endpoints registrados en el backend: **120** (incluye 4 definidos directamente en `server.js`).
 
 - **Auth**: `Pública` = sin JWT · `JWT` = requiere `Authorization: Bearer` · `JWT + admin` / `JWT + cliente` = además el rol indicado. Los arrays de middleware compartidos se expanden desde el router real.
 - **React / Flutter**: archivos que llaman al endpoint (directamente o a través de su servicio). `—` = ningún cliente lo usa.
@@ -104,18 +104,11 @@ Total de endpoints registrados en el backend: **127** (incluye 4 definidos direc
 | GET | `/api/reclamaciones/:id` | controllers/reclamacion.controller.js#obtener | JWT + rol:administrador | — | — | JWT + admin |
 | PUT | `/api/reclamaciones/:id/respuesta` | controllers/reclamacion.controller.js#responder | JWT + rol:administrador | features/reclamaciones/ReclamacionesPage.jsx | — | JWT + admin |
 | GET | `/api/reportes/ventas-por-estado` | controllers/reporte.controller.js#obtenerVentasPorEstado | JWT + verificarPanel | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
-| GET | `/api/reportes/reservas-por-estado` | controllers/reporte.controller.js#obtenerReservasPorEstado | JWT + verificarPanel | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
-| GET | `/api/reportes/resumen` | controllers/reporte.controller.js#obtenerResumenGeneral | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
-| GET | `/api/reportes/libros-mas-vendidos` | controllers/reporte.controller.js#obtenerLibrosMasVendidos | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
-| GET | `/api/reportes/ventas-por-mes` | controllers/reporte.controller.js#obtenerVentasPorMes | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
-| GET | `/api/reportes/ventas-por-dia` | controllers/reporte.controller.js#obtenerVentasPorDia | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js<br>features/reportes/useVentasDiarias.js | — | JWT + admin |
-| GET | `/api/reportes/indicadores-ventas` | controllers/reporte.controller.js#obtenerIndicadoresVentas | JWT + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
-| GET | `/api/reservas/mis-reservas` | controllers/reserva.controller.js#obtenerMisReservas | JWT | — | screens/reservas_screen.dart | JWT |
-| POST | `/api/reservas` | controllers/reserva.controller.js#crearReserva | JWT | — | — | JWT |
-| DELETE | `/api/reservas/:id` | controllers/reserva.controller.js#cancelarReserva | JWT | — | screens/reservas_screen.dart | JWT |
-| GET | `/api/reservas` | controllers/reserva.controller.js#obtenerReservas | JWT + verificarPanel | features/notificaciones/notificacionesService.js<br>features/reservas/ReservasPage.jsx | — | JWT + admin |
-| GET | `/api/reservas/:id` | controllers/reserva.controller.js#obtenerReserva | JWT | features/reservas/ReservasPage.jsx | — | JWT |
-| PUT | `/api/reservas/:id/estado` | controllers/reserva.controller.js#actualizarEstado | JWT + verificarPanel | features/reservas/ReservaEstadoModal.jsx | — | JWT + admin |
+| GET | `/api/reportes/resumen` | controllers/reporte.controller.js#obtenerResumenGeneral | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
+| GET | `/api/reportes/libros-mas-vendidos` | controllers/reporte.controller.js#obtenerLibrosMasVendidos | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
+| GET | `/api/reportes/ventas-por-mes` | controllers/reporte.controller.js#obtenerVentasPorMes | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
+| GET | `/api/reportes/ventas-por-dia` | controllers/reporte.controller.js#obtenerVentasPorDia | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js<br>features/reportes/useVentasDiarias.js | — | JWT + admin |
+| GET | `/api/reportes/indicadores-ventas` | controllers/reporte.controller.js#obtenerIndicadoresVentas | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | features/dashboard/DashboardPage.jsx<br>features/dashboard/dashboardService.js | — | JWT + admin |
 | GET | `/api/ubicaciones/provincias` | controllers/ubicacion.controller.js#listarProvincias | JWT | — | — | JWT |
 | GET | `/api/ubicaciones/provincias/:id_provincia/distritos` | controllers/ubicacion.controller.js#listarDistritos | JWT | — | — | JWT |
 | PUT | `/api/ubicaciones/distritos/:id` | controllers/ubicacion.controller.js#actualizarTarifaDistrito | JWT + rol:administrador | — | — | JWT + admin |
@@ -169,7 +162,7 @@ Total de endpoints registrados en el backend: **127** (incluye 4 definidos direc
 - `GET /api/ventas/:id/pago`
 - `GET /api/zonas-delivery`
 
-## Endpoints sin cliente en el código (23)
+## Endpoints sin cliente en el código (22)
 
 Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL o desde un tercero:
 
@@ -190,7 +183,6 @@ Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL 
 - `POST /api/pagos/webhook` — Confirmación de PayU (servidor a servidor).
 - `GET /api/pedidos/usuario/:id_usuario` — Posiblemente no utilizado por ningún cliente.
 - `GET /api/reclamaciones/:id` — Posiblemente no utilizado por ningún cliente.
-- `POST /api/reservas` — Posiblemente no utilizado por ningún cliente.
 - `GET /api/ubicaciones/provincias` — Posiblemente no utilizado por ningún cliente.
 - `GET /api/ubicaciones/provincias/:id_provincia/distritos` — Posiblemente no utilizado por ningún cliente.
 - `PUT /api/ubicaciones/distritos/:id` — Posiblemente no utilizado por ningún cliente.

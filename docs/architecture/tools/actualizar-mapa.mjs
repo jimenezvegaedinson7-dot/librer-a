@@ -96,7 +96,6 @@ const MODULOS = [
     ['Categorías', 'categorias', 'features/categorias', '—'],
     ['Inventario', 'inventario', 'features/inventario', '—'],
     ['Pedidos', 'pedidos', 'features/pedidos', '—'],
-    ['Reservas históricas (creación retirada)', 'reservas', 'features/reservas (consulta/cancelación)', 'historial de reservas (consulta/cancelación)'],
     ['Ventas', 'ventas', 'features/ventas · public-site/tienda/MisComprasPage', 'mis compras'],
     ['Pagos (PayU)', 'pagos', 'features/pagos · public-site/tienda/CheckoutPage', 'entrega y pago, mis compras'],
     ['Comprobantes', 'comprobantes', 'features/comprobantes · ventas/EmitirComprobanteModal', '—'],
@@ -184,7 +183,7 @@ const MODULOS = [
 | \`utils/mailer.js\` | Correo con **nodemailer** (SMTP_*): verificación, reseteo y avisos comerciales. Comprobantes adjuntos PDF, renderizados con **Playwright Chromium** por \`utils/pdf.js\`. |
 | \`utils/cloudinary.js\` | Subida/eliminación de imágenes en Cloudinary (CLOUDINARY_*), \`publicIdDesdeUrl\`. |
 | \`utils/crypto.js\` | Cifrado/descifrado del secreto 2FA con \`TWO_FACTOR_ENCRYPTION_KEY\`. |
-| \`utils/transiciones.js\` | Máquinas de estado permitidas de \`VENTA\` y \`RESERVA\` (\`permitirTransicion\`). |
+| \`utils/transiciones.js\` | Máquinas de estado de \`VENTA\` y \`ENTREGA\`; los marcadores de origen retirado permanecen de solo lectura. |
 | \`utils/payuStatus.js\` | Traduce estados de PayU a estados de venta. |
 | \`utils/validaciones.js\` | \`validarId\`, \`esEmailValido\`, \`esNumeroNoNegativo\`, \`esCantidadPositiva\`, \`esEstadoValido\`… |
 | \`utils/roles.js\` | Dominio actual: \`ADMINISTRADOR\` y \`CLIENTE\`. Exporta \`ROLES\`, \`ROLES_PANEL\`, \`ROLES_ASIGNABLES\`, \`normalizar\`, \`esRolValido\` y \`esPersonalInterno\`. \`usuarios.rol\` solo admite \`cliente\`/\`administrador\`; la migración \`029_retirar_rol_obsoleto.sql\` conserva las cuentas del rol retirado como clientes inactivos, sin cambiar IDs ni compras. |
@@ -194,7 +193,7 @@ const MODULOS = [
 | \`services/aiAssistant.service.js\` | Asistente público: búsqueda PostgreSQL tolerante, recomendaciones verificadas y fallback local. No modifica libros ni inventario. |
 | \`services/geminiAssistant.service.js\` | Gemini REST, una llamada como máximo con 8 libros, timeout de 8 s, salida estructurada validada y pausa ante errores/cuota. |
 | \`services/asistenteContexto.service.js\` | Contexto firmado temporal, 6 entradas de historial y expiración a los 20 min; sin tabla de conversaciones. |
-| \`jobs/limpieza.js\` | Cada 5 min: \`reservaModel.cancelarVencidas()\` y cancelación de ventas abandonadas (ventaModel). |
+| \`jobs/limpieza.js\` | Cada 5 min: reconciliación PayU y cancelación de ventas abandonadas (ventaModel). |
 
 ## Autenticación (JWT + 2FA)
 
@@ -284,7 +283,7 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
     md += `\n## Hooks y utilidades\n\n${archivos.filter((f) => /\/lib\//.test(f)).map((f) => `- \`${corto(f)}\``).join('\n')}\n`;
     md += `\n## Framer Motion (\`motion/react\`) — ${conMotion.length} archivos\n\n${conMotion.map((f) => `- \`${corto(f)}\``).join('\n')}\n`;
     md += `\n## Módulo Dashboard (Resumen)\n
-\`DashboardPage.jsx\` carga en paralelo \`/api/reportes/{resumen, libros-mas-vendidos, ventas-por-estado, reservas-por-estado, ventas-por-mes, ventas-por-dia, indicadores-ventas, stock-bajo}\` y \`GET /api/libros\` (los tres últimos de reportes con \`.catch\` para no bloquear). Componentes: \`StatCard\`/\`MiniStat\`, \`MejorRegistro\`, \`SalesChart\` (30 días / 12 meses, métrica, tabla), \`TopBooks\`, \`StatusDonut\` (barra apilada de estados), \`StockBajo\`, \`RecentBooks\`; utilidades en \`graficoUtils.js\`.
+\`DashboardPage.jsx\` carga en paralelo \`/api/reportes/{resumen, libros-mas-vendidos, ventas-por-estado, ventas-por-mes, ventas-por-dia, indicadores-ventas}\`, \`GET /api/inventario/stock-bajo\` y \`GET /api/libros\`. Los complementarios pueden fallar sin bloquear el resumen. Componentes: \`StatCard\`/\`MiniStat\`, \`MejorRegistro\`, \`SalesChart\`, \`TopBooks\`, \`StatusDonut\`, \`StockBajo\`, \`RecentBooks\`; utilidades en \`graficoUtils.js\`. No muestra ni consulta reservas.
 `;
     escribir('03-FRONTEND-MAP.md', md);
 }
@@ -335,7 +334,6 @@ Fuentes Inter y Source Serif 4 empaquetadas en \`assets/fonts/\` y declaradas en
 | Favoritos | favoritos, detalle_libro | \`/api/favoritos\` (GET, GET/POST/DELETE \`/:idLibro\`) |
 | Carrito | carrito (local) | — |
 | Compra + PayU | entrega_y_pago, mis_compras, pago_en_app | \`GET /api/zonas-delivery\`, \`POST /api/pagos/crear-orden\` → \`PagoEnAppScreen\` muestra WebCheckout con **webview_flutter** (enlaces externos con url_launcher). El retorno obliga a consultar \`GET /api/pagos/:orderId\`; también \`GET /api/ventas/mis-ventas\` y \`GET /api/ventas/:id/pago\`. |
-| Reservas históricas | reservas (pestaña Historial), perfil | \`GET /api/reservas/mis-reservas\`, \`DELETE /api/reservas/:id\`; crear está retirado (405) |
 | Perfil | perfil, editar_perfil, cambiar_password | \`/api/usuarios/perfil\` (GET/PUT), \`PUT /api/usuarios/foto\` (**image_picker**), \`PUT /api/usuarios/password\` |
 | 2FA | two_factor_setup/verify/disable | \`/api/auth/2fa/*\` |
 | Registro y cuenta | registro, verificacion_email, recuperar/reestablecer_contrasena | \`/api/auth/{registro, verificar-email, reenviar-codigo, solicitar-reseteo, reestablecer-contrasena}\` |
@@ -403,11 +401,11 @@ ${linea('POST', '/api/auth/solicitar-reseteo')} envía código por correo → ${
 - Descubrimiento: \`GET /api/libros/:id/relacionados\` consulta el autor y la categoría con los índices existentes y LIMIT 8 por grupo; entrega hasta 4 relacionados, 4 títulos adicionales del autor y 4 de categoría, sin duplicados. Solo libros activos, disponibilidad real y el mismo precio SQL del catálogo. La entrada directa a una ficha no carga el catálogo completo. Autor interactivo filtra \`/catalogo?autor=:id\`.
 - Favoritos de la ficha usan GET/POST/DELETE \`/api/favoritos/:idLibro\` con la sesión cliente y ownership JWT existentes; no hay persistencia nueva. Sin sesión, Cuenta permite retorno interno al libro. Compartir usa Web Share API o copiar enlace/WhatsApp/Facebook. SEO amplía los metadatos existentes y genera Book/Product con datos reales. No modifica pagos, inventario ni migraciones.
 
-## 5. Reservas históricas
-- Creación retirada: \`POST /api/reservas\` responde 405; completar/confirmar devuelve 409. No existen nuevas ventas origen reserva, ni cobros manuales.
-- Flutter conserva lectura histórica y cancelación: ${linea('DELETE', '/api/reservas/:id')}.
-- React solo consulta y cancela activas: ${linea('PUT', '/api/reservas/:id/estado')}. El modelo bloquea la reserva y libera stock una sola vez.
-- El job cancela reservas vencidas cada 5 min (\`reservaModel.cancelarVencidas\`).
+## 5. Retiro total de Reservas
+- API, panel y Flutter no ofrecen creación, lectura ni cancelación. Los namespaces antiguos \`/api/reservas\` y \`/api/reportes/reservas-por-estado\` exigen JWT y responden 410 sin consultar datos.
+- Migración de datos \`042_purga_reservas.sql\`: purga reservas y su historial, libera solo apartados activos sin venta vinculada y registra el kardex en la misma transacción. Se aplica una sola vez y queda registrada en \`migraciones_datos\`.
+- La tabla vacía se mantiene por compatibilidad con migraciones anteriores. Los marcadores \`ventas.origen\`/\`id_reserva\` conservan la protección de ventas históricas; no se borran ventas ni comprobantes.
+- La ruta web antigua redirige al Dashboard. La pestaña móvil ahora abre Mis compras, sin llamadas al módulo retirado.
 
 ## 6. Catálogo e inventario
 - Lectura pública compartida: ${linea('GET', '/api/libros')}.
@@ -418,7 +416,7 @@ ${linea('POST', '/api/auth/solicitar-reseteo')} envía código por correo → ${
 \`DashboardPage\` → ${E.filter(e => e.path.startsWith('/api/reportes/')).length} endpoints \`/api/reportes/*\`, catálogo e inventario de stock bajo → \`reporte.model\` y modelos correspondientes (consultas agregadas).
 
 ## 8. Auditoría
-Las operaciones de escritura registran en \`historial_operaciones\` (\`historial.model#crear\`). Historial lo consulta con \`GET /api/historial\`. Las notificaciones del Topbar consultan pagos, reservas y stock bajo cada 60 s mientras la pestaña está visible y al volver a ella.
+Las operaciones de escritura registran en \`historial_operaciones\` (\`historial.model#crear\`). Historial lo consulta con \`GET /api/historial\`. Las notificaciones del Topbar consultan pagos y stock bajo cada 60 s mientras la pestaña está visible y al volver a ella.
 `;
     escribir('06-DATA-FLOW.md', md);
 }
@@ -491,7 +489,7 @@ Ejemplos de caminos:\n\n${H.flutter.ciclos.slice(0, 4).map((c) => `- ${c.map(cor
         if (/\/utils\//.test(f) && f.startsWith('backend')) return `Utilidad backend ${n}`;
         if (/\/services\//.test(f) && f.startsWith('backend')) return `Servicio de integración ${n}`;
         if (/\/config\//.test(f) && f.startsWith('backend')) return `Configuración ${n}`;
-        if (/\/jobs\//.test(f)) return 'Tareas periódicas de limpieza (reservas vencidas, ventas abandonadas)';
+        if (/\/jobs\//.test(f)) return 'Reconciliación de pagos y limpieza de ventas abandonadas';
         if (/Service\.js$/.test(f)) return `Servicio HTTP del panel (${n})`;
         if (/Page\.jsx$/.test(f)) return `Página del panel: ${n.replace('Page', '')}`;
         if (/Modal\.jsx$/.test(f)) return `Modal: ${n}`;
@@ -578,7 +576,7 @@ ${MODULOS.map(([n, b, r, f]) => `| ${n} | \`/api/${b}\` | ${r} | ${f} |`).join('
 | Cadena ruta → controlador → modelo → tabla | \`02-BACKEND-MAP.md\` |
 | Página/servicio del panel que llama a un endpoint | \`03-FRONTEND-MAP.md\` |
 | Pantalla Flutter que llama a un endpoint | \`04-FLUTTER-MAP.md\` |
-| Flujos completos (login, venta, pago, reserva) | \`06-DATA-FLOW.md\` |
+| Flujos completos (login, venta, pago y retiro de reservas) | \`06-DATA-FLOW.md\` |
 | Paquetes, ciclos y código posiblemente no usado | \`07-DEPENDENCIES.md\` |
 | Índice por archivo (imports, usado por, endpoints) | \`08-CODE-INDEX.json\` |
 | Diagramas Mermaid | \`graphs/*.mmd\` |
@@ -768,23 +766,21 @@ ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps
     P->>V: POST /api/comprobantes/:id/enviar-email
     Note over P: Flutter solo lee: GET /api/ventas/mis-ventas y GET /api/ventas/:id/pago`);
 
-    G('reservations-flow', `sequenceDiagram
+    G('reservations-retirement', `sequenceDiagram
     autonumber
-    participant F as Flutter · historial de reservas
-    participant R as React · ReservasPage
-    participant API as /api/reservas (reserva.controller)
-    participant RM as reserva.model
+    participant B as Arranque del backend
+    participant M as Migración de datos 042
     participant DB as PostgreSQL
-    participant J as jobs/limpieza (cada 5 min)
-    F->>API: POST /api/reservas (JWT)
-    API-->>F: 405 creación retirada
-    F->>API: GET /api/reservas/mis-reservas
-    F->>API: DELETE /api/reservas/:id (cancelar, solo dueño)
-    R->>API: GET /api/reservas (admin)
-    R->>API: PUT /api/reservas/:id/estado (solo cancelar)
-    API->>RM: cancelar bajo bloqueo, stock una sola vez
-    RM->>DB: UPDATE reserva + inventario + kardex atómicos
-    J->>RM: cancelarVencidas()`);
+    participant A as APK antiguo
+    participant API as Contrato retirado
+    B->>M: aplicar una sola vez con advisory lock
+    M->>DB: bloquear reservas y ventas
+    M->>DB: liberar apartados activos sin venta, registrar kardex
+    M->>DB: borrar reservas e historial del módulo
+    M->>DB: registrar 042 y confirmar transacción
+    Note over M,DB: fallo revierte todo; ventas y comprobantes permanecen
+    A->>API: petición JWT al namespace antiguo
+    API-->>A: 410 módulo eliminado, sin datos`);
 
     G('payments-flow', `sequenceDiagram
     autonumber

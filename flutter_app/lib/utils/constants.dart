@@ -109,11 +109,6 @@ class Constants {
       'https://libreria.my/libro-de-reclamaciones';
 
   // ---------------------------------------------------------------------------
-  // Rutas de reservas (solo cliente)
-  // ---------------------------------------------------------------------------
-  static const String reservasPath = '/reservas';
-
-  // ---------------------------------------------------------------------------
   // Rutas de favoritos / lista de deseos (solo cliente)
   // ---------------------------------------------------------------------------
   static const String favoritosPath = '/favoritos';

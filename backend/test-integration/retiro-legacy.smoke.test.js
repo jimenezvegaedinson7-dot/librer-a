@@ -6,7 +6,6 @@ const path = require('node:path');
 const jwt = require('jsonwebtoken');
 const pool = require('../src/config/database');
 const ventas = require('../src/models/venta.model');
-const reservas = require('../src/models/reserva.model');
 const comprobantes = require('../src/models/comprobante.model');
 
 // Los avisos por correo se envían en segundo plano: antes de contar se espera
@@ -85,21 +84,21 @@ test('retiro legacy: HTTP + PostgreSQL desechable + SMTP local', async t => {
         await t.test('POST reservas retirado para admin y cliente: ninguna fila, venta ni stock nuevo', async () => {
             const antes = await stock(), n = await conteoVentas();
             const total = Number((await pool.query('SELECT count(*) AS n FROM reservas WHERE id_usuario=?', [usuarios[1]]))[0][0].n);
-            for (const token of [admin, cliente]) assert.equal((await http('/reservas', { id_libro: libros[0], cantidad: 1, id_usuario_cliente: usuarios[1] }, 'POST', token)).status, 405);
+            for (const token of [admin, cliente]) assert.equal((await http('/reservas', { id_libro: libros[0], cantidad: 1, id_usuario_cliente: usuarios[1] }, 'POST', token)).status, 410);
             assert.equal(await stock(), antes); assert.equal(await conteoVentas(), n);
             assert.equal(Number((await pool.query('SELECT count(*) AS n FROM reservas WHERE id_usuario=?', [usuarios[1]]))[0][0].n), total);
         });
         for (const metodo of ['efectivo', 'yape', 'plin', 'transferencia', 'tarjeta', 'payu']) {
             await t.test(`reserva + ${metodo}: completar bloqueado sin venta`, async () => {
                 const n = await conteoVentas(), s = await stock();
-                assert.equal((await http(`/reservas/${r}/estado`, { estado: 'completada', metodo_pago: metodo }, 'PUT')).status, 409);
+                assert.equal((await http(`/reservas/${r}/estado`, { estado: 'completada', metodo_pago: metodo }, 'PUT')).status, 410);
                 assert.equal(await conteoVentas(), n); assert.equal(await stock(), s);
-                assert.equal((await reservas.obtenerPorId(r)).estado, 'confirmada');
+                assert.equal((await pool.query('SELECT estado FROM reservas WHERE id_reserva=?',[r]))[0][0].estado, 'confirmada');
             });
         }
-        await t.test('históricos legibles; id_reserva nunca habilita cobro, entrega, comprobante o devolución', async () => {
-            assert.equal((await http(`/reservas/${r}`)).status, 200);
-            assert.ok((await http('/reservas/mis-reservas', undefined, 'GET', cliente)).body.data.some(v => v.id_reserva === r));
+        await t.test('reservas no legibles; el marcador histórico nunca habilita cobro, entrega, comprobante o devolución', async () => {
+            assert.equal((await http(`/reservas/${r}`)).status, 410);
+            assert.equal((await http('/reservas/mis-reservas', undefined, 'GET', cliente)).status, 410);
             for (const origen of ['panel', 'reserva']) {
                 const [v] = await pool.query("INSERT INTO ventas(id_usuario,total,estado,origen,id_reserva,metodo_pago,tipo_entrega) VALUES (?,25,'pagada',?,?,'efectivo','tienda')", [usuarios[1], origen, r]);
                 ventaIds.push(v.insertId);
@@ -112,14 +111,14 @@ test('retiro legacy: HTTP + PostgreSQL desechable + SMTP local', async t => {
                 await assert.rejects(ventas.crear({ origen, id_reserva: r }), e => e.status === 409);
             }
         });
-        await t.test('cancelación histórica concurrente libera stock exactamente una vez', async () => {
+        await t.test('las rutas antiguas concurrentes no modifican stock ni registros', async () => {
             const antes = await stock();
             const results = await Promise.all([1, 2].map(() => http(`/reservas/${r}`, undefined, 'DELETE', cliente)));
-            assert.deepEqual(results.map(v => v.status).sort(), [200, 409]);
-            assert.equal(await stock(), antes + 1);
-            assert.equal((await http(`/reservas/${r}`, undefined, 'DELETE', cliente)).status, 409);
-            assert.equal(await stock(), antes + 1);
-            assert.equal((await pool.query("SELECT count(*) AS n FROM movimientos_inventario WHERE id_libro=? AND motivo='cancelacion_reserva'", [libros[0]]))[0][0].n, '1');
+            assert.deepEqual(results.map(v => v.status).sort(), [410, 410]);
+            assert.equal(await stock(), antes);
+            assert.equal((await http(`/reservas/${r}`, undefined, 'DELETE', cliente)).status, 410);
+            assert.equal(await stock(), antes);
+            assert.equal((await pool.query("SELECT count(*) AS n FROM movimientos_inventario WHERE id_libro=? AND motivo='cancelacion_reserva'", [libros[0]]))[0][0].n, '0');
         });
         for (const estado of ['pendiente', 'preparando', 'cancelado', 'en_camino', 'listo_recojo']) {
             await t.test(`Ventas no confirma entrega con logística ${estado}`, async () => {

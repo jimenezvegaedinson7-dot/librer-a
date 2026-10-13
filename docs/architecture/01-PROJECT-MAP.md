@@ -1,6 +1,6 @@
 # Mapa del proyecto C:\libreria
 
-> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-13 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Visión general
@@ -13,11 +13,11 @@
 
 Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `backups/`, scripts `*.ps1` de utilidades locales.
 
-## Cifras (análisis 2026-10-12)
+## Cifras (análisis 2026-10-13)
 
-- Backend: **178** archivos JS (incluye tests y scripts) · **127** endpoints · 23 routers · 25 controladores · 22 modelos · **21 tablas en esquema canónico** (22 declaradas al incluir migraciones y arranque).
-- Frontend: **210** archivos JS/JSX · 38 rutas · 26 archivos de servicio.
-- Flutter: **78** archivos Dart · 38 métodos en ApiService · 22 pantallas/widgets con llamadas a la API.
+- Backend: **175** archivos JS (incluye tests y scripts) · **120** endpoints · 22 routers · 24 controladores · 21 modelos · **21 tablas en esquema canónico** (22 declaradas al incluir migraciones y arranque).
+- Frontend: **206** archivos JS/JSX · 38 rutas · 25 archivos de servicio.
+- Flutter: **76** archivos Dart · 35 métodos en ApiService · 21 pantallas/widgets con llamadas a la API.
 
 ## Módulos de negocio
 
@@ -30,7 +30,6 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 | Categorías | `/api/categorias` | features/categorias | — |
 | Inventario | `/api/inventario` | features/inventario | — |
 | Pedidos | `/api/pedidos` | features/pedidos | — |
-| Reservas históricas (creación retirada) | `/api/reservas` | features/reservas (consulta/cancelación) | historial de reservas (consulta/cancelación) |
 | Ventas | `/api/ventas` | features/ventas · public-site/tienda/MisComprasPage | mis compras |
 | Pagos (PayU) | `/api/pagos` | features/pagos · public-site/tienda/CheckoutPage | entrega y pago, mis compras |
 | Comprobantes | `/api/comprobantes` | features/comprobantes · ventas/EmitirComprobanteModal | — |
@@ -52,7 +51,7 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 | Cadena ruta → controlador → modelo → tabla | `02-BACKEND-MAP.md` |
 | Página/servicio del panel que llama a un endpoint | `03-FRONTEND-MAP.md` |
 | Pantalla Flutter que llama a un endpoint | `04-FLUTTER-MAP.md` |
-| Flujos completos (login, venta, pago, reserva) | `06-DATA-FLOW.md` |
+| Flujos completos (login, venta, pago y retiro de reservas) | `06-DATA-FLOW.md` |
 | Paquetes, ciclos y código posiblemente no usado | `07-DEPENDENCIES.md` |
 | Índice por archivo (imports, usado por, endpoints) | `08-CODE-INDEX.json` |
 | Diagramas Mermaid | `graphs/*.mmd` |

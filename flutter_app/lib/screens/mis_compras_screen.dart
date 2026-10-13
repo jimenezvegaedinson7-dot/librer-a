@@ -22,7 +22,9 @@ import 'pago_en_app_screen.dart';
 /// Pantalla "Mis compras": lista las ventas del cliente desde
 /// `GET /ventas/mis-ventas`.
 class MisComprasScreen extends StatefulWidget {
-  const MisComprasScreen({super.key});
+  final bool embedded;
+  final bool activa;
+  const MisComprasScreen({super.key, this.embedded = false, this.activa = true});
 
   @override
   State<MisComprasScreen> createState() => MisComprasScreenState();
@@ -30,7 +32,7 @@ class MisComprasScreen extends StatefulWidget {
 
 class MisComprasScreenState extends State<MisComprasScreen>
     with WidgetsBindingObserver {
-  bool _loading = true;
+  bool _loading = false;
   bool _cargando = false;
   String? _error;
   List<Venta> _ventas = const [];
@@ -42,18 +44,26 @@ class MisComprasScreenState extends State<MisComprasScreen>
     WidgetsBinding.instance.addObserver(this);
     _timer = Timer.periodic(const Duration(seconds: 60), (_) {
       if (mounted &&
+          widget.activa &&
           ModalRoute.of(context)?.isCurrent == true &&
           WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
         _cargarVentas();
       }
     });
-    _cargarVentas();
+    if (widget.activa) _cargarVentas();
+  }
+
+  @override
+  void didUpdateWidget(covariant MisComprasScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.activa && !oldWidget.activa) _cargarVentas();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed &&
         mounted &&
+        widget.activa &&
         ModalRoute.of(context)?.isCurrent == true) {
       _cargarVentas();
     }
@@ -68,14 +78,14 @@ class MisComprasScreenState extends State<MisComprasScreen>
 
   /// Recarga las compras desde el backend.
   ///
-  /// Se invoca desde [HomeScreen] cada vez que se entra a la pestaña "Mis
-  /// compras" (la pantalla vive en un IndexedStack y no se vuelve a construir).
+  /// Home la conserva en un IndexedStack: activar la pestaña actualiza los
+  /// pedidos; volver a tocar Compras solicita otra recarga sin perder el estado.
   Future<void> recargar() async {
     await _cargarVentas();
   }
 
   Future<void> _cargarVentas() async {
-    if (_cargando) return;
+    if (!mounted || !widget.activa || _cargando) return;
     _cargando = true;
     setState(() {
       _loading = _ventas.isEmpty;
@@ -98,8 +108,8 @@ class MisComprasScreenState extends State<MisComprasScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Abierta encima de otra pantalla (desde Perfil o Reservas): flecha para volver.
-    final apilada = Navigator.of(context).canPop();
+    // El acceso independiente desde Perfil conserva la flecha para volver.
+    final apilada = !widget.embedded && Navigator.of(context).canPop();
     return Scaffold(
       appBar: apilada ? AppBar(toolbarHeight: 52) : null,
       body: SafeArea(
@@ -114,7 +124,7 @@ class MisComprasScreenState extends State<MisComprasScreen>
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
                   child: AppPageHeader(
-                    eyebrow: 'Historial',
+                    eyebrow: 'Pedidos',
                     title: 'Mis compras',
                     subtitle: _ventas.isEmpty
                         ? null

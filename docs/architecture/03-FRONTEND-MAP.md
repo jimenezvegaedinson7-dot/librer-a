@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web
 
-> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-13 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -41,7 +41,7 @@
 | `/autores` | AutoresPage | `features/autores/AutoresPage.jsx` |
 | `/categorias` | CategoriasPage | `features/categorias/CategoriasPage.jsx` |
 | `/inventario` | InventarioPage | `features/inventario/InventarioPage.jsx` |
-| `/reservas` | ReservasPage | `features/reservas/ReservasPage.jsx` |
+| `/reservas` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
 | `/pedidos` | PedidosPage | `features/pedidos/PedidosPage.jsx` |
 | `/ventas` | VentasPage | `features/ventas/VentasPage.jsx` |
 | `/comprobantes` | ComprobantesPage | `features/comprobantes/ComprobantesPage.jsx` |
@@ -82,8 +82,8 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/comprobantes/ComprobanteViewModal.jsx` | `GET /api/comprobantes/:param`<br>`GET /api/empresa` |
 | `features/comprobantes/ComprobantesPage.jsx` | `GET /api/comprobantes`<br>`GET /api/comprobantes/resumen`<br>`POST /api/comprobantes/:param/enviar-email` |
 | `features/configuracion/EmpresaPage.jsx` | `GET /api/empresa`<br>`PUT /api/empresa` |
-| `features/dashboard/DashboardPage.jsx` | `GET /api/inventario/stock-bajo`<br>`GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/reservas-por-estado`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
-| `features/dashboard/dashboardService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/reservas-por-estado`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
+| `features/dashboard/DashboardPage.jsx` | `GET /api/inventario/stock-bajo`<br>`GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
+| `features/dashboard/dashboardService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
 | `features/historial/HistorialPage.jsx` | `GET /api/historial` |
 | `features/inventario/InventarioEditModal.jsx` | `PUT /api/inventario/libro/:param` |
 | `features/inventario/InventarioForm.jsx` | `POST /api/inventario` |
@@ -95,14 +95,12 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/libros/LibroForm.jsx` | `GET /api/libros/:param`<br>`POST /api/libros` |
 | `features/libros/LibrosPage.jsx` | `DELETE /api/libros/:param`<br>`GET /api/inventario`<br>`GET /api/libros`<br>`GET /api/libros/:param` |
 | `features/libros/useCatalogo.js` | `GET /api/autores`<br>`GET /api/categorias` |
-| `features/notificaciones/notificacionesService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/pagos`<br>`GET /api/reservas` |
+| `features/notificaciones/notificacionesService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/pagos` |
 | `features/pagos/PagosPage.jsx` | `GET /api/pagos`<br>`GET /api/pagos/resumen`<br>`GET /api/ventas` |
 | `features/pedidos/PedidosPage.jsx` | `GET /api/pedidos`<br>`GET /api/pedidos/:param`<br>`PUT /api/pedidos/:param/estado` |
 | `features/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `features/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
 | `features/reportes/useVentasDiarias.js` | `GET /api/reportes/ventas-por-dia` |
-| `features/reservas/ReservaEstadoModal.jsx` | `PUT /api/reservas/:param/estado` |
-| `features/reservas/ReservasPage.jsx` | `GET /api/reservas`<br>`GET /api/reservas/:param` |
 | `features/tarifas/TarifaEditModal.jsx` | `POST /api/zonas-delivery`<br>`PUT /api/zonas-delivery/:param` |
 | `features/tarifas/TarifasEnvioPage.jsx` | `GET /api/zonas-delivery/todos` |
 | `features/usuarios/UsuariosPage.jsx` | `GET /api/usuarios`<br>`PATCH /api/usuarios/:param` |
@@ -177,7 +175,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/dashboard/dashboardService.js` | `obtenerResumen` | `GET /api/reportes/resumen` (vía features/reportes/reportesService.js#obtenerResumen) |
 | `features/dashboard/dashboardService.js` | `obtenerLibrosMasVendidos` | `GET /api/reportes/libros-mas-vendidos` (vía features/reportes/reportesService.js#obtenerLibrosMasVendidos) |
 | `features/dashboard/dashboardService.js` | `obtenerVentasPorEstado` | `GET /api/reportes/ventas-por-estado` (vía features/reportes/reportesService.js#obtenerVentasPorEstado) |
-| `features/dashboard/dashboardService.js` | `obtenerReservasPorEstado` | `GET /api/reportes/reservas-por-estado` (vía features/reportes/reportesService.js#obtenerReservasPorEstado) |
 | `features/dashboard/dashboardService.js` | `obtenerVentasPorMes` | `GET /api/reportes/ventas-por-mes` (vía features/reportes/reportesService.js#obtenerVentasPorMes) |
 | `features/dashboard/dashboardService.js` | `obtenerVentasPorDia` | `GET /api/reportes/ventas-por-dia` (vía features/reportes/reportesService.js#obtenerVentasPorDia) |
 | `features/dashboard/dashboardService.js` | `obtenerIndicadoresVentas` | `GET /api/reportes/indicadores-ventas` (vía features/reportes/reportesService.js#obtenerIndicadoresVentas) |
@@ -209,14 +206,10 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `features/reportes/reportesService.js` | `obtenerResumen` | `GET /api/reportes/resumen` |
 | `features/reportes/reportesService.js` | `obtenerLibrosMasVendidos` | `GET /api/reportes/libros-mas-vendidos` |
 | `features/reportes/reportesService.js` | `obtenerVentasPorEstado` | `GET /api/reportes/ventas-por-estado` |
-| `features/reportes/reportesService.js` | `obtenerReservasPorEstado` | `GET /api/reportes/reservas-por-estado` |
 | `features/reportes/reportesService.js` | `obtenerStockBajo` | `GET /api/inventario/stock-bajo` |
 | `features/reportes/reportesService.js` | `obtenerVentasPorMes` | `GET /api/reportes/ventas-por-mes` |
 | `features/reportes/reportesService.js` | `obtenerVentasPorDia` | `GET /api/reportes/ventas-por-dia` |
 | `features/reportes/reportesService.js` | `obtenerIndicadoresVentas` | `GET /api/reportes/indicadores-ventas` |
-| `features/reservas/reservasService.js` | `listarReservas` | `GET /api/reservas` |
-| `features/reservas/reservasService.js` | `obtenerReserva` | `GET /api/reservas/:param` |
-| `features/reservas/reservasService.js` | `actualizarEstadoReserva` | `PUT /api/reservas/:param/estado` |
 | `features/tarifas/tarifasService.js` | `listarZonasDelivery` | `GET /api/zonas-delivery/todos` |
 | `features/tarifas/tarifasService.js` | `guardarZonaDelivery` | `PUT /api/zonas-delivery/:param`<br>`POST /api/zonas-delivery` |
 | `features/usuarios/usuariosService.js` | `listarUsuarios` | `GET /api/usuarios` |
@@ -266,28 +259,28 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | Archivo | Usado por (nº de archivos) |
 |---|---|
 | `components/catalogo/PortadaCatalogo.jsx` | 3 |
-| `components/providers/ToastProvider.jsx` | 17 |
-| `components/ui/Acciones.jsx` | 14 |
-| `components/ui/Alert.jsx` | 34 |
-| `components/ui/Badge.jsx` | 23 |
-| `components/ui/Button.jsx` | 48 |
-| `components/ui/Card.jsx` | 20 |
+| `components/providers/ToastProvider.jsx` | 16 |
+| `components/ui/Acciones.jsx` | 13 |
+| `components/ui/Alert.jsx` | 33 |
+| `components/ui/Badge.jsx` | 22 |
+| `components/ui/Button.jsx` | 46 |
+| `components/ui/Card.jsx` | 19 |
 | `components/ui/Celebracion.jsx` | 2 |
 | `components/ui/ConfirmarAccion.jsx` | 3 |
 | `components/ui/ConfirmarEliminacion.jsx` | 4 |
-| `components/ui/DataTable.jsx` | 15 |
-| `components/ui/EmptyState.jsx` | 17 |
+| `components/ui/DataTable.jsx` | 14 |
+| `components/ui/EmptyState.jsx` | 16 |
 | `components/ui/ErrorBoundary.jsx` | 1 |
-| `components/ui/EstadoModal.jsx` | 1 |
-| `components/ui/Ficha.jsx` | 10 |
-| `components/ui/Form.jsx` | 36 |
+| `components/ui/EstadoModal.jsx` | 0 |
+| `components/ui/Ficha.jsx` | 9 |
+| `components/ui/Form.jsx` | 35 |
 | `components/ui/FormularioAlta.jsx` | 3 |
-| `components/ui/Indicadores.jsx` | 13 |
-| `components/ui/Modal.jsx` | 29 |
-| `components/ui/PageHeader.jsx` | 16 |
-| `components/ui/Pagination.jsx` | 13 |
+| `components/ui/Indicadores.jsx` | 12 |
+| `components/ui/Modal.jsx` | 28 |
+| `components/ui/PageHeader.jsx` | 15 |
+| `components/ui/Pagination.jsx` | 12 |
 | `components/ui/Spinner.jsx` | 4 |
-| `components/ui/TableSkeleton.jsx` | 17 |
+| `components/ui/TableSkeleton.jsx` | 16 |
 | `public-site/components/ActualizarApp.jsx` | 1 |
 | `public-site/components/BarraMovil.jsx` | 1 |
 | `public-site/components/CierreDescarga.jsx` | 1 |
@@ -352,4 +345,4 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 
 ## Módulo Dashboard (Resumen)
 
-`DashboardPage.jsx` carga en paralelo `/api/reportes/{resumen, libros-mas-vendidos, ventas-por-estado, reservas-por-estado, ventas-por-mes, ventas-por-dia, indicadores-ventas, stock-bajo}` y `GET /api/libros` (los tres últimos de reportes con `.catch` para no bloquear). Componentes: `StatCard`/`MiniStat`, `MejorRegistro`, `SalesChart` (30 días / 12 meses, métrica, tabla), `TopBooks`, `StatusDonut` (barra apilada de estados), `StockBajo`, `RecentBooks`; utilidades en `graficoUtils.js`.
+`DashboardPage.jsx` carga en paralelo `/api/reportes/{resumen, libros-mas-vendidos, ventas-por-estado, ventas-por-mes, ventas-por-dia, indicadores-ventas}`, `GET /api/inventario/stock-bajo` y `GET /api/libros`. Los complementarios pueden fallar sin bloquear el resumen. Componentes: `StatCard`/`MiniStat`, `MejorRegistro`, `SalesChart`, `TopBooks`, `StatusDonut`, `StockBajo`, `RecentBooks`; utilidades en `graficoUtils.js`. No muestra ni consulta reservas.

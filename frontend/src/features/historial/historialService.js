@@ -2,7 +2,8 @@ import client from '../../lib/api/client';
 
 export async function obtenerHistorial(limite) {
     const res = await client.get('/historial');
-    const registros = Array.isArray(res?.data) ? res.data : [];
+    const registros = (Array.isArray(res?.data) ? res.data : [])
+        .filter(item => !['reserva', 'reservas'].includes(String(item.modulo || '').trim().toLowerCase()));
     if (typeof limite === 'number' && limite > 0) {
         return registros.slice(0, limite);
     }

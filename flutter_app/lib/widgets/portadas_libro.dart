@@ -11,7 +11,7 @@ import 'presionable.dart';
 import 'estado_chip.dart';
 
 // Portadas "sueltas" (sin tarjeta) con aspecto de libro, compartidas por
-// Inicio, Catálogo, Favoritos y Reservas.
+// Inicio, Catálogo y Favoritos.
 
 /// Hasta tres portadas de la categoría abiertas en abanico (como el banner).
 class AbanicoCategoria extends StatelessWidget {

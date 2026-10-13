@@ -6,8 +6,8 @@ import 'carrito_badge.dart';
 
 /// Índices de las pestañas de la navegación principal.
 ///
-/// Inicio · Catálogo · Carrito · Reservas · Perfil.
-enum AppTab { inicio, libros, carrito, reservas, perfil }
+/// Inicio · Catálogo · Carrito · Compras · Perfil.
+enum AppTab { inicio, libros, carrito, compras, perfil }
 
 /// Navegación principal con identidad editorial de la librería.
 ///
@@ -47,10 +47,10 @@ class AppBottomNavigation extends StatelessWidget {
       label: 'Carrito',
     ),
     (
-      tab: AppTab.reservas,
-      icon: Icons.bookmark_outline_rounded,
-      activo: Icons.bookmark_rounded,
-      label: 'Historial',
+      tab: AppTab.compras,
+      icon: Icons.receipt_long_outlined,
+      activo: Icons.receipt_long_rounded,
+      label: 'Compras',
     ),
     (
       tab: AppTab.perfil,

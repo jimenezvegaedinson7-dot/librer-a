@@ -124,7 +124,7 @@ for (const width of [390, 1440]) {
 test('las demás secciones usan los gráficos comunes y no dibujan ondas decorativas', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 1000 });
     const control = await preparar(page);
-    for (const ruta of ['/libros', '/autores', '/categorias', '/inventario', '/pedidos', '/reservas', '/historial', '/reclamaciones', '/usuarios?vista=clientes', '/anuncios']) {
+    for (const ruta of ['/libros', '/autores', '/categorias', '/inventario', '/pedidos', '/historial', '/reclamaciones', '/usuarios?vista=clientes', '/anuncios']) {
         await page.goto(ruta);
         if (ruta === '/anuncios') await page.getByRole('tab', { name: 'Anuncios en video' }).click();
         const indicadores = page.locator('.indicadores');

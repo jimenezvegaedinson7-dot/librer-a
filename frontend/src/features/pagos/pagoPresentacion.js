@@ -46,8 +46,9 @@ const COBRADAS = ['pagada', 'entregada'];
 
 // Une el pago con su venta y deja listos los textos a mostrar.
 export function enriquecerPago(pago, venta) {
-    const origen = venta?.origen || (pago.external_reference ? 'app' : 'panel');
-    const enTienda = origen === 'panel' || origen === 'reserva';
+    const origen = venta?.origen || pago.origen || (pago.external_reference ? 'app' : 'panel');
+    const idReservaHistorica = venta?.id_reserva ?? pago.id_reserva;
+    const enTienda = origen === 'panel' || origen === 'reserva' || Boolean(idReservaHistorica);
     const estadoVenta = pago.estado_venta;
     const cliente = pago.cliente || {};
 
@@ -82,7 +83,7 @@ export function enriquecerPago(pago, venta) {
         provincia: venta?.provincia,
         agencia: venta?.agencia,
         origen,
-        origen_texto: textoOrigen({ origen, id_reserva: venta?.id_reserva, canal_compra: pago.canal_compra ?? venta?.canal_compra }),
+        origen_texto: textoOrigen({ origen, id_reserva: idReservaHistorica, canal_compra: pago.canal_compra ?? venta?.canal_compra }),
         cliente: { ...cliente, nombre_completo: nombre, email: correo },
         metodo_pago: enTienda ? textoMetodoPago(venta?.metodo_pago) || 'Cobro en tienda' : 'PayU',
         referencia_pago: enTienda ? venta?.referencia_pago || null : null,

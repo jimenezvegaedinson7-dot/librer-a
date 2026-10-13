@@ -97,9 +97,12 @@ test('un claim de rol retirado no permite consultar ventas, pagos o reservas aje
     const referencia=crypto.randomUUID(); await pool.query('UPDATE ventas SET external_reference=? WHERE id_venta=?',[referencia,ventas[0]]);
     const [r]=await pool.query('INSERT INTO reservas (id_usuario,id_libro,cantidad) VALUES (?,?,1)',[cliente,libro]);
     try {
-        for(const ruta of [`/api/ventas/${ventas[0]}`,`/api/ventas/${ventas[0]}/pago`,`/api/pagos/${referencia}`,`/api/reservas/${r.insertId}`]) {
+        for(const ruta of [`/api/ventas/${ventas[0]}`,`/api/ventas/${ventas[0]}/pago`,`/api/pagos/${referencia}`]) {
             const res=await fetch(`${process.env.TEST_BASE_URL}${ruta}`,{headers:{Authorization:`Bearer ${legacy}`}}); assert.equal(res.status,403,ruta);
         }
+        const retirada=await fetch(`${process.env.TEST_BASE_URL}/api/reservas/${r.insertId}`,{headers:{Authorization:`Bearer ${legacy}`}});
+        assert.equal(retirada.status,410);
+        assert.equal(Object.hasOwn(await retirada.json(),'data'),false);
     } finally { await pool.query('DELETE FROM reservas WHERE id_reserva=?',[r.insertId]); }
 });
 test('ventas legacy panel/reserva solo lectura: estado, reembolso y emisión bloqueados',async () => {

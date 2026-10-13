@@ -94,15 +94,10 @@ void main() {
             final limite = tester.getRect(barra);
             expect(pintado.left, greaterThanOrEqualTo(limite.left));
             expect(pintado.right, lessThanOrEqualTo(limite.right + 0.1));
-            final reservar = find.descendant(
-              of: barra,
-              matching: find.byType(OutlinedButton),
-            );
             final anadir = find.descendant(
               of: barra,
               matching: find.byType(FilledButton),
             );
-            expect(reservar, findsNothing);
             expect(anadir, findsOneWidget);
             expect(tester.getSize(anadir).height, greaterThanOrEqualTo(48));
             expect(
@@ -259,7 +254,6 @@ void main() {
     expect(find.text('Ficha del libro'), findsOneWidget);
     expect(find.text('Cien años de soledad'), findsOneWidget);
     expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
-    expect(find.text('Reservar'), findsNothing);
     expect(find.text('Añadir'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -287,7 +281,10 @@ void main() {
 
     expect(find.text('Inicio'), findsOneWidget);
     expect(find.text('Catálogo'), findsOneWidget);
-    expect(find.text('Historial'), findsOneWidget);
+    expect(find.text('Carrito'), findsOneWidget);
+    expect(find.text('Compras'), findsOneWidget);
+    expect(find.text('Perfil'), findsOneWidget);
+    expect(find.text('Historial'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

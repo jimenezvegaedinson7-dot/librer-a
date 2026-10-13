@@ -20,7 +20,7 @@ const estados = {
 
 // Cómo se cobró: PayU en pedidos de la app; en tienda, el medio anotado.
 function descripcionCobro(venta) {
-    if (venta.origen === 'panel' || venta.origen === 'reserva') {
+    if (venta.origen === 'panel' || venta.origen === 'reserva' || venta.id_reserva) {
         const metodo = textoMetodoPago(venta.metodo_pago) || 'Sin registrar';
         return venta.referencia_pago ? `${metodo} · N.º de operación ${venta.referencia_pago}` : metodo;
     }

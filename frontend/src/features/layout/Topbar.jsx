@@ -72,7 +72,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
         );
     }, [busqueda, usuario?.rol]);
 
-    // Solo eventos que requieren atención: pagos aprobados, reservas pendientes y stock bajo.
+    // Solo eventos que requieren atención: pagos aprobados y stock bajo.
     const cargarNotificaciones = async () => {
         try {
             setCargandoNotif(true);

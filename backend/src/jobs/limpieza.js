@@ -2,13 +2,10 @@
 // JOBS DE LIMPIEZA / MANTENIMIENTO
 // ============================================================
 // Se ejecuta cada 5 minutos:
-//   1. Cancela reservas vencidas (pendiente/confirmada que
-//      superaron fecha_vencimiento) y devuelve stock.
-//   2. Cancela órdenes de venta abandonadas (pendientes con
+// Cancela órdenes de venta abandonadas (pendientes con
 //      más de 30 minutos de antigüedad) y devuelve stock.
 // ============================================================
 
-const reservaModel = require('../models/reserva.model');
 const ventaModel = require('../models/venta.model');
 
 const INTERVALO_MS = 5 * 60 * 1000;
@@ -17,25 +14,6 @@ const INTERVALO_MS = 5 * 60 * 1000;
 // EJECUTAR LIMPIEZA
 // ========================================
 const ejecutarLimpieza = async () => {
-    // ========================================
-    // RESERVAS VENCIDAS
-    // ========================================
-    try {
-        const reservasCanceladas =
-            await reservaModel.cancelarVencidas();
-
-        if (reservasCanceladas > 0) {
-            console.log(
-                `[jobs] Reservas vencidas canceladas: ${reservasCanceladas}`
-            );
-        }
-    } catch (error) {
-        console.error(
-            '[jobs] Error al cancelar reservas vencidas:',
-            error.message
-        );
-    }
-
     // ========================================
     // VENTAS ABANDONADAS
     // ========================================

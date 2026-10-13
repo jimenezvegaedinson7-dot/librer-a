@@ -46,7 +46,7 @@ test('041: backfill de entrega en ventas canceladas (PostgreSQL real)', async (t
         await pool.query('DELETE FROM migraciones_datos WHERE nombre = ?', [ARCHIVO]).catch(() => {});
 
         await t.test('primera aplicación corrige solo las canceladas no entregadas y queda registrada', async () => {
-            const [resultado] = await aplicarMigracionesDatos(pool, { registro: silencio });
+            const [resultado] = await aplicarMigracionesDatos(pool, { lista: [ARCHIVO], registro: silencio });
             assert.equal(resultado.nombre, ARCHIVO);
             assert.equal(resultado.aplicada, true);
             assert.ok(resultado.filas >= 3, `se esperaban al menos 3 filas, hubo ${resultado.filas}`);
@@ -68,7 +68,7 @@ test('041: backfill de entrega en ventas canceladas (PostgreSQL real)', async (t
         });
 
         await t.test('es idempotente: el ejecutor no la repite y el SQL repetido no cambia filas', async () => {
-            const [segunda] = await aplicarMigracionesDatos(pool, { registro: silencio });
+            const [segunda] = await aplicarMigracionesDatos(pool, { lista: [ARCHIVO], registro: silencio });
             assert.deepEqual(segunda, { nombre: ARCHIVO, aplicada: false, filas: 0 });
             const sql = readFileSync(path.join(__dirname, '../database/migrations', ARCHIVO), 'utf8');
             const [filas] = await pool.query(sql);

@@ -24,7 +24,7 @@ import '../widgets/seccion_titulo.dart';
 import 'carrito_screen.dart';
 import 'libros_screen.dart';
 import 'perfil_screen.dart';
-import 'reservas_screen.dart';
+import 'mis_compras_screen.dart';
 
 /// Pantalla principal con navegación inferior entre las secciones del cliente.
 class HomeScreen extends StatefulWidget {
@@ -36,18 +36,18 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   AppTab _currentTab = AppTab.inicio;
-  int _reservasRefreshToken = 0;
+  final _comprasKey = GlobalKey<MisComprasScreenState>();
   String _nombreCliente = '';
 
   /// Enlace de Inicio con el Catálogo (categoría o buscador).
   final SolicitudCatalogo _solicitudCatalogo = SolicitudCatalogo();
 
   void _onTabSelected(AppTab tab) {
+    if (tab == AppTab.compras && _currentTab == tab) {
+      _comprasKey.currentState?.recargar();
+    }
     setState(() {
       _currentTab = tab;
-      if (tab == AppTab.reservas) {
-        _reservasRefreshToken += 1;
-      }
     });
     if (tab == AppTab.inicio) {
       // Refresca el saludo ("Hola, {nombre}") cada vez que se vuelve a la
@@ -108,7 +108,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             LibrosScreen(solicitud: _solicitudCatalogo),
             const CarritoScreen(embedded: true),
-            ReservasScreen(key: ValueKey(_reservasRefreshToken)),
+            MisComprasScreen(
+              key: _comprasKey,
+              embedded: true,
+              activa: _currentTab == AppTab.compras,
+            ),
             const PerfilScreen(),
           ],
         ),

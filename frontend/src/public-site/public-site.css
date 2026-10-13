@@ -475,6 +475,9 @@ html.lenis, html.lenis body { height: auto; }
 .app__telefonos { position: relative; z-index: 7; height: clamp(520px, 56vw, 700px); }
 .telefono { position: absolute; width: clamp(200px, 20vw, 280px); aspect-ratio: 390 / 844; border-radius: var(--r-telefono); padding: 11px; background: #0d0f0f; box-shadow: var(--sombra-telefono), inset 0 0 0 1.5px rgba(255, 255, 255, 0.18); }
 .telefono img { width: 100%; height: 100%; object-fit: cover; border-radius: calc(var(--r-telefono) - 11px); }
+/* Recortes del catálogo existente: la navegación antigua queda fuera del encuadre. */
+.sitio .telefono.telefono--catalogo, .sitio .vitrina__telefono.vitrina__telefono--catalogo { aspect-ratio: 390 / 700; }
+.sitio .telefono--catalogo img { object-position: top; }
 .telefono::before { content: ''; position: absolute; top: 19px; left: 50%; translate: -50% 0; width: 30%; height: 20px; border-radius: 20px; background: #0d0f0f; z-index: 1; }
 .telefono--1 { left: 30%; top: 4%; z-index: 9; }
 .telefono--2 { left: 2%; top: 17%; z-index: 8; scale: 0.9; filter: brightness(0.9); }

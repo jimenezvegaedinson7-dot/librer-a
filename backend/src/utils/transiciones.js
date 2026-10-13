@@ -1,14 +1,13 @@
 // ========================================
 // TRANSICIONES DE ESTADO UNIFICADAS
-// (ventas, reservas y estado de entrega)
+// (ventas y estado de entrega)
 // ========================================
 // Fuente única de verdad para las máquinas de estado. Los models
 // y controllers usan estos mapas + helpers en lugar de duplicar
 // tablas internas (FASE 5 — eliminar duplicación).
 //
-// Nota: una venta/reserva "entregada"/"completada" NO puede pasar
-// a "cancelada": el bien ya salió de la tienda / la reserva ya se
-// consumió. Una venta pagada o entregada solo se revierte como
+// Nota: una venta entregada NO puede pasar a cancelada: el bien
+// ya salió de la tienda. Una venta pagada o entregada se revierte como
 // "reembolsada" (devolución del dinero, con su nota de crédito), por
 // el flujo dedicado POST /api/ventas/:id/reembolso.
 // ========================================
@@ -31,20 +30,6 @@ const VENTA = {
     cancelada: [],
 
     reembolsada: []
-};
-
-const RESERVA = {
-    pendiente: [
-        'cancelada'
-    ],
-
-    confirmada: [
-        'cancelada'
-    ],
-
-    completada: [],
-
-    cancelada: []
 };
 
 // ========================================
@@ -141,9 +126,9 @@ const ESTADO_POR_TIPO = {
 
 const TIPOS_ENTREGA = Object.keys(ESTADO_POR_TIPO);
 
-// Todo cobro manual es histórico, tenga o no vínculo a una reserva.
+// Los marcadores de origen retirado siguen siendo de solo lectura tras purgar.
 const esVentaHistorica = (venta) => venta?.origen === 'panel' ||
-    venta?.origen === 'reserva';
+    venta?.origen === 'reserva' || Boolean(venta?.id_reserva);
 
 // El typeof no es redundante: hasOwnProperty convierte la clave a string,
 // así que sin él un array como ['domicilio'] pasaba por válido.
@@ -173,7 +158,6 @@ const permitirTransicionEntrega = (tipoEntrega, actual, nuevo) => {
 
 module.exports = {
     VENTA,
-    RESERVA,
     ENTREGA,
     ESTADO_POR_TIPO,
     TIPOS_ENTREGA,

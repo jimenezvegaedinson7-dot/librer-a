@@ -98,7 +98,7 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Abierta encima de otra pantalla (desde Perfil o Reservas): flecha para volver.
+    // Abierta desde Perfil: flecha para volver.
     final apilada = Navigator.of(context).canPop();
     return Scaffold(
       appBar: apilada ? AppBar(toolbarHeight: 52) : null,

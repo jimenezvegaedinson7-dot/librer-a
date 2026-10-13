@@ -1,5 +1,5 @@
 // ============================================================
-// TESTS DE TRANSICIONES DE ESTADO (VENTA Y RESERVA)
+// TESTS DE TRANSICIONES DE ESTADO (VENTA Y ENTREGA)
 // ============================================================
 // Sin BD: solo lógica pura de la máquina de estados unificada
 // (src/utils/transiciones.js).
@@ -10,7 +10,6 @@ const assert = require('node:assert/strict');
 
 const {
     VENTA,
-    RESERVA,
     ENTREGA,
     ESTADO_POR_TIPO,
     esTipoEntregaValido,
@@ -76,38 +75,6 @@ test('venta: pendiente -> entregada salta etapa y es FALSO', () => {
         permitirTransicion(VENTA, 'pendiente', 'entregada'),
         false
     );
-});
-
-// ----------------------------------------
-// RESERVA
-// ----------------------------------------
-test('reserva: pendiente -> confirmada está retirado', () => {
-    assert.equal(
-        permitirTransicion(RESERVA, 'pendiente', 'confirmada'),
-        false
-    );
-});
-
-test('reserva: confirmada -> completada no genera cobros nuevos', () => {
-    assert.equal(
-        permitirTransicion(RESERVA, 'confirmada', 'completada'),
-        false
-    );
-});
-
-test('reserva: completada ya no se puede cancelar', () => {
-    assert.equal(
-        permitirTransicion(RESERVA, 'completada', 'cancelada'),
-        false
-    );
-});
-
-test('reserva: cancelada es estado final', () => {
-    assert.equal(
-        permitirTransicion(RESERVA, 'cancelada', 'confirmada'),
-        false
-    );
-    assert.deepEqual(RESERVA.cancelada, []);
 });
 
 // ----------------------------------------

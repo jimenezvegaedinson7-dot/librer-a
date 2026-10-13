@@ -12,10 +12,10 @@ const METODOS_PAGO_HISTORICOS = [
 export const textoMetodoPago = (valor) =>
     METODOS_PAGO_HISTORICOS.find((m) => m.valor === valor)?.texto || (valor ? String(valor) : '');
 
-// De dónde viene la venta: pedido de la app (PayU), mostrador o reserva.
+// Los vínculos antiguos solo identifican ventas históricas de solo lectura.
 export const textoOrigen = (venta) => {
     if (venta?.origen === 'panel') return 'Mostrador';
-    if (venta?.origen === 'reserva') return venta?.id_reserva ? `Reserva #${venta.id_reserva}` : 'Reserva';
+    if (venta?.origen === 'reserva' || venta?.id_reserva) return 'Venta histórica';
     if (venta?.canal_compra === 'web') return 'Web (PayU)';
     return 'App (PayU)';
 };

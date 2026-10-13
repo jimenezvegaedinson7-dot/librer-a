@@ -23,10 +23,11 @@ test.after(async () => {
 });
 test('Dashboard base sin operaciones: ceros y listas vacías',async () => {
     const resumen = await pedir('/api/reportes/resumen');
-    for (const campo of ['total_libros','total_ventas','total_vendido','total_reservas','libros_stock_bajo']) assert.equal(Number(resumen[campo]),0,campo);
+    for (const campo of ['total_libros','total_ventas','total_vendido','libros_stock_bajo']) assert.equal(Number(resumen[campo]),0,campo);
+    assert.equal(Object.hasOwn(resumen,'total_reservas'),false);
     const indicadores = await pedir('/api/reportes/indicadores-ventas');
     assert.equal(Number(indicadores.total_vendido),0); assert.equal(indicadores.mejor_mes,null);
-    for (const ruta of ['libros-mas-vendidos','ventas-por-dia','ventas-por-mes','ventas-por-estado','reservas-por-estado']) assert.deepEqual(await pedir(`/api/reportes/${ruta}`),[]);
+    for (const ruta of ['libros-mas-vendidos','ventas-por-dia','ventas-por-mes','ventas-por-estado']) assert.deepEqual(await pedir(`/api/reportes/${ruta}`),[]);
 });
 test('Dashboard suma solo pagada/entregada una vez y stock bajo coherente',async () => {
     const [a] = await pool.query("INSERT INTO autores (nombre,apellido) VALUES ('Dash','Audit')"); autor = a.insertId;

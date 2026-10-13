@@ -1,4 +1,4 @@
-%% Generado 2026-10-12 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-13 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     subgraph React
         R__api_anuncios["anuncios"]
@@ -18,7 +18,6 @@ flowchart LR
         R__api_pedidos["pedidos"]
         R__api_reclamaciones["reclamaciones"]
         R__api_reportes["reportes"]
-        R__api_reservas["reservas"]
         R__api_usuarios["usuarios"]
         R__api_ventas["ventas"]
         R__api_zonas_delivery["zonas-delivery"]
@@ -29,7 +28,6 @@ flowchart LR
         F__api_libros["libros"]
         F__api_pagos["pagos"]
         F__api_reclamaciones["reclamaciones"]
-        F__api_reservas["reservas"]
         F__api_usuarios["usuarios"]
         F__api_ventas["ventas"]
         F__api_zonas_delivery["zonas-delivery"]
@@ -73,9 +71,6 @@ flowchart LR
     F__api_reclamaciones --> E__api_reclamaciones
     E__api_reportes(("/api/reportes")) --> C_reporte_controller["reporte.controller"]
     R__api_reportes --> E__api_reportes
-    E__api_reservas(("/api/reservas")) --> C_reserva_controller["reserva.controller"]
-    R__api_reservas --> E__api_reservas
-    F__api_reservas --> E__api_reservas
     E__api_usuarios(("/api/usuarios")) --> C_usuario_controller["usuario.controller"]
     R__api_usuarios --> E__api_usuarios
     F__api_usuarios --> E__api_usuarios
@@ -106,7 +101,6 @@ flowchart LR
     C_pedido_controller --> DB
     C_reclamacion_controller --> DB
     C_reporte_controller --> DB
-    C_reserva_controller --> DB
     C_ubicacion_controller --> DB
     C_usuario_controller --> DB
     C_venta_controller --> DB

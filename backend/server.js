@@ -35,7 +35,6 @@ const libroRoutes = require('./src/routes/libro.routes');
 const autorRoutes = require('./src/routes/autor.routes');
 const categoriaRoutes = require('./src/routes/categoria.routes');
 const inventarioRoutes = require('./src/routes/inventario.routes');
-const reservaRoutes = require('./src/routes/reserva.routes');
 const ventaRoutes = require('./src/routes/venta.routes');
 const authRoutes = require('./src/routes/auth.routes');
 const historialRoutes = require('./src/routes/historial.routes');
@@ -238,11 +237,15 @@ app.use(
 );
 
 // ===============================
-// API DE RESERVAS
+// COMPATIBILIDAD DE APK ANTIGUOS: RESERVAS RETIRADO POR COMPLETO
 // ===============================
 app.use(
     '/api/reservas',
-    reservaRoutes
+    verificarToken,
+    (_req, res) => res.status(410).json({
+        success: false,
+        mensaje: 'El módulo de reservas fue eliminado. Compra desde la web o la app con PayU.'
+    })
 );
 
 // ===============================

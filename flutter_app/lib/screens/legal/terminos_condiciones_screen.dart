@@ -10,7 +10,7 @@ class TerminosCondicionesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return LegalDocumento(
       titulo: 'Términos y Condiciones',
-      fechaActualizacion: '19 de septiembre de 2026',
+      fechaActualizacion: '12 de octubre de 2026',
       secciones: const [
         LegalSeccion(
           titulo: '1. Aceptación de los términos',
@@ -23,7 +23,7 @@ class TerminosCondicionesScreen extends StatelessWidget {
         LegalSeccion(
           titulo: '2. La cuenta del cliente',
           texto:
-              'Para comprar o reservar necesitas crear una cuenta con datos '
+              'Para comprar necesitas crear una cuenta con datos '
               'válidos y reales. Eres responsable de mantener la '
               'confidencialidad de tu contraseña y de toda la actividad que se '
               'realice en tu cuenta. Debes notificarnos de inmediato cualquier '
@@ -68,14 +68,7 @@ class TerminosCondicionesScreen extends StatelessWidget {
               'la compra.',
         ),
         LegalSeccion(
-          titulo: '7. Reservas de libros',
-          texto:
-              'Al reservar un libro comprometes su disponibilidad por un plazo '
-              'determinado. Si la reserva no se completa en el plazo indicado, '
-              'el libro vuelve a estar disponible para otros clientes.',
-        ),
-        LegalSeccion(
-          titulo: '8. Propiedad intelectual',
+          titulo: '7. Propiedad intelectual',
           texto:
               'Todo el contenido de la aplicación (textos, imágenes, logos y '
               'marcas) es de titularidad de la Librería o de sus proveedores y '
@@ -84,7 +77,7 @@ class TerminosCondicionesScreen extends StatelessWidget {
               'autorización.',
         ),
         LegalSeccion(
-          titulo: '9. Limitación de responsabilidad',
+          titulo: '8. Limitación de responsabilidad',
           texto:
               'La Librería no será responsable por daños indirectos o pérdidas '
               'derivadas del uso de la aplicación, ni por demoras ajenas a su '
@@ -92,14 +85,14 @@ class TerminosCondicionesScreen extends StatelessWidget {
               'conectividad.',
         ),
         LegalSeccion(
-          titulo: '10. Modificaciones',
+          titulo: '9. Modificaciones',
           texto:
               'La Librería podrá actualizar estos Términos en cualquier '
               'momento. La versión vigente se publicará en la aplicación y el '
               'uso continuado de la misma implica su aceptación.',
         ),
         LegalSeccion(
-          titulo: '11. Contacto',
+          titulo: '10. Contacto',
           texto:
               'Por consultas sobre estos términos puedes escribirnos a través '
               'de la información de contacto publicada en la aplicación. Si no '

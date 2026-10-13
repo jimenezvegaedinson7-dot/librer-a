@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import '../models/libro.dart';
 import '../models/orden_pago.dart';
-import '../models/reserva.dart';
 import '../models/usuario.dart';
 import '../models/venta.dart';
 import '../models/zona_delivery.dart';
@@ -587,47 +586,6 @@ class ApiService {
     } on DioException catch (e) {
       throw _toApiException(e);
     }
-  }
-
-  /// Obtiene las reservas del cliente contra `GET /reservas/mis-reservas`.
-  Future<List<Reserva>> obtenerMisReservas() async {
-    try {
-      final response = await _dio.get<dynamic>(
-        '${Constants.reservasPath}/mis-reservas',
-      );
-      final raw = response.data;
-      final list = _extractList(raw);
-      return list
-          .map((e) => Reserva.fromJson(Map<String, dynamic>.from(e)))
-          .toList();
-    } on DioException catch (e) {
-      throw _toApiException(e);
-    }
-  }
-
-  /// Cancela una reserva propia contra `DELETE /reservas/:id`.
-  ///
-  /// El backend cambia el estado a `cancelada` y devuelve el stock. El token
-  /// se agrega automáticamente por el interceptor. Lanza [ApiException] si la
-  /// reserva no existe (404), no es del cliente (403) o ya está completada
-  /// (400).
-  Future<void> cancelarReserva(int id) async {
-    try {
-      await _dio.delete<dynamic>('${Constants.reservasPath}/$id');
-    } on DioException catch (e) {
-      throw _toApiException(e);
-    }
-  }
-
-  /// Compatibilidad con clientes antiguos: la creación de reservas está retirada.
-  Future<int> crearReserva({
-    required int idLibro,
-    required int cantidad,
-    String? fechaVencimiento,
-  }) async {
-    throw const ApiException(
-      'No se crean nuevas reservas. Compra con PayU desde el carrito.',
-    );
   }
 
   /// Obtiene las compras (ventas) del cliente contra `GET /ventas/mis-ventas`.

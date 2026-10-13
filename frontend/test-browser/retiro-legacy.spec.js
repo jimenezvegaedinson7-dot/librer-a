@@ -52,9 +52,8 @@ for (const width of [390, 1440]) {
     });
 }
 
-test('históricos vinculados no ofrecen entrega, devolución ni cobro; reservas solo cancelación', async ({ page }) => {
+test('ventas históricas vinculadas siguen protegidas y la ruta retirada redirige al Dashboard', async ({ page }) => {
     await preparar(page);
-    const reserva = { id_reserva: 5, estado: 'confirmada', cantidad: 1, titulo: 'Libro histórico' };
     await page.route('**/api/ventas', route => route.fulfill({ json: { success: true, data: [
         { id_venta: 1, origen: 'reserva', id_reserva: 5, estado: 'pagada', total: 25, reembolso_elegible: true },
         { id_venta: 2, origen: 'panel', estado: 'pagada', total: 25, reembolso_elegible: true }
@@ -63,15 +62,10 @@ test('históricos vinculados no ofrecen entrega, devolución ni cobro; reservas 
     for (const name of ['Confirmar entrega', 'Solicitar devolución PayU', 'Emitir boleta', 'Emitir factura']) {
         await expect(page.getByTitle(name, { exact: true })).toHaveCount(0);
     }
-    await page.route('**/api/reservas', route => route.fulfill({ json: { success: true, data: [reserva] } }));
-    await page.route('**/api/reservas/5', route => route.fulfill({ json: { success: true, data: reserva } }));
     await page.goto('/reservas');
-    await expect(page.getByRole('button', { name: 'Guardar reserva' })).toHaveCount(0);
-    await page.getByTitle('Cambiar estado').click();
-    await expect(page.getByRole('dialog').getByRole('combobox').locator('option')).toHaveText([
-        'Cancelar y liberar stock'
-    ]);
-    await expect(page.getByRole('dialog').getByText('Efectivo', { exact: true })).toHaveCount(0);
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.getByRole('heading', { name: 'Resumen', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Reservas/ })).toHaveCount(0);
 });
 
 test('devolución rechazada por backend mantiene datos y no muestra confirmación falsa', async ({ page }) => {

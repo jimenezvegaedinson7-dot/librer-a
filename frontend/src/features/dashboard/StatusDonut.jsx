@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'motion/react';
-import { FaCalendarCheck, FaCartShopping, FaCircleCheck, FaCircleXmark, FaClock, FaRotateLeft, FaTruck } from 'react-icons/fa6';
+import { FaCartShopping, FaCircleCheck, FaCircleXmark, FaClock, FaRotateLeft, FaTruck } from 'react-icons/fa6';
 
 import { formatearMoneda } from '../../lib/utils/format';
 import Pastel3D from './Pastel3D';
@@ -9,9 +9,7 @@ import { num } from './graficoUtils';
 // Orden fijo: el color sigue al estado, nunca a su posición en la lista.
 const ESTADOS = {
     pagada: { texto: 'Pagada', clase: 'estado--exito', Icono: FaCircleCheck, orden: 1 },
-    completada: { texto: 'Completada', clase: 'estado--exito', Icono: FaCircleCheck, orden: 1 },
     entregada: { texto: 'Entregada', clase: 'estado--info', Icono: FaTruck, orden: 2 },
-    confirmada: { texto: 'Confirmada', clase: 'estado--info', Icono: FaCircleCheck, orden: 2 },
     pendiente: { texto: 'Pendiente', clase: 'estado--aviso', Icono: FaClock, orden: 3 },
     cancelada: { texto: 'Cancelada', clase: 'estado--peligro', Icono: FaCircleXmark, orden: 4 },
     reembolsada: { texto: 'Reembolsada', clase: 'estado--neutro', Icono: FaRotateLeft, orden: 5 },
@@ -80,16 +78,14 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas', variante 
         .sort((a, b) => a.orden - b.orden);
 
     const total = lista.reduce((acc, item) => acc + item.cantidad, 0);
-    const unidad = tipo === 'reservas' ? 'reservas' : 'ventas';
-    const IconoTitulo = tipo === 'reservas' ? FaCalendarCheck : FaCartShopping;
+    const unidad = 'ventas';
+    const IconoTitulo = FaCartShopping;
 
-    // Pie: lo que ya se cobró (ventas) o lo que falta atender (reservas).
+    // Pie: ventas efectivamente cobradas.
     const suma = (estados, campo) => lista
         .filter((i) => estados.includes(String(i.estado).toLowerCase()))
         .reduce((acc, i) => acc + num(i[campo]), 0);
-    const resumenPie = tipo === 'reservas'
-        ? { etiqueta: 'Por atender (pendientes y confirmadas)', valor: suma(['pendiente', 'confirmada'], 'cantidad') }
-        : { etiqueta: `Cobradas: ${suma(['pagada', 'entregada'], 'cantidad')} ventas`, valor: formatearMoneda(suma(['pagada', 'entregada'], 'total')) };
+    const resumenPie = { etiqueta: `Cobradas: ${suma(['pagada', 'entregada'], 'cantidad')} ventas`, valor: formatearMoneda(suma(['pagada', 'entregada'], 'total')) };
 
     const esDonut = variante === 'donut';
 

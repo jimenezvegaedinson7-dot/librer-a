@@ -82,33 +82,6 @@ const obtenerVentasPorEstado = async (req, res) => {
 };
 
 // ========================================
-// OBTENER RESERVAS POR ESTADO
-// ========================================
-const obtenerReservasPorEstado = async (req, res) => {
-    try {
-        const reservas =
-            await reporteModel.obtenerReservasPorEstado();
-
-        return res.json({
-            success: true,
-            data: reservas
-        });
-
-    } catch (error) {
-        console.error(
-            'Error al obtener reservas por estado:',
-            error
-        );
-
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al obtener las reservas por estado'
-        });
-    }
-};
-
-// ========================================
 // OBTENER STOCK BAJO
 // ========================================
 const obtenerStockBajo = async (req, res) => {
@@ -252,7 +225,6 @@ module.exports = {
     obtenerResumenGeneral,
     obtenerLibrosMasVendidos,
     obtenerVentasPorEstado,
-    obtenerReservasPorEstado,
     obtenerStockBajo,
     obtenerVentasPorMes,
     obtenerVentasPorDia,

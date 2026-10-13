@@ -66,7 +66,7 @@ function nombreCliente(venta) {
 const esDeCuentaEliminada = (venta) => venta.origen !== 'panel' && esCorreoDeCuentaEliminada(venta.correo_usuario);
 
 function detalleCobro(venta) {
-    if (venta.origen === 'panel' || venta.origen === 'reserva') {
+    if (venta.origen === 'panel' || venta.origen === 'reserva' || venta.id_reserva) {
         const metodo = textoMetodoPago(venta.metodo_pago);
         return [textoOrigen(venta), metodo].filter(Boolean).join(' · ');
     }
@@ -147,7 +147,7 @@ const columnasVentas = [
 ];
 
 function accionesVenta(fila, { onVer, onEmitirComprobante, onReembolsar, puedeReembolsar }) {
-    if (fila.origen === 'panel' || fila.origen === 'reserva') {
+    if (fila.origen === 'panel' || fila.origen === 'reserva' || fila.id_reserva) {
         return <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>;
     }
     const conComprobante = Number(fila.tiene_comprobante ?? 0) === 1;
@@ -425,7 +425,7 @@ const totalIngresos = ventas
                 { titulo: 'Cliente', exportar: (f) => nombreCliente(f) },
                 { titulo: 'Documento', exportar: (f) => f.cliente_documento || '' },
                 { titulo: 'Origen', exportar: (f) => textoOrigen(f) },
-                { titulo: 'Método de pago', exportar: (f) => (f.origen === 'panel' || f.origen === 'reserva' ? textoMetodoPago(f.metodo_pago) : 'PayU') },
+                { titulo: 'Método de pago', exportar: (f) => (f.origen === 'panel' || f.origen === 'reserva' || f.id_reserva ? textoMetodoPago(f.metodo_pago) : 'PayU') },
                 { titulo: 'Referencia de pago', exportar: (f) => f.referencia_pago || f.payu_order_id || '' },
                 { titulo: 'Correo', exportar: (f) => correoVisible(f.correo_compra) || correoVisible(f.correo_usuario) },
                 { titulo: 'Fecha', exportar: (f) => f.fecha_venta || '' },

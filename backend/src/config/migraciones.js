@@ -19,7 +19,8 @@
 //   falta, deben reescribirse a PostgreSQL y añadirse a la lista.
 //
 //   Todas las migraciones de la lista son idempotentes: se pueden
-//   ejecutar muchas veces sin duplicar nada ni borrar datos.
+//   ejecutar muchas veces sin duplicar efectos. Las purgas de datos
+//   se declaran aparte, se aplican una sola vez y quedan registradas.
 // ============================================================
 
 const fs = require('fs');
@@ -111,7 +112,8 @@ const MIGRACIONES = [
 // cantidad de filas que cambiaron. Cada una corre en su propia transacción
 // con un bloqueo, así dos instancias del servicio no la aplican a la vez.
 const MIGRACIONES_DATOS = [
-    '041_backfill_entrega_ventas_canceladas.sql'
+    '041_backfill_entrega_ventas_canceladas.sql',
+    '042_purga_reservas.sql'
 ];
 
 const TABLA_MIGRACIONES_DATOS = `
@@ -224,7 +226,10 @@ async function aplicarMigracionesDatos(pool, {
                 continue;
             }
             const resultado = await conexion.pgQuery(leer(archivo));
-            const filas = resultado.rowCount ?? 0;
+            // Los scripts con varios pasos (bloqueos/DDL/kardex/purga) terminan
+            // en la sentencia cuyo rowCount registra la migración.
+            const ultimoResultado = Array.isArray(resultado) ? resultado.at(-1) : resultado;
+            const filas = ultimoResultado.rowCount ?? 0;
             await conexion.pgQuery('INSERT INTO migraciones_datos (nombre, filas) VALUES ($1, $2)', [archivo, filas]);
             await conexion.commit();
             registro.log(`[bootstrap] Migración de datos ${archivo}: ${filas} filas corregidas`);

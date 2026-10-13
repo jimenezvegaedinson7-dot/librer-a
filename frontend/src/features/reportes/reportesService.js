@@ -15,11 +15,6 @@ export async function obtenerVentasPorEstado() {
     return Array.isArray(res?.data) ? res.data : [];
 }
 
-export async function obtenerReservasPorEstado() {
-    const res = await client.get('/reportes/reservas-por-estado');
-    return Array.isArray(res?.data) ? res.data : [];
-}
-
 // Stock bajo vive en el módulo de inventario, no en el de reportes.
 export async function obtenerStockBajo() {
     const res = await client.get('/inventario/stock-bajo');

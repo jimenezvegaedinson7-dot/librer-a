@@ -29,8 +29,8 @@ function poolFalso({ yaAplicadas = [], filas = 3, falla = false } = {}) {
 }
 const silencio = { log() {}, error() {} };
 
-test('la migración 041 está registrada como migración de datos', () => {
-    assert.deepEqual(MIGRACIONES_DATOS, ['041_backfill_entrega_ventas_canceladas.sql']);
+test('el backfill y la purga autorizada están registrados como migraciones de datos en orden', () => {
+    assert.deepEqual(MIGRACIONES_DATOS, ['041_backfill_entrega_ventas_canceladas.sql', '042_purga_reservas.sql']);
 });
 
 test('migración de datos: se aplica en transacción con bloqueo y registra las filas', async () => {

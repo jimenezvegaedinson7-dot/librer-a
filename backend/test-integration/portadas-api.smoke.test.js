@@ -4,7 +4,7 @@ const { randomUUID } = require('node:crypto');
 const jwt = require('jsonwebtoken');
 const pool = require('../src/config/database');
 
-test('portadas por API: catálogo, ficha, relacionados, favoritos y reservas compatibles con Flutter', async t => {
+test('portadas por API: catálogo, ficha, relacionados y favoritos compatibles con Flutter', async t => {
     const libros = [], usuarios = [];
     let autor, categoria;
     const pedir = async (ruta, token, method = 'GET', body) => {
@@ -51,10 +51,10 @@ test('portadas por API: catálogo, ficha, relacionados, favoritos y reservas com
             comprobar(favoritos.data.find(l => l.id_libro === libros[0]));
             assert.equal((await pedir('/favoritos')).status, 401);
         });
-        await t.test('mis reservas incluye ISBN y URL para la portada sin cambiar la reserva', async () => {
-            await pool.query("INSERT INTO reservas(id_usuario,id_libro,cantidad,fecha_vencimiento,estado) VALUES (?,?,1,CURRENT_DATE + 7,'pendiente')", [usuarios[0], libros[0]]);
-            const reservas = await pedir('/reservas/mis-reservas', cliente); assert.equal(reservas.status, 200);
-            comprobar(reservas.data[0]); assert.equal(reservas.data[0].cantidad, 1);
+        await t.test('el contrato retirado no expone portadas ni historial de reservas', async () => {
+            const retiradas = await pedir('/reservas/mis-reservas', cliente);
+            assert.equal(retiradas.status, 410);
+            assert.equal(Object.hasOwn(retiradas, 'data'), false);
         });
         await t.test('editar datos sin archivo no persiste la portada de respaldo en la BD', async () => {
             const r = await pedir(`/libros/${libros[0]}`, admin, 'PUT', { descripcion: 'Descripción editada', portada: referencia });
@@ -71,7 +71,6 @@ test('portadas por API: catálogo, ficha, relacionados, favoritos y reservas com
             assert.equal(l.portada, '/uploads/portadas/nueva-manual.jpg');
             assert.equal(l.portada_es_referencia, false); assert.equal(l.portada_edicion_referencia, null);
             assert.equal((await pedir('/favoritos', cliente)).data[0].portada, l.portada);
-            assert.equal((await pedir('/reservas/mis-reservas', cliente)).data[0].portada, l.portada);
         });
     } finally {
         for (const id of libros) {

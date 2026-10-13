@@ -10,7 +10,7 @@ class PoliticaPrivacidadScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return LegalDocumento(
       titulo: 'Política de Privacidad',
-      fechaActualizacion: '19 de septiembre de 2026',
+      fechaActualizacion: '12 de octubre de 2026',
       secciones: const [
         LegalSeccion(
           titulo: '1. Responsable del tratamiento',
@@ -24,14 +24,14 @@ class PoliticaPrivacidadScreen extends StatelessWidget {
           titulo: '2. Datos que recopilamos',
           texto:
               'Nombre, correo electrónico, teléfono, contraseña (cifrada), '
-              'foto de perfil si la subes, historial de compras y reservas, y '
+              'foto de perfil si la subes, historial de compras y '
               'los datos necesarios para la entrega, como la dirección.',
         ),
         LegalSeccion(
           titulo: '3. Finalidad del uso de los datos',
           texto:
               'Usamos tus datos para gestionar tu cuenta, procesar pedidos y '
-              'pagos, coordinar entregas, gestionar reservas, atender reclamos '
+              'pagos, coordinar entregas, atender reclamos '
               'y, con tu consentimiento, enviarte información de la Librería.',
         ),
         LegalSeccion(

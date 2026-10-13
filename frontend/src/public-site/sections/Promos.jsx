@@ -23,7 +23,7 @@ export default function Promos() {
                             <p>Busca, revisa la ficha de cada libro, guarda favoritos y compra con PayU.</p>
                             <Link to="/aplicacion" className="boton boton--marca boton--chico">Conoce la app <FaChevronRight aria-hidden="true" /></Link>
                         </div>
-                        <div className="vitrina__telefono" aria-hidden="true">
+                        <div className="vitrina__telefono vitrina__telefono--catalogo" aria-hidden="true">
                             <img src={imgInicio360} srcSet={`${imgInicio360} 360w, ${imgInicio} 780w`} sizes="(max-width: 700px) 46vw, 230px" alt="" width="390" height="844" loading="lazy" decoding="async" />
                         </div>
                     </article>

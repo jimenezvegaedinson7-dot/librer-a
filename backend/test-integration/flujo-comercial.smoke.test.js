@@ -569,9 +569,9 @@ test('matriz funcional del flujo comercial', async (t) => {
         });
 
         // ==============================================
-        // 5. RESERVA: crear 201 / cancelar 200 + stock
+        // 5. CONTRATO RETIRADO: NO CREA, LEE NI CANCELA RESERVAS
         // ==============================================
-        await t.test('reserva: creación retirada y cancelación histórica', async () => {
+        await t.test('reservas eliminadas: las rutas antiguas no modifican registros ni stock', async () => {
             const crearReserva = await pedir(
                 '/api/reservas',
                 cliente,
@@ -581,7 +581,7 @@ test('matriz funcional del flujo comercial', async (t) => {
             const crearTexto = await crearReserva.text();
             assert.equal(
                 crearReserva.status,
-                405,
+                410,
                 `crear reserva devolvió ${crearReserva.status}: ${crearTexto}`
             );
             // Simula una reserva que ya existía antes del retiro comercial.
@@ -605,10 +605,10 @@ test('matriz funcional del flujo comercial', async (t) => {
             const cancelarTexto = await cancelar.text();
             assert.equal(
                 cancelar.status,
-                200,
+                410,
                 `cancelar reserva devolvió ${cancelar.status}: ${cancelarTexto}`
             );
-            assert.equal(JSON.parse(cancelarTexto).success, true);
+            assert.equal(JSON.parse(cancelarTexto).success, false);
 
             const [reservaFila] = await pool.query(
                 'SELECT estado FROM reservas WHERE id_reserva = ?',
@@ -616,14 +616,14 @@ test('matriz funcional del flujo comercial', async (t) => {
             );
             assert.equal(
                 reservaFila[0].estado,
-                'cancelada',
-                'la reserva debe quedar cancelada'
+                'pendiente',
+                'la ruta retirada no debe mutar registros legacy'
             );
 
             assert.equal(
                 await leerStock(sembrados.libroReserva),
-                2,
-                'cancelar la reserva debe devolver el stock apartado'
+                1,
+                'solo la purga transaccional puede liberar un apartado antiguo'
             );
         });
 

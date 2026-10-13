@@ -1,6 +1,6 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-10-12 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-13 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
@@ -9,7 +9,7 @@
 2. `helmet` (sin CSP, CORP cross-origin) → `config/cors.js` con lista `FRONTEND_ORIGINS` y patrón `FRONTEND_ORIGINS_REGEX` (regex inválida desactiva previews y conserva lista explícita) → `express.json({ limit: '1mb' })` → `baseLimiter`.
 3. Estáticos: `/uploads` → `backend/uploads` (portadas y fotos locales cuando Cloudinary no está configurado).
 4. Endpoints en línea: `GET /`, `GET /api`, `GET /api/test-db` y `GET /api/debug-egress` (ambos JWT + admin).
-5. Montaje de 23 routers bajo `/api/*` → 404 JSON → `error.middleware`.
+5. Montaje de 22 routers bajo `/api/*` → 404 JSON → `error.middleware`.
 6. `iniciarJobs()` programa limpieza cada 5 min. `iniciar()` espera `aplicarMigraciones` y `aplicarMigracionesDatos` antes de aceptar tráfico; en test se usa el esquema preparado por el runner. Un fallo en producción aborta el arranque.
 7. `app.listen(PORT || 3000)` después de comprobar el esquema. Las migraciones base e incrementales están en `config/migraciones.js`; los backfills se registran en `migraciones_datos`.
 
@@ -35,7 +35,6 @@
 | `/api/pedidos` | `routes/pedido.routes.js` |
 | `/api/reclamaciones` | `routes/reclamacion.routes.js` |
 | `/api/reportes` | `routes/reporte.routes.js` |
-| `/api/reservas` | `routes/reserva.routes.js` |
 | `/api/ubicaciones` | `routes/ubicacion.routes.js` |
 | `/api/usuarios` | `routes/usuario.routes.js` |
 | `/api/ventas` | `routes/venta.routes.js` |
@@ -66,7 +65,7 @@
 | `utils/mailer.js` | Correo con **nodemailer** (SMTP_*): verificación, reseteo y avisos comerciales. Comprobantes adjuntos PDF, renderizados con **Playwright Chromium** por `utils/pdf.js`. |
 | `utils/cloudinary.js` | Subida/eliminación de imágenes en Cloudinary (CLOUDINARY_*), `publicIdDesdeUrl`. |
 | `utils/crypto.js` | Cifrado/descifrado del secreto 2FA con `TWO_FACTOR_ENCRYPTION_KEY`. |
-| `utils/transiciones.js` | Máquinas de estado permitidas de `VENTA` y `RESERVA` (`permitirTransicion`). |
+| `utils/transiciones.js` | Máquinas de estado de `VENTA` y `ENTREGA`; los marcadores de origen retirado permanecen de solo lectura. |
 | `utils/payuStatus.js` | Traduce estados de PayU a estados de venta. |
 | `utils/validaciones.js` | `validarId`, `esEmailValido`, `esNumeroNoNegativo`, `esCantidadPositiva`, `esEstadoValido`… |
 | `utils/roles.js` | Dominio actual: `ADMINISTRADOR` y `CLIENTE`. Exporta `ROLES`, `ROLES_PANEL`, `ROLES_ASIGNABLES`, `normalizar`, `esRolValido` y `esPersonalInterno`. `usuarios.rol` solo admite `cliente`/`administrador`; la migración `029_retirar_rol_obsoleto.sql` conserva las cuentas del rol retirado como clientes inactivos, sin cambiar IDs ni compras. |
@@ -76,7 +75,7 @@
 | `services/aiAssistant.service.js` | Asistente público: búsqueda PostgreSQL tolerante, recomendaciones verificadas y fallback local. No modifica libros ni inventario. |
 | `services/geminiAssistant.service.js` | Gemini REST, una llamada como máximo con 8 libros, timeout de 8 s, salida estructurada validada y pausa ante errores/cuota. |
 | `services/asistenteContexto.service.js` | Contexto firmado temporal, 6 entradas de historial y expiración a los 20 min; sin tabla de conversaciones. |
-| `jobs/limpieza.js` | Cada 5 min: `reservaModel.cancelarVencidas()` y cancelación de ventas abandonadas (ventaModel). |
+| `jobs/limpieza.js` | Cada 5 min: reconciliación PayU y cancelación de ventas abandonadas (ventaModel). |
 
 ## Autenticación (JWT + 2FA)
 
@@ -247,7 +246,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/libros/:id` | — | controllers/libro.controller.js#obtenerLibro | `libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | POST | `/api/libros` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#crearLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro`<br>`libro.model.js#crear`<br>`libro.model.js#eliminar` | autores, categorias, historial_operaciones, inventario, libros |
 | PUT | `/api/libros/:id` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#actualizarLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`libro.model.js#actualizar`<br>`libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, ventas |
-| DELETE | `/api/libros/:id` | JWT + rol:administrador | controllers/libro.controller.js#eliminarLibro | `historial.model.js#crear`<br>`inventario.model.js#eliminarMovimientosPorLibro`<br>`inventario.model.js#eliminarPorLibro`<br>`libro.model.js#obtenerPorId`<br>`usuario.model.js#buscarPorIdConPassword` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, movimientos_inventario, reservas, usuarios, ventas |
+| DELETE | `/api/libros/:id` | JWT + rol:administrador | controllers/libro.controller.js#eliminarLibro | `historial.model.js#crear`<br>`inventario.model.js#eliminarMovimientosPorLibro`<br>`inventario.model.js#eliminarPorLibro`<br>`libro.model.js#obtenerPorId`<br>`usuario.model.js#buscarPorIdConPassword` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, movimientos_inventario, usuarios, ventas |
 
 ### /api/pagos
 
@@ -286,23 +285,11 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/reportes/ventas-por-estado` | JWT + verificarPanel | controllers/reporte.controller.js#obtenerVentasPorEstado | `reporte.model.js#obtenerVentasPorEstado` | ventas |
-| GET | `/api/reportes/reservas-por-estado` | JWT + verificarPanel | controllers/reporte.controller.js#obtenerReservasPorEstado | `reporte.model.js#obtenerReservasPorEstado` | reservas |
-| GET | `/api/reportes/resumen` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerResumenGeneral | `reporte.model.js#obtenerResumenGeneral` | autores, categorias, inventario, libros, reservas, usuarios, ventas |
-| GET | `/api/reportes/libros-mas-vendidos` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerLibrosMasVendidos | `reporte.model.js#obtenerLibrosMasVendidos` | detalle_venta, libros, ventas |
-| GET | `/api/reportes/ventas-por-mes` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerVentasPorMes | `reporte.model.js#obtenerVentasPorMes` | ventas |
-| GET | `/api/reportes/ventas-por-dia` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerVentasPorDia | `reporte.model.js#obtenerVentasPorDia` | ventas |
-| GET | `/api/reportes/indicadores-ventas` | JWT + soloAdmin | controllers/reporte.controller.js#obtenerIndicadoresVentas | `reporte.model.js#obtenerIndicadoresVentas` | ventas |
-
-### /api/reservas
-
-| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
-|---|---|---|---|---|---|
-| GET | `/api/reservas/mis-reservas` | JWT | controllers/reserva.controller.js#obtenerMisReservas | `reserva.model.js#obtenerPorUsuario` | inventario, libros, reservas, usuarios |
-| POST | `/api/reservas` | JWT | controllers/reserva.controller.js#crearReserva | — | — |
-| DELETE | `/api/reservas/:id` | JWT | controllers/reserva.controller.js#cancelarReserva | — | — |
-| GET | `/api/reservas` | JWT + verificarPanel | controllers/reserva.controller.js#obtenerReservas | `reserva.model.js#obtenerTodos` | inventario, libros, reservas, usuarios |
-| GET | `/api/reservas/:id` | JWT | controllers/reserva.controller.js#obtenerReserva | `reserva.model.js#obtenerPorId` | inventario, libros, reservas, usuarios |
-| PUT | `/api/reservas/:id/estado` | JWT + verificarPanel | controllers/reserva.controller.js#actualizarEstado | `historial.model.js#crear`<br>`reserva.model.js#actualizarEstado`<br>`reserva.model.js#obtenerPorId` | historial_operaciones, inventario, libros, reservas, usuarios |
+| GET | `/api/reportes/resumen` | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | controllers/reporte.controller.js#obtenerResumenGeneral | `reporte.model.js#obtenerResumenGeneral` | autores, categorias, inventario, libros, usuarios, ventas |
+| GET | `/api/reportes/libros-mas-vendidos` | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | controllers/reporte.controller.js#obtenerLibrosMasVendidos | `reporte.model.js#obtenerLibrosMasVendidos` | detalle_venta, libros, ventas |
+| GET | `/api/reportes/ventas-por-mes` | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | controllers/reporte.controller.js#obtenerVentasPorMes | `reporte.model.js#obtenerVentasPorMes` | ventas |
+| GET | `/api/reportes/ventas-por-dia` | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | controllers/reporte.controller.js#obtenerVentasPorDia | `reporte.model.js#obtenerVentasPorDia` | ventas |
+| GET | `/api/reportes/indicadores-ventas` | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | controllers/reporte.controller.js#obtenerIndicadoresVentas | `reporte.model.js#obtenerIndicadoresVentas` | ventas |
 
 ### /api/ubicaciones
 
@@ -321,7 +308,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | PUT | `/api/usuarios/perfil` | JWT | controllers/usuario.controller.js#actualizarPerfil | `usuario.model.js#actualizarPerfil`<br>`usuario.model.js#buscarPorId`<br>`usuario.model.js#existeEmail` | usuarios |
 | PUT | `/api/usuarios/foto` | JWT + uploadPerfil(foto) | controllers/usuario.controller.js#subirFotoPerfil | `usuario.model.js#actualizarFotoPerfil`<br>`usuario.model.js#buscarPorId` | usuarios |
 | PUT | `/api/usuarios/password` | JWT | controllers/usuario.controller.js#cambiarPassword | `usuario.model.js#actualizarPassword`<br>`usuario.model.js#buscarPorIdConPassword` | usuarios |
-| DELETE | `/api/usuarios/cuenta` | JWT | controllers/usuario.controller.js#eliminarMiCuenta | `historial.model.js#crear`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#eliminarCuenta` | asistente_memoria, favoritos, historial_operaciones, inventario, reservas, usuarios, ventas |
+| DELETE | `/api/usuarios/cuenta` | JWT | controllers/usuario.controller.js#eliminarMiCuenta | `historial.model.js#crear`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#eliminarCuenta` | asistente_memoria, favoritos, historial_operaciones, usuarios, ventas |
 | PATCH | `/api/usuarios/:id` | JWT + rol:administrador | controllers/usuario.controller.js#adminUpdateUsuario | `historial.model.js#crear`<br>`usuario.model.js#actualizarEstadoRol`<br>`usuario.model.js#buscarPorId` | historial_operaciones, usuarios |
 
 ### /api/ventas
@@ -366,16 +353,15 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/libro.model.js` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | `models/pago.model.js` | ventas |
 | `models/reclamacion.model.js` | reclamaciones |
-| `models/reporte.model.js` | autores, categorias, comprobantes, detalle_venta, inventario, libros, reservas, usuarios, ventas |
-| `models/reserva.model.js` | inventario, libros, reservas, usuarios |
+| `models/reporte.model.js` | autores, categorias, comprobantes, detalle_venta, inventario, libros, usuarios, ventas |
 | `models/ubicacion.model.js` | distritos_lima, provincias_lima |
-| `models/usuario.model.js` | asistente_memoria, favoritos, inventario, reservas, usuarios, ventas |
+| `models/usuario.model.js` | asistente_memoria, favoritos, usuarios, ventas |
 | `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
 | `models/zonaDelivery.model.js` | zonas_delivery_pallasca |
 
-Tablas consultadas por los modelos (21): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `reservas`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. Este subconjunto no es el total del esquema.
+Tablas consultadas por los modelos (20): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. Este subconjunto no es el total del esquema.
 
-Esquema canónico: **21 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **22 tablas**, incluidas las auxiliares de migración. Hay 41 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
+Esquema canónico: **21 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **22 tablas**, incluidas las auxiliares de migración. Hay 42 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
 
 ## Integraciones externas
 

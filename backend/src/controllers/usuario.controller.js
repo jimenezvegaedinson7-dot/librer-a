@@ -763,7 +763,7 @@ const eliminarMiCuenta = async (req, res) => {
         }
 
         const aleatoria = require('crypto').randomBytes(32).toString('hex');
-        const resultado = await usuarioModel.eliminarCuenta(
+        await usuarioModel.eliminarCuenta(
             idUsuario,
             await bcrypt.hash(aleatoria, 10)
         );
@@ -773,7 +773,7 @@ const eliminarMiCuenta = async (req, res) => {
                 id_usuario: null,
                 tipo_operacion: 'ELIMINAR',
                 modulo: 'usuarios',
-                descripcion: `Cuenta #${idUsuario} eliminada por su titular (datos anonimizados; ${resultado.reservas_canceladas} reservas canceladas)`
+                descripcion: `Cuenta #${idUsuario} eliminada por su titular (datos anonimizados)`
             });
         } catch (errorHistorial) {
             console.error('No se pudo registrar el historial:', errorHistorial.message);

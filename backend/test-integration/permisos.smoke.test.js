@@ -35,7 +35,6 @@ const baseUrl = process.env.TEST_BASE_URL || 'http://localhost:3000';
 // ------------------------------------------------------------
 const PANEL_OPERATIVO = [
     '/api/ventas',
-    '/api/reservas',
     '/api/pagos',
     '/api/pagos/resumen',
     '/api/comprobantes',
@@ -45,7 +44,6 @@ const PANEL_OPERATIVO = [
     '/api/inventario/movimientos',
     '/api/pedidos',
     '/api/reportes/ventas-por-estado',
-    '/api/reportes/reservas-por-estado',
 ];
 
 // ------------------------------------------------------------
@@ -97,7 +95,6 @@ const CATALOGO = ['/api/libros'];
 // el cliente las usa con normalidad y recibe 200.
 const RUTAS_DEL_CLIENTE = [
     '/api/ventas/mis-ventas',
-    '/api/reservas/mis-reservas',
     '/api/usuarios/perfil',
     '/api/libros',
 ];

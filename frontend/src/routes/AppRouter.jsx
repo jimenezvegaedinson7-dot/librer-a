@@ -49,7 +49,6 @@ const LibrosPage = lazyConReintento(() => import('../features/libros/LibrosPage'
 const AutoresPage = lazyConReintento(() => import('../features/autores/AutoresPage'));
 const CategoriasPage = lazyConReintento(() => import('../features/categorias/CategoriasPage'));
 const InventarioPage = lazyConReintento(() => import('../features/inventario/InventarioPage'));
-const ReservasPage = lazyConReintento(() => import('../features/reservas/ReservasPage'));
 const PedidosPage = lazyConReintento(() => import('../features/pedidos/PedidosPage'));
 const VentasPage = lazyConReintento(() => import('../features/ventas/VentasPage'));
 const ComprobantesPage = lazyConReintento(() => import('../features/comprobantes/ComprobantesPage'));
@@ -123,7 +122,7 @@ const router = createBrowserRouter([
             { path: '/inventario', element: para(AMBOS, <InventarioPage />) },
 
             // --- Operaciones ---
-            { path: '/reservas', element: para(AMBOS, <ReservasPage />) },
+            { path: '/reservas', element: <Navigate to="/dashboard" replace /> },
             // Logística de las ventas de la app: solo el administrador
             // mueve el estado de entrega.
             { path: '/pedidos', element: para(SOLO_ADMIN, <PedidosPage />) },

@@ -210,7 +210,7 @@ class _VistaPrevia extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Mis reservas',
+            'Mis compras',
             style: textTheme.titleLarge?.copyWith(color: AppColors.textPrimary),
           ),
           const SizedBox(height: 12),

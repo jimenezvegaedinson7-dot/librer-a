@@ -38,7 +38,6 @@ const matrizDe = (archivo, router) => {
 const routers = {
     'venta.routes.js': require('../src/routes/venta.routes'),
     'pedido.routes.js': require('../src/routes/pedido.routes'),
-    'reserva.routes.js': require('../src/routes/reserva.routes'),
     'pago.routes.js': require('../src/routes/pago.routes'),
     'comprobante.routes.js': require('../src/routes/comprobante.routes'),
     'inventario.routes.js': require('../src/routes/inventario.routes'),
@@ -95,7 +94,6 @@ test('los reportes administrativos son solo de administrador', () => {
 test('los agregados operativos del mostrador son solo de administrador', () => {
     for (const ruta of [
         'GET /ventas-por-estado',
-        'GET /reservas-por-estado',
     ]) {
         esperaRoles(`reporte.routes.js ${ruta}`, ADMIN);
     }
@@ -133,13 +131,11 @@ test('todos los reportes exigen un rol: ninguno queda abierto', () => {
 // OPERACIONES DEL ADMINISTRADOR
 // ========================================
 
-test('solo el administrador opera ventas, reservas, pagos, comprobantes e inventario', () => {
+test('solo el administrador opera ventas, pagos, comprobantes e inventario', () => {
     const permitidas = [
         'venta.routes.js GET /',
         'venta.routes.js PUT /:id/estado',
         'venta.routes.js POST /:id/comprobante',
-        'reserva.routes.js GET /',
-        'reserva.routes.js PUT /:id/estado',
         'pago.routes.js GET /',
         'pago.routes.js GET /resumen',
         'comprobante.routes.js GET /',
@@ -251,9 +247,6 @@ test('el módulo de pedidos no quedó abierto al cajero ni al cliente', () => {
 test('las rutas propias del cliente siguen abiertas a cualquier autenticado', () => {
     const delCliente = [
         'venta.routes.js GET /mis-ventas',
-        'reserva.routes.js GET /mis-reservas',
-        'reserva.routes.js POST /',
-        'reserva.routes.js DELETE /:id',
         'pago.routes.js POST /crear-orden',
         'pago.routes.js GET /:orderId',
     ];
@@ -270,7 +263,6 @@ test('los registros por id se validan en el controlador (dueño o panel)', () =>
     for (const clave of [
         'venta.routes.js GET /:id',
         'venta.routes.js GET /:id/pago',
-        'reserva.routes.js GET /:id',
     ]) {
         esperaRoles(clave, []);
     }
