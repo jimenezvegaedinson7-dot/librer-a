@@ -27,8 +27,12 @@ for (const width of [390, 1440]) test(`Pedidos ${width}px: cuatro tarjetas con b
     await preparar(page, auditados());
     await page.goto('/pedidos');
     const resumen = page.getByRole('region', { name: 'Indicadores de pedidos' });
+    await expect(resumen.locator('.indicador-tarjeta.joya')).toHaveCount(4);
+    await expect(resumen.locator('.kpi-destello')).toHaveCount(4);
     await expect(resumen.locator('.pedido-indicador__valor')).toHaveText(['1', '0', '0', '1']);
     await expect(resumen.locator('.pedido-indicador__proporcion')).toHaveText(['50% del total', '0% del total', '0% del total', '50% del total']);
+    await expect(resumen.getByRole('meter')).toHaveCount(4);
+    for (const meter of await resumen.getByRole('meter').all()) await expect(meter).toHaveAttribute('aria-valuemax', '2');
     await expect(page.locator('.pedido-resumen-nota')).toContainText('Base del resumen: 2 pedidos pagados y vigentes');
     await expect(page.locator('.data-table-shell tbody tr')).toHaveCount(5);
     await page.getByLabel('Filtrar pedidos').selectOption('pendiente');
@@ -60,6 +64,7 @@ test('Pedidos: error, respuesta inválida y base vacía no fabrican ceros ni por
     const valores = page.locator('.pedido-indicador__valor');
     await expect(valores).toHaveText(['—', '—', '—', '—']);
     await expect(page.locator('.pedido-indicador__proporcion')).toHaveCount(0);
+    await expect(page.getByRole('meter')).toHaveCount(0);
     modo = 'invalido';
     await page.getByRole('button', { name: 'Actualizar pedidos', exact: true }).click();
     await expect(page.getByRole('alert')).toContainText('No se pudieron cargar los pedidos');
@@ -68,6 +73,21 @@ test('Pedidos: error, respuesta inválida y base vacía no fabrican ceros ni por
     await page.getByRole('button', { name: 'Actualizar pedidos', exact: true }).click();
     await expect(valores).toHaveText(['0', '0', '0', '0']);
     await expect(page.locator('.pedido-indicador__proporcion')).toHaveText(Array(4).fill('Sin base para calcular porcentaje'));
+    await expect(page.getByRole('meter')).toHaveCount(0);
+});
+test('Pedidos: los anillos conservan la base común y el reparto corregido a una décima', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await preparar(page, [
+        { ...base, id_venta: 1, estado_entrega: 'pendiente' },
+        { ...base, id_venta: 2, estado_entrega: 'listo_recojo' },
+        { ...base, id_venta: 3, estado_entrega: 'entregado' },
+    ]);
+    await page.goto('/pedidos');
+    const resumen = page.getByRole('region', { name: 'Indicadores de pedidos' });
+    await expect(resumen.locator('.kpi-anillo-cifra')).toHaveText(['33.4%', '33.3%', '0%', '33.3%']);
+    await expect(resumen.locator('.pedido-indicador__valor')).toHaveText(['1', '1', '0', '1']);
+    for (const meter of await resumen.getByRole('meter').all()) await expect(meter).toHaveAttribute('aria-valuemax', '3');
+    await expect(resumen.getByRole('meter').first()).toHaveAttribute('aria-valuetext', '33.4% del total (1 de 3 pedidos)');
 });
 test('Delivery: confirmar salida envía el estado real; rechazo no adelanta los pasos', async ({ page }) => {
     const pedido = { ...base, id_venta: 8, tipo_entrega: 'domicilio', estado_entrega: 'pendiente', direccion: 'Pallasca' };

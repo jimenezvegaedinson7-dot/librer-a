@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { animate, motion, useReducedMotion } from 'motion/react';
 import {
     FaBoxOpen,
     FaCircleCheck,
@@ -115,20 +116,55 @@ function Seguimiento({ pedido }) {
     );
 }
 
+// Mismo acabado de las tarjetas anteriores (joya, destello y anillo),
+// conservando la distribución corregida a una décima solo en Pedidos.
+function TarjetaResumenPedido({ estado, titulo, detalle, Icono, tono, cantidad, porcentaje, total, orden, cargando, error }) {
+    const reducir = useReducedMotion();
+    const [activa, setActiva] = useState(false);
+    const [cifra, setCifra] = useState(cantidad);
+    const anterior = useRef(0);
+    const animar = !cargando && !error && !reducir;
+    useEffect(() => {
+        if (!animar) return undefined;
+        const control = animate(anterior.current, cantidad, { duration: 0.9, ease: [0.16, 1, 0.3, 1], onUpdate: setCifra });
+        anterior.current = cantidad;
+        return () => control.stop();
+    }, [cantidad, animar]);
+    const textoPorcentaje = `${porcentaje.toLocaleString('es-PE')}%`;
+    return <article
+        className={`kpi-card kpi-card--destacada joya ${tono === 'primary' ? '' : `joya--${tono}`} indicador-tarjeta pedido-indicador pedido-estado--${estado} ${cargando ? 'indicador--cargando' : ''}`}
+        aria-label={titulo} style={{ '--orden': orden }}
+        onPointerEnter={e => { if (e.pointerType === 'mouse') setActiva(true); }} onPointerLeave={() => setActiva(false)}>
+        <div className="flex items-start justify-between gap-3"><p className="kpi-label pedido-indicador__titulo">{titulo}</p><span className="kpi-icono" aria-hidden="true"><Icono/></span></div>
+        {cargando ? <span className="indicador-esqueleto" aria-hidden="true"/> :
+            <p className={`kpi-valor pedido-indicador__valor${error ? ' indicador-valor--texto' : ''}`}>{error ? '—' : Math.round(animar ? cifra : cantidad).toLocaleString('es-PE')}</p>}
+        <p className="kpi-descripcion">{detalle}</p>
+        {!cargando && !error && (total > 0 ? <div className="indicador-zona"><div className="kpi-zona kpi-zona--anillo">
+            <div className="kpi-anillo" role="meter" aria-label={`${titulo} sobre el total`} aria-valuemin={0} aria-valuemax={total} aria-valuenow={cantidad}
+                aria-valuetext={`${textoPorcentaje} del total (${cantidad} de ${total} pedidos)`}>
+                <svg viewBox="0 0 44 44" aria-hidden="true">
+                    <circle className="kpi-anillo-pista" cx="22" cy="22" r="18" pathLength="100"/>
+                    <circle className="kpi-anillo-valor" cx="22" cy="22" r="18" pathLength="100" strokeDasharray={`${porcentaje} 100`}/>
+                    <motion.circle className="kpi-anillo-brillo" cx="22" cy="22" r="18" pathLength="100" strokeDasharray="12 88" initial={{ opacity: 0, strokeDashoffset: 0 }}
+                        animate={activa && !reducir ? { strokeDashoffset: [0, -100], opacity: [0, 1, 0] } : { opacity: 0, strokeDashoffset: 0 }} transition={{ duration: 0.5, ease: 'easeInOut' }}/>
+                </svg><span className="kpi-anillo-cifra" aria-hidden="true">{textoPorcentaje}</span>
+            </div><p className="kpi-anillo-leyenda pedido-indicador__proporcion"><span className="sr-only">{textoPorcentaje} </span>del total</p>
+        </div></div> : <p className="kpi-descripcion pedido-indicador__proporcion">Sin base para calcular porcentaje</p>)}
+        {cargando && <><span className="indicador-zona indicador-zona--esqueleto" aria-hidden="true"/><span className="sr-only">Cargando {titulo}</span></>}
+        <span className="kpi-destello" aria-hidden="true"/>
+    </article>;
+}
+
 function ResumenPedidos({ resumen, cargando, error }) {
     const tarjetas = [
-        ['pendiente', 'Por preparar', 'Sin salir ni estar listos', FaClock],
-        ['listo_recojo', 'Listos para recoger', 'Disponibles en tienda', FaStore],
-        ['en_camino', 'En camino', 'Con el repartidor', FaTruck],
-        ['entregado', 'Entregados', 'Recibidos por el cliente', FaCircleCheck],
+        ['pendiente', 'Por preparar', 'Sin salir ni estar listos', FaClock, 'warning'],
+        ['listo_recojo', 'Listos para recoger', 'Disponibles en tienda', FaStore, 'primary'],
+        ['en_camino', 'En camino', 'Con el repartidor', FaTruck, 'info'],
+        ['entregado', 'Entregados', 'Recibidos por el cliente', FaCircleCheck, 'success'],
     ];
-    return <><section className="pedidos-indicadores" aria-label="Indicadores de pedidos" aria-busy={cargando}>
-        {tarjetas.map(([estado, titulo, detalle, Icono]) => <article key={estado} className={`pedido-indicador pedido-estado--${estado}`} aria-label={titulo}>
-            <div className="pedido-indicador__cabecera"><h2 className="pedido-indicador__titulo">{titulo}</h2><span className="pedido-indicador__icono" aria-hidden="true"><Icono/></span></div>
-            {cargando ? <div className="skeleton mt-3 h-8 w-16"/> : <p className="pedido-indicador__valor">{error ? '—' : resumen.conteos[estado]}</p>}
-            <p className="pedido-indicador__detalle">{detalle}</p>
-            {!cargando && !error && <p className="pedido-indicador__proporcion">{resumen.total ? `${resumen.porcentajes[estado].toLocaleString('es-PE')}% del total` : 'Sin base para calcular porcentaje'}</p>}
-        </article>)}
+    return <><section className="indicadores pedidos-indicadores" aria-label="Indicadores de pedidos" aria-busy={cargando}>
+        {tarjetas.map(([estado, titulo, detalle, Icono, tono], orden) => <TarjetaResumenPedido key={estado} estado={estado} titulo={titulo} detalle={detalle} Icono={Icono} tono={tono}
+            cantidad={resumen.conteos[estado]} porcentaje={resumen.porcentajes[estado]} total={resumen.total} orden={orden} cargando={cargando} error={error}/>)}
     </section><p className="pedido-resumen-nota">{cargando ? 'Consultando los pedidos...' : error ? 'Indicadores no disponibles. Actualiza para consultar los pedidos.' : <>Base del resumen: {resumen.total} {resumen.total === 1 ? 'pedido pagado y vigente' : 'pedidos pagados y vigentes'}. Se excluyen cancelaciones, reembolsos, devoluciones pendientes y pagos en revisión. El filtro de estado solo cambia la lista.</>}</p></>;
 }
 

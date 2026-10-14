@@ -1,12 +1,6 @@
 .pedidos-pagina { --pedido-inicial: #9a650f; --pedido-listo: #0369a1; --pedido-ruta: #0e5873; --pedido-final: #16734a; }
 .pedidos-indicadores { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.pedido-indicador { min-width: 0; padding: 18px 20px; border: 1px solid #e3ddd3; border-radius: 10px; background: #fffefa; }
-.pedido-indicador__cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-.pedido-indicador__titulo { margin: 0; color: #293e49; font-size: 14px; font-weight: 650; line-height: 1.4; }
-.pedido-indicador__icono { color: var(--pedido-color); font-size: 18px; padding-top: 2px; }
-.pedido-indicador__valor { margin: 12px 0 3px; color: #132d3b; font-size: 30px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.pedido-indicador__detalle { margin: 0; color: #5b6268; font-size: 12px; line-height: 1.5; }
-.pedido-indicador__proporcion { margin: 12px 0 0; color: var(--pedido-color); font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.pedidos-indicadores .pedido-indicador { min-width: 0; }
 .pedido-estado--pendiente { --pedido-color: var(--pedido-inicial); }
 .pedido-estado--listo_recojo { --pedido-color: var(--pedido-listo); }
 .pedido-estado--en_camino { --pedido-color: var(--pedido-ruta); }
@@ -23,4 +17,4 @@
 .pedido-seguimiento__paso--hecho .pedido-seguimiento__trazo { background: #23754b; }
 .pedido-seguimiento__paso[aria-current="step"] { font-weight: 700; }
 @media (max-width: 1100px) { .pedidos-indicadores { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 420px) { .pedido-indicador { padding: 14px; } .pedido-indicador__titulo { min-height: 40px; } .pedido-seguimiento { gap: 8px; } }
+@media (max-width: 420px) { .pedidos-indicadores .pedido-indicador__titulo { min-height: 40px; } .pedido-seguimiento { gap: 8px; } }
