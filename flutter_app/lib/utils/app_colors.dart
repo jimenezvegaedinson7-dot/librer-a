@@ -183,6 +183,10 @@ class AppColors {
   static Color _price = burdeos;
 
   static Color get primary => _primary;
+
+  /// Texto sobre botones: también legible en temas dorados o naranjas.
+  static Color get onPrimary =>
+      _contraste(Colors.white, _primary) >= 4.5 ? Colors.white : Colors.black;
   static Color get primaryDark => _primaryDark;
   static Color get primaryContainer => _primaryContainer;
   static Color get secondary => _secondary;
@@ -213,7 +217,7 @@ class AppColors {
 ColorScheme appColorSchemeLight() {
   return ColorScheme.light(
     primary: AppColors.primary,
-    onPrimary: Colors.white,
+    onPrimary: AppColors.onPrimary,
     secondary: AppColors.secondary,
     onSecondary: AppColors.textPrimary,
     tertiary: AppColors.tertiary,

@@ -1,8 +1,8 @@
 {
-    "version": "1.0.23",
-    "versionCode": 24,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.23/libreria-1.0.23.apk",
-    "sha256": "b784379eaa9f0014da6087016265a0ddd36b8858b41f2e9aafac720e5fd7ffa7",
+    "version": "1.0.24",
+    "versionCode": 25,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.24/libreria-1.0.24.apk",
+    "sha256": "9eaedca59e06bcc1c36a5bb2c52f309b249c72e02c0601cefbab2cf0dbfe29e5",
     "obligatoria": false,
-    "notas": "Tarifa única de delivery editable por el administrador. Web y app utilizan el precio vigente del servidor, revalidan cambios antes de comprar y conservan los importes de pedidos existentes. Panel con moneda PEN, unidad de cobro, cálculo e historial de actualizaciones."
+    "notas": "Nuevo perfil con diseño editorial, foto e identidad en cabecera. Colores y degradados personalizados, vista previa de fondos y tarjetas, mejor contraste y adaptación a texto ampliado. Correcciones de actualización del perfil y estado de doble factor."
 }

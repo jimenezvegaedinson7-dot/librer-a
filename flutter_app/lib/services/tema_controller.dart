@@ -32,24 +32,19 @@ class TemaController extends ChangeNotifier {
   Future<void> cargar() async {
     try {
       final fondoId = await StorageService.instance.obtenerFondo();
-      if (fondoId != null) {
-        _fondo = fondoPorId(fondoId);
-        AppColors.aplicarFondo(_fondo.fondo, _fondo.tarjeta);
-        notifyListeners();
-      }
+      _fondo = fondoPorId(fondoId ?? fondoDefaultId);
+      AppColors.aplicarFondo(_fondo.fondo, _fondo.tarjeta);
     } catch (_) {
       // Sin fondo guardado: se mantiene el marfil.
     }
     try {
       final id = await StorageService.instance.obtenerTemaPerfil();
-      if (id != null) {
-        _tema = perfilTemaPorId(id);
-        AppColors.aplicarAcento(_tema);
-        notifyListeners();
-      }
+      _tema = perfilTemaPorId(id ?? perfilTemaDefaultId);
+      AppColors.aplicarAcento(_tema);
     } catch (_) {
       // Sin tema guardado: se mantiene el por defecto.
     }
+    notifyListeners();
   }
 
   /// Aplica un fondo de pantallas y tarjetas, lo pinta en toda la app y lo

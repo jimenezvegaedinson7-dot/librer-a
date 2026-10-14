@@ -10,15 +10,16 @@ import '../services/carrito_service.dart';
 import '../services/storage_service.dart';
 import '../services/tema_controller.dart';
 import '../utils/app_colors.dart';
+import '../utils/app_theme.dart';
 import '../utils/app_tokens.dart';
 import '../utils/avatar_generator.dart';
 import '../utils/constants.dart';
 import '../utils/perfil_fondos.dart';
 import '../utils/perfil_temas.dart';
 import '../widgets/aparecer.dart';
-import '../widgets/app_page_header.dart';
 import 'fondos_screen.dart';
 import '../widgets/estado_chip.dart';
+import '../widgets/estanteria.dart';
 import '../widgets/presionable.dart';
 import 'login_screen.dart';
 import 'mis_compras_screen.dart';
@@ -55,6 +56,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Usuario? _usuario;
   bool _twoFactorEnabled = false;
   bool _refreshing = false;
+  bool _subiendoFoto = false;
+  bool _perfilServidorRecibido = false;
+  int _revisionPerfil = 0;
+  int _refrescoActivoRevision = 0;
   String _temaId = perfilTemaDefaultId;
 
   PerfilTema get _tema => perfilTemaPorId(_temaId);
@@ -76,7 +81,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   /// Mantiene el tema local sincronizado con el controlador global.
   void _syncTema() {
-    if (mounted && _temaId != TemaController.instance.id) {
+    if (mounted) {
       setState(() => _temaId = TemaController.instance.id);
     }
   }
@@ -89,8 +94,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Future<void> _cargarLocal() async {
+    final generacion = StorageService.instance.generacion;
     final usuario = await StorageService.instance.obtenerUsuario();
-    if (usuario != null) {
+    if (usuario != null &&
+        mounted &&
+        generacion == StorageService.instance.generacion &&
+        !_perfilServidorRecibido) {
       // El estado 2FA se precarga desde el usuario guardado y luego la
       // pantalla lo refresca con GET /usuarios/perfil.
       final twoFa = usuario.twoFactorEnabled ?? false;
@@ -107,12 +116,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
   ///
   /// `GET /usuarios/perfil` ahora incluye `two_factor_enabled`; si el servidor
   /// no lo envía (respuesta anterior), se conserva el valor local.
-  Future<void> _refrescarPerfil() async {
+  Future<void> _refrescarPerfil({bool forzar = false}) async {
+    if ((_refreshing && !forzar) || _subiendoFoto) return;
+    final revision = ++_revisionPerfil;
+    _refrescoActivoRevision = revision;
     final generacion = StorageService.instance.generacion;
     if (mounted) setState(() => _refreshing = true);
     try {
       final perfil = await ApiService.instance.obtenerPerfil();
-      if (!mounted || generacion != StorageService.instance.generacion) return;
+      if (!mounted ||
+          generacion != StorageService.instance.generacion ||
+          revision != _revisionPerfil) {
+        return;
+      }
+      _perfilServidorRecibido = true;
       final twoFaServidor = perfil.twoFactorEnabled;
       final perfilConTwoFa = perfil.copyWith(
         twoFactorEnabled: twoFaServidor ?? _twoFactorEnabled,
@@ -121,7 +138,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
         perfilConTwoFa,
         generacionEsperada: generacion,
       );
-      if (mounted) {
+      if (mounted &&
+          generacion == StorageService.instance.generacion &&
+          revision == _revisionPerfil) {
         setState(() {
           _usuario = perfilConTwoFa;
           if (twoFaServidor != null) {
@@ -134,7 +153,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
     } catch (_) {
       // Sin acción: se muestran los datos locales.
     } finally {
-      if (mounted) setState(() => _refreshing = false);
+      if (mounted && _refrescoActivoRevision == revision) {
+        setState(() => _refreshing = false);
+      }
     }
   }
 
@@ -177,13 +198,22 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Future<void> _editarPerfil() async {
     final usuario = _usuario;
     if (usuario == null) return;
+    // Una lectura iniciada antes de editar no debe restaurar los datos viejos.
+    _revisionPerfil++;
     final guardado = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
         builder: (_) => EditarPerfilScreen(usuario: usuario),
       ),
     );
-    if (guardado == true) {
-      await _refrescarPerfil();
+    if (guardado == true && mounted) {
+      final generacion = StorageService.instance.generacion;
+      final actualizado = await StorageService.instance.obtenerUsuario();
+      if (!mounted || generacion != StorageService.instance.generacion) return;
+      if (actualizado != null) {
+        _perfilServidorRecibido = true;
+        setState(() => _usuario = actualizado);
+      }
+      await _refrescarPerfil(forzar: true);
     }
   }
 
@@ -239,6 +269,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   /// Muestra el selector de foto: avatar predefinido, galería o cámara.
   Future<void> _cambiarFoto() async {
+    if (_subiendoFoto) return;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -295,6 +326,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   /// Abre la galería de avatares predefinidos y sube el seleccionado.
   Future<void> _elegirAvatar() async {
+    final generacion = StorageService.instance.generacion;
     final seleccionado = await showModalBottomSheet<AvatarPreset>(
       context: context,
       showDragHandle: true,
@@ -338,15 +370,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
     );
 
-    if (seleccionado == null || !mounted) return;
+    if (seleccionado == null ||
+        !mounted ||
+        generacion != StorageService.instance.generacion) {
+      return;
+    }
     await _subirAvatar(seleccionado);
   }
 
   /// Genera el PNG del avatar en runtime y lo sube como foto de perfil.
   Future<void> _subirAvatar(AvatarPreset preset) async {
+    final generacion = StorageService.instance.generacion;
     try {
       final bytes = await generarAvatarPng(preset);
-      if (!mounted) return;
+      if (!mounted || generacion != StorageService.instance.generacion) return;
       final nombre = 'avatar_${DateTime.now().millisecondsSinceEpoch}.png';
       await _subirBytes(bytes, nombre);
     } catch (_) {
@@ -356,6 +393,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   /// Selecciona una imagen desde la galería o cámara y la sube.
   Future<void> _seleccionarImagen(ImageSource source) async {
+    final generacion = StorageService.instance.generacion;
     final picker = ImagePicker();
     try {
       final xfile = await picker.pickImage(
@@ -364,14 +402,18 @@ class _PerfilScreenState extends State<PerfilScreen> {
         maxHeight: 1024,
         imageQuality: 85,
       );
-      if (xfile == null) return;
+      if (xfile == null ||
+          !mounted ||
+          generacion != StorageService.instance.generacion) {
+        return;
+      }
 
       final bytes = await xfile.readAsBytes();
       if (bytes.length > 5 * 1024 * 1024) {
         _toast('La imagen supera el tamaño máximo de 5 MB.');
         return;
       }
-      if (!mounted) return;
+      if (!mounted || generacion != StorageService.instance.generacion) return;
 
       // Se detecta el formato real por magic bytes. No se confía en la
       // extensión original (puede estar vacía o ser incorrecta) ni se asume
@@ -430,41 +472,68 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   /// Sube los bytes como foto de perfil (compartido por avatar y foto).
   Future<void> _subirBytes(Uint8List bytes, String fileName) async {
-    setState(() => _refreshing = true);
+    if (_subiendoFoto || !mounted) return;
+    final generacion = StorageService.instance.generacion;
+    _revisionPerfil++;
+    setState(() => _subiendoFoto = true);
     try {
       final usuario = await ApiService.instance.subirFotoPerfil(
         bytes: bytes,
         fileName: fileName,
       );
-      if (mounted) {
+      if (mounted && generacion == StorageService.instance.generacion) {
+        _perfilServidorRecibido = true;
         setState(() => _usuario = usuario);
         _toast('Foto de perfil actualizada.');
       }
     } on ApiException catch (e) {
-      if (mounted) _toast(e.message);
+      if (mounted && generacion == StorageService.instance.generacion) {
+        _toast(e.message);
+      }
     } catch (_) {
-      if (mounted) _toast('No se pudo actualizar la foto.');
+      if (mounted && generacion == StorageService.instance.generacion) {
+        _toast('No se pudo actualizar la foto.');
+      }
     } finally {
-      if (mounted) setState(() => _refreshing = false);
+      if (mounted) setState(() => _subiendoFoto = false);
     }
   }
 
   Future<void> _activarTwoFactor() async {
+    _revisionPerfil++;
     final activado = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(builder: (_) => const TwoFactorSetupScreen()),
     );
     if (activado == true && mounted) {
-      setState(() => _twoFactorEnabled = true);
-      await _refrescarPerfil();
+      await _actualizarTwoFactor(true);
     }
   }
 
   Future<void> _desactivarTwoFactor() async {
+    _revisionPerfil++;
     final resultado = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(builder: (_) => const TwoFactorDisableScreen()),
     );
     if (resultado == true && mounted) {
-      setState(() => _twoFactorEnabled = false);
+      await _actualizarTwoFactor(false);
+    }
+  }
+
+  Future<void> _actualizarTwoFactor(bool activo) async {
+    final generacion = StorageService.instance.generacion;
+    final actualizado = _usuario?.copyWith(twoFactorEnabled: activo);
+    setState(() {
+      _twoFactorEnabled = activo;
+      _usuario = actualizado;
+    });
+    if (actualizado != null) {
+      await StorageService.instance.guardarUsuario(
+        actualizado,
+        generacionEsperada: generacion,
+      );
+    }
+    if (mounted && generacion == StorageService.instance.generacion) {
+      await _refrescarPerfil(forzar: true);
     }
   }
 
@@ -479,285 +548,448 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final usuario = _usuario;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
           color: AppColors.primary,
           backgroundColor: _profileSurface,
           onRefresh: _refrescarPerfil,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
-            children: [
-              AppPageHeader(
-                title: 'Mi perfil',
-                centrado: true,
-                trailing: AnimatedSwitcher(
-                  duration: Duracion.rapida,
-                  child: _refreshing
-                      ? const SizedBox(
-                          key: ValueKey('cargando'),
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2.2),
-                        )
-                      : const SizedBox(key: ValueKey('listo'), width: 22),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Aparecer(child: _buildPortada(context, usuario)),
-
-              const SizedBox(height: 16),
-
-              // Accesos rápidos
-              Aparecer(
-                indice: 1,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _AccesoRapido(
-                        icon: Icons.shopping_bag_outlined,
-                        label: 'Mis compras',
-                        onTap: _misCompras,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'TU CUENTA',
+                              style: textTheme.labelMedium?.copyWith(
+                                color: AppColors.gold,
+                                letterSpacing: 1.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text('Mi perfil', style: textTheme.headlineMedium),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _AccesoRapido(
-                        icon: Icons.favorite_outline_rounded,
-                        label: 'Mis favoritos',
-                        onTap: _misFavoritos,
+                      const SizedBox(width: 12),
+                      AnimatedSwitcher(
+                        duration: Duracion.rapida,
+                        child: _refreshing
+                            ? const SizedBox(
+                                key: ValueKey('cargando'),
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                ),
+                              )
+                            : const SizedBox(key: ValueKey('listo'), width: 22),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Datos
-              _sectionTitle(textTheme, 'Tus datos'),
-              const SizedBox(height: 10),
-              _profileCard(
-                child: Column(
-                  children: [
-                    _row(
-                      context,
-                      Icons.mail_outline_rounded,
-                      'Correo',
-                      usuario?.email ?? '—',
-                    ),
-                    _divider(),
-                    _row(
-                      context,
-                      Icons.call_outlined,
-                      'Teléfono',
-                      usuario?.telefono ?? '—',
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Personalización: dos botones del mismo estilo.
-              _sectionTitle(
-                textTheme,
-                'Personaliza tu app',
-                detalle: 'Se aplican a toda la aplicación.',
-              ),
-              const SizedBox(height: 10),
-              _profileCard(
-                child: Column(
-                  children: [
-                    _actionTile(
-                      context,
-                      icon: Icons.palette_outlined,
-                      label: 'Colores',
-                      detalle: _tema.nombre,
-                      trailing: _MuestraTema(tema: _tema),
-                      onTap: _abrirColores,
-                    ),
-                    _divider(),
-                    _actionTile(
-                      context,
-                      icon: Icons.wallpaper_outlined,
-                      label: 'Fondo y tarjetas',
-                      detalle: TemaController.instance.fondo.nombre,
-                      trailing: _MuestraFondo(
-                        fondo: TemaController.instance.fondo,
-                      ),
-                      onTap: () async {
-                        await Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const FondosScreen(),
-                          ),
-                        );
-                        if (mounted) setState(() {});
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Seguridad y cuenta
-              _sectionTitle(textTheme, 'Cuenta y seguridad'),
-              const SizedBox(height: 10),
-              _profileCard(
-                child: Column(
-                  children: [
-                    _actionTile(
-                      context,
-                      icon: Icons.manage_accounts_outlined,
-                      label: 'Editar perfil',
-                      onTap: _editarPerfil,
-                    ),
-                    _divider(),
-                    _actionTile(
-                      context,
-                      icon: Icons.key_outlined,
-                      label: 'Cambiar contraseña',
-                      onTap: _cambiarPassword,
-                    ),
-                    _divider(),
-                    _actionTile(
-                      context,
-                      icon: _twoFactorEnabled
-                          ? Icons.verified_user_outlined
-                          : Icons.gpp_maybe_outlined,
-                      label: _twoFactorEnabled
-                          ? 'Desactivar doble factor'
-                          : 'Activar doble factor',
-                      trailing: EstadoChip(
-                        texto: _twoFactorEnabled ? 'Activo' : 'Inactivo',
-                        tono: _twoFactorEnabled
-                            ? TonoEstado.exito
-                            : TonoEstado.neutro,
-                      ),
-                      onTap: _twoFactorEnabled
-                          ? _desactivarTwoFactor
-                          : _activarTwoFactor,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Legal
-              _sectionTitle(textTheme, 'Legal'),
-              const SizedBox(height: 10),
-              _profileCard(
-                child: Column(
-                  children: [
-                    _actionTile(
-                      context,
-                      icon: Icons.gavel_outlined,
-                      label: 'Términos y Condiciones',
-                      onTap: _terminos,
-                    ),
-                    _divider(),
-                    _actionTile(
-                      context,
-                      icon: Icons.policy_outlined,
-                      label: 'Política de Privacidad',
-                      onTap: _privacidad,
-                    ),
-                    _divider(),
-                    _actionTile(
-                      context,
-                      icon: Icons.auto_stories_outlined,
-                      label: 'Libro de Reclamaciones',
-                      onTap: _libroReclamaciones,
-                    ),
-                    _divider(),
-                    _actionTile(
-                      context,
-                      icon: Icons.no_accounts_outlined,
-                      label: 'Eliminar mi cuenta',
-                      onTap: _eliminarCuenta,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              // Cerrar sesión
-              OutlinedButton.icon(
-                onPressed: _confirmarCierre,
-                icon: const Icon(Icons.logout_rounded, size: 20),
-                label: const Text('Cerrar sesión'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.error,
-                  side: BorderSide(
-                    color: AppColors.error.withValues(alpha: 0.35),
+                    ],
                   ),
-                  minimumSize: const Size(double.infinity, 52),
-                ),
+                  const SizedBox(height: 16),
+
+                  Aparecer(child: _buildPortada(context, usuario)),
+
+                  const SizedBox(height: 16),
+
+                  // Accesos rápidos
+                  Aparecer(
+                    indice: 1,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _AccesoRapido(
+                            icon: Icons.shopping_bag_outlined,
+                            label: 'Mis compras',
+                            onTap: _misCompras,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _AccesoRapido(
+                            icon: Icons.favorite_outline_rounded,
+                            label: 'Mis favoritos',
+                            onTap: _misFavoritos,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Datos
+                  _sectionTitle(textTheme, 'Tus datos'),
+                  const SizedBox(height: 10),
+                  _profileCard(
+                    child: Column(
+                      children: [
+                        _row(
+                          context,
+                          Icons.mail_outline_rounded,
+                          'Correo',
+                          usuario?.email ?? '—',
+                        ),
+                        _divider(),
+                        _row(
+                          context,
+                          Icons.call_outlined,
+                          'Teléfono',
+                          usuario?.telefono ?? '—',
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Personalización directa, como AccountView en Swift.
+                  _sectionTitle(
+                    textTheme,
+                    'Personaliza tus colores',
+                    detalle:
+                        'Tema activo: ${_tema.nombre}. Se aplica a toda la app.',
+                  ),
+                  const SizedBox(height: 10),
+                  _profileCard(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        children: [
+                          for (final tema in perfilTemas.where(
+                            (t) => !t.vidrio,
+                          ))
+                            Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: _TemaSwatch(
+                                tema: tema,
+                                seleccionado: _temaId == tema.id,
+                                onTap: () =>
+                                    TemaController.instance.aplicar(tema.id),
+                              ),
+                            ),
+                          _TemaSwatch(
+                            tema: _temaId.startsWith('custom_') ? _tema : null,
+                            seleccionado: _temaId.startsWith('custom_'),
+                            onTap: _combinarColores,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _abrirColores,
+                      icon: const Icon(Icons.palette_outlined, size: 20),
+                      label: const Text('Ver todos los colores'),
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(48, 48),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  _profileCard(
+                    child: Column(
+                      children: [
+                        _actionTile(
+                          context,
+                          icon: Icons.wallpaper_outlined,
+                          label: 'Fondo y tarjetas',
+                          detalle: TemaController.instance.fondo.nombre,
+                          trailing: _MuestraFondo(
+                            fondo: TemaController.instance.fondo,
+                          ),
+                          onTap: () async {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const FondosScreen(),
+                              ),
+                            );
+                            if (mounted) setState(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Seguridad y cuenta
+                  _sectionTitle(textTheme, 'Cuenta y seguridad'),
+                  const SizedBox(height: 10),
+                  _profileCard(
+                    child: Column(
+                      children: [
+                        _actionTile(
+                          context,
+                          icon: Icons.manage_accounts_outlined,
+                          label: 'Editar perfil',
+                          onTap: _editarPerfil,
+                        ),
+                        _divider(),
+                        _actionTile(
+                          context,
+                          icon: Icons.key_outlined,
+                          label: 'Cambiar contraseña',
+                          onTap: _cambiarPassword,
+                        ),
+                        _divider(),
+                        _actionTile(
+                          context,
+                          icon: _twoFactorEnabled
+                              ? Icons.verified_user_outlined
+                              : Icons.gpp_maybe_outlined,
+                          label: _twoFactorEnabled
+                              ? 'Desactivar doble factor'
+                              : 'Activar doble factor',
+                          trailing: EstadoChip(
+                            texto: _twoFactorEnabled ? 'Activo' : 'Inactivo',
+                            tono: _twoFactorEnabled
+                                ? TonoEstado.exito
+                                : TonoEstado.neutro,
+                          ),
+                          onTap: _twoFactorEnabled
+                              ? _desactivarTwoFactor
+                              : _activarTwoFactor,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Legal
+                  _sectionTitle(textTheme, 'Legal'),
+                  const SizedBox(height: 10),
+                  _profileCard(
+                    child: Column(
+                      children: [
+                        _actionTile(
+                          context,
+                          icon: Icons.gavel_outlined,
+                          label: 'Términos y Condiciones',
+                          onTap: _terminos,
+                        ),
+                        _divider(),
+                        _actionTile(
+                          context,
+                          icon: Icons.policy_outlined,
+                          label: 'Política de Privacidad',
+                          onTap: _privacidad,
+                        ),
+                        _divider(),
+                        _actionTile(
+                          context,
+                          icon: Icons.auto_stories_outlined,
+                          label: 'Libro de Reclamaciones',
+                          onTap: _libroReclamaciones,
+                        ),
+                        _divider(),
+                        _actionTile(
+                          context,
+                          icon: Icons.no_accounts_outlined,
+                          label: 'Eliminar mi cuenta',
+                          onTap: _eliminarCuenta,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // Cerrar sesión
+                  OutlinedButton.icon(
+                    onPressed: _confirmarCierre,
+                    icon: const Icon(Icons.logout_rounded, size: 20),
+                    label: const Text('Cerrar sesión'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                      side: BorderSide(
+                        color: AppColors.error.withValues(alpha: 0.35),
+                      ),
+                      minimumSize: const Size(double.infinity, 52),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  /// Identidad del perfil: solo foto centrada y nombre, sin fondo propio.
+  Future<void> _combinarColores() async {
+    final resultado = await showModalBottomSheet<(Color, Color)>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      backgroundColor: _profileSurface,
+      builder: (_) =>
+          _CustomThemeSheet(inicioInicial: _tema.inicio, finInicial: _tema.fin),
+    );
+    if (resultado != null && mounted) {
+      await TemaController.instance.aplicar(
+        perfilTemaIdPersonalizado(resultado.$1, fin: resultado.$2),
+      );
+    }
+  }
+
+  /// Cabecera de AccountView: foto, identidad y degradado editorial.
   Widget _buildPortada(BuildContext context, Usuario? usuario) {
     final textTheme = Theme.of(context).textTheme;
-    return Padding(
-      key: const ValueKey('identidad-perfil'),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        children: [
-          Semantics(
-            button: true,
-            label: 'Cambiar foto de perfil',
-            child: GestureDetector(
-              onTap: _cambiarFoto,
-              child: SizedBox(
-                width: 92,
-                height: 92,
-                child: Stack(
-                  children: [
-                    Center(child: _Avatar(usuario: usuario, anillo: null)),
-                    Positioned(
-                      right: 0,
-                      bottom: 2,
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: AppColors.gold,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                        child: const Icon(
-                          Icons.photo_camera_rounded,
-                          size: 15,
-                          color: AppColors.tinta,
-                        ),
-                      ),
-                    ),
-                  ],
+    final tinta = _tema.textColor;
+    final foto = Semantics(
+      button: true,
+      label: 'Cambiar foto de perfil',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: _subiendoFoto ? null : _cambiarFoto,
+          child: SizedBox(
+            width: 92,
+            height: 92,
+            child: Stack(
+              children: [
+                Center(
+                  child: _Avatar(usuario: usuario, anillo: Colors.white),
                 ),
+                if (_subiendoFoto)
+                  const Positioned.fill(
+                    child: Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+                  ),
+                Positioned(
+                  right: 0,
+                  bottom: 2,
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: AppColors.dorado,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.photo_camera_rounded,
+                      size: 15,
+                      color: AppColors.tinta,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    Widget identidad = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          usuario?.nombreCompleto ?? 'Tu cuenta',
+          key: const ValueKey('nombre-perfil'),
+          style: AppTheme.serif(fontSize: 22, color: tinta, height: 1.2),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          usuario?.email ?? '',
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: textTheme.bodyMedium?.copyWith(
+            color: tinta.withValues(alpha: 0.9),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Toca la foto para actualizarla',
+          style: textTheme.labelSmall?.copyWith(
+            color: tinta.withValues(alpha: 0.9),
+          ),
+        ),
+      ],
+    );
+    // Una combinación propia puede mezclar blanco y negro: un solo color de
+    // texto no alcanza contraste en ambos extremos. Proteger solo la identidad.
+    double contraste(Color fondo) {
+      final a = tinta.computeLuminance(), b = fondo.computeLuminance();
+      return ((a > b ? a : b) + 0.05) / ((a > b ? b : a) + 0.05);
+    }
+
+    if (contraste(_tema.inicio) < 4.5 || contraste(_tema.fin) < 4.5) {
+      identidad = Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: tinta == Colors.white
+              ? Colors.black.withValues(alpha: 0.72)
+              : Colors.white.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: identidad,
+      );
+    }
+    return AnimatedContainer(
+      key: const ValueKey('identidad-perfil'),
+      duration: reducirMovimiento(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 350),
+      decoration: BoxDecoration(
+        gradient: _tema.gradiente,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: EstanteriaAnimada(
+                tinta: tinta,
+                acento: AppColors.doradoClaro,
+                opacidad: tinta == Colors.white ? 0.05 : 0.035,
+                altoBalda: 64,
+                semilla: 5,
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            usuario?.nombreCompleto ?? 'Tu cuenta',
-            key: const ValueKey('nombre-perfil'),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: textTheme.headlineSmall?.copyWith(
-              color: _profileInk,
-              height: 1.2,
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: LayoutBuilder(
+              builder: (context, c) {
+                if (c.maxWidth < 230 ||
+                    (c.maxWidth < 300 &&
+                        MediaQuery.textScalerOf(context).scale(14) > 19)) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [foto, const SizedBox(height: 16), identidad],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    foto,
+                    const SizedBox(width: 18),
+                    Expanded(child: identidad),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -796,7 +1028,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         width: 38,
         height: 38,
         decoration: BoxDecoration(
-          color: AppColors.primaryContainer,
+          color: _profileSoft,
           borderRadius: BorderRadius.circular(11),
           border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
         ),
@@ -829,41 +1061,45 @@ class _PerfilScreenState extends State<PerfilScreen> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: _profileSurface,
-        borderRadius: BorderRadius.circular(Radios.md),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _profileBorder),
-        boxShadow: Sombra.tarjeta,
       ),
       child: Material(color: Colors.transparent, child: child),
     );
   }
 
   Widget _row(BuildContext context, IconData icon, String label, String value) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-      // Misma placa que las demás filas del perfil.
-      leading: Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: AppColors.primaryContainer,
-          borderRadius: BorderRadius.circular(11),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.12),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Icon(icon, size: 22, color: AppColors.gold),
           ),
-        ),
-        child: Icon(icon, size: 20, color: AppColors.primary),
-      ),
-      title: Text(
-        label,
-        style: Theme.of(context).textTheme.bodySmall
-            ?.copyWith(color: _profileMuted),
-      ),
-      subtitle: Text(
-        value,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.bodyMedium
-            ?.copyWith(fontWeight: FontWeight.w500, color: _profileInk),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: _profileMuted),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value.trim().isEmpty ? '—' : value,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: _profileInk,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -901,8 +1137,8 @@ class _AccesoRapido extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: AppColors.primaryContainer,
                     shape: BoxShape.circle,
@@ -913,7 +1149,7 @@ class _AccesoRapido extends StatelessWidget {
                 Text(
                   label,
                   textAlign: TextAlign.center,
-                  maxLines: 1,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelMedium
                       ?.copyWith(color: _profileInk),
@@ -1203,7 +1439,7 @@ class _ColoresScreenState extends State<_ColoresScreen> {
               ],
             ),
             const SizedBox(height: 10),
-            // Cuatro columnas que ocupan todo el ancho.
+            // Columnas adaptables al espacio disponible.
             LayoutBuilder(
               builder: (context, c) => Wrap(
                 spacing: 12,
@@ -1211,7 +1447,25 @@ class _ColoresScreenState extends State<_ColoresScreen> {
                 children: [
                   for (final t in temas)
                     SizedBox(
-                      width: (c.maxWidth - 36) / 4,
+                      width:
+                          (c.maxWidth -
+                              12 *
+                                  ((c.maxWidth /
+                                              (MediaQuery.textScalerOf(context)
+                                                          .scale(12) >
+                                                      18
+                                                  ? 116
+                                                  : 88))
+                                          .floor()
+                                          .clamp(2, 6) -
+                                      1)) /
+                          (c.maxWidth /
+                                  (MediaQuery.textScalerOf(context).scale(12) >
+                                          18
+                                      ? 116
+                                      : 88))
+                              .floor()
+                              .clamp(2, 6),
                       child: Column(
                         children: [
                           _TemaSwatch(
@@ -1222,8 +1476,6 @@ class _ColoresScreenState extends State<_ColoresScreen> {
                           const SizedBox(height: 5),
                           Text(
                             t.nombre,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                             style: texto.labelSmall?.copyWith(
                               color: AppColors.textSecondary,
@@ -1295,7 +1547,9 @@ class _VistaPreviaTema extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AnimatedContainer(
-    duration: const Duration(milliseconds: 250),
+    duration: reducirMovimiento(context)
+        ? Duration.zero
+        : const Duration(milliseconds: 250),
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
       color: AppColors.surface,
@@ -1306,8 +1560,8 @@ class _VistaPreviaTema extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          constraints: const BoxConstraints(minHeight: 64),
+          padding: const EdgeInsets.all(16),
           alignment: Alignment.centerLeft,
           decoration: BoxDecoration(gradient: tema.gradiente),
           child: Text(
@@ -1321,31 +1575,32 @@ class _VistaPreviaTema extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Así se ven tus letras',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
+          child: LayoutBuilder(
+            builder: (context, c) {
+              final apilar =
+                  c.maxWidth < 330 &&
+                  MediaQuery.textScalerOf(context).scale(14) > 19;
+              final letras = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Así se ven tus letras',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Precios, títulos y botones',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12.5,
-                      ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Precios, títulos y botones',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12.5,
                     ),
-                  ],
-                ),
-              ),
-              Container(
+                  ),
+                ],
+              );
+              final boton = Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 8,
@@ -1354,15 +1609,28 @@ class _VistaPreviaTema extends StatelessWidget {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
+                child: Text(
                   'Comprar',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-            ],
+              );
+              if (apilar) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [letras, const SizedBox(height: 14), boton],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(child: letras),
+                  const SizedBox(width: 12),
+                  boton,
+                ],
+              );
+            },
           ),
         ),
       ],
@@ -1402,52 +1670,64 @@ class _TemaSwatch extends StatelessWidget {
     final esPersonalizado = tema == null;
     final colorCheck = tema?.textColor ?? const Color(0xFF2C2621);
 
-    return InkWell(
-      onTap: onTap,
-      customBorder: const CircleBorder(),
-      child: Container(
-        width: 42,
-        height: 42,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: tema?.gradiente,
-          color: esPersonalizado ? const Color(0xFFF1E8D8) : null,
-          border: Border.all(
-            color: seleccionado
-                ? const Color(0xFF2C2621)
-                : const Color(0xFFD6CAB8),
-            width: seleccionado ? 3 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        foregroundDecoration: tema?.vidrio == true
-            ? const BoxDecoration(
-                shape: BoxShape.circle,
-                // Brillo de cristal arriba a la izquierda.
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0x66FFFFFF),
-                    Color(0x00FFFFFF),
-                    Color(0x14FFFFFF),
-                  ],
-                  stops: [0, 0.5, 1],
+    return Semantics(
+      button: true,
+      selected: seleccionado,
+      label: esPersonalizado ? 'Combinar tus colores' : 'Tema ${tema!.nombre}',
+      child: Tooltip(
+        message: esPersonalizado ? 'Combinar tus colores' : tema!.nombre,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: Container(
+            width: 48,
+            height: 48,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: tema?.gradiente,
+              color: esPersonalizado ? const Color(0xFFF1E8D8) : null,
+              border: Border.all(
+                color: seleccionado
+                    ? const Color(0xFF2C2621)
+                    : const Color(0xFFD6CAB8),
+                width: seleccionado ? 3 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
                 ),
-              )
-            : null,
-        child: seleccionado
-            ? Icon(Icons.check_rounded, size: 18, color: colorCheck)
-            : esPersonalizado
-            ? Icon(Icons.add_rounded, size: 18, color: AppColors.textSecondary)
-            : null,
+              ],
+            ),
+            foregroundDecoration: tema?.vidrio == true
+                ? const BoxDecoration(
+                    shape: BoxShape.circle,
+                    // Brillo de cristal arriba a la izquierda.
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0x66FFFFFF),
+                        Color(0x00FFFFFF),
+                        Color(0x14FFFFFF),
+                      ],
+                      stops: [0, 0.5, 1],
+                    ),
+                  )
+                : null,
+            child: seleccionado
+                ? Icon(Icons.check_rounded, size: 18, color: colorCheck)
+                : esPersonalizado
+                ? Icon(
+                    Icons.add_rounded,
+                    size: 18,
+                    color: AppColors.textSecondary,
+                  )
+                : null,
+          ),
+        ),
       ),
     );
   }
@@ -1533,6 +1813,7 @@ class _CustomThemeSheetState extends State<_CustomThemeSheet> {
             ),
             const SizedBox(height: 8),
             _ColorPalette(
+              key: const ValueKey('paleta-inicio'),
               seleccionado: _inicio,
               onSeleccionar: (color) => setState(() => _inicio = color),
             ),
@@ -1546,6 +1827,7 @@ class _CustomThemeSheetState extends State<_CustomThemeSheet> {
             ),
             const SizedBox(height: 8),
             _ColorPalette(
+              key: const ValueKey('paleta-fin'),
               seleccionado: _fin,
               onSeleccionar: (color) => setState(() => _fin = color),
             ),
@@ -1571,6 +1853,7 @@ class _ColorPalette extends StatelessWidget {
   final ValueChanged<Color> onSeleccionar;
 
   const _ColorPalette({
+    super.key,
     required this.seleccionado,
     required this.onSeleccionar,
   });
@@ -1582,30 +1865,36 @@ class _ColorPalette extends StatelessWidget {
       runSpacing: 10,
       children: [
         for (final color in _coloresPersonalizables())
-          InkWell(
-            customBorder: const CircleBorder(),
-            onTap: () => onSeleccionar(color),
-            child: Container(
-              width: 36,
-              height: 36,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color,
-                border: Border.all(
-                  color: color == seleccionado
-                      ? const Color(0xFF2C2621)
-                      : const Color(0xFFD6CAB8),
-                  width: color == seleccionado ? 3 : 1,
+          Semantics(
+            button: true,
+            selected: color == seleccionado,
+            label:
+                'Color ${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => onSeleccionar(color),
+              child: Container(
+                width: 48,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color,
+                  border: Border.all(
+                    color: color == seleccionado
+                        ? const Color(0xFF2C2621)
+                        : const Color(0xFFD6CAB8),
+                    width: color == seleccionado ? 3 : 1,
+                  ),
                 ),
+                child: color == seleccionado
+                    ? Icon(
+                        Icons.check_rounded,
+                        size: 16,
+                        color: _textoLegible(color, color),
+                      )
+                    : null,
               ),
-              child: color == seleccionado
-                  ? Icon(
-                      Icons.check_rounded,
-                      size: 16,
-                      color: _textoLegible(color, color),
-                    )
-                  : null,
             ),
           ),
       ],

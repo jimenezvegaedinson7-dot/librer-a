@@ -303,6 +303,7 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
     let md = cab('Mapa de la app Flutter (Android / clientes)');
     md += `## Arranque y navegación\n
 - \`lib/main.dart\` → \`LibreriaApp\` (\`MaterialApp\` con \`navigatorKey\` global y \`TemaController\`) → \`SplashScreen\`.
+- Antes de \`runApp\`, se espera \`TemaController.cargar()\` para restaurar colores, fondo y tarjetas sin un destello de la paleta inicial.
 - \`SplashScreen\` comprueba la sesión (\`StorageService\`) y valida el token con \`GET /api/usuarios/perfil\`.
 - Navegación imperativa con \`Navigator\` / \`MaterialPageRoute\`; \`services/navigation.dart\` expone \`navigatorKey\`, \`constructorLogin\` (lo registra \`main.dart\`) e \`irALogin()\` para navegar sin contexto (lo usa el interceptor 401).
 - Barra inferior: \`widgets/app_bottom_navigation.dart\`.
@@ -319,10 +320,19 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 | \`services/storage_service.dart\` | Token JWT en **flutter_secure_storage**; usuario y preferencias en **shared_preferences** (migra el token legado). Serializa cambios de credencial, mantiene la generación de sesión e invalida intentos login/2FA abandonados antes de instalar credenciales. |
 | \`services/carrito_service.dart\` | Carrito y guardados (\`ChangeNotifier\`), persistidos por titular en SharedPreferences \`carrito_v2_<id>\`. Migra \`carrito_v1\` solo si coincide el dueño; cerrar sesión limpia memoria y conserva los datos de ese cliente. **Sin endpoint propio**: los ítems se envían en \`POST /api/pagos/crear-orden\`. |
 | \`services/checkout_store.dart\` | Diario local por propietario: cuerpo e idempotencia persistidos antes del POST, para recuperar la misma compra sin duplicarla. |
-| \`services/tema_controller.dart\` | Tema de color del perfil (\`ChangeNotifier\`). |
+| \`services/tema_controller.dart\` | Colores, fondo y tarjetas globales (\`ChangeNotifier\`); restaura preferencias locales y repinta \`AppColors\`. |
 | \`services/navigation.dart\` | \`navigatorKey\` + \`irALogin()\`. |
 
 Fuentes Inter y Source Serif 4 empaquetadas en \`assets/fonts/\` y declaradas en \`pubspec.yaml\`; la app no descarga tipografía en ejecución. La memoria de checkout se limpia al cambiar sesión; los intentos persistidos siguen separados por propietario.
+
+## Perfil y personalización
+
+- \`screens/perfil_screen.dart\` adapta \`ios_swift_app/Views/Account/AccountView.swift\`: cabecera degradada con foto e identidad, accesos a compras/favoritos, datos, colores, seguridad y legal. Conserva edición, cámara/galería y avatares PNG multipart.
+- Las lecturas del perfil se vinculan a la generación de sesión y a una revisión local: una respuesta anterior a editar, cambiar foto o modificar 2FA no sobrescribe el estado nuevo. Tras editar se muestra el usuario guardado y se fuerza una lectura actual; el estado 2FA confirmado también se persiste.
+- Los temas de \`utils/perfil_temas.dart\` se aplican al tocar; la combinación de dos colores tiene borrador local hasta Aplicar. Los colores y fondos se guardan en SharedPreferences mediante \`StorageService\`, sin endpoint adicional.
+- \`screens/fondos_screen.dart\` adapta \`BackgroundsView\` de Swift: vista previa de fondo y tarjetas, grupos Suaves/Con color y selección adaptable. Atrás descarta el borrador; Aplicar actualiza \`TemaController\` y toda la app.
+- Texto ampliado, nombres y etiquetas adaptables, controles de color de 48 dp y animaciones que respetan Reduce Motion. \`AppColors.onPrimary\` mantiene al menos 4.5:1 sobre botones, incluidos temas dorados/naranjas; la identidad de la cabecera se protege si el degradado mezcla extremos de bajo contraste.
+- Pruebas: \`test/perfil_personalizacion_test.dart\` (persistencia, cancelación, combinación, contraste, edición tardía, 2FA y avatar) y \`test/perfil_presentacion_test.dart\` (cabecera, foto y capturas con fuentes locales reales).
 
 ## Métodos de ApiService → endpoints
 

@@ -58,7 +58,7 @@ Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxl
 |---|---|---|---|
 | Backend (`require`) | 182 | 393 | 0 (analizador estático de imports) |
 | Frontend (`import`) | 206 | 807 | 0 (analizador estático de imports) |
-| Flutter (`import` relativos) | 76 | 328 | 4 caminos cíclicos |
+| Flutter (`import` relativos) | 76 | 330 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter
 

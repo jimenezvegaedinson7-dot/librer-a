@@ -20,7 +20,7 @@ Future<void> main() async {
     }
   });
   // Restaura el tema de colores elegido por el usuario.
-  TemaController.instance.cargar();
+  await TemaController.instance.cargar();
   // Restaura el carrito guardado antes de mostrar la app, para que nada lo
   // pise mientras carga.
   await CarritoService.instance.cargar();
