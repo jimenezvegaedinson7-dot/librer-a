@@ -232,7 +232,7 @@ async function apiVacia(page) {
 }
 
 for (const width of [390, 1440]) {
-    test(`Pallasca: tarifa fija y dirección de recojo sin edición por barrio a ${width}px`, async ({page}) => {
+    test(`Pallasca: tarifa vigente con edición explícita, sin bloque de recojo a ${width}px`, async ({page}) => {
         await page.setViewportSize({width, height:1000});
         const errores = []; page.on('pageerror', e => errores.push(e.message));
         const escrituras = []; const ubicaciones = [];
@@ -247,8 +247,8 @@ for (const width of [390, 1440]) {
         });
         await page.goto('/tarifas-envio');
         await expect(page.getByText('S/ 5.00 por pedido',{exact:true})).toBeVisible();
-        await expect(page.getByText('Gratis · S/ 0.00',{exact:true})).toBeVisible();
-        await expect(page.getByText('Plaza de Armas, Jr. Marañón 161, Pallasca 02835',{exact:true})).toBeVisible();
+        await expect(page.getByRole('button',{name:'Editar tarifa',exact:true})).toBeEnabled();
+        await expect(page.getByRole('heading',{name:'Recojo en tienda',exact:true})).toHaveCount(0);
         await expect(page.getByRole('button',{name:'Nueva zona',exact:true})).toHaveCount(0);
         await page.getByRole('button',{name:'Actualizar',exact:true}).click();
         await expect(page.getByText('S/ 5.00 por pedido',{exact:true})).toBeVisible();

@@ -102,13 +102,13 @@ for (const width of [320, 390, 1440]) {
 }
 
 for (const width of [390, 1440]) {
-    test(`tarifas ${width}px: delivery único S/5 y recojo gratuito sin gráficos redundantes`, async ({ page }, info) => {
+    test(`tarifas ${width}px: configuración de delivery con acción Editar visible`, async ({ page }, info) => {
         await page.setViewportSize({ width, height: 1000 });
         const control = await preparar(page);
         await page.goto('/tarifas-envio');
         await expect(page.getByText('S/ 5.00 por pedido', { exact: true })).toBeVisible();
-        await expect(page.getByText('Gratis · S/ 0.00', { exact: true })).toBeVisible();
-        await expect(page.getByText('Plaza de Armas, Jr. Marañón 161, Pallasca 02835', { exact: true })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Editar tarifa', exact: true })).toBeEnabled();
+        await expect(page.getByRole('heading', { name: 'Recojo en tienda', exact: true })).toHaveCount(0);
         await expect(page.getByRole('meter')).toHaveCount(0);
         expect(control.errores).toEqual([]);
         expect(control.escrituras).toEqual([]);
