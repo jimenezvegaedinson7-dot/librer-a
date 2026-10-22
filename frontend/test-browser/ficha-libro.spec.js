@@ -63,8 +63,12 @@ for(const ancho of [320,390,820,1440]){
         await expect(page.getByRole('button',{name:'Ver menos',exact:true})).toHaveAttribute('aria-expanded','true');
         await expect(page.locator('.ficha-relacionados li')).toHaveCount(4);
         await expect(page.locator('.ficha-descubrir .tarjeta-libro')).toHaveCount(8);
-        const ids=await page.locator('.ficha-relacionados h3 a, .ficha-descubrir .compra-libro a').evaluateAll(a=>a.map(x=>x.getAttribute('href')));
-        expect(new Set(ids).size).toBe(ids.length);expect(ids).not.toContain('/libro/1');
+        const hrefs=await page.locator('.ficha-relacionados h3 a').evaluateAll(a=>a.map(x=>x.getAttribute('href')));
+        const titulos=await page.locator('.ficha-descubrir .tarjeta-libro .libro__titulo').allTextContents();
+        expect(new Set(hrefs).size).toBe(hrefs.length);
+        expect(hrefs).not.toContain('/libro/1');
+        expect(new Set(titulos).size).toBe(titulos.length);
+        expect(titulos).not.toContain(principal.titulo);
         expect(control.catalogos).toEqual([]);
         await expect(page).toHaveTitle(/Una lectura para descubrir.*Autora de prueba/);
         await expect(page.locator('meta[name="description"]')).toHaveAttribute('content',descripcion);
@@ -86,6 +90,28 @@ test('ficha: cantidad y agregar reutilizan el carrito, comprar ahora reutiliza c
     await page.getByRole('spinbutton',{name:'Cantidad de ejemplares',exact:true}).fill('1');
     await page.getByRole('button',{name:'Comprar ahora',exact:true}).click();await expect(page).toHaveURL(/\/checkout$/);
     await expect(page.locator('.compra-carrito')).toHaveAttribute('aria-label','Carrito (3)');
+});
+test('tarjeta del catálogo: clic en cualquier parte abre la ficha y no queda el enlace "Ver detalle"',async({page})=>{
+    await preparar(page);await page.goto('/catalogo');
+    const tarjeta=page.locator('.rejilla-libros--todos .tarjeta-libro').first();
+    await expect(tarjeta.getByText('Ver detalle',{exact:true})).toHaveCount(0);
+    await tarjeta.locator('.tarjeta-libro__cuerpo').click();
+    await expect(page).toHaveURL(/\/libro\/\d+$/);
+});
+test('agregar al carrito no navega y muestra la pila flotante con portada, cantidad y subtotal',async({page})=>{
+    await preparar(page);await page.goto('/catalogo');
+    const tarjeta=page.locator('.rejilla-libros--todos .tarjeta-libro').first();
+    await tarjeta.getByRole('button',{name:`Agregar ${principal.titulo} al carrito`,exact:true}).click();
+    await expect(page).toHaveURL(/\/catalogo$/);
+    const pila=page.locator('.pila-carrito');
+    await expect(pila).toBeVisible();
+    await expect(pila.locator('.pila-carrito__titulo')).toHaveText(principal.titulo);
+    await expect(pila.locator('.pila-carrito__detalle')).toContainText('1 ejemplar');
+    await expect(pila.locator('.pila-carrito__detalle')).toContainText('S/ 75.00');
+    await expect(pila.locator('.pila-carrito__ver')).toContainText('Subtotal: S/ 75.00');
+    await expect(pila.locator('.pila-carrito__ver')).toHaveAttribute('href','/carrito');
+    await pila.locator('.pila-carrito__cerrar').click();
+    await expect(pila).toHaveCount(0);
 });
 test('favoritos: agregar, persistir al recargar y quitar con JWT de cliente y sin id_usuario',async({page})=>{
     const control=await preparar(page,{sesion:true});await page.goto('/libro/1');
@@ -176,10 +202,12 @@ for(const ancho of [390,1440])test(`ruta de relacionados ausente ${ancho}px: cat
     await expect(page.locator('.ficha-descubrir .tarjeta-libro')).toHaveCount(8);
     expect(control.catalogos).toHaveLength(1);
     expect(autorizaciones).toEqual([undefined]);
-    const enlaces=page.locator('.ficha-relacionados h3 a, .ficha-descubrir .compra-libro a');
+    const enlaces=page.locator('.ficha-relacionados h3 a');
     const ids=await enlaces.evaluateAll(a=>a.map(x=>x.getAttribute('href')));
+    const titulos=await page.locator('.ficha-descubrir .tarjeta-libro .libro__titulo').allTextContents();
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).not.toContain('/libro/1');expect(ids).not.toContain('/libro/90');expect(ids).not.toContain('/libro/91');
+    expect(new Set(titulos).size).toBe(titulos.length);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     await page.screenshot({path:test.info().outputPath(`relacionados-respaldo-${ancho}.png`),fullPage:true});
     const siguiente=await page.locator('.ficha-relacionados h3 a').first().textContent();

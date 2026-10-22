@@ -164,6 +164,15 @@ CREATE TABLE IF NOT EXISTS anuncios (
 CREATE INDEX IF NOT EXISTS idx_anuncios_estado ON anuncios (estado, id_anuncio DESC);
 
 -- Carrusel de imágenes del inicio, gestionado desde Anuncios.
+-- Libro protagonista de la portada web (una sola fila; NULL = automático).
+CREATE TABLE IF NOT EXISTS portada_config (
+    id SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+    id_libro_protagonista INT NULL REFERENCES libros (id_libro) ON DELETE SET NULL,
+    actualizado_por INT NULL REFERENCES usuarios (id_usuario) ON DELETE SET NULL,
+    actualizado_en TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+INSERT INTO portada_config (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
 CREATE TABLE IF NOT EXISTS carrusel_anuncios (
     id_imagen SERIAL PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,

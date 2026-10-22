@@ -1,0 +1,465 @@
+/* ============================================================
+   MODALES FORMALES
+   Solo afecta a los modales del panel: encabezado compacto, cuerpo con
+   desplazamiento propio y detalles como "etiqueta + valor" con líneas
+   divisorias, sin tarjetas ni cajas beige. Solo presentación.
+   ============================================================ */
+
+/* ---------- Modales ---------- */
+.admin-shell .modal-panel, .modal-panel {
+    border-radius: 0.875rem;
+    box-shadow: 0 24px 60px -24px rgb(13 41 64 / 0.4), 0 2px 6px rgb(13 41 64 / 0.06);
+}
+.modal-panel .modal-header { padding: 1rem 1.5rem; }
+.modal-panel .modal-header h2 { font-size: 1.25rem; font-weight: 600; line-height: 1.3; color: #0d2940; }
+.modal-panel .modal-header p { font-size: 0.8125rem; }
+.modal-panel .modal-body { padding: 1.25rem 1.5rem 1.5rem; font-size: 0.875rem; }
+@media (max-width: 639px) {
+    .modal-panel .modal-header { padding: 0.875rem 1rem; }
+    .modal-panel .modal-body { padding: 1rem; }
+}
+
+/* ---------- Detalles: etiqueta y valor, sin tarjetas ----------
+   Las fichas pasan a ser filas con una línea divisoria; el icono queda
+   pequeño y sin cuadro de fondo. */
+.modal-body .detail-tile {
+    border: 0 !important;
+    border-bottom: 1px solid var(--panel-borde, #e3dfd7) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 0.625rem 0 0.75rem !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+.modal-body .detail-tile:hover { transform: none !important; box-shadow: none !important; }
+.modal-body .detail-tile .ficha-icono {
+    width: auto !important; height: auto !important;
+    background: none !important; box-shadow: none !important;
+    color: var(--panel-secundario, #6b7280) !important; font-size: 0.75rem;
+}
+.modal-body .detail-tile > div:first-child { gap: 0.4rem; }
+.modal-body .detail-tile > div:first-child > span:last-child { font-size: 0.6875rem; letter-spacing: 0.06em; font-weight: 700; }
+.modal-body .detail-tile .ficha-valor { margin-top: 0.25rem; font-size: 0.9375rem; font-weight: 600; }
+.modal-body .grid:has(> .detail-tile) { column-gap: 2rem; row-gap: 0.25rem; }
+
+/* Cajas beige de los modales de consulta (monto, fecha, estados…):
+   pasan a ser filas con una línea divisoria, igual que las fichas. */
+.modal-body :is([class~="p-4"], [class~="p-3"])[class*="bg-parchment-"][class~="border-primary-200"]:not(:has(img, input, textarea, select)) {
+    border: 0 !important;
+    border-bottom: 1px solid var(--panel-borde, #e3dfd7) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    padding: 0.625rem 0 0.75rem !important;
+}
+.modal-body :is([class~="p-4"], [class~="p-3"])[class*="bg-parchment-"][class~="border-primary-200"]:not(:has(img, input, textarea, select)) > div:first-child[class*="text-sm"][class*="font-semibold"] {
+    font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--panel-secundario, #6b7280);
+}
+.modal-body .grid:has(> [class*="bg-parchment-"][class~="border-primary-200"]) { column-gap: 2rem; row-gap: 0.25rem; }
+/* Textos largos (descripción, motivo): fondo neutro suave, sin beige. */
+.modal-body [class*="min-h-["][class*="bg-parchment-"] { background: var(--panel-suave, #f7f5f1) !important; border-color: var(--panel-borde, #e3dfd7) !important; border-radius: 0.5rem !important; }
+
+/* ============================================================
+   ESCALA DEL PANEL
+   Las páginas y los modales se ven al 93 % de su tamaño: un poco más
+   compactos sin que las letras queden pequeñas. La barra lateral y la
+   barra superior conservan su tamaño original.
+   ============================================================ */
+.admin-shell .admin-main {
+    zoom: 0.93;
+}
+
+/* ============================================================
+   TEXTO MÁS OSCURO Y NÍTIDO
+   Los grises claros del panel (subtítulos, ayudas, etiquetas, celdas,
+   ejes y leyendas de gráficos) pasan a tonos sólidos con buen contraste
+   sobre el fondo marfil y blanco. Las tarjetas oscuras de indicadores
+   conservan sus propios colores.
+   ============================================================ */
+.admin-shell[data-theme] {
+    --panel-secundario: #3f4a56;
+}
+.admin-shell :is(.text-slate-400, .text-slate-500, .text-primary-400, .text-primary-500,
+    [class*="text-[#766d62]"], [class*="text-[#a39a8e]"],
+    .card-subtitle, .mini-stat-label, .mini-stat-descripcion, .registro-detalle,
+    .panel-subtitulo, .estado-monto, .estado-porcentaje, .donut-texto, .stock-ubicacion,
+    .panel-pie, .grafico-eje-y, .grafico-composicion__leyenda, .page-header p):not(.kpi-card--destacada *) {
+    color: #3f4a56 !important;
+}
+.admin-shell :is(.text-slate-600, .text-slate-700, [class*="text-[#433c35]"]):not(.kpi-card--destacada *) {
+    color: #26313c !important;
+}
+.admin-shell .data-table-shell thead th { color: #26313c !important; }
+.admin-shell .data-table-shell tbody td { color: #1f2a35; }
+.admin-shell :is(.field, input, textarea, select) { color: #1f2a35; }
+.admin-shell :is(.field, input, textarea)::placeholder { color: #7a828c; opacity: 1; }
+.admin-shell .field-label, .admin-shell label { color: #1f2a35; }
+.admin-shell svg text { fill: #3f4a56; }
+
+/* ============================================================
+   RESUMEN: TARJETAS PEQUEÑAS Y MEJORES REGISTROS
+   Cada tarjeta tiene su tono suave y un contenido con datos reales
+   (desgloses del catálogo y columnas de ventas) que se anima al
+   aparecer. Con "reducir movimiento" todo aparece quieto.
+   ============================================================ */
+.admin-shell[data-theme] .mini-stat[class*="mini-stat--"] {
+    --tono: #1d4f91; --tono-suave: #e9f0fa;
+    display: flex; flex-direction: column; gap: 0.625rem;
+    border: 1px solid color-mix(in srgb, var(--tono) 18%, #ffffff) !important;
+    background:
+        radial-gradient(220px 120px at 100% 0%, color-mix(in srgb, var(--tono) 12%, transparent), transparent 70%),
+        linear-gradient(160deg, var(--tono-suave) 0%, #ffffff 62%) !important;
+    box-shadow: 0 1px 2px rgb(13 41 64 / 0.05), 0 12px 26px -20px color-mix(in srgb, var(--tono) 55%, transparent) !important;
+}
+.admin-shell[data-theme] .mini-stat.mini-stat--verde { --tono: #1f7a4d; --tono-suave: #e8f5ee; }
+.admin-shell[data-theme] .mini-stat.mini-stat--ambar { --tono: #b45309; --tono-suave: #fdf2e3; }
+.admin-shell[data-theme] .mini-stat.mini-stat--violeta { --tono: #5b4a9c; --tono-suave: #f0ecfa; }
+.admin-shell[data-theme] .mini-stat[class*="mini-stat--"] .mini-stat-icono {
+    background: color-mix(in srgb, var(--tono) 14%, #ffffff) !important;
+    color: var(--tono) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tono) 22%, transparent) !important;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.admin-shell[data-theme] .mini-stat[class*="mini-stat--"]:hover .mini-stat-icono { transform: rotate(-6deg) scale(1.06); }
+.admin-shell[data-theme] .mini-stat[class*="mini-stat--"] .mini-stat-valor { margin: 0; color: var(--tono) !important; font-size: 1.75rem; line-height: 1; }
+
+.mini-detalle { margin-top: auto; }
+.mini-barra { display: flex; gap: 2px; height: 0.5rem; overflow: hidden; border-radius: 999px; background: color-mix(in srgb, var(--tono, #1d4f91) 10%, #ffffff); }
+.mini-barra-tramo { display: block; height: 100%; border-radius: 999px; }
+.mini-barra-tramo--verde { background: linear-gradient(90deg, #2e9a62, #1f7a4d); }
+.mini-barra-tramo--gris { background: #b9c0c8; }
+.mini-barra-tramo--violeta { background: linear-gradient(90deg, #7a68c2, #5b4a9c); }
+.mini-leyenda { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; margin: 0.5rem 0 0; padding: 0; list-style: none; font-size: 0.75rem; color: #3f4a56; }
+.mini-leyenda li { display: inline-flex; align-items: center; gap: 0.375rem; }
+.mini-punto { width: 0.5rem; height: 0.5rem; border-radius: 50%; }
+.mini-punto--verde { background: #1f7a4d; }
+.mini-punto--gris { background: #b9c0c8; }
+.mini-punto--violeta { background: #5b4a9c; }
+.mini-top { display: grid; gap: 0.375rem; margin-bottom: 0; padding: 0; list-style: none; }
+.mini-top li { display: grid; grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr) auto; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #26313c; }
+.mini-top-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mini-top-pista { height: 0.375rem; overflow: hidden; border-radius: 999px; background: color-mix(in srgb, var(--tono, #b45309) 12%, #ffffff); }
+.mini-top-relleno { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, color-mix(in srgb, var(--tono, #b45309) 70%, #ffffff), var(--tono, #b45309)); }
+.mini-top-valor { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--tono, #b45309); }
+
+/* Mejores registros: tono oro (mes) y marino (día), con columnas reales. */
+.admin-shell[data-theme] .registro-card[class*="registro-card--"] {
+    --tono: #a0700f; --tono-suave: #fff5e1;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1rem;
+    border: 1px solid color-mix(in srgb, var(--tono) 22%, #ffffff) !important;
+    background:
+        radial-gradient(320px 150px at 100% 0%, color-mix(in srgb, var(--tono) 14%, transparent), transparent 70%),
+        linear-gradient(135deg, var(--tono-suave) 0%, #ffffff 65%) !important;
+}
+.admin-shell[data-theme] .registro-card.registro-card--marino { --tono: #1d4f91; --tono-suave: #eaf1fa; }
+.admin-shell[data-theme] .registro-card[class*="registro-card--"]::after { border-color: color-mix(in srgb, var(--tono) 22%, transparent); }
+.admin-shell[data-theme] .registro-card[class*="registro-card--"] .registro-icono {
+    background: color-mix(in srgb, var(--tono) 16%, #ffffff) !important;
+    color: var(--tono) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tono) 25%, transparent) !important;
+}
+.admin-shell[data-theme] .registro-card[class*="registro-card--"] .registro-principal { color: #0d2940; }
+.registro-columnas { display: flex; align-items: flex-end; gap: 4px; height: 3.5rem; min-width: 7rem; }
+.registro-columna { display: flex; flex: 1 1 0; align-items: flex-end; height: 100%; min-width: 6px; }
+.registro-columna-barra { display: block; width: 100%; border-radius: 3px 3px 1px 1px; background: color-mix(in srgb, var(--tono, #a0700f) 28%, #ffffff); }
+.registro-columna-barra--mejor { background: linear-gradient(180deg, color-mix(in srgb, var(--tono, #a0700f) 75%, #ffffff), var(--tono, #a0700f)); box-shadow: 0 4px 10px -4px color-mix(in srgb, var(--tono, #a0700f) 70%, transparent); }
+@media (max-width: 520px) {
+    .admin-shell[data-theme] .registro-card[class*="registro-card--"] { grid-template-columns: auto minmax(0, 1fr); }
+    .registro-columnas { grid-column: 1 / -1; min-width: 0; height: 2.75rem; }
+}
+
+/* ============================================================
+   RESUMEN: VENTAS POR ESTADO (PASTEL 3D)
+   ============================================================ */
+.pastel3d { display: flex; justify-content: center; padding: 0.25rem 0 0.5rem; }
+.pastel3d svg { width: 100%; max-width: 17rem; height: auto; overflow: visible; }
+.pastel3d-sombra { fill: rgb(13 41 64 / 0.16); filter: blur(4px); }
+.pastel3d-porcion { cursor: pointer; }
+.pastel3d-etiqueta { fill: #ffffff !important; font-size: 11px; font-weight: 700; paint-order: stroke; stroke: rgb(0 0 0 / 0.25); stroke-width: 2px; pointer-events: none; }
+
+/* ============================================================
+   RESUMEN: ÚLTIMOS LIBROS AGREGADOS
+   Tono salvia suave y líneas marcadas para leer bien cada fila.
+   ============================================================ */
+.admin-shell[data-theme] .grafico-card.recientes {
+    border: 1px solid #c9ddd3 !important;
+    background: linear-gradient(180deg, #eef7f2 0%, #f8fbf9 34%, #ffffff 100%) !important;
+    box-shadow: 0 1px 2px rgb(13 41 64 / 0.05), 0 14px 30px -24px rgb(31 106 79 / 0.45) !important;
+}
+.recientes .recientes-cabecera { background: #dcece4; border-top: 2px solid #9fc4b3; border-bottom: 2px solid #9fc4b3; }
+.recientes .recientes-cabecera th { color: #1d4a3b !important; }
+.recientes .recientes-fila { transition: background-color 0.15s ease; }
+.recientes .recientes-fila--linea { border-bottom: 1.5px solid #bcd3c8; }
+.recientes .recientes-fila:hover { background: #e8f3ed; }
+.recientes tbody td { color: #1f2a35 !important; }
+
+/* ============================================================
+   RESUMEN: EVOLUCIÓN DE VENTAS
+   Barras con color (azul, verde la mejor, índigo la actual), una línea
+   de tendencia turquesa con su área, un punto en cada cima y el monto
+   de cada barra visible sin pasar el mouse.
+   ============================================================ */
+.grafico-plot .grafico-barra {
+    background: linear-gradient(180deg, #5b9bd8 0%, #2f6fb3 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+.grafico-plot .grafico-barra--actual { background: linear-gradient(180deg, #7c6be0 0%, #4c3fa8 100%); }
+.grafico-plot .grafico-barra--mejor { background: linear-gradient(180deg, #34c27a 0%, #15803d 100%); }
+.grafico-plot .grafico-barra--activa { filter: brightness(1.12) saturate(1.1); }
+.grafico-plot .grafico-columna:hover { background: rgb(47 111 179 / 0.06); }
+.evolucion-tendencia { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.evolucion-tendencia-trazo { fill: none; stroke: #0d9488; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.grafico-columnas { z-index: 3; }
+.grafico-punto {
+    position: absolute; top: -5px; left: 50%; z-index: 4;
+    width: 10px; height: 10px; transform: translateX(-50%);
+    border: 2px solid #ffffff; border-radius: 50%; background: #0d9488;
+    box-shadow: 0 1px 3px rgb(13 41 64 / 0.35);
+}
+.grafico-etiqueta-valor {
+    position: absolute; bottom: calc(100% + 8px); left: 50%; z-index: 4;
+    transform: translateX(-50%);
+    font-size: 0.6875rem; font-weight: 700; font-variant-numeric: tabular-nums;
+    color: #1d4f91; white-space: nowrap; pointer-events: none;
+}
+.grafico-etiqueta-valor--clave { color: #15803d; font-size: 0.75rem; }
+.grafico-barra--actual .grafico-etiqueta-valor { color: #4c3fa8; }
+.grafico-leyenda-marca { background: #2f6fb3 !important; }
+.grafico-leyenda-marca--actual { background: #4c3fa8 !important; }
+.grafico-leyenda-marca--mejor { background: #15803d !important; }
+.grafico-leyenda-tendencia { display: inline-block; width: 1.125rem; height: 3px; border-radius: 2px; background: #0d9488; }
+@media (max-width: 640px) {
+    .grafico-etiqueta-valor:not(.grafico-etiqueta-valor--clave) { display: none; }
+}
+.grafico-etiqueta-valor { padding: 0 4px; border-radius: 4px; background: rgb(255 255 255 / 0.88); box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6); }
+.grafico-columna:first-child .grafico-etiqueta-valor { left: 0; transform: none; }
+.grafico-columna:last-child .grafico-etiqueta-valor { left: auto; right: 0; transform: none; }
+
+/* Encabezado de "Últimos libros agregados": negro suave con brillo de
+   espejo y un destello que lo cruza al aparecer y al pasar el mouse. */
+.recientes .recientes-encabezado {
+    position: relative;
+    overflow: hidden;
+    border-radius: inherit;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 0.16) 0%, rgb(255 255 255 / 0.04) 48%, rgb(0 0 0 / 0) 52%),
+        linear-gradient(135deg, #ead9c3 0%, #dcc3a3 55%, #cfb28d 100%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), inset 0 -1px 0 rgb(0 0 0 / 0.35);
+}
+.recientes .recientes-encabezado::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: -40%;
+    width: 30%;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.22), transparent);
+    transform: skewX(-18deg);
+    animation: recientes-destello 1.6s cubic-bezier(0.25, 1, 0.5, 1) 0.4s 1 both;
+    pointer-events: none;
+}
+.recientes:hover .recientes-encabezado::after { animation: recientes-destello 1.2s cubic-bezier(0.25, 1, 0.5, 1) 1 both; }
+@keyframes recientes-destello { from { left: -40%; } to { left: 120%; } }
+.recientes .recientes-encabezado h3 { color: #ffffff !important; }
+.recientes .recientes-encabezado p { color: rgb(255 255 255 / 0.72) !important; }
+.recientes .recientes-encabezado > div:first-child > div:first-child {
+    background: rgb(255 255 255 / 0.12) !important;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
+}
+.recientes .recientes-encabezado > div:first-child > div:first-child svg { color: #f2d48a !important; }
+.recientes .recientes-encabezado > button {
+    border-color: rgb(255 255 255 / 0.28) !important;
+    background: rgb(255 255 255 / 0.1) !important;
+    color: #ffffff !important;
+}
+.recientes .recientes-encabezado > button:hover { background: rgb(255 255 255 / 0.2) !important; }
+.recientes .recientes-cabecera { border-top: 0; }
+@media (prefers-reduced-motion: reduce) {
+    .recientes .recientes-encabezado::after, .recientes:hover .recientes-encabezado::after { animation: none; display: none; }
+}
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado p { color: rgb(255 255 255 / 0.74) !important; }
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado h3 { color: #ffffff !important; }
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado > button {
+    border: 1px solid rgb(255 255 255 / 0.3) !important;
+    background: rgb(255 255 255 / 0.1) !important;
+    color: #ffffff !important;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.15) !important;
+}
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado > button:hover { background: rgb(255 255 255 / 0.22) !important; }
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado > button svg { color: #ffffff !important; }
+
+/* Anillos de porcentaje: más grandes y con trazo fino para que el número
+   (hasta "100%") quepa completo dentro. */
+.admin-shell[data-theme] .kpi-anillo.kpi-anillo { width: 3rem !important; height: 3rem !important; }
+.admin-shell[data-theme] .kpi-anillo.kpi-anillo circle { stroke-width: 3 !important; }
+.admin-shell[data-theme] .kpi-anillo.kpi-anillo .kpi-anillo-cifra { font-size: 0.6875rem !important; letter-spacing: -0.03em; }
+
+/* ============================================================
+   LIBROS: tablas con encabezado negro brillante, columnas en salvia,
+   líneas marcadas; formulario y filtros con un tono suave.
+   ============================================================ */
+.admin-shell[data-theme] .libros-pagina .card.libros-tabla {
+    overflow: hidden;
+    border: 1px solid #c9ddd3 !important;
+    background: linear-gradient(180deg, #f8fbf9 0%, #ffffff 40%) !important;
+    box-shadow: 0 1px 2px rgb(13 41 64 / 0.05), 0 14px 30px -24px rgb(31 106 79 / 0.4) !important;
+}
+.admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header {
+    position: relative; overflow: hidden;
+    border-bottom: 0 !important;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 0.16) 0%, rgb(255 255 255 / 0.04) 48%, rgb(0 0 0 / 0) 52%),
+        linear-gradient(135deg, #ead9c3 0%, #dcc3a3 55%, #cfb28d 100%) !important;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
+}
+.admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: -40%; width: 30%;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.22), transparent);
+    transform: skewX(-18deg); pointer-events: none;
+    animation: recientes-destello 1.6s cubic-bezier(0.25, 1, 0.5, 1) 0.4s 1 both;
+}
+.admin-shell[data-theme] .libros-pagina .libros-tabla:hover > .card-header::after { animation: recientes-destello 1.2s cubic-bezier(0.25, 1, 0.5, 1) 1 both; }
+.admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header .card-title { color: #ffffff !important; }
+.admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header .card-subtitle { color: rgb(255 255 255 / 0.74) !important; }
+.admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header :is(span, div)[class*="rounded-full"] {
+    border-color: rgb(255 255 255 / 0.3) !important; background: rgb(255 255 255 / 0.12) !important; color: #ffffff !important;
+}
+.admin-shell[data-theme] .libros-pagina .libros-tabla .data-table-shell thead tr { background: #dcece4 !important; }
+.admin-shell[data-theme] .libros-pagina .libros-tabla .data-table-shell thead th {
+    color: #1d4a3b !important; font-weight: 700;
+    border-top: 2px solid #9fc4b3 !important; border-bottom: 2px solid #9fc4b3 !important;
+}
+.admin-shell[data-theme] .libros-pagina .libros-tabla .data-table-shell tbody tr { border-color: #bcd3c8 !important; border-bottom-width: 1.5px; }
+.admin-shell[data-theme] .libros-pagina .libros-tabla .data-table-shell tbody { --tw-divide-y-reverse: 0; }
+.admin-shell[data-theme] .libros-pagina .libros-tabla .data-table-shell tbody > tr + tr { border-top: 1.5px solid #bcd3c8 !important; }
+.admin-shell[data-theme] .libros-pagina .libros-tabla .data-table-shell tbody tr:hover { background: #e8f3ed !important; }
+
+/* Formulario y filtros: tono salvia muy suave en la cabecera. */
+.admin-shell[data-theme] .libros-pagina :is(.libros-form, .libros-filtros) { border-color: #c9ddd3 !important; }
+.admin-shell[data-theme] .libros-pagina :is(.libros-form, .libros-filtros) > .card-header {
+    background: linear-gradient(180deg, #eef7f2 0%, #f6faf8 100%) !important;
+    border-bottom: 1.5px solid #c9ddd3 !important;
+}
+.admin-shell[data-theme] .libros-pagina :is(.libros-form, .libros-filtros) .card-header-icon {
+    background: #dcece4 !important; color: #1f6a4f !important;
+}
+
+/* ============================================================
+   TARJETAS DE INDICADORES: destello que las cruza al aparecer y al
+   pasar el mouse, e icono que flota suavemente.
+   ============================================================ */
+.kpi-destello {
+    position: absolute; inset: 0; z-index: 2; overflow: hidden; border-radius: inherit; pointer-events: none;
+}
+.kpi-destello::before {
+    content: ''; position: absolute; top: -20%; bottom: -20%; left: -45%; width: 35%;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.16), transparent);
+    transform: skewX(-18deg);
+    animation: recientes-destello 1.8s cubic-bezier(0.25, 1, 0.5, 1) 0.5s 1 both;
+}
+.kpi-card:hover .kpi-destello::before { animation: recientes-destello 1.1s cubic-bezier(0.25, 1, 0.5, 1) 1 both; }
+.kpi-card .kpi-icono { animation: kpi-flotar 3.2s ease-in-out infinite; }
+.kpi-card:nth-child(2) .kpi-icono { animation-delay: -0.8s; }
+.kpi-card:nth-child(3) .kpi-icono { animation-delay: -1.6s; }
+.kpi-card:nth-child(4) .kpi-icono { animation-delay: -2.4s; }
+@keyframes kpi-flotar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) {
+    .kpi-destello::before, .kpi-card:hover .kpi-destello::before, .kpi-card .kpi-icono,
+    .admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header::after { animation: none !important; display: none; }
+}
+
+/* Encabezados en marrón claro: el texto pasa a marrón oscuro para leerse bien. */
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado h3,
+.admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header .card-title { color: #3b2716 !important; }
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado p,
+.admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header .card-subtitle { color: #5e4630 !important; }
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado > button,
+.admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header :is(span, div)[class*="rounded-full"] {
+    border-color: rgb(59 39 22 / 0.28) !important; background: rgb(255 255 255 / 0.45) !important; color: #3b2716 !important;
+}
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado > button svg { color: #3b2716 !important; }
+.admin-shell[data-theme] .grafico-card.recientes .recientes-encabezado > button:hover { background: rgb(255 255 255 / 0.7) !important; }
+.recientes .recientes-encabezado > div:first-child > div:first-child { background: rgb(255 255 255 / 0.5) !important; box-shadow: inset 0 0 0 1px rgb(59 39 22 / 0.15); }
+.recientes .recientes-encabezado > div:first-child > div:first-child svg { color: #7a5432 !important; }
+.recientes .recientes-encabezado::after,
+.admin-shell[data-theme] .libros-pagina .libros-tabla > .card-header::after { background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.55), transparent); }
+
+/* ============================================================
+   MISMO ESTILO EN TODAS LAS SECCIONES DEL PANEL
+   - Tarjetas con tabla: encabezado marrón claro con brillo de espejo,
+     columnas en salvia y líneas marcadas.
+   - Tarjetas de formularios y filtros: cabecera salvia suave.
+   ============================================================ */
+.admin-shell[data-theme] .admin-main .card:has(table) {
+    overflow: hidden;
+    border: 1px solid #c9ddd3 !important;
+    box-shadow: 0 1px 2px rgb(13 41 64 / 0.05), 0 14px 30px -24px rgb(31 106 79 / 0.4) !important;
+}
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header {
+    position: relative; overflow: hidden;
+    border-bottom: 0 !important;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / 0.35) 0%, rgb(255 255 255 / 0.1) 48%, rgb(255 255 255 / 0) 52%),
+        linear-gradient(135deg, #ead9c3 0%, #dcc3a3 55%, #cfb28d 100%) !important;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5);
+}
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header::after {
+    content: ''; position: absolute; top: 0; bottom: 0; left: -40%; width: 30%;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.55), transparent);
+    transform: skewX(-18deg); pointer-events: none;
+    animation: recientes-destello 1.6s cubic-bezier(0.25, 1, 0.5, 1) 0.4s 1 both;
+}
+.admin-shell[data-theme] .admin-main .card:has(table):hover > .card-header::after { animation: recientes-destello 1.2s cubic-bezier(0.25, 1, 0.5, 1) 1 both; }
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header .card-title { color: #3b2716 !important; }
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header .card-subtitle { color: #5e4630 !important; }
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header .card-header-icon {
+    background: rgb(255 255 255 / 0.5) !important; color: #7a5432 !important; box-shadow: inset 0 0 0 1px rgb(59 39 22 / 0.15) !important;
+}
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header :is(span, div)[class*="rounded-full"] {
+    border-color: rgb(59 39 22 / 0.28) !important; background: rgb(255 255 255 / 0.45) !important; color: #3b2716 !important;
+}
+.admin-shell[data-theme] .admin-main .card:has(table) > .card-header :is(button, a):not([class*="admin-primary-button"]) {
+    border-color: rgb(59 39 22 / 0.28) !important; background: rgb(255 255 255 / 0.5) !important; color: #3b2716 !important;
+}
+.admin-shell[data-theme] .admin-main .card:has(table) thead tr { background: #dcece4 !important; }
+.admin-shell[data-theme] .admin-main .card:has(table) thead th {
+    color: #1d4a3b !important; font-weight: 700;
+    border-top: 2px solid #9fc4b3 !important; border-bottom: 2px solid #9fc4b3 !important;
+}
+.admin-shell[data-theme] .admin-main .card:has(table) thead th button { color: #1d4a3b !important; }
+.admin-shell[data-theme] .admin-main .card:has(table) tbody > tr + tr { border-top: 1.5px solid #bcd3c8 !important; }
+.admin-shell[data-theme] .admin-main .card:has(table) tbody tr:hover { background: #e8f3ed !important; }
+
+.admin-shell[data-theme] .admin-main .card:not(:has(table)) { border-color: #c9ddd3 !important; }
+.admin-shell[data-theme] .admin-main .card:not(:has(table)) > .card-header {
+    background: linear-gradient(180deg, #eef7f2 0%, #f6faf8 100%) !important;
+    border-bottom: 1.5px solid #c9ddd3 !important;
+}
+.admin-shell[data-theme] .admin-main .card:not(:has(table)) > .card-header .card-header-icon { background: #dcece4 !important; color: #1f6a4f !important; }
+@media (prefers-reduced-motion: reduce) {
+    .admin-shell[data-theme] .admin-main .card:has(table) > .card-header::after { animation: none !important; display: none; }
+}
+
+/* ============================================================
+   ANUNCIOS → LIBRO PROTAGONISTA
+   ============================================================ */
+.protagonista-modo { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.75rem 0.875rem; border: 1px solid #ddd5c7; border-radius: 0.625rem; background: #fff; cursor: pointer; }
+.protagonista-modo:has(input:checked) { border-color: #6d4aff; background: #f4f1ff; }
+.protagonista-modo input { margin-top: 0.2rem; accent-color: #6d4aff; }
+.protagonista-modo span { display: grid; gap: 0.125rem; font-size: 0.875rem; color: #1f2a35; }
+.protagonista-modo small { font-size: 0.75rem; color: #3f4a56; }
+.protagonista-lista { max-height: 22rem; overflow-y: auto; margin: 0; padding: 0.25rem; list-style: none; border: 1px solid #ddd5c7; border-radius: 0.625rem; background: #fff; }
+.protagonista-opcion { display: flex; width: 100%; align-items: center; gap: 0.75rem; padding: 0.5rem 0.625rem; border: 1px solid transparent; border-radius: 0.5rem; background: transparent; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease; }
+.protagonista-opcion:hover { background: #f7f5f1; }
+.protagonista-opcion--activa { border-color: #6d4aff; background: #f4f1ff; }
+.protagonista-opcion:focus-visible { outline: 2px solid #6d4aff; outline-offset: 1px; }
+.protagonista-vista { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 1.25rem; align-items: center; padding: 1.25rem; border-radius: 0.875rem; background: #f7f5f1; border: 1px solid #ddd5c7; }
+.protagonista-vista--vacia { display: flex; flex-direction: column; justify-content: center; gap: 0.5rem; min-height: 14rem; text-align: center; color: #3f4a56; font-size: 0.875rem; }
+.protagonista-vista--vacia svg { margin: 0 auto; font-size: 1.5rem; color: #6d4aff; }
+.protagonista-vista__escena { position: relative; display: grid; place-items: center; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 0.75rem; background: radial-gradient(circle at 50% 55%, #2a1d63 0%, #10182d 55%, #080910 100%); perspective: 600px; }
+.protagonista-vista__luz { position: absolute; inset: 20%; border-radius: 50%; background: radial-gradient(circle, rgb(109 74 255 / 0.55), transparent 70%); filter: blur(10px); }
+.protagonista-vista__libro { position: relative; width: 58%; aspect-ratio: 2 / 3; overflow: hidden; border-radius: 2px 4px 4px 2px; box-shadow: -6px 10px 24px rgb(0 0 0 / 0.55), inset 3px 0 0 rgb(0 0 0 / 0.25); transform: rotateY(-18deg) rotateX(4deg); animation: protagonista-flotar 4s ease-in-out infinite; }
+@keyframes protagonista-flotar { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+.protagonista-vista__libro { display: block; }
+.protagonista-vista__libro img { display: block; width: 100%; height: 100%; object-fit: contain; }
+@media (max-width: 640px) { .protagonista-vista { grid-template-columns: 1fr; } .protagonista-vista__escena { max-width: 12rem; margin: 0 auto; width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .protagonista-vista__libro { animation: none; } }

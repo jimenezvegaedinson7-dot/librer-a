@@ -1,6 +1,6 @@
 # Dependencias
 
-> Generado desde el código real el 2026-10-14 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-22 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Paquetes npm
@@ -42,6 +42,7 @@ Todas las dependencias se importan en algún archivo.
 | `react-icons` | ^5.7.0 |
 | `react-router-dom` | ^7.18.3 |
 | `tailwindcss` | ^4.3.3 |
+| `three` | ^0.181.2 |
 
 Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxlint, vite.
 
@@ -56,8 +57,8 @@ Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxl
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 182 | 393 | 0 (analizador estático de imports) |
-| Frontend (`import`) | 206 | 807 | 0 (analizador estático de imports) |
+| Backend (`require`) | 186 | 400 | 0 (analizador estático de imports) |
+| Frontend (`import`) | 218 | 854 | 0 (analizador estático de imports) |
 | Flutter (`import` relativos) | 76 | 330 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter

@@ -89,25 +89,25 @@ const modulo = (ruta) => {
 
 // Módulos de negocio: backend ↔ React ↔ Flutter
 const MODULOS = [
-    ['Autenticación y 2FA', 'auth', 'features/auth (admin) · public-site/tienda/CuentaPage (cliente)', 'login, registro, verificación, 2FA, recuperar/restablecer contraseña'],
-    ['Usuarios y perfil', 'usuarios', 'features/usuarios · layout/PerfilAdministrador', 'perfil, editar perfil, foto, contraseña'],
-    ['Libros (catálogo)', 'libros', 'features/libros · public-site/pages/CatalogoPage · public-site/tienda/LibroPage', 'home, libros, detalle de libro'],
-    ['Autores', 'autores', 'features/autores', '—'],
-    ['Categorías', 'categorias', 'features/categorias', '—'],
-    ['Inventario', 'inventario', 'features/inventario', '—'],
-    ['Pedidos', 'pedidos', 'features/pedidos', '—'],
-    ['Ventas', 'ventas', 'features/ventas · public-site/tienda/MisComprasPage', 'mis compras'],
-    ['Pagos (PayU)', 'pagos', 'features/pagos · public-site/tienda/CheckoutPage', 'entrega y pago, mis compras'],
-    ['Comprobantes', 'comprobantes', 'features/comprobantes · ventas/EmitirComprobanteModal', '—'],
-    ['Clientes', 'clientes', 'features/clientes', '—'],
-    ['Historial / auditoría', 'historial', 'features/historial · layout/Topbar (notificaciones)', '—'],
-    ['Reportes / Resumen', 'reportes', 'features/dashboard (vía reportes/reportesService)', '—'],
-    ['Favoritos', 'favoritos', 'public-site/tienda/AccionesLibro (cliente)', 'favoritos, detalle de libro'],
-    ['Cobertura Pallasca', 'zonas-delivery', 'features/tarifas', 'entrega y pago, mis compras'],
+    ['Autenticación y 2FA', 'auth', 'panel/auth (admin) · web/tienda/CuentaPage (cliente)', 'login, registro, verificación, 2FA, recuperar/restablecer contraseña'],
+    ['Usuarios y perfil', 'usuarios', 'panel/usuarios · panel/layout/PerfilAdministrador', 'perfil, editar perfil, foto, contraseña'],
+    ['Libros (catálogo)', 'libros', 'panel/libros · web/paginas/CatalogoPage · web/tienda/LibroPage', 'home, libros, detalle de libro'],
+    ['Autores', 'autores', 'panel/autores', '—'],
+    ['Categorías', 'categorias', 'panel/categorias', '—'],
+    ['Inventario', 'inventario', 'panel/inventario', '—'],
+    ['Pedidos', 'pedidos', 'panel/pedidos', '—'],
+    ['Ventas', 'ventas', 'panel/ventas · web/tienda/MisComprasPage', 'mis compras'],
+    ['Pagos (PayU)', 'pagos', 'panel/pagos · web/tienda/CheckoutPage', 'entrega y pago, mis compras'],
+    ['Comprobantes', 'comprobantes', 'panel/comprobantes · panel/ventas/EmitirComprobanteModal', '—'],
+    ['Clientes', 'clientes', 'panel/clientes', '—'],
+    ['Historial / auditoría', 'historial', 'panel/historial · panel/layout/Topbar (notificaciones)', '—'],
+    ['Reportes / Resumen', 'reportes', 'panel/dashboard (vía panel/reportes/reportesService)', '—'],
+    ['Favoritos', 'favoritos', 'web/tienda/AccionesLibro (cliente)', 'favoritos, detalle de libro'],
+    ['Cobertura Pallasca', 'zonas-delivery', 'panel/tarifas', 'entrega y pago, mis compras'],
     ['Ubicaciones (Lima, legacy)', 'ubicaciones', 'datos de ubicación en historial', 'nombres conservados en Venta; sin selector ni consultas de provincias/distritos'],
-    ['Agencias courier (legacy)', 'agencias', 'ruta redirigida; features/agencias sin ruta activa', '—'],
-    ['Empresa (emisor)', 'empresa', 'features/configuracion/EmpresaPage', '—'],
-    ['Reclamaciones', 'reclamaciones', 'features/reclamaciones (formulario público y gestión admin)', 'libro_reclamaciones_screen (formulario nativo)'],
+    ['Agencias courier (legacy)', 'agencias', 'ruta redirigida; panel/agencias sin ruta activa', '—'],
+    ['Empresa (emisor)', 'empresa', 'panel/configuracion/EmpresaPage', '—'],
+    ['Reclamaciones', 'reclamaciones', 'panel/reclamaciones (formulario público y gestión admin)', 'libro_reclamaciones_screen (formulario nativo)'],
 ];
 
 // ════════════════════════ 05-API-MAP ════════════════════════
@@ -253,19 +253,44 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
     const pkg = JSON.parse(leer('frontend/package.json'));
     const archivos = Object.keys(H.frontend.grafo);
     const conMotion = archivos.filter((f) => /from 'motion\/react'/.test(leer(f)));
-    const personalizable = /ThemeProvider|useTema/.test(leer('frontend/src/features/layout/AdminLayout.jsx'));
+    const personalizable = /ThemeProvider|useTema/.test(leer('frontend/src/panel/layout/AdminLayout.jsx'));
     let md = cab('Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web');
     md += `## Arranque\n
-\`index.html\` → \`src/main.jsx\` → \`<ErrorBoundary>\` → \`routes/AppRouter.jsx\`:
+\`index.html\` → \`src/app/main.jsx\` → \`<ErrorBoundary>\` → \`app/router/AppRouter.jsx\`:
 \`<ToastProvider>\` → \`<AuthProvider>\` → \`<RouterProvider>\` (react-router ${pkg.dependencies['react-router-dom']}).
 
-- **Cliente HTTP**: \`lib/api/client.js\` (axios). \`baseURL = VITE_API_URL\`; los valores se configuran por entorno. El interceptor añade \`Bearer <token>\`, devuelve \`response.data\` y ante **401 de sesión** limpia la sesión y redirige a \`/admin/login\`. Los 401 de credencial incorrecta se distinguen con \`erroresSesion.js\`.
-- **Sesión**: \`features/auth/AuthContext.jsx\` + \`lib/storage/index.js\` (\`localStorage\`: \`token\`, \`usuario\`, \`ultimoHistorialVisto\`). Solo entra \`administrador\`; perfil actualiza los datos de sesión desde la API.
-- **Cliente web**: \`public-site/tienda/TiendaContext.jsx\` y \`clienteApi.js\` mantienen sesión exclusiva de \`cliente\`, carrito por usuario/invitado e intento de compra persistente; nunca usan la sesión administrativa. \`PublicLayout\` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
-- **Guards**: \`routes/RutaProtegida.jsx\` redirige a \`/admin/login\` sin sesión administrativa; \`RutaPorRol.jsx\` exige los roles configurados. Un **403** muestra rechazo de permisos.
-- **Layout**: \`features/layout/AdminLayout.jsx\` (Sidebar, Topbar, Breadcrumbs, transición con Framer Motion${personalizable ? ', proveedor de tema' : ', tema claro fijo'}).
-- **Tema**: ${personalizable ? 'Proveedor de tema conectado al layout.' : 'El layout actual declara `data-theme="light"`; `/personalizacion` redirige a `/dashboard`.'} \`src/index.css\` carga \`styles/paleta-editorial.css\`, \`styles/theme.css\`, \`styles/panel-editorial.css\` y \`styles/panel-formal.css\`. La tienda usa su propio tema en \`public-site/tema-editorial.css\`. Los iconos de navegación y búsqueda se centralizan en \`features/layout/navConfig.js\`.
+- **Cliente HTTP**: \`panel/lib/api/client.js\` (axios). \`baseURL = VITE_API_URL\`; los valores se configuran por entorno. El interceptor añade \`Bearer <token>\`, devuelve \`response.data\` y ante **401 de sesión** limpia la sesión y redirige a \`/admin/login\`. Los 401 de credencial incorrecta se distinguen con \`erroresSesion.js\`.
+- **Sesión**: \`app/providers/AuthContext.jsx\` + \`panel/lib/storage/index.js\` (\`localStorage\`: \`token\`, \`usuario\`, \`ultimoHistorialVisto\`). Solo entra \`administrador\`; perfil actualiza los datos de sesión desde la API.
+- **Cliente web**: \`web/tienda/TiendaContext.jsx\` y \`clienteApi.js\` mantienen sesión exclusiva de \`cliente\`, carrito por usuario/invitado e intento de compra persistente; nunca usan la sesión administrativa. \`PublicLayout\` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
+- **Guards**: \`app/router/RutaProtegida.jsx\` redirige a \`/admin/login\` sin sesión administrativa; \`RutaPorRol.jsx\` exige los roles configurados. Un **403** muestra rechazo de permisos.
+- **Layout**: \`panel/layout/AdminLayout.jsx\` (Sidebar, Topbar, Breadcrumbs, transición con Framer Motion${personalizable ? ', proveedor de tema' : ', tema claro fijo'}).
+- **Tema**: ${personalizable ? 'Proveedor de tema conectado al layout.' : 'El layout actual declara `data-theme="light"`; `/personalizacion` redirige a `/dashboard`.'} \`src/app/index.css\` carga \`panel/estilos/paleta-editorial.css\`, \`panel/estilos/theme.css\`, \`panel/estilos/panel-editorial.css\` y \`panel/estilos/panel-formal.css\`. La tienda usa su propio tema en \`web/estilos/tema-editorial.css\`. Los iconos de navegación y búsqueda se centralizan en \`panel/layout/navConfig.js\`.
 - **Despliegue**: Vercel (\`frontend/vercel.json\` reescribe todo a \`index.html\`).
+- **Estructura**: \`frontend/src\` tiene cuatro capas. \`app/\` es el arranque (main, index.css, ErrorBoundary, router con las guardas y los providers). \`panel/\` es la superficie administrativa, con un dominio por carpeta, sus servicios, \`componentes/\`, \`ui/\`, \`lib/\` y \`estilos/\`. \`web/\` es la superficie pública: \`PublicLayout.jsx\`, \`paginas/\`, \`secciones/\`, \`componentes/\`, \`tienda/\`, \`asistente/\`, \`animacion/\`, \`hooks/\`, \`config/\`, \`lib/\`, \`estilos/\` y \`assets/\`. \`compartido/\` guarda lo que usan ambas superficies: \`ui/\`, \`lib/utils/\`, \`config/env.js\` y \`assets/\`. Las dependencias van en un solo sentido: app → panel | web → compartido. El detalle está en \`docs/architecture/04-ARQUITECTURA-FRONTEND.md\`.
+
+## Portada espacial y protagonista
+
+- \`web/paginas/paginas.jsx\` monta \`secciones/portada3d/PortadaEspacial.jsx\` al inicio. Reutiliza GSAP/ScrollTrigger con scroll nativo (Lenis ya estaba retirado). \`escenaLibro.js\` importa Three.js bajo demanda y modela un único libro con la portada registrada, proporción original, lomo, tapas y páginas.
+- Dirección confirmada por el usuario: **Portal editorial**, tras revisar su video local. \`portalEditorial.js\` calcula una atmósfera volumétrica en un render target acotado con ruido 3D, cintas reflectantes/refractivas y disolución por material; \`cinematografia.js\` centraliza los tramos reversibles. El modelo añade tapas biseladas, lomo con datos reales, geometría curva de papel y entorno PMREM. La cara frontal permanece visible durante la ficha.
+- La superficie autoaloja Source Serif 4 (WOFF2 latino de 23.832 bytes, licencia OFL) para títulos; conserva Work Sans en datos y controles. El usuario eligió **Ibero** como referencia principal de navbar/footer y retiró la franja superior de delivery/recojo/PayU. \`components/public-header.css\` aplica cabecera gris frío #F5F7F9, buscador blanco, menú blanco con texto marino #24304B y detalles turquesa; marca en Work Sans e iconos Lucide de contorno. Los botones de escena son blancos/marino; el catálogo conserva sus controles de compra. El texto principal se recorta contra el contorno proyectado del libro.
+- Primero se presenta el libro a pantalla completa; un gesto corto revela \`PublicHeader\` fijo a todo ancho mediante tres fases de \`estadoReveladoNavegacion\`: línea central, cuerpo en perspectiva y enlaces. Reloj GSAP lineal de 1s con curvas por fase y salida de 0,5s; márgenes alineados al contenedor, sin redimensionar el canvas. Foco de teclado y salto al final conservan acceso inmediato. Fuera del 3D, \`.navegacion-publica\` usa \`display:contents\` y mantiene el sticky de las páginas interiores; los respaldos estáticos no ocultan navegación.
+- \`components/PublicFooter.jsx\` y \`public-footer.css\` usan fondo blanco, títulos marinos y cuatro columnas de identidad/dirección real, navegación, cuenta y atención. Pagos PayU y tarjetas existentes van en una fila independiente; reclamaciones y acceso administrativo siguen disponibles. Móvil usa dos columnas y espacio para barra/asistente. No hay ticker superior ni formulario de suscripción inventado. Buscador, cuenta, carrito y cajón móvil conservan sus funciones.
+- Presupuesto gráfico: render target volumétrico reducido, menor detalle en móvil/renderizado por software, resolución adaptativa en escritorio y pausa según visibilidad del escenario (excluye cabecera/barra fijas). \`test-unit/portada-cinematica.test.js\` comprueba límites y orden de las fases; Playwright también detecta errores de compilación GLSL.
+- \`GET /api/anuncios/protagonista\` es público y responde sin caché. El componente usa fetch sin JWT, tiempo límite de 12 s y reintento; revalida al volver al foco/pestaña y cada 60 s mientras está visible. Una respuesta idéntica no reinicia la escena.
+- \`backend/src/models/portada.model.js\` prioriza el libro manual activo, con título, precio positivo y portada válida; si deja de ser elegible, resuelve el más reciente por \`creado_en DESC NULLS LAST, id_libro DESC\`. Sin candidato devuelve ninguno, sin inventar datos.
+- Configuración en \`portada_config\`, creada por \`044_portada_protagonista.sql\` sin modificar libros ni ventas. \`GET /api/anuncios/protagonista/panel\` y \`PUT /api/anuncios/protagonista\` exigen JWT administrador; \`panel/anuncios/ProtagonistaPanel.jsx\` y \`protagonistaService.js\` gestionan modo manual/automático, búsqueda, vista previa y guardado. La respuesta del panel incluye \`libro_automatico\` para previsualizar el cambio de modo antes de guardarlo.
+- Por petición del usuario, el protagonista permanece cerrado durante todo el scroll: \`escenaLibro.js\` fija la encuadernación a apertura cero, sin mover tapa/hojas ni comprimir el bloque. Se conservan los recorridos de cámara, giro del volumen, cintas, luces, partículas y disolución.
+- La portada ya no importa ni instancia \`SonidoEspacial\`, no crea AudioContext y no muestra botón ni avisos de sonido. El módulo histórico y sus utilidades unitarias permanecen desacoplados de la interfaz. Las regresiones de \`portada-espacial.spec.js\` comprueban ausencia de audio y encuadernación cerrada en avance y retroceso a 390/1440px.
+- Movimiento reducido, ahorro de datos, pantalla baja, ausencia/pérdida de WebGL 2, error de textura o fallo de carga del motor llevan a una portada estática con el mismo libro. Se liberan geometrías, texturas, RAF, observadores, listeners, audio y ScrollTriggers. Móvil/equipos modestos reducen partículas, resolución y frecuencia de dibujo.
+- Hasta cinco libros recientes proceden del catálogo normalizado (\`libroComercial.creadoEn\`). En escritorio se despliegan desde el centro hacia una cuadrícula de cinco columnas: solo las tapas se inclinan y títulos, autores y precios permanecen rectos en columnas independientes. En móvil ≤900px se usa un carrusel horizontal nativo. El recorrido del hero es 250svh en escritorio y 225svh en móvil; novedades continúa con espaciado compacto. \`MOSTRAR_CARRUSEL_INICIO=false\` oculta los banners públicos; CarruselPanel y AnunciosVideo mantienen su administración.
+- Regresiones: \`test-browser/portada-espacial.spec.js\`, \`protagonista-panel.spec.js\`, \`carrusel.spec.js\`, \`backend/test/portada-protagonista.test.js\` y \`backend/test-integration/portada-protagonista.smoke.test.js\`.
+
+## Caché y prioridad de carga pública
+
+- \`public/cache-recursos-sw.js\`, registrado desde \`PublicLayout\` mediante \`web/lib/cacheRecursos.js\`, guarda hasta 200 imágenes, fuentes y archivos JS/CSS de producción con hash en CacheStorage. Sirve los recursos guardados inmediatamente y revalida los que superan 24 horas. No intercepta HTML, JSON, sesiones ni operaciones; respeta respuestas privadas/no-store y no guarda errores ni HTML devuelto como imagen. La escritura de caché no bloquea la primera imagen.
+- \`web/lib/cachePublica.js\` conserva durante 15 minutos datos públicos de catálogo, fichas, autores, empresa y anuncios (hasta 40 entradas y 2 MiB). Los hooks y \`LibroPage\` pueden mostrarlos durante la consulta de red; las respuestas actualizadas prevalecen y los 404/410 invalidan fichas guardadas. \`clienteApi\` sigue consultando la red; checkout y pagos no leen esta caché.
+- El inicio no muestra la pantalla de precarga general ni el fundido de 1,2 s del canvas. \`main.jsx\` inicia la descarga del motor 3D en paralelo; \`PortadaEspacial\` espera la textura, la fuente y el primer cuadro real antes de retirar su spinner claro. \`cachePortada.js\` conserva también el respaldo del catálogo cuando el endpoint de protagonista devuelve 404, incluidos los datos de oferta. Una respuesta válida con libro nulo se sigue respetando.
+- Las demás portadas se precargan con dos descargas simultáneas, prioridad baja y después de que el protagonista esté listo; ahorro de datos omite esa precarga. Pruebas: \`cache-recursos.spec.js\` verifica recuperación de imágenes sin red con SW real; \`cache-publica.spec.js\` y \`portada-carga.spec.js\` comprueban datos actualizados, caducidad, respaldo 404 y ausencia de doble carga/fondo oscuro. Las pruebas con API simulada bloquean SW por defecto; la integración real lo habilita explícitamente.
 
 ## Rutas
 
@@ -276,7 +301,7 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
     md += `\n## Cadena página → servicio → endpoint\n\nArchivos que importan funciones de servicio y los endpoints que alcanzan (el componente puede ser una página, un formulario o un modal):\n\n| Archivo | Endpoints |\n|---|---|\n`;
     for (const [archivo, eps] of Object.entries(H.frontend.endpointsPorArchivo).sort()) if (eps.length) md += `| \`${corto(archivo)}\` | ${eps.map((e) => `\`${e}\``).join('<br>')} |\n`;
 
-    md += `\n## Servicios (\`features/*/*Service.js\`)\n\n| Servicio | Función | Endpoint |\n|---|---|---|\n`;
+    md += `\n## Servicios (\`panel/*/*Service.js\`)\n\n| Servicio | Función | Endpoint |\n|---|---|---|\n`;
     for (const [archivo, fns] of Object.entries(H.frontend.servicios)) {
         for (const [fn, info] of Object.entries(fns)) {
             if (!info.endpoints.length) continue;
@@ -286,7 +311,7 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
     md += `\n## Componentes compartidos (\`components/\`)\n\n| Archivo | Usado por (nº de archivos) |\n|---|---|\n`;
     const usadoPor = {};
     for (const [f, imps] of Object.entries(H.frontend.grafo)) for (const i of imps) (usadoPor[i] ||= []).push(f);
-    for (const f of archivos.filter((f) => f.includes('/components/')).sort()) md += `| \`${corto(f)}\` | ${(usadoPor[f] || []).length} |\n`;
+    for (const f of archivos.filter((f) => f.includes('/componentes/')).sort()) md += `| \`${corto(f)}\` | ${(usadoPor[f] || []).length} |\n`;
     md += `\n## Hooks y utilidades\n\n${archivos.filter((f) => /\/lib\//.test(f)).map((f) => `- \`${corto(f)}\``).join('\n')}\n`;
     md += `\n## Framer Motion (\`motion/react\`) — ${conMotion.length} archivos\n\n${conMotion.map((f) => `- \`${corto(f)}\``).join('\n')}\n`;
     md += `\n## Módulo Dashboard (Resumen)\n
@@ -409,7 +434,7 @@ ${linea('POST', '/api/auth/solicitar-reseteo')} envía código por correo → ${
 
 ### Compra desde la web (React, cliente)
 - \`PublicLayout\` incorpora \`TiendaProvider\`; rutas \`/cuenta\`, \`/carrito\`, \`/checkout\`, \`/mis-compras\`, \`/libro/:id\`. Catálogo, portada y ofertas permiten agregar libros al carrito.
-- \`public-site/tienda/clienteApi.js\` usa fetch y sesión \`libreria-web-cliente-v1\`, independiente de token/usuario del panel. Revalida perfil y rol cliente. Registro y correo verificado, login/2FA y recuperación reutilizan los endpoints existentes.
+- \`web/tienda/clienteApi.js\` usa fetch y sesión \`libreria-web-cliente-v1\`, independiente de token/usuario del panel. Revalida perfil y rol cliente. Registro y correo verificado, login/2FA y recuperación reutilizan los endpoints existentes.
 - Carrito por invitado/usuario con solo IDs y cantidades en localStorage; precios y stock desde el catálogo. Se fusiona el carrito invitado al iniciar sesión. Totales en céntimos.
 - \`GET /api/pagos/capacidades\` confirma compatibilidad del backend antes de crear compras web. Checkout envía \`canal_compra=web\` a \`POST /api/pagos/crear-orden\`; \`origen=app\` sigue identificando el ecommerce para compatibilidad. Migración \`033_canal_compra_web.sql\`: columna nullable, sin UPDATE de ventas antiguas.
 - Antes de crear se refrescan precios, stock y zonas; cambios requieren revisar y confirmar otra vez. El intento y su clave de idempotencia se persisten antes del POST, permitiendo recuperar timeouts sin duplicar ventas ni stock. El backend guarda el total definitivo; el cliente lo muestra antes de abrir el WebCheckout.
@@ -497,8 +522,8 @@ Ejemplos de caminos:\n\n${H.flutter.ciclos.slice(0, 4).map((c) => `- ${c.map(cor
             if (/\/utils\//.test(f)) return `Utilidad Flutter ${n}`;
             return `Arranque Flutter ${n}`;
         }
-        if (f.startsWith('frontend/src/routes/')) return `Enrutamiento y guardas React ${n}`;
-        if (f.startsWith('frontend/src/public-site/')) return /Page\.jsx$/.test(f) ? `Página de la tienda pública ${n}` : `Componente o servicio de la tienda ${n}`;
+        if (f.startsWith('frontend/src/app/router/')) return `Enrutamiento y guardas React ${n}`;
+        if (f.startsWith('frontend/src/web/')) return /Page\.jsx$/.test(f) ? `Página de la tienda pública ${n}` : `Componente o servicio de la tienda ${n}`;
         if (f === 'backend/server.js') return 'Punto de entrada Express: middlewares globales, montaje de routers, jobs y migraciones en línea';
         if (/\/routes\//.test(f)) return `Rutas Express de ${n.replace('.routes', '')} (prefijo ${H.backend.montajes[f] || '?'})`;
         if (/\/controllers\//.test(f)) return `Controlador HTTP de ${n.replace('.controller', '')}`;

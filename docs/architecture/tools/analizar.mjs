@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { argumentos, bloque, cuerposMetodosDart, dependenciasPubspec, endpointsPeticionCliente, metodosUsadosDart, miembrosObjeto, propagarEndpoints, resolverMiddlewares, tablasDeclaradas } from './extraer-relaciones.mjs';
+import { argumentos, bloque, cuerposMetodosDart, dependenciasPubspec, endpointsFetchApi, endpointsPeticionCliente, metodosUsadosDart, miembrosObjeto, propagarEndpoints, resolverMiddlewares, tablasDeclaradas } from './extraer-relaciones.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const leer = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
@@ -280,12 +280,14 @@ for (const p of archivosFront) {
 }
 
 // Rutas del router
-const router = leer(`${FRONT}/routes/AppRouter.jsx`);
+const ROUTER = `${FRONT}/app/router/AppRouter.jsx`;
+const router = leer(ROUTER);
+const routerDir = path.dirname(ROUTER);
 const lazys = {};
-for (const m of router.matchAll(/const\s+(\w+)\s*=\s*lazyConReintento\(\(\)\s*=>\s*import\('([^']+)'\)\)/g)) lazys[m[1]] = rel(path.resolve(`${FRONT}/routes`, m[2])) + '.jsx';
-for (const m of router.matchAll(/import\s+(\w+)\s+from\s+'([^']+)'/g)) if (m[2].startsWith('.')) lazys[m[1]] ||= rel(path.resolve(`${FRONT}/routes`, m[2])) + '.jsx';
+for (const m of router.matchAll(/const\s+(\w+)\s*=\s*lazyConReintento\(\(\)\s*=>\s*import\('([^']+)'\)\)/g)) lazys[m[1]] = rel(path.resolve(routerDir, m[2])) + '.jsx';
+for (const m of router.matchAll(/import\s+(\w+)\s+from\s+'([^']+)'/g)) if (m[2].startsWith('.')) lazys[m[1]] ||= rel(path.resolve(routerDir, m[2])) + '.jsx';
 // Exportaciones con nombre cargadas en diferido: import('...').then((m) => ({ default: m.X }))
-for (const m of router.matchAll(/const\s+(\w+)\s*=\s*lazyConReintento\(\(\)\s*=>\s*import\('([^']+)'\)\.then/g)) lazys[m[1]] ||= rel(path.resolve(`${FRONT}/routes`, m[2])) + '.jsx';
+for (const m of router.matchAll(/const\s+(\w+)\s*=\s*lazyConReintento\(\(\)\s*=>\s*import\('([^']+)'\)\.then/g)) lazys[m[1]] ||= rel(path.resolve(routerDir, m[2])) + '.jsx';
 const rutasFront = [];
 for (const m of router.matchAll(/path:\s*'([^']+)'\s*,\s*element:\s*([^\n]+)/g)) {
     // El primer componente que no sea un envoltorio <Suspense>.
@@ -302,6 +304,10 @@ for (const [archivo, usos] of Object.entries(usoServicios)) {
         (servicios[sf]?.[fn]?.endpoints || []).forEach((e) => eps.push(`${e.method} ${e.path}`));
     }
     endpointsPorArchivoFront[archivo] = [...new Set(eps)].sort();
+}
+for (const p of archivosFront) {
+    const directos = endpointsFetchApi(leer(p), normalizar).map(e => `${e.method} ${e.path}`);
+    if (directos.length) endpointsPorArchivoFront[rel(p)] = [...new Set([...(endpointsPorArchivoFront[rel(p)] || []), ...directos])].sort();
 }
 
 // ─────────────────────────── FLUTTER ───────────────────────────

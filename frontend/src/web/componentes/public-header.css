@@ -1,0 +1,67 @@
+/* Referencia comercial elegida: Ibero. La portada espacial tiene su propia
+   tipografía, pero navegación y cuenta usan la misma sans de la tienda. */
+@font-face {
+    font-family:'Serif Editorial'; font-style:normal; font-weight:400;
+    font-display:swap; src:url('/fonts/source-serif-4-editorial-latin.woff2') format('woff2');
+}
+.sitio {
+    --nav-fondo:#f5f7f9; --nav-papel:#ffffff; --nav-tinta: #0d1633;
+    --nav-secundario: #384569; --nav-acento:#00bfd6; --nav-filete:#e4e8ee;
+    --nav-accion:#24304b; --nav-sobre-accion:#ffffff; --nav-hover:#354563;
+    --nav-marfil:#ffffff; --nav-teal-legible: #005f6b;
+}
+.sitio .navegacion-publica .cabecera { background:var(--nav-fondo); color: var(--nav-tinta); }
+.sitio .navegacion-publica .cabecera__principal {
+    display:grid; grid-template-columns:auto minmax(240px,1fr) auto;
+    gap:clamp(24px,3vw,48px); min-height:86px;
+}
+.sitio .navegacion-publica .contenedor { padding-inline:0; }
+.sitio .navegacion-publica .marca { min-width:0; gap:10px; color:var(--nav-teal-legible); }
+.sitio .navegacion-publica .marca img { width:36px; height:auto; filter:brightness(0) saturate(100%) invert(38%) sepia(78%) saturate(912%) hue-rotate(144deg) brightness(90%) contrast(101%); }
+.sitio .navegacion-publica .marca span { font-family:var(--f-texto); font-size:1.25rem; font-weight:600; font-style:italic; line-height:1.15; letter-spacing:-.035em; color:var(--nav-teal-legible); white-space:nowrap; }
+.sitio .navegacion-publica .buscador { width:100%; max-width:none; height:46px; padding:4px; border:1px solid transparent; border-radius:10px; background:var(--nav-papel); overflow:hidden; box-shadow:0 5px 18px -12px rgb(36 48 75 / .22); }
+.sitio .navegacion-publica .buscador input { color: var(--nav-tinta); background:transparent; padding-inline:12px; font-size:.8125rem; caret-color:var(--nav-teal-legible); }
+.sitio .navegacion-publica .buscador input::placeholder { color:var(--nav-secundario); opacity:1; }
+.sitio .navegacion-publica .buscador button { flex:none; width:44px; height:36px; padding:0; border-radius:6px; background:var(--nav-accion); color:var(--nav-sobre-accion); border:0; }
+.sitio .navegacion-publica .buscador button svg { width:21px; height:21px; stroke-width:1.6; }
+.sitio .navegacion-publica .buscador button:hover { background:var(--nav-hover); }
+.sitio .navegacion-publica .buscador:focus-within { border-color:var(--nav-teal-legible); box-shadow:0 3px 12px -7px rgb(36 48 75 / .3); }
+.sitio .navegacion-publica .cabecera__acciones { gap:26px; margin-left:0; }
+.sitio .navegacion-publica .cabecera :is(.cabecera__enlace,.compra-cuenta,.compra-carrito) { gap:9px; color: var(--nav-tinta); font-size:.8125rem; font-weight:400; white-space:nowrap; }
+.sitio .navegacion-publica .cabecera :is(.cabecera__enlace svg,.compra-cuenta svg,.compra-carrito svg) { flex:none; color:var(--nav-teal-legible); width:23px; height:23px; stroke-width:1.7; }
+.sitio .navegacion-publica .cabecera .compra-cuenta small { color:var(--nav-secundario); font-size:.6875rem; margin-bottom:3px; }
+.sitio .navegacion-publica .cabecera .boton-menu { width:40px; height:40px; padding:8px; border:0; border-radius:6px; color: var(--nav-tinta); background:transparent; }
+.sitio .navegacion-publica .cabecera .boton-menu:hover { background:#e9edf3; }
+.sitio .navegacion-publica .menu { background:#fff; border:0; border-bottom:1px solid var(--nav-filete); }
+.sitio .navegacion-publica .menu ul { justify-content:center; column-gap:clamp(24px,3.4vw,52px); min-height:46px; }
+.sitio .navegacion-publica .menu li + li::before { content:none; }
+.sitio .navegacion-publica .menu a { color: var(--nav-tinta); font-size:.75rem; font-weight:600; letter-spacing:.025em; text-transform:uppercase; padding:15px 0; }
+.sitio .navegacion-publica .menu a[data-destacado] { color: var(--nav-tinta); }
+.sitio .navegacion-publica .menu a:hover,.sitio .navegacion-publica .menu a[aria-current=page] { color:var(--nav-teal-legible); background:transparent; }
+.sitio .navegacion-publica .menu a::after { bottom:6px; height:2px; background:var(--nav-teal-legible); }
+.sitio .navegacion-publica :is(a,button):focus-visible { outline:2px solid var(--nav-teal-legible); outline-offset:4px; }
+.sitio .navegacion-publica ::selection { background:#ccf0f4; color: var(--nav-tinta); }
+.sitio .barra-movil { background:#fff; color: var(--nav-tinta); border-color:var(--nav-filete); }
+.sitio .barra-movil a { color:var(--nav-secundario); border-radius:6px; }
+.sitio .barra-movil a[aria-current=page] { color: var(--nav-tinta); background:#e8f5f7; }
+.sitio .barra-movil a[aria-current=page] svg { color:var(--nav-teal-legible); }
+.sitio .cajon .marca span { font-family:var(--f-texto); color:var(--nav-teal-legible); font-style:italic; }
+.sitio .cajon .cajon__lista a { color: var(--nav-tinta); }
+.sitio .cajon .cajon__lista a[aria-current=page],.sitio .cajon .cajon__pie { background:var(--nav-fondo); }
+.sitio .cajon .cajon__pie a { color: var(--nav-tinta); }
+@media (max-width:1180px) {
+    .sitio .navegacion-publica .cabecera__principal { column-gap:24px; }
+    .sitio .navegacion-publica .cabecera__acciones { gap:18px; }
+    .sitio .navegacion-publica .cabecera__acciones .cabecera__enlace { display:none; }
+}
+@media (max-width:1023px) {
+    .sitio .navegacion-publica .cabecera__principal { grid-template-columns:36px minmax(0,1fr) auto; min-height:64px; gap:10px; }
+    .sitio .navegacion-publica .marca { gap:8px; }
+    .sitio .navegacion-publica .marca img { width:28px; }
+    .sitio .navegacion-publica .marca span { font-size:1.0625rem; white-space:normal; }
+    .sitio .navegacion-publica .cabecera__movil { padding-bottom:12px; }
+    .sitio .navegacion-publica .cabecera__principal > .buscador { display:none; }
+    .sitio .navegacion-publica .cabecera__acciones { gap:12px; }
+    .sitio .navegacion-publica .cabecera :is(.compra-cuenta,.compra-carrito) { min-width:36px; min-height:44px; justify-content:center; }
+    .sitio .navegacion-publica .cabecera :is(.compra-cuenta__texto,.compra-carrito span) { display:none; }
+}

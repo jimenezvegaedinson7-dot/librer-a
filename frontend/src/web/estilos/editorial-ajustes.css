@@ -1,0 +1,317 @@
+/* ============================================================
+   EDITORIAL LUMINOSO · AJUSTES (21/10/2026, segunda revisión)
+   Cabecera oscura y tenue, jerarquía tipográfica en cabecera y pie,
+   acceso al catálogo como única acción y movimiento (flotación y
+   paralaje ligado al scroll). Se carga después de editorial-luminoso.css.
+   ============================================================ */
+
+/* La cabecera vive en una sola capa al final de este archivo. */
+
+/* ---------- Acceso al catálogo: solo la acción ---------- */
+.sitio .acceso-catalogo { padding-block: clamp(1.5rem, 2.5vw, 2rem); background: var(--ed-papel-claro); }
+.sitio .acceso-catalogo__contenido { display: flex; justify-content: center; }
+.sitio .acceso-catalogo__boton {
+    position: relative; overflow: hidden; isolation: isolate;
+    display: inline-flex; align-items: center; gap: 0.9rem;
+    min-height: 64px; padding: 0 2.25rem;
+    border-radius: 999px; background: var(--ed-marino); color: #fffaf2;
+    font-family: var(--ed-serif); font-size: clamp(1.25rem, 1rem + 0.8vw, 1.6rem); letter-spacing: -0.01em;
+    text-decoration: none;
+    box-shadow: 0 18px 40px -20px rgb(36 48 75 / 0.65);
+    transition: transform 0.5s var(--ed-salida), box-shadow 0.5s var(--ed-salida);
+}
+.sitio .acceso-catalogo__boton::before {
+    content: ''; position: absolute; inset: 0; z-index: -1;
+    background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.22) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.9s var(--ed-salida);
+}
+.sitio .acceso-catalogo__boton:hover { transform: translateY(-3px); box-shadow: 0 26px 50px -22px rgb(36 48 75 / 0.75); color: #ffffff; }
+.sitio .acceso-catalogo__boton:hover::before { transform: translateX(120%); }
+.sitio .acceso-catalogo__boton svg { width: 1.2em; height: 1.2em; transition: transform 0.45s var(--ed-salida); }
+.sitio .acceso-catalogo__boton:hover svg { transform: translateX(5px); }
+
+/* ---------- Del estante a tus manos: tres pasos en columnas ---------- */
+.sitio .comprar__rejilla { display: block !important; }
+.sitio .comprar__titulo { text-align: center; }
+.sitio .comprar__pasos {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+    border-top: 0 !important; margin: 0 !important;
+}
+.sitio .comprar__paso {
+    display: grid !important; grid-template-columns: 1fr !important; justify-items: start; gap: 1rem !important;
+    padding: clamp(1.5rem, 1rem + 1.5vw, 2.25rem) !important;
+    border: 1px solid var(--ed-filete) !important; border-radius: var(--ed-radio);
+    background: var(--ed-papel-claro);
+    transition: transform 0.6s var(--ed-salida), box-shadow 0.6s var(--ed-salida);
+}
+.sitio .comprar__paso:hover { transform: translateY(-6px); box-shadow: var(--ed-sombra-alta); }
+.sitio .comprar__icono { width: 3.25rem !important; height: 3.25rem !important; background: var(--ed-marino) !important; color: #fffaf2 !important; border: 0 !important; }
+.sitio .comprar__paso:hover .comprar__icono { animation: ed-flotar 2.4s ease-in-out infinite; }
+
+/* ---------- Movimiento: flotación y paralaje ----------
+   Flotación suave en las portadas de géneros; paralaje ligado al scroll
+   (scroll-driven animations) en titulares, géneros y pasos. Los
+   navegadores sin soporte muestran el contenido quieto. */
+@keyframes ed-flotar { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+.sitio .categoria__libro:nth-child(1) { animation: ed-flotar 5.2s ease-in-out infinite; }
+.sitio .categoria__libro:nth-child(2) { animation: ed-flotar 4.6s ease-in-out -1.4s infinite; }
+.sitio .categoria__libro:nth-child(3) { animation: ed-flotar 5.8s ease-in-out -2.6s infinite; }
+@supports (animation-timeline: view()) {
+    @keyframes ed-paralaje-titulo { from { translate: 0 36px; opacity: 0.25; } to { translate: none; opacity: 1; } }
+    @keyframes ed-paralaje-capa { from { translate: 0 48px; } to { translate: 0 -24px; } }
+    @keyframes ed-aparecer-escala { from { opacity: 0; scale: 0.94; } to { opacity: 1; scale: 1; } }
+    .sitio :is(.seccion__titulo, .categorias__titulo, .comprar__titulo) {
+        animation: ed-paralaje-titulo linear both; animation-timeline: view(); animation-range: entry 0% cover 45%;
+    }
+    .sitio :is(.categorias__item, .comprar__paso) {
+        animation: ed-paralaje-capa linear both; animation-timeline: view(); animation-range: entry 0% exit 100%;
+    }
+    .sitio .comprar__paso:nth-child(2) { animation-range: entry 0% exit 80%; }
+    .sitio .acceso-catalogo__boton {
+        animation: ed-aparecer-escala linear both; animation-timeline: view(); animation-range: entry 10% cover 35%;
+    }
+}
+
+@media (max-width: 900px) {
+    .sitio .comprar__pasos { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sitio :is(.categoria__libro, .comprar__icono, .seccion__titulo, .categorias__titulo, .comprar__titulo, .categorias__item, .comprar__paso, .acceso-catalogo__boton) { animation: none !important; }
+    .sitio :is(.acceso-catalogo__boton, .acceso-catalogo__boton::before, .comprar__paso) { transition: none !important; }
+}
+
+/* ============================================================
+   Revisión general de páginas (21/10/2026)
+   ============================================================ */
+/* Mismo papel en todas las páginas (antes main pintaba un gris frío). */
+.sitio main { background: var(--ed-papel-claro) !important; }
+.sitio .nosotros-valores .seccion__titulo { font-size: clamp(1.75rem, 3.2vw, 3rem); }
+.sitio .nosotros-valores__cabeza { gap: clamp(1rem, 3vw, 2rem); }
+.sitio .nosotros-valores__cabeza .seccion__entrada { justify-self: end; }
+.sitio .nosotros-pilares { margin-top: clamp(1.5rem, 3vw, 2rem); }
+.sitio .nosotros-tienda { padding-top: 0; }
+.sitio .compra-vacio { background: #ffffff; border: 1px solid var(--ed-filete); border-radius: var(--ed-radio); box-shadow: none; }
+
+/* Nosotros: la tarjeta va a la derecha para no tapar el recuadro de Google Maps. */
+@media (min-width: 768px) {
+    .sitio .nosotros-tienda__tarjeta { left: auto !important; right: clamp(16px, 3vw, 40px); }
+}
+
+/* Tarjetas de libro en celular: «Agregar» y «Ver detalle» apilados,
+   cada uno en una sola línea. */
+@media (max-width: 560px) {
+    .sitio :is(.libro, .tarjeta-libro, .oferta-tarjeta) .compra-libro { display: flex !important; flex-direction: column; align-items: stretch; gap: 4px !important; }
+    .sitio :is(.libro, .tarjeta-libro, .oferta-tarjeta) .compra-libro > :first-child { width: 100%; justify-content: center; }
+    .sitio :is(.libro, .tarjeta-libro, .oferta-tarjeta) .compra-libro__detalle { display: inline-flex !important; align-items: center; justify-content: center; gap: 4px; width: 100% !important; max-width: none !important; white-space: nowrap !important; min-height: 32px; }
+}
+
+/* ============================================================
+   CABECERA PROFESIONAL (21/10/2026)
+   Dos franjas con una sola jerarquía:
+   1. Barra de marca espresso tenue: marca serif · buscador sólido ·
+      acciones con icono en cápsula.
+   2. Fila del menú en blanco: versalitas espaciadas, subrayado
+      que crece desde el centro en la página activa.
+   ============================================================ */
+.sitio .navegacion-publica .cabecera,
+.sitio .cabecera {
+    background: rgb(33 28 24 / 0.95) !important;
+    -webkit-backdrop-filter: saturate(1.3) blur(16px);
+    backdrop-filter: saturate(1.3) blur(16px);
+    border-bottom: 0 !important;
+    color: #f3eee6;
+    transition: box-shadow 0.4s var(--ed-salida);
+}
+.sitio .cabecera[data-sombra="true"] { box-shadow: 0 14px 34px -20px rgb(10 12 18 / 0.6); }
+.sitio .navegacion-publica .cabecera__principal {
+    grid-template-columns: auto minmax(260px, 600px) auto;
+    justify-content: space-between;
+    min-height: 74px;
+    gap: clamp(24px, 3vw, 48px);
+}
+
+/* Marca */
+.sitio .cabecera .marca { gap: 12px; color: #fbf6ee !important; }
+.sitio .cabecera .marca img { width: 30px !important; filter: brightness(0) invert(1) !important; opacity: 0.96; }
+.sitio .navegacion-publica .cabecera .marca span,
+.sitio .cabecera .marca span {
+    font-family: var(--ed-serif) !important;
+    font-style: normal !important; font-weight: 400 !important;
+    font-size: 1.375rem !important; line-height: 1 !important;
+    letter-spacing: -0.015em !important; color: #fbf6ee !important;
+}
+
+/* Buscador sólido: el texto de ayuda supera 4.5:1 sobre el fondo. */
+.sitio .navegacion-publica .cabecera .buscador,
+.sitio .cabecera .buscador {
+    height: 44px !important; padding: 4px 4px 4px 6px !important;
+    background: #2e2823 !important;
+    border: 1px solid #4a4139 !important;
+    border-radius: 999px !important;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04) !important;
+    transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+.sitio .cabecera .buscador:hover { border-color: #62574c !important; }
+.sitio .cabecera .buscador:focus-within {
+    background: #352e28 !important; border-color: #c9c2b8 !important;
+    box-shadow: 0 0 0 4px rgb(255 255 255 / 0.07) !important;
+}
+.sitio .cabecera .buscador input {
+    background: transparent !important; border: 0 !important; box-shadow: none !important;
+    color: #f6f1ea !important; caret-color: #f6f1ea !important;
+    font-size: 0.875rem !important; padding-inline: 14px !important;
+}
+.sitio .cabecera .buscador input::placeholder { color: #cbc1b4 !important; opacity: 1; }
+.sitio .cabecera .buscador button[type="submit"] {
+    width: 36px !important; height: 36px !important; border-radius: 999px !important;
+    background: #f3eee6 !important; color: #211c18 !important;
+    transition: background 0.25s ease, transform 0.25s var(--ed-salida);
+}
+.sitio .cabecera .buscador button[type="submit"]:hover { background: #ffffff !important; transform: scale(1.05); }
+.sitio .cabecera .buscador button[type="submit"] svg { width: 18px !important; height: 18px !important; color: #211c18 !important; stroke-width: 2 !important; }
+
+/* Acciones en cápsula */
+.sitio .navegacion-publica .cabecera__acciones { gap: 6px !important; }
+.sitio .cabecera :is(.cabecera__enlace, .compra-cuenta, .compra-carrito) {
+    position: relative;
+    display: inline-flex; align-items: center; gap: 8px !important;
+    min-height: 40px; padding: 0 14px; border-radius: 999px;
+    color: #ece6dd !important; font-size: 0.875rem !important; font-weight: 500 !important;
+    text-decoration: none;
+    transition: background 0.25s ease, color 0.25s ease;
+}
+.sitio .cabecera :is(.cabecera__enlace, .compra-cuenta, .compra-carrito):hover { background: rgb(255 255 255 / 0.08); color: #ffffff !important; }
+.sitio .cabecera :is(.cabecera__enlace, .compra-cuenta, .compra-carrito) svg {
+    width: 20px !important; height: 20px !important; stroke-width: 1.7 !important; color: currentColor !important;
+}
+.sitio .cabecera .compra-cuenta__texto { display: grid; line-height: 1.15; }
+.sitio .cabecera .compra-cuenta small { color: #b9b2a8 !important; font-size: 0.6875rem !important; font-weight: 400; margin: 0 0 1px !important; }
+/* El carrito es la acción de compra: cápsula clara. */
+.sitio .cabecera .compra-carrito { background: #f3eee6; color: #211c18 !important; margin-left: 6px; }
+.sitio .cabecera .compra-carrito:hover { background: #ffffff; color: #111111 !important; }
+.sitio .cabecera .boton-menu { border-radius: 999px !important; }
+.sitio .cabecera .boton-menu, .sitio .cabecera .boton-menu svg { color: #f3eee6 !important; background: transparent !important; }
+.sitio .cabecera .boton-menu:hover { background: rgb(255 255 255 / 0.08) !important; }
+
+/* Fila del menú en blanco */
+.sitio .navegacion-publica .menu,
+.sitio .cabecera .menu {
+    background: #ffffff !important;
+    border-top: 0 !important;
+    border-bottom: 1px solid #e7e1d8 !important;
+}
+.sitio .navegacion-publica .menu ul { min-height: 48px; column-gap: clamp(28px, 3.6vw, 56px); }
+.sitio .navegacion-publica .menu a,
+.sitio .cabecera .menu a {
+    display: inline-flex; align-items: center; min-height: 48px; padding: 0 !important;
+    color: #574c42 !important;
+    font-family: var(--f-texto);
+    font-size: 0.75rem !important; font-weight: 600 !important;
+    letter-spacing: 0.14em !important; text-transform: uppercase;
+    transition: color 0.25s ease;
+}
+.sitio .navegacion-publica .menu a:hover,
+.sitio .navegacion-publica .menu a[aria-current="page"],
+.sitio .cabecera .menu a:hover,
+.sitio .cabecera .menu a[aria-current="page"] { color: #16120f !important; }
+.sitio .cabecera .menu a::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -1px !important; height: 2px !important;
+    background: #16120f !important; border-radius: 2px;
+    transform: scaleX(0) !important; transform-origin: center !important;
+    transition: transform 0.35s var(--ed-salida) !important;
+}
+.sitio .cabecera .menu a:hover::after { transform: scaleX(0.5) !important; }
+.sitio .cabecera .menu a[aria-current="page"]::after { transform: scaleX(1) !important; }
+
+@media (max-width: 1180px) {
+    .sitio .navegacion-publica .cabecera__principal { grid-template-columns: auto minmax(220px, 1fr) auto; }
+}
+@media (max-width: 1023px) {
+    .sitio .navegacion-publica .cabecera__principal { grid-template-columns: 40px minmax(0, 1fr) auto; min-height: 62px; gap: 8px; }
+    .sitio .navegacion-publica .cabecera .marca span, .sitio .cabecera .marca span { font-size: 1.1875rem !important; }
+    .sitio .cabecera .marca img { width: 26px !important; }
+    .sitio .cabecera :is(.compra-cuenta, .compra-carrito) { min-width: 40px; padding: 0 10px; justify-content: center; }
+    .sitio .cabecera .compra-carrito { margin-left: 0; }
+    .sitio .navegacion-publica .cabecera__movil { padding-bottom: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sitio .cabecera :is(.menu a::after, .buscador, .buscador button) { transition: none !important; }
+}
+
+/* ============================================================
+   DIAMANTE NEGRO (21/10/2026)
+   Cabecera y pie en negro profundo con facetas de luz: reflejos
+   fijos suaves y un destello que cruza cada pocos segundos. Filo
+   plateado en lugar de color. Buscador con botón blanco simple.
+   ============================================================ */
+.sitio {
+    --diamante-negro: #050506;
+    --diamante-facetas:
+        radial-gradient(120% 140% at 12% -40%, rgb(255 255 255 / 0.22), transparent 55%),
+        radial-gradient(90% 160% at 88% 130%, rgb(190 205 225 / 0.10), transparent 60%),
+        linear-gradient(115deg, transparent 0 30%, rgb(255 255 255 / 0.07) 30% 46%, transparent 46% 64%, rgb(255 255 255 / 0.05) 64% 76%, transparent 76%);
+    --diamante-destello: linear-gradient(105deg, transparent 44%, rgb(255 255 255 / 0.10) 48%, rgb(255 255 255 / 0.55) 50%, rgb(255 255 255 / 0.10) 52%, transparent 56%);
+    --diamante-filo: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.18) 15%, rgb(255 255 255 / 0.85) 50%, rgb(255 255 255 / 0.18) 85%, transparent);
+}
+@keyframes diamante-destello {
+    0%, 55% { background-position: 0 0, 0 0, 0 0, 170% 0; }
+    100% { background-position: 0 0, 0 0, 0 0, -70% 0; }
+}
+
+.sitio .navegacion-publica .cabecera,
+.sitio .cabecera {
+    background-color: var(--diamante-negro) !important;
+    background-image: var(--diamante-facetas), var(--diamante-destello) !important;
+    background-size: 100% 100%, 100% 100%, 100% 100%, 260% 100% !important;
+    background-repeat: no-repeat !important;
+    animation: diamante-destello 7s cubic-bezier(.45,0,.2,1) infinite;
+}
+.sitio .cabecera[data-sombra="true"] { box-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.75); }
+.sitio .cabecera .marca span { color: #ffffff !important; text-shadow: 0 0 18px rgb(255 255 255 / 0.18); }
+
+/* Buscador blanco con lupa en botón negro. */
+.sitio .navegacion-publica .cabecera .buscador,
+.sitio .cabecera .buscador {
+    background: #ffffff !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.3) !important;
+}
+.sitio .cabecera .buscador:hover { border-color: #e6e6ea !important; }
+.sitio .cabecera .buscador:focus-within {
+    background: #ffffff !important;
+    border-color: #ffffff !important;
+    box-shadow: 0 0 0 4px rgb(255 255 255 / 0.22) !important;
+}
+.sitio .cabecera .buscador input { color: #111113 !important; caret-color: #111113 !important; }
+.sitio .cabecera .buscador input::placeholder { color: #66666d !important; }
+.sitio .cabecera .buscador button[type="submit"] {
+    background: #0b0b0d !important; color: #ffffff !important;
+    box-shadow: none !important; border: 0 !important;
+}
+.sitio .cabecera .buscador button[type="submit"]:hover { background: #2a2a2f !important; transform: none; }
+.sitio .cabecera .buscador button[type="submit"] svg { color: #ffffff !important; width: 17px !important; height: 17px !important; stroke-width: 2.25 !important; }
+
+.sitio .cabecera :is(.cabecera__enlace, .compra-cuenta, .compra-carrito):hover { background: rgb(255 255 255 / 0.10); }
+.sitio .cabecera .compra-cuenta small { color: #d4d4d8 !important; }
+/* Texto sobre negro: blanco pleno, sin velo. */
+.sitio .cabecera :is(.cabecera__enlace, .compra-cuenta) { color: #ffffff !important; font-weight: 600 !important; }
+.sitio .cabecera :is(.cabecera__enlace, .compra-cuenta) svg { color: #ffffff !important; }
+.sitio .cabecera .compra-carrito { background: #ffffff; color: #050506 !important; }
+
+/* Filo plateado entre la barra negra y la fila blanca del menú. */
+.sitio .navegacion-publica .menu,
+.sitio .cabecera .menu {
+    background: var(--diamante-filo) 0 0 / 100% 1px no-repeat, #ffffff !important;
+}
+.sitio .cabecera .menu a:hover,
+.sitio .cabecera .menu a[aria-current="page"] { color: #050506 !important; }
+.sitio .cabecera .menu a::after { background: #050506 !important; height: 2px !important; }
+
+@media (prefers-reduced-motion: reduce) {
+    .sitio .cabecera, .sitio footer.pie { animation: none !important; }
+}
+
+/* Iniciar sesión / crear cuenta: sin logo encima del título. */
+.sitio .cuenta-cliente::before { content: none !important; display: none !important; }

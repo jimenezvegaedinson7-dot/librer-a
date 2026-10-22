@@ -60,7 +60,7 @@ for(const ancho of [390,1440]) {
         const peticiones=[];page.on('request',r=>{if(r.url().includes('/api/libros'))peticiones.push(r.headers().authorization);});
         const control=await api(page);await hastaCheckout(page);
         await page.getByLabel('Número de documento',{exact:true}).fill('12345678');
-        await expect(page.getByText('Plaza de Armas, Jr. Marañón 161, Pallasca 02835', {exact:true})).toBeVisible();
+        await expect(page.getByRole('group',{name:'Cómo recibir tus libros'}).getByText('Plaza de Armas, Jr. Marañón 161, Pallasca 02835', {exact:true})).toBeVisible();
         await expect(page.getByLabel('Dirección',{exact:true})).toHaveCount(0);
         await page.getByRole('button',{name:'Crear pedido y continuar al pago',exact:true}).click();
         await expect(page.getByRole('heading',{name:'Tu pedido está creado',exact:true})).toBeVisible();
@@ -154,7 +154,7 @@ test('mis compras muestra la portada del catálogo y favoritos se abre desde Mi 
     await expect(compra.getByRole('link',{name:`Ver ${libro.titulo}`,exact:true})).toHaveAttribute('href','/libro/1');
     // Favoritos vive dentro del perfil, no en la cabecera.
     await expect(page.locator('header').getByRole('link',{name:/favoritos/i})).toHaveCount(0);
-    await page.goto('/cuenta');await page.getByRole('link',{name:/Mis favoritos/}).click();
+    await page.goto('/cuenta');await page.locator('main').getByRole('link',{name:/Mis favoritos/}).click();
     await expect(page.getByRole('heading',{name:'Mis favoritos',exact:true})).toBeVisible();
     await expect(page.getByRole('heading',{name:libro.titulo,level:2})).toBeVisible();
     await expect(page.getByAltText(`Portada de ${libro.titulo}`)).toBeVisible();

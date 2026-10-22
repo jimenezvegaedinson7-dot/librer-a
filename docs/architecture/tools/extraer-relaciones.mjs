@@ -75,6 +75,22 @@ export function endpointsPeticionCliente(cuerpo, normalizar) {
     return endpoints;
 }
 
+// Fetch público directo, también dentro de componentes/hooks locales. Solo
+// reconoce la base configurada de la API, no imágenes ni hosts arbitrarios.
+export function endpointsFetchApi(cuerpo, normalizar) {
+    const endpoints = [];
+    for (const m of cuerpo.matchAll(/\bfetch\s*\(/g)) {
+        const args = argumentos(bloque(cuerpo, m.index + m[0].length - 1));
+        const ruta = /^`\$\{env\.apiUrl\}(\/[^`]+)`$/.exec(args[0] || '');
+        if (!ruta) continue;
+        const opciones = args[1] || '';
+        const method = /\bmethod\s*:\s*['"](GET|POST|PUT|PATCH|DELETE)['"]/.exec(opciones)?.[1];
+        if (!method && /\bmethod\s*[:},]/.test(opciones)) continue;
+        endpoints.push({ method: method || 'GET', path: `/api${normalizar(ruta[1])}` });
+    }
+    return endpoints;
+}
+
 export function miembrosObjeto(texto, nombre) {
     const inicio = new RegExp(`\\b${nombre}\\s*=\\s*\\{`).exec(texto);
     if (!inicio) return {};

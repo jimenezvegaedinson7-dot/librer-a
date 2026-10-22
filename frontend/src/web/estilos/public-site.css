@@ -1,0 +1,849 @@
+/* Work Sans se declara en index.html (public/fonts) y se precarga en las rutas públicas. */
+
+/* ============================================================
+   WEB PÚBLICA — Librería del Saber
+   Estilo de librería comercial: fondos claros, verde oscuro de
+   marca y de acción y un acento ámbar en los distintivos. Todo
+   vive bajo .sitio para no tocar el panel.
+   ============================================================ */
+
+.sitio {
+    /* Paleta */
+    /* Paleta de la marca (fuente única: cambiar aquí cambia toda la web). */
+    --verde-900: #033a2c;   /* verde oscuro: pie y fondos profundos */
+    --verde-700: #064e3b;   /* verde principal: marca, enlaces, acciones */
+    --marfil: #fffdf7;      /* fondo marfil */
+    --dorado: #d6a84b;      /* dorado elegante: botones y detalles */
+    --dorado-hover: #e2bc6b;
+    --tinta: #17221d;       /* texto oscuro */
+    /* Marco de la página (barra superior y pie): verde oscuro de la marca. */
+    --marco: var(--verde-900);
+    --marco-texto: #e8f3ed;
+    --marco-tenue: #b9cfc4;
+    /* Franja de beneficios (barra superior). */
+    --avisos-fondo: var(--verde-700);
+    --avisos-texto: var(--marfil);
+    --verde-600: #0d6b52;
+    --oferta: #c2410c;
+    --oferta-fondo: #ffedd5;
+    --salvia-100: #d7e9df;
+    --salvia-50: #f3f9f5;
+    --ambar-500: var(--dorado);
+    --ambar-100: #f6ebd2;
+    --ambar-700: #6d4700;
+    --ambar-50: var(--marfil);
+    --ambar-300: var(--dorado-hover);
+    /* Verde vajito: fondos de sección que dan aire sin competir con el texto. */
+    --verde-100: #e8f3ed;  /* verde claro de fondos */
+    --verde-050: #f3f9f5;
+    --blanco: #ffffff;
+    --gris-50: #f7f7f7;
+    --gris-100: #f3f3f3;
+    --gris-300: #cfcfcf;
+    --gris-500: #757575;
+    --gris-700: #4a4a4a;
+    --negro: var(--tinta);
+
+    /* Semánticos (las zonas .oscuro los redefinen) */
+    --texto: var(--negro);
+    --texto-2: var(--gris-700);
+    --texto-3: var(--gris-500);
+    --borde: var(--gris-300);
+    --marca: var(--verde-700);
+    --accion: var(--verde-700);
+    --accion-hover: var(--verde-900);
+
+    /* Tipo */
+    --f-texto: 'Work Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --t-hero: clamp(2rem, 1.35rem + 2.3vw, 3.25rem);
+    --t-h1: clamp(1.5rem, 1.3rem + 0.7vw, 1.75rem);
+    --t-h3: 1.25rem;
+    --t-lead: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+    --t-cuerpo: 1rem;
+    --t-menu: 0.875rem;
+    --t-meta: 0.8125rem;
+
+    /* Espacio */
+    --gutter: clamp(16px, 4vw, 56px);
+    --ancho: 1280px;
+    --e-2: 1rem;
+    --e-3: 1.5rem;
+    --e-4: 2.5rem;
+    --e-5: 4rem;
+    --seccion: clamp(2.75rem, 2rem + 3vw, 5rem);
+
+    /* Forma */
+    --r-tarjeta: 8px;
+    --r-control: 6px;
+    --r-telefono: 44px;
+    --sombra-tarjeta: 0 12px 30px -18px rgba(0, 0, 0, 0.25);
+    --sombra-libro: 0 14px 30px -12px rgba(0, 0, 0, 0.35), 0 3px 8px -3px rgba(0, 0, 0, 0.25);
+    --sombra-telefono: 0 40px 80px -30px rgba(0, 0, 0, 0.45), 0 12px 24px -12px rgba(0, 0, 0, 0.3);
+
+    /* Movimiento */
+    --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
+    --d-rapida: 200ms;
+    --d-media: 500ms;
+
+    position: relative;
+    overflow-x: clip;
+    background: var(--blanco);
+    color: var(--texto);
+    font-family: var(--f-texto);
+    font-size: var(--t-cuerpo);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+.sitio ::selection { background: var(--marca); color: var(--blanco); }
+.sitio :focus-visible { outline: 2px solid var(--accion); outline-offset: 3px; border-radius: 4px; }
+.sitio main :is(h1, h2)[tabindex='-1']:focus { outline: none; }
+/* Reglas base con especificidad cero (:where): las clases de cada
+   componente siempre las pueden sobrescribir. */
+:where(.sitio) a { color: inherit; text-decoration: none; }
+:where(.sitio) img { display: block; max-width: 100%; }
+:where(.sitio) :is(h1, h2, h3) { font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; text-wrap: balance; margin: 0; }
+:where(.sitio) p { margin: 0; text-wrap: pretty; }
+:where(.sitio) :is(ul, ol) { list-style: none; margin: 0; padding: 0; }
+
+/* El panel fija scroll-behavior: smooth en <html>; aquí el desplazamiento
+   suave lo hace Lenis, y con movimiento reducido el salto es inmediato. */
+html:has(.sitio) { scroll-behavior: auto; background: var(--blanco, #fff); }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+.saltar {
+    position: absolute; left: var(--gutter); top: -100px; z-index: 100;
+    background: var(--marca); color: var(--blanco); padding: 0.6rem 1rem; font-weight: 600; border-radius: var(--r-control);
+}
+.saltar:focus { top: 12px; }
+.contenedor { width: min(100% - 2 * var(--gutter), var(--ancho)); margin-inline: auto; position: relative; }
+/* Mientras la página de la ruta se descarga, <main> está vacío: reserva
+   la pantalla para que el pie no aparezca arriba y luego salte (CLS). */
+.sitio main:empty { min-height: 100svh; }
+.visualmente-oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Zonas oscuras (verde): los tokens semánticos se invierten. */
+.oscuro {
+    --texto: var(--blanco);
+    --texto-2: var(--salvia-100);
+    --texto-3: #b8c9c2;
+    --borde: rgba(255, 255, 255, 0.28);
+    background-color: var(--verde-700);
+    color: var(--texto);
+}
+.oscuro :focus-visible { outline-color: var(--blanco); }
+/* Fondos con color para que las secciones no se sigan pareciendo. */
+.verde-claro { background-color: var(--verde-100); }
+.verde-tenue { background-color: var(--verde-050); }
+.crema { background-color: var(--ambar-50); }
+
+/* ---------- Botones en píldora ---------- */
+/* Botón principal en amarillo: es la acción que queremos que se pulse. El
+   verde queda para .boton--marca, donde manda la marca y no la urgencia. */
+.boton {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem;
+    min-height: 48px; padding: 0 1.5rem;
+    font: 600 1rem/1 var(--f-texto);
+    color: var(--negro); background: var(--ambar-500);
+    border: 1px solid var(--ambar-500); border-radius: 999px;
+    cursor: pointer;
+    transition: background var(--d-rapida) var(--ease-salida), border-color var(--d-rapida), transform var(--d-rapida) var(--ease-salida);
+}
+.boton:hover { background: var(--ambar-300); border-color: var(--ambar-300); }
+.boton:active { transform: translateY(1px); }
+/* .boton--marca mantiene el texto claro: el botón base ahora es amarillo con
+   texto oscuro, y sin esto el verde se quedaría ilegible. */
+.boton--marca { background: var(--marca); border-color: var(--marca); color: var(--blanco); }
+.boton--marca:hover { background: var(--verde-900); border-color: var(--verde-900); }
+.boton--linea { background: transparent; color: var(--texto); border-color: var(--borde); }
+.boton--linea:hover { background: rgba(0, 0, 0, 0.05); border-color: var(--texto-3); }
+.oscuro .boton--linea:hover { background: rgba(255, 255, 255, 0.1); }
+.boton--blanco { background: var(--blanco); color: var(--verde-700); border-color: var(--blanco); }
+.boton--blanco:hover { background: var(--salvia-100); border-color: var(--salvia-100); }
+.boton--chico { min-height: 38px; padding: 0 1rem; font-size: 0.875rem; }
+.boton--icono { width: 44px; min-height: 44px; padding: 0; }
+.boton svg { width: 1.1em; height: 1.1em; flex: none; }
+
+.enlace-mas { display: inline-flex; align-items: center; gap: 0.35rem; font-weight: 600; color: var(--marca); }
+.enlace-mas svg { width: 0.8em; height: 0.8em; transition: transform var(--d-rapida) var(--ease-salida); }
+.enlace-mas:hover svg { transform: translateX(3px); }
+.oscuro .enlace-mas { color: var(--blanco); }
+.subrayado { text-decoration: underline; text-underline-offset: 3px; }
+.enlace-texto { color: var(--marca); font-weight: 600; }
+.oscuro .enlace-texto { color: var(--blanco); }
+
+/* Cierre con la acción principal al final de las páginas de la app. */
+.cierre-descarga { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2) var(--e-3); margin-top: var(--e-4); padding: var(--e-3); border: 1px solid var(--borde); border-radius: var(--r-tarjeta); background: var(--verde-100); }
+.cierre-descarga p { font-weight: 600; color: var(--texto); max-width: 52ch; }
+
+/* ---------- Cabecera (avisos · principal · menú) ---------- */
+.sitio .navegacion-publica { display: contents; }
+.avisos { background: var(--avisos-fondo); color: var(--avisos-texto); font-size: var(--t-menu); font-weight: 600; }
+.avisos .contenedor { display: flex; justify-content: space-between; gap: var(--e-3); min-height: 44px; align-items: center; }
+.avisos a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.cabecera { position: sticky; top: 0; z-index: 50; background: var(--blanco); transition: box-shadow var(--d-media) var(--ease-salida); }
+.cabecera[data-sombra='true'] { box-shadow: 0 4px 18px -10px rgba(0, 0, 0, 0.3); }
+.cabecera__principal { display: flex; align-items: center; gap: var(--e-3); min-height: 76px; }
+.marca { display: flex; align-items: center; gap: 0.65rem; flex: none; color: var(--verde-700); }
+.marca img { width: 30px; height: auto; }
+.marca span { font-size: 1.125rem; font-weight: 600; color: var(--negro); }
+.buscador { flex: 1; display: flex; align-items: center; max-width: 640px; height: 44px; border: 1px solid var(--gris-300); border-radius: var(--r-control); background: var(--blanco); }
+.buscador:focus-within { border-color: var(--verde-700); box-shadow: 0 0 0 3px rgba(6, 78, 59, 0.15); }
+.buscador input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; padding: 0 0.9rem; font: 400 0.875rem var(--f-texto); color: var(--negro); outline: none; }
+.buscador input::placeholder { color: var(--gris-500); }
+.buscador button { height: 100%; padding: 0 0.9rem; border: 0; border-left: 1px solid var(--gris-300); background: transparent; color: var(--verde-700); cursor: pointer; display: grid; place-items: center; }
+.buscador button svg { width: 18px; height: 18px; }
+.cabecera__acciones { display: flex; align-items: center; gap: var(--e-3); margin-left: auto; }
+.cabecera__enlace { display: inline-flex; align-items: center; gap: 0.45rem; font-size: var(--t-menu); font-weight: 600; color: var(--verde-700); white-space: nowrap; }
+.cabecera__enlace svg { width: 18px; height: 18px; }
+.cabecera__enlace:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.menu { border-bottom: 1px solid var(--gris-300); }
+.menu ul { display: flex; align-items: center; flex-wrap: wrap; min-height: 44px; }
+.menu li { display: flex; align-items: center; }
+.menu li + li::before { content: ''; width: 1px; height: 14px; background: var(--gris-300); margin: 0 0.9rem; }
+.menu a { font-size: var(--t-menu); font-weight: 600; color: var(--verde-700); padding: 0.7rem 0; position: relative; }
+.menu a::after { content: ''; position: absolute; left: 0; right: 0; bottom: 4px; height: 2px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform var(--d-media) var(--ease-salida); }
+.menu a:hover::after, .menu a[aria-current='page']::after { transform: scaleX(1); }
+.menu a[data-destacado] { color: var(--verde-900); font-weight: 700; }
+
+.cabecera__movil { display: none; }
+.boton-menu.cabecera__boton-menu { display: none; }
+.boton-menu { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--gris-300); border-radius: var(--r-control); background: var(--blanco); color: var(--verde-700); cursor: pointer; }
+.boton-menu svg { width: 20px; height: 20px; }
+
+.cajon { position: fixed; inset: 0; z-index: 60; display: flex; }
+.cajon__velo { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); border: 0; cursor: pointer; }
+.cajon__panel { position: relative; width: min(86vw, 360px); height: 100%; background: var(--blanco); display: flex; flex-direction: column; overflow-y: auto; }
+.cajon__cabeza { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gutter); min-height: 64px; border-bottom: 1px solid var(--gris-300); }
+.cajon__lista a { display: flex; justify-content: space-between; align-items: center; padding: 1rem var(--gutter); border-bottom: 1px solid var(--gris-100); font-size: 1rem; font-weight: 600; color: var(--verde-700); }
+.cajon__lista a[aria-current='page'] { background: var(--salvia-50); }
+.cajon__lista a[data-destacado] { color: var(--verde-900); font-weight: 700; }
+.cajon__pie { margin-top: auto; padding: var(--e-3) var(--gutter); display: grid; gap: 0.9rem; font-size: var(--t-menu); color: var(--gris-700); background: var(--gris-100); }
+
+.cabecera__descarga-texto { white-space: nowrap; }
+@media (max-width: 520px) {
+    .cabecera__descarga { width: 42px; padding: 0; }
+    .cabecera__descarga-texto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+@media (max-width: 1023px) {
+    .avisos li:not(:first-child), .menu, .cabecera__acciones .cabecera__enlace { display: none; }
+    .avisos .contenedor { justify-content: center; }
+    .cabecera__principal { min-height: 60px; gap: 0.75rem; }
+    .cabecera__principal .buscador { display: none; }
+    .cabecera__movil { display: block; padding-bottom: 0.75rem; }
+    .boton-menu.cabecera__boton-menu { display: grid; }
+    .cabecera__movil .buscador { max-width: none; }
+}
+
+/* ---------- Migas y cabecera de página ---------- */
+.migas { background: var(--verde-050); font-size: var(--t-meta); color: var(--gris-700); }
+.migas ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; min-height: 44px; }
+.migas li + li::before { content: '›'; margin-right: 0.4rem; color: var(--gris-500); }
+.migas a { color: var(--verde-700); font-weight: 600; }
+.migas a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- Secciones ---------- */
+.seccion { position: relative; padding-block: var(--seccion); }
+.seccion__titulo { font-size: var(--t-h1); max-width: 30ch; color: var(--texto); }
+/* Rayita ámbar bajo el título: el mismo acento en todas las secciones, para
+   que el ojo sepa dónde empieza cada bloque. */
+.seccion__titulo::after { content: ''; display: block; width: 52px; height: 4px; margin-top: 0.7rem; border-radius: 2px; background: var(--ambar-500); }
+.seccion__entrada { font-size: var(--t-lead); color: var(--texto-2); max-width: 62ch; margin-top: 0.6rem; line-height: 1.55; }
+.seccion__cabeza { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--e-2); padding-bottom: 0.75rem; border-bottom: 1px solid var(--borde); }
+
+/* Distintivo sobre un título: da color a las secciones que son solo texto. */
+.sello {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    padding: 0.35rem 0.8rem; border-radius: 999px;
+    font: 700 0.75rem/1 var(--f-texto); letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ambar-700); background: var(--ambar-100);
+    box-shadow: inset 0 0 0 1px rgba(214, 168, 75, 0.5);
+}
+.sello svg { width: 0.85rem; height: 0.85rem; }
+.oscuro .sello { color: var(--ambar-500); background: rgba(214, 168, 75, 0.16); box-shadow: inset 0 0 0 1px rgba(214, 168, 75, 0.4); }
+
+/* Titulares que se revelan por líneas al entrar en pantalla. Visibles por
+   defecto: solo se ocultan cuando el script está listo (.sitio.js). */
+.linea { display: block; overflow: clip; padding-bottom: 0.12em; margin-bottom: -0.12em; }
+.linea:last-child { margin-bottom: 0; }
+.linea > span { display: block; }
+.sitio [data-revelar] .linea > span { transition: transform 0.5s var(--ease-salida); transition-delay: calc(var(--i, 0) * 50ms); }
+.sitio.js [data-revelar]:not([data-visto]) .linea > span { transform: translateY(112%); }
+.sitio [data-revelar] > .libro, .sitio [data-revelar] > .tarjeta-libro { transition: opacity 400ms var(--ease-salida), transform 400ms var(--ease-salida); transition-delay: calc(var(--i, 0) * 35ms); }
+.sitio.js [data-revelar]:not([data-visto]) > .libro, .sitio.js [data-revelar]:not([data-visto]) > .tarjeta-libro { opacity: 0; transform: translateY(16px); }
+@media (prefers-reduced-motion: reduce) {
+    .sitio.js [data-revelar]:not([data-visto]) .linea > span,
+    .sitio.js [data-revelar]:not([data-visto]) > .libro,
+    .sitio.js [data-revelar]:not([data-visto]) > .tarjeta-libro { transform: none; opacity: 1; }
+}
+
+/* ---------- Hero (Inicio) ---------- */
+/* Fondo con imagen (fondo_inicio) y un velo para el texto; sin efectos animados. */
+.hero {
+    padding: 0; overflow: clip; isolation: isolate;
+    background-color: var(--verde-900);
+}
+.hero > .contenedor { z-index: 1; }
+.hero-fondo { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.hero-fondo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: var(--bg-hero);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+/* Velo del hero: dos capas. La izquierda se oscurece con un degradado neutro
+   para que las letras blancas resalten, y una viñeta suave cierra el conjunto. */
+.hero-fondo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg,
+            rgba(8, 12, 15, 0.80) 0%,
+            rgba(8, 12, 15, 0.64) 16%,
+            rgba(8, 12, 15, 0.40) 36%,
+            rgba(8, 12, 15, 0.17) 55%,
+            transparent 75%),
+        radial-gradient(125% 105% at 42% 45%, transparent 44%, rgba(4, 8, 10, 0.36) 100%);
+}
+@media (max-width: 1023px) {
+    /* En móvil el texto arriba y el libro abajo: el velo sube desde el borde superior. */
+    .hero-fondo::after {
+        background:
+            linear-gradient(180deg,
+                rgba(8, 12, 15, 0.78) 0%,
+                rgba(8, 12, 15, 0.56) 26%,
+                rgba(8, 12, 15, 0.25) 50%,
+                transparent 76%),
+            radial-gradient(130% 100% at 50% 38%, transparent 40%, rgba(4, 8, 10, 0.34) 100%);
+    }
+}
+.hero__rejilla { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: center; gap: var(--e-4); min-height: min(640px, 76svh); padding-block: var(--e-4); }
+.hero__titulo { font-size: var(--t-hero); max-width: 14ch; line-height: 1.1; }
+.hero__bajada { font-size: var(--t-lead); color: var(--texto-2); max-width: 44ch; margin-top: 1.1rem; line-height: 1.55; }
+.hero__acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: var(--e-3); }
+.hero__escena { position: relative; height: min(60svh, 580px); min-height: 380px; }
+.hero__escena canvas { touch-action: pan-y; }
+/* Pista solo en pantallas sin hover (táctiles): el libro se abre con un toque. */
+.hero__pista { display: none; }
+@media (hover: none) {
+    .hero__pista { display: block; position: absolute; left: 50%; bottom: 3%; translate: -50% 0; z-index: 1; margin: 0; padding: 0.35rem 0.85rem; border-radius: 999px; background: rgba(3, 58, 44, 0.6); color: var(--salvia-100); font-size: var(--t-meta); font-weight: 600; white-space: nowrap; pointer-events: none; }
+}
+/* La sombra de contacto del libro se desvanece antes del borde del lienzo:
+   sin esto se cortaba en una línea recta al final del hero. */
+.hero__escena > div { -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent 100%); mask-image: linear-gradient(180deg, #000 82%, transparent 100%); }
+.hero__poster { position: absolute; inset: 0; margin: auto; width: min(88%, 600px); max-height: 88%; height: auto; object-fit: contain; filter: drop-shadow(0 26px 36px rgba(0, 0, 0, 0.45)); }
+@media (max-width: 1023px) {
+    .hero__rejilla { grid-template-columns: 1fr; gap: var(--e-2); min-height: 0; padding-top: var(--e-4); padding-bottom: 0; }
+    .hero__escena { height: 46svh; min-height: 300px; }
+}
+
+/* ---------- Libros (carrusel del inicio) ---------- */
+.catalogo { overflow: clip; background: var(--verde-050); }
+.catalogo__controles { display: flex; align-items: center; gap: 0.6rem; }
+.catalogo__ventana { position: relative; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: thin; }
+.catalogo__pista { display: flex; gap: clamp(16px, 2vw, 28px); padding: var(--e-4) var(--gutter) var(--e-3); width: max-content; }
+.libro { width: clamp(150px, 15vw, 200px); flex: none; scroll-snap-align: start; }
+.libro__tapa {
+    position: relative; aspect-ratio: 2 / 3; border-radius: 2px 4px 4px 2px; overflow: hidden;
+    background: var(--gris-100); box-shadow: var(--sombra-libro); transform-origin: 0 50%;
+    transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida);
+}
+.libro__tapa::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 7%; z-index: 1; background: linear-gradient(90deg, rgba(0, 0, 0, 0.3), rgba(255, 255, 255, 0.12) 60%, transparent); }
+.libro__tapa img { width: 100%; height: 100%; object-fit: cover; }
+.libro:hover .libro__tapa { transform: perspective(900px) rotateY(-14deg) translateY(-6px); box-shadow: 0 26px 44px -16px rgba(0, 0, 0, 0.45); }
+.libro__datos { margin-top: 0.9rem; }
+.libro__titulo { font-size: 1rem; font-weight: 500; line-height: 1.3; min-height: 2.6em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.libro__autor { color: var(--texto-3); font-size: 0.875rem; margin-top: 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.libro__pie { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 0.45rem; font-size: 0.8125rem; color: var(--texto-3); }
+.libro__pie > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Precio resaltado en verde claro: pastilla clara con texto verde oscuro,
+   para que destaque sin gritar y sin perder contraste. */
+.precio {
+    display: inline-block; align-self: center; padding: 0.1rem 0.55rem; border-radius: 999px;
+    background: var(--verde-100); color: var(--verde-900);
+    font-weight: 700; font-size: 0.9375rem; font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+    white-space: nowrap; flex: none;
+}
+.libro--esqueleto .libro__tapa, .tarjeta-libro--esqueleto .tarjeta-libro__tapa { background: linear-gradient(100deg, #ececec 30%, #f7f7f7 50%, #ececec 70%) 0 0 / 300% 100%; box-shadow: none; animation: brillo 1.4s linear infinite; }
+.libro--esqueleto .libro__datos { min-height: calc(2.6rem + 1.3rem + 1.25rem + 0.65rem); }
+
+/* ---------- Precio en oferta: naranja y subrayado ---------- */
+.precio.oferta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.15rem 0.5rem 0.15rem 0.25rem;
+    background: var(--oferta-fondo);
+    color: var(--oferta);
+}
+.precio.oferta .oferta__pastilla {
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: var(--oferta-fondo);
+    color: var(--oferta);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+/* El precio tachado no hereda el peso de la pastilla: si no, compite
+   visualmente con el precio final, que es el que importa. */
+.precio.oferta .oferta__anterior {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--texto-2);
+    opacity: 0.65;
+}
+.precio.oferta .oferta__final {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--oferta);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+@keyframes brillo { to { background-position: -150% 0; } }
+.aviso { margin-top: var(--e-3); padding: var(--e-3); border: 1px solid var(--borde); border-radius: var(--r-tarjeta); color: var(--texto-2); max-width: 64ch; background: var(--blanco); }
+
+/* ---------- Página de catálogo ---------- */
+.filtros { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: var(--e-3); }
+.filtros .buscador { max-width: 420px; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: var(--e-2); }
+.chip { min-height: 36px; padding: 0 0.95rem; border-radius: 999px; border: 1px solid var(--gris-300); background: var(--blanco); color: var(--verde-700); font: 600 0.875rem var(--f-texto); cursor: pointer; transition: background var(--d-rapida), color var(--d-rapida), border-color var(--d-rapida); }
+.chip:hover { border-color: var(--verde-700); }
+.chip[aria-pressed='true'] { background: var(--verde-700); border-color: var(--verde-700); color: var(--blanco); }
+.resultado { margin-top: var(--e-3); font-size: var(--t-menu); color: var(--texto-3); }
+.rejilla-libros { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: clamp(12px, 1.6vw, 20px); margin-top: var(--e-2); }
+.tarjeta-libro { display: flex; flex-direction: column; gap: 0.35rem; padding: 14px; border: 1px solid var(--gris-300); border-radius: var(--r-tarjeta); background: var(--blanco); transition: box-shadow var(--d-media) var(--ease-salida), border-color var(--d-media); }
+.tarjeta-libro:hover { box-shadow: var(--sombra-tarjeta); border-color: var(--verde-600); }
+.tarjeta-libro__tapa { aspect-ratio: 2 / 3; border-radius: 2px 4px 4px 2px; overflow: hidden; background: var(--gris-100); box-shadow: var(--sombra-libro); margin-bottom: 0.55rem; transition: transform var(--d-media) var(--ease-salida); }
+.tarjeta-libro:hover .tarjeta-libro__tapa { transform: translateY(-4px); }
+.tarjeta-libro__tapa img { width: 100%; height: 100%; object-fit: cover; }
+.tarjeta-libro .libro__titulo { min-height: 2.6em; }
+.categoria { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--ambar-700); background: var(--ambar-100); padding: 0.15rem 0.55rem; border-radius: 999px; }
+.agotado { display: inline-block; align-self: flex-start; font-size: 0.75rem; font-weight: 600; color: var(--ambar-700); background: var(--ambar-100); padding: 0.15rem 0.55rem; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(214, 168, 75, 0.5); }
+.tarjeta-libro .boton { margin-top: auto; width: 100%; padding-inline: 0.75rem; white-space: nowrap; }
+/* La acción repetida en cada tarjeta va en contorno verde: 25 botones ámbar
+   seguidos convertían la rejilla en una pared amarilla. Se rellena al pasar. */
+.tarjeta-libro .boton--linea { color: var(--verde-700); border-color: var(--verde-700); background: var(--blanco); }
+.tarjeta-libro .boton--linea:hover { color: var(--blanco); background: var(--verde-700); border-color: var(--verde-700); }
+/* En la rejilla el <p> lleva a la vez .precio y .tarjeta-libro__precio: la
+   pastilla verde la pinta .precio, aquí solo va el margen. */
+.tarjeta-libro__precio { margin-top: 0.35rem; }
+@media (max-width: 520px) { .rejilla-libros { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tarjeta-libro { padding: 10px; } }
+@media (max-width: 520px) { .tarjeta-libro .boton { font-size: 0.8125rem; padding-inline: 0.5rem; } .tarjeta-libro .boton svg { display: none; } }
+@media (max-width: 380px) { .tarjeta-libro .boton { font-size: 0.75rem; } }
+
+/* ---------- Video de anuncios ---------- */
+/* Dos columnas: video (16:9) a la izquierda y sus textos a la derecha,
+   centrados en vertical. En móvil, el video arriba y el texto debajo. */
+.video-destacado__rejilla { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); gap: clamp(2rem, 4vw, 3.5rem); align-items: center; }
+.video-destacado__marco { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: var(--marino-950); box-shadow: 0 30px 60px -36px rgba(13, 41, 64, 0.55), 0 0 0 1px var(--linea); }
+.video-destacado__marco video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.video-destacado__texto { display: grid; justify-items: start; gap: 1rem; max-width: 34rem; }
+.video-destacado__etiqueta { display: inline-flex; align-items: center; gap: 0.6rem; font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dorado-oscuro); }
+.video-destacado__titulo { font-size: clamp(1.625rem, 1.1rem + 1.9vw, 2.5rem); font-weight: 600; line-height: 1.15; letter-spacing: -0.015em; color: var(--tinta); text-wrap: balance; }
+.video-destacado__descripcion { font-size: 1rem; line-height: 1.65; color: var(--texto-2); max-width: 46ch; }
+.video-destacado__boton { margin-top: 0.5rem; border-radius: 999px; padding-inline: 1.5rem; }
+.video-destacado__boton svg { transition: translate 0.2s ease; }
+.video-destacado__boton:hover svg { translate: 3px 0; }
+@media (max-width: 860px) {
+    .video-destacado__rejilla { grid-template-columns: 1fr; gap: 1.75rem; }
+    .video-destacado__texto { max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) { .video-destacado__boton svg { transition: none; } }
+
+/* ---------- Promociones del inicio ---------- */
+/* El texto queda siempre por encima y a la izquierda de la captura. */
+
+/* ---------- App ---------- */
+.app { overflow: clip; }
+.app__rejilla { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--e-5); align-items: center; }
+.app__lista { margin-top: var(--e-3); display: grid; gap: 1.1rem; }
+.app__lista li { display: grid; grid-template-columns: 2rem 1fr; gap: 0.8rem; align-items: start; }
+.app__lista svg { width: 1.25rem; height: 1.25rem; color: var(--marca); margin-top: 0.15rem; }
+.app__lista b { display: block; font-weight: 600; color: var(--texto); }
+.app__lista span { color: var(--texto-2); font-size: 0.9375rem; }
+.app__telefonos { position: relative; z-index: 7; height: clamp(520px, 56vw, 700px); }
+.telefono { position: absolute; width: clamp(200px, 20vw, 280px); aspect-ratio: 390 / 844; border-radius: var(--r-telefono); padding: 11px; background: #0d0f0f; box-shadow: var(--sombra-telefono), inset 0 0 0 1.5px rgba(255, 255, 255, 0.18); }
+.telefono img { width: 100%; height: 100%; object-fit: cover; border-radius: calc(var(--r-telefono) - 11px); }
+/* Recortes del catálogo existente: la navegación antigua queda fuera del encuadre. */
+.sitio .telefono.telefono--catalogo, .sitio .vitrina__telefono.vitrina__telefono--catalogo { aspect-ratio: 390 / 700; }
+.sitio .telefono--catalogo img { object-position: top; }
+.telefono::before { content: ''; position: absolute; top: 19px; left: 50%; translate: -50% 0; width: 30%; height: 20px; border-radius: 20px; background: #0d0f0f; z-index: 1; }
+.telefono--1 { left: 30%; top: 4%; z-index: 9; }
+.telefono--2 { left: 2%; top: 17%; z-index: 8; scale: 0.9; filter: brightness(0.9); }
+.telefono--3 { left: 60%; top: 20%; z-index: 7; scale: 0.86; filter: brightness(0.85); }
+.app__nota { margin-top: var(--e-3); font-size: var(--t-meta); color: var(--texto-3); }
+@media (max-width: 1023px) {
+    .app__rejilla { grid-template-columns: 1fr; gap: var(--e-3); }
+    .app__telefonos { height: clamp(440px, 118vw, 620px); order: -1; }
+    .telefono { width: clamp(160px, 42vw, 240px); }
+    .telefono--1 { left: 50%; translate: -50% 0; }
+    .telefono--2 { left: 2%; }
+    .telefono--3 { left: auto; right: 2%; }
+}
+
+/* ---------- Características ---------- */
+.ventajas__lista { display: grid; gap: var(--e-5); margin-top: var(--e-4); }
+.ventaja { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--e-4); align-items: center; }
+.ventaja__texto { grid-column: 1 / span 5; }
+.ventaja__visual { grid-column: 7 / span 6; position: relative; }
+.ventaja--inversa .ventaja__texto { grid-column: 8 / span 5; order: 2; }
+.ventaja--inversa .ventaja__visual { grid-column: 1 / span 6; order: 1; }
+.ventaja h2 { font-size: var(--t-h3); color: var(--marca); }
+.ventaja__texto p { margin-top: 0.75rem; color: var(--texto-2); max-width: 46ch; }
+.ventaja__texto .ventaja__detalle { margin-top: var(--e-2); display: flex; flex-wrap: wrap; gap: 0.5rem 1.3rem; font-size: 0.875rem; color: var(--texto); }
+.ventaja__detalle span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.ventaja__detalle svg { width: 1rem; height: 1rem; color: var(--marca); }
+.ficha { position: relative; padding: clamp(1.1rem, 2.4vw, 1.6rem); background: var(--blanco); border: 1px solid var(--gris-300); border-radius: var(--r-tarjeta); box-shadow: var(--sombra-tarjeta); }
+.ficha__pie { margin-top: 0.85rem; font-size: 0.75rem; color: var(--gris-500); text-align: center; }
+.recorte { position: relative; overflow: hidden; border-radius: 12px; background: var(--verde-050); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06); }
+.recorte img { width: 100%; height: auto; }
+.tipografica { font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem); font-weight: 700; line-height: 1.15; color: var(--texto); }
+.tipografica em { font-style: normal; color: var(--verde-600); }
+@media (max-width: 1023px) {
+    .ventaja, .ventaja--inversa { grid-template-columns: 1fr; gap: var(--e-3); }
+    .ventaja__texto, .ventaja__visual, .ventaja--inversa .ventaja__texto, .ventaja--inversa .ventaja__visual { grid-column: 1; order: initial; }
+}
+
+/* Selector de entrega: réplica del de la app. */
+.selector-entrega { display: grid; gap: 0.75rem; max-width: 460px; margin-inline: auto; }
+.opcion-entrega { display: grid; grid-template-columns: 48px 1fr auto; gap: 1rem; align-items: center; text-align: left; padding: 1rem 1.1rem; border-radius: 12px; border: 1.5px solid var(--gris-300); background: var(--blanco); color: var(--negro); font: inherit; cursor: pointer; transition: border-color var(--d-rapida), background var(--d-rapida); }
+.opcion-entrega[aria-checked='true'] { border-color: var(--verde-700); background: var(--verde-050); }
+.opcion-entrega__icono { width: 48px; height: 48px; border-radius: 10px; display: grid; place-items: center; background: var(--verde-700); color: var(--blanco); }
+.opcion-entrega[aria-checked='false'] .opcion-entrega__icono { background: var(--blanco); color: var(--verde-700); border: 1px solid var(--gris-300); }
+.opcion-entrega__icono svg { width: 22px; height: 22px; }
+.opcion-entrega b { display: block; font-weight: 600; }
+.opcion-entrega small { color: var(--gris-700); font-size: 0.8125rem; }
+.opcion-entrega__radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--gris-300); display: grid; place-items: center; }
+.opcion-entrega[aria-checked='true'] .opcion-entrega__radio { border-color: var(--verde-700); }
+.opcion-entrega[aria-checked='true'] .opcion-entrega__radio::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--verde-700); }
+.selector-entrega__resultado { margin-top: 0.4rem; font-size: 0.875rem; color: var(--gris-700); text-align: center; min-height: 1.6em; }
+
+/* ---------- Descarga ---------- */
+.descarga__rejilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 1.6vw, 20px); margin-top: var(--e-4); align-items: start; }
+.tarjeta-descarga { position: relative; display: flex; flex-direction: column; gap: 1.1rem; padding: clamp(1.4rem, 2.6vw, 2.2rem); background: var(--blanco); border: 1px solid var(--gris-300); border-radius: var(--r-tarjeta); }
+.tarjeta-descarga[data-destacada='true'] { border-color: var(--verde-700); box-shadow: 0 0 0 1px var(--verde-700); }
+.tarjeta-descarga__cabeza { display: flex; align-items: center; gap: 0.9rem; }
+.tarjeta-descarga__cabeza svg { width: 36px; height: 36px; color: var(--verde-700); }
+.tarjeta-descarga h2 { font-size: var(--t-h3); }
+.tarjeta-descarga__estado { font-size: var(--t-meta); color: var(--gris-700); }
+.ficha-tecnica { display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1.3rem; margin: 0; font-size: 0.9375rem; }
+.ficha-tecnica dt { color: var(--gris-700); }
+.ficha-tecnica dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tarjeta-descarga__nota { font-size: var(--t-meta); color: var(--gris-700); }
+.tarjeta-descarga .boton { align-self: flex-start; }
+.tu-equipo { position: absolute; top: -12px; right: 1.2rem; padding: 0.2rem 0.65rem; font-size: 0.75rem; font-weight: 700; background: var(--ambar-500); color: var(--negro); border-radius: 999px; }
+@media (max-width: 767px) { .descarga__rejilla { grid-template-columns: 1fr; } }
+
+/* ---------- Nosotros ---------- */
+
+/* Tienda: dirección y mapa. */
+.tienda { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: var(--e-4); align-items: center; margin-top: var(--e-5); padding-top: var(--e-4); border-top: 1px solid var(--borde); scroll-margin-top: 96px; }
+.tienda h2 { font-size: var(--t-h3); color: var(--marca); }
+.tienda__direccion { display: flex; gap: 0.6rem; align-items: flex-start; margin-top: 0.9rem; font-weight: 600; color: var(--texto); }
+.tienda__direccion svg { flex: none; width: 1.1rem; height: 1.1rem; margin-top: 0.2rem; color: var(--marca); }
+.tienda__nota { margin-top: 0.6rem; color: var(--texto-2); font-size: 0.9375rem; max-width: 40ch; }
+.tienda .boton { margin-top: var(--e-3); }
+.tienda__mapa { position: relative; aspect-ratio: 16 / 10; border: 1px solid var(--gris-300); border-radius: var(--r-tarjeta); overflow: hidden; background: var(--gris-100); box-shadow: var(--sombra-tarjeta); }
+.tienda__mapa iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+@media (max-width: 767px) { .tienda { grid-template-columns: 1fr; gap: var(--e-3); } .tienda__mapa { aspect-ratio: 4 / 3; } }
+
+/* El pie tiene su propia capa: web/componentes/public-footer.css */
+
+@media (prefers-reduced-motion: reduce) {
+    .sitio *, .sitio *::before, .sitio *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}
+
+/* ============================================================
+   PULIDO VISUAL: botones con relieve y libros que parecen libros
+   ============================================================ */
+
+/* Botones: un poco de relieve en reposo, se elevan al pasar y se hunden
+   al pulsar. Los colores de cada variante no cambian. */
+.boton {
+    letter-spacing: 0.005em;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 8px 18px -12px rgba(0, 0, 0, 0.55);
+    transition: background var(--d-rapida) var(--ease-salida), border-color var(--d-rapida), color var(--d-rapida),
+        transform var(--d-rapida) var(--ease-salida), box-shadow var(--d-rapida) var(--ease-salida);
+}
+.boton:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 14px 24px -14px rgba(0, 0, 0, 0.6); }
+.boton:active { transform: translateY(0); box-shadow: 0 4px 10px -8px rgba(0, 0, 0, 0.5); }
+.boton--linea { box-shadow: none; }
+.boton--linea:hover { box-shadow: 0 10px 20px -14px rgba(3, 58, 44, 0.55); }
+/* La flecha final se adelanta un poco al pasar. */
+.boton svg:last-child:not(:first-child) { transition: transform var(--d-rapida) var(--ease-salida); }
+.boton:hover svg:last-child:not(:first-child) { transform: translateX(3px); }
+/* Flechas del carrusel: discos blancos que se vuelven verdes. */
+.catalogo__controles .boton--icono { background: var(--blanco); color: var(--verde-700); border-color: var(--gris-300); box-shadow: 0 6px 14px -10px rgba(0, 0, 0, 0.4); }
+.catalogo__controles .boton--icono:hover { background: var(--verde-700); color: var(--blanco); border-color: var(--verde-700); }
+
+/* Portadas como libros de verdad: filo de hojas a la derecha (capas de
+   papel con box-shadow), lomo sombreado a la izquierda y esquinas suaves. */
+.libro__tapa, .tarjeta-libro__tapa {
+    border-radius: 2px 6px 6px 2px;
+    box-shadow:
+        3px 0 0 -1px #f3ecdc, 5px 1px 0 -1px #e2d8c4, 7px 2px 0 -2px #d6cab2,
+        0 16px 28px -14px rgba(0, 0, 0, 0.45), 0 4px 10px -4px rgba(0, 0, 0, 0.25);
+}
+.tarjeta-libro__tapa { position: relative; overflow: hidden; }
+.tarjeta-libro__tapa::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 7%; z-index: 1; background: linear-gradient(90deg, rgba(0, 0, 0, 0.28), rgba(255, 255, 255, 0.14) 60%, transparent); pointer-events: none; }
+.libro__tapa img, .tarjeta-libro__tapa img { transition: transform 700ms var(--ease-salida); }
+.libro:hover .libro__tapa { transform: perspective(900px) rotateY(-9deg) translateY(-6px); box-shadow: 3px 0 0 -1px #f3ecdc, 5px 1px 0 -1px #e2d8c4, 7px 2px 0 -2px #d6cab2, 0 28px 40px -18px rgba(0, 0, 0, 0.5); }
+.libro__titulo { font-weight: 600; color: var(--texto); }
+
+/* Carrusel: los bordes se desvanecen para insinuar que hay más libros. */
+.catalogo__ventana {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - var(--gutter) * 2), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 var(--gutter), #000 calc(100% - var(--gutter) * 2), transparent 100%);
+}
+
+/* Tarjetas del catálogo: papel blanco que flota y se eleva al pasar. */
+.tarjeta-libro {
+    padding: 16px 16px 18px; gap: 0.4rem;
+    border: 1px solid rgba(3, 58, 44, 0.08); border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 26px -18px rgba(3, 58, 44, 0.35);
+    transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida), border-color var(--d-media);
+}
+/* Ya revelada, la tarjeta responde al instante (sin el retraso escalonado de la entrada). */
+.sitio [data-revelar][data-visto] > .tarjeta-libro { transition: transform var(--d-media) var(--ease-salida), box-shadow var(--d-media) var(--ease-salida), border-color var(--d-media), opacity 800ms var(--ease-salida); transition-delay: 0s; }
+.tarjeta-libro:hover { transform: translateY(-4px); border-color: rgba(3, 58, 44, 0.18); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 24px 40px -22px rgba(3, 58, 44, 0.45); }
+.tarjeta-libro:hover .tarjeta-libro__tapa { transform: none; }
+.tarjeta-libro:hover .tarjeta-libro__tapa img { transform: scale(1.04); }
+.tarjeta-libro__tapa { margin: 4px 8px 0.75rem 2px; }
+.tarjeta-libro__precio { align-self: flex-start; }
+/* Sin stock: cinta sobre la portada en lugar de una etiqueta suelta. */
+.tarjeta-libro__tapa .agotado {
+    position: absolute; z-index: 2; left: 8px; top: 8px; margin: 0;
+    background: rgba(3, 58, 44, 0.88); color: var(--blanco); box-shadow: none;
+    backdrop-filter: blur(2px);
+}
+.tarjeta-libro--sin-stock .tarjeta-libro__tapa img { filter: saturate(0.6) brightness(0.92); }
+
+@media (prefers-reduced-motion: reduce) {
+    .boton:hover, .tarjeta-libro:hover { transform: none; }
+    .tarjeta-libro:hover .tarjeta-libro__tapa img { transform: none; }
+}
+.sitio .libro-nuevo {
+    position: absolute;
+    bottom: 0.6rem;
+    left: 0.6rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.3rem;
+    background: var(--verde-700);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 2;
+}
+
+/* ============================================================
+   TIENDA: botones de compra, etiquetas y catálogo al estilo de
+   las grandes tiendas en línea (Amazon como referencia), con la
+   identidad verde y ámbar de la librería.
+   ============================================================ */
+
+/* Botón de compra: amarillo de tienda, píldora, sombra suave y foco claro. */
+.sitio .boton--compra {
+    background: var(--dorado); border-color: #c99a3c; color: var(--tinta);
+    font-weight: 600; letter-spacing: 0;
+    box-shadow: 0 2px 5px 0 rgba(213, 217, 217, 0.5);
+}
+.sitio .boton--compra:hover { background: var(--dorado-hover); border-color: var(--dorado); box-shadow: 0 4px 10px -2px rgba(150, 110, 30, 0.35); }
+.sitio .boton--compra:active { background: #c99a3c; }
+.sitio .boton--compra:focus-visible { outline: 2px solid #007185; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(0, 113, 133, 0.18); }
+
+/* Etiquetas sobre la portada. */
+.etiquetas-libro {
+    position: absolute; z-index: 2; top: 8px; left: 0;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    pointer-events: none;
+}
+/* "Más vendido": cinta naranja con muesca, como la de las tiendas en línea. */
+.etiqueta-top {
+    padding: 0.2rem 0.85rem 0.2rem 0.55rem;
+    background: #c45500; color: #fff;
+    font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.02em;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 50%, 100% 100%, 0 100%);
+    box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.35);
+}
+.etiquetas-libro .agotado,
+.tarjeta-libro__tapa .etiquetas-libro .agotado {
+    position: static; margin: 0 0 0 8px;
+}
+/* "Agregado recientemente": cinta verde de la marca, abajo de la portada. */
+.sitio .libro-nuevo {
+    left: 0; bottom: 0.6rem; border-radius: 0;
+    padding: 0.2rem 0.85rem 0.2rem 0.55rem;
+    background: var(--verde-700);
+    font-size: 0.6875rem; letter-spacing: 0.02em;
+    clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 50%, 100% 100%, 0 100%);
+    box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Catálogo ---------- */
+.catalogo-pagina { padding-top: var(--e-4); background: linear-gradient(180deg, var(--salvia-50), var(--blanco) 320px); }
+.catalogo-cabeza {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--e-3); align-items: end;
+    padding-bottom: var(--e-3); border-bottom: 1px solid var(--borde);
+}
+.catalogo-cabeza .seccion__entrada { max-width: 60ch; }
+.catalogo-ventajas { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; font-size: var(--t-menu); color: var(--texto-2); }
+.catalogo-ventajas li { display: flex; align-items: center; gap: 0.5rem; }
+.catalogo-ventajas svg { color: var(--verde-700); width: 1rem; height: 1rem; }
+/* Sin espacio a la derecha, los beneficios pasan a su propia fila. */
+@media (max-width: 1200px) {
+    .catalogo-cabeza { grid-template-columns: minmax(0, 1fr); gap: var(--e-2); }
+    .catalogo-ventajas { justify-content: flex-start; }
+}
+.catalogo-pagina .filtros { justify-content: space-between; }
+.catalogo-pagina .filtros .buscador { flex: 1; max-width: 560px; }
+.ordenar { display: inline-flex; align-items: center; gap: 0.5rem; font-size: var(--t-menu); color: var(--texto-2); }
+.ordenar select {
+    min-height: 40px; padding: 0 2rem 0 0.8rem; border: 1px solid var(--gris-300); border-radius: 8px;
+    background: #f0f2f2 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E") no-repeat right 0.7rem center;
+    appearance: none; font: 500 0.875rem var(--f-texto); color: var(--negro); cursor: pointer;
+    box-shadow: 0 2px 5px 0 rgba(213, 217, 217, 0.5);
+}
+.ordenar select:hover { background-color: #e3e6e6; }
+.catalogo-cuerpo { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: var(--e-4); margin-top: var(--e-3); align-items: start; }
+.catalogo-lateral { position: sticky; top: 120px; display: grid; gap: var(--e-3); }
+.filtro-bloque h2 { font-size: 0.9375rem; font-weight: 700; color: var(--texto); margin-bottom: 0.6rem; }
+.catalogo-lateral .chips { flex-direction: column; align-items: stretch; gap: 0.15rem; margin-top: 0; }
+.catalogo-lateral .chip {
+    display: flex; justify-content: space-between; align-items: center; min-height: 34px; padding: 0 0.7rem;
+    border: 0; border-radius: 8px; background: transparent; color: var(--texto); font-weight: 500; text-align: left;
+}
+.catalogo-lateral .chip:hover { background: var(--salvia-50); color: var(--verde-700); }
+.catalogo-lateral .chip[aria-pressed='true'] { background: var(--verde-700); color: var(--blanco); font-weight: 700; }
+.chip__cuenta { font-size: 0.75rem; font-weight: 600; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.casilla { display: flex; align-items: center; gap: 0.55rem; padding: 0.35rem 0.2rem; font-size: 0.875rem; color: var(--texto); cursor: pointer; }
+.casilla input { width: 18px; height: 18px; accent-color: var(--verde-700); cursor: pointer; }
+.casilla .chip__cuenta { margin-left: auto; }
+.catalogo-resultados .resultado { margin-top: 0; padding-bottom: 0.6rem; border-bottom: 1px solid var(--borde); color: var(--texto-2); }
+.catalogo-resultados .resultado strong { color: var(--texto); }
+
+/* Tarjeta de producto. */
+.tarjeta-libro__cuerpo { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
+.tarjeta-libro .libro__titulo { font-size: 0.975rem; line-height: 1.3; transition: color var(--d-rapida); }
+.tarjeta-libro:hover .libro__titulo { color: #c45500; }
+.tarjeta-libro .libro__autor { font-size: 0.8125rem; color: var(--texto-3); margin: 0; }
+.tarjeta-libro .libro__autor span { color: #007185; font-weight: 500; }
+.tarjeta-libro .categoria { margin-top: 0.1rem; }
+.ahorro { font-size: 0.8125rem; font-weight: 600; color: #b12704; }
+.stock { display: flex; align-items: center; gap: 0.35rem; font-size: 0.8125rem; font-weight: 600; }
+.stock svg { width: 0.9rem; height: 0.9rem; }
+.stock--ok { color: #007600; }
+.stock--poco { color: #b12704; }
+.stock--agotado { color: var(--texto-2); font-weight: 500; }
+.entrega-linea { display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.75rem; line-height: 1.4; color: var(--texto-3); }
+.entrega-linea svg { flex: none; width: 0.95rem; height: 0.95rem; margin-top: 0.1rem; color: var(--verde-700); }
+.tarjeta-libro .boton--compra { margin-top: 0.6rem; }
+
+@media (max-width: 1023px) {
+    .catalogo-cabeza { grid-template-columns: 1fr; }
+    .catalogo-cuerpo { grid-template-columns: minmax(0, 1fr); gap: var(--e-2); }
+    .catalogo-lateral { position: static; }
+    .catalogo-lateral .chips { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: 0.4rem; padding-bottom: 0.25rem; scrollbar-width: none; }
+    .catalogo-lateral .chip { flex: none; gap: 0.4rem; border: 1px solid var(--gris-300); border-radius: 999px; background: var(--blanco); }
+    .catalogo-lateral .filtro-bloque:nth-child(2) { display: flex; flex-wrap: wrap; gap: 0 1rem; align-items: center; }
+    .catalogo-lateral .filtro-bloque:nth-child(2) h2 { width: 100%; margin-bottom: 0.2rem; }
+    .casilla .chip__cuenta { margin-left: 0.25rem; }
+    .catalogo-lateral .filtro-bloque h2 { font-size: 0.875rem; }
+}
+@media (max-width: 520px) {
+    .ordenar { width: 100%; justify-content: space-between; }
+    .entrega-linea { display: none; }
+}
+
+/* ---------- Inicio: explora por categoría ---------- */
+
+/* ---------- Inicio: cómo comprar ---------- */
+.como-comprar { background: var(--salvia-50); }
+
+/* Aparición escalonada de los nuevos bloques al entrar en pantalla. */
+.sitio [data-revelar] > .categorias__item, .sitio [data-revelar] > .proceso__paso {
+    transition: opacity 800ms var(--ease-salida), transform 800ms var(--ease-salida);
+    transition-delay: calc(var(--i, 0) * 90ms);
+}
+.sitio.js [data-revelar]:not([data-visto]) > .categorias__item,
+.sitio.js [data-revelar]:not([data-visto]) > .proceso__paso { opacity: 0; transform: translateY(20px); }
+@media (prefers-reduced-motion: reduce) {
+    .sitio.js [data-revelar]:not([data-visto]) > .categorias__item,
+    .sitio.js [data-revelar]:not([data-visto]) > .proceso__paso { opacity: 1; transform: none; }
+}
+/* Precio en oferta dentro de tarjetas angostas: se acomoda en dos líneas
+   antes que salirse de la tarjeta. */
+.tarjeta-libro .precio.oferta { flex-wrap: wrap; max-width: 100%; row-gap: 0.1rem; }
+.sitio .libro-nuevo, .etiqueta-top { white-space: nowrap; }
+@media (max-width: 520px) {
+    .sitio .libro-nuevo, .etiqueta-top { font-size: 0.59rem; letter-spacing: 0; padding: 0.15rem 0.6rem 0.15rem 0.4rem; }
+    .tarjeta-libro .precio.oferta .oferta__final { font-size: 0.9375rem; }
+}
+.sitio .actualizacion-app {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 176px;
+    gap: var(--e-4);
+    align-items: center;
+    margin-top: var(--e-4);
+    padding-top: var(--e-3);
+    border-top: 1px solid var(--borde);
+}
+.sitio .actualizacion-app h2 { font-size: var(--t-h3); margin-bottom: 0.75rem; }
+.sitio .actualizacion-app p { color: var(--texto-2); margin-bottom: 0.75rem; max-width: 60ch; }
+.sitio .actualizacion-app__version { font-weight: 600; }
+.sitio .actualizacion-app__qr { width: 176px; height: 176px; background: #fff; }
+@media (max-width: 520px) {
+    .sitio .actualizacion-app { grid-template-columns: 1fr; }
+    .sitio .actualizacion-app__qr { justify-self: center; }
+}
+
+/* ============================================================
+   FRANJA DE BENEFICIOS (barra superior)
+   Verde profundo, texto marfil y un sello dorado delante de cada
+   beneficio. Aparecen uno tras otro con un leve ascenso y reaccionan
+   al pasar el mouse con un subrayado dorado.
+   ============================================================ */
+.avisos { position: relative; overflow: hidden; }
+.avisos::after {
+    content: ''; position: absolute; inset: auto 0 0 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(214, 168, 75, 0.55), transparent);
+}
+.avisos li {
+    position: relative; display: inline-flex; align-items: center; gap: 0.5rem;
+    padding-block: 0.2rem; letter-spacing: 0.01em;
+    animation: aviso-entrar 700ms var(--ease-salida) both;
+    transition: color var(--d-rapida), transform var(--d-rapida) var(--ease-salida);
+}
+.avisos li:nth-child(2) { animation-delay: 120ms; }
+.avisos li:nth-child(3) { animation-delay: 240ms; }
+/* Sello dorado: círculo con una marca de verificación. */
+.avisos li::before {
+    content: ''; flex: none; width: 15px; height: 15px; border-radius: 50%;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.2 8.3l2.4 2.4 5.2-5.4' fill='none' stroke='%23033a2c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 11px no-repeat,
+        var(--dorado);
+    box-shadow: 0 0 0 3px rgba(214, 168, 75, 0.18);
+}
+.avisos li::after {
+    content: ''; position: absolute; left: 23px; right: 0; bottom: -1px; height: 1px;
+    background: var(--dorado); transform: scaleX(0); transform-origin: left;
+    transition: transform 400ms var(--ease-salida);
+}
+.avisos li:hover { transform: translateY(-1px); color: #ffffff; }
+.avisos li:hover::after { transform: scaleX(1); }
+@keyframes aviso-entrar { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+    .avisos li { animation: none; }
+    .avisos li:hover { transform: none; }
+}

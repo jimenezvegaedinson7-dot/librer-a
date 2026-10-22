@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import backend from '../../backend/src/utils/pedidos.js';
-import { resumirPedidos, estadoContabilizable } from '../src/lib/utils/estadoEntrega.js';
-import { accionSiguiente, etiquetaEntregaPedido, FLUJO } from '../src/features/pedidos/estadosPedido.js';
-import { seguimientoPedido } from '../src/lib/utils/seguimientoPedido.js';
+import { resumirPedidos, estadoContabilizable } from '../src/compartido/lib/utils/estadoEntrega.js';
+import { accionSiguiente, etiquetaEntregaPedido, FLUJO } from '../src/panel/pedidos/estadosPedido.js';
+import { seguimientoPedido } from '../src/compartido/lib/utils/seguimientoPedido.js';
 const p = (id, tipo, estado, extra = {}) => ({ id_venta: id, origen: 'app', estado: 'pagada', external_reference: `ref-${id}`, tipo_entrega: tipo, estado_entrega: estado, payu_payment_status: 'APPROVED', ...extra });
 
 test('panel y backend clasifican igual todas las combinaciones de estados y tipos', () => {

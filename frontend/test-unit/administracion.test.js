@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cambiosInventario } from '../src/features/inventario/cambiosInventario.js';
-import { emisorHistorico } from '../src/features/comprobantes/emisorHistorico.js';
-import { es401DeCredencial } from '../src/features/auth/erroresSesion.js';
+import { cambiosInventario } from '../src/panel/inventario/cambiosInventario.js';
+import { emisorHistorico } from '../src/panel/comprobantes/emisorHistorico.js';
+import { es401DeCredencial } from '../src/panel/auth/erroresSesion.js';
 const previo = { stock: 10, stock_minimo: 5, ubicacion: 'A' };
 test('cambiar ubicación no reenvía stock leído al abrir', () => {
     assert.deepEqual(cambiosInventario({ stock: '10', stock_minimo: '5', ubicacion: ' B ' }, previo), { ubicacion: 'B' });

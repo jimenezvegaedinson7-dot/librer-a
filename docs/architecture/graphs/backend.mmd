@@ -1,4 +1,4 @@
-%% Generado 2026-10-14 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-22 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     libro_routes["/api/libros<br/>libro.routes"]
     libro_routes --> libro_controller["libro.controller"]
@@ -45,6 +45,7 @@ flowchart LR
     anuncio_routes["/api/anuncios<br/>anuncio.routes"]
     anuncio_routes --> anuncio_controller["anuncio.controller"]
     anuncio_routes --> carrusel_controller["carrusel.controller"]
+    anuncio_routes --> portada_controller["portada.controller"]
     favorito_routes["/api/favoritos<br/>favorito.routes"]
     favorito_routes --> favorito_controller["favorito.controller"]
     agencia_controller --> agencia_model[("agencia.model")]
@@ -83,6 +84,8 @@ flowchart LR
     pago_controller --> venta_model[("venta.model")]
     pago_controller --> zonaDelivery_model[("zonaDelivery.model")]
     pedido_controller --> venta_model[("venta.model")]
+    portada_controller --> portada_model[("portada.model")]
+    portada_controller --> libro_model[("libro.model")]
     reclamacion_controller --> empresa_model[("empresa.model")]
     reclamacion_controller --> reclamacion_model[("reclamacion.model")]
     reclamacion_controller --> historial_model[("historial.model")]
@@ -130,6 +133,8 @@ flowchart LR
     libro_model -.-> T_libros[/"libros"/]
     libro_model -.-> T_ventas[/"ventas"/]
     pago_model -.-> T_ventas[/"ventas"/]
+    portada_model -.-> T_libros[/"libros"/]
+    portada_model -.-> T_portada_config[/"portada_config"/]
     reclamacion_model -.-> T_reclamaciones[/"reclamaciones"/]
     reporte_model -.-> T_autores[/"autores"/]
     reporte_model -.-> T_categorias[/"categorias"/]

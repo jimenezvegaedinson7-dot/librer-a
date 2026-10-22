@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const destino = path.resolve(__dirname, '../src/config/portadasCatalogo.json');
-const tienda = path.resolve(__dirname, '../../frontend/src/public-site/tienda');
+const tienda = path.resolve(__dirname, '../../frontend/src/web/tienda');
 
 function sincronizar() {
     const indice = path.join(tienda, 'portadasCatalogo.json');
@@ -12,8 +12,8 @@ function sincronizar() {
         console.log('Portadas: usando el índice empaquetado del backend.');
         return;
     }
-    const portadas = require('../../frontend/src/public-site/tienda/portadasCatalogo.json');
-    const referencias = require('../../frontend/src/public-site/tienda/portadasReferencia.json');
+    const portadas = require('../../frontend/src/web/tienda/portadasCatalogo.json');
+    const referencias = require('../../frontend/src/web/tienda/portadasReferencia.json');
     for (const [isbn, archivo] of Object.entries(portadas)) {
         if (!/^\d{13}$/.test(isbn) || !/^\/portadas\/\d{13}(?:-referencia)?\.jpg$/.test(archivo)) {
             throw new Error('Índice de portadas inválido');

@@ -1,6 +1,6 @@
 # Flujos de datos
 
-> Generado desde el código real el 2026-10-14 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-22 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arquitectura general
@@ -12,8 +12,8 @@
                   Backend Express · /api/*
                   JWT · PayU · SMTP · Cloudinary
                               |
-                PostgreSQL · 21 tablas en esquema canónico
-                + auxiliares de migración (22 declaradas en código)
+                PostgreSQL · 22 tablas en esquema canónico
+                + auxiliares de migración (23 declaradas en código)
 ```
 
 ## 1. Login (React y Flutter)
@@ -45,7 +45,7 @@
 
 ### Compra desde la web (React, cliente)
 - `PublicLayout` incorpora `TiendaProvider`; rutas `/cuenta`, `/carrito`, `/checkout`, `/mis-compras`, `/libro/:id`. Catálogo, portada y ofertas permiten agregar libros al carrito.
-- `public-site/tienda/clienteApi.js` usa fetch y sesión `libreria-web-cliente-v1`, independiente de token/usuario del panel. Revalida perfil y rol cliente. Registro y correo verificado, login/2FA y recuperación reutilizan los endpoints existentes.
+- `web/tienda/clienteApi.js` usa fetch y sesión `libreria-web-cliente-v1`, independiente de token/usuario del panel. Revalida perfil y rol cliente. Registro y correo verificado, login/2FA y recuperación reutilizan los endpoints existentes.
 - Carrito por invitado/usuario con solo IDs y cantidades en localStorage; precios y stock desde el catálogo. Se fusiona el carrito invitado al iniciar sesión. Totales en céntimos.
 - `GET /api/pagos/capacidades` confirma compatibilidad del backend antes de crear compras web. Checkout envía `canal_compra=web` a `POST /api/pagos/crear-orden`; `origen=app` sigue identificando el ecommerce para compatibilidad. Migración `033_canal_compra_web.sql`: columna nullable, sin UPDATE de ventas antiguas.
 - Antes de crear se refrescan precios, stock y zonas; cambios requieren revisar y confirmar otra vez. El intento y su clave de idempotencia se persisten antes del POST, permitiendo recuperar timeouts sin duplicar ventas ni stock. El backend guarda el total definitivo; el cliente lo muestra antes de abrir el WebCheckout.

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { MOSTRAR_CARRUSEL_INICIO } from '../src/web/config/site.js';
 const API='http://127.0.0.1:59999/api';
 // Banners sintéticos solo de prueba; no se instalan en la web ni en la BD real.
 const banner=n=>`${API}/fixtures/carrusel-${n}.svg`;
@@ -44,6 +45,7 @@ async function preparar(page,{lista=imagenes,fallo=false,panel=false}={}){
     return control;
 }
 for(const ancho of [320,390,1440])test(`inicio ${ancho}px: banners completos, navegación y sin libro 3D`,async({page})=>{
+    test.skip(!MOSTRAR_CARRUSEL_INICIO,'El carrusel de anuncios está oculto en el inicio (config/site.js)');
     await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:ancho,height:900});
     const recursos=[],errores=[];page.on('request',r=>recursos.push(r.url()));page.on('pageerror',e=>errores.push(e.message));
     const control=await preparar(page);await page.goto('/');
@@ -63,11 +65,13 @@ for(const ancho of [320,390,1440])test(`inicio ${ancho}px: banners completos, na
     await page.screenshot({path:test.info().outputPath(`carrusel-${ancho}.png`),fullPage:false});expect(errores).toEqual([]);
 });
 test('sin anuncios o con un solo banner no se inventan imágenes ni se muestran controles innecesarios',async({page})=>{
+    test.skip(!MOSTRAR_CARRUSEL_INICIO,'El carrusel de anuncios está oculto en el inicio (config/site.js)');
     const control=await preparar(page,{lista:[]});await page.goto('/');await expect(page.getByText('Sin imágenes publicadas todavía.',{exact:true})).toBeVisible();
     expect(control.lista).toHaveLength(0);control.lista=[imagenes[0]];await page.reload();
     await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();await expect(page.getByRole('button',{name:'Mostrar anuncio 2',exact:true})).toHaveCount(0);
 });
 test('error y archivo roto permiten reintentar sin restaurar el libro fijo',async({page})=>{
+    test.skip(!MOSTRAR_CARRUSEL_INICIO,'El carrusel de anuncios está oculto en el inicio (config/site.js)');
     const control=await preparar(page,{fallo:true});await page.goto('/');await expect(page.getByText('No pudimos cargar los anuncios.',{exact:true})).toBeVisible();
     control.fallo=false;control.lista=[{...imagenes[0],imagen_url:'http://127.0.0.1:5179/banner-inexistente.png'}];
     await page.route('**/banner-inexistente.png',r=>r.fulfill({status:404}));await page.getByRole('button',{name:'Reintentar anuncios',exact:true}).click();
@@ -76,6 +80,7 @@ test('error y archivo roto permiten reintentar sin restaurar el libro fijo',asyn
     await expect(page.locator('.hero__poster')).toHaveCount(0);
 });
 test('cambia solo: con el mouse encima, tras pulsar un punto y con movimiento reducido',async({page})=>{
+    test.skip(!MOSTRAR_CARRUSEL_INICIO,'El carrusel de anuncios está oculto en el inicio (config/site.js)');
     await page.emulateMedia({reducedMotion:'no-preference'});await page.clock.install();await preparar(page);await page.goto('/');await expect(page.getByAltText('Banner de prueba 1')).toBeVisible();
     await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
     // Con el mouse encima sigue cambiando.
@@ -89,6 +94,7 @@ test('cambia solo: con el mouse encima, tras pulsar un punto y con movimiento re
     await page.clock.fastForward(6100);await expect(page.getByAltText('Banner de prueba 2')).toBeVisible();
 });
 test('el banner con libro vinculado lleva a la ficha sin texto «Ver ahora» encima',async({page})=>{
+    test.skip(!MOSTRAR_CARRUSEL_INICIO,'El carrusel de anuncios está oculto en el inicio (config/site.js)');
     await page.emulateMedia({reducedMotion:'reduce'});await preparar(page);await page.goto('/');
     const carrusel=page.getByRole('region',{name:'Anuncios de la librería',exact:true});
     const enlace=carrusel.getByRole('link',{name:'Ver libro: Banner de prueba 1',exact:true});

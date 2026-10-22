@@ -6,7 +6,7 @@ const { conPortadaCatalogo } = require('../src/utils/portadasCatalogo');
 const indice = require('../src/config/portadasCatalogo.json');
 
 test('backend empaqueta el mismo índice y referencias que la tienda', () => {
-    const tienda = path.resolve(__dirname, '../../frontend/src/public-site/tienda');
+    const tienda = path.resolve(__dirname, '../../frontend/src/web/tienda');
     assert.deepEqual(indice.portadas, JSON.parse(readFileSync(path.join(tienda, 'portadasCatalogo.json'), 'utf8')));
     assert.deepEqual(indice.referencias, JSON.parse(readFileSync(path.join(tienda, 'portadasReferencia.json'), 'utf8')));
 });

@@ -99,12 +99,12 @@ test('Contrato: revisión coincide con backend, respeta el cierre y acepta requi
         }
     }
     const resultado = await page.evaluate(async filas => {
-        const { pagoEnRevision } = await import('/src/features/pedidos/estadosPedido.js');
+        const { pagoEnRevision } = await import('/src/panel/pedidos/estadosPedido.js');
         return filas.map(pagoEnRevision);
     }, filas);
     expect(resultado).toEqual(filas.map(requiereRevisionPago));
     const explicitos = await page.evaluate(async () => {
-        const { pagoEnRevision } = await import('/src/features/pedidos/estadosPedido.js');
+        const { pagoEnRevision } = await import('/src/panel/pedidos/estadosPedido.js');
         return [
             pagoEnRevision({ estado: 'pagada', payu_payment_status: 'APPROVED', requiere_revision: true }),
             pagoEnRevision({ estado: 'pagada', payu_payment_status: 'APPROVED', requiere_revision: false }),

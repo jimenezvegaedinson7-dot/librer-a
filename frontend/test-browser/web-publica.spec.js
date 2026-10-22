@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
-import { DESCARGAS } from '../src/public-site/config/downloads.js';
+import { DESCARGAS } from '../src/web/config/downloads.js';
 
 // Web pública: páginas separadas (Inicio, Catálogo, Aplicación,
 // Características, Nosotros, Descargar), catálogo real (simulado aquí),
@@ -116,7 +116,9 @@ for (const width of [390, 1440]) {
         await expect(todos.locator('.libro-nuevo')).toBeVisible();
         const nuevo = await todos.locator('.libro-nuevo').boundingBox();
         const agotado = await todos.locator('.tarjeta-libro').first().locator('.agotado').boundingBox();
-        expect(nuevo.y).toBeGreaterThanOrEqual(agotado.y + agotado.height);
+        // La cinta "Agregado recientemente" va arriba; la de "Sin stock" baja al
+        // pie de la portada para no superponerse.
+        expect(agotado.y).toBeGreaterThanOrEqual(nuevo.y + nuevo.height);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
         await page.goto('/');
         await expect(page.locator('.libro-nuevo')).toHaveCount(1);
@@ -146,7 +148,7 @@ test('cada sección es una página: título, URL canónica y foco en su h1', asy
     const paginas = [
         ['Aplicación', '/aplicacion', 'Toda la librería cabe en la app'],
         ['Características', '/caracteristicas', 'Comprar un libro, sin vueltas'],
-        ['Nosotros', '/nosotros', 'Nosotros'],
+        ['Nosotros', '/nosotros', 'Una librería de barrio, abierta a todo el Perú'],
         ['Descargar', '/descargar', 'Descarga la app'],
         ['Catálogo', '/catalogo', 'Catálogo'],
     ];
@@ -395,6 +397,8 @@ test('video del inicio: usa el fondo de la página, no uno propio', async ({ pag
     });
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
+    // La sección aparece cuando llega el anuncio: se espera antes de medir.
+    await expect(page.locator('.video-destacado')).toHaveCount(1);
     const fondos = await page.evaluate(() => {
         const seccion = document.querySelector('.video-destacado');
         const anterior = seccion.previousElementSibling;
@@ -529,22 +533,23 @@ test('catálogo: el precio es texto sobrio sin pastilla de color', async ({ page
 test('el botón principal es azul marino con texto blanco', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/descargar');
-    const boton = page.locator('.descargar .boton, .seccion.crema .boton').first();
+    const boton = page.locator('.descargar-portada .boton').first();
     await expect(boton).toBeVisible();
     const estilos = await boton.evaluate((e) => {
         const s = getComputedStyle(e);
         return { fondo: s.backgroundColor, color: s.color };
     });
-    expect(estilos.fondo).toBe('rgb(13, 41, 64)');
+    expect(estilos.fondo).toBe('rgb(36, 48, 75)');
     expect(estilos.color).toBe('rgb(255, 255, 255)');
 });
 
-// El pie va en verde oscuro sobre texto claro. Con este contraste alto
-// cualquier cambio de color hay que comprobarlo aparte.
+// El pie oscuro mantiene contraste de lectura alto sobre el carbón.
 test('el pie mantiene contraste alto', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
+    // El pie entra con la página en diferido: se espera a que exista.
+    await expect(page.locator('footer.pie')).toBeVisible({ timeout: 30000 });
 
     const medido = await page.evaluate(() => {
         const brillo = (c) => {
@@ -574,12 +579,16 @@ test('el pie mantiene contraste alto', async ({ page }) => {
             lema: ratio(pie.fondo, leer('.pie__lema').texto),
             legal: ratio(pie.fondo, leer('.pie__legal').texto),
             marca: ratio(pie.fondo, leer('.pie .marca span').texto),
+            // El texto del pie usa una sola familia; la marca va en serif, como en la cabecera.
+            familias: [...new Set([...document.querySelectorAll('.pie h2, .pie__lema, .pie nav a')]
+                .map((e) => getComputedStyle(e).fontFamily.split(',')[0].replace(/"/g, '')))],
         };
     });
 
-    expect(medido.pieFondo).toBe('rgb(10, 31, 49)');
+    expect(medido.pieFondo).toBe('rgb(5, 5, 6)');
+    expect(medido.familias).toEqual(['Work Sans']);
     for (const [donde, valor] of Object.entries(medido)) {
-        if (donde === 'pieFondo') continue;
+        if (donde === 'pieFondo' || donde === 'familias') continue;
         expect(valor, `${donde} = ${valor}:1`).toBeGreaterThanOrEqual(4.5);
     }
 });
@@ -588,6 +597,9 @@ test('cada variante de botón conserva un texto legible', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
+    // La página se carga en diferido: se espera a que exista el botón.
+    await expect(page.locator('.acceso-catalogo__boton')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('footer.pie')).toBeVisible({ timeout: 30000 });
     const colores = await page.evaluate(() => {
         const leer = (sel) => {
             const e = document.querySelector(sel);
@@ -595,18 +607,21 @@ test('cada variante de botón conserva un texto legible', async ({ page }) => {
             const s = getComputedStyle(e);
             return { fondo: s.backgroundColor, texto: s.color };
         };
-        return { marca: leer('.boton--marca') };
+        return { marca: leer('.acceso-catalogo__boton') };
     });
-    expect(colores.marca.fondo).toBe('rgb(13, 41, 64)');
-    expect(colores.marca.texto).toBe('rgb(255, 255, 255)');
-    // El inicio ya no usa el botón blanco: se comprueba en Nosotros.
+    expect(colores.marca.fondo).toBe('rgb(36, 48, 75)');
+    expect(colores.marca.texto).toBe('rgb(255, 250, 242)');
+    // La portada de Nosotros se retiró; sus enlaces de app viven en el pie.
     await page.goto('/nosotros');
-    const blanco = await page.locator('.boton--blanco').first().evaluate((e) => {
+    await expect(page.locator('.nosotros-valores .app-tiendas')).toHaveCount(0);
+    await expect(page.locator('footer.pie .app-tiendas a')).toBeVisible({ timeout: 30000 });
+    const descarga = await page.locator('footer.pie .app-tiendas a').evaluate((e) => {
         const s = getComputedStyle(e);
         return { fondo: s.backgroundColor, texto: s.color };
     });
-    expect(blanco.fondo).toBe('rgb(255, 255, 255)');
-    expect(blanco.texto).toBe('rgb(13, 41, 64)');
+    // En el pie oscuro el badge se apoya en un filete claro, sin fondo relleno.
+    expect(descarga.fondo).toBe('rgba(0, 0, 0, 0)');
+    expect(descarga.texto).toBe('rgb(240, 236, 228)');
 });
 
 // ============================================================
@@ -657,7 +672,7 @@ test('catálogo: botón de compra azul marino y stock real en la tarjeta', async
     await apiPublica(page, { libros });
     await page.goto('/catalogo');
     const boton = page.locator('.tarjeta-libro .boton--compra').first();
-    await expect(boton).toHaveCSS('background-color', 'rgb(13, 41, 64)');
+    await expect(boton).toHaveCSS('background-color', 'rgb(36, 48, 75)');
     await expect(page.locator('.stock--poco')).toHaveCount(1);
     await expect(page.locator('.stock--poco')).toHaveText('Quedan solo 2 en stock');
     await expect(page.locator('.tarjeta-libro--sin-stock .boton--compra')).toContainText('Agotado');
@@ -669,45 +684,28 @@ test('inicio: explora por categoría y cómo comprar', async ({ page }) => {
     await page.waitForSelector('#precarga', { state: 'detached' });
     const tarjetas = page.locator('.categoria-tarjeta');
     await expect(tarjetas).toHaveCount(3);
-    // Cómo comprar: 4 pasos numerados 01–04, sin tarjetas.
-    const pasos = page.locator('.proceso__paso');
-    await expect(pasos).toHaveCount(4);
-    await expect(pasos.locator('.proceso__numero')).toHaveText(['01', '02', '03', '04']);
-    await expect(pasos.nth(2)).toContainText('Paga seguro');
+    // Del estante a tus manos: tres pasos reales, sin numeración decorativa.
+    const pasos = page.locator('.comprar__paso');
+    await expect(pasos).toHaveCount(3);
+    await expect(pasos.nth(1)).toContainText('Pague con PayU');
     await tarjetas.first().click();
     await expect(page).toHaveURL(/\/catalogo\?categoria=/);
 });
 
-// Franja de beneficios: azul marino, texto marfil e iconos dorados.
-test('franja de beneficios: azul marino, texto marfil e iconos dorados', async ({ page }) => {
+test('cabecera comercial sin franja superior y con menú claro como la referencia Ibero', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
-    const franja = page.locator('.avisos');
-    await expect(franja).toHaveCSS('background-color', 'rgb(13, 41, 64)');
-    await expect(franja).toHaveCSS('color', 'rgb(255, 249, 239)');
-    await expect(page.locator('.avisos .aviso-icono')).toHaveCount(3);
-    await expect(page.locator('.avisos .aviso-icono').first()).toHaveCSS('color', 'rgb(213, 164, 71)');
-    for (const texto of ['Delivery con tarifa única en Pallasca', 'Recojo sin costo en Pallasca', 'Pago en línea seguro con PayU']) {
-        await expect(page.locator('.avisos')).toContainText(texto);
-    }
+    await expect(page.locator('.avisos')).toHaveCount(0);
+    // Editorial luminoso: cabecera oscura tenue con la fila de menú en blanco.
+    await expect(page.locator('.cabecera')).toHaveCSS('background-color', 'rgb(5, 5, 6)');
+    await expect(page.locator('.menu')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+    await expect(page.locator('.menu a').first()).toHaveCSS('text-transform', 'uppercase');
 });
 
-test('inicio: vitrina de la app con tarjeta grande y dos apiladas', async ({ page }) => {
-    await page.setViewportSize({ width: 1366, height: 900 });
+test('inicio: sin secciones repetidas; el catálogo se ofrece con una sola acción', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
-    const vitrina = page.locator('.vitrina');
-    await expect(vitrina.locator('.vitrina__principal')).toContainText('Toda la librería cabe en la app');
-    await expect(vitrina.locator('.vitrina__telefono img')).toHaveCount(1);
-    await expect(vitrina.getByRole('link', { name: /Conoce la app/ })).toHaveAttribute('href', '/aplicacion');
-    await expect(vitrina.getByRole('link', { name: /Ver cómo funciona/ })).toHaveAttribute('href', '/caracteristicas');
-    await expect(vitrina.getByRole('link', { name: /Descargar la app/ })).toHaveAttribute('href', '/descargar');
-    // Escritorio: la grande a la izquierda y las otras dos apiladas a la derecha.
-    const grande = await vitrina.locator('.vitrina__principal').boundingBox();
-    const tarjetas = vitrina.locator('.vitrina__tarjeta');
-    const arriba = await tarjetas.nth(0).boundingBox();
-    const abajo = await tarjetas.nth(1).boundingBox();
-    expect(arriba.x).toBeGreaterThan(grande.x + grande.width - 1);
-    expect(abajo.y).toBeGreaterThan(arriba.y + arriba.height - 1);
+    await expect(page.locator('.vitrina, .comprar__app, .banda-catalogo')).toHaveCount(0);
+    await expect(page.locator('.acceso-catalogo').getByRole('link', { name: 'Explorar catálogo' })).toHaveAttribute('href', '/catalogo');
 });

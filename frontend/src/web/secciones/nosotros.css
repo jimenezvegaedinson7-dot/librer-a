@@ -1,0 +1,57 @@
+/* ============================================================
+   NOSOTROS
+   Portada con el fondo del inicio y texto centrado, pilares con
+   icono en línea, tienda con tarjeta flotante sobre el mapa, datos de la
+   empresa y cierre verde. Usa los tokens de public-site.css.
+   ============================================================ */
+
+/* ---------- Pilares ----------
+   Sin tarjetas: cuatro columnas separadas por un filete fino arriba,
+   icono pequeño en línea con el título. Formal y ligero de pintar. */
+.nosotros-valores { background: var(--blanco); }
+.nosotros-valores__cabeza { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--e-4); align-items: end; }
+.nosotros-valores__cabeza .seccion__titulo { max-width: 22ch; }
+.nosotros-valores__cabeza .seccion__entrada { margin-top: 0; }
+.nosotros-pilares { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(20px, 2.6vw, 40px); margin-top: var(--e-4); }
+.nosotros-pilar { display: grid; align-content: start; gap: 0.5rem; padding-top: 1.1rem; border-top: 1px solid var(--linea, var(--borde)); }
+.nosotros-pilar__icono { display: inline-flex; color: var(--marino-900, var(--verde-900)); }
+.nosotros-pilar__icono svg { width: 20px; height: 20px; }
+.nosotros-pilar h3 { margin-top: 0.25rem; font-size: 1rem; font-weight: 600; line-height: 1.35; }
+.nosotros-pilar p { font-size: 0.9375rem; line-height: 1.6; color: var(--texto-2); }
+
+/* ---------- Tienda ---------- */
+.nosotros-tienda { padding-block: var(--e-4) var(--seccion); }
+.nosotros-tienda__marco { position: relative; }
+.nosotros-tienda .tienda__mapa {
+    aspect-ratio: auto; height: clamp(380px, 46vw, 540px);
+    border-radius: 12px; border: 1px solid var(--linea, var(--borde));
+    background: var(--fondo-alt, #f6f4f0);
+}
+.nosotros-tienda__tarjeta {
+    position: absolute; z-index: 2; left: clamp(16px, 3vw, 40px); top: 50%; translate: 0 -50%;
+    width: min(400px, calc(100% - 32px));
+    display: grid; gap: 0.8rem; justify-items: start;
+    padding: 1.6rem; border-radius: 12px;
+    background: var(--blanco);
+    border: 1px solid var(--linea, var(--borde));
+    box-shadow: 0 18px 40px -24px rgba(17, 24, 32, 0.35);
+}
+.nosotros-tienda__tarjeta h2 { font-size: 1.25rem; color: var(--marino-900, var(--verde-900)); }
+.nosotros-tienda__tarjeta .tienda__direccion { margin: 0; }
+.nosotros-tienda__tarjeta .tienda__nota { margin: 0; max-width: none; }
+.nosotros-tienda__tarjeta .boton { margin-top: 0.4rem; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1023px) {
+    .nosotros-valores__cabeza { grid-template-columns: 1fr; gap: var(--e-2); }
+    .nosotros-pilares { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+    /* En móvil la tarjeta va debajo del mapa, superpuesta solo un poco. */
+    .nosotros-tienda .tienda__mapa { height: 300px; }
+    .nosotros-tienda__tarjeta { position: relative; left: auto; top: auto; translate: none; width: auto; margin: -48px 12px 0; }
+}
+@media (max-width: 560px) {
+    .nosotros-pilares { grid-template-columns: 1fr; }
+}
+

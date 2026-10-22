@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 function montar({ fallaLectura = false } = {}) {
-    const codigo = readFileSync(new URL('../src/public-site/asistente/useMemoriaAsistente.js', import.meta.url), 'utf8')
+    const codigo = readFileSync(new URL('../src/web/asistente/useMemoriaAsistente.js', import.meta.url), 'utf8')
         .replace(/^import .*;\r?\n/gm, '').replace('export function useMemoriaAsistente', 'function useMemoriaAsistente') + '\nthis.hook=useMemoriaAsistente;';
     const slots = [], efectos = [], timers = new Map(), escrituras = [];
     let cursor = 0, numero = 0;

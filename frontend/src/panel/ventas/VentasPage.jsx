@@ -1,0 +1,644 @@
+import { useEffect, useMemo, useState } from 'react';
+
+import {
+    FaCircleCheck,
+    FaClock,
+    FaEye,
+    FaFileCircleCheck,
+    FaFileCsv,
+    FaFileInvoice,
+    FaMagnifyingGlass,
+    FaMoneyBillTrendUp,
+    FaReceipt,
+    FaRotate,
+    FaRotateLeft,
+    FaXmark,
+} from 'react-icons/fa6';
+import { motion } from 'motion/react';
+
+import { PageHeader } from '../ui/PageHeader';
+import { Card, CardHeader, CardBody } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { Input, Select } from '../ui/Form';
+import { StatCard } from '../dashboard/StatCard';
+import { fechaLima, num, serieDiaria } from '../dashboard/graficoUtils';
+import { Alert } from '../ui/Alert';
+import { Pagination } from '../ui/Pagination';
+import { EmptyState } from '../ui/EmptyState';
+import { TableSkeleton } from '../ui/TableSkeleton';
+import { DataTable } from '../ui/DataTable';
+import { Badge } from '../ui/Badge';
+import { BtnAccion } from '../ui/Acciones';
+import { formatearMoneda, formatearFecha } from '../../compartido/lib/utils/format';
+import { exportarCsv } from '../lib/utils/exportarCsv';
+import { descripcionEntrega } from '../../compartido/lib/utils/entrega';
+
+import { useToast } from '../../app/providers/ToastProvider';
+import { useRol } from '../auth/useRol';
+
+import { listarVentas, obtenerVenta } from './ventasService';
+import ComprobanteViewModal from '../comprobantes/ComprobanteViewModal';
+import VentaViewModal from './VentaViewModal';
+import EmitirComprobanteModal from './EmitirComprobanteModal';
+import ReembolsoModal from './ReembolsoModal';
+import { textoMetodoPago, textoOrigen } from './metodosPago';
+import { correoVisible, esCorreoDeCuentaEliminada } from '../lib/utils/cuentas';
+
+const POR_PAGINA = 10;
+
+const estadosVenta = {
+    pendiente: { texto: 'Pendiente', color: 'warning' },
+    pagada: { texto: 'Pagada', color: 'success' },
+    entregada: { texto: 'Entregada', color: 'info' },
+    cancelada: { texto: 'Cancelada', color: 'danger' },
+    reembolsada: { texto: 'Reembolsada', color: 'neutral' },
+};
+
+// Nombre del comprador: en ventas de mostrador la cuenta de la venta es
+// la del administrador que la registró, así que se usa el cliente anotado.
+function nombreCliente(venta) {
+    if (venta.origen === 'panel') {
+        return venta.cliente_nombre || 'Cliente de mostrador';
+    }
+    return venta.cliente_nombre || `${venta.nombre_usuario || ''} ${venta.apellido_usuario || ''}`.trim();
+}
+
+const esDeCuentaEliminada = (venta) => venta.origen !== 'panel' && esCorreoDeCuentaEliminada(venta.correo_usuario);
+
+function detalleCobro(venta) {
+    if (venta.origen === 'panel' || venta.origen === 'reserva' || venta.id_reserva) {
+        const metodo = textoMetodoPago(venta.metodo_pago);
+        return [textoOrigen(venta), metodo].filter(Boolean).join(' · ');
+    }
+    if (esDeCuentaEliminada(venta)) {
+        return 'Cuenta eliminada por su titular';
+    }
+    return correoVisible(venta.correo_compra) || correoVisible(venta.correo_usuario);
+}
+
+function valorOrdenVenta(venta, campo) {
+    switch (campo) {
+        case 'usuario':
+            return nombreCliente(venta).toLowerCase();
+        case 'total':
+            return Number(venta.total || 0);
+        case 'fecha_venta':
+            return new Date(venta.fecha_venta || 0).getTime();
+        default:
+            return venta[campo] || '';
+    }
+}
+
+const columnasVentas = [
+    { titulo: 'N.º', alineacion: 'centro', ordenable: true, campo: 'id_venta', render: (fila) => <span className="font-semibold tabular-nums text-slate-500">#{fila.id_venta}</span> },
+    {
+        titulo: 'Cliente',
+        ordenable: true,
+        campo: 'usuario',
+        render: (fila) => {
+            const nombre = nombreCliente(fila);
+            const iniciales = nombre.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || '?';
+            return (
+                <div className="flex min-w-0 items-center gap-3">
+                    <span className="cliente-iniciales" aria-hidden="true">{iniciales}</span>
+                    <p className="min-w-0 text-sm">
+                        <span className="block truncate font-semibold text-slate-800">{nombre || 'Usuario no disponible'}</span>
+                        <span className="block truncate text-xs text-slate-500">{detalleCobro(fila)}</span>
+                    </p>
+                </div>
+            );
+        },
+    },
+    { titulo: 'Fecha', alineacion: 'centro', ordenable: true, campo: 'fecha_venta', render: (fila) => <span className="whitespace-nowrap text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_venta) || 'Sin fecha'}</span> },
+    { titulo: 'Total', alineacion: 'derecha', ordenable: true, campo: 'total', render: (fila) => <span className="whitespace-nowrap font-semibold tabular-nums text-slate-800">{formatearMoneda(Number(fila.total || 0))}</span> },
+    {
+        titulo: 'Estado',
+        alineacion: 'centro',
+        ordenable: true,
+        campo: 'estado',
+        render: (fila) => {
+            const estado = estadosVenta[fila.estado] || { texto: fila.estado || 'Sin estado', color: 'neutral' };
+            return <Badge color={estado.color}>{estado.texto}</Badge>;
+        },
+    },
+    {
+        titulo: 'Entrega',
+        alineacion: 'centro',
+        ordenable: true,
+        campo: 'tipo_entrega',
+        render: (fila) => {
+            if (fila.tipo_entrega === 'domicilio') {
+                return <Badge color="primary">{descripcionEntrega(fila)}</Badge>;
+            }
+            // Ventas antiguas: el envío por agencia ya no se ofrece.
+            if (fila.tipo_entrega === 'agencia') {
+                return (
+                    <span title={fila.agencia || 'Agencia courier (servicio ya no disponible)'}>
+                        <Badge color="neutral">Agencia (histórico)</Badge>
+                    </span>
+                );
+            }
+            if (fila.tipo_entrega === 'tienda') {
+                return <Badge color="neutral">{descripcionEntrega(fila)}</Badge>;
+            }
+            return <Badge color="neutral">Sin especificar</Badge>;
+        },
+    },
+];
+
+function accionesVenta(fila, { onVer, onEmitirComprobante, onReembolsar, puedeReembolsar }) {
+    if (fila.origen === 'panel' || fila.origen === 'reserva' || fila.id_reserva) {
+        return <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>;
+    }
+    const conComprobante = Number(fila.tiene_comprobante ?? 0) === 1;
+    const puedeEmitir = !conComprobante && (fila.estado === 'pagada' || fila.estado === 'entregada');
+    return (
+        <>
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>
+            {fila.pago_revision_motivo && <Badge color="warning">Pago en revisión</Badge>}
+            {fila.estado_reembolso === 'pendiente_verificacion' && <Badge color="warning" title="Devolución pendiente de verificación">Devolución pendiente</Badge>}
+            {conComprobante && (fila.estado === 'pagada' || fila.estado === 'entregada') && (
+                <span
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700"
+                    title="Comprobante emitido (ver en Comprobantes)"
+                    aria-label="Comprobante emitido"
+                    role="img"
+                >
+                    <FaFileCircleCheck />
+                </span>
+            )}
+            {puedeEmitir && (
+                <>
+                    <BtnAccion tipo="ver" onClick={() => onEmitirComprobante(fila, 'boleta')} titulo="Emitir boleta">
+                        <FaReceipt />
+                    </BtnAccion>
+                    <BtnAccion tipo="ver" onClick={() => onEmitirComprobante(fila, 'factura')} titulo="Emitir factura">
+                        <FaFileInvoice />
+                    </BtnAccion>
+                </>
+            )}
+            {puedeReembolsar && fila.reembolso_elegible === true && (
+                <BtnAccion tipo="eliminar" onClick={() => onReembolsar(fila)} titulo={fila.estado_reembolso === 'pendiente_verificacion' ? 'Verificar devolución PayU' : 'Solicitar devolución PayU'}>
+                    <FaRotateLeft />
+                </BtnAccion>
+            )}
+        </>
+    );
+}
+
+const FILTROS_ESTADO = [
+    { valor: 'todos', texto: 'Todas', clase: 'estado--neutro' },
+    { valor: 'pendiente', texto: 'Pendientes', clase: 'estado--aviso' },
+    { valor: 'pagada', texto: 'Pagadas', clase: 'estado--exito' },
+    { valor: 'entregada', texto: 'Entregadas', clase: 'estado--info' },
+    { valor: 'cancelada', texto: 'Canceladas', clase: 'estado--peligro' },
+    { valor: 'reembolsada', texto: 'Reembolsadas', clase: 'estado--neutro' },
+];
+
+function FiltroEstados({ valor, onCambiar, conteos }) {
+    return (
+        <div className="filtro-chips" role="radiogroup" aria-label="Filtrar por estado">
+            {FILTROS_ESTADO.map((f) => {
+                const activo = valor === f.valor;
+                return (
+                    <button
+                        key={f.valor}
+                        type="button"
+                        role="radio"
+                        aria-checked={activo}
+                        onClick={() => onCambiar(f.valor)}
+                        className={`filtro-chip ${f.clase} ${activo ? 'filtro-chip--activo' : ''}`}
+                    >
+                        {f.valor !== 'todos' && <span className="filtro-chip-punto" aria-hidden="true" />}
+                        {f.texto}
+                        <span className="filtro-chip-conteo">{conteos[f.valor] ?? 0}</span>
+                    </button>
+                );
+            })}
+        </div>
+    );
+}
+
+export default function VentasPage() {
+    const { exito, error: mostrarError } = useToast();
+    const { puedeReembolsar } = useRol();
+
+    const [ventas, setVentas] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState('');
+
+const [ventaVer, setVentaVer] = useState(null);
+    const [ventaReembolsar, setVentaReembolsar] = useState(null);
+    const [comprobanteEmitido, setComprobanteEmitido] = useState(null);
+    const [comprobanteModal, setComprobanteModal] = useState(null);
+
+    const [busqueda, setBusqueda] = useState('');
+    const [filtroEstado, setFiltroEstado] = useState('todos');
+    const [filtroEntrega, setFiltroEntrega] = useState('todos');
+
+const [paginaActual, setPaginaActual] = useState(1);
+
+    const [orden, setOrden] = useState({ campo: 'fecha_venta', direccion: 'desc' });
+
+    const cargarVentas = async () => {
+        try {
+            setCargando(true);
+            setError('');
+            setVentas(await listarVentas());
+        } catch (err) {
+            setError(err.response?.data?.mensaje || 'Error al cargar las ventas');
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    // Carga inicial. `cargando` ya nace en true, así que este efecto no
+    // enciende el spinner: solo espera la respuesta y entonces actualiza.
+    // El bandera `vigente` evita fijar estado si el componente se desmonta.
+    useEffect(() => {
+        let vigente = true;
+
+        (async () => {
+            try {
+                const datos = await listarVentas();
+                if (vigente) setVentas(datos);
+            } catch (err) {
+                if (vigente) {
+                    setError(err.response?.data?.mensaje || 'Error al cargar las ventas');
+                }
+            } finally {
+                if (vigente) setCargando(false);
+            }
+        })();
+
+        return () => {
+            vigente = false;
+        };
+    }, []);
+
+    // Al cambiar cualquier filtro se vuelve a la primera página: se hace
+    // aquí, en el evento, y no en un efecto que la reinicie tras el render.
+    const alBuscar = (valor) => {
+        setBusqueda(valor);
+        setPaginaActual(1);
+    };
+
+    const alFiltrarEstado = (valor) => {
+        setFiltroEstado(valor);
+        setPaginaActual(1);
+    };
+
+    const alFiltrarEntrega = (valor) => {
+        setFiltroEntrega(valor);
+        setPaginaActual(1);
+    };
+
+    const totalPendientes = ventas.filter((v) => v.estado === 'pendiente').length;
+    const totalPagadas = ventas.filter((v) => v.estado === 'pagada').length;
+    const totalEntregadas = ventas.filter((v) => v.estado === 'entregada').length;
+    const totalCanceladas = ventas.filter((v) => v.estado === 'cancelada').length;
+    const totalReembolsadas = ventas.filter((v) => v.estado === 'reembolsada').length;
+const totalIngresos = ventas
+        .filter((v) => v.estado === 'pagada' || v.estado === 'entregada')
+        .reduce((acumulado, v) => acumulado + Number(v.total || 0), 0);
+
+    const cobradas = ventas.filter((v) => v.estado === 'pagada' || v.estado === 'entregada');
+    const porCobrar = ventas.filter((v) => v.estado === 'pendiente').reduce((acc, v) => acc + num(v.total), 0);
+    const diario = useMemo(() => {
+        const porDia = new Map();
+        for (const v of ventas) {
+            const fechaCobro = v.fecha_pago || v.fecha_venta;
+            const clave = fechaCobro ? fechaLima(fechaCobro) : '';
+            if (!clave) continue;
+            const dia = porDia.get(clave) || { fecha: clave, total_vendido: 0, cantidad_ventas: 0, registradas: 0 };
+            dia.registradas += 1;
+            if (v.estado === 'pagada' || v.estado === 'entregada') {
+                dia.total_vendido += num(v.total);
+                dia.cantidad_ventas += 1;
+            }
+            porDia.set(clave, dia);
+        }
+        return serieDiaria([...porDia.values()], 14);
+    }, [ventas]);
+
+    const ventasFiltradas = useMemo(() => {
+        const texto = busqueda.toLowerCase().trim();
+        return ventas.filter((venta) => {
+            const usuario = `${nombreCliente(venta)} ${venta.nombre_usuario || ''} ${venta.apellido_usuario || ''}`.toLowerCase();
+            const idVenta = String(venta.id_venta || '');
+            const total = String(venta.total || '');
+            const direccion = String(venta.direccion || '').toLowerCase();
+            const tipoEntrega = String(venta.tipo_entrega || '').toLowerCase();
+
+            const coincideBusqueda =
+                !texto ||
+                usuario.includes(texto) ||
+                idVenta.includes(texto) ||
+                total.includes(texto) ||
+                direccion.includes(texto) ||
+                tipoEntrega.includes(texto);
+            const coincideEstado = filtroEstado === 'todos' || venta.estado === filtroEstado;
+            const coincideEntrega = filtroEntrega === 'todos' || (venta.tipo_entrega || '') === filtroEntrega;
+
+            return coincideBusqueda && coincideEstado && coincideEntrega;
+        });
+    }, [ventas, busqueda, filtroEstado, filtroEntrega]);
+
+    const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
+
+    // Si la lista se acorta (filtro) la página se recorta durante el render
+    // en vez de corregirse después con un efecto.
+    const paginaActualEfectiva = totalPaginas > 0 ? Math.min(paginaActual, totalPaginas) : 1;
+
+    const ventasOrdenadas = useMemo(() => {
+        const copia = [...ventasFiltradas];
+        copia.sort((a, b) => {
+            const va = valorOrdenVenta(a, orden.campo);
+            const vb = valorOrdenVenta(b, orden.campo);
+            if (va < vb) return orden.direccion === 'asc' ? -1 : 1;
+            if (va > vb) return orden.direccion === 'asc' ? 1 : -1;
+            return 0;
+        });
+        return copia;
+    }, [ventasFiltradas, orden]);
+
+    const ventasPaginadas = ventasOrdenadas.slice(
+        (paginaActualEfectiva - 1) * POR_PAGINA,
+        paginaActualEfectiva * POR_PAGINA,
+    );
+
+    const manejarOrden = (campo) => {
+        setOrden((actual) => {
+            if (actual.campo === campo) {
+                return { campo, direccion: actual.direccion === 'asc' ? 'desc' : 'asc' };
+            }
+            return { campo, direccion: 'asc' };
+        });
+    };
+
+    const verVenta = async (venta) => {
+        try {
+            setVentaVer(await obtenerVenta(venta.id_venta));
+        } catch (err) {
+            mostrarError(err.response?.data?.mensaje || 'Error al obtener la venta');
+        }
+    };
+
+    const abrirEmitirComprobante = async (venta, tipo) => {
+        try {
+            const ventaCompleta = await obtenerVenta(venta.id_venta);
+            setComprobanteModal({ venta: ventaCompleta || venta, tipo });
+        } catch {
+            setComprobanteModal({ venta, tipo });
+        }
+    };
+
+    const manejarComprobanteEmitido = (comprobante) => {
+        setVentas((actuales) =>
+            actuales.map((venta) =>
+                venta.id_venta === comprobante?.id_venta
+                    ? { ...venta, tiene_comprobante: 1 }
+                    : venta,
+            ),
+        );
+        setComprobanteEmitido(comprobante);
+    };
+
+    const ventaReembolsada = async (respuesta) => {
+        await cargarVentas();
+        const anulado = respuesta?.data?.comprobante_anulado;
+        exito(
+            (respuesta?.data?.estado_reembolso === 'pendiente_verificacion'
+                ? `Devolución de venta #${respuesta?.data?.id_venta} pendiente de verificación`
+                : `Devolución externa de venta #${respuesta?.data?.id_venta} confirmada documentalmente`) +
+                (anulado
+                    ? `. Comprobante ${anulado.serie}-${String(anulado.numero).padStart(8, '0')} anulado: registra su nota de crédito en Comprobantes.`
+                    : ''),
+        );
+    };
+
+    const exportar = () => {
+        exportarCsv({
+            nombreArchivo: `ventas_${new Date().toISOString().slice(0, 10)}`,
+            columnas: [
+                { titulo: 'N.º', exportar: (f) => f.id_venta },
+                { titulo: 'Cliente', exportar: (f) => nombreCliente(f) },
+                { titulo: 'Documento', exportar: (f) => f.cliente_documento || '' },
+                { titulo: 'Origen', exportar: (f) => textoOrigen(f) },
+                { titulo: 'Método de pago', exportar: (f) => (f.origen === 'panel' || f.origen === 'reserva' || f.id_reserva ? textoMetodoPago(f.metodo_pago) : 'PayU') },
+                { titulo: 'Referencia de pago', exportar: (f) => f.referencia_pago || f.payu_order_id || '' },
+                { titulo: 'Correo', exportar: (f) => correoVisible(f.correo_compra) || correoVisible(f.correo_usuario) },
+                { titulo: 'Fecha', exportar: (f) => f.fecha_venta || '' },
+                { titulo: 'Total', exportar: (f) => f.total || 0 },
+                { titulo: 'Costo envío', exportar: (f) => f.costo_envio || 0 },
+                { titulo: 'Estado', exportar: (f) => f.estado || '' },
+                { titulo: 'Tipo de entrega', exportar: (f) => descripcionEntrega(f) },
+                { titulo: 'Dirección', exportar: (f) => f.direccion || '' },
+                { titulo: 'Motivo de reembolso', exportar: (f) => f.motivo_reembolso || '' },
+            ],
+            filas: ventasOrdenadas,
+        });
+    };
+
+    const limpiarFiltros = () => {
+        setBusqueda('');
+        setFiltroEstado('todos');
+        setFiltroEntrega('todos');
+        setPaginaActual(1);
+    };
+
+    const hayFiltros = busqueda || filtroEstado !== 'todos' || filtroEntrega !== 'todos';
+
+    return (
+        <div className="space-y-4">
+            <PageHeader
+                titulo="Ventas"
+                descripcion="Compras realizadas: quién compró, qué y cuánto"
+            />
+
+            <motion.section
+                aria-label="Indicadores de ventas"
+                initial="oculto"
+                animate="visible"
+                variants={{ oculto: {}, visible: { transition: { staggerChildren: 0.06 } } }}
+                className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4 xl:gap-5"
+            >
+                <StatCard
+                    titulo="Ingresos cobrados"
+                    valor={formatearMoneda(totalIngresos)}
+                    icono={<FaMoneyBillTrendUp />}
+                    color="primary"
+                    detalle={`${cobradas.length} ${cobradas.length === 1 ? 'venta pagada o entregada' : 'ventas pagadas o entregadas'}`}
+                    tendencia={diario.map((d) => d.total)}
+                    etiquetaTendencia="Ingresos cobrados por día en los últimos 14 días"
+                />
+                <StatCard
+                    titulo="Ventas registradas"
+                    valor={ventas.length}
+                    icono={<FaReceipt />}
+                    color="info"
+                    detalle={`${totalCanceladas} ${totalCanceladas === 1 ? 'cancelada' : 'canceladas'} · ${totalReembolsadas} ${totalReembolsadas === 1 ? 'reembolsada' : 'reembolsadas'}`}
+                    tendencia={diario.map((d) => d.cantidad)}
+                    etiquetaTendencia="Ventas cobradas por día en los últimos 14 días"
+                />
+                <StatCard
+                    titulo="Pendientes de pago"
+                    valor={totalPendientes}
+                    icono={<FaClock />}
+                    color="warning"
+                    detalle={porCobrar > 0 ? `${formatearMoneda(porCobrar)} por cobrar` : 'Nada por cobrar'}
+                    medidor={{ valor: totalPendientes, total: ventas.length, etiqueta: 'Ventas pendientes sobre el total', leyenda: 'del total, pendiente de pago' }}
+                />
+                <StatCard
+                    titulo="Promedio por venta"
+                    valor={cobradas.length > 0 ? formatearMoneda(totalIngresos / cobradas.length) : '—'}
+                    icono={<FaCircleCheck />}
+                    color="success"
+                    detalle={`${totalPagadas} pagadas · ${totalEntregadas} entregadas`}
+                    tendencia={diario.map((d) => (d.cantidad > 0 ? d.total / d.cantidad : 0))}
+                    etiquetaTendencia="Promedio por venta de cada día en los últimos 14 días"
+                />
+            </motion.section>
+
+            <Card>
+                <CardHeader
+                    titulo="Lista de ventas"
+                    subtitulo="Busca por cliente, número de venta o total"
+                    acciones={
+                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                            <div className="relative">
+                                <Input
+                                    type="text"
+                                    value={busqueda}
+                                    onChange={(e) => alBuscar(e.target.value)}
+                                    placeholder="Buscar venta..."
+                                    icono={<FaMagnifyingGlass />}
+                                    className="pr-8 sm:w-72"
+                                />
+                                {busqueda && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setBusqueda('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
+                                        title="Limpiar búsqueda"
+                                    >
+                                        <FaXmark />
+                                    </button>
+                                )}
+                            </div>
+
+<Select value={filtroEntrega} onChange={(e) => alFiltrarEntrega(e.target.value)} className="sm:w-52">
+                                <option value="todos">Todas las entregas</option>
+                                <option value="domicilio">A domicilio</option>
+                                <option value="tienda">Recoger en tienda</option>
+                            </Select>
+
+                            {hayFiltros && (
+                                <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>
+                            )}
+
+                            <Button variante="secondary" onClick={cargarVentas} disabled={cargando}>
+                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
+                            </Button>
+                        </div>
+                    }
+                />
+                <div className="px-5 pb-4 sm:px-6">
+                    <FiltroEstados
+                        valor={filtroEstado}
+                        onCambiar={alFiltrarEstado}
+                        conteos={{
+                            todos: ventas.length,
+                            pendiente: totalPendientes,
+                            pagada: totalPagadas,
+                            entregada: totalEntregadas,
+                            cancelada: totalCanceladas,
+                            reembolsada: totalReembolsadas,
+                        }}
+                    />
+                </div>
+            </Card>
+
+            {cargando && <TableSkeleton columnas={7} filas={8} titulo />}
+
+            {!cargando && error && <Alert tipo="error">{error}</Alert>}
+
+            {!cargando && !error && ventas.length === 0 && (
+                <EmptyState
+                    titulo="No hay ventas registradas"
+                    descripcion="Registra una venta utilizando el formulario."
+                    icono={<FaMagnifyingGlass />}
+                />
+            )}
+
+            {!cargando && !error && ventas.length > 0 && ventasFiltradas.length === 0 && (
+                <EmptyState
+                    titulo="No se encontraron ventas"
+                    descripcion="Cambia la búsqueda o el filtro seleccionado."
+                    icono={<FaMagnifyingGlass />}
+                    acciones={<Button variante="secondary" onClick={limpiarFiltros}>Limpiar filtros</Button>}
+                />
+            )}
+
+            {!cargando && !error && ventasPaginadas.length > 0 && (
+                <Card>
+<CardHeader
+                        titulo="Ventas registradas"
+                        subtitulo="Historial de ventas realizadas"
+                        acciones={
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="reporte-contador">
+                                    {ventasFiltradas.length} {ventasFiltradas.length === 1 ? 'venta' : 'ventas'}
+                                </span>
+                                <Button variante="secondary" tamano="sm" onClick={exportar}>
+                                    <FaFileCsv /> Descargar para Excel
+                                </Button>
+                            </div>
+                        }
+                    />
+                    <CardBody className="p-0">
+                        <DataTable
+                            columnas={columnasVentas}
+                            filas={ventasPaginadas}
+                            keyExtractor={(fila) => fila.id_venta}
+                            orden={orden}
+                            onOrdenar={manejarOrden}
+                            acciones={(fila) =>
+                                accionesVenta(fila, {
+                                    onVer: verVenta,
+                                    onEmitirComprobante: abrirEmitirComprobante,
+                                    onReembolsar: setVentaReembolsar,
+                                    puedeReembolsar,
+                                })
+                            }
+                        />
+                    </CardBody>
+                    <Pagination pagina={paginaActualEfectiva} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
+                </Card>
+            )}
+
+<VentaViewModal venta={ventaVer} abierto={Boolean(ventaVer)} onCerrar={() => setVentaVer(null)} />
+<ComprobanteViewModal
+                comprobante={comprobanteEmitido}
+                abierto={Boolean(comprobanteEmitido)}
+                onCerrar={() => setComprobanteEmitido(null)}
+            />
+            {ventaReembolsar && (
+                <ReembolsoModal
+                    venta={ventaReembolsar}
+                    abierto
+                    onCerrar={() => setVentaReembolsar(null)}
+                    onReembolsada={ventaReembolsada}
+                />
+            )}
+            <EmitirComprobanteModal
+                venta={comprobanteModal?.venta}
+                tipoInicial={comprobanteModal?.tipo || 'boleta'}
+                abierto={Boolean(comprobanteModal)}
+                onCerrar={() => setComprobanteModal(null)}
+                onEmitido={manejarComprobanteEmitido}
+            />
+        </div>
+    );
+}
+

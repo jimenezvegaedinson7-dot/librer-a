@@ -1,0 +1,126 @@
+/* ============================================================
+   PIE DE LA WEB PÚBLICA
+   Diamante negro, como la cabecera: negro profundo con facetas de
+   luz y un destello lento (variables en editorial-ajustes.css).
+   Una sola rejilla y una barra de cierre. Work Sans en el texto;
+   solo el nombre de la marca va en serif.
+   Este archivo se carga el último de la web.
+   ============================================================ */
+.sitio footer.pie {
+    --pie-fondo: #050506;
+    --pie-texto: #f7f7f8;
+    --pie-suave: #c9c9cf;
+    --pie-filete: rgb(255 255 255 / 0.12);
+    --pie-oro: #ffffff;
+    position: relative;
+    background-color: var(--pie-fondo);
+    background-image: var(--diamante-facetas), var(--diamante-destello);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 260% 100%;
+    background-repeat: no-repeat;
+    animation: diamante-destello 11s cubic-bezier(.45,0,.2,1) infinite;
+    color: var(--pie-texto);
+    font-family: var(--f-texto);
+    font-size: .9375rem;
+    line-height: 1.6;
+    padding-block: clamp(3.5rem, 2.5rem + 3vw, 4.75rem) 1.75rem;
+    border-top: 0;
+}
+.sitio footer.pie::before {
+    content: ''; position: absolute; inset: 0 0 auto; height: 1px;
+    background: var(--diamante-filo);
+}
+.sitio footer.pie ::selection { background: var(--pie-oro); color: #15120f; }
+.sitio footer.pie a { color: var(--pie-texto); text-decoration: none; transition: color .2s ease; }
+.sitio footer.pie a:hover { color: #fffaf2; }
+.sitio footer.pie a:focus-visible { outline: 2px solid var(--pie-oro); outline-offset: 4px; border-radius: 4px; }
+
+/* ---------- Rejilla ---------- */
+.sitio .pie__rejilla {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, .8fr));
+    gap: clamp(2rem, 1rem + 3vw, 4.5rem);
+    padding-bottom: clamp(2.5rem, 2rem + 2vw, 3.5rem);
+}
+.sitio footer.pie h2 {
+    font-family: var(--f-texto);
+    font-size: .75rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--pie-suave); margin: .4rem 0 1.25rem;
+}
+.sitio footer.pie ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
+.sitio footer.pie .pie__rejilla ul a {
+    display: inline-block;
+    background: linear-gradient(var(--pie-oro), var(--pie-oro)) left 100% / 0 1px no-repeat;
+    transition: color .2s ease, background-size .35s var(--ed-salida, ease);
+}
+.sitio footer.pie .pie__rejilla ul a:hover { background-size: 100% 1px; }
+
+/* ---------- Identidad ---------- */
+.sitio .pie__identidad { display: grid; justify-items: start; align-content: start; gap: 1.25rem; max-width: 30rem; }
+.sitio .pie .marca { display: inline-flex; align-items: center; gap: 12px; }
+.sitio .pie .marca img { width: 34px; height: auto; filter: brightness(0) invert(1); opacity: .95; }
+.sitio .pie .marca span {
+    font-family: var(--ed-serif, Georgia, serif); font-style: normal; font-weight: 400;
+    font-size: 1.75rem; line-height: 1; letter-spacing: -.015em; color: #ffffff;
+}
+.sitio .pie .pie__lema { max-width: 38ch; margin: 0; font-size: .9375rem; line-height: 1.65; color: var(--pie-suave); }
+.sitio .pie .pie__direccion { display: flex; align-items: flex-start; gap: 10px; line-height: 1.55; }
+.sitio .pie .pie__direccion svg { flex: none; width: 17px; height: 17px; margin-top: 3px; color: var(--pie-oro); }
+.sitio .pie .pie__contacto { display: grid; gap: 6px; margin: 0; }
+.sitio .pie .pie__identidad .app-tiendas { margin-top: .25rem; }
+.sitio .pie .pie__redes { display: flex; gap: 10px; }
+.sitio .pie .pie__redes a {
+    display: grid; place-items: center; width: 40px; height: 40px;
+    border: 1px solid var(--pie-filete); border-radius: 999px;
+    transition: background .25s ease, border-color .25s ease, color .25s ease;
+}
+.sitio .pie .pie__redes a:hover { background: #fbf6ee; border-color: #fbf6ee; color: #15120f; }
+.sitio .pie .pie__redes svg { width: 17px; height: 17px; }
+
+/* Libro de Reclamaciones: sello discreto con su nombre. */
+.sitio footer.pie .pie__reclamaciones {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-top: 1.5rem; padding: 7px 14px 7px 10px;
+    border: 1px solid var(--pie-filete); border-radius: 8px;
+    font-size: .8125rem; line-height: 1.25;
+    transition: border-color .25s ease, background .25s ease;
+}
+.sitio footer.pie .pie__reclamaciones:hover { border-color: rgb(255 255 255 / 0.3); background: rgb(255 255 255 / 0.05); }
+.sitio .pie__reclamaciones img { width: 38px; height: auto; filter: brightness(0) invert(1); opacity: .85; }
+.sitio .pie__reclamaciones span { max-width: 12ch; }
+
+/* ---------- Barra de cierre: © · medios de pago · acceso ---------- */
+.sitio .pie__legal {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px;
+    padding-top: 1.5rem; padding-right: 96px;
+    border-top: 1px solid var(--pie-filete);
+    color: var(--pie-suave); font-size: .8125rem;
+}
+.sitio .pie__legal > p { margin: 0; }
+.sitio footer.pie .pie__pagos-medios { display: flex; align-items: center; gap: 12px 18px; flex-wrap: wrap; }
+.sitio footer.pie .pie__pagos-lista { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.sitio footer.pie .pie__pagos-lista li { display: block; margin: 0; padding: 0; }
+.sitio footer.pie .pie__pagos-lista img {
+    display: block; width: auto; height: 22px; max-width: 100%;
+    object-fit: contain; background: none; border-radius: 0; padding: 0; opacity: .9;
+}
+.sitio footer.pie .pie__pagos-nota { margin: 0; font-size: .8125rem; color: var(--pie-suave); }
+.sitio footer.pie .pie__admin { color: var(--pie-suave); }
+.sitio footer.pie .pie__admin:hover { color: #fffaf2; }
+
+/* ---------- Pantallas medianas ---------- */
+@media (max-width: 1023px) {
+    .sitio .pie__rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .sitio .pie__identidad { grid-column: 1 / -1; max-width: none; }
+}
+
+/* ---------- Móvil ---------- */
+@media (max-width: 767px) {
+    .sitio footer.pie { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
+    .sitio .pie__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.25rem 1.5rem; }
+    .sitio .pie__atencion { grid-column: 1 / -1; }
+    .sitio .pie__legal { flex-direction: column; align-items: flex-start; padding-right: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sitio footer.pie { animation: none; }
+    .sitio footer.pie :is(a, .pie__rejilla ul a) { transition: none; }
+}

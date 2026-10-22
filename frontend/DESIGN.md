@@ -1,6 +1,6 @@
 ---
 name: Librería del Saber — Web pública
-description: Librería comercial clara y ordenada, con banners de anuncios a lo ancho del inicio, administrables desde el panel.
+description: Librería comercial con portada espacial y navegación y footer claros inspirados en Ibero Librerías, sin franja superior.
 colors:
   verde-900: "#033a2c"
   marco: "#033a2c"
@@ -24,7 +24,53 @@ colors:
   gris-500: "#757575"
   gris-700: "#4a4a4a"
   negro: "#17221d"
+  portal-negro: "#060609"
+  portal-texto: "#f1eee8"
+  portal-luz: "#a48bcb"
+  portal-metal: "#89808f"
+  portal-borde: "#57515e"
+  portal-texto-secundario: "#bdb4c4"
+  novedades-papel: "#f7f1e8"
+  novedades-tinta: "#342a21"
+  novedades-nota: "#6b5947"
+  novedades-luz: "#fffaf2"
+  novedades-filete: "#bba58c"
+  nav-fondo: "#f5f7f9"
+  nav-marfil: "#ffffff"
+  nav-tinta: "#24304b"
+  nav-secundario: "#556078"
+  nav-acento: "#00bfd6"
+  nav-teal-legible: "#00788a"
+  nav-filete: "#e4e8ee"
+  nav-accion: "#24304b"
+  nav-sobre-accion: "#ffffff"
+  nav-hover: "#354563"
+  nav-papel: "#ffffff"
+  nav-seleccion: "#ccf0f4"
+  nav-activo: "#e8f5f7"
+  nav-hover-claro: "#e9edf3"
 typography:
+  navigation-label:
+    fontFamily: "'Work Sans', sans-serif"
+    fontSize: ".75rem"
+    fontWeight: 600
+    lineHeight: 1.5
+  navigation-note:
+    fontFamily: "'Work Sans', sans-serif"
+    fontSize: ".6875rem"
+    fontWeight: 400
+    lineHeight: 1.7
+  navigation-brand-mobile:
+    fontFamily: "'Work Sans', sans-serif"
+    fontSize: "1.0625rem"
+    fontWeight: 600
+    lineHeight: 1.15
+  editorial-display:
+    fontFamily: "'Serif Editorial', 'Source Serif 4', Georgia, serif"
+    fontSize: "clamp(3.25rem, 7vw, 6rem)"
+    fontWeight: 400
+    lineHeight: 0.95
+    letterSpacing: "-0.035em"
   display:
     fontFamily: "'Work Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
     fontSize: "clamp(2rem, 1.35rem + 2.3vw, 3.25rem)"
@@ -67,6 +113,7 @@ rounded:
   tapa: "2px 4px 4px 2px"
   control: "6px"
   tarjeta: "8px"
+  buscador-comercial: "10px"
   panel: "12px"
   telefono: "44px"
   pildora: "999px"
@@ -153,15 +200,54 @@ components:
     typography: "{typography.label}"
     height: "40px"
   footer:
-    backgroundColor: "{colors.marco}"
-    textColor: "{colors.salvia-100}"
+    backgroundColor: "{colors.blanco}"
+    textColor: "{colors.nav-secundario}"
 ---
 
 # Design System: Librería del Saber — Web pública
 
-Alcance: la web pública (`src/public-site/`, todo bajo la clase raíz `.sitio`, tokens en `public-site.css`). El panel administrativo (`src/features/**`, `src/styles/theme.css`) es una superficie hermana con su propio sistema; este documento no lo describe.
+Alcance: la web pública (`src/web/`, todo bajo la clase raíz `.sitio`, tokens en `public-site.css`). El panel administrativo (`src/panel/**`, `src/panel/estilos/theme.css`) es una superficie hermana con su propio sistema; este documento no lo describe.
 
 ## Overview
+
+### Excepción vigente del inicio: portada espacial (20/10/2026)
+
+La nueva instrucción del usuario sustituye el carrusel público inicial por `sections/portada3d/PortadaEspacial.jsx`: un único libro real con volumen Three.js, movimiento por scroll y audio opcional. Tras la última corrección del usuario, **toda la escena del libro usa fondo hueso cálido**, no negro; las cintas escultóricas conservan reflejos suaves. Su dirección concreta se documenta en `.impeccable/surfaces/src-public-site-sections-portada3d-portadaespacial-jsx.md`. Esta excepción prevalece sobre las descripciones históricas de «sin libro 3D» de este documento y del brief del carrusel. La administración de imágenes y videos permanece disponible; las demás superficies conservan su sistema visual.
+
+El usuario confirmó después la dirección **Portal editorial**, tras revisar su video real: Source Serif 4 autoalojada para titulares, Work Sans para datos y controles y portal escultórico/volumétrico violeta. Los botones de la escena son blancos con texto marino y radio de 6px.
+
+### Cabecera y footer vigentes: Ibero, sin franja superior (20/10/2026)
+
+Se revisaron [El Virrey](https://www.elvirrey.com/) e [Ibero Librerías](https://www.iberolibrerias.com/) en navegador. Tras rechazar la primera interpretación marfil/cacao, el usuario eligió expresamente **Ibero como referencia principal**, con cabecera clara, buscador amplio, marino/turquesa y footer blanco en columnas. También pidió eliminar por completo la franja superior de delivery, recojo y pago. Esta decisión sustituye las anteriores paletas y la cinta animada.
+
+- `components/public-header.css`: cabecera gris frío `#F5F7F9`, buscador blanco y botón marino `#24304B`; menú blanco con texto marino en mayúsculas compactas. Turquesa `#00BFD6` como acento y `#00788A` para texto/iconos que requieren contraste; bordes `#E4E8EE` y texto secundario `#556078`. El navbar no contiene franja superior, ticker ni CTA de descarga dominante.
+- Marca y controles en Work Sans, con nombre en cursiva y monograma oficial; iconos de contorno Lucide. Buscador de 46px con botón interior de radio 6px; en móvil baja a una segunda fila. El contenedor conserva sus márgenes simétricos y ancho máximo, alineados con el título y los controles de la escena.
+- En la portada 3D se muestra primero el libro a pantalla completa. Después de un gesto corto, el navbar fijo se despliega en tres capas: línea central, cuerpo con perspectiva y recorte vertical y enlaces. `estadoReveladoNavegacion` suaviza cada capa; el reloj GSAP lineal dura 1s al entrar y 0,5s al cerrar. No cambia la altura del canvas ni el recorrido del scroll.
+- El foco de teclado revela inmediatamente los controles. Al saltar después de la escena, la navegación permanece disponible. Las páginas interiores conservan la cabecera sticky; movimiento reducido y respaldos estáticos mantienen la navegación normal visible.
+- `components/PublicFooter.jsx` y `public-footer.css`: fondo blanco, títulos marinos y cuatro columnas (marca/dirección real, librería, cuenta y atención al cliente). Medios de pago existentes en una fila aparte; reclamaciones, enlaces de descarga y acceso administrativo funcionales. En móvil pasa a dos columnas, con identidad y atención a todo ancho, sin desbordamiento. El espacio de seguridad evita que el asistente tape los enlaces finales.
+- Source Serif 4 permanece exclusivamente en los titulares de la experiencia editorial. El catálogo y sus botones de compra mantienen su estilo comercial existente. Se conservan los datos reales y solo se muestran contactos o enlaces legales configurados.
+
+Estas decisiones vigentes prevalecen para portada, navegación y footer sobre la base histórica descrita a continuación, incluidos sus antiguos colores verdes, pie oscuro y banners iniciales. El scroll actual es nativo; Lenis permanece retirado.
+
+### Movimiento editorial vigente: libro → estante → tienda
+
+Refinamiento solicitado con Impeccable y referencias [Lusion](https://lusion.co/) y [Land-book](https://land-book.com/). Se toma la dirección de profundidad, composición y ritmo; no se incorporan código ni recursos de esas webs.
+
+- **Momento principal:** el libro 3D y su coreografía reversible existente. Al llegar a novedades, un libro central despliega cuatro portadas reales hacia ambos lados en 1,55s más 0,32s de escalonado. Los datos aparecen después, en 550ms. Por la corrección posterior del usuario, el fondo de novedades es ahora hueso cálido.
+- **Continuidad:** máscaras verticales en titulares (850ms, `expo.out`), aparición breve de entradillas y estantes (650ms); escalonado de hermanos limitado a 280ms. No se anima toda la página como una sola lista ni se trasladan secciones con controles dentro.
+- **Respuesta:** acercamiento leve de las portadas en hover, elevación de 4px y seguimiento de hasta 4px exclusivamente en el icono de enlaces editoriales. El área pulsable permanece fija. Los formularios, catálogo de compra y checkout conservan sus interacciones.
+- **Presupuesto:** un único parallax de 18px por lado en el fondo fotográfico de catálogo, solo en escritorio. Sin blur global, bucles nuevos ni scroll artificial. No se fuerza `will-change` de forma permanente.
+- **Ciclo de vida:** `PublicLayout` inicia `aplicarAnimacionesGlobales` después de la precarga, limitado a `.sitio`; al cambiar de ruta limpia observadores, eventos, tweens y triggers. Un observador DOM agrupa los cambios de elementos en un cuadro e ignora la escritura del asistente. La portada 3D y el navbar no reciben los revelados genéricos.
+- **Accesibilidad:** contenido visible en el estado natural; se anima solo al entrar en vista. Foco de teclado completa el revelado. Cambiar Reduce Motion durante la sesión retira movimiento espacial. En ≤900px, novedades usa carrusel horizontal nativo; en escritorio reducido las cinco portadas ya están desplegadas por CSS.
+- **Compatibilidad de datos:** si la API antigua responde 404 al protagonista, se deriva el respaldo del catálogo aunque este llegue después. Una respuesta válida con `libro:null` se respeta; fallos 503/red conservan error y reintento.
+
+Corrección posterior solicitada por el usuario: novedades ocupa cinco columnas reales, con separación fluida de 16–24px; solo las tapas giran. Títulos y autores permanecen rectos, se limitan visualmente a dos líneas y el precio puede envolver dentro de su propia columna. La información entra a partir de 1,05s, cuando las portadas ya están separadas. El recorrido del hero se reduce de 390svh a 250svh (móvil: 335svh a 225svh) y se compactan ambos niveles de padding antes de novedades. Comprobado a 1024/1440px y móvil 390px con datos reales, sin cruces de texto ni errores JS; las 30 pruebas de portada/movimiento incluyen dos regresiones de títulos, autores y precios largos. Lint y build correctos.
+
+**Acabado hueso de novedades:** decisión expresa del usuario tras la revisión anterior. Papel `#F7F1E8`, luz tenue `#FFFAF2`, tinta `#342A21` y notas `#6B5947`; sombras de libro suaves y cálidas. Se retira el indicador horizontal `portada3d__recorrido` y su CSS. El velo final de la escena se funde al mismo color hueso del contenedor siguiente, evitando el corte oscuro; en respaldo estático, el bloque claro ocupa todo el ancho. Título, autores, precio vigente, precio anterior y porcentaje tienen contraste mínimo medido de 5,95:1 contra el papel. Revisión en Chrome a 1440/1024/390px sin errores JS, overflow ni textos cruzados; seis regresiones de movimiento correctas, lint/build correctos. Veredicto: listo en local.
+
+**Corrección de alcance: también el libro 3D en hueso.** La petición incluye el escenario principal, no solo novedades. `escenaLibro.js` usa `0xF7F1E8` en clear color y niebla, y entrega ese mismo color a `PortalEditorial`. El shader volumétrico recibe `uPapel`, conserva ese fondo durante entrada, apertura, energía y salida, y deposita una atmósfera tenue sobre él. El render target de fondo declara `SRGBColorSpace` para impedir que el tone mapping ACES del libro vuelva gris el hueso de la interfaz. CSS de carga y respaldos, títulos, ficha, precios, audio y pantalla final adoptan la misma paleta clara. Verificado por capturas reales en escritorio/móvil en cuatro fases y en Reduce Motion; píxeles libres de geometría del fondo de escritorio RGB 247/241/232, sin errores de shader o JS ni overflow. Las 24 pruebas de portada pasaron. Veredicto: listo en local.
+
+Verificación local: escritorio 1440×1000, móvil 390×844 y versión reducida en Chrome, datos reales mediante proxy `/api`, navegación de ida y vuelta al catálogo, sin errores JavaScript ni overflow. Se verificaron 56 escenarios de compra/navegación/retiro legacy, 24 de portada, 4 regresiones nuevas de movimiento y 12 pruebas unitarias de coreografía/audio. Lint y build correctos; el build conserva el aviso de tamaño de los paquetes principales. El detector Impeccable solo señaló avisos consultivos de tokens y escalas preexistentes del portal. Veredicto: listo para revisión local del usuario.
 
 **Creative North Star: "La librería que destaca sus libros"**
 

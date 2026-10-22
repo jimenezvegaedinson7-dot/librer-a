@@ -24,7 +24,7 @@ Una librería física en Pallasca, Áncash, con catálogo comercial web y móvil
 - Compra web en `/cuenta`, `/carrito`, `/checkout` y `/mis-compras`; ficha pública en `/libro/:id`. La app usa el mismo backend de ventas y pagos.
 - El panel solo admite `administrador`; tienda web y app usan `cliente`. Las sesiones web y los carritos de clientes se mantienen separados del acceso administrativo.
 - Catálogo público real: `GET /api/libros` (título, autor, categoría, precio, portada en Cloudinary, stock, estado).
-- Datos legales: `GET /api/empresa`; los enlaces de contacto se configuran en `src/public-site/config/site.js` y los valores `null` no se muestran. Los datos de producción no se fijan en este contexto.
+- Datos legales: `GET /api/empresa`; los enlaces de contacto se configuran en `src/web/config/site.js` y los valores `null` no se muestran. Los datos de producción no se fijan en este contexto.
 - Libro de Reclamaciones público en `/libro-de-reclamaciones`.
 
 ## Capabilities and Constraints
@@ -50,14 +50,15 @@ Rutas: la web pública ocupa `/`; el login del panel pasa a `/admin/login`; las 
 ## Brand Commitments
 
 - Nombre visible: **Librería del Saber** (confirmado). MATIDANA, razón social y RUC solo como datos legales.
-- Logo oficial: monograma "f" caligráfico (`src/assets/logo-principal.png`), usado en verde o blanco en la web pública.
+- Logo oficial: monograma "f" caligráfico (`src/compartido/assets/logo-principal.png`), usado en verde o blanco en la web pública.
 - Idioma: español de Perú; precios en soles (S/).
+- Navbar y footer públicos: referencia principal **Ibero Librerías**, elegida expresamente el 20/10/2026; cabecera clara, marino/turquesa y footer blanco en columnas. Sin la franja superior de avisos de delivery, recojo y PayU. Se mantiene la identidad propia de Librería del Saber.
 
 ## Evidence on Hand
 
 - Catálogo real procedente de la API pública; el tamaño del catálogo no se fija en este documento.
-- Logo y fondo del login (`src/assets/`).
-- Fuentes verificables: `src/routes/AppRouter.jsx`, `src/public-site/tienda/`, `flutter_app/lib/` y `docs/architecture/05-API-MAP.md`.
+- Logo y fondo del login (`src/compartido/assets/`).
+- Fuentes verificables: `src/app/router/AppRouter.jsx`, `src/web/tienda/`, `flutter_app/lib/` y `docs/architecture/05-API-MAP.md`.
 - Testimonios, cifras comerciales, premios, trayectoria y contactos requieren datos verificables antes de mostrarse.
 
 ## Product Principles

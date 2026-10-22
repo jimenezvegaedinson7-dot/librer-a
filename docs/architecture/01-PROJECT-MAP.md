@@ -1,6 +1,6 @@
 # Mapa del proyecto C:\libreria
 
-> Generado desde el código real el 2026-10-14 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-10-22 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Visión general
@@ -13,35 +13,35 @@
 
 Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `backups/`, scripts `*.ps1` de utilidades locales.
 
-## Cifras (análisis 2026-10-14)
+## Cifras (análisis 2026-10-22)
 
-- Backend: **182** archivos JS (incluye tests y scripts) · **120** endpoints · 22 routers · 24 controladores · 21 modelos · **21 tablas en esquema canónico** (22 declaradas al incluir migraciones y arranque).
-- Frontend: **206** archivos JS/JSX · 38 rutas · 25 archivos de servicio.
+- Backend: **186** archivos JS (incluye tests y scripts) · **123** endpoints · 22 routers · 25 controladores · 22 modelos · **22 tablas en esquema canónico** (23 declaradas al incluir migraciones y arranque).
+- Frontend: **218** archivos JS/JSX · 38 rutas · 26 archivos de servicio.
 - Flutter: **76** archivos Dart · 35 métodos en ApiService · 21 pantallas/widgets con llamadas a la API.
 
 ## Módulos de negocio
 
 | Módulo | Backend (`/api/...`) | React | Flutter |
 |---|---|---|---|
-| Autenticación y 2FA | `/api/auth` | features/auth (admin) · public-site/tienda/CuentaPage (cliente) | login, registro, verificación, 2FA, recuperar/restablecer contraseña |
-| Usuarios y perfil | `/api/usuarios` | features/usuarios · layout/PerfilAdministrador | perfil, editar perfil, foto, contraseña |
-| Libros (catálogo) | `/api/libros` | features/libros · public-site/pages/CatalogoPage · public-site/tienda/LibroPage | home, libros, detalle de libro |
-| Autores | `/api/autores` | features/autores | — |
-| Categorías | `/api/categorias` | features/categorias | — |
-| Inventario | `/api/inventario` | features/inventario | — |
-| Pedidos | `/api/pedidos` | features/pedidos | — |
-| Ventas | `/api/ventas` | features/ventas · public-site/tienda/MisComprasPage | mis compras |
-| Pagos (PayU) | `/api/pagos` | features/pagos · public-site/tienda/CheckoutPage | entrega y pago, mis compras |
-| Comprobantes | `/api/comprobantes` | features/comprobantes · ventas/EmitirComprobanteModal | — |
-| Clientes | `/api/clientes` | features/clientes | — |
-| Historial / auditoría | `/api/historial` | features/historial · layout/Topbar (notificaciones) | — |
-| Reportes / Resumen | `/api/reportes` | features/dashboard (vía reportes/reportesService) | — |
-| Favoritos | `/api/favoritos` | public-site/tienda/AccionesLibro (cliente) | favoritos, detalle de libro |
-| Cobertura Pallasca | `/api/zonas-delivery` | features/tarifas | entrega y pago, mis compras |
+| Autenticación y 2FA | `/api/auth` | panel/auth (admin) · web/tienda/CuentaPage (cliente) | login, registro, verificación, 2FA, recuperar/restablecer contraseña |
+| Usuarios y perfil | `/api/usuarios` | panel/usuarios · panel/layout/PerfilAdministrador | perfil, editar perfil, foto, contraseña |
+| Libros (catálogo) | `/api/libros` | panel/libros · web/paginas/CatalogoPage · web/tienda/LibroPage | home, libros, detalle de libro |
+| Autores | `/api/autores` | panel/autores | — |
+| Categorías | `/api/categorias` | panel/categorias | — |
+| Inventario | `/api/inventario` | panel/inventario | — |
+| Pedidos | `/api/pedidos` | panel/pedidos | — |
+| Ventas | `/api/ventas` | panel/ventas · web/tienda/MisComprasPage | mis compras |
+| Pagos (PayU) | `/api/pagos` | panel/pagos · web/tienda/CheckoutPage | entrega y pago, mis compras |
+| Comprobantes | `/api/comprobantes` | panel/comprobantes · panel/ventas/EmitirComprobanteModal | — |
+| Clientes | `/api/clientes` | panel/clientes | — |
+| Historial / auditoría | `/api/historial` | panel/historial · panel/layout/Topbar (notificaciones) | — |
+| Reportes / Resumen | `/api/reportes` | panel/dashboard (vía panel/reportes/reportesService) | — |
+| Favoritos | `/api/favoritos` | web/tienda/AccionesLibro (cliente) | favoritos, detalle de libro |
+| Cobertura Pallasca | `/api/zonas-delivery` | panel/tarifas | entrega y pago, mis compras |
 | Ubicaciones (Lima, legacy) | `/api/ubicaciones` | datos de ubicación en historial | nombres conservados en Venta; sin selector ni consultas de provincias/distritos |
-| Agencias courier (legacy) | `/api/agencias` | ruta redirigida; features/agencias sin ruta activa | — |
-| Empresa (emisor) | `/api/empresa` | features/configuracion/EmpresaPage | — |
-| Reclamaciones | `/api/reclamaciones` | features/reclamaciones (formulario público y gestión admin) | libro_reclamaciones_screen (formulario nativo) |
+| Agencias courier (legacy) | `/api/agencias` | ruta redirigida; panel/agencias sin ruta activa | — |
+| Empresa (emisor) | `/api/empresa` | panel/configuracion/EmpresaPage | — |
+| Reclamaciones | `/api/reclamaciones` | panel/reclamaciones (formulario público y gestión admin) | libro_reclamaciones_screen (formulario nativo) |
 
 ## Dónde buscar
 

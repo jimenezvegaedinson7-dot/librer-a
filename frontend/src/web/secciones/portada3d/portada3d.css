@@ -1,0 +1,785 @@
+/* ============================================================
+   PORTADA ESPACIAL
+   Papel hueso cálido, volumen editorial y tipografía oscura.
+   ============================================================ */
+.sitio .portada3d {
+    --p3-negro: #080910;
+    --p3-noche: #10182d;
+    --p3-violeta: #6d4aff;
+    --p3-azul: #568cff;
+    --p3-blanco: #f5f5f7;
+    --p3-papel: #f7f1e8;
+    --p3-tinta-papel: #342a21;
+    --p3-nota-papel: #6b5947;
+    --cabecera: 0px;
+    --barra: 0px;
+    --margen-inicial: 0px;
+    position: relative;
+    background: var(--p3-papel);
+    color: var(--p3-tinta-papel);
+}
+.sitio .portada3d--3d { height: 360svh; }
+.sitio .portada3d--cargando { height: calc(100svh - var(--cabecera)); min-height: 520px; background: var(--p3-papel); }
+
+.sitio .portada3d__escenario {
+    position: sticky;
+    top: var(--cabecera);
+    height: calc(100svh - var(--cabecera) - var(--barra) - var(--margen-inicial));
+    min-height: min(480px, calc(100svh - var(--cabecera) - var(--barra) - var(--margen-inicial)));
+    overflow: hidden;
+    isolation: isolate;
+}
+.sitio .portada3d__lienzo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; }
+.sitio .portada3d--lista .portada3d__lienzo { opacity: 1; }
+
+/* Título partido alrededor del libro, como en la referencia. */
+.sitio .portada3d__titulo {
+    position: absolute; inset: 0; z-index: 1;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 clamp(16px, 4vw, 64px);
+    pointer-events: none;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: clamp(2.6rem, 1rem + 5.2vw, 6rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--p3-blanco);
+    text-shadow: 0 0 40px rgb(109 74 255 / 0.35);
+    will-change: opacity, transform;
+}
+.sitio .portada3d__titulo span:last-child { text-align: right; }
+.sitio .portada3d__lema {
+    margin: 0; font-size: clamp(0.95rem, 0.85rem + 0.3vw, 1.125rem); color: rgb(245 245 247 / 0.78); letter-spacing: 0.01em;
+}
+.sitio .portada3d__lema--flotante { position: absolute; left: 0; right: 0; bottom: 13%; z-index: 2; width: min(100% - 2rem, 34rem); margin: 0 auto; text-align: center; pointer-events: none; }
+
+/* Ficha del libro real. */
+.sitio .portada3d__ficha {
+    display: grid; gap: 0.5rem;
+    max-width: 24rem;
+    padding: 1.5rem 1.5rem 1.375rem;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: 18px;
+    background: linear-gradient(160deg, rgb(16 24 45 / 0.72), rgb(8 9 16 / 0.62));
+    background: rgb(12 14 25 / 0.96);
+    box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+.sitio .portada3d__ficha--flotante { position: absolute; right: clamp(16px, 5vw, 80px); top: 50%; z-index: 3; margin-top: -9rem; opacity: 0; visibility: hidden; will-change: opacity, transform; }
+.sitio .portada3d__eyebrow { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #b9a7ff; }
+.sitio .portada3d .portada3d__libro-titulo { margin: 0; font-family: inherit; font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem); font-weight: 600; line-height: 1.15; color: var(--p3-tinta-papel); overflow-wrap: anywhere; }
+.sitio .portada3d__autor { margin: 0; color: rgb(245 245 247 / 0.78); font-size: 0.9375rem; }
+.sitio .portada3d .portada3d__precio { color: var(--p3-tinta-papel); background: none; font-size: 1.25rem; font-weight: 700; }
+.sitio .portada3d .portada3d__precio .oferta__anterior { color: rgb(245 245 247 / 0.6); }
+.sitio .portada3d__stock { margin: 0; font-size: 0.8125rem; color: #9fe3bd; }
+.sitio .portada3d__stock--agotado { color: #ffb4a8; }
+.sitio .portada3d__sinopsis { margin: 0.25rem 0 0; font-size: 0.875rem; line-height: 1.55; color: rgb(245 245 247 / 0.72); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.sitio .portada3d__boton {
+    justify-self: start;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    margin-top: 0.5rem; min-height: 44px; padding: 0 1.25rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #6944c6, #3c57b3);
+    color: #ffffff; font-weight: 700; font-size: 0.9375rem; text-decoration: none;
+    box-shadow: 0 10px 30px -10px rgb(109 74 255 / 0.8);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.sitio .portada3d__boton:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -10px rgb(109 74 255 / 0.95); color: #ffffff; }
+.sitio .portada3d__boton:focus-visible { outline: 3px solid #b9a7ff; outline-offset: 3px; }
+
+/* Texto sobre la nube violeta. */
+.sitio .portada3d__final {
+    position: absolute; inset: 0; z-index: 3;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem;
+    padding: 0 1.5rem; text-align: center;
+    opacity: 0; visibility: hidden; will-change: opacity, transform;
+}
+.sitio .portada3d__final-titulo { margin: 0; font-family: inherit; font-size: clamp(2rem, 1rem + 3.4vw, 4.25rem); font-weight: 600; line-height: 1.05; color: #ffffff; text-shadow: 0 2px 30px rgb(40 20 120 / 0.55); }
+.sitio .portada3d__final-texto { margin: 0; max-width: 32rem; color: rgb(255 255 255 / 0.88); font-size: 1rem; }
+.sitio .portada3d__final .portada3d__boton { justify-self: center; }
+
+.sitio .portada3d__pista { position: absolute; left: 50%; bottom: 1.5rem; z-index: 2; display: inline-flex; align-items: center; gap: 0.5rem; margin: 0; transform: translateX(-50%); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgb(245 245 247 / 0.6); pointer-events: none; }
+.sitio .portada3d__pista svg { animation: portada3d-baja 1.8s ease-in-out infinite; }
+@keyframes portada3d-baja { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+.sitio .portada3d__aviso { position: absolute; left: 1rem; bottom: 1rem; z-index: 4; margin: 0; font-size: 0.75rem; color: var(--p3-nota-papel); }
+
+.sitio .portada3d__sonido {
+    position: absolute; right: clamp(12px, 2vw, 28px); top: clamp(12px, 2vw, 24px); z-index: 5;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    min-height: 44px; min-width: 44px; padding: 0 0.95rem; justify-content: center;
+    border: 1px solid rgb(255 255 255 / 0.18); border-radius: 999px;
+    background: rgb(16 24 45 / 0.6); color: var(--p3-blanco);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    font-size: 0.8125rem; font-weight: 600; cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.sitio .portada3d__sonido:hover { background: rgb(109 74 255 / 0.35); border-color: rgb(185 167 255 / 0.5); }
+.sitio .portada3d__sonido[aria-pressed="true"] { border-color: #b9a7ff; }
+.sitio .portada3d__sonido:disabled { opacity: 0.5; cursor: default; }
+.sitio .portada3d__sonido:focus-visible { outline: 3px solid #b9a7ff; outline-offset: 2px; }
+
+/* Al final la escena se funde con el fondo claro del catálogo. */
+.sitio .portada3d__velo { position: absolute; inset: 0; z-index: 4; background: var(--p3-papel); opacity: 0; pointer-events: none; }
+
+/* ---------- Portada estática ---------- */
+.sitio .portada3d--estatica { padding: clamp(48px, 8vw, 96px) 0; background: var(--p3-papel); }
+.sitio .portada3d__estatica { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); align-items: center; gap: clamp(24px, 4vw, 64px); width: min(100% - 2 * var(--gutter, 16px), var(--ancho, 1200px)); margin-inline: auto; }
+.sitio .portada3d__marca { margin: 0 0 0.75rem; font-family: inherit; font-size: clamp(2.4rem, 1rem + 5vw, 5rem); font-weight: 600; line-height: 1.06; letter-spacing: -0.02em; }
+.sitio .portada3d__estatica-texto .portada3d__boton { margin-top: 1.25rem; }
+.sitio .portada3d__estatica-libro { display: flex; align-items: center; gap: clamp(20px, 3vw, 40px); }
+.sitio .portada3d__estatica-libro img { width: min(100%, clamp(150px, 18vw, 240px)); height: auto; object-fit: contain; border-radius: 3px 6px 6px 3px; box-shadow: -10px 20px 40px -14px rgb(69 49 26 / 0.3); }
+
+/* ---------- Pantallas medianas y celulares ---------- */
+@media (max-width: 900px) {
+    .sitio .portada3d--3d { height: 310svh; }
+    .sitio .portada3d__titulo { inset: 64px 16px auto; display: block; padding: 0; text-align: center; font-size: clamp(1.8rem, 0.8rem + 4vw, 3rem); line-height: 1.08; }
+    .sitio .portada3d__titulo span + span::before { content: ' '; }
+    .sitio .portada3d__titulo span:last-child { text-align: center; }
+    .sitio .portada3d__lema--flotante { display: none; }
+    .sitio .portada3d__ficha--flotante { left: 1rem; right: 1rem; top: auto; bottom: 4.5rem; margin: 0 auto; max-width: none; padding: 1rem 1.125rem; }
+    .sitio .portada3d__ficha--flotante .portada3d__sinopsis { display: none; }
+    .sitio .portada3d__estatica { grid-template-columns: 1fr; }
+    .sitio .portada3d__estatica-libro { flex-direction: column; align-items: stretch; }
+    .sitio .portada3d__estatica-libro img { align-self: center; }
+    .sitio .portada3d__sonido span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sitio .portada3d__pista svg { animation: none; }
+    .sitio .portada3d__boton { transition: none; }
+}
+
+/* Carrusel de anuncios dentro de la portada (final de la animación). */
+.sitio .portada3d__anuncios { width: min(100%, 60rem); }
+.sitio .portada3d__anuncios .anuncios-inicio--compacto { background: transparent; }
+.sitio .portada3d__anuncios .anuncios-inicio__marco { border-radius: 14px; background: rgb(8 9 16 / 0.35); box-shadow: 0 30px 70px -30px rgb(20 10 60 / 0.9), 0 0 0 1px rgb(255 255 255 / 0.14); }
+.sitio .portada3d__anuncios .anuncios-inicio__puntos span { background: rgb(255 255 255 / 0.45); }
+.sitio .portada3d__anuncios .anuncios-inicio__puntos [aria-current=true] span { background: #ffffff; }
+.sitio .portada3d__final .portada3d__final-titulo { font-size: clamp(1.6rem, 1rem + 2.4vw, 3.2rem); }
+@media (max-width: 900px) { .sitio .portada3d__final { gap: 0.5rem; } }
+
+/* Últimos libros agregados (cinemático: un libro se despliega en cinco). */
+.sitio .portada3d__ultimos--apilado { position: relative; isolation: isolate; display: block !important; padding: 12px 0 24px; overflow: hidden; scroll-margin-top: 160px; background: var(--p3-papel); color: var(--p3-tinta-papel); }
+.sitio .portada3d__ultimos-fondo--hueso { position: absolute; inset: 0; background: radial-gradient(ellipse at center, #fffaf2 0%, transparent 70%), var(--p3-papel); z-index: -1; pointer-events: none; }
+.sitio .portada3d__ultimos-contenido { position: relative; width: min(1100px, calc(100% - clamp(1rem, 8vw, 4rem))); margin: 0 auto; display: grid; gap: clamp(28px, 3vw, 40px); justify-items: center; }
+.sitio .portada3d__ultimos--apilado h2 { margin: 0; color: inherit; font-family: var(--fuente-titulo); font-size: clamp(1.8rem, 4vw, 3.4rem); font-weight: 700; text-align: center; letter-spacing: -.01em; }
+.sitio .portada3d__apilar { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: clamp(16px, 2vw, 24px); align-items: start; width: min(980px, 100%); padding-top: 16px; perspective: 1800px; transform-style: preserve-3d; }
+.sitio .portada3d__apilar-item { position: relative; min-width: 0; backface-visibility: hidden; transform-style: preserve-3d; }
+.sitio .portada3d__apilar--final .portada3d__apilar-item { transition: none; }
+.sitio .portada3d__apilar-link { display: grid; gap: 28px; justify-items: center; min-width: 0; text-align: center; color: var(--p3-tinta-papel); text-decoration: none; }
+.sitio .portada3d__apilar-link:hover { color: var(--p3-tinta-papel); }
+.sitio .portada3d__apilar-link:focus-visible { outline: 2px solid var(--p3-nota-papel); outline-offset: 6px; border-radius: 4px; }
+.sitio .portada3d__apilar-tapa { position: relative; width: min(100%, 180px); aspect-ratio: 2 / 3; border-radius: 4px 8px 8px 4px; overflow: hidden; transform: perspective(1600px) rotateY(calc(var(--posicion, 0) * 7deg)) rotateZ(calc(var(--posicion, 0) * 2.5deg)); box-shadow: 0 18px 30px -14px rgb(69 49 26 / 0.3), 0 4px 8px -3px rgb(69 49 26 / 0.16); }
+.sitio .portada3d__apilar-tapa img { width: 100%; height: 100%; object-fit: cover; }
+.sitio .portada3d__apilar-descuento { position: absolute; top: 12px; right: 12px; background: linear-gradient(135deg, #b99a5d, #d9b77a); color: #1f1a14; font-weight: 700; font-size: .8rem; padding: .25rem .5rem; border-radius: 999px; }
+.sitio .portada3d__apilar-info { display: grid; grid-template-rows: minmax(2.6em, auto) minmax(2.8em, auto) auto; gap: .375rem; justify-items: center; align-content: start; width: 100%; min-width: 0; font-size: .875rem; }
+.sitio .portada3d__apilar-titulo { margin: 0; width: 100%; min-width: 0; font-size: .875rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sitio .portada3d__apilar-autor { margin: 0; width: 100%; min-width: 0; color: var(--p3-nota-papel); font-size: .8125rem; line-height: 1.4; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sitio .portada3d .portada3d__apilar-precio { justify-content: center; align-self: start; width: 100%; max-width: 100%; min-width: 0; flex-wrap: wrap; color: var(--p3-tinta-papel); }
+.sitio .portada3d__apilar-carrusel { display: none; }
+.sitio .portada3d__apilar[data-final="true"] .portada3d__apilar-item { transition: none; }
+
+@media (max-width: 900px) {
+  .sitio .portada3d__apilar { display: none; }
+  .sitio .portada3d__apilar-carrusel { display: block; width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; padding: 0 clamp(1rem, 6vw, 2rem); }
+  .sitio .portada3d__apilar-carrusel ul { display: flex; gap: clamp(1rem, 6vw, 1.6rem); list-style: none; margin: 0; padding: 0 clamp(1rem, 6vw, 2rem); }
+  .sitio .portada3d__apilar-carrusel li { flex: 0 0 auto; scroll-snap-align: center; }
+  .sitio .portada3d__apilar-link--móvil { width: clamp(200px, 70vw, 240px); }
+  .sitio .portada3d__apilar-link--móvil .portada3d__apilar-tapa { width: 100%; transform: none; }
+}
+
+/* Últimos libros agregados (final de la animación y versión estática). */
+.sitio .portada3d__ultimos { display: grid; justify-items: center; gap: 1.5rem; width: min(100%, 64rem); margin-inline: auto; }
+.sitio .portada3d__ultimos h2 { margin: 0; color: inherit; font: inherit; font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); font-weight: 600; text-align: center; }
+.sitio .portada3d__ultimos > ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(10px, 2vw, 20px); width: 100%; margin: 0; padding: 0; list-style: none; }
+.sitio .portada3d__ultimo {
+    display: grid; justify-items: center; gap: 0.375rem; height: 100%;
+    padding: 0.75rem 0.625rem 0.875rem; border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #ffffff; text-decoration: none; text-align: center;
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+.sitio .portada3d__ultimo:hover { transform: translateY(-4px); background: rgb(255 255 255 / 0.04); border-color: rgb(255 255 255 / 0.16); color: #ffffff; }
+.sitio .portada3d__ultimo:focus-visible { outline: 3px solid #ffffff; outline-offset: 2px; }
+.sitio .portada3d__ultimo img { width: 100%; max-width: 130px; aspect-ratio: 2 / 3; height: auto; object-fit: contain; border-radius: 3px 6px 6px 3px; box-shadow: -6px 12px 24px rgb(0 0 0 / 0.45); }
+.sitio .portada3d__ultimo-titulo { font-size: 0.8125rem; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sitio .portada3d .portada3d__ultimo-precio { color: #ffffff; background: none; font-size: 0.875rem; font-weight: 700; }
+.sitio .portada3d .portada3d__ultimo-precio .oferta__anterior { color: rgb(255 255 255 / 0.6); }
+.sitio .portada3d .precio.oferta .oferta__final { color: #fdba74; }
+.sitio .portada3d .precio.oferta .oferta__anterior { color: #bcb7c9; opacity: 1; }
+.sitio .portada3d .precio.oferta { font-size: 0.9375rem; gap: 0.4rem; flex-wrap: wrap; }
+.sitio .portada3d__ultimos .portada3d__eyebrow { color: #e4dcff; }
+.sitio .portada3d__ultimos--estatica { margin: clamp(32px, 5vw, 56px) auto 0; width: 100%; }
+.sitio .portada3d--estatica:has(.portada3d__ultimos--apilado) { padding-bottom: 0; }
+@media (max-width: 640px) {
+    .sitio .portada3d__ultimos > ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sitio .portada3d__ultimo img { max-width: 76px; }
+}
+@media (prefers-reduced-motion: reduce) { .sitio .portada3d__ultimo { transition: none; } }
+
+/* El catálogo es accesible desde el primer cuadro y los recientes quedan en
+   flujo normal: cuatro libros también en móvil, sin atraparlos en un sticky. */
+.sitio .portada3d__acceso { position: absolute; z-index: 3; left: clamp(16px, 4vw, 64px); bottom: 3.5rem; display: grid; gap: 0.35rem; max-width: min(24rem, calc(100% - 32px)); }
+.sitio .portada3d__acceso-titulo { font-size: 1.125rem; line-height: 1.2; font-weight: 600; overflow-wrap: anywhere; }
+.sitio .portada3d__cargando {
+    position: absolute; inset: 0; z-index: 10;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem;
+    background: var(--p3-papel);
+}
+.sitio .portada3d--3d:not(.portada3d--lista) .portada3d__escenario > :not(.portada3d__cargando),
+.sitio .portada3d--3d:not(.portada3d--lista) .portada3d__escenario > :not(.portada3d__cargando) * { visibility: hidden !important; }
+.sitio .portada3d__spinner {
+    width: 46px; height: 46px; border-radius: 50%;
+    border: 3px solid #e9dfce;
+    border-top-color: #916f35;
+    animation: portada3d-girar 0.9s linear infinite;
+}
+.sitio .portada3d__cargando-texto { font-family: var(--f-texto, 'Work Sans', sans-serif); font-size: 0.9375rem; letter-spacing: 0.02em; color: var(--p3-nota-papel); }
+@keyframes portada3d-girar { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sitio .portada3d__spinner { animation: none; } }
+.sitio .portada3d__titulo, .sitio .portada3d__lema--flotante, .sitio .portada3d__ficha--flotante, .sitio .portada3d__final, .sitio .portada3d__acceso { transform: translate3d(0, var(--desplazamiento, 0px), 0); }
+.sitio .portada3d__pista { transform: translate(-50%, var(--desplazamiento, 0px)); white-space: nowrap; }
+.sitio .portada3d__descubrimientos { padding: clamp(40px, 6vw, 88px) var(--gutter, 16px); }
+.sitio .portada3d__reintentar { color: #ddd3ff; text-decoration: underline; text-underline-offset: 0.2em; min-height: 44px; cursor: pointer; }
+.sitio .portada3d__sin-imagen { min-width: 120px; color: #d8cfff; }
+.sitio .portada3d ::selection { background: #ab92ff; color: #101020; }
+@media (max-width: 900px) {
+    .sitio .portada3d__acceso { bottom: 3.5rem; right: 88px; max-width: 24rem; }
+    .sitio .portada3d__acceso .portada3d__autor { display: none; }
+    .sitio .portada3d__acceso-titulo { max-width: 24ch; font-size: 1rem; }
+    .sitio .portada3d__acceso .portada3d__precio { font-size: 1rem; }
+    .sitio .portada3d__acceso .portada3d__boton { position: static; max-width: 100%; }
+    .sitio .portada3d__acceso-titulo, .sitio .portada3d__acceso .portada3d__precio { max-width: 100%; }
+}
+
+/* ============================================================
+   PORTAL EDITORIAL — dirección elegida tras revisar el video real.
+   La luz y el material viven en WebGL; la interfaz permanece sobria.
+   ============================================================ */
+.sitio .portada3d { --p3-negro:#060609; --p3-noche:#0c0c11; --p3-blanco:#f1eee8; --p3-violeta:#a48bcb; }
+.sitio .portada3d--3d { height: 250svh; }
+.sitio .portada3d__titulo {
+    font-family:'Serif Editorial',Georgia,serif; font-weight:400;
+    font-size:clamp(3.25rem,7vw,6rem); letter-spacing:-.035em; line-height:.95;
+    padding:0 clamp(24px,5.5vw,88px); text-shadow:none; color:var(--p3-tinta-papel);
+}
+.sitio .portada3d__titulo span:first-child { align-self:center; margin-top:-1.7rem; }
+.sitio .portada3d__titulo span:last-child { align-self:center; margin-top:5.5rem; }
+.sitio .portada3d__lema { color:var(--p3-nota-papel); font-size:1rem; font-weight:400; line-height:1.6; letter-spacing:0; }
+.sitio .portada3d__lema--flotante { bottom:12%; max-width:26ch; text-wrap:balance; }
+.sitio .portada3d__boton {
+    min-height:48px; padding:0 1.2rem; gap:1.5rem; border:1px solid #e4dfd7;
+    border-radius:3px; background:#eeeae3; color:#141319;
+    font-size:.875rem; font-weight:500; box-shadow:none;
+    transition:background .25s ease,color .25s ease,border-color .25s ease;
+}
+.sitio .portada3d__boton svg { width:13px; height:13px; transition:transform .25s ease; }
+.sitio .portada3d__boton:hover { transform:none; background:#fff; color:#111015; border-color:#fff; box-shadow:none; }
+.sitio .portada3d__boton:hover svg { transform:translateX(3px); }
+.sitio .portada3d__boton:focus-visible { outline:2px solid var(--p3-nota-papel); outline-offset:5px; }
+.sitio .portada3d__sonido {
+    border-radius:2px; border-color:#bba58c; background:rgba(255,250,242,.94);
+    color:var(--p3-tinta-papel); backdrop-filter:none; -webkit-backdrop-filter:none;
+    font-weight:400; font-size:.75rem; letter-spacing:.015em;
+}
+.sitio .portada3d__sonido:hover { background:#fffaf2; border-color:var(--p3-nota-papel); }
+.sitio .portada3d__sonido[aria-pressed=true] { border-color:var(--p3-nota-papel); }
+.sitio .portada3d__sonido:focus-visible { outline-color:var(--p3-nota-papel); }
+.sitio .portada3d__ficha {
+    border:0; border-top:1px solid #bba58c; border-radius:0;
+    padding:1.25rem 0 0; background:transparent; box-shadow:none;
+    max-width:21rem; gap:.65rem;
+}
+.sitio .portada3d__ficha--flotante { right:clamp(32px,6vw,96px); top:45%; margin-top:0; }
+.sitio .portada3d .portada3d__libro-titulo {
+    font-family:'Serif Editorial',Georgia,serif; font-size:clamp(1.75rem,2.3vw,2.5rem); font-weight:400; letter-spacing:-.02em; line-height:1.08;
+}
+.sitio .portada3d__autor { color:var(--p3-nota-papel); font-weight:400; }
+.sitio .portada3d__stock { color:#416047; font-weight:400; }
+.sitio .portada3d__stock--agotado { color:#a04431; }
+.sitio .portada3d__sinopsis { color:var(--p3-nota-papel); max-width:38ch; font-size:.875rem; }
+.sitio .portada3d__acceso { bottom:4rem; left:clamp(24px,5.5vw,88px); gap:.45rem; }
+.sitio .portada3d__acceso-titulo { font-size:1.1rem; font-weight:500; }
+.sitio .portada3d__acceso .portada3d__boton { margin-top:.65rem; }
+.sitio .portada3d .precio.oferta .oferta__final { color:var(--p3-tinta-papel); font-weight:500; }
+.sitio .portada3d .precio.oferta .oferta__anterior { color:var(--p3-nota-papel); font-weight:400; }
+.sitio .portada3d .precio.oferta .oferta__pastilla { background:transparent; color:var(--p3-nota-papel); border:1px solid #bba58c; border-radius:2px; font-weight:400; }
+.sitio .portada3d .precio { font-variant-numeric:tabular-nums; font-weight:500; }
+.sitio .portada3d__final { gap:1rem; }
+.sitio .portada3d__final .portada3d__final-titulo {
+    font-family:'Serif Editorial',Georgia,serif; font-size:clamp(2.6rem,5vw,5rem); font-weight:400; line-height:1.03;
+    letter-spacing:-.035em; max-width:12ch; text-wrap:balance; text-shadow:none; color:var(--p3-tinta-papel);
+}
+.sitio .portada3d__final-texto { color:var(--p3-nota-papel); max-width:30ch; }
+.sitio .portada3d__pista { bottom:1.5rem; color:var(--p3-nota-papel); font-size:.6875rem; letter-spacing:.12em; gap:.7rem; }
+.sitio .portada3d__pista svg { animation:none; width:10px; }
+.sitio .portada3d__descubrimientos { padding-block:clamp(12px,2vw,24px); background:var(--p3-papel); color:var(--p3-tinta-papel); }
+.sitio .portada3d__ultimos--apilado .precio.oferta .oferta__final { color:var(--p3-tinta-papel); font-weight:600; }
+.sitio .portada3d__ultimos--apilado .precio.oferta .oferta__anterior { color:var(--p3-nota-papel); }
+.sitio .portada3d__ultimos--apilado .precio.oferta .oferta__pastilla { color:var(--p3-nota-papel); border-color:#bba58c; background:transparent; }
+.sitio .portada3d__ultimos h2 { font-family:'Serif Editorial',Georgia,serif; font-weight:400; font-size:clamp(1.8rem,3vw,2.8rem); letter-spacing:-.02em; }
+.sitio .portada3d__ultimo { border-radius:0; padding-block:1.25rem; gap:.65rem; }
+.sitio .portada3d__ultimo:hover { background:transparent; border-color:transparent; transform:none; }
+.sitio .portada3d__ultimo:hover img { transform:translateY(-5px); }
+.sitio .portada3d__ultimo img { transition:transform .35s ease; max-width:140px; }
+.sitio .portada3d__ultimo-titulo { font-weight:400; font-size:.875rem; }
+.sitio .portada3d--estatica { background:radial-gradient(ellipse at center,#fffaf2 0,transparent 70%),var(--p3-papel); }
+.sitio .portada3d__marca { font-family:'Serif Editorial',Georgia,serif; font-weight:400; letter-spacing:-.035em; }
+.sitio .portada3d__estatica-libro .portada3d__ficha { max-width:none; }
+.sitio .portada3d ::selection { color:var(--p3-tinta-papel); background:#ead6b3; }
+
+/* Primero el libro. Después la cabecera se despliega por capas: línea,
+   superficie y controles. Los contenedores comparten el mismo margen. */
+.sitio:has(.portada3d--3d) .navegacion-publica {
+    display:block; position:fixed; z-index:50;
+    top:0; left:0; right:0; width:100%;
+    background:transparent; border:0; border-radius:0;
+    opacity:clamp(0,calc(var(--revelar-nav,0) * 8),1); pointer-events:none;
+    transform:none; clip-path:none;
+    box-shadow:0 12px 32px -16px rgb(0 0 0 / .45);
+    will-change:opacity;
+}
+.sitio:has(.portada3d--3d) .navegacion-publica::before { content:''; position:absolute; left:0; right:0; top:0; height:2px; z-index:2; background:var(--nav-acento); transform:scaleX(var(--nav-linea,0)); transform-origin:center; }
+.sitio:has(.portada3d--3d) .navegacion-publica .cabecera {
+    position:relative; top:auto; box-shadow:none; transform-origin:top center;
+    transform:perspective(1200px) rotateX(calc((1 - var(--nav-cuerpo,0)) * -7deg)) translateY(calc((1 - var(--nav-cuerpo,0)) * -14px));
+    clip-path:inset(0 0 calc((1 - var(--nav-cuerpo,0)) * 100%) 0);
+}
+.sitio:has(.portada3d--3d) .navegacion-publica :is(.marca,.cabecera__principal > .buscador,.cabecera__acciones,.cabecera__movil) { opacity:var(--nav-enlaces,0); transform:translateY(calc((1 - var(--nav-enlaces,0)) * 8px)); }
+.sitio:has(.portada3d--3d) .navegacion-publica .menu { opacity:var(--nav-enlaces,0); transform:translateY(calc((1 - var(--nav-enlaces,0)) * -8px)); }
+.sitio:has(.portada3d--3d) .portada3d__escenario { top:0; height:100svh; min-height:0; }
+.sitio:has(.portada3d--3d) .portada3d__acceso { bottom:calc(var(--barra,0px) + 24px); }
+.sitio:has(.portada3d--3d) .portada3d__sonido { top:calc(20px + var(--revelar-nav,0) * var(--altura-nav,160px)); right:max(var(--gutter,16px),calc((100% - var(--ancho,1280px)) / 2)); }
+.sitio .portada3d__titulo { padding-inline:max(var(--gutter,16px),calc((100% - var(--ancho,1280px)) / 2)); }
+.sitio .portada3d__acceso { left:max(var(--gutter,16px),calc((100% - var(--ancho,1280px)) / 2)); }
+.sitio .portada3d__boton { background:var(--nav-marfil); color:var(--nav-tinta); border-color:var(--nav-marfil); border-radius:6px; }
+.sitio .portada3d__boton:hover { background:#fff; color:var(--nav-tinta); }
+.sitio:has(.portada3d--3d) .barra-movil {
+    opacity:var(--nav-enlaces,0); pointer-events:none;
+    transform:translateY(calc((1 - var(--nav-enlaces,0)) * 100%));
+}
+.sitio[data-nav-visible=true] .navegacion-publica,
+.sitio[data-nav-visible=true] .barra-movil { pointer-events:auto; }
+/* El teclado puede entrar directamente al menú, sin exigir gesto de scroll. */
+.sitio:has(.portada3d--3d) .navegacion-publica:focus-within,
+.sitio:has(.portada3d--3d) .barra-movil:focus-within,
+.sitio:has(.portada3d--3d)[data-nav-posterior=true] .navegacion-publica,
+.sitio:has(.portada3d--3d)[data-nav-posterior=true] .barra-movil,
+.sitio:has(.portada3d--3d):has(.barra-movil:focus-within) .navegacion-publica {
+    --revelar-nav:1; --nav-linea:1; --nav-cuerpo:1; --nav-enlaces:1; pointer-events:auto; clip-path:none;
+}
+@media (max-width:900px) {
+    .sitio .portada3d--3d { height:225svh; }
+    .sitio .portada3d__titulo { inset:56px 20px auto; padding:0; font-size:clamp(2rem,7vw,3.6rem); line-height:1.02; }
+    .sitio .portada3d__titulo span:first-child, .sitio .portada3d__titulo span:last-child { margin:0; }
+    .sitio .portada3d__acceso { left:var(--gutter,16px); bottom:3.8rem; right:88px; }
+    .sitio .portada3d__ficha--flotante { left:24px; right:88px; top:auto; bottom:3.8rem; margin:0; max-width:none; padding:1rem; background:rgba(247,241,232,.97); }
+    .sitio .portada3d .portada3d__ficha--flotante .portada3d__libro-titulo { font-size:1.7rem; }
+    .sitio .portada3d__ficha--flotante .portada3d__stock { display:none; }
+    .sitio .portada3d__sonido span { display:none; }
+    .sitio .portada3d__ultimo img { max-width:92px; }
+}
+@media (prefers-reduced-motion:reduce) {
+    .sitio:has(.portada3d--3d) .navegacion-publica,
+    .sitio:has(.portada3d--3d) .barra-movil { --revelar-nav:1; --nav-linea:1; --nav-cuerpo:1; --nav-enlaces:1; opacity:1; pointer-events:auto; clip-path:none; }
+    .sitio .portada3d__boton svg,.sitio .portada3d__ultimo img { transition:none; }
+    .sitio .portada3d__ultimo:hover img { transform:none; }
+}
+
+/* Arranque según la referencia local: cabecera visible, identidad y ficha
+   a la izquierda; libro en un estudio cálido sobre pedestal a la derecha.
+   Solo escritorio; el móvil conserva su coreografía base. */
+@media (min-width: 901px) {
+.sitio:has(.portada3d--3d) .portada3d__escenario {
+    top: var(--cabecera);
+    height: calc(100svh - var(--cabecera) - var(--barra));
+}
+.sitio:has(.portada3d--3d) .portada3d__sonido { top: 20px; }
+.sitio:has(.portada3d--3d) .portada3d__presentacion {
+    position: absolute;
+    z-index: 3;
+    left: max(var(--gutter, 16px), calc((100% - var(--ancho, 1280px)) / 2));
+    top: 45%;
+    transform: translateY(-50%);
+    width: min(46%, 40rem);
+    display: grid;
+    gap: clamp(18px, 2.4vw, 32px);
+}
+.sitio .portada3d--3d .portada3d__presentacion .portada3d__titulo {
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0;
+    font-size: clamp(3.5rem, 7.2vw, 8.25rem);
+    line-height: .94;
+    letter-spacing: -.035em;
+    font-weight: 400;
+    color: #10243d;
+    text-shadow: 0 1px 0 rgba(255, 252, 246, .55);
+}
+.sitio .portada3d__presentacion .portada3d__titulo span {
+    align-self: auto;
+    margin: 0;
+    white-space: nowrap;
+    text-align: left;
+}
+.sitio .portada3d__presentacion .portada3d__titulo span:last-child { color: #00616d; }
+.sitio .portada3d--3d .portada3d__presentacion .portada3d__acceso {
+    position: relative;
+    inset: auto;
+    max-width: none;
+    gap: 6px;
+}
+.sitio .portada3d__presentacion .portada3d__acceso-titulo {
+    font-family: 'Serif Editorial', Georgia, serif;
+    font-size: clamp(1.75rem, 2.6vw, 2.75rem);
+    font-weight: 400;
+    line-height: 1.1;
+    color: #10243d;
+}
+.sitio .portada3d__presentacion .portada3d__autor { font-size: clamp(.9375rem, 1.3vw, 1.25rem); }
+.sitio .portada3d__presentacion .portada3d__precio { font-size: clamp(1.125rem, 1.8vw, 1.75rem); }
+.sitio .portada3d__presentacion .precio.oferta .oferta__final { color: #b12704; font-weight: 700; }
+.sitio .portada3d__presentacion .precio.oferta .oferta__pastilla {
+    background: #b12704;
+    border-color: #b12704;
+    color: #fff;
+    border-radius: 4px;
+    padding: 3px 7px;
+    font-weight: 600;
+}
+.sitio .portada3d__presentacion .portada3d__boton {
+    margin-top: 12px;
+    min-width: 190px;
+    min-height: 48px;
+    justify-content: space-between;
+    background: #00616d;
+    border-color: #00616d;
+    color: #fff;
+}
+.sitio .portada3d__presentacion .portada3d__boton:hover { background: #004e58; border-color: #004e58; color: #fff; }
+.sitio:has(.portada3d--3d) .portada3d__lema--flotante { display: none; }
+}
+
+/* ============================================================
+   UNIFICACIÓN Y ENTRADA DE IMPACTO (21/10/2026)
+   - Mismo color de letra que el resto del sitio: tinta cálida,
+     botón negro como la cabecera.
+   - Entrada: destello de luz, titular que sube línea a línea desde
+     una máscara y ficha del libro escalonada. El libro 3D llega
+     girando desde el fondo (escenaLibro.js).
+   - «Últimos libros agregados» con la cabecera de las demás secciones.
+   ============================================================ */
+.sitio .portada3d--3d .portada3d__presentacion .portada3d__titulo,
+.sitio .portada3d__presentacion .portada3d__titulo span:last-child,
+.sitio .portada3d__presentacion .portada3d__acceso-titulo,
+.sitio .portada3d__final .portada3d__final-titulo,
+.sitio .portada3d .portada3d__libro-titulo,
+.sitio .portada3d__marca { color: var(--ed-tinta, #231c16); }
+.sitio .portada3d__presentacion .portada3d__titulo span:last-child { font-style: italic; }
+.sitio .portada3d :is(.portada3d__autor, .portada3d__lema, .portada3d__sinopsis, .portada3d__final-texto, .portada3d__pista) { color: #5c5047; }
+.sitio .portada3d .portada3d__boton,
+.sitio .portada3d__presentacion .portada3d__boton {
+    background: #0b0b0d; border-color: #0b0b0d; color: #ffffff;
+    border-radius: 999px; padding: 0 1.4rem; gap: 1rem;
+    box-shadow: 0 14px 30px -16px rgb(0 0 0 / .6);
+    transition: background .25s ease, transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease;
+}
+.sitio .portada3d .portada3d__boton:hover,
+.sitio .portada3d__presentacion .portada3d__boton:hover {
+    background: #26262b; border-color: #26262b; color: #ffffff;
+    transform: translateY(-2px); box-shadow: 0 20px 36px -16px rgb(0 0 0 / .7);
+}
+
+/* Destello de entrada. */
+.sitio .portada3d__destello {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0;
+    background:
+        radial-gradient(circle at 68% 48%, rgb(255 255 255 / .95) 0, rgb(255 244 222 / .6) 14%, transparent 42%),
+        radial-gradient(circle at 68% 48%, rgb(255 236 200 / .35) 0, transparent 70%);
+    mix-blend-mode: screen;
+}
+@keyframes p3-destello { 0% { opacity: 0; transform: scale(.6); } 18% { opacity: 1; } 100% { opacity: 0; transform: scale(1.6); } }
+@keyframes p3-sube { from { transform: translateY(105%) rotate(2deg); } to { transform: none; } }
+@keyframes p3-aparece { from { opacity: 0; transform: translateY(18px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes p3-barrido { from { transform: translateX(-120%) skewX(-18deg); } to { transform: translateX(260%) skewX(-18deg); } }
+
+@media (prefers-reduced-motion: no-preference) {
+    .sitio .portada3d--lista .portada3d__destello { animation: p3-destello 1.6s cubic-bezier(.16,1,.3,1) .15s both; }
+    /* Cada línea del titular sube desde su propia máscara. */
+    .sitio .portada3d--3d .portada3d__presentacion .portada3d__titulo span { display: block; overflow: hidden; padding-bottom: .08em; margin-bottom: -.08em; }
+    .sitio .portada3d--3d .portada3d__presentacion .portada3d__titulo span::after { content: none; }
+    .sitio .portada3d--lista .portada3d__presentacion .portada3d__titulo span {
+        animation: p3-aparece 1.2s cubic-bezier(.16,1,.3,1) both;
+    }
+    .sitio .portada3d--lista .portada3d__presentacion .portada3d__titulo span:first-child { animation-delay: .45s; }
+    .sitio .portada3d--lista .portada3d__presentacion .portada3d__titulo span:last-child { animation-delay: .65s; }
+    .sitio .portada3d--lista .portada3d__acceso > * { animation: p3-aparece .9s cubic-bezier(.16,1,.3,1) both; }
+    .sitio .portada3d--lista .portada3d__acceso > :nth-child(1) { animation-delay: 1.05s; }
+    .sitio .portada3d--lista .portada3d__acceso > :nth-child(2) { animation-delay: 1.15s; }
+    .sitio .portada3d--lista .portada3d__acceso > :nth-child(3) { animation-delay: 1.25s; }
+    .sitio .portada3d--lista .portada3d__acceso > :nth-child(4) { animation-delay: 1.4s; }
+    /* Brillo que recorre el botón una vez al llegar. */
+    .sitio .portada3d__boton { position: relative; overflow: hidden; isolation: isolate; }
+    .sitio .portada3d__boton::before {
+        content: ''; position: absolute; inset: 0 auto 0 0; width: 40%; z-index: -1;
+        background: linear-gradient(90deg, transparent, rgb(255 255 255 / .35), transparent);
+        transform: translateX(-120%) skewX(-18deg);
+    }
+    .sitio .portada3d--lista .portada3d__acceso .portada3d__boton::before { animation: p3-barrido 1.1s ease-in-out 2.1s both; }
+    .sitio .portada3d .portada3d__boton:hover::before { animation: p3-barrido .8s ease-in-out both; }
+}
+
+/* Últimos libros agregados: misma cabecera y ancho que las demás secciones. */
+.sitio .portada3d__ultimos--apilado { padding-block: clamp(2.5rem, 2rem + 3vw, 4.5rem); background: var(--ed-papel-claro, #fffaf2); }
+.sitio .portada3d__ultimos-fondo--hueso { background: var(--ed-papel-claro, #fffaf2); }
+.sitio .portada3d__ultimos-contenido {
+    width: min(var(--ancho, 1280px), calc(100% - 2 * var(--gutter, 16px)));
+    justify-items: stretch; gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+.sitio .portada3d__ultimos--apilado .portada3d__ultimos-cabeza { display: flex; align-items: end; justify-content: space-between; margin: 0; }
+.sitio .portada3d__ultimos--apilado .portada3d__ultimos-cabeza h2 {
+    font-family: var(--ed-serif, 'Serif Editorial', Georgia, serif); font-weight: 400;
+    font-size: clamp(2.1rem, 1.3rem + 2.8vw, 3.75rem); letter-spacing: -.02em; line-height: 1.05;
+    text-align: left; color: var(--ed-tinta, #231c16);
+}
+.sitio .portada3d__apilar { width: 100%; gap: clamp(16px, 2.4vw, 36px); justify-self: center; }
+.sitio .portada3d__apilar-tapa { width: min(100%, 210px); }
+.sitio .portada3d__apilar-link { gap: 18px; }
+.sitio .portada3d__apilar-titulo { font-size: .9375rem; color: var(--ed-tinta, #231c16); }
+.sitio .portada3d__apilar-autor { color: #5c5047; }
+.sitio .portada3d__apilar-link:hover .portada3d__apilar-tapa { box-shadow: 0 28px 40px -18px rgb(69 49 26 / .45); }
+.sitio .portada3d__apilar-descuento { background: #b12704; color: #ffffff; font-weight: 600; border-radius: 4px; }
+@media (max-width: 900px) {
+    .sitio .portada3d__ultimos-contenido { width: 100%; }
+    .sitio .portada3d__ultimos--apilado .portada3d__ultimos-cabeza { padding-inline: var(--gutter, 16px); }
+}
+.sitio .portada3d--3d .portada3d__presentacion .portada3d__titulo span { padding-right: .12em; }
+.sitio .portada3d__ultimos.portada3d__ultimos--apilado { width: 100%; max-width: none; margin: 0; justify-items: stretch; }
+.sitio .portada3d__descubrimientos { padding-block: 0; background: var(--ed-papel-claro, #fffaf2); }
+
+/* Frase que se arma con los pedazos del libro (ver FraseEnPiezas). */
+.sitio .frase-piezas__palabra { display: inline-block; white-space: nowrap; }
+.sitio .frase-piezas__letra {
+    --f: clamp(0, calc((var(--formar, 1) - var(--d)) / (1 - var(--d))), 1);
+    display: inline-block;
+    transform: translate(calc(var(--dx) * (1 - var(--f))), calc(var(--dy) * (1 - var(--f)))) rotate(calc(var(--giro) * (1 - var(--f)))) scale(calc(.4 + .6 * var(--f)));
+    opacity: calc(var(--f) * 1.4);
+    filter: blur(calc((1 - var(--f)) * 6px));
+    will-change: transform;
+}
+.sitio .portada3d__final .portada3d__boton {
+    opacity: clamp(0, calc((var(--formar, 1) - .6) * 2.5), 1);
+    transform: scale(calc(.85 + .15 * clamp(0, calc((var(--formar, 1) - .6) * 2.5), 1)));
+}
+
+/* ============================================================
+   ÚLTIMOS LIBROS EN EL MISMO ESCENARIO (21/10/2026)
+   Tras la frase armada con los pedazos, los cinco libros llegan
+   uno a uno desde el centro (--libros: 0→1 con el scroll). El
+   recorrido se alarga para darles su propio tramo.
+   ============================================================ */
+.sitio .portada3d--3d { height: 300svh; }
+.sitio .portada3d__final { gap: clamp(.5rem, 1.4vh, 1rem); }
+.sitio .portada3d__final .portada3d__final-titulo { font-size: clamp(2.2rem, 1.2rem + 3vw, 4.25rem); }
+.sitio .portada3d__escena-libros {
+    --f-grupo: clamp(0, calc(var(--libros, 0) * 3), 1);
+    display: grid; justify-items: center; gap: clamp(.75rem, 2vh, 1.25rem);
+    width: min(980px, 100%); margin-top: clamp(.75rem, 3vh, 2rem);
+}
+.sitio .portada3d__escena-libros-titulo {
+    margin: 0; font-size: .75rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #5c5047;
+    opacity: var(--f-grupo); transform: translateY(calc((1 - var(--f-grupo)) * 12px));
+}
+.sitio .portada3d__escena-libros .portada3d__apilar {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: clamp(12px, 2vw, 28px);
+    width: 100%; padding: 0; perspective: 1400px;
+}
+.sitio .portada3d__escena-libros .portada3d__apilar-item {
+    --f: clamp(0, calc((var(--libros, 0) - var(--orden) * .16) / .52), 1);
+    opacity: calc(var(--f) * 1.5);
+    transform: translateY(calc((1 - var(--f)) * 90px)) scale(calc(.6 + .4 * var(--f)));
+    filter: blur(calc((1 - var(--f)) * 8px));
+}
+.sitio .portada3d__escena-libros .portada3d__apilar-link { gap: 12px; }
+.sitio .portada3d__escena-libros .portada3d__apilar-tapa {
+    width: min(100%, clamp(96px, 17vh, 150px));
+    transform: perspective(1200px) rotateY(calc(var(--lado) * (6deg + (1 - var(--f)) * 50deg))) rotateZ(calc(var(--lado) * 2deg));
+    transition: transform .4s cubic-bezier(.16,1,.3,1), box-shadow .4s ease;
+}
+.sitio .portada3d__escena-libros .portada3d__apilar-link:hover .portada3d__apilar-tapa { transform: perspective(1200px) translateY(-6px); box-shadow: 0 26px 36px -18px rgb(69 49 26 / .5); }
+.sitio .portada3d__escena-libros .portada3d__apilar-info { grid-template-rows: auto auto; gap: .25rem; font-size: .8125rem; }
+.sitio .portada3d__escena-libros .portada3d__apilar-titulo { font-size: .8125rem; -webkit-line-clamp: 1; }
+.sitio .portada3d__escena-libros .portada3d__apilar-precio { font-size: .8125rem; }
+
+@media (max-width: 900px) {
+    .sitio .portada3d--3d { height: 280svh; }
+    .sitio .portada3d__escena-libros { width: 100vw; margin-inline: calc(50% - 50vw); }
+    .sitio .portada3d__escena-libros .portada3d__apilar {
+        display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory;
+        padding: 4px 20px 8px; scrollbar-width: none;
+    }
+    .sitio .portada3d__escena-libros .portada3d__apilar::-webkit-scrollbar { display: none; }
+    .sitio .portada3d__escena-libros .portada3d__apilar-item { flex: 0 0 104px; scroll-snap-align: center; }
+    .sitio .portada3d__escena-libros .portada3d__apilar-tapa { width: 104px; transform: none; }
+    .sitio .portada3d__final .portada3d__final-titulo { font-size: clamp(1.75rem, 7vw, 2.4rem); }
+}
+
+/* Escritorio: la frase a la izquierda y los últimos libros a la derecha,
+   en el lugar del libro principal (ahí se reúnen sus pedazos). */
+@media (min-width: 901px) {
+    .sitio .portada3d--3d .portada3d__final {
+        display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); grid-template-rows: auto auto auto;
+        align-content: center; justify-items: start; column-gap: clamp(24px, 4vw, 72px); row-gap: 1rem;
+        padding-inline: max(var(--gutter, 16px), calc((100% - var(--ancho, 1280px)) / 2));
+        text-align: left;
+    }
+    .sitio .portada3d--3d .portada3d__final > :not(.portada3d__escena-libros) { grid-column: 1; }
+    .sitio .portada3d--3d .portada3d__final .portada3d__final-titulo { max-width: 11ch; font-size: clamp(2.6rem, 1.4rem + 3.4vw, 5rem); }
+    .sitio .portada3d--3d .portada3d__final .portada3d__boton { justify-self: start; }
+    .sitio .portada3d--3d .portada3d__escena-libros { grid-column: 2; grid-row: 1 / span 3; align-self: center; margin: 0; width: 100%; }
+    .sitio .portada3d--3d .portada3d__escena-libros .portada3d__apilar-tapa { width: min(100%, clamp(96px, 20vh, 160px)); }
+}
+
+/* Un solo abanico: primero el libro central (formado por los pedazos),
+   luego salen desde detrás de él dos libros a cada lado. --libros 0→1:
+   0–.3 central; .3–1 laterales, primero los vecinos y luego los extremos. */
+.sitio .portada3d__escena-libros .portada3d__apilar {
+    display: flex !important; justify-content: center; align-items: flex-start; gap: 0;
+    overflow: visible; padding: 0;
+}
+.sitio .portada3d__escena-libros .portada3d__apilar-item {
+    --f: clamp(0, calc((var(--libros, 0) - .3 - (var(--orden) - 1) * .3) / .38), 1);
+    flex: 0 0 auto; width: clamp(104px, 20vh, 160px);
+    margin-inline: clamp(-34px, -2.4vw, -18px);
+    z-index: calc(10 - var(--orden));
+    opacity: 1; filter: none;
+    transform: translateX(calc(var(--lado) * -1 * (1 - var(--f)) * (100% - 2 * clamp(18px, 2.4vw, 34px)) / max(1, var(--orden))))
+               translateY(calc(var(--orden) * 14px * var(--f)))
+               rotate(calc(var(--lado) * 5deg * var(--f)));
+    transform-origin: 50% 120%;
+}
+.sitio .portada3d__escena-libros .portada3d__apilar-item:not([style*="--orden:0"]) { visibility: visible; }
+/* El central aparece cuando terminan de llegar los pedazos. */
+.sitio .portada3d__escena-libros .portada3d__apilar-item:nth-child(3) {
+    --f: 1;
+    opacity: clamp(0, calc(var(--libros, 0) / .3), 1);
+}
+.sitio .portada3d__escena-libros .portada3d__apilar-item:not(:nth-child(3)) { opacity: clamp(0, calc(var(--f) * 3), 1); }
+.sitio .portada3d__escena-libros .portada3d__apilar-tapa { width: 100% !important; transform: none !important; box-shadow: 0 18px 32px -14px rgb(40 28 14 / .45); }
+.sitio .portada3d__escena-libros .portada3d__apilar-info {
+    width: calc(100% - 2 * clamp(18px, 2.4vw, 34px)); margin-inline: auto;
+    opacity: clamp(0, calc((var(--libros, 0) - .85) / .15), 1);
+}
+.sitio .portada3d__escena-libros .portada3d__apilar-link:hover .portada3d__apilar-tapa { transform: translateY(-8px) !important; }
+@media (max-width: 900px) {
+    .sitio .portada3d__escena-libros .portada3d__apilar-item { width: 92px; margin-inline: -14px; }
+    .sitio .portada3d__escena-libros .portada3d__apilar-info { display: none; }
+}
+
+/* Ajuste: el libro central gira una vuelta y después salen los otros
+   cuatro hasta quedar los cinco en una fila, separados y rectos. */
+.sitio .portada3d__escena-libros { --hueco: clamp(14px, 1.8vw, 28px); }
+.sitio .portada3d__escena-libros .portada3d__apilar { gap: var(--hueco); }
+.sitio .portada3d__escena-libros .portada3d__apilar-item {
+    --f: clamp(0, calc((var(--libros, 0) - .42 - (var(--orden) - 1) * .2) / .34), 1);
+    margin-inline: 0;
+    transform: translateX(calc(var(--lado) * -1 * (1 - var(--f)) * (100% + var(--hueco)) / max(1, var(--orden)) * var(--orden)));
+}
+.sitio .portada3d__escena-libros .portada3d__apilar-item:nth-child(3) { transform: none; }
+.sitio .portada3d__escena-libros .portada3d__apilar-item:nth-child(3) .portada3d__apilar-tapa {
+    transform: perspective(1000px) rotateY(calc((1 - clamp(0, calc((var(--libros, 0) - .08) / .3), 1)) * 360deg)) !important;
+}
+.sitio .portada3d__escena-libros .portada3d__apilar-info { width: 100%; }
+@media (max-width: 900px) {
+    .sitio .portada3d__escena-libros { --hueco: 10px; }
+    .sitio .portada3d__escena-libros .portada3d__apilar-item { width: clamp(56px, 16vw, 92px); margin-inline: 0; }
+}
+/* Los cinco caben siempre en su columna: el ancho se reparte. */
+.sitio .portada3d__escena-libros .portada3d__apilar-item { flex: 1 1 0; width: auto; min-width: 0; max-width: 150px; }
+@media (max-width: 900px) {
+    .sitio .portada3d__escena-libros .portada3d__apilar { padding-inline: 16px !important; overflow: visible; }
+}
+/* Cierre un poco más arriba: el centro óptico queda sobre la mitad. */
+@media (min-width: 901px) {
+    .sitio .portada3d--3d .portada3d__final { padding-bottom: clamp(70px, 16vh, 180px); }
+}
+/* Ficha del libro durante el acercamiento: más arriba, a la altura del libro. */
+@media (min-width: 901px) {
+    .sitio .portada3d__ficha--flotante { top: 24%; }
+}
+/* Últimos libros más grandes: la fila toma más ancho y la frase menos. */
+@media (min-width: 901px) {
+    .sitio .portada3d--3d .portada3d__final { grid-template-columns: minmax(0, .62fr) minmax(0, 1.38fr); column-gap: clamp(20px, 3vw, 56px); }
+    .sitio .portada3d--3d .portada3d__final .portada3d__final-titulo { font-size: clamp(2.4rem, 1.2rem + 3vw, 4.4rem); }
+    .sitio .portada3d__escena-libros .portada3d__apilar-item { max-width: min(210px, 30vh); }
+    .sitio .portada3d__escena-libros .portada3d__apilar-titulo { font-size: .9375rem; }
+    .sitio .portada3d__escena-libros-titulo { font-size: .8125rem; }
+}
+
+/* Cierre sin frase: los últimos libros al centro, a todo el ancho, y
+   «Ver catálogo» debajo. */
+.sitio .portada3d--3d .portada3d__final {
+    display: flex !important; flex-direction: column; align-items: center; justify-content: center;
+    gap: clamp(1rem, 3vh, 2rem); text-align: center;
+}
+.sitio .portada3d--3d .portada3d__final .portada3d__boton { justify-self: auto; align-self: center; }
+.sitio .portada3d--3d .portada3d__escena-libros { width: min(1100px, 100%); margin: 0; }
+@media (min-width: 901px) {
+    .sitio .portada3d__escena-libros .portada3d__apilar-item { max-width: min(200px, 30vh); }
+    .sitio .portada3d__escena-libros { --hueco: clamp(20px, 2.6vw, 40px); }
+    .sitio .portada3d__escena-libros-titulo { font-size: .875rem; }
+}
+@media (max-width: 900px) {
+    .sitio .portada3d__escena-libros .portada3d__apilar { flex-wrap: wrap; row-gap: 16px; }
+    .sitio .portada3d__escena-libros .portada3d__apilar-item { flex: 0 0 calc((100% - 2 * var(--hueco)) / 3); max-width: 120px; width: auto; }
+    .sitio .portada3d__escena-libros .portada3d__apilar-descuento { top: 6px; right: 6px; font-size: .6875rem; padding: .15rem .35rem; }
+    .sitio .portada3d__escena-libros .portada3d__apilar-info { display: grid; }
+    .sitio .portada3d__escena-libros .portada3d__apilar-precio .oferta__anterior,
+    .sitio .portada3d__escena-libros .portada3d__apilar-precio .oferta__pastilla { display: none; }
+}
+/* «Ver catálogo» llega al final, cuando ya están los cinco libros. */
+.sitio .portada3d__final .portada3d__boton {
+    opacity: clamp(0, calc((var(--libros, 0) - .8) * 5), 1) !important;
+    transform: translateY(calc((1 - clamp(0, calc((var(--libros, 0) - .8) * 5), 1)) * 14px)) !important;
+}
+
+/* Descuentos con color en toda la portada: etiqueta roja y precio final
+   en rojo; el precio anterior queda tachado en gris. */
+.sitio .portada3d .precio.oferta .oferta__pastilla {
+    background: linear-gradient(135deg, #d0300f, #b12704) !important; color: #ffffff !important;
+    border: 0 !important; border-radius: 6px !important; padding: 3px 8px !important; font-weight: 700 !important;
+    box-shadow: 0 6px 14px -6px rgb(177 39 4 / .6);
+}
+.sitio .portada3d .precio.oferta .oferta__final { color: #b12704 !important; font-weight: 700 !important; }
+.sitio .portada3d .precio.oferta .oferta__anterior { color: #8a7f74 !important; }
+
+/* Ficha del libro durante el acercamiento: letra más grande. */
+@media (min-width: 901px) {
+    .sitio .portada3d__ficha--flotante { max-width: 27rem !important; gap: .8rem; }
+    .sitio .portada3d .portada3d__ficha--flotante .portada3d__libro-titulo { font-size: clamp(2.4rem, 1.6rem + 1.8vw, 3.4rem); }
+    .sitio .portada3d__ficha--flotante .portada3d__autor { font-size: 1.25rem; }
+    .sitio .portada3d__ficha--flotante .portada3d__precio { font-size: 1.6rem !important; }
+    .sitio .portada3d__ficha--flotante .precio.oferta .oferta__anterior { font-size: 1.05rem; }
+    .sitio .portada3d__ficha--flotante .precio.oferta .oferta__pastilla { font-size: .95rem; padding: 4px 10px !important; }
+    .sitio .portada3d__ficha--flotante .portada3d__stock { font-size: 1rem; }
+    .sitio .portada3d__ficha--flotante .portada3d__sinopsis { font-size: 1.0625rem; line-height: 1.6; max-width: 40ch; }
+    .sitio .portada3d__ficha--flotante .portada3d__boton { min-height: 52px; font-size: 1rem; }
+}
+@media (min-width: 901px) {
+    .sitio .portada3d__ficha--flotante .precio.oferta .oferta__final,
+    .sitio .portada3d__ficha--flotante .precio > :only-child { font-size: 1.6rem !important; }
+}
+
+/* Últimos libros: un poco más abajo y subtítulo del tamaño de los demás. */
+.sitio .portada3d--3d .portada3d__final { padding-bottom: 0 !important; padding-top: clamp(40px, 8vh, 96px); }
+.sitio .portada3d__escena-libros-titulo {
+    font-family: var(--ed-serif, 'Serif Editorial', Georgia, serif) !important;
+    font-size: clamp(2.1rem, 1.3rem + 2.8vw, 3.75rem) !important; font-weight: 400 !important;
+    letter-spacing: -.02em !important; text-transform: none !important; line-height: 1.05;
+    color: var(--ed-tinta, #231c16) !important; margin-bottom: .25em !important;
+}
+@media (max-width: 900px) {
+    .sitio .portada3d__escena-libros-titulo { font-size: clamp(1.75rem, 7vw, 2.4rem) !important; }
+}

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { cuerposMetodosDart, dependenciasPubspec, endpointsPeticionCliente, metodosUsadosDart, miembrosObjeto, propagarEndpoints, resolverMiddlewares, tablasDeclaradas } from './extraer-relaciones.mjs';
+import { cuerposMetodosDart, dependenciasPubspec, endpointsFetchApi, endpointsPeticionCliente, metodosUsadosDart, miembrosObjeto, propagarEndpoints, resolverMiddlewares, tablasDeclaradas } from './extraer-relaciones.mjs';
 
 test('expande middleware compartido y reconoce el rol cliente sin declararlo público', () => {
     const resolver = resolverMiddlewares("const autenticada=[verificarToken]; const soloCliente=[limite,...autenticada,verificarRol(ROLES.CLIENTE)];");
@@ -44,6 +44,11 @@ test('obtiene dependencias declaradas de pubspec, sin clasificar crypto como tra
     assert.deepEqual(dependenciasPubspec(pub, 'dev_dependencies'), ['flutter_test']);
 });
 
+test('fetch de la portada se reconoce sin confundir imágenes o métodos dinámicos', () => {
+    const texto = 'fetch(`${env.apiUrl}/anuncios/protagonista`, {signal, headers:{Accept:"application/json"}}); fetch(`${env.apiUrl}/ejemplo`, {method:"PUT"}); fetch(`${env.apiUrl}/otra`, {method}); fetch("https://images.test/libro.jpg");';
+    assert.deepEqual(endpointsFetchApi(texto, s => s), [{ method: 'GET', path: '/api/anuncios/protagonista' }, { method: 'PUT', path: '/api/ejemplo' }]);
+});
+
 test('una declaración SQL multilínea no crea una tabla fantasma llamada IF', () => {
     const sql = 'CREATE TABLE IF NOT EXISTS\n favoritos (id INT);\ncreate table\n migraciones_datos (nombre TEXT);\n-- CREATE TABLE tabla_de_ejemplo\n';
     assert.deepEqual(tablasDeclaradas(sql), ['favoritos', 'migraciones_datos']);
@@ -61,11 +66,13 @@ test('el analizador refleja permisos, conexiones y tablas del código real', () 
         for (const e of memoria) { assert.ok(e.middleware.includes('JWT')); assert.ok(e.middleware.includes('rol:cliente')); }
         assert.ok(h.flutter.usoApi['flutter_app/lib/screens/verificacion_email_screen.dart'].includes('verificarEmail'));
         assert.ok(h.flutter.metodosApi.crearOrdenPago.some(e => e.method === 'POST' && e.path === '/api/pagos/crear-orden'));
-        assert.ok(h.frontend.servicios['frontend/src/features/reclamaciones/reclamacionesService.js'].registrarReclamacion.endpoints.some(e => e.method === 'POST' && e.path === '/api/reclamaciones'));
-        assert.ok(h.frontend.servicios['frontend/src/public-site/tienda/clienteApi.js'].relacionados.endpoints.some(e => e.path === '/api/libros/:param/relacionados'));
-        assert.equal(h.backend.tablasEsquema.length, 21);
+        assert.ok(h.frontend.servicios['frontend/src/panel/reclamaciones/reclamacionesService.js'].registrarReclamacion.endpoints.some(e => e.method === 'POST' && e.path === '/api/reclamaciones'));
+        assert.ok(h.frontend.servicios['frontend/src/web/tienda/clienteApi.js'].relacionados.endpoints.some(e => e.path === '/api/libros/:param/relacionados'));
+        assert.equal(h.backend.tablasEsquema.length, 22);
+        assert.ok(h.backend.tablasEsquema.includes('portada_config'));
+        assert.ok(h.frontend.endpointsPorArchivo['frontend/src/web/secciones/portada3d/PortadaEspacial.jsx'].includes('GET /api/anuncios/protagonista'));
         assert.ok(h.backend.tablasDeclaradas.includes('migraciones_datos'));
-        assert.equal(h.backend.tablasDeclaradas.length, 22);
+        assert.equal(h.backend.tablasDeclaradas.length, 23);
         assert.ok(!h.backend.tablasDeclaradas.includes('if'));
         assert.ok(h.flutter.dependencias.includes('webview_flutter'));
     } finally { if (fs.existsSync(salida)) fs.unlinkSync(salida); }

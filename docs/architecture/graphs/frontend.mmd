@@ -1,4 +1,4 @@
-%% Generado 2026-10-14 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-22 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     paginas["/<br/>paginas"]
     CatalogoPage["/catalogo<br/>CatalogoPage"]
@@ -33,22 +33,16 @@ flowchart LR
     PedidosPage --> pedidosService(["pedidosService"])
     VentasPage["/ventas<br/>VentasPage"]
     VentasPage --> ventasService(["ventasService"])
-    VentasPage --> comprobantesService(["comprobantesService"])
-    VentasPage --> empresaService(["empresaService"])
     ComprobantesPage["/comprobantes<br/>ComprobantesPage"]
     ComprobantesPage --> comprobantesService(["comprobantesService"])
-    ComprobantesPage --> empresaService(["empresaService"])
     PagosPage["/pagos<br/>PagosPage"]
     PagosPage --> pagosService(["pagosService"])
     PagosPage --> ventasService(["ventasService"])
     UsuariosClientesPage["/usuarios<br/>UsuariosClientesPage"]
-    UsuariosClientesPage --> usuariosService(["usuariosService"])
     ReclamacionesPage["/reclamaciones<br/>ReclamacionesPage"]
     ReclamacionesPage --> reclamacionesService(["reclamacionesService"])
     AnunciosPage["/anuncios<br/>AnunciosPage"]
     AnunciosPage --> anunciosService(["anunciosService"])
-    AnunciosPage --> librosService(["librosService"])
-    AnunciosPage --> carruselService(["carruselService"])
     TarifasEnvioPage["/tarifas-envio<br/>TarifasEnvioPage"]
     TarifasEnvioPage --> tarifasService(["tarifasService"])
     HistorialPage["/historial<br/>HistorialPage"]
@@ -57,6 +51,7 @@ flowchart LR
     EmpresaPage --> empresaService(["empresaService"])
     anunciosService --> _api_anuncios{{"/api/anuncios"}}
     carruselService --> _api_anuncios{{"/api/anuncios"}}
+    protagonistaService --> _api_anuncios{{"/api/anuncios"}}
     authService --> _api_auth{{"/api/auth"}}
     perfilService --> _api_usuarios{{"/api/usuarios"}}
     autoresService --> _api_autores{{"/api/autores"}}

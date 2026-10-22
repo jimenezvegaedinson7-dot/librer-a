@@ -104,7 +104,8 @@ const MIGRACIONES = [
     '037_administracion.sql',
     '038_version_sesion.sql',
     '039_otp_anti_replay.sql',
-    '040_devoluciones_payu.sql'
+    '040_devoluciones_payu.sql',
+    '044_portada_protagonista.sql'
 ];
 
 // Migraciones de DATOS (backfills): a diferencia de las de esquema, se

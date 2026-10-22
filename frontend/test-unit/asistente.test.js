@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ALCANCE_ASISTENTE, analizarConsulta, responderConsulta } from '../src/public-site/asistente/respuestasAsistente.js';
+import { ALCANCE_ASISTENTE, analizarConsulta, responderConsulta } from '../src/web/asistente/respuestasAsistente.js';
 
 const libros = [
     {id:1,titulo:'Cien años de soledad',autor:'Gabriel García Márquez',categoria:'Novela',isbn:'9780307474728',estado:1,stock:5,precio:60,precioFinal:48,descuento:20,sinopsis:'Descripción publicada en la ficha.',masVendido:true,esNuevo:false},

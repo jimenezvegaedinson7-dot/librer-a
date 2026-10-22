@@ -28,7 +28,7 @@ def selected():
     index = json.loads(INDEX.read_text(encoding='utf-8'))
     records = {r['file']: r for r in index['files'] if r['file'].startswith(SCOPES) or r['file'] == 'backend/server.js'}
     # La cadena de estilos no forma parte del índice JS/Dart.
-    for name in ('index.css', 'styles/paleta-editorial.css', 'styles/theme.css', 'styles/panel-editorial.css', 'styles/panel-formal.css', 'public-site/public-site.css', 'public-site/tema-editorial.css'):
+    for name in ('app/index.css', 'panel/estilos/paleta-editorial.css', 'panel/estilos/theme.css', 'panel/estilos/panel-editorial.css', 'panel/estilos/panel-formal.css', 'web/estilos/public-site.css', 'web/estilos/tema-editorial.css'):
         rel = 'frontend/src/' + name
         if (ROOT / rel).is_file():
             records.setdefault(rel, {'file': rel, 'imports': [], 'endpoints': []})
@@ -43,9 +43,9 @@ def sector(rel):
         return 'API / Backend'
     if rel.startswith('flutter_app/'):
         return 'App Flutter'
-    if rel.startswith('frontend/src/public-site/'):
+    if rel.startswith('frontend/src/web/'):
         return 'Tienda web'
-    if rel.startswith('frontend/src/features/'):
+    if rel.startswith('frontend/src/panel/'):
         return 'Panel administrativo'
     return 'Web / componentes compartidos'
 
@@ -164,9 +164,9 @@ def build():
     for route in index['frontendRoutes']:
         rel = route.get('file')
         if rel in file_ids:
-            route_id = node('pagina:' + route['path'], 'Página ' + route['path'], 'frontend/src/routes/AppRouter.jsx', 'route', sector=sector(rel))
+            route_id = node('pagina:' + route['path'], 'Página ' + route['path'], 'frontend/src/app/router/AppRouter.jsx', 'route', sector=sector(rel))
             edge(route_id, file_ids[rel], 'renders_page', 'docs/architecture/08-CODE-INDEX.json')
-            edge(file_ids['frontend/src/routes/AppRouter.jsx'], route_id, 'defines_page', 'frontend/src/routes/AppRouter.jsx')
+            edge(file_ids['frontend/src/app/router/AppRouter.jsx'], route_id, 'defines_page', 'frontend/src/app/router/AppRouter.jsx')
 
     # Tablas del esquema local, sin leer ninguna fila de la base de producción.
     schema_file = 'backend/database/schema.sql'
@@ -201,8 +201,8 @@ def build():
                     modules[module] += 1
             elif '/screens/' in path:
                 modules[Path(path).stem.replace('_screen', '')] += 1
-            elif '/public-site/' in path:
-                modules[path.split('/public-site/', 1)[1].split('/')[0].split('.')[0]] += 1
+            elif '/src/web/' in path:
+                modules[path.split('/src/web/', 1)[1].split('/')[0].split('.')[0]] += 1
         module_text = ' / '.join(name for name, _ in modules.most_common(2))
         labels[cid] = names.most_common(1)[0][0] + (' · ' + module_text if module_text else '')
     gods = god_nodes(graph)

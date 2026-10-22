@@ -1,0 +1,440 @@
+/* ============================================================
+   APLICACIÓN Y DESCARGAR (21/10/2026)
+   Mismo contenido; solo aspecto. Portadas con su fondo claro de
+   siempre, teléfonos flotando sobre un halo cálido y tarjetas con
+   más jerarquía: teselas de icono, filete al pasar el cursor y la
+   descarga de Android destacada.
+   Se carga después de editorial-ajustes.css.
+   ============================================================ */
+
+/* ---------- Portadas ----------
+   Conservan su fondo claro de estantería; solo se afina el titular y
+   el icono de la app. */
+.sitio :is(.app-portada__titulo, .descargar-portada__titulo) {
+    font-family: var(--ed-serif) !important; font-weight: 400 !important; color: var(--ed-tinta) !important;
+    letter-spacing: -.03em !important; text-wrap: balance;
+}
+.sitio :is(.app-portada, .descargar-portada) .icono-app--grande {
+    border-radius: 22px; box-shadow: 0 0 0 1px rgb(35 28 22 / .08), 0 18px 36px -14px rgb(69 49 26 / .45);
+}
+
+/* Teléfonos: flotan sobre un halo de luz. */
+@keyframes app-flotar { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+.sitio :is(.app__telefonos, .descargar-portada__telefono) { position: relative; }
+.sitio :is(.app__telefonos, .descargar-portada__telefono)::before {
+    content: ''; position: absolute; inset: 8% 4%; z-index: -1; border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(255 250 240 / .85), rgb(255 244 222 / .35) 55%, transparent);
+    filter: blur(10px);
+}
+.sitio :is(.app-portada, .descargar-portada) .telefono img { box-shadow: 0 40px 70px -32px rgb(69 49 26 / .55); }
+@media (prefers-reduced-motion: no-preference) {
+    .sitio .app-portada .telefono--1 { animation: app-flotar 6s ease-in-out infinite; }
+    .sitio .app-portada .telefono--2 { animation: app-flotar 7s ease-in-out -2.5s infinite; }
+    .sitio .descargar-portada .telefono { animation: app-flotar 6.5s ease-in-out infinite; }
+}
+
+/* ---------- Funciones de la app ---------- */
+.sitio .app-funciones-seccion { background: var(--ed-papel-claro) !important; padding-block: clamp(3.5rem, 2.5rem + 4vw, 6.5rem) !important; }
+.sitio .app-funciones { gap: clamp(12px, 1.4vw, 20px) !important; }
+.sitio .app-funcion {
+    position: relative; overflow: hidden;
+    display: grid !important; align-content: start; gap: 1.1rem !important;
+    padding: clamp(1.4rem, 1rem + 1vw, 2rem) !important;
+    background: #ffffff !important; border: 1px solid var(--ed-filete) !important; border-radius: 22px !important;
+    box-shadow: 0 1px 2px rgb(35 28 22 / .04) !important;
+    transition: transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease, border-color .3s ease;
+}
+.sitio .app-funcion::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(115deg, transparent 40%, rgb(255 255 255 / .6) 50%, transparent 60%) 160% 0 / 250% 100% no-repeat;
+    transition: background-position .9s ease;
+}
+.sitio .app-funcion:hover { transform: translateY(-6px); border-color: #d8cdbd !important; box-shadow: 0 26px 44px -26px rgb(35 28 22 / .35) !important; }
+.sitio .app-funcion:hover::after { background-position: -60% 0; }
+.sitio .app-funcion__icono {
+    display: grid !important; place-items: center; width: 52px !important; height: 52px !important;
+    border-radius: 16px !important; border: 1px solid #eadfcd !important;
+    background: linear-gradient(145deg, #fffaf2, #f1e6d3) !important; color: var(--ed-tinta) !important;
+    box-shadow: inset 0 1px 0 #ffffff, 0 10px 20px -12px rgb(69 49 26 / .45);
+    transition: transform .5s cubic-bezier(.16,1,.3,1);
+}
+.sitio .app-funcion:hover .app-funcion__icono { transform: rotate(-6deg) scale(1.06); }
+.sitio .app-funcion__icono svg { width: 20px; height: 20px; color: var(--ed-tinta) !important; }
+/* Filete superior que se dibuja al pasar el cursor. */
+.sitio :is(.app-funcion, .instalar__paso)::before {
+    content: ''; position: absolute; inset: 0 0 auto; height: 3px; z-index: 1;
+    background: linear-gradient(90deg, #231c16, #8a7458); transform: scaleX(0); transform-origin: left;
+    transition: transform .6s cubic-bezier(.16,1,.3,1);
+}
+.sitio :is(.app-funcion, .instalar__paso):hover::before { transform: scaleX(1); }
+.sitio .instalar__paso { overflow: hidden; }
+.sitio .app-funcion p { display: grid; gap: .45rem; margin: 0; }
+.sitio .app-funcion b { font-family: var(--ed-serif); font-weight: 400; font-size: 1.3rem; line-height: 1.15; color: var(--ed-tinta); }
+.sitio .app-funcion span { color: #5c5047; font-size: .9375rem; line-height: 1.55; }
+
+/* Cierre: mismo aspecto de antes, más abajo y separado de las tarjetas. */
+.sitio .app-pagina .cierre-descarga { margin-top: clamp(4rem, 3rem + 4vw, 7rem) !important; }
+
+/* ---------- Descargar: plataformas ---------- */
+.sitio .descargar-plataformas { background: var(--ed-papel-claro) !important; padding-block: clamp(3.5rem, 2.5rem + 4vw, 6.5rem) !important; }
+.sitio .descarga__rejilla { gap: clamp(14px, 2vw, 28px) !important; align-items: stretch; }
+.sitio .tarjeta-descarga {
+    position: relative; overflow: hidden; isolation: isolate;
+    border-radius: 26px !important; padding: clamp(1.5rem, 1rem + 1.6vw, 2.5rem) !important;
+    background: #ffffff !important; border: 1px solid var(--ed-filete) !important; box-shadow: none !important;
+    transition: transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease;
+}
+.sitio .tarjeta-descarga[data-disponible="true"] {
+    border: 1.5px solid var(--ed-tinta) !important;
+    background: linear-gradient(180deg, #ffffff 0%, #fffaf2 100%) !important;
+    box-shadow: 0 34px 60px -38px rgb(69 49 26 / .5) !important;
+}
+.sitio .tarjeta-descarga[data-disponible="true"]::before {
+    content: ''; position: absolute; inset: 0 0 auto; height: 4px;
+    background: linear-gradient(90deg, #231c16, #6b5a48, #231c16);
+}
+.sitio .tarjeta-descarga[data-disponible="true"]:hover { transform: translateY(-4px); }
+.sitio .tarjeta-descarga h2 { font-family: var(--ed-serif); font-weight: 400; font-size: 2rem; color: var(--ed-tinta); }
+.sitio .tarjeta-descarga[data-disponible="true"] .tarjeta-descarga__estado { color: #2f7a4d !important; font-weight: 600; }
+.sitio .tarjeta-descarga .ficha-tecnica dt { color: #7a6c5e !important; }
+.sitio .tarjeta-descarga .ficha-tecnica dd { color: var(--ed-tinta) !important; font-weight: 600; }
+.sitio .tarjeta-descarga[data-disponible="false"] { background: transparent !important; border-style: dashed !important; border-color: #cfc3b2 !important; }
+.sitio .tarjeta-descarga .icono-app--medio { border-radius: 16px; box-shadow: 0 10px 24px -12px rgb(0 0 0 / .5); }
+.sitio .tarjeta-descarga .ficha-tecnica { row-gap: 0 !important; margin-block: 1.25rem; }
+.sitio .tarjeta-descarga .ficha-tecnica :is(dt, dd) { padding-block: .6rem; border-bottom: 1px solid var(--ed-filete); margin: 0; }
+.sitio .tarjeta-descarga .tu-equipo { border-radius: 999px; background: var(--ed-tinta); color: #fffaf2; font-weight: 600; }
+
+/* ---------- Cómo instalar ---------- */
+.sitio .instalar { margin-top: clamp(3rem, 2rem + 3vw, 5rem) !important; }
+.sitio .instalar > h2 { font-family: var(--ed-serif) !important; font-weight: 400 !important; font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.4rem) !important; color: var(--ed-tinta); display: flex; align-items: center; gap: .6rem; }
+.sitio .instalar__pasos { counter-reset: none; gap: clamp(14px, 2vw, 28px) !important; }
+.sitio .instalar__paso {
+    position: relative; background: #ffffff !important; border: 1px solid var(--ed-filete) !important;
+    border-radius: 22px !important; padding: clamp(1.4rem, 1rem + 1vw, 2rem) !important; box-shadow: none !important;
+    transition: transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease;
+}
+.sitio .instalar__paso:hover { transform: translateY(-5px); box-shadow: 0 26px 44px -26px rgb(35 28 22 / .35) !important; }
+.sitio .instalar__numero {
+    display: grid !important; place-items: center; width: 52px !important; height: 52px !important;
+    border-radius: 50% !important; border: 1px solid #eadfcd !important;
+    background: linear-gradient(145deg, #fffaf2, #f1e6d3) !important; color: var(--ed-tinta) !important;
+    font-family: var(--ed-serif); font-size: 1.5rem !important; font-weight: 400 !important;
+    box-shadow: inset 0 1px 0 #ffffff, 0 10px 20px -12px rgb(69 49 26 / .45);
+}
+.sitio .instalar__paso h3 { font-family: var(--ed-serif); font-weight: 400; font-size: 1.3rem; margin-top: 1rem; color: var(--ed-tinta); }
+.sitio .instalar__paso p { color: #5c5047; }
+
+/* ---------- Actualizar la app ---------- */
+.sitio .actualizacion-app {
+    margin-top: clamp(3rem, 2rem + 3vw, 5rem) !important;
+    padding: clamp(1.5rem, 1rem + 2vw, 2.75rem) !important;
+    background: #ffffff !important; border: 1px solid var(--ed-filete) !important; border-radius: 26px !important;
+}
+.sitio .actualizacion-app h2 { font-family: var(--ed-serif); font-weight: 400; font-size: clamp(1.5rem, 1.2rem + 1vw, 2.1rem); color: var(--ed-tinta); }
+.sitio .actualizacion-app .boton--linea { border-radius: 999px !important; min-height: 48px; }
+.sitio .actualizacion-app__qr {
+    padding: 14px; background: #ffffff; border-radius: 20px;
+    box-shadow: 0 0 0 1px var(--ed-filete), 0 24px 44px -24px rgb(35 28 22 / .45);
+}
+
+@media (max-width: 767px) {
+    .sitio .app-pagina .cierre-descarga { margin-top: 3rem !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga) { transition: none !important; }
+}
+
+/* ============================================================
+   TARJETAS DE COLORES: marco degradado que gira, resplandor del
+   color en su interior y gema del icono en el mismo tono.
+   Cada tarjeta tiene su par de colores (--c1, --c2).
+   ============================================================ */
+@property --giro-marco { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes marco-gira { to { --giro-marco: 360deg; } }
+@keyframes resplandor-flota { 0%, 100% { translate: 0 0; scale: 1; } 50% { translate: -10px 8px; scale: 1.12; } }
+
+.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #0d8f8a; --c2: #62d6c9; }
+.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #5b3fd9; --c2: #b19cff; }
+.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #d9542f; --c2: #f7a660; }
+.sitio .app-funcion:nth-child(4) { --c1: #c92a64; --c2: #ff8fb4; }
+.sitio .app-funcion:nth-child(5) { --c1: #b7800c; --c2: #f2c94c; }
+.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #2f8f4e; --c2: #8fdcaa; }
+.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #4a6fd1; --c2: #a9c1ff; }
+
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga) {
+    border: 2px solid transparent !important;
+    background:
+        radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--c2) 22%, transparent), transparent 60%) padding-box,
+        linear-gradient(180deg, #ffffff, color-mix(in srgb, var(--c2) 8%, #ffffff)) padding-box,
+        conic-gradient(from var(--giro-marco), var(--c1), var(--c2), color-mix(in srgb, var(--c2) 30%, #ffffff), var(--c1)) border-box !important;
+    animation: marco-gira 8s linear infinite;
+}
+.sitio .tarjeta-descarga[data-disponible="false"] { border-style: solid !important; }
+.sitio .tarjeta-descarga[data-disponible="true"]::before { display: none; }
+.sitio :is(.app-funcion, .instalar__paso)::before { background: linear-gradient(90deg, var(--c1), var(--c2)) !important; }
+
+/* Resplandor de color que respira dentro de la tarjeta. */
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga) > :first-child { position: relative; z-index: 1; }
+.sitio :is(.app-funcion, .instalar__paso) { isolation: isolate; }
+.sitio :is(.app-funcion, .instalar__paso)::after {
+    content: '' !important; position: absolute; z-index: -1; pointer-events: none;
+    width: 160px; height: 160px; right: -50px; bottom: -60px; inset-block-start: auto; inset-inline-start: auto;
+    border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--c2) 45%, transparent), transparent) !important;
+    filter: blur(6px); animation: resplandor-flota 7s ease-in-out infinite;
+    transition: none !important;
+}
+.sitio .app-funcion:nth-child(2n)::after, .sitio .instalar__paso:nth-child(2)::after { animation-delay: -3s; }
+
+/* Gema del icono / número en su color. */
+.sitio :is(.app-funcion__icono, .instalar__numero) {
+    background: linear-gradient(145deg, var(--c2), var(--c1)) !important;
+    color: #ffffff !important; border: 0 !important;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / .45), 0 12px 22px -10px color-mix(in srgb, var(--c1) 70%, transparent) !important;
+}
+.sitio .app-funcion__icono svg { color: #ffffff !important; }
+.sitio :is(.app-funcion b, .instalar__paso h3) { color: color-mix(in srgb, var(--c1) 55%, #231c16) !important; }
+
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover {
+    box-shadow: 0 28px 50px -26px color-mix(in srgb, var(--c1) 60%, transparent) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga), .sitio :is(.app-funcion, .instalar__paso)::after { animation: none !important; }
+}
+.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) {
+    border: 2px solid transparent !important;
+    background:
+        radial-gradient(90% 80% at 100% 0%, color-mix(in srgb, var(--c2) 24%, transparent), transparent 60%) padding-box,
+        linear-gradient(180deg, #ffffff, color-mix(in srgb, var(--c2) 9%, #ffffff)) padding-box,
+        conic-gradient(from var(--giro-marco), var(--c1), var(--c2), color-mix(in srgb, var(--c2) 30%, #ffffff), var(--c1)) border-box !important;
+}
+.sitio .tarjeta-descarga .icono-app--medio { box-shadow: 0 0 0 2px color-mix(in srgb, var(--c2) 60%, #ffffff), 0 12px 24px -12px color-mix(in srgb, var(--c1) 70%, transparent); }
+.sitio .tarjeta-descarga[data-disponible="false"] .tarjeta-descarga__estado { color: var(--c1) !important; font-weight: 600; }
+
+/* ============================================================
+   COLORES INTENSOS: cada tarjeta rellena con su degradado (oscuro →
+   vivo) y texto blanco. Los tonos vivos mantienen ≥ 4.5:1 con blanco.
+   ============================================================ */
+.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #0b3f3c; --c2: #0f766e; --c3: #5eead4; }
+.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #2e1065; --c2: #6d28d9; --c3: #c4b5fd; }
+.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #6b1d0a; --c2: #c2410c; --c3: #fdba74; }
+.sitio .app-funcion:nth-child(4) { --c1: #6b0f35; --c2: #be185d; --c3: #f9a8d4; }
+.sitio .app-funcion:nth-child(5) { --c1: #5a3008; --c2: #a16207; --c3: #fde047; }
+.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #0f3d22; --c2: #15803d; --c3: #86efac; }
+.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #172554; --c2: #1d4ed8; --c3: #93c5fd; }
+
+.sitio :is(.app-funcion, .instalar__paso),
+.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) {
+    color: #ffffff;
+    background:
+        radial-gradient(90% 80% at 100% 0%, color-mix(in srgb, var(--c3) 38%, transparent), transparent 60%) padding-box,
+        linear-gradient(150deg, var(--c1) 0%, var(--c2) 100%) padding-box,
+        conic-gradient(from var(--giro-marco), var(--c3), #ffffff, var(--c3), var(--c2), var(--c3)) border-box !important;
+}
+.sitio :is(.app-funcion b, .instalar__paso h3, .tarjeta-descarga h2) { color: #ffffff !important; }
+.sitio :is(.app-funcion span, .instalar__paso p, .tarjeta-descarga__nota) { color: rgb(255 255 255 / .9) !important; }
+.sitio :is(.app-funcion, .instalar__paso)::after { background: radial-gradient(closest-side, color-mix(in srgb, var(--c3) 55%, transparent), transparent) !important; }
+.sitio :is(.app-funcion, .instalar__paso)::before { background: linear-gradient(90deg, var(--c3), #ffffff) !important; }
+
+/* Gema blanca con el icono en el color de la tarjeta. */
+.sitio :is(.app-funcion__icono, .instalar__numero) {
+    background: linear-gradient(145deg, #ffffff, color-mix(in srgb, var(--c3) 35%, #ffffff)) !important;
+    color: var(--c2) !important;
+    box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--c3) 60%, transparent), 0 12px 24px -10px rgb(0 0 0 / .45) !important;
+}
+.sitio .app-funcion__icono svg { color: var(--c2) !important; }
+
+/* Tarjetas de plataforma sobre su color. */
+.sitio .tarjeta-descarga .tarjeta-descarga__estado { color: var(--c3) !important; font-weight: 600; }
+.sitio .tarjeta-descarga .ficha-tecnica dt { color: rgb(255 255 255 / .75) !important; }
+.sitio .tarjeta-descarga .ficha-tecnica dd { color: #ffffff !important; }
+.sitio .tarjeta-descarga .ficha-tecnica :is(dt, dd) { border-color: rgb(255 255 255 / .18) !important; }
+.sitio .tarjeta-descarga .boton { background: #ffffff !important; color: var(--c1) !important; border-color: #ffffff !important; }
+.sitio .tarjeta-descarga .boton:hover { background: color-mix(in srgb, var(--c3) 30%, #ffffff) !important; }
+.sitio .tarjeta-descarga .tu-equipo { background: #ffffff; color: var(--c1); }
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover { box-shadow: 0 30px 55px -24px color-mix(in srgb, var(--c2) 80%, transparent) !important; }
+.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) .tarjeta-descarga__estado { color: var(--c3) !important; }
+
+/* ============================================================
+   ESPEJO Y PROFUNDIDAD (última capa de las tarjetas)
+   - Colores más vivos.
+   - Reflejo de cristal en la mitad superior y destello al pasar.
+   - Sin la línea superior ni el marco giratorio: filo plateado fijo.
+   - Profundidad: canto inferior del color, biseles y sombras en capas;
+     al pasar el cursor la placa se inclina en 3D.
+   ============================================================ */
+.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #064e47; --c2: #0d9488; --c3: #5eead4; }
+.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #3b0a8f; --c2: #7c3aed; --c3: #d8b4fe; }
+.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #8a2304; --c2: #ea580c; --c3: #fdba74; }
+.sitio .app-funcion:nth-child(4) { --c1: #83104a; --c2: #db2777; --c3: #f9a8d4; }
+.sitio .app-funcion:nth-child(5) { --c1: #6b3a03; --c2: #ca8a04; --c3: #fde047; }
+.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #0b4a26; --c2: #16a34a; --c3: #86efac; }
+.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #142a7a; --c2: #2563eb; --c3: #93c5fd; }
+
+.sitio :is(.app-funcion, .instalar__paso),
+.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) {
+    animation: none !important;
+    border: 1px solid rgb(255 255 255 / .38) !important;
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / .34) 0%, rgb(255 255 255 / .1) 46%, rgb(255 255 255 / 0) 47%) padding-box,
+        radial-gradient(120% 70% at 50% 120%, color-mix(in srgb, var(--c3) 40%, transparent), transparent 60%) padding-box,
+        linear-gradient(155deg, var(--c1) 0%, var(--c2) 70%, color-mix(in srgb, var(--c2) 80%, var(--c3)) 100%) padding-box !important;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / .6),
+        inset 0 -10px 24px -8px rgb(0 0 0 / .35),
+        inset 0 0 0 1px rgb(255 255 255 / .08),
+        0 6px 0 -1px var(--c1),
+        0 22px 34px -14px color-mix(in srgb, var(--c2) 75%, transparent),
+        0 48px 70px -36px rgb(0 0 0 / .55) !important;
+    text-shadow: 0 1px 2px rgb(0 0 0 / .3);
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.16,1,.3,1), box-shadow .55s ease !important;
+}
+/* Sin línea superior que «carga». */
+.sitio :is(.app-funcion, .instalar__paso)::before,
+.sitio .tarjeta-descarga[data-disponible="true"]::before { content: none !important; display: none !important; }
+/* Destello de espejo que cruza la tarjeta al pasar el cursor. */
+.sitio :is(.app-funcion, .instalar__paso)::after {
+    content: '' !important; inset: 0 !important; width: auto !important; height: auto !important; border-radius: inherit !important;
+    filter: none !important; animation: none !important; z-index: 2 !important;
+    background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / .55) 48%, rgb(255 255 255 / .15) 52%, transparent 62%) 170% 0 / 260% 100% no-repeat !important;
+    transition: background-position .9s cubic-bezier(.16,1,.3,1) !important;
+}
+.sitio :is(.app-funcion, .instalar__paso):hover::after { background-position: -70% 0 !important; }
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover {
+    transform: perspective(900px) rotateX(7deg) translateY(-8px) !important;
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / .7),
+        inset 0 -10px 24px -8px rgb(0 0 0 / .35),
+        inset 0 0 0 1px rgb(255 255 255 / .1),
+        0 8px 0 -1px var(--c1),
+        0 34px 50px -18px color-mix(in srgb, var(--c2) 85%, transparent),
+        0 60px 80px -40px rgb(0 0 0 / .6) !important;
+}
+/* Gema del icono en relieve. */
+.sitio :is(.app-funcion__icono, .instalar__numero) {
+    box-shadow: inset 0 2px 0 #ffffff, inset 0 -3px 0 color-mix(in srgb, var(--c3) 70%, transparent), 0 4px 0 color-mix(in srgb, var(--c1) 60%, transparent), 0 14px 22px -10px rgb(0 0 0 / .5) !important;
+    text-shadow: none;
+}
+@media (prefers-reduced-motion: reduce) {
+    .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover { transform: none !important; }
+}
+.sitio .tarjeta-descarga .boton { text-shadow: none; }
+
+/* Tonos más oscuros y profundos (misma familia de color). */
+.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #022c28; --c2: #0f6b63; --c3: #5eead4; }
+.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #1e0558; --c2: #5521b5; --c3: #d8b4fe; }
+.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #4a1102; --c2: #b1400a; --c3: #fdba74; }
+.sitio .app-funcion:nth-child(4) { --c1: #4d0829; --c2: #a3195a; --c3: #f9a8d4; }
+.sitio .app-funcion:nth-child(5) { --c1: #3b1f02; --c2: #8f6205; --c3: #fde047; }
+.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #052914; --c2: #12723a; --c3: #86efac; }
+.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #0b1a4d; --c2: #1d44b0; --c3: #93c5fd; }
+.sitio :is(.app-funcion, .instalar__paso),
+.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) {
+    background:
+        linear-gradient(180deg, rgb(255 255 255 / .22) 0%, rgb(255 255 255 / .06) 46%, rgb(255 255 255 / 0) 47%) padding-box,
+        radial-gradient(120% 70% at 50% 120%, color-mix(in srgb, var(--c3) 22%, transparent), transparent 60%) padding-box,
+        linear-gradient(155deg, var(--c1) 0%, var(--c2) 100%) padding-box !important;
+}
+
+/* Oscuros pero fieles a su color: cada tarjeta conserva su tono puro
+   (sin virar a café ni a negro). */
+.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #075a52; --c2: #0d7f74; --c3: #5eead4; }
+.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #3a179a; --c2: #5f2bd6; --c3: #d8b4fe; }
+.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #a3300b; --c2: #d4470f; --c3: #fdba74; }
+.sitio .app-funcion:nth-child(4) { --c1: #8c0f4b; --c2: #bf1865; --c3: #f9a8d4; }
+.sitio .app-funcion:nth-child(5) { --c1: #8a5c00; --c2: #b98500; --c3: #fde047; }
+.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #0c5a2b; --c2: #13803e; --c3: #86efac; }
+.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #1a3596; --c2: #2650d0; --c3: #93c5fd; }
+
+/* Aplicación: sin el icono de la app en la portada y con menos altura. */
+.sitio .app-portada .icono-app--grande { display: none !important; }
+.sitio .app-portada { padding-block: clamp(20px, 2.5vw, 36px) clamp(24px, 3vw, 40px) !important; }
+.sitio .app-portada .app__rejilla { align-items: center !important; }
+.sitio .app-portada .app__telefonos { height: clamp(360px, 34vw, 460px) !important; }
+.sitio .app-portada .telefono { width: clamp(160px, 14.5vw, 205px) !important; }
+@media (max-width: 767px) {
+    .sitio .app-portada .app__telefonos { height: clamp(300px, 82vw, 400px) !important; }
+    .sitio .app-portada .telefono { width: clamp(130px, 34vw, 180px) !important; }
+}
+
+/* Tarjetas muy oscuras, cada una en su color. */
+.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #021f1c; --c2: #064a43; --c3: #5eead4; }
+.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #12053a; --c2: #2f1478; --c3: #d8b4fe; }
+.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #3a0e02; --c2: #7a2608; --c3: #fdba74; }
+.sitio .app-funcion:nth-child(4) { --c1: #33041b; --c2: #6e0c3b; --c3: #f9a8d4; }
+.sitio .app-funcion:nth-child(5) { --c1: #2c1d00; --c2: #5e4000; --c3: #fde047; }
+.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #031d0d; --c2: #0a4a23; --c3: #86efac; }
+.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #070f33; --c2: #14287a; --c3: #93c5fd; }
+
+/* Tarjetas quietas: sin animaciones ni movimiento (ni al pasar el cursor). */
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga),
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover,
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga) * {
+    animation: none !important; transition: none !important;
+}
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover { transform: none !important; }
+.sitio :is(.app-funcion, .instalar__paso)::after { display: none !important; }
+.sitio .app-funcion:hover .app-funcion__icono,
+.sitio .tarjeta-descarga .boton:hover { transform: none !important; }
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover {
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / .6),
+        inset 0 -10px 24px -8px rgb(0 0 0 / .35),
+        inset 0 0 0 1px rgb(255 255 255 / .08),
+        0 6px 0 -1px var(--c1),
+        0 22px 34px -14px color-mix(in srgb, var(--c2) 75%, transparent),
+        0 48px 70px -36px rgb(0 0 0 / .55) !important;
+}
+
+/* ============================================================
+   CRISTAL PIEL (decisión final de las tarjetas)
+   Vidrio esmerilado en tono piel/nácar, facetas de luz suaves y un
+   filo irisado tenue, como un diamante translúcido. Texto en tinta.
+   Sin animaciones ni movimiento.
+   ============================================================ */
+.sitio :is(.app-funcion, .instalar__paso),
+.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) {
+    --piel: #f4e4d4; --piel-claro: #fffaf4; --piel-hondo: #e6cdb6;
+    color: var(--ed-tinta) !important; text-shadow: none !important;
+    border: 1px solid transparent !important;
+    background:
+        linear-gradient(135deg, rgb(255 255 255 / .75) 0%, rgb(255 255 255 / .15) 34%, transparent 35%) padding-box,
+        linear-gradient(315deg, rgb(255 255 255 / .5) 0%, transparent 22%) padding-box,
+        linear-gradient(115deg, transparent 52%, rgb(255 255 255 / .35) 53%, transparent 66%) padding-box,
+        linear-gradient(160deg, rgb(255 250 244 / .82), rgb(244 228 212 / .72)) padding-box,
+        linear-gradient(135deg, #ffffff, #f0d9c4 30%, #e9dff3 50%, #d9eef0 70%, #ffffff) border-box !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / .95),
+        inset 0 -1px 0 rgb(230 205 182 / .7),
+        0 14px 30px -18px rgb(120 84 52 / .35),
+        0 2px 6px -2px rgb(120 84 52 / .12) !important;
+}
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover {
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / .95),
+        inset 0 -1px 0 rgb(230 205 182 / .7),
+        0 14px 30px -18px rgb(120 84 52 / .35),
+        0 2px 6px -2px rgb(120 84 52 / .12) !important;
+}
+.sitio :is(.app-funcion b, .instalar__paso h3, .tarjeta-descarga h2) { color: var(--ed-tinta) !important; }
+.sitio :is(.app-funcion span, .instalar__paso p, .tarjeta-descarga__nota) { color: #5c5047 !important; }
+
+/* Gema del icono / número: cristal nácar con tinta. */
+.sitio :is(.app-funcion__icono, .instalar__numero) {
+    background: linear-gradient(145deg, #ffffff 0%, #f6e7d8 55%, #ead3bd 100%) !important;
+    color: var(--ed-tinta) !important; border: 1px solid rgb(255 255 255 / .9) !important;
+    box-shadow: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(214 186 160 / .55), 0 8px 16px -10px rgb(120 84 52 / .45) !important;
+}
+.sitio .app-funcion__icono svg { color: var(--ed-tinta) !important; }
+
+/* Plataformas sobre cristal. */
+.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) .tarjeta-descarga__estado { color: #2f6b45 !important; }
+.sitio .tarjeta-descarga[data-disponible="false"] .tarjeta-descarga__estado { color: #7a6c5e !important; }
+.sitio .tarjeta-descarga .ficha-tecnica dt { color: #7a6c5e !important; }
+.sitio .tarjeta-descarga .ficha-tecnica dd { color: var(--ed-tinta) !important; }
+.sitio .tarjeta-descarga .ficha-tecnica :is(dt, dd) { border-color: rgb(214 186 160 / .45) !important; }
+.sitio .tarjeta-descarga .boton,
+.sitio .tarjeta-descarga .boton:hover { background: #24304b !important; color: #ffffff !important; border-color: #24304b !important; }
+.sitio .tarjeta-descarga .icono-app--medio { box-shadow: 0 0 0 1px rgb(255 255 255 / .9), 0 8px 18px -10px rgb(120 84 52 / .45) !important; }
+.sitio .tarjeta-descarga .tu-equipo { background: var(--ed-tinta); color: #fffaf2; }

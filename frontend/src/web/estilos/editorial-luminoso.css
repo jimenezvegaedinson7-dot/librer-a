@@ -1,0 +1,237 @@
+/* ============================================================
+   EDITORIAL LUMINOSO (21/10/2026)
+   Última capa visual de la web pública. Dirección elegida por el usuario:
+   el aire y la tipografía grande de Lusion sobre papel hueso cálido, la
+   galería de portadas de recent.design y los estantes comerciales de Ibero.
+   Titulares en Source Serif 4 (autoalojada), textos y controles en Work
+   Sans, marino Ibero para las acciones y turquesa legible para el foco.
+   ============================================================ */
+
+.sitio {
+    --ed-papel: #f7f1e8;
+    --ed-papel-claro: #fffaf2;
+    --ed-papel-hondo: #efe6d8;
+    --ed-tinta: #231c16;
+    --ed-tinta-2: #5a4d41;
+    --ed-tinta-3: #7a6a5b;
+    --ed-filete: #e2d6c4;
+    --ed-marino: #24304b;
+    --ed-marino-hover: #161f33;
+    --ed-turquesa: #00788a;
+    --ed-serif: 'Serif Editorial', 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --ed-radio: 20px;
+    --ed-radio-chico: 12px;
+    --ed-sombra: 0 1px 2px rgb(60 40 20 / 0.06), 0 18px 40px -24px rgb(60 40 20 / 0.35);
+    --ed-sombra-alta: 0 2px 4px rgb(60 40 20 / 0.08), 0 30px 60px -28px rgb(60 40 20 / 0.45);
+    --ed-salida: cubic-bezier(0.16, 1, 0.3, 1);
+    --seccion: clamp(1.5rem, 3vw, 3rem);
+    background: var(--ed-papel-claro);
+    color: var(--ed-tinta);
+    caret-color: var(--ed-turquesa);
+}
+
+/* ---------- Superficies del navegador ---------- */
+.sitio ::selection { background: var(--ed-marino); color: #ffffff; }
+.sitio :focus-visible { outline: 2px solid var(--ed-turquesa); outline-offset: 3px; }
+html:has(.sitio) { scrollbar-color: #c9b9a3 var(--ed-papel-claro, #fffaf2); scrollbar-width: thin; }
+html:has(.sitio)::-webkit-scrollbar { width: 10px; }
+html:has(.sitio)::-webkit-scrollbar-track { background: #fffaf2; }
+html:has(.sitio)::-webkit-scrollbar-thumb { background: #c9b9a3; border-radius: 999px; border: 2px solid #fffaf2; }
+.sitio a { text-underline-offset: 0.22em; text-decoration-thickness: 1px; }
+
+/* ---------- Tipografía editorial ---------- */
+.sitio :is(.seccion__titulo, .categorias__titulo, .comprar__titulo, .banda-catalogo h2, main h1:not(.sr-only, .visualmente-oculto)) {
+    font-family: var(--ed-serif);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 1.02;
+    color: var(--ed-tinta);
+    text-wrap: balance;
+}
+.sitio :is(.seccion__titulo, .categorias__titulo, .comprar__titulo) { font-size: clamp(2.1rem, 1.3rem + 2.8vw, 3.75rem); }
+.sitio main h1:not(.sr-only, .visualmente-oculto) { font-size: clamp(2.5rem, 1.5rem + 3.6vw, 4.75rem); }
+.sitio :is(.seccion__entrada, .categorias__entrada) { color: var(--ed-tinta-2); font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); max-width: 56ch; }
+.sitio .seccion__cabeza { align-items: end; gap: 1.5rem; margin-bottom: clamp(1rem, 2vw, 1.5rem); }
+.sitio .seccion { padding-block: var(--seccion); }
+
+/* ---------- Botones y enlaces ---------- */
+.sitio .boton {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
+    min-height: 48px; padding: 0 1.5rem;
+    border: 1px solid var(--ed-marino); border-radius: 999px;
+    background: var(--ed-marino); color: #ffffff;
+    font-weight: 600; letter-spacing: 0.005em;
+    box-shadow: none;
+    transition: background-color 0.35s var(--ed-salida), border-color 0.35s var(--ed-salida), transform 0.35s var(--ed-salida);
+}
+.sitio .boton:hover { background: var(--ed-marino-hover); border-color: var(--ed-marino-hover); color: #ffffff; }
+.sitio .boton:active { transform: scale(0.98); }
+.sitio .boton svg { width: 1.05em; height: 1.05em; transition: transform 0.35s var(--ed-salida); }
+.sitio .boton:hover svg:last-child { transform: translateX(3px); }
+.sitio .boton.boton--linea { background: transparent; color: var(--ed-marino); }
+.sitio .boton.boton--linea:hover { background: var(--ed-marino); color: #ffffff; }
+.sitio .boton--chico { min-height: 40px; padding: 0 1.1rem; font-size: 0.875rem; }
+.sitio :is(.enlace-texto, .enlace-mas, .categorias__todas) {
+    color: var(--ed-marino); font-weight: 600; text-decoration: none;
+    background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+    transition: background-size 0.45s var(--ed-salida);
+}
+.sitio :is(.enlace-texto, .enlace-mas, .categorias__todas):hover { background-size: 100% 1px; }
+
+/* ---------- Cabecera (Ibero refinada) ---------- */
+.sitio .cabecera {
+    background: rgb(255 250 242 / 0.88) !important;
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
+    border-bottom: 1px solid var(--ed-filete);
+    transition: box-shadow 0.4s var(--ed-salida), background-color 0.4s var(--ed-salida);
+}
+.sitio .cabecera[data-sombra="true"] { box-shadow: 0 10px 30px -22px rgb(60 40 20 / 0.45); }
+.sitio .cabecera .marca { color: var(--ed-tinta); }
+.sitio .cabecera :is(input[type="search"], .buscador input) {
+    border-radius: 999px !important;
+    border-color: var(--ed-filete) !important;
+    background: #ffffff !important;
+    padding-inline-start: 1.25rem !important;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.sitio .cabecera :is(input[type="search"], .buscador input):focus { border-color: var(--ed-marino) !important; box-shadow: 0 0 0 4px rgb(36 48 75 / 0.1) !important; outline: none; }
+.sitio .cabecera .buscador button[type="submit"] { border-radius: 999px !important; background: var(--ed-marino) !important; }
+.sitio .menu { background: transparent !important; border-top: 1px solid rgb(226 214 196 / 0.6); }
+.sitio .menu a {
+    position: relative;
+    color: var(--ed-tinta-2) !important;
+    letter-spacing: 0.08em;
+    transition: color 0.3s ease;
+}
+.sitio .menu a::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 4px; height: 1.5px;
+    background: var(--ed-marino); transform: scaleX(0); transform-origin: right;
+    transition: transform 0.45s var(--ed-salida);
+}
+.sitio .menu a:hover, .sitio .menu a[aria-current="page"] { color: var(--ed-marino) !important; }
+.sitio .menu a:hover::after, .sitio .menu a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
+
+/* ---------- Transición entre páginas ---------- */
+@keyframes ed-pagina-entra { from { opacity: 0; } to { opacity: 1; } }
+.sitio main > :not(.portada3d):not(:has(.portada3d)) { animation: ed-pagina-entra 0.6s var(--ed-salida) both; }
+
+/* ---------- Galería de géneros (tipo recent.design) ---------- */
+.sitio .categorias { background: var(--ed-papel); }
+.sitio .categorias__curvas { display: none; }
+.sitio .categorias__cabeza { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; margin-bottom: clamp(1rem, 2vw, 1.5rem); }
+.sitio .categoria-tarjeta {
+    display: flex; flex-direction: column; height: 100%;
+    border: 1px solid var(--ed-filete); border-radius: var(--ed-radio);
+    background: var(--ed-papel-claro);
+    overflow: hidden; text-decoration: none; color: var(--ed-tinta);
+    box-shadow: none;
+    transition: transform 0.6s var(--ed-salida), box-shadow 0.6s var(--ed-salida), border-color 0.6s var(--ed-salida);
+}
+.sitio .categoria-tarjeta:hover { transform: translateY(-6px); box-shadow: var(--ed-sombra-alta); border-color: #d3c3ab; }
+.sitio .categoria__escena { background: radial-gradient(120% 90% at 50% 100%, #efe3d0 0%, var(--ed-papel-claro) 70%); }
+.sitio .categoria__adorno { color: #c9a77a; opacity: 0.55; }
+.sitio .categoria__libro img { border-radius: 2px 5px 5px 2px; box-shadow: -4px 10px 22px rgb(60 40 20 / 0.28); }
+.sitio .categoria-tarjeta .categoria__libro { transition: transform 0.7s var(--ed-salida); }
+.sitio .categoria-tarjeta:hover .categoria__libro:nth-child(1) { transform: translateX(-10px) rotate(-6deg); }
+.sitio .categoria-tarjeta:hover .categoria__libro:nth-child(3) { transform: translateX(10px) rotate(6deg); }
+.sitio .categoria-tarjeta:hover .categoria__libro:nth-child(2) { transform: translateY(-6px); }
+.sitio .categoria__pie { padding: 1.1rem 1.25rem 1.25rem; border-top: 1px solid var(--ed-filete); }
+.sitio .categoria__nombre { font-family: var(--ed-serif); font-weight: 400; font-size: 1.5rem; letter-spacing: -0.02em; color: var(--ed-tinta); }
+.sitio .categoria__cuenta { color: var(--ed-tinta-3); }
+.sitio .categoria__flecha { background: var(--ed-marino) !important; color: #ffffff !important; transition: transform 0.45s var(--ed-salida); }
+.sitio .categoria-tarjeta:hover .categoria__flecha { transform: translateX(4px); }
+
+/* ---------- Estantes de libros (recomendados y ofertas) ---------- */
+.sitio .catalogo, .sitio .ofertas { background: var(--ed-papel-claro); }
+.sitio .ofertas { border-top: 1px solid var(--ed-filete); }
+.sitio .libro, .sitio .oferta-tarjeta {
+    border: 0 !important; background: transparent !important; box-shadow: none !important;
+}
+.sitio :is(.libro__tapa, .oferta-tarjeta__tapa) {
+    border-radius: 3px 8px 8px 3px; overflow: hidden;
+    box-shadow: -6px 14px 28px -10px rgb(60 40 20 / 0.42);
+    transition: transform 0.7s var(--ed-salida), box-shadow 0.7s var(--ed-salida);
+}
+.sitio :is(.libro, .oferta-tarjeta):hover :is(.libro__tapa, .oferta-tarjeta__tapa) { transform: translateY(-8px) rotate(-1.2deg); box-shadow: -10px 26px 40px -14px rgb(60 40 20 / 0.5); }
+.sitio .libro__titulo { font-family: var(--ed-serif); font-weight: 400; font-size: 1.125rem; letter-spacing: -0.01em; color: var(--ed-tinta); }
+.sitio :is(.libro__autor, .oferta-tarjeta__autor) { color: var(--ed-tinta-3); }
+
+/* ---------- Banda del catálogo ---------- */
+.sitio .banda-catalogo { margin-inline: var(--gutter); border-radius: var(--ed-radio); overflow: hidden; }
+.sitio .banda-catalogo h2 { color: #fffaf2; font-size: clamp(2.4rem, 1.4rem + 4vw, 5rem); }
+.sitio .banda-catalogo p { color: rgb(255 250 242 / 0.86); max-width: 44ch; }
+.sitio .banda-catalogo .boton { background: #fffaf2; border-color: #fffaf2; color: var(--ed-marino); }
+.sitio .banda-catalogo .boton:hover { background: #ffffff; color: var(--ed-marino-hover); }
+
+/* ---------- Del estante a tus manos ---------- */
+.sitio .comprar { background: var(--ed-papel); }
+.sitio .comprar__rejilla { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(2rem, 1rem + 4vw, 5rem); align-items: center; }
+.sitio .comprar__titulo { margin: 0 0 clamp(1.5rem, 1rem + 1.5vw, 2.5rem); }
+.sitio .comprar__pasos { margin: 0 0 2rem; padding: 0; list-style: none; border-top: 1px solid var(--ed-filete); }
+.sitio .comprar__paso { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: 1rem; align-items: start; padding: 1.25rem 0; border-bottom: 1px solid var(--ed-filete); }
+.sitio .comprar__icono { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 50%; background: var(--ed-papel-claro); border: 1px solid var(--ed-filete); color: var(--ed-marino); }
+.sitio .comprar__icono svg { width: 1.3rem; height: 1.3rem; }
+.sitio .comprar__paso h3 { margin: 0.2rem 0 0.25rem; font-family: var(--ed-serif); font-weight: 400; font-size: 1.4rem; letter-spacing: -0.015em; color: var(--ed-tinta); }
+.sitio .comprar__paso p { margin: 0; color: var(--ed-tinta-2); }
+.sitio .comprar__app {
+    position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 1rem;
+    min-height: 22rem; padding: clamp(1.5rem, 1rem + 2vw, 2.5rem) clamp(1.5rem, 1rem + 2vw, 2.5rem) 0;
+    border-radius: var(--ed-radio);
+    background: radial-gradient(90% 80% at 85% 100%, #3a4766 0%, var(--ed-marino) 60%);
+    color: #fffaf2; overflow: hidden;
+}
+.sitio .comprar__app-texto { align-self: start; }
+.sitio .comprar__app h3 { margin: 0 0 0.75rem; font-family: var(--ed-serif); font-weight: 400; font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.4rem); line-height: 1.08; letter-spacing: -0.02em; color: #fffaf2; }
+.sitio .comprar__app p { margin: 0 0 1.25rem; color: rgb(255 250 242 / 0.82); max-width: 32ch; }
+.sitio .comprar__app-enlaces { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+.sitio .comprar__app .boton { background: #fffaf2; border-color: #fffaf2; color: var(--ed-marino); }
+.sitio .comprar__app .enlace-texto { color: #fffaf2; }
+.sitio .comprar__telefono { align-self: end; width: clamp(150px, 16vw, 220px); }
+.sitio .comprar__telefono img { display: block; width: 100%; height: auto; border-radius: 26px 26px 0 0; box-shadow: 0 -10px 40px rgb(0 0 0 / 0.35); transform: translateY(8%); transition: transform 0.8s var(--ed-salida); }
+.sitio .comprar__app:hover .comprar__telefono img { transform: translateY(2%); }
+
+/* ---------- Páginas interiores ---------- */
+.sitio .migas { background: transparent !important; border-bottom: 1px solid var(--ed-filete); }
+.sitio .catalogo-pagina { background: var(--ed-papel-claro); }
+.sitio .catalogo-ventajas li { border-radius: 999px; border: 1px solid var(--ed-filete); background: #ffffff; padding: 0.35rem 0.85rem; }
+
+/* El pie de página tiene su propia capa: web/componentes/public-footer.css */
+
+/* ---------- Pantallas medianas y celulares ---------- */
+@media (max-width: 900px) {
+    .sitio .comprar__rejilla { grid-template-columns: minmax(0, 1fr); }
+    .sitio .categorias__cabeza { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 560px) {
+    .sitio .comprar__app { grid-template-columns: minmax(0, 1fr) 40%; min-height: 0; }
+    .sitio .banda-catalogo { margin-inline: 0; border-radius: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sitio main > * { animation: none; }
+    .sitio :is(.categoria-tarjeta, .categoria__libro, .libro__tapa, .oferta-tarjeta__tapa, .comprar__telefono img, .boton, .boton svg, .menu a::after) { transition: none !important; }
+}
+
+/* Banda del catálogo: foto a sangre dentro de su marco, sin tarjeta de
+   vidrio encima; un degradado cálido garantiza el contraste del texto. */
+.sitio .banda-catalogo { padding-block: var(--seccion); }
+.sitio .banda-catalogo__fondo::after { background: linear-gradient(100deg, rgb(28 20 14 / 0.86) 0%, rgb(28 20 14 / 0.62) 45%, rgb(28 20 14 / 0.25) 100%) !important; }
+.sitio .banda-catalogo__contenido {
+    background: none !important; border: 0 !important; box-shadow: none !important;
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+    padding: 0 !important; align-items: flex-end !important;
+}
+.sitio .banda-catalogo__contenido > div { max-width: 40rem; }
+.sitio .banda-catalogo p { font-size: 1.0625rem; margin-top: 1rem; }
+
+/* Portada en celular: el título queda debajo de la cabecera fija (su altura
+   real la mide la portada en --cabecera) y no detrás de ella. */
+@media (max-width: 900px) {
+    .sitio .portada3d--3d .portada3d__titulo { top: calc(var(--cabecera, 0px) + 20px) !important; font-weight: 400; }
+}
+
+/* Zonas oscuras: el titular editorial va en claro. */
+.sitio .oscuro h1:not(.sr-only, .visualmente-oculto) { color: #fffaf2 !important; text-shadow: 0 2px 30px rgb(20 12 6 / 0.45); }
+.sitio .oscuro .boton.boton--linea { color: #fffaf2 !important; border-color: rgb(255 250 242 / 0.7) !important; }
+.sitio .oscuro .boton.boton--linea:hover { background: #fffaf2 !important; color: var(--ed-marino) !important; }
+.sitio .oscuro .boton:not(.boton--linea) { background: #fffaf2; border-color: #fffaf2; color: var(--ed-marino); }

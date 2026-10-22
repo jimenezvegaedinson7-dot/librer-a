@@ -1,0 +1,49 @@
+/* ============================================================
+   BADGES DE LAS TIENDAS DE APPS
+   Mismo componente en la página y en el pie: cambia el fondo según
+   el contexto, nunca la estructura.
+   ============================================================ */
+.sitio .app-tiendas { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.sitio .app-tiendas__enlace {
+    display: inline-flex; align-items: center; gap: 11px;
+    min-height: 56px; min-width: 168px; padding: 8px 16px 8px 10px;
+    border: 1px solid var(--ed-marino); border-radius: 10px;
+    background: var(--ed-marino); color: #fffaf2; text-decoration: none;
+    transition: background 0.3s var(--ed-salida), border-color 0.3s var(--ed-salida), transform 0.3s var(--ed-salida);
+}
+.sitio .app-tiendas__icono {
+    display: grid; place-items: center; flex: none;
+    width: 38px; height: 38px; border-radius: 8px;
+    background: rgb(255 255 255 / 0.10);
+}
+.sitio .app-tiendas__icono svg { width: 21px; height: 21px; }
+.sitio .app-tiendas__texto { display: grid; gap: 3px; min-width: 0; }
+.sitio .app-tiendas__texto small {
+    font-family: var(--f-texto); font-size: .6875rem; font-weight: 500;
+    line-height: 1.2; letter-spacing: .02em; opacity: .78;
+}
+.sitio .app-tiendas__texto strong {
+    font-family: var(--f-texto); font-size: 1rem; font-weight: 600; line-height: 1.15; letter-spacing: -.01em;
+}
+.sitio a.app-tiendas__enlace:hover {
+    background: var(--ed-marino-hover); color: #ffffff;
+    transform: translateY(-1px);
+}
+.sitio .app-tiendas__enlace[aria-disabled="true"] {
+    background: transparent; color: var(--ed-tinta-3); border-color: var(--ed-filete);
+    cursor: default;
+}
+.sitio .app-tiendas__enlace[aria-disabled="true"] .app-tiendas__icono { background: rgb(35 28 22 / 0.05); }
+
+/* ---------- Pie oscuro: el badge se apoya en un filete claro ---------- */
+.sitio footer.pie .app-tiendas__enlace {
+    background: transparent; border-color: rgb(255 255 255 / 0.16); color: #f0ece4;
+}
+.sitio footer.pie .app-tiendas__enlace .app-tiendas__icono { background: rgb(255 255 255 / 0.08); }
+.sitio footer.pie a.app-tiendas__enlace:hover {
+    background: rgb(255 255 255 / 0.07); border-color: rgb(255 255 255 / 0.32); color: #ffffff;
+}
+.sitio footer.pie .app-tiendas__enlace[aria-disabled="true"] {
+    border-color: rgb(255 255 255 / 0.10); color: #8f8a82;
+}
+.sitio footer.pie .app-tiendas__enlace[aria-disabled="true"] .app-tiendas__icono { background: rgb(255 255 255 / 0.04); }

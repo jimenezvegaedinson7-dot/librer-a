@@ -14,6 +14,7 @@ const verificarToken = require('../middlewares/auth.middleware');
 const verificarRol = require('../middlewares/rol.middleware');
 const uploadVideo = require('../middlewares/uploadVideo.middleware');
 const carrusel = require('../controllers/carrusel.controller');
+const portada = require('../controllers/portada.controller');
 const { recibir } = require('../middlewares/uploadCarrusel.middleware');
 
 // ========================================
@@ -24,6 +25,10 @@ const { recibir } = require('../middlewares/uploadCarrusel.middleware');
 // pública no necesita el listado ni los public_id.
 router.get('/', obtenerAnuncioActivo);
 router.get('/carrusel', carrusel.listarPublico);
+// Libro protagonista de la portada 3D (antes de '/:id' para no confundirse).
+router.get('/protagonista', portada.obtenerPublico);
+router.get('/protagonista/panel', verificarToken, verificarRol('administrador'), portada.obtenerPanel);
+router.put('/protagonista', verificarToken, verificarRol('administrador'), portada.guardar);
 router.get('/carrusel/todos', verificarToken, verificarRol('administrador'), carrusel.listarPanel);
 router.post('/carrusel', verificarToken, verificarRol('administrador'), recibir, carrusel.crear);
 router.put('/carrusel/orden', verificarToken, verificarRol('administrador'), carrusel.reordenar);

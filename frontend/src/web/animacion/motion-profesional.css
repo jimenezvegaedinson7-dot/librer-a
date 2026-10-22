@@ -1,0 +1,63 @@
+/* Movimiento editorial: el libro es el espectáculo; la tienda mantiene el ritmo. */
+.sitio {
+    --motion-entrada: cubic-bezier(0.16, 1, 0.3, 1);
+    --motion-respuesta: 220ms;
+}
+
+/* Las transiciones CSS heredadas no deben interpolar encima de GSAP. */
+.sitio [data-motion-state="running"] {
+    transition: none !important;
+    will-change: transform, opacity;
+}
+
+.sitio h2[data-reveal] { text-wrap: balance; }
+
+/* Recorrido de fondo acotado: nunca mueve el texto ni el área pulsable. */
+.sitio .banda-catalogo__fondo { inset-block: -24px; }
+.sitio .banda-catalogo__atmosfera {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(110deg, transparent 15%, rgb(255 255 255 / 5%) 50%, transparent 80%);
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .sitio .categoria-tarjeta,
+    .sitio .oferta-tarjeta,
+    .sitio .vitrina__tarjeta {
+        transition: transform 420ms var(--motion-entrada), box-shadow 420ms var(--motion-entrada);
+    }
+    .sitio .categoria-tarjeta:hover,
+    .sitio .categoria-tarjeta:focus-visible,
+    .sitio .oferta-tarjeta:focus-within {
+        transform: translateY(-4px);
+    }
+    .sitio .libro__tapa img,
+    .sitio .oferta-tarjeta__tapa img {
+        transition: transform 600ms var(--motion-entrada);
+    }
+    .sitio .libro:hover .libro__tapa img,
+    .sitio .oferta-tarjeta:hover .oferta-tarjeta__tapa img {
+        transform: scale(1.035);
+    }
+    .sitio .proceso__paso:hover .proceso__icono {
+        transform: translateY(-3px);
+    }
+}
+
+.sitio .proceso__icono {
+    transition: transform 300ms var(--motion-entrada), color var(--motion-respuesta);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sitio [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+        clip-path: none !important;
+        filter: none !important;
+    }
+    .sitio .proceso__icono,
+    .sitio .categoria-tarjeta,
+    .sitio .oferta-tarjeta__tapa img { transition: color 120ms; }
+}

@@ -51,7 +51,7 @@
 
     <!--
       PANTALLA DE CARGA de la web pública. Se pinta con el HTML, antes de
-      que descargue el JavaScript; la retira src/public-site/components/Precarga.jsx
+      que descargue el JavaScript; la retira src/web/componentes/Precarga.jsx
       cuando las fuentes y la página están listas.
       Solo se activa en las rutas de PublicLayout (el panel no la ve).
     -->
@@ -66,8 +66,12 @@
         if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         window.scrollTo(0, 0);
         var html = document.documentElement;
-        html.setAttribute('data-precarga', '');
-        html.classList.add('precarga-bloqueo');
+        // El inicio tiene su propio indicador ligado al primer cuadro 3D.
+        // No superponer otra pantalla ni retrasar artificialmente la escena.
+        if (ruta !== '/') {
+          html.setAttribute('data-precarga', '');
+          html.classList.add('precarga-bloqueo');
+        }
         // Fuentes de la primera pantalla (texto, títulos, botones y pantalla de carga).
         [400, 600, 700].forEach(function (peso) {
           var f = document.createElement('link');
@@ -176,6 +180,6 @@
       }
     </script>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <script type="module" src="/src/app/main.jsx"></script>
   </body>
 </html>

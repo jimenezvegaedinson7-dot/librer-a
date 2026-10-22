@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { descontarCompra, estadoCarrito } from '../src/public-site/tienda/carritoCompra.js';
+import { descontarCompra, estadoCarrito } from '../src/web/tienda/carritoCompra.js';
 
 const intento={carrito:[{id_libro:1,cantidad:3,linea:'original',retiradas:0}]};
 const venta={id_venta:10,detalle:[{id_libro:1,cantidad:3}]};

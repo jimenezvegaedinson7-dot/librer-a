@@ -1,4 +1,4 @@
-%% Generado 2026-10-14 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-10-22 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     subgraph React
         R__api_anuncios["anuncios"]
@@ -32,7 +32,7 @@ flowchart LR
         F__api_ventas["ventas"]
         F__api_zonas_delivery["zonas-delivery"]
     end
-    E__api_anuncios(("/api/anuncios")) --> C_anuncio_controller["anuncio.controller"] & C_carrusel_controller["carrusel.controller"]
+    E__api_anuncios(("/api/anuncios")) --> C_anuncio_controller["anuncio.controller"] & C_carrusel_controller["carrusel.controller"] & C_portada_controller["portada.controller"]
     R__api_anuncios --> E__api_anuncios
     E__api_app(("/api/app")) --> C_app_controller["app.controller"]
     R__api_app --> E__api_app
@@ -84,6 +84,7 @@ flowchart LR
     C_agencia_controller --> DB
     C_anuncio_controller --> DB
     C_carrusel_controller --> DB
+    C_portada_controller --> DB
     C_app_controller --> DB
     C_asistente_controller --> DB
     C_auth_controller --> DB

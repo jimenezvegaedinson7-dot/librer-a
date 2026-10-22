@@ -41,7 +41,7 @@ def main():
     assert graph.has_edge(email_screen, 'endpoint:POST /api/auth/verificar-email'), 'Falta verificación de email Flutter'
     checkout_screen = next(n['id'] for n in data['nodes'] if n.get('source_file') == 'flutter_app/lib/screens/entrega_y_pago_screen.dart' and n.get('label') == 'entrega_y_pago_screen.dart')
     assert graph.has_edge(checkout_screen, 'endpoint:POST /api/pagos/crear-orden'), 'Falta creación de orden Flutter'
-    for client in ['flutter_app/lib/screens/mis_compras_screen.dart', 'frontend/src/public-site/tienda/CheckoutPage.jsx', 'frontend/src/features/pedidos/PedidosPage.jsx']:
+    for client in ['flutter_app/lib/screens/mis_compras_screen.dart', 'frontend/src/web/tienda/CheckoutPage.jsx', 'frontend/src/panel/pedidos/PedidosPage.jsx']:
         # Graphify consolida un nodo de archivo con su equivalente del AST;
         # su ID canónico puede cambiar, pero fuente y etiqueta se conservan.
         source = next(n['id'] for n in data['nodes'] if n.get('source_file') == client and n.get('label') == Path(client).name)
