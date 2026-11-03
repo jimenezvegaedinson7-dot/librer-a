@@ -109,8 +109,14 @@ const listarComprobantes = async (req, res) => {
             por_pagina
         } = req.query;
 
+        const idVenta = req.query.id_venta === undefined ? undefined : validarId(req.query.id_venta);
+        if (req.query.id_venta !== undefined && !idVenta) {
+            return res.status(400).json({ success: false, mensaje: 'ID de venta inválido' });
+        }
+
         const resultado =
             await comprobanteModel.listarComprobantes({
+                idVenta,
                 tipo,
                 q,
                 envio,
@@ -124,6 +130,7 @@ const listarComprobantes = async (req, res) => {
             comprobantes:
                 resultado.comprobantes,
             total: resultado.total,
+            filtro_venta: idVenta ?? null,
             paginas: resultado.paginas
         });
 
@@ -264,12 +271,8 @@ const enviarComprobanteEmail = async (req, res) => {
                 clienteTipoDocumento: comprobante.cliente_tipo_documento,
                 clienteEmail: comprobante.cliente_email || comprobante.correo_compra,
                 subtotal: comprobante.subtotal,
-                igv: comprobante.igv,
                 costoEnvio: comprobante.costo_envio,
                 total: comprobante.total,
-                opGravada: comprobante.op_gravada,
-                opExonerada: comprobante.op_exonerada,
-                numeroSunat: comprobante.numero_sunat,
                 items: comprobante.detalle || [],
                 empresaRazon: comprobante.razon_social ?? empresa.razon_social,
                 empresaRuc: comprobante.ruc ?? empresa.ruc,
@@ -312,50 +315,9 @@ const enviarComprobanteEmail = async (req, res) => {
 };
 
 // ========================================
-// EXPORTAR CONTROLADORES
-// ========================================
-// ========================================
-// REGISTRAR NÚMERO SUNAT (ADMIN)
-// PUT /api/comprobantes/:id/sunat
-// { numero_sunat, nota_credito_sunat }
-// ========================================
-const registrarSunat = async (req, res) => {
-    try {
-        const idComprobante = validarId(req.params.id);
-        if (!idComprobante) {
-            return res.status(400).json({ success: false, mensaje: 'ID de comprobante inválido' });
-        }
-
-        const { numero_sunat, nota_credito_sunat } = req.body;
-        if (!numero_sunat && !nota_credito_sunat) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'Indica el número del comprobante SUNAT o de su nota de crédito'
-            });
-        }
-
-        const comprobante = await comprobanteModel.registrarSunat(idComprobante, {
-            numero_sunat,
-            nota_credito_sunat
-        });
-        if (!comprobante) {
-            return res.status(404).json({ success: false, mensaje: 'Comprobante no encontrado' });
-        }
-
-        await registrarHistorialComprobante(req, idComprobante,
-            `Comprobante #${idComprobante}: SUNAT ${comprobante.numero_sunat || '—'}` +
-            (comprobante.nota_credito_sunat ? `, nota de crédito ${comprobante.nota_credito_sunat}` : ''));
-
-        return res.json({ success: true, mensaje: 'Datos de SUNAT registrados', comprobante });
-    } catch (error) {
-        return responderError(res, error, 'Error al registrar los datos de SUNAT');
-    }
-};
-
-// ========================================
 // ANULAR COMPROBANTE (ADMIN)
 // POST /api/comprobantes/:id/anular
-// { motivo, nota_credito_sunat }
+// { motivo }
 // ========================================
 const anularComprobante = async (req, res) => {
     try {
@@ -372,10 +334,7 @@ const anularComprobante = async (req, res) => {
             });
         }
 
-        const comprobante = await comprobanteModel.anular(idComprobante, {
-            motivo,
-            nota_credito_sunat: req.body.nota_credito_sunat
-        });
+        const comprobante = await comprobanteModel.anular(idComprobante, { motivo });
         if (!comprobante) {
             return res.status(404).json({ success: false, mensaje: 'Comprobante no encontrado' });
         }
@@ -411,11 +370,13 @@ const responderError = (res, error, mensajeGenerico) => {
     return res.status(500).json({ success: false, mensaje: mensajeGenerico });
 };
 
+// ========================================
+// EXPORTAR CONTROLADORES
+// ========================================
 module.exports = {
     generarComprobante,
     listarComprobantes,
     obtenerComprobante,
     enviarComprobanteEmail,
-    registrarSunat,
     anularComprobante
 };

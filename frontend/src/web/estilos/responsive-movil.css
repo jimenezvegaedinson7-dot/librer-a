@@ -2,7 +2,7 @@
    CELULAR Y TABLET
    Ajustes para que la web se sienta como una tienda en el teléfono:
    barra inferior fija, secciones más compactas, rejillas de dos
-   columnas y botones a mano del pulgar. Se carga al final.
+   columnas y botones a mano del pulgar. Se carga después de los temas.
    ============================================================ */
 
 /* ---------- Barra inferior ---------- */
@@ -33,7 +33,7 @@
 /* ---------- Secciones más compactas en el teléfono ---------- */
 @media (max-width: 640px) {
     .sitio { --seccion: 2.4rem; }
-    .sitio .seccion__titulo { font-size: 1.5rem; }
+    .sitio .seccion__titulo { font-size: clamp(1.5rem, 1rem + 2.5vw, 2rem); }
     .sitio .seccion__entrada { font-size: 0.9375rem; margin-top: 0.4rem; }
     .sitio .seccion__cabeza { align-items: center; }
 
@@ -41,7 +41,7 @@
     .hero__rejilla { padding-top: 2rem; }
     .hero__titulo { font-size: 2.1rem; }
     .hero__bajada { font-size: 0.9375rem; }
-    .hero__acciones { flex-wrap: nowrap; gap: 0.5rem; }
+    .hero__acciones { flex-wrap: wrap; gap: 0.5rem; }
     .hero__acciones .boton { flex: 1; min-height: 44px; padding: 0 0.8rem; font-size: 0.875rem; }
     .hero__escena { height: 36svh; min-height: 240px; }
 
@@ -64,4 +64,128 @@
 /* ---------- Tablet ---------- */
 @media (min-width: 641px) and (max-width: 1023px) {
     .ofertas__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Los hijos de una rejilla/fila deben poder encogerse: min-width:auto
+   conservaba el ancho de nombres, precios y controles largos. */
+.sitio :is(.catalogo-resultados, .tarjeta-libro, .tarjeta-libro__cuerpo,
+    .libro__datos, .oferta-tarjeta, .oferta-tarjeta__datos, .categorias__item,
+    .categoria__pie > span, .app-funcion, .app-funcion p, .compra-formulario,
+    .compra-formulario fieldset, .compra-formulario label) { min-width: 0; }
+.sitio :is(.libro__titulo, .libro__autor, .categoria, .libro__categoria,
+    .oferta-tarjeta h3, .oferta-tarjeta__autor, .categoria__nombre,
+    .app-funcion b, .app-funcion span) { overflow-wrap: anywhere; }
+.sitio :is(.tarjeta-libro, .libro, .oferta-tarjeta) .precio { max-width: 100%; flex-wrap: wrap; }
+.sitio .categoria__pie > span:first-child { flex: 1; }
+
+/* Las acciones de oferta participan en el flujo, incluso cuando se
+   apilan; ya no dependen de reservar una altura fija de 88px. */
+.sitio .ofertas__carrusel .oferta-tarjeta { padding-bottom: 16px; align-items: start; }
+.sitio .oferta-tarjeta h3 { padding-right: 0; }
+.sitio .oferta-tarjeta > .compra-libro:has(> .compra-libro__detalle) {
+    position: static; grid-column: 1 / -1; width: 100%; margin-top: auto;
+}
+
+/* La distribución de las acciones depende de la tarjeta, también en
+   tablet: dos botones apretados no deben invadir la columna vecina. */
+@container tarjeta-comercial (max-width: 220px) {
+    .sitio :is(.tarjeta-libro, .libro, .oferta-tarjeta) .compra-libro:has(> .compra-libro__detalle) {
+        display: flex; flex-direction: column; align-items: stretch; gap: 4px;
+    }
+    .sitio :is(.tarjeta-libro, .libro, .oferta-tarjeta) .compra-libro > .compra-libro__detalle {
+        justify-content: center; width: 100%; max-width: none; text-align: center;
+    }
+}
+
+@media (max-width: 1023px) {
+    .sitio .navegacion-publica .cabecera__principal {
+        grid-template-columns: 44px minmax(0, 1fr) auto; gap: 4px;
+    }
+    .sitio .navegacion-publica .cabecera .marca { min-width: 0; gap: 6px; padding-inline: 2px !important; }
+    .sitio .navegacion-publica .cabecera .marca span {
+        font-size: clamp(0.9375rem, 0.7rem + 1vw, 1.1875rem) !important;
+        line-height: 1.1 !important; white-space: normal;
+    }
+    .sitio .navegacion-publica .cabecera .marca img { flex: none; width: 24px !important; }
+    .sitio .navegacion-publica .cabecera .compra-cuenta__texto { display: none; }
+    .sitio .navegacion-publica .cabecera :is(.compra-cuenta, .compra-carrito) {
+        width: 44px; min-width: 44px; min-height: 44px; padding-inline: 4px !important;
+    }
+    .sitio .cabecera .buscador, .sitio .cabecera .buscador button[type='submit'] { height: 44px !important; }
+    .sitio .cabecera .buscador input { font-size: 1rem !important; }
+    .sitio .catalogo-lateral { max-width: 100%; }
+    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) {
+        display: flex; flex-wrap: wrap; overflow: visible; padding-right: 14px;
+    }
+    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) h2 { flex-basis: 100%; }
+    .sitio .catalogo-lateral :is(.casilla, .chip) { min-height: 44px; }
+    .sitio .categorias__rejilla { grid-auto-columns: 30%; }
+    .sitio .categoria__pie { padding: 12px; gap: 8px; }
+    .sitio .categoria__nombre { font-size: clamp(1rem, 0.75rem + 1vw, 1.25rem); }
+    .sitio .compra-distribucion { grid-template-columns: minmax(0, 1fr); }
+    .sitio .compra-resumen { position: static; }
+}
+
+@media (max-width: 640px) {
+    .sitio { --seccion: clamp(1.5rem, 5vw, 2rem); }
+    .sitio main h1:not(.sr-only, .visualmente-oculto) { font-size: clamp(1.875rem, 1rem + 4vw, 2.5rem); }
+    .sitio :is(.categorias__titulo, .comprar__titulo) { font-size: clamp(1.5rem, 1rem + 2.5vw, 2rem); }
+    .sitio .seccion__cabeza { align-items: start; gap: 12px; }
+    .sitio .catalogo__controles { flex-wrap: wrap; gap: 8px; max-width: 100%; }
+    .sitio .catalogo__controles .enlace-mas { font-size: 0.8125rem; }
+    .sitio .categorias__rejilla { grid-auto-columns: calc((100% - 12px) / 2); }
+    .sitio .categoria-tarjeta .categoria__pie { padding: 10px 8px; align-items: start; }
+    .sitio .categoria-tarjeta .categoria__nombre { font-size: clamp(1rem, 0.8rem + 1vw, 1.1875rem); }
+    .sitio .categoria-tarjeta .categoria__flecha { width: 24px; height: 24px; }
+    .sitio .catalogo-pagina .filtros { display: grid; grid-template-columns: minmax(0, 1fr); }
+    .sitio .catalogo-pagina .filtros .buscador { width: 100%; max-width: none; }
+    .sitio .ordenar { width: 100%; min-width: 0; justify-content: space-between; }
+    .sitio .ordenar select { min-width: 0; max-width: 75%; min-height: 44px; }
+    .sitio .catalogo-estante__cabeza { flex-wrap: wrap; gap: 8px; }
+    .sitio .catalogo-estante__ver { flex: none; min-height: 44px; display: inline-flex; align-items: center; }
+    .sitio .catalogo-resultados .rejilla-libros { grid-auto-columns: calc((100% - 10px) / 2); }
+    /* Los estantes temáticos se deslizan; la lista completa se lee hacia abajo. */
+    .sitio .catalogo-resultados .rejilla-libros--todos {
+        grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-inline: 0; padding: 4px 0 12px; overflow: visible;
+    }
+    .sitio .catalogo-resultados .tarjeta-libro { padding: clamp(8px, 2vw, 12px); }
+    .sitio .catalogo-resultados .tarjeta-libro__tapa { margin-inline: 0; flex: none; }
+    .sitio .catalogo-resultados .tarjeta-libro .libro__autor { white-space: normal; }
+    .sitio :is(.libro, .tarjeta-libro, .oferta-tarjeta) .libro__titulo {
+        font-size: clamp(0.875rem, 0.75rem + 0.5vw, 1rem); line-height: 1.3;
+    }
+    .sitio :is(.libro, .tarjeta-libro, .oferta-tarjeta) .compra-libro > .boton.boton--compra { min-height: 44px; font-size: 0.8125rem; }
+    .sitio :is(.libro, .tarjeta-libro, .oferta-tarjeta) .compra-libro > .compra-libro__detalle {
+        min-height: 32px; padding-block: 4px; font-size: 0.75rem;
+    }
+    .sitio .ofertas__carrusel { grid-template-columns: none; grid-auto-columns: calc((100% - 12px) / 2); gap: 12px; }
+    .sitio .ofertas__carrusel .oferta-tarjeta {
+        grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto;
+        gap: 10px; padding: 8px;
+    }
+    .sitio .oferta-tarjeta__tapa { margin: 0; }
+    .sitio .oferta-tarjeta__porcentaje { top: 12px; right: 12px; font-size: 0.75rem; }
+    .sitio .oferta-tarjeta h3 { font-size: 0.9375rem; }
+    .sitio .oferta-tarjeta__datos { gap: 4px; }
+    .sitio .oferta-tarjeta .compra-libro:has(> .compra-libro__detalle) { padding-top: 4px; }
+    .sitio .comprar__paso { padding: 16px !important; gap: 12px !important; }
+    .sitio .comprar__paso h3 { font-size: 1.25rem; }
+    .sitio .comprar__paso p { font-size: 0.9375rem; }
+    .sitio .acceso-catalogo__boton { min-height: 48px; padding-inline: 20px; font-size: 1.125rem; max-width: 100%; }
+    .sitio :is(.app-funcion, .instalar__paso) { padding: clamp(12px, 3vw, 20px) !important; gap: 12px !important; }
+    .sitio .app-funcion b { font-size: clamp(1.0625rem, 0.8rem + 1vw, 1.25rem); }
+    .sitio .app-funcion span { font-size: 0.875rem; }
+    .sitio :is(.app-funcion__icono, .instalar__numero) { width: 44px !important; height: 44px !important; }
+    .sitio :is(.app-funciones-seccion, .descargar-plataformas) { padding-block: 28px !important; }
+    .sitio :is(.tarjeta-descarga, .actualizacion-app) { padding: 20px !important; }
+    .sitio .compra-formulario :is(input:not([type=radio]), select) { min-width: 0; font-size: 1rem; }
+    .sitio .cuenta-fila { grid-template-columns: minmax(0, 1fr); }
+    .sitio .carrito-linea-datos { min-width: 0; flex-basis: calc(100% - 82px); }
+}
+
+/* En horizontal baja la cabecera al desplazarse: deja espacio real al
+   contenido y al teclado en teléfonos con poca altura disponible. */
+@media (max-height: 500px) and (max-width: 1023px) {
+    .sitio .cabecera { position: relative; }
 }

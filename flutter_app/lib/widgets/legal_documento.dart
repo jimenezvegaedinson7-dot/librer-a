@@ -56,7 +56,7 @@ class LegalDocumento extends StatelessWidget {
             const SizedBox(height: 8),
             Center(
               child: Text(
-                '© 2026 Librería. Todos los derechos reservados.',
+                '© 2026 MATIDANA. Todos los derechos reservados.',
                 textAlign: TextAlign.center,
                 style: textTheme.bodySmall?.copyWith(
                   color: AppColors.textTertiary,

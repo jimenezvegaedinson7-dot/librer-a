@@ -46,7 +46,7 @@ struct ComplaintsBookView: View {
     private var form: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                Text("Hoja de reclamación virtual · Librería del Saber")
+                Text("Hoja de reclamación virtual · MATIDANA")
                     .font(.caption)
                     .foregroundStyle(Brand.textoSecundario)
                 if prefilled {

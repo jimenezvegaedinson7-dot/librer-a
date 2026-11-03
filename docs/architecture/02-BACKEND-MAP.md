@@ -1,6 +1,6 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-10-22 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-03 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
@@ -208,7 +208,6 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/comprobantes/resumen` | JWT + verificarPanel | inline (comprobante.routes.js) | `comprobante.model.js#listarResumen` | comprobantes |
 | POST | `/api/comprobantes/:id/enviar-email` | JWT + verificarPanel | controllers/comprobante.controller.js#enviarComprobanteEmail | `comprobante.model.js#obtenerComprobante`<br>`empresa.model.js#obtenerEmpresa` | comprobantes, empresa, usuarios, ventas |
 | GET | `/api/comprobantes/:id` | JWT + verificarPanel | controllers/comprobante.controller.js#obtenerComprobante | `comprobante.model.js#obtenerComprobante` | comprobantes, usuarios, ventas |
-| PUT | `/api/comprobantes/:id/sunat` | JWT + rol:administrador | controllers/comprobante.controller.js#registrarSunat | `comprobante.model.js#registrarSunat`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
 | POST | `/api/comprobantes/:id/anular` | JWT + rol:administrador | controllers/comprobante.controller.js#anularComprobante | `comprobante.model.js#anular`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
 
 ### /api/empresa

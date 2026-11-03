@@ -39,7 +39,7 @@ export default function AdminLayout() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-40 bg-[#1c1814]/50 backdrop-blur-[2px] lg:hidden"
+                        className="fixed inset-0 z-40 bg-[#1c1814]/50 lg:hidden"
                     />
                 )}
             </AnimatePresence>
@@ -49,7 +49,7 @@ export default function AdminLayout() {
                     onAbrirMenu={abrirSidebar}
                     onToggleSidebar={toggleSidebar}
                 />
-                <main className="admin-main px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-6">
+                <main data-tablas-formales={pathname !== '/dashboard'} className="admin-main px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-6">
                     <div className="mx-auto w-full max-w-[1600px]">
                         <Breadcrumbs />
                         <motion.div

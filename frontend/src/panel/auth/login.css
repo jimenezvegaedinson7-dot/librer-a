@@ -1,0 +1,309 @@
+/* Libro abierto: portada interior de marca y página de acceso. */
+.login-page {
+    --login-texto: var(--editorial-marino-900);
+    --login-secundario: #354351;
+    --login-borde: rgb(13 41 64 / 0.22);
+    --login-blanco: #ffffff;
+    --login-sobre-marca: #e1e8ed;
+    --login-papel: #fffdf7;
+    --login-papel-sombra: #e5dfd1;
+    --login-hoja: #fffdf7;
+    --login-hoja-borde: #e5dfd1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100svh;
+    padding: 3rem clamp(1.5rem, 5vw, 6rem);
+    background-color: var(--editorial-marino-950);
+    background-image: linear-gradient(rgb(10 31 49 / 0.38), rgb(10 31 49 / 0.5)), var(--login-fondo);
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+    color: var(--login-texto);
+    caret-color: var(--editorial-marino-900);
+    overflow-x: clip;
+}
+
+.login-page ::selection { background: var(--editorial-dorado); color: var(--editorial-marino-950); }
+
+.login-libro {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100%, 60rem);
+    min-height: 34.5rem;
+    border-radius: 0.5rem;
+    background: rgb(255 253 247 / 0.06);
+    box-shadow: 0 2.5rem 4rem -1.5rem rgb(0 0 0 / 0.65);
+    perspective: 1600px;
+}
+
+/* La cubierta y los cantos quedan por debajo de las dos páginas. */
+.login-libro::before {
+    content: '';
+    position: absolute;
+    z-index: -2;
+    inset: -0.5rem -0.625rem -1rem;
+    border: 1px solid rgb(213 164 71 / 0.7);
+    border-radius: 0.625rem;
+    background: transparent;
+    box-shadow: inset 0 0 0 0.4rem rgb(22 57 90 / 0.6);
+}
+
+.login-libro::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: auto -0.2rem -0.5rem;
+    height: 0.5rem;
+    border: 1px solid var(--login-papel-sombra);
+    border-radius: 0.5rem 0.5rem 0.75rem 0.75rem;
+    background: repeating-linear-gradient(180deg, var(--login-papel) 0 2px, var(--login-papel-sombra) 2px 3px);
+}
+
+.login-pliegue {
+    position: absolute;
+    z-index: 1;
+    top: 0.5rem;
+    bottom: 0.25rem;
+    left: 50%;
+    width: 1px;
+    background: rgb(95 77 51 / 0.2);
+    pointer-events: none;
+}
+
+.login-page .login-marca {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 2.5rem clamp(1.75rem, 3.5vw, 3rem) 5rem;
+    border-radius: 0.375rem 1.25rem 1rem 0.375rem;
+    background: linear-gradient(90deg, var(--login-hoja-borde), var(--login-hoja) 6%, var(--login-hoja) 84%, var(--login-hoja-borde));
+    color: var(--login-texto);
+    text-align: center;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.login-page .login-marca::after { display: none; }
+
+.login-page .login-volver {
+    display: inline-flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 0.625rem;
+    margin-top: 0.75rem;
+    padding-block: 0.5rem;
+    color: var(--login-texto);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.5;
+    text-decoration: none;
+    text-underline-offset: 0.3em;
+}
+
+.login-page .login-volver:hover { color: var(--editorial-marino-700); text-decoration: underline; }
+.login-page .login-volver svg { width: 0.75rem; }
+.login-identidad { margin-block: 1rem; max-width: 25rem; }
+.login-logo { display: block; width: 4rem; height: 5.375rem; margin-inline: auto; object-fit: contain; }
+
+.login-nombre {
+    margin: 1.5rem 0 1.25rem;
+    color: var(--login-texto);
+    font-family: var(--font-title);
+    font-size: clamp(2.5rem, 3.5vw, 3.125rem);
+    font-weight: 500;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+}
+
+.login-descripcion {
+    max-width: 31ch;
+    margin: 0 auto;
+    color: var(--login-secundario);
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    text-wrap: pretty;
+}
+
+.login-marca-pie {
+    position: absolute;
+    inset: auto 2.5rem 1.75rem;
+    margin: 0;
+    border-top: 1px solid rgb(213 164 71 / 0.45);
+    padding-top: 1rem;
+    color: var(--login-secundario);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.login-lado {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem clamp(1.75rem, 3.5vw, 3rem);
+    border-radius: 1.25rem 0.375rem 0.375rem 1rem;
+    background: linear-gradient(90deg, var(--login-hoja-borde), var(--login-hoja) 7%, var(--login-hoja) 94%, var(--login-hoja-borde));
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.login-hoja-recuperacion { transform-origin: left center; backface-visibility: hidden; }
+.login-reset { min-width: 0; overflow-wrap: anywhere; }
+.login-reset [class*="text-[#766d62]"] { color: var(--login-secundario); }
+
+/* Una cubierta real gira sobre el lomo; termina en 400 ms, sin espera. */
+.login-tapa-intro {
+    position: absolute;
+    z-index: 5;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 50%;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    pointer-events: none;
+    animation: login-abrir-tapa 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.login-tapa-frente, .login-tapa-dorso {
+    position: absolute;
+    inset: 0;
+    border: 1px solid var(--editorial-dorado-oscuro);
+    border-radius: 0.375rem;
+    backface-visibility: hidden;
+}
+
+.login-tapa-frente {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    background: var(--editorial-marino-900);
+    box-shadow: inset 0 0 0 0.5rem var(--editorial-marino-700), 0 1rem 2rem -1rem rgb(0 0 0 / 0.6);
+    color: var(--editorial-dorado-hover);
+    text-align: center;
+}
+
+.login-tapa-frente img { width: 4rem; height: 5.375rem; object-fit: contain; filter: brightness(0) invert(1); }
+.login-tapa-frente span { font-family: var(--font-title); font-size: 2.5rem; line-height: 1.15; }
+.login-tapa-dorso { transform: rotateY(180deg); background: var(--login-hoja-borde); }
+.login-libro--abriendo { animation: login-revelar-base 400ms ease-out both; }
+.login-libro--abriendo::before, .login-libro--abriendo::after,
+.login-libro--abriendo > :is(.login-marca, .login-lado, .login-pliegue) { animation: login-revelar-paginas 400ms ease-out both; }
+
+@keyframes login-abrir-tapa {
+    0%, 10% { transform: translateX(-50%) rotateY(0deg); opacity: 1; }
+    85% { transform: translateX(0) rotateY(-175deg); opacity: 1; }
+    100% { transform: translateX(0) rotateY(-180deg); opacity: 0; }
+}
+
+@keyframes login-revelar-paginas {
+    0%, 10% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes login-revelar-base {
+    0%, 10% { background: transparent; box-shadow: none; }
+    100% { background: rgb(255 253 247 / 0.06); box-shadow: 0 2.5rem 4rem -1.5rem rgb(0 0 0 / 0.65); }
+}
+
+.login-page .login-tarjeta {
+    width: 100%;
+    max-width: 24rem;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+.login-titulo {
+    margin: 0;
+    color: var(--login-texto);
+    font-family: var(--font-title);
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+}
+
+.login-entradilla { margin: 0.75rem 0 0; color: var(--login-secundario); font-size: 0.875rem; line-height: 1.65; }
+.login-tarjeta .mb-8 { margin-bottom: 1.5rem; }
+.login-page .login-campo { height: 3rem; border: 1px solid var(--login-borde); border-radius: 0.5rem; background: #ffffff; box-shadow: none; }
+.login-page .login-campo:hover { border-color: var(--login-secundario); }
+.login-page .login-campo:focus-within { border-color: var(--editorial-marino-700); box-shadow: 0 0 0 3px rgb(13 41 64 / 0.1); }
+.login-page .login-campo-icono { color: var(--login-secundario); width: 3rem; }
+.login-page .login-campo:focus-within .login-campo-icono { color: var(--login-texto); }
+.login-page .login-input { color: var(--login-texto); font-size: 1rem; }
+.login-page .login-input::placeholder { color: #475563; opacity: 1; }
+.login-page .login-input--codigo { font-size: 1.375rem; }
+.login-page .login-ojo { width: 2.75rem; height: 2.75rem; color: var(--login-secundario); }
+.login-page .login-ojo:hover { color: var(--login-texto); background: #f0f3f5; }
+.login-page .login-enlace { color: var(--login-texto); font-weight: 600; }
+.login-page .login-enlace:hover { color: var(--editorial-marino-700); }
+
+.login-page .login-boton {
+    min-height: 3rem;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    background: var(--editorial-dorado);
+    color: var(--editorial-marino-950);
+    box-shadow: none;
+    font-size: 0.9375rem;
+}
+
+.login-page .login-boton:hover:not(:disabled) { background: var(--editorial-dorado-hover); filter: none; box-shadow: none; }
+.login-page .login-boton[aria-busy="true"] > span { border-color: rgb(10 31 49 / 0.25); border-top-color: var(--editorial-marino-950); }
+.login-page :is(button, a, input):focus-visible { outline: 2px solid var(--editorial-dorado-oscuro); outline-offset: 4px; }
+.login-page .login-input:focus-visible { outline: none; }
+.login-nota { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin: 1.5rem 0 0; border-top: 1px solid var(--login-borde); padding-top: 1rem; color: var(--login-secundario); font-size: 0.75rem; line-height: 1.6; text-align: center; }
+.login-nota svg { flex-shrink: 0; font-size: 0.6875rem; }
+
+@media (max-width: 899px) {
+    .login-page { padding: 1.5rem 1.25rem 2.5rem; background-attachment: scroll; }
+    .login-libro { grid-template-columns: minmax(0, 1fr); min-height: 0; max-width: 34rem; }
+    .login-page .login-marca { padding: 1.5rem 1.5rem 1.25rem; border-radius: 0.375rem 0.375rem 0 0; background: var(--login-hoja); }
+    .login-identidad { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); align-items: center; gap: 1rem; max-width: none; margin: 0; text-align: left; }
+    .login-logo { width: 3rem; height: 4rem; }
+    .login-nombre { margin: 0; font-size: 2rem; line-height: 1.15; }
+    .login-nombre br { display: none; }
+    .login-descripcion { grid-column: 1 / -1; max-width: 45ch; font-size: 0.875rem; line-height: 1.65; }
+    .login-marca-pie { display: none; }
+    .login-lado { padding: 1.5rem; border-top: 1px solid var(--login-borde); border-radius: 0 0 0.375rem 0.375rem; background: linear-gradient(90deg, var(--login-hoja-borde), var(--login-hoja) 2%, var(--login-hoja) 98%, var(--login-hoja-borde)); }
+    .login-lado { grid-column: 1; grid-row: 2; }
+    .login-tapa-intro { width: 100%; animation-name: login-abrir-tapa-movil; }
+    .login-pliegue { display: none; }
+    .login-titulo { font-size: 2rem; }
+    .login-nota { margin-top: 1.5rem; }
+}
+
+@keyframes login-abrir-tapa-movil {
+    0%, 10% { transform: rotateY(0deg); opacity: 1; }
+    85% { transform: rotateY(-100deg); opacity: 1; }
+    100% { transform: rotateY(-110deg); opacity: 0; }
+}
+
+@media (max-width: 359px) {
+    .login-page { padding-inline: 1rem; }
+    .login-page .login-marca, .login-lado { padding-inline: 1.125rem; }
+    .login-nombre { font-size: 1.75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-page *, .login-page *::before, .login-page *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    .login-tapa-intro { display: none; }
+}

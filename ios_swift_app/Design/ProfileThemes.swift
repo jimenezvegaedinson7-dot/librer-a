@@ -5,7 +5,7 @@ extension ProfileTheme {
     static let defaultID = "libreria"
 
     static let all: [ProfileTheme] = [
-        ProfileTheme(id: "libreria", name: "Librería", start: 0x7A2530, end: 0x4E1620, accent: 0xB98D3E),
+        ProfileTheme(id: "libreria", name: "MATIDANA", start: 0x7A2530, end: 0x4E1620, accent: 0xB98D3E),
         ProfileTheme(id: "default", name: "Blanco", start: 0xFFFFFF, end: 0xFFFFFF, accent: nil),
         ProfileTheme(id: "grafito", name: "Grafito", start: 0x202227, end: 0x3A3E46, accent: nil),
         ProfileTheme(id: "noche", name: "Noche", start: 0x111827, end: 0x1F2937, accent: nil),

@@ -27,8 +27,8 @@ for (const width of [390, 1440]) test(`Pedidos ${width}px: cuatro tarjetas con b
     await preparar(page, auditados());
     await page.goto('/pedidos');
     const resumen = page.getByRole('region', { name: 'Indicadores de pedidos' });
-    await expect(resumen.locator('.indicador-tarjeta.joya')).toHaveCount(4);
-    await expect(resumen.locator('.kpi-destello')).toHaveCount(4);
+    await expect(resumen.locator('.indicador-nuevo.joya')).toHaveCount(4);
+    await expect(resumen.locator('.indicador-ilustracion > svg')).toHaveCount(4);
     await expect(resumen.locator('.pedido-indicador__valor')).toHaveText(['1', '0', '0', '1']);
     await expect(resumen.locator('.pedido-indicador__proporcion')).toHaveText(['50% del total', '0% del total', '0% del total', '50% del total']);
     await expect(resumen.getByRole('meter')).toHaveCount(4);
@@ -75,7 +75,7 @@ test('Pedidos: error, respuesta inválida y base vacía no fabrican ceros ni por
     await expect(page.locator('.pedido-indicador__proporcion')).toHaveText(Array(4).fill('Sin base para calcular porcentaje'));
     await expect(page.getByRole('meter')).toHaveCount(0);
 });
-test('Pedidos: los anillos conservan la base común y el reparto corregido a una décima', async ({ page }) => {
+test('Pedidos: las tarjetas conservan la base común y el reparto corregido a una décima', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await preparar(page, [
         { ...base, id_venta: 1, estado_entrega: 'pendiente' },
@@ -84,7 +84,7 @@ test('Pedidos: los anillos conservan la base común y el reparto corregido a una
     ]);
     await page.goto('/pedidos');
     const resumen = page.getByRole('region', { name: 'Indicadores de pedidos' });
-    await expect(resumen.locator('.kpi-anillo-cifra')).toHaveText(['33.4%', '33.3%', '0%', '33.3%']);
+    await expect(resumen.locator('.pedido-indicador__proporcion')).toHaveText(['33.4% del total', '33.3% del total', '0% del total', '33.3% del total']);
     await expect(resumen.locator('.pedido-indicador__valor')).toHaveText(['1', '1', '0', '1']);
     for (const meter of await resumen.getByRole('meter').all()) await expect(meter).toHaveAttribute('aria-valuemax', '3');
     await expect(resumen.getByRole('meter').first()).toHaveAttribute('aria-valuetext', '33.4% del total (1 de 3 pedidos)');
@@ -107,4 +107,26 @@ test('Delivery: confirmar salida envía el estado real; rechazo no adelanta los 
     await expect(page.getByText('El pedido cambió. Actualiza antes de confirmar.', { exact: true })).toBeVisible();
     expect(cambios).toEqual([{ estado: 'en_camino', confirmado: true, estado_anterior: 'pendiente' }]);
     await expect(page.locator('.pedido-indicador__valor')).toHaveText(['1', '0', '0', '0']);
+});
+
+test('Pedidos: canal y entrega se combinan; el estado no cambia la base del resumen', async ({ page }) => {
+    await preparar(page, [
+        { ...base, id_venta: 1, canal_compra: 'web', tipo_entrega: 'domicilio', estado_entrega: 'pendiente' },
+        { ...base, id_venta: 2, canal_compra: 'web', tipo_entrega: 'tienda', estado_entrega: 'listo_recojo' },
+        { ...base, id_venta: 3, canal_compra: 'app', tipo_entrega: 'domicilio', estado_entrega: 'en_camino' },
+    ]);
+    await page.goto('/ventas/pedidos');
+    const resumen = page.getByRole('region', { name: 'Indicadores de pedidos' });
+    await expect(resumen.locator('.pedido-indicador__valor')).toHaveText(['1', '1', '1', '0']);
+    await page.getByLabel('Canal de compra', { exact: true }).selectOption('web');
+    await page.getByLabel('Tipo de entrega', { exact: true }).selectOption('domicilio');
+    await expect(page.locator('.data-table-shell tbody tr')).toHaveCount(1);
+    await expect(page.locator('.data-table-shell tbody tr')).toContainText('#1');
+    await expect(resumen.locator('.pedido-indicador__valor')).toHaveText(['1', '0', '0', '0']);
+    await page.getByLabel('Filtrar pedidos', { exact: true }).selectOption('en_camino');
+    await expect(page.getByRole('heading', { name: 'No hay pedidos', exact: true })).toBeVisible();
+    await expect(resumen.locator('.pedido-indicador__valor')).toHaveText(['1', '0', '0', '0']);
+    await page.getByRole('button', { name: 'Limpiar', exact: true }).click();
+    await expect(page.locator('.data-table-shell tbody tr')).toHaveCount(3);
+    await expect(resumen.locator('.pedido-indicador__valor')).toHaveText(['1', '1', '1', '0']);
 });

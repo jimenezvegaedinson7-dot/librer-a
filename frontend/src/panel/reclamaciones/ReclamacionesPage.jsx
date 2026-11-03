@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { FaArrowUpRightFromSquare, FaBook, FaEye, FaMagnifyingGlass, FaPrint, FaReply, FaRotate } from 'react-icons/fa6';
+import { FaBook, FaEye, FaMagnifyingGlass, FaPrint, FaReply, FaRotate } from 'react-icons/fa6';
 
 import { FaHourglassHalf, FaClock, FaTriangleExclamation } from 'react-icons/fa6';
 import { Indicador, Indicadores } from '../ui/Indicadores';
@@ -9,6 +9,7 @@ import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input, Select, Textarea } from '../ui/Form';
 import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
 import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
 import { DataTable } from '../ui/DataTable';
@@ -17,6 +18,7 @@ import { BtnAccion } from '../ui/Acciones';
 import { Modal } from '../ui/Modal';
 import { Pagination } from '../ui/Pagination';
 import { useToast } from '../../app/providers/ToastProvider';
+import { useImpresion } from '../lib/hooks/useImpresion';
 import { formatearFecha, formatearMoneda } from '../../compartido/lib/utils/format';
 
 import { listarReclamaciones, obtenerResumenReclamaciones, responderReclamacion } from './reclamacionesService';
@@ -28,6 +30,7 @@ function diasRestantes(fechaLimite) {
     if (!fechaLimite) return null;
     const hoy = new Date(`${hoyLima()}T00:00:00Z`);
     const limite = new Date(`${fechaLimite}T00:00:00Z`);
+    if (Number.isNaN(limite.getTime())) return null;
     return Math.round((limite - hoy) / 86400000);
 }
 
@@ -36,6 +39,7 @@ function Plazo({ fila }) {
         return <Badge color="success">Respondida</Badge>;
     }
     const dias = diasRestantes(fila.fecha_limite);
+    if (dias === null) return <span className="text-xs text-slate-600">Sin fecha límite</span>;
     const fecha = new Date(`${fila.fecha_limite}T12:00:00`).toLocaleDateString('es-PE');
     if (dias < 0) return <span title={`Venció el ${fecha}`}><Badge color="danger">Vencida</Badge></span>;
     if (dias <= 3) return <span title={`Vence el ${fecha}`}><Badge color="warning">{dias === 0 ? 'Vence hoy' : `Vence en ${dias} d`}</Badge></span>;
@@ -58,26 +62,27 @@ const columnas = [
     { titulo: 'Plazo', alineacion: 'centro', render: (f) => <Plazo fila={f} /> },
 ];
 
-function Hoja({ r }) {
+function Hoja({ r, documentoRef }) {
+    const limite = r.fecha_limite ? new Date(`${r.fecha_limite}T12:00:00`) : null;
     const fila = (etiqueta, valor) => (
-        <div className="grid grid-cols-[170px_1fr] gap-2 border-b border-slate-200 py-1.5 text-sm">
+        <div className="grid grid-cols-1 gap-1 border-b border-slate-200 py-2 text-sm sm:grid-cols-[170px_1fr] sm:gap-2 print:grid-cols-[170px_1fr]">
             <span className="text-slate-500">{etiqueta}</span>
-            <span className="whitespace-pre-line text-slate-900">{valor || '—'}</span>
+            <span className="min-w-0 whitespace-pre-line break-words text-slate-900">{valor || '—'}</span>
         </div>
     );
     return (
-        <div id="hoja-reclamacion" className="print-area">
+        <div ref={documentoRef} id="hoja-reclamacion" className="print-area">
             <h3 className="mb-2 font-title text-lg font-semibold">Hoja de reclamación N.° {r.numero}</h3>
             {fila('Fecha de registro', formatearFecha(r.fecha_registro))}
-            {fila('Plazo de respuesta', new Date(`${r.fecha_limite}T12:00:00`).toLocaleDateString('es-PE'))}
+            {fila('Plazo de respuesta', limite && !Number.isNaN(limite.getTime()) ? limite.toLocaleDateString('es-PE') : '')}
             {fila('Consumidor', r.consumidor_nombre)}
-            {fila('Documento', `${r.consumidor_tipo_documento} ${r.consumidor_documento}`)}
+            {fila('Documento', [r.consumidor_tipo_documento, r.consumidor_documento].filter(Boolean).join(' '))}
             {fila('Domicilio', r.consumidor_domicilio)}
             {fila('Teléfono', r.consumidor_telefono)}
             {fila('Correo', r.consumidor_email)}
             {r.es_menor && fila('Padre, madre o apoderado', r.apoderado_nombre)}
-            {fila('Bien contratado', `${r.bien_tipo === 'servicio' ? 'Servicio' : 'Producto'}: ${r.bien_descripcion}`)}
-            {fila('Monto reclamado', r.monto_reclamado !== null ? formatearMoneda(r.monto_reclamado) : '')}
+            {fila('Bien contratado', r.bien_descripcion ? `${r.bien_tipo === 'servicio' ? 'Servicio' : 'Producto'}: ${r.bien_descripcion}` : '')}
+            {fila('Monto reclamado', r.monto_reclamado != null && r.monto_reclamado !== '' && Number.isFinite(Number(r.monto_reclamado)) ? formatearMoneda(r.monto_reclamado) : '')}
             {fila('N.° de pedido', r.id_venta ? `#${r.id_venta}` : '')}
             {fila('Tipo', r.tipo === 'queja' ? 'Queja' : 'Reclamo')}
             {fila('Detalle', r.detalle)}
@@ -96,6 +101,8 @@ function HojaModal({ reclamacion, onCerrar, onRespondida }) {
     const [respuesta, setRespuesta] = useState('');
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
+    const documentoRef = useRef(null);
+    const { imprimir, imprimiendo, errorImpresion } = useImpresion(documentoRef);
 
     const enviar = async (e) => {
         e.preventDefault();
@@ -126,11 +133,12 @@ function HojaModal({ reclamacion, onCerrar, onRespondida }) {
             footer={
                 <div className="no-print flex gap-2">
                     <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
-                    <Button variante="secondary" onClick={() => window.print()}><FaPrint /> Imprimir</Button>
+                    <Button variante="secondary" onClick={imprimir} cargando={imprimiendo}><FaPrint /> Imprimir</Button>
                 </div>
             }
         >
-            <Hoja r={reclamacion} />
+            {errorImpresion && <Alert tipo="error">{errorImpresion}</Alert>}
+            <Hoja r={reclamacion} documentoRef={documentoRef} />
             {reclamacion.estado === 'pendiente' && (
                 <form onSubmit={enviar} className="no-print mt-5 space-y-3 border-t border-slate-200 pt-5">
                     <Textarea
@@ -201,8 +209,6 @@ export default function ReclamacionesPage() {
     }, [estado, busqueda, pagina]);
     const filtradas = lista;
 
-    const urlPublica = `${window.location.origin}/libro-de-reclamaciones`;
-
     return (
         <div className="space-y-4">
             <PageHeader
@@ -210,7 +216,7 @@ export default function ReclamacionesPage() {
                 descripcion="Reclamos y quejas de los consumidores: respóndelos en un plazo no mayor a 15 días hábiles"
                 icono={<FaBook />}
             />
-            <Indicadores cargando={cargando} etiqueta="Resumen de reclamaciones">
+            <Indicadores cargando={cargando} error={error} etiqueta="Resumen de reclamaciones">
                 <Indicador titulo="Hojas" valor={resumen.total} icono={<FaBook />} tono="primary" detalle="Registradas en el libro" />
                 <Indicador titulo="Pendientes" valor={resumen.pendientes} icono={<FaHourglassHalf />} tono="sky" detalle="Por responder" de={resumen.total} />
                 <Indicador titulo="Por vencer" valor={resumen.por_vencer} icono={<FaClock />} tono="warning" detalle="Cerca del plazo de 15 días hábiles" de={resumen.total} />
@@ -220,36 +226,30 @@ export default function ReclamacionesPage() {
             <Card>
                 <CardHeader
                     titulo={`Hojas registradas · ${total} resultados`}
-                    subtitulo={
-                        <span>
-                            Formulario público:{' '}
-                            <a href={urlPublica} target="_blank" rel="noreferrer" className="font-semibold text-[#004d43] underline">
-                                {urlPublica} <FaArrowUpRightFromSquare className="inline text-xs" />
-                            </a>
-                        </span>
-                    }
-                    acciones={
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                            <Input value={busqueda} onChange={(e) => { setBusqueda(e.target.value); setPagina(1); }} placeholder="Buscar hoja o consumidor..." icono={<FaMagnifyingGlass />} className="sm:w-64" />
-                            <Select value={estado} onChange={(e) => { setEstado(e.target.value); setPagina(1); }} className="sm:w-44" aria-label="Filtrar por estado">
+                    subtitulo="Consulta y responde las hojas de reclamación recibidas."
+                    acciones={<div className="tabla-filtros-acciones"><Button variante="secondary" onClick={cargar} disabled={cargando}><FaRotate /> Actualizar</Button></div>}
+                    filtros={
+                        <div className="filtros-grid filtros-grid--dos">
+                            <Input label="Hoja o consumidor" value={busqueda} onChange={(e) => { setBusqueda(e.target.value); setPagina(1); }} placeholder="Buscar hoja o consumidor..." icono={<FaMagnifyingGlass />} />
+                            <Select label="Estado de la reclamación" value={estado} onChange={(e) => { setEstado(e.target.value); setPagina(1); }} aria-label="Filtrar por estado">
                                 <option value="todos">Todas</option>
                                 <option value="pendiente">Pendientes</option>
                                 <option value="vencido">Vencidas</option>
                                 <option value="respondido">Respondidas</option>
                             </Select>
-                            <Button variante="secondary" onClick={cargar} disabled={cargando}><FaRotate /> Actualizar</Button>
                         </div>
                     }
                 />
                 <CardBody className="p-0">
                     {cargando && <TableSkeleton columnas={5} filas={5} />}
                     {avisoResumen && <div className="px-4 pt-4"><Alert tipo="warning">{avisoResumen}</Alert></div>}
-                    {!cargando && error && <div className="p-4"><Alert tipo="error">{error}</Alert></div>}
+                    {!cargando && error && <div className="p-4"><ErrorCarga mensaje={error} onReintentar={cargar} /></div>}
                     {!cargando && !error && filtradas.length === 0 && (
                         <EmptyState titulo="Sin hojas" descripcion="No hay hojas de reclamación con este filtro." icono={<FaBook />} />
                     )}
                     {!cargando && !error && filtradas.length > 0 && (
                         <DataTable
+                            etiqueta="Hojas de reclamación registradas"
                             columnas={columnas}
                             filas={filtradas}
                             keyExtractor={(f) => f.id_reclamacion}

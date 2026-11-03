@@ -1,7 +1,7 @@
-# Especificación de diseño y funcional de la app "Librería"
+# Especificación de diseño y funcional de la app "MATIDANA"
 
 > Referencia para replicar el diseño actual en la herramienta de diseño (Framer/Stitch).
-> App Flutter 100% Android. Nombre visible en Android: **Librería**.
+> App Flutter 100% Android. Nombre visible en Android: **MATIDANA**.
 > Package: `com.jimenezvega.libreria`. Backend de producción: `https://libreria-api-v9h0.onrender.com`.
 
 ---

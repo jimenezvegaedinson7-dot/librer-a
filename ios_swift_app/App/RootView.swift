@@ -64,7 +64,7 @@ struct SplashView: View {
                     .padding(8)
                     .overlay(Circle().stroke(Brand.doradoClaro.opacity(0.55)))
                     .frame(width: 156, height: 156)
-                Text("Librería")
+                Text("MATIDANA")
                     .font(.serif(30))
                     .foregroundStyle(.white)
                     .padding(.top, 24)

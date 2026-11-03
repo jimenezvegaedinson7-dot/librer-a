@@ -1,0 +1,13 @@
+.gestion-ventas { min-width: 0; }
+.gestion-ventas__pestanas .pestana { text-decoration: none; min-height: 52px; }
+.gestion-ventas__pestanas .pestana-detalle { color: #665745; }
+.gestion-ventas__contexto { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.gestion-ventas__pago { min-width: 100px; }
+.gestion-ventas__referencia { display: block; max-width: 180px; margin-top: 4px; overflow-wrap: anywhere; font-size: 11px; color: #665745; }
+.gestion-ventas__datos-pago { overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+    .gestion-ventas__pestanas { gap: 0; }
+    .gestion-ventas__pestanas .pestana { flex: 1 0 auto; justify-content: center; gap: 6px; padding-inline: 10px; }
+    .gestion-ventas__pestanas .pestana-icono { display: none; }
+    .gestion-ventas__pestanas .pestana-texto { font-size: 0.8125rem; }
+}

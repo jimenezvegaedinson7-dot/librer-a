@@ -22,7 +22,7 @@ const TOTP_WINDOW = 30;
 const getAppName = () => {
     // Sin acentos para máxima compatibilidad
     // con Google Authenticator.
-    return 'Libreria';
+    return 'MATIDANA';
 };
 
 // ========================================

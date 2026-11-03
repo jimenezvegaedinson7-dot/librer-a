@@ -146,7 +146,7 @@ final class AppState: ObservableObject, SessionExpirationHandling {
         sessionState = .locked(message: nil, isUnlocking: true)
         do {
             let unlocked = try await biometricService.evaluate(
-                reason: "Desbloquea tu sesión de Librería Secure."
+                reason: "Desbloquea tu sesión de MATIDANA."
             )
             guard unlocked else {
                 throw BiometricError.evaluationFailed(nil)

@@ -33,7 +33,7 @@ if ($Configurar) {
     $disparadores = @((New-ScheduledTaskTrigger -Daily -At '03:00'), (New-ScheduledTaskTrigger -AtLogOn -User $usuario))
     $opciones = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -MultipleInstances IgnoreNew -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 30) -ExecutionTimeLimit (New-TimeSpan -Minutes 30)
     $principal = New-ScheduledTaskPrincipal -UserId $usuario -LogonType Interactive -RunLevel Limited
-    Register-ScheduledTask -TaskName $tarea -Action $accion -Trigger $disparadores -Settings $opciones -Principal $principal -Description 'Respaldo PostgreSQL de Librería del Saber: diario, al iniciar sesión y con recuperación de ejecuciones pendientes.' -Force | Out-Null
+    Register-ScheduledTask -TaskName $tarea -Action $accion -Trigger $disparadores -Settings $opciones -Principal $principal -Description 'Respaldo PostgreSQL de MATIDANA: diario, al iniciar sesión y con recuperación de ejecuciones pendientes.' -Force | Out-Null
     'Respaldo programado a las 03:00 y al iniciar sesión, con recuperación de tareas pendientes.'
     exit 0
 }

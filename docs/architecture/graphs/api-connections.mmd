@@ -1,4 +1,4 @@
-%% Generado 2026-10-22 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-11-03 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     subgraph React
         R__api_anuncios["anuncios"]
@@ -11,7 +11,6 @@ flowchart LR
         R__api_comprobantes["comprobantes"]
         R__api_empresa["empresa"]
         R__api_favoritos["favoritos"]
-        R__api_historial["historial"]
         R__api_inventario["inventario"]
         R__api_libros["libros"]
         R__api_pagos["pagos"]
@@ -54,8 +53,6 @@ flowchart LR
     E__api_favoritos(("/api/favoritos")) --> C_favorito_controller["favorito.controller"]
     R__api_favoritos --> E__api_favoritos
     F__api_favoritos --> E__api_favoritos
-    E__api_historial(("/api/historial")) --> C_historial_controller["historial.controller"]
-    R__api_historial --> E__api_historial
     E__api_inventario(("/api/inventario")) --> C_inventario_controller["inventario.controller"]
     R__api_inventario --> E__api_inventario
     E__api_libros(("/api/libros")) --> C_libro_controller["libro.controller"]

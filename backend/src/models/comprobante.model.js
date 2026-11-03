@@ -505,6 +505,7 @@ const generarComprobante = async ({
 // envio ('enviado' | 'pendiente'), pagina/porPagina.
 // ========================================
 const listarComprobantes = async ({
+    idVenta,
     tipo,
     q,
     envio,
@@ -534,6 +535,11 @@ const listarComprobantes = async ({
     const condiciones = [];
     const valores = [];
 
+    if (idVenta !== undefined) {
+        condiciones.push('c.id_venta = ?');
+        valores.push(idVenta);
+    }
+
     if (
         tipo &&
         esTipoValido(tipo)
@@ -553,12 +559,10 @@ const listarComprobantes = async ({
             c.serie ILIKE ? OR
             CAST(c.numero AS TEXT) LIKE ? OR
             c.cliente_nombre ILIKE ? OR
-            c.cliente_dni_ruc LIKE ? OR
-            c.numero_sunat ILIKE ?
+            c.cliente_dni_ruc LIKE ?
         )`);
 
         valores.push(
-            busqueda,
             busqueda,
             busqueda,
             busqueda,
@@ -569,9 +573,6 @@ const listarComprobantes = async ({
     if (estado === 'emitido' || estado === 'anulado') {
         condiciones.push('c.estado = ?');
         valores.push(estado);
-    } else if (estado === 'sin_sunat') {
-        // Emitidos que aún no tienen su comprobante electrónico SUNAT.
-        condiciones.push(`(c.estado = 'emitido' AND c.numero_sunat IS NULL)`);
     }
 
     if (envio === 'enviado') {
@@ -756,77 +757,22 @@ const listarResumen = async () => {
 };
 
 // ========================================
-// NÚMERO DE COMPROBANTE ELECTRÓNICO SUNAT
-// ----------------------------------------
-// Serie y número del comprobante emitido en SUNAT (p. ej. EB01-125 o
-// E001-40): 4 caracteres alfanuméricos, guion y hasta 8 dígitos.
-// ========================================
-const FORMATO_SUNAT = /^[A-Z0-9]{4}-\d{1,8}$/;
-
-const normalizarNumeroSunat = (valor) => {
-    if (valor === undefined || valor === null || String(valor).trim() === '') {
-        return null;
-    }
-    const texto = String(valor).trim().toUpperCase();
-    if (!FORMATO_SUNAT.test(texto)) {
-        throw crearError(
-            'Número SUNAT no válido. Usa la serie y el número, por ejemplo EB01-125 o E001-40',
-            400
-        );
-    }
-    const [serie, numero] = texto.split('-');
-    return `${serie}-${Number(numero)}`;
-};
-
-// Registra el comprobante electrónico SUNAT (y su nota de crédito, si
-// el comprobante está anulado).
-const registrarSunat = async (id, { numero_sunat, nota_credito_sunat }) => {
-    const numero = normalizarNumeroSunat(numero_sunat);
-    const nota = normalizarNumeroSunat(nota_credito_sunat);
-
-    const actual = await obtenerComprobante(id);
-    if (!actual) {
-        return null;
-    }
-    if (nota && actual.estado !== 'anulado') {
-        throw crearError(
-            'La nota de crédito solo se registra en un comprobante anulado',
-            400
-        );
-    }
-
-    await pool.query(`
-        UPDATE comprobantes
-        SET numero_sunat = COALESCE(?, numero_sunat),
-            nota_credito_sunat = COALESCE(?, nota_credito_sunat)
-        WHERE id_comprobante = ?
-    `, [numero, nota, id]);
-
-    return obtenerComprobante(id);
-};
-
-// ========================================
 // ANULAR COMPROBANTE (datos errados)
 // ----------------------------------------
 // La venta sigue vigente: tras anular se puede emitir un comprobante
-// nuevo con los datos correctos. En SUNAT, la anulación de una boleta o
-// factura electrónica se hace con una nota de crédito.
-// Para devolver el dinero se usa el reembolso de la venta, que también
-// anula su comprobante.
+// nuevo con los datos correctos. Para devolver el dinero se usa el
+// reembolso de la venta, que también anula su comprobante.
 // ========================================
-const anular = async (id, { motivo, nota_credito_sunat }) => {
-    const nota = normalizarNumeroSunat(nota_credito_sunat);
-
+const anular = async (id, { motivo }) => {
     const [filas] = await pool.query(`
         UPDATE comprobantes
         SET estado = 'anulado',
             motivo_anulacion = ?,
-            fecha_anulacion = NOW(),
-            nota_credito_sunat = COALESCE(?, nota_credito_sunat)
+            fecha_anulacion = NOW()
         WHERE id_comprobante = ?
           AND estado = 'emitido'
         RETURNING id_comprobante
-    `, [motivo, nota, id]);
+    `, [motivo, id]);
 
     if (filas.length === 0) {
         const actual = await obtenerComprobante(id);
@@ -930,9 +876,7 @@ module.exports = {
     listarComprobantes,
     listarResumen,
     obtenerComprobante,
-    registrarSunat,
     anular,
-    normalizarNumeroSunat,
     esClienteDniRucValido,
     normalizarTipoDocumentoCliente,
     validarDatosClienteFactura

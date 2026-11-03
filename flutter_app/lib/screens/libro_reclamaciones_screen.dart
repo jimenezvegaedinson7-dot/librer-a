@@ -252,7 +252,7 @@ class _LibroReclamacionesScreenState extends State<LibroReclamacionesScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           Text(
-            'Hoja de reclamación virtual · Librería del Saber',
+            'Hoja de reclamación virtual · MATIDANA',
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
           ),
           if (!_cargando &&

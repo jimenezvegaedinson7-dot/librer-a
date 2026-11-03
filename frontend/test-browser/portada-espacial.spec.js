@@ -52,7 +52,7 @@ test('con movimiento reducido muestra la portada estática con el libro real y s
     await expect(page.locator('.navegacion-publica')).toHaveCSS('display','contents');
     await expect(portada.getByRole('link', { name: /Ver este libro/ })).toHaveAttribute('href', '/libro/7');
     await expect(page.locator('.portada3d canvas')).toHaveCount(0);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Libros y anuncios de Librería del Saber');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Libros y anuncios de MATIDANA Libros y Cultura');
     // En lugar del carrusel de anuncios se muestran los últimos libros agregados.
     await expect(page.getByRole('region', { name: 'Anuncios de la librería' })).toHaveCount(0);
     const ultimos = portada.locator('.portada3d__ultimos');
@@ -67,7 +67,7 @@ test('cabecera comercial: controles legibles, fuente local y colores coherentes 
     await api(page); await page.goto('/');
     const boton=page.locator('.portada3d__ficha .portada3d__boton');
     await expect(boton).toBeVisible({timeout:30000});
-    await expect(page.locator('.cabecera')).toHaveCSS('background-color','rgb(5, 5, 6)');
+    await expect(page.locator('.cabecera')).toHaveCSS('background-color','rgb(19, 25, 33)');
     const lectura=await boton.evaluate(async e=>{
         await document.fonts.load('400 32px "Serif Editorial"');
         const s=getComputedStyle(e);
@@ -81,7 +81,7 @@ test('cabecera comercial: controles legibles, fuente local y colores coherentes 
     expect(lectura.nav).toBeGreaterThanOrEqual(4.5); expect(lectura.marca).toBeGreaterThanOrEqual(4.5); expect(lectura.placeholder).toBeGreaterThanOrEqual(4.5); expect(lectura.fuente).toBe(true);
     await page.goto('/catalogo');
     await expect(page.getByRole('heading',{level:1})).toHaveText('Catálogo');
-    await expect(page.locator('.cabecera')).toHaveCSS('background-color','rgb(5, 5, 6)');
+    await expect(page.locator('.cabecera')).toHaveCSS('background-color','rgb(19, 25, 33)');
 });
 
 for(const ancho of [390,1440])test(`cabecera siempre visible ${ancho}px: identidad y compra usables desde el primer cuadro`,async({page})=>{
@@ -293,7 +293,7 @@ test('si la API de la portada falla, la página sigue usable', async ({ page }) 
     await page.route(`${API}/anuncios/protagonista`, (r) => r.fulfill({ status: 503, json: { success: false } }));
     await page.goto('/');
     await expect(page.locator('.portada3d--estatica')).toBeVisible({ timeout: 30000 });
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Libros y anuncios de Librería del Saber');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Libros y anuncios de MATIDANA Libros y Cultura');
 });
 
 test('escena 3D: avanza y retrocede con el scroll sin controles de sonido', async ({ page, browserName }) => {
@@ -316,7 +316,7 @@ test('escena 3D: avanza y retrocede con el scroll sin controles de sonido', asyn
     expect(errores).toEqual([]);
 });
 
-for(const ancho of [390,1440])test(`libro cerrado ${ancho}px: tapa y hojas inmóviles, con cintas y transición reversibles`, async ({ page }) => {
+for(const ancho of [390,1440])test(`libro cerrado ${ancho}px: tapa y hojas inmóviles, con transición reversible`, async ({ page }) => {
     test.setTimeout(60000);
     await page.setViewportSize({width:ancho,height:1000});
     await page.addInitScript(()=>performance.setResourceTimingBufferSize(3000));
@@ -333,7 +333,7 @@ for(const ancho of [390,1440])test(`libro cerrado ${ancho}px: tapa y hojas inmó
             const r=dibujar.apply(this,args);
             if(r)window.__coordinacion.push({p:r.p,tapa:this.bisagra.rotation.y,
                 hojas:this.hojas.map(h=>h.rotation.y),bloque:this.bloque.scale.z,
-                cintas:this.portal.grupo.rotation.z,disolucion:r.disolucion});
+                disolucion:r.disolucion});
             return r;
         };
     });
@@ -341,12 +341,11 @@ for(const ancho of [390,1440])test(`libro cerrado ${ancho}px: tapa y hojas inmó
         await page.evaluate(p=>{const s=document.querySelector('.portada3d--3d'),top=s.getBoundingClientRect().top+scrollY,cab=parseFloat(getComputedStyle(s).getPropertyValue('--cabecera'))||0;scrollTo(0,top-cab+(s.offsetHeight-innerHeight+cab)*p);},p);
         await page.waitForTimeout(1100);
     };
-    for(const p of [.3,.46,.6,.75,.46,0])await ir(p);
+    for(const p of [.3,.46,.6,.85,.46,0])await ir(p);
     const cuadros=await page.evaluate(()=>window.__coordinacion);
     expect(cuadros.length).toBeGreaterThan(6);
     expect(cuadros.every(c=>Math.abs(c.tapa)<1e-6 && c.hojas.every(h=>Math.abs(h)<1e-6) && c.bloque===1)).toBe(true);
     expect(cuadros.some(c=>c.disolucion>0)).toBe(true);
-    expect(new Set(cuadros.map(c=>c.cintas.toFixed(3))).size).toBeGreaterThan(1);
     await expect(page.locator('.portada3d__sonido')).toHaveCount(0);
     await page.screenshot({path:test.info().outputPath(`libro-cerrado-${ancho}.png`)});
 });

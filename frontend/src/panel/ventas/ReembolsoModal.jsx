@@ -55,7 +55,7 @@ export default function ReembolsoModal({ venta, abierto, onCerrar, onReembolsada
                         <input type="checkbox" checked={devolverStock} onChange={e => setDevolverStock(e.target.checked)} disabled={guardando}/>
                         El cliente devolvió los libros y están disponibles para vender.
                     </label></> : <p>Al confirmar se liberará el stock de los libros que no salieron.</p>}
-                {Number(venta.tiene_comprobante) === 1 && <p>El comprobante interno se anulará al confirmar. Gestiona la nota de crédito externa en SUNAT.</p>}
+                {Number(venta.tiene_comprobante) === 1 && <p>El comprobante interno se anulará al confirmar.</p>}
             </>}
             {error && <Alert tipo="error">{error}</Alert>}
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

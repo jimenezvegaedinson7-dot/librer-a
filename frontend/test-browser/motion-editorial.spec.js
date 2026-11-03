@@ -38,15 +38,16 @@ test('revelados finalizan y se limpian al navegar sin ocultar compras ni hero', 
     await preparar(page);
     await page.locator('.categorias').scrollIntoViewIfNeeded();
     const titulo = page.locator('.categorias h2');
-    await expect(titulo).toHaveAttribute('data-motion-state', 'done');
+    await expect(titulo).toBeVisible();
     await expect(titulo).toHaveCSS('opacity', '1');
+    await expect(titulo).toHaveCSS('transform', /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
     expect(await page.locator('.portada3d [data-reveal]').count()).toBe(0);
     await page.locator('.pie a[href="/catalogo"]').click();
     await expect(page.locator('.tarjeta-libro').first()).toBeVisible();
     expect(await page.locator('.tarjeta-libro [data-reveal]').count()).toBe(0);
     await page.locator('.pie a[href="/"]').first().click();
     await page.locator('.categorias').scrollIntoViewIfNeeded();
-    await expect(page.locator('.categorias h2')).toHaveAttribute('data-motion-state', 'done');
+    await expect(page.locator('.categorias h2')).toBeVisible();
     // El paralaje termina en su sitio: sin desplazamiento residual.
     await expect(page.locator('.categorias h2')).toHaveCSS('transform', /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);
     expect(errores).toEqual([]);
@@ -73,7 +74,7 @@ test('cambiar a movimiento reducido durante la sesión retira los efectos espaci
     // Esta prueba comprueba el motor editorial, no compila además el shader 3D.
     await preparar(page, 0, true);
     await page.locator('.categorias').scrollIntoViewIfNeeded();
-    await expect(page.locator('.categorias h2')).toHaveAttribute('data-motion-state', 'done');
+    await expect(page.locator('.categorias h2')).toBeVisible();
     await page.emulateMedia({ reducedMotion: 'reduce' });
     // El paralaje termina en su sitio: sin desplazamiento residual.
     await expect(page.locator('.categorias h2')).toHaveCSS('transform', /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/);

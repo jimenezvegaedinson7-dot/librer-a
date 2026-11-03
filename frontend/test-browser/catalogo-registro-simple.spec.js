@@ -2,13 +2,13 @@ import { test, expect } from '@playwright/test';
 
 const admin = { id_usuario: 1, nombre: 'Audit', apellido: 'Admin', rol: 'administrador', estado: 1 };
 const casos = [
-    { modulo: 'autores', titulo: 'Registrar autor', boton: 'Guardar autor',
+    { modulo: 'autores', titulo: 'Registrar autor', boton: 'Guardar autor', abrir: 'Nuevo autor',
         basicos: { Nombre: 'Gabriel', Apellido: 'García Márquez' },
         adicionales: { Nacionalidad: 'Colombiana', Biografía: 'Autor de novelas y cuentos.' },
         minimo: { nombre: 'Gabriel', apellido: 'García Márquez', nacionalidad: '', biografia: '' },
         completo: { nombre: 'Gabriel', apellido: 'García Márquez', nacionalidad: 'Colombiana', biografia: 'Autor de novelas y cuentos.' },
         primero: 'Nombre', id: 'id_autor' },
-    { modulo: 'categorias', titulo: 'Registrar categoría', boton: 'Guardar categoría',
+    { modulo: 'categorias', titulo: 'Registrar categoría', boton: 'Guardar categoría', abrir: 'Nueva categoría',
         basicos: { 'Nombre de la categoría': 'Literatura' },
         adicionales: { Descripción: 'Novelas, cuentos y poesía.' },
         minimo: { nombre: 'Literatura', descripcion: '' },
@@ -41,8 +41,19 @@ for (const width of [390, 1440]) for (const caso of casos) {
             return route.fulfill({ json: { success: true, data: [] } });
         });
         await page.goto(`/${caso.modulo}`);
-        const card = page.locator('.admin-form-card').filter({ has: page.getByRole('heading', { name: caso.titulo, exact: true }) });
+        const botonAlta = page.getByRole('button', { name: caso.abrir, exact: true });
+        await expect(botonAlta).toBeVisible();
+        await expect(page.getByLabel(caso.primero, { exact: true })).toHaveCount(0);
+        await page.screenshot({ path: info.outputPath('listado-con-boton.png'), fullPage: true });
+        await botonAlta.click();
+        const card = page.getByRole('dialog', { name: caso.titulo, exact: true });
         const form = card.locator('form');
+        await form.getByLabel(caso.primero, { exact: true }).fill('Borrador');
+        await form.getByRole('button', { name: 'Cancelar', exact: true }).click();
+        await expect(card).toHaveCount(0);
+        await expect(botonAlta).toBeFocused();
+        await botonAlta.click();
+        await expect(form.getByLabel(caso.primero, { exact: true })).toHaveValue('');
         for (const label of Object.keys(caso.adicionales)) await expect(form.getByLabel(label, { exact: true })).toBeHidden();
         await expect(card.getByText('Nuevo registro', { exact: true })).toHaveCount(0);
         await form.getByRole('button', { name: caso.boton, exact: true }).click();
@@ -50,6 +61,8 @@ for (const width of [390, 1440]) for (const caso of casos) {
         expect(escrituras).toHaveLength(0);
         for (const [label, value] of Object.entries(caso.basicos)) await form.getByLabel(label, { exact: true }).fill(value);
         await form.getByRole('button', { name: caso.boton, exact: true }).click();
+        await expect(card).toHaveCount(0);
+        await botonAlta.click();
         await expect(form.getByLabel(caso.primero, { exact: true })).toHaveValue('');
         expect(escrituras[0]).toEqual(caso.minimo);
 
@@ -68,12 +81,13 @@ for (const width of [390, 1440]) for (const caso of casos) {
         rechazar = false;
         await summary.click();
         await form.getByRole('button', { name: caso.boton, exact: true }).click();
+        await expect(card).toHaveCount(0);
+        await botonAlta.click();
         await expect(form.getByLabel(caso.primero, { exact: true })).toHaveValue('');
         expect(escrituras[2]).toEqual(caso.completo);
         await summary.click();
         for (const label of Object.keys(caso.adicionales)) await expect(form.getByLabel(label, { exact: true })).toHaveValue('');
         await summary.click();
-        await page.waitForTimeout(500);
         expect(await form.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
         await card.screenshot({ path: info.outputPath('registro-simple.png') });
         expect(errores).toEqual([]);

@@ -41,7 +41,7 @@ def main():
     download('https://d3js.org/d3.v7.min.js', 'd3.v7.min.js')
     graph = re.sub(r'<script src="https://unpkg.com/vis-network[^>]+></script>', '<script src="./assets/vis-network.min.js"></script>', graph)
     tree = tree.replace('https://d3js.org/d3.v7.min.js', './assets/d3.v7.min.js')
-    graph = graph.replace('<html lang="en">', '<html lang="es">').replace('<title>graphify - graphify-out/graph.html</title>', '<title>Librería del Saber · Cerebro Graphify</title>')
+    graph = graph.replace('<html lang="en">', '<html lang="es">').replace('<title>graphify - graphify-out/graph.html</title>', '<title>MATIDANA · Cerebro Graphify</title>')
     graph = graph.replace('Search nodes...', 'Buscar archivos, funciones o endpoints...').replace('<h3>Node Info</h3>', '<h3>Detalles del nodo</h3>').replace('Click a node to inspect it', 'Selecciona un nodo para ver sus conexiones').replace('<h3>Communities</h3>', '<h3>Módulos conectados</h3>').replace('>Select All</label>', '>Seleccionar todos</label>')
     tree = tree.replace('<html lang="en">', '<html lang="es">').replace(' — Knowledge Graph</h1>', ' — Mapa de conocimiento</h1>').replace('>Expand All</button>', '>Expandir todo</button>').replace('>Collapse All</button>', '>Contraer todo</button>').replace('>Reset View</button>', '>Restablecer vista</button>').replace('Total Count:', 'Elementos:')
     (OUT / 'graph.html').write_text(graph, encoding='utf-8')

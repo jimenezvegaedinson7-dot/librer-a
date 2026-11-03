@@ -27,6 +27,7 @@ import {
 } from './dashboardService';
 
 import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
 import { Button } from '../ui/Button';
 import { formatearMoneda } from '../../compartido/lib/utils/format';
 import { num, serieDiaria, serieMensual } from './graficoUtils';
@@ -142,7 +143,7 @@ export default function DashboardPage() {
     }
 
     if (error && !resumen) {
-        return <Alert tipo="error">{error}</Alert>;
+        return <ErrorCarga mensaje={error} onReintentar={() => setRecarga(n => n + 1)} />;
     }
 
     if (!resumen) return null;

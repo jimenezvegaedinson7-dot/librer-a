@@ -315,3 +315,167 @@
 
 /* Iniciar sesión / crear cuenta: sin logo encima del título. */
 .sitio .cuenta-cliente::before { content: none !important; display: none !important; }
+
+/* ============================================================
+   CABECERA AL ESTILO AMAZON (22/10/2026)
+   Dos barras: arriba marca, tienda, buscador con botón naranja,
+   cuenta y carrito; debajo los enlaces con «Todo». Iconos blancos
+   y el contorno blanco fino al pasar, como en Amazon.
+   ============================================================ */
+.sitio {
+    --amz-barra: #131921;
+    --amz-subbarra: #232f3e;
+    --amz-naranja: #febd69;
+    --amz-naranja-hover: #f3a847;
+    --amz-foco: #ff9900;
+}
+.sitio .navegacion-publica .cabecera,
+.sitio .cabecera {
+    background: var(--amz-barra) !important;
+    animation: none !important;
+}
+.sitio .cabecera[data-sombra="true"] { box-shadow: 0 2px 6px rgb(0 0 0 / 0.35); }
+.sitio .navegacion-publica .cabecera__principal {
+    grid-template-columns: auto minmax(240px, 1fr) auto;
+    min-height: 60px; gap: 6px;
+}
+@media (max-width: 1023px) {
+    .sitio .navegacion-publica .cabecera__principal { grid-template-columns: 40px minmax(0, 1fr) auto; min-height: 54px; }
+}
+
+/* Contorno blanco al pasar, propio de Amazon. */
+.sitio .cabecera :is(.marca, .cabecera__enlace, .compra-cuenta, .compra-carrito, .boton-menu),
+.sitio .navegacion-publica .menu :is(a, button) {
+    border: 1px solid transparent !important; border-radius: 2px !important;
+    background: transparent !important;
+    transition: border-color 0.1s ease !important;
+}
+.sitio .cabecera :is(.marca, .cabecera__enlace, .compra-cuenta, .compra-carrito, .boton-menu):hover,
+.sitio .navegacion-publica .menu :is(a, button):hover { border-color: #ffffff !important; background: transparent !important; }
+.sitio .cabecera .marca { padding: 6px 8px !important; }
+.sitio .cabecera .marca span { text-shadow: none; }
+
+/* Tienda, cuenta y carrito: icono blanco y dos líneas de texto. */
+.sitio .navegacion-publica .cabecera__acciones { gap: 2px !important; }
+.sitio .cabecera :is(.cabecera__enlace, .compra-cuenta, .compra-carrito) {
+    min-height: 50px; padding: 0 9px !important; margin: 0 !important; gap: 4px !important;
+    color: #ffffff !important; font-size: 0.875rem !important; font-weight: 700 !important;
+}
+.sitio .cabecera :is(.cabecera__enlace, .compra-cuenta, .compra-carrito) svg { color: #ffffff !important; width: 20px !important; height: 20px !important; }
+.sitio .cabecera .cabecera__enlace-texto { display: grid; line-height: 1.15; }
+.sitio .cabecera :is(.cabecera__enlace-texto, .compra-cuenta) small {
+    color: #cccccc !important; font-size: 0.75rem !important; font-weight: 400 !important; margin: 0 !important;
+}
+.sitio .navegacion-publica .cabecera__principal > .buscador { margin-inline: 8px; }
+.sitio .cabecera .compra-carrito { position: relative; padding-top: 10px !important; align-items: flex-end; }
+.sitio .cabecera .compra-carrito svg { width: 30px !important; height: 30px !important; }
+.sitio .cabecera .compra-carrito[data-cantidad]::after {
+    content: attr(data-cantidad); position: absolute; top: 2px; left: 20px;
+    color: var(--amz-foco); font-size: 1rem; font-weight: 700; line-height: 1;
+}
+
+/* Buscador: blanco, esquinas cortas y botón naranja. */
+.sitio .navegacion-publica .cabecera .buscador,
+.sitio .cabecera .buscador {
+    height: 40px !important; padding: 0 !important; overflow: hidden;
+    background: #ffffff !important; border: 0 !important; border-radius: 4px !important;
+    box-shadow: none !important;
+}
+.sitio .cabecera .buscador:focus-within { box-shadow: 0 0 0 3px var(--amz-foco) !important; }
+.sitio .cabecera .buscador input { color: #0f1111 !important; font-size: 0.9375rem !important; padding-inline: 12px !important; }
+.sitio .cabecera .buscador input::placeholder { color: #6f7373 !important; }
+.sitio .cabecera .buscador button[type="submit"] {
+    width: 46px !important; height: 40px !important; border-radius: 0 !important;
+    background: var(--amz-naranja) !important; color: #0f1111 !important;
+}
+.sitio .cabecera .buscador button[type="submit"]:hover { background: var(--amz-naranja-hover) !important; }
+.sitio .cabecera .buscador button[type="submit"] svg { color: #0f1111 !important; width: 22px !important; height: 22px !important; stroke-width: 2.4 !important; }
+
+/* Segunda barra: enlaces blancos sobre azul pizarra. */
+.sitio .navegacion-publica .menu,
+.sitio .cabecera .menu {
+    background: var(--amz-subbarra) !important; border: 0 !important;
+}
+.sitio .navegacion-publica .menu ul {
+    min-height: 39px; justify-content: flex-start; column-gap: 2px;
+}
+.sitio .navegacion-publica .menu li + li::before { content: none !important; }
+.sitio .navegacion-publica .menu a,
+.sitio .cabecera .menu a,
+.sitio .navegacion-publica .menu button {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 33px; padding: 0 9px !important;
+    color: #ffffff !important; font-family: var(--f-texto); font-size: 0.875rem !important;
+    font-weight: 400 !important; letter-spacing: 0 !important; text-transform: none !important;
+    cursor: pointer;
+}
+.sitio .navegacion-publica .menu a[aria-current="page"] { font-weight: 700 !important; }
+.sitio .cabecera .menu a::after { content: none !important; }
+.sitio .navegacion-publica .menu button { font-weight: 700 !important; }
+.sitio .navegacion-publica .menu button svg { width: 20px; height: 20px; color: #ffffff; }
+.sitio .cabecera :is(a, button):focus-visible { outline: 2px solid var(--amz-foco) !important; outline-offset: 0 !important; }
+.sitio .cabecera .compra-cuenta__texto small { max-width: 20ch; }
+.sitio .navegacion-publica .menu a:is(:hover, [aria-current="page"]),
+.sitio .cabecera .menu a:is(:hover, [aria-current="page"]) { color: #ffffff !important; }
+
+/* Segunda barra con estilo propio: blanca, enlaces centrados y
+   subrayado azul-violeta, a juego con el botón del buscador. */
+.sitio .navegacion-publica .menu,
+.sitio .cabecera .menu {
+    background: #ffffff !important; border-bottom: 1px solid #e6e8ee !important;
+    box-shadow: 0 6px 18px -14px rgb(19 25 33 / 0.5);
+}
+.sitio .navegacion-publica .menu ul { min-height: 44px; justify-content: center; column-gap: clamp(8px, 1.6vw, 24px); }
+.sitio .navegacion-publica .menu a,
+.sitio .cabecera .menu a,
+.sitio .navegacion-publica .menu button {
+    position: relative; min-height: 44px; padding: 0 10px !important;
+    color: #3d4456 !important; font-weight: 600 !important; font-size: 0.875rem !important;
+    border: 0 !important; border-radius: 0 !important;
+}
+.sitio .navegacion-publica .menu a:is(:hover, [aria-current="page"]),
+.sitio .cabecera .menu a:is(:hover, [aria-current="page"]) { color: #131921 !important; border: 0 !important; }
+.sitio .navegacion-publica .menu :is(a, button):hover { border: 0 !important; }
+.sitio .cabecera .menu a::after {
+    content: '' !important; position: absolute; left: 10px; right: 10px; bottom: 0 !important;
+    height: 3px !important; border-radius: 3px 3px 0 0;
+    background: linear-gradient(90deg, #3b82f6, #7c3aed) !important;
+    transform: scaleX(0) !important; transform-origin: center !important;
+    transition: transform 0.3s ease !important;
+}
+.sitio .cabecera .menu a:hover::after { transform: scaleX(0.6) !important; }
+.sitio .cabecera .menu a[aria-current="page"]::after { transform: scaleX(1) !important; }
+.sitio .navegacion-publica .menu button { color: #131921 !important; }
+.sitio .navegacion-publica .menu button:hover { color: #3b5bdb !important; }
+.sitio .navegacion-publica .menu button svg { color: currentColor; }
+
+/* Botón del buscador en azul-violeta en lugar de naranja. */
+.sitio .cabecera .buscador button[type="submit"] { background: linear-gradient(135deg, #3b82f6, #7c3aed) !important; color: #ffffff !important; }
+.sitio .cabecera .buscador button[type="submit"]:hover { background: linear-gradient(135deg, #2563eb, #6d28d9) !important; }
+.sitio .cabecera .buscador button[type="submit"] svg { color: #ffffff !important; }
+.sitio .cabecera .buscador:focus-within { box-shadow: 0 0 0 3px #7c9cf5 !important; }
+
+/* Hamburguesa en la primera barra también en escritorio, en naranja. */
+@media (min-width: 1024px) {
+    .sitio .navegacion-publica .cabecera__principal { grid-template-columns: 44px auto minmax(240px, 1fr) auto; }
+    .sitio .boton-menu.cabecera__boton-menu { display: grid; }
+}
+.sitio .cabecera .boton-menu,
+.sitio .cabecera .boton-menu svg { color: #ff9900 !important; }
+.sitio .navegacion-publica .cabecera .boton-menu { width: 44px; height: 44px; padding: 8px; }
+.sitio .navegacion-publica .cabecera .boton-menu svg { width: 26px; height: 26px; stroke-width: 2.25; }
+
+/* Botón del buscador en rojo. */
+.sitio .cabecera .buscador button[type="submit"] { background: #e11d2e !important; color: #ffffff !important; }
+.sitio .cabecera .buscador button[type="submit"]:hover { background: #b91524 !important; }
+.sitio .cabecera .buscador:focus-within { box-shadow: 0 0 0 3px #f8a1a9 !important; }
+
+/* Enlaces de la segunda barra en tono formal: tinta oscura, versalitas
+   espaciadas y subrayado sólido, sin degradados. */
+.sitio .navegacion-publica .menu a,
+.sitio .cabecera .menu a {
+    color: #4a5163 !important; font-size: 0.75rem !important; font-weight: 600 !important;
+    letter-spacing: 0.12em !important; text-transform: uppercase !important;
+}
+.sitio .navegacion-publica .menu a:is(:hover, [aria-current="page"]),
+.sitio .cabecera .menu a:is(:hover, [aria-current="page"]) { color: #131921 !important; }
+.sitio .cabecera .menu a::after { height: 2px !important; border-radius: 0; background: #131921 !important; }

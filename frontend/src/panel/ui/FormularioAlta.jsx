@@ -28,6 +28,9 @@ export function FormularioAlta({
     renderCampos,
     errorExterno,
     deshabilitarEnvio,
+    incrustado = false,
+    onCancelar,
+    onGuardandoChange,
 }) {
     const { formulario, errores, manejarCambio, validarTodos, marcarErrores, restablecer } = useFormulario({
         inicial: formularioVacio,
@@ -61,13 +64,14 @@ export function FormularioAlta({
         try {
             envioEnCurso.current = true;
             setGuardando(true);
+            onGuardandoChange?.(true);
             const respuesta = await guardar(formulario);
             // El botón deja de cargar apenas el servidor confirma el guardado;
             // el refresco de la lista ocurre en segundo plano (onRegistrado).
             setGuardando(false);
             restablecer();
             setMensaje(respuesta?.mensaje || mensajeExito || 'Registro correcto');
-            if (onRegistrado) await onRegistrado();
+            if (onRegistrado) await onRegistrado(respuesta, formulario);
         } catch (err) {
             const mensajeServidor = err.response?.data?.mensaje;
             setError(mensajeServidor || mensajeError || 'Error al registrar');
@@ -80,12 +84,16 @@ export function FormularioAlta({
         } finally {
             envioEnCurso.current = false;
             setGuardando(false);
+            onGuardandoChange?.(false);
         }
     };
 
+    const Contenedor = incrustado ? 'div' : Card;
+    const Cuerpo = incrustado ? 'div' : CardBody;
+
     return (
-        <Card className="admin-form-card">
-            <CardHeader
+        <Contenedor className={incrustado ? undefined : 'admin-form-card'}>
+            {!incrustado && <CardHeader
                 titulo={titulo}
                 subtitulo={subtitulo}
                 icono={icono}
@@ -94,8 +102,8 @@ export function FormularioAlta({
                         {etiquetaAlta}
                     </span> : undefined
                 }
-            />
-            <CardBody>
+            />}
+            <Cuerpo>
                 {errorExterno && (
                     <div className="mb-5">
                         <Alert tipo="error" cerrar>{errorExterno}</Alert>
@@ -120,15 +128,15 @@ export function FormularioAlta({
                     {renderCampos({ formulario, manejarCambio, errores })}
 
                     <div className="form-actions flex items-center justify-end gap-3 border-t border-primary-200 pt-5">
-                        <Button variante="secondary" type="button" onClick={limpiar} disabled={guardando}>
-                            <FaRotateLeft /> Limpiar
+                        <Button variante="secondary" type="button" onClick={onCancelar || limpiar} disabled={guardando}>
+                            {onCancelar ? 'Cancelar' : <><FaRotateLeft /> Limpiar</>}
                         </Button>
                         <Button type="submit" cargando={guardando} disabled={guardando || deshabilitarEnvio}>
                             <FaFloppyDisk /> {guardando ? 'Guardando...' : botonGuardar || 'Guardar'}
                         </Button>
                     </div>
                 </form>
-            </CardBody>
-        </Card>
+            </Cuerpo>
+        </Contenedor>
     );
 }

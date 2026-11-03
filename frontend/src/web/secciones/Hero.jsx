@@ -44,7 +44,7 @@ export default function Hero({compacto=false}={}){
     return <section className={`anuncios-inicio${compacto?' anuncios-inicio--compacto':''}`} aria-label="Anuncios de la librería" aria-roledescription="carrusel" tabIndex={0}
         onFocusCapture={e=>{if(e.target.matches(':focus-visible'))setFoco(true);}} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setFoco(false);}}
         onKeyDown={e=>{if(imagenes.length>1 && ['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();cambiar(e.key==='ArrowRight'?1:-1);}}}>
-        {!compacto && <h1 className="sr-only">Libros y anuncios de Librería del Saber</h1>}
+        {!compacto && <h1 className="sr-only">Libros y anuncios de MATIDANA</h1>}
         <div className="anuncios-inicio__marco">
             {cargando?<div className="anuncios-inicio__vacio"><p role="status">Cargando anuncios…</p></div>
                 :error?<div className="anuncios-inicio__vacio"><p role="status">No pudimos cargar los anuncios.</p><div><button type="button" onClick={intentar}>Reintentar anuncios</button><Link to="/catalogo">Ver catálogo</Link></div></div>

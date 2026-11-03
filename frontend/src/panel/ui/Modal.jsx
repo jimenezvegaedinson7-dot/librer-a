@@ -6,6 +6,8 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Button } from './Button';
 
 const ENFOCABLES = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const bloqueosScroll = new Set();
+let overflowAnterior = '';
 
 export function Modal({
     abierto,
@@ -15,18 +17,26 @@ export function Modal({
     children,
     grande = false,
     footer = null,
+    cerrarDeshabilitado = false,
+    retornoFocoRef = null,
 }) {
     const reducirMovimiento = useReducedMotion();
     const panelRef = useRef(null);
     const idTitulo = useId();
     const idSubtitulo = useId();
+    const cerrarRef = useRef(onCerrar);
+    useEffect(() => { cerrarRef.current = onCerrar; }, [onCerrar]);
 
     // Escape, bloqueo de scroll del fondo y contención del foco dentro del diálogo
     useEffect(() => {
         if (!abierto) return undefined;
+        const panel = panelRef.current;
         const manejarTecla = (e) => {
+            // Solo el diálogo superior recibe Escape y contiene el foco.
+            const dialogos = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+            if (dialogos[dialogos.length - 1] !== panel) return;
             if (e.key === 'Escape') {
-                onCerrar();
+                cerrarRef.current();
                 return;
             }
             if (e.key !== 'Tab' || !panelRef.current) return;
@@ -46,17 +56,20 @@ export function Modal({
             }
         };
         document.addEventListener('keydown', manejarTecla);
+        if (bloqueosScroll.size === 0) overflowAnterior = document.body.style.overflow;
+        bloqueosScroll.add(panel);
         document.body.style.overflow = 'hidden';
         return () => {
             document.removeEventListener('keydown', manejarTecla);
-            document.body.style.overflow = '';
+            bloqueosScroll.delete(panel);
+            if (bloqueosScroll.size === 0) document.body.style.overflow = overflowAnterior;
         };
-    }, [abierto, onCerrar]);
+    }, [abierto]);
 
     // Al abrir, lleva el foco al diálogo (o a su campo con autoFocus); al cerrar, lo devuelve al disparador
     useEffect(() => {
         if (!abierto) return undefined;
-        const previo = document.activeElement;
+        const previo = retornoFocoRef?.current || document.activeElement;
         const marco = requestAnimationFrame(() => {
             if (panelRef.current && !panelRef.current.contains(document.activeElement)) {
                 panelRef.current.focus({ preventScroll: true });
@@ -66,7 +79,7 @@ export function Modal({
             cancelAnimationFrame(marco);
             if (previo instanceof HTMLElement && document.contains(previo)) previo.focus({ preventScroll: true });
         };
-    }, [abierto]);
+    }, [abierto, retornoFocoRef]);
 
     return (
         <AnimatePresence>
@@ -77,7 +90,7 @@ export function Modal({
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: reducirMovimiento ? 0 : 0.2 }}
-                        className="absolute inset-0 bg-[#1c1814]/55 backdrop-blur-[3px]"
+                        className="absolute inset-0 bg-[#1c1814]/55"
                         onClick={onCerrar}
                         aria-hidden="true"
                     />
@@ -110,6 +123,7 @@ export function Modal({
                                 variante="ghost"
                                 tamano="sm"
                                 onClick={onCerrar}
+                                disabled={cerrarDeshabilitado}
                                 aria-label="Cerrar"
                                 className="-mr-1.5 !h-8 !w-8 shrink-0 !p-0"
                             >

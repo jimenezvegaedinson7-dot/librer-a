@@ -51,8 +51,8 @@ export default function OfertasDestacadas({ catalogo }) {
                                 <p className="oferta-tarjeta__autor">{libro.autor}</p>
                                 <PrecioOferta libro={libro} />
                                 <p className="oferta-tarjeta__ahorro">Ahorras {soles(libro.precio - libro.precioFinal)}</p>
-                                <ComprarLibro libro={libro}/>
                             </div>
+                            <ComprarLibro libro={libro}/>
                         </li>
                     ))}
                 </ul>

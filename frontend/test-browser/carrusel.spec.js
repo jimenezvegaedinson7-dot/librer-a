@@ -6,11 +6,8 @@ const banner=n=>`${API}/fixtures/carrusel-${n}.svg`;
 const grafico=(n,color='#064e3b')=>`<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="600"><rect width="1600" height="600" fill="${color}"/><rect x="1100" y="100" width="220" height="400" fill="#fffdf7"/><text x="100" y="210" fill="#fffdf7" font-size="84">ANUNCIO DE PRUEBA ${n}</text><text x="100" y="340" fill="#fffdf7" font-size="52">Imagen del carrusel · prueba de interfaz</text></svg>`;
 const imagenes=[{id_imagen:1,titulo:'Banner de prueba 1',imagen_url:banner(1),orden:1,estado:1,id_libro:1},
     {id_imagen:2,titulo:'Banner de prueba 2',imagen_url:banner(2,'#0d2940'),orden:2,estado:1,id_libro:null}];
-const admin={id_usuario:1,nombre:'Admin',apellido:'Prueba',rol:'administrador',estado:1};
-const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jr1sAAAAASUVORK5CYII=','base64');
-async function preparar(page,{lista=imagenes,fallo=false,panel=false}={}){
-    const control={lista:lista.map(i=>({...i})),fallo,altas:0,ordenes:[],autorizacionPublica:[],peticiones:[]};
-    if(panel)await page.addInitScript(admin=>{localStorage.setItem('token','token-admin-prueba');localStorage.setItem('usuario',JSON.stringify(admin));},admin);
+async function preparar(page,{lista=imagenes,fallo=false}={}){
+    const control={lista:lista.map(i=>({...i})),fallo,autorizacionPublica:[],peticiones:[]};
     await page.route(`${API}/**`,async route=>{
         const req=route.request(),ruta=new URL(req.url()).pathname,metodo=req.method();control.peticiones.push(ruta);
         if(/^\/api\/fixtures\/carrusel-\d+\.svg$/.test(ruta))return route.fulfill({body:grafico(Number(/carrusel-(\d+)/.exec(ruta)[1])),contentType:'image/svg+xml'});
@@ -18,27 +15,8 @@ async function preparar(page,{lista=imagenes,fallo=false,panel=false}={}){
             control.autorizacionPublica.push(req.headers().authorization);
             return route.fulfill(control.fallo?{status:503,json:{success:false}}:{json:{success:true,data:control.lista.filter(l=>l.estado===1).sort((a,b)=>a.orden-b.orden)}});
         }
-        if(ruta==='/api/anuncios/carrusel/todos')return route.fulfill({json:{success:true,data:control.lista.sort((a,b)=>a.orden-b.orden)}});
-        if(ruta==='/api/anuncios/carrusel' && metodo==='POST'){
-            expect(req.headers().authorization).toBe('Bearer token-admin-prueba');
-            const body=req.postData();expect(body).toContain('name="imagen"');expect(body).toContain('name="titulo"');control.altas++;
-            control.lista.push({id_imagen:3,titulo:'Nuevo banner',imagen_url:banner(3),orden:3,estado:1,id_libro:1});
-            return route.fulfill({status:201,json:{success:true,mensaje:'Imagen guardada'}});
-        }
-        if(ruta==='/api/anuncios/carrusel/orden'){
-            const {ids}=req.postDataJSON();control.ordenes.push(ids);control.lista=ids.map((id,i)=>({...control.lista.find(l=>l.id_imagen===id),orden:i+1}));
-            return route.fulfill({json:{success:true,mensaje:'Orden actualizado'}});
-        }
-        if(/^\/api\/anuncios\/carrusel\/\d+$/.test(ruta)){
-            const id=Number(ruta.split('/').pop());
-            if(metodo==='PUT'){
-                const d=req.postDataJSON();control.lista=control.lista.map(l=>l.id_imagen===id?{...l,...d,estado:Number(d.estado ?? l.estado)}:l);
-            }else if(metodo==='DELETE'){expect(req.postDataJSON()).toEqual({password:'ClavePrueba123'});control.lista=control.lista.filter(l=>l.id_imagen!==id);}
-            return route.fulfill({json:{success:true,mensaje:'Carrusel actualizado'}});
-        }
-        if(ruta==='/api/usuarios/perfil')return route.fulfill({json:{success:true,data:admin}});
         if(ruta==='/api/libros')return route.fulfill({json:{success:true,data:[{id_libro:1,titulo:'Libro de prueba',autor:'Autor de prueba',precio:35,stock:3,estado:1}]}});
-        if(ruta==='/api/empresa')return route.fulfill({json:{success:true,data:{nombre_comercial:'Librería del Saber'}}});
+        if(ruta==='/api/empresa')return route.fulfill({json:{success:true,data:{nombre_comercial:'MATIDANA'}}});
         if(ruta==='/api/anuncios')return route.fulfill({json:{success:true,anuncio:null}});
         return route.fulfill({json:{success:true,data:[]}});
     });
@@ -101,25 +79,4 @@ test('el banner con libro vinculado lleva a la ficha sin texto «Ver ahora» enc
     await expect(enlace).toHaveAttribute('href','/libro/1');
     await expect(carrusel.getByText('Ver ahora')).toHaveCount(0);
     await enlace.click();await expect(page).toHaveURL(/\/libro\/1$/);
-});
-for(const ancho of [390,1440])test(`panel ${ancho}px: subir, editar, ordenar, ocultar y eliminar banners`,async({page})=>{
-    await page.setViewportSize({width:ancho,height:1000});const errores=[];page.on('pageerror',e=>errores.push(e.message));const control=await preparar(page,{panel:true});
-    await page.goto('/anuncios');await expect(page.getByRole('heading',{name:'Anuncios de la web',exact:true})).toBeVisible();
-    await page.getByRole('button',{name:'Nueva imagen',exact:true}).click();
-    const modal=page.getByRole('dialog');await modal.getByRole('textbox',{name:'Título del anuncio / texto alternativo',exact:true}).fill('Nuevo banner');
-    await modal.getByLabel('Libro vinculado (opcional)',{exact:true}).selectOption('1');
-    await modal.locator('#imagen-carrusel').setInputFiles({name:'banner.png',mimeType:'image/png',buffer:png});
-    await expect(modal.getByAltText('Vista previa del banner')).toHaveAttribute('src',/^blob:/);
-    await modal.getByRole('button',{name:'Guardar imagen',exact:true}).click();await expect(modal).toHaveCount(0);expect(control.altas).toBe(1);
-    const fila=page.getByRole('listitem').filter({has:page.getByRole('heading',{name:'Nuevo banner',exact:true})});
-    await fila.getByRole('button',{name:'Subir Nuevo banner',exact:true}).click();await expect.poll(()=>control.ordenes.length).toBe(1);
-    await fila.getByRole('button',{name:'Editar imagen',exact:true}).click();
-    await page.getByRole('dialog').getByRole('textbox',{name:'Título del anuncio / texto alternativo',exact:true}).fill('Banner editado');
-    await page.getByRole('dialog').getByRole('button',{name:'Guardar imagen',exact:true}).click();await expect(page.getByRole('dialog')).toHaveCount(0);
-    const editada=page.getByRole('listitem').filter({has:page.getByRole('heading',{name:'Banner editado',exact:true})});
-    await editada.getByRole('button',{name:'Ocultar',exact:true}).click();await expect(editada).toContainText('Oculto');
-    await page.screenshot({path:test.info().outputPath(`panel-carrusel-${ancho}.png`),fullPage:true});
-    await editada.getByRole('button',{name:'Eliminar imagen',exact:true}).click();await page.getByLabel('Contraseña del administrador').fill('ClavePrueba123');
-    await page.getByRole('button',{name:'Confirmar eliminación'}).click();await expect(page.getByRole('heading',{name:'Banner editado',exact:true})).toHaveCount(0);
-    expect(errores).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });

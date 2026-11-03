@@ -520,7 +520,7 @@ class _EditorialBanner extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'LIBRERÍA DEL SABER',
+                        'MATIDANA',
                         style: textTheme.labelSmall?.copyWith(
                           color: AppColors.doradoClaro,
                           letterSpacing: 1.6,

@@ -29,5 +29,9 @@ export default function useCatalogo() {
         };
     }, []);
 
-    return { autores, categorias, cargando, error };
+    const agregarAutor = (autor) => {
+        setAutores((anteriores) => [...anteriores.filter((a) => String(a.id_autor) !== String(autor.id_autor)), autor]);
+    };
+
+    return { autores, categorias, cargando, error, agregarAutor };
 }

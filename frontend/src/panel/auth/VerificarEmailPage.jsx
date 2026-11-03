@@ -98,8 +98,8 @@ export default function VerificarEmailPage() {
                 className="verificar-tarjeta relative z-10 w-full max-w-[440px]"
             >
                 <div className="mb-7 flex flex-col items-center text-center">
-                    <img src={logoLibreria} alt="Librería del Saber" className="h-14 w-auto object-contain" />
-                    <p className="mt-2 font-title text-base font-semibold text-[#1c1814]">Librería del Saber</p>
+                    <img src={logoLibreria} alt="MATIDANA" className="h-14 w-auto object-contain" />
+                    <p className="mt-2 font-title text-base font-semibold text-[#1c1814]">MATIDANA</p>
                 </div>
 
                 <div className="mb-6">

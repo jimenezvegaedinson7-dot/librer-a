@@ -1,4 +1,4 @@
-# Librería — Backend (Express + PostgreSQL)
+# MATIDANA — Backend (Express + PostgreSQL)
 
 API REST de la librería. Incluye el módulo de ventas con **checkout profesional**:
 pago vía PayU (WebCheckout) y dos modos de entrega: **domicilio**

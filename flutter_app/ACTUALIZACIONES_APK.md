@@ -47,7 +47,7 @@ Publica siempre el APK universal (`flutter build apk --release`); no uses
      versionCode mayor;
    - abre el **instalador oficial de Android**, que pide confirmación.
 4. La primera vez Android pide permitir "Instalar apps desconocidas" para
-   Librería; la app ofrece el botón "Abrir ajustes".
+   MATIDANA; la app ofrece el botón "Abrir ajustes".
 
 La sesión, el carrito y los datos locales se conservan al actualizar.
 

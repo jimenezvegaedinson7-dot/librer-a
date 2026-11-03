@@ -1,5 +1,5 @@
 ---
-name: Librería del Saber — Web pública
+name: MATIDANA Libros y Cultura — Web pública
 description: Librería comercial con portada espacial y navegación y footer claros inspirados en Ibero Librerías, sin franja superior.
 colors:
   verde-900: "#033a2c"
@@ -204,11 +204,33 @@ components:
     textColor: "{colors.nav-secundario}"
 ---
 
-# Design System: Librería del Saber — Web pública
+# Design System: MATIDANA Libros y Cultura — Web pública
 
 Alcance: la web pública (`src/web/`, todo bajo la clase raíz `.sitio`, tokens en `public-site.css`). El panel administrativo (`src/panel/**`, `src/panel/estilos/theme.css`) es una superficie hermana con su propio sistema; este documento no lo describe.
 
 ## Overview
+
+### Prioridad vigente: web ligera y sin espejo (27/10/2026)
+
+El usuario pide aligerar la carga y retirar el espejo/vidrio en **toda la web**. Esta decisión sustituye la portada espacial y los acabados reflectantes descritos históricamente más abajo.
+
+- El inicio pinta primero `PortadaLigera`: texto, libro destacado real con precio/stock y cinco novedades. Después, `PortadaDiferida` sustituye esa vista por la animación 3D original cuando el navegador está libre (`requestIdleCallback`), el visitante sigue arriba y no hay ahorro de datos ni red 2G; si algo falla se conserva la versión ligera. Catálogo y fichas conservan sus datos y acciones.
+- `limpia.css` elimina el desenfoque de fondos, las facetas animadas de cabecera/pie y el cristal de las tarjetas. Se conservan los colores y componentes de la implementación vigente, con superficies sólidas y legibles.
+- El libro del login mantiene su apertura CSS de 400ms y la recuperación en otra hoja; páginas y campos pasan a ser sólidos, sin filtro de vidrio.
+- No hay pantalla de precarga que bloquee la navegación. No se descargan todas las portadas anticipadamente, el panel se carga bajo demanda y las páginas informativas tienen módulos separados. Las fuentes del panel se piden solamente al abrirlo.
+- Medición local de recursos de producción con la misma API simulada: el JavaScript inicial pasa de 1.459.497 a 629.822 bytes (aprox. −57%); acceso administrativo de 651.665 a 575.597 bytes (aprox. −12%). No es una medición de latencia de Render ni de dispositivos físicos.
+
+### Adaptación a celulares y tabletas (23/10/2026)
+
+`responsive-movil.css` se importa después de las capas visuales de `PublicLayout`, para que los temas no anulen las reglas móviles. Conserva la cabecera oscura y los acabados presentes en el código al comenzar esta revisión.
+
+- Novedades muestra portadas fluidas de hasta 200px, con dos libros por ancho de teléfono y desplazamiento horizontal nativo. Se elimina el doble padding del carrusel.
+- Géneros, ofertas y estantes temáticos mantienen anchos de columna porcentuales **fijos**, sin un mínimo cero que permita comprimir todos los libros en una sola pantalla. Los nombres largos envuelven dentro de cada tarjeta.
+- «Todos los libros» usa dos columnas y recorrido vertical hasta 640px; los estantes temáticos siguen siendo horizontales. Títulos, autores, precios y acciones respetan el ancho real de su tarjeta. Una container query apila las acciones en tarjetas angostas, también en tablet.
+- Las acciones de las ofertas son una fila propia dentro del flujo de la rejilla; no flotan encima de los datos ni requieren reservar una altura fija. En celular, las ofertas muestran dos tarjetas verticales por pantalla.
+- Cabecera, formularios, filtros y tarjetas de la app usan espacios y tipografía compactos; los controles de compra y búsqueda conservan 44px de alto. En teléfonos horizontales de poca altura la cabecera interior deja de ser sticky.
+
+Verificación: nueve viewports Chromium de 320/360/390/430/600/768/1024/1440px y horizontal 844×390, con textos largos, 24 libros, ocho categorías y doce ofertas. Se comprueban límites internos y solapamientos, no solo el ancho del documento, además de carrito, menú y desplazamiento de novedades. Revisión visual con catálogo real a 320/390/768/1440px sin desbordamientos detectados ni errores JS. Pasaron los nueve casos responsive, las regresiones de ofertas, ficha, movimiento y portada; lint y build correctos. La prueba general de foco al cambiar de página falló una vez bajo concurrencia y pasó en su repetición aislada. No se han probado dispositivos físicos. Veredicto: adaptación lista para revisar en local.
 
 ### Excepción vigente del inicio: portada espacial (20/10/2026)
 
@@ -324,7 +346,7 @@ Los precios van en 700, 16px, negro, con cifras tabulares; los títulos de libro
 Contenedor centrado de ancho máximo 1280px con márgenes laterales fluidos (gutter de 16 a 56px). El ritmo vertical de sección es fluido (44 a 80px); dentro de las secciones la escala es 16 / 24 / 40 / 64px.
 
 - **Cabecera** en tres bandas: avisos (44px, verde oscuro con texto claro), cabecera principal blanca y pegajosa (76px: logo, buscador de hasta 640px, "Nuestra tienda", "Descargar app") y menú (44px) con separadores verticales de 1px. La cabecera gana una sombra suave al desplazarse.
-- **Inicio / carrusel**: banners a todo el ancho bajo la cabecera, proporción recomendada 1600 × 600 (8:3), `object-fit: contain` para no recortar el anuncio. Las imágenes y su contenido proceden del administrador. Flechas, indicadores y pausa cuando hay varios banners; sin controles innecesarios para uno solo. Estado vacío y error con reintento cuando corresponde. Sin escena 3D, imagen de libro fija ni precarga de Three.js.
+- **Inicio / carrusel**: banners a todo el ancho bajo la cabecera, proporción recomendada 1600 × 600 (8:3), `object-fit: contain` para no recortar el anuncio. Las imágenes y su contenido proceden del administrador. Flechas, indicadores y pausa cuando hay varios banners; sin controles innecesarios para uno solo. Estado vacío y error con reintento cuando corresponde. La escena 3D del libro se carga aparte y solo después de la primera pintura; Three.js no bloquea el inicio.
 - **Páginas interiores**: migas de pan en banda gris, luego la sección con cabecera (título + filete) y contenido.
 - **Rejillas**: catálogo en `auto-fill` de mínimo 190px (dos columnas bajo 520px); carrusel horizontal con scroll-snap en el inicio; promos en 3 columnas; ventajas en 12 columnas alternando texto (5) y visual (6); descarga en 2 columnas; pie 2/1/1.
 - **Responsive**: bajo 1024px desaparecen el menú y los enlaces de cabecera; aparece un botón de menú que abre un cajón lateral (máx. 360px) y el buscador baja a su propia fila; las rejillas pasan a una columna. Bajo 520px el botón de descarga de la cabecera queda solo con icono.
@@ -386,7 +408,7 @@ Bordes de 1px en gris filete; 1.5px en las opciones de entrega. Los separadores 
 - **Pie:** verde encuadernación, texto salvia, títulos blancos 700 14px, logo blanco, legal sobre filete blanco al 20%.
 
 ### Pantalla de carga
-Solo en las rutas públicas y en la primera carga. Vive en `index.html` (`#precarga`) para pintarse antes del JavaScript; la retira `components/Precarga.jsx` cuando la página está montada, las fuentes y el evento load están listos y no quedan recursos registrados (imagen del hero, primer cuadro del libro 3D). Sobria: fondo de papel claro (degradado radial de blanco a #ece6db), el logo "f" en verde (public/precarga/logo-f-verde.webp, 96 a 128px) que llega en cinco pedazos (recortes con clip-path) que se juntan en unos 0.75s y luego respira 5px cada 5s con un reflejo de luz recortado a su silueta, y debajo "Librería del Saber" en verde (700) y "Preparando tu experiencia de lectura...". Sin barras, partículas ni líneas doradas. Mínimo 800ms en pantalla (lo que tarda en unirse el logo), salida con opacidad en 380ms. Con movimiento reducido solo aparece, sin respiración ni reflejo.
+Solo en las rutas públicas y en la primera carga. Vive en `index.html` (`#precarga`) para pintarse antes del JavaScript; la retira `components/Precarga.jsx` cuando la página está montada, las fuentes y el evento load están listos y no quedan recursos registrados (imagen del hero, primer cuadro del libro 3D). Sobria: fondo de papel claro (degradado radial de blanco a #ece6db), el logo "f" en verde (public/precarga/logo-f-verde.webp, 96 a 128px) que llega en cinco pedazos (recortes con clip-path) que se juntan en unos 0.75s y luego respira 5px cada 5s con un reflejo de luz recortado a su silueta, y debajo "MATIDANA Libros y Cultura" en verde (700) y "Preparando tu experiencia de lectura...". Sin barras, partículas ni líneas doradas. Mínimo 800ms en pantalla (lo que tarda en unirse el logo), salida con opacidad en 380ms. Con movimiento reducido solo aparece, sin respiración ni reflejo.
 
 ### Cierre de descarga
 Al final de las páginas que explican la app (Aplicación, Características): banda salvia pálida con borde gris filete y radio 8px, una frase en 600 y el botón principal "Descargar la app". Ninguna página termina sin salida.

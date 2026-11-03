@@ -98444,7 +98444,7 @@ A.RM.prototype={
 C(a){return A.h2($.qR(),new A.agS(),null)}}
 A.agS.prototype={
 $2(a,b){var s=A.b1P()
-return new A.tm($.aRO(),B.a1G,"Librer\xeda",s,!1,B.Ip,null)},
+return new A.tm($.aRO(),B.a1G,"MATIDANA",s,!1,B.Ip,null)},
 $S:603}
 A.auy.prototype={
 glq(){return B.a_K}}
@@ -99888,7 +99888,7 @@ A.YL.prototype={
 C(a){var s,r,q,p,o=null,n=A.D(a).ok,m=A.aw(18),l=A.b([$.aZ,A.mt(B.q.aR(0.32),$.aZ)],t.d),k=A.b([new A.bj(0,B.N,$.ml.aR(0.28),B.Wn,24)],t.V),j=A.tS(0,A.hw(A.ot(A.aw(18),A.aP4(B.la,B.Nx,new A.ayp()),B.aV),!0,o)),i=A.aw(13)
 i=A.tS(0,A.aO(o,o,B.m,o,o,new A.ak(o,o,A.cD(B.cR.aR(0.3),1),i,o,o,B.r),o,o,B.eS,o,o,o,o))
 s=n.ax
-s=A.Q("LIBRER\xcdA DEL SABER",o,o,o,o,s==null?o:s.awV(B.cR,10,1.6),o,o)
+s=A.Q("MATIDANA",o,o,o,o,s==null?o:s.awV(B.cR,10,1.6),o,o)
 r=A.Q("\u201cEncuentra tu pr\xf3xima lectura.\u201d",o,o,o,o,A.aNE(B.f,22,B.cv,B.V,1.2,-0.2),o,o)
 q=n.Q
 p=t.p
@@ -103105,7 +103105,7 @@ C(a){var s,r,q=null,p=t.d,o=A.b([$.aZ,A.mt(B.q.aR(0.35),$.aZ)],p)
 p=A.tS(0,A.fJ(q,new A.ak(q,q,q,q,q,new A.pv(B.C,0.75,B.b8,q,0,A.b([$.ml.aR(0.9),$.ml.aR(0)],p),q,q),B.r),B.b4))
 s=A.cD(B.cR.aR(0.55),1)
 r=t.p
-return A.dZ(q,q,A.fJ(A.eE(B.bc,A.b([B.YI,p,A.cG(!0,A.dj(A.VK(new A.aIe(),A.aG(A.b([A.aO(q,A.fJ(B.IP,new A.ak(B.f.aR(0.08),q,q,q,q,q,B.aw),B.b4),B.m,q,q,new A.ak(q,q,s,q,q,q,B.aw),q,156,q,B.r2,q,q,156),B.c5,A.Q("Librer\xeda",q,q,q,q,A.aNE(B.f,30,q,B.W,q,-0.4),q,q),B.bt,A.aO(q,q,B.m,q,q,new A.ak(B.cR,q,q,A.aw(2),q,q,B.r),q,2,q,q,q,q,36),B.a1_,B.a0Y],r),B.o,B.h,B.a3),B.fW,B.M8,q,new A.as(0,1,t.Y),t.i),q,q),B.J,!0)],r),B.p,B.b6,q),new A.ak(q,q,q,q,q,new A.eT(B.bZ,B.dP,B.b8,o,q,q),B.r),B.b4),q)}}
+return A.dZ(q,q,A.fJ(A.eE(B.bc,A.b([B.YI,p,A.cG(!0,A.dj(A.VK(new A.aIe(),A.aG(A.b([A.aO(q,A.fJ(B.IP,new A.ak(B.f.aR(0.08),q,q,q,q,q,B.aw),B.b4),B.m,q,q,new A.ak(q,q,s,q,q,q,B.aw),q,156,q,B.r2,q,q,156),B.c5,A.Q("MATIDANA",q,q,q,q,A.aNE(B.f,30,q,B.W,q,-0.4),q,q),B.bt,A.aO(q,q,B.m,q,q,new A.ak(B.cR,q,q,A.aw(2),q,q,B.r),q,2,q,q,q,q,36),B.a1_,B.a0Y],r),B.o,B.h,B.a3),B.fW,B.M8,q,new A.as(0,1,t.Y),t.i),q,q),B.J,!0)],r),B.p,B.b6,q),new A.ak(q,q,q,q,q,new A.eT(B.bZ,B.dP,B.b8,o,q,q),B.r),B.b4),q)}}
 A.aIc.prototype={
 $1(a){return B.f2},
 $S:58}
@@ -105117,7 +105117,7 @@ q=t.p
 r=A.b([new A.ka(this.c,B.P,m,m,"Legal",m),B.bt,A.Q("\xdaltima actualizaci\xf3n: "+this.d,m,m,m,m,r,m,m),B.c4],q)
 for(p=this.e,o=p.length,n=0;n<o;++n)B.b.M(r,A.b([new A.a20(p[n],m),B.cE],q))
 r.push(B.aE)
-r.push(A.dj(A.Q("\xa9 2026 Librer\xeda. Todos los derechos reservados.",m,m,m,m,s?m:l.ah(B.ad),B.a0,m),m,m))
+r.push(A.dj(A.Q("\xa9 2026 MATIDANA. Todos los derechos reservados.",m,m,m,m,s?m:l.ah(B.ad),B.a0,m),m,m))
 return A.dZ(k,B.cs,A.cG(!0,A.E9(r,B.p,B.dy,m,m,B.aj,!1),B.J,!0),m)}}
 A.a20.prototype={
 C(a){var s,r=null,q=A.D(a).ok,p=A.aw(14),o=A.cD(B.a8,1),n=A.aO(r,r,B.m,r,r,new A.ak($.aND,r,r,A.aw(3),r,r,B.r),r,18,B.Mu,r,r,r,3),m=this.c,l=q.w
@@ -111532,10 +111532,10 @@ B.QY=s([B.SO,B.Ss,B.TU],t.zg)
 B.QZ=s([1,2,0],t.t)
 B.to=s(["text","multiline","number","phone","datetime","emailAddress","url","visiblePassword","name","address","none","webSearch","twitter"],t.s)
 B.Rp=s([4,9,14,19],t.t)
-B.Qx=new A.dX("1. Responsable del tratamiento","La Librer\xeda es responsable del tratamiento de los datos personales que recopila a trav\xe9s de su aplicaci\xf3n, conforme a la Ley N.\xba 29733, Ley de Protecci\xf3n de Datos Personales, y su reglamento.")
+B.Qx=new A.dX("1. Responsable del tratamiento","La MATIDANA es responsable del tratamiento de los datos personales que recopila a trav\xe9s de su aplicaci\xf3n, conforme a la Ley N.\xba 29733, Ley de Protecci\xf3n de Datos Personales, y su reglamento.")
 B.QD=new A.dX("2. Datos que recopilamos","Nombre, correo electr\xf3nico, tel\xe9fono, contrase\xf1a (cifrada), foto de perfil si la subes, historial de compras y reservas, y los datos necesarios para la entrega, como la direcci\xf3n.")
-B.Qu=new A.dX("3. Finalidad del uso de los datos","Usamos tus datos para gestionar tu cuenta, procesar pedidos y pagos, coordinar entregas, gestionar reservas, atender reclamos y, con tu consentimiento, enviarte informaci\xf3n de la Librer\xeda.")
-B.Qo=new A.dX("4. Pagos y PayU","Los pagos se procesan a trav\xe9s de PayU. La Librer\xeda no recibe, almacena ni procesa los datos de tu tarjeta; el tratamiento se realiza por el proveedor de pagos bajo sus propias pol\xedticas de privacidad.")
+B.Qu=new A.dX("3. Finalidad del uso de los datos","Usamos tus datos para gestionar tu cuenta, procesar pedidos y pagos, coordinar entregas, gestionar reservas, atender reclamos y, con tu consentimiento, enviarte informaci\xf3n de la MATIDANA.")
+B.Qo=new A.dX("4. Pagos y PayU","Los pagos se procesan a trav\xe9s de PayU. La MATIDANA no recibe, almacena ni procesa los datos de tu tarjeta; el tratamiento se realiza por el proveedor de pagos bajo sus propias pol\xedticas de privacidad.")
 B.Qq=new A.dX("5. Seguridad de la informaci\xf3n","Protegemos tus datos con medidas t\xe9cnicas y organizativas razonables, incluyendo el uso de contrase\xf1as cifradas y la verificaci\xf3n en dos pasos para tu cuenta.")
 B.Qn=new A.dX("6. Conservaci\xf3n de los datos","Conservamos tus datos solo durante el tiempo necesario para cumplir las finalidades descritas y las obligaciones legales, contables o fiscales aplicables.")
 B.Qz=new A.dX("7. Derechos del titular","De acuerdo con la Ley N.\xba 29733, puedes solicitar el acceso, actualizaci\xf3n, inclusi\xf3n, rectificaci\xf3n, supresi\xf3n o revocaci\xf3n de tus datos personales ejerciendo tus derechos ARCO a trav\xe9s de los canales de contacto de la aplicaci\xf3n.")
@@ -111625,13 +111625,13 @@ B.S5=s(["Carrito","Entrega","Pago"],t.s)
 B.Ql=new A.dX("1. Aceptaci\xf3n de los t\xe9rminos","Mediante el registro de tu cuenta o el uso de la aplicaci\xf3n aceptas los presentes T\xe9rminos y Condiciones y nuestra Pol\xedtica de Privacidad. Si no est\xe1s de acuerdo con alguna de sus cl\xe1usulas, te pedimos que no utilices la aplicaci\xf3n.")
 B.Qm=new A.dX("2. La cuenta del cliente","Para comprar o reservar necesitas crear una cuenta con datos v\xe1lidos y reales. Eres responsable de mantener la confidencialidad de tu contrase\xf1a y de toda la actividad que se realice en tu cuenta. Debes notificarnos de inmediato cualquier uso no autorizado. Puedes eliminar tu cuenta cuando quieras desde Perfil \u2192 Eliminar mi cuenta.")
 B.QE=new A.dX("3. Cat\xe1logo, precios y disponibilidad","Los precios se muestran en soles peruanos (S/) e incluyen los impuestos aplicables. La disponibilidad de stock es referencial y puede variar al momento de procesar tu pedido; si un libro no estuviera disponible te informaremos antes de completar el cobro.")
-B.Qw=new A.dX("4. Pedidos y pagos","Los pagos se procesan a trav\xe9s de PayU, un proveedor externo de pagos. Al confirmar un pedido aceptas pagar el importe total indicado. La Librer\xeda no almacena datos de tarjetas de cr\xe9dito o d\xe9bito.")
+B.Qw=new A.dX("4. Pedidos y pagos","Los pagos se procesan a trav\xe9s de PayU, un proveedor externo de pagos. Al confirmar un pedido aceptas pagar el importe total indicado. La MATIDANA no almacena datos de tarjetas de cr\xe9dito o d\xe9bito.")
 B.Qv=new A.dX("5. Entregas","Los pedidos se entregan en la direcci\xf3n y dentro del plazo indicados al momento de la compra. Los plazos son estimados. Los costos de env\xedo, si aplican, se informan antes de confirmar el pago.")
 B.QB=new A.dX("6. Devoluciones y cambios","Aceptamos devoluciones o cambios de libros en buen estado dentro de los 7 d\xedas calendario posteriores a la entrega, siempre que no presenten se\xf1ales de uso y conserven su empaque original. Si el libro lleg\xf3 da\xf1ado, con fallas de impresi\xf3n o no corresponde a tu pedido, lo cambiamos o te devolvemos el importe por el mismo medio de pago, sin costo para ti. Las condiciones especiales de cada venta se indican al momento de la compra.")
 B.QF=new A.dX("7. Reservas de libros","Al reservar un libro comprometes su disponibilidad por un plazo determinado. Si la reserva no se completa en el plazo indicado, el libro vuelve a estar disponible para otros clientes.")
-B.Qr=new A.dX("8. Propiedad intelectual","Todo el contenido de la aplicaci\xf3n (textos, im\xe1genes, logos y marcas) es de titularidad de la Librer\xeda o de sus proveedores y est\xe1 protegido por las normas de propiedad intelectual. No est\xe1 permitido copiarlo, distribuirlo ni usarlo comercialmente sin autorizaci\xf3n.")
-B.Qy=new A.dX("9. Limitaci\xf3n de responsabilidad","La Librer\xeda no ser\xe1 responsable por da\xf1os indirectos o p\xe9rdidas derivadas del uso de la aplicaci\xf3n, ni por demoras ajenas a su control, como fallas de los servicios de pago, transporte o conectividad.")
-B.Qp=new A.dX("10. Modificaciones","La Librer\xeda podr\xe1 actualizar estos T\xe9rminos en cualquier momento. La versi\xf3n vigente se publicar\xe1 en la aplicaci\xf3n y el uso continuado de la misma implica su aceptaci\xf3n.")
+B.Qr=new A.dX("8. Propiedad intelectual","Todo el contenido de la aplicaci\xf3n (textos, im\xe1genes, logos y marcas) es de titularidad de la MATIDANA o de sus proveedores y est\xe1 protegido por las normas de propiedad intelectual. No est\xe1 permitido copiarlo, distribuirlo ni usarlo comercialmente sin autorizaci\xf3n.")
+B.Qy=new A.dX("9. Limitaci\xf3n de responsabilidad","La MATIDANA no ser\xe1 responsable por da\xf1os indirectos o p\xe9rdidas derivadas del uso de la aplicaci\xf3n, ni por demoras ajenas a su control, como fallas de los servicios de pago, transporte o conectividad.")
+B.Qp=new A.dX("10. Modificaciones","La MATIDANA podr\xe1 actualizar estos T\xe9rminos en cualquier momento. La versi\xf3n vigente se publicar\xe1 en la aplicaci\xf3n y el uso continuado de la misma implica su aceptaci\xf3n.")
 B.QC=new A.dX("11. Contacto","Por consultas sobre estos t\xe9rminos puedes escribirnos a trav\xe9s de la informaci\xf3n de contacto publicada en la aplicaci\xf3n. Si no est\xe1s conforme con un producto o con nuestra atenci\xf3n, puedes registrar un reclamo o una queja en nuestro Libro de Reclamaciones virtual (Perfil \u2192 Libro de Reclamaciones). Te responderemos en un plazo no mayor a 15 d\xedas h\xe1biles.")
 B.S8=s([B.Ql,B.Qm,B.QE,B.Qw,B.Qv,B.QB,B.QF,B.Qr,B.Qy,B.Qp,B.QC],t.Nb)
 B.HE=new A.rQ()

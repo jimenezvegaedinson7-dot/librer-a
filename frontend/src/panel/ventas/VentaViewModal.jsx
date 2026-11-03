@@ -9,6 +9,9 @@ import { formatearMoneda, formatearFecha } from '../../compartido/lib/utils/form
 import { textoMetodoPago, textoOrigen } from './metodosPago';
 import { correoVisible } from '../lib/utils/cuentas';
 import { descripcionEntrega, ubicacionEntrega } from '../../compartido/lib/utils/entrega';
+import { pagoDesdeVenta } from '../pagos/pagoPresentacion';
+import { EstadoPagoBadge } from '../pagos/PagoBadges';
+import { EstadoEntregaVenta } from './EstadoEntregaVenta';
 
 const estados = {
     pendiente: { texto: 'Pendiente', color: 'warning' },
@@ -39,6 +42,7 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
     const estado = estados[venta.estado] || { texto: venta.estado || 'Sin estado', color: 'neutral' };
     const entrega = descripcionEntrega(venta);
     const ubicacion = ubicacionEntrega(venta);
+    const pago = pagoDesdeVenta(venta);
 
     return (
         <Modal abierto={abierto} titulo="Detalle de la venta" subtitulo="Información completa de la operación" onCerrar={onCerrar} grande>
@@ -116,6 +120,19 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                     </p>
                 )}
             </div>
+
+            <section className="gestion-ventas__datos-pago border-b border-primary-200 py-4" aria-label="Datos del pago y la entrega">
+                <h3 className="text-sm font-semibold text-slate-800">Pago y entrega</h3>
+                <div className="mt-3 grid grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-2">
+                    <Ficha icono={<FaMoneyBillWave />} etiqueta="Estado del pago"><EstadoPagoBadge estado={pago.estado_pago} /></Ficha>
+                    <Ficha icono={<FaTruckFast />} etiqueta="Estado de entrega"><EstadoEntregaVenta venta={venta} /></Ficha>
+                    {venta.external_reference && <Ficha etiqueta="Referencia externa">{venta.external_reference}</Ficha>}
+                    {venta.payu_order_id && <Ficha etiqueta="Orden PayU">{venta.payu_order_id}</Ficha>}
+                    {venta.payu_payment_id && <Ficha etiqueta="Transacción PayU">{venta.payu_payment_id}</Ficha>}
+                    {venta.payu_payer_email && <Ficha etiqueta="Correo del pagador">{correoVisible(venta.payu_payer_email) || 'Sin correo'}</Ficha>}
+                    {venta.pago_revision_motivo && <p className="text-sm text-amber-800 md:col-span-2">Pago en revisión: {venta.pago_revision_motivo}</p>}
+                </div>
+            </section>
 
             <div className="pt-4">
                 <h3 className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.06em] text-slate-500">

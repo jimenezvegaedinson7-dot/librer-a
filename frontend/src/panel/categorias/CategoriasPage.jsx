@@ -7,8 +7,9 @@ import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { AltaFlotante } from '../ui/AltaFlotante';
 import { Input } from '../ui/Form';
-import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
 import { Pagination } from '../ui/Pagination';
 import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
@@ -45,9 +46,9 @@ function accionesCategoria(fila, { onVer, onEditar, onEliminar }) {
     );
 }
 
-function Contador({ cargando, total, activas, inactivas }) {
+function Contador({ cargando, error, total, activas, inactivas }) {
     return (
-        <Indicadores cargando={cargando} etiqueta="Resumen de categorías">
+        <Indicadores cargando={cargando} error={error} etiqueta="Resumen de categorías">
             <Indicador titulo="Categorías" valor={total} icono={<FaTags />} tono="primary" detalle="Registradas en el catálogo" />
             <Indicador titulo="Activas" valor={activas} icono={<FaCircleCheck />} tono="success" detalle="Visibles en el catálogo" de={total} />
             <Indicador titulo="Inactivas" valor={inactivas} icono={<FaBan />} tono="rose" detalle="Ocultas al público" de={total} />
@@ -65,6 +66,7 @@ function TablaCategorias({ titulo, subtitulo, paginadas, contador, pagina, total
             />
             <CardBody className="p-0">
                 <DataTable
+                    etiqueta={titulo}
                     columnas={columnasCategorias}
                     filas={paginadas}
                     keyExtractor={(fila) => fila.id_categoria}
@@ -207,18 +209,22 @@ export default function CategoriaPage() {
                 titulo="Categorías"
                 descripcion="Administra las categorías de los libros"
             />
-            <Contador cargando={cargando} total={categorias.length} activas={categoriasActivas.length} inactivas={categoriasInactivas.length} />
-
-            <CategoriaForm onCategoriaCreada={categoriaCreada} />
+            <Contador cargando={cargando} error={error} total={categorias.length} activas={categoriasActivas.length} inactivas={categoriasInactivas.length} />
 
             <Card>
                 <CardHeader
                     titulo="Catálogo de categorías"
                     subtitulo="Busca categorías por nombre o descripción"
-                    acciones={
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                            <div className="relative">
+                    acciones={<div className="tabla-filtros-acciones">
+                        <Button variante="secondary" onClick={cargarCategorias} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
+                        <AltaFlotante etiqueta="Nueva categoría" titulo="Registrar categoría" subtitulo="El nombre es obligatorio; la descripción es opcional."
+                            formulario={CategoriaForm} eventoRegistro="onCategoriaCreada" onRegistrado={categoriaCreada} />
+                    </div>}
+                    filtros={
+                        <div className="filtros-grid filtros-grid--busqueda">
+                            <div className="filtro-busqueda">
                                 <Input
+                                    label="Buscar categoría"
                                     type="text"
                                     value={busqueda}
                                     onChange={(e) => alBuscar(e.target.value)}
@@ -230,15 +236,13 @@ export default function CategoriaPage() {
                                     <button
                                         type="button"
                                         onClick={() => alBuscar('')}
+                                        title="Limpiar búsqueda"
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-slate-700"
                                     >
                                         <FaXmark />
                                     </button>
                                 )}
                             </div>
-                            <Button variante="secondary" onClick={cargarCategorias} disabled={cargando}>
-                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
-                            </Button>
                         </div>
                     }
                 />
@@ -246,12 +250,12 @@ export default function CategoriaPage() {
 
             {cargando && <TableSkeleton columnas={4} filas={8} titulo />}
 
-            {!cargando && error && <Alert tipo="error">{error}</Alert>}
+            {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarCategorias} />}
 
             {!cargando && !error && categorias.length === 0 && (
                 <EmptyState
                     titulo="No hay categorías registradas"
-                    descripcion="Registra una categoría utilizando el formulario."
+                    descripcion="Pulsa Nueva categoría para completar los datos y registrarla."
                     icono={<FaMagnifyingGlass />}
                 />
             )}

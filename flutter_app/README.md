@@ -1,6 +1,6 @@
-# Flutter iOS - Libreria
+# Flutter - MATIDANA
 
-Aplicacion movil de libreria desarrollada con Flutter. Incluye autenticacion,
+Aplicacion movil de MATIDANA desarrollada con Flutter. Incluye autenticacion,
 catalogo de libros, carrito, reservas, compras, perfil y seguridad con 2FA.
 
 ## Ejecucion

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { animate, motion, useReducedMotion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import {
     FaBoxOpen,
     FaCircleCheck,
@@ -15,10 +15,13 @@ import {
 } from 'react-icons/fa6';
 
 import { PageHeader } from '../ui/PageHeader';
+import { FechaTabla } from '../ui/FechaTabla';
+import { Indicador, Indicadores } from '../ui/Indicadores';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Input, Select } from '../ui/Form';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
 import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
 import { DataTable } from '../ui/DataTable';
@@ -82,10 +85,6 @@ const esPedido = esPedidoEcommerce;
 
 const FILTROS = [
     { valor: 'todos', etiqueta: 'Todos' },
-    { valor: 'web', etiqueta: 'Compras web' },
-    { valor: 'app', etiqueta: 'Compras app' },
-    { valor: 'domicilio', etiqueta: 'Delivery' },
-    { valor: 'tienda', etiqueta: 'Recojo en tienda' },
     { valor: 'pendiente', etiqueta: 'Por preparar' },
     { valor: 'listo_recojo', etiqueta: 'Listos para recoger' },
     { valor: 'en_camino', etiqueta: 'En camino' },
@@ -116,45 +115,6 @@ function Seguimiento({ pedido }) {
     );
 }
 
-// Mismo acabado de las tarjetas anteriores (joya, destello y anillo),
-// conservando la distribución corregida a una décima solo en Pedidos.
-function TarjetaResumenPedido({ estado, titulo, detalle, Icono, tono, cantidad, porcentaje, total, orden, cargando, error }) {
-    const reducir = useReducedMotion();
-    const [activa, setActiva] = useState(false);
-    const [cifra, setCifra] = useState(cantidad);
-    const anterior = useRef(0);
-    const animar = !cargando && !error && !reducir;
-    useEffect(() => {
-        if (!animar) return undefined;
-        const control = animate(anterior.current, cantidad, { duration: 0.9, ease: [0.16, 1, 0.3, 1], onUpdate: setCifra });
-        anterior.current = cantidad;
-        return () => control.stop();
-    }, [cantidad, animar]);
-    const textoPorcentaje = `${porcentaje.toLocaleString('es-PE')}%`;
-    return <article
-        className={`kpi-card kpi-card--destacada joya ${tono === 'primary' ? '' : `joya--${tono}`} indicador-tarjeta pedido-indicador pedido-estado--${estado} ${cargando ? 'indicador--cargando' : ''}`}
-        aria-label={titulo} style={{ '--orden': orden }}
-        onPointerEnter={e => { if (e.pointerType === 'mouse') setActiva(true); }} onPointerLeave={() => setActiva(false)}>
-        <div className="flex items-start justify-between gap-3"><p className="kpi-label pedido-indicador__titulo">{titulo}</p><span className="kpi-icono" aria-hidden="true"><Icono/></span></div>
-        {cargando ? <span className="indicador-esqueleto" aria-hidden="true"/> :
-            <p className={`kpi-valor pedido-indicador__valor${error ? ' indicador-valor--texto' : ''}`}>{error ? '—' : Math.round(animar ? cifra : cantidad).toLocaleString('es-PE')}</p>}
-        <p className="kpi-descripcion">{detalle}</p>
-        {!cargando && !error && (total > 0 ? <div className="indicador-zona"><div className="kpi-zona kpi-zona--anillo">
-            <div className="kpi-anillo" role="meter" aria-label={`${titulo} sobre el total`} aria-valuemin={0} aria-valuemax={total} aria-valuenow={cantidad}
-                aria-valuetext={`${textoPorcentaje} del total (${cantidad} de ${total} pedidos)`}>
-                <svg viewBox="0 0 44 44" aria-hidden="true">
-                    <circle className="kpi-anillo-pista" cx="22" cy="22" r="18" pathLength="100"/>
-                    <circle className="kpi-anillo-valor" cx="22" cy="22" r="18" pathLength="100" strokeDasharray={`${porcentaje} 100`}/>
-                    <motion.circle className="kpi-anillo-brillo" cx="22" cy="22" r="18" pathLength="100" strokeDasharray="12 88" initial={{ opacity: 0, strokeDashoffset: 0 }}
-                        animate={activa && !reducir ? { strokeDashoffset: [0, -100], opacity: [0, 1, 0] } : { opacity: 0, strokeDashoffset: 0 }} transition={{ duration: 0.5, ease: 'easeInOut' }}/>
-                </svg><span className="kpi-anillo-cifra" aria-hidden="true">{textoPorcentaje}</span>
-            </div><p className="kpi-anillo-leyenda pedido-indicador__proporcion"><span className="sr-only">{textoPorcentaje} </span>del total</p>
-        </div></div> : <p className="kpi-descripcion pedido-indicador__proporcion">Sin base para calcular porcentaje</p>)}
-        {cargando && <><span className="indicador-zona indicador-zona--esqueleto" aria-hidden="true"/><span className="sr-only">Cargando {titulo}</span></>}
-        <span className="kpi-destello" aria-hidden="true"/>
-    </article>;
-}
-
 function ResumenPedidos({ resumen, cargando, error }) {
     const tarjetas = [
         ['pendiente', 'Por preparar', 'Sin salir ni estar listos', FaClock, 'warning'],
@@ -162,10 +122,21 @@ function ResumenPedidos({ resumen, cargando, error }) {
         ['en_camino', 'En camino', 'Con el repartidor', FaTruck, 'info'],
         ['entregado', 'Entregados', 'Recibidos por el cliente', FaCircleCheck, 'success'],
     ];
-    return <><section className="indicadores pedidos-indicadores" aria-label="Indicadores de pedidos" aria-busy={cargando}>
-        {tarjetas.map(([estado, titulo, detalle, Icono, tono], orden) => <TarjetaResumenPedido key={estado} estado={estado} titulo={titulo} detalle={detalle} Icono={Icono} tono={tono}
-            cantidad={resumen.conteos[estado]} porcentaje={resumen.porcentajes[estado]} total={resumen.total} orden={orden} cargando={cargando} error={error}/>)}
-    </section><p className="pedido-resumen-nota">{cargando ? 'Consultando los pedidos...' : error ? 'Indicadores no disponibles. Actualiza para consultar los pedidos.' : <>Base del resumen: {resumen.total} {resumen.total === 1 ? 'pedido pagado y vigente' : 'pedidos pagados y vigentes'}. Se excluyen cancelaciones, reembolsos, devoluciones pendientes y pagos en revisión. El filtro de estado solo cambia la lista.</>}</p></>;
+    return <><Indicadores etiqueta="Indicadores de pedidos" cargando={cargando}>
+        {tarjetas.map(([estado, titulo, detalle, Icono, tono]) => {
+            const cantidad = resumen.conteos[estado];
+            const porcentaje = `${resumen.porcentajes[estado].toLocaleString('es-PE')}%`;
+            return <Indicador key={estado} titulo={titulo} detalle={detalle} icono={<Icono />} tono={tono}
+                valor={error ? '—' : cantidad} className={`pedido-indicador pedido-estado--${estado}`} claseValor="pedido-indicador__valor">
+                {!cargando && !error && (resumen.total > 0 ?
+                    <p className="pedido-indicador__proporcion" role="meter" aria-label={`${titulo} sobre el total`}
+                        aria-valuemin={0} aria-valuemax={resumen.total} aria-valuenow={cantidad}
+                        aria-valuetext={`${porcentaje} del total (${cantidad} de ${resumen.total} pedidos)`}>
+                        {porcentaje} del total
+                    </p> : <p className="pedido-indicador__proporcion">Sin base para calcular porcentaje</p>)}
+            </Indicador>;
+        })}
+    </Indicadores><p className="pedido-resumen-nota">{cargando ? 'Consultando los pedidos...' : error ? 'Indicadores no disponibles. Actualiza para consultar los pedidos.' : <>Base del resumen: {resumen.total} {resumen.total === 1 ? 'pedido pagado y vigente' : 'pedidos pagados y vigentes'}. Se excluyen cancelaciones, reembolsos, devoluciones pendientes y pagos en revisión. El filtro de estado solo cambia la lista.</>}</p></>;
 }
 
 const nombreCliente = (p) => {
@@ -179,7 +150,7 @@ const destino = (p) => {
     return partes || 'Sin dirección registrada';
 };
 
-export default function PedidosPage() {
+export default function PedidosPage({ incrustado = false }) {
     const { exito, error: mostrarError } = useToast();
 
     const [pedidos, setPedidos] = useState([]);
@@ -187,6 +158,8 @@ export default function PedidosPage() {
     const [errorCarga, setErrorCarga] = useState(null);
     const [busqueda, setBusqueda] = useState('');
     const [filtro, setFiltro] = useState('todos');
+    const [canal, setCanal] = useState('todos');
+    const [tipoEntrega, setTipoEntrega] = useState('todos');
 
     const [detalle, setDetalle] = useState(null);
     const [cargandoDetalle, setCargandoDetalle] = useState(false);
@@ -309,10 +282,9 @@ export default function PedidosPage() {
         const texto = busqueda.trim().toLowerCase();
 
         return pedidos.filter((p) => {
-            if (filtro === 'web' && p.canal_compra !== 'web') return false;
-            if (filtro === 'app' && p.canal_compra === 'web') return false;
-            if (filtro === 'domicilio' && p.tipo_entrega !== 'domicilio') return false;
-            if (filtro === 'tienda' && p.tipo_entrega !== 'tienda') return false;
+            if (canal === 'web' && p.canal_compra !== 'web') return false;
+            if (canal === 'app' && p.canal_compra === 'web') return false;
+            if (tipoEntrega !== 'todos' && p.tipo_entrega !== tipoEntrega) return false;
 
             if (!texto) return true;
 
@@ -329,7 +301,7 @@ export default function PedidosPage() {
                 .filter(Boolean)
                 .some((campo) => String(campo).toLowerCase().includes(texto));
         });
-    }, [pedidos, filtro, busqueda]);
+    }, [pedidos, canal, tipoEntrega, busqueda]);
     const pedidosFiltrados = useMemo(() => pedidosEnAmbito.filter(p => {
         if (['pendiente', 'listo_recojo', 'en_camino', 'entregado'].includes(filtro)) return estadoContabilizable(p) === filtro;
         if (filtro === 'sin_pago') return p.estado === 'pendiente';
@@ -346,15 +318,17 @@ export default function PedidosPage() {
     const columnas = [
         {
             titulo: 'N° pedido',
+            className: 'tabla-col-registro',
             campo: 'id_venta',
             render: (p) => (
                 <div><span className="font-semibold text-primary-700">#{p.id_venta}</span>
                     <span className="ml-2"><Badge color="neutral">{p.canal_compra === 'web' ? 'Web' : 'App'}</Badge></span>
-                    <span className="block text-xs text-slate-500">{formatearFecha(p.fecha_venta)}</span></div>
+                    <FechaTabla valor={p.fecha_venta} /></div>
             ),
         },
         {
             titulo: 'Cliente',
+            className: 'tabla-col-principal',
             render: (p) => (
                 <div className="min-w-0">
                     <div className="truncate font-medium text-slate-800">
@@ -368,6 +342,7 @@ export default function PedidosPage() {
         },
         {
             titulo: 'Total',
+            className: 'tabla-col-importe',
             alineacion: 'derecha',
             render: (p) => (
                 <span className="whitespace-nowrap font-semibold text-slate-800">
@@ -384,19 +359,14 @@ export default function PedidosPage() {
             ),
         },
         {
-            titulo: 'Entrega',
+            titulo: 'Entrega y destino',
+            className: 'tabla-col-nota',
             render: (p) => (
-                <div><Badge color={esTipoEntregaValido(p.tipo_entrega) ? (p.tipo_entrega === 'domicilio' ? 'primary' : 'info') : 'danger'}>
-                    {descripcionEntrega(p)}
-                </Badge><p className="mt-1 max-w-[240px] text-xs text-slate-600">{destino(p)}</p></div>
+                <div className="tabla-celda-grupo"><Badge className={`pedido-estado pedido-estado--${normalizarEstadoEntrega(p.estado_entrega)}`} color={COLOR_ESTADO[normalizarEstadoEntrega(p.estado_entrega)] || 'neutral'}>{etiquetaEntregaPedido(p)}</Badge>
+                    <span className="tabla-nota">{descripcionEntrega(p)}</span>
+                    {p.tipo_entrega !== 'tienda' && <span className="tabla-nota">{destino(p)}</span>}
+                </div>
             ),
-        },
-        {
-            titulo: 'Estado entrega',
-            render: (p) => {
-                const estado = normalizarEstadoEntrega(p.estado_entrega);
-                return <Badge className={`pedido-estado pedido-estado--${estado}`} color={COLOR_ESTADO[estado] || 'neutral'}>{etiquetaEntregaPedido(p)}</Badge>;
-            },
         },
     ];
 
@@ -488,11 +458,11 @@ export default function PedidosPage() {
 
     return (
         <div className="pedidos-pagina space-y-4">
-            <PageHeader
+            {!incrustado && <PageHeader
                 titulo="Pedidos"
                 descripcion="Pedidos de la web y la app: pagos, delivery y recojo en Pallasca"
                 acciones={<Button variante="secondary" onClick={() => cargarPedidos()} disabled={cargando || procesando}><FaRotate /> Actualizar pedidos</Button>}
-            />
+            />}
 
             <ResumenPedidos resumen={indicadores} cargando={cargando} error={errorCarga}/>
 
@@ -500,24 +470,31 @@ export default function PedidosPage() {
                 <CardHeader
                     titulo="Lista de pedidos"
                     subtitulo="Por preparar → En camino o Listo para recoger → Entregado. Confirma cada avance cuando realmente ocurra."
-                    acciones={
-                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                            <div className="relative">
+                    acciones={<div className="tabla-filtros-acciones">
+                        {(busqueda || filtro !== 'todos' || canal !== 'todos' || tipoEntrega !== 'todos') && <Button variante="secondary" onClick={() => { setBusqueda(''); setFiltro('todos'); setCanal('todos'); setTipoEntrega('todos'); }}>Limpiar</Button>}
+                        <Button variante="secondary" onClick={() => cargarPedidos()} disabled={cargando || procesando}><FaRotate /> Actualizar pedidos</Button>
+                    </div>}
+                    filtros={
+                        <div className="filtros-grid filtros-grid--cuatro">
+                            <div>
                                 <Input
+                                    label="Pedido, cliente o destino"
                                     type="text"
                                     value={busqueda}
                                     onChange={(e) => setBusqueda(e.target.value)}
                                     placeholder="Buscar pedido, cliente o zona"
                                     aria-label="Buscar pedidos"
-                                    className="pl-9"
-                                />
-                                <FaMagnifyingGlass
-                                    aria-hidden="true"
-                                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                                    icono={<FaMagnifyingGlass />}
                                 />
                             </div>
-
+                            <Select label="Canal de compra" value={canal} onChange={e => setCanal(e.target.value)}>
+                                <option value="todos">Web y app</option><option value="web">Compras web</option><option value="app">Compras app</option>
+                            </Select>
+                            <Select label="Tipo de entrega" value={tipoEntrega} onChange={e => setTipoEntrega(e.target.value)}>
+                                <option value="todos">Todas las entregas</option><option value="domicilio">Delivery</option><option value="tienda">Recojo en tienda</option>
+                            </Select>
                             <Select
+                                label="Estado del pedido"
                                 value={filtro}
                                 onChange={(e) => {
                                     setFiltro(e.target.value);
@@ -537,13 +514,13 @@ export default function PedidosPage() {
                 <CardBody>
                     {errorCarga && (
                         <div className="mb-4">
-                            <Alert tipo="error">{errorCarga}</Alert>
+                            <ErrorCarga mensaje={errorCarga} onReintentar={() => cargarPedidos()} cargando={cargando || procesando} />
                         </div>
                     )}
 
                     {cargando ? (
                         <TableSkeleton columnas={columnas.length + 1} filas={5} />
-                    ) : pedidosFiltrados.length === 0 ? (
+                    ) : errorCarga ? null : pedidosFiltrados.length === 0 ? (
                         <EmptyState
                             icono={<FaBoxOpen aria-hidden="true" />}
                             titulo="No hay pedidos"
@@ -555,6 +532,7 @@ export default function PedidosPage() {
                         />
                     ) : (
                         <DataTable
+                            etiqueta="Pedidos de la web y la app"
                             columnas={columnas}
                             filas={pedidosFiltrados}
                             keyExtractor={(p) => p.id_venta}
@@ -645,6 +623,9 @@ export default function PedidosPage() {
                                 {botonesPedido(detalle, false)}
                             </div>
                         )}
+                        <div className="border-t border-slate-100 pt-4">
+                            <Link className="text-sm font-semibold underline underline-offset-4" to={`/ventas?ver=${detalle.id_venta}`}>Ver venta y pago de este pedido</Link>
+                        </div>
                     </div>
                 )}
             </Modal>

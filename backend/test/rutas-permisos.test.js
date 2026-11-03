@@ -195,7 +195,6 @@ test('la venta manual no expone ninguna ruta de creación alternativa', () => {
 test('las operaciones de control son solo de administrador', () => {
     const soloAdmin = [
         'venta.routes.js POST /:id/reembolso',
-        'comprobante.routes.js PUT /:id/sunat',
         'comprobante.routes.js POST /:id/anular',
         'inventario.routes.js POST /',
         'inventario.routes.js PUT /libro/:id/stock',

@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { FaBook, FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
-import { FaCircleCheck, FaBan } from 'react-icons/fa6';
-import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { AltaFlotante } from '../ui/AltaFlotante';
 import { Input, Select } from '../ui/Form';
 import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
 import { Pagination } from '../ui/Pagination';
 import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
@@ -44,7 +44,7 @@ function PrecioCelda({ fila }) {
     }
 
     return (
-        <span className="flex flex-col items-center gap-0.5">
+        <span className="flex flex-col items-end gap-0.5">
             <span className="descuento-resaltado rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-bold">
                 -{fila.descuento_porcentaje_efectivo}%
             </span>
@@ -56,13 +56,13 @@ function PrecioCelda({ fila }) {
 
 const columnasLibros = [
     { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_libro}</span> },
-    { titulo: 'Título', render: (fila) => <span className="flex items-center gap-3"><PortadaCatalogo libro={fila} mostrarTexto={false} className="h-16 w-11 shrink-0 rounded bg-slate-50 object-contain"/>
+    { titulo: 'Título', className: 'tabla-col-principal', render: (fila) => <span className="flex items-center gap-3"><PortadaCatalogo libro={fila} mostrarTexto={false} className="h-16 w-11 shrink-0 rounded bg-slate-50 object-contain"/>
         <span className="font-semibold text-slate-700">{fila.titulo}
             {referenciaPortadaLibro(fila) && <span className="mt-1 block text-xs font-normal text-slate-600">{AVISO_PORTADA_REFERENCIA}</span>}
         </span></span> },
     { titulo: 'Autor', render: (fila) => <span className="text-slate-700">{fila.autor}</span> },
     { titulo: 'Categoría', render: (fila) => <span className="text-slate-700">{fila.categoria}</span> },
-    { titulo: 'Precio', alineacion: 'centro', render: (fila) => <PrecioCelda fila={fila} /> },
+    { titulo: 'Precio', className: 'tabla-col-importe', alineacion: 'derecha', render: (fila) => <PrecioCelda fila={fila} /> },
     { titulo: 'Stock', alineacion: 'centro', render: (fila) => <StockBadge stock={fila.stock} stockMinimo={fila.stock_minimo} /> },
     { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
 ];
@@ -81,16 +81,6 @@ function accionesLibro(fila, { onVer, onEditar, onEliminar, puedeEditar }) {
     );
 }
 
-function Contador({ cargando, total, activos, inactivos }) {
-    return (
-        <Indicadores cargando={cargando} etiqueta="Resumen de libros">
-            <Indicador titulo="Libros" valor={total} icono={<FaBook />} tono="primary" detalle="Títulos en el catálogo" />
-            <Indicador titulo="Activos" valor={activos} icono={<FaCircleCheck />} tono="success" detalle="A la venta" de={total} />
-            <Indicador titulo="Inactivos" valor={inactivos} icono={<FaBan />} tono="rose" detalle="Ocultos al público" de={total} />
-        </Indicadores>
-    );
-}
-
 function TablaLibros({ titulo, subtitulo, paginados, contadorLibros, pagina, totalPaginas, onCambiarPagina, color, onVer, onEditar, onEliminar, puedeEditar }) {
     return (
         <Card className="libros-tabla">
@@ -105,6 +95,7 @@ function TablaLibros({ titulo, subtitulo, paginados, contadorLibros, pagina, tot
             />
             <CardBody className="p-0">
                 <DataTable
+                    etiqueta={titulo}
                     columnas={columnasLibros}
                     filas={paginados}
                     keyExtractor={(fila) => fila.id_libro}
@@ -116,7 +107,7 @@ function TablaLibros({ titulo, subtitulo, paginados, contadorLibros, pagina, tot
     );
 }
 
-export default function LibrosPage() {
+export default function LibrosPage({ incrustado = false }) {
     const { exito, error: mostrarError } = useToast();
     const { puedeEditarCatalogo } = useRol();
 
@@ -295,26 +286,30 @@ export default function LibrosPage() {
 
     return (
         <div className="libros-pagina space-y-4">
-            <PageHeader
+            {!incrustado && <PageHeader
                 titulo="Libros"
                 descripcion={
                     puedeEditarCatalogo
                         ? 'Administra el catálogo de la librería'
                         : 'Consulta el catálogo de la librería (solo lectura)'
                 }
-            />
-            <Contador cargando={cargando} total={libros.length} activos={librosActivos.length} inactivos={librosInactivos.length} />
-
-            {puedeEditarCatalogo && <LibroForm onLibroCreado={libroCreado} />}
+            />}
 
             <Card className="libros-filtros">
                 <CardHeader
                     titulo="Catálogo de libros"
                     subtitulo="Busca y filtra los libros registrados"
-                    acciones={
-                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                            <div className="relative">
+                    acciones={<div className="tabla-filtros-acciones">
+                        {hayFiltros && <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>}
+                        <Button variante="secondary" onClick={cargarLibros} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
+                        {puedeEditarCatalogo && <AltaFlotante etiqueta="Nuevo libro" titulo="Registrar libro" subtitulo="Completa los datos del libro y confirma el registro." grande
+                            formulario={LibroForm} eventoRegistro="onLibroCreado" onRegistrado={libroCreado} />}
+                    </div>}
+                    filtros={
+                        <div className="filtros-grid">
+                            <div className="filtro-busqueda">
                                 <Input
+                                    label="Buscar libro"
                                     type="text"
                                     value={busqueda}
                                     onChange={(e) => alBuscar(e.target.value)}
@@ -334,26 +329,19 @@ export default function LibrosPage() {
                                 )}
                             </div>
 
-                            <Select value={filtroEstado} onChange={(e) => alFiltrarEstado(e.target.value)} className="sm:w-44">
+                            <Select label="Estado del libro" value={filtroEstado} onChange={(e) => alFiltrarEstado(e.target.value)}>
                                 <option value="todos">Todos los estados</option>
                                 <option value="activo">Activos</option>
                                 <option value="inactivo">Inactivos</option>
                             </Select>
 
-                            <Select value={filtroStock} onChange={(e) => alFiltrarStock(e.target.value)} className="sm:w-44">
+                            <Select label="Disponibilidad" value={filtroStock} onChange={(e) => alFiltrarStock(e.target.value)}>
                                 <option value="todos">Todo el stock</option>
                                 <option value="disponible">Disponible</option>
                                 <option value="bajo">Stock bajo</option>
                                 <option value="sin-stock">Sin stock</option>
                             </Select>
 
-                            {hayFiltros && (
-                                <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>
-                            )}
-
-                            <Button variante="secondary" onClick={cargarLibros} disabled={cargando}>
-                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
-                            </Button>
                         </div>
                     }
                 />
@@ -363,7 +351,7 @@ export default function LibrosPage() {
                 <TableSkeleton columnas={6} filas={8} titulo />
             )}
 
-            {!cargando && error && <Alert tipo="error">{error}</Alert>}
+            {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarLibros} />}
             {!cargando && !error && avisoMinimos && <Alert tipo="warning">{avisoMinimos}</Alert>}
 
             {!cargando && !error && libros.length === 0 && (
@@ -371,7 +359,7 @@ export default function LibrosPage() {
                     titulo="No hay libros registrados"
                     descripcion={
                         puedeEditarCatalogo
-                            ? 'Registra un nuevo libro utilizando el formulario.'
+                            ? 'Pulsa Nuevo libro para completar los datos y registrarlo.'
                             : 'Todavía no hay libros en el catálogo.'
                     }
                     icono={<FaBook />}

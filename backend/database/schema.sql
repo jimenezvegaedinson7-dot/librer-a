@@ -1,6 +1,6 @@
 -- ============================================================
 -- SCHEMA COMPLETO DE LA BASE DE DATOS
--- Librería — Backend (Express + PostgreSQL)
+-- MATIDANA — Backend (Express + PostgreSQL)
 -- ============================================================
 -- Reconstruye TODA la base desde los modelos y las migraciones
 -- 001 a 019. Este archivo NO se ejecuta automáticamente: se usa

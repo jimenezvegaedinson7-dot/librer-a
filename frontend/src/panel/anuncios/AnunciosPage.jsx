@@ -17,6 +17,7 @@ import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input, Select, Textarea } from '../ui/Form';
 import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
 import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
 import { DataTable } from '../ui/DataTable';
@@ -26,7 +27,6 @@ import { Modal } from '../ui/Modal';
 import { ConfirmarEliminacion } from '../ui/ConfirmarEliminacion';
 import { useToast } from '../../app/providers/ToastProvider';
 import { formatearFecha } from '../../compartido/lib/utils/format';
-import CarruselPanel from './CarruselPanel';
 import ProtagonistaPanel from './ProtagonistaPanel';
 
 import {
@@ -385,7 +385,7 @@ function AnunciosVideo() {
 
     return (
         <div className="space-y-4">
-            <Indicadores cargando={cargando} etiqueta="Resumen de anuncios">
+            <Indicadores cargando={cargando} error={error} etiqueta="Resumen de anuncios">
                 <Indicador titulo="Anuncios" valor={lista.length} icono={<FaBullhorn />} tono="primary" detalle="Creados en total" />
                 <Indicador
                     titulo="Portada actual"
@@ -419,7 +419,7 @@ function AnunciosVideo() {
                     {cargando && <TableSkeleton columnas={4} filas={2} />}
                     {!cargando && error && (
                         <div className="p-4">
-                            <Alert tipo="error">{error}</Alert>
+                            <ErrorCarga mensaje={error} onReintentar={cargar} />
                         </div>
                     )}
                     {!cargando && !error && lista.length === 0 && (
@@ -431,6 +431,7 @@ function AnunciosVideo() {
                     )}
                     {!cargando && !error && lista.length > 0 && (
                         <DataTable
+                            etiqueta="Anuncios de video registrados"
                             columnas={columnas(enPortada)}
                             filas={lista}
                             keyExtractor={(f) => f.id_anuncio}
@@ -478,21 +479,19 @@ function AnunciosVideo() {
 }
 
 export default function AnunciosPage(){
-    const [tipo,setTipo]=useState('imagenes');
-    const TIPOS=['protagonista','imagenes','videos'];
+    const [tipo,setTipo]=useState('protagonista');
+    const TIPOS=['protagonista','videos'];
     function navegarTabs(e){if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const i=TIPOS.indexOf(tipo);const nuevo=TIPOS[(i+(e.key==='ArrowRight'?1:TIPOS.length-1))%TIPOS.length];setTipo(nuevo);document.getElementById(`tab-anuncios-${nuevo}`)?.focus();}}
     return <div className="space-y-4">
-        <PageHeader titulo="Anuncios de la web" descripcion="Libro protagonista de la portada, carrusel de imágenes del inicio y anuncios en video" icono={<FaCloudArrowUp/>}/>
+        <PageHeader titulo="Anuncios de la web" descripcion="Libro protagonista de la portada y anuncios en video" icono={<FaCloudArrowUp/>}/>
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="Tipo de anuncios">
             <button type="button" role="tab" tabIndex={tipo==='protagonista'?0:-1} onKeyDown={navegarTabs} aria-selected={tipo==='protagonista'} aria-controls="anuncios-protagonista" id="tab-anuncios-protagonista"
                 className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50" onClick={()=>setTipo('protagonista')}>Libro protagonista</button>
-            <button type="button" role="tab" tabIndex={tipo==='imagenes'?0:-1} onKeyDown={navegarTabs} aria-selected={tipo==='imagenes'} aria-controls="anuncios-imagenes" id="tab-anuncios-imagenes"
-                className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50" onClick={()=>setTipo('imagenes')}>Carrusel de imágenes</button>
+            {/* Botón de carrusel eliminado */}
             <button type="button" role="tab" tabIndex={tipo==='videos'?0:-1} onKeyDown={navegarTabs} aria-selected={tipo==='videos'} aria-controls="anuncios-videos" id="tab-anuncios-videos"
                 className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50" onClick={()=>setTipo('videos')}>Anuncios en video</button>
         </div>
         {tipo==='protagonista'?<section role="tabpanel" id="anuncios-protagonista" aria-labelledby="tab-anuncios-protagonista"><ProtagonistaPanel/></section>
-            :tipo==='imagenes'?<section role="tabpanel" id="anuncios-imagenes" aria-labelledby="tab-anuncios-imagenes"><CarruselPanel/></section>
             :<section role="tabpanel" id="anuncios-videos" aria-labelledby="tab-anuncios-videos"><AnunciosVideo/></section>}
     </div>;
 }

@@ -124,7 +124,7 @@ class ActualizacionService {
 
     if (!await _puedeInstalar()) {
       throw const ActualizacionException(
-        'Para actualizar, permite que Librería instale aplicaciones.',
+        'Para actualizar, permite que MATIDANA instale aplicaciones.',
         faltaPermiso: true,
       );
     }
@@ -174,7 +174,7 @@ class ActualizacionService {
       await _canal.invokeMethod<bool>('instalarApk', {'ruta': archivo.path});
     } on PlatformException catch (e) {
       throw ActualizacionException(switch (e.code) {
-        'FIRMA' => 'El archivo no está firmado por Librería.',
+        'FIRMA' => 'El archivo no está firmado por MATIDANA.',
         'PAQUETE' => 'El archivo no corresponde a esta aplicación.',
         'VERSION' => 'El archivo no es una versión más reciente.',
         _ => 'No se pudo abrir el instalador de Android.',

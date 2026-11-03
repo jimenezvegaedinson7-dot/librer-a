@@ -91,7 +91,7 @@ export default function DownloadSection({ reducido }) {
             <section className="seccion descargar-portada" aria-labelledby="descarga-titulo">
                 <div className="contenedor descargar-portada__rejilla">
                     <div className="descargar-portada__texto">
-                        <img className="icono-app icono-app--grande" src={iconoApp} alt="Icono de la app Librería del Saber" width="88" height="88" />
+                        <img className="icono-app icono-app--grande" src={iconoApp} alt="Icono de la app MATIDANA Libros y Cultura" width="88" height="88" />
                         <h1 id="descarga-titulo" className="descargar-portada__titulo">Descarga la app</h1>
                         <p className="descargar-portada__entrada">Gratis para Android.</p>
                         {androidListo && (

@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class Constants {
   Constants._();
 
-  static const String appName = 'Librería';
+  static const String appName = 'MATIDANA';
   static const String ciudadDelivery = 'Ciudad de Pallasca';
   static const String direccionRecojo =
       'Plaza de Armas, Jr. Marañón 161, Pallasca 02835';

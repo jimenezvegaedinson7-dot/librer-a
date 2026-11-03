@@ -13,7 +13,7 @@ web
 
 ## Product Purpose
 
-Librería del Saber vende libros físicos mediante una tienda web y una app Android que comparten la misma API. Éxito: el cliente encuentra un libro, revisa precio y disponibilidad, compra con PayU y consulta su entrega; el administrador gestiona esa operación desde el panel.
+MATIDANA Libros y Cultura vende libros físicos mediante una tienda web y una app Android que comparten la misma API. Éxito: el cliente encuentra un libro, revisa precio y disponibilidad, compra con PayU y consulta su entrega; el administrador gestiona esa operación desde el panel.
 
 ## Positioning
 
@@ -49,10 +49,10 @@ Rutas: la web pública ocupa `/`; el login del panel pasa a `/admin/login`; las 
 
 ## Brand Commitments
 
-- Nombre visible: **Librería del Saber** (confirmado). MATIDANA, razón social y RUC solo como datos legales.
+- Nombre visible: **MATIDANA Libros y Cultura** (confirmado 01/11/2026). MATIDANA se mantiene como nombre comercial en los datos legales; razón social y RUC son datos legales.
 - Logo oficial: monograma "f" caligráfico (`src/compartido/assets/logo-principal.png`), usado en verde o blanco en la web pública.
 - Idioma: español de Perú; precios en soles (S/).
-- Navbar y footer públicos: referencia principal **Ibero Librerías**, elegida expresamente el 20/10/2026; cabecera clara, marino/turquesa y footer blanco en columnas. Sin la franja superior de avisos de delivery, recojo y PayU. Se mantiene la identidad propia de Librería del Saber.
+- Navbar y footer públicos: referencia principal **Ibero Librerías**, elegida expresamente el 20/10/2026; cabecera clara, marino/turquesa y footer blanco en columnas. Sin la franja superior de avisos de delivery, recojo y PayU. Se mantiene la identidad propia de MATIDANA Libros y Cultura.
 
 ## Evidence on Hand
 

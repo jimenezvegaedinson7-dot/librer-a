@@ -47,22 +47,24 @@ for (const ancho of [390, 1440]) {
             await page.goto('/autores');
             await expect(page.locator('.admin-shell')).toHaveAttribute('data-theme', tema);
             await expect(page.locator('.admin-main')).toHaveCSS('background-color', tema === 'dark' ? 'rgb(10, 31, 49)' : 'rgb(255, 249, 239)');
-            const guardar=page.getByRole('button',{name:'Guardar autor',exact:true});
+            await page.getByRole('button',{name:'Nuevo autor',exact:true}).click();
+            const guardar=page.getByRole('dialog').getByRole('button',{name:'Guardar autor',exact:true});
             await expect(guardar).toHaveCSS('background-color','rgb(213, 164, 71)');
             await expect(guardar).toHaveCSS('color','rgb(10, 31, 49)');
             expect(await contraste(guardar)).toBeGreaterThanOrEqual(4.5);
             await expect(page.getByLabel('Nombre',{exact:true})).toHaveCSS('background-color',tema === 'dark' ? 'rgb(13, 41, 64)' : 'rgb(255, 255, 255)');
+            await page.getByRole('dialog').getByRole('button',{name:'Cancelar',exact:true}).click();
             if (ancho < 1024) await page.getByRole('button',{name:'Alternar menú',exact:true}).click();
             const menu=page.getByRole('complementary',{name:'Navegación principal'});
             await expect(menu).toBeVisible();
             await expect(menu).toHaveCSS('background-color',tema === 'dark' ? 'rgb(10, 31, 49)' : 'rgb(13, 41, 64)');
-            await expect(menu.locator('a[href="/autores"] svg')).toHaveCSS('color','rgb(255, 255, 255)');
+            await expect(menu.locator('a[href="/libros"] svg')).toHaveCSS('color','rgb(255, 255, 255)');
             for (const [ruta, icono] of [
-                ['/dashboard','layout-dashboard'], ['/libros','book'], ['/autores','feather'],
-                ['/categorias','tags'], ['/inventario','boxes'], ['/pedidos','package'],
-                ['/ventas','shopping-bag'], ['/pagos','credit-card'], ['/comprobantes','receipt-text'],
+                ['/dashboard','layout-dashboard'], ['/libros','book'],
+                ['/categorias','tags'], ['/inventario','boxes'],
+                ['/ventas','shopping-bag'],
                 ['/tarifas-envio','truck'], ['/usuarios','users'], ['/anuncios','film'],
-                ['/reclamaciones','message-square-warning'], ['/historial','history'], ['/configuracion/empresa','building-2']
+                ['/reclamaciones','message-square-warning'], ['/configuracion/empresa','building-2']
             ]) {
                 await expect(menu.locator(`a[href="${ruta}"] svg.lucide-${icono}`)).toHaveCount(1);
             }
@@ -86,4 +88,3 @@ for (const ancho of [390, 1440]) {
         });
     }
 }
-

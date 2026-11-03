@@ -48,7 +48,7 @@ export default function MobileExperience({ reducido }) {
             <section id="app" className="seccion app app-portada" aria-labelledby="app-titulo">
                 <div className="contenedor app__rejilla">
                     <div className="app-portada__texto">
-                        <img className="icono-app icono-app--grande" src={iconoApp} alt="Icono de la app Librería del Saber" width="88" height="88" />
+                        <img className="icono-app icono-app--grande" src={iconoApp} alt="Icono de la app MATIDANA Libros y Cultura" width="88" height="88" />
                         <h1 id="app-titulo" className="app-portada__titulo">Toda la librería cabe en la app</h1>
                         <p className="app-portada__entrada">Compre y siga sus pedidos desde su teléfono.</p>
                         <div className="app-portada__acciones">

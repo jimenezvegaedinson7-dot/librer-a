@@ -1,0 +1,27 @@
+.documento-impresion { display: none; }
+.comprobante-cabecera { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 24px; }
+.comprobante-cliente { display: grid; grid-template-columns: 160px 16px minmax(0, 1fr); row-gap: 8px; overflow-wrap: anywhere; }
+.comprobante-tabla { overflow-x: auto; }
+.comprobante-tabla table { min-width: 620px; table-layout: fixed; }
+.comprobante-totales { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 24px; padding-top: 20px; }
+@media screen and (max-width: 640px) {
+    .comprobante-cabecera, .comprobante-totales { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .comprobante-cliente { grid-template-columns: 105px 10px minmax(0, 1fr); font-size: 11px; }
+}
+@media print {
+    @page { size: A4; margin: 12mm; }
+    body.imprimiendo-documento { height: auto !important; min-height: 0 !important; overflow: visible !important; background: #fff !important; }
+    body.imprimiendo-documento > :not(.documento-impresion) { display: none !important; }
+    body.imprimiendo-documento > .documento-impresion {
+        display: block !important; position: static !important; width: 100%; margin: 0; padding: 0;
+        color: #000; background: #fff; font-family: Arial, Helvetica, sans-serif;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .documento-impresion .print-area { position: static !important; width: 100% !important; max-width: none !important; margin: 0 !important; overflow: visible !important; }
+    .documento-impresion .no-print { display: none !important; }
+    .documento-impresion .comprobante-tabla { overflow: visible; }
+    .documento-impresion table { width: 100%; min-width: 0; }
+    .documento-impresion thead { display: table-header-group; }
+    .documento-impresion tr, .documento-impresion .comprobante-totales { break-inside: avoid; }
+    .documento-impresion th, .documento-impresion td { overflow-wrap: anywhere; }
+}

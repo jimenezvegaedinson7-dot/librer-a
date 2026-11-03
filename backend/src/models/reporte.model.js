@@ -495,8 +495,7 @@ const obtenerCierreCaja = async (fecha) => {
     `, [fecha]);
 
     const [[comprobantes]] = await pool.query(`
-        SELECT COUNT(*) AS emitidos,
-               COALESCE(SUM(CASE WHEN numero_sunat IS NULL THEN 1 ELSE 0 END), 0) AS sin_sunat
+        SELECT COUNT(*) AS emitidos
         FROM comprobantes
         WHERE estado = 'emitido'
           AND DATE(${EN_LIMA('fecha_emision')}) = ?::date
@@ -535,8 +534,7 @@ const obtenerCierreCaja = async (fecha) => {
         },
         ventas: ventas.map((v) => ({ ...v, total: Number(v.total) })),
         comprobantes: {
-            emitidos: Number(comprobantes.emitidos || 0),
-            sin_sunat: Number(comprobantes.sin_sunat || 0)
+            emitidos: Number(comprobantes.emitidos || 0)
         }
     };
 };

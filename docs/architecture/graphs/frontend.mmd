@@ -1,11 +1,11 @@
-%% Generado 2026-10-22 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-11-03 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     paginas["/<br/>paginas"]
     CatalogoPage["/catalogo<br/>CatalogoPage"]
-    paginas["/aplicacion<br/>paginas"]
-    paginas["/caracteristicas<br/>paginas"]
-    paginas["/nosotros<br/>paginas"]
-    paginas["/descargar<br/>paginas"]
+    AplicacionPage["/aplicacion<br/>AplicacionPage"]
+    CaracteristicasPage["/caracteristicas<br/>CaracteristicasPage"]
+    NosotrosPage["/nosotros<br/>NosotrosPage"]
+    DescargarPage["/descargar<br/>DescargarPage"]
     CuentaPage["/cuenta<br/>CuentaPage"]
     CarritoPage["/carrito<br/>CarritoPage"]
     CheckoutPage["/checkout<br/>CheckoutPage"]
@@ -16,28 +16,21 @@ flowchart LR
     LoginPage --> authService(["authService"])
     VerificarEmailPage["/verificar-email<br/>VerificarEmailPage"]
     VerificarEmailPage --> authService(["authService"])
-    LibroReclamacionesPage["/libro-de-reclamaciones<br/>LibroReclamacionesPage"]
-    LibroReclamacionesPage --> reclamacionesService(["reclamacionesService"])
+    ReclamacionesPublicasPage["/libro-de-reclamaciones<br/>ReclamacionesPublicasPage"]
     DashboardPage["/dashboard<br/>DashboardPage"]
     DashboardPage --> dashboardService(["dashboardService"])
-    LibrosPage["/libros<br/>LibrosPage"]
-    LibrosPage --> librosService(["librosService"])
-    LibrosPage --> inventarioService(["inventarioService"])
-    AutoresPage["/autores<br/>AutoresPage"]
-    AutoresPage --> autoresService(["autoresService"])
+    LibrosAutoresPage["/libros<br/>LibrosAutoresPage"]
     CategoriasPage["/categorias<br/>CategoriasPage"]
     CategoriasPage --> categoriasService(["categoriasService"])
     InventarioPage["/inventario<br/>InventarioPage"]
     InventarioPage --> inventarioService(["inventarioService"])
-    PedidosPage["/pedidos<br/>PedidosPage"]
-    PedidosPage --> pedidosService(["pedidosService"])
+    GestionVentasPage["/ventas<br/>GestionVentasPage"]
     VentasPage["/ventas<br/>VentasPage"]
     VentasPage --> ventasService(["ventasService"])
-    ComprobantesPage["/comprobantes<br/>ComprobantesPage"]
+    PedidosPage["/ventas/pedidos<br/>PedidosPage"]
+    PedidosPage --> pedidosService(["pedidosService"])
+    ComprobantesPage["/ventas/comprobantes<br/>ComprobantesPage"]
     ComprobantesPage --> comprobantesService(["comprobantesService"])
-    PagosPage["/pagos<br/>PagosPage"]
-    PagosPage --> pagosService(["pagosService"])
-    PagosPage --> ventasService(["ventasService"])
     UsuariosClientesPage["/usuarios<br/>UsuariosClientesPage"]
     ReclamacionesPage["/reclamaciones<br/>ReclamacionesPage"]
     ReclamacionesPage --> reclamacionesService(["reclamacionesService"])
@@ -45,12 +38,9 @@ flowchart LR
     AnunciosPage --> anunciosService(["anunciosService"])
     TarifasEnvioPage["/tarifas-envio<br/>TarifasEnvioPage"]
     TarifasEnvioPage --> tarifasService(["tarifasService"])
-    HistorialPage["/historial<br/>HistorialPage"]
-    HistorialPage --> historialService(["historialService"])
     EmpresaPage["/configuracion/empresa<br/>EmpresaPage"]
     EmpresaPage --> empresaService(["empresaService"])
     anunciosService --> _api_anuncios{{"/api/anuncios"}}
-    carruselService --> _api_anuncios{{"/api/anuncios"}}
     protagonistaService --> _api_anuncios{{"/api/anuncios"}}
     authService --> _api_auth{{"/api/auth"}}
     perfilService --> _api_usuarios{{"/api/usuarios"}}
@@ -63,7 +53,6 @@ flowchart LR
     dashboardService --> _api_libros{{"/api/libros"}}
     dashboardService --> _api_reportes{{"/api/reportes"}}
     dashboardService --> _api_inventario{{"/api/inventario"}}
-    historialService --> _api_historial{{"/api/historial"}}
     inventarioService --> _api_inventario{{"/api/inventario"}}
     inventarioService --> _api_libros{{"/api/libros"}}
     librosService --> _api_libros{{"/api/libros"}}

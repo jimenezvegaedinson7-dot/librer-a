@@ -179,7 +179,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     return (
         <>
             <header
-                className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b bg-white/80 backdrop-blur-md px-3 sm:px-4 lg:px-6"
+                className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b bg-white px-3 sm:px-4 lg:px-6"
                 style={{
                     borderColor: '#e6e0d7',
                 }}
@@ -297,6 +297,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                                     setNotificacionesAbiertas(false);
                                 }}
                                 aria-haspopup="menu"
+                                aria-label="Menú del administrador"
                                 aria-expanded={menuAbierto}
                                 className="flex items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-[#faf8f5]"
                             >

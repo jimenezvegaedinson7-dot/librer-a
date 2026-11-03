@@ -2,13 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
 
-import { FaFeather, FaCircleCheck, FaBan } from 'react-icons/fa6';
-import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { AltaFlotante } from '../ui/AltaFlotante';
 import { Input } from '../ui/Form';
-import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
 import { Pagination } from '../ui/Pagination';
 import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
@@ -45,16 +44,6 @@ function accionesAutor(fila, { onVer, onEditar, onEliminar }) {
     );
 }
 
-function Contador({ cargando, total, activos, inactivos }) {
-    return (
-        <Indicadores cargando={cargando} etiqueta="Resumen de autores">
-            <Indicador titulo="Autores" valor={total} icono={<FaFeather />} tono="primary" detalle="Registrados en la librería" />
-            <Indicador titulo="Activos" valor={activos} icono={<FaCircleCheck />} tono="success" detalle="Visibles en el catálogo" de={total} />
-            <Indicador titulo="Inactivos" valor={inactivos} icono={<FaBan />} tono="rose" detalle="Ocultos al público" de={total} />
-        </Indicadores>
-    );
-}
-
 function TablaAutores({ titulo, subtitulo, paginados, contador, pagina, totalPaginas, onCambiarPagina, color, onVer, onEditar, onEliminar }) {
     return (
         <Card>
@@ -65,6 +54,7 @@ function TablaAutores({ titulo, subtitulo, paginados, contador, pagina, totalPag
             />
             <CardBody className="p-0">
                 <DataTable
+                    etiqueta={titulo}
                     columnas={columnasAutores}
                     filas={paginados}
                     keyExtractor={(fila) => fila.id_autor}
@@ -76,7 +66,7 @@ function TablaAutores({ titulo, subtitulo, paginados, contador, pagina, totalPag
     );
 }
 
-export default function AutoresPage() {
+export default function AutoresPage({ incrustado = false }) {
     const { exito, error: mostrarError } = useToast();
 
     const [autores, setAutores] = useState([]);
@@ -205,22 +195,25 @@ export default function AutoresPage() {
 
     return (
         <div className="space-y-4">
-            <PageHeader
+            {!incrustado && <PageHeader
                 titulo="Autores"
                 descripcion="Administra los autores registrados en la librería"
-            />
-            <Contador cargando={cargando} total={autores.length} activos={autoresActivos.length} inactivos={autoresInactivos.length} />
-
-            <AutorForm onAutorCreado={autorCreado} />
+            />}
 
             <Card>
                 <CardHeader
                     titulo="Catálogo de autores"
                     subtitulo="Busca autores por nombre, apellido o nacionalidad"
-                    acciones={
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                            <div className="relative">
+                    acciones={<div className="tabla-filtros-acciones">
+                        <Button variante="secondary" onClick={cargarAutores} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
+                        <AltaFlotante etiqueta="Nuevo autor" titulo="Registrar autor" subtitulo="Introduce el nombre y apellido. La información adicional es opcional."
+                            formulario={AutorForm} formularioProps={{ enfocarNombre: true }} eventoRegistro="onAutorCreado" onRegistrado={autorCreado} />
+                    </div>}
+                    filtros={
+                        <div className="filtros-grid filtros-grid--busqueda">
+                            <div className="filtro-busqueda">
                                 <Input
+                                    label="Buscar autor"
                                     type="text"
                                     value={busqueda}
                                     onChange={(e) => alBuscar(e.target.value)}
@@ -232,15 +225,13 @@ export default function AutoresPage() {
                                     <button
                                         type="button"
                                         onClick={() => alBuscar('')}
+                                        title="Limpiar búsqueda"
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-slate-700"
                                     >
                                         <FaXmark />
                                     </button>
                                 )}
                             </div>
-                            <Button variante="secondary" onClick={cargarAutores} disabled={cargando}>
-                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
-                            </Button>
                         </div>
                     }
                 />
@@ -248,10 +239,10 @@ export default function AutoresPage() {
 
             {cargando && <TableSkeleton columnas={5} filas={8} titulo />}
 
-            {!cargando && error && <Alert tipo="error">{error}</Alert>}
+            {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarAutores} />}
 
             {!cargando && !error && autores.length === 0 && (
-                <EmptyState titulo="No hay autores registrados" descripcion="Registra el primer autor con el formulario superior." />
+                <EmptyState titulo="No hay autores registrados" descripcion="Pulsa Nuevo autor para registrar el primer autor." />
             )}
 
             {!cargando && !error && autores.length > 0 && autoresFiltrados.length === 0 && (

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import {
     FaEye,
@@ -17,7 +17,7 @@ import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input, Select } from '../ui/Form';
-import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
 import { Pagination } from '../ui/Pagination';
 import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
@@ -49,6 +49,7 @@ const columnasUsuarios = [
     { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_usuario}</span> },
     {
         titulo: 'Usuario',
+        className: 'tabla-col-principal',
         render: (fila) => (
             <p className="text-sm">
                 <span className="font-semibold text-slate-700">{`${fila.nombre || ''} ${fila.apellido || ''}`.trim() || 'Sin nombre'}</span>
@@ -76,7 +77,8 @@ const columnasUsuarios = [
     },
     {
         titulo: 'Total gastado',
-        alineacion: 'centro',
+        alineacion: 'derecha',
+        className: 'tabla-col-importe',
         render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>,
     },
 ];
@@ -111,6 +113,7 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
                 onChange={(e) => !esPropio && onCambiarRol(fila, e.target.value)}
                 disabled={esPropio}
                 title={esPropio ? 'No puedes cambiar tu propio rol' : 'Cambiar rol'}
+                aria-label={`Rol de ${[fila.nombre, fila.apellido].filter(Boolean).join(' ') || 'usuario'}`}
                 className="h-8 rounded-lg border border-primary-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-parchment-200 disabled:text-primary-400"
             >
                 {!ETIQUETA_ROL[fila.rol] && <option value="" disabled>Rol no válido</option>}
@@ -120,9 +123,9 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
     );
 }
 
-function Contador({ cargando, total, administradores, clientes, activos, inactivos }) {
+function Contador({ cargando, error, total, administradores, clientes, activos, inactivos }) {
     return (
-        <Indicadores cargando={cargando} etiqueta="Resumen de usuarios">
+        <Indicadores cargando={cargando} error={error} etiqueta="Resumen de usuarios">
             <Indicador titulo="Usuarios" valor={total} icono={<FaUsers />} tono="primary" detalle="Cuentas registradas" />
             <Indicador titulo="Administradores" valor={administradores} icono={<FaUserShield />} tono="violet" detalle="Acceso al panel" de={total} />
             <Indicador titulo="Clientes" valor={clientes} icono={<FaUser />} tono="sky" detalle="Compran en web y app" de={total} />
@@ -149,6 +152,7 @@ export default function UsuariosPage({ incrustado = false }) {
     const [usuarioVer, setUsuarioVer] = useState(null);
     const [accionPendiente, setAccionPendiente] = useState(null);
     const [ejecutando, setEjecutando] = useState(false);
+    const accionEnCurso = useRef(false);
 
     const idUsuarioSesion = Number(usuarioSesion?.id_usuario);
 
@@ -277,7 +281,8 @@ export default function UsuariosPage({ incrustado = false }) {
     };
 
     const confirmarAccionUsuario = async () => {
-        if (!accionPendiente) return;
+        if (!accionPendiente || accionEnCurso.current) return;
+        accionEnCurso.current = true;
         const { tipo, usuario, valor } = accionPendiente;
         try {
             setEjecutando(true);
@@ -293,6 +298,7 @@ export default function UsuariosPage({ incrustado = false }) {
         } catch (err) {
             mostrarError(err.response?.data?.mensaje || 'Error al actualizar el usuario');
         } finally {
+            accionEnCurso.current = false;
             setEjecutando(false);
         }
     };
@@ -324,6 +330,7 @@ export default function UsuariosPage({ incrustado = false }) {
             )}
             <Contador
                 cargando={cargando}
+                error={error}
                 total={usuarios.length}
                 administradores={totalAdministradores}
                 clientes={totalClientes}
@@ -335,10 +342,15 @@ export default function UsuariosPage({ incrustado = false }) {
                 <CardHeader
                     titulo="Usuarios registrados"
                     subtitulo="Busca usuarios por nombre o correo"
-                    acciones={
-                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                            <div className="relative">
+                    acciones={<div className="tabla-filtros-acciones">
+                        {hayFiltros && <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>}
+                        <Button variante="secondary" onClick={cargarUsuarios} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
+                    </div>}
+                    filtros={
+                        <div className="filtros-grid">
+                            <div className="filtro-busqueda">
                                 <Input
+                                    label="Nombre o correo"
                                     type="text"
                                     value={busqueda}
                                     onChange={(e) => alBuscar(e.target.value)}
@@ -358,25 +370,18 @@ export default function UsuariosPage({ incrustado = false }) {
                                 )}
                             </div>
 
-                            <Select aria-label="Filtrar por rol" value={filtroRol} onChange={(e) => alFiltrarRol(e.target.value)} className="sm:w-44">
+                            <Select label="Rol del usuario" aria-label="Filtrar por rol" value={filtroRol} onChange={(e) => alFiltrarRol(e.target.value)}>
                 <option value="todos">Todos los roles</option>
                 <option value="administrador">Administradores</option>
                 <option value="cliente">Clientes</option>
                             </Select>
 
-                            <Select value={filtroEstado} onChange={(e) => alFiltrarEstado(e.target.value)} className="sm:w-44">
+                            <Select label="Estado de la cuenta" value={filtroEstado} onChange={(e) => alFiltrarEstado(e.target.value)}>
                                 <option value="todos">Todos los estados</option>
                                 <option value="1">Activos</option>
                                 <option value="0">Inactivos</option>
                             </Select>
 
-                            {hayFiltros && (
-                                <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>
-                            )}
-
-                            <Button variante="secondary" onClick={cargarUsuarios} disabled={cargando}>
-                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
-                            </Button>
                         </div>
                     }
                 />
@@ -384,7 +389,7 @@ export default function UsuariosPage({ incrustado = false }) {
 
             {cargando && <TableSkeleton columnas={6} filas={8} titulo />}
 
-            {!cargando && error && <Alert tipo="error">{error}</Alert>}
+            {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarUsuarios} />}
 
             {!cargando && !error && usuarios.length === 0 && (
                 <EmptyState
@@ -421,6 +426,7 @@ export default function UsuariosPage({ incrustado = false }) {
                     />
                     <CardBody className="p-0">
                         <DataTable
+                            etiqueta="Usuarios registrados"
                             columnas={columnasUsuarios}
                             filas={usuariosPaginados}
                             keyExtractor={(fila) => fila.id_usuario}

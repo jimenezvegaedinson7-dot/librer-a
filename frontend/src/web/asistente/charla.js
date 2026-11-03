@@ -34,7 +34,7 @@ const ESTADO = [
     '¡De maravilla! Un buen día para empezar un libro nuevo.',
 ];
 const IDENTIDAD = [
-    'Soy el asistente virtual de Librería del Saber. Busco libros del catálogo, te digo precios y stock reales, te recomiendo lecturas y respondo dudas sobre entrega, pagos y la tienda. Y si quieres, también te cuento un chiste o una historia de libros.',
+    'Soy el asistente virtual de MATIDANA Libros y Cultura. Busco libros del catálogo, te digo precios y stock reales, te recomiendo lecturas y respondo dudas sobre entrega, pagos y la tienda. Y si quieres, también te cuento un chiste o una historia de libros.',
 ];
 const CHISTES = [
     '¿Por qué el libro de matemáticas estaba triste? Porque tenía demasiados problemas. 📚',
@@ -108,7 +108,7 @@ function personalidad(q, memoria = {}) {
     if (/^(?:chau|chao|adios|hasta luego|nos vemos|bye|me voy)\b/.test(q)) return { texto: conNombre(azar(ADIOS), nombre) };
     if (/\b(tu libro favorito|que te gusta leer|que lees|que estas leyendo|cual es tu favorito|te gusta leer)\b/.test(q)) return { texto: azar(FAVORITOS) };
     if (/\b(de donde eres|donde vives|donde estas)\b/.test(q))
-        return { texto: 'Vivo dentro de la web de Librería del Saber, entre estantes de Pallasca, Áncash. 🏔️ Es un lugar tranquilo… y lleno de buenas historias.' };
+        return { texto: 'Vivo dentro de la web de MATIDANA Libros y Cultura, entre estantes de Pallasca, Áncash. 🏔️ Es un lugar tranquilo… y lleno de buenas historias.' };
     if (/\b(cuantos anos tienes|tu edad|que edad tienes)\b/.test(q))
         return { texto: 'Soy joven en años, pero viejo en lecturas. 📚 Digamos que tengo tantos años como páginas he leído… ¡y ya perdí la cuenta!' };
     if (/\b(estas vivo|eres real|tienes sentimientos|sientes|tienes corazon|eres humano)\b/.test(q))

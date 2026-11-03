@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../widgets/legal_documento.dart';
 
-/// Política de Privacidad de la aplicación de la Librería.
+/// Política de Privacidad de la aplicación de MATIDANA.
 class PoliticaPrivacidadScreen extends StatelessWidget {
   const PoliticaPrivacidadScreen({super.key});
 
@@ -15,7 +15,7 @@ class PoliticaPrivacidadScreen extends StatelessWidget {
         LegalSeccion(
           titulo: '1. Responsable del tratamiento',
           texto:
-              'La Librería es responsable del tratamiento de los datos '
+              'MATIDANA es responsable del tratamiento de los datos '
               'personales que recopila a través de su aplicación, conforme a '
               'la Ley N.º 29733, Ley de Protección de Datos Personales, y su '
               'reglamento.',
@@ -32,12 +32,12 @@ class PoliticaPrivacidadScreen extends StatelessWidget {
           texto:
               'Usamos tus datos para gestionar tu cuenta, procesar pedidos y '
               'pagos, coordinar entregas, atender reclamos '
-              'y, con tu consentimiento, enviarte información de la Librería.',
+              'y, con tu consentimiento, enviarte información de MATIDANA.',
         ),
         LegalSeccion(
           titulo: '4. Pagos y PayU',
           texto:
-              'Los pagos se procesan a través de PayU. La Librería no recibe, '
+              'Los pagos se procesan a través de PayU. MATIDANA no recibe, '
               'almacena ni procesa los datos de tu tarjeta; el tratamiento se '
               'realiza por el proveedor de pagos bajo sus propias políticas de '
               'privacidad.',

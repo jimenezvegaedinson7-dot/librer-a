@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import {
     FaBan,
     FaCircleCheck,
     FaEye,
-    FaHashtag,
     FaMagnifyingGlass,
     FaPaperPlane,
     FaPrint,
@@ -14,13 +14,13 @@ import {
 } from 'react-icons/fa6';
 
 import { FaFileLines, FaFileInvoice, FaMoneyBillWave } from 'react-icons/fa6';
-import { useVentasDiarias } from '../reportes/useVentasDiarias';
 import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input, Select } from '../ui/Form';
 import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
 import { Pagination } from '../ui/Pagination';
 import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
@@ -36,13 +36,10 @@ import { correoVisible } from '../lib/utils/cuentas';
 import { listarComprobantes, obtenerResumen, enviarComprobanteEmail } from './comprobantesService';
 import { envioAutomaticoActivo, guardarEnvioAutomatico } from './envioAutomatico';
 import ComprobanteViewModal from './ComprobanteViewModal';
-import { AnularComprobanteModal, RegistrarSunatModal } from './ComprobanteSunatModal';
+import { AnularComprobanteModal } from './AnularComprobanteModal';
 import { useRol } from '../auth/useRol';
 
 const POR_PAGINA = 10;
-// Ajuste visual temporal: conserva los datos y la lógica SUNAT,
-// pero oculta el registro y el aviso de falta de número mientras no se use.
-const MOSTRAR_REGISTRO_SUNAT = false;
 
 function formatearSerieNumero(comprobante) {
     const serie = String(comprobante?.serie ?? '');
@@ -58,31 +55,22 @@ function badgeTipo(tipo) {
 const columnasComprobantes = [
     {
         titulo: 'Serie-Número',
+        className: 'tabla-col-principal',
         render: (fila) => (
             <p className="text-xs">
-                <span className={`font-mono font-bold tracking-wide ${fila.estado === 'anulado' ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                <span className={`tabla-dato ${fila.estado === 'anulado' ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
                     {formatearSerieNumero(fila)}
                 </span>
+                <span className="tabla-nota">{badgeTipo(fila.tipo)} · {formatearFecha(fila.fecha_emision) || 'Sin fecha'}</span>
                 {fila.estado === 'anulado' && (
                     <span className="ml-2 align-middle"><Badge color="danger">Anulado</Badge></span>
                 )}
-                {(fila.numero_sunat || fila.nota_credito_sunat || fila.estado === 'anulado' || MOSTRAR_REGISTRO_SUNAT) && <span className="mt-0.5 block text-[11px] text-slate-500">
-                    {[
-                        fila.numero_sunat ? `SUNAT ${fila.numero_sunat}` : null,
-                        fila.nota_credito_sunat ? `Nota de crédito ${fila.nota_credito_sunat}` : null,
-                    ]
-                        .filter(Boolean)
-                        .join(' · ') ||
-                        (fila.estado === 'anulado'
-                            ? 'Sin nota de crédito registrada'
-                            : <span className="text-amber-700">Falta N.° SUNAT</span>)}
-                </span>}
             </p>
         ),
     },
-    { titulo: 'Tipo', alineacion: 'centro', render: (fila) => badgeTipo(fila.tipo) },
     {
         titulo: 'Cliente',
+        className: 'tabla-col-principal',
         render: (fila) => (
             <p className="text-sm text-slate-700">
                 <span className="font-semibold text-slate-700">{fila.cliente_nombre || 'Cliente sin nombre'}</span>
@@ -92,7 +80,8 @@ const columnasComprobantes = [
     },
     {
         titulo: 'Total',
-        alineacion: 'centro',
+        alineacion: 'derecha',
+        className: 'tabla-col-importe',
         render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(fila.total)}</span>,
     },
     {
@@ -117,16 +106,9 @@ const columnasComprobantes = [
                 : <span className="correo-estado" title="El cliente no tiene correo registrado">Sin correo</span>;
         },
     },
-    {
-        titulo: 'Fecha',
-        alineacion: 'centro',
-        render: (fila) => (
-            <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_emision) || 'Sin fecha'}</span>
-        ),
-    },
 ];
 
-function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando, onSunat, onAnular, puedeAnular, puedeRegistrarSunat }) {
+function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando, onAnular, puedeAnular }) {
     const fueEnviado = fila.enviado_por_email;
     const anulado = fila.estado === 'anulado';
     return (
@@ -156,16 +138,6 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando,
                     <FaPaperPlane />
                 )}
             </BtnAccion>
-            {/* Registrar SUNAT y anular invalidan el comprobante: solo el administrador. */}
-            {MOSTRAR_REGISTRO_SUNAT && puedeRegistrarSunat && (
-                <BtnAccion
-                    tipo="ver"
-                    onClick={() => onSunat(fila)}
-                    titulo={anulado ? 'Registrar nota de crédito SUNAT' : 'Registrar N.° de comprobante SUNAT'}
-                >
-                    <FaHashtag />
-                </BtnAccion>
-            )}
             {puedeAnular && !anulado && (
                 <BtnAccion tipo="eliminar" onClick={() => onAnular(fila)} titulo="Anular comprobante (datos errados)">
                     <FaBan />
@@ -175,7 +147,10 @@ function accionesComprobante(fila, { onVer, onImprimir, onEnviarEmail, enviando,
     );
 }
 
-export default function ComprobantesPage() {
+export default function ComprobantesPage({ incrustado = false }) {
+    const [parametros, setParametros] = useSearchParams();
+    const idVenta = parametros.get('venta') || '';
+    const revisionLista = useRef(0);
     const [comprobantes, setComprobantes] = useState([]);
     const [total, setTotal] = useState(0);
     const [totalPaginas, setTotalPaginas] = useState(0);
@@ -191,8 +166,7 @@ export default function ComprobantesPage() {
     const [filtroTipo, setFiltroTipo] = useState('todos');
     const [paginaActual, setPaginaActual] = useState(1);
 
-    const [comprobanteVer, setComprobanteVer] = useState(null);
-    const [comprobanteImprimir, setComprobanteImprimir] = useState(null);
+    const [vistaComprobante, setVistaComprobante] = useState(null);
     const [enviandoEmail, setEnviandoEmail] = useState(null);
     const [reenviarConfirmar, setReenviarConfirmar] = useState(null);
     const [filtroEnvio, setFiltroEnvio] = useState('todos');
@@ -203,16 +177,17 @@ export default function ComprobantesPage() {
     const [confirmarLote, setConfirmarLote] = useState(false);
     const [enviandoLote, setEnviandoLote] = useState(null); // { actual, total }
     const [filtroEstado, setFiltroEstado] = useState('todos');
-    const [comprobanteSunat, setComprobanteSunat] = useState(null);
     const [comprobanteAnular, setComprobanteAnular] = useState(null);
     const { exito, error: mostrarError } = useToast();
-    const { puedeAnularComprobantes, puedeRegistrarSunat } = useRol();
+    const { puedeAnularComprobantes } = useRol();
 
-    const cargarComprobantes = async () => {
+    const cargarComprobantes = async (estaVigente = () => true) => {
+        const revision = ++revisionLista.current;
         try {
             setCargando(true);
             setError('');
             const resultado = await listarComprobantes({
+                id_venta: idVenta || undefined,
                 tipo: filtroTipo === 'todos' ? undefined : filtroTipo,
                 q: busquedaAplicada.trim() || undefined,
                 envio: filtroEnvio === 'todos' ? undefined : filtroEnvio,
@@ -220,6 +195,7 @@ export default function ComprobantesPage() {
                 pagina: paginaActual,
                 por_pagina: POR_PAGINA,
             });
+            if (!estaVigente() || revision !== revisionLista.current) return;
             setComprobantes(resultado.comprobantes);
             setTotal(resultado.total);
             setTotalPaginas(resultado.paginas);
@@ -227,16 +203,18 @@ export default function ComprobantesPage() {
                 setPaginaActual(resultado.paginas);
             }
         } catch (err) {
-            setError(err.response?.data?.mensaje || 'Error al cargar los comprobantes');
+            if (estaVigente() && revision === revisionLista.current) setError(err.response?.data?.mensaje || err.message || 'Error al cargar los comprobantes');
         } finally {
-            setCargando(false);
+            if (estaVigente() && revision === revisionLista.current) setCargando(false);
         }
     };
 
     useEffect(() => {
-        cargarComprobantes();
+        let vigente = true;
+        cargarComprobantes(() => vigente);
+        return () => { vigente = false; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [busquedaAplicada, filtroTipo, filtroEnvio, filtroEstado, paginaActual]);
+    }, [busquedaAplicada, filtroTipo, filtroEnvio, filtroEstado, paginaActual, idVenta]);
 
     const cargarResumen = async () => {
         setCargandoResumen(true);
@@ -377,7 +355,7 @@ export default function ComprobantesPage() {
         }
     };
 
-    const hayFiltros = Boolean(busquedaAplicada) || filtroTipo !== 'todos' || filtroEnvio !== 'todos' || filtroEstado !== 'todos';
+    const hayFiltros = Boolean(busquedaAplicada || idVenta) || filtroTipo !== 'todos' || filtroEnvio !== 'todos' || filtroEstado !== 'todos';
     const referencia = hayFiltros || error ? undefined : total;
 
     const comprobanteActualizado = async (comprobante, mensaje) => {
@@ -386,19 +364,29 @@ export default function ComprobantesPage() {
         return comprobante;
     };
 
-    const ventasDiarias = useVentasDiarias();
     return (
         <div className="space-y-4">
-            <PageHeader
+            {!incrustado && <PageHeader
                 titulo="Comprobantes de pago"
                 descripcion="Boletas y facturas emitidas por las ventas"
                 icono={<FaReceipt />}
-            />
+            />}
+            {idVenta && <div className="gestion-ventas__contexto">
+                <p className="text-sm text-slate-700">Comprobantes de la venta <strong>#{idVenta}</strong></p>
+                <Button variante="secondary" onClick={() => {
+                    setPaginaActual(1);
+                    setParametros(actuales => {
+                        const siguientes = new URLSearchParams(actuales);
+                        siguientes.delete('venta');
+                        return siguientes;
+                    });
+                }}>Ver todos los comprobantes</Button>
+            </div>}
             <Indicadores cargando={cargando || cargandoResumen} etiqueta="Resumen de comprobantes">
                 <Indicador titulo="Comprobantes" valor={error ? 'No disponible' : total} icono={<FaReceipt />} tono="primary" detalle="Emitidos en el filtro" />
                 <Indicador titulo="Boletas" valor={resumen?.boletas ?? 'No disponible'} icono={<FaFileLines />} tono="sky" detalle={hayFiltros ? 'Consumidores finales · global' : 'Para consumidores finales'} de={referencia} />
                 <Indicador titulo="Facturas" valor={resumen?.facturas ?? 'No disponible'} icono={<FaFileInvoice />} tono="violet" detalle={hayFiltros ? 'Empresas con RUC · global' : 'Para empresas con RUC'} de={referencia} />
-                <Indicador titulo="Importe emitido" valor={resumen?.ingresos ?? 'No disponible'} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Ventas · últimos 14 días" serie={ventasDiarias} />
+                <Indicador titulo="Importe emitido" valor={resumen?.ingresos ?? 'No disponible'} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle={hayFiltros ? 'Total emitido · global' : 'Comprobantes emitidos'} />
                 {resumen?.anulados > 0 && (
                     <Indicador titulo="Anulados" valor={resumen.anulados} icono={<FaBan />} tono="danger" detalle={hayFiltros ? 'Sin validez · global' : 'Sin validez'} de={referencia} />
                 )}
@@ -409,10 +397,15 @@ export default function ComprobantesPage() {
                 <CardHeader
                     titulo="Filtros de comprobantes"
                     subtitulo="Busca por serie, número, cliente o documento"
-                    acciones={
-                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                            <div className="relative">
+                    acciones={<div className="tabla-filtros-acciones">
+                        {hayFiltros && <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>}
+                        <Button variante="secondary" onClick={actualizar} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
+                    </div>}
+                    filtros={
+                        <div className="filtros-grid">
+                            <div className="filtro-busqueda-envio"><div className="filtro-busqueda">
                                 <Input
+                                    label="Serie, número o cliente"
                                     type="text"
                                     value={busqueda}
                                     onChange={(e) => setBusqueda(e.target.value)}
@@ -433,15 +426,16 @@ export default function ComprobantesPage() {
                                         <FaXmark />
                                     </button>
                                 )}
-                            </div>
+                            </div><Button variante="secondary" onClick={() => aplicarBusqueda(busqueda)} disabled={cargando}>Buscar</Button></div>
 
-                            <Select value={filtroTipo} onChange={(e) => cambiarTipo(e.target.value)} className="sm:w-44">
+                            <Select label="Tipo de comprobante" value={filtroTipo} onChange={(e) => cambiarTipo(e.target.value)}>
                                 <option value="todos">Todos los tipos</option>
                                 <option value="boleta">Boletas</option>
                                 <option value="factura">Facturas</option>
                             </Select>
 
                             <Select
+                                label="Estado del comprobante"
                                 value={filtroEstado}
                                 onChange={(e) => {
                                     setFiltroEstado(e.target.value);
@@ -452,19 +446,9 @@ export default function ComprobantesPage() {
                             >
                                 <option value="todos">Todos los estados</option>
                                 <option value="emitido">Emitidos</option>
-                                <option value="sin_sunat">Sin N.° SUNAT</option>
                                 <option value="anulado">Anulados</option>
                             </Select>
 
-                            {hayFiltros && (
-                                <Button variante="secondary" onClick={limpiarFiltros}>
-                                    Limpiar
-                                </Button>
-                            )}
-
-                            <Button variante="secondary" onClick={actualizar} disabled={cargando}>
-                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
-                            </Button>
                         </div>
                     }
                 />
@@ -519,11 +503,11 @@ export default function ComprobantesPage() {
                 </div>
             </section>
 
-            {cargando && <TableSkeleton columnas={6} filas={8} titulo />}
+            {cargando && <TableSkeleton columnas={5} filas={8} titulo />}
 
-            {!cargando && error && <Alert tipo="error">{error}</Alert>}
+            {!cargando && error && <ErrorCarga mensaje={error} onReintentar={actualizar} />}
 
-            {!cargando && !error && total === 0 && (
+            {!cargando && !error && total === 0 && !hayFiltros && (
                 <EmptyState
                     titulo="No hay comprobantes emitidos"
                     descripcion="Los comprobantes se generan al emitir boletas o facturas desde el módulo de ventas."
@@ -531,7 +515,7 @@ export default function ComprobantesPage() {
                 />
             )}
 
-            {!cargando && !error && total > 0 && comprobantes.length === 0 && (
+            {!cargando && !error && comprobantes.length === 0 && (total > 0 || hayFiltros) && (
                 <EmptyState
                     titulo="No se encontraron comprobantes"
                     descripcion="Cambia la búsqueda o el filtro seleccionado."
@@ -559,19 +543,18 @@ export default function ComprobantesPage() {
                     />
                     <CardBody className="p-0">
                         <DataTable
+                            etiqueta="Comprobantes emitidos"
                             columnas={columnasComprobantes}
                             filas={comprobantes}
                             keyExtractor={(fila) => fila.id_comprobante}
                             acciones={(fila) =>
                                 accionesComprobante(fila, {
-                                    onVer: setComprobanteVer,
-                                    onImprimir: setComprobanteImprimir,
+                                    onVer: comprobante => setVistaComprobante({ comprobante, imprimir: false }),
+                                    onImprimir: comprobante => setVistaComprobante({ comprobante, imprimir: true }),
                                     onEnviarEmail: handleEnviarEmail,
                                     enviando: enviandoEmail === fila.id_comprobante,
-                                    onSunat: setComprobanteSunat,
                                     onAnular: setComprobanteAnular,
                                     puedeAnular: puedeAnularComprobantes,
-                                    puedeRegistrarSunat,
                                 })
                             }
                         />
@@ -580,26 +563,11 @@ export default function ComprobantesPage() {
                 </Card>
             )}
 
-            <ComprobanteViewModal
-                comprobante={comprobanteVer}
-                abierto={Boolean(comprobanteVer)}
-                onCerrar={() => setComprobanteVer(null)}
-            />
-            <ComprobanteViewModal
-                comprobante={comprobanteImprimir}
-                abierto={Boolean(comprobanteImprimir)}
-                onCerrar={() => setComprobanteImprimir(null)}
-                autoImprimir
-            />
-
-            {comprobanteSunat && (
-                <RegistrarSunatModal
-                    comprobante={comprobanteSunat}
-                    abierto
-                    onCerrar={() => setComprobanteSunat(null)}
-                    onGuardado={(c) => comprobanteActualizado(c, 'Datos de SUNAT registrados')}
-                />
-            )}
+            {vistaComprobante && <ComprobanteViewModal
+                key={vistaComprobante.comprobante.id_comprobante}
+                comprobante={vistaComprobante.comprobante} abierto
+                onCerrar={() => setVistaComprobante(null)} autoImprimir={vistaComprobante.imprimir}
+            />}
             {comprobanteAnular && (
                 <AnularComprobanteModal
                     comprobante={comprobanteAnular}

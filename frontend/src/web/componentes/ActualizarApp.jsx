@@ -36,7 +36,7 @@ export default function ActualizarApp() {
                 </a>
             </div>
             <img className="actualizacion-app__qr" src={qr}
-                alt="Código QR para descargar la actualización más reciente de Librería"
+                alt="Código QR para descargar la actualización más reciente de MATIDANA Libros y Cultura"
                 width="176" height="176" decoding="async" />
         </section>
     );

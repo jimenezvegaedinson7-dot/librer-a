@@ -128,7 +128,7 @@ export default function ProtagonistaPanel() {
         <Card>
             <CardHeader
                 titulo="Libro protagonista de la portada"
-                subtitulo="El libro real que flota en la escena 3D del inicio de la web"
+                subtitulo="Elige el libro destacado que verán los visitantes en el inicio de la web"
                 icono={<FaWandMagicSparkles />}
                 acciones={<Button variante="secondary" tamano="sm" icono={<FaRotate />} disabled={guardando || cargando} onClick={() => { setCargando(true); setRecarga((n) => n + 1); }}>Actualizar</Button>}
             />
@@ -156,7 +156,10 @@ export default function ProtagonistaPanel() {
                                 <div className="space-y-2">
                                     <Input disabled={guardando || !config} value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar por título o autor…" icono={<FaMagnifyingGlass />} aria-label="Buscar libro" />
                                     <ul className="protagonista-lista" aria-label="Libros activos con portada">
-                                        {candidatos.length === 0 && <li className="px-3 py-6 text-center text-sm text-slate-600">No hay libros activos con portada que coincidan.</li>}
+                                        {candidatos.length === 0 && <li className="px-3 py-6 text-center text-sm text-slate-600">
+                                            {busqueda ? 'No hay coincidencias para esa búsqueda.' : 'No hay libros activos con portada disponibles.'}
+                                            {busqueda && <Button variante="ghost" tamano="sm" onClick={() => setBusqueda('')}>Limpiar búsqueda</Button>}
+                                        </li>}
                                         {candidatos.map((l) => (
                                             <li key={l.id_libro}>
                                                 <button type="button" disabled={guardando || !config} aria-pressed={Number(l.id_libro) === elegido} onClick={() => setElegido(Number(l.id_libro))}
@@ -175,7 +178,7 @@ export default function ProtagonistaPanel() {
                             )}
 
                             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-primary-200 pt-4">
-                                <p className="text-xs text-slate-600">{config?.actualizado_en ? `Última actualización: ${formatearFecha(config.actualizado_en)}` : 'Sin cambios guardados todavía.'}</p>
+                                <p className="text-xs text-slate-600" role="status">{cambios ? 'Tienes cambios sin guardar.' : config?.actualizado_en ? `Última actualización: ${formatearFecha(config.actualizado_en)}` : 'Sin cambios guardados todavía.'}</p>
                                 <Button icono={<FaFloppyDisk />} onClick={guardar} cargando={guardando} disabled={!config || !cambios || (modoManual && !elegido)}>
                                     {modoManual ? 'Guardar libro protagonista' : 'Usar modo automático'}
                                 </Button>

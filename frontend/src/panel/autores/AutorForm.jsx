@@ -13,7 +13,7 @@ const REGLAS = {
     apellido: [(v) => requerido(v, 'El apellido')],
 };
 
-export default function AutorForm({ onAutorCreado }) {
+export default function AutorForm({ onAutorCreado, incrustado = false, onCancelar, enfocarNombre = false, onGuardandoChange }) {
     return (
         <FormularioAlta
             titulo="Registrar autor"
@@ -26,6 +26,9 @@ export default function AutorForm({ onAutorCreado }) {
             mensajeExito="Autor registrado correctamente"
             mensajeError="Error al registrar el autor"
             onRegistrado={onAutorCreado}
+            incrustado={incrustado}
+            onCancelar={onCancelar}
+            onGuardandoChange={onGuardandoChange}
             renderCampos={({ formulario, manejarCambio, errores }) => (
                 <div className="space-y-4">
                     <div className="form-grid">
@@ -34,6 +37,7 @@ export default function AutorForm({ onAutorCreado }) {
                             label="Nombre"
                             aria-label="Nombre"
                             name="nombre"
+                            autoFocus={enfocarNombre}
                             value={formulario.nombre}
                             onChange={manejarCambio}
                             error={errores?.nombre}

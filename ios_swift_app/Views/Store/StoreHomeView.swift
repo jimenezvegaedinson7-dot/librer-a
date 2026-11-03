@@ -171,7 +171,7 @@ struct StoreHomeView: View {
     }
 }
 
-/// Portada editorial "Librería del Saber" con abanico de portadas reales.
+/// Portada editorial "MATIDANA" con abanico de portadas reales.
 struct EditorialBanner: View {
     let covers: [String?]
     let onExplore: () -> Void
@@ -180,7 +180,7 @@ struct EditorialBanner: View {
     var body: some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("LIBRERÍA DEL SABER")
+                Text("MATIDANA")
                     .font(.system(size: 10, weight: .semibold))
                     .kerning(1.6)
                     .foregroundStyle(Brand.doradoClaro)

@@ -83,7 +83,7 @@ export default function TarifasEnvioPage() {
                     <div className="flex flex-wrap gap-2"><Button type="submit" disabled={!cobertura || !importeValido(tarifa) || !modificado || cargando || guardando} cargando={guardando}><FaFloppyDisk/> Guardar tarifa</Button>
                         <Button type="button" variante="secondary" disabled={guardando || cargando} onClick={cancelar}>Cancelar</Button></div>
                 </form>}
-                <p className="mt-6 border-t border-slate-200 pt-4 text-sm text-slate-600">Los cambios se registran en Historial y solo afectan pedidos nuevos.</p>
+                <p className="mt-6 border-t border-slate-200 pt-4 text-sm text-slate-600">La tarifa se aplica únicamente a pedidos nuevos. Las compras anteriores conservan su importe.</p>
         </CardBody></Card>
     </div>;
 }

@@ -1,18 +1,13 @@
 import {
     LayoutDashboard,
     Book,
-    Feather,
     Tags,
     Boxes,
     ShoppingBag,
-    ReceiptText,
-    CreditCard,
     Users,
     Truck,
-    History,
     Building2,
     MessageSquareWarning,
-    Package,
     Film,
 } from 'lucide-react';
 
@@ -30,18 +25,14 @@ export const navPrincipal = [
     { nombre: 'Dashboard', ruta: '/dashboard', icono: LayoutDashboard, descripcion: 'Resumen ecommerce, estadísticas y reportes', seccion: 'General', roles: [ROLES.ADMINISTRADOR] },
 
     // --- Catálogo ---
-    { nombre: 'Libros', ruta: '/libros', icono: Book, descripcion: 'Gestión de libros', seccion: 'Catálogo', roles: [ROLES.ADMINISTRADOR] },
-    { nombre: 'Autores', ruta: '/autores', icono: Feather, descripcion: 'Gestión de autores', seccion: 'Catálogo', roles: [ROLES.ADMINISTRADOR] },
+    { nombre: 'Libros y autores', ruta: '/libros', icono: Book, descripcion: 'Catálogo de libros y gestión de autores', seccion: 'Catálogo', roles: [ROLES.ADMINISTRADOR] },
     { nombre: 'Categorías', ruta: '/categorias', icono: Tags, descripcion: 'Gestión de categorías', seccion: 'Catálogo', roles: [ROLES.ADMINISTRADOR] },
 
     // --- Inventario ---
     { nombre: 'Stock', ruta: '/inventario', icono: Boxes, descripcion: 'Stock y ubicaciones de libros', seccion: 'Catálogo', roles: [ROLES.ADMINISTRADOR] },
 
     // --- Operaciones ---
-    { nombre: 'Pedidos', ruta: '/pedidos', icono: Package, descripcion: 'Pedidos de la web y la app: delivery y recojo', seccion: 'Operaciones', roles: [ROLES.ADMINISTRADOR] },
-    { nombre: 'Ventas', ruta: '/ventas', icono: ShoppingBag, descripcion: 'Ventas online ecommerce', seccion: 'Operaciones', roles: [ROLES.ADMINISTRADOR] },
-    { nombre: 'Pagos', ruta: '/pagos', icono: CreditCard, descripcion: 'Pagos online recibidos via PayU', seccion: 'Operaciones', roles: [ROLES.ADMINISTRADOR] },
-    { nombre: 'Comprobantes', ruta: '/comprobantes', icono: ReceiptText, descripcion: 'Boletas y facturas emitidas', seccion: 'Operaciones', roles: [ROLES.ADMINISTRADOR] },
+    { nombre: 'Gestión de ventas', ruta: '/ventas', icono: ShoppingBag, descripcion: 'Ventas y pagos, pedidos y comprobantes', seccion: 'Operaciones', roles: [ROLES.ADMINISTRADOR] },
 
     // --- Logística ---
     { nombre: 'Delivery y Tarifas', ruta: '/tarifas-envio', icono: Truck, descripcion: 'Configuración de tarifa única de delivery y punto de recojo', seccion: 'Operaciones', roles: [ROLES.ADMINISTRADOR] },
@@ -52,7 +43,6 @@ export const navPrincipal = [
     // --- Control ---
     { nombre: 'Anuncios', ruta: '/anuncios', icono: Film, descripcion: 'Video publicitario de la portada web', seccion: 'Administración', roles: [ROLES.ADMINISTRADOR] },
     { nombre: 'Reclamaciones', ruta: '/reclamaciones', icono: MessageSquareWarning, descripcion: 'Reclamos y quejas: respuesta en 15 días hábiles', seccion: 'Administración', roles: [ROLES.ADMINISTRADOR] },
-    { nombre: 'Historial', ruta: '/historial', icono: History, descripcion: 'Auditoría de operaciones importantes', seccion: 'Administración', roles: [ROLES.ADMINISTRADOR] },
 
     // --- Configuración ---
     { nombre: 'Empresa', ruta: '/configuracion/empresa', icono: Building2, descripcion: 'Configuración del emisor de comprobantes', seccion: 'Administración', roles: [ROLES.ADMINISTRADOR] },

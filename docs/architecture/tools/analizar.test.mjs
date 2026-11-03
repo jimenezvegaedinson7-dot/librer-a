@@ -4,7 +4,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { cuerposMetodosDart, dependenciasPubspec, endpointsFetchApi, endpointsPeticionCliente, metodosUsadosDart, miembrosObjeto, propagarEndpoints, resolverMiddlewares, tablasDeclaradas } from './extraer-relaciones.mjs';
+import { cuerposMetodosDart, dependenciasPubspec, endpointsFetchApi, endpointsPeticionCliente, metodosUsadosDart, miembrosObjeto, propagarEndpoints, resolverMiddlewares, rutasReact, tablasDeclaradas } from './extraer-relaciones.mjs';
+
+test('resuelve rutas anidadas, index y redirecciones sin ejecutar JSX', () => {
+    const router = `const router = createBrowserRouter([
+        { element: <AdminLayout />, children: [
+            // Sección común con tres vistas.
+            { path: '/ventas', element: para(ADMIN, <GestionVentasPage />), children: [
+                { index: true, element: cargar(<VentasPage incrustado />) },
+                { path: 'pedidos', element: cargar(<PedidosPage incrustado />) },
+                { path: 'comprobantes', element: cargar(<ComprobantesPage incrustado />) },
+            ] },
+            { path: '/pagos', element: <Navigate to='/ventas' replace /> },
+        ] },
+        { path: '*', element: <Navigate to='/' /> },
+    ]);`;
+    assert.deepEqual(rutasReact(router).map(r => r.path), ['/ventas', '/ventas', '/ventas/pedidos', '/ventas/comprobantes', '/pagos', '*']);
+    assert.match(rutasReact(router)[1].element, /VentasPage/);
+});
 
 test('expande middleware compartido y reconoce el rol cliente sin declararlo público', () => {
     const resolver = resolverMiddlewares("const autenticada=[verificarToken]; const soloCliente=[limite,...autenticada,verificarRol(ROLES.CLIENTE)];");
@@ -61,6 +78,8 @@ test('el analizador refleja permisos, conexiones y tablas del código real', () 
     try {
         execFileSync(process.execPath, [path.join(dir, 'analizar.mjs'), salida], { stdio: 'pipe' });
         const h = JSON.parse(fs.readFileSync(salida, 'utf8'));
+        assert.ok(h.frontend.rutas.some(r => r.path === '/ventas/pedidos' && r.component === 'PedidosPage'));
+        assert.ok(h.frontend.rutas.some(r => r.path === '/ventas' && r.component === 'VentasPage'));
         const memoria = h.backend.endpoints.filter(e => e.path === '/api/asistente/memoria');
         assert.equal(memoria.length, 3);
         for (const e of memoria) { assert.ok(e.middleware.includes('JWT')); assert.ok(e.middleware.includes('rol:cliente')); }

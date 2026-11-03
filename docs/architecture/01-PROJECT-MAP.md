@@ -1,6 +1,6 @@
 # Mapa del proyecto C:\libreria
 
-> Generado desde el código real el 2026-10-22 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-03 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Visión general
@@ -13,10 +13,10 @@
 
 Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `backups/`, scripts `*.ps1` de utilidades locales.
 
-## Cifras (análisis 2026-10-22)
+## Cifras (análisis 2026-11-03)
 
-- Backend: **186** archivos JS (incluye tests y scripts) · **123** endpoints · 22 routers · 25 controladores · 22 modelos · **22 tablas en esquema canónico** (23 declaradas al incluir migraciones y arranque).
-- Frontend: **218** archivos JS/JSX · 38 rutas · 26 archivos de servicio.
+- Backend: **187** archivos JS (incluye tests y scripts) · **122** endpoints · 22 routers · 25 controladores · 22 modelos · **22 tablas en esquema canónico** (23 declaradas al incluir migraciones y arranque).
+- Frontend: **230** archivos JS/JSX · 40 rutas · 24 archivos de servicio.
 - Flutter: **76** archivos Dart · 35 métodos en ApiService · 21 pantallas/widgets con llamadas a la API.
 
 ## Módulos de negocio
@@ -34,11 +34,11 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 | Pagos (PayU) | `/api/pagos` | panel/pagos · web/tienda/CheckoutPage | entrega y pago, mis compras |
 | Comprobantes | `/api/comprobantes` | panel/comprobantes · panel/ventas/EmitirComprobanteModal | — |
 | Clientes | `/api/clientes` | panel/clientes | — |
-| Historial / auditoría | `/api/historial` | panel/historial · panel/layout/Topbar (notificaciones) | — |
+| Auditoría interna | `/api/historial` | Sin sección en el panel | — |
 | Reportes / Resumen | `/api/reportes` | panel/dashboard (vía panel/reportes/reportesService) | — |
 | Favoritos | `/api/favoritos` | web/tienda/AccionesLibro (cliente) | favoritos, detalle de libro |
 | Cobertura Pallasca | `/api/zonas-delivery` | panel/tarifas | entrega y pago, mis compras |
-| Ubicaciones (Lima, legacy) | `/api/ubicaciones` | datos de ubicación en historial | nombres conservados en Venta; sin selector ni consultas de provincias/distritos |
+| Ubicaciones (Lima, legacy) | `/api/ubicaciones` | datos de ubicación de ventas antiguas | nombres conservados en Venta; sin selector ni consultas de provincias/distritos |
 | Agencias courier (legacy) | `/api/agencias` | ruta redirigida; panel/agencias sin ruta activa | — |
 | Empresa (emisor) | `/api/empresa` | panel/configuracion/EmpresaPage | — |
 | Reclamaciones | `/api/reclamaciones` | panel/reclamaciones (formulario público y gestión admin) | libro_reclamaciones_screen (formulario nativo) |

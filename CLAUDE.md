@@ -1,4 +1,4 @@
-# CLAUDE.md — Librería del Saber
+# CLAUDE.md — MATIDANA
 
 Monorepo con tres partes que comparten una misma API:
 

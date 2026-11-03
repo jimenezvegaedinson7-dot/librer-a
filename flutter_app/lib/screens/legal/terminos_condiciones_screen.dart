@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../widgets/legal_documento.dart';
 
-/// Términos y Condiciones de uso de la aplicación de la Librería.
+/// Términos y Condiciones de uso de la aplicación de MATIDANA.
 class TerminosCondicionesScreen extends StatelessWidget {
   const TerminosCondicionesScreen({super.key});
 
@@ -44,7 +44,7 @@ class TerminosCondicionesScreen extends StatelessWidget {
           texto:
               'Los pagos se procesan a través de PayU, un proveedor externo '
               'de pagos. Al confirmar un pedido aceptas pagar el importe total '
-              'indicado. La Librería no almacena datos de tarjetas de crédito '
+              'indicado. MATIDANA no almacena datos de tarjetas de crédito '
               'o débito.',
         ),
         LegalSeccion(
@@ -71,7 +71,7 @@ class TerminosCondicionesScreen extends StatelessWidget {
           titulo: '7. Propiedad intelectual',
           texto:
               'Todo el contenido de la aplicación (textos, imágenes, logos y '
-              'marcas) es de titularidad de la Librería o de sus proveedores y '
+              'marcas) es de titularidad de MATIDANA o de sus proveedores y '
               'está protegido por las normas de propiedad intelectual. No está '
               'permitido copiarlo, distribuirlo ni usarlo comercialmente sin '
               'autorización.',
@@ -79,7 +79,7 @@ class TerminosCondicionesScreen extends StatelessWidget {
         LegalSeccion(
           titulo: '8. Limitación de responsabilidad',
           texto:
-              'La Librería no será responsable por daños indirectos o pérdidas '
+              'MATIDANA no será responsable por daños indirectos o pérdidas '
               'derivadas del uso de la aplicación, ni por demoras ajenas a su '
               'control, como fallas de los servicios de pago, transporte o '
               'conectividad.',
@@ -87,7 +87,7 @@ class TerminosCondicionesScreen extends StatelessWidget {
         LegalSeccion(
           titulo: '9. Modificaciones',
           texto:
-              'La Librería podrá actualizar estos Términos en cualquier '
+              'MATIDANA podrá actualizar estos Términos en cualquier '
               'momento. La versión vigente se publicará en la aplicación y el '
               'uso continuado de la misma implica su aceptación.',
         ),

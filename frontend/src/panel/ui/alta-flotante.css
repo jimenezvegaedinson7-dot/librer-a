@@ -1,0 +1,6 @@
+.alta-catalogo { display: inline-flex; min-width: 0; }
+.alta-catalogo-boton { min-height: 40px; white-space: nowrap; }
+@media (max-width: 480px) {
+    .tabla-filtros-acciones > .alta-catalogo { flex: 1; }
+    .alta-catalogo-boton { width: 100%; }
+}

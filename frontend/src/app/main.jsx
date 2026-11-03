@@ -6,13 +6,6 @@ import './index.css';
 import AppRouter from './router/AppRouter';
 import ErrorBoundary from './ErrorBoundary';
 
-// Arranca en paralelo a las rutas públicas: la escena no espera a que React
-// monte el inicio para descargar Three.js. No retrasa el render de la página.
-if (location.pathname === '/' && innerHeight > 600
-    && !matchMedia('(prefers-reduced-motion: reduce)').matches && !navigator.connection?.saveData) {
-    import('../web/secciones/portada3d/escenaLibro').catch(() => {});
-}
-
 // Tras una publicación nueva, una pestaña abierta con la versión anterior
 // pide archivos que ya no existen. En ese caso se recarga una sola vez para
 // traer la versión actual (sin bucles si el fallo persiste).

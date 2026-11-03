@@ -34,6 +34,7 @@ export const ESTADOS_PAGO = {
     confirmado: { texto: 'Confirmado', color: 'success' },
     sin_confirmar: { texto: 'Sin confirmar', color: 'warning' },
     sin_pago: { texto: 'Sin pago', color: 'neutral' },
+    en_revision: { texto: 'En revisión', color: 'warning' },
 };
 
 export const configEstadoVenta = (estado) =>
@@ -89,4 +90,26 @@ export function enriquecerPago(pago, venta) {
         referencia_pago: enTienda ? venta?.referencia_pago || null : null,
         estado_pago: estadoPago,
     };
+}
+
+// La vista comercial ya recibe todos los campos PayU en /ventas. Derivar su
+// presentación aquí evita otra lectura de /pagos y mantiene tabla, detalle y CSV.
+export function pagoDesdeVenta(venta) {
+    const pago = enriquecerPago({
+        id_venta: venta.id_venta,
+        id_pago: venta.payu_payment_id,
+        external_reference: venta.external_reference,
+        payu_order_id: venta.payu_order_id,
+        estado_venta: venta.estado,
+        estado_pago: venta.payu_payment_status,
+        monto_total: Number(venta.total || 0),
+        fecha_creacion: venta.fecha_venta,
+        tipo_entrega: venta.tipo_entrega,
+        cliente: {
+            id_usuario: venta.id_usuario,
+            nombre_completo: `${venta.nombre_usuario || ''} ${venta.apellido_usuario || ''}`.trim(),
+            email: venta.correo_usuario,
+        },
+    }, venta);
+    return venta.pago_revision_motivo ? { ...pago, estado_pago: 'en_revision' } : pago;
 }

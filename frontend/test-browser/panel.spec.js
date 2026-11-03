@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const rutas = ['/dashboard','/libros','/autores','/categorias','/inventario','/pedidos','/ventas',
-    '/pagos','/comprobantes','/tarifas-envio','/usuarios','/anuncios','/reclamaciones','/historial','/configuracion/empresa'];
+    '/pagos','/comprobantes','/tarifas-envio','/usuarios','/anuncios','/reclamaciones','/configuracion/empresa'];
 const admin = { id_usuario: 1, nombre:'Audit', apellido:'Admin', rol:'administrador', estado:1 };
 
 async function catalogoEditable(page, { antiguo = false, ignorarCambios = false } = {}) {
@@ -45,12 +45,15 @@ test('libros: editar porcentaje y oferta, consultar el ojito y quitar promoción
     ]) {
         await page.getByRole('button', {name:'Editar libro', exact:true}).click();
         const editar = page.getByRole('dialog');
+            await editar.getByRole('button', {name:/^(Agregar descuento|Editar descuento)$/}).click();
+        await expect(page.getByRole('dialog', {name:'Descuento del libro', exact:true})).toHaveCount(1);
         const campoPorcentaje = editar.locator('[name="descuento_porcentaje"]');
         const campoOferta = editar.locator('[name="precio_oferta"]');
         if (await campoPorcentaje.isEnabled()) await campoPorcentaje.fill('');
         if (await campoOferta.isEnabled()) await campoOferta.fill('');
         if (porcentaje) await campoPorcentaje.fill(porcentaje);
         if (oferta) await campoOferta.fill(oferta);
+        await editar.getByRole('button', {name:'Aplicar descuento', exact:true}).click();
         await editar.getByRole('button', {name:'Guardar cambios', exact:true}).click();
         await expect(editar).toHaveCount(0);
         await page.getByRole('button', {name:'Ver libro', exact:true}).click();
@@ -73,7 +76,9 @@ test('libros: API antigua se señala en el ojito y no permite un guardado falso'
     await detalle.getByRole('button', {name:'Cerrar', exact:true}).last().click();
     await page.getByRole('button', {name:'Editar libro', exact:true}).click();
     const editar = page.getByRole('dialog');
+    await editar.getByRole('button', {name:'Agregar descuento', exact:true}).click();
     await editar.locator('[name="descuento_porcentaje"]').fill('25');
+    await editar.getByRole('button', {name:'Aplicar descuento', exact:true}).click();
     await editar.getByRole('button', {name:'Guardar cambios', exact:true}).click();
     await expect(editar.getByText('La API conectada aún no admite descuentos. Actualiza el backend antes de guardar una promoción.')).toBeVisible();
     expect(api.escrituras()).toBe(0);
@@ -83,9 +88,12 @@ test('libros: HTTP 200 sin persistir descuento conserva el formulario y muestra 
     const api = await catalogoEditable(page, {ignorarCambios:true});
     await page.getByRole('button', {name:'Editar libro', exact:true}).click();
     const editar = page.getByRole('dialog');
+    await editar.getByRole('button', {name:'Agregar descuento', exact:true}).click();
     await editar.locator('[name="descuento_porcentaje"]').fill('25');
+    await editar.getByRole('button', {name:'Aplicar descuento', exact:true}).click();
     await editar.getByRole('button', {name:'Guardar cambios', exact:true}).click();
     await expect(editar.getByText('El servidor respondió, pero el descuento no quedó guardado como lo enviaste. Revisa el detalle del libro.')).toBeVisible();
+    await editar.getByRole('button', {name:'Editar descuento', exact:true}).click();
     await expect(editar.locator('[name="descuento_porcentaje"]')).toHaveValue('25');
     expect(api.escrituras()).toBe(1);
 });
@@ -347,7 +355,7 @@ test('sidebar admin: todos los links activos resuelven URL y pantalla', async ({
     await expect(sidebar).toBeVisible();
     const hrefs = await sidebar.locator('nav a').evaluateAll(as => as.map(a => a.getAttribute('href')));
     await expect(sidebar.getByRole('link', {name:'Volver a la página principal'})).toHaveAttribute('href', '/');
-    expect(hrefs.sort()).toEqual([...rutas].sort());
+    expect(hrefs.sort()).toEqual(rutas.filter(ruta => !['/autores', '/pedidos', '/pagos', '/comprobantes'].includes(ruta)).sort());
     for (const ruta of hrefs) {
         await sidebar.locator(`a[href="${ruta}"]`).click();
         await expect(page).toHaveURL(`http://127.0.0.1:5179${ruta}`);
@@ -363,17 +371,24 @@ test('rol degradado en backend: localStorage admin no autoriza URL manual', asyn
 test('alta autor: doble submit no duplica, error backend visible y conserva campos', async ({page}) => {
     await sesion(page); await apiVacia(page);
     let escrituras = 0;
+    let liberar;
+    const espera = new Promise(resolve => { liberar = resolve; });
     await page.route('**/api/autores', async route => {
         if (route.request().method() !== 'POST') return route.fulfill({json:{success:true,data:[]}});
-        escrituras++; await new Promise(r => setTimeout(r,500));
+        escrituras++; await espera;
         await route.fulfill({status:409,json:{success:false,mensaje:'Conflicto de auditoría'}});
     });
     await page.goto('/autores');
+    await page.getByRole('button', {name:'Nuevo autor',exact:true}).click();
     await page.getByLabel('Nombre', {exact:true}).fill('Audit');
     await page.getByLabel('Apellido', {exact:true}).fill('Autor');
     const form = page.locator('form').filter({has:page.getByRole('button',{name:'Guardar autor'})});
     await form.evaluate(el => { el.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})); el.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})); });
     await expect(page.getByRole('button',{name:'Guardando...'})).toBeDisabled();
+    await expect(page.getByRole('dialog').getByRole('button', {name:'Cerrar', exact:true})).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', {name:'Registrar autor', exact:true})).toBeVisible();
+    liberar();
     await expect(page.getByText('Conflicto de auditoría', {exact:true})).toBeVisible();
     expect(escrituras).toBe(1);
     await expect(page.getByLabel('Nombre',{exact:true})).toHaveValue('Audit');

@@ -96,7 +96,7 @@ const String perfilTemaDefaultId = 'libreria';
 const List<PerfilTema> perfilTemas = [
   PerfilTema(
     id: 'libreria',
-    nombre: 'Librería',
+    nombre: 'MATIDANA',
     inicio: Color(0xFF7A2530),
     fin: Color(0xFF4E1620),
     acento: Color(0xFFB98D3E),

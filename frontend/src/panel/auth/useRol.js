@@ -22,7 +22,6 @@ export function useRol() {
         puedeEditarStock: esAdmin,
         puedeReembolsar: esAdmin,
         puedeAnularComprobantes: esAdmin,
-        puedeRegistrarSunat: esAdmin,
     };
 }
 

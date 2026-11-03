@@ -13,7 +13,7 @@ import { useMemoriaAsistente } from './useMemoriaAsistente';
 import { soles, urlPortada } from '../lib/formato';
 import './asistente.css';
 
-const bienvenida = {id:0,autor:'asistente',texto:'¡Hola! Soy el asistente de Librería del Saber. Te ayudo a encontrar libros, ver precios, stock y ofertas, y te recomiendo qué leer. También puedo orientarte sobre entrega y cómo comprar… o contarte un chiste de libros. ¿Qué buscas?'};
+const bienvenida = {id:0,autor:'asistente',texto:'¡Hola! Soy el asistente de MATIDANA Libros y Cultura. Te ayudo a encontrar libros, ver precios, stock y ofertas, y te recomiendo qué leer. También puedo orientarte sobre entrega y cómo comprar… o contarte un chiste de libros. ¿Qué buscas?'};
 const sugerencias = [
     {texto:'Buscar un libro',pregunta:'¿Cómo busco un libro?'},
     {texto:'Ver ofertas',pregunta:'¿Qué libros están en oferta?'},

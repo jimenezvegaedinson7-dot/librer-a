@@ -32,6 +32,7 @@ async function apiPublica(page, { falla = false, vacia = false, libros = LIBROS,
     // activo. Las pruebas del video pasan uno explícito.
     await page.route(`${API}/anuncios`, (r) => r.fulfill({ json: { success: true, anuncio } }));
     await page.route(`${API}/anuncios/carrusel`,r=>r.fulfill({json:{success:true,data:[]}}));
+    await page.route(`${API}/anuncios/protagonista`, r => r.fulfill({ status: 404, json: {} }));
     // El archivo del anuncio se sirve con un WebM real y diminuto: la portada
     // retira la sección si el video no carga, así que una URL inventada no basta.
     if (anuncio?.video_url && !anuncio.roto) {
@@ -70,7 +71,7 @@ for (const width of [390, 1440]) {
         await page.goto('/descargar');
         await expect(page.getByRole('heading',{name:'¿Ya tienes la app en Android?'})).toBeVisible();
         await expect(page.getByText('Versión disponible: 8.0.0',{exact:true})).toBeVisible();
-        const qr = page.getByAltText('Código QR para descargar la actualización más reciente de Librería');
+        const qr = page.getByAltText('Código QR para descargar la actualización más reciente de MATIDANA Libros y Cultura');
         await expect(qr).toBeVisible();
         expect(await qr.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
         await expect(page.locator('a[data-actualizar-app]')).toHaveAttribute('href',APK_FUTURA);
@@ -131,8 +132,8 @@ test('inicio: web pública con metadatos, menú de páginas y sin errores', asyn
     page.on('pageerror', (e) => errores.push(e.message));
     await apiPublica(page);
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Libros y anuncios de Librería del Saber');
-    await expect(page).toHaveTitle(/Librería del Saber/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Historias que abren otros mundos.');
+    await expect(page).toHaveTitle(/MATIDANA Libros y Cultura/);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /PayU/);
     for (const texto of ['Inicio', 'Catálogo', 'Aplicación', 'Características', 'Nosotros', 'Descargar']) {
         await expect(menu(page).getByRole('link', { name: texto, exact: true })).toBeVisible();
@@ -290,12 +291,12 @@ test('la web pública no envía el token del panel a la API', async ({ page }) =
 test('recarga: vuelve arriba sin cambiar de página', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/nosotros');
-    await page.waitForSelector('#precarga', { state: 'detached' });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await page.evaluate(() => window.scrollTo(0, 1500));
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
 
     await page.reload();
-    await page.waitForSelector('#precarga', { state: 'detached' });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(50);
     await expect(page).toHaveURL(/\/nosotros$/);
 });
@@ -696,8 +697,8 @@ test('cabecera comercial sin franja superior y con menú claro como la referenci
     await apiPublica(page);
     await page.goto('/');
     await expect(page.locator('.avisos')).toHaveCount(0);
-    // Editorial luminoso: cabecera oscura tenue con la fila de menú en blanco.
-    await expect(page.locator('.cabecera')).toHaveCSS('background-color', 'rgb(5, 5, 6)');
+    // Barra superior oscura y segunda barra de enlaces en blanco.
+    await expect(page.locator('.cabecera')).toHaveCSS('background-color', 'rgb(19, 25, 33)');
     await expect(page.locator('.menu')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
     await expect(page.locator('.menu a').first()).toHaveCSS('text-transform', 'uppercase');
 });

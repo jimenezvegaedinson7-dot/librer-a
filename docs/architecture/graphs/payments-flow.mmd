@@ -1,4 +1,4 @@
-%% Generado 2026-10-22 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-11-03 desde el código real (actualizar-mapa.mjs)
 sequenceDiagram
     autonumber
     participant F as Flutter · entrega_y_pago
@@ -22,4 +22,4 @@ sequenceDiagram
     B->>API: GET /api/pagos/respuesta/:externalReference
     F->>API: GET /api/pagos/:orderId (estado)
     F->>API: GET /api/ventas/mis-ventas
-    Note over API: React (admin) lee: GET /api/pagos y GET /api/pagos/resumen
+    Note over API: React (admin) lee GET /api/pagos para las notificaciones

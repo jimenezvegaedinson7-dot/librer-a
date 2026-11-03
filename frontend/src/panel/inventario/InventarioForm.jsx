@@ -20,7 +20,7 @@ const REGLAS = {
     stock_minimo: [(v) => numeroNoNegativo(v, 'El stock mínimo')],
 };
 
-export default function InventarioForm({ onInventarioCreado }) {
+export default function InventarioForm({ onInventarioCreado, incrustado = false, onCancelar, onGuardandoChange }) {
     const { libros, cargando: cargandoLibros, error: errorLibros } = useLibros();
 
     return (
@@ -36,6 +36,9 @@ export default function InventarioForm({ onInventarioCreado }) {
             mensajeExito="Inventario registrado correctamente"
             mensajeError="Error al registrar el inventario"
             onRegistrado={onInventarioCreado}
+            incrustado={incrustado}
+            onCancelar={onCancelar}
+            onGuardandoChange={onGuardandoChange}
             errorExterno={cargandoLibros ? null : errorLibros}
             deshabilitarEnvio={cargandoLibros}
             renderCampos={({ formulario, manejarCambio, errores }) => (

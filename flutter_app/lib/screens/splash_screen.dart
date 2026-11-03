@@ -184,7 +184,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'Librería',
+                        'MATIDANA',
                         style: AppTheme.serif(
                           fontSize: 30,
                           color: Colors.white,

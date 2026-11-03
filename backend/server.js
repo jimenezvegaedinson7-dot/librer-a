@@ -118,7 +118,7 @@ app.use(
 // ===============================
 app.get('/', (req, res) => {
     res.json({
-        mensaje: 'Servidor de Librería funcionando'
+        mensaje: 'Servidor de MATIDANA funcionando'
     });
 });
 
@@ -127,7 +127,7 @@ app.get('/', (req, res) => {
 // ===============================
 app.get('/api', (req, res) => {
     res.json({
-        mensaje: 'API de Librería funcionando correctamente',
+        mensaje: 'API de MATIDANA funcionando correctamente',
         capacidades: { descuentos_libros: true, anuncios_video: true, libros_nuevos: true }
     });
 });

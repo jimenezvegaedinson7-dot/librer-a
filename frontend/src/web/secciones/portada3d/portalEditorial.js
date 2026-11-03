@@ -1,7 +1,6 @@
 import {
-    BufferAttribute, Color, Data3DTexture, Group, IcosahedronGeometry, LinearFilter, OctahedronGeometry, RedFormat, RepeatWrapping, SRGBColorSpace, UnsignedByteType,
-    Mesh, MeshPhysicalMaterial, MeshStandardMaterial,
-    OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, WebGLRenderTarget,
+    Color, Data3DTexture, LinearFilter, RedFormat, RepeatWrapping, SRGBColorSpace, UnsignedByteType,
+    Mesh, OrthographicCamera, PlaneGeometry, Scene, ShaderMaterial, WebGLRenderTarget,
 } from 'three';
 
 // Campo de densidad tridimensional, calculado a resolución acotada. No se
@@ -52,40 +51,6 @@ void main(){
  gl_FragColor=vec4(color,1.);
 }`;
 
-// Cristales tallados que orbitan el libro: talla diamante (octaedro
-// alargado) y gema facetada (icosaedro), con sombreado plano para que
-// cada faceta devuelva su propio reflejo. Posiciones deterministas.
-function azar(semilla) { let x = semilla; return () => { x = (x * 16807) % 2147483647; return (x - 1) / 2147483646; }; }
-function crearCristales(cantidad) {
-    const r = azar(4211);
-    const tallas = [new OctahedronGeometry(1, 0), new IcosahedronGeometry(1, 0)];
-    tallas[0].scale(.62, 1, .62);
-    // Dispersión de diamante: cada faceta devuelve un matiz distinto del
-    // espectro (rosa, cian, lila, oro y blanco), visible en todo equipo.
-    const espectro = [[1, .86, .94], [.82, .96, 1], [.9, .86, 1], [1, .95, .8], [1, 1, 1], [.84, 1, .93]];
-    tallas.forEach((g, k) => {
-        const n = g.attributes.position.count, colores = new Float32Array(n * 3);
-        for (let i = 0; i < n; i += 3) {
-            const c = espectro[(i / 3 + k * 2) % espectro.length];
-            for (let j = 0; j < 3; j++) colores.set(c, (i + j) * 3);
-        }
-        g.setAttribute('color', new BufferAttribute(colores, 3));
-    });
-    const cristales = Array.from({ length: cantidad }, (_, i) => ({
-        talla: i % 3 === 0 ? 1 : 0,
-        radio: 2.15 + r() * 1.5,
-        angulo: (i / cantidad) * Math.PI * 2 + r() * .4,
-        altura: (r() - .5) * 2.6,
-        profundidad: -.4 + (r() - .5) * 1.6,
-        velocidad: (.06 + r() * .1) * (i % 2 ? 1 : -1) * .7,
-        tamano: .07 + Math.pow(r(), 2) * .2,
-        giro: [r() * 1.2 + .3, r() * 1.4 + .3, r() * .8],
-        fase: r() * Math.PI * 2,
-        retardo: r() * .35,
-    }));
-    return { tallas, cristales };
-}
-
 export class PortalEditorial {
     constructor(renderer, movil, papel = 0xf7f1e8) {
         this.renderer = renderer; this.movil = movil;
@@ -104,44 +69,15 @@ export class PortalEditorial {
         this.plano = new Mesh(new PlaneGeometry(2,2), this.material);
         this.escena = new Scene(); this.escena.add(this.plano);
         this.camara = new OrthographicCamera(-1,1,1,-1,0,1);
-        this.grupo = new Group();
-        // Material de diamante: superficie pulida con irisación prismática.
-        this.materialCristal = movil
-             ? new MeshStandardMaterial({ color:0xffffff, vertexColors:true, metalness:.55, roughness:.07, flatShading:true,
-                 emissive:0xfff6ea, emissiveIntensity:.18, envMapIntensity:4 })
-             : new MeshPhysicalMaterial({ color:0xffffff, vertexColors:true, metalness:.6, roughness:.03, clearcoat:1, clearcoatRoughness:.02,
-                 iridescence:1, iridescenceIOR:2.1, iridescenceThicknessRange:[260, 900],
-                 emissive:0xfff6ea, emissiveIntensity:.12, envMapIntensity:5, flatShading:true });
-        const { tallas, cristales } = crearCristales(movil ? 10 : 22);
-        this.tallas = tallas;
-        this.cristales = cristales.map((datos) => {
-            const malla = new Mesh(tallas[datos.talla], this.materialCristal);
-            this.grupo.add(malla);
-            return { malla, ...datos };
-        });
-        this.grupo.position.z = -.6;
     }
     redimensionar(ancho, alto) {
         const w = Math.round(Math.min(this.movil?260:520, ancho*.4));
         this.destino.setSize(Math.max(1,w), Math.max(1,Math.round(w*alto/ancho)));
         this.uniforms.uAspect.value = ancho/alto;
     }
-    actualizar(t, entrada, energia, salida, apertura) {
+    actualizar(t, entrada, energia, salida) {
         this.uniforms.uTime.value=t; this.uniforms.uEntry.value=entrada;
         this.uniforms.uEnergy.value=energia; this.uniforms.uExit.value=salida;
-        this.grupo.visible = entrada>.01 && salida<.99;
-        // Los cristales orbitan desde el arranque y se abren con la energía.
-        this.grupo.scale.setScalar((.82+entrada*.18)*(1+energia*.75));
-        this.grupo.rotation.set(.11+apertura*.3, Math.sin(t*.08)*.12, -.12+energia*.42);
-        for (const c of this.cristales) {
-            const a = c.angulo + t * c.velocidad;
-            const llegada = Math.min(1, Math.max(0, (entrada - c.retardo) / (1 - c.retardo)));
-            const brote = 1 - Math.pow(1 - llegada, 3);
-            const radio = c.radio * (.35 + .65 * brote);
-            c.malla.position.set(Math.cos(a) * radio, c.altura * .55 + Math.sin(a) * radio * .42 + Math.sin(t * .6 + c.fase) * .06, c.profundidad + Math.sin(a) * radio * .55);
-            c.malla.rotation.set(t * c.giro[0] + c.fase, t * c.giro[1], t * c.giro[2]);
-            c.malla.scale.setScalar(c.tamano * brote);
-        }
     }
     dibujar() {
         const t=this.uniforms.uTime.value;
@@ -153,9 +89,8 @@ export class PortalEditorial {
         this.renderer.setRenderTarget(previo);
     }
     destruir() {
-        this.tallas.forEach(g=>g.dispose());
-        this.materialCristal.dispose(); this.plano.geometry.dispose(); this.material.dispose(); this.destino.dispose(); this.ruido.dispose();
-        this.escena.clear(); this.grupo.clear();
+        this.plano.geometry.dispose(); this.material.dispose(); this.destino.dispose(); this.ruido.dispose();
+        this.escena.clear();
     }
 }
 

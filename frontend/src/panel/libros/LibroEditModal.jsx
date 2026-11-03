@@ -8,7 +8,9 @@ import { Select } from '../ui/Form';import { Alert } from '../ui/Alert';
 
 import { listarAutores, listarCategorias, actualizarLibro } from './librosService';
 import { urlPortadaLibro } from '../../compartido/lib/utils/portadasLibro';
-import CamposLibro, { SelectorPortada, CamposDescuento } from './CamposLibro';
+import CamposLibro, { SelectorPortada } from './CamposLibro';
+import DescuentoLibroModal, { BotonDescuentoLibro } from './DescuentoLibroModal';
+import AutorForm from '../autores/AutorForm';
 import { requerido, numeroNoNegativo, seleccionRequerida, validarFormulario } from '../lib/utils/validaciones';
 
 // mysql2 devuelve las columnas DATE como Date en hora local, así que los
@@ -69,6 +71,28 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
     const [error, setError] = useState('');
     const [errores, setErrores] = useState({});
     const inputArchivoRef = useRef(null);
+    const formularioRef = useRef(null);
+    const devolverFocoAutor = useRef(false);
+    const [creandoAutor, setCreandoAutor] = useState(false);
+    const [editandoDescuento, setEditandoDescuento] = useState(false);
+
+    const cerrarAltaAutor = () => {
+        devolverFocoAutor.current = true;
+        setCreandoAutor(false);
+    };
+
+    useEffect(() => {
+        if (creandoAutor || !devolverFocoAutor.current) return;
+        devolverFocoAutor.current = false;
+        formularioRef.current?.querySelector('[name="id_autor"]')?.focus();
+    }, [creandoAutor]);
+
+    const autorCreado = (respuesta, datos) => {
+        const autor = { ...datos, nombre: datos.nombre.trim(), apellido: datos.apellido.trim(), id_autor: respuesta.id_autor, estado: 1 };
+        setAutores((anteriores) => [...anteriores.filter((a) => String(a.id_autor) !== String(autor.id_autor)), autor]);
+        manejarCambio({ target: { name: 'id_autor', value: String(autor.id_autor) } });
+        cerrarAltaAutor();
+    };
 
     // Autores y categorías vienen del servidor: esto sí es sincronizar con
     // un sistema externo, por lo que corresponde a un efecto. El `activo`
@@ -177,11 +201,17 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
     };
 
     return (
-        <Modal abierto={abierto} titulo="Editar libro" subtitulo="Actualiza la información del libro seleccionado" onCerrar={onCerrar} grande>
+        <>
+        <Modal abierto={abierto && !editandoDescuento}
+            titulo={creandoAutor ? 'Agregar autor al libro' : 'Editar libro'}
+            subtitulo={creandoAutor ? 'Guarda el autor y continúa editando el libro.' : 'Actualiza la información del libro seleccionado'}
+            onCerrar={onCerrar} grande>
             {error && <div className="mb-4"><Alert tipo="error">{error}</Alert></div>}
 
-            <form onSubmit={actualizar} className="space-y-3">
-                <CamposLibro formulario={formulario} autores={autores} categorias={categorias} manejarCambio={manejarCambio} errores={errores} />
+            {creandoAutor && <AutorForm incrustado enfocarNombre onAutorCreado={autorCreado} onCancelar={cerrarAltaAutor} />}
+            <form ref={formularioRef} onSubmit={actualizar} className={`space-y-3 ${creandoAutor ? 'hidden' : ''}`}>
+                <CamposLibro formulario={formulario} autores={autores} categorias={categorias} manejarCambio={manejarCambio} errores={errores}
+                    onAgregarAutor={() => setCreandoAutor(true)} guardando={guardando} />
 
                 <div className="form-grid">
                     <div className="md:col-span-3">
@@ -214,10 +244,10 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
                     cargando={guardando}
                 />
 
-                <CamposDescuento
+                <BotonDescuentoLibro
                     formulario={formulario}
-                    manejarCambio={manejarCambio}
-                    errores={errores}
+                    onAbrir={() => setEditandoDescuento(true)}
+                    disabled={guardando}
                 />
 
                 <div className="flex flex-col-reverse gap-3 border-t border-primary-200 pt-5 sm:flex-row sm:justify-end">
@@ -233,5 +263,14 @@ export default function LibroEditModal({ libro, abierto, onCerrar, onActualizado
                 </div>
             </form>
         </Modal>
+        {editandoDescuento && <DescuentoLibroModal
+            formulario={formulario}
+            onCerrar={() => setEditandoDescuento(false)}
+            onAplicar={(descuento) => {
+                setFormulario((anterior) => ({ ...anterior, ...descuento }));
+                setEditandoDescuento(false);
+            }}
+        />}
+        </>
     );
 }

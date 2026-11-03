@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
@@ -16,13 +16,13 @@ import { login, verificarLoginOtp, solicitarReseteo, restablecerContrasena } fro
 import { useAuth } from '../../app/providers/AuthContext';
 import { usePaginaPanel } from '../lib/hooks/usePaginaPanel';
 import { Alert } from '../ui/Alert';
-import { Modal } from '../ui/Modal';
 import { CargaCorreo, ExitoAnimado } from '../ui/Celebracion';
 import { prepararSonido, sonarPagoAprobado } from '../lib/utils/sonido';
 import { esPersonalInterno, inicioPorRol } from '../lib/roles';
 
+import logoMarca from '../../compartido/assets/logo-principal-oscuro.png';
 import fondoLogin from '../../compartido/assets/fondo-login.webp';
-import logoClaro from '../../compartido/assets/logo-f-blanco-96.webp';
+import './login.css';
 
 const MENSAJE_FUERA_DE_PANEL = 'Este panel es solo para administradores';
 
@@ -41,8 +41,10 @@ export default function LoginPage() {
     const [codigo, setCodigo] = useState('');
     const [verificando, setVerificando] = useState(false);
 
-    // --- Forgot password modal state ---
-    const [showResetModal, setShowResetModal] = useState(false);
+    // La recuperación se muestra en la siguiente hoja del libro.
+    const [mostrandoRecuperacion, setMostrandoRecuperacion] = useState(false);
+    const [libroAbierto, setLibroAbierto] = useState(false);
+    const recuperarRef = useRef(null);
     const [resetStep, setResetStep] = useState(1); // 1=email, 2=code+pass, 3=done
     const [resetEmail, setResetEmail] = useState('');
     const [resetCodigo, setResetCodigo] = useState('');
@@ -55,6 +57,10 @@ export default function LoginPage() {
     const [autoInicio, setAutoInicio] = useState('iniciando'); // 'iniciando' | 'no-admin' | 'error'
 
     const reducirMovimiento = useReducedMotion();
+    const abriendoLibro = !reducirMovimiento && !libroAbierto;
+    const transicionHoja = reducirMovimiento
+        ? { initial: false, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0 } }
+        : { initial: { opacity: 0, rotateY: -70 }, animate: { opacity: 1, rotateY: 0 }, exit: { opacity: 0, rotateY: -70 }, transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] } };
 
     if (autenticado) return <Navigate to={inicioPorRol()} replace />;
 
@@ -138,8 +144,8 @@ export default function LoginPage() {
     };
 
     // --- Forgot password handlers ---
-    const openResetModal = () => {
-        setShowResetModal(true);
+    const abrirRecuperacion = () => {
+        setMostrandoRecuperacion(true);
         setResetStep(1);
         setResetEmail(email);
         setResetCodigo('');
@@ -150,11 +156,12 @@ export default function LoginPage() {
         setEnvioCorreo(null);
     };
 
-    const closeResetModal = () => {
-        setShowResetModal(false);
+    const cerrarRecuperacion = () => {
+        setMostrandoRecuperacion(false);
         setResetStep(1);
         setResetError('');
         setEnvioCorreo(null);
+        requestAnimationFrame(() => recuperarRef.current?.focus());
     };
 
     // Tras llenarse el cargador y mostrar "Correo enviado", pasa al código.
@@ -170,7 +177,7 @@ export default function LoginPage() {
             const [respuesta] = await Promise.all([login({ email: correo, password: clave }), pausa]);
 
             if (respuesta.requires_2fa) {
-                closeResetModal();
+                cerrarRecuperacion();
                 setEmail(correo);
                 setTwoFactorToken(respuesta.two_factor_token || '');
                 setCodigo('');
@@ -275,60 +282,49 @@ export default function LoginPage() {
     }[resetStep];
 
     return (
-        <main className="login-page relative min-h-screen bg-[#0d2940]">
-            {/* Foto de fondo a pantalla completa */}
-            <aside className="login-marca fixed inset-0 overflow-hidden" aria-hidden="true">
-                <motion.div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${fondoLogin})` }}
-                    initial={reducirMovimiento ? false : { scale: 1.06 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 1.6, ease: [0.25, 1, 0.5, 1] }}
-                    aria-hidden="true"
-                />
-                <div className="login-velo absolute inset-0" aria-hidden="true" />
-
+        <main className="login-page" style={{ '--login-fondo': `url(${fondoLogin})` }}>
+            <div className={`login-libro ${abriendoLibro ? 'login-libro--abriendo' : ''}`} onFocusCapture={() => setLibroAbierto(true)}>
+            <aside className="login-marca" aria-labelledby="login-nombre-libreria">
+                <div className="login-identidad">
+                    <img src={logoMarca} alt="" className="login-logo" width="226" height="301" />
+                    <h2 id="login-nombre-libreria" className="login-nombre">MATIDANA</h2>
+                    <p className="login-descripcion">
+                        Administra el catálogo, los pedidos y las operaciones de tu librería desde un solo lugar.
+                    </p>
+                </div>
+                <p className="login-marca-pie">Panel administrativo</p>
             </aside>
 
-            {/* Formulario */}
-            <div className="login-lado relative z-10 flex min-h-screen items-center justify-center px-4 py-10 sm:px-8">
+            <div className="login-lado" style={mostrandoRecuperacion ? { display: 'none' } : undefined}>
                 <motion.section
-                    initial={reducirMovimiento ? false : { opacity: 0, y: 12 }}
+                    initial={false}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
-                    className="login-tarjeta w-full min-w-0 max-w-[420px]"
+                    transition={{ duration: 0 }}
+                    className="login-tarjeta"
+                    aria-label="Acceso administrativo"
                 >
-                    {/* Marca */}
-                    <div className="mb-7 flex flex-col items-center text-center">
-                        <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-mahogany-700 p-2.5">
-                            <img src={logoClaro} alt="Librería del Saber" className="h-full w-full object-contain" />
-                        </span>
-                        <p className="mt-2 font-title text-lg font-semibold text-[#1c1814]">Librería del Saber</p>
-                        <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-[#7a5c43]">Administración</p>
-                    </div>
-
                     <AnimatePresence mode="wait" initial={false}>
                         {!twoFactorToken ? (
                             <motion.div key="login" {...transicionPaso}>
                                 <div className="mb-8">
-                                    <h1 className="font-title text-[26px] font-semibold leading-tight tracking-[-0.01em] text-[#1c1814]">
+                                    <h1 className="login-titulo">
                                         Iniciar sesión
                                     </h1>
-                                    <p className="mt-2 text-sm text-[#766d62]">
-                                        Ingresa tus credenciales de administración
+                                    <p className="login-entradilla">
+                                        Bienvenido de nuevo. Ingresa tus credenciales para continuar.
                                     </p>
                                 </div>
 
                                 <MensajeError mensaje={error} />
 
-                                <form onSubmit={enviar} className="min-w-0 space-y-5">
+                                <form onSubmit={enviar} className="min-w-0 space-y-4">
                                     <Campo id="login-email" etiqueta="Correo electrónico" icono={<FaEnvelope />}>
                                         <input
                                             id="login-email"
                                             type="email"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="admin@libreria.com"
+                                            placeholder="tu.correo@ejemplo.com"
                                             autoComplete="email"
                                             required
                                             className="login-input"
@@ -364,7 +360,7 @@ export default function LoginPage() {
                                     </Campo>
 
                                     <div className="flex justify-end">
-                                        <button type="button" onClick={openResetModal} className="login-enlace">
+                                        <button ref={recuperarRef} type="button" onClick={abrirRecuperacion} className="login-enlace">
                                             ¿Olvidaste tu contraseña?
                                         </button>
                                     </div>
@@ -380,17 +376,17 @@ export default function LoginPage() {
                                     <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#e3cdb2] bg-[#f7f1ea] text-lg text-[#7a5c43]">
                                         <FaQrcode />
                                     </span>
-                                    <h1 className="font-title text-[30px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814]">
+                                    <h1 className="login-titulo">
                                         Código de verificación
                                     </h1>
-                                    <p className="mt-2 text-sm text-[#766d62]">
+                                    <p className="login-entradilla">
                                         Ingresa el código de 6 dígitos de tu aplicación de autenticación
                                     </p>
                                 </div>
 
                                 <MensajeError mensaje={error} />
 
-                                <form onSubmit={enviarCodigo} className="min-w-0 space-y-5">
+                                <form onSubmit={enviarCodigo} className="min-w-0 space-y-4">
                                     <Campo id="login-otp" etiqueta="Código OTP" icono={<FaKey />}>
                                         <input
                                             id="login-otp"
@@ -419,14 +415,30 @@ export default function LoginPage() {
                         )}
                     </AnimatePresence>
 
+                    <p className="login-nota"><FaLock aria-hidden="true" /> Acceso exclusivo para administradores</p>
                     <Link to="/" className="login-volver">
-                        <FaArrowLeft className="text-[10px]" aria-hidden="true" /> Volver a la página principal
+                        <FaArrowLeft aria-hidden="true" /> Volver a la página principal
                     </Link>
                 </motion.section>
             </div>
+            <span className="login-pliegue" aria-hidden="true" />
+            {abriendoLibro && (
+                <div className="login-tapa-intro" aria-hidden="true" onAnimationEnd={() => setLibroAbierto(true)}>
+                    <div className="login-tapa-frente">
+                        <img src={logoMarca} alt="" width="226" height="301" />
+                        <span>MATIDANA</span>
+                    </div>
+                    <div className="login-tapa-dorso" />
+                </div>
+            )}
 
-            {/* --- Modal de recuperación de contraseña --- */}
-            <Modal abierto={showResetModal} onCerrar={closeResetModal} titulo="Restablecer contraseña" subtitulo={pasoReset}>
+            <AnimatePresence initial={false}>
+            {mostrandoRecuperacion && <motion.div className="login-lado login-hoja-recuperacion" {...transicionHoja}>
+                <section className="login-tarjeta" aria-label="Recuperar contraseña">
+                <div className="mb-8">
+                    <h1 className="login-titulo">Recuperar contraseña</h1>
+                    <p className="login-entradilla">{pasoReset}</p>
+                </div>
                 <div className="login-reset">
                     <ol className="mb-5 flex items-center gap-2" aria-label="Progreso">
                         {[1, 2, 3].map((paso) => (
@@ -468,6 +480,7 @@ export default function LoginPage() {
                                     onChange={(e) => setResetEmail(e.target.value)}
                                     placeholder="Escribe tu correo completo"
                                     autoComplete="email"
+                                    autoFocus
                                     required
                                     className="login-input"
                                 />
@@ -577,7 +590,7 @@ export default function LoginPage() {
                                     <BotonPrimario
                                         type="button"
                                         onClick={() => {
-                                            closeResetModal();
+                                            cerrarRecuperacion();
                                             setEmail(resetEmail.trim());
                                             setPassword('');
                                         }}
@@ -590,7 +603,16 @@ export default function LoginPage() {
                         </ExitoAnimado>
                     )}
                 </div>
-            </Modal>
+                <button type="button" onClick={cerrarRecuperacion} className="login-volver" disabled={resetCargando}>
+                    <FaArrowLeft aria-hidden="true" /> Volver al inicio de sesión
+                </button>
+                <Link to="/" className="login-volver">
+                    <FaArrowLeft aria-hidden="true" /> Volver a la página principal
+                </Link>
+                </section>
+            </motion.div>}
+            </AnimatePresence>
+            </div>
         </main>
     );
 }
@@ -641,7 +663,6 @@ function MensajeError({ mensaje }) {
             {mensaje && (
                 <motion.div
                     key={mensaje}
-                    role="alert"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}

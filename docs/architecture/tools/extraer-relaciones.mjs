@@ -39,6 +39,34 @@ export function argumentos(llamada) {
     return args;
 }
 
+// Rutas de createBrowserRouter: combina rutas hijas relativas e index con el
+// padre, conservando también el layout asociado a una ruta con children.
+export function rutasReact(texto) {
+    const inicio = /createBrowserRouter\s*\(\s*\[/.exec(texto);
+    if (!inicio) return [];
+    const quitarComentarios = s => s.replace(/^\s*(?:(?:\/\/[^\n]*(?:\n|$)|\/\*[\s\S]*?\*\/)\s*)+/, '').trim();
+    const rutas = [];
+    const visitar = (lista, base = '') => {
+        for (const entrada of argumentos(`(${lista.slice(1, -1)})`)) {
+            const objeto = quitarComentarios(entrada);
+            if (!objeto.startsWith('{')) continue;
+            const propiedades = Object.fromEntries(argumentos(`(${objeto.slice(1, -1)})`).flatMap(item => {
+                const m = /^(\w+)\s*:\s*([\s\S]*)$/.exec(quitarComentarios(item));
+                return m ? [[m[1], m[2].trim()]] : [];
+            }));
+            const literal = /^(['"])(.*?)\1$/.exec(propiedades.path || '');
+            const ruta = literal?.[2];
+            const completa = ruta === undefined ? base : ruta.startsWith('/') || ruta === '*' ? ruta : `${base}/${ruta}`.replace(/\/{2,}/g, '/');
+            if ((ruta !== undefined || propiedades.index === 'true') && propiedades.element) {
+                rutas.push({ path: completa || '/', element: propiedades.element });
+            }
+            if (propiedades.children?.startsWith('[')) visitar(propiedades.children, completa);
+        }
+    };
+    visitar(bloque(texto, inicio.index + inicio[0].length - 1));
+    return rutas;
+}
+
 export function nombreMiddleware(arg) {
     if (arg === 'verificarToken') return 'JWT';
     const roles = /^verificarRol\(\s*(?:['"](\w+)['"]|ROLES\.(\w+))\s*\)$/.exec(arg);

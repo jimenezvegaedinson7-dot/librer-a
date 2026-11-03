@@ -6,7 +6,6 @@ const {
     listarComprobantes,
     obtenerComprobante,
     enviarComprobanteEmail,
-    registrarSunat,
     anularComprobante
 } = require('../controllers/comprobante.controller');
 
@@ -80,15 +79,6 @@ router.get('/:id', verificarPanel, obtenerComprobante);
 // ========================================
 // SOLO ADMINISTRADOR
 // ========================================
-
-// COMPROBANTE ELECTRÓNICO SUNAT (serie-número)
-// Y NOTA DE CRÉDITO
-// ========================================
-router.put(
-    '/:id/sunat',
-    verificarRol(ROLES.ADMINISTRADOR),
-    registrarSunat
-);
 
 // ========================================
 // ANULAR COMPROBANTE (datos errados; la

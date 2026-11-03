@@ -5,15 +5,17 @@ import { Button } from '../ui/Button';
 import { Ficha } from '../ui/Ficha';
 
 import { formatearMoneda, formatearFecha } from '../../compartido/lib/utils/format';
+import { correoVisible, esCuentaEliminada } from '../lib/utils/cuentas';
 
 export default function ClienteViewModal({ cliente, abierto, onCerrar }) {
     if (!abierto || !cliente) return null;
+    const correo = correoVisible(cliente.email) || 'Sin correo';
 
     return (
         <Modal abierto={abierto} titulo="Detalle del cliente" subtitulo="Información del cliente y su actividad de compras" onCerrar={onCerrar}>
             <div className="border-b border-primary-200 pb-3">
                 <h3 className="font-title text-[20px] font-semibold leading-tight text-slate-900">{cliente.nombre_completo || 'Sin nombre'}</h3>
-                <p className="mt-1 text-sm text-primary-500">{cliente.email || 'Sin correo'}</p>
+                <p className="mt-1 break-words text-sm text-primary-500">{esCuentaEliminada(cliente) ? 'Cuenta eliminada por su titular' : correo}</p>
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -21,7 +23,7 @@ export default function ClienteViewModal({ cliente, abierto, onCerrar }) {
                     <span className="text-sm">#{cliente.id_usuario}</span>
                 </Ficha>
                 <Ficha color="sky" icono={<FaEnvelope />} etiqueta="Correo electrónico">
-                    <span className="break-all text-sm">{cliente.email || 'Sin correo'}</span>
+                    <span className="break-all text-sm">{correo}</span>
                 </Ficha>
                 <Ficha color="sky" icono={<FaCalendarDays />} etiqueta="Última compra">
                     <span className="text-sm">{formatearFecha(cliente.ultima_compra, { soloDia: true }) || 'Sin compras'}</span>

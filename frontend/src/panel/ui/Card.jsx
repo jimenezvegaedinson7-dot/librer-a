@@ -16,10 +16,9 @@ const iconColores = {
     slate: 'bg-[#f3efe9] text-[#5c544b]',
 };
 
-export function CardHeader({ titulo, subtitulo, acciones = null, icono = null, color = 'slate' }) {
+export function CardHeader({ titulo, subtitulo, acciones = null, filtros = null, icono = null, color = 'slate' }) {
     const ic = iconColores[color] || iconColores.slate;
-    return (
-        <div className="card-header">
+    const identidad = (
             <div className="flex items-center gap-3">
                 {icono && (
                     <span className={`card-header-icon page-header-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${ic}`}>
@@ -31,6 +30,16 @@ export function CardHeader({ titulo, subtitulo, acciones = null, icono = null, c
                     {subtitulo && <p className="card-subtitle">{subtitulo}</p>}
                 </div>
             </div>
+    );
+    if (filtros) return (
+        <div className="card-header card-header--filtros">
+            <div className="tabla-filtros-cabecera">{identidad}{acciones}</div>
+            <div className="tabla-filtros">{filtros}</div>
+        </div>
+    );
+    return (
+        <div className="card-header">
+            {identidad}
             {acciones}
         </div>
     );

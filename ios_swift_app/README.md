@@ -1,4 +1,4 @@
-# Librería del Saber — iOS (SwiftUI)
+# MATIDANA — iOS (SwiftUI)
 
 App nativa en Swift/SwiftUI para clientes, con las mismas funciones que la app Flutter (`flutter_app/`): catálogo, detalle, favoritos, carrito, checkout con PayU, reservas, compras, cuenta, temas de color, registro, recuperación de contraseña y 2FA. No usa Flutter ni dependencias externas.
 
@@ -48,7 +48,7 @@ Qué contiene el proyecto:
 
 | Elemento | Detalle |
 |---|---|
-| Target `LibreriaSecureApp` | App iPhone, iOS 17, Swift 5, orientación vertical, nombre visible "Librería del Saber" |
+| Target `LibreriaSecureApp` | App iPhone, iOS 17, Swift 5, orientación vertical, nombre visible "MATIDANA" |
 | Target `LibreriaSecureAppTests` | XCTest con `Tests/` (usa la app como host) |
 | Carpetas sincronizadas | `App`, `Components`, `Content`, `Core`, `Design`, `Models`, `Resources`, `Services`, `Utilities`, `ViewModels`, `Views`; cualquier `.swift` nuevo en ellas entra solo al target |
 | `Resources/Assets.xcassets` | Icono de la app (1024×1024, sin transparencia), logo `Logo` (el mismo de Flutter) y color de acento burdeos |

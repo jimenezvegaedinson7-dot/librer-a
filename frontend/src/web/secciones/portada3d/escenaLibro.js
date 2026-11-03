@@ -1,5 +1,5 @@
 import {
-    ACESFilmicToneMapping, AdditiveBlending, AmbientLight, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, Clock, CylinderGeometry, DirectionalLight, DoubleSide, FogExp2, Group, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, PerspectiveCamera, PlaneGeometry, PMREMGenerator, PointLight, Points, PointsMaterial, Quaternion, Euler, SRGBColorSpace, Scene, Sprite, SpriteMaterial, TextureLoader, Vector3, WebGLRenderer,
+    ACESFilmicToneMapping, AdditiveBlending, AmbientLight, BufferAttribute, BufferGeometry, CanvasTexture, Clock, CylinderGeometry, DirectionalLight, DoubleSide, FogExp2, Group, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, MeshStandardMaterial, PerspectiveCamera, PlaneGeometry, PMREMGenerator, PointLight, Points, PointsMaterial, SRGBColorSpace, Scene, Sprite, SpriteMaterial, TextureLoader, Vector3, WebGLRenderer,
 } from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -125,8 +125,7 @@ export default class EscenaLibro {
         this.escena.environmentIntensity = .45;
         sala.dispose(); generador.dispose();
         this.portal = new PortalEditorial(r, this.economico, COLOR.fondo);
-        if(this.software){this.escena.environment=null;this.portal.materialCristal.envMap=this.entorno.texture;}
-        this.escena.add(this.portal.grupo);
+        if(this.software){this.escena.environment=null;}
         this.escena.background = this.portal.destino.texture;
         this.crearLibro();
         this.crearPedestal();
@@ -207,7 +206,7 @@ export default class EscenaLibro {
         lomoTexto.colorSpace = SRGBColorSpace;
         const matLomo = this.registrar(new MeshStandardMaterial({ map: lomoTexto, roughness: .72 }));
         this.matsLibro.push(matLomo);
-        this.matsLibro.forEach(m => prepararDisolucion(m, this.uniformeDisolver));
+        this.matsLibro.forEach(m => { m.transparent = true; prepararDisolucion(m, this.uniformeDisolver); });
 
         // Bloque de páginas (cantos con líneas) y contratapa.
         this.bloque = new Mesh(this.registrar(new RoundedBoxGeometry(W - .09, H - .1, T - .09, 2, .014)),
@@ -273,113 +272,9 @@ export default class EscenaLibro {
             const img = tex.image;
             const aspecto = img && img.width && img.height ? img.width / img.height : 2 / 3;
             this.ajustarProporcion(aspecto);
-            this.crearFragmentos(tex);
             this.redimensionar(this.ancho, this.alto);
             alCargar?.(true);
         }, undefined, () => { if (!this.destruida) alCargar?.(false); });
-    }
-
-    // Estallido final: la tapa real se parte en esquirlas (cada una lleva su
-    // trozo de la portada) que salen despedidas girando hacia la cámara.
-    // Posiciones y giros deterministas: el scroll lo hace reversible.
-    crearFragmentos(tex) {
-        const { H, W, T } = this.medidas;
-        const columnas = this.movil ? 6 : 9, filas = this.movil ? 9 : 13;
-        this.columnasFragmento = columnas; this.filasFragmento = filas;
-        const w = W / columnas, h = H / filas;
-        const matFrente = this.registrar(new MeshStandardMaterial({ map: tex, roughness: .45 }));
-        const matCanto = this.registrar(new MeshStandardMaterial({ color: 0x1a181c, roughness: .6 }));
-        const matDorso = this.registrar(new MeshStandardMaterial({ color: 0xe9e1cf, roughness: .9 }));
-        this.fragmentos = new Group();
-        this.fragmentos.visible = false;
-        this.piezas = [];
-        let semilla = 9001;
-        const azar = () => { semilla = (semilla * 16807) % 2147483647; return (semilla - 1) / 2147483646; };
-        for (let f = 0; f < filas; f++) for (let c = 0; c < columnas; c++) {
-            const geo = this.registrar(new BoxGeometry(w * .985, h * .985, .035));
-            // Cara frontal (+z, vértices 16-19): su trozo de la portada.
-            const uv = geo.attributes.uv;
-            for (let i = 16; i < 20; i++) uv.setXY(i, (c + uv.getX(i)) / columnas, (f + uv.getY(i)) / filas);
-            uv.needsUpdate = true;
-            const malla = new Mesh(geo, [matCanto, matCanto, matCanto, matCanto, matFrente, matDorso]);
-            const x = -W / 2 + w * (c + .5), y = -H / 2 + h * (f + .5);
-            malla.position.set(x, y, T / 2 + .005);
-            const ang = Math.atan2(y, x), fuerza = .8 + azar() * 1.6;
-            this.piezas.push({
-                malla, x, y, z: T / 2 + .005, columna: c, fila: f,
-                dx: Math.cos(ang) * fuerza * 1.9 + (azar() - .5) * 1.1,
-                dy: Math.sin(ang) * fuerza * 1.5 + (azar() - .3) * 1.1,
-                dz: 1 + azar() * 2.2,
-                rx: (azar() - .5) * 9, ry: (azar() - .5) * 9, rz: (azar() - .5) * 6,
-                retardo: (Math.hypot(x / W, y / H)) * .35 + azar() * .12,
-            });
-            this.fragmentos.add(malla);
-        }
-        this.libro.add(this.fragmentos);
-    }
-
-    // Destinos de las esquirlas: rectángulos (px del lienzo) de las portadas
-    // de los últimos libros. Con ellos los pedazos vuelven a juntarse.
-    setDestinos(rects) { this.destinos = rects && rects.length ? rects : null; }
-
-    // Fase 1 (funde): las esquirlas salen despedidas girando.
-    // Fase 2 (reunir): vuelan a las portadas de los últimos libros, se
-    // aplanan de cara a la cámara y se funden en ellas.
-    moverFragmentos(funde) {
-        if (!this.fragmentos) return;
-        const reunir = this.destinos ? tramoCine(this.progreso, .77, .88) : 0;
-        const visible = this.estalla && reunir < .999;
-        this.fragmentos.visible = visible;
-        if (!visible) return;
-        const cam = this.camara, columnas = this.columnasFragmento, filas = this.filasFragmento;
-        let destino = null, sx = 1, sy = 1;
-        if (reunir > 0) {
-            cam.updateMatrixWorld(); this.libro.updateMatrixWorld();
-            this._v = this._v || new Vector3(); this._d = this._d || new Vector3();
-            this._q = this._q || new Quaternion(); this._qo = this._qo || new Quaternion(); this._e = this._e || new Euler();
-            destino = this.destinos[0];
-            // Cada pedazo vuelve a su sitio en la portada central, de frente a la
-            // cámara y del tamaño exacto de su celda: el libro se rearma entero.
-            const izq = this.puntoPantalla(destino.left, destino.top + destino.height / 2).clone();
-            const der = this.puntoPantalla(destino.left + destino.width, destino.top + destino.height / 2).clone();
-            const arr = this.puntoPantalla(destino.left + destino.width / 2, destino.top).clone();
-            const aba = this.puntoPantalla(destino.left + destino.width / 2, destino.top + destino.height).clone();
-            sx = izq.distanceTo(der) / (this.medidas.W * this.libro.scale.x);
-            sy = arr.distanceTo(aba) / (this.medidas.H * this.libro.scale.y);
-            this.libro.getWorldQuaternion(this._qo).invert().multiply(cam.quaternion);
-        }
-        this.piezas.forEach((q) => {
-            const k = clamp((funde - q.retardo) / (1 - q.retardo * .6));
-            const v = 1 - Math.pow(1 - k, 2.2);
-            let x = q.x + q.dx * v, y = q.y + q.dy * v - k * k * .35, z = q.z + q.dz * v;
-            this._e?.set(q.rx * v, q.ry * v, q.rz * v);
-            if (destino) {
-                const r = clamp((reunir - q.retardo * .35) / .8);
-                const u = r * r * (3 - 2 * r);
-                const px = destino.left + destino.width * ((q.columna + .5) / columnas);
-                const py = destino.top + destino.height * (1 - (q.fila + .5) / filas);
-                this._v.copy(this.puntoPantalla(px, py));
-                this.libro.worldToLocal(this._v);
-                x += (this._v.x - x) * u; y += (this._v.y - y) * u; z += (this._v.z - z) * u;
-                this._q.setFromEuler(this._e).slerp(this._qo, u);
-                q.malla.quaternion.copy(this._q);
-                q.malla.scale.set(1 + (sx - 1) * u, 1 + (sy - 1) * u, 1);
-            } else {
-                q.malla.rotation.set(q.rx * v, q.ry * v, q.rz * v);
-                q.malla.scale.setScalar(1);
-            }
-            q.malla.position.set(x, y, z);
-        });
-    }
-
-    // Punto del mundo bajo un píxel del lienzo, sobre un plano frente al libro.
-    puntoPantalla(px, py) {
-        const cam = this.camara;
-        this._p = this._p || new Vector3(); this._dir = this._dir || new Vector3();
-        this._p.set(px / this.ancho * 2 - 1, -(py / this.alto * 2 - 1), .5).unproject(cam);
-        this._dir.copy(this._p).sub(cam.position).normalize();
-        const t = (cam.position.z - 1.2) / Math.max(.05, -this._dir.z);
-        return this._p.copy(cam.position).addScaledVector(this._dir, t);
     }
 
     // Escala el ancho del libro a la proporción real de la portada.
@@ -548,12 +443,12 @@ export default class EscenaLibro {
             posiciones.needsUpdate=true; normales.needsUpdate=true;
         });
 
-        // Estallido: el libro entero cede su lugar a las esquirlas de la tapa.
+        // El libro permanece entero y centrado y se desvanece en su sitio:
+        // no se fragmenta, no se aleja y no queda pegado al final.
         this.uniformeDisolver.value=0;
-        const estalla = this.piezas && funde > .001;
-        L.visible = true;
-        for (const parte of [this.bloque, this.contratapa, this.lomo, this.bisagra, ...this.hojas]) parte.visible = !estalla;
-        this.estalla = estalla;
+        const visible = 1 - funde;
+        this.matsLibro.forEach(m => { m.opacity = visible; m.depthWrite = funde < .5; });
+        L.visible = funde < .995;
         // La base acompaña al libro mientras está asentado: no puede quedarse
         // en su sitio de entrada si el libro ya se movió (p. ej. al hacer zoom).
         this.pedestal.position.x = L.position.x;
@@ -565,34 +460,32 @@ export default class EscenaLibro {
         this.luzInterior.intensity = luz * 12 * (1 - sale);
         this.luzInterior.position.set(L.position.x * 0.3, L.position.y, 0.9);
         this.portal.actualizar(t,e,luz,sale,abre);
-        this.portal.grupo.position.x = L.position.x * (1 - luz) * .8;
-        this.portal.grupo.position.y = L.position.y * (1 - luz) * .6;
 
         this.brillo.position.set(-W * 0.02, 0, this.medidas.T / 2 + 0.25);
         this.brillo.scale.setScalar(.05+luz*1.2);
-        this.brillo.material.opacity=luz*.12*(1-sale);
+        this.brillo.material.opacity=luz*.12*(1-sale)*visible;
 
         // Efecto diamante: visible mientras el libro está entero.
-        const enteroVisible = !this.estalla && e > .05;
+        const enteroVisible = e > .05;
         const { W: anchoTapa, H: altoTapa, T: grosor } = this.medidas;
-        this.haz.visible = enteroVisible;
+        this.haz.visible = enteroVisible && funde < .99;
         if (enteroVisible) {
             const ciclo = (t * .22) % 1.6;
             this.haz.scale.set(anchoTapa, altoTapa, 1);
             this.haz.position.set(0, 0, grosor / 2 + .03);
             this.haz.material.map.offset.set(1 - ciclo * 1.5, 0);
-            this.haz.material.opacity = .45 * e;
+            this.haz.material.opacity = .45 * e * visible;
         }
         for (const d of this.destellos) {
             const pulso = Math.pow(Math.max(0, Math.sin(t * d.vel + d.fase)), 10);
-            d.sprite.visible = enteroVisible && pulso > .01;
+            d.sprite.visible = enteroVisible && funde < .99 && pulso > .01;
             if (!d.sprite.visible) continue;
             d.sprite.position.set(d.u * anchoTapa, d.v * altoTapa, grosor / 2 + .06);
             d.sprite.scale.setScalar(d.tam * (.35 + pulso));
-            d.sprite.material.opacity = pulso * e;
+            d.sprite.material.opacity = pulso * e * visible;
         }
 
-        // Partículas: deriva lenta, reaccionan al puntero y estallan al final.
+        // Partículas: deriva lenta que reacciona al puntero.
         this.particulas.rotation.y = t * 0.012 + px * 0.06;
         this.particulas.rotation.x = py * 0.04;
         this.particulas.scale.setScalar(1 + luz * 1.6);
@@ -608,7 +501,6 @@ export default class EscenaLibro {
         c.position.y=py*.12+rot*.22+abre*.75*(1-luz);
         c.lookAt(L.position.x * mezcla(0, 0.85, abre), L.position.y * rot * 0.5, 0);
         this.renderer.toneMappingExposure=1.05;
-        this.moverFragmentos(funde);
         return {...estado,tapa:encuadernacion.tapa,hojas:encuadernacion.hojas.map(h=>h.angulo)};
     }
 

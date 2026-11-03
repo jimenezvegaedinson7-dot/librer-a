@@ -6,7 +6,7 @@ const original = { ruc: '20123456789', razon_social: 'Empresa de demostración',
     fecha_inicio: '2020-01-01', aplica_igv: 0, libros_exonerados: 1, exoneracion_libros_hasta: '2026-10-17', tasa_igv: 18 };
 
 for (const width of [390, 1440]) {
-    test(`Empresa ${width}px: solo datos usados, impuestos válidos e históricos intactos`, async ({ page }, info) => {
+    test(`Empresa ${width}px: datos visibles y configuración interna conservada`, async ({ page }, info) => {
         await page.setViewportSize({ width, height: 1000 });
         await page.emulateMedia({ reducedMotion: 'reduce' });
         await page.addInitScript(usuario => {
@@ -21,10 +21,6 @@ for (const width of [390, 1440]) {
             if (path === '/api/empresa') {
                 if (route.request().method() === 'PUT') {
                     const body = route.request().postDataJSON(); escrituras.push(body);
-                    // El contrato real de la API exige flags numéricos, no booleanos.
-                    if (![0, 1].includes(body.aplica_igv) || ![0, 1].includes(body.libros_exonerados)) {
-                        return route.fulfill({ status: 400, json: { success: false, mensaje: 'Los indicadores deben ser 0 o 1' } });
-                    }
                     empresa = { ...empresa, ...body };
                 }
                 return route.fulfill({ json: { success: true, empresa } });
@@ -33,6 +29,9 @@ for (const width of [390, 1440]) {
         });
         await page.goto('/configuracion/empresa');
         const main = page.locator('main');
+        await expect(main.getByText(original.ruc, { exact: true })).toBeVisible();
+        await expect(main.getByLabel('RUC', { exact: true })).toHaveCount(0);
+        await main.getByRole('button', { name: 'Editar datos', exact: true }).click();
         await expect(main.getByLabel('RUC', { exact: true })).toHaveValue(original.ruc);
         await expect(main.getByLabel('Tipo de documento', { exact: true })).toHaveCount(0);
         await expect(main.getByLabel('Número de documento', { exact: true })).toHaveCount(0);
@@ -44,20 +43,25 @@ for (const width of [390, 1440]) {
         await main.getByLabel('Razón social', { exact: true }).fill('Empresa actualizada');
         await main.getByRole('button', { name: 'Guardar cambios', exact: true }).click();
         await expect(page.getByText('Datos de la empresa actualizados correctamente', { exact: true })).toBeVisible();
-        expect(escrituras[0]).toMatchObject({ aplica_igv: 0, libros_exonerados: 1 });
+        expect(Object.keys(escrituras[0]).sort()).toEqual(['direccion', 'nombre_comercial', 'razon_social', 'ruc']);
         expect(escrituras[0]).not.toHaveProperty('tipo_documento');
         expect(escrituras[0]).not.toHaveProperty('documento_identidad');
         expect(escrituras[0]).not.toHaveProperty('fecha_inicio');
         expect(empresa).toMatchObject({ tipo_documento: original.tipo_documento,
             documento_identidad: original.documento_identidad, fecha_inicio: original.fecha_inicio });
-        await main.getByRole('switch', { name: 'Empresa afecta al IGV', exact: true }).click();
-        await expect(main.getByLabel('Tasa del IGV (%)')).toBeVisible();
-        await expect(main.getByLabel('Exonerados hasta')).toBeVisible();
+        await main.getByRole('button', { name: 'Editar datos', exact: true }).click();
+        await expect(main.getByRole('switch')).toHaveCount(0);
+        await expect(main.getByLabel('Tasa del IGV (%)')).toHaveCount(0);
+        await expect(main.getByLabel('Exonerados hasta')).toHaveCount(0);
+        await main.getByLabel('Nombre comercial', { exact: true }).fill('Nombre comercial actualizado');
         await main.getByRole('button', { name: 'Guardar cambios', exact: true }).click();
         await expect.poll(() => escrituras.length).toBe(2);
-        expect(escrituras[1]).toMatchObject({ aplica_igv: 1, libros_exonerados: 1, tasa_igv: '18' });
+        expect(escrituras[1]).not.toHaveProperty('aplica_igv');
+        expect(escrituras[1]).not.toHaveProperty('tasa_igv');
+        expect(empresa).toMatchObject({ aplica_igv: original.aplica_igv, libros_exonerados: original.libros_exonerados, tasa_igv: original.tasa_igv, exoneracion_libros_hasta: original.exoneracion_libros_hasta });
         await main.getByRole('button', { name: 'Actualizar', exact: true }).click();
-        await expect(main.getByLabel('Razón social', { exact: true })).toHaveValue('Empresa actualizada');
+        await expect(main.getByText('Empresa actualizada', { exact: true })).toBeVisible();
+        await expect(main.getByLabel('Razón social', { exact: true })).toHaveCount(0);
         expect(errores).toEqual([]);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
         await page.waitForTimeout(600);

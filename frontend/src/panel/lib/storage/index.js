@@ -1,6 +1,5 @@
 const KEY_TOKEN = 'token';
 const KEY_USUARIO = 'usuario';
-const KEY_HISTORIAL_VISTO = 'ultimoHistorialVisto';
 
 const storage = {
     getToken() {
@@ -29,16 +28,10 @@ const storage = {
     removeUsuario() {
         localStorage.removeItem(KEY_USUARIO);
     },
-    getUltimoHistorialVisto() {
-        return localStorage.getItem(KEY_HISTORIAL_VISTO);
-    },
-    setUltimoHistorialVisto(valor) {
-        localStorage.setItem(KEY_HISTORIAL_VISTO, String(valor));
-    },
     clearSesion() {
         localStorage.removeItem(KEY_TOKEN);
         localStorage.removeItem(KEY_USUARIO);
-        localStorage.removeItem(KEY_HISTORIAL_VISTO);
+        localStorage.removeItem('ultimoHistorialVisto');
     },
 };
 

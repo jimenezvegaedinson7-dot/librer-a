@@ -1,4 +1,5 @@
 import { FaInbox, FaSort, FaSortDown, FaSortUp } from 'react-icons/fa6';
+import { useEffect, useId, useRef, useState } from 'react';
 
 export function DataTable({
     columnas,
@@ -9,8 +10,22 @@ export function DataTable({
     orden = null,
     onOrdenar = null,
     onFilaClick = null,
+    etiqueta = 'Tabla de registros',
 }) {
     const filaClickable = typeof onFilaClick === 'function';
+    const contenedor = useRef(null);
+    const idAyuda = useId();
+    const [desborda, setDesborda] = useState(false);
+
+    useEffect(() => {
+        const elemento = contenedor.current;
+        const revisar = () => setDesborda(elemento.scrollWidth > elemento.clientWidth + 1);
+        const observador = new ResizeObserver(revisar);
+        observador.observe(elemento);
+        observador.observe(elemento.querySelector('table'));
+        revisar();
+        return () => observador.disconnect();
+    }, []);
 
     const ariaSort = (col) => {
         if (!col.ordenable || !onOrdenar || orden?.campo !== col.campo) return undefined;
@@ -39,8 +54,10 @@ export function DataTable({
     const alinear = (col) => (col.alineacion === 'centro' ? 'text-center' : col.alineacion === 'derecha' ? 'text-right' : 'text-left');
 
     return (
-        <div className="data-table-shell overflow-x-auto">
+        <div className="data-table-contenedor">
+        <div ref={contenedor} className="data-table-shell overflow-x-auto" role="region" aria-label={etiqueta} aria-describedby={desborda ? idAyuda : undefined} tabIndex={0}>
             <table className="min-w-full border-collapse">
+                <caption className="sr-only">{etiqueta}</caption>
                 <thead>
                     <tr className="bg-parchment-100">
                         {columnas.map((col, i) => (
@@ -48,13 +65,13 @@ export function DataTable({
                                 key={i}
                                 scope="col"
                                 aria-sort={ariaSort(col)}
-                                className={`whitespace-nowrap border-b border-primary-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 ${alinear(col)}`}
+                                className={`whitespace-nowrap border-b border-primary-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 ${alinear(col)} ${col.className || ''}`}
                             >
                                 {renderEncabezado(col)}
                             </th>
                         ))}
                         {acciones && (
-                            <th scope="col" className="border-b border-primary-100 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                            <th scope="col" className="tabla-col-acciones border-b border-primary-100 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                                 Acciones
                             </th>
                         )}
@@ -95,12 +112,12 @@ export function DataTable({
                                 }`}
                             >
                                 {columnas.map((col, i) => (
-                                    <td key={i} className={`px-4 py-3 text-sm ${alinear(col)}`}>
+                                    <td key={i} className={`px-4 py-3 text-sm ${alinear(col)} ${col.className || ''}`}>
                                         {col.render ? col.render(fila) : String(fila?.[col.campo] ?? '')}
                                     </td>
                                 ))}
                                 {acciones && (
-                                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                                    <td className="tabla-col-acciones px-4 py-3" onClick={(e) => e.stopPropagation()}>
                                         <div className="tabla-acciones flex flex-wrap items-center justify-center gap-1.5">{acciones(fila)}</div>
                                     </td>
                                 )}
@@ -109,6 +126,8 @@ export function DataTable({
                     )}
                 </tbody>
             </table>
+        </div>
+        {desborda && <p id={idAyuda} className="tabla-scroll-nota">Desplaza la tabla horizontalmente para ver todas las columnas.</p>}
         </div>
     );
 }

@@ -14,18 +14,3 @@ export async function listarPagos(params = {}) {
 
     return { pagos, total, paginas };
 }
-
-export async function obtenerResumen() {
-    const res = await client.get('/pagos/resumen');
-
-    // Contrato: { success, pagado, pendiente, cancelado, ingresos }; también
-    // tolera la forma { success, data: { pagado, pendiente, cancelado, ingresos } }.
-    const origen = res?.data && !Array.isArray(res.data) && res.data.pagado !== undefined ? res.data : res;
-
-    return {
-        pagado: Number(origen?.pagado ?? 0),
-        pendiente: Number(origen?.pendiente ?? 0),
-        cancelado: Number(origen?.cancelado ?? 0),
-        ingresos: Number(origen?.ingresos ?? 0),
-    };
-}

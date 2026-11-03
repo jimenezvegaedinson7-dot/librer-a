@@ -38,7 +38,7 @@ class LibreriaApp extends StatelessWidget {
     return AnimatedBuilder(
       animation: TemaController.instance,
       builder: (context, _) => MaterialApp(
-        title: 'Librería',
+        title: 'MATIDANA',
         debugShowCheckedModeBanner: false,
         scrollBehavior: const _AppScrollBehavior(),
         theme: AppTheme.light(),

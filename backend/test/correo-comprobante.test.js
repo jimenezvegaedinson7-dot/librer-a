@@ -21,6 +21,14 @@ const datos = {
     subtotal: 40, igv: 0, costoEnvio: 0, total: 40, items: [{ titulo: 'Rayuela', cantidad: 1, precio_unitario: 40, subtotal: 40 }],
 };
 
+test('el PDF adjunto muestra el total sin desglose tributario ni campos SUNAT', () => {
+    const { construirHtmlComprobante } = cargarMailer({ pdf: true });
+    const { cuerpoHtml } = construirHtmlComprobante({ ...datos, igv: 18, opGravada: 100, opExonerada: 0, total: 118, numeroSunat: 'EB01-125' });
+    assert.doesNotMatch(cuerpoHtml, /IGV|Op\. Gravada|Op\. Exonerada|Op\. Inafecta|SUNAT/);
+    assert.match(cuerpoHtml, /Importe Total/);
+    assert.match(cuerpoHtml, /S\/ 118\.00/);
+});
+
 test('con PDF, el correo trae solo un aviso breve (sin la vista del comprobante)', async () => {
     const mailer = cargarMailer({ pdf: true });
     const { cuerpoHtml } = mailer.construirHtmlComprobante(datos);
@@ -48,7 +56,7 @@ test('correos con código: formales, sin cabecera de color y con el nombre escap
     const { plantillaCodigo } = require('../src/utils/mailer');
     const html = plantillaCodigo({ titulo: 'Verifica tu cuenta', saludo: 'Hola &lt;Ana&gt;,', intro: 'Ingresa este código:', codigo: '482915', cierre: 'Ignóralo si no fuiste tú.' });
     assert.match(html, /482915/);
-    assert.match(html, /Librería del Saber/);
+    assert.match(html, /MATIDANA/);
     assert.doesNotMatch(html, /#4f46e5|#4338ca|#eef2ff/i);
     assert.match(html, /no compartas este código/);
 });

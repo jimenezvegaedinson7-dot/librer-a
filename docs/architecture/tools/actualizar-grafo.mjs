@@ -49,7 +49,7 @@ export function actualizarGrafo() {
         ejecutar('Detección', python, [`${herramientas}/generar-grafo-graphify.py`, '--detectar']);
         ejecutar('Grafo', python, [`${herramientas}/generar-grafo-graphify.py`]);
         ejecutar('Visor del grafo', python, ['-m', 'graphify', 'export', 'html']);
-        ejecutar('Mapa jerárquico', python, ['-m', 'graphify', 'tree', '--output', 'graphify-out/MAPA-CEREBRO.html', '--label', 'Librería del Saber · Mapa del proyecto']);
+        ejecutar('Mapa jerárquico', python, ['-m', 'graphify', 'tree', '--output', 'graphify-out/MAPA-CEREBRO.html', '--label', 'MATIDANA · Mapa del proyecto']);
         ejecutar('Visores sin conexión', python, [`${herramientas}/preparar-visores-graphify.py`]);
         ejecutar('Verificación', python, [`${herramientas}/verificar-grafo-graphify.py`]);
         registrar(`Grafo actualizado en ${Math.round((Date.now() - inicio) / 1000)} s.`);

@@ -200,8 +200,8 @@ test('verificarPanel permite solo al administrador', () => {
 test('el cajero no puede usar un permiso exclusivo del administrador', () => {
     const soloAdmin = verificarRol(ROLES.ADMINISTRADOR);
 
-    // Reembolsos, anulación de comprobantes, SUNAT, usuarios.
-    for (const operacion of ['reembolsar', 'anular', 'sunat', 'usuarios']) {
+    // Reembolsos, anulación de comprobantes, usuarios.
+    for (const operacion of ['reembolsar', 'anular', 'usuarios']) {
         assert.equal(
             ejecutar(soloAdmin, como('cajero')).status,
             403,

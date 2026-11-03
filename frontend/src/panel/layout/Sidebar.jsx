@@ -76,7 +76,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 className={`relative flex h-16 shrink-0 items-center border-b ${colapsado ? 'justify-center px-2' : 'px-4'}`}
             >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center">
-                    <img src={logoLibreria} alt="Librería del Saber" className="h-full w-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" />
+                    <img src={logoLibreria} alt="MATIDANA" className="h-full w-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" />
                 </div>
                 {!colapsado && (
                     <div className="ml-3 min-w-0">
@@ -84,10 +84,10 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                             className="truncate font-title text-[17px] font-semibold leading-tight tracking-[-0.01em]"
                             style={{ color: colores.brandTitle || acento }}
                         >
-                            Librería del Saber
+                            MATIDANA
                         </p>
-                        <p className="mt-0.5 text-[10.5px] font-medium uppercase tracking-[0.14em]" style={{ color: acento, opacity: 0.85 }}>
-                            Administración
+                        <p className="mt-0.5 truncate text-[10.5px] font-medium uppercase tracking-[0.14em]" style={{ color: acento, opacity: 0.85 }}>
+                            Libros y Cultura
                         </p>
                     </div>
                 )}

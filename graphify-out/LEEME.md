@@ -1,4 +1,4 @@
-# Cerebro Graphify de Librería del Saber
+# Cerebro Graphify de MATIDANA
 
 ## Abrir el mapa
 
@@ -45,7 +45,7 @@ node docs/architecture/tools/actualizar-mapa.mjs
 & $python docs/architecture/tools/generar-grafo-graphify.py --detectar
 & $python docs/architecture/tools/generar-grafo-graphify.py
 & $graphify export html
-& $graphify tree --output "graphify-out/MAPA-CEREBRO.html" --label "Librería del Saber · Mapa del proyecto"
+& $graphify tree --output "graphify-out/MAPA-CEREBRO.html" --label "MATIDANA · Mapa del proyecto"
 & $python docs/architecture/tools/preparar-visores-graphify.py
 & $python docs/architecture/tools/verificar-grafo-graphify.py
 ```

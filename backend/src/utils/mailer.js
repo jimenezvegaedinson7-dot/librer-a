@@ -28,7 +28,7 @@ const SMTP_SECURE = String(process.env.SMTP_SECURE || process.env.EMAIL_SECURE |
 const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
 const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
 const MAIL_FROM = process.env.MAIL_FROM || process.env.EMAIL_FROM || SMTP_USER;
-const MAIL_FROM_NAME = 'Librería';
+const MAIL_FROM_NAME = 'MATIDANA';
 
 // ¿Está configurado algún canal? Si no, el sistema funciona en "modo consola".
 const resendConfigurado = Boolean(RESEND_API_KEY);
@@ -260,9 +260,9 @@ function encabezadoCorreo() {
     return (
         `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px">` +
         `<tr><td style="vertical-align:middle;padding-right:12px">` +
-        `<img src="${LOGO_CORREO}" width="34" height="40" alt="Librería del Saber" style="display:block;border:0;width:34px;height:40px">` +
+        `<img src="${LOGO_CORREO}" width="34" height="40" alt="MATIDANA" style="display:block;border:0;width:34px;height:40px">` +
         `</td><td style="vertical-align:middle">` +
-        `<span style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:bold;color:#1f1f1f">Librería del Saber</span>` +
+        `<span style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:bold;color:#1f1f1f">MATIDANA</span>` +
         `</td></tr></table>`
     );
 }
@@ -271,7 +271,7 @@ function pieCorreo(texto) {
     return (
         `<p style="margin:32px 0 0;font-size:12px;line-height:1.5;color:#8a8a8a">` +
         (texto ? `${texto}<br>` : '') +
-        `Librería del Saber · Pallasca, Áncash, Perú</p>`
+        `MATIDANA · Pallasca, Áncash, Perú</p>`
     );
 }
 
@@ -299,15 +299,15 @@ function plantillaCodigo({ titulo, saludo, intro, codigo, cierre }) {
         `<p style="margin:0 0 18px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#111111">${htmlEscape(codigo)}</p>` +
         `<p style="margin:0 0 12px;font-size:14px;color:#3c3c3c">Este código vence en <strong>10 minutos</strong> y solo se puede usar una vez.</p>` +
         `<p style="margin:0;font-size:14px;color:#3c3c3c">${cierre}</p>` +
-        pieCorreo('Por tu seguridad, no compartas este código con nadie. Librería del Saber nunca te lo pedirá por teléfono, mensaje ni correo.')
+        pieCorreo('Por tu seguridad, no compartas este código con nadie. MATIDANA nunca te lo pedirá por teléfono, mensaje ni correo.')
     );
 }
 
 async function enviarCodigoVerificacion({ destinatario, codigo, nombre }) {
-    const asunto = `${codigo} es tu código de verificación · Librería del Saber`;
+    const asunto = `${codigo} es tu código de verificación · MATIDANA`;
     const texto =
         `Hola ${nombre},\n\n` +
-        `Para activar tu cuenta en Librería del Saber, ingresa este código:\n\n` +
+        `Para activar tu cuenta en MATIDANA, ingresa este código:\n\n` +
         `${codigo}\n\n` +
         `Este código vence en 10 minutos y solo se puede usar una vez.\n` +
         `Si no creaste esta cuenta, puedes ignorar este correo.\n\n` +
@@ -316,7 +316,7 @@ async function enviarCodigoVerificacion({ destinatario, codigo, nombre }) {
     const html = plantillaCodigo({
         titulo: 'Verifica tu cuenta',
         saludo: `Hola ${htmlEscape(nombre)},`,
-        intro: 'Para activar tu cuenta en Librería del Saber, ingresa este código de verificación:',
+        intro: 'Para activar tu cuenta en MATIDANA, ingresa este código de verificación:',
         codigo,
         cierre: 'Si no creaste esta cuenta, puedes ignorar este correo.'
     });
@@ -325,7 +325,7 @@ async function enviarCodigoVerificacion({ destinatario, codigo, nombre }) {
 }
 
 async function enviarCodigoReseteo({ destinatario, codigo, nombre }) {
-    const asunto = `${codigo} es tu código para restablecer la contraseña · Librería del Saber`;
+    const asunto = `${codigo} es tu código para restablecer la contraseña · MATIDANA`;
     const texto =
         `Hola ${nombre},\n\n` +
         `Recibimos una solicitud para restablecer la contraseña de tu cuenta.\n` +
@@ -421,7 +421,7 @@ async function enviarCorreoOrdenCreada({
 
     const cuerpoHtml =
         `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
-        `<p>Recibimos tu pedido <strong>#${htmlEscape(idVenta)}</strong> en Librería. ` +
+        `<p>Recibimos tu pedido <strong>#${htmlEscape(idVenta)}</strong> en MATIDANA. ` +
         `Tu pedido está <strong>pendiente de pago</strong>; completa el pago en la pasarela para confirmarlo.</p>` +
         `<table style="width:100%;border-collapse:collapse;margin:18px 0">` +
         filas +
@@ -619,12 +619,8 @@ function construirHtmlComprobante({
     numero,
     clienteDniRuc,
     clienteTipoDocumento,
-    igv,
     costoEnvio,
     total,
-    opGravada: opGravadaDato,
-    opExonerada: opExoneradaDato,
-    numeroSunat,
     items,
     empresaRazon,
     empresaRuc,
@@ -642,14 +638,8 @@ function construirHtmlComprobante({
     const serieNumero = `${serie}-${String(numero).padStart(8, '0')}`;
     const clienteTipoDoc = clienteTipoDocumento || (esFactura ? 'RUC' : 'DNI');
 
-    const igvVal = Number(igv || 0);
     const tot = Number(total || 0);
     const envio = Number(costoEnvio || 0);
-    // Desglose del backend (utils/impuestos): gravada + exonerada + IGV = total.
-    // Comprobantes antiguos sin desglose: se deriva del IGV registrado.
-    const tieneDesglose = Number(opGravadaDato || 0) + Number(opExoneradaDato || 0) > 0;
-    const opGravada = tieneDesglose ? Number(opGravadaDato || 0) : igvVal > 0 ? tot - igvVal : 0;
-    const opExonerada = tieneDesglose ? Number(opExoneradaDato || 0) : igvVal > 0 ? 0 : tot;
 
     const fecha = formatearFechaEmision(fechaEmision);
 
@@ -682,8 +672,7 @@ function construirHtmlComprobante({
             '</tr>';
     });
 
-    // El envío es un servicio: va como línea del detalle (su IGV ya está
-    // incluido en el desglose), no como una suma aparte.
+    // El envío ya forma parte del total guardado; se muestra como detalle.
     if (envio > 0) {
         filasHtml +=
             '<tr>' +
@@ -719,7 +708,6 @@ function construirHtmlComprobante({
         '<tr><td style="padding:10px;font-size:16px;font-weight:bold;text-transform:uppercase">' + tipoLabel + '</td></tr>' +
         '<tr><td style="border-top:1px solid #000;padding:6px;font-size:13px;font-weight:bold">RUC: ' + htmlEscape(empresaRuc || '\u2014') + '</td></tr>' +
         '<tr><td style="border-top:1px solid #000;padding:10px;font-size:18px;font-weight:bold;letter-spacing:1px">' + htmlEscape(serieNumero) + '</td></tr>' +
-        (numeroSunat ? '<tr><td style="border-top:1px solid #000;padding:6px;font-size:12px">Comprobante SUNAT: <strong>' + htmlEscape(numeroSunat) + '</strong></td></tr>' : '') +
         '</table>' +
         '</td>' +
         '</tr>' +
@@ -752,10 +740,6 @@ function construirHtmlComprobante({
         '</td>' +
         '<td style="vertical-align:top;width:45%">' +
         '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #000;border-collapse:collapse">' +
-        totalFila('Op. Gravada', opGravada, false) +
-        totalFila('Op. Exonerada', opExonerada, false) +
-        totalFila('Op. Inafecta', 0, false) +
-        totalFila('IGV', igvVal, false) +
         totalFila('Importe Total', tot, true) +
         '</table>' +
         '</td>' +

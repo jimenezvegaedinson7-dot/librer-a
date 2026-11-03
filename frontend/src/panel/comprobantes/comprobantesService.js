@@ -19,6 +19,9 @@ export async function listarComprobantes(params = {}) {
     // Contrato: { comprobantes, total, paginas }; también tolera
     // { success, data: { comprobantes, total, paginas } }.
     const origen = res?.data && !Array.isArray(res.data) && res.data.comprobantes ? res.data : res;
+    if (params.id_venta && Number(origen?.filtro_venta) !== Number(params.id_venta)) {
+        throw new Error('La API debe actualizarse para consultar los comprobantes de una venta. Puedes consultar el listado general.');
+    }
     const comprobantes = Array.isArray(origen?.comprobantes)
         ? origen.comprobantes
         : Array.isArray(origen)
@@ -83,21 +86,9 @@ export async function obtenerResumen() {
     };
 }
 
-// Serie y número del comprobante electrónico emitido en SUNAT (y de su
-// nota de crédito si el comprobante está anulado).
-export async function registrarSunat(idComprobante, { numeroSunat, notaCreditoSunat }) {
-    const body = {};
-    if (numeroSunat) body.numero_sunat = numeroSunat.trim();
-    if (notaCreditoSunat) body.nota_credito_sunat = notaCreditoSunat.trim();
-    const res = await client.put(`/comprobantes/${idComprobante}/sunat`, body);
-    return extraerComprobante(res);
-}
-
-// Anula un comprobante con datos errados (la venta sigue vigente y se
-// puede emitir uno nuevo). En SUNAT se anula con una nota de crédito.
-export async function anularComprobante(idComprobante, { motivo, notaCreditoSunat }) {
+// Anula un comprobante con datos errados sin cancelar la venta.
+export async function anularComprobante(idComprobante, { motivo }) {
     const body = { motivo: motivo.trim() };
-    if (notaCreditoSunat) body.nota_credito_sunat = notaCreditoSunat.trim();
     const res = await client.post(`/comprobantes/${idComprobante}/anular`, body);
     return extraerComprobante(res);
 }

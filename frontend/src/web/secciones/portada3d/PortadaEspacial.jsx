@@ -2,13 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaArrowDown, FaArrowRight } from 'react-icons/fa6';
 
+import { SITIO } from '../../config/site';
 import env from '../../../compartido/config/env';
 import { gsap, ScrollTrigger } from '../../animacion/scroll';
 import { libroComercial } from '../../tienda/libroComercial';
 import { PrecioOferta } from '../../componentes/PrecioOferta';
 import { urlPortada } from '../../lib/formato';
-import { SITIO, MOSTRAR_CARRUSEL_INICIO } from '../../config/site';
-import Hero from '../Hero';
+
+
 import { estadoCinematico } from './cinematografia';
 import { leerProtagonista, guardarProtagonista, leerRecientes, guardarRecientes } from './cachePortada';
 import { precargarImagenes } from '../../lib/cacheRecursos';
@@ -165,7 +166,6 @@ function UltimosLibros({ libros = [], className = '' }) {
 
 // Últimos libros dentro del mismo escenario: aparecen después de la frase,
 // uno a uno desde el centro, con el progreso del scroll (--libros).
-// El libro central es el protagonista que estalló: sus pedazos lo rearman.
 function UltimosEnEscena({ libros = [], protagonista = null }) {
     const ordenados = ultimosAgregados(libros);
     const recientes = protagonista
@@ -310,8 +310,8 @@ function PortadaEstatica({ libro, crudo, recientes, cargando, error, reintentar 
     const [imagenFallida, setImagenFallida] = useState(false);
     return (
         <>
-        <section className="portada3d portada3d--estatica" aria-label="Portada de Librería del Saber">
-            {!MOSTRAR_CARRUSEL_INICIO && <h1 className="sr-only">Libros y anuncios de Librería del Saber</h1>}
+        <section className="portada3d portada3d--estatica" aria-label="Portada de MATIDANA Libros y Cultura">
+            <h1 className="sr-only">Libros y anuncios de MATIDANA Libros y Cultura</h1>
             <div className="portada3d__estatica">
                 <div className="portada3d__estatica-texto">
                     <p className="portada3d__marca">{SITIO.nombre}</p>
@@ -330,7 +330,7 @@ function PortadaEstatica({ libro, crudo, recientes, cargando, error, reintentar 
             </div>
             <UltimosLibros libros={recientes} className="portada3d__ultimos--estatica" />
         </section>
-        {MOSTRAR_CARRUSEL_INICIO && <Hero />}
+        
         </>
     );
 }
@@ -464,7 +464,9 @@ export default function PortadaEspacial({ reducido, catalogo }) {
             // El bloque se enciende; libros y botón llegan con --libros y --formar.
             op(capas.final, Math.min(1, fin * 6), 0);
             capas.final.current?.style.setProperty('--formar', fin.toFixed(4));
-            capas.final.current?.style.setProperty('--libros', tramo(p, 0.87, 0.96).toFixed(4));
+            // Los cinco libros entran mientras el protagonista se desvanece:
+            // nunca queda el centro vacío entre ambos estados.
+            capas.final.current?.style.setProperty('--libros', tramo(p, 0.80, 0.94).toFixed(4));
             if (capas.velo.current) capas.velo.current.style.opacity = '0';
         };
 
@@ -515,21 +517,7 @@ export default function PortadaEspacial({ reducido, catalogo }) {
                     },
                 });
                 motor.current = escena;
-                // Portadas de los últimos libros, medidas sin las transformaciones
-                // de su entrada (offset*): ahí se reúnen las esquirlas.
-                const medirDestinos = () => {
-                    const cont = capas.final.current?.querySelector('.portada3d__escena-libros .portada3d__apilar');
-                    if (!cont) { escena.setDestinos(null); return; }
-                    const base = espacio.getBoundingClientRect(), c = cont.getBoundingClientRect();
-                    // Solo la portada central: los pedazos forman primero un libro y
-                    // los demás salen después desde detrás de él, dos a cada lado.
-                    const centro = cont.children[Math.floor(cont.children.length / 2)];
-                    escena.setDestinos([centro].filter(Boolean).map((item) => {
-                        const tapa = item.querySelector('.portada3d__apilar-tapa');
-                        return { left: c.left - base.left + item.offsetLeft + tapa.offsetLeft - cont.scrollLeft, top: c.top - base.top + item.offsetTop + tapa.offsetTop, width: tapa.offsetWidth, height: tapa.offsetHeight };
-                    }));
-                };
-                const medir = () => { if (!vivo || !espacio.isConnected) return; const r = espacio.getBoundingClientRect(); escena.redimensionar(r.width, r.height); medirDestinos(); };
+                const medir = () => { if (!vivo || !espacio.isConnected) return; const r = espacio.getBoundingClientRect(); escena.redimensionar(r.width, r.height); };
                 medir();
                 const ro = new ResizeObserver(medir); ro.observe(espacio); limpiar.push(() => ro.disconnect());
 
@@ -588,8 +576,8 @@ export default function PortadaEspacial({ reducido, catalogo }) {
     }, [modo3d, fallo, cargando, libro, crudo]);
 
     if (cargando && !libro) return (
-        <section ref={seccion} className="portada3d portada3d--cargando" aria-label="Portada de Librería del Saber" aria-busy="true">
-            <h1 className="sr-only">Libros y anuncios de Librería del Saber</h1>
+        <section ref={seccion} className="portada3d portada3d--cargando" aria-label="Portada de MATIDANA Libros y Cultura" aria-busy="true">
+            <h1 className="sr-only">Libros y anuncios de MATIDANA Libros y Cultura</h1>
             <CargaPortada />
         </section>
     );
@@ -597,15 +585,15 @@ export default function PortadaEspacial({ reducido, catalogo }) {
 
     return (
         <>
-        <section ref={seccion} className={`portada3d portada3d--3d ${lista ? 'portada3d--lista' : ''}`} aria-busy={!lista} aria-label={`Portada de Librería del Saber con el libro destacado: ${libro.titulo}`}>
-            <h1 className="sr-only">Libros y anuncios de Librería del Saber</h1>
+        <section ref={seccion} className={`portada3d portada3d--3d ${lista ? 'portada3d--lista' : ''}`} aria-busy={!lista} aria-label={`Portada de MATIDANA Libros y Cultura con el libro destacado: ${libro.titulo}`}>
+            <h1 className="sr-only">Libros y anuncios de MATIDANA Libros y Cultura</h1>
             <div ref={escenario} className="portada3d__escenario">
                 <canvas ref={lienzo} className="portada3d__lienzo" aria-hidden="true" />
                 <span className="portada3d__destello" aria-hidden="true" />
                 {!lista && <CargaPortada />}
                 <div className="portada3d__presentacion">
                 <div ref={capas.titulo} className="portada3d__titulo" aria-hidden="true">
-                    <span>Librería</span><span>del Saber</span>
+                    <span>MATIDANA</span><span>Libros y Cultura</span>
                 </div>
                 <div ref={capas.compra} className="portada3d__acceso">
                     <span className="portada3d__acceso-titulo">{libro.titulo}</span>
@@ -617,14 +605,14 @@ export default function PortadaEspacial({ reducido, catalogo }) {
                 <p ref={capas.lema} className="portada3d__lema portada3d__lema--flotante">Historias que abren otros mundos.</p>
                 <FichaLibro libro={libro} className="portada3d__ficha--flotante" fichaRef={capas.ficha} />
                 <div ref={capas.final} className="portada3d__final">
-                    {!MOSTRAR_CARRUSEL_INICIO && <UltimosEnEscena libros={recientes} protagonista={libro} />}
+                    <UltimosEnEscena libros={recientes} protagonista={libro} />
                     <Link to="/catalogo" className="portada3d__boton">Ver catálogo <FaArrowRight aria-hidden="true" /></Link>
                 </div>
                 <p ref={capas.pista} className="portada3d__pista" aria-hidden="true"><FaArrowDown /> Desliza para descubrir</p>
                 <span ref={capas.velo} className="portada3d__velo" aria-hidden="true" />
             </div>
         </section>
-        {MOSTRAR_CARRUSEL_INICIO && <div className="portada3d portada3d__descubrimientos"><Hero compacto /></div>}
+        
         </>
     );
 }

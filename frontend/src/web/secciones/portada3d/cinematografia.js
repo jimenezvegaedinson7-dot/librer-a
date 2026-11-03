@@ -20,7 +20,7 @@ export function estadoCinematico(progreso, entrada=1) {
         acercamiento:suavizarCine(tramoCine(p,.13,.38)),
         apertura:suavizarCine(tramoCine(p,.39,.64)),
         energia:suavizarCine(tramoCine(p,.59,.80)),
-        disolucion:suavizarCine(tramoCine(p,.69,.83)),
+        disolucion:suavizarCine(tramoCine(p,.76,.90)),
         // El cierre llega mientras el libro se disuelve y permanece hasta que
         // la sección sale de pantalla: no queda ningún cuadro vacío.
         presentacionFinal:suavizarCine(tramoCine(p,.72,.86)),

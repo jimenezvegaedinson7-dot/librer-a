@@ -9,16 +9,17 @@ import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input, Select } from '../ui/Form';
-import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
+import { AltaFlotante } from '../ui/AltaFlotante';
 import { Pagination } from '../ui/Pagination';
 import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
 import { DataTable } from '../ui/DataTable';
+import { FechaTabla } from '../ui/FechaTabla';
 import { Badge } from '../ui/Badge';
 import { BtnAccion } from '../ui/Acciones';
 
 import { FaEye, FaPenToSquare } from 'react-icons/fa6';
-import { formatearFecha } from '../../compartido/lib/utils/format';
 
 import { useToast } from '../../app/providers/ToastProvider';
 import { useRol } from '../auth/useRol';
@@ -41,11 +42,11 @@ function EstadoStock({ stock, stockMinimo }) {
 
 const columnasInventario = [
     { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_inventario}</span> },
-    { titulo: 'Libro', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo}</span> },
+    { titulo: 'Libro', className: 'tabla-col-principal', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo}</span> },
     { titulo: 'Stock', alineacion: 'centro', render: (fila) => <EstadoStock stock={fila.stock} stockMinimo={fila.stock_minimo} /> },
     { titulo: 'Stock mínimo', alineacion: 'centro', render: (fila) => <span className="font-medium text-slate-700">{Number(fila.stock_minimo)}</span> },
     { titulo: 'Ubicación', render: (fila) => <span className="text-slate-700">{fila.ubicacion || 'No registrada'}</span> },
-    { titulo: 'Última actualización', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.ultima_actualizacion) || 'Sin registro'}</span> },
+    { titulo: 'Última actualización', render: fila => <FechaTabla valor={fila.ultima_actualizacion} vacio="Sin registro" /> },
 ];
 
 function accionesInventario(fila, { onVer, onEditar, puedeEditar }) {
@@ -59,9 +60,9 @@ function accionesInventario(fila, { onVer, onEditar, puedeEditar }) {
     );
 }
 
-function Contador({ cargando, total, disponibles, stockBajo, sinStock }) {
+function Contador({ cargando, error, total, disponibles, stockBajo, sinStock }) {
     return (
-        <Indicadores cargando={cargando} etiqueta="Resumen de inventario">
+        <Indicadores cargando={cargando} error={error} etiqueta="Resumen de inventario">
             <Indicador titulo="Inventario" valor={total} icono={<FaWarehouse />} tono="primary" detalle="Libros con stock registrado" />
             <Indicador titulo="Disponibles" valor={disponibles} icono={<FaCircleCheck />} tono="success" detalle="Con stock suficiente" de={total} />
             <Indicador titulo="Stock bajo" valor={stockBajo} icono={<FaTriangleExclamation />} tono="warning" detalle="Conviene reponer" de={total} />
@@ -138,15 +139,8 @@ const [inventarioVer, setInventarioVer] = useState(null);
     }, [inventario, busqueda, filtroStock]);
 
     const totalPaginas = Math.ceil(inventarioFiltrado.length / POR_PAGINA);
-    const inventarioPaginado = inventarioFiltrado.slice((paginaActual - 1) * POR_PAGINA, paginaActual * POR_PAGINA);
-
-    useEffect(() => {
-        setPaginaActual(1);
-    }, [busqueda, filtroStock]);
-
-    useEffect(() => {
-        if (totalPaginas > 0 && paginaActual > totalPaginas) setPaginaActual(totalPaginas);
-    }, [paginaActual, totalPaginas]);
+    const paginaActualEfectiva = totalPaginas > 0 ? Math.min(paginaActual, totalPaginas) : 1;
+    const inventarioPaginado = inventarioFiltrado.slice((paginaActualEfectiva - 1) * POR_PAGINA, paginaActualEfectiva * POR_PAGINA);
 
     const verInventario = async (registro) => {
         try {
@@ -161,7 +155,11 @@ const [inventarioVer, setInventarioVer] = useState(null);
     useEffect(() => {
         const ver = parametros.get('ver');
         if (!ver) return;
-        setParametros({}, { replace: true });
+        setParametros(actuales => {
+            const siguientes = new URLSearchParams(actuales);
+            siguientes.delete('ver');
+            return siguientes;
+        }, { replace: true });
         verInventario({ id_libro: ver });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [parametros]);
@@ -209,25 +207,31 @@ const [inventarioVer, setInventarioVer] = useState(null);
             />
             <Contador
                 cargando={cargando}
+                error={error}
                 total={inventario.length}
                 disponibles={totalDisponibles}
                 stockBajo={totalStockBajo}
                 sinStock={totalSinStock}
             />
 
-            {puedeEditarStock && <InventarioForm onInventarioCreado={inventarioCreado} />}
-
             <Card>
                 <CardHeader
                     titulo="Control de inventario"
                     subtitulo="Busca libros y filtra según el nivel de stock"
-                    acciones={
-                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                            <div className="relative">
+                    acciones={<div className="tabla-filtros-acciones">
+                        {hayFiltros && <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>}
+                        <Button variante="secondary" onClick={cargarInventario} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
+                        {puedeEditarStock && <AltaFlotante etiqueta="Registrar stock" titulo="Registrar stock" subtitulo="Selecciona un libro e indica sus existencias y ubicación." grande
+                            formulario={InventarioForm} eventoRegistro="onInventarioCreado" onRegistrado={inventarioCreado} />}
+                    </div>}
+                    filtros={
+                        <div className="filtros-grid filtros-grid--dos">
+                            <div className="filtro-busqueda">
                                 <Input
+                                    label="Libro o ubicación"
                                     type="text"
                                     value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
+                                    onChange={(e) => { setBusqueda(e.target.value); setPaginaActual(1); }}
                                     placeholder="Buscar libro o ubicación..."
                                     icono={<FaMagnifyingGlass />}
                                     className="pr-8 sm:w-72"
@@ -235,7 +239,7 @@ const [inventarioVer, setInventarioVer] = useState(null);
                                 {busqueda && (
                                     <button
                                         type="button"
-                                        onClick={() => setBusqueda('')}
+                                        onClick={() => { setBusqueda(''); setPaginaActual(1); }}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
                                         title="Limpiar búsqueda"
                                     >
@@ -244,20 +248,13 @@ const [inventarioVer, setInventarioVer] = useState(null);
                                 )}
                             </div>
 
-                            <Select value={filtroStock} onChange={(e) => setFiltroStock(e.target.value)} className="sm:w-44">
+                            <Select label="Nivel de stock" value={filtroStock} onChange={(e) => { setFiltroStock(e.target.value); setPaginaActual(1); }}>
                                 <option value="todos">Todo el stock</option>
                                 <option value="disponible">Disponible</option>
                                 <option value="bajo">Stock bajo</option>
                                 <option value="sin-stock">Sin stock</option>
                             </Select>
 
-                            {hayFiltros && (
-                                <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>
-                            )}
-
-                            <Button variante="secondary" onClick={cargarInventario} disabled={cargando}>
-                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
-                            </Button>
                         </div>
                     }
                 />
@@ -267,12 +264,12 @@ const [inventarioVer, setInventarioVer] = useState(null);
                 <TableSkeleton columnas={6} filas={8} titulo />
             )}
 
-            {!cargando && error && <Alert tipo="error">{error}</Alert>}
+            {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarInventario} />}
 
             {!cargando && !error && inventario.length === 0 && (
                 <EmptyState
                     titulo="No hay inventario registrado"
-                    descripcion="Registra el inventario de un libro utilizando el formulario."
+                    descripcion="Pulsa Registrar stock para indicar las existencias y la ubicación de un libro."
                     icono={<FaBoxesStacked />}
                 />
             )}
@@ -299,13 +296,14 @@ const [inventarioVer, setInventarioVer] = useState(null);
                     />
                     <CardBody className="p-0">
                         <DataTable
+                            etiqueta="Inventario registrado"
                             columnas={columnasInventario}
                             filas={inventarioPaginado}
                             keyExtractor={(fila) => fila.id_inventario}
                             acciones={(fila) => accionesInventario(fila, { onVer: verInventario, onEditar: editarInventario, puedeEditar: puedeEditarStock })}
                         />
                     </CardBody>
-                    <Pagination pagina={paginaActual} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
+                    <Pagination pagina={paginaActualEfectiva} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
                 </Card>
             )}
 

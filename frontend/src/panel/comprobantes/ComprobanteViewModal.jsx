@@ -13,21 +13,7 @@ import { obtenerComprobante } from './comprobantesService';
 import { obtenerEmpresa } from '../configuracion/empresaService';
 import { emisorHistorico } from './emisorHistorico';
 import { correoVisible } from '../lib/utils/cuentas';
-
-const CSS_IMPRESION = `
-@media print {
-    body * { visibility: hidden !important; }
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    .print-area, .print-area * { visibility: visible !important; }
-    .print-area {
-        position: fixed !important; left: 0 !important; top: 0 !important;
-        margin: 0 auto !important;
-        overflow: visible !important;
-        background: white !important;
-    }
-    .no-print { display: none !important; }
-}
-`;
+import { useImpresion } from '../lib/hooks/useImpresion';
 
 function formatMoney(value) {
     return Number(value || 0).toLocaleString('es-PE', {
@@ -71,10 +57,14 @@ export default function ComprobanteViewModal({
     const [error, setError] = useState('');
 
     const impresoRef = useRef(false);
+    const documentoRef = useRef(null);
+    const { imprimir, imprimiendo, errorImpresion } = useImpresion(documentoRef);
+    const idComprobante = comprobante?.id_comprobante;
+    const listo = abierto && !cargando && !error && detalle && String(detalle.id_comprobante) === String(idComprobante);
 
     useEffect(() => {
         if (!abierto) return undefined;
-        if (!comprobante?.id_comprobante) return undefined;
+        if (!idComprobante) return undefined;
 
         let activo = true;
         const cargar = async () => {
@@ -82,16 +72,17 @@ export default function ComprobanteViewModal({
                 setCargando(true);
                 setError('');
                 const [datos, datosEmpresa] = await Promise.all([
-                    obtenerComprobante(comprobante.id_comprobante),
+                    obtenerComprobante(idComprobante),
                     obtenerEmpresa().catch(() => null),
                 ]);
                 if (!activo) return;
-                setDetalle(datos || comprobante);
+                if (!datos || String(datos.id_comprobante) !== String(idComprobante)) throw new Error('Comprobante no disponible');
+                setDetalle(datos);
                 setEmpresa(datosEmpresa || {});
             } catch (err) {
                 if (activo) {
                     setError(err.response?.data?.mensaje || 'Error al obtener el comprobante');
-                    setDetalle(comprobante);
+                    setDetalle(null);
                 }
             } finally {
                 if (activo) setCargando(false);
@@ -100,19 +91,22 @@ export default function ComprobanteViewModal({
 
         cargar();
         return () => { activo = false; };
-    }, [abierto, comprobante]);
+    }, [abierto, idComprobante]);
 
     useEffect(() => {
-        if (!abierto) impresoRef.current = false;
-    }, [abierto, comprobante?.id_comprobante]);
+        impresoRef.current = false;
+    }, [abierto, idComprobante]);
 
     useEffect(() => {
-        if (!autoImprimir || !abierto || cargando || !detalle?.id_comprobante) return undefined;
+        if (!autoImprimir || !listo) return undefined;
         if (impresoRef.current) return undefined;
-        impresoRef.current = true;
-        const t = setTimeout(() => window.print(), 200);
+        const t = setTimeout(() => {
+            if (impresoRef.current) return;
+            impresoRef.current = true;
+            imprimir();
+        }, 200);
         return () => clearTimeout(t);
-    }, [autoImprimir, abierto, cargando, detalle]);
+    }, [autoImprimir, listo, imprimir]);
 
     if (!abierto) return null;
 
@@ -133,17 +127,9 @@ export default function ComprobanteViewModal({
 
     const detalles = Array.isArray(detalle?.detalle) ? detalle.detalle : [];
 
-    const igvVal = Number(detalle?.igv || 0);
     const costoEnvio = Number(detalle?.costo_envio || 0);
     const total = Number(detalle?.total || 0);
 
-    // Desglose calculado por el backend (utils/impuestos): libros exonerados
-    // mientras rija la Ley 31053 y envío gravado. Siempre cumple
-    // gravada + exonerada + IGV = total. Comprobantes antiguos sin desglose:
-    // se deriva del IGV registrado.
-    const tieneDesglose = Number(detalle?.op_gravada || 0) + Number(detalle?.op_exonerada || 0) > 0;
-    const opGravada = tieneDesglose ? Number(detalle.op_gravada || 0) : igvVal > 0 ? total - igvVal : 0;
-    const opExonerada = tieneDesglose ? Number(detalle.op_exonerada || 0) : igvVal > 0 ? 0 : total;
     const anulado = detalle?.estado === 'anulado';
 
     const montoLetras = montoEnLetras(total);
@@ -157,25 +143,25 @@ export default function ComprobanteViewModal({
             grande
             footer={
                 <div className="no-print flex gap-2">
-                    <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
-                    <Button onClick={() => window.print()} icono={<FaPrint />}>Imprimir</Button>
+                    <Button variante="secondary" onClick={onCerrar} disabled={imprimiendo}>Cerrar</Button>
+                    <Button onClick={() => { impresoRef.current = true; imprimir(); }} icono={<FaPrint />} disabled={!listo} cargando={imprimiendo}>Imprimir</Button>
                 </div>
             }
         >
-            <style>{CSS_IMPRESION}</style>
-
-            {cargando && (
+            {(cargando || (!error && !listo && idComprobante)) && (
                 <div className="py-10">
                     <CargandoPantalla texto="Cargando comprobante..." />
                 </div>
             )}
 
             {!cargando && error && <Alert tipo="error">{error}</Alert>}
+            {errorImpresion && <Alert tipo="error">{errorImpresion}</Alert>}
 
-            {!cargando && !error && detalle && (
+            {listo && (
                 <div
                     id="boleta-documento"
-                    className="print-area relative mx-auto w-full max-w-[1100px] border border-black bg-white p-3 text-[12px] font-sans text-black"
+                    ref={documentoRef}
+                    className="print-area comprobante-documento relative mx-auto w-full max-w-[1100px] border border-black bg-white p-3 text-[12px] font-sans text-black"
                 >
                     {anulado && (
                         <div
@@ -190,7 +176,7 @@ export default function ComprobanteViewModal({
                     {/* ========================= */}
                     {/* CABECERA                   */}
                     {/* ========================= */}
-                    <div className="grid grid-cols-[1fr_300px] gap-6 border-b border-black pb-5">
+                    <div className="comprobante-cabecera border-b border-black pb-5">
                         <div>
                             <h1 className="text-[20px] font-bold uppercase leading-tight">
                                 {empresaData.razon_social || '—'}
@@ -211,16 +197,6 @@ export default function ComprobanteViewModal({
                             <div className="mt-1 text-[16px] font-bold tracking-wide">
                                 {numeroSerie}
                             </div>
-                            {detalle?.numero_sunat && (
-                                <div className="mt-1 text-[11px]">
-                                    Comprobante SUNAT: <strong>{detalle.numero_sunat}</strong>
-                                </div>
-                            )}
-                            {detalle?.nota_credito_sunat && (
-                                <div className="text-[11px]">
-                                    Nota de crédito: <strong>{detalle.nota_credito_sunat}</strong>
-                                </div>
-                            )}
                         </div>
                     </div>
 
@@ -234,7 +210,7 @@ export default function ComprobanteViewModal({
                     {/* DATOS DEL COMPRADOR        */}
                     {/* ========================= */}
                     <div className="py-5">
-                        <div className="grid grid-cols-[190px_20px_1fr] gap-y-2">
+                        <div className="comprobante-cliente">
                             <span className="font-medium">Fecha de Emisión</span>
                             <span>:</span>
                             <span>{fechaEmision(detalle?.fecha_emision)}</span>
@@ -264,15 +240,15 @@ export default function ComprobanteViewModal({
                     {/* ========================= */}
                     {/* DETALLE                    */}
                     {/* ========================= */}
-                    <table className="w-full border-collapse border border-black">
+                    <div className="comprobante-tabla"><table className="w-full border-collapse border border-black">
                         <thead>
                             <tr>
-                                <th className="w-[90px] border-r border-black px-2 py-2 font-bold">Cantidad</th>
-                                <th className="w-[130px] border-r border-black px-2 py-2 font-bold">Unidad Medida</th>
+                                <th className="w-[10%] border-r border-black px-2 py-2 font-bold">Cantidad</th>
+                                <th className="w-[14%] border-r border-black px-2 py-2 font-bold">Unidad Medida</th>
                                 <th className="border-r border-black px-3 py-2 font-bold">Descripción</th>
-                                <th className="w-[130px] border-r border-black px-2 py-2 font-bold">Valor Unitario</th>
-                                <th className="w-[110px] border-r border-black px-2 py-2 font-bold">Descuento</th>
-                                <th className="w-[150px] px-2 py-2 font-bold">Importe de Venta</th>
+                                <th className="w-[15%] border-r border-black px-2 py-2 font-bold">Valor Unitario</th>
+                                <th className="w-[13%] border-r border-black px-2 py-2 font-bold">Descuento</th>
+                                <th className="w-[17%] px-2 py-2 font-bold">Importe de Venta</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -324,14 +300,14 @@ export default function ComprobanteViewModal({
                                 </tr>
                             )}
                         </tbody>
-                    </table>
+                    </table></div>
 
                     {/* ========================= */}
                     {/* PARTE INFERIOR             */}
                     {/* ========================= */}
-                    <div className="grid grid-cols-[1fr_360px] gap-10 pt-5">
+                    <div className="comprobante-totales">
                         {/* MONTO EN LETRAS */}
-                        <div className="flex items-end pb-10">
+                        <div className="flex items-end">
                             <p className="text-[16px] font-bold uppercase leading-snug">
                                 SON: {montoLetras}
                             </p>
@@ -339,10 +315,6 @@ export default function ComprobanteViewModal({
 
                         {/* TOTALES */}
                         <div className="border border-black p-2">
-                            <TotalFila label="Op. Gravada" value={opGravada} />
-                            <TotalFila label="Op. Exonerada" value={opExonerada} />
-                            <TotalFila label="Op. Inafecta" value={0} />
-                            <TotalFila label="IGV" value={igvVal} />
                             <TotalFila label="Importe Total" value={total} strong />
                         </div>
                     </div>

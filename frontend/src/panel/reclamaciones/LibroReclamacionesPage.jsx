@@ -140,7 +140,7 @@ function FormularioReclamaciones({ tienda }) {
         <div className="reclamaciones-publica reclamaciones-compacta min-h-screen bg-[#f6f4f0] px-4 py-6 sm:py-8">
             <div className="mx-auto mb-3 w-full max-w-2xl">
                 <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#0d2940] hover:underline">
-                    <FaArrowLeft aria-hidden="true" /> Volver a Librería del Saber
+                    <FaArrowLeft aria-hidden="true" /> Volver a MATIDANA
                 </Link>
             </div>
             <main className="mx-auto w-full max-w-2xl rounded-2xl border border-[#cfcfcf] bg-white p-4 shadow-sm sm:p-6">
@@ -153,7 +153,7 @@ function FormularioReclamaciones({ tienda }) {
                         </div>
                     </div>
                     <div className="text-xs text-slate-700 sm:text-right">
-                        <p className="font-semibold">{empresa?.razon_social || 'Librería del Saber'}</p>
+                        <p className="font-semibold">{empresa?.razon_social || 'MATIDANA'}</p>
                         {empresa?.nombre_comercial && <p>{empresa.nombre_comercial}</p>}
                         {empresa?.ruc && <p>RUC {empresa.ruc}</p>}
                         {empresa?.direccion && <p className="text-xs text-slate-500">{empresa.direccion}</p>}

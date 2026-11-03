@@ -1,8 +1,10 @@
-import { FaImage, FaTag, FaXmark } from 'react-icons/fa6';
+import { FaImage, FaPlus, FaTag, FaXmark } from 'react-icons/fa6';
 
 import { Input, Select, Textarea } from '../ui/Form';
 import { Spinner } from '../ui/Spinner';
+import { Button } from '../ui/Button';
 import PortadaCatalogo from '../componentes/PortadaCatalogo';
+import { avisoDescuentoLibro } from './promocion';
 
 export function SelectorPortada({ imagen, preview, portadaActual, libro, onCambiar, onQuitar, inputRef, cargando = false }) {
     return (
@@ -78,7 +80,7 @@ const hoyEnLima = () =>
         day: '2-digit',
     }).format(new Date());
 
-export function CamposDescuento({ formulario, manejarCambio, errores = {} }) {
+export function CamposDescuento({ formulario, manejarCambio, errores = {}, flotante = false }) {
     const precio = Number(formulario.precio);
     const precioValido = Number.isFinite(precio) && precio > 0;
 
@@ -90,19 +92,7 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {} }) {
     const usaPorcentaje = textoPorcentaje !== '';
     const usaOferta = textoOferta !== '';
 
-    // Avisos en vivo, antes de guardar.
-    let aviso = '';
-    if (usaPorcentaje && usaOferta) {
-        aviso = 'Usa porcentaje o precio de oferta, no los dos. Borra uno de los dos campos.';
-    } else if (usaPorcentaje && (!Number.isInteger(porcentaje) || porcentaje < 1 || porcentaje > 99)) {
-        aviso = 'El porcentaje debe ser un número entero entre 1 y 99.';
-    } else if (usaOferta && (!Number.isFinite(oferta) || oferta <= 0)) {
-        aviso = 'El precio de oferta debe ser mayor que 0.';
-    } else if (usaOferta && precioValido && oferta >= precio) {
-        aviso = `El precio de oferta debe ser menor que el precio normal (S/ ${precio.toFixed(2)}).`;
-    } else if ((usaPorcentaje || usaOferta) && !precioValido) {
-        aviso = 'Primero indica el precio normal del libro.';
-    }
+    const aviso = avisoDescuentoLibro(formulario);
 
     const hayDescuento = (usaPorcentaje || usaOferta) && !aviso;
 
@@ -121,13 +111,13 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {} }) {
     const vencida = hayDescuento && fecha !== '' && fecha < hoy;
 
     return (
-        <div className="space-y-3 rounded-xl border border-orange-200 bg-orange-50/50 p-4">
-            <div className="flex items-center gap-2">
+        <div className={flotante ? 'space-y-4' : 'space-y-3 rounded-xl border border-orange-200 bg-orange-50/50 p-4'}>
+            {!flotante && <div className="flex items-center gap-2">
                 <FaTag className="text-oferta" />
                 <span className="text-sm font-semibold text-slate-800">Descuento (opcional)</span>
-            </div>
+            </div>}
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className={flotante ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-1 gap-4 md:grid-cols-3'}>
                 <Input
                     label="Porcentaje"
                     name="descuento_porcentaje"
@@ -140,7 +130,7 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {} }) {
                     step="1"
                     disabled={usaOferta && !usaPorcentaje}
                     error={errores.descuento_porcentaje}
-                    ancho={4}
+                    ancho={flotante ? undefined : 4}
                     prefijo="-%"
                 />
 
@@ -156,7 +146,7 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {} }) {
                     step="0.01"
                     disabled={usaPorcentaje && !usaOferta}
                     error={errores.precio_oferta}
-                    ancho={4}
+                    ancho={flotante ? undefined : 4}
                     prefijo="S/"
                 />
 
@@ -169,7 +159,7 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {} }) {
                     min={hoy}
                     disabled={!usaPorcentaje && !usaOferta}
                     error={errores.descuento_hasta}
-                    ancho={4}
+                    ancho={flotante ? undefined : 4}
                 />
             </div>
 
@@ -211,12 +201,16 @@ export default function CamposLibro({
     manejarCambio,
     editable = true,
     errores = {},
+    onAgregarAutor,
+    guardando = false,
+    enfocarTitulo = false,
 }) {
     return (
         <div className="form-grid">
             <Input
                 label="Título"
                 name="titulo"
+                autoFocus={enfocarTitulo}
                 value={formulario.titulo}
                 onChange={manejarCambio}
                 placeholder="Ej. Cien años de soledad"
@@ -235,22 +229,29 @@ export default function CamposLibro({
                 className="tabular-nums"
             />
 
-            <Select
-                label="Autor"
-                name="id_autor"
-                value={formulario.id_autor}
-                onChange={manejarCambio}
-                error={errores.id_autor}
-                required
-                ancho={editable ? 5 : 6}
-            >
-                <option value="">Seleccione un autor</option>
-                {autores.map((autor) => (
-                    <option key={autor.id_autor} value={autor.id_autor}>
-                        {autor.nombre} {autor.apellido}
-                    </option>
-                ))}
-            </Select>
+            <div className={editable ? 'md:col-span-5' : 'md:col-span-6'}>
+                <Select
+                    label="Autor"
+                    name="id_autor"
+                    value={formulario.id_autor}
+                    onChange={manejarCambio}
+                    error={errores.id_autor}
+                    required
+                    ancho={12}
+                >
+                    <option value="">Seleccione un autor</option>
+                    {autores.map((autor) => (
+                        <option key={autor.id_autor} value={autor.id_autor}>
+                            {autor.nombre} {autor.apellido}
+                        </option>
+                    ))}
+                </Select>
+                {onAgregarAutor && (
+                    <Button type="button" variante="ghost" tamano="sm" onClick={onAgregarAutor} disabled={guardando}>
+                        <FaPlus aria-hidden="true" /> Agregar autor
+                    </Button>
+                )}
+            </div>
 
             <Select
                 label="Categoría"

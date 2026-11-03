@@ -15,7 +15,7 @@ struct AppLogo: View {
         let scale = AppLogo.screenScale(regularWidth: sizeClass == .regular)
         logo
             .frame(width: width * scale, height: height * scale)
-            .accessibilityLabel("Librería del Saber")
+            .accessibilityLabel("MATIDANA")
     }
 
     @ViewBuilder

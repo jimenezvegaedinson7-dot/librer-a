@@ -55,14 +55,6 @@ export default function PublicHeader() {
     useEffect(() => {
         const alScroll = () => {
             setSombra(window.scrollY > 90);
-            // Un salto directo a una sección inferior también debe dejar el
-            // menú disponible, aunque la escena no llegue a dibujar un cuadro.
-            const escena=document.querySelector('.portada3d--3d');
-            const sitio=escena?.closest('.sitio');
-            if(sitio){
-                const posterior=escena.getBoundingClientRect().bottom<=0?'true':'false';
-                if(sitio.dataset.navPosterior!==posterior)sitio.dataset.navPosterior=posterior;
-            }
         };
         alScroll();
         window.addEventListener('scroll', alScroll, { passive: true });
@@ -111,8 +103,8 @@ export default function PublicHeader() {
                     <Marca />
                     <Buscador id="buscar-escritorio" />
                     <div className="cabecera__acciones">
-                        <Link to="/nosotros#tienda" className="cabecera__enlace"><MapPin aria-hidden="true" /> <span className="cabecera__enlace-texto">Nuestra tienda</span></Link>
-                        <Link to="/cuenta" className="compra-cuenta" aria-label="Mi cuenta"><UserRound aria-hidden="true"/><span className="compra-cuenta__texto">{tienda.usuario && <small>Hola, {tienda.usuario.nombre}</small>}Mi cuenta</span></Link>
+                        <Link to="/nosotros#tienda" className="cabecera__enlace"><MapPin aria-hidden="true" /> <span className="cabecera__enlace-texto"><small>Visítanos en</small>Nuestra tienda</span></Link>
+                        <Link to="/cuenta" className="compra-cuenta" aria-label="Mi cuenta"><UserRound aria-hidden="true"/><span className="compra-cuenta__texto"><small>{tienda.usuario ? `Hola, ${tienda.usuario.nombre}` : 'Hola, identifícate'}</small>Mi cuenta</span></Link>
                         {verCarrito && <Link to="/carrito" className="compra-carrito" data-cantidad={unidades || undefined} aria-label={textoCarrito}><ShoppingCart aria-hidden="true"/><span>{textoCarrito}</span></Link>}
                     </div>
                 </div>

@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { argumentos, bloque, cuerposMetodosDart, dependenciasPubspec, endpointsFetchApi, endpointsPeticionCliente, metodosUsadosDart, miembrosObjeto, propagarEndpoints, resolverMiddlewares, tablasDeclaradas } from './extraer-relaciones.mjs';
+import { argumentos, bloque, cuerposMetodosDart, dependenciasPubspec, endpointsFetchApi, endpointsPeticionCliente, metodosUsadosDart, miembrosObjeto, propagarEndpoints, resolverMiddlewares, rutasReact, tablasDeclaradas } from './extraer-relaciones.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const leer = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
@@ -289,10 +289,10 @@ for (const m of router.matchAll(/import\s+(\w+)\s+from\s+'([^']+)'/g)) if (m[2].
 // Exportaciones con nombre cargadas en diferido: import('...').then((m) => ({ default: m.X }))
 for (const m of router.matchAll(/const\s+(\w+)\s*=\s*lazyConReintento\(\(\)\s*=>\s*import\('([^']+)'\)\.then/g)) lazys[m[1]] ||= rel(path.resolve(routerDir, m[2])) + '.jsx';
 const rutasFront = [];
-for (const m of router.matchAll(/path:\s*'([^']+)'\s*,\s*element:\s*([^\n]+)/g)) {
+for (const ruta of rutasReact(router)) {
     // El primer componente que no sea un envoltorio <Suspense>.
-    const comp = /<(?!Suspense\b|TiendaProvider\b|RutaProtegida\b|RutaPorRol\b)(\w+)/.exec(m[2]);
-    rutasFront.push({ path: m[1], element: m[2].trim().replace(/,\s*$/, ''), component: comp ? comp[1] : null, file: comp ? lazys[comp[1]] || null : null });
+    const comp = /<(?!Suspense\b|TiendaProvider\b|RutaProtegida\b|RutaPorRol\b)(\w+)/.exec(ruta.element);
+    rutasFront.push({ path: ruta.path, element: ruta.element, component: comp ? comp[1] : null, file: comp ? lazys[comp[1]] || null : null });
 }
 
 // Endpoints consumidos por cada archivo del frontend (directa o transitivamente vía servicios)

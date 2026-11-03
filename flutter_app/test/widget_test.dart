@@ -10,7 +10,7 @@ void main() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
 
     await tester.pumpWidget(const LibreriaApp());
-    expect(find.text('Librería'), findsOneWidget);
+    expect(find.text('MATIDANA'), findsOneWidget);
 
     // Dejar que el timer del splash se complete para evitar timers pendientes.
     await tester.pump(const Duration(milliseconds: 600));

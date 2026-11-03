@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web
 
-> Generado desde el código real el 2026-10-22 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-03 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -9,17 +9,30 @@
 `<ToastProvider>` → `<AuthProvider>` → `<RouterProvider>` (react-router ^7.18.3).
 
 - **Cliente HTTP**: `panel/lib/api/client.js` (axios). `baseURL = VITE_API_URL`; los valores se configuran por entorno. El interceptor añade `Bearer <token>`, devuelve `response.data` y ante **401 de sesión** limpia la sesión y redirige a `/admin/login`. Los 401 de credencial incorrecta se distinguen con `erroresSesion.js`.
-- **Sesión**: `app/providers/AuthContext.jsx` + `panel/lib/storage/index.js` (`localStorage`: `token`, `usuario`, `ultimoHistorialVisto`). Solo entra `administrador`; perfil actualiza los datos de sesión desde la API.
+- **Sesión**: `app/providers/AuthContext.jsx` + `panel/lib/storage/index.js` (`localStorage`: `token`, `usuario`). Solo entra `administrador`; perfil actualiza los datos de sesión desde la API.
 - **Cliente web**: `web/tienda/TiendaContext.jsx` y `clienteApi.js` mantienen sesión exclusiva de `cliente`, carrito por usuario/invitado e intento de compra persistente; nunca usan la sesión administrativa. `PublicLayout` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
 - **Guards**: `app/router/RutaProtegida.jsx` redirige a `/admin/login` sin sesión administrativa; `RutaPorRol.jsx` exige los roles configurados. Un **403** muestra rechazo de permisos.
 - **Layout**: `panel/layout/AdminLayout.jsx` (Sidebar, Topbar, Breadcrumbs, transición con Framer Motion, tema claro fijo).
+- **Altas de catálogo**: Libros, Autores y Categorías muestran botones normales en la cabecera de sus filtros. `AltaFlotante` monta el formulario únicamente al pulsarlos y lo presenta en un `Modal` mediante portal dentro del layout administrativo. Cancelar desmonta el borrador; el éxito cierra el diálogo y refresca el listado; un error conserva los campos. `Modal` contiene el foco del diálogo superior y mantiene el bloqueo de scroll al abrir descuentos sobre el alta de libros.
+- **Descuento en el alta de libros**: el botón `Agregar descuento` abre el editor opcional. Si se intenta guardar sin una oferta ni una elección previa, el formulario validado pregunta si se desea agregar un descuento o registrar con el precio normal. Solo `Registrar sin descuento` confirma ese envío; configurar una oferta vuelve al formulario para guardarla junto al libro. Edición conserva el mismo editor de descuentos y los endpoints existentes.
+- **Aviso de portada en altas**: tras validar los datos, `LibroForm` avisa si no se seleccionó un archivo de portada. Permite abrir el selector o continuar explícitamente sin subir imagen; no envía el registro antes de esa decisión. Quitar la imagen vuelve a habilitar el aviso. Las referencias de portada por ISBN y el contrato de subida existente permanecen en su capa correspondiente.
+- **Tablas del panel**: `panel/estilos/tablas-formales.css` se carga después de los estilos existentes y se aplica a `main[data-tablas-formales="true"]` o a un bloque explícito `.tabla-panel`. El Dashboard declara false; su cuadro Últimos libros agregados usa `.tabla-panel`, `CardHeader` y `DataTable` para compartir encabezados, colores y filas con los listados. `CardHeader` separa `filtros` de `acciones` en una rejilla etiquetada. `DataTable` admite clases por columna, nombre accesible, desplazamiento con teclado y aviso de desbordamiento. `FechaTabla` presenta fecha y hora en líneas separadas. Pedidos combina canal y tipo de entrega para el ámbito de sus indicadores; el estado solo filtra la lista.
+- **Revisión de secciones**: la pantalla y el servicio React de Historial se retiraron; `/historial` redirige al Dashboard. Empresa abre en consulta y solo muestra el formulario al pulsar Editar datos. Stock reutiliza `AltaFlotante` para registrar inventario bajo demanda. `ErrorCarga` ofrece recuperación explícita y los indicadores de listas fallidas muestran No disponible. Las consultas de clientes descartan respuestas antiguas y los estados vacíos diferencian búsquedas sin coincidencias de listas sin registros.
 - **Tema**: El layout actual declara `data-theme="light"`; `/personalizacion` redirige a `/dashboard`. `src/app/index.css` carga `panel/estilos/paleta-editorial.css`, `panel/estilos/theme.css`, `panel/estilos/panel-editorial.css` y `panel/estilos/panel-formal.css`. La tienda usa su propio tema en `web/estilos/tema-editorial.css`. Los iconos de navegación y búsqueda se centralizan en `panel/layout/navConfig.js`.
 - **Despliegue**: Vercel (`frontend/vercel.json` reescribe todo a `index.html`).
 - **Estructura**: `frontend/src` tiene cuatro capas. `app/` es el arranque (main, index.css, ErrorBoundary, router con las guardas y los providers). `panel/` es la superficie administrativa, con un dominio por carpeta, sus servicios, `componentes/`, `ui/`, `lib/` y `estilos/`. `web/` es la superficie pública: `PublicLayout.jsx`, `paginas/`, `secciones/`, `componentes/`, `tienda/`, `asistente/`, `animacion/`, `hooks/`, `config/`, `lib/`, `estilos/` y `assets/`. `compartido/` guarda lo que usan ambas superficies: `ui/`, `lib/utils/`, `config/env.js` y `assets/`. Las dependencias van en un solo sentido: app → panel | web → compartido. El detalle está en `docs/architecture/04-ARQUITECTURA-FRONTEND.md`.
 
-## Portada espacial y protagonista
+## Portada ligera y carga por rutas
 
-- `web/paginas/paginas.jsx` monta `secciones/portada3d/PortadaEspacial.jsx` al inicio. Reutiliza GSAP/ScrollTrigger con scroll nativo (Lenis ya estaba retirado). `escenaLibro.js` importa Three.js bajo demanda y modela un único libro con la portada registrada, proporción original, lomo, tapas y páginas.
+- El inicio monta `web/secciones/PortadaLigera.jsx`: presentación inmediata con un libro real y hasta cinco novedades. No descarga Three.js, no crea canvas ni renderiza reflejos/partículas. `main.jsx` no precarga el motor 3D.
+- `web/hooks/useLibroProtagonista.js` consulta el protagonista sin JWT, revalida al volver al foco y respeta libro nulo. El respaldo 404 funciona aunque el catálogo llegue después.
+- Aplicación, Características, Nosotros y Descargar tienen módulos de página separados. `AdminLayout` y el formulario público de reclamaciones se cargan bajo demanda; la tienda y el login no descargan el layout administrativo.
+- `web/estilos/limpia.css` retira vidrio, destellos, facetas y sombras de espejo. El acceso administrativo conserva el libro CSS y su apertura breve, con páginas sólidas y recuperación en la siguiente hoja.
+- `PublicLayout` usa scroll nativo y foco accesible al navegar; no inicia el motor global GSAP ni precarga masivamente todas las portadas.
+
+## Implementación espacial histórica (no montada en el inicio)
+
+- `secciones/portada3d/PortadaEspacial.jsx` permanece como implementación histórica desacoplada del router. Reutiliza GSAP/ScrollTrigger y `escenaLibro.js`; estos módulos no se descargan en el inicio ligero.
 - Dirección confirmada por el usuario: **Portal editorial**, tras revisar su video local. `portalEditorial.js` calcula una atmósfera volumétrica en un render target acotado con ruido 3D, cintas reflectantes/refractivas y disolución por material; `cinematografia.js` centraliza los tramos reversibles. El modelo añade tapas biseladas, lomo con datos reales, geometría curva de papel y entorno PMREM. La cara frontal permanece visible durante la ficha.
 - La superficie autoaloja Source Serif 4 (WOFF2 latino de 23.832 bytes, licencia OFL) para títulos; conserva Work Sans en datos y controles. El usuario eligió **Ibero** como referencia principal de navbar/footer y retiró la franja superior de delivery/recojo/PayU. `components/public-header.css` aplica cabecera gris frío #F5F7F9, buscador blanco, menú blanco con texto marino #24304B y detalles turquesa; marca en Work Sans e iconos Lucide de contorno. Los botones de escena son blancos/marino; el catálogo conserva sus controles de compra. El texto principal se recorta contra el contorno proyectado del libro.
 - Primero se presenta el libro a pantalla completa; un gesto corto revela `PublicHeader` fijo a todo ancho mediante tres fases de `estadoReveladoNavegacion`: línea central, cuerpo en perspectiva y enlaces. Reloj GSAP lineal de 1s con curvas por fase y salida de 0,5s; márgenes alineados al contenedor, sin redimensionar el canvas. Foco de teclado y salto al final conservan acceso inmediato. Fuera del 3D, `.navegacion-publica` usa `display:contents` y mantiene el sticky de las páginas interiores; los respaldos estáticos no ocultan navegación.
@@ -38,19 +51,21 @@
 
 - `public/cache-recursos-sw.js`, registrado desde `PublicLayout` mediante `web/lib/cacheRecursos.js`, guarda hasta 200 imágenes, fuentes y archivos JS/CSS de producción con hash en CacheStorage. Sirve los recursos guardados inmediatamente y revalida los que superan 24 horas. No intercepta HTML, JSON, sesiones ni operaciones; respeta respuestas privadas/no-store y no guarda errores ni HTML devuelto como imagen. La escritura de caché no bloquea la primera imagen.
 - `web/lib/cachePublica.js` conserva durante 15 minutos datos públicos de catálogo, fichas, autores, empresa y anuncios (hasta 40 entradas y 2 MiB). Los hooks y `LibroPage` pueden mostrarlos durante la consulta de red; las respuestas actualizadas prevalecen y los 404/410 invalidan fichas guardadas. `clienteApi` sigue consultando la red; checkout y pagos no leen esta caché.
-- El inicio no muestra la pantalla de precarga general ni el fundido de 1,2 s del canvas. `main.jsx` inicia la descarga del motor 3D en paralelo; `PortadaEspacial` espera la textura, la fuente y el primer cuadro real antes de retirar su spinner claro. `cachePortada.js` conserva también el respaldo del catálogo cuando el endpoint de protagonista devuelve 404, incluidos los datos de oferta. Una respuesta válida con libro nulo se sigue respetando.
-- Las demás portadas se precargan con dos descargas simultáneas, prioridad baja y después de que el protagonista esté listo; ahorro de datos omite esa precarga. Pruebas: `cache-recursos.spec.js` verifica recuperación de imágenes sin red con SW real; `cache-publica.spec.js` y `portada-carga.spec.js` comprueban datos actualizados, caducidad, respaldo 404 y ausencia de doble carga/fondo oscuro. Las pruebas con API simulada bloquean SW por defecto; la integración real lo habilita explícitamente.
+- `index.html` no contiene ni activa una pantalla de precarga: el contenido no espera fuentes, imágenes ni canvas. Las fuentes de Google del panel se piden únicamente desde `usePaginaPanel`. La web pública conserva fuentes locales con swap.
+- El libro destacado usa imagen eager de hasta 480px y las novedades usan imágenes lazy de hasta 320px. Se retiró la precarga de todo el catálogo a dos tamaños. `cachePortada.js` conserva protagonista y recientes con sus datos públicos; una respuesta válida con libro nulo se respeta. Pruebas vigentes: `web-ligera.spec.js`, `cache-publica.spec.js`, `compra-web.spec.js` y navegación/responsive públicos.
 
 ## Rutas
+
+El menú reúne **Gestión de ventas** en `/ventas` con tres vistas cargadas bajo demanda: Ventas y pagos (índice), Pedidos (`/ventas/pedidos`) y Comprobantes (`/ventas/comprobantes`). Las direcciones anteriores `/pagos`, `/pedidos` y `/comprobantes` redirigen conservando query y hash. La lista comercial usa los campos PayU de `GET /api/ventas`; las notificaciones abren su detalle mediante `?ver=referencia`. Los comprobantes vinculados usan `?venta=id` y el filtro exacto `GET /api/comprobantes?id_venta=id`, validado y confirmado por la API.
 
 | Ruta | Componente | Archivo |
 |---|---|---|
 | `/` | InicioPage | `web/paginas/paginas.jsx` |
 | `/catalogo` | CatalogoPublicoPage | `web/paginas/CatalogoPage.jsx` |
-| `/aplicacion` | AplicacionPage | `web/paginas/paginas.jsx` |
-| `/caracteristicas` | CaracteristicasPage | `web/paginas/paginas.jsx` |
-| `/nosotros` | NosotrosPage | `web/paginas/paginas.jsx` |
-| `/descargar` | DescargarPage | `web/paginas/paginas.jsx` |
+| `/aplicacion` | AplicacionPage | `web/paginas/AplicacionPage.jsx` |
+| `/caracteristicas` | CaracteristicasPage | `web/paginas/CaracteristicasPage.jsx` |
+| `/nosotros` | NosotrosPage | `web/paginas/NosotrosPage.jsx` |
+| `/descargar` | DescargarPage | `web/paginas/DescargarPage.jsx` |
 | `/cuenta` | CuentaClientePage | `web/tienda/CuentaPage.jsx` |
 | `/carrito` | CarritoWebPage | `web/tienda/CarritoPage.jsx` |
 | `/checkout` | CheckoutWebPage | `web/tienda/CheckoutPage.jsx` |
@@ -60,28 +75,30 @@
 | `/admin/login` | LoginPage | `panel/auth/LoginPage.jsx` |
 | `/admin` | Navigate | redirección: `<Navigate to="/admin/login" replace />` |
 | `/verificar-email` | VerificarEmailPage | `panel/auth/VerificarEmailPage.jsx` |
-| `/libro-de-reclamaciones` | LibroReclamacionesPage | `panel/reclamaciones/LibroReclamacionesPage.jsx` |
+| `/libro-de-reclamaciones` | LibroReclamacionesPage | `web/paginas/ReclamacionesPublicasPage.jsx` |
 | `/dashboard` | DashboardPage | `panel/dashboard/DashboardPage.jsx` |
-| `/libros` | LibrosPage | `panel/libros/LibrosPage.jsx` |
-| `/autores` | AutoresPage | `panel/autores/AutoresPage.jsx` |
+| `/libros` | LibrosAutoresPage | `panel/libros/LibrosAutoresPage.jsx` |
+| `/autores` | Navigate | redirección: `para(SOLO_ADMIN, <Navigate to="/libros?vista=autores" replace />)` |
 | `/categorias` | CategoriasPage | `panel/categorias/CategoriasPage.jsx` |
 | `/inventario` | InventarioPage | `panel/inventario/InventarioPage.jsx` |
-| `/reservas` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
-| `/pedidos` | PedidosPage | `panel/pedidos/PedidosPage.jsx` |
+| `/reservas` | Navigate | redirección: `<Navigate to="/dashboard" replace />` |
+| `/ventas` | GestionVentasPage | `panel/ventas/GestionVentasPage.jsx` |
 | `/ventas` | VentasPage | `panel/ventas/VentasPage.jsx` |
-| `/comprobantes` | ComprobantesPage | `panel/comprobantes/ComprobantesPage.jsx` |
-| `/pagos` | PagosPage | `panel/pagos/PagosPage.jsx` |
+| `/ventas/pedidos` | PedidosPage | `panel/pedidos/PedidosPage.jsx` |
+| `/ventas/comprobantes` | ComprobantesPage | `panel/comprobantes/ComprobantesPage.jsx` |
+| `/pedidos` | RedirigirOperacion | — |
+| `/comprobantes` | RedirigirOperacion | — |
+| `/pagos` | RedirigirOperacion | — |
 | `/usuarios` | UsuariosPage | `panel/usuarios/UsuariosClientesPage.jsx` |
-| `/clientes` | Navigate | redirección: `para(SOLO_ADMIN, <Navigate to="/usuarios?vista=clientes" replace />) }` |
+| `/clientes` | Navigate | redirección: `para(SOLO_ADMIN, <Navigate to="/usuarios?vista=clientes" replace />)` |
 | `/reclamaciones` | ReclamacionesPage | `panel/reclamaciones/ReclamacionesPage.jsx` |
 | `/anuncios` | AnunciosPage | `panel/anuncios/AnunciosPage.jsx` |
 | `/tarifas-envio` | TarifasEnvioPage | `panel/tarifas/TarifasEnvioPage.jsx` |
-| `/historial` | HistorialPage | `panel/historial/HistorialPage.jsx` |
+| `/historial` | Navigate | redirección: `para(SOLO_ADMIN, <Navigate to="/dashboard" replace />)` |
 | `/configuracion/empresa` | EmpresaPage | `panel/configuracion/EmpresaPage.jsx` |
-| `/personalizacion` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
-| `/agencias` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
-| `/cierre-caja` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
-| `/reportes` | Navigate | redirección: `<Navigate to="/dashboard" replace /> }` |
+| `/agencias` | Navigate | redirección: `<Navigate to="/dashboard" replace />` |
+| `/cierre-caja` | Navigate | redirección: `<Navigate to="/dashboard" replace />` |
+| `/reportes` | Navigate | redirección: `<Navigate to="/dashboard" replace />` |
 | `*` | Navigate | redirección: `<Navigate to="/" replace />` |
 
 El panel cuelga de `<RutaProtegida><AdminLayout/></RutaProtegida>` y permite solo administrador. `/`, `/verificar-email` y `/libro-de-reclamaciones` son públicas. `/reportes` y `/cierre-caja` redirigen a `/dashboard`; `/agencias` a `/`.
@@ -93,7 +110,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | Archivo | Endpoints |
 |---|---|
 | `panel/anuncios/AnunciosPage.jsx` | `DELETE /api/anuncios/:param`<br>`GET /api/anuncios/todos`<br>`POST /api/anuncios`<br>`PUT /api/anuncios/:param` |
-| `panel/anuncios/CarruselPanel.jsx` | `DELETE /api/anuncios/carrusel/:param`<br>`GET /api/anuncios/carrusel/todos`<br>`GET /api/libros`<br>`POST /api/anuncios/carrusel`<br>`PUT /api/anuncios/carrusel/:param`<br>`PUT /api/anuncios/carrusel/orden` |
 | `panel/anuncios/ProtagonistaPanel.jsx` | `GET /api/anuncios/protagonista/panel`<br>`GET /api/libros`<br>`PUT /api/anuncios/protagonista` |
 | `panel/auth/LoginPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/solicitar-reseteo` |
 | `panel/auth/VerificarEmailPage.jsx` | `POST /api/auth/reenviar-codigo`<br>`POST /api/auth/verificar-email` |
@@ -104,13 +120,12 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `panel/categorias/CategoriaForm.jsx` | `POST /api/categorias` |
 | `panel/categorias/CategoriasPage.jsx` | `DELETE /api/categorias/:param`<br>`GET /api/categorias`<br>`GET /api/categorias/:param` |
 | `panel/clientes/ClientesPage.jsx` | `GET /api/clientes` |
-| `panel/comprobantes/ComprobanteSunatModal.jsx` | `POST /api/comprobantes/:param/anular`<br>`PUT /api/comprobantes/:param/sunat` |
+| `panel/comprobantes/AnularComprobanteModal.jsx` | `POST /api/comprobantes/:param/anular` |
 | `panel/comprobantes/ComprobanteViewModal.jsx` | `GET /api/comprobantes/:param`<br>`GET /api/empresa` |
 | `panel/comprobantes/ComprobantesPage.jsx` | `GET /api/comprobantes`<br>`GET /api/comprobantes/resumen`<br>`POST /api/comprobantes/:param/enviar-email` |
 | `panel/configuracion/EmpresaPage.jsx` | `GET /api/empresa`<br>`PUT /api/empresa` |
 | `panel/dashboard/DashboardPage.jsx` | `GET /api/inventario/stock-bajo`<br>`GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
 | `panel/dashboard/dashboardService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
-| `panel/historial/HistorialPage.jsx` | `GET /api/historial` |
 | `panel/inventario/InventarioEditModal.jsx` | `PUT /api/inventario/libro/:param` |
 | `panel/inventario/InventarioForm.jsx` | `POST /api/inventario` |
 | `panel/inventario/InventarioPage.jsx` | `GET /api/inventario`<br>`GET /api/inventario/libro/:param` |
@@ -122,7 +137,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `panel/libros/LibrosPage.jsx` | `DELETE /api/libros/:param`<br>`GET /api/inventario`<br>`GET /api/libros`<br>`GET /api/libros/:param` |
 | `panel/libros/useCatalogo.js` | `GET /api/autores`<br>`GET /api/categorias` |
 | `panel/notificaciones/notificacionesService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/pagos` |
-| `panel/pagos/PagosPage.jsx` | `GET /api/pagos`<br>`GET /api/pagos/resumen`<br>`GET /api/ventas` |
 | `panel/pedidos/PedidosPage.jsx` | `GET /api/pedidos`<br>`GET /api/pedidos/:param`<br>`PUT /api/pedidos/:param/estado` |
 | `panel/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `panel/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
@@ -137,6 +151,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `web/asistente/useMemoriaAsistente.js` | `DELETE /api/asistente/memoria`<br>`GET /api/asistente/memoria`<br>`PUT /api/asistente/memoria` |
 | `web/componentes/ActualizarApp.jsx` | `GET /api/app/version` |
 | `web/hooks/useCarrusel.js` | `GET /api/anuncios/carrusel` |
+| `web/hooks/useLibroProtagonista.js` | `GET /api/anuncios/protagonista` |
 | `web/secciones/Hero.jsx` | `GET /api/anuncios/carrusel` |
 | `web/secciones/VideoSection.jsx` | `GET /api/anuncios` |
 | `web/secciones/portada3d/PortadaEspacial.jsx` | `GET /api/anuncios/protagonista` |
@@ -160,11 +175,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `panel/anuncios/anunciosService.js` | `crearAnuncio` | `POST /api/anuncios` |
 | `panel/anuncios/anunciosService.js` | `actualizarAnuncio` | `PUT /api/anuncios/:param` |
 | `panel/anuncios/anunciosService.js` | `eliminarAnuncio` | `DELETE /api/anuncios/:param` |
-| `panel/anuncios/carruselService.js` | `listarImagenesCarrusel` | `GET /api/anuncios/carrusel/todos` |
-| `panel/anuncios/carruselService.js` | `crearImagenCarrusel` | `POST /api/anuncios/carrusel` |
-| `panel/anuncios/carruselService.js` | `actualizarImagenCarrusel` | `PUT /api/anuncios/carrusel/:param`<br>`PUT /api/anuncios/carrusel/:param` |
-| `panel/anuncios/carruselService.js` | `ordenarCarrusel` | `PUT /api/anuncios/carrusel/orden` |
-| `panel/anuncios/carruselService.js` | `eliminarImagenCarrusel` | `DELETE /api/anuncios/carrusel/:param` |
 | `panel/anuncios/protagonistaService.js` | `obtenerProtagonista` | `GET /api/anuncios/protagonista/panel` |
 | `panel/anuncios/protagonistaService.js` | `guardarProtagonista` | `PUT /api/anuncios/protagonista` |
 | `panel/auth/authService.js` | `login` | `POST /api/auth/login` |
@@ -196,7 +206,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `panel/comprobantes/comprobantesService.js` | `emitirComprobante` | `POST /api/ventas/:param/comprobante` |
 | `panel/comprobantes/comprobantesService.js` | `enviarComprobanteEmail` | `POST /api/comprobantes/:param/enviar-email` |
 | `panel/comprobantes/comprobantesService.js` | `obtenerResumen` | `GET /api/comprobantes/resumen` |
-| `panel/comprobantes/comprobantesService.js` | `registrarSunat` | `PUT /api/comprobantes/:param/sunat` |
 | `panel/comprobantes/comprobantesService.js` | `anularComprobante` | `POST /api/comprobantes/:param/anular` |
 | `panel/configuracion/empresaService.js` | `obtenerEmpresa` | `GET /api/empresa` |
 | `panel/configuracion/empresaService.js` | `actualizarEmpresa` | `PUT /api/empresa` |
@@ -208,7 +217,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `panel/dashboard/dashboardService.js` | `obtenerVentasPorDia` | `GET /api/reportes/ventas-por-dia` (vía panel/reportes/reportesService.js#obtenerVentasPorDia) |
 | `panel/dashboard/dashboardService.js` | `obtenerIndicadoresVentas` | `GET /api/reportes/indicadores-ventas` (vía panel/reportes/reportesService.js#obtenerIndicadoresVentas) |
 | `panel/dashboard/dashboardService.js` | `obtenerStockBajo` | `GET /api/inventario/stock-bajo` (vía panel/reportes/reportesService.js#obtenerStockBajo) |
-| `panel/historial/historialService.js` | `obtenerHistorial` | `GET /api/historial` |
 | `panel/inventario/inventarioService.js` | `listarInventario` | `GET /api/inventario` |
 | `panel/inventario/inventarioService.js` | `obtenerInventarioLibro` | `GET /api/inventario/libro/:param` |
 | `panel/inventario/inventarioService.js` | `crearInventario` | `POST /api/inventario` |
@@ -223,7 +231,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `panel/libros/librosService.js` | `listarAutores` | `GET /api/autores` |
 | `panel/libros/librosService.js` | `listarCategorias` | `GET /api/categorias` |
 | `panel/pagos/pagosService.js` | `listarPagos` | `GET /api/pagos` |
-| `panel/pagos/pagosService.js` | `obtenerResumen` | `GET /api/pagos/resumen` |
 | `panel/pedidos/pedidosService.js` | `listarPedidos` | `GET /api/pedidos` |
 | `panel/pedidos/pedidosService.js` | `obtenerPedido` | `GET /api/pedidos/:param` |
 | `panel/pedidos/pedidosService.js` | `cambiarEstadoPedido` | `PUT /api/pedidos/:param/estado` |
@@ -295,9 +302,9 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `web/componentes/EtiquetasLibro.jsx` | 2 |
 | `web/componentes/ImagenCarga.jsx` | 2 |
 | `web/componentes/MediosPago.jsx` | 1 |
-| `web/componentes/Migas.jsx` | 2 |
-| `web/componentes/Precarga.jsx` | 1 |
-| `web/componentes/PrecioOferta.jsx` | 6 |
+| `web/componentes/Migas.jsx` | 5 |
+| `web/componentes/Precarga.jsx` | 0 |
+| `web/componentes/PrecioOferta.jsx` | 7 |
 | `web/componentes/PublicFooter.jsx` | 1 |
 | `web/componentes/PublicHeader.jsx` | 1 |
 
@@ -311,11 +318,13 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `compartido/lib/utils/url.js`
 - `panel/lib/api/client.js`
 - `panel/lib/hooks/useFormulario.js`
+- `panel/lib/hooks/useImpresion.js`
 - `panel/lib/hooks/usePaginaPanel.js`
 - `panel/lib/roles.js`
 - `panel/lib/storage/index.js`
 - `panel/lib/utils/cuentas.js`
 - `panel/lib/utils/exportarCsv.js`
+- `panel/lib/utils/imprimirDocumento.js`
 - `panel/lib/utils/numeroALetras.js`
 - `panel/lib/utils/sonido.js`
 - `panel/lib/utils/validaciones.js`
@@ -325,7 +334,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `web/lib/precarga.js`
 - `web/lib/useCarruselAutomatico.js`
 
-## Framer Motion (`motion/react`) — 28 archivos
+## Framer Motion (`motion/react`) — 26 archivos
 
 - `app/providers/ToastProvider.jsx`
 - `panel/auth/LoginPage.jsx`
@@ -344,13 +353,11 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `panel/layout/PerfilAdministrador.jsx`
 - `panel/layout/Sidebar.jsx`
 - `panel/notificaciones/PanelNotificaciones.jsx`
-- `panel/pedidos/PedidosPage.jsx`
 - `panel/ui/Celebracion.jsx`
 - `panel/ui/EmptyState.jsx`
 - `panel/ui/Indicadores.jsx`
 - `panel/ui/Modal.jsx`
 - `panel/usuarios/UsuariosClientesPage.jsx`
-- `panel/ventas/VentasPage.jsx`
 - `web/componentes/PublicHeader.jsx`
 - `web/PublicLayout.jsx`
 - `web/secciones/FeatureStory.jsx`

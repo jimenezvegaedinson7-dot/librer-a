@@ -39,7 +39,7 @@ function dePago(pago) {
         titulo: `Pago de ${nombreCliente(pago.cliente?.nombre_completo)}`,
         detalle: `${formatearMoneda(pago.monto_total)} · Venta #${pago.id_venta} · PayU`,
         fecha: pago.fecha_creacion ? new Date(pago.fecha_creacion) : null,
-        destino: `/pagos?ver=${encodeURIComponent(pago.external_reference)}`,
+        destino: `/ventas?ver=${encodeURIComponent(pago.external_reference)}`,
     };
 }
 

@@ -12,7 +12,7 @@ const REGLAS = {
     nombre: [(v) => requerido(v, 'El nombre de la categoría')],
 };
 
-export default function CategoriaForm({ onCategoriaCreada }) {
+export default function CategoriaForm({ onCategoriaCreada, incrustado = false, onCancelar, onGuardandoChange }) {
     return (
         <FormularioAlta
             titulo="Registrar categoría"
@@ -25,12 +25,16 @@ export default function CategoriaForm({ onCategoriaCreada }) {
             mensajeExito="Categoría registrada correctamente"
             mensajeError="Error al registrar la categoría"
             onRegistrado={onCategoriaCreada}
+            incrustado={incrustado}
+            onCancelar={onCancelar}
+            onGuardandoChange={onGuardandoChange}
             renderCampos={({ formulario, manejarCambio, errores }) => (
                 <div className="space-y-4">
                     <Input
                         label="Nombre de la categoría"
                         aria-label="Nombre de la categoría"
                         name="nombre"
+                        autoFocus={incrustado}
                         value={formulario.nombre}
                         onChange={manejarCambio}
                         error={errores?.nombre}

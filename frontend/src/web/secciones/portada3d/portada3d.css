@@ -179,10 +179,10 @@
 
 @media (max-width: 900px) {
   .sitio .portada3d__apilar { display: none; }
-  .sitio .portada3d__apilar-carrusel { display: block; width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; padding: 0 clamp(1rem, 6vw, 2rem); }
-  .sitio .portada3d__apilar-carrusel ul { display: flex; gap: clamp(1rem, 6vw, 1.6rem); list-style: none; margin: 0; padding: 0 clamp(1rem, 6vw, 2rem); }
+  .sitio .portada3d__apilar-carrusel { display: block; width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; padding: 0; scroll-padding-inline: var(--gutter); }
+  .sitio .portada3d__apilar-carrusel ul { display: flex; gap: 12px; list-style: none; margin: 0; padding: 4px var(--gutter) 12px; }
   .sitio .portada3d__apilar-carrusel li { flex: 0 0 auto; scroll-snap-align: center; }
-  .sitio .portada3d__apilar-link--móvil { width: clamp(200px, 70vw, 240px); }
+  .sitio .portada3d__apilar-link--móvil { width: min(200px, calc((100vw - 2 * var(--gutter) - 12px) / 2)); gap: 12px; }
   .sitio .portada3d__apilar-link--móvil .portada3d__apilar-tapa { width: 100%; transform: none; }
 }
 
@@ -783,3 +783,45 @@
 @media (max-width: 900px) {
     .sitio .portada3d__escena-libros-titulo { font-size: clamp(1.75rem, 7vw, 2.4rem) !important; }
 }
+
+/* ============================================================
+   ACENTOS DE LECTURA EN LA ANIMACION (01/11/2026)
+   Jerarquia por color: tinta para titulos, turquesa para datos
+   secundarios y rojo para ofertas. Solo color y un filete; sin
+   sombras ni filtros nuevos, para no sumar trabajo al scroll.
+   ============================================================ */
+.sitio .portada3d {
+    --p3-acento: #00788a;
+    --p3-acento-fuerte: #005a66;
+}
+
+.sitio .portada3d--3d .portada3d__presentacion .portada3d__titulo span:last-child {
+    color: var(--p3-acento) !important;
+    font-size: .56em;
+    line-height: 1.14;
+    letter-spacing: -.02em;
+}
+
+.sitio .portada3d .portada3d__acceso .portada3d__autor,
+.sitio .portada3d__ficha .portada3d__autor {
+    color: var(--p3-acento-fuerte) !important;
+    font-weight: 500;
+}
+
+.sitio .portada3d .portada3d__lema--flotante {
+    color: var(--p3-acento-fuerte) !important;
+    font-family: var(--ed-serif, 'Serif Editorial', Georgia, serif);
+    font-style: italic;
+}
+
+.sitio .portada3d__pista { color: var(--p3-acento-fuerte) !important; }
+.sitio .portada3d__pista svg { color: var(--p3-oferta, #b12704); }
+
+.sitio .portada3d__escena-libros-titulo { color: var(--p3-acento) !important; }
+.sitio .portada3d__escena-libros-titulo::after {
+    content: ''; display: block; width: 2.6rem; height: 2px;
+    margin: .5rem auto 0; border-radius: 999px; background: currentColor;
+}
+
+.sitio .portada3d__escena-libros .portada3d__apilar-titulo { transition: color .2s ease; }
+.sitio .portada3d__escena-libros .portada3d__apilar-link:hover .portada3d__apilar-titulo { color: var(--p3-acento) !important; }

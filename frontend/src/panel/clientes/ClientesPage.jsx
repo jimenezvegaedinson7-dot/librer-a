@@ -1,15 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { FaEye, FaFileCsv, FaMagnifyingGlass, FaRotate, FaUserGroup, FaXmark } from 'react-icons/fa6';
 
 import { FaMoneyBillWave, FaCartShopping } from 'react-icons/fa6';
-import { useVentasDiarias } from '../reportes/useVentasDiarias';
 import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Form';
-import { Alert } from '../ui/Alert';
+import { ErrorCarga } from '../ui/ErrorCarga';
 import { Pagination } from '../ui/Pagination';
 import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
@@ -28,6 +27,7 @@ const POR_PAGINA = 10;
 const columnasClientes = [
     {
         titulo: 'Cliente',
+        className: 'tabla-col-principal',
         render: (fila) => (
             <p className="text-sm text-slate-700">
                 <span className="font-semibold text-slate-700">{fila.nombre_completo || 'Sin nombre'}</span>
@@ -42,7 +42,8 @@ const columnasClientes = [
     },
     {
         titulo: 'Total gastado',
-        alineacion: 'centro',
+        alineacion: 'derecha',
+        className: 'tabla-col-importe',
         render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>,
     },
     {
@@ -64,12 +65,11 @@ function accionesCliente(fila, { onVer }) {
     );
 }
 
-function Contador({ cargando, total, totalComprado, conCompras }) {
-    const ventasDiarias = useVentasDiarias();
+function Contador({ cargando, error, total, totalComprado, conCompras }) {
     return (
-        <Indicadores cargando={cargando} etiqueta="Resumen de clientes">
+        <Indicadores cargando={cargando} error={error} etiqueta="Resumen de clientes">
             <Indicador titulo="Clientes" valor={total} icono={<FaUserGroup />} tono="primary" detalle="Registrados" />
-            <Indicador titulo="Total comprado" valor={totalComprado} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Ventas · últimos 14 días" serie={ventasDiarias} />
+            <Indicador titulo="Total comprado" valor={totalComprado} formato="moneda" icono={<FaMoneyBillWave />} tono="teal" detalle="Compras acumuladas del filtro" />
             <Indicador titulo="Con compras" valor={conCompras} icono={<FaCartShopping />} tono="violet" detalle="Compraron al menos una vez" de={total} />
         </Indicadores>
     );
@@ -89,8 +89,10 @@ export default function ClientesPage({ incrustado = false }) {
     const [paginaActual, setPaginaActual] = useState(1);
 
     const [clienteVer, setClienteVer] = useState(null);
+    const revisionLista = useRef(0);
 
-    const cargarClientes = async () => {
+    const cargarClientes = async (estaVigente = () => true) => {
+        const revision = ++revisionLista.current;
         try {
             setCargando(true);
             setError('');
@@ -99,6 +101,7 @@ export default function ClientesPage({ incrustado = false }) {
                 pagina: paginaActual,
                 por_pagina: POR_PAGINA,
             });
+            if (!estaVigente() || revision !== revisionLista.current) return;
             setClientes(resultado.clientes);
             setTotal(resultado.total);
             setTotalPaginas(resultado.paginas);
@@ -109,20 +112,22 @@ export default function ClientesPage({ incrustado = false }) {
                 setPaginaActual(resultado.paginas);
             }
         } catch (err) {
-            setError(err.response?.data?.mensaje || 'Error al cargar los clientes');
+            if (estaVigente() && revision === revisionLista.current) setError(err.response?.data?.mensaje || 'Error al cargar los clientes');
         } finally {
-            setCargando(false);
+            if (estaVigente() && revision === revisionLista.current) setCargando(false);
         }
     };
 
     useEffect(() => {
-        cargarClientes();
+        let vigente = true;
+        cargarClientes(() => vigente);
+        return () => { vigente = false; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [busquedaAplicada, paginaActual]);
 
     const aplicarBusqueda = (valor) => {
         setBusqueda(valor);
-        setBusquedaAplicada(valor);
+        setBusquedaAplicada(valor.trim());
         setPaginaActual(1);
     };
 
@@ -154,6 +159,7 @@ export default function ClientesPage({ incrustado = false }) {
             )}
             <Contador
                 cargando={cargando}
+                error={error}
                 total={total}
                 totalComprado={Number(resumen.total_general || 0)}
                 conCompras={conCompras}
@@ -163,10 +169,15 @@ export default function ClientesPage({ incrustado = false }) {
                 <CardHeader
                     titulo="Filtros de clientes"
                     subtitulo="Busca por nombre o correo"
-                    acciones={
-                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                            <div className="relative">
+                    acciones={<div className="tabla-filtros-acciones">
+                        {busquedaAplicada && <Button variante="secondary" onClick={() => aplicarBusqueda('')}>Limpiar</Button>}
+                        <Button variante="secondary" onClick={() => cargarClientes()} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
+                    </div>}
+                    filtros={
+                        <div className="filtros-grid filtros-grid--busqueda">
+                            <div className="filtro-busqueda-envio"><div className="filtro-busqueda">
                                 <Input
+                                    label="Nombre o correo del cliente"
                                     type="text"
                                     value={busqueda}
                                     onChange={(e) => setBusqueda(e.target.value)}
@@ -187,11 +198,7 @@ export default function ClientesPage({ incrustado = false }) {
                                         <FaXmark />
                                     </button>
                                 )}
-                            </div>
-
-                            <Button variante="secondary" onClick={cargarClientes} disabled={cargando}>
-                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
-                            </Button>
+                            </div><Button variante="secondary" onClick={() => aplicarBusqueda(busqueda)} disabled={cargando}>Buscar</Button></div>
                         </div>
                     }
                 />
@@ -199,9 +206,9 @@ export default function ClientesPage({ incrustado = false }) {
 
             {cargando && <TableSkeleton columnas={5} filas={8} titulo />}
 
-            {!cargando && error && <Alert tipo="error">{error}</Alert>}
+            {!cargando && error && <ErrorCarga mensaje={error} onReintentar={() => cargarClientes()} />}
 
-            {!cargando && !error && total === 0 && (
+            {!cargando && !error && total === 0 && !busquedaAplicada && (
                 <EmptyState
                     titulo="No hay clientes registrados"
                     descripcion="Cuando los clientes realicen compras, su información aparecerá aquí."
@@ -209,7 +216,7 @@ export default function ClientesPage({ incrustado = false }) {
                 />
             )}
 
-            {!cargando && !error && total > 0 && clientes.length === 0 && (
+            {!cargando && !error && clientes.length === 0 && (total > 0 || Boolean(busquedaAplicada)) && (
                 <EmptyState
                     titulo="No se encontraron clientes"
                     descripcion="Cambia la búsqueda o el filtro seleccionado."
@@ -247,6 +254,7 @@ export default function ClientesPage({ incrustado = false }) {
                     />
                     <CardBody className="p-0">
                         <DataTable
+                            etiqueta="Clientes y compras"
                             columnas={columnasClientes}
                             filas={clientes}
                             keyExtractor={(fila) => fila.id_usuario}
