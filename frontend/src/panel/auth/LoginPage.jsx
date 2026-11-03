@@ -1,17 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import {
-    FaArrowLeft,
-    FaEnvelope,
-    FaEye,
-    FaEyeSlash,
-    FaKey,
-    FaLock,
-    FaQrcode,
-    FaRightToBracket,
-} from 'react-icons/fa6';
-
+import { FaArrowLeft, FaEnvelope, FaEye, FaEyeSlash, FaKey, FaLock, FaQrcode, FaRightToBracket } from 'react-icons/fa6';
 import { login, verificarLoginOtp, solicitarReseteo, restablecerContrasena } from './authService';
 import { useAuth } from '../../app/providers/AuthContext';
 import { usePaginaPanel } from '../lib/hooks/usePaginaPanel';
@@ -19,7 +9,6 @@ import { Alert } from '../ui/Alert';
 import { CargaCorreo, ExitoAnimado } from '../ui/Celebracion';
 import { prepararSonido, sonarPagoAprobado } from '../lib/utils/sonido';
 import { esPersonalInterno, inicioPorRol } from '../lib/roles';
-
 import logoMarca from '../../compartido/assets/logo-principal-oscuro.png';
 import fondoLogin from '../../compartido/assets/fondo-login.webp';
 import './login.css';
@@ -41,11 +30,10 @@ export default function LoginPage() {
     const [codigo, setCodigo] = useState('');
     const [verificando, setVerificando] = useState(false);
 
-    // La recuperación se muestra en la siguiente hoja del libro.
     const [mostrandoRecuperacion, setMostrandoRecuperacion] = useState(false);
     const [libroAbierto, setLibroAbierto] = useState(false);
     const recuperarRef = useRef(null);
-    const [resetStep, setResetStep] = useState(1); // 1=email, 2=code+pass, 3=done
+    const [resetStep, setResetStep] = useState(1);
     const [resetEmail, setResetEmail] = useState('');
     const [resetCodigo, setResetCodigo] = useState('');
     const [resetPassword, setResetPassword] = useState('');
@@ -53,18 +41,22 @@ export default function LoginPage() {
     const [resetError, setResetError] = useState('');
     const [resetCargando, setResetCargando] = useState(false);
     const [mostrarResetPass, setMostrarResetPass] = useState(false);
-    const [envioCorreo, setEnvioCorreo] = useState(null); // null | 'enviando' | 'enviado'
-    const [autoInicio, setAutoInicio] = useState('iniciando'); // 'iniciando' | 'no-admin' | 'error'
+    const [envioCorreo, setEnvioCorreo] = useState(null);
+    const [autoInicio, setAutoInicio] = useState('iniciando');
 
     const reducirMovimiento = useReducedMotion();
     const abriendoLibro = !reducirMovimiento && !libroAbierto;
     const transicionHoja = reducirMovimiento
         ? { initial: false, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0 } }
-        : { initial: { opacity: 0, rotateY: -70 }, animate: { opacity: 1, rotateY: 0 }, exit: { opacity: 0, rotateY: -70 }, transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] } };
+        : {
+              initial: { opacity: 0, rotateY: -70 },
+              animate: { opacity: 1, rotateY: 0 },
+              exit: { opacity: 0, rotateY: -70 },
+              transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] }
+          };
 
     if (autenticado) return <Navigate to={inicioPorRol()} replace />;
 
-    // --- Login handlers ---
     const enviar = async (e) => {
         e.preventDefault();
         try {
@@ -90,10 +82,7 @@ export default function LoginPage() {
             iniciarSesion(token, data);
             navigate(inicioPorRol());
         } catch (err) {
-            if (
-                err.response?.status === 403 &&
-                /verificar tu correo/i.test(err.response?.data?.mensaje || '')
-            ) {
+            if (err.response?.status === 403 && /verificar tu correo/i.test(err.response?.data?.mensaje || '')) {
                 navigate('/verificar-email', { replace: true, state: { email } });
                 return;
             }
@@ -116,10 +105,7 @@ export default function LoginPage() {
             setVerificando(true);
             setError('');
 
-            const respuesta = await verificarLoginOtp({
-                two_factor_token: twoFactorToken,
-                codigo,
-            });
+            const respuesta = await verificarLoginOtp({ two_factor_token: twoFactorToken, codigo });
 
             const { token, data } = respuesta;
 
@@ -143,7 +129,6 @@ export default function LoginPage() {
         setError('');
     };
 
-    // --- Forgot password handlers ---
     const abrirRecuperacion = () => {
         setMostrandoRecuperacion(true);
         setResetStep(1);
@@ -164,13 +149,11 @@ export default function LoginPage() {
         requestAnimationFrame(() => recuperarRef.current?.focus());
     };
 
-    // Tras llenarse el cargador y mostrar "Correo enviado", pasa al código.
     const alTerminarEnvio = () => {
         setEnvioCorreo(null);
         setResetStep(2);
     };
 
-    // Inicia sesión con la contraseña recién creada mientras se ve la confirmación.
     const iniciarConNuevaContrasena = async (correo, clave) => {
         const pausa = new Promise((resolver) => setTimeout(resolver, 2400));
         try {
@@ -244,19 +227,15 @@ export default function LoginPage() {
             setResetError('Las contraseñas no coinciden');
             return;
         }
-        // El audio debe habilitarse durante el clic del usuario.
+
         prepararSonido();
         try {
             setResetCargando(true);
             setResetError('');
-            await restablecerContrasena({
-                email: resetEmail.trim(),
-                codigo: resetCodigo,
-                password: resetPassword,
-            });
+            await restablecerContrasena({ email: resetEmail.trim(), codigo: resetCodigo, password: resetPassword });
             setAutoInicio('iniciando');
             setResetStep(3);
-            // Suena cuando el check termina de dibujarse.
+
             setTimeout(sonarPagoAprobado, 600);
             iniciarConNuevaContrasena(resetEmail.trim(), resetPassword);
         } catch (err) {
@@ -274,344 +253,314 @@ export default function LoginPage() {
         setResetError('');
     };
 
-
-    const pasoReset = {
-        1: 'Confirma tu correo para recibir un código',
-        2: 'Ingresa el código y tu nueva contraseña',
-        3: 'Proceso completado',
-    }[resetStep];
+    const pasoReset = { 1: 'Confirma tu correo para recibir un código', 2: 'Ingresa el código y tu nueva contraseña', 3: 'Proceso completado' }[resetStep];
 
     return (
         <main className="login-page" style={{ '--login-fondo': `url(${fondoLogin})` }}>
             <div className={`login-libro ${abriendoLibro ? 'login-libro--abriendo' : ''}`} onFocusCapture={() => setLibroAbierto(true)}>
-            <aside className="login-marca" aria-labelledby="login-nombre-libreria">
-                <div className="login-identidad">
-                    <img src={logoMarca} alt="" className="login-logo" width="226" height="301" />
-                    <h2 id="login-nombre-libreria" className="login-nombre">MATIDANA</h2>
-                    <p className="login-descripcion">
-                        Administra el catálogo, los pedidos y las operaciones de tu librería desde un solo lugar.
-                    </p>
-                </div>
-                <p className="login-marca-pie">Panel administrativo</p>
-            </aside>
+                <aside className="login-marca" aria-labelledby="login-nombre-libreria">
+                    <div className="login-identidad">
+                        <img src={logoMarca} alt="" className="login-logo" width="226" height="301" />
+                        <h2 id="login-nombre-libreria" className="login-nombre">
+                            MATIDANA
+                        </h2>
+                        <p className="login-descripcion">Administra el catálogo, los pedidos y las operaciones de tu librería desde un solo lugar.</p>
+                    </div>
+                    <p className="login-marca-pie">Panel administrativo</p>
+                </aside>
 
-            <div className="login-lado" style={mostrandoRecuperacion ? { display: 'none' } : undefined}>
-                <motion.section
-                    initial={false}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0 }}
-                    className="login-tarjeta"
-                    aria-label="Acceso administrativo"
-                >
-                    <AnimatePresence mode="wait" initial={false}>
-                        {!twoFactorToken ? (
-                            <motion.div key="login" {...transicionPaso}>
-                                <div className="mb-8">
-                                    <h1 className="login-titulo">
-                                        Iniciar sesión
-                                    </h1>
-                                    <p className="login-entradilla">
-                                        Bienvenido de nuevo. Ingresa tus credenciales para continuar.
-                                    </p>
-                                </div>
-
-                                <MensajeError mensaje={error} />
-
-                                <form onSubmit={enviar} className="min-w-0 space-y-4">
-                                    <Campo id="login-email" etiqueta="Correo electrónico" icono={<FaEnvelope />}>
-                                        <input
-                                            id="login-email"
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="tu.correo@ejemplo.com"
-                                            autoComplete="email"
-                                            required
-                                            className="login-input"
-                                        />
-                                    </Campo>
-
-                                    <Campo
-                                        id="login-password"
-                                        etiqueta="Contraseña"
-                                        icono={<FaLock />}
-                                        accion={
-                                            <button
-                                                type="button"
-                                                onClick={() => setMostrarPassword((v) => !v)}
-                                                aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                                                aria-pressed={mostrarPassword}
-                                                className="login-ojo"
-                                            >
-                                                {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
-                                            </button>
-                                        }
-                                    >
-                                        <input
-                                            id="login-password"
-                                            type={mostrarPassword ? 'text' : 'password'}
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            placeholder="Ingresa tu contraseña"
-                                            autoComplete="current-password"
-                                            required
-                                            className="login-input"
-                                        />
-                                    </Campo>
-
-                                    <div className="flex justify-end">
-                                        <button ref={recuperarRef} type="button" onClick={abrirRecuperacion} className="login-enlace">
-                                            ¿Olvidaste tu contraseña?
-                                        </button>
+                <div className="login-lado" style={mostrandoRecuperacion ? { display: 'none' } : undefined}>
+                    <motion.section initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0 }} className="login-tarjeta" aria-label="Acceso administrativo">
+                        <AnimatePresence mode="wait" initial={false}>
+                            {!twoFactorToken ? (
+                                <motion.div key="login" {...transicionPaso}>
+                                    <div className="mb-8">
+                                        <h1 className="login-titulo">Iniciar sesión</h1>
+                                        <p className="login-entradilla">Bienvenido de nuevo. Ingresa tus credenciales para continuar.</p>
                                     </div>
 
-                                    <BotonPrimario cargando={cargando} textoCarga="Ingresando..." icono={<FaRightToBracket />}>
-                                        Iniciar sesión
-                                    </BotonPrimario>
-                                </form>
-                            </motion.div>
-                        ) : (
-                            <motion.div key="otp" {...transicionPaso}>
-                                <div className="mb-8">
-                                    <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#e3cdb2] bg-[#f7f1ea] text-lg text-[#7a5c43]">
-                                        <FaQrcode />
-                                    </span>
-                                    <h1 className="login-titulo">
-                                        Código de verificación
-                                    </h1>
-                                    <p className="login-entradilla">
-                                        Ingresa el código de 6 dígitos de tu aplicación de autenticación
-                                    </p>
-                                </div>
+                                    <MensajeError mensaje={error} />
 
-                                <MensajeError mensaje={error} />
+                                    <form onSubmit={enviar} className="min-w-0 space-y-4">
+                                        <Campo id="login-email" etiqueta="Correo electrónico" icono={<FaEnvelope />}>
+                                            <input
+                                                id="login-email"
+                                                type="email"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                placeholder="tu.correo@ejemplo.com"
+                                                autoComplete="email"
+                                                required
+                                                className="login-input"
+                                            />
+                                        </Campo>
 
-                                <form onSubmit={enviarCodigo} className="min-w-0 space-y-4">
-                                    <Campo id="login-otp" etiqueta="Código OTP" icono={<FaKey />}>
-                                        <input
-                                            id="login-otp"
-                                            type="text"
-                                            inputMode="numeric"
-                                            maxLength="6"
-                                            value={codigo}
-                                            onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
-                                            placeholder="000000"
-                                            autoComplete="one-time-code"
-                                            autoFocus
-                                            required
-                                            className="login-input login-input--codigo"
-                                        />
-                                    </Campo>
+                                        <Campo
+                                            id="login-password"
+                                            etiqueta="Contraseña"
+                                            icono={<FaLock />}
+                                            accion={
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setMostrarPassword((v) => !v)}
+                                                    aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                                    aria-pressed={mostrarPassword}
+                                                    className="login-ojo">
+                                                    {mostrarPassword ? <FaEyeSlash /> : <FaEye />}
+                                                </button>
+                                            }>
+                                            <input
+                                                id="login-password"
+                                                type={mostrarPassword ? 'text' : 'password'}
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder="Ingresa tu contraseña"
+                                                autoComplete="current-password"
+                                                required
+                                                className="login-input"
+                                            />
+                                        </Campo>
 
-                                    <BotonPrimario cargando={verificando} textoCarga="Verificando..." icono={<FaQrcode />}>
-                                        Verificar código
-                                    </BotonPrimario>
+                                        <div className="flex justify-end">
+                                            <button ref={recuperarRef} type="button" onClick={abrirRecuperacion} className="login-enlace">
+                                                ¿Olvidaste tu contraseña?
+                                            </button>
+                                        </div>
 
-                                    <button type="button" onClick={volverAlLogin} className="login-enlace mx-auto flex items-center gap-2">
-                                        <FaArrowLeft className="text-xs" /> Volver al inicio de sesión
-                                    </button>
-                                </form>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <p className="login-nota"><FaLock aria-hidden="true" /> Acceso exclusivo para administradores</p>
-                    <Link to="/" className="login-volver">
-                        <FaArrowLeft aria-hidden="true" /> Volver a la página principal
-                    </Link>
-                </motion.section>
-            </div>
-            <span className="login-pliegue" aria-hidden="true" />
-            {abriendoLibro && (
-                <div className="login-tapa-intro" aria-hidden="true" onAnimationEnd={() => setLibroAbierto(true)}>
-                    <div className="login-tapa-frente">
-                        <img src={logoMarca} alt="" width="226" height="301" />
-                        <span>MATIDANA</span>
-                    </div>
-                    <div className="login-tapa-dorso" />
-                </div>
-            )}
-
-            <AnimatePresence initial={false}>
-            {mostrandoRecuperacion && <motion.div className="login-lado login-hoja-recuperacion" {...transicionHoja}>
-                <section className="login-tarjeta" aria-label="Recuperar contraseña">
-                <div className="mb-8">
-                    <h1 className="login-titulo">Recuperar contraseña</h1>
-                    <p className="login-entradilla">{pasoReset}</p>
-                </div>
-                <div className="login-reset">
-                    <ol className="mb-5 flex items-center gap-2" aria-label="Progreso">
-                        {[1, 2, 3].map((paso) => (
-                            <li
-                                key={paso}
-                                aria-current={resetStep === paso ? 'step' : undefined}
-                                className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
-                                    resetStep >= paso ? 'bg-mahogany-700' : 'bg-[#e6e0d7]'
-                                }`}
-                            />
-                        ))}
-                    </ol>
-
-                    <MensajeError mensaje={resetError} />
-
-                    {/* Paso 1: confirmar correo */}
-                    {resetStep === 1 && envioCorreo && (
-                        <CargaCorreo enviado={envioCorreo === 'enviado'} onCompleto={alTerminarEnvio} />
-                    )}
-
-                    {resetStep === 1 && !envioCorreo && (
-                        <form onSubmit={enviarCodigoReset} className="space-y-4">
-                            <p className="text-sm text-[#766d62]">
-                                Se enviará un código de verificación al correo registrado.
-                            </p>
-
-                            <div className="rounded-lg border border-[#e6e0d7] bg-[#faf8f5] px-4 py-3">
-                                <p className="text-xs text-[#766d62]">Correo de recuperación</p>
-                                <p className="mt-0.5 text-sm font-semibold text-[#1c1814]">
-                                    {resetEmail || 'Introduce el correo de tu cuenta'}
-                                </p>
-                            </div>
-
-                            <Campo id="reset-email" etiqueta="Correo electrónico de tu cuenta" icono={<FaEnvelope />}>
-                                <input
-                                    id="reset-email"
-                                    type="email"
-                                    value={resetEmail}
-                                    onChange={(e) => setResetEmail(e.target.value)}
-                                    placeholder="Escribe tu correo completo"
-                                    autoComplete="email"
-                                    autoFocus
-                                    required
-                                    className="login-input"
-                                />
-                            </Campo>
-
-                            <BotonPrimario cargando={resetCargando} textoCarga="Enviando..." icono={<FaEnvelope />}>
-                                Enviar código
-                            </BotonPrimario>
-                        </form>
-                    )}
-
-                    {/* Paso 2: código + nueva contraseña */}
-                    {resetStep === 2 && (
-                        <form onSubmit={restablecer} className="space-y-4">
-                            <p className="text-sm text-[#766d62]">
-                                Se envió un código a <strong className="font-semibold text-[#1c1814]">{resetEmail}</strong>.
-                            </p>
-
-                            <Campo id="reset-codigo" etiqueta="Código de verificación" icono={<FaKey />}>
-                                <input
-                                    id="reset-codigo"
-                                    type="text"
-                                    inputMode="numeric"
-                                    maxLength="6"
-                                    value={resetCodigo}
-                                    onChange={(e) => setResetCodigo(e.target.value.replace(/\D/g, ''))}
-                                    placeholder="000000"
-                                    autoComplete="one-time-code"
-                                    required
-                                    className="login-input login-input--codigo"
-                                />
-                            </Campo>
-
-                            <Campo
-                                id="reset-password"
-                                etiqueta="Nueva contraseña"
-                                icono={<FaLock />}
-                                ayuda="Mínimo 8 caracteres, con al menos una letra y un número."
-                                accion={
-                                    <button
-                                        type="button"
-                                        onClick={() => setMostrarResetPass((v) => !v)}
-                                        aria-label={mostrarResetPass ? 'Ocultar contraseñas' : 'Mostrar contraseñas'}
-                                        aria-pressed={mostrarResetPass}
-                                        className="login-ojo"
-                                    >
-                                        {mostrarResetPass ? <FaEyeSlash /> : <FaEye />}
-                                    </button>
-                                }
-                            >
-                                <input
-                                    id="reset-password"
-                                    type={mostrarResetPass ? 'text' : 'password'}
-                                    value={resetPassword}
-                                    onChange={(e) => setResetPassword(e.target.value)}
-                                    placeholder="Nueva contraseña"
-                                    autoComplete="new-password"
-                                    required
-                                    className="login-input"
-                                />
-                            </Campo>
-
-                            <Campo id="reset-password2" etiqueta="Confirmar contraseña" icono={<FaLock />}>
-                                <input
-                                    id="reset-password2"
-                                    type={mostrarResetPass ? 'text' : 'password'}
-                                    value={resetPassword2}
-                                    onChange={(e) => setResetPassword2(e.target.value)}
-                                    placeholder="Repite la contraseña"
-                                    autoComplete="new-password"
-                                    required
-                                    className="login-input"
-                                />
-                            </Campo>
-
-                            <div className="flex gap-3 pt-1">
-                                <button type="button" onClick={resetPaso2Volver} className="login-boton-secundario">
-                                    <FaArrowLeft className="text-xs" /> Volver
-                                </button>
-                                <BotonPrimario cargando={resetCargando} textoCarga="Guardando..." className="flex-1">
-                                    Restablecer
-                                </BotonPrimario>
-                            </div>
-                        </form>
-                    )}
-
-                    {/* Paso 3: listo */}
-                    {resetStep === 3 && (
-                        <ExitoAnimado
-                            titulo="Contraseña actualizada"
-                            detalle={{
-                                iniciando: 'Iniciando sesión con tu nueva contraseña…',
-                                'no-admin': MENSAJE_FUERA_DE_PANEL,
-                                error: 'No se pudo iniciar sesión automáticamente. Ingresa con tu nueva contraseña.',
-                            }[autoInicio]}
-                        >
-                            {autoInicio === 'iniciando' ? (
-                                <div className="login-autoinicio" aria-hidden="true">
-                                    <motion.span
-                                        initial={{ scaleX: 0 }}
-                                        animate={{ scaleX: 1 }}
-                                        transition={{ duration: reducirMovimiento ? 0 : 2.4, ease: 'easeInOut' }}
-                                    />
-                                </div>
+                                        <BotonPrimario cargando={cargando} textoCarga="Ingresando..." icono={<FaRightToBracket />}>
+                                            Iniciar sesión
+                                        </BotonPrimario>
+                                    </form>
+                                </motion.div>
                             ) : (
-                                <div className="mt-5">
-                                    <BotonPrimario
-                                        type="button"
-                                        onClick={() => {
-                                            cerrarRecuperacion();
-                                            setEmail(resetEmail.trim());
-                                            setPassword('');
-                                        }}
-                                        icono={<FaRightToBracket />}
-                                    >
-                                        Ir al inicio de sesión
-                                    </BotonPrimario>
-                                </div>
+                                <motion.div key="otp" {...transicionPaso}>
+                                    <div className="mb-8">
+                                        <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-[#e3cdb2] bg-[#f7f1ea] text-lg text-[#7a5c43]">
+                                            <FaQrcode />
+                                        </span>
+                                        <h1 className="login-titulo">Código de verificación</h1>
+                                        <p className="login-entradilla">Ingresa el código de 6 dígitos de tu aplicación de autenticación</p>
+                                    </div>
+
+                                    <MensajeError mensaje={error} />
+
+                                    <form onSubmit={enviarCodigo} className="min-w-0 space-y-4">
+                                        <Campo id="login-otp" etiqueta="Código OTP" icono={<FaKey />}>
+                                            <input
+                                                id="login-otp"
+                                                type="text"
+                                                inputMode="numeric"
+                                                maxLength="6"
+                                                value={codigo}
+                                                onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
+                                                placeholder="000000"
+                                                autoComplete="one-time-code"
+                                                autoFocus
+                                                required
+                                                className="login-input login-input--codigo"
+                                            />
+                                        </Campo>
+
+                                        <BotonPrimario cargando={verificando} textoCarga="Verificando..." icono={<FaQrcode />}>
+                                            Verificar código
+                                        </BotonPrimario>
+
+                                        <button type="button" onClick={volverAlLogin} className="login-enlace mx-auto flex items-center gap-2">
+                                            <FaArrowLeft className="text-xs" /> Volver al inicio de sesión
+                                        </button>
+                                    </form>
+                                </motion.div>
                             )}
-                        </ExitoAnimado>
-                    )}
+                        </AnimatePresence>
+
+                        <p className="login-nota">
+                            <FaLock aria-hidden="true" /> Acceso exclusivo para administradores
+                        </p>
+                        <Link to="/" className="login-volver">
+                            <FaArrowLeft aria-hidden="true" /> Volver a la página principal
+                        </Link>
+                    </motion.section>
                 </div>
-                <button type="button" onClick={cerrarRecuperacion} className="login-volver" disabled={resetCargando}>
-                    <FaArrowLeft aria-hidden="true" /> Volver al inicio de sesión
-                </button>
-                <Link to="/" className="login-volver">
-                    <FaArrowLeft aria-hidden="true" /> Volver a la página principal
-                </Link>
-                </section>
-            </motion.div>}
-            </AnimatePresence>
+                <span className="login-pliegue" aria-hidden="true" />
+                {abriendoLibro && (
+                    <div className="login-tapa-intro" aria-hidden="true" onAnimationEnd={() => setLibroAbierto(true)}>
+                        <div className="login-tapa-frente">
+                            <img src={logoMarca} alt="" width="226" height="301" />
+                            <span>MATIDANA</span>
+                        </div>
+                        <div className="login-tapa-dorso" />
+                    </div>
+                )}
+
+                <AnimatePresence initial={false}>
+                    {mostrandoRecuperacion && (
+                        <motion.div className="login-lado login-hoja-recuperacion" {...transicionHoja}>
+                            <section className="login-tarjeta" aria-label="Recuperar contraseña">
+                                <div className="mb-8">
+                                    <h1 className="login-titulo">Recuperar contraseña</h1>
+                                    <p className="login-entradilla">{pasoReset}</p>
+                                </div>
+                                <div className="login-reset">
+                                    <ol className="mb-5 flex items-center gap-2" aria-label="Progreso">
+                                        {[1, 2, 3].map((paso) => (
+                                            <li
+                                                key={paso}
+                                                aria-current={resetStep === paso ? 'step' : undefined}
+                                                className={`h-1 flex-1 rounded-full transition-colors duration-300 ${resetStep >= paso ? 'bg-mahogany-700' : 'bg-[#e6e0d7]'}`}
+                                            />
+                                        ))}
+                                    </ol>
+
+                                    <MensajeError mensaje={resetError} />
+
+                                    {resetStep === 1 && envioCorreo && <CargaCorreo enviado={envioCorreo === 'enviado'} onCompleto={alTerminarEnvio} />}
+
+                                    {resetStep === 1 && !envioCorreo && (
+                                        <form onSubmit={enviarCodigoReset} className="space-y-4">
+                                            <p className="text-sm text-[#766d62]">Se enviará un código de verificación al correo registrado.</p>
+
+                                            <div className="rounded-lg border border-[#e6e0d7] bg-[#faf8f5] px-4 py-3">
+                                                <p className="text-xs text-[#766d62]">Correo de recuperación</p>
+                                                <p className="mt-0.5 text-sm font-semibold text-[#1c1814]">{resetEmail || 'Introduce el correo de tu cuenta'}</p>
+                                            </div>
+
+                                            <Campo id="reset-email" etiqueta="Correo electrónico de tu cuenta" icono={<FaEnvelope />}>
+                                                <input
+                                                    id="reset-email"
+                                                    type="email"
+                                                    value={resetEmail}
+                                                    onChange={(e) => setResetEmail(e.target.value)}
+                                                    placeholder="Escribe tu correo completo"
+                                                    autoComplete="email"
+                                                    autoFocus
+                                                    required
+                                                    className="login-input"
+                                                />
+                                            </Campo>
+
+                                            <BotonPrimario cargando={resetCargando} textoCarga="Enviando..." icono={<FaEnvelope />}>
+                                                Enviar código
+                                            </BotonPrimario>
+                                        </form>
+                                    )}
+
+                                    {resetStep === 2 && (
+                                        <form onSubmit={restablecer} className="space-y-4">
+                                            <p className="text-sm text-[#766d62]">
+                                                Se envió un código a <strong className="font-semibold text-[#1c1814]">{resetEmail}</strong>.
+                                            </p>
+
+                                            <Campo id="reset-codigo" etiqueta="Código de verificación" icono={<FaKey />}>
+                                                <input
+                                                    id="reset-codigo"
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    maxLength="6"
+                                                    value={resetCodigo}
+                                                    onChange={(e) => setResetCodigo(e.target.value.replace(/\D/g, ''))}
+                                                    placeholder="000000"
+                                                    autoComplete="one-time-code"
+                                                    required
+                                                    className="login-input login-input--codigo"
+                                                />
+                                            </Campo>
+
+                                            <Campo
+                                                id="reset-password"
+                                                etiqueta="Nueva contraseña"
+                                                icono={<FaLock />}
+                                                ayuda="Mínimo 8 caracteres, con al menos una letra y un número."
+                                                accion={
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setMostrarResetPass((v) => !v)}
+                                                        aria-label={mostrarResetPass ? 'Ocultar contraseñas' : 'Mostrar contraseñas'}
+                                                        aria-pressed={mostrarResetPass}
+                                                        className="login-ojo">
+                                                        {mostrarResetPass ? <FaEyeSlash /> : <FaEye />}
+                                                    </button>
+                                                }>
+                                                <input
+                                                    id="reset-password"
+                                                    type={mostrarResetPass ? 'text' : 'password'}
+                                                    value={resetPassword}
+                                                    onChange={(e) => setResetPassword(e.target.value)}
+                                                    placeholder="Nueva contraseña"
+                                                    autoComplete="new-password"
+                                                    required
+                                                    className="login-input"
+                                                />
+                                            </Campo>
+
+                                            <Campo id="reset-password2" etiqueta="Confirmar contraseña" icono={<FaLock />}>
+                                                <input
+                                                    id="reset-password2"
+                                                    type={mostrarResetPass ? 'text' : 'password'}
+                                                    value={resetPassword2}
+                                                    onChange={(e) => setResetPassword2(e.target.value)}
+                                                    placeholder="Repite la contraseña"
+                                                    autoComplete="new-password"
+                                                    required
+                                                    className="login-input"
+                                                />
+                                            </Campo>
+
+                                            <div className="flex gap-3 pt-1">
+                                                <button type="button" onClick={resetPaso2Volver} className="login-boton-secundario">
+                                                    <FaArrowLeft className="text-xs" /> Volver
+                                                </button>
+                                                <BotonPrimario cargando={resetCargando} textoCarga="Guardando..." className="flex-1">
+                                                    Restablecer
+                                                </BotonPrimario>
+                                            </div>
+                                        </form>
+                                    )}
+
+                                    {resetStep === 3 && (
+                                        <ExitoAnimado
+                                            titulo="Contraseña actualizada"
+                                            detalle={
+                                                {
+                                                    iniciando: 'Iniciando sesión con tu nueva contraseña…',
+                                                    'no-admin': MENSAJE_FUERA_DE_PANEL,
+                                                    error: 'No se pudo iniciar sesión automáticamente. Ingresa con tu nueva contraseña.'
+                                                }[autoInicio]
+                                            }>
+                                            {autoInicio === 'iniciando' ? (
+                                                <div className="login-autoinicio" aria-hidden="true">
+                                                    <motion.span
+                                                        initial={{ scaleX: 0 }}
+                                                        animate={{ scaleX: 1 }}
+                                                        transition={{ duration: reducirMovimiento ? 0 : 2.4, ease: 'easeInOut' }}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="mt-5">
+                                                    <BotonPrimario
+                                                        type="button"
+                                                        onClick={() => {
+                                                            cerrarRecuperacion();
+                                                            setEmail(resetEmail.trim());
+                                                            setPassword('');
+                                                        }}
+                                                        icono={<FaRightToBracket />}>
+                                                        Ir al inicio de sesión
+                                                    </BotonPrimario>
+                                                </div>
+                                            )}
+                                        </ExitoAnimado>
+                                    )}
+                                </div>
+                                <button type="button" onClick={cerrarRecuperacion} className="login-volver" disabled={resetCargando}>
+                                    <FaArrowLeft aria-hidden="true" /> Volver al inicio de sesión
+                                </button>
+                                <Link to="/" className="login-volver">
+                                    <FaArrowLeft aria-hidden="true" /> Volver a la página principal
+                                </Link>
+                            </section>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </main>
     );
@@ -620,7 +569,7 @@ export default function LoginPage() {
 const transicionPaso = {
     initial: { opacity: 0, x: 16 },
     animate: { opacity: 1, x: 0, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
-    exit: { opacity: 0, x: -16, transition: { duration: 0.18, ease: 'easeIn' } },
+    exit: { opacity: 0, x: -16, transition: { duration: 0.18, ease: 'easeIn' } }
 };
 
 function Campo({ id, etiqueta, icono, accion = null, ayuda = null, children }) {
@@ -630,7 +579,9 @@ function Campo({ id, etiqueta, icono, accion = null, ayuda = null, children }) {
                 {etiqueta}
             </label>
             <div className="login-campo">
-                <span className="login-campo-icono" aria-hidden="true">{icono}</span>
+                <span className="login-campo-icono" aria-hidden="true">
+                    {icono}
+                </span>
                 {children}
                 {accion}
             </div>
@@ -667,8 +618,7 @@ function MensajeError({ mensaje }) {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
-                    className="overflow-hidden"
-                >
+                    className="overflow-hidden">
                     <div className="mb-5">
                         <Alert tipo="error">{mensaje}</Alert>
                     </div>

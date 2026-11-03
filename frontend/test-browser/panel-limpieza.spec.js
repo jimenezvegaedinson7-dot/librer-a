@@ -1,26 +1,39 @@
 import { test, expect } from '@playwright/test';
 
 const admin = { id_usuario: 1, nombre: 'Audit', apellido: 'Admin', rol: 'administrador', estado: 1 };
-const original = { ruc: '20123456789', razon_social: 'Empresa de demostración', nombre_comercial: 'Librería de demostración',
-    direccion: 'Dirección ficticia para revisión local', tipo_documento: 'CE', documento_identidad: 'HIST-0001',
-    fecha_inicio: '2020-01-01', aplica_igv: 0, libros_exonerados: 1, exoneracion_libros_hasta: '2026-10-17', tasa_igv: 18 };
+const original = {
+    ruc: '20123456789',
+    razon_social: 'Empresa de demostración',
+    nombre_comercial: 'Librería de demostración',
+    direccion: 'Dirección ficticia para revisión local',
+    tipo_documento: 'CE',
+    documento_identidad: 'HIST-0001',
+    fecha_inicio: '2020-01-01',
+    aplica_igv: 0,
+    libros_exonerados: 1,
+    exoneracion_libros_hasta: '2026-10-17',
+    tasa_igv: 18
+};
 
 for (const width of [390, 1440]) {
     test(`Empresa ${width}px: datos visibles y configuración interna conservada`, async ({ page }, info) => {
         await page.setViewportSize({ width, height: 1000 });
         await page.emulateMedia({ reducedMotion: 'reduce' });
-        await page.addInitScript(usuario => {
-            localStorage.setItem('token', 'audit-token'); localStorage.setItem('usuario', JSON.stringify(usuario));
+        await page.addInitScript((usuario) => {
+            localStorage.setItem('token', 'audit-token');
+            localStorage.setItem('usuario', JSON.stringify(usuario));
         }, admin);
-        const errores = [], escrituras = [];
+        const errores = [],
+            escrituras = [];
         let empresa = { ...original };
-        page.on('pageerror', error => errores.push(error.message));
-        await page.route('http://127.0.0.1:59999/api/**', route => {
+        page.on('pageerror', (error) => errores.push(error.message));
+        await page.route('http://127.0.0.1:59999/api/**', (route) => {
             const path = new URL(route.request().url()).pathname;
             if (path.endsWith('/usuarios/perfil')) return route.fulfill({ json: { success: true, data: admin } });
             if (path === '/api/empresa') {
                 if (route.request().method() === 'PUT') {
-                    const body = route.request().postDataJSON(); escrituras.push(body);
+                    const body = route.request().postDataJSON();
+                    escrituras.push(body);
                     empresa = { ...empresa, ...body };
                 }
                 return route.fulfill({ json: { success: true, empresa } });
@@ -47,8 +60,7 @@ for (const width of [390, 1440]) {
         expect(escrituras[0]).not.toHaveProperty('tipo_documento');
         expect(escrituras[0]).not.toHaveProperty('documento_identidad');
         expect(escrituras[0]).not.toHaveProperty('fecha_inicio');
-        expect(empresa).toMatchObject({ tipo_documento: original.tipo_documento,
-            documento_identidad: original.documento_identidad, fecha_inicio: original.fecha_inicio });
+        expect(empresa).toMatchObject({ tipo_documento: original.tipo_documento, documento_identidad: original.documento_identidad, fecha_inicio: original.fecha_inicio });
         await main.getByRole('button', { name: 'Editar datos', exact: true }).click();
         await expect(main.getByRole('switch')).toHaveCount(0);
         await expect(main.getByLabel('Tasa del IGV (%)')).toHaveCount(0);
@@ -58,7 +70,12 @@ for (const width of [390, 1440]) {
         await expect.poll(() => escrituras.length).toBe(2);
         expect(escrituras[1]).not.toHaveProperty('aplica_igv');
         expect(escrituras[1]).not.toHaveProperty('tasa_igv');
-        expect(empresa).toMatchObject({ aplica_igv: original.aplica_igv, libros_exonerados: original.libros_exonerados, tasa_igv: original.tasa_igv, exoneracion_libros_hasta: original.exoneracion_libros_hasta });
+        expect(empresa).toMatchObject({
+            aplica_igv: original.aplica_igv,
+            libros_exonerados: original.libros_exonerados,
+            tasa_igv: original.tasa_igv,
+            exoneracion_libros_hasta: original.exoneracion_libros_hasta
+        });
         await main.getByRole('button', { name: 'Actualizar', exact: true }).click();
         await expect(main.getByText('Empresa actualizada', { exact: true })).toBeVisible();
         await expect(main.getByLabel('Razón social', { exact: true })).toHaveCount(0);

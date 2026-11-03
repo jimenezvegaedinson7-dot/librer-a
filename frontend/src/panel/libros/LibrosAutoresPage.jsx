@@ -1,14 +1,13 @@
 import { useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FaBook, FaFeather } from 'react-icons/fa6';
-
 import { PageHeader } from '../ui/PageHeader';
 import LibrosPage from './LibrosPage';
 import AutoresPage from '../autores/AutoresPage';
 
 const PESTANAS = [
     { id: 'libros', texto: 'Libros', detalle: 'Catálogo y precios', Icono: FaBook },
-    { id: 'autores', texto: 'Autores', detalle: 'Registro y edición', Icono: FaFeather },
+    { id: 'autores', texto: 'Autores', detalle: 'Registro y edición', Icono: FaFeather }
 ];
 
 export default function LibrosAutoresPage() {
@@ -39,7 +38,9 @@ export default function LibrosAutoresPage() {
                 {PESTANAS.map(({ id, texto, detalle, Icono }, indice) => (
                     <button
                         key={id}
-                        ref={(el) => { botones.current[indice] = el; }}
+                        ref={(el) => {
+                            botones.current[indice] = el;
+                        }}
                         type="button"
                         role="tab"
                         id={`catalogo-pestana-${id}`}
@@ -48,9 +49,10 @@ export default function LibrosAutoresPage() {
                         tabIndex={activa === id ? 0 : -1}
                         onClick={() => cambiar(id)}
                         onKeyDown={(e) => alTeclear(e, indice)}
-                        className={`pestana ${activa === id ? 'pestana--activa' : ''}`}
-                    >
-                        <span className="pestana-icono" aria-hidden="true"><Icono /></span>
+                        className={`pestana ${activa === id ? 'pestana--activa' : ''}`}>
+                        <span className="pestana-icono" aria-hidden="true">
+                            <Icono />
+                        </span>
                         <span className="text-left">
                             <span className="pestana-texto">{texto}</span>
                             <span className="pestana-detalle">{detalle}</span>

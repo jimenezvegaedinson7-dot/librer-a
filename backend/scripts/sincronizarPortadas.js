@@ -1,5 +1,3 @@
-// Índice empaquetado para que Render pueda ejecutar backend/ por separado.
-// Se sincroniza en npm ci (prepare) cuando el checkout incluye frontend/.
 const fs = require('node:fs');
 const path = require('node:path');
 const destino = path.resolve(__dirname, '../src/config/portadasCatalogo.json');
@@ -32,5 +30,7 @@ function sincronizar() {
     }
     console.log(`Portadas sincronizadas: ${Object.keys(portadas).length}, referencias: ${Object.keys(referencias).length}.`);
 }
+
 if (require.main === module) sincronizar();
+
 module.exports = { sincronizar };

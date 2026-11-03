@@ -5,20 +5,9 @@ import { FaChevronRight } from 'react-icons/fa6';
 import ImagenCarga from '../componentes/ImagenCarga';
 import { useCarruselAutomatico } from '../lib/useCarruselAutomatico';
 
-// ============================================================
-// EXPLORA POR CATEGORÍA
-// Las categorías con más títulos (4 en computadora; hasta 8 en el carrusel
-// automático de celular y tablet) del catálogo real, en tarjetas marfil:
-// tres libros de pie con las portadas reales de la categoría, un adorno
-// de línea dorada según el género, el nombre en serif, cuántos títulos
-// tiene y un botón circular. Cada una lleva al catálogo ya filtrado.
-// Sin catálogo (cargando o error) la sección no aparece.
-// ============================================================
-
-// Adornos de línea fina (dorado), uno por género; el resto usa hojas.
 const trazo = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round', strokeLinejoin: 'round' };
 const ADORNOS = {
-    novela: ( // pluma con un rizo de tinta
+    novela: (
         <g {...trazo}>
             <path d="M74 8C46 22 30 52 24 96c14-20 30-40 50-88Z" />
             <path d="M74 8C58 34 42 62 24 96" />
@@ -26,14 +15,14 @@ const ADORNOS = {
             <path d="M24 96c-4 8-12 10-16 6s2-10 8-8c8 3 6 14 18 12 6-1 10-4 14-2" />
         </g>
     ),
-    cuento: ( // ramas con hojas y destellos
+    cuento: (
         <g {...trazo}>
             <path d="M40 112C38 80 44 52 58 26" />
             <path d="M44 88c-12-2-18-10-18-18 10 0 17 7 18 18ZM47 66c10-4 17-12 16-21-9 2-15 10-16 21ZM42 74c-11-5-15-13-14-21 9 3 14 11 14 21ZM51 46c-9-5-12-12-10-19 8 3 12 10 10 19Z" />
             <path d="M70 14l2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6ZM84 34l1.2 3.6 3.6 1.2-3.6 1.2L84 44l-1.2-3.6-3.6-1.2 3.6-1.2L84 34Z" />
         </g>
     ),
-    poesía: ( // flor de trazo fino
+    poesía: (
         <g {...trazo}>
             <path d="M46 114C46 88 44 66 48 44" />
             <path d="M48 44c-8-10-8-22 0-30 8 8 8 20 0 30ZM48 44c-12-2-20-10-22-20 11 0 19 8 22 20ZM48 44c12-2 20-10 22-20-11 0-19 8-22 20Z" />
@@ -41,15 +30,16 @@ const ADORNOS = {
             <circle cx="48" cy="40" r="2.2" />
         </g>
     ),
-    ensayo: ( // columna clásica
+    ensayo: (
         <g {...trazo}>
             <path d="M22 30h52M26 30c-6 0-9-4-8-8 1-5 8-5 9-1 1 3-2 5-4 4M70 30c6 0 9-4 8-8-1-5-8-5-9-1-1 3 2 5 4 4" />
             <path d="M28 36h40M30 36v72M38 36v72M48 36v72M58 36v72M66 36v72" opacity=".8" />
             <path d="M24 108h48M20 114h56" />
         </g>
-    ),
+    )
 };
 const ADORNO_GENERICO = ADORNOS.cuento;
+
 const adornoDe = (nombre) => ADORNOS[String(nombre).toLowerCase()] || ADORNO_GENERICO;
 
 export default function ExplorarCategorias({ catalogo }) {
@@ -66,7 +56,7 @@ export default function ExplorarCategorias({ catalogo }) {
             .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0], 'es'))
             .filter(([, lista]) => lista.length >= 2)
             .slice(0, 8)
-            // Para los libros de la tarjeta se prefieren los que tienen portada.
+
             .map(([nombre, lista]) => [nombre, lista, [...lista].sort((a, b) => Number(Boolean(b.portada)) - Number(Boolean(a.portada))).slice(0, 3)]);
     }, [libros]);
 
@@ -84,17 +74,22 @@ export default function ExplorarCategorias({ catalogo }) {
             <div className="contenedor">
                 <div className="categorias__cabeza">
                     <div>
-                        <h2 id="explorar-titulo" className="categorias__titulo" data-revelar="">Explora por género</h2>
-
+                        <h2 id="explorar-titulo" className="categorias__titulo" data-revelar="">
+                            Explora por género
+                        </h2>
                     </div>
-                    <Link to="/catalogo" className="categorias__todas">Ver todas <FaChevronRight aria-hidden="true" /></Link>
+                    <Link to="/catalogo" className="categorias__todas">
+                        Ver todas <FaChevronRight aria-hidden="true" />
+                    </Link>
                 </div>
                 <ul ref={rejilla} className="categorias__rejilla" data-revelar="">
                     {grupos.map(([nombre, lista, muestra], i) => (
                         <li key={nombre} className="categorias__item" style={{ '--i': i }}>
                             <Link to={`/catalogo?categoria=${encodeURIComponent(nombre)}`} className="categoria-tarjeta">
                                 <span className="categoria__escena" aria-hidden="true">
-                                    <svg className="categoria__adorno" viewBox="0 0 96 120" focusable="false">{adornoDe(nombre)}</svg>
+                                    <svg className="categoria__adorno" viewBox="0 0 96 120" focusable="false">
+                                        {adornoDe(nombre)}
+                                    </svg>
                                     <span className="categoria__libros">
                                         {muestra.map((l, k) => (
                                             <span key={l.id} className="categoria__libro" style={{ '--k': k }}>
@@ -106,9 +101,13 @@ export default function ExplorarCategorias({ catalogo }) {
                                 <span className="categoria__pie">
                                     <span>
                                         <strong className="categoria__nombre">{nombre}</strong>
-                                        <span className="categoria__cuenta">{lista.length} {lista.length === 1 ? 'título' : 'títulos'}</span>
+                                        <span className="categoria__cuenta">
+                                            {lista.length} {lista.length === 1 ? 'título' : 'títulos'}
+                                        </span>
                                     </span>
-                                    <span className="categoria__flecha" aria-hidden="true"><FaChevronRight /></span>
+                                    <span className="categoria__flecha" aria-hidden="true">
+                                        <FaChevronRight />
+                                    </span>
                                 </span>
                             </Link>
                         </li>

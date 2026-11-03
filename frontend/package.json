@@ -12,6 +12,15 @@
     "test:browser": "playwright test",
     "preview": "vite preview"
   },
+  "prettier": {
+    "tabWidth": 4,
+    "singleQuote": true,
+    "trailingComma": "none",
+    "printWidth": 180,
+    "objectWrap": "collapse",
+    "bracketSameLine": true,
+    "embeddedLanguageFormatting": "off"
+  },
   "dependencies": {
     "@gsap/react": "^2.1.2",
     "@tailwindcss/vite": "^4.3.3",

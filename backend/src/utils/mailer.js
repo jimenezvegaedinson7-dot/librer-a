@@ -1,27 +1,10 @@
-// ============================================================
-// UTILIDAD DE CORREO (Resend HTTP como canal principal + SMTP fallback)
-// ============================================================
-// Envía correos transaccionales como el código de verificación
-// de email en el registro.
-//
-// Canal principal: Resend (API REST por HTTPS/puerto 443). Render
-// bloquea el tráfico SMTP saliente (25/465/587) en instancias donde
-// no hay ruta, por lo que Gmail SMTP da timeout. Resend sale por 443.
-//
-// Si no hay RESEND_API_KEY, se intenta SMTP (nodemailer) y, si tampoco
-// hay credenciales SMTP, se registra en consola solo destinatario y
-// asunto (NUNCA el código OTP ni el cuerpo) para probar el flujo local.
-// ============================================================
-
 const nodemailer = require('nodemailer');
 const { resolve4 } = require('dns').promises;
 const { generarPdfDesdeHtml } = require('./pdf');
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || 'jimenezvegaedinson7@gmail.com';
-
 const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.EMAIL_RESEND_API_KEY;
-
 const SMTP_HOST = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
 const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 587);
 const SMTP_SECURE = String(process.env.SMTP_SECURE || process.env.EMAIL_SECURE || 'false') === 'true';
@@ -29,27 +12,12 @@ const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
 const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
 const MAIL_FROM = process.env.MAIL_FROM || process.env.EMAIL_FROM || SMTP_USER;
 const MAIL_FROM_NAME = 'MATIDANA';
-
-// ¿Está configurado algún canal? Si no, el sistema funciona en "modo consola".
 const resendConfigurado = Boolean(RESEND_API_KEY);
 const brevoConfigurado = Boolean(BREVO_API_KEY);
 const smtpConfigurado = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
-
 let transporter = null;
-
-const resendHeaders = RESEND_API_KEY
-    ? {
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-      }
-    : null;
-
-const brevoHeaders = BREVO_API_KEY
-    ? {
-          'api-key': BREVO_API_KEY,
-          'Content-Type': 'application/json',
-      }
-    : null;
+const resendHeaders = RESEND_API_KEY ? { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' } : null;
+const brevoHeaders = BREVO_API_KEY ? { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' } : null;
 
 async function enviarPorBrevo({ destinatario, asunto, html, texto, attachments }) {
     const body = {
@@ -57,62 +25,37 @@ async function enviarPorBrevo({ destinatario, asunto, html, texto, attachments }
         to: [{ email: destinatario }],
         subject: asunto,
         textContent: texto || undefined,
-        htmlContent: html,
+        htmlContent: html
     };
     if (attachments && attachments.length > 0) {
-        body.attachment = attachments.map(a => ({
-            name: a.filename,
-            content: a.content.toString('base64'),
-        }));
+        body.attachment = attachments.map((a) => ({ name: a.filename, content: a.content.toString('base64') }));
     }
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: brevoHeaders,
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(20000),
-    });
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', { method: 'POST', headers: brevoHeaders, body: JSON.stringify(body), signal: AbortSignal.timeout(20000) });
     const cuerpo = await res.json().catch(() => null);
     if (![200, 201].includes(res.status)) {
-        throw new Error(
-            `Brevo HTTP ${res.status}: ${(cuerpo && cuerpo.message) || JSON.stringify(cuerpo)}`
-        );
+        throw new Error(`Brevo HTTP ${res.status}: ${(cuerpo && cuerpo.message) || JSON.stringify(cuerpo)}`);
     }
     return cuerpo;
 }
 
-// Dirección visible del remitente. Sin dominio verificado, Resend solo
-// acepta "onboarding@resend.dev" (entrega únicamente al correo dueño de
-// la cuenta). Con dominio verificado, usar algo como no-reply@misdominio.com
-// vía RESEND_FROM.
-const RESEND_FROM =
-    process.env.RESEND_FROM || 'onboarding@resend.dev';
+const RESEND_FROM = process.env.RESEND_FROM || 'onboarding@resend.dev';
 
 async function enviarPorResend({ destinatario, asunto, html, texto }) {
     const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: resendHeaders,
-        body: JSON.stringify({
-            from: `${MAIL_FROM_NAME} <${RESEND_FROM}>`,
-            to: [destinatario],
-            subject: asunto,
-            text: texto || undefined,
-            html,
-        }),
-        signal: AbortSignal.timeout(20000),
+        body: JSON.stringify({ from: `${MAIL_FROM_NAME} <${RESEND_FROM}>`, to: [destinatario], subject: asunto, text: texto || undefined, html }),
+        signal: AbortSignal.timeout(20000)
     });
     const cuerpo = await res.json().catch(() => null);
     if (!res.ok) {
-        throw new Error(
-            `Resend HTTP ${res.status}: ${(cuerpo && (cuerpo.message || cuerpo.error)) || JSON.stringify(cuerpo)}`
-        );
+        throw new Error(`Resend HTTP ${res.status}: ${(cuerpo && (cuerpo.message || cuerpo.error)) || JSON.stringify(cuerpo)}`);
     }
     return cuerpo;
 }
 
-// Resuelve (una sola vez) la dirección IPv4 del host SMTP. Gmail publica
-// A + AAAA y Render no tiene ruta IPv6; conectar a la IP IPv4 literal
-// desactiva el sorteo A/AAAA de nodemailer y evita ENETUNREACH.
 let smtpResolver = null;
+
 async function hostIpv4() {
     if (smtpResolver !== null) return smtpResolver;
     if (!SMTP_HOST || require('net').isIP(SMTP_HOST)) {
@@ -134,7 +77,9 @@ async function obtenerTransporter() {
     if (!smtpConfigurado) return null;
     if (!transporter) {
         const rechazarNoAutorizado =
-            String(process.env.SMTP_REJECT_UNAUTHORIZED || 'true').trim().toLowerCase() === 'true';
+            String(process.env.SMTP_REJECT_UNAUTHORIZED || 'true')
+                .trim()
+                .toLowerCase() === 'true';
 
         transporter = nodemailer.createTransport({
             host: await hostIpv4(),
@@ -143,48 +88,24 @@ async function obtenerTransporter() {
             requireTLS: !SMTP_SECURE && process.env.SMTP_REQUIRE_TLS !== 'false',
             servername: SMTP_HOST,
             family: 4,
-            auth: {
-                user: SMTP_USER,
-                pass: SMTP_PASS,
-            },
-            tls: {
-                rejectUnauthorized: rechazarNoAutorizado,
-                servername: SMTP_HOST,
-            },
+            auth: { user: SMTP_USER, pass: SMTP_PASS },
+            tls: { rejectUnauthorized: rechazarNoAutorizado, servername: SMTP_HOST },
             connectionTimeout: 15000,
             greetingTimeout: 15000,
-            socketTimeout: 30000,
+            socketTimeout: 30000
         });
     }
     return transporter;
 }
 
-// ============================================================
-// GENERAR PDF DESDE HTML
-// ============================================================
-// ============================================================
-// ENVIAR CORREO
-// Devuelve { enviado: boolean, consola: boolean }
-// ============================================================
-async function enviarCorreo({
-    destinatario,
-    asunto,
-    html,
-    texto = null,
-    attachments = null,
-}) {
-    // Modo consola: no hay ningún canal configurado.
+async function enviarCorreo({ destinatario, asunto, html, texto = null, attachments = null }) {
     if (!brevoConfigurado && !resendConfigurado && !smtpConfigurado) {
-        console.log(
-            `[MAIL·CONSOLA] to=${destinatario} subject=${asunto} ok=false (sin canal configurado)`
-        );
+        console.log(`[MAIL·CONSOLA] to=${destinatario} subject=${asunto} ok=false (sin canal configurado)`);
         return { enviado: false, consola: true };
     }
 
     let ultimoError = null;
 
-    // Canal 1: Brevo (HTTPS). Permite enviar a cualquier destinatario con un
-    // remitente verificado (correo, sin necesidad de dominio).
     if (brevoConfigurado) {
         try {
             const res = await enviarPorBrevo({ destinatario, asunto, html, texto, attachments });
@@ -198,8 +119,6 @@ async function enviarCorreo({
         }
     }
 
-    // Canal 2: Resend (HTTPS). No envía adjuntos: un correo con PDF pasa al
-    // siguiente canal en vez de llegar sin su archivo.
     if (resendConfigurado && !(attachments && attachments.length)) {
         try {
             const res = await enviarPorResend({ destinatario, asunto, html, texto });
@@ -213,11 +132,9 @@ async function enviarCorreo({
         }
     }
 
-    // Canal 2: SMTP. Hasta 3 intentos con backoff.
     if (smtpConfigurado) {
         const MAX_INTENTOS = 3;
         for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
-            // Transporter nuevo en cada intento para no reutilizar un socket dañado.
             transporter = null;
 
             const intentoRemitente = await obtenerTransporter();
@@ -230,7 +147,7 @@ async function enviarCorreo({
                     subject: asunto,
                     text: texto,
                     html,
-                    attachments: attachments || undefined,
+                    attachments: attachments || undefined
                 });
                 return { enviado: true, consola: false, canal: 'smtp' };
             } catch (error) {
@@ -243,16 +160,10 @@ async function enviarCorreo({
         }
     }
 
-    // Si fallan los canales reales, registramos solo destinatario/asunto y
-    // el error (sin imprimir el cuerpo ni el código OTP).
-    console.log(
-        `[MAIL·FALLBACK] to=${destinatario} subject=${asunto} ok=false error=${ultimoError || '(desconocido)'}`
-    );
+    console.log(`[MAIL·FALLBACK] to=${destinatario} subject=${asunto} ok=false error=${ultimoError || '(desconocido)'}`);
     return { enviado: false, consola: true, error: ultimoError };
 }
 
-// Encabezado común de todos los correos: el logo y el nombre en texto,
-// sin franja de color ni recuadros. El logo se sirve desde la web pública.
 const LOGO_CORREO = 'https://libreria.my/logo-correo.png';
 const FUENTE_CORREO = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 
@@ -268,38 +179,23 @@ function encabezadoCorreo() {
 }
 
 function pieCorreo(texto) {
-    return (
-        `<p style="margin:32px 0 0;font-size:12px;line-height:1.5;color:#8a8a8a">` +
-        (texto ? `${texto}<br>` : '') +
-        `MATIDANA · Pallasca, Áncash, Perú</p>`
-    );
+    return `<p style="margin:32px 0 0;font-size:12px;line-height:1.5;color:#8a8a8a">` + (texto ? `${texto}<br>` : '') + `MATIDANA · Pallasca, Áncash, Perú</p>`;
 }
 
-// Mensaje suelto, en texto, sobre fondo blanco (sin tarjeta alrededor).
 function envolturaCorreo(contenido) {
-    return (
-        `<div style="max-width:560px;margin:0 auto;padding:24px 16px;font-family:${FUENTE_CORREO};font-size:15px;line-height:1.6;color:#1f1f1f">` +
-        contenido +
-        `</div>`
-    );
+    return `<div style="max-width:560px;margin:0 auto;padding:24px 16px;font-family:${FUENTE_CORREO};font-size:15px;line-height:1.6;color:#1f1f1f">` + contenido + `</div>`;
 }
 
-// ============================================================
-// CORREOS CON CÓDIGO (verificar cuenta y restablecer contraseña)
-// ------------------------------------------------------------
-// Formato sobrio: logo y nombre arriba, texto suelto y el código grande,
-// sin cabecera de color ni recuadros.
-// ============================================================
 function plantillaCodigo({ titulo, saludo, intro, codigo, cierre }) {
     return envolturaCorreo(
         encabezadoCorreo() +
-        `<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;font-weight:600;color:#1f1f1f">${htmlEscape(titulo)}</h1>` +
-        `<p style="margin:0 0 12px">${saludo}</p>` +
-        `<p style="margin:0 0 18px">${intro}</p>` +
-        `<p style="margin:0 0 18px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#111111">${htmlEscape(codigo)}</p>` +
-        `<p style="margin:0 0 12px;font-size:14px;color:#3c3c3c">Este código vence en <strong>10 minutos</strong> y solo se puede usar una vez.</p>` +
-        `<p style="margin:0;font-size:14px;color:#3c3c3c">${cierre}</p>` +
-        pieCorreo('Por tu seguridad, no compartas este código con nadie. MATIDANA nunca te lo pedirá por teléfono, mensaje ni correo.')
+            `<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;font-weight:600;color:#1f1f1f">${htmlEscape(titulo)}</h1>` +
+            `<p style="margin:0 0 12px">${saludo}</p>` +
+            `<p style="margin:0 0 18px">${intro}</p>` +
+            `<p style="margin:0 0 18px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#111111">${htmlEscape(codigo)}</p>` +
+            `<p style="margin:0 0 12px;font-size:14px;color:#3c3c3c">Este código vence en <strong>10 minutos</strong> y solo se puede usar una vez.</p>` +
+            `<p style="margin:0;font-size:14px;color:#3c3c3c">${cierre}</p>` +
+            pieCorreo('Por tu seguridad, no compartas este código con nadie. MATIDANA nunca te lo pedirá por teléfono, mensaje ni correo.')
     );
 }
 
@@ -346,9 +242,6 @@ async function enviarCodigoReseteo({ destinatario, codigo, nombre }) {
     return enviarCorreo({ destinatario, asunto, html, texto });
 }
 
-// ============================================================
-// ESCAPAR HTML (para títulos, nombres, etc. en correos transaccionales)
-// ============================================================
 const htmlEscape = (valor) =>
     String(valor ?? '')
         .replace(/&/g, '&amp;')
@@ -357,19 +250,12 @@ const htmlEscape = (valor) =>
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-// ============================================================
-// PLANTILLA BASE DE CORREO
-// ============================================================
-const plantillaBase = ({
-    tituloCabecera,
-    asunto,
-    cuerpoHtml
-}) => {
+const plantillaBase = ({ tituloCabecera, asunto, cuerpoHtml }) => {
     const html = envolturaCorreo(
         encabezadoCorreo() +
-        `<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;font-weight:600;color:#1f1f1f">${htmlEscape(tituloCabecera)}</h1>` +
-        cuerpoHtml +
-        pieCorreo()
+            `<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;font-weight:600;color:#1f1f1f">${htmlEscape(tituloCabecera)}</h1>` +
+            cuerpoHtml +
+            pieCorreo()
     );
 
     return { asunto, html };
@@ -379,32 +265,15 @@ const etiquetaTipoEntrega = (tipoEntrega) => {
     if (tipoEntrega === 'domicilio') return 'Envío a domicilio';
     if (tipoEntrega === 'tienda') return 'Recojo en tienda';
 
-    // No se inventa la ruta. Un tipo desconocido (o ausente en una venta
-    // legacy) se dice como lo que es, en vez de anunciarle al cliente un
-    // "recojo en tienda" que el sistema no puede confirmar.
     return 'Tipo de entrega por confirmar';
 };
 
-const money = (valor) =>
-    `S/ ${Number(valor || 0).toFixed(2)}`;
+const money = (valor) => `S/ ${Number(valor || 0).toFixed(2)}`;
 
-// ============================================================
-// CORREO: PEDIDO CREADO (pendiente de pago)
-// ============================================================
-async function enviarCorreoOrdenCreada({
-    destinatario,
-    nombre,
-    idVenta,
-    items,
-    total,
-    costoEnvio,
-    tipoEntrega
-}) {
+async function enviarCorreoOrdenCreada({ destinatario, nombre, idVenta, items, total, costoEnvio, tipoEntrega }) {
     const filas = (items || [])
         .map((item) => {
-            const subtotal = Number(
-                Number(item.unit_price) * Number(item.quantity)
-            ).toFixed(2);
+            const subtotal = Number(Number(item.unit_price) * Number(item.quantity)).toFixed(2);
 
             return (
                 `<tr>` +
@@ -437,24 +306,12 @@ async function enviarCorreoOrdenCreada({
         `<p style="color:#64748b;font-size:13px">Entrega: <strong>${htmlEscape(etiquetaTipoEntrega(tipoEntrega))}</strong>.</p>` +
         `<p style="color:#64748b;font-size:13px">Si no realizaste este pedido, ignora este correo.</p>`;
 
-    const { asunto, html } = plantillaBase({
-        tituloCabecera: 'Confirmación de pedido',
-        cuerpoHtml
-    });
+    const { asunto, html } = plantillaBase({ tituloCabecera: 'Confirmación de pedido', cuerpoHtml });
 
     return enviarCorreo({ destinatario, asunto, html });
 }
 
-// ============================================================
-// CORREO: PAGO CONFIRMADO
-// ============================================================
-async function enviarCorreoPagoConfirmado({
-    destinatario,
-    nombre,
-    idVenta,
-    total,
-    externalReference
-}) {
+async function enviarCorreoPagoConfirmado({ destinatario, nombre, idVenta, total, externalReference }) {
     const cuerpoHtml =
         `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
         `<p>El pago de tu pedido <strong>#${htmlEscape(idVenta)}</strong> fue <strong>aprobado</strong>. Tu pedido está por preparar; te avisaremos cuando esté listo para recoger o salga con el repartidor.</p>` +
@@ -462,24 +319,12 @@ async function enviarCorreoPagoConfirmado({
         `<p style="color:#64748b;font-size:13px">Referencia del pago: <strong>${htmlEscape(externalReference || '—')}</strong>.</p>` +
         `<p style="color:#64748b;font-size:13px">Puedes revisar el estado de tu pedido en la aplicación en «Mis compras».</p>`;
 
-    const { asunto, html } = plantillaBase({
-        tituloCabecera: 'Pago confirmado',
-        cuerpoHtml
-    });
+    const { asunto, html } = plantillaBase({ tituloCabecera: 'Pago confirmado', cuerpoHtml });
 
     return enviarCorreo({ destinatario, asunto, html });
 }
 
-// ============================================================
-// CORREO: PAGO RECHAZADO
-// ============================================================
-async function enviarCorreoPagoRechazado({
-    destinatario,
-    nombre,
-    idVenta,
-    total,
-    estado
-}) {
+async function enviarCorreoPagoRechazado({ destinatario, nombre, idVenta, total, estado }) {
     const cuerpoHtml =
         `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
         `<p>El pago de tu pedido <strong>#${htmlEscape(idVenta)}</strong> no pudo completarse (${htmlEscape(estado || 'rechazado')}).</p>` +
@@ -487,21 +332,11 @@ async function enviarCorreoPagoRechazado({
         `<p style="color:#64748b;font-size:13px">Monto del pedido: <strong>${money(total)}</strong>.</p>` +
         `<p style="color:#64748b;font-size:13px">Si tienes dudas, escríbenos respondiendo este correo.</p>`;
 
-    const { asunto, html } = plantillaBase({
-        tituloCabecera: 'Pago no procesado',
-        cuerpoHtml
-    });
+    const { asunto, html } = plantillaBase({ tituloCabecera: 'Pago no procesado', cuerpoHtml });
 
     return enviarCorreo({ destinatario, asunto, html });
 }
 
-// ============================================================
-// CORREOS DE AVANCE DEL PEDIDO
-// ------------------------------------------------------------
-// Cada tipo de entrega tiene su propio aviso, como en las tiendas
-// online: el recojo avisa cuando el pedido está listo en tienda y
-// el delivery cuando sale hacia la dirección del cliente.
-// ============================================================
 const AVISOS_PEDIDO = {
     tienda: {
         listo_recojo: {
@@ -519,7 +354,8 @@ const AVISOS_PEDIDO = {
         en_camino: {
             titulo: 'Tu pedido va en camino',
             sello: 'En camino',
-            texto: (id, direccion) => `Tu pedido <strong>#${id}</strong> salió de la tienda` +
+            texto: (id, direccion) =>
+                `Tu pedido <strong>#${id}</strong> salió de la tienda` +
                 (direccion ? ` hacia <strong>${htmlEscape(direccion)}</strong>` : '') +
                 '. Mantén tu teléfono a mano para coordinar la entrega.'
         },
@@ -531,17 +367,9 @@ const AVISOS_PEDIDO = {
     }
 };
 
-// Devuelve el aviso de ese paso, o null si el paso no notifica.
 const avisoPedido = (tipoEntrega, estado) => AVISOS_PEDIDO[tipoEntrega]?.[estado] || null;
 
-async function enviarCorreoAvancePedido({
-    destinatario,
-    nombre,
-    idVenta,
-    tipoEntrega,
-    estado,
-    direccion
-}) {
+async function enviarCorreoAvancePedido({ destinatario, nombre, idVenta, tipoEntrega, estado, direccion }) {
     const aviso = avisoPedido(tipoEntrega, estado);
     if (!aviso) return null;
     const cuerpoHtml =
@@ -551,67 +379,19 @@ async function enviarCorreoAvancePedido({
         `<p style="color:#64748b;font-size:13px">Entrega: <strong>${htmlEscape(etiquetaTipoEntrega(tipoEntrega))}</strong>.</p>` +
         `<p style="color:#64748b;font-size:13px">Si tienes dudas, responde este correo y te ayudamos.</p>`;
 
-    const { asunto, html } = plantillaBase({
-        tituloCabecera: aviso.titulo,
-        cuerpoHtml
-    });
+    const { asunto, html } = plantillaBase({ tituloCabecera: aviso.titulo, cuerpoHtml });
 
     return enviarCorreo({ destinatario, asunto, html });
 }
 
-// Compatibilidad: el aviso final según el tipo de entrega.
-async function enviarCorreoPedidoEntregado({ destinatario, nombre, idVenta, tipoEntrega }) {
-    return enviarCorreoAvancePedido({ destinatario, nombre, idVenta, tipoEntrega, estado: 'entregado' });
-}
-
-// ============================================================
-// CORREO: RESERVA CREADA
-// ============================================================
-async function enviarCorreoReservaCreada({
-    destinatario,
-    nombre,
-    idReserva,
-    titulo,
-    cantidad,
-    fechaVencimiento
-}) {
-    const cuerpoHtml =
-        `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
-        `<p>Tu reserva <strong>#${htmlEscape(idReserva)}</strong> fue confirmada:</p>` +
-        `<p>Libro: <strong>${htmlEscape(titulo || 'Libro')}</strong><br>Cantidad reservada: <strong>${htmlEscape(cantidad)}</strong></p>` +
-        `<p style="color:#64748b;font-size:13px">La reserva vence el <strong>${htmlEscape(fechaVencimiento || '—')}</strong>. ` +
-        `Pasa a recoger el libro antes de esa fecha.</p>` +
-        `<p style="color:#64748b;font-size:13px">Si no realizaste esta reserva, ignora este correo.</p>`;
-
-    const { asunto, html } = plantillaBase({
-        tituloCabecera: 'Reserva confirmada',
-        cuerpoHtml
-    });
-
-    return enviarCorreo({ destinatario, asunto, html });
-}
-
-// ============================================================
-// CORREO: COMPROBANTE ELECTRÓNICO
-// ============================================================
-// Fecha de emisión legible en horario de Perú: "23/09/2026 11:42 p. m.".
 function formatearFechaEmision(fecha) {
     const d = fecha ? new Date(fecha) : new Date();
     if (Number.isNaN(d.getTime())) return String(fecha || '');
     return d
-        .toLocaleString('es-PE', {
-            timeZone: 'America/Lima',
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        })
+        .toLocaleString('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
         .replace(',', '');
 }
 
-// Representación imprimible del comprobante (cuerpo del correo y PDF).
 function construirHtmlComprobante({
     nombre,
     tipo,
@@ -631,9 +411,7 @@ function construirHtmlComprobante({
 }) {
     const { montoEnLetras } = require('./numeroALetras');
     const esFactura = tipo === 'factura';
-    // Denominación temporal: el sistema aún no emite el comprobante
-    // electrónico ante SUNAT (sin XML firmado ni OSE/PSE), así que ni la
-    // boleta ni la factura se presentan como documento electrónico oficial.
+
     const tipoLabel = 'COMPROBANTE DE VENTA';
     const serieNumero = `${serie}-${String(numero).padStart(8, '0')}`;
     const clienteTipoDoc = clienteTipoDocumento || (esFactura ? 'RUC' : 'DNI');
@@ -643,9 +421,7 @@ function construirHtmlComprobante({
 
     const fecha = formatearFechaEmision(fechaEmision);
 
-    const docLine = clienteDniRuc
-        ? `${htmlEscape(clienteTipoDoc)} - ${htmlEscape(clienteDniRuc)}`
-        : '\u2014';
+    const docLine = clienteDniRuc ? `${htmlEscape(clienteTipoDoc)} - ${htmlEscape(clienteDniRuc)}` : '\u2014';
 
     const emailLine = clienteEmail
         ? `<tr><td style="padding:2px 0;font-weight:500;width:190px">Correo</td><td style="padding:2px 0;width:20px">:</td><td style="padding:2px 0">${htmlEscape(clienteEmail)}</td></tr>`
@@ -660,67 +436,103 @@ function construirHtmlComprobante({
         const cantidad = Number(item.cantidad || 0);
         const precio = Number(item.precio_unitario || 0);
         const descuento = Number(item.descuento || 0);
-        const importe = Number(item.subtotal || (cantidad * precio - descuento));
+        const importe = Number(item.subtotal || cantidad * precio - descuento);
         filasHtml +=
             '<tr>' +
-            '<td style="border:1px solid #000;padding:6px 8px;text-align:center">' + cantidad.toFixed(2) + '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:center">' +
+            cantidad.toFixed(2) +
+            '</td>' +
             '<td style="border:1px solid #000;padding:6px 8px;text-align:center">UNIDAD</td>' +
-            '<td style="border:1px solid #000;padding:6px 8px;text-align:left">' + htmlEscape(item.titulo || '\u2014') + '</td>' +
-            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' + formatMailMoney(precio) + '</td>' +
-            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' + formatMailMoney(descuento) + '</td>' +
-            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' + formatMailMoney(importe) + '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:left">' +
+            htmlEscape(item.titulo || '\u2014') +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(precio) +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(descuento) +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(importe) +
+            '</td>' +
             '</tr>';
     });
 
-    // El envío ya forma parte del total guardado; se muestra como detalle.
     if (envio > 0) {
         filasHtml +=
             '<tr>' +
             '<td style="border:1px solid #000;padding:6px 8px;text-align:center">1.00</td>' +
             '<td style="border:1px solid #000;padding:6px 8px;text-align:center">SERVICIO</td>' +
             '<td style="border:1px solid #000;padding:6px 8px;text-align:left">Servicio de env\u00edo a domicilio</td>' +
-            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' + formatMailMoney(envio) + '</td>' +
-            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' + formatMailMoney(0) + '</td>' +
-            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' + formatMailMoney(envio) + '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(envio) +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(0) +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(envio) +
+            '</td>' +
             '</tr>';
     }
 
     const totalFila = (label, value, strong) => {
         const weight = strong ? 'font-weight:bold' : '';
-        return '<tr>' +
-            '<td style="padding:4px 8px;text-align:right;' + weight + '">' + label + ' :</td>' +
-            '<td style="border:1px solid #000;padding:4px 8px;text-align:right;' + weight + '">' + formatMailMoney(value) + '</td>' +
-            '</tr>';
+        return (
+            '<tr>' +
+            '<td style="padding:4px 8px;text-align:right;' +
+            weight +
+            '">' +
+            label +
+            ' :</td>' +
+            '<td style="border:1px solid #000;padding:4px 8px;text-align:right;' +
+            weight +
+            '">' +
+            formatMailMoney(value) +
+            '</td>' +
+            '</tr>'
+        );
     };
 
     const cuerpoHtml =
         '<div style="max-width:760px;margin:0 auto;background:#ffffff;border:2px solid #000;padding:14px;font-family:Arial,Helvetica,sans-serif;color:#000000">' +
-
         '<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #000;padding-bottom:16px;margin-bottom:16px">' +
         '<tr>' +
         '<td style="vertical-align:top;padding-right:30px">' +
-        '<p style="margin:0;font-size:18px;font-weight:bold;text-transform:uppercase;line-height:1.2">' + htmlEscape(empresaRazon || '\u2014') + '</p>' +
+        '<p style="margin:0;font-size:18px;font-weight:bold;text-transform:uppercase;line-height:1.2">' +
+        htmlEscape(empresaRazon || '\u2014') +
+        '</p>' +
         (empresaNombreComercial ? '<p style="margin:4px 0 0;font-size:13px">' + htmlEscape(empresaNombreComercial) + '</p>' : '') +
         (empresaDireccion ? '<p style="margin:4px 0 0;font-size:12px">' + htmlEscape(empresaDireccion) + '</p>' : '') +
         '</td>' +
         '<td style="vertical-align:top;width:320px">' +
         '<table width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #000;text-align:center">' +
-        '<tr><td style="padding:10px;font-size:16px;font-weight:bold;text-transform:uppercase">' + tipoLabel + '</td></tr>' +
-        '<tr><td style="border-top:1px solid #000;padding:6px;font-size:13px;font-weight:bold">RUC: ' + htmlEscape(empresaRuc || '\u2014') + '</td></tr>' +
-        '<tr><td style="border-top:1px solid #000;padding:10px;font-size:18px;font-weight:bold;letter-spacing:1px">' + htmlEscape(serieNumero) + '</td></tr>' +
+        '<tr><td style="padding:10px;font-size:16px;font-weight:bold;text-transform:uppercase">' +
+        tipoLabel +
+        '</td></tr>' +
+        '<tr><td style="border-top:1px solid #000;padding:6px;font-size:13px;font-weight:bold">RUC: ' +
+        htmlEscape(empresaRuc || '\u2014') +
+        '</td></tr>' +
+        '<tr><td style="border-top:1px solid #000;padding:10px;font-size:18px;font-weight:bold;letter-spacing:1px">' +
+        htmlEscape(serieNumero) +
+        '</td></tr>' +
         '</table>' +
         '</td>' +
         '</tr>' +
         '</table>' +
-
         '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px">' +
-        '<tr><td style="padding:2px 0;font-weight:500;width:190px">Fecha de Emisi\u00f3n</td><td style="padding:2px 0;width:20px">:</td><td style="padding:2px 0">' + htmlEscape(fecha) + '</td></tr>' +
-        '<tr><td style="padding:2px 0;font-weight:500">Se\u00f1or(es)</td><td style="padding:2px 0">:</td><td style="padding:2px 0">' + htmlEscape(nombre || '\u2014') + '</td></tr>' +
-        '<tr><td style="padding:2px 0;font-weight:500">Documento</td><td style="padding:2px 0">:</td><td style="padding:2px 0">' + docLine + '</td></tr>' +
+        '<tr><td style="padding:2px 0;font-weight:500;width:190px">Fecha de Emisi\u00f3n</td><td style="padding:2px 0;width:20px">:</td><td style="padding:2px 0">' +
+        htmlEscape(fecha) +
+        '</td></tr>' +
+        '<tr><td style="padding:2px 0;font-weight:500">Se\u00f1or(es)</td><td style="padding:2px 0">:</td><td style="padding:2px 0">' +
+        htmlEscape(nombre || '\u2014') +
+        '</td></tr>' +
+        '<tr><td style="padding:2px 0;font-weight:500">Documento</td><td style="padding:2px 0">:</td><td style="padding:2px 0">' +
+        docLine +
+        '</td></tr>' +
         '<tr><td style="padding:2px 0;font-weight:500">Tipo de Moneda</td><td style="padding:2px 0">:</td><td style="padding:2px 0">SOLES</td></tr>' +
         emailLine +
         '</table>' +
-
         '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #000;margin-bottom:16px">' +
         '<thead><tr>' +
         '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:58px">Cant.</th>' +
@@ -730,13 +542,16 @@ function construirHtmlComprobante({
         '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:72px">Descuento</th>' +
         '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:92px">Importe de Venta</th>' +
         '</tr></thead>' +
-        '<tbody>' + filasHtml + '</tbody>' +
+        '<tbody>' +
+        filasHtml +
+        '</tbody>' +
         '</table>' +
-
         '<table width="100%" cellpadding="0" cellspacing="0">' +
         '<tr>' +
         '<td style="vertical-align:top;padding-top:6px;padding-right:20px;width:55%">' +
-        '<p style="margin:0;font-size:14px;font-weight:bold;text-transform:uppercase;line-height:1.3">SON: ' + htmlEscape(montoEnLetras(tot)) + '</p>' +
+        '<p style="margin:0;font-size:14px;font-weight:bold;text-transform:uppercase;line-height:1.3">SON: ' +
+        htmlEscape(montoEnLetras(tot)) +
+        '</p>' +
         '</td>' +
         '<td style="vertical-align:top;width:45%">' +
         '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #000;border-collapse:collapse">' +
@@ -750,10 +565,6 @@ function construirHtmlComprobante({
     return { cuerpoHtml, tipoLabel, serieNumero };
 }
 
-// El correo lleva solo un mensaje breve y el comprobante en PDF adjunto
-// (no la vista completa repetida en el cuerpo). Si el PDF no se pudiera
-// generar, se envía la vista en el cuerpo para que el cliente no se quede
-// sin su comprobante.
 function cuerpoAvisoComprobante({ nombre, tipoLabel, serieNumero, archivoPdf }) {
     return (
         `<p>Hola${nombre ? ` <strong>${htmlEscape(nombre)}</strong>` : ''},</p>` +
@@ -765,13 +576,9 @@ function cuerpoAvisoComprobante({ nombre, tipoLabel, serieNumero, archivoPdf }) 
 
 async function enviarComprobantePorEmail(datos) {
     const { destinatario } = datos;
-    const { cuerpoHtml, tipoLabel, serieNumero } =
-        construirHtmlComprobante(datos);
+    const { cuerpoHtml, tipoLabel, serieNumero } = construirHtmlComprobante(datos);
     const archivoPdf = `${serieNumero}.pdf`;
-    const titulo = {
-        tituloCabecera: `${tipoLabel} ${serieNumero}`,
-        asunto: `${tipoLabel} ${serieNumero} \u2014 Librer\u00eda`
-    };
+    const titulo = { tituloCabecera: `${tipoLabel} ${serieNumero}`, asunto: `${tipoLabel} ${serieNumero} \u2014 Librer\u00eda` };
 
     let pdfBuffer = null;
     try {
@@ -781,33 +588,14 @@ async function enviarComprobantePorEmail(datos) {
     }
 
     if (!pdfBuffer) {
-        // Respaldo: sin PDF, el comprobante va en el cuerpo del correo.
         const { asunto, html } = plantillaBase({ ...titulo, cuerpoHtml });
         return enviarCorreo({ destinatario, asunto, html, attachments: null });
     }
 
-    const { asunto, html } = plantillaBase({
-        ...titulo,
-        cuerpoHtml: cuerpoAvisoComprobante({
-            nombre: datos.nombre,
-            tipoLabel,
-            serieNumero,
-            archivoPdf
-        })
-    });
-    return enviarCorreo({
-        destinatario,
-        asunto,
-        html,
-        attachments: [{ filename: archivoPdf, content: pdfBuffer }]
-    });
+    const { asunto, html } = plantillaBase({ ...titulo, cuerpoHtml: cuerpoAvisoComprobante({ nombre: datos.nombre, tipoLabel, serieNumero, archivoPdf }) });
+    return enviarCorreo({ destinatario, asunto, html, attachments: [{ filename: archivoPdf, content: pdfBuffer }] });
 }
 
-// ============================================================
-// LIBRO DE RECLAMACIONES
-// ============================================================
-// Copia de la hoja al consumidor (obligatoria al registrarla) y
-// respuesta del proveedor.
 function htmlHojaReclamacion(r, empresa) {
     const fila = (etiqueta, valor) =>
         `<tr><td style="padding:4px 12px 4px 0;width:38%;vertical-align:top;color:#6b6b6b">${htmlEscape(etiqueta)}</td>` +
@@ -882,13 +670,11 @@ module.exports = {
     enviarCorreoOrdenCreada,
     enviarCorreoPagoConfirmado,
     enviarCorreoPagoRechazado,
-    enviarCorreoReservaCreada,
-    enviarCorreoPedidoEntregado,
     enviarCorreoAvancePedido,
     avisoPedido,
     enviarComprobantePorEmail,
     construirHtmlComprobante,
     smtpConfigurado,
     resendConfigurado,
-    brevoConfigurado,
+    brevoConfigurado
 };

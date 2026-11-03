@@ -1,4 +1,3 @@
--- Identifica nuevas compras web sin reinterpretar ni actualizar el historial.
 ALTER TABLE ventas ADD COLUMN IF NOT EXISTS canal_compra VARCHAR(10) NULL;
 DO $$
 BEGIN

@@ -18,7 +18,7 @@ export async function crearAutor(formulario) {
         nombre: formulario.nombre.trim(),
         apellido: formulario.apellido.trim(),
         nacionalidad: formulario.nacionalidad.trim(),
-        biografia: formulario.biografia.trim(),
+        biografia: formulario.biografia.trim()
     });
 }
 
@@ -28,7 +28,7 @@ export async function actualizarAutor(id, formulario) {
         apellido: formulario.apellido.trim(),
         nacionalidad: formulario.nacionalidad.trim(),
         biografia: formulario.biografia.trim(),
-        estado: formulario.estado,
+        estado: formulario.estado
     });
 }
 

@@ -4,27 +4,12 @@ const reclamacionModel = require('../models/reclamacion.model');
 const empresaModel = require('../models/empresa.model');
 const historialModel = require('../models/historial.model');
 const { validarId } = require('../utils/validaciones');
-const {
-    enviarConstanciaReclamacion,
-    enviarRespuestaReclamacion
-} = require('../utils/mailer');
-
-// ========================================
-// LIBRO DE RECLAMACIONES
-// ----------------------------------------
-// POST /api/reclamaciones           público (con o sin sesión)
-// GET  /api/reclamaciones           admin
-// GET  /api/reclamaciones/resumen   admin
-// GET  /api/reclamaciones/:id       admin
-// PUT  /api/reclamaciones/:id/respuesta  admin
-// ========================================
+const { enviarConstanciaReclamacion, enviarRespuestaReclamacion } = require('../utils/mailer');
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const texto = (valor, max) =>
-    typeof valor === 'string' ? valor.trim().slice(0, max) : '';
+const texto = (valor, max) => (typeof valor === 'string' ? valor.trim().slice(0, max) : '');
 
-// Valida y normaliza la hoja. Devuelve { datos } o { error }.
 const validarHoja = (body) => {
     const datos = {
         tipo: texto(body.tipo, 10).toLowerCase(),
@@ -107,7 +92,6 @@ const validarHoja = (body) => {
     return { datos };
 };
 
-// Si llega con sesión válida, se enlaza al usuario (no es obligatorio).
 const usuarioOpcional = (req) => {
     const partes = String(req.headers.authorization || '').split(' ');
     if (partes[0] !== 'Bearer' || !partes[1] || !process.env.JWT_SECRET) {
@@ -127,27 +111,21 @@ const registrar = async (req, res) => {
             return res.status(400).json({ success: false, mensaje: error });
         }
 
-        const reclamacion = await reclamacionModel.crear({
-            ...datos,
-            id_usuario: usuarioOpcional(req)
-        });
+        const reclamacion = await reclamacionModel.crear({ ...datos, id_usuario: usuarioOpcional(req) });
 
         const empresa = await empresaModel.obtenerEmpresa().catch(() => ({}));
-        // La copia al consumidor no debe bloquear el registro.
+
         enviarConstanciaReclamacion({ reclamacion, empresa }).catch((errorCorreo) => {
             console.error('No se pudo enviar la constancia del reclamo:', errorCorreo.message);
         });
 
-        return res.status(201).json({
-            success: true,
-            mensaje: `Registramos tu hoja N.° ${reclamacion.numero}. Te enviamos una copia a ${reclamacion.consumidor_email}.`,
-            data: {
-                id_reclamacion: reclamacion.id_reclamacion,
-                numero: reclamacion.numero,
-                fecha_registro: reclamacion.fecha_registro,
-                fecha_limite: reclamacion.fecha_limite
-            }
-        });
+        return res
+            .status(201)
+            .json({
+                success: true,
+                mensaje: `Registramos tu hoja N.° ${reclamacion.numero}. Te enviamos una copia a ${reclamacion.consumidor_email}.`,
+                data: { id_reclamacion: reclamacion.id_reclamacion, numero: reclamacion.numero, fecha_registro: reclamacion.fecha_registro, fecha_limite: reclamacion.fecha_limite }
+            });
     } catch (error) {
         console.error('Error al registrar reclamación:', error);
         return res.status(500).json({ success: false, mensaje: 'No se pudo registrar la hoja de reclamación' });
@@ -158,15 +136,16 @@ const listar = async (req, res) => {
     try {
         const pagina = req.query.pagina === undefined ? 1 : validarId(req.query.pagina);
         const porPagina = req.query.por_pagina === undefined ? 50 : validarId(req.query.por_pagina);
-        if (!pagina || !porPagina || porPagina > 100 || (req.query.q !== undefined && typeof req.query.q !== 'string') ||
-            (req.query.estado !== undefined && !['todos', 'pendiente', 'respondido', 'vencido'].includes(req.query.estado))) {
+        if (
+            !pagina ||
+            !porPagina ||
+            porPagina > 100 ||
+            (req.query.q !== undefined && typeof req.query.q !== 'string') ||
+            (req.query.estado !== undefined && !['todos', 'pendiente', 'respondido', 'vencido'].includes(req.query.estado))
+        ) {
             return res.status(400).json({ success: false, mensaje: 'Filtros o paginación no válidos' });
         }
-        const resultado = await reclamacionModel.listar({
-            estado: req.query.estado,
-            q: req.query.q,
-            pagina, porPagina
-        });
+        const resultado = await reclamacionModel.listar({ estado: req.query.estado, q: req.query.q, pagina, porPagina });
         return res.json({ success: true, data: resultado.reclamaciones, total: resultado.total, pagina: resultado.pagina, paginas: resultado.paginas });
     } catch (error) {
         console.error('Error al listar reclamaciones:', error);
@@ -210,10 +189,7 @@ const responder = async (req, res) => {
         return res.status(400).json({ success: false, mensaje: 'Escribe la respuesta (al menos 10 caracteres)' });
     }
     try {
-        const reclamacion = await reclamacionModel.responder(id, {
-            respuesta,
-            idUsuario: req.usuario?.id_usuario
-        });
+        const reclamacion = await reclamacionModel.responder(id, { respuesta, idUsuario: req.usuario?.id_usuario });
         if (!reclamacion) {
             return res.status(404).json({ success: false, mensaje: 'Hoja no encontrada' });
         }
@@ -255,11 +231,4 @@ const responder = async (req, res) => {
     }
 };
 
-module.exports = {
-    registrar,
-    listar,
-    resumen,
-    obtener,
-    responder,
-    validarHoja
-};
+module.exports = { registrar, listar, resumen, obtener, responder, validarHoja };

@@ -1,4 +1,11 @@
 import { lazy, Suspense } from 'react';
+import { createBrowserRouter, Navigate, RouterProvider, useLocation } from 'react-router-dom';
+import { AuthProvider } from '../providers/AuthProvider';
+import { ToastProvider } from '../providers/ToastProvider';
+import RutaProtegida from './RutaProtegida';
+import RutaPorRol from './RutaPorRol';
+import { ROLES } from '../../panel/lib/roles';
+import { CargandoPantalla } from '../../panel/ui/Spinner';
 
 const lazyConReintento = (importador) =>
     lazy(() => {
@@ -15,15 +22,6 @@ const lazyConReintento = (importador) =>
         return intentar();
     });
 
-import { createBrowserRouter, Navigate, RouterProvider, useLocation } from 'react-router-dom';
-
-import { AuthProvider } from '../providers/AuthContext';
-import { ToastProvider } from '../providers/ToastProvider';
-import RutaProtegida from './RutaProtegida';
-import RutaPorRol from './RutaPorRol';
-import { ROLES } from '../../panel/lib/roles';
-import { CargandoPantalla } from '../../panel/ui/Spinner';
-
 const PublicLayout = lazyConReintento(() => import('../../web/PublicLayout'));
 const AdminLayout = lazyConReintento(() => import('../../panel/layout/AdminLayout'));
 const InicioPage = lazyConReintento(() => import('../../web/paginas/paginas').then((m) => ({ default: m.InicioPage })));
@@ -39,8 +37,8 @@ const MisComprasWebPage = lazyConReintento(() => import('../../web/tienda/MisCom
 const FavoritosWebPage = lazyConReintento(() => import('../../web/tienda/FavoritosPage'));
 const LibroPublicoPage = lazyConReintento(() => import('../../web/tienda/LibroPage'));
 
-// Páginas de la web pública: sin pantalla de carga del panel.
 const publica = (elemento) => <Suspense fallback={null}>{elemento}</Suspense>;
+
 const LoginPage = lazyConReintento(() => import('../../panel/auth/LoginPage'));
 const VerificarEmailPage = lazyConReintento(() => import('../../panel/auth/VerificarEmailPage'));
 const DashboardPage = lazyConReintento(() => import('../../panel/dashboard/DashboardPage'));
@@ -60,8 +58,6 @@ const AnunciosPage = lazyConReintento(() => import('../../panel/anuncios/Anuncio
 
 const cargar = (elemento) => <Suspense fallback={<CargandoPantalla />}>{elemento}</Suspense>;
 
-// Restringe una pantalla del panel a ciertos roles. Si el rol no está
-// autorizado, RutaPorRol redirige a la portada que le corresponde.
 const para = (roles, elemento) => <RutaPorRol roles={roles}>{cargar(elemento)}</RutaPorRol>;
 
 const AMBOS = [ROLES.ADMINISTRADOR];
@@ -74,7 +70,6 @@ function RedirigirOperacion({ ruta }) {
 
 const router = createBrowserRouter([
     {
-        // Web pública comercial: cada sección es una página propia.
         element: publica(<PublicLayout />),
         children: [
             { path: '/', element: publica(<InicioPage />) },
@@ -88,82 +83,56 @@ const router = createBrowserRouter([
             { path: '/checkout', element: publica(<CheckoutWebPage />) },
             { path: '/mis-compras', element: publica(<MisComprasWebPage />) },
             { path: '/favoritos', element: publica(<FavoritosWebPage />) },
-            { path: '/libro/:id', element: publica(<LibroPublicoPage />) },
-        ],
+            { path: '/libro/:id', element: publica(<LibroPublicoPage />) }
+        ]
     },
+    { path: '/admin/login', element: cargar(<LoginPage />) },
+    { path: '/admin', element: <Navigate to="/admin/login" replace /> },
+    { path: '/verificar-email', element: cargar(<VerificarEmailPage />) },
+    { path: '/libro-de-reclamaciones', element: cargar(<LibroReclamacionesPage />) },
     {
-        // Login del panel administrativo (antes en la raíz).
-        path: '/admin/login',
-        element: cargar(<LoginPage />),
-    },
-    {
-        path: '/admin',
-        element: <Navigate to="/admin/login" replace />,
-    },
-    {
-        path: '/verificar-email',
-        element: cargar(<VerificarEmailPage />),
-    },
-    {
-        // Público (sin sesión): lo enlazan las apps y el login.
-        path: '/libro-de-reclamaciones',
-        element: cargar(<LibroReclamacionesPage />),
-    },
-    {
-        element: (
-            <RutaProtegida>{cargar(<AdminLayout />)}</RutaProtegida>
-        ),
+        element: <RutaProtegida>{cargar(<AdminLayout />)}</RutaProtegida>,
         children: [
-            // --- Portadas ---
             { path: '/dashboard', element: para(SOLO_ADMIN, <DashboardPage />) },
 
-            // --- Catálogo: administración ---
             { path: '/libros', element: para(AMBOS, <LibrosAutoresPage />) },
             { path: '/autores', element: para(SOLO_ADMIN, <Navigate to="/libros?vista=autores" replace />) },
             { path: '/categorias', element: para(SOLO_ADMIN, <CategoriasPage />) },
             { path: '/inventario', element: para(AMBOS, <InventarioPage />) },
 
-            // --- Operaciones ---
             { path: '/reservas', element: <Navigate to="/dashboard" replace /> },
             {
-                path: '/ventas', element: para(SOLO_ADMIN, <GestionVentasPage />),
+                path: '/ventas',
+                element: para(SOLO_ADMIN, <GestionVentasPage />),
                 children: [
                     { index: true, element: cargar(<VentasPage incrustado />) },
                     { path: 'pedidos', element: cargar(<PedidosPage incrustado />) },
-                    { path: 'comprobantes', element: cargar(<ComprobantesPage incrustado />) },
-                ],
+                    { path: 'comprobantes', element: cargar(<ComprobantesPage incrustado />) }
+                ]
             },
-            // Direcciones guardadas y notificaciones antiguas conservan su contexto.
+
             { path: '/pedidos', element: para(SOLO_ADMIN, <RedirigirOperacion ruta="/ventas/pedidos" />) },
             { path: '/comprobantes', element: para(SOLO_ADMIN, <RedirigirOperacion ruta="/ventas/comprobantes" />) },
             { path: '/pagos', element: para(SOLO_ADMIN, <RedirigirOperacion ruta="/ventas" />) },
 
-            // --- Administración y control: solo administrador ---
             { path: '/usuarios', element: para(SOLO_ADMIN, <UsuariosPage />) },
             { path: '/clientes', element: para(SOLO_ADMIN, <Navigate to="/usuarios?vista=clientes" replace />) },
             { path: '/reclamaciones', element: para(SOLO_ADMIN, <ReclamacionesPage />) },
-        { path: '/anuncios', element: para(SOLO_ADMIN, <AnunciosPage />) },
+            { path: '/anuncios', element: para(SOLO_ADMIN, <AnunciosPage />) },
             { path: '/tarifas-envio', element: para(SOLO_ADMIN, <TarifasEnvioPage />) },
             { path: '/historial', element: para(SOLO_ADMIN, <Navigate to="/dashboard" replace />) },
             { path: '/configuracion/empresa', element: para(SOLO_ADMIN, <EmpresaPage />) },
-            // La personalización de tema es local al navegador: no expone
-            // datos del backend, así que queda disponible para ambos roles.
+
             { path: '/personalizacion', element: <Navigate to="/dashboard" replace /> },
 
-            // El envío por agencia ya no se ofrece (solo Lima): la página queda
-            // oculta; se redirige para no romper enlaces guardados.
             { path: '/agencias', element: <Navigate to="/dashboard" replace /> },
-            // El cierre de caja no tiene endpoint propio: el resumen del día
-            // se ve en el dashboard. Se redirige para no romper enlaces.
+
             { path: '/cierre-caja', element: <Navigate to="/dashboard" replace /> },
-            // Reportes se integró en el resumen; se conserva la ruta para enlaces guardados.
-            { path: '/reportes', element: <Navigate to="/dashboard" replace /> },
-        ],
+
+            { path: '/reportes', element: <Navigate to="/dashboard" replace /> }
+        ]
     },
-    {
-        path: '*',
-        element: <Navigate to="/" replace />,
-    },
+    { path: '*', element: <Navigate to="/" replace /> }
 ]);
 
 export default function AppRouter() {

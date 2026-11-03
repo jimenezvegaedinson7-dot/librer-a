@@ -7,9 +7,6 @@ import { DataTable } from '../ui/DataTable';
 function RecentBooks({ libros = [], stockBajo = [] }) {
     const navigate = useNavigate();
 
-    // Stock bajo según el mínimo configurado en Inventario (la lista ya viene
-    // del backend), no un umbral fijo; los libros inactivos se indican aparte.
-    // stockBajo null = la consulta falló: no se clasifica como bajo ni normal.
     const idsStockBajo = stockBajo ? new Set(stockBajo.map((item) => Number(item.id_libro))) : null;
 
     const obtenerStock = (libro) => {
@@ -36,23 +33,40 @@ function RecentBooks({ libros = [], stockBajo = [] }) {
 
     const librosRecientes = libros.slice(0, 5);
     const columnas = [
-        { titulo: 'Libro', className: 'tabla-col-principal', render: libro => <span className="tabla-dato">{libro.titulo || 'Sin título'}</span> },
-        { titulo: 'Autor', className: 'tabla-col-nota', campo: 'autor', render: libro => libro.autor || 'Sin autor' },
-        { titulo: 'Categoría', campo: 'categoria', render: libro => libro.categoria || 'Sin categoría' },
-        { titulo: 'Stock', alineacion: 'derecha', className: 'tabla-col-importe', render: libro => {
-            const stock = obtenerStock(libro);
-            return <span className={`estado-pildora ${stock.clase}`}>{stock.texto}</span>;
-        } },
+        { titulo: 'Libro', className: 'tabla-col-principal', render: (libro) => <span className="tabla-dato">{libro.titulo || 'Sin título'}</span> },
+        { titulo: 'Autor', className: 'tabla-col-nota', campo: 'autor', render: (libro) => libro.autor || 'Sin autor' },
+        { titulo: 'Categoría', campo: 'categoria', render: (libro) => libro.categoria || 'Sin categoría' },
+        {
+            titulo: 'Stock',
+            alineacion: 'derecha',
+            className: 'tabla-col-importe',
+            render: (libro) => {
+                const stock = obtenerStock(libro);
+                return <span className={`estado-pildora ${stock.clase}`}>{stock.texto}</span>;
+            }
+        }
     ];
 
     return (
         <div className="tabla-panel">
             <Card>
-                <CardHeader titulo="Últimos libros agregados" subtitulo="Libros registrados recientemente"
-                    acciones={<Button variante="secondary" onClick={() => navigate('/libros')}>Ver todos <FaArrowRight aria-hidden="true" /></Button>} />
+                <CardHeader
+                    titulo="Últimos libros agregados"
+                    subtitulo="Libros registrados recientemente"
+                    acciones={
+                        <Button variante="secondary" onClick={() => navigate('/libros')}>
+                            Ver todos <FaArrowRight aria-hidden="true" />
+                        </Button>
+                    }
+                />
                 <CardBody className="p-0">
-                    <DataTable etiqueta="Últimos libros agregados" columnas={columnas} filas={librosRecientes} keyExtractor={libro => libro.id_libro}
-                        vacio="No hay libros registrados. Los últimos libros agregados aparecerán aquí." />
+                    <DataTable
+                        etiqueta="Últimos libros agregados"
+                        columnas={columnas}
+                        filas={librosRecientes}
+                        keyExtractor={(libro) => libro.id_libro}
+                        vacio="No hay libros registrados. Los últimos libros agregados aparecerán aquí."
+                    />
                 </CardBody>
             </Card>
         </div>

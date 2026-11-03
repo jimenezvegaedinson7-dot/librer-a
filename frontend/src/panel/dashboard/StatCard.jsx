@@ -1,12 +1,8 @@
 import { useState } from 'react';
-
 import { motion, useReducedMotion } from 'motion/react';
-
 import { Anillo, TendenciaViva } from './Decoraciones';
 import { useContador } from './useContador';
 
-// Todas las tarjetas llevan el acabado de "Total vendido"; el tono solo
-// cambia su color (clases joya--* en panel-editorial.css).
 const tonos = {
     primary: '',
     success: 'joya--success',
@@ -17,15 +13,10 @@ const tonos = {
     violet: 'joya--violet',
     teal: 'joya--teal',
     sky: 'joya--sky',
-    rose: 'joya--rose',
+    rose: 'joya--rose'
 };
 
-const entradaTarjeta = {
-    oculto: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } },
-};
-
-// Sin movimiento: mismas etiquetas para que las piezas internas hereden el reposo.
+const entradaTarjeta = { oculto: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } } };
 const estatica = { oculto: { opacity: 1 }, visible: { opacity: 1 } };
 
 export function StatCard({ titulo, valor, icono, color = 'primary', descripcion, detalle, tendencia, etiquetaTendencia, medidor }) {
@@ -38,11 +29,12 @@ export function StatCard({ titulo, valor, icono, color = 'primary', descripcion,
             variants={reducirMovimiento ? estatica : entradaTarjeta}
             onHoverStart={() => setActiva(true)}
             onHoverEnd={() => setActiva(false)}
-            className={`kpi-card kpi-card--destacada joya ${tono}`}
-        >
+            className={`kpi-card kpi-card--destacada joya ${tono}`}>
             <div className="flex items-start justify-between gap-3">
                 <p className="kpi-label">{titulo}</p>
-                <span className="kpi-icono" aria-hidden="true">{icono}</span>
+                <span className="kpi-icono" aria-hidden="true">
+                    {icono}
+                </span>
             </div>
             <p className="kpi-valor">{valor}</p>
             {(detalle || descripcion) && <p className="kpi-descripcion">{detalle || descripcion}</p>}
@@ -63,10 +55,11 @@ export function MiniStat({ titulo, valor, icono, descripcion, tono = 'azul', chi
             variants={reducirMovimiento ? estatica : entradaTarjeta}
             whileHover={reducirMovimiento ? undefined : { y: -3 }}
             transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-            className={`mini-stat mini-stat--${tono}`}
-        >
+            className={`mini-stat mini-stat--${tono}`}>
             <div className="mini-stat-cabecera">
-                <span className="mini-stat-icono" aria-hidden="true">{icono}</span>
+                <span className="mini-stat-icono" aria-hidden="true">
+                    {icono}
+                </span>
                 <div className="min-w-0 text-right">
                     <p className="mini-stat-valor">{Number.isFinite(numero) ? contado : valor}</p>
                 </div>

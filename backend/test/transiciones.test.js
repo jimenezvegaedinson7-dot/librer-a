@@ -1,52 +1,22 @@
-// ============================================================
-// TESTS DE TRANSICIONES DE ESTADO (VENTA Y ENTREGA)
-// ============================================================
-// Sin BD: solo lógica pura de la máquina de estados unificada
-// (src/utils/transiciones.js).
-// ============================================================
-
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const {
-    VENTA,
-    ENTREGA,
-    ESTADO_POR_TIPO,
-    esTipoEntregaValido,
-    permitirTransicion,
-    permitirTransicionEntrega,
-    estadosValidos
-} = require('../src/utils/transiciones');
+const { VENTA, ENTREGA, ESTADO_POR_TIPO, esTipoEntregaValido, permitirTransicion, permitirTransicionEntrega, estadosValidos } = require('../src/utils/transiciones');
 
-// ----------------------------------------
-// VENTA
-// ----------------------------------------
 test('venta: pendiente -> pagada es permitido', () => {
-    assert.equal(
-        permitirTransicion(VENTA, 'pendiente', 'pagada'),
-        true
-    );
+    assert.equal(permitirTransicion(VENTA, 'pendiente', 'pagada'), true);
 });
 
 test('venta: pendiente -> cancelada es permitido', () => {
-    assert.equal(
-        permitirTransicion(VENTA, 'pendiente', 'cancelada'),
-        true
-    );
+    assert.equal(permitirTransicion(VENTA, 'pendiente', 'cancelada'), true);
 });
 
 test('venta: confirmar entrega no cambia el estado comercial pagada', () => {
-    assert.equal(
-        permitirTransicion(VENTA, 'pagada', 'entregada'),
-        false
-    );
+    assert.equal(permitirTransicion(VENTA, 'pagada', 'entregada'), false);
 });
 
 test('venta: entregada -> cancelada es FALSO (FASE 5)', () => {
-    assert.equal(
-        permitirTransicion(VENTA, 'entregada', 'cancelada'),
-        false
-    );
+    assert.equal(permitirTransicion(VENTA, 'entregada', 'cancelada'), false);
 });
 
 test('venta: entregada solo puede pasar a reembolsada (devolución)', () => {
@@ -60,26 +30,14 @@ test('venta: reembolsada es estado final', () => {
 });
 
 test('venta: cancelada es estado final y no regresa', () => {
-    assert.equal(
-        permitirTransicion(VENTA, 'cancelada', 'pendiente'),
-        false
-    );
-    assert.equal(
-        permitirTransicion(VENTA, 'cancelada', 'pagada'),
-        false
-    );
+    assert.equal(permitirTransicion(VENTA, 'cancelada', 'pendiente'), false);
+    assert.equal(permitirTransicion(VENTA, 'cancelada', 'pagada'), false);
 });
 
 test('venta: pendiente -> entregada salta etapa y es FALSO', () => {
-    assert.equal(
-        permitirTransicion(VENTA, 'pendiente', 'entregada'),
-        false
-    );
+    assert.equal(permitirTransicion(VENTA, 'pendiente', 'entregada'), false);
 });
 
-// ----------------------------------------
-// ENTREGA (máquina general, sin tipo)
-// ----------------------------------------
 test('entrega: la máquina general admite ambos caminos', () => {
     assert.equal(permitirTransicion(ENTREGA, 'pendiente', 'preparando'), false);
     assert.equal(permitirTransicion(ENTREGA, 'pendiente', 'listo_recojo'), true);
@@ -94,9 +52,6 @@ test('entrega: entregado y cancelado son finales', () => {
     assert.equal(permitirTransicion(ENTREGA, 'entregado', 'preparando'), false);
 });
 
-// ----------------------------------------
-// ENTREGA consciente del tipo de entrega
-// ----------------------------------------
 test('entrega: delivery recorre en_camino', () => {
     assert.equal(permitirTransicionEntrega('domicilio', 'pendiente', 'en_camino'), true);
     assert.equal(permitirTransicionEntrega('domicilio', 'pendiente', 'preparando'), false);
@@ -112,19 +67,11 @@ test('entrega: recojo en tienda recorre listo_recojo', () => {
 });
 
 test('entrega: un delivery NO puede pasar por listo_recojo', () => {
-    // Sin esto el pedido quedaría en un estado que el panel no sabe
-    // avanzar: el botón de siguiente paso no existiría.
-    assert.equal(
-        permitirTransicionEntrega('domicilio', 'preparando', 'listo_recojo'),
-        false
-    );
+    assert.equal(permitirTransicionEntrega('domicilio', 'preparando', 'listo_recojo'), false);
 });
 
 test('entrega: un recojo en tienda NO puede pasar por en_camino', () => {
-    assert.equal(
-        permitirTransicionEntrega('tienda', 'preparando', 'en_camino'),
-        false
-    );
+    assert.equal(permitirTransicionEntrega('tienda', 'preparando', 'en_camino'), false);
 });
 
 test('entrega: cancelar sigue permitido en ambos tipos', () => {
@@ -144,9 +91,6 @@ test('entrega: el tipo no salta etapas ni revive estados finales', () => {
 });
 
 test('entrega: un tipo desconocido NO adivina la ruta', () => {
-    // 'cancelado' es válido para un tipo reconocido, así que el único motivo
-    // posible del false es el tipo: no se confunde "tipo inválido" con
-    // "salto inválido". Adivinar dejaría pedidos en estados sin salida.
     assert.equal(permitirTransicionEntrega('otro', 'pendiente', 'cancelado'), false);
     assert.equal(permitirTransicionEntrega('agencia', 'pendiente', 'cancelado'), false);
 });
@@ -158,9 +102,6 @@ test('entrega: un tipo ausente (NULL) tampoco se enruta', () => {
 });
 
 test('entrega: esTipoEntregaValido es sensible a mayúsculas y rechaza lo ausente', () => {
-    // El CHECK de la base también es case-sensitive, y el controlador hace
-    // trim() pero no lowerCase(): este test fija esa garantía. La
-    // normalización por trim vive en los controladores, no aquí.
     assert.equal(esTipoEntregaValido('DOMICILIO'), false);
     assert.equal(esTipoEntregaValido('Tienda'), false);
     assert.equal(esTipoEntregaValido(null), false);
@@ -170,38 +111,13 @@ test('entrega: esTipoEntregaValido es sensible a mayúsculas y rechaza lo ausent
 });
 
 test('entrega: el dominio coincide con el CHECK ventas_tipo_estado_entrega_check', () => {
-    // ESTADO_POR_TIPO y el CHECK de database/schema.sql describen el mismo
-    // conjunto. Si divergen, la API aceptaría escrituras que la base
-    // rechaza (23514) o la base admitía estados que el panel no ofrece.
-    assert.deepEqual(
-        [...ESTADO_POR_TIPO.domicilio].sort(),
-        ['cancelado', 'en_camino', 'entregado', 'pendiente', 'preparando']
-    );
-    assert.deepEqual(
-        [...ESTADO_POR_TIPO.tienda].sort(),
-        ['cancelado', 'entregado', 'listo_recojo', 'pendiente', 'preparando']
-    );
+    assert.deepEqual([...ESTADO_POR_TIPO.domicilio].sort(), ['cancelado', 'en_camino', 'entregado', 'pendiente', 'preparando']);
+    assert.deepEqual([...ESTADO_POR_TIPO.tienda].sort(), ['cancelado', 'entregado', 'listo_recojo', 'pendiente', 'preparando']);
 
-    // Cada estado exclusivo pertenece a un solo tipo: es la propiedad que
-    // hace que el panel nunca ofrezca un botón que no exista.
-    assert.equal(
-        ESTADO_POR_TIPO.domicilio.includes('listo_recojo'),
-        false,
-        'listo_recojo es exclusivo de tienda'
-    );
-    assert.equal(
-        ESTADO_POR_TIPO.tienda.includes('en_camino'),
-        false,
-        'en_camino es exclusivo de domicilio'
-    );
-    assert.equal(
-        ESTADO_POR_TIPO.domicilio.includes('en_camino'),
-        true
-    );
-    assert.equal(
-        ESTADO_POR_TIPO.tienda.includes('listo_recojo'),
-        true
-    );
+    assert.equal(ESTADO_POR_TIPO.domicilio.includes('listo_recojo'), false, 'listo_recojo es exclusivo de tienda');
+    assert.equal(ESTADO_POR_TIPO.tienda.includes('en_camino'), false, 'en_camino es exclusivo de domicilio');
+    assert.equal(ESTADO_POR_TIPO.domicilio.includes('en_camino'), true);
+    assert.equal(ESTADO_POR_TIPO.tienda.includes('listo_recojo'), true);
 });
 
 test('entrega simplificada: desde pendiente puede quedar listo o despacharse según el tipo', () => {

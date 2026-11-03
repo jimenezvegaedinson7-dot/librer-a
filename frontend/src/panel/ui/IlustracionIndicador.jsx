@@ -1,19 +1,43 @@
 import {
-    FaBook, FaBoxOpen, FaBullhorn, FaCartShopping, FaClock, FaClockRotateLeft,
-    FaCreditCard, FaHourglassHalf, FaMoneyBillTrendUp, FaMoneyBillWave, FaStore, FaTags, FaTruck,
-    FaUser, FaUserGroup, FaUsers, FaUserShield, FaWarehouse,
+    FaBook,
+    FaBoxOpen,
+    FaBullhorn,
+    FaCartShopping,
+    FaClock,
+    FaClockRotateLeft,
+    FaCreditCard,
+    FaHourglassHalf,
+    FaMoneyBillTrendUp,
+    FaMoneyBillWave,
+    FaStore,
+    FaTags,
+    FaTruck,
+    FaUser,
+    FaUserGroup,
+    FaUsers,
+    FaUserShield,
+    FaWarehouse
 } from 'react-icons/fa6';
 
-// Asociar por componente conserva el significado aunque cambie el título o
-// el minificador renombre las funciones. Los demás símbolos van sobre una ficha.
 const ESCENAS = new Map([
     [FaBook, 'libros'],
-    [FaUser, 'personas'], [FaUserGroup, 'personas'], [FaUsers, 'personas'], [FaUserShield, 'personas'],
-    [FaWarehouse, 'inventario'], [FaBoxOpen, 'inventario'], [FaCartShopping, 'inventario'],
-    [FaCreditCard, 'pago'], [FaMoneyBillWave, 'pago'], [FaMoneyBillTrendUp, 'pago'],
-    [FaStore, 'tienda'], [FaTruck, 'reparto'],
-    [FaTags, 'etiquetas'], [FaBullhorn, 'anuncio'],
-    [FaHourglassHalf, 'tiempo'], [FaClock, 'tiempo'], [FaClockRotateLeft, 'tiempo'],
+    [FaUser, 'personas'],
+    [FaUserGroup, 'personas'],
+    [FaUsers, 'personas'],
+    [FaUserShield, 'personas'],
+    [FaWarehouse, 'inventario'],
+    [FaBoxOpen, 'inventario'],
+    [FaCartShopping, 'inventario'],
+    [FaCreditCard, 'pago'],
+    [FaMoneyBillWave, 'pago'],
+    [FaMoneyBillTrendUp, 'pago'],
+    [FaStore, 'tienda'],
+    [FaTruck, 'reparto'],
+    [FaTags, 'etiquetas'],
+    [FaBullhorn, 'anuncio'],
+    [FaHourglassHalf, 'tiempo'],
+    [FaClock, 'tiempo'],
+    [FaClockRotateLeft, 'tiempo']
 ]);
 
 const DIBUJOS = {
@@ -117,7 +141,7 @@ const DIBUJOS = {
             <path d="M20 20h9m-9 7h20m-20 6h17" fill="none" />
             <path d="M8 52h20v6H8Z" fill="var(--figura-acento)" />
         </>
-    ),
+    )
 };
 
 export function IlustracionIndicador({ icono }) {
@@ -125,8 +149,7 @@ export function IlustracionIndicador({ icono }) {
 
     return (
         <span className="indicador-ilustracion" aria-hidden="true">
-            <svg viewBox="0 0 64 64" fill="none" stroke="var(--figura-trazo)" strokeWidth="1.5"
-                strokeLinecap="round" strokeLinejoin="round" focusable="false">
+            <svg viewBox="0 0 64 64" fill="none" stroke="var(--figura-trazo)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" focusable="false">
                 {DIBUJOS[escena]}
             </svg>
             {escena === 'ficha' && <span className="indicador-ilustracion__simbolo">{icono}</span>}

@@ -15,4 +15,6 @@
 .pedido-seguimiento__paso--hecho .pedido-seguimiento__trazo { background: #23754b; }
 .pedido-seguimiento__paso[aria-current="step"] { font-weight: 700; }
 .pedido-indicador__proporcion { margin: 0; }
-@media (max-width: 420px) { .pedido-seguimiento { gap: 8px; } }
+@media (max-width: 420px) {
+    .pedido-seguimiento { gap: 8px; }
+}

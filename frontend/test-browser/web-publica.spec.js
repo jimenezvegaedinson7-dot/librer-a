@@ -4,10 +4,6 @@ import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
 import { DESCARGAS } from '../src/web/config/downloads.js';
 
-// Web pública: páginas separadas (Inicio, Catálogo, Aplicación,
-// Características, Nosotros, Descargar), catálogo real (simulado aquí),
-// descargas desde la configuración central y el panel en /admin/login.
-
 const API = 'http://127.0.0.1:59999/api';
 const CATEGORIAS = ['Novela', 'Poesía', 'Fantasía'];
 const LIBROS = Array.from({ length: 14 }, (_, i) => ({
@@ -18,23 +14,24 @@ const LIBROS = Array.from({ length: 14 }, (_, i) => ({
     precio: '39.90',
     stock: i === 3 ? 0 : 5,
     estado: i === 13 ? 0 : 1,
-    portada: 'data:image/gif;base64,R0lGODlhAQABAAAAACw=',
+    portada: 'data:image/gif;base64,R0lGODlhAQABAAAAACw='
 }));
 
 const VIDEO_PRUEBA = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), 'fixtures/anuncio.webm'));
 
 async function apiPublica(page, { falla = false, vacia = false, libros = LIBROS, anuncio = null } = {}) {
     await page.route(`${API}/libros`, (r) => (falla ? r.fulfill({ status: 503, json: {} }) : r.fulfill({ json: vacia ? [] : libros })));
-    await page.route(`${API}/empresa`, (r) => r.fulfill({ json: { success: true, empresa: { razon_social: 'FLORES SALINAS SARA', nombre_comercial: 'MATIDANA', ruc: '10447545387' } } }));
-    await page.route(`${API}/app/version`, r => r.fulfill({json:{version:DESCARGAS.android.version,
-        versionCode:4, apkUrl:DESCARGAS.android.url, sha256:'a'.repeat(64)}}));
-    // El video lo sube el administrador, así que por defecto no hay ninguno
-    // activo. Las pruebas del video pasan uno explícito.
+    await page.route(`${API}/empresa`, (r) =>
+        r.fulfill({ json: { success: true, empresa: { razon_social: 'FLORES SALINAS SARA', nombre_comercial: 'MATIDANA', ruc: '10447545387' } } })
+    );
+    await page.route(`${API}/app/version`, (r) =>
+        r.fulfill({ json: { version: DESCARGAS.android.version, versionCode: 4, apkUrl: DESCARGAS.android.url, sha256: 'a'.repeat(64) } })
+    );
+
     await page.route(`${API}/anuncios`, (r) => r.fulfill({ json: { success: true, anuncio } }));
-    await page.route(`${API}/anuncios/carrusel`,r=>r.fulfill({json:{success:true,data:[]}}));
-    await page.route(`${API}/anuncios/protagonista`, r => r.fulfill({ status: 404, json: {} }));
-    // El archivo del anuncio se sirve con un WebM real y diminuto: la portada
-    // retira la sección si el video no carga, así que una URL inventada no basta.
+    await page.route(`${API}/anuncios/carrusel`, (r) => r.fulfill({ json: { success: true, data: [] } }));
+    await page.route(`${API}/anuncios/protagonista`, (r) => r.fulfill({ status: 404, json: {} }));
+
     if (anuncio?.video_url && !anuncio.roto) {
         await page.route(anuncio.video_url, (r) => r.fulfill({ body: VIDEO_PRUEBA, contentType: 'video/webm' }));
     }
@@ -42,7 +39,7 @@ async function apiPublica(page, { falla = false, vacia = false, libros = LIBROS,
 
 const menu = (page) => page.getByRole('navigation', { name: 'Principal' });
 
-test('cobertura Pallasca: textos y SEO estático no ofrecen entrega en Lima ni nacional', async ({page}) => {
+test('cobertura Pallasca: textos y SEO estático no ofrecen entrega en Lima ni nacional', async ({ page }) => {
     const html = await (await page.request.get('/')).text();
     expect(html).not.toMatch(/entrega en Lima|domicilio en Lima|"areaServed": "PE"/);
     expect(html).toContain('"areaServed": "Ciudad de Pallasca"');
@@ -59,66 +56,71 @@ test('cobertura Pallasca: textos y SEO estático no ofrecen entrega en Lima ni n
 
 const APK_FUTURA = 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v8.0.0/libreria-8.0.0.apk';
 for (const width of [390, 1440]) {
-    test(`actualización: QR visible y botón usa la última versión del servidor a ${width}px`, async ({page}) => {
-        await page.setViewportSize({width,height:1000});
+    test(`actualización: QR visible y botón usa la última versión del servidor a ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 1000 });
         await apiPublica(page);
         let sinToken = false;
-        await page.addInitScript(() => localStorage.setItem('token','token-del-panel-no-enviar'));
-        await page.route(`${API}/app/version`, r => {
+        await page.addInitScript(() => localStorage.setItem('token', 'token-del-panel-no-enviar'));
+        await page.route(`${API}/app/version`, (r) => {
             sinToken = !r.request().headers().authorization;
-            return r.fulfill({json:{version:'8.0.0',versionCode:80,apkUrl:APK_FUTURA,sha256:'a'.repeat(64)}});
+            return r.fulfill({ json: { version: '8.0.0', versionCode: 80, apkUrl: APK_FUTURA, sha256: 'a'.repeat(64) } });
         });
         await page.goto('/descargar');
-        await expect(page.getByRole('heading',{name:'¿Ya tienes la app en Android?'})).toBeVisible();
-        await expect(page.getByText('Versión disponible: 8.0.0',{exact:true})).toBeVisible();
+        await expect(page.getByRole('heading', { name: '¿Ya tienes la app en Android?' })).toBeVisible();
+        await expect(page.getByText('Versión disponible: 8.0.0', { exact: true })).toBeVisible();
         const qr = page.getByAltText('Código QR para descargar la actualización más reciente de MATIDANA Libros y Cultura');
         await expect(qr).toBeVisible();
-        expect(await qr.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
-        await expect(page.locator('a[data-actualizar-app]')).toHaveAttribute('href',APK_FUTURA);
+        expect(await qr.evaluate((img) => img.complete && img.naturalWidth > 0)).toBe(true);
+        await expect(page.locator('a[data-actualizar-app]')).toHaveAttribute('href', APK_FUTURA);
         expect(sinToken).toBe(true);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     });
 }
 
-test('actualización: escanear QR abre el APK más reciente, no una versión fija', async ({page}) => {
+test('actualización: escanear QR abre el APK más reciente, no una versión fija', async ({ page }) => {
     await apiPublica(page);
-    await page.route(`${API}/app/version`, r => r.fulfill({json:{version:'8.0.0',versionCode:80,apkUrl:APK_FUTURA,sha256:'a'.repeat(64)}}));
-    await page.route(APK_FUTURA, r => r.fulfill({body:'APK de prueba',contentType:'application/vnd.android.package-archive',
-        headers:{'Content-Disposition':'attachment; filename="libreria-8.0.0.apk"'}}));
+    await page.route(`${API}/app/version`, (r) => r.fulfill({ json: { version: '8.0.0', versionCode: 80, apkUrl: APK_FUTURA, sha256: 'a'.repeat(64) } }));
+    await page.route(APK_FUTURA, (r) =>
+        r.fulfill({
+            body: 'APK de prueba',
+            contentType: 'application/vnd.android.package-archive',
+            headers: { 'Content-Disposition': 'attachment; filename="libreria-8.0.0.apk"' }
+        })
+    );
     const archivo = page.waitForEvent('download');
-    await page.goto('/descargar?actualizar=1',{waitUntil:'domcontentloaded'});
+    await page.goto('/descargar?actualizar=1', { waitUntil: 'domcontentloaded' });
     const descargado = await archivo;
     expect(descargado.url()).toBe(APK_FUTURA);
     expect(descargado.suggestedFilename()).toBe('libreria-8.0.0.apk');
 });
 
-test('actualización: API no disponible deja una alternativa y no inicia una descarga equivocada', async ({page}) => {
+test('actualización: API no disponible deja una alternativa y no inicia una descarga equivocada', async ({ page }) => {
     await apiPublica(page);
-    await page.route(`${API}/app/version`, r => r.fulfill({status:503,json:{}}));
-    let descargas=0; page.on('download',()=>descargas++);
+    await page.route(`${API}/app/version`, (r) => r.fulfill({ status: 503, json: {} }));
+    let descargas = 0;
+    page.on('download', () => descargas++);
     await page.goto('/descargar?actualizar=1');
     await expect(page.getByText('No pudimos consultar la última versión. Puedes descargar la versión publicada en esta página.')).toBeVisible();
-    await expect(page.locator('a[data-actualizar-app]')).toHaveAttribute('href',DESCARGAS.android.url);
+    await expect(page.locator('a[data-actualizar-app]')).toHaveAttribute('href', DESCARGAS.android.url);
     expect(descargas).toBe(0);
 });
 
 test.use({ reducedMotion: 'reduce' });
 
 for (const width of [390, 1440]) {
-    test(`Nuevo: catálogo e inicio con libros recientes a ${width}px`, async ({page}) => {
-        await page.setViewportSize({width, height: 900});
-        const errores = []; page.on('pageerror', e => errores.push(e.message));
-        const libros = LIBROS.map((libro, i) => ({...libro, es_nuevo: i === 0 ? 1 : 0,
-            stock: i === 0 ? 0 : libro.stock}));
-        await apiPublica(page, {libros});
+    test(`Nuevo: catálogo e inicio con libros recientes a ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        const errores = [];
+        page.on('pageerror', (e) => errores.push(e.message));
+        const libros = LIBROS.map((libro, i) => ({ ...libro, es_nuevo: i === 0 ? 1 : 0, stock: i === 0 ? 0 : libro.stock }));
+        await apiPublica(page, { libros });
         await page.goto('/catalogo');
         const todos = page.locator('.rejilla-libros--todos');
         await expect(todos.locator('.libro-nuevo')).toHaveCount(1);
         await expect(todos.locator('.libro-nuevo')).toBeVisible();
         const nuevo = await todos.locator('.libro-nuevo').boundingBox();
         const agotado = await todos.locator('.tarjeta-libro').first().locator('.agotado').boundingBox();
-        // La cinta "Agregado recientemente" va arriba; la de "Sin stock" baja al
-        // pie de la portada para no superponerse.
+
         expect(agotado.y).toBeGreaterThanOrEqual(nuevo.y + nuevo.height);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
         await page.goto('/');
@@ -151,7 +153,7 @@ test('cada sección es una página: título, URL canónica y foco en su h1', asy
         ['Características', '/caracteristicas', 'Comprar un libro, sin vueltas'],
         ['Nosotros', '/nosotros', 'Una librería de barrio, abierta a todo el Perú'],
         ['Descargar', '/descargar', 'Descarga la app'],
-        ['Catálogo', '/catalogo', 'Catálogo'],
+        ['Catálogo', '/catalogo', 'Catálogo']
     ];
     for (const [enlace, ruta, h1] of paginas) {
         await menu(page).getByRole('link', { name: enlace, exact: true }).click();
@@ -216,7 +218,11 @@ test('descargar: Android real desde la configuración, iOS en preparación sin e
 });
 
 test('en un iPhone se destaca su tarjeta sin ocultar Android', async ({ browser }) => {
-    const ctx = await browser.newContext({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148', viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const ctx = await browser.newContext({
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148',
+        viewport: { width: 390, height: 844 },
+        reducedMotion: 'reduce'
+    });
     const page = await ctx.newPage();
     await apiPublica(page);
     await page.goto('/descargar');
@@ -278,7 +284,10 @@ test('rutas: panel sin sesión va a /admin/login; ruta desconocida va al inicio'
 test('la web pública no envía el token del panel a la API', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('token', 'token-del-panel'));
     const cabeceras = [];
-    await page.route(`${API}/**`, (r) => { cabeceras.push(r.request().headers().authorization || ''); r.fulfill({ json: [] }); });
+    await page.route(`${API}/**`, (r) => {
+        cabeceras.push(r.request().headers().authorization || '');
+        r.fulfill({ json: [] });
+    });
     const peticion = page.waitForRequest((r) => r.url().startsWith(API));
     await page.goto('/');
     await peticion;
@@ -286,8 +295,6 @@ test('la web pública no envía el token del panel a la API', async ({ page }) =
     expect(cabeceras.every((c) => c === '')).toBe(true);
 });
 
-// El navegador, por su cuenta, devuelve la página en la posición en la que se
-// estaba al recargar. Aquí se desactiva: recargar siempre vuelve arriba.
 test('recarga: vuelve arriba sin cambiar de página', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/nosotros');
@@ -301,8 +308,6 @@ test('recarga: vuelve arriba sin cambiar de página', async ({ page }) => {
     await expect(page).toHaveURL(/\/nosotros$/);
 });
 
-// El enlace con ancla manda sobre el "volver arriba": si la url trae #seccion,
-// recargar tiene que dejarte en esa sección, no al principio de la página.
 test('recarga: un enlace con ancla sigue llevando a su sección', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/nosotros#tienda');
@@ -314,9 +319,6 @@ test('recarga: un enlace con ancla sigue llevando a su sección', async ({ page 
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
 });
 
-// Video de anuncios del inicio: video a la izquierda y sus textos a la
-// derecha. Todo lo escribe el administrador; sin anuncio activo la sección
-// no se monta: es preferible a dejar un hueco vacío en la portada.
 test('video del inicio: sin anuncio activo no hay sección, y no rompe la portada', async ({ page }) => {
     const errores = [];
     page.on('pageerror', (e) => errores.push(String(e)));
@@ -325,7 +327,7 @@ test('video del inicio: sin anuncio activo no hay sección, y no rompe la portad
     await page.waitForSelector('#precarga', { state: 'detached' });
 
     await expect(page.locator('.video-destacado')).toHaveCount(0);
-    // La portada sigue completa: el hero no desaparece por falta de video.
+
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     expect(errores).toHaveLength(0);
 });
@@ -335,9 +337,14 @@ test('video del inicio: el anuncio activo muestra el video y los textos del pane
     page.on('pageerror', (e) => errores.push(String(e)));
     await apiPublica(page, {
         anuncio: {
-            id_anuncio: 7, titulo: 'Lecturas para el verano', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4',
-            etiqueta: 'Novedades de la casa', descripcion: 'Nuevos títulos cada semana.', boton_texto: 'Ver novedades', boton_enlace: '/catalogo?orden=titulo',
-        },
+            id_anuncio: 7,
+            titulo: 'Lecturas para el verano',
+            video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4',
+            etiqueta: 'Novedades de la casa',
+            descripcion: 'Nuevos títulos cada semana.',
+            boton_texto: 'Ver novedades',
+            boton_enlace: '/catalogo?orden=titulo'
+        }
     });
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
@@ -353,7 +360,6 @@ test('video del inicio: el anuncio activo muestra el video y los textos del pane
     await expect(seccion.getByText('Nuevos títulos cada semana.')).toBeVisible();
     await expect(seccion.getByRole('link', { name: 'Ver novedades' })).toHaveAttribute('href', '/catalogo?orden=titulo');
 
-    // Escritorio: video a la izquierda y texto a la derecha, a la misma altura.
     const caja = await video.boundingBox();
     const texto = await seccion.locator('.video-destacado__texto').boundingBox();
     expect(texto.x).toBeGreaterThan(caja.x + caja.width);
@@ -364,7 +370,7 @@ test('video del inicio: el anuncio activo muestra el video y los textos del pane
 test('video del inicio: sin textos usa los de ejemplo y nunca enlaza fuera de la web', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await apiPublica(page, {
-        anuncio: { id_anuncio: 9, titulo: 'Promo', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4', boton_enlace: '//externo.example' },
+        anuncio: { id_anuncio: 9, titulo: 'Promo', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4', boton_enlace: '//externo.example' }
     });
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
@@ -373,19 +379,14 @@ test('video del inicio: sin textos usa los de ejemplo y nunca enlaza fuera de la
     await expect(seccion.getByText('Descubre nuestra librería')).toBeVisible();
     await expect(seccion.getByRole('link', { name: 'Explorar libros' })).toHaveAttribute('href', '/catalogo');
 
-    // Móvil: el video va arriba y el texto debajo, sin scroll horizontal.
     const caja = await seccion.locator('video').boundingBox();
     const texto = await seccion.locator('.video-destacado__texto').boundingBox();
     expect(texto.y).toBeGreaterThanOrEqual(caja.y + caja.height);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
-// El fondo se lo queda la página, no la sección: antes iba ámbar y quedaba
-// un bloque suelto que rompía el ritmo de la portada.
 test('video del inicio: si el archivo no carga, la sección se retira en vez de quedar rota', async ({ page }) => {
-    await apiPublica(page, {
-        anuncio: { id_anuncio: 8, titulo: 'Roto', video_url: 'https://res.cloudinary.com/x/video/upload/v1/no-existe.mp4', roto: true },
-    });
+    await apiPublica(page, { anuncio: { id_anuncio: 8, titulo: 'Roto', video_url: 'https://res.cloudinary.com/x/video/upload/v1/no-existe.mp4', roto: true } });
     await page.route('https://res.cloudinary.com/x/video/upload/v1/no-existe.mp4', (r) => r.fulfill({ status: 404, body: '' }));
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
@@ -393,12 +394,10 @@ test('video del inicio: si el archivo no carga, la sección se retira en vez de 
 });
 
 test('video del inicio: usa el fondo de la página, no uno propio', async ({ page }) => {
-    await apiPublica(page, {
-        anuncio: { id_anuncio: 7, titulo: 'Promo', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4' },
-    });
+    await apiPublica(page, { anuncio: { id_anuncio: 7, titulo: 'Promo', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4' } });
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
-    // La sección aparece cuando llega el anuncio: se espera antes de medir.
+
     await expect(page.locator('.video-destacado')).toHaveCount(1);
     const fondos = await page.evaluate(() => {
         const seccion = document.querySelector('.video-destacado');
@@ -407,19 +406,16 @@ test('video del inicio: usa el fondo de la página, no uno propio', async ({ pag
             seccion: getComputedStyle(seccion).backgroundColor,
             cuerpo: getComputedStyle(document.body).backgroundColor,
             transparente: getComputedStyle(seccion).backgroundColor === 'rgba(0, 0, 0, 0)',
-            anterior: anterior ? getComputedStyle(anterior).backgroundColor : null,
+            anterior: anterior ? getComputedStyle(anterior).backgroundColor : null
         };
     });
-    console.log('FONDO VIDEO:', JSON.stringify(fondos));
-    // Transparente: así se ve el fondo que usa el resto de la página.
+
     expect(fondos.transparente).toBe(true);
-    expect(fondos.seccion).not.toBe('rgb(253, 245, 228)'); // nada de ámbar
+    expect(fondos.seccion).not.toBe('rgb(253, 245, 228)');
 });
 
 test('video del inicio: en escritorio el video ocupa cerca del 60 % de la sección, no todo el ancho', async ({ page }) => {
-    await apiPublica(page, {
-        anuncio: { id_anuncio: 7, titulo: 'Promo', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4' },
-    });
+    await apiPublica(page, { anuncio: { id_anuncio: 7, titulo: 'Promo', video_url: 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4' } });
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
 
@@ -427,7 +423,6 @@ test('video del inicio: en escritorio el video ocupa cerca del 60 % de la secci�
     await expect(video).toHaveCount(1);
     await expect(video).toHaveAttribute('src', 'https://res.cloudinary.com/x/video/upload/v1/anuncio.mp4');
 
-    // Unos tres quintos: el resto es para los textos.
     await page.setViewportSize({ width: 1366, height: 800 });
     const anchos = await page.evaluate(() => {
         const marco = document.querySelector('.video-destacado__marco');
@@ -437,35 +432,12 @@ test('video del inicio: en escritorio el video ocupa cerca del 60 % de la secci�
     expect(anchos.marco / anchos.contenedor).toBeGreaterThan(0.52);
     expect(anchos.marco / anchos.contenedor).toBeLessThan(0.65);
 
-    // El reproductor se queda aunque el video no se pueda decodificar: el
-    // aviso de "llega muy pronto" sería falso, el archivo sí llegó.
     await page.waitForTimeout(1000);
     await expect(video).toHaveCount(1);
 });
 
-// ============================================================
-// DESCUENTOS
-// precio_final, descuento_vigente y descuento_porcentaje_efectivo los
-// calcula el backend. La web solo los pinta, así que estas pruebas
-// comprueban que no invente cifras ni deje la pastilla cuando la
-// promoción ya venció.
-// ============================================================
-
-const enOferta = {
-    ...LIBROS[0],
-    descuento_vigente: 1,
-    descuento_porcentaje: 30,
-    descuento_porcentaje_efectivo: 30,
-    precio_final: '27.93',
-};
-
-const promoVencida = {
-    ...LIBROS[1],
-    descuento_vigente: 0,
-    descuento_porcentaje: 30,
-    descuento_porcentaje_efectivo: 0,
-    precio_final: '39.90',
-};
+const enOferta = { ...LIBROS[0], descuento_vigente: 1, descuento_porcentaje: 30, descuento_porcentaje_efectivo: 30, precio_final: '27.93' };
+const promoVencida = { ...LIBROS[1], descuento_vigente: 0, descuento_porcentaje: 30, descuento_porcentaje_efectivo: 0, precio_final: '39.90' };
 
 test('catálogo: en oferta muestra porcentaje, precio tachado y precio final', async ({ page }) => {
     const errores = [];
@@ -477,7 +449,7 @@ test('catálogo: en oferta muestra porcentaje, precio tachado y precio final', a
     await expect(tarjeta.locator('.oferta__pastilla')).toHaveText('-30%');
     await expect(tarjeta.locator('.oferta__anterior s')).toHaveText('S/ 39.90');
     await expect(tarjeta.locator('.oferta__final')).toHaveText('S/ 27.93');
-    // Estilo formal: pastilla roja sobria con texto blanco y precio final en rojo.
+
     await expect(tarjeta.locator('.oferta__pastilla')).toHaveCSS('background-color', 'rgb(177, 39, 4)');
     await expect(tarjeta.locator('.oferta__pastilla')).toHaveCSS('color', 'rgb(255, 255, 255)');
     await expect(tarjeta.locator('.oferta__final')).toHaveCSS('color', 'rgb(177, 39, 4)');
@@ -526,7 +498,7 @@ test('catálogo: el precio es texto sobrio sin pastilla de color', async ({ page
         const s = getComputedStyle(e);
         return { fondo: s.backgroundColor, color: s.color, radio: s.borderRadius };
     });
-    // Estilo formal: sin fondo de color, texto en tinta oscura.
+
     expect(estilos.fondo).toBe('rgba(0, 0, 0, 0)');
     expect(estilos.color).toBe('rgb(17, 24, 32)');
 });
@@ -544,20 +516,23 @@ test('el botón principal es azul marino con texto blanco', async ({ page }) => 
     expect(estilos.color).toBe('rgb(255, 255, 255)');
 });
 
-// El pie oscuro mantiene contraste de lectura alto sobre el carbón.
 test('el pie mantiene contraste alto', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
-    // El pie entra con la página en diferido: se espera a que exista.
+
     await expect(page.locator('footer.pie')).toBeVisible({ timeout: 30000 });
 
     const medido = await page.evaluate(() => {
         const brillo = (c) => {
-            const [r, g, b] = c.match(/\d+/g).slice(0, 3).map(Number).map((v) => {
-                v /= 255;
-                return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-            });
+            const [r, g, b] = c
+                .match(/\d+/g)
+                .slice(0, 3)
+                .map(Number)
+                .map((v) => {
+                    v /= 255;
+                    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+                });
             return 0.2126 * r + 0.7152 * g + 0.0722 * b;
         };
         const leer = (sel) => {
@@ -574,15 +549,13 @@ test('el pie mantiene contraste alto', async ({ page }) => {
         return {
             pieFondo: pie.fondo,
             h2: ratio(pie.fondo, leer('.pie h2').texto),
-            // Los enlaces de las columnas, no el del logo: aquel envuelve un
-            // <span> que ya lleva su propio color blanco.
+
             enlace: ratio(pie.fondo, leer('.pie ul a').texto),
             lema: ratio(pie.fondo, leer('.pie__lema').texto),
             legal: ratio(pie.fondo, leer('.pie__legal').texto),
             marca: ratio(pie.fondo, leer('.pie .marca span').texto),
-            // El texto del pie usa una sola familia; la marca va en serif, como en la cabecera.
-            familias: [...new Set([...document.querySelectorAll('.pie h2, .pie__lema, .pie nav a')]
-                .map((e) => getComputedStyle(e).fontFamily.split(',')[0].replace(/"/g, '')))],
+
+            familias: [...new Set([...document.querySelectorAll('.pie h2, .pie__lema, .pie nav a')].map((e) => getComputedStyle(e).fontFamily.split(',')[0].replace(/"/g, '')))]
         };
     });
 
@@ -598,7 +571,7 @@ test('cada variante de botón conserva un texto legible', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
-    // La página se carga en diferido: se espera a que exista el botón.
+
     await expect(page.locator('.acceso-catalogo__boton')).toBeVisible({ timeout: 30000 });
     await expect(page.locator('footer.pie')).toBeVisible({ timeout: 30000 });
     const colores = await page.evaluate(() => {
@@ -612,7 +585,7 @@ test('cada variante de botón conserva un texto legible', async ({ page }) => {
     });
     expect(colores.marca.fondo).toBe('rgb(36, 48, 75)');
     expect(colores.marca.texto).toBe('rgb(255, 250, 242)');
-    // La portada de Nosotros se retiró; sus enlaces de app viven en el pie.
+
     await page.goto('/nosotros');
     await expect(page.locator('.nosotros-valores .app-tiendas')).toHaveCount(0);
     await expect(page.locator('footer.pie .app-tiendas a')).toBeVisible({ timeout: 30000 });
@@ -620,34 +593,30 @@ test('cada variante de botón conserva un texto legible', async ({ page }) => {
         const s = getComputedStyle(e);
         return { fondo: s.backgroundColor, texto: s.color };
     });
-    // En el pie oscuro el badge se apoya en un filete claro, sin fondo relleno.
+
     expect(descarga.fondo).toBe('rgba(0, 0, 0, 0)');
     expect(descarga.texto).toBe('rgb(240, 236, 228)');
 });
 
-// ============================================================
-// CATÁLOGO ESTILO TIENDA: etiquetas reales, orden y filtros
-// ============================================================
 test('catálogo: "Más vendido" solo en los libros que la API marca', async ({ page }) => {
     const libros = LIBROS.map((l, i) => ({ ...l, mas_vendido: i === 2 ? 1 : 0 }));
     await apiPublica(page, { libros });
     await page.goto('/catalogo');
     await expect(page.locator('.etiqueta-top')).toHaveCount(1);
-    // En orden "Destacados" el más vendido va primero.
+
     await expect(page.locator('.rejilla-libros .tarjeta-libro').first()).toContainText('Libro de prueba 3');
     await expect(page.locator('.rejilla-libros .tarjeta-libro').first().locator('.etiqueta-top')).toHaveText('Más vendido');
 });
 
 test('catálogo: ordenar por precio y filtrar ofertas y stock', async ({ page }) => {
-    const libros = LIBROS.map((l, i) => ({ ...l, precio: String(10 + i),
-        ...(i === 5 ? { descuento_vigente: 1, precio_final: '5.00', descuento_porcentaje_efectivo: 67 } : {}) }));
+    const libros = LIBROS.map((l, i) => ({ ...l, precio: String(10 + i), ...(i === 5 ? { descuento_vigente: 1, precio_final: '5.00', descuento_porcentaje_efectivo: 67 } : {}) }));
     await apiPublica(page, { libros });
     await page.goto('/catalogo');
     const tarjetas = page.locator('.rejilla-libros .tarjeta-libro');
 
     await page.getByLabel('Ordenar por').selectOption('precio-asc');
     await expect(page).toHaveURL(/orden=precio-asc/);
-    await expect(tarjetas.first()).toContainText('Libro de prueba 6'); // la oferta a S/ 5.00
+    await expect(tarjetas.first()).toContainText('Libro de prueba 6');
     await expect(tarjetas.first().locator('.ahorro')).toHaveText('Ahorras S/ 10.00');
 
     await page.getByLabel('Ordenar por').selectOption('precio-desc');
@@ -685,7 +654,7 @@ test('inicio: explora por categoría y cómo comprar', async ({ page }) => {
     await page.waitForSelector('#precarga', { state: 'detached' });
     const tarjetas = page.locator('.categoria-tarjeta');
     await expect(tarjetas).toHaveCount(3);
-    // Del estante a tus manos: tres pasos reales, sin numeración decorativa.
+
     const pasos = page.locator('.comprar__paso');
     await expect(pasos).toHaveCount(3);
     await expect(pasos.nth(1)).toContainText('Pague con PayU');
@@ -697,7 +666,7 @@ test('cabecera comercial sin franja superior y con menú claro como la referenci
     await apiPublica(page);
     await page.goto('/');
     await expect(page.locator('.avisos')).toHaveCount(0);
-    // Barra superior oscura y segunda barra de enlaces en blanco.
+
     await expect(page.locator('.cabecera')).toHaveCSS('background-color', 'rgb(19, 25, 33)');
     await expect(page.locator('.menu')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
     await expect(page.locator('.menu a').first()).toHaveCSS('text-transform', 'uppercase');

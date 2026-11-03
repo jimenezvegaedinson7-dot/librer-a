@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react';
-
 import { useLocation, useNavigate } from 'react-router-dom';
-
 import { FaArrowLeft, FaEnvelopeCircleCheck, FaKey } from 'react-icons/fa6';
 import { motion, useReducedMotion } from 'motion/react';
-
 import { reenviarCodigo, verificarEmail } from './authService';
 import { Input } from '../ui/Form';
 import { Alert } from '../ui/Alert';
-
 import fondoLogin from '../../compartido/assets/fondo-login.webp';
 import logoLibreria from '../../compartido/assets/logo-principal-oscuro.png';
 
@@ -95,8 +91,7 @@ export default function VerificarEmailPage() {
                 initial={reducirMovimiento ? false : { opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
-                className="verificar-tarjeta relative z-10 w-full max-w-[440px]"
-            >
+                className="verificar-tarjeta relative z-10 w-full max-w-[440px]">
                 <div className="mb-7 flex flex-col items-center text-center">
                     <img src={logoLibreria} alt="MATIDANA" className="h-14 w-auto object-contain" />
                     <p className="mt-2 font-title text-base font-semibold text-[#1c1814]">MATIDANA</p>
@@ -108,9 +103,7 @@ export default function VerificarEmailPage() {
                     </span>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7a5c43]">Activación de cuenta</p>
                     <h1 className="mt-1.5 font-title text-[28px] font-semibold leading-tight tracking-[-0.015em] text-[#1c1814]">Verifica tu correo</h1>
-                    <p className="mt-2 text-sm leading-6 text-[#766d62]">
-                        Ingresa el código de 6 dígitos que enviamos a tu correo para activar tu cuenta.
-                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[#766d62]">Ingresa el código de 6 dígitos que enviamos a tu correo para activar tu cuenta.</p>
                 </div>
 
                 <div aria-live="polite" className="space-y-3 empty:hidden">
@@ -161,27 +154,19 @@ export default function VerificarEmailPage() {
                         type="button"
                         onClick={reenviar}
                         disabled={reenviando || segundos > 0 || cargando}
-                        className="login-enlace tabular-nums disabled:cursor-not-allowed disabled:text-[#a39a8e] disabled:no-underline"
-                    >
-                        {reenviando
-                            ? 'Reenviando...'
-                            : segundos > 0
-                              ? `Reenviar código en ${segundos}s`
-                              : '¿No recibiste el código? Reenviar'}
+                        className="login-enlace tabular-nums disabled:cursor-not-allowed disabled:text-[#a39a8e] disabled:no-underline">
+                        {reenviando ? 'Reenviando...' : segundos > 0 ? `Reenviar código en ${segundos}s` : '¿No recibiste el código? Reenviar'}
                     </button>
 
                     <button
                         type="button"
                         onClick={volverAlLogin}
-                        className="flex items-center gap-1.5 rounded text-[13px] font-medium text-[#766d62] transition-colors hover:text-[#1c1814]"
-                    >
+                        className="flex items-center gap-1.5 rounded text-[13px] font-medium text-[#766d62] transition-colors hover:text-[#1c1814]">
                         <FaArrowLeft className="text-[10px]" aria-hidden="true" /> Volver al inicio de sesión
                     </button>
                 </div>
 
-                <p className="mt-7 border-t border-[#e6e0d7] pt-5 text-center text-xs text-[#766d62]">
-                    La cuenta debe verificarse para poder ingresar.
-                </p>
+                <p className="mt-7 border-t border-[#e6e0d7] pt-5 text-center text-xs text-[#766d62]">La cuenta debe verificarse para poder ingresar.</p>
             </motion.section>
         </main>
     );

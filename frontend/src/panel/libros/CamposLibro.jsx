@@ -1,5 +1,4 @@
 import { FaImage, FaPlus, FaTag, FaXmark } from 'react-icons/fa6';
-
 import { Input, Select, Textarea } from '../ui/Form';
 import { Spinner } from '../ui/Spinner';
 import { Button } from '../ui/Button';
@@ -13,8 +12,13 @@ export function SelectorPortada({ imagen, preview, portadaActual, libro, onCambi
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-[150px_1fr]">
                 <div className="relative flex h-52 items-center justify-center overflow-hidden rounded-xl border border-primary-200 bg-parchment-200">
-                    <PortadaCatalogo libro={libro} {...(preview?{src:preview}:libro?{}:{src:portadaActual})}
-                        alt="Portada del libro" className="h-full w-full object-contain" prioritaria/>
+                    <PortadaCatalogo
+                        libro={libro}
+                        {...(preview ? { src: preview } : libro ? {} : { src: portadaActual })}
+                        alt="Portada del libro"
+                        className="h-full w-full object-contain"
+                        prioritaria
+                    />
                     {cargando && imagen && (
                         <div className="upload-overlay absolute inset-0 flex flex-col items-center justify-center gap-2" role="status">
                             <Spinner className="text-amber-700" />
@@ -27,14 +31,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, libro, onCambi
                     <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-primary-300 bg-parchment-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-primary-500 hover:bg-primary-50 hover:text-primary-700">
                         <FaImage />
                         {imagen ? 'Seleccionar otra imagen' : 'Seleccionar imagen'}
-                        <input
-                            ref={inputRef}
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            onChange={onCambiar}
-                            disabled={cargando}
-                            className="hidden"
-                        />
+                        <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={onCambiar} disabled={cargando} className="hidden" />
                     </label>
                     <p className="mt-1.5 text-xs text-slate-500">JPG, PNG o WEBP. Máximo 5 MB.</p>
 
@@ -45,11 +42,14 @@ export function SelectorPortada({ imagen, preview, portadaActual, libro, onCambi
                             <button
                                 type="button"
                                 onClick={onQuitar}
-                                className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-crimson-500 hover:text-crimson-500"
-                            >
+                                className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-crimson-500 hover:text-crimson-500">
                                 <FaXmark /> Cancelar cambio
                             </button>
-                            {cargando && <div className="upload-progress mt-3" aria-hidden="true"><span /></div>}
+                            {cargando && (
+                                <div className="upload-progress mt-3" aria-hidden="true">
+                                    <span />
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -58,27 +58,7 @@ export function SelectorPortada({ imagen, preview, portadaActual, libro, onCambi
     );
 }
 
-// ============================================================
-// DESCUENTO
-//
-// Reglas (las mismas que valida el backend en utils/descuentos.js):
-//   - Porcentaje (1 a 99) o precio de oferta, nunca los dos: al escribir
-//     en uno, el otro se bloquea.
-//   - El precio de oferta debe ser mayor que 0 y menor que el precio normal.
-//   - La fecha "Hasta" solo se puede poner con un descuento, incluye ese
-//     día completo (hora de Lima) y no puede ser anterior a hoy.
-// El precio final se calcula aquí para que el administrador vea el
-// resultado antes de guardar.
-// ============================================================
-
-// Hoy en Lima como AAAA-MM-DD (para el mínimo del calendario).
-const hoyEnLima = () =>
-    new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'America/Lima',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-    }).format(new Date());
+const hoyEnLima = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 
 export function CamposDescuento({ formulario, manejarCambio, errores = {}, flotante = false }) {
     const precio = Number(formulario.precio);
@@ -96,15 +76,9 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {}, flota
 
     const hayDescuento = (usaPorcentaje || usaOferta) && !aviso;
 
-    const final = !hayDescuento
-        ? precio
-        : usaOferta
-            ? oferta
-            : Math.round(precio * (1 - porcentaje / 100) * 100) / 100;
+    const final = !hayDescuento ? precio : usaOferta ? oferta : Math.round(precio * (1 - porcentaje / 100) * 100) / 100;
 
-    const porcentajeEfectivo = hayDescuento
-        ? Math.round(((precio - final) / precio) * 100)
-        : 0;
+    const porcentajeEfectivo = hayDescuento ? Math.round(((precio - final) / precio) * 100) : 0;
 
     const hoy = hoyEnLima();
     const fecha = formulario.descuento_hasta || '';
@@ -112,10 +86,12 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {}, flota
 
     return (
         <div className={flotante ? 'space-y-4' : 'space-y-3 rounded-xl border border-orange-200 bg-orange-50/50 p-4'}>
-            {!flotante && <div className="flex items-center gap-2">
-                <FaTag className="text-oferta" />
-                <span className="text-sm font-semibold text-slate-800">Descuento (opcional)</span>
-            </div>}
+            {!flotante && (
+                <div className="flex items-center gap-2">
+                    <FaTag className="text-oferta" />
+                    <span className="text-sm font-semibold text-slate-800">Descuento (opcional)</span>
+                </div>
+            )}
 
             <div className={flotante ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-1 gap-4 md:grid-cols-3'}>
                 <Input
@@ -164,8 +140,8 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {}, flota
             </div>
 
             <p className="text-xs text-slate-600">
-                Elige un porcentaje o un precio de oferta (no los dos). La fecha es opcional: la promoción dura
-                hasta ese día inclusive; si la dejas vacía, no vence. Este precio es el que se cobra en la app.
+                Elige un porcentaje o un precio de oferta (no los dos). La fecha es opcional: la promoción dura hasta ese día inclusive; si la dejas vacía, no vence. Este precio es
+                el que se cobra en la app.
             </p>
 
             {aviso && (
@@ -182,9 +158,7 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {}, flota
 
             {hayDescuento && !vencida && (
                 <div className="flex flex-wrap items-center gap-2 rounded-lg border border-orange-200 bg-white px-3 py-2 text-sm">
-                    <span className="descuento-resaltado rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold">
-                        -{porcentajeEfectivo}%
-                    </span>
+                    <span className="descuento-resaltado rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold">-{porcentajeEfectivo}%</span>
                     <span className="text-slate-500 line-through">S/ {precio.toFixed(2)}</span>
                     <span className="descuento-resaltado font-bold">S/ {final.toFixed(2)}</span>
                     {fecha && <span className="text-xs text-slate-500">hasta el {fecha.split('-').reverse().join('/')}</span>}
@@ -194,17 +168,7 @@ export function CamposDescuento({ formulario, manejarCambio, errores = {}, flota
     );
 }
 
-export default function CamposLibro({
-    formulario,
-    autores,
-    categorias,
-    manejarCambio,
-    editable = true,
-    errores = {},
-    onAgregarAutor,
-    guardando = false,
-    enfocarTitulo = false,
-}) {
+export default function CamposLibro({ formulario, autores, categorias, manejarCambio, editable = true, errores = {}, onAgregarAutor, guardando = false, enfocarTitulo = false }) {
     return (
         <div className="form-grid">
             <Input
@@ -218,27 +182,10 @@ export default function CamposLibro({
                 required
                 ancho={8}
             />
-            <Input
-                label="ISBN"
-                name="isbn"
-                value={formulario.isbn}
-                onChange={manejarCambio}
-                placeholder="978-1234567890"
-                error={errores.isbn}
-                ancho={4}
-                className="tabular-nums"
-            />
+            <Input label="ISBN" name="isbn" value={formulario.isbn} onChange={manejarCambio} placeholder="978-1234567890" error={errores.isbn} ancho={4} className="tabular-nums" />
 
             <div className={editable ? 'md:col-span-5' : 'md:col-span-6'}>
-                <Select
-                    label="Autor"
-                    name="id_autor"
-                    value={formulario.id_autor}
-                    onChange={manejarCambio}
-                    error={errores.id_autor}
-                    required
-                    ancho={12}
-                >
+                <Select label="Autor" name="id_autor" value={formulario.id_autor} onChange={manejarCambio} error={errores.id_autor} required ancho={12}>
                     <option value="">Seleccione un autor</option>
                     {autores.map((autor) => (
                         <option key={autor.id_autor} value={autor.id_autor}>
@@ -253,15 +200,7 @@ export default function CamposLibro({
                 )}
             </div>
 
-            <Select
-                label="Categoría"
-                name="id_categoria"
-                value={formulario.id_categoria}
-                onChange={manejarCambio}
-                error={errores.id_categoria}
-                required
-                ancho={editable ? 4 : 6}
-            >
+            <Select label="Categoría" name="id_categoria" value={formulario.id_categoria} onChange={manejarCambio} error={errores.id_categoria} required ancho={editable ? 4 : 6}>
                 <option value="">Seleccione una categoría</option>
                 {categorias.map((categoria) => (
                     <option key={categoria.id_categoria} value={categoria.id_categoria}>
@@ -287,14 +226,7 @@ export default function CamposLibro({
                 />
             )}
 
-            <Textarea
-                label="Descripción"
-                name="descripcion"
-                value={formulario.descripcion}
-                onChange={manejarCambio}
-                placeholder="Descripción breve del libro"
-                rows="2"
-            />
+            <Textarea label="Descripción" name="descripcion" value={formulario.descripcion} onChange={manejarCambio} placeholder="Descripción breve del libro" rows="2" />
         </div>
     );
 }

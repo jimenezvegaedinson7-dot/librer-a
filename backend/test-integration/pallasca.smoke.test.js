@@ -11,26 +11,30 @@ test('Pallasca: cobertura fija S/5, PayU e historial conservado', async (t) => {
     const usuarios = [];
     const zonas = [];
     let autor, categoria, libro;
-    const pedir = (ruta, token, method = 'GET', body) => fetch(`${process.env.TEST_BASE_URL}/api${ruta}`, {
-        method, headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
-        body: body !== undefined ? JSON.stringify(body) : undefined
-    });
+    const pedir = (ruta, token, method = 'GET', body) =>
+        fetch(`${process.env.TEST_BASE_URL}/api${ruta}`, {
+            method,
+            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+            body: body !== undefined ? JSON.stringify(body) : undefined
+        });
     try {
         for (const rol of ['administrador', 'cliente']) {
-            const [u] = await pool.query("INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES ('Cobertura','Test',?,'hash-test',?)",
-                [`${randomUUID()}@example.test`, rol]);
+            const [u] = await pool.query("INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES ('Cobertura','Test',?,'hash-test',?)", [
+                `${randomUUID()}@example.test`,
+                rol
+            ]);
             usuarios.push(u.insertId);
         }
         const admin = jwt.sign({ id_usuario: usuarios[0] }, process.env.JWT_SECRET);
         const cliente = jwt.sign({ id_usuario: usuarios[1] }, process.env.JWT_SECRET);
-        const [a] = await pool.query("INSERT INTO autores(nombre,apellido) VALUES ('Cobertura','Test')"); autor = a.insertId;
-        const [c] = await pool.query('INSERT INTO categorias(nombre) VALUES (?)', [`Cobertura-${randomUUID()}`]); categoria = c.insertId;
-        const [l] = await pool.query('INSERT INTO libros(titulo,precio,id_autor,id_categoria,estado) VALUES (?,100,?,?,1)',
-            [`Cobertura ${randomUUID()}`, autor, categoria]); libro = l.insertId;
+        const [a] = await pool.query("INSERT INTO autores(nombre,apellido) VALUES ('Cobertura','Test')");
+        autor = a.insertId;
+        const [c] = await pool.query('INSERT INTO categorias(nombre) VALUES (?)', [`Cobertura-${randomUUID()}`]);
+        categoria = c.insertId;
+        const [l] = await pool.query('INSERT INTO libros(titulo,precio,id_autor,id_categoria,estado) VALUES (?,100,?,?,1)', [`Cobertura ${randomUUID()}`, autor, categoria]);
+        libro = l.insertId;
         await pool.query('INSERT INTO inventario(id_libro,stock,stock_minimo) VALUES (?,100,2)', [libro]);
-        const orden = (extra = {}) => ({ items: [{ id_libro: libro, cantidad: 2, precio: 1 }],
-            tipo_entrega: 'tienda', idempotencia_clave: randomUUID(), ...extra });
+        const orden = (extra = {}) => ({ items: [{ id_libro: libro, cantidad: 2, precio: 1 }], tipo_entrega: 'tienda', idempotencia_clave: randomUUID(), ...extra });
         const leerVenta = async (id) => (await pool.query('SELECT * FROM ventas WHERE id_venta=?', [id]))[0][0];
         const verificarPayU = async (data, monto) => {
             const html = await (await fetch(data.checkout_url)).text();
@@ -38,12 +42,13 @@ test('Pallasca: cobertura fija S/5, PayU e historial conservado', async (t) => {
             assert.match(html, /name="currency"\s+value="PEN"/);
             assert.match(html, /name="signature"\s+value="[a-f0-9]{32}"/);
         };
-        // Fila legacy real antes de aplicar 032: preservamos cada columna anterior.
+
         const [d] = await pool.query("SELECT d.id_distrito FROM distritos_lima d JOIN provincias_lima p USING(id_provincia) WHERE p.nombre='Lima' LIMIT 1");
         const [ag] = await pool.query('SELECT id_agencia FROM agencias_courier LIMIT 1');
-        const [historica] = await pool.query(`INSERT INTO ventas(id_usuario,total,costo_envio,tipo_entrega,direccion,referencia,id_distrito,id_agencia,external_reference,estado)
-            VALUES (?,212.50,12.50,'domicilio','Dirección Lima original','Referencia original',?,?,?,'pagada')`,
-            [usuarios[1], d[0].id_distrito, ag[0]?.id_agencia || null, `historica_${randomUUID()}`]);
+        const [historica] = await pool.query(
+            `INSERT INTO ventas(id_usuario,total,costo_envio,tipo_entrega,direccion,referencia,id_distrito,id_agencia,external_reference,estado) VALUES (?,212.50,12.50,'domicilio','Dirección Lima original','Referencia original',?,?,?,'pagada')`,
+            [usuarios[1], d[0].id_distrito, ag[0]?.id_agencia || null, `historica_${randomUUID()}`]
+        );
         const antes = await leerVenta(historica.insertId);
         const migracion = readFileSync(path.join(__dirname, '../database/migrations/032_cobertura_pallasca.sql'), 'utf8');
 
@@ -51,35 +56,35 @@ test('Pallasca: cobertura fija S/5, PayU e historial conservado', async (t) => {
             const connection = await pool.getConnection();
             try {
                 await connection.beginTransaction();
-                // Tablas temporales de esta conexión: no alteran el schema de
-                // la API ni los fixtures compartidos del resto de las pruebas.
-                await connection.query(`CREATE TEMP TABLE zonas_delivery_pallasca (
-                    id_zona SERIAL PRIMARY KEY, nombre VARCHAR(80) NOT NULL,
-                    tarifa NUMERIC(10,2) NOT NULL, estado SMALLINT NOT NULL DEFAULT 1
-                ) ON COMMIT DROP`);
-                await connection.query(`CREATE TEMP TABLE ventas (
-                    id_venta SERIAL PRIMARY KEY, total NUMERIC(10,2), costo_envio NUMERIC(10,2),
-                    tipo_entrega VARCHAR(20), direccion VARCHAR(255), referencia VARCHAR(255),
-                    id_distrito INT, id_agencia INT
-                ) ON COMMIT DROP`);
-                await connection.query(`INSERT INTO ventas(total,costo_envio,tipo_entrega,direccion,referencia,id_distrito,id_agencia)
-                    VALUES (212.50,12.50,'domicilio','Dirección Lima original','Referencia original',1,1)`);
+
+                await connection.query(
+                    `CREATE TEMP TABLE zonas_delivery_pallasca (id_zona SERIAL PRIMARY KEY, nombre VARCHAR(80) NOT NULL, tarifa NUMERIC(10,2) NOT NULL, estado SMALLINT NOT NULL DEFAULT 1) ON COMMIT DROP`
+                );
+                await connection.query(
+                    `CREATE TEMP TABLE ventas (id_venta SERIAL PRIMARY KEY, total NUMERIC(10,2), costo_envio NUMERIC(10,2), tipo_entrega VARCHAR(20), direccion VARCHAR(255), referencia VARCHAR(255), id_distrito INT, id_agencia INT) ON COMMIT DROP`
+                );
+                await connection.query(
+                    `INSERT INTO ventas(total,costo_envio,tipo_entrega,direccion,referencia,id_distrito,id_agencia) VALUES (212.50,12.50,'domicilio','Dirección Lima original','Referencia original',1,1)`
+                );
                 const [original] = await connection.query('SELECT * FROM ventas');
-                await connection.query(migracion); await connection.query(migracion);
+                await connection.query(migracion);
+                await connection.query(migracion);
                 const [posterior] = await connection.query(`SELECT ${Object.keys(original[0]).join(',')} FROM ventas`);
                 assert.deepEqual(posterior, original);
                 const [marca] = await connection.query('SELECT cobertura_entrega,id_zona_delivery,zona_delivery_nombre FROM ventas');
                 assert.deepEqual(marca[0], { cobertura_entrega: null, id_zona_delivery: null, zona_delivery_nombre: null });
                 assert.equal((await connection.query('SELECT * FROM zonas_delivery_pallasca'))[0].length, 0);
             } finally {
-                await connection.rollback(); connection.release();
+                await connection.rollback();
+                connection.release();
             }
         });
 
         await t.test('D: migración repetible conserva ventas y ubicaciones antiguas, sin zonas iniciales', async () => {
             const [ubicacionesAntes] = await pool.query('SELECT * FROM distritos_lima ORDER BY id_distrito');
             const [zonasAntes] = await pool.query('SELECT * FROM zonas_delivery_pallasca ORDER BY id_zona');
-            await pool.query(migracion); await pool.query(migracion);
+            await pool.query(migracion);
+            await pool.query(migracion);
             assert.deepEqual(await leerVenta(historica.insertId), antes);
             assert.deepEqual((await pool.query('SELECT * FROM distritos_lima ORDER BY id_distrito'))[0], ubicacionesAntes);
             assert.deepEqual((await pool.query('SELECT * FROM zonas_delivery_pallasca ORDER BY id_zona'))[0], zonasAntes);
@@ -93,14 +98,19 @@ test('Pallasca: cobertura fija S/5, PayU e historial conservado', async (t) => {
             assert.equal(vista.id_agencia, antes.id_agencia);
         });
         await t.test('A: recojo Pallasca funciona sin zonas; envío cero aun con datos manipulados', async () => {
-            const r = await pedir('/pagos/crear-orden', cliente, 'POST', orden({ costo_envio: 999, id_zona_delivery: 999,
-                direccion: 'Dato que no debe guardarse', referencia: 'Dato de delivery', id_distrito: d[0].id_distrito }));
+            const r = await pedir(
+                '/pagos/crear-orden',
+                cliente,
+                'POST',
+                orden({ costo_envio: 999, id_zona_delivery: 999, direccion: 'Dato que no debe guardarse', referencia: 'Dato de delivery', id_distrito: d[0].id_distrito })
+            );
             assert.equal(r.status, 201, await r.clone().text());
             const data = (await r.json()).data;
             const v = await leerVenta(data.id_venta);
             assert.equal(v.cobertura_entrega, 'pallasca');
             assert.equal(v.tipo_entrega, 'tienda');
-            assert.equal(Number(v.costo_envio), 0); assert.equal(Number(v.total), 200);
+            assert.equal(Number(v.costo_envio), 0);
+            assert.equal(Number(v.total), 200);
             for (const campo of ['id_zona_delivery', 'zona_delivery_nombre', 'id_distrito', 'id_agencia', 'direccion', 'referencia']) assert.equal(v[campo], null);
             await verificarPayU(data, 200);
         });
@@ -109,25 +119,38 @@ test('Pallasca: cobertura fija S/5, PayU e historial conservado', async (t) => {
             assert.equal((await pedir('/zonas-delivery/todos', cliente)).status, 403);
             assert.equal((await pedir('/zonas-delivery', cliente, 'POST', { nombre: 'Zona prueba', tarifa: 7.5, estado: 1 })).status, 403);
             for (const tarifa of [0, 5, 7, 999]) assert.equal((await pedir('/zonas-delivery', admin, 'POST', { nombre: 'Zona', tarifa, estado: 1 })).status, 409);
-            // Referencias de apps publicadas: una activa y una inactiva.
-            for (const estado of [1, 0]) zonas.push((await pool.query('INSERT INTO zonas_delivery_pallasca(nombre,tarifa,estado) VALUES (?,7.50,?) RETURNING *', [randomUUID(), estado]))[0][0]);
+
+            for (const estado of [1, 0])
+                zonas.push((await pool.query('INSERT INTO zonas_delivery_pallasca(nombre,tarifa,estado) VALUES (?,7.50,?) RETURNING *', [randomUUID(), estado]))[0][0]);
             const activas = (await (await pedir('/zonas-delivery', cliente)).json()).data;
             assert.equal(activas.length, 1);
             assert.equal(activas[0].nombre, 'Ciudad de Pallasca');
             assert.equal(Number(activas[0].tarifa), 5);
         });
         await t.test('B: delivery fijo también para clientes antiguos, total exacto en PayU', async () => {
-            const cuerpo = orden({ tipo_entrega: 'domicilio', id_zona_delivery: zonas[0].id_zona, direccion: '  Dirección Pallasca prueba  ',
-                referencia: ' Frente al punto de prueba ', costo_envio: 0.01, total: 1, id_distrito: d[0].id_distrito });
+            const cuerpo = orden({
+                tipo_entrega: 'domicilio',
+                id_zona_delivery: zonas[0].id_zona,
+                direccion: '  Dirección Pallasca prueba  ',
+                referencia: ' Frente al punto de prueba ',
+                costo_envio: 0.01,
+                total: 1,
+                id_distrito: d[0].id_distrito
+            });
             const r = await pedir('/pagos/crear-orden', cliente, 'POST', cuerpo);
             assert.equal(r.status, 201, await r.clone().text());
-            const data = (await r.json()).data; const v = await leerVenta(data.id_venta);
-            assert.equal(v.cobertura_entrega, 'pallasca'); assert.notEqual(v.id_zona_delivery, zonas[0].id_zona);
-            assert.equal(v.zona_delivery_nombre, 'Ciudad de Pallasca'); assert.equal(v.direccion, 'Dirección Pallasca prueba');
-            assert.equal(v.referencia, 'Frente al punto de prueba'); assert.equal(v.id_distrito, null);
-            assert.equal(Number(v.costo_envio), 5); assert.equal(Number(v.total), 205);
+            const data = (await r.json()).data;
+            const v = await leerVenta(data.id_venta);
+            assert.equal(v.cobertura_entrega, 'pallasca');
+            assert.notEqual(v.id_zona_delivery, zonas[0].id_zona);
+            assert.equal(v.zona_delivery_nombre, 'Ciudad de Pallasca');
+            assert.equal(v.direccion, 'Dirección Pallasca prueba');
+            assert.equal(v.referencia, 'Frente al punto de prueba');
+            assert.equal(v.id_distrito, null);
+            assert.equal(Number(v.costo_envio), 5);
+            assert.equal(Number(v.total), 205);
             await verificarPayU(data, 205);
-            // Cambios futuros no recalculan ni renombran la instantánea vendida.
+
             const cambio = await pedir(`/zonas-delivery/${zonas[0].id_zona}`, admin, 'PUT', { nombre: `Renombrada ${randomUUID()}`, tarifa: 11, estado: 0 });
             assert.equal(cambio.status, 409);
             assert.deepEqual(await leerVenta(data.id_venta), v);
@@ -138,65 +161,101 @@ test('Pallasca: cobertura fija S/5, PayU e historial conservado', async (t) => {
             const pedidos = (await (await pedir(`/pedidos/${data.id_venta}`, admin)).json()).data;
             assert.equal(pedidos.zona_delivery_nombre, 'Ciudad de Pallasca');
             const compras = (await (await pedir('/ventas/mis-ventas', cliente)).json()).data;
-            assert.equal(compras.find(p => p.id_venta === data.id_venta).cobertura_entrega, 'pallasca');
+            assert.equal(compras.find((p) => p.id_venta === data.id_venta).cobertura_entrega, 'pallasca');
             const pagos = (await (await pedir('/pagos', admin)).json()).pagos;
-            assert.equal(pagos.find(p => p.id_venta === data.id_venta).zona_delivery_nombre, 'Ciudad de Pallasca');
+            assert.equal(pagos.find((p) => p.id_venta === data.id_venta).zona_delivery_nombre, 'Ciudad de Pallasca');
         });
         await t.test('C: rechaza zona inexistente/inactiva, Lima legacy, agencia y dirección inválida sin venta ni stock consumido', async () => {
             const [stockAntes] = await pool.query('SELECT stock FROM inventario WHERE id_libro=?', [libro]);
             const [ventasAntes] = await pool.query('SELECT count(*) AS n FROM ventas WHERE id_usuario=?', [usuarios[1]]);
-            for (const extra of [
-                { id_zona_delivery: 2147483647 }, { id_zona_delivery: zonas[1].id_zona },
-                { id_zona_delivery: true }, { tipo_entrega: 'agencia' }
-            ]) {
+            for (const extra of [{ id_zona_delivery: 2147483647 }, { id_zona_delivery: zonas[1].id_zona }, { id_zona_delivery: true }, { tipo_entrega: 'agencia' }]) {
                 const r = await pedir('/pagos/crear-orden', cliente, 'POST', orden({ tipo_entrega: 'domicilio', direccion: 'Dirección prueba', ...extra }));
                 assert.equal(r.status, 400, await r.clone().text());
             }
             for (const extra of [{ direccion: 'abc' }, { direccion: 'a'.repeat(256) }, { referencia: true }]) {
-                assert.equal((await pedir('/pagos/crear-orden', cliente, 'POST', orden({ tipo_entrega: 'domicilio',
-                    id_zona_delivery: zonas[0].id_zona, direccion: 'Dirección prueba', ...extra }))).status, 400);
+                assert.equal(
+                    (
+                        await pedir(
+                            '/pagos/crear-orden',
+                            cliente,
+                            'POST',
+                            orden({ tipo_entrega: 'domicilio', id_zona_delivery: zonas[0].id_zona, direccion: 'Dirección prueba', ...extra })
+                        )
+                    ).status,
+                    400
+                );
             }
             assert.deepEqual((await pool.query('SELECT stock FROM inventario WHERE id_libro=?', [libro]))[0], stockAntes);
             assert.deepEqual((await pool.query('SELECT count(*) AS n FROM ventas WHERE id_usuario=?', [usuarios[1]]))[0], ventasAntes);
         });
         await t.test('043 repetible conserva ventas y zonas históricas; delivery funciona sin selector', async () => {
             const sql = readFileSync(path.join(__dirname, '../database/migrations/043_delivery_fijo_pallasca.sql'), 'utf8');
-            // También probar una base anterior SIN la cobertura de ciudad.
+
             const conexion = await pool.getConnection();
             try {
                 await conexion.beginTransaction();
-                await conexion.query('CREATE TEMP TABLE zonas_delivery_pallasca(id_zona SERIAL PRIMARY KEY,nombre VARCHAR(80),tarifa NUMERIC(10,2),estado SMALLINT) ON COMMIT DROP');
+                await conexion.query(
+                    'CREATE TEMP TABLE zonas_delivery_pallasca(id_zona SERIAL PRIMARY KEY,nombre VARCHAR(80),tarifa NUMERIC(10,2),estado SMALLINT) ON COMMIT DROP'
+                );
                 await conexion.query('CREATE UNIQUE INDEX zona_prueba_nombre ON zonas_delivery_pallasca(lower(btrim(nombre)))');
                 await conexion.query("INSERT INTO zonas_delivery_pallasca(nombre,tarifa,estado) VALUES ('Zona anterior',7.50,1)");
                 const original = (await conexion.query('SELECT * FROM zonas_delivery_pallasca'))[0][0];
-                await conexion.query(sql); await conexion.query(sql);
+                await conexion.query(sql);
+                await conexion.query(sql);
                 const ciudades = (await conexion.query("SELECT * FROM zonas_delivery_pallasca WHERE nombre='Ciudad de Pallasca'"))[0];
-                assert.equal(ciudades.length, 1); assert.equal(Number(ciudades[0].tarifa), 5);
+                assert.equal(ciudades.length, 1);
+                assert.equal(Number(ciudades[0].tarifa), 5);
                 assert.deepEqual((await conexion.query("SELECT * FROM zonas_delivery_pallasca WHERE nombre='Zona anterior'"))[0][0], original);
                 await conexion.query("UPDATE zonas_delivery_pallasca SET tarifa=7,estado=0 WHERE nombre='Ciudad de Pallasca'");
                 await conexion.query(sql);
                 assert.equal(Number((await conexion.query("SELECT tarifa FROM zonas_delivery_pallasca WHERE nombre='Ciudad de Pallasca'"))[0][0].tarifa), 5);
-            } finally { await conexion.rollback(); conexion.release(); }
+            } finally {
+                await conexion.rollback();
+                conexion.release();
+            }
             const previas = (await pool.query('SELECT * FROM ventas ORDER BY id_venta'))[0];
-            const antiguas = (await pool.query('SELECT * FROM zonas_delivery_pallasca WHERE id_zona IN (?,?) ORDER BY id_zona', zonas.map(z => z.id_zona)))[0];
-            await pool.query(sql); await pool.query(sql);
+            const antiguas = (
+                await pool.query(
+                    'SELECT * FROM zonas_delivery_pallasca WHERE id_zona IN (?,?) ORDER BY id_zona',
+                    zonas.map((z) => z.id_zona)
+                )
+            )[0];
+            await pool.query(sql);
+            await pool.query(sql);
             assert.deepEqual((await pool.query('SELECT * FROM ventas ORDER BY id_venta'))[0], previas);
-            assert.deepEqual((await pool.query('SELECT * FROM zonas_delivery_pallasca WHERE id_zona IN (?,?) ORDER BY id_zona', zonas.map(z => z.id_zona)))[0], antiguas);
+            assert.deepEqual(
+                (
+                    await pool.query(
+                        'SELECT * FROM zonas_delivery_pallasca WHERE id_zona IN (?,?) ORDER BY id_zona',
+                        zonas.map((z) => z.id_zona)
+                    )
+                )[0],
+                antiguas
+            );
             const r = await pedir('/pagos/crear-orden', cliente, 'POST', orden({ tipo_entrega: 'domicilio', direccion: 'Jr. Comercio 123', costo_envio: 0 }));
             assert.equal(r.status, 201, await r.clone().text());
             const data = (await r.json()).data;
-            assert.equal(Number(data.total), 205); assert.equal(Number(data.costo_envio), 5);
+            assert.equal(Number(data.total), 205);
+            assert.equal(Number(data.costo_envio), 5);
             await verificarPayU(data, 205);
             assert.deepEqual(await leerVenta(historica.insertId), antes);
-            // Una compra local YA creada con S/7.50 sigue teniendo S/7.50.
+
             const clave = randomUUID();
-            const [viejas] = await pool.query(`INSERT INTO ventas(id_usuario,total,costo_envio,tipo_entrega,cobertura_entrega,id_zona_delivery,zona_delivery_nombre,direccion,external_reference,idempotencia_clave,origen,metodo_pago,estado)
-                VALUES (?,207.50,7.50,'domicilio','pallasca',?,'Zona anterior','Dirección original',?,?,'app','payu','pendiente') RETURNING id_venta`, [usuarios[1],zonas[0].id_zona,randomUUID(),clave]);
+            const [viejas] = await pool.query(
+                `INSERT INTO ventas(id_usuario,total,costo_envio,tipo_entrega,cobertura_entrega,id_zona_delivery,zona_delivery_nombre,direccion,external_reference,idempotencia_clave,origen,metodo_pago,estado) VALUES (?,207.50,7.50,'domicilio','pallasca',?,'Zona anterior','Dirección original',?,?,'app','payu','pendiente') RETURNING id_venta`,
+                [usuarios[1], zonas[0].id_zona, randomUUID(), clave]
+            );
             const vieja = await leerVenta(viejas[0].id_venta);
-            const reintento = await pedir('/pagos/crear-orden', cliente, 'POST', orden({tipo_entrega:'domicilio',direccion:'Dirección original',id_zona_delivery:zonas[0].id_zona,idempotencia_clave:clave}));
+            const reintento = await pedir(
+                '/pagos/crear-orden',
+                cliente,
+                'POST',
+                orden({ tipo_entrega: 'domicilio', direccion: 'Dirección original', id_zona_delivery: zonas[0].id_zona, idempotencia_clave: clave })
+            );
             assert.equal(reintento.status, 200, await reintento.clone().text());
             const recuperada = (await reintento.json()).data;
-            assert.equal(Number(recuperada.total), 207.5); assert.equal(Number(recuperada.costo_envio), 7.5);
+            assert.equal(Number(recuperada.total), 207.5);
+            assert.equal(Number(recuperada.costo_envio), 7.5);
             assert.deepEqual(await leerVenta(viejas[0].id_venta), vieja);
         });
     } finally {
@@ -207,7 +266,10 @@ test('Pallasca: cobertura fija S/5, PayU e historial conservado', async (t) => {
             await pool.query('DELETE FROM usuarios WHERE id_usuario IN (?, ?)', usuarios);
         }
         for (const z of zonas) await pool.query('DELETE FROM zonas_delivery_pallasca WHERE id_zona=?', [z.id_zona]);
-        if (libro) { await pool.query('DELETE FROM inventario WHERE id_libro=?', [libro]); await pool.query('DELETE FROM libros WHERE id_libro=?', [libro]); }
+        if (libro) {
+            await pool.query('DELETE FROM inventario WHERE id_libro=?', [libro]);
+            await pool.query('DELETE FROM libros WHERE id_libro=?', [libro]);
+        }
         if (autor) await pool.query('DELETE FROM autores WHERE id_autor=?', [autor]);
         if (categoria) await pool.query('DELETE FROM categorias WHERE id_categoria=?', [categoria]);
         await pool.end();

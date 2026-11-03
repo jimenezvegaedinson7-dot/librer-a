@@ -57,8 +57,8 @@ Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxl
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 187 | 405 | 0 (analizador estático de imports) |
-| Frontend (`import`) | 230 | 860 | 0 (analizador estático de imports) |
+| Backend (`require`) | 183 | 401 | 0 (analizador estático de imports) |
+| Frontend (`import`) | 227 | 861 | 0 (analizador estático de imports) |
 | Flutter (`import` relativos) | 76 | 330 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter
@@ -78,5 +78,5 @@ Ejemplos de caminos:
 
 - Flutter: ninguno.
 - React: funciones de servicio no importadas: `agenciasService#obtenerAgencia`, `ubicacionesService#listarProvincias`/`listarDistritos` (se usan solo internamente por `listarDistritosParaEnvio`).
-- Backend: endpoints `GET /api/historial/mi-historial`, `POST /api/historial`, `PUT /api/inventario/libro/:id/stock` sin consumidor React/Flutter; `GET /api/debug-egress` es diagnóstico manual protegido.
+- Backend: endpoints `GET /api/historial/mi-historial`, `POST /api/historial`, `PUT /api/inventario/libro/:id/stock` sin consumidor React/Flutter.
 - Estilos: las reglas de la antigua página Reportes sin consumidores se retiraron. `tabla-reporte`, `reporte-barra`, `reporte-puesto` y `reporte-contador` se conservan porque los usan Dashboard y Ventas.

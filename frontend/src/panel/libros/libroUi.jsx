@@ -1,5 +1,4 @@
 import { Badge } from '../ui/Badge';
-
 import { nivelStock } from './nivelStock';
 
 export function StockBadge({ stock, stockMinimo }) {

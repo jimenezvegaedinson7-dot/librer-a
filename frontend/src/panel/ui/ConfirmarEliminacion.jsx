@@ -1,28 +1,14 @@
 import { useState } from 'react';
-
 import { FaLock, FaTriangleExclamation, FaTrash } from 'react-icons/fa6';
-
 import { Modal } from './Modal';
 import { Button } from './Button';
 import { Input } from './Form';
 
-export function ConfirmarEliminacion({
-    abierto,
-    titulo,
-    mensaje,
-    advertencia,
-    eliminando,
-    onCerrar,
-    onConfirmar,
-}) {
+export function ConfirmarEliminacion({ abierto, titulo, mensaje, advertencia, eliminando, onCerrar, onConfirmar }) {
     const [password, setPassword] = useState('');
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [abiertoAnterior, setAbiertoAnterior] = useState(abierto);
 
-    // Al abrir el diálogo la contraseña arranca vacía y oculta. Se ajusta
-    // durante el render en vez de en un efecto: React descarta este render y
-    // vuelve a dibujar de inmediato con el estado ya corregido, así no hay un
-    // render intermedio con la contraseña del intento anterior.
     if (abierto !== abiertoAnterior) {
         setAbiertoAnterior(abierto);
         if (abierto) {
@@ -68,15 +54,16 @@ export function ConfirmarEliminacion({
                     className="pr-24"
                 />
                 <div className="mt-1 flex items-center justify-between">
-                    <p id="confirmar-eliminacion-ayuda" className="text-xs text-slate-500">Por seguridad, confirma tu contraseña antes de continuar.</p>
+                    <p id="confirmar-eliminacion-ayuda" className="text-xs text-slate-500">
+                        Por seguridad, confirma tu contraseña antes de continuar.
+                    </p>
                     <button
                         type="button"
                         onClick={() => setMostrarPassword((a) => !a)}
                         disabled={eliminando}
                         aria-pressed={mostrarPassword}
                         aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                        className="rounded px-1 text-xs font-semibold text-slate-600 transition hover:text-slate-900 disabled:opacity-50"
-                    >
+                        className="rounded px-1 text-xs font-semibold text-slate-600 transition hover:text-slate-900 disabled:opacity-50">
                         {mostrarPassword ? 'Ocultar' : 'Mostrar'}
                     </button>
                 </div>

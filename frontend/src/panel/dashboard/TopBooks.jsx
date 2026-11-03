@@ -1,7 +1,5 @@
 import { useState } from 'react';
-
 import { FaBook, FaRankingStar } from 'react-icons/fa6';
-
 import { construirUrlArchivo } from '../../compartido/lib/utils/url';
 import { formatearMoneda } from '../../compartido/lib/utils/format';
 import { num } from './graficoUtils';
@@ -18,15 +16,7 @@ function PortadaLibro({ portada }) {
         );
     }
 
-    return (
-        <img
-            src={url}
-            alt=""
-            className="h-full w-full object-cover"
-            onError={() => setError(true)}
-            loading="lazy"
-        />
-    );
+    return <img src={url} alt="" className="h-full w-full object-cover" onError={() => setError(true)} loading="lazy" />;
 }
 
 function TopBooks({ libros = [], limite = 5 }) {
@@ -49,7 +39,11 @@ function TopBooks({ libros = [], limite = 5 }) {
                         <p className="mt-0.5 text-[13px] text-[#766d62]">Unidades en ventas cobradas (pagadas y entregadas)</p>
                     </div>
                 </div>
-                {lista.length > 0 && <span className="reporte-contador">{lista.length} {lista.length === 1 ? 'libro' : 'libros'}</span>}
+                {lista.length > 0 && (
+                    <span className="reporte-contador">
+                        {lista.length} {lista.length === 1 ? 'libro' : 'libros'}
+                    </span>
+                )}
             </header>
 
             {lista.length === 0 ? (
@@ -76,7 +70,9 @@ function TopBooks({ libros = [], limite = 5 }) {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <div className="flex items-baseline justify-between gap-3">
-                                            <p className="truncate text-[14px] font-semibold text-[#1c1814]" title={libro.titulo}>{libro.titulo}</p>
+                                            <p className="truncate text-[14px] font-semibold text-[#1c1814]" title={libro.titulo}>
+                                                {libro.titulo}
+                                            </p>
                                             <p className="shrink-0 text-[13px] tabular-nums text-[#1c1814]">
                                                 <span className="font-semibold">{unidades}</span>
                                                 <span className="text-[#766d62]"> {unidades === 1 ? 'unidad' : 'unid.'}</span>
@@ -86,9 +82,7 @@ function TopBooks({ libros = [], limite = 5 }) {
                                             <div className="ranking-pista" aria-hidden="true">
                                                 <span className="ranking-barra reporte-barra-h" style={{ width: `${ancho}%`, '--barra-i': index }} />
                                             </div>
-                                            <span className="w-[76px] shrink-0 text-right text-[12px] tabular-nums text-[#766d62]">
-                                                {formatearMoneda(libro.total_generado)}
-                                            </span>
+                                            <span className="w-[76px] shrink-0 text-right text-[12px] tabular-nums text-[#766d62]">{formatearMoneda(libro.total_generado)}</span>
                                         </div>
                                     </div>
                                 </li>
@@ -96,7 +90,9 @@ function TopBooks({ libros = [], limite = 5 }) {
                         })}
                     </ol>
                     <footer className="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-3.5 text-[13px] sm:px-6">
-                        <span className="text-[#766d62]">{totalUnidades} {totalUnidades === 1 ? 'unidad vendida' : 'unidades vendidas'} en total</span>
+                        <span className="text-[#766d62]">
+                            {totalUnidades} {totalUnidades === 1 ? 'unidad vendida' : 'unidades vendidas'} en total
+                        </span>
                         <span className="font-semibold tabular-nums text-[#1c1814]">{formatearMoneda(totalIngresos)}</span>
                     </footer>
                 </>

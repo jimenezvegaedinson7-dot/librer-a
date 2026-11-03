@@ -1,22 +1,15 @@
 import { Spinner } from './Spinner';
 
 const variantes = {
-    primary:
-        'admin-primary-button border border-mahogany-700 bg-mahogany-700 text-parchment-100 hover:bg-mahogany-600 focus-visible:ring-gold-300 active:bg-mahogany-800',
+    primary: 'admin-primary-button border border-mahogany-700 bg-mahogany-700 text-parchment-100 hover:bg-mahogany-600 focus-visible:ring-gold-300 active:bg-mahogany-800',
     secondary:
         'admin-secondary-button border border-primary-200 bg-white text-primary-500 hover:border-gold-400 hover:bg-parchment-100 focus-visible:ring-gold-300 active:bg-parchment-200',
     ghost: 'text-primary-600 hover:bg-parchment-200 hover:text-primary-900 focus-visible:ring-gold-300',
-    danger:
-        'bg-crimson-500 text-parchment-100 shadow-sm hover:bg-crimson-600 focus-visible:ring-crimson-200 active:bg-crimson-700',
-    'danger-outline':
-        'border border-crimson-200 bg-white text-crimson-500 hover:bg-crimson-50 focus-visible:ring-crimson-200 active:bg-crimson-100',
+    danger: 'bg-crimson-500 text-parchment-100 shadow-sm hover:bg-crimson-600 focus-visible:ring-crimson-200 active:bg-crimson-700',
+    'danger-outline': 'border border-crimson-200 bg-white text-crimson-500 hover:bg-crimson-50 focus-visible:ring-crimson-200 active:bg-crimson-100'
 };
 
-const tamanos = {
-    sm: 'h-8 px-3 text-xs gap-1.5 rounded-md',
-    md: 'h-10 px-4 text-sm gap-2 rounded-lg',
-    lg: 'h-11 px-5 text-[15px] gap-2 rounded-lg',
-};
+const tamanos = { sm: 'h-8 px-3 text-xs gap-1.5 rounded-md', md: 'h-10 px-4 text-sm gap-2 rounded-lg', lg: 'h-11 px-5 text-[15px] gap-2 rounded-lg' };
 
 export function Button({
     children,
@@ -36,7 +29,7 @@ export function Button({
         tamanos[tamano],
         cargando ? 'button-loading' : '',
         bloque ? 'w-full' : '',
-        className,
+        className
     ]
         .filter(Boolean)
         .join(' ');

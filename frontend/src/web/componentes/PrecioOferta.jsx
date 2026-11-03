@@ -1,17 +1,5 @@
 import { soles } from '../lib/formato';
 
-// ============================================================
-// PRECIO CON OFERTA
-//
-// El precio final y el porcentaje llegan ya resueltos desde
-// useCatalogo: cuando la promoción está vencida, descuento llega en 0
-// y precioFinal es el precio de lista, así que aquí no hay ninguna regla
-// que pueda quedar desincronizada del backend.
-//
-// Sin descuento devuelve el precio solo, para no dejar una pastilla
-// "-0%" colgada en la ficha.
-// ============================================================
-
 export function PrecioOferta({ libro, clase = '' }) {
     const conOferta = libro.descuento > 0 && libro.precioFinal < libro.precio;
 

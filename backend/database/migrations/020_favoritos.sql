@@ -1,15 +1,3 @@
--- ============================================================
--- MIGRACIÓN 020: FAVORITOS / LISTA DE DESEOS
--- ============================================================
--- Tabla de favoritos del cliente (lista de deseos).
---
--- SEGURO E IDEMPOTENTE (ejecutable 2 veces sin error):
---   - CREATE TABLE IF NOT EXISTS.
---   - Índices con IF NOT EXISTS.
---   - La PK (id_usuario, id_libro) impide duplicados; agregar dos veces el
---     mismo libro es un no-op.
--- ============================================================
-
 CREATE TABLE IF NOT EXISTS favoritos (
     id_usuario INT NOT NULL,
     id_libro   INT NOT NULL,

@@ -1,8 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-
-import { FaEye, FaFileCsv, FaMagnifyingGlass, FaRotate, FaUserGroup, FaXmark } from 'react-icons/fa6';
-
-import { FaMoneyBillWave, FaCartShopping } from 'react-icons/fa6';
+import { useRef, useState } from 'react';
+import { FaEye, FaFileCsv, FaMagnifyingGlass, FaRotate, FaUserGroup, FaXmark, FaMoneyBillWave, FaCartShopping } from 'react-icons/fa6';
 import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
@@ -14,13 +11,12 @@ import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
 import { DataTable } from '../ui/DataTable';
 import { BtnAccion } from '../ui/Acciones';
-
 import { formatearMoneda, formatearFecha } from '../../compartido/lib/utils/format';
 import { exportarCsv } from '../lib/utils/exportarCsv';
-
 import { listarClientes } from './clientesService';
 import ClienteViewModal from './ClienteViewModal';
 import { correoVisible, esCuentaEliminada } from '../lib/utils/cuentas';
+import { useCarga } from '../lib/hooks/useCarga';
 
 const POR_PAGINA = 10;
 
@@ -33,28 +29,20 @@ const columnasClientes = [
                 <span className="font-semibold text-slate-700">{fila.nombre_completo || 'Sin nombre'}</span>
                 <span className="block text-xs text-slate-500">{esCuentaEliminada(fila) ? 'Cuenta eliminada por su titular' : correoVisible(fila.email) || 'Sin correo'}</span>
             </p>
-        ),
+        )
     },
-    {
-        titulo: 'Nº compras',
-        alineacion: 'centro',
-        render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.numero_compras || 0)}</span>,
-    },
+    { titulo: 'Nº compras', alineacion: 'centro', render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.numero_compras || 0)}</span> },
     {
         titulo: 'Total gastado',
         alineacion: 'derecha',
         className: 'tabla-col-importe',
-        render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>,
+        render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>
     },
     {
         titulo: 'Última compra',
         alineacion: 'centro',
-        render: (fila) => (
-            <span className="text-xs font-medium text-slate-700">
-                {formatearFecha(fila.ultima_compra, { soloDia: true }) || 'Sin compras'}
-            </span>
-        ),
-    },
+        render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.ultima_compra, { soloDia: true }) || 'Sin compras'}</span>
+    }
 ];
 
 function accionesCliente(fila, { onVer }) {
@@ -96,18 +84,12 @@ export default function ClientesPage({ incrustado = false }) {
         try {
             setCargando(true);
             setError('');
-            const resultado = await listarClientes({
-                q: busquedaAplicada.trim() || undefined,
-                pagina: paginaActual,
-                por_pagina: POR_PAGINA,
-            });
+            const resultado = await listarClientes({ q: busquedaAplicada.trim() || undefined, pagina: paginaActual, por_pagina: POR_PAGINA });
             if (!estaVigente() || revision !== revisionLista.current) return;
             setClientes(resultado.clientes);
             setTotal(resultado.total);
             setTotalPaginas(resultado.paginas);
-            setResumen(
-                resultado.resumen || { total_general: 0, con_compras: 0 },
-            );
+            setResumen(resultado.resumen || { total_general: 0, con_compras: 0 });
             if (paginaActual > resultado.paginas) {
                 setPaginaActual(resultado.paginas);
             }
@@ -118,12 +100,7 @@ export default function ClientesPage({ incrustado = false }) {
         }
     };
 
-    useEffect(() => {
-        let vigente = true;
-        cargarClientes(() => vigente);
-        return () => { vigente = false; };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [busquedaAplicada, paginaActual]);
+    useCarga(cargarClientes, JSON.stringify([busquedaAplicada, paginaActual]));
 
     const aplicarBusqueda = (valor) => {
         setBusqueda(valor);
@@ -142,63 +119,63 @@ export default function ClientesPage({ incrustado = false }) {
                 { titulo: 'Email', exportar: (f) => correoVisible(f.email) },
                 { titulo: 'Nº compras', exportar: (f) => f.numero_compras || 0 },
                 { titulo: 'Total gastado', exportar: (f) => f.total_gastado || 0 },
-                { titulo: 'Última compra', exportar: (f) => f.ultima_compra || '' },
+                { titulo: 'Última compra', exportar: (f) => f.ultima_compra || '' }
             ],
-            filas: clientes,
+            filas: clientes
         });
     };
 
     return (
         <div className="space-y-4">
-            {!incrustado && (
-                <PageHeader
-                    titulo="Clientes"
-                    descripcion="Clientes registrados y su actividad de compras"
-                    icono={<FaUserGroup />}
-                />
-            )}
-            <Contador
-                cargando={cargando}
-                error={error}
-                total={total}
-                totalComprado={Number(resumen.total_general || 0)}
-                conCompras={conCompras}
-            />
+            {!incrustado && <PageHeader titulo="Clientes" descripcion="Clientes registrados y su actividad de compras" icono={<FaUserGroup />} />}
+            <Contador cargando={cargando} error={error} total={total} totalComprado={Number(resumen.total_general || 0)} conCompras={conCompras} />
 
             <Card>
                 <CardHeader
                     titulo="Filtros de clientes"
                     subtitulo="Busca por nombre o correo"
-                    acciones={<div className="tabla-filtros-acciones">
-                        {busquedaAplicada && <Button variante="secondary" onClick={() => aplicarBusqueda('')}>Limpiar</Button>}
-                        <Button variante="secondary" onClick={() => cargarClientes()} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
-                    </div>}
+                    acciones={
+                        <div className="tabla-filtros-acciones">
+                            {busquedaAplicada && (
+                                <Button variante="secondary" onClick={() => aplicarBusqueda('')}>
+                                    Limpiar
+                                </Button>
+                            )}
+                            <Button variante="secondary" onClick={() => cargarClientes()} disabled={cargando}>
+                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
+                            </Button>
+                        </div>
+                    }
                     filtros={
                         <div className="filtros-grid filtros-grid--busqueda">
-                            <div className="filtro-busqueda-envio"><div className="filtro-busqueda">
-                                <Input
-                                    label="Nombre o correo del cliente"
-                                    type="text"
-                                    value={busqueda}
-                                    onChange={(e) => setBusqueda(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') aplicarBusqueda(busqueda);
-                                    }}
-                                    placeholder="Buscar cliente..."
-                                    icono={<FaMagnifyingGlass />}
-                                    className="pr-8 sm:w-72"
-                                />
-                                {busqueda && (
-                                    <button
-                                        type="button"
-                                        onClick={() => aplicarBusqueda('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
-                                        title="Limpiar búsqueda"
-                                    >
-                                        <FaXmark />
-                                    </button>
-                                )}
-                            </div><Button variante="secondary" onClick={() => aplicarBusqueda(busqueda)} disabled={cargando}>Buscar</Button></div>
+                            <div className="filtro-busqueda-envio">
+                                <div className="filtro-busqueda">
+                                    <Input
+                                        label="Nombre o correo del cliente"
+                                        type="text"
+                                        value={busqueda}
+                                        onChange={(e) => setBusqueda(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') aplicarBusqueda(busqueda);
+                                        }}
+                                        placeholder="Buscar cliente..."
+                                        icono={<FaMagnifyingGlass />}
+                                        className="pr-8 sm:w-72"
+                                    />
+                                    {busqueda && (
+                                        <button
+                                            type="button"
+                                            onClick={() => aplicarBusqueda('')}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
+                                            title="Limpiar búsqueda">
+                                            <FaXmark />
+                                        </button>
+                                    )}
+                                </div>
+                                <Button variante="secondary" onClick={() => aplicarBusqueda(busqueda)} disabled={cargando}>
+                                    Buscar
+                                </Button>
+                            </div>
                         </div>
                     }
                 />
@@ -209,11 +186,7 @@ export default function ClientesPage({ incrustado = false }) {
             {!cargando && error && <ErrorCarga mensaje={error} onReintentar={() => cargarClientes()} />}
 
             {!cargando && !error && total === 0 && !busquedaAplicada && (
-                <EmptyState
-                    titulo="No hay clientes registrados"
-                    descripcion="Cuando los clientes realicen compras, su información aparecerá aquí."
-                    icono={<FaUserGroup />}
-                />
+                <EmptyState titulo="No hay clientes registrados" descripcion="Cuando los clientes realicen compras, su información aparecerá aquí." icono={<FaUserGroup />} />
             )}
 
             {!cargando && !error && clientes.length === 0 && (total > 0 || Boolean(busquedaAplicada)) && (
@@ -228,8 +201,7 @@ export default function ClientesPage({ incrustado = false }) {
                                 setBusqueda('');
                                 setBusquedaAplicada('');
                                 setPaginaActual(1);
-                            }}
-                        >
+                            }}>
                             Limpiar filtros
                         </Button>
                     }

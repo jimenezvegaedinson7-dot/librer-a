@@ -18,7 +18,7 @@ export async function crearInventario(formulario) {
         id_libro: Number(formulario.id_libro),
         stock: Number(formulario.stock),
         stock_minimo: Number(formulario.stock_minimo),
-        ubicacion: formulario.ubicacion.trim(),
+        ubicacion: formulario.ubicacion.trim()
     });
 }
 
@@ -29,14 +29,8 @@ export async function actualizarInventario(id, formulario) {
 export async function listarMovimientos(params = {}) {
     const res = await client.get('/inventario/movimientos', { params });
 
-    // Contrato: { movimientos, total, paginas }; también tolera
-    // la forma { success, data: { movimientos, total, paginas } }.
     const origen = res?.data && !Array.isArray(res.data) && res.data.movimientos ? res.data : res;
-    const movimientos = Array.isArray(origen?.movimientos)
-        ? origen.movimientos
-        : Array.isArray(origen)
-          ? origen
-          : [];
+    const movimientos = Array.isArray(origen?.movimientos) ? origen.movimientos : Array.isArray(origen) ? origen : [];
 
     const total = Number(origen?.total ?? movimientos.length);
     const porPagina = Number(params.por_pagina || 10);

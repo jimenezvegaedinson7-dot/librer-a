@@ -1,10 +1,8 @@
 import { FaUser, FaCalendarDays, FaMoneyBillWave, FaBook, FaLocationDot, FaShop, FaEnvelope, FaTruckFast, FaCashRegister, FaRotateLeft } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Ficha } from '../ui/Ficha';
-
 import { formatearMoneda, formatearFecha } from '../../compartido/lib/utils/format';
 import { textoMetodoPago, textoOrigen } from './metodosPago';
 import { correoVisible } from '../lib/utils/cuentas';
@@ -18,10 +16,9 @@ const estados = {
     pagada: { texto: 'Pagada', color: 'success' },
     entregada: { texto: 'Entregada', color: 'info' },
     cancelada: { texto: 'Cancelada', color: 'danger' },
-    reembolsada: { texto: 'Reembolsada', color: 'neutral' },
+    reembolsada: { texto: 'Reembolsada', color: 'neutral' }
 };
 
-// Cómo se cobró: PayU en pedidos de la app; en tienda, el medio anotado.
 function descripcionCobro(venta) {
     if (venta.origen === 'panel' || venta.origen === 'reserva' || venta.id_reserva) {
         const metodo = textoMetodoPago(venta.metodo_pago) || 'Sin registrar';
@@ -73,9 +70,7 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                 </Ficha>
                 <Ficha icono={<FaCashRegister />} etiqueta={`Origen: ${textoOrigen(venta)}`}>
                     {descripcionCobro(venta)}
-                    {venta.fecha_pago && (
-                        <span className="block text-xs font-normal text-slate-500">Cobrada el {formatearFecha(venta.fecha_pago)}</span>
-                    )}
+                    {venta.fecha_pago && <span className="block text-xs font-normal text-slate-500">Cobrada el {formatearFecha(venta.fecha_pago)}</span>}
                 </Ficha>
                 {venta.origen === 'panel' && venta.nombre_usuario && (
                     <Ficha icono={<FaUser />} etiqueta="Registrada por">
@@ -115,17 +110,19 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
                     <p className="mt-1 text-[26px] font-bold leading-none text-slate-900">{formatearMoneda(venta.total)}</p>
                 </div>
                 {(venta.cobertura_entrega === 'pallasca' || Number(venta.costo_envio || 0) > 0) && (
-                    <p className="text-[13px] text-slate-500">
-                        Incluye envío: {formatearMoneda(venta.costo_envio)}
-                    </p>
+                    <p className="text-[13px] text-slate-500">Incluye envío: {formatearMoneda(venta.costo_envio)}</p>
                 )}
             </div>
 
             <section className="gestion-ventas__datos-pago border-b border-primary-200 py-4" aria-label="Datos del pago y la entrega">
                 <h3 className="text-sm font-semibold text-slate-800">Pago y entrega</h3>
                 <div className="mt-3 grid grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-2">
-                    <Ficha icono={<FaMoneyBillWave />} etiqueta="Estado del pago"><EstadoPagoBadge estado={pago.estado_pago} /></Ficha>
-                    <Ficha icono={<FaTruckFast />} etiqueta="Estado de entrega"><EstadoEntregaVenta venta={venta} /></Ficha>
+                    <Ficha icono={<FaMoneyBillWave />} etiqueta="Estado del pago">
+                        <EstadoPagoBadge estado={pago.estado_pago} />
+                    </Ficha>
+                    <Ficha icono={<FaTruckFast />} etiqueta="Estado de entrega">
+                        <EstadoEntregaVenta venta={venta} />
+                    </Ficha>
                     {venta.external_reference && <Ficha etiqueta="Referencia externa">{venta.external_reference}</Ficha>}
                     {venta.payu_order_id && <Ficha etiqueta="Orden PayU">{venta.payu_order_id}</Ficha>}
                     {venta.payu_payment_id && <Ficha etiqueta="Transacción PayU">{venta.payu_payment_id}</Ficha>}
@@ -168,7 +165,9 @@ export default function VentaViewModal({ venta, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 flex justify-end border-t border-primary-200 pt-4">
-                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>
+                    Cerrar
+                </Button>
             </div>
         </Modal>
     );

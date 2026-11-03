@@ -10,26 +10,27 @@ const pool = require('../src/config/database');
 test('promociones: HTTP, precio cobrado, favoritos, novedades y anuncios', async (t) => {
     const ids = { usuarios: [], libros: [], anuncios: [] };
     const clave = 'Prueba-local-123!';
-    const pedir = (ruta, token, method = 'GET', body) => fetch(`${process.env.TEST_BASE_URL}/api${ruta}`, {
-        method, headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            ...(body ? { 'Content-Type': 'application/json' } : {}) },
-        body: body ? JSON.stringify(body) : undefined
-    });
+    const pedir = (ruta, token, method = 'GET', body) =>
+        fetch(`${process.env.TEST_BASE_URL}/api${ruta}`, {
+            method,
+            headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+            body: body ? JSON.stringify(body) : undefined
+        });
     let autor, categoria;
     try {
         const hash = await bcrypt.hash(clave, 4);
         for (const rol of ['administrador', 'cliente']) {
-            const [u] = await pool.query("INSERT INTO usuarios (nombre,apellido,email,password,rol) VALUES ('Promo','Test',?,?,?)",
-                [`${randomUUID()}@example.test`, hash, rol]);
+            const [u] = await pool.query("INSERT INTO usuarios (nombre,apellido,email,password,rol) VALUES ('Promo','Test',?,?,?)", [`${randomUUID()}@example.test`, hash, rol]);
             ids.usuarios.push(u.insertId);
         }
         const admin = jwt.sign({ id_usuario: ids.usuarios[0] }, process.env.JWT_SECRET);
         const cliente = jwt.sign({ id_usuario: ids.usuarios[1] }, process.env.JWT_SECRET);
-        const [a] = await pool.query("INSERT INTO autores (nombre,apellido) VALUES ('Promo','Autor')"); autor = a.insertId;
-        const [c] = await pool.query('INSERT INTO categorias (nombre) VALUES (?)', [`Promo-${randomUUID()}`]); categoria = c.insertId;
+        const [a] = await pool.query("INSERT INTO autores (nombre,apellido) VALUES ('Promo','Autor')");
+        autor = a.insertId;
+        const [c] = await pool.query('INSERT INTO categorias (nombre) VALUES (?)', [`Promo-${randomUUID()}`]);
+        categoria = c.insertId;
         const crear = async (extra = {}) => {
-            const r = await pedir('/libros', admin, 'POST', { titulo: `Promo ${randomUUID()}`, precio: 100,
-                id_autor: autor, id_categoria: categoria, ...extra });
+            const r = await pedir('/libros', admin, 'POST', { titulo: `Promo ${randomUUID()}`, precio: 100, id_autor: autor, id_categoria: categoria, ...extra });
             assert.equal(r.status, 201, await r.clone().text());
             const body = await r.json();
             const id = body.id_libro;
@@ -45,7 +46,7 @@ test('promociones: HTTP, precio cobrado, favoritos, novedades y anuncios', async
             assert.equal(l.es_nuevo, 1);
             assert.ok(l.creado_en);
             const listado = (await (await pedir('/libros')).json()).data;
-            assert.equal(listado.find(l => l.id_libro === id).es_nuevo, 1);
+            assert.equal(listado.find((l) => l.id_libro === id).es_nuevo, 1);
             for (const fecha of [null, '2000-01-01', '2099-01-01']) {
                 await pool.query('UPDATE libros SET creado_en=? WHERE id_libro=?', [fecha, id]);
                 assert.equal((await detalle(id)).es_nuevo, 0);
@@ -62,17 +63,21 @@ test('promociones: HTTP, precio cobrado, favoritos, novedades y anuncios', async
         });
         await t.test('porcentaje, oferta prioritaria, vencimiento y redondeo', async () => {
             for (const [extra, esperado, vigente] of [
-                [{}, 100, 0], [{ descuento_porcentaje: 35 }, 65, 1],
+                [{}, 100, 0],
+                [{ descuento_porcentaje: 35 }, 65, 1],
                 [{ precio_oferta: 100, descuento_porcentaje: 30 }, 100, 0],
                 [{ precio_oferta: 60, descuento_porcentaje: 90 }, 60, 1],
                 [{ descuento_porcentaje: 30, descuento_hasta: '2000-01-01' }, 100, 0],
                 [{ precio: 65.5, descuento_porcentaje: 35 }, 42.58, 1]
             ]) {
-                // Datos heredados se leen con coherencia incluso si hoy el
-                // formulario ya rechaza combinar los dos tipos de promoción.
                 const caso = await crear();
-                await pool.query('UPDATE libros SET precio=?,descuento_porcentaje=?,precio_oferta=?,descuento_hasta=? WHERE id_libro=?',
-                    [extra.precio ?? 100, extra.descuento_porcentaje ?? null, extra.precio_oferta ?? null, extra.descuento_hasta ?? null, caso]);
+                await pool.query('UPDATE libros SET precio=?,descuento_porcentaje=?,precio_oferta=?,descuento_hasta=? WHERE id_libro=?', [
+                    extra.precio ?? 100,
+                    extra.descuento_porcentaje ?? null,
+                    extra.precio_oferta ?? null,
+                    extra.descuento_hasta ?? null,
+                    caso
+                ]);
                 const l = await detalle(caso);
                 assert.equal(Number(l.precio_final), esperado);
                 assert.equal(l.descuento_vigente, vigente);
@@ -82,13 +87,18 @@ test('promociones: HTTP, precio cobrado, favoritos, novedades y anuncios', async
             assert.equal((await pedir(`/favoritos/${id}`, cliente, 'POST', {})).status, 200);
             const favoritos = await (await pedir('/favoritos', cliente)).json();
             const listado = favoritos.data || favoritos;
-            const l = listado.find(l => l.id_libro === id);
+            const l = listado.find((l) => l.id_libro === id);
             assert.equal(Number(l.precio_final), 22.5);
             assert.equal(l.descuento_vigente, 1);
         });
         await t.test('checkout, detalle persistido y PayU cobran el descuento', async () => {
-            const body = { items: [{ id_libro: id, cantidad: 2, precio: 1 }],
-                tipo_entrega: 'tienda', cliente_tipo_documento: 'DNI', cliente_documento: '12345678', idempotencia_clave: randomUUID() };
+            const body = {
+                items: [{ id_libro: id, cantidad: 2, precio: 1 }],
+                tipo_entrega: 'tienda',
+                cliente_tipo_documento: 'DNI',
+                cliente_documento: '12345678',
+                idempotencia_clave: randomUUID()
+            };
             const r = await pedir('/pagos/crear-orden', cliente, 'POST', body);
             assert.equal(r.status, 201, await r.clone().text());
             const orden = (await r.json()).data;
@@ -100,9 +110,8 @@ test('promociones: HTTP, precio cobrado, favoritos, novedades y anuncios', async
             assert.equal(Number(d[0].subtotal), 45);
             const html = await (await fetch(orden.checkout_url)).text();
             assert.match(html, /name="amount"\s+value="45\.00"/);
-            // Un reintento conserva el total original de la orden; no crea
-            // otra venta ni recalcula la compra que ya está pendiente.
-            await pool.query('UPDATE libros SET descuento_hasta=\'2000-01-01\' WHERE id_libro=?', [id]);
+
+            await pool.query("UPDATE libros SET descuento_hasta='2000-01-01' WHERE id_libro=?", [id]);
             const repetida = await pedir('/pagos/crear-orden', cliente, 'POST', body);
             assert.equal(repetida.status, 200);
             const existente = (await repetida.json()).data;
@@ -113,10 +122,16 @@ test('promociones: HTTP, precio cobrado, favoritos, novedades y anuncios', async
             const vendido = await crear();
             const pendiente = await crear();
             const venta = async (estado, idLibro, cantidad) => {
-                const [v] = await pool.query(`INSERT INTO ventas (id_usuario, total, costo_envio, estado, estado_entrega, tipo_entrega, origen, fecha_venta)
-                    VALUES (?, ?, 0, ?, 'pendiente', 'tienda', 'app', CURRENT_TIMESTAMP) RETURNING id_venta`, [ids.usuarios[1], cantidad * 100, estado]);
-                await pool.query('INSERT INTO detalle_venta (id_venta, id_libro, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, 100, ?)',
-                    [v[0].id_venta, idLibro, cantidad, cantidad * 100]);
+                const [v] = await pool.query(
+                    `INSERT INTO ventas (id_usuario, total, costo_envio, estado, estado_entrega, tipo_entrega, origen, fecha_venta) VALUES (?, ?, 0, ?, 'pendiente', 'tienda', 'app', CURRENT_TIMESTAMP) RETURNING id_venta`,
+                    [ids.usuarios[1], cantidad * 100, estado]
+                );
+                await pool.query('INSERT INTO detalle_venta (id_venta, id_libro, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, 100, ?)', [
+                    v[0].id_venta,
+                    idLibro,
+                    cantidad,
+                    cantidad * 100
+                ]);
             };
             await venta('pagada', vendido, 500);
             await venta('pendiente', pendiente, 900);
@@ -124,26 +139,31 @@ test('promociones: HTTP, precio cobrado, favoritos, novedades y anuncios', async
             assert.equal(listado.find((l) => l.id_libro === vendido).mas_vendido, 1);
             assert.equal(listado.find((l) => l.id_libro === pendiente).mas_vendido, 0);
             assert.equal((await detalle(vendido)).mas_vendido, 1);
-            // La cantidad vendida no se publica: solo la etiqueta.
-            assert.equal(Object.keys(listado[0]).some((k) => /unidades|vendidas|cantidad/.test(k)), false);
+
+            assert.equal(
+                Object.keys(listado[0]).some((k) => /unidades|vendidas|cantidad/.test(k)),
+                false
+            );
         });
         await t.test('anuncios CRUD real, autorización, archivo y contraseña', async () => {
             const video = readFileSync(path.resolve(__dirname, '../../frontend/test-browser/fixtures/anuncio.webm'));
             const subir = async (titulo, tipo = 'video/webm', contenido = video) => {
-                const form = new FormData(); form.append('titulo', titulo);
+                const form = new FormData();
+                form.append('titulo', titulo);
                 form.append('video', new Blob([contenido], { type: tipo }), 'anuncio.webm');
                 return fetch(`${process.env.TEST_BASE_URL}/api/anuncios`, { method: 'POST', headers: { Authorization: `Bearer ${admin}` }, body: form });
             };
             assert.equal((await pedir('/anuncios/todos', cliente)).status, 403);
             assert.equal((await subir('Prueba', 'text/plain')).status, 400);
             assert.equal((await subir('Prueba', 'video/mp4', Buffer.from('texto disfrazado'))).status, 400);
-            const r = await subir('Promo video'); assert.equal(r.status, 201, await r.clone().text());
-            const anuncio = (await r.json()).anuncio; ids.anuncios.push(anuncio.id_anuncio);
+            const r = await subir('Promo video');
+            assert.equal(r.status, 201, await r.clone().text());
+            const anuncio = (await r.json()).anuncio;
+            ids.anuncios.push(anuncio.id_anuncio);
             const archivo = path.resolve(__dirname, '../uploads/videos', path.basename(anuncio.video_url));
             assert.equal(existsSync(archivo), true);
             assert.equal((await (await pedir('/anuncios')).json()).anuncio.id_anuncio, anuncio.id_anuncio);
-            // Textos junto al video: se guardan, la web pública los recibe,
-            // pausar no los borra y el botón no puede enlazar fuera de la web.
+
             const textos = { etiqueta: 'Novedades', descripcion: 'Nuevos títulos cada semana.', boton_texto: 'Ver novedades', boton_enlace: '/catalogo' };
             const conTextos = await pedir(`/anuncios/${anuncio.id_anuncio}`, admin, 'PUT', textos);
             assert.equal(conTextos.status, 200, await conTextos.clone().text());

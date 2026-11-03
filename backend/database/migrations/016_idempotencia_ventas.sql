@@ -1,18 +1,3 @@
--- ============================================================
--- MIGRACIÓN 016: IDEMPOTENCIA DE ÓRDENES DE PAGO
--- ============================================================
--- Agrega idempotencia_clave a ventas + UNIQUE para evitar el
--- doble descuento de stock cuando el cliente reintenta
--- POST /api/pagos/crear-orden con la misma clave.
---
--- SEGURO E IDEMPOTENTE (ejecutable 2 veces sin error):
---   - La columna se agrega con ADD COLUMN IF NOT EXISTS.
---   - El índice UNIQUE se crea con guard: MySQL/MariaDB no
---     soportan ADD CONSTRAINT ... IF NOT EXISTS, por eso se
---     verifica primero con INFORMATION_SCHEMA.STATISTICS vía
---     una sentencia preparada.
--- ============================================================
-
 ALTER TABLE ventas
     ADD COLUMN IF NOT EXISTS idempotencia_clave VARCHAR(64) NULL;
 

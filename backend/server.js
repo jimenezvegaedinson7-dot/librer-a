@@ -1,19 +1,9 @@
 require('dotenv').config();
 
-// ===============================
-// VALIDAR CLAVE DE CIFRADO 2FA
-// (fail-secure: no arrancar sin ella)
-// ===============================
-const clave2FA =
-    process.env.TWO_FACTOR_ENCRYPTION_KEY;
+const clave2FA = process.env.TWO_FACTOR_ENCRYPTION_KEY;
 
-if (
-    !clave2FA ||
-    String(clave2FA).length < 16
-) {
-    throw new Error(
-        'TWO_FACTOR_ENCRYPTION_KEY debe existir y tener al menos 16 caracteres'
-    );
+if (!clave2FA || String(clave2FA).length < 16) {
+    throw new Error('TWO_FACTOR_ENCRYPTION_KEY debe existir y tener al menos 16 caracteres');
 }
 
 const express = require('express');
@@ -27,10 +17,6 @@ const { baseLimiter } = require('./src/middlewares/rateLimit');
 const verificarToken = require('./src/middlewares/auth.middleware');
 const verificarRol = require('./src/middlewares/rol.middleware');
 const { iniciarJobs } = require('./src/jobs/limpieza');
-
-// ===============================
-// IMPORTAR RUTAS
-// ===============================
 const libroRoutes = require('./src/routes/libro.routes');
 const autorRoutes = require('./src/routes/autor.routes');
 const categoriaRoutes = require('./src/routes/categoria.routes');
@@ -54,363 +40,85 @@ const reclamacionRoutes = require('./src/routes/reclamacion.routes');
 const anuncioRoutes = require('./src/routes/anuncio.routes');
 const asistenteRoutes = require('./src/routes/asistente.routes');
 
-// ===============================
-// CONFIGURACIÓN DE EXPRESS
-// ===============================
 const app = express();
 
-// ===============================
-// TRUST PROXY
-// ===============================
-// Solo confiar en el primer hop cuando el despliegue realmente
-// usa un reverse proxy que sobrescribe X-Forwarded-For.
-// ===============================
-app.set(
-    'trust proxy',
-    ['1', 'true'].includes(
-        String(process.env.TRUST_PROXY || '').toLowerCase()
-    )
-        ? 1
-        : false
-);
-
-// ===============================
-// SEGURIDAD (helmet)
-// - Sin CSP para no interferir con el panel (imágenes servidas
-//   desde el backend en otro puerto).
-// - crossOriginResourcePolicy: 'cross-origin' permite que el panel
-//   (React en :5173) cargue portadas desde /uploads.
-// - helmet elimina el header X-Powered-By de Express.
-// ===============================
-app.use(helmet({
-    contentSecurityPolicy: false,
-    crossOriginResourcePolicy: {
-        policy: 'cross-origin'
-    }
-}));
+app.set('trust proxy', ['1', 'true'].includes(String(process.env.TRUST_PROXY || '').toLowerCase()) ? 1 : false);
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 const PORT = process.env.PORT || 3000;
 
-// ===============================
-// MIDDLEWARE
-// ===============================
 app.use(crearCors());
-
 app.use(express.json({ limit: '1mb' }));
-
-// ===============================
-// RATE LIMITING GLOBAL
-// ===============================
 app.use(baseLimiter);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ===============================
-// ARCHIVOS ESTÁTICOS - PORTADAS
-// ===============================
-app.use(
-    '/uploads',
-    express.static(
-        path.join(__dirname, 'uploads')
-    )
-);
-
-// ===============================
-// RUTA PRINCIPAL
-// ===============================
 app.get('/', (req, res) => {
-    res.json({
-        mensaje: 'Servidor de MATIDANA funcionando'
-    });
+    res.json({ mensaje: 'Servidor de MATIDANA funcionando' });
 });
 
-// ===============================
-// API PRINCIPAL
-// ===============================
 app.get('/api', (req, res) => {
-    res.json({
-        mensaje: 'API de MATIDANA funcionando correctamente',
-        capacidades: { descuentos_libros: true, anuncios_video: true, libros_nuevos: true }
-    });
+    res.json({ mensaje: 'API de MATIDANA funcionando correctamente', capacidades: { descuentos_libros: true, anuncios_video: true, libros_nuevos: true } });
 });
 
-// ===============================
-// PRUEBA DE CONEXIÓN POSTGRESQL
-// (SOLO ADMIN: requiere JWT + rol administrador)
-// ===============================
-app.get(
-    '/api/test-db',
-    verificarToken,
-    verificarRol('administrador'),
-    async (req, res) => {
-        try {
-            const [rows] = await pool.query(
-                'SELECT 1 AS resultado'
-            );
+app.get('/api/test-db', verificarToken, verificarRol('administrador'), async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT 1 AS resultado');
 
-            res.json({
-                mensaje: 'Conexión con PostgreSQL exitosa',
-                resultado: rows[0].resultado
-            });
+        res.json({ mensaje: 'Conexión con PostgreSQL exitosa', resultado: rows[0].resultado });
+    } catch (error) {
+        console.error('Error de PostgreSQL:', error);
 
-        } catch (error) {
-            console.error(
-                'Error de PostgreSQL:',
-                error
-            );
-
-            res.status(500).json({
-                mensaje: 'Error al conectar con PostgreSQL'
-            });
-        }
+        res.status(500).json({ mensaje: 'Error al conectar con PostgreSQL' });
     }
+});
+
+app.use('/api/libros', libroRoutes);
+app.use('/api/autores', autorRoutes);
+app.use('/api/categorias', categoriaRoutes);
+app.use('/api/inventario', inventarioRoutes);
+app.use('/api/pedidos', pedidoRoutes);
+
+app.use('/api/reservas', verificarToken, (_req, res) =>
+    res.status(410).json({ success: false, mensaje: 'El módulo de reservas fue eliminado. Compra desde la web o la app con PayU.' })
 );
 
-// ===============================
-// DIAGNÓSTICO TEMPORAL DE EGRESS (quitar tras resolver el SMTP)
-// ===============================
-app.get(
-    '/api/debug-egress',
-    verificarToken,
-    verificarRol('administrador'),
-    async (req, res) => {
-        const net = require('net');
-        const { resolve4 } = require('dns').promises;
-        const info = {};
-        try {
-            info.ipv4 = await resolve4('smtp.gmail.com');
-        } catch (e) { info.dnsError = e.message; }
-        for (const puerto of [465, 587, 25]) {
-            const host = (info.ipv4 && info.ipv4[0]) || 'smtp.gmail.com';
-            info['tcp:' + puerto] = await new Promise(r => {
-                const s = net.connect({ host, port: puerto });
-                s.setTimeout(8000, () => { s.destroy(); r('timeout'); });
-                s.on('connect', () => { s.destroy(); r('ok'); });
-                s.on('error', e => { s.destroy(); r(e.code || e.message); });
-            });
-        }
-        try {
-            const t0 = Date.now();
-            const f = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
-            info.https443 = (await f.text()).slice(0, 60) + ' ms=' + (Date.now() - t0);
-        } catch (e) { info.https443 = 'error: ' + e.message; }
-        res.json(info);
-    }
-);
-
-// ===============================
-// API DE LIBROS
-// ===============================
-app.use(
-    '/api/libros',
-    libroRoutes
-);
-
-// ===============================
-// API DE AUTORES
-// ===============================
-app.use(
-    '/api/autores',
-    autorRoutes
-);
-
-// ===============================
-// API DE CATEGORÍAS
-// ===============================
-app.use(
-    '/api/categorias',
-    categoriaRoutes
-);
-
-// ===============================
-// API DE INVENTARIO
-// ===============================
-app.use(
-    '/api/inventario',
-    inventarioRoutes
-);
-
-// ===============================
-// API DE PEDIDOS
-// ===============================
-app.use(
-    '/api/pedidos',
-    pedidoRoutes
-);
-
-// ===============================
-// COMPATIBILIDAD DE APK ANTIGUOS: RESERVAS RETIRADO POR COMPLETO
-// ===============================
-app.use(
-    '/api/reservas',
-    verificarToken,
-    (_req, res) => res.status(410).json({
-        success: false,
-        mensaje: 'El módulo de reservas fue eliminado. Compra desde la web o la app con PayU.'
-    })
-);
-
-// ===============================
-// API DE VENTAS
-// ===============================
-app.use(
-    '/api/ventas',
-    ventaRoutes
-);
-
-// ===============================
-// API DE AUTENTICACIÓN
-// ===============================
-app.use(
-    '/api/auth',
-    authRoutes
-);
-
-// ===============================
-// API DE HISTORIAL
-// ===============================
-app.use(
-    '/api/historial',
-    historialRoutes
-);
-
-// ===============================
-// API DE REPORTES
-// ===============================
-app.use(
-    '/api/reportes',
-    reporteRoutes
-);
-
-// ===============================
-// API DE USUARIOS
-// ===============================
-app.use(
-    '/api/usuarios',
-    usuarioRoutes
-);
-
-// ===============================
-// API DE PAGOS (PayU)
-// ===============================
-app.use(
-    '/api/pagos',
-    pagoRoutes
-);
-
-// ===============================
-// API DE UBICACIONES (LIMA)
-// ===============================
-app.use(
-    '/api/ubicaciones',
-    ubicacionRoutes
-);
-
-// ===============================
-// API DE AGENCIAS COURIER
-// ===============================
-app.use(
-    '/api/agencias',
-    agenciaRoutes
-);
-
-// ===============================
-// API DE EMPRESA (EMISOR)
-// ===============================
-app.use(
-    '/api/empresa',
-    empresaRoutes
-);
-
-// ===============================
-// API DE LA APP ANDROID (VERSIÓN PUBLICADA, PÚBLICA)
-// ===============================
-app.use(
-    '/api/app',
-    appRoutes
-);
-
+app.use('/api/ventas', ventaRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/historial', historialRoutes);
+app.use('/api/reportes', reporteRoutes);
+app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/pagos', pagoRoutes);
+app.use('/api/ubicaciones', ubicacionRoutes);
+app.use('/api/agencias', agenciaRoutes);
+app.use('/api/empresa', empresaRoutes);
+app.use('/api/app', appRoutes);
 app.use('/api/zonas-delivery', zonaDeliveryRoutes);
 app.use('/api/asistente', asistenteRoutes);
+app.use('/api/comprobantes', comprobanteRoutes);
+app.use('/api/clientes', clienteRoutes);
+app.use('/api/reclamaciones', reclamacionRoutes);
+app.use('/api/anuncios', anuncioRoutes);
+app.use('/api/favoritos', favoritoRoutes);
 
-// ===============================
-// API DE COMPROBANTES DE PAGO
-// ===============================
-app.use(
-    '/api/comprobantes',
-    comprobanteRoutes
-);
-
-app.use(
-    '/api/clientes',
-    clienteRoutes
-);
-
-// ===============================
-// LIBRO DE RECLAMACIONES (registro público)
-// ===============================
-app.use(
-    '/api/reclamaciones',
-    reclamacionRoutes
-);
-
-// ===============================
-// ANUNCIOS EN VIDEO DE LA WEB PÚBLICA
-// ===============================
-app.use(
-    '/api/anuncios',
-    anuncioRoutes
-);
-
-// ===============================
-// API DE FAVORITOS (LISTA DE DESEOS)
-// ===============================
-app.use(
-    '/api/favoritos',
-    favoritoRoutes
-);
-
-// ===============================
-// RUTA NO ENCONTRADA
-// ===============================
 app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        mensaje: 'Ruta no encontrada'
-    });
+    res.status(404).json({ success: false, mensaje: 'Ruta no encontrada' });
 });
 
-// ===============================
-// MIDDLEWARE GLOBAL DE ERRORES
-// (después del 404)
-// ===============================
 app.use(manejarErrores);
 
-// ===============================
-// JOBS DE LIMPIEZA
-// ===============================
 iniciarJobs();
 
-// ===============================
-// INICIAR SERVIDOR
-// ===============================
-// El esquema se verifica ANTES de aceptar tráfico: si una migración
-// falla en producción el proceso termina en vez de servir contra una
-// base incompleta. Las migraciones son idempotentes, así que reiniciar
-// el servicio no duplica nada.
 const { aplicarMigraciones, aplicarMigracionesDatos } = require('./src/config/migraciones');
 
 async function iniciar() {
-    // En test la base ya está creada desde database/schema.sql y no
-    // se toca el esquema (ver src/config/migraciones.js).
     if (process.env.NODE_ENV !== 'test') {
         await aplicarMigraciones(pool);
-        // Backfills de datos: una sola vez cada uno (registro en migraciones_datos).
+
         await aplicarMigracionesDatos(pool);
     }
 
     app.listen(PORT, () => {
-        console.log(
-            `Servidor ejecutándose en http://localhost:${PORT}`
-        );
+        console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
     });
 }
 

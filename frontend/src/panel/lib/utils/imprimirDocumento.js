@@ -2,15 +2,13 @@ import '../../estilos/impresion.css';
 
 let impresionActiva = null;
 
-// Una copia aislada y en flujo normal evita que un elemento fixed se repita
-// en las páginas que ocupa el listado situado detrás del diálogo.
 export function imprimirDocumento(elemento) {
     if (!elemento || impresionActiva) return Promise.resolve(false);
     const contenedor = document.createElement('div');
     contenedor.className = 'documento-impresion';
     const copia = elemento.cloneNode(true);
     copia.removeAttribute('id');
-    copia.querySelectorAll('[id]').forEach(nodo => nodo.removeAttribute('id'));
+    copia.querySelectorAll('[id]').forEach((nodo) => nodo.removeAttribute('id'));
     contenedor.append(copia);
     document.body.append(contenedor);
     document.body.classList.add('imprimiendo-documento');
@@ -27,8 +25,11 @@ export function imprimirDocumento(elemento) {
             document.body.classList.remove('imprimiendo-documento');
             if (impresionActiva === operacion) impresionActiva = null;
         };
-        const terminar = () => { limpiar(); resolve(true); };
-        const cambiarMedio = evento => {
+        const terminar = () => {
+            limpiar();
+            resolve(true);
+        };
+        const cambiarMedio = (evento) => {
             if (evento.matches) entroEnImpresion = true;
             else if (entroEnImpresion) terminar();
         };

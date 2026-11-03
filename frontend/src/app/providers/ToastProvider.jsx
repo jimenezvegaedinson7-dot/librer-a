@@ -1,23 +1,10 @@
-/* oxlint-disable react/only-export-components */
-import { createContext, useCallback, useContext, useRef, useState } from 'react';
-
+import { useCallback, useRef, useState } from 'react';
 import { FaCircleCheck, FaCircleExclamation, FaCircleInfo, FaXmark } from 'react-icons/fa6';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { ToastContext } from './ToastContext';
 
-const ToastContext = createContext(null);
-
-const iconos = {
-    success: FaCircleCheck,
-    error: FaCircleExclamation,
-    info: FaCircleInfo,
-};
-
-// Toast en tinta con acento por tipo: legible sobre el tema claro y el oscuro
-const acentos = {
-    success: '#4ade80',
-    error: '#f87171',
-    info: '#f0c866',
-};
+const iconos = { success: FaCircleCheck, error: FaCircleExclamation, info: FaCircleInfo };
+const acentos = { success: '#4ade80', error: '#f87171', info: '#f0c866' };
 
 export function ToastProvider({ children }) {
     const [toasts, setToasts] = useState([]);
@@ -36,7 +23,7 @@ export function ToastProvider({ children }) {
                 setTimeout(() => eliminar(id), duracion);
             }
         },
-        [eliminar],
+        [eliminar]
     );
 
     const value = { mostrar, exito: (m) => mostrar(m, 'success'), error: (m) => mostrar(m, 'error') };
@@ -60,17 +47,17 @@ export function ToastProvider({ children }) {
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={reducirMovimiento ? { opacity: 0 } : { opacity: 0, x: 24, transition: { duration: 0.18 } }}
                                 transition={{ duration: 0.28, ease: [0.25, 1, 0.5, 1] }}
-                                className="pointer-events-auto relative flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-xl border border-white/10 bg-[#013a33] py-3.5 pl-4 pr-3 text-[#f5eedf] shadow-[0_18px_40px_-14px_rgba(0,0,0,0.55)]"
-                            >
+                                className="pointer-events-auto relative flex w-full max-w-sm items-start gap-3 overflow-hidden rounded-xl border border-white/10 bg-[#013a33] py-3.5 pl-4 pr-3 text-[#f5eedf] shadow-[0_18px_40px_-14px_rgba(0,0,0,0.55)]">
                                 <span className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: acento }} aria-hidden="true" />
-                                <span className="mt-0.5 shrink-0 text-base" style={{ color: acento }} aria-hidden="true"><Icono /></span>
+                                <span className="mt-0.5 shrink-0 text-base" style={{ color: acento }} aria-hidden="true">
+                                    <Icono />
+                                </span>
                                 <p className="flex-1 text-sm font-medium leading-5">{toast.mensaje}</p>
                                 <button
                                     type="button"
                                     onClick={() => eliminar(toast.id)}
                                     className="-my-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[#cfc5b8] transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f0c866]"
-                                    aria-label="Cerrar notificación"
-                                >
+                                    aria-label="Cerrar notificación">
                                     <FaXmark className="text-xs" />
                                 </button>
                             </motion.div>
@@ -80,12 +67,4 @@ export function ToastProvider({ children }) {
             </div>
         </ToastContext.Provider>
     );
-}
-
-export function useToast() {
-    const context = useContext(ToastContext);
-    if (!context) {
-        throw new Error('useToast debe usarse dentro de <ToastProvider>');
-    }
-    return context;
 }

@@ -15,8 +15,8 @@ Otras carpetas: `web/` (build web de Flutter publicado), `ios_swift_app/`, `back
 
 ## Cifras (análisis 2026-11-03)
 
-- Backend: **187** archivos JS (incluye tests y scripts) · **122** endpoints · 22 routers · 25 controladores · 22 modelos · **22 tablas en esquema canónico** (23 declaradas al incluir migraciones y arranque).
-- Frontend: **230** archivos JS/JSX · 40 rutas · 24 archivos de servicio.
+- Backend: **183** archivos JS (incluye tests y scripts) · **121** endpoints · 22 routers · 25 controladores · 22 modelos · **22 tablas en esquema canónico** (23 declaradas al incluir migraciones y arranque).
+- Frontend: **227** archivos JS/JSX · 41 rutas · 23 archivos de servicio.
 - Flutter: **76** archivos Dart · 35 métodos en ApiService · 21 pantallas/widgets con llamadas a la API.
 
 ## Módulos de negocio
@@ -67,7 +67,6 @@ Regenera todos los archivos a partir del código (solo lectura del código). Si 
 
 Ver detalle en `05-API-MAP.md` y `07-DEPENDENCIES.md`.
 - No se detectaron endpoints declarados por clientes sin ruta correspondiente en el backend.
-- `GET /api/debug-egress` es diagnóstico manual protegido (JWT + admin), sin consumidor React/Flutter.
 - La memoria del asistente requiere **JWT + cliente**; el router comparte esos middlewares mediante un array.
 - Los endpoints sin consumidor detectado se detallan en `05-API-MAP.md`; stock bajo sí tiene consumidores en Dashboard y notificaciones.
 - Flutter: solo quedan ciclos de navegación entre pantallas (sin ciclo servicios ↔ pantallas).

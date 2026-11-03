@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FaDownload } from 'react-icons/fa6';
-
 import qr from '../assets/qr-actualizar.png';
 import { DESCARGAS } from '../config/downloads';
 import { useVersionApp } from '../hooks/useApiPublica';
@@ -24,20 +23,29 @@ export default function ActualizarApp() {
             <div>
                 <h2 id="actualizacion-titulo">¿Ya tienes la app en Android?</h2>
                 <p>Escanee este código QR o pulse el botón desde su celular para obtener la última versión.</p>
-                <p>Abra el APK y seleccione <strong>Actualizar</strong>. No es necesario desinstalar la aplicación: sus datos se conservan.</p>
+                <p>
+                    Abra el APK y seleccione <strong>Actualizar</strong>. No es necesario desinstalar la aplicación: sus datos se conservan.
+                </p>
                 <p className="actualizacion-app__version" role="status">
-                    {cargando ? 'Consultando la versión más reciente…'
-                        : error ? 'No pudimos consultar la última versión. Puedes descargar la versión publicada en esta página.'
-                            : `Versión disponible: ${version.version}`}
+                    {cargando
+                        ? 'Consultando la versión más reciente…'
+                        : error
+                          ? 'No pudimos consultar la última versión. Puedes descargar la versión publicada en esta página.'
+                          : `Versión disponible: ${version.version}`}
                 </p>
                 {desdeQR && version && <p role="status">La descarga se está abriendo. Si no comienza, pulsa «Actualizar app».</p>}
                 <a className="boton boton--linea" href={url} rel="noopener" data-actualizar-app="">
                     <FaDownload aria-hidden="true" /> Actualizar app
                 </a>
             </div>
-            <img className="actualizacion-app__qr" src={qr}
+            <img
+                className="actualizacion-app__qr"
+                src={qr}
                 alt="Código QR para descargar la actualización más reciente de MATIDANA Libros y Cultura"
-                width="176" height="176" decoding="async" />
+                width="176"
+                height="176"
+                decoding="async"
+            />
         </section>
     );
 }

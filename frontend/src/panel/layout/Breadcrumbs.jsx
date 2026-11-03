@@ -1,17 +1,12 @@
 import { useEffect } from 'react';
-
 import { Link, useLocation } from 'react-router-dom';
-
 import { FaChevronRight } from 'react-icons/fa6';
-
 import { navPrincipal } from './navConfig';
 
 export default function Breadcrumbs() {
     const { pathname } = useLocation();
 
-    const modulo = navPrincipal
-        .filter((item) => pathname === item.ruta || pathname.startsWith(`${item.ruta}/`))
-        .sort((a, b) => b.ruta.length - a.ruta.length)[0];
+    const modulo = navPrincipal.filter((item) => pathname === item.ruta || pathname.startsWith(`${item.ruta}/`)).sort((a, b) => b.ruta.length - a.ruta.length)[0];
 
     const vistaVentas = { '/ventas': 'Ventas y pagos', '/ventas/pedidos': 'Pedidos', '/ventas/comprobantes': 'Comprobantes' }[pathname];
     const nombre = vistaVentas || modulo?.nombre || 'Panel';
@@ -20,7 +15,6 @@ export default function Breadcrumbs() {
         document.title = modulo ? `${vistaVentas ? `${nombre} · ` : ''}${modulo.nombre} · Panel administrativo` : 'Panel administrativo';
     }, [modulo, nombre, vistaVentas]);
 
-    // En el Resumen (inicio del panel) la miga repetiría el título de la página.
     if (pathname === '/dashboard') return null;
 
     return (
@@ -29,8 +23,15 @@ export default function Breadcrumbs() {
                 Panel
             </Link>
             <FaChevronRight className="text-[9px] text-slate-400" aria-hidden="true" />
-            {vistaVentas && <><Link to="/ventas">Gestión de ventas</Link><FaChevronRight className="text-[9px] text-slate-400" aria-hidden="true" /></>}
-            <span className="font-medium text-slate-800" aria-current="page">{nombre}</span>
+            {vistaVentas && (
+                <>
+                    <Link to="/ventas">Gestión de ventas</Link>
+                    <FaChevronRight className="text-[9px] text-slate-400" aria-hidden="true" />
+                </>
+            )}
+            <span className="font-medium text-slate-800" aria-current="page">
+                {nombre}
+            </span>
         </nav>
     );
 }

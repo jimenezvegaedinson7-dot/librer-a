@@ -1,5 +1,4 @@
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
-
 import { Button } from './Button';
 
 function paginasVisibles(pagina, total) {
@@ -23,28 +22,23 @@ export function Pagination({ pagina, totalPaginas, onCambiarPagina }) {
     return (
         <nav
             aria-label="Paginación"
-            className="pagination-bar flex flex-col gap-3 border-t border-primary-100 bg-parchment-100/50 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between"
-        >
+            className="pagination-bar flex flex-col gap-3 border-t border-primary-100 bg-parchment-100/50 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-slate-500" aria-live="polite">
                 Página <span className="font-semibold tabular-nums text-slate-800">{pagina}</span> de{' '}
                 <span className="font-semibold tabular-nums text-slate-800">{totalPaginas}</span>
             </p>
 
             <div className="flex flex-wrap items-center gap-1">
-                <Button
-                    variante="ghost"
-                    tamano="sm"
-                    disabled={pagina === 1}
-                    onClick={() => onCambiarPagina(pagina - 1)}
-                    aria-label="Página anterior"
-                >
+                <Button variante="ghost" tamano="sm" disabled={pagina === 1} onClick={() => onCambiarPagina(pagina - 1)} aria-label="Página anterior">
                     <FaChevronLeft className="text-[10px]" aria-hidden="true" />
                     <span className="hidden sm:inline">Anterior</span>
                 </Button>
 
                 {paginas.map((numero, i) =>
                     numero === '...' ? (
-                        <span key={`dots-${i}`} className="px-1.5 text-xs text-slate-500" aria-hidden="true">…</span>
+                        <span key={`dots-${i}`} className="px-1.5 text-xs text-slate-500" aria-hidden="true">
+                            …
+                        </span>
                     ) : (
                         <Button
                             key={numero}
@@ -53,20 +47,13 @@ export function Pagination({ pagina, totalPaginas, onCambiarPagina }) {
                             onClick={() => onCambiarPagina(numero)}
                             aria-label={`Página ${numero}`}
                             aria-current={numero === pagina ? 'page' : undefined}
-                            className="min-w-8 !px-2 tabular-nums"
-                        >
+                            className="min-w-8 !px-2 tabular-nums">
                             {numero}
                         </Button>
                     )
                 )}
 
-                <Button
-                    variante="ghost"
-                    tamano="sm"
-                    disabled={pagina === totalPaginas}
-                    onClick={() => onCambiarPagina(pagina + 1)}
-                    aria-label="Página siguiente"
-                >
+                <Button variante="ghost" tamano="sm" disabled={pagina === totalPaginas} onClick={() => onCambiarPagina(pagina + 1)} aria-label="Página siguiente">
                     <span className="hidden sm:inline">Siguiente</span>
                     <FaChevronRight className="text-[10px]" aria-hidden="true" />
                 </Button>

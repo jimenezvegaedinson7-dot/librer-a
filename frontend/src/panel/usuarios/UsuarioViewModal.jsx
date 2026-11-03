@@ -1,10 +1,8 @@
 import { FaUser, FaEnvelope, FaPhone, FaCalendarDays, FaCartShopping, FaMoneyBillWave, FaIdBadge } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Badge, EstadoActivo } from '../ui/Badge';
 import { Ficha } from '../ui/Ficha';
-
 import { formatearMoneda, formatearFecha } from '../../compartido/lib/utils/format';
 import { correoVisible, esCuentaEliminada } from '../lib/utils/cuentas';
 import { etiquetaRol } from '../lib/roles';
@@ -68,7 +66,9 @@ export default function UsuarioViewModal({ usuario, abierto, onCerrar }) {
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>
+                    Cerrar
+                </Button>
             </div>
         </Modal>
     );

@@ -2,8 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { esReembolsoElegible, requiereRevisionPago } = require('../src/utils/devoluciones');
 
-const cobro = { origen: 'app', metodo_pago: 'payu', estado: 'pagada',
-    external_reference: 'ref', payu_order_id: '100', payu_payment_id: 'tx', payu_payment_status: 'APPROVED' };
+const cobro = { origen: 'app', metodo_pago: 'payu', estado: 'pagada', external_reference: 'ref', payu_order_id: '100', payu_payment_id: 'tx', payu_payment_status: 'APPROVED' };
 
 for (const status of ['REFUNDED', 'CHARGED_BACK']) {
     test(`${status}: permite cierre documental del cobro identificado, no de una cancelación sin cobro`, () => {
@@ -11,8 +10,14 @@ for (const status of ['REFUNDED', 'CHARGED_BACK']) {
         assert.equal(esReembolsoElegible(revertida), true);
         assert.equal(esReembolsoElegible({ ...revertida, estado: 'cancelada' }), false);
         assert.equal(esReembolsoElegible({ ...revertida, estado: 'cancelada', pago_revision_motivo: 'aprobacion_tardia' }), true);
-        for (const cambio of [{ payu_payment_id: null }, { payu_order_id: '' }, { origen: 'panel' },
-            { id_reserva: 1 }, { estado: 'reembolsada' }, { estado_reembolso: 'confirmado' }]) {
+        for (const cambio of [
+            { payu_payment_id: null },
+            { payu_order_id: '' },
+            { origen: 'panel' },
+            { id_reserva: 1 },
+            { estado: 'reembolsada' },
+            { estado_reembolso: 'confirmado' }
+        ]) {
             assert.equal(esReembolsoElegible({ ...revertida, ...cambio }), false);
         }
     });

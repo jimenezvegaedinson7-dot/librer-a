@@ -1,5 +1,4 @@
 import { FaCircleCheck, FaCirclePause, FaFlag, FaBook } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -19,7 +18,9 @@ export default function AutorViewModal({ autor, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Ficha color="rose" icono={<FaFlag />} etiqueta="Nacionalidad">{autor.nacionalidad || 'No registrada'}</Ficha>
+                <Ficha color="rose" icono={<FaFlag />} etiqueta="Nacionalidad">
+                    {autor.nacionalidad || 'No registrada'}
+                </Ficha>
                 <Ficha color="rose" icono={activo ? <FaCircleCheck className="text-success" /> : <FaCirclePause />} etiqueta="Estado">
                     <Badge color={activo ? 'success' : 'neutral'}>{activo ? 'Activo' : 'Inactivo'}</Badge>
                 </Ficha>
@@ -30,14 +31,14 @@ export default function AutorViewModal({ autor, abierto, onCerrar }) {
                     <FaBook /> Biografía
                 </div>
                 <div className="min-h-[110px] rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
-                    <p className="text-sm leading-6 text-primary-500">
-                        {autor.biografia || 'No se registró una biografía para este autor.'}
-                    </p>
+                    <p className="text-sm leading-6 text-primary-500">{autor.biografia || 'No se registró una biografía para este autor.'}</p>
                 </div>
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>
+                    Cerrar
+                </Button>
             </div>
         </Modal>
     );

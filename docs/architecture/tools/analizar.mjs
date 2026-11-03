@@ -392,7 +392,7 @@ const salida = {
     flutter: { constantes, metodosApi, usoApi: usoApiDart, grafo: grafoDart, ciclos: ciclos(grafoDart), paquetes: paquetesDart, archivos: archivosDart.length,
         dependencias: dependenciasPubspec(leer(path.join(FL, '../pubspec.yaml')), 'dependencies'), devDependencias: dependenciasPubspec(leer(path.join(FL, '../pubspec.yaml')), 'dev_dependencies') },
     posiblesNoUsados: {
-        backend: noUsados(grafoBack, ['server.js', '/test', 'test-integration', '/scripts/', 'run_migration', '_test_smtp']),
+        backend: noUsados(grafoBack, ['server.js', '/test', 'test-integration', '/scripts/']),
         frontend: noUsados(grafoFront, ['main.jsx']),
         flutter: noUsados(grafoDart, ['main.dart']),
     },

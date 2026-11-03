@@ -1,13 +1,14 @@
 export function PageHeader({ titulo, descripcion, acciones = null, icono = null, color = 'slate' }) {
-    const iconBg = {
-        blue: 'bg-[#dfeee9] text-[#0b5c51]',
-        rose: 'bg-[#ffe4e6] text-[#e11d48]',
-        emerald: 'bg-[#d1fae5] text-[#059669]',
-        amber: 'bg-[#fef3c7] text-[#d97706]',
-        violet: 'bg-[#ede9fe] text-[#7c3aed]',
-        sky: 'bg-[#e0f2fe] text-[#0284c7]',
-        slate: 'bg-[#f3efe9] text-[#5c544b]',
-    }[color] || 'bg-[#f3efe9] text-[#5c544b]';
+    const iconBg =
+        {
+            blue: 'bg-[#dfeee9] text-[#0b5c51]',
+            rose: 'bg-[#ffe4e6] text-[#e11d48]',
+            emerald: 'bg-[#d1fae5] text-[#059669]',
+            amber: 'bg-[#fef3c7] text-[#d97706]',
+            violet: 'bg-[#ede9fe] text-[#7c3aed]',
+            sky: 'bg-[#e0f2fe] text-[#0284c7]',
+            slate: 'bg-[#f3efe9] text-[#5c544b]'
+        }[color] || 'bg-[#f3efe9] text-[#5c544b]';
 
     return (
         <div className="page-header flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">

@@ -9,5 +9,5 @@ router.get('/', listarZonas);
 router.get('/todos', verificarRol('administrador'), listarTodasZonas);
 router.post('/', verificarRol('administrador'), crearZona);
 router.put('/:id', verificarRol('administrador'), actualizarZona);
-// Solo se edita la tarifa única; se conservan las referencias históricas.
+
 module.exports = router;

@@ -1,22 +1,6 @@
 import { correoVisible } from '../lib/utils/cuentas';
 import { textoMetodoPago, textoOrigen } from '../ventas/metodosPago';
 
-// ============================================================
-// PRESENTACIÓN DE PAGOS (tabla, detalle y CSV usan lo mismo)
-// ------------------------------------------------------------
-// /api/pagos solo describe el pago en línea (PayU): no trae el origen de la
-// venta, el método de cobro en tienda ni el cliente anotado en mostrador.
-// Esos datos vienen de /api/ventas y se unen por id_venta.
-// ============================================================
-
-export const ESTADOS_VENTA = {
-    pendiente: { texto: 'Pendiente', color: 'warning' },
-    pagada: { texto: 'Pagada', color: 'success' },
-    entregada: { texto: 'Entregada', color: 'info' },
-    cancelada: { texto: 'Cancelada', color: 'danger' },
-    reembolsada: { texto: 'Reembolsada', color: 'neutral' },
-};
-
 export const ESTADOS_PAGO = {
     approved: { texto: 'Aprobado', color: 'success' },
     captured: { texto: 'Cobrado', color: 'success' },
@@ -28,37 +12,28 @@ export const ESTADOS_PAGO = {
     expired: { texto: 'Expirado', color: 'neutral' },
     refunded: { texto: 'Reembolsado', color: 'warning' },
     cancelled: { texto: 'Cancelado', color: 'neutral' },
-    // Estados derivados cuando PayU no aplica o aún no informó.
+
     tienda: { texto: 'Cobrado en tienda', color: 'success' },
     tienda_devuelto: { texto: 'Devuelto', color: 'neutral' },
     confirmado: { texto: 'Confirmado', color: 'success' },
     sin_confirmar: { texto: 'Sin confirmar', color: 'warning' },
     sin_pago: { texto: 'Sin pago', color: 'neutral' },
-    en_revision: { texto: 'En revisión', color: 'warning' },
+    en_revision: { texto: 'En revisión', color: 'warning' }
 };
 
-export const configEstadoVenta = (estado) =>
-    ESTADOS_VENTA[estado] || { texto: estado ? estado.charAt(0).toUpperCase() + estado.slice(1) : 'Sin estado', color: 'neutral' };
-
-export const configEstadoPago = (estado) =>
-    ESTADOS_PAGO[estado] || ESTADOS_PAGO[String(estado || '').toLowerCase()] || { texto: estado || 'Sin pago', color: 'neutral' };
+export const configEstadoPago = (estado) => ESTADOS_PAGO[estado] || ESTADOS_PAGO[String(estado || '').toLowerCase()] || { texto: estado || 'Sin pago', color: 'neutral' };
 
 const COBRADAS = ['pagada', 'entregada'];
 
-// Une el pago con su venta y deja listos los textos a mostrar.
-export function enriquecerPago(pago, venta) {
+function enriquecerPago(pago, venta) {
     const origen = venta?.origen || pago.origen || (pago.external_reference ? 'app' : 'panel');
     const idReservaHistorica = venta?.id_reserva ?? pago.id_reserva;
     const enTienda = origen === 'panel' || origen === 'reserva' || Boolean(idReservaHistorica);
     const estadoVenta = pago.estado_venta;
     const cliente = pago.cliente || {};
 
-    const nombre = origen === 'panel'
-        ? venta?.cliente_nombre || 'Cliente de mostrador'
-        : venta?.cliente_nombre || cliente.nombre_completo || 'Sin nombre';
-    const correo = origen === 'panel'
-        ? correoVisible(venta?.correo_compra)
-        : correoVisible(venta?.correo_compra) || correoVisible(cliente.email);
+    const nombre = origen === 'panel' ? venta?.cliente_nombre || 'Cliente de mostrador' : venta?.cliente_nombre || cliente.nombre_completo || 'Sin nombre';
+    const correo = origen === 'panel' ? correoVisible(venta?.correo_compra) : correoVisible(venta?.correo_compra) || correoVisible(cliente.email);
 
     let estadoPago;
     if (enTienda) {
@@ -88,28 +63,25 @@ export function enriquecerPago(pago, venta) {
         cliente: { ...cliente, nombre_completo: nombre, email: correo },
         metodo_pago: enTienda ? textoMetodoPago(venta?.metodo_pago) || 'Cobro en tienda' : 'PayU',
         referencia_pago: enTienda ? venta?.referencia_pago || null : null,
-        estado_pago: estadoPago,
+        estado_pago: estadoPago
     };
 }
 
-// La vista comercial ya recibe todos los campos PayU en /ventas. Derivar su
-// presentación aquí evita otra lectura de /pagos y mantiene tabla, detalle y CSV.
 export function pagoDesdeVenta(venta) {
-    const pago = enriquecerPago({
-        id_venta: venta.id_venta,
-        id_pago: venta.payu_payment_id,
-        external_reference: venta.external_reference,
-        payu_order_id: venta.payu_order_id,
-        estado_venta: venta.estado,
-        estado_pago: venta.payu_payment_status,
-        monto_total: Number(venta.total || 0),
-        fecha_creacion: venta.fecha_venta,
-        tipo_entrega: venta.tipo_entrega,
-        cliente: {
-            id_usuario: venta.id_usuario,
-            nombre_completo: `${venta.nombre_usuario || ''} ${venta.apellido_usuario || ''}`.trim(),
-            email: venta.correo_usuario,
+    const pago = enriquecerPago(
+        {
+            id_venta: venta.id_venta,
+            id_pago: venta.payu_payment_id,
+            external_reference: venta.external_reference,
+            payu_order_id: venta.payu_order_id,
+            estado_venta: venta.estado,
+            estado_pago: venta.payu_payment_status,
+            monto_total: Number(venta.total || 0),
+            fecha_creacion: venta.fecha_venta,
+            tipo_entrega: venta.tipo_entrega,
+            cliente: { id_usuario: venta.id_usuario, nombre_completo: `${venta.nombre_usuario || ''} ${venta.apellido_usuario || ''}`.trim(), email: venta.correo_usuario }
         },
-    }, venta);
+        venta
+    );
     return venta.pago_revision_motivo ? { ...pago, estado_pago: 'en_revision' } : pago;
 }

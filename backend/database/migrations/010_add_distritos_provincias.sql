@@ -1,13 +1,3 @@
--- ============================================================
--- MIGRACIÓN 010: DISTRITOS DEL RESTO DE PROVINCIAS DE LIMA
--- ============================================================
--- Completa distritos_lima con los distritos de Barranca,
--- Cajatambo, Canta, Cañete, Huaral, Huarochirí, Huaura, Oyón
--- y Yauyos, con sus tarifas de envío a domicilio.
--- SEGURO: INSERT IGNORE (no duplica), UPDATE solo tarifas.
--- ============================================================
-
--- Barranca (id 2)
 INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (2, 'Barranca'),
 (2, 'Paramonga'),
@@ -15,7 +5,6 @@ INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (2, 'Supe'),
 (2, 'Supe Puerto');
 
--- Cajatambo (id 3)
 INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (3, 'Cajatambo'),
 (3, 'Copa'),
@@ -23,7 +12,6 @@ INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (3, 'Huancapón'),
 (3, 'Manás');
 
--- Canta (id 4)
 INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (4, 'Canta'),
 (4, 'Arahuay'),
@@ -33,7 +21,6 @@ INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (4, 'San Buenaventura'),
 (4, 'Santa Rosa de Quives');
 
--- Cañete (id 5)
 INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (5, 'San Vicente de Cañete'),
 (5, 'Asia'),
@@ -52,7 +39,6 @@ INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (5, 'Santa Cruz de Flores'),
 (5, 'Zúñiga');
 
--- Huaral (id 6)
 INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (6, 'Huaral'),
 (6, 'Atavillos Alto'),
@@ -67,7 +53,6 @@ INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (6, 'Sumbilca'),
 (6, 'Veintisiete de Noviembre');
 
--- Huarochirí (id 7)
 INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (7, 'Matucana'),
 (7, 'Antioquia'),
@@ -102,7 +87,6 @@ INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (7, 'Santo Domingo de los Olleros'),
 (7, 'Surco');
 
--- Huaura (id 8)
 INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (8, 'Huacho'),
 (8, 'Ámbar'),
@@ -117,7 +101,6 @@ INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (8, 'Sayán'),
 (8, 'Vegueta');
 
--- Oyón (id 9)
 INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (9, 'Oyón'),
 (9, 'Andajes'),
@@ -126,7 +109,6 @@ INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (9, 'Naván'),
 (9, 'Pachangara');
 
--- Yauyos (id 10)
 INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (10, 'Yauyos'),
 (10, 'Alis'),
@@ -162,12 +144,6 @@ INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (10, 'Viñac'),
 (10, 'Vitis');
 
--- ------------------------------------------------------------------
--- TARIFAS DE ENVÍO POR PROVINCIA (resto de Lima)
--- Costeras (Barranca, Cañete, Huaral, Huaura): S/ 15.00
--- Sierra cercana (Canta, Huarochirí): S/ 18.00
--- Sierra lejana (Cajatambo, Oyón, Yauyos): S/ 20.00
--- ------------------------------------------------------------------
 UPDATE distritos_lima SET tarifa_envio = 15.00
 WHERE id_provincia IN (2, 5, 6, 8);
 

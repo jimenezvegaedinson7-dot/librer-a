@@ -1,4 +1,3 @@
-// Solo las ventas marcadas por el nuevo checkout son de Pallasca.
 export const esEntregaPallasca = (venta) => venta?.cobertura_entrega === 'pallasca';
 
 export function descripcionEntrega(venta) {

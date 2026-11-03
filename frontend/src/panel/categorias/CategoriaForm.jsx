@@ -1,16 +1,11 @@
 import { FaTags } from 'react-icons/fa6';
-
 import { FormularioAlta } from '../ui/FormularioAlta';
 import { Input, Textarea } from '../ui/Form';
-
 import { crearCategoria } from './categoriasService';
 import { requerido } from '../lib/utils/validaciones';
 
 const FORMULARIO_VACIO = { nombre: '', descripcion: '' };
-
-const REGLAS = {
-    nombre: [(v) => requerido(v, 'El nombre de la categoría')],
-};
+const REGLAS = { nombre: [(v) => requerido(v, 'El nombre de la categoría')] };
 
 export default function CategoriaForm({ onCategoriaCreada, incrustado = false, onCancelar, onGuardandoChange }) {
     return (

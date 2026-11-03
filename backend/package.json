@@ -22,6 +22,14 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "prettier": {
+    "tabWidth": 4,
+    "singleQuote": true,
+    "trailingComma": "none",
+    "printWidth": 180,
+    "objectWrap": "collapse",
+    "embeddedLanguageFormatting": "off"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",

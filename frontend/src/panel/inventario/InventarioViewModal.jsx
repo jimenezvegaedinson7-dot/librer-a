@@ -1,9 +1,7 @@
 import { FaBook, FaBoxesStacked, FaLocationDot, FaClockRotateLeft } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Ficha } from '../ui/Ficha';
-
 import { formatearFecha } from '../../compartido/lib/utils/format';
 
 export default function InventarioViewModal({ inventario, abierto, onCerrar }) {
@@ -19,9 +17,15 @@ export default function InventarioViewModal({ inventario, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <Ficha color="emerald" icono={<FaBoxesStacked />} etiqueta="Stock">{stock}</Ficha>
-                <Ficha color="emerald" icono={<FaBoxesStacked />} etiqueta="Stock mínimo">{stockMinimo}</Ficha>
-                <Ficha color="emerald" icono={<FaLocationDot />} etiqueta="Ubicación">{inventario.ubicacion || 'No registrada'}</Ficha>
+                <Ficha color="emerald" icono={<FaBoxesStacked />} etiqueta="Stock">
+                    {stock}
+                </Ficha>
+                <Ficha color="emerald" icono={<FaBoxesStacked />} etiqueta="Stock mínimo">
+                    {stockMinimo}
+                </Ficha>
+                <Ficha color="emerald" icono={<FaLocationDot />} etiqueta="Ubicación">
+                    {inventario.ubicacion || 'No registrada'}
+                </Ficha>
                 <Ficha color="emerald" icono={<FaClockRotateLeft />} etiqueta="Última actualización">
                     {formatearFecha(inventario.ultima_actualizacion) || 'Sin registro'}
                 </Ficha>
@@ -37,7 +41,9 @@ export default function InventarioViewModal({ inventario, abierto, onCerrar }) {
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>
+                    Cerrar
+                </Button>
             </div>
         </Modal>
     );

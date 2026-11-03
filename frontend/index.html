@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <!-- Las fuentes administrativas se solicitan solo al abrir el panel. -->
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#064e3b" />
     <title>MATIDANA Libros y Cultura · Delivery y recojo en Pallasca</title>
@@ -44,31 +44,28 @@
       }
     </script>
 
-    <!-- Fuentes locales prioritarias, sin pantalla de carga bloqueante. -->
+
     <script>
       (function () {
-        var ruta = location.pathname.replace(/\/+$/, '') || '/';
-        var publicas = ['/', '/catalogo', '/aplicacion', '/caracteristicas', '/nosotros', '/descargar'];
-        if (publicas.indexOf(ruta) === -1) return;
-        // Al recargar, siempre desde arriba. Por defecto el navegador devuelve
-        // la página en la posición en la que se estaba, que no es lo que
-        // queremos; se desactiva antes de que llegue a pintar.
-        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-        window.scrollTo(0, 0);
-        // El contenido aparece inmediatamente: fuentes e imágenes no bloquean
-        // la navegación con una pantalla de carga.
-        // Fuentes de la primera pantalla (texto, títulos y botones).
-        [400, 600, 700].forEach(function (peso) {
-          var f = document.createElement('link');
-          f.rel = 'preload'; f.as = 'font'; f.type = 'font/woff2'; f.crossOrigin = 'anonymous';
-          f.href = '/fonts/work-sans-latin-' + peso + '-normal.woff2';
-          document.head.appendChild(f);
-        });
+          var ruta = location.pathname.replace(/\/+$/, '') || '/';
+          var publicas = ['/', '/catalogo', '/aplicacion', '/caracteristicas', '/nosotros', '/descargar'];
+          if (publicas.indexOf(ruta) === -1) return;
+
+          if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+          window.scrollTo(0, 0);
+
+          [400, 600, 700].forEach(function (peso) {
+              var f = document.createElement('link');
+              f.rel = 'preload';
+              f.as = 'font';
+              f.type = 'font/woff2';
+              f.crossOrigin = 'anonymous';
+              f.href = '/fonts/work-sans-latin-' + peso + '-normal.woff2';
+              document.head.appendChild(f);
+          });
       })();
     </script>
     <style>
-      /* Work Sans (web pública), autoalojada con nombre fijo
-         para precargarla desde el HTML: así el texto no cambia de fuente al recargar. */
       @font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/work-sans-latin-400-normal.woff2') format('woff2'); }
       @font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url('/fonts/work-sans-latin-500-normal.woff2') format('woff2'); }
       @font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/work-sans-latin-600-normal.woff2') format('woff2'); }

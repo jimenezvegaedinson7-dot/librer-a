@@ -1,17 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-
-import {
-    FaEye,
-    FaFileCsv,
-    FaMagnifyingGlass,
-    FaRotate,
-    FaUserCheck,
-    FaUserSlash,
-    FaUsers,
-    FaXmark,
-} from 'react-icons/fa6';
-
-import { FaUserShield, FaUser, FaCircleCheck, FaBan } from 'react-icons/fa6';
+import { FaEye, FaFileCsv, FaMagnifyingGlass, FaRotate, FaUserCheck, FaUserSlash, FaUsers, FaXmark, FaUserShield, FaUser, FaCircleCheck, FaBan } from 'react-icons/fa6';
 import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
@@ -25,15 +13,12 @@ import { DataTable } from '../ui/DataTable';
 import { Badge, EstadoActivo } from '../ui/Badge';
 import { BtnAccion } from '../ui/Acciones';
 import { ConfirmarAccion } from '../ui/ConfirmarAccion';
-
 import { formatearMoneda, formatearFecha } from '../../compartido/lib/utils/format';
 import { exportarCsv } from '../lib/utils/exportarCsv';
 import { correoVisible, esCuentaEliminada } from '../lib/utils/cuentas';
-
-import { useToast } from '../../app/providers/ToastProvider';
+import { useToast } from '../../app/providers/ToastContext';
 import { useAuth } from '../../app/providers/AuthContext';
 import { ROLES, ETIQUETAS_ROL as ETIQUETA_ROL, etiquetaRol } from '../lib/roles';
-
 import { listarUsuarios, actualizarUsuario } from './usuariosService';
 import UsuarioViewModal from './UsuarioViewModal';
 
@@ -57,35 +42,27 @@ const columnasUsuarios = [
                     {esCuentaEliminada(fila) ? 'Datos anonimizados a pedido del titular' : correoVisible(fila.email) || 'Sin correo'}
                 </span>
             </p>
-        ),
+        )
     },
     { titulo: 'Rol', alineacion: 'centro', render: (fila) => rolBadge(fila.rol) },
-    {
-        titulo: 'Estado',
-        alineacion: 'centro',
-        render: (fila) => (esCuentaEliminada(fila) ? <Badge color="neutral">Eliminada</Badge> : <EstadoActivo activo={fila.estado} />),
-    },
+    { titulo: 'Estado', alineacion: 'centro', render: (fila) => (esCuentaEliminada(fila) ? <Badge color="neutral">Eliminada</Badge> : <EstadoActivo activo={fila.estado} />) },
     {
         titulo: 'Registro',
         alineacion: 'centro',
-        render: (fila) => <span className="whitespace-nowrap text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_registro, { soloDia: true }) || 'Sin fecha'}</span>,
+        render: (fila) => <span className="whitespace-nowrap text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_registro, { soloDia: true }) || 'Sin fecha'}</span>
     },
-    {
-        titulo: 'Compras',
-        alineacion: 'centro',
-        render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.total_compras || 0)}</span>,
-    },
+    { titulo: 'Compras', alineacion: 'centro', render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.total_compras || 0)}</span> },
     {
         titulo: 'Total gastado',
         alineacion: 'derecha',
         className: 'tabla-col-importe',
-        render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>,
-    },
+        render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>
+    }
 ];
 
 function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio }) {
     const activo = Number(fila.estado) === 1;
-    // Una cuenta eliminada por su titular no se reactiva ni cambia de rol.
+
     if (esCuentaEliminada(fila)) {
         return (
             <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver usuario">
@@ -103,8 +80,7 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
                 tipo={activo ? 'eliminar' : 'editar'}
                 onClick={() => !esPropio && onCambiarEstado(fila, activo ? 0 : 1)}
                 titulo={esPropio ? 'No puedes cambiar tu propio estado' : activo ? 'Desactivar usuario' : 'Activar usuario'}
-                disabled={esPropio}
-            >
+                disabled={esPropio}>
                 {activo ? <FaUserSlash /> : <FaUserCheck />}
             </BtnAccion>
 
@@ -114,10 +90,17 @@ function accionesUsuario(fila, { onVer, onCambiarEstado, onCambiarRol, esPropio 
                 disabled={esPropio}
                 title={esPropio ? 'No puedes cambiar tu propio rol' : 'Cambiar rol'}
                 aria-label={`Rol de ${[fila.nombre, fila.apellido].filter(Boolean).join(' ') || 'usuario'}`}
-                className="h-8 rounded-lg border border-primary-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-parchment-200 disabled:text-primary-400"
-            >
-                {!ETIQUETA_ROL[fila.rol] && <option value="" disabled>Rol no válido</option>}
-                {Object.entries(ETIQUETA_ROL).map(([rol, etiqueta]) => <option key={rol} value={rol}>{etiqueta}</option>)}
+                className="h-8 rounded-lg border border-primary-200 bg-white px-2 text-xs font-semibold text-slate-700 shadow-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/10 disabled:cursor-not-allowed disabled:bg-parchment-200 disabled:text-primary-400">
+                {!ETIQUETA_ROL[fila.rol] && (
+                    <option value="" disabled>
+                        Rol no válido
+                    </option>
+                )}
+                {Object.entries(ETIQUETA_ROL).map(([rol, etiqueta]) => (
+                    <option key={rol} value={rol}>
+                        {etiqueta}
+                    </option>
+                ))}
             </select>
         </>
     );
@@ -168,9 +151,6 @@ export default function UsuariosPage({ incrustado = false }) {
         }
     };
 
-    // Carga inicial. `cargando` ya nace en true, así que este efecto no
-    // enciende el spinner: solo espera la respuesta y entonces actualiza.
-    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
         let vigente = true;
 
@@ -192,8 +172,6 @@ export default function UsuariosPage({ incrustado = false }) {
         };
     }, []);
 
-    // Al cambiar cualquier filtro se vuelve a la primera página: se hace
-    // aquí, en el evento, y no en un efecto que la reinicie tras el render.
     const alBuscar = (valor) => {
         setBusqueda(valor);
         setPaginaActual(1);
@@ -228,14 +206,9 @@ export default function UsuariosPage({ incrustado = false }) {
 
     const totalPaginas = Math.ceil(usuariosFiltrados.length / POR_PAGINA);
 
-    // Si la lista se acorta (filtro) la página se recorta durante el render
-    // en vez de corregirse después con un efecto.
     const paginaActualEfectiva = totalPaginas > 0 ? Math.min(paginaActual, totalPaginas) : 1;
 
-    const usuariosPaginados = usuariosFiltrados.slice(
-        (paginaActualEfectiva - 1) * POR_PAGINA,
-        paginaActualEfectiva * POR_PAGINA,
-    );
+    const usuariosPaginados = usuariosFiltrados.slice((paginaActualEfectiva - 1) * POR_PAGINA, paginaActualEfectiva * POR_PAGINA);
 
     const limpiarFiltros = () => {
         setBusqueda('');
@@ -255,12 +228,9 @@ export default function UsuariosPage({ incrustado = false }) {
             valor: estado,
             titulo: estado === 1 ? 'Activar usuario' : 'Desactivar usuario',
             mensaje: `¿Deseas ${estado === 1 ? 'activar' : 'desactivar'} a "${usuario.nombre || 'este usuario'}"?`,
-            advertencia:
-                estado === 0
-                    ? 'El usuario no podrá iniciar sesión mientras esté desactivado.'
-                    : 'El usuario volverá a disponer de acceso a la aplicación.',
+            advertencia: estado === 0 ? 'El usuario no podrá iniciar sesión mientras esté desactivado.' : 'El usuario volverá a disponer de acceso a la aplicación.',
             textoConfirmar: estado === 1 ? 'Activar' : 'Desactivar',
-            variante: estado === 1 ? 'primary' : 'danger',
+            variante: estado === 1 ? 'primary' : 'danger'
         });
     };
 
@@ -276,7 +246,7 @@ export default function UsuariosPage({ incrustado = false }) {
                     ? 'El usuario podrá acceder a este panel administrativo con todos los permisos.'
                     : 'El usuario perderá el acceso a este panel administrativo.',
             textoConfirmar: 'Cambiar rol',
-            variante: 'primary',
+            variante: 'primary'
         });
     };
 
@@ -313,21 +283,15 @@ export default function UsuariosPage({ incrustado = false }) {
                 { titulo: 'Rol', exportar: (f) => etiquetaRol(f.rol) },
                 { titulo: 'Estado', exportar: (f) => (Number(f.estado) === 1 ? 'Activo' : 'Inactivo') },
                 { titulo: 'Compras', exportar: (f) => f.total_compras || 0 },
-                { titulo: 'Total gastado', exportar: (f) => f.total_gastado || 0 },
+                { titulo: 'Total gastado', exportar: (f) => f.total_gastado || 0 }
             ],
-            filas: usuariosFiltrados,
+            filas: usuariosFiltrados
         });
     };
 
     return (
         <div className="space-y-4">
-            {!incrustado && (
-                <PageHeader
-                    titulo="Usuarios"
-                    descripcion="Control de usuarios registrados en la aplicación"
-                    icono={<FaUsers />}
-                />
-            )}
+            {!incrustado && <PageHeader titulo="Usuarios" descripcion="Control de usuarios registrados en la aplicación" icono={<FaUsers />} />}
             <Contador
                 cargando={cargando}
                 error={error}
@@ -342,10 +306,18 @@ export default function UsuariosPage({ incrustado = false }) {
                 <CardHeader
                     titulo="Usuarios registrados"
                     subtitulo="Busca usuarios por nombre o correo"
-                    acciones={<div className="tabla-filtros-acciones">
-                        {hayFiltros && <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>}
-                        <Button variante="secondary" onClick={cargarUsuarios} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
-                    </div>}
+                    acciones={
+                        <div className="tabla-filtros-acciones">
+                            {hayFiltros && (
+                                <Button variante="secondary" onClick={limpiarFiltros}>
+                                    Limpiar
+                                </Button>
+                            )}
+                            <Button variante="secondary" onClick={cargarUsuarios} disabled={cargando}>
+                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
+                            </Button>
+                        </div>
+                    }
                     filtros={
                         <div className="filtros-grid">
                             <div className="filtro-busqueda">
@@ -363,17 +335,16 @@ export default function UsuariosPage({ incrustado = false }) {
                                         type="button"
                                         onClick={() => setBusqueda('')}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
-                                        title="Limpiar búsqueda"
-                                    >
+                                        title="Limpiar búsqueda">
                                         <FaXmark />
                                     </button>
                                 )}
                             </div>
 
                             <Select label="Rol del usuario" aria-label="Filtrar por rol" value={filtroRol} onChange={(e) => alFiltrarRol(e.target.value)}>
-                <option value="todos">Todos los roles</option>
-                <option value="administrador">Administradores</option>
-                <option value="cliente">Clientes</option>
+                                <option value="todos">Todos los roles</option>
+                                <option value="administrador">Administradores</option>
+                                <option value="cliente">Clientes</option>
                             </Select>
 
                             <Select label="Estado de la cuenta" value={filtroEstado} onChange={(e) => alFiltrarEstado(e.target.value)}>
@@ -381,7 +352,6 @@ export default function UsuariosPage({ incrustado = false }) {
                                 <option value="1">Activos</option>
                                 <option value="0">Inactivos</option>
                             </Select>
-
                         </div>
                     }
                 />
@@ -392,11 +362,7 @@ export default function UsuariosPage({ incrustado = false }) {
             {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarUsuarios} />}
 
             {!cargando && !error && usuarios.length === 0 && (
-                <EmptyState
-                    titulo="No hay usuarios registrados"
-                    descripcion="Cuando los usuarios se registren en la aplicación aparecerán aquí."
-                    icono={<FaUsers />}
-                />
+                <EmptyState titulo="No hay usuarios registrados" descripcion="Cuando los usuarios se registren en la aplicación aparecerán aquí." icono={<FaUsers />} />
             )}
 
             {!cargando && !error && usuarios.length > 0 && usuariosFiltrados.length === 0 && (
@@ -404,7 +370,11 @@ export default function UsuariosPage({ incrustado = false }) {
                     titulo="No se encontraron usuarios"
                     descripcion="Cambia la búsqueda o el filtro seleccionado."
                     icono={<FaMagnifyingGlass />}
-                    acciones={<Button variante="secondary" onClick={limpiarFiltros}>Limpiar filtros</Button>}
+                    acciones={
+                        <Button variante="secondary" onClick={limpiarFiltros}>
+                            Limpiar filtros
+                        </Button>
+                    }
                 />
             )}
 
@@ -435,7 +405,7 @@ export default function UsuariosPage({ incrustado = false }) {
                                     onVer: verUsuario,
                                     onCambiarEstado: pedirCambioEstado,
                                     onCambiarRol: pedirCambioRol,
-                                    esPropio: Number(fila.id_usuario) === idUsuarioSesion,
+                                    esPropio: Number(fila.id_usuario) === idUsuarioSesion
                                 })
                             }
                         />

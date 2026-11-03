@@ -1,8 +1,6 @@
 import { useState } from 'react';
-
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import Breadcrumbs from './Breadcrumbs';
@@ -23,11 +21,7 @@ export default function AdminLayout() {
 
     return (
         <div data-theme="light" className="admin-shell min-h-screen bg-surface">
-            <Sidebar
-                abierto={sidebarAbierto}
-                onCerrar={cerrarSidebar}
-                colapsado={sidebarColapsado}
-            />
+            <Sidebar abierto={sidebarAbierto} onCerrar={cerrarSidebar} colapsado={sidebarColapsado} />
 
             <AnimatePresence>
                 {sidebarAbierto && (
@@ -45,10 +39,7 @@ export default function AdminLayout() {
             </AnimatePresence>
 
             <div className={`min-h-screen transition-[margin] duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${mlClase}`}>
-                <Topbar
-                    onAbrirMenu={abrirSidebar}
-                    onToggleSidebar={toggleSidebar}
-                />
+                <Topbar onAbrirMenu={abrirSidebar} onToggleSidebar={toggleSidebar} />
                 <main data-tablas-formales={pathname !== '/dashboard'} className="admin-main px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-6">
                     <div className="mx-auto w-full max-w-[1600px]">
                         <Breadcrumbs />
@@ -57,8 +48,7 @@ export default function AdminLayout() {
                             className="pt-1"
                             initial={reducirMovimiento ? false : { opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.32, ease: [0.25, 1, 0.5, 1] }}
-                        >
+                            transition={{ duration: 0.32, ease: [0.25, 1, 0.5, 1] }}>
                             <Outlet />
                         </motion.div>
                     </div>
@@ -67,4 +57,3 @@ export default function AdminLayout() {
         </div>
     );
 }
-

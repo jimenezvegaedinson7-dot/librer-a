@@ -4,5 +4,10 @@ import FeatureStory from '../secciones/FeatureStory';
 
 export default function CaracteristicasPage() {
     const { reducido } = useOutletContext();
-    return <><Migas actual="Características" /><FeatureStory reducido={reducido} /></>;
+    return (
+        <>
+            <Migas actual="Características" />
+            <FeatureStory reducido={reducido} />
+        </>
+    );
 }

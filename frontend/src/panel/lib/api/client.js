@@ -1,19 +1,16 @@
 import axios from 'axios';
-
 import env from '../../../compartido/config/env';
 import storage from '../storage/index';
 import { construirUrlArchivo } from '../../../compartido/lib/utils/url';
 import { es401DeCredencial } from '../../auth/erroresSesion';
 
-// Login del panel: una sesión vencida vuelve aquí.
 const RUTA_LOGIN = '/admin/login';
 
-// El perfil puede actualizarse sin cambiar la sesión. Su identidad y el token
-// sí deben coincidir antes de consumir una respuesta o revocar el acceso.
 const firmaSesionPanel = () => {
     const usuario = storage.getUsuario();
     return JSON.stringify([storage.getToken(), usuario?.id_usuario ?? null, usuario?.rol ?? null]);
 };
+
 const exigirSesionPanel = (config) => {
     if (config?._sesionPanel === firmaSesionPanel()) return;
     const error = new Error('La sesión administrativa cambió. Revisa la cuenta actual.');
@@ -24,9 +21,8 @@ const exigirSesionPanel = (config) => {
 
 const client = axios.create({
     baseURL: env.apiUrl,
-    // Timeout generoso para arranques en frío de Render free, pero finito:
-    // evita que el spinner se quede cargando para siempre.
-    timeout: 120000,
+
+    timeout: 120000
 });
 
 client.interceptors.request.use(
@@ -41,7 +37,7 @@ client.interceptors.request.use(
         }
         return config;
     },
-    (error) => Promise.reject(error),
+    (error) => Promise.reject(error)
 );
 
 client.interceptors.response.use(
@@ -50,7 +46,7 @@ client.interceptors.response.use(
         if (response.data?.sesiones_revocadas === true) {
             storage.clearSesion();
             window.location.href = RUTA_LOGIN;
-            // No devolver un perfil revocado que un consumidor pueda guardar.
+
             exigirSesionPanel(response.config);
         }
         return response.data;
@@ -64,7 +60,7 @@ client.interceptors.response.use(
             }
         }
         return Promise.reject(error);
-    },
+    }
 );
 
 export { construirUrlArchivo };

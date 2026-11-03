@@ -1,24 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FaBookOpen, FaMagnifyingGlass, FaRotate, FaWandMagicSparkles, FaFloppyDisk, FaArrowUpRightFromSquare } from 'react-icons/fa6';
-
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Form';
 import { Alert } from '../ui/Alert';
 import { Badge } from '../ui/Badge';
-import { useToast } from '../../app/providers/ToastProvider';
+import { useToast } from '../../app/providers/ToastContext';
 import PortadaCatalogo from '../componentes/PortadaCatalogo';
 import { formatearMoneda, formatearFecha } from '../../compartido/lib/utils/format';
 import { listarLibros } from '../libros/librosService';
 import { obtenerProtagonista, guardarProtagonista } from './protagonistaService';
 
-// ============================================================
-// PORTADA → LIBRO PROTAGONISTA
-// Elige el libro real que aparece en la escena 3D del inicio. Sin selección
-// manual, la web usa el último libro agregado (activo y con portada).
-// ============================================================
-
 const conPortada = (l) => typeof l?.portada === 'string' && l.portada.trim() !== '';
+
 const elegible = (l) => Number(l?.estado) === 1 && conPortada(l);
 
 function Precio({ libro }) {
@@ -55,8 +49,14 @@ function VistaPrevia({ libro, modo }) {
                 <Badge color={modo === 'manual' ? 'info' : 'neutral'}>{modo === 'manual' ? 'Selección manual' : 'Automático: último agregado'}</Badge>
                 <p className="mt-2 font-title text-lg font-semibold leading-tight text-slate-900">{libro.titulo}</p>
                 <p className="text-sm text-slate-600">{libro.autor || 'Autor no registrado'}</p>
-                <div className="mt-2"><Precio libro={libro} /></div>
-                <a className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1d4f91] hover:underline" href={`/libro/${libro.id_libro}`} target="_blank" rel="noreferrer">
+                <div className="mt-2">
+                    <Precio libro={libro} />
+                </div>
+                <a
+                    className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1d4f91] hover:underline"
+                    href={`/libro/${libro.id_libro}`}
+                    target="_blank"
+                    rel="noreferrer">
                     Ver en la web <FaArrowUpRightFromSquare className="text-xs" aria-hidden="true" />
                 </a>
             </div>
@@ -88,9 +88,16 @@ export default function ProtagonistaPanel() {
                 setElegido(c?.modo === 'manual' ? Number(c.libro?.id_libro) : null);
                 setError('');
             })
-            .catch((e) => { if (activo) { setConfig(null); setError(e?.response?.data?.mensaje || 'No se pudo cargar la configuración de la portada.'); } })
+            .catch((e) => {
+                if (activo) {
+                    setConfig(null);
+                    setError(e?.response?.data?.mensaje || 'No se pudo cargar la configuración de la portada.');
+                }
+            })
             .finally(() => activo && setCargando(false));
-        return () => { activo = false; };
+        return () => {
+            activo = false;
+        };
     }, [recarga]);
 
     const candidatos = useMemo(() => {
@@ -130,39 +137,82 @@ export default function ProtagonistaPanel() {
                 titulo="Libro protagonista de la portada"
                 subtitulo="Elige el libro destacado que verán los visitantes en el inicio de la web"
                 icono={<FaWandMagicSparkles />}
-                acciones={<Button variante="secondary" tamano="sm" icono={<FaRotate />} disabled={guardando || cargando} onClick={() => { setCargando(true); setRecarga((n) => n + 1); }}>Actualizar</Button>}
+                acciones={
+                    <Button
+                        variante="secondary"
+                        tamano="sm"
+                        icono={<FaRotate />}
+                        disabled={guardando || cargando}
+                        onClick={() => {
+                            setCargando(true);
+                            setRecarga((n) => n + 1);
+                        }}>
+                        Actualizar
+                    </Button>
+                }
             />
             <CardBody>
-                {error && <div className="mb-4"><Alert tipo="error">{error}</Alert></div>}
-                {config?.manual_invalido && (
-                    <div className="mb-4"><Alert tipo="warning">El libro elegido antes ya no está activo o no tiene portada. Mientras tanto se muestra el último libro agregado.</Alert></div>
+                {error && (
+                    <div className="mb-4">
+                        <Alert tipo="error">{error}</Alert>
+                    </div>
                 )}
-                {cargando ? <p className="py-8 text-center text-sm text-slate-600">Cargando…</p> : (
+                {config?.manual_invalido && (
+                    <div className="mb-4">
+                        <Alert tipo="warning">El libro elegido antes ya no está activo o no tiene portada. Mientras tanto se muestra el último libro agregado.</Alert>
+                    </div>
+                )}
+                {cargando ? (
+                    <p className="py-8 text-center text-sm text-slate-600">Cargando…</p>
+                ) : (
                     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
                         <div className="space-y-4">
                             <fieldset className="space-y-2" disabled={guardando || !config}>
                                 <legend className="text-sm font-semibold text-slate-900">Modo</legend>
                                 <label className="protagonista-modo">
                                     <input type="radio" name="modo-portada" checked={!modoManual} onChange={() => setModoManual(false)} />
-                                    <span><strong>Automático</strong><small>Usa el último libro agregado que esté activo y tenga portada.</small></span>
+                                    <span>
+                                        <strong>Automático</strong>
+                                        <small>Usa el último libro agregado que esté activo y tenga portada.</small>
+                                    </span>
                                 </label>
                                 <label className="protagonista-modo">
                                     <input type="radio" name="modo-portada" checked={modoManual} onChange={() => setModoManual(true)} />
-                                    <span><strong>Elegir un libro</strong><small>Solo un libro puede ser protagonista a la vez.</small></span>
+                                    <span>
+                                        <strong>Elegir un libro</strong>
+                                        <small>Solo un libro puede ser protagonista a la vez.</small>
+                                    </span>
                                 </label>
                             </fieldset>
 
                             {modoManual && (
                                 <div className="space-y-2">
-                                    <Input disabled={guardando || !config} value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar por título o autor…" icono={<FaMagnifyingGlass />} aria-label="Buscar libro" />
+                                    <Input
+                                        disabled={guardando || !config}
+                                        value={busqueda}
+                                        onChange={(e) => setBusqueda(e.target.value)}
+                                        placeholder="Buscar por título o autor…"
+                                        icono={<FaMagnifyingGlass />}
+                                        aria-label="Buscar libro"
+                                    />
                                     <ul className="protagonista-lista" aria-label="Libros activos con portada">
-                                        {candidatos.length === 0 && <li className="px-3 py-6 text-center text-sm text-slate-600">
-                                            {busqueda ? 'No hay coincidencias para esa búsqueda.' : 'No hay libros activos con portada disponibles.'}
-                                            {busqueda && <Button variante="ghost" tamano="sm" onClick={() => setBusqueda('')}>Limpiar búsqueda</Button>}
-                                        </li>}
+                                        {candidatos.length === 0 && (
+                                            <li className="px-3 py-6 text-center text-sm text-slate-600">
+                                                {busqueda ? 'No hay coincidencias para esa búsqueda.' : 'No hay libros activos con portada disponibles.'}
+                                                {busqueda && (
+                                                    <Button variante="ghost" tamano="sm" onClick={() => setBusqueda('')}>
+                                                        Limpiar búsqueda
+                                                    </Button>
+                                                )}
+                                            </li>
+                                        )}
                                         {candidatos.map((l) => (
                                             <li key={l.id_libro}>
-                                                <button type="button" disabled={guardando || !config} aria-pressed={Number(l.id_libro) === elegido} onClick={() => setElegido(Number(l.id_libro))}
+                                                <button
+                                                    type="button"
+                                                    disabled={guardando || !config}
+                                                    aria-pressed={Number(l.id_libro) === elegido}
+                                                    onClick={() => setElegido(Number(l.id_libro))}
                                                     className={`protagonista-opcion ${Number(l.id_libro) === elegido ? 'protagonista-opcion--activa' : ''}`}>
                                                     <PortadaCatalogo libro={l} mostrarTexto={false} className="h-14 w-10 shrink-0 rounded object-cover" />
                                                     <span className="min-w-0 flex-1 text-left">
@@ -178,7 +228,13 @@ export default function ProtagonistaPanel() {
                             )}
 
                             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-primary-200 pt-4">
-                                <p className="text-xs text-slate-600" role="status">{cambios ? 'Tienes cambios sin guardar.' : config?.actualizado_en ? `Última actualización: ${formatearFecha(config.actualizado_en)}` : 'Sin cambios guardados todavía.'}</p>
+                                <p className="text-xs text-slate-600" role="status">
+                                    {cambios
+                                        ? 'Tienes cambios sin guardar.'
+                                        : config?.actualizado_en
+                                          ? `Última actualización: ${formatearFecha(config.actualizado_en)}`
+                                          : 'Sin cambios guardados todavía.'}
+                                </p>
                                 <Button icono={<FaFloppyDisk />} onClick={guardar} cargando={guardando} disabled={!config || !cambios || (modoManual && !elegido)}>
                                     {modoManual ? 'Guardar libro protagonista' : 'Usar modo automático'}
                                 </Button>
@@ -187,9 +243,14 @@ export default function ProtagonistaPanel() {
 
                         <div>
                             <p className="mb-2 text-sm font-semibold text-slate-900">Vista previa</p>
-                            {modoManual && !libroElegido
-                                ? <div className="protagonista-vista protagonista-vista--vacia"><FaBookOpen aria-hidden="true" /><p>Elige un libro de la lista para verlo aquí.</p></div>
-                                : <VistaPrevia libro={vista} modo={modoManual ? 'manual' : 'automatico'} />}
+                            {modoManual && !libroElegido ? (
+                                <div className="protagonista-vista protagonista-vista--vacia">
+                                    <FaBookOpen aria-hidden="true" />
+                                    <p>Elige un libro de la lista para verlo aquí.</p>
+                                </div>
+                            ) : (
+                                <VistaPrevia libro={vista} modo={modoManual ? 'manual' : 'automatico'} />
+                            )}
                         </div>
                     </div>
                 )}

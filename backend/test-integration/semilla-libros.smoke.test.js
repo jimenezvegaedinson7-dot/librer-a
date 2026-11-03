@@ -1,17 +1,3 @@
-// ============================================================
-// SMOKE TEST — scripts/semillaLibros.js
-// ============================================================
-// Corre contra la base desechable que crea test-integration/run.cjs
-// (nunca contra .env ni contra producción).
-//
-// Verifica:
-//   1. El seed inserta exactamente el catálogo verificado.
-//   2. Cada libro nuevo tiene su fila de inventario con el mismo stock.
-//   3. Reejecutarlo no inserta nada (idempotencia).
-//   4. No se duplican ISBN ni obras.
-//   5. Un autor inexistente hace fallar el seed sin escribir nada.
-// ============================================================
-
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
@@ -22,19 +8,19 @@ const { Client } = require('pg');
 const raiz = path.resolve(__dirname, '..');
 const CATALOGO = path.join(raiz, 'database', 'seeds', 'libros-catalogo.json');
 const SCRIPT = path.join(raiz, 'scripts', 'semillaLibros.js');
-
 const catalogo = JSON.parse(readFileSync(CATALOGO, 'utf8'));
 
 const normalizar = (t) =>
-    String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/[.]/g, ' ').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    String(t || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[.]/g, ' ')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
 
 const ejecutarSeed = (args = []) => {
-    const r = spawnSync(process.execPath, [SCRIPT, '--confirmar', ...args], {
-        cwd: raiz,
-        encoding: 'utf8',
-        env: process.env
-    });
+    const r = spawnSync(process.execPath, [SCRIPT, '--confirmar', ...args], { cwd: raiz, encoding: 'utf8', env: process.env });
     return { codigo: r.status, salida: `${r.stdout || ''}${r.stderr || ''}` };
 };
 
@@ -44,8 +30,6 @@ const clientes = async () => {
     return c;
 };
 
-// Los autores y categorías que el catálogo necesita deben existir de
-// antemano: el seed no los crea.
 async function sembrarAutoresYCategorias() {
     const c = await clientes();
     const autores = [...new Set(catalogo.libros.map((l) => l.autor))];
@@ -82,17 +66,13 @@ test('semillaLibros inserta el catálogo verificado y crea su inventario', async
 
     const { rows: conId } = await c.query('SELECT id_libro, isbn, stock FROM libros');
     for (const fila of conId) {
-        assert.equal(stockPorLibro.get(fila.id_libro), fila.stock,
-            `stock de inventario desalineado con libros.stock en ${fila.isbn}`);
+        assert.equal(stockPorLibro.get(fila.id_libro), fila.stock, `stock de inventario desalineado con libros.stock en ${fila.isbn}`);
     }
     for (const fila of inventario) {
         assert.ok(fila.stock_minimo >= 0);
     }
 
-    // Solo los libros con descuento llevan precio_oferta, y nunca es mayor al precio.
-    const { rows: ofertas } = await c.query(
-        'SELECT isbn, precio, descuento_porcentaje, precio_oferta FROM libros WHERE descuento_porcentaje IS NOT NULL'
-    );
+    const { rows: ofertas } = await c.query('SELECT isbn, precio, descuento_porcentaje, precio_oferta FROM libros WHERE descuento_porcentaje IS NOT NULL');
     const esperados = catalogo.libros.filter((l) => l.descuento_porcentaje).length;
     assert.equal(ofertas.length, esperados, 'solo losebook con descuento del catálogo debe tener oferta');
     for (const o of ofertas) {
@@ -112,15 +92,11 @@ test('semillaLibros es idempotente: la segunda ejecución no inserta nada', asyn
     const { rows } = await c.query('SELECT COUNT(*)::int AS total FROM libros');
     assert.equal(rows[0].total, catalogo.libros.length, 'no debe crecer el catálogo');
 
-    const { rows: dups } = await c.query(
-        `SELECT isbn, COUNT(*)::int AS n FROM libros WHERE isbn IS NOT NULL GROUP BY isbn HAVING COUNT(*) > 1`
-    );
+    const { rows: dups } = await c.query(`SELECT isbn, COUNT(*)::int AS n FROM libros WHERE isbn IS NOT NULL GROUP BY isbn HAVING COUNT(*) > 1`);
     assert.equal(dups.length, 0, `ISBN duplicados: ${JSON.stringify(dups)}`);
 
     const { rows: obras } = await c.query(
-        `SELECT a.nombre, a.apellido, l.titulo, COUNT(*)::int AS n
-         FROM libros l JOIN autores a ON a.id_autor = l.id_autor
-         GROUP BY a.nombre, a.apellido, l.titulo HAVING COUNT(*) > 1`
+        `SELECT a.nombre, a.apellido, l.titulo, COUNT(*)::int AS n FROM libros l JOIN autores a ON a.id_autor = l.id_autor GROUP BY a.nombre, a.apellido, l.titulo HAVING COUNT(*) > 1`
     );
     assert.equal(obras.length, 0, `obras duplicadas: ${JSON.stringify(obras)}`);
 
@@ -149,7 +125,7 @@ test('el catálogo no contiene ISBN sintéticos ni duplicados', () => {
         assert.ok(libro.titulo && libro.autor && libro.categoria);
         assert.ok(Number(libro.precio) > 0);
         assert.ok(Number(libro.stock) > 0);
-        // Las portadas no se inventan: el seed las deja en NULL.
+
         assert.equal(libro.portada, undefined);
     }
 });

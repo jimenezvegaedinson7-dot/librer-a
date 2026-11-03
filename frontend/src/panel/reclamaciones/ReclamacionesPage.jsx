@@ -1,8 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-
-import { FaBook, FaEye, FaMagnifyingGlass, FaPrint, FaReply, FaRotate } from 'react-icons/fa6';
-
-import { FaHourglassHalf, FaClock, FaTriangleExclamation } from 'react-icons/fa6';
+import { useRef, useState } from 'react';
+import { FaBook, FaEye, FaMagnifyingGlass, FaPrint, FaReply, FaRotate, FaHourglassHalf, FaClock, FaTriangleExclamation } from 'react-icons/fa6';
 import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
@@ -17,15 +14,14 @@ import { Badge } from '../ui/Badge';
 import { BtnAccion } from '../ui/Acciones';
 import { Modal } from '../ui/Modal';
 import { Pagination } from '../ui/Pagination';
-import { useToast } from '../../app/providers/ToastProvider';
+import { useToast } from '../../app/providers/ToastContext';
 import { useImpresion } from '../lib/hooks/useImpresion';
 import { formatearFecha, formatearMoneda } from '../../compartido/lib/utils/format';
-
 import { listarReclamaciones, obtenerResumenReclamaciones, responderReclamacion } from './reclamacionesService';
+import { useCarga } from '../lib/hooks/useCarga';
 
 const hoyLima = () => new Date(Date.now() - 5 * 3600 * 1000).toISOString().slice(0, 10);
 
-// Días de calendario hasta la fecha límite (negativo = vencida).
 function diasRestantes(fechaLimite) {
     if (!fechaLimite) return null;
     const hoy = new Date(`${hoyLima()}T00:00:00Z`);
@@ -41,8 +37,18 @@ function Plazo({ fila }) {
     const dias = diasRestantes(fila.fecha_limite);
     if (dias === null) return <span className="text-xs text-slate-600">Sin fecha límite</span>;
     const fecha = new Date(`${fila.fecha_limite}T12:00:00`).toLocaleDateString('es-PE');
-    if (dias < 0) return <span title={`Venció el ${fecha}`}><Badge color="danger">Vencida</Badge></span>;
-    if (dias <= 3) return <span title={`Vence el ${fecha}`}><Badge color="warning">{dias === 0 ? 'Vence hoy' : `Vence en ${dias} d`}</Badge></span>;
+    if (dias < 0)
+        return (
+            <span title={`Venció el ${fecha}`}>
+                <Badge color="danger">Vencida</Badge>
+            </span>
+        );
+    if (dias <= 3)
+        return (
+            <span title={`Vence el ${fecha}`}>
+                <Badge color="warning">{dias === 0 ? 'Vence hoy' : `Vence en ${dias} d`}</Badge>
+            </span>
+        );
     return <span className="text-xs text-slate-600">Hasta el {fecha}</span>;
 }
 
@@ -54,12 +60,14 @@ const columnas = [
         render: (f) => (
             <p className="text-sm">
                 <span className="block font-semibold text-slate-800">{f.consumidor_nombre}</span>
-                <span className="block text-xs text-slate-500">{f.consumidor_tipo_documento} {f.consumidor_documento}</span>
+                <span className="block text-xs text-slate-500">
+                    {f.consumidor_tipo_documento} {f.consumidor_documento}
+                </span>
             </p>
-        ),
+        )
     },
     { titulo: 'Tipo', alineacion: 'centro', render: (f) => <Badge color={f.tipo === 'queja' ? 'info' : 'primary'}>{f.tipo === 'queja' ? 'Queja' : 'Reclamo'}</Badge> },
-    { titulo: 'Plazo', alineacion: 'centro', render: (f) => <Plazo fila={f} /> },
+    { titulo: 'Plazo', alineacion: 'centro', render: (f) => <Plazo fila={f} /> }
 ];
 
 function Hoja({ r, documentoRef }) {
@@ -132,11 +140,14 @@ function HojaModal({ reclamacion, onCerrar, onRespondida }) {
             grande
             footer={
                 <div className="no-print flex gap-2">
-                    <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
-                    <Button variante="secondary" onClick={imprimir} cargando={imprimiendo}><FaPrint /> Imprimir</Button>
+                    <Button variante="secondary" onClick={onCerrar}>
+                        Cerrar
+                    </Button>
+                    <Button variante="secondary" onClick={imprimir} cargando={imprimiendo}>
+                        <FaPrint /> Imprimir
+                    </Button>
                 </div>
-            }
-        >
+            }>
             {errorImpresion && <Alert tipo="error">{errorImpresion}</Alert>}
             <Hoja r={reclamacion} documentoRef={documentoRef} />
             {reclamacion.estado === 'pendiente' && (
@@ -177,18 +188,21 @@ export default function ReclamacionesPage() {
     const [avisoResumen, setAvisoResumen] = useState('');
     const solicitud = useRef(0);
 
-    const cargar = async () => {
+    const cargar = async (estaVigente = () => true) => {
         const turno = ++solicitud.current;
         try {
             setCargando(true);
             setError('');
-            // El resumen es complementario: si falla, la lista se muestra igual.
+
             let resumenFallo = false;
             const [datos, res] = await Promise.all([
                 listarReclamaciones({ estado: estado === 'todos' ? undefined : estado, q: busqueda.trim() || undefined, pagina, por_pagina: 20 }),
-                obtenerResumenReclamaciones().catch(() => { resumenFallo = true; return null; }),
+                obtenerResumenReclamaciones().catch(() => {
+                    resumenFallo = true;
+                    return null;
+                })
             ]);
-            if (turno !== solicitud.current) return;
+            if (!estaVigente() || turno !== solicitud.current) return;
             setLista(datos.reclamaciones);
             setTotal(datos.total);
             setPaginas(datos.paginas);
@@ -196,17 +210,13 @@ export default function ReclamacionesPage() {
             if (res) setResumen(res);
             setAvisoResumen(resumenFallo ? 'No se pudo actualizar el resumen de arriba. La lista de hojas sí está al día.' : '');
         } catch (err) {
-            if (turno === solicitud.current) setError(err.response?.data?.mensaje || 'Error al cargar el libro de reclamaciones');
+            if (estaVigente() && turno === solicitud.current) setError(err.response?.data?.mensaje || 'Error al cargar el libro de reclamaciones');
         } finally {
-            if (turno === solicitud.current) setCargando(false);
+            if (estaVigente() && turno === solicitud.current) setCargando(false);
         }
     };
 
-    useEffect(() => {
-        const timer = setTimeout(cargar, 250);
-        return () => { clearTimeout(timer); solicitud.current += 1; };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [estado, busqueda, pagina]);
+    useCarga(cargar, JSON.stringify([estado, busqueda, pagina]), true, 250);
     const filtradas = lista;
 
     return (
@@ -227,11 +237,33 @@ export default function ReclamacionesPage() {
                 <CardHeader
                     titulo={`Hojas registradas · ${total} resultados`}
                     subtitulo="Consulta y responde las hojas de reclamación recibidas."
-                    acciones={<div className="tabla-filtros-acciones"><Button variante="secondary" onClick={cargar} disabled={cargando}><FaRotate /> Actualizar</Button></div>}
+                    acciones={
+                        <div className="tabla-filtros-acciones">
+                            <Button variante="secondary" onClick={() => cargar()} disabled={cargando}>
+                                <FaRotate /> Actualizar
+                            </Button>
+                        </div>
+                    }
                     filtros={
                         <div className="filtros-grid filtros-grid--dos">
-                            <Input label="Hoja o consumidor" value={busqueda} onChange={(e) => { setBusqueda(e.target.value); setPagina(1); }} placeholder="Buscar hoja o consumidor..." icono={<FaMagnifyingGlass />} />
-                            <Select label="Estado de la reclamación" value={estado} onChange={(e) => { setEstado(e.target.value); setPagina(1); }} aria-label="Filtrar por estado">
+                            <Input
+                                label="Hoja o consumidor"
+                                value={busqueda}
+                                onChange={(e) => {
+                                    setBusqueda(e.target.value);
+                                    setPagina(1);
+                                }}
+                                placeholder="Buscar hoja o consumidor..."
+                                icono={<FaMagnifyingGlass />}
+                            />
+                            <Select
+                                label="Estado de la reclamación"
+                                value={estado}
+                                onChange={(e) => {
+                                    setEstado(e.target.value);
+                                    setPagina(1);
+                                }}
+                                aria-label="Filtrar por estado">
                                 <option value="todos">Todas</option>
                                 <option value="pendiente">Pendientes</option>
                                 <option value="vencido">Vencidas</option>
@@ -242,8 +274,16 @@ export default function ReclamacionesPage() {
                 />
                 <CardBody className="p-0">
                     {cargando && <TableSkeleton columnas={5} filas={5} />}
-                    {avisoResumen && <div className="px-4 pt-4"><Alert tipo="warning">{avisoResumen}</Alert></div>}
-                    {!cargando && error && <div className="p-4"><ErrorCarga mensaje={error} onReintentar={cargar} /></div>}
+                    {avisoResumen && (
+                        <div className="px-4 pt-4">
+                            <Alert tipo="warning">{avisoResumen}</Alert>
+                        </div>
+                    )}
+                    {!cargando && error && (
+                        <div className="p-4">
+                            <ErrorCarga mensaje={error} onReintentar={() => cargar()} />
+                        </div>
+                    )}
                     {!cargando && !error && filtradas.length === 0 && (
                         <EmptyState titulo="Sin hojas" descripcion="No hay hojas de reclamación con este filtro." icono={<FaBook />} />
                     )}

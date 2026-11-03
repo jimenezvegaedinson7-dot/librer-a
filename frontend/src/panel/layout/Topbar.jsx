@@ -1,25 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import {
-    FaBars,
-    FaBell,
-    FaChevronDown,
-    FaGear,
-    FaGlobe,
-    FaMagnifyingGlass,
-    FaRightFromBracket,
-    FaUser,
-    FaXmark,
-} from 'react-icons/fa6';
-
+import { FaBars, FaBell, FaChevronDown, FaGear, FaGlobe, FaMagnifyingGlass, FaRightFromBracket, FaUser, FaXmark } from 'react-icons/fa6';
 import { construirUrlArchivo } from '../lib/api/client';
 import PanelNotificaciones from '../notificaciones/PanelNotificaciones';
 import { esPrimeraVez, leerVistas, marcarVistas, obtenerNotificaciones } from '../notificaciones/notificacionesService';
 import { useAuth } from '../../app/providers/AuthContext';
 import PerfilAdministrador from './PerfilAdministrador';
 import { navPorRol } from './navConfig';
+import { useCarga } from '../lib/hooks/useCarga';
 
 function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
     return (
@@ -27,14 +15,11 @@ function Avatar({ foto, inicial, className = 'h-9 w-9' }) {
             {foto ? (
                 <img src={foto} alt="Foto del administrador" className="h-full w-full object-cover" />
             ) : (
-                <div className="flex h-full w-full items-center justify-center bg-mahogany-700 text-sm font-semibold text-parchment-100">
-                    {inicial}
-                </div>
+                <div className="flex h-full w-full items-center justify-center bg-mahogany-700 text-sm font-semibold text-parchment-100">{inicial}</div>
             )}
         </div>
     );
 }
-
 
 export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     const navigate = useNavigate();
@@ -67,12 +52,9 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
     const resultadosBusqueda = useMemo(() => {
         const texto = busqueda.trim().toLowerCase();
         if (!texto) return [];
-        return navPorRol(usuario?.rol).filter(
-            (m) => m.nombre.toLowerCase().includes(texto) || m.descripcion.toLowerCase().includes(texto),
-        );
+        return navPorRol(usuario?.rol).filter((m) => m.nombre.toLowerCase().includes(texto) || m.descripcion.toLowerCase().includes(texto));
     }, [busqueda, usuario?.rol]);
 
-    // Solo eventos que requieren atención: pagos aprobados y stock bajo.
     const cargarNotificaciones = async () => {
         try {
             setCargandoNotif(true);
@@ -90,22 +72,21 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
         }
     };
 
-    // Consulta cada minuto solo mientras la pestaña está visible (no gasta
-    // el límite de peticiones del API en segundo plano) y al volver a ella.
+    useCarga(cargarNotificaciones);
+    const refrescarNotificaciones = useEffectEvent(cargarNotificaciones);
+
     useEffect(() => {
-        cargarNotificaciones();
         const intervalo = setInterval(() => {
-            if (document.visibilityState === 'visible') cargarNotificaciones();
+            if (document.visibilityState === 'visible') refrescarNotificaciones();
         }, 60000);
         const alVolver = () => {
-            if (document.visibilityState === 'visible') cargarNotificaciones();
+            if (document.visibilityState === 'visible') refrescarNotificaciones();
         };
         document.addEventListener('visibilitychange', alVolver);
         return () => {
             clearInterval(intervalo);
             document.removeEventListener('visibilitychange', alVolver);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -144,7 +125,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
         if (!abrir) return;
         const lista = await cargarNotificaciones();
         if (lista === null) return;
-        // Se resaltan las que eran nuevas y quedan marcadas como vistas.
+
         const vistasAntes = leerVistas();
         setResaltadas(new Set(lista.filter((n) => !vistasAntes.has(n.clave)).map((n) => n.clave)));
         marcarVistas(lista.map((n) => n.clave));
@@ -178,25 +159,16 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
 
     return (
         <>
-            <header
-                className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b bg-white px-3 sm:px-4 lg:px-6"
-                style={{
-                    borderColor: '#e6e0d7',
-                }}
-            >
+            <header className="admin-topbar sticky top-0 z-30 flex h-16 w-full items-center border-b bg-white px-3 sm:px-4 lg:px-6" style={{ borderColor: '#e6e0d7' }}>
                 <div className="flex w-full items-center justify-between gap-4">
-
-                    {/* Hamburger — visible en mobile Y desktop */}
                     <button
                         type="button"
                         onClick={manejarHamburguesa}
                         aria-label="Alternar menú"
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#e6e0d7] bg-white text-[#766d62] transition-colors hover:bg-[#faf8f5] hover:text-[#1c1814]"
-                    >
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#e6e0d7] bg-white text-[#766d62] transition-colors hover:bg-[#faf8f5] hover:text-[#1c1814]">
                         <FaBars className="text-sm" />
                     </button>
 
-                    {/* Buscador */}
                     <div ref={buscadorRef} className="relative hidden w-full max-w-md sm:block">
                         <div className="admin-search flex items-center gap-2.5 rounded-xl border border-[#e6e0d7] bg-[#faf8f5] px-3.5 py-2 transition-all focus-within:bg-white focus-within:shadow-sm">
                             <FaMagnifyingGlass className="text-sm text-[#a39a8e]" />
@@ -236,8 +208,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                                                 key={modulo.ruta}
                                                 type="button"
                                                 onClick={() => navegarModulo(modulo.ruta)}
-                                                className="flex w-full items-center gap-3 border-b border-[#f3efe9] px-4 py-3 text-left transition last:border-0 hover:bg-[#faf8f5]"
-                                            >
+                                                className="flex w-full items-center gap-3 border-b border-[#f3efe9] px-4 py-3 text-left transition last:border-0 hover:bg-[#faf8f5]">
                                                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#f2f8f6] text-[#0b5c51]">
                                                     <Icono className="text-sm" />
                                                 </span>
@@ -253,18 +224,13 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                         )}
                     </div>
 
-                    {/* Acciones derecha */}
                     <div className="flex items-center gap-2">
-
-
-                        {/* Notificaciones */}
                         <div ref={notifRef} className="relative">
                             <button
                                 type="button"
                                 onClick={abrirNotificaciones}
                                 aria-label="Notificaciones"
-                                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-[#e6e0d7] bg-white text-[#766d62] transition-all hover:border-[#d3cbbf] hover:text-[#1c1814]"
-                            >
+                                className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-[#e6e0d7] bg-white text-[#766d62] transition-all hover:border-[#d3cbbf] hover:text-[#1c1814]">
                                 <FaBell className="text-sm" />
                                 {cantidadNuevas > 0 && (
                                     <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full admin-notif-badge px-1 text-[9px] font-bold text-white ring-2 ring-white">
@@ -288,7 +254,6 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                             )}
                         </div>
 
-                        {/* Menú admin */}
                         <div ref={menuRef} className="relative">
                             <button
                                 type="button"
@@ -299,8 +264,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                                 aria-haspopup="menu"
                                 aria-label="Menú del administrador"
                                 aria-expanded={menuAbierto}
-                                className="flex items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-[#faf8f5]"
-                            >
+                                className="flex items-center gap-2.5 rounded-xl py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-[#faf8f5]">
                                 <Avatar foto={foto} inicial={inicial} />
                                 <div className="hidden max-w-[170px] text-left md:block">
                                     <p className="truncate text-sm font-semibold text-[#1c1814]">{nombre}</p>
@@ -322,8 +286,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                                                 setPerfilAbierto(true);
                                                 setMenuAbierto(false);
                                             }}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#766d62] transition hover:bg-[#faf8f5] hover:text-[#1c1814]"
-                                        >
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#766d62] transition hover:bg-[#faf8f5] hover:text-[#1c1814]">
                                             <FaUser className="text-sm" /> Datos del administrador
                                         </button>
                                         <button
@@ -332,15 +295,17 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                                                 setConfigAbierta(true);
                                                 setMenuAbierto(false);
                                             }}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#766d62] transition hover:bg-[#faf8f5] hover:text-[#1c1814]"
-                                        >
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#766d62] transition hover:bg-[#faf8f5] hover:text-[#1c1814]">
                                             <FaGear className="text-sm" /> Configuración
                                         </button>
                                         <a
                                             href="/"
-                                            onClick={(e) => { e.preventDefault(); setMenuAbierto(false); navigate('/'); }}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#766d62] transition hover:bg-[#faf8f5] hover:text-[#1c1814]"
-                                        >
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setMenuAbierto(false);
+                                                navigate('/');
+                                            }}
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[#766d62] transition hover:bg-[#faf8f5] hover:text-[#1c1814]">
                                             <FaGlobe className="text-sm" /> Ir a la página principal
                                         </a>
                                     </div>
@@ -348,8 +313,7 @@ export default function Topbar({ onAbrirMenu, onToggleSidebar }) {
                                         <button
                                             type="button"
                                             onClick={salir}
-                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-semibold text-[#b91c1c] transition hover:bg-[#fef2f2]"
-                                        >
+                                            className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-semibold text-[#b91c1c] transition hover:bg-[#fef2f2]">
                                             <FaRightFromBracket className="text-sm" /> Cerrar sesión
                                         </button>
                                     </div>

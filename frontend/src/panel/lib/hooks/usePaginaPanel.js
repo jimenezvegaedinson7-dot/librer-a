@@ -1,7 +1,5 @@
 import { useEffect } from 'react';
 
-// Las pantallas del panel no se indexan y llevan su propio título. La web
-// pública (/) define el suyo; index.html trae los metadatos públicos.
 export function usePaginaPanel(titulo = 'Panel administrativo') {
     useEffect(() => {
         if (!document.getElementById('fuentes-panel')) {

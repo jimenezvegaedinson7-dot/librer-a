@@ -8,7 +8,9 @@ export function useImpresion(documentoRef) {
     const [errorImpresion, setErrorImpresion] = useState('');
     useEffect(() => {
         activo.current = true;
-        return () => { activo.current = false; };
+        return () => {
+            activo.current = false;
+        };
     }, []);
     const imprimir = useCallback(async () => {
         if (enCurso.current || !documentoRef.current) return;

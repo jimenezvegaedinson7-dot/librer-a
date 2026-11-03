@@ -1,38 +1,26 @@
 import { useEffect, useId, useRef } from 'react';
-
 import { FaXmark } from 'react-icons/fa6';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-
 import { Button } from './Button';
 
 const ENFOCABLES = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 const bloqueosScroll = new Set();
 let overflowAnterior = '';
 
-export function Modal({
-    abierto,
-    titulo,
-    subtitulo,
-    onCerrar,
-    children,
-    grande = false,
-    footer = null,
-    cerrarDeshabilitado = false,
-    retornoFocoRef = null,
-}) {
+export function Modal({ abierto, titulo, subtitulo, onCerrar, children, grande = false, footer = null, cerrarDeshabilitado = false, retornoFocoRef = null }) {
     const reducirMovimiento = useReducedMotion();
     const panelRef = useRef(null);
     const idTitulo = useId();
     const idSubtitulo = useId();
     const cerrarRef = useRef(onCerrar);
-    useEffect(() => { cerrarRef.current = onCerrar; }, [onCerrar]);
+    useEffect(() => {
+        cerrarRef.current = onCerrar;
+    }, [onCerrar]);
 
-    // Escape, bloqueo de scroll del fondo y contención del foco dentro del diálogo
     useEffect(() => {
         if (!abierto) return undefined;
         const panel = panelRef.current;
         const manejarTecla = (e) => {
-            // Solo el diálogo superior recibe Escape y contiene el foco.
             const dialogos = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
             if (dialogos[dialogos.length - 1] !== panel) return;
             if (e.key === 'Escape') {
@@ -66,7 +54,6 @@ export function Modal({
         };
     }, [abierto]);
 
-    // Al abrir, lleva el foco al diálogo (o a su campo con autoFocus); al cerrar, lo devuelve al disparador
     useEffect(() => {
         if (!abierto) return undefined;
         const previo = retornoFocoRef?.current || document.activeElement;
@@ -107,8 +94,7 @@ export function Modal({
                         aria-describedby={subtitulo ? idSubtitulo : undefined}
                         className={`modal-panel relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-slate-200 bg-white shadow-2xl outline-none sm:max-h-[90vh] sm:rounded-2xl ${
                             grande ? 'sm:max-w-3xl' : 'sm:max-w-lg'
-                        }`}
-                    >
+                        }`}>
                         <span className="modal-asa mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-slate-300 sm:hidden" aria-hidden="true" />
                         <div className="modal-header flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4 sm:px-6">
                             <div className="min-w-0">
@@ -117,27 +103,20 @@ export function Modal({
                                         {titulo}
                                     </h2>
                                 )}
-                                {subtitulo && <p id={idSubtitulo} className="mt-0.5 text-[13px] text-slate-500">{subtitulo}</p>}
+                                {subtitulo && (
+                                    <p id={idSubtitulo} className="mt-0.5 text-[13px] text-slate-500">
+                                        {subtitulo}
+                                    </p>
+                                )}
                             </div>
-                            <Button
-                                variante="ghost"
-                                tamano="sm"
-                                onClick={onCerrar}
-                                disabled={cerrarDeshabilitado}
-                                aria-label="Cerrar"
-                                className="-mr-1.5 !h-8 !w-8 shrink-0 !p-0"
-                            >
+                            <Button variante="ghost" tamano="sm" onClick={onCerrar} disabled={cerrarDeshabilitado} aria-label="Cerrar" className="-mr-1.5 !h-8 !w-8 shrink-0 !p-0">
                                 <FaXmark />
                             </Button>
                         </div>
 
                         <div className="modal-body overflow-y-auto overscroll-contain p-5 sm:p-6">{children}</div>
 
-                        {footer && (
-                            <div className="flex items-center justify-end gap-3 border-t border-slate-200 bg-slate-50 px-5 py-3.5 sm:px-6">
-                                {footer}
-                            </div>
-                        )}
+                        {footer && <div className="flex items-center justify-end gap-3 border-t border-slate-200 bg-slate-50 px-5 py-3.5 sm:px-6">{footer}</div>}
                     </motion.div>
                 </div>
             )}

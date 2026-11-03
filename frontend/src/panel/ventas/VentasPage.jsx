@@ -1,20 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-
-import {
-    FaCircleCheck,
-    FaClock,
-    FaEye,
-    FaFileCsv,
-    FaFileInvoice,
-    FaMagnifyingGlass,
-    FaMoneyBillTrendUp,
-    FaReceipt,
-    FaRotate,
-    FaRotateLeft,
-    FaXmark,
-} from 'react-icons/fa6';
-
+import { FaCircleCheck, FaClock, FaEye, FaFileCsv, FaFileInvoice, FaMagnifyingGlass, FaMoneyBillTrendUp, FaReceipt, FaRotate, FaRotateLeft, FaXmark } from 'react-icons/fa6';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -32,10 +18,8 @@ import { BtnAccion } from '../ui/Acciones';
 import { formatearMoneda } from '../../compartido/lib/utils/format';
 import { exportarCsv } from '../lib/utils/exportarCsv';
 import { descripcionEntrega } from '../../compartido/lib/utils/entrega';
-
-import { useToast } from '../../app/providers/ToastProvider';
+import { useToast } from '../../app/providers/ToastContext';
 import { useRol } from '../auth/useRol';
-
 import { listarVentas, obtenerVenta } from './ventasService';
 import ComprobanteViewModal from '../comprobantes/ComprobanteViewModal';
 import VentaViewModal from './VentaViewModal';
@@ -55,11 +39,9 @@ const estadosVenta = {
     pagada: { texto: 'Pagada', color: 'success' },
     entregada: { texto: 'Entregada', color: 'info' },
     cancelada: { texto: 'Cancelada', color: 'danger' },
-    reembolsada: { texto: 'Reembolsada', color: 'neutral' },
+    reembolsada: { texto: 'Reembolsada', color: 'neutral' }
 };
 
-// Nombre del comprador: en ventas de mostrador la cuenta de la venta es
-// la del administrador que la registró, así que se usa el cliente anotado.
 function nombreCliente(venta) {
     if (venta.origen === 'panel') {
         return venta.cliente_nombre || 'Cliente de mostrador';
@@ -96,13 +78,22 @@ function valorOrdenVenta(venta, campo) {
 }
 
 const columnasVentas = [
-    { titulo: 'Venta / fecha', className: 'tabla-col-registro', ordenable: true, campo: 'fecha_venta', render: fila => {
-        const estado = estadosVenta[fila.estado] || { texto: fila.estado || 'Sin estado', color: 'neutral' };
-        return <div className="tabla-celda-grupo"><span className="tabla-dato">#{fila.id_venta}</span>
-            <FechaTabla valor={fila.fecha_venta} />
-            <Badge color={estado.color}>{estado.texto}</Badge>
-        </div>;
-    } },
+    {
+        titulo: 'Venta / fecha',
+        className: 'tabla-col-registro',
+        ordenable: true,
+        campo: 'fecha_venta',
+        render: (fila) => {
+            const estado = estadosVenta[fila.estado] || { texto: fila.estado || 'Sin estado', color: 'neutral' };
+            return (
+                <div className="tabla-celda-grupo">
+                    <span className="tabla-dato">#{fila.id_venta}</span>
+                    <FechaTabla valor={fila.fecha_venta} />
+                    <Badge color={estado.color}>{estado.texto}</Badge>
+                </div>
+            );
+        }
+    },
     {
         titulo: 'Cliente',
         className: 'tabla-col-principal',
@@ -110,60 +101,95 @@ const columnasVentas = [
         campo: 'usuario',
         render: (fila) => {
             const nombre = nombreCliente(fila);
-            const iniciales = nombre.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || '?';
+            const iniciales =
+                nombre
+                    .split(' ')
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((p) => p[0])
+                    .join('')
+                    .toUpperCase() || '?';
             return (
                 <div className="flex min-w-0 items-center gap-3">
-                    <span className="cliente-iniciales" aria-hidden="true">{iniciales}</span>
+                    <span className="cliente-iniciales" aria-hidden="true">
+                        {iniciales}
+                    </span>
                     <p className="min-w-0 text-sm">
                         <span className="block truncate font-semibold text-slate-800">{nombre || 'Usuario no disponible'}</span>
                         <span className="block truncate text-xs text-slate-500">{detalleCobro(fila)}</span>
                     </p>
                 </div>
             );
-        },
+        }
     },
-    { titulo: 'Importe', className: 'tabla-col-importe', alineacion: 'derecha', ordenable: true, campo: 'total', render: (fila) => <span className="whitespace-nowrap font-semibold tabular-nums text-slate-800">{formatearMoneda(Number(fila.total || 0))}</span> },
+    {
+        titulo: 'Importe',
+        className: 'tabla-col-importe',
+        alineacion: 'derecha',
+        ordenable: true,
+        campo: 'total',
+        render: (fila) => <span className="whitespace-nowrap font-semibold tabular-nums text-slate-800">{formatearMoneda(Number(fila.total || 0))}</span>
+    },
     {
         titulo: 'Pago',
         alineacion: 'centro',
         campo: 'estado_pago',
         ordenable: true,
-        render: fila => {
+        render: (fila) => {
             const pago = pagoDesdeVenta(fila);
-            return <div className="gestion-ventas__pago tabla-celda-grupo"><EstadoPagoBadge estado={pago.estado_pago} />
-                <span className="gestion-ventas__referencia">{textoMetodoPago(pago.metodo_pago)}</span>
-                {fila.pago_revision_motivo && <span className="tabla-nota">Pago en revisión</span>}
-                {fila.estado_reembolso === 'pendiente_verificacion' && <span className="tabla-nota">Devolución pendiente</span>}
-            </div>;
-        },
+            return (
+                <div className="gestion-ventas__pago tabla-celda-grupo">
+                    <EstadoPagoBadge estado={pago.estado_pago} />
+                    <span className="gestion-ventas__referencia">{textoMetodoPago(pago.metodo_pago)}</span>
+                    {fila.pago_revision_motivo && <span className="tabla-nota">Pago en revisión</span>}
+                    {fila.estado_reembolso === 'pendiente_verificacion' && <span className="tabla-nota">Devolución pendiente</span>}
+                </div>
+            );
+        }
     },
     {
         titulo: 'Entrega',
         className: 'tabla-col-nota',
         ordenable: true,
         campo: 'tipo_entrega',
-        render: fila => <div className="space-y-1"><EstadoEntregaVenta venta={fila} />
-            <span className="block"><EntregaBadge tipo={fila.tipo_entrega} venta={fila} /></span>
-        </div>,
+        render: (fila) => (
+            <div className="space-y-1">
+                <EstadoEntregaVenta venta={fila} />
+                <span className="block">
+                    <EntregaBadge tipo={fila.tipo_entrega} venta={fila} />
+                </span>
+            </div>
+        )
     },
     {
         titulo: 'Comprobante',
         alineacion: 'centro',
-        render: fila => Number(fila.tiene_comprobante) === 1
-            ? <Link className="tabla-enlace" to={`/ventas/comprobantes?venta=${fila.id_venta}`} aria-label={`Ver comprobante de la venta ${fila.id_venta}`}>Ver comprobante</Link>
-            : <span className="text-xs text-slate-500">Sin emitir</span>,
-    },
+        render: (fila) =>
+            Number(fila.tiene_comprobante) === 1 ? (
+                <Link className="tabla-enlace" to={`/ventas/comprobantes?venta=${fila.id_venta}`} aria-label={`Ver comprobante de la venta ${fila.id_venta}`}>
+                    Ver comprobante
+                </Link>
+            ) : (
+                <span className="text-xs text-slate-500">Sin emitir</span>
+            )
+    }
 ];
 
 function accionesVenta(fila, { onVer, onEmitirComprobante, onReembolsar, puedeReembolsar }) {
     if (fila.origen === 'panel' || fila.origen === 'reserva' || fila.id_reserva) {
-        return <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>;
+        return (
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta">
+                <FaEye />
+            </BtnAccion>
+        );
     }
     const conComprobante = Number(fila.tiene_comprobante ?? 0) === 1;
     const puedeEmitir = !conComprobante && (fila.estado === 'pagada' || fila.estado === 'entregada');
     return (
         <>
-            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta"><FaEye /></BtnAccion>
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver venta">
+                <FaEye />
+            </BtnAccion>
             {puedeEmitir && (
                 <>
                     <BtnAccion tipo="ver" onClick={() => onEmitirComprobante(fila, 'boleta')} titulo="Emitir boleta">
@@ -175,7 +201,10 @@ function accionesVenta(fila, { onVer, onEmitirComprobante, onReembolsar, puedeRe
                 </>
             )}
             {puedeReembolsar && fila.reembolso_elegible === true && (
-                <BtnAccion tipo="eliminar" onClick={() => onReembolsar(fila)} titulo={fila.estado_reembolso === 'pendiente_verificacion' ? 'Verificar devolución PayU' : 'Solicitar devolución PayU'}>
+                <BtnAccion
+                    tipo="eliminar"
+                    onClick={() => onReembolsar(fila)}
+                    titulo={fila.estado_reembolso === 'pendiente_verificacion' ? 'Verificar devolución PayU' : 'Solicitar devolución PayU'}>
                     <FaRotateLeft />
                 </BtnAccion>
             )}
@@ -189,7 +218,7 @@ const FILTROS_ESTADO = [
     { valor: 'pagada', texto: 'Pagadas', clase: 'estado--exito' },
     { valor: 'entregada', texto: 'Entregadas', clase: 'estado--info' },
     { valor: 'cancelada', texto: 'Canceladas', clase: 'estado--peligro' },
-    { valor: 'reembolsada', texto: 'Reembolsadas', clase: 'estado--neutro' },
+    { valor: 'reembolsada', texto: 'Reembolsadas', clase: 'estado--neutro' }
 ];
 
 function FiltroEstados({ valor, onCambiar, conteos }) {
@@ -204,8 +233,7 @@ function FiltroEstados({ valor, onCambiar, conteos }) {
                         role="radio"
                         aria-checked={activo}
                         onClick={() => onCambiar(f.valor)}
-                        className={`filtro-chip ${f.clase} ${activo ? 'filtro-chip--activo' : ''}`}
-                    >
+                        className={`filtro-chip ${f.clase} ${activo ? 'filtro-chip--activo' : ''}`}>
                         {f.valor !== 'todos' && <span className="filtro-chip-punto" aria-hidden="true" />}
                         {f.texto}
                         <span className="filtro-chip-conteo">{conteos[f.valor] ?? 0}</span>
@@ -226,11 +254,10 @@ export default function VentasPage({ incrustado = false }) {
     const [parametros, setParametros] = useSearchParams();
     const referenciaDetalle = parametros.get('ver');
     const [errorEnlace, setErrorEnlace] = useState('');
-    const ventaEnlace = referenciaDetalle ? ventas.find(v => v.external_reference === referenciaDetalle || String(v.id_venta) === referenciaDetalle) : null;
-    const errorReferencia = referenciaDetalle && !cargando && !error && !ventaEnlace
-        ? 'No se encontró la venta de este enlace. Actualiza para volver a consultar.' : errorEnlace;
+    const ventaEnlace = referenciaDetalle ? ventas.find((v) => v.external_reference === referenciaDetalle || String(v.id_venta) === referenciaDetalle) : null;
+    const errorReferencia = referenciaDetalle && !cargando && !error && !ventaEnlace ? 'No se encontró la venta de este enlace. Actualiza para volver a consultar.' : errorEnlace;
 
-const [ventaVer, setVentaVer] = useState(null);
+    const [ventaVer, setVentaVer] = useState(null);
     const [ventaReembolsar, setVentaReembolsar] = useState(null);
     const [comprobanteEmitido, setComprobanteEmitido] = useState(null);
     const [comprobanteModal, setComprobanteModal] = useState(null);
@@ -256,9 +283,6 @@ const [ventaVer, setVentaVer] = useState(null);
         }
     };
 
-    // Carga inicial. `cargando` ya nace en true, así que este efecto no
-    // enciende el spinner: solo espera la respuesta y entonces actualiza.
-    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
         let vigente = true;
 
@@ -280,35 +304,41 @@ const [ventaVer, setVentaVer] = useState(null);
         };
     }, []);
 
-    // Las referencias de notificaciones antiguas /pagos?ver=... llegan aquí.
-    // Se resuelven solo al terminar la lista y se consulta el detalle completo.
     useEffect(() => {
         if (!referenciaDetalle || cargando || error) return undefined;
         let vigente = true;
         if (!ventaEnlace) return undefined;
-        obtenerVenta(ventaEnlace.id_venta).then(detalle => {
-            if (vigente) {
-                if (detalle) { setVentaVer(detalle); setErrorEnlace(''); }
-                else setErrorEnlace('No se pudo abrir el detalle de la venta. Actualiza para reintentar.');
-            }
-        }).catch(() => {
-            if (vigente) setErrorEnlace('No se pudo abrir el detalle de la venta. Actualiza para reintentar.');
-        });
-        return () => { vigente = false; };
+        obtenerVenta(ventaEnlace.id_venta)
+            .then((detalle) => {
+                if (vigente) {
+                    if (detalle) {
+                        setVentaVer(detalle);
+                        setErrorEnlace('');
+                    } else setErrorEnlace('No se pudo abrir el detalle de la venta. Actualiza para reintentar.');
+                }
+            })
+            .catch(() => {
+                if (vigente) setErrorEnlace('No se pudo abrir el detalle de la venta. Actualiza para reintentar.');
+            });
+        return () => {
+            vigente = false;
+        };
     }, [referenciaDetalle, cargando, error, ventaEnlace]);
 
     const cerrarDetalle = () => {
         setVentaVer(null);
         setErrorEnlace('');
-        if (referenciaDetalle) setParametros(actuales => {
-            const siguientes = new URLSearchParams(actuales);
-            siguientes.delete('ver');
-            return siguientes;
-        }, { replace: true });
+        if (referenciaDetalle)
+            setParametros(
+                (actuales) => {
+                    const siguientes = new URLSearchParams(actuales);
+                    siguientes.delete('ver');
+                    return siguientes;
+                },
+                { replace: true }
+            );
     };
 
-    // Al cambiar cualquier filtro se vuelve a la primera página: se hace
-    // aquí, en el evento, y no en un efecto que la reinicie tras el render.
     const alBuscar = (valor) => {
         setBusqueda(valor);
         setPaginaActual(1);
@@ -329,9 +359,7 @@ const [ventaVer, setVentaVer] = useState(null);
     const totalEntregadas = ventas.filter((v) => v.estado === 'entregada').length;
     const totalCanceladas = ventas.filter((v) => v.estado === 'cancelada').length;
     const totalReembolsadas = ventas.filter((v) => v.estado === 'reembolsada').length;
-const totalIngresos = ventas
-        .filter((v) => v.estado === 'pagada' || v.estado === 'entregada')
-        .reduce((acumulado, v) => acumulado + Number(v.total || 0), 0);
+    const totalIngresos = ventas.filter((v) => v.estado === 'pagada' || v.estado === 'entregada').reduce((acumulado, v) => acumulado + Number(v.total || 0), 0);
 
     const cobradas = ventas.filter((v) => v.estado === 'pagada' || v.estado === 'entregada');
     const porCobrar = ventas.filter((v) => v.estado === 'pendiente').reduce((acc, v) => acc + num(v.total), 0);
@@ -362,15 +390,20 @@ const totalIngresos = ventas
             const tipoEntrega = String(venta.tipo_entrega || '').toLowerCase();
 
             const coincideBusqueda =
-                !texto ||
-                usuario.includes(texto) ||
-                idVenta.includes(texto) ||
-                total.includes(texto) ||
-                direccion.includes(texto) ||
-                tipoEntrega.includes(texto);
-            const coincideReferencia = [venta.external_reference, venta.payu_order_id, venta.payu_payment_id,
-                venta.referencia_pago, venta.cliente_documento, venta.correo_compra, venta.correo_usuario]
-                .some(valor => String(valor || '').toLowerCase().includes(texto));
+                !texto || usuario.includes(texto) || idVenta.includes(texto) || total.includes(texto) || direccion.includes(texto) || tipoEntrega.includes(texto);
+            const coincideReferencia = [
+                venta.external_reference,
+                venta.payu_order_id,
+                venta.payu_payment_id,
+                venta.referencia_pago,
+                venta.cliente_documento,
+                venta.correo_compra,
+                venta.correo_usuario
+            ].some((valor) =>
+                String(valor || '')
+                    .toLowerCase()
+                    .includes(texto)
+            );
             const coincideEstado = filtroEstado === 'todos' || venta.estado === filtroEstado;
             const coincideEntrega = filtroEntrega === 'todos' || (venta.tipo_entrega || '') === filtroEntrega;
             const coincidePago = filtroPago === 'todos' || pagoDesdeVenta(venta).estado_pago?.toLowerCase() === filtroPago;
@@ -381,8 +414,6 @@ const totalIngresos = ventas
 
     const totalPaginas = Math.ceil(ventasFiltradas.length / POR_PAGINA);
 
-    // Si la lista se acorta (filtro) la página se recorta durante el render
-    // en vez de corregirse después con un efecto.
     const paginaActualEfectiva = totalPaginas > 0 ? Math.min(paginaActual, totalPaginas) : 1;
 
     const ventasOrdenadas = useMemo(() => {
@@ -397,10 +428,7 @@ const totalIngresos = ventas
         return copia;
     }, [ventasFiltradas, orden]);
 
-    const ventasPaginadas = ventasOrdenadas.slice(
-        (paginaActualEfectiva - 1) * POR_PAGINA,
-        paginaActualEfectiva * POR_PAGINA,
-    );
+    const ventasPaginadas = ventasOrdenadas.slice((paginaActualEfectiva - 1) * POR_PAGINA, paginaActualEfectiva * POR_PAGINA);
 
     const manejarOrden = (campo) => {
         setOrden((actual) => {
@@ -429,13 +457,7 @@ const totalIngresos = ventas
     };
 
     const manejarComprobanteEmitido = (comprobante) => {
-        setVentas((actuales) =>
-            actuales.map((venta) =>
-                venta.id_venta === comprobante?.id_venta
-                    ? { ...venta, tiene_comprobante: 1 }
-                    : venta,
-            ),
-        );
+        setVentas((actuales) => actuales.map((venta) => (venta.id_venta === comprobante?.id_venta ? { ...venta, tiene_comprobante: 1 } : venta)));
         setComprobanteEmitido(comprobante);
     };
 
@@ -446,9 +468,7 @@ const totalIngresos = ventas
             (respuesta?.data?.estado_reembolso === 'pendiente_verificacion'
                 ? `Devolución de venta #${respuesta?.data?.id_venta} pendiente de verificación`
                 : `Devolución externa de venta #${respuesta?.data?.id_venta} confirmada documentalmente`) +
-                (anulado
-                    ? `. Comprobante ${anulado.serie}-${String(anulado.numero).padStart(8, '0')} anulado.`
-                    : ''),
+                (anulado ? `. Comprobante ${anulado.serie}-${String(anulado.numero).padStart(8, '0')} anulado.` : '')
         );
     };
 
@@ -471,12 +491,12 @@ const totalIngresos = ventas
                 { titulo: 'Transacción PayU', exportar: (f) => f.payu_payment_id || '' },
                 { titulo: 'Referencia externa', exportar: (f) => f.external_reference || '' },
                 { titulo: 'Estado de entrega', exportar: (f) => f.estado_entrega || '' },
-                { titulo: 'Comprobante', exportar: (f) => Number(f.tiene_comprobante) === 1 ? 'Emitido' : 'Sin emitir' },
+                { titulo: 'Comprobante', exportar: (f) => (Number(f.tiene_comprobante) === 1 ? 'Emitido' : 'Sin emitir') },
                 { titulo: 'Tipo de entrega', exportar: (f) => descripcionEntrega(f) },
                 { titulo: 'Dirección', exportar: (f) => f.direccion || '' },
-                { titulo: 'Motivo de reembolso', exportar: (f) => f.motivo_reembolso || '' },
+                { titulo: 'Motivo de reembolso', exportar: (f) => f.motivo_reembolso || '' }
             ],
-            filas: ventasOrdenadas,
+            filas: ventasOrdenadas
         });
     };
 
@@ -536,10 +556,18 @@ const totalIngresos = ventas
                 <CardHeader
                     titulo="Ventas y pagos"
                     subtitulo="Busca por cliente, venta o referencia PayU"
-                    acciones={<div className="tabla-filtros-acciones">
-                        {hayFiltros && <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>}
-                        <Button variante="secondary" onClick={cargarVentas} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
-                    </div>}
+                    acciones={
+                        <div className="tabla-filtros-acciones">
+                            {hayFiltros && (
+                                <Button variante="secondary" onClick={limpiarFiltros}>
+                                    Limpiar
+                                </Button>
+                            )}
+                            <Button variante="secondary" onClick={cargarVentas} disabled={cargando}>
+                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
+                            </Button>
+                        </div>
+                    }
                     filtros={
                         <div className="filtros-grid">
                             <div className="filtro-busqueda">
@@ -558,23 +586,32 @@ const totalIngresos = ventas
                                         type="button"
                                         onClick={() => setBusqueda('')}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
-                                        title="Limpiar búsqueda"
-                                    >
+                                        title="Limpiar búsqueda">
                                         <FaXmark />
                                     </button>
                                 )}
                             </div>
 
-                            <Select label="Estado del pago" value={filtroPago} aria-label="Filtrar por estado de pago" onChange={e => { setFiltroPago(e.target.value); setPaginaActual(1); }}>
+                            <Select
+                                label="Estado del pago"
+                                value={filtroPago}
+                                aria-label="Filtrar por estado de pago"
+                                onChange={(e) => {
+                                    setFiltroPago(e.target.value);
+                                    setPaginaActual(1);
+                                }}>
                                 <option value="todos">Todos los pagos</option>
-                                {Object.entries(ESTADOS_PAGO).map(([valor, dato]) => <option key={valor} value={valor}>{dato.texto}</option>)}
+                                {Object.entries(ESTADOS_PAGO).map(([valor, dato]) => (
+                                    <option key={valor} value={valor}>
+                                        {dato.texto}
+                                    </option>
+                                ))}
                             </Select>
                             <Select label="Tipo de entrega" value={filtroEntrega} aria-label="Filtrar por tipo de entrega" onChange={(e) => alFiltrarEntrega(e.target.value)}>
                                 <option value="todos">Todas las entregas</option>
                                 <option value="domicilio">A domicilio</option>
                                 <option value="tienda">Recoger en tienda</option>
                             </Select>
-
                         </div>
                     }
                 />
@@ -589,7 +626,7 @@ const totalIngresos = ventas
                             pagada: totalPagadas,
                             entregada: totalEntregadas,
                             cancelada: totalCanceladas,
-                            reembolsada: totalReembolsadas,
+                            reembolsada: totalReembolsadas
                         }}
                     />
                 </div>
@@ -600,11 +637,7 @@ const totalIngresos = ventas
             {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarVentas} />}
 
             {!cargando && !error && ventas.length === 0 && (
-                <EmptyState
-                    titulo="No hay ventas registradas"
-                    descripcion="Las compras de la web y la app aparecerán aquí con sus datos de pago."
-                    icono={<FaMagnifyingGlass />}
-                />
+                <EmptyState titulo="No hay ventas registradas" descripcion="Las compras de la web y la app aparecerán aquí con sus datos de pago." icono={<FaMagnifyingGlass />} />
             )}
 
             {!cargando && !error && ventas.length > 0 && ventasFiltradas.length === 0 && (
@@ -612,13 +645,17 @@ const totalIngresos = ventas
                     titulo="No se encontraron ventas"
                     descripcion="Cambia la búsqueda o el filtro seleccionado."
                     icono={<FaMagnifyingGlass />}
-                    acciones={<Button variante="secondary" onClick={limpiarFiltros}>Limpiar filtros</Button>}
+                    acciones={
+                        <Button variante="secondary" onClick={limpiarFiltros}>
+                            Limpiar filtros
+                        </Button>
+                    }
                 />
             )}
 
             {!cargando && !error && ventasPaginadas.length > 0 && (
                 <Card>
-<CardHeader
+                    <CardHeader
                         titulo="Ventas registradas"
                         subtitulo="Compras registradas y su situación de pago y entrega"
                         acciones={
@@ -641,12 +678,7 @@ const totalIngresos = ventas
                             orden={orden}
                             onOrdenar={manejarOrden}
                             acciones={(fila) =>
-                                accionesVenta(fila, {
-                                    onVer: verVenta,
-                                    onEmitirComprobante: abrirEmitirComprobante,
-                                    onReembolsar: setVentaReembolsar,
-                                    puedeReembolsar,
-                                })
+                                accionesVenta(fila, { onVer: verVenta, onEmitirComprobante: abrirEmitirComprobante, onReembolsar: setVentaReembolsar, puedeReembolsar })
                             }
                         />
                     </CardBody>
@@ -655,19 +687,8 @@ const totalIngresos = ventas
             )}
 
             <VentaViewModal venta={ventaVer} abierto={Boolean(ventaVer)} onCerrar={cerrarDetalle} />
-<ComprobanteViewModal
-                comprobante={comprobanteEmitido}
-                abierto={Boolean(comprobanteEmitido)}
-                onCerrar={() => setComprobanteEmitido(null)}
-            />
-            {ventaReembolsar && (
-                <ReembolsoModal
-                    venta={ventaReembolsar}
-                    abierto
-                    onCerrar={() => setVentaReembolsar(null)}
-                    onReembolsada={ventaReembolsada}
-                />
-            )}
+            <ComprobanteViewModal comprobante={comprobanteEmitido} abierto={Boolean(comprobanteEmitido)} onCerrar={() => setComprobanteEmitido(null)} />
+            {ventaReembolsar && <ReembolsoModal venta={ventaReembolsar} abierto onCerrar={() => setVentaReembolsar(null)} onReembolsada={ventaReembolsada} />}
             <EmitirComprobanteModal
                 venta={comprobanteModal?.venta}
                 tipoInicial={comprobanteModal?.tipo || 'boleta'}
@@ -678,4 +699,3 @@ const totalIngresos = ventas
         </div>
     );
 }
-

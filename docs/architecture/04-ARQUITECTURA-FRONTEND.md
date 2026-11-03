@@ -26,13 +26,13 @@ src/
 
 | Ruta | Contenido |
 |---|---|
-| `app/main.jsx` | Monta React, registra el service worker de recursos y precarga Three.js en el inicio. |
+| `app/main.jsx` | Monta React y recupera pestañas que solicitan recursos de una publicación anterior. La caché se registra desde PublicLayout y el 3D se carga bajo demanda desde PortadaDiferida. |
 | `app/index.css` | Orden de carga de los estilos globales: tema del panel y base. |
 | `app/ErrorBoundary.jsx` | Frontera de errores de la aplicación. |
 | `app/router/AppRouter.jsx` | Tabla de rutas; las páginas se cargan en diferido. |
 | `app/router/RutaProtegida.jsx`, `app/router/RutaPorRol.jsx` | Guardas de sesión y rol. |
-| `app/providers/AuthContext.jsx` | Sesión del administrador. |
-| `app/providers/ToastProvider.jsx` | Avisos globales. |
+| `app/providers/AuthProvider.jsx`, `AuthContext.js` | Estado de la sesión del administrador, contexto y hook de acceso separados. |
+| `app/providers/ToastProvider.jsx`, `ToastContext.js` | Presentación de los avisos globales, contexto y hook de acceso separados. |
 
 ## `panel` — superficie administrativa
 

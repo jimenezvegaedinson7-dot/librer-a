@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react';
-
+import { useState } from 'react';
 import { FaArrowRightArrowLeft, FaMagnifyingGlass } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -12,10 +10,9 @@ import { EmptyState } from '../ui/EmptyState';
 import { TableSkeleton } from '../ui/TableSkeleton';
 import { DataTable } from '../ui/DataTable';
 import { Badge } from '../ui/Badge';
-
 import { formatearFecha } from '../../compartido/lib/utils/format';
-
 import { listarMovimientos, listarLibros } from './inventarioService';
+import { useCarga } from '../lib/hooks/useCarga';
 
 const POR_PAGINA = 8;
 
@@ -25,25 +22,13 @@ function tipoBadge(tipo) {
 }
 
 const columnasMovimientos = [
-    {
-        titulo: 'Fecha',
-        alineacion: 'centro',
-        render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_movimiento) || 'Sin fecha'}</span>,
-    },
+    { titulo: 'Fecha', alineacion: 'centro', render: (fila) => <span className="text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_movimiento) || 'Sin fecha'}</span> },
     { titulo: 'Libro', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo || 'Sin título'}</span> },
     { titulo: 'Tipo', alineacion: 'centro', render: (fila) => tipoBadge(fila.tipo) },
-    {
-        titulo: 'Cantidad',
-        alineacion: 'centro',
-        render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.cantidad || 0)}</span>,
-    },
-    {
-        titulo: 'Stock resultante',
-        alineacion: 'centro',
-        render: (fila) => <span className="font-bold text-slate-700">{Number(fila.stock_resultante || 0)}</span>,
-    },
+    { titulo: 'Cantidad', alineacion: 'centro', render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.cantidad || 0)}</span> },
+    { titulo: 'Stock resultante', alineacion: 'centro', render: (fila) => <span className="font-bold text-slate-700">{Number(fila.stock_resultante || 0)}</span> },
     { titulo: 'Motivo', render: (fila) => <span className="text-xs text-primary-500">{fila.motivo || 'Sin motivo'}</span> },
-    { titulo: 'Usuario', render: (fila) => <span className="text-xs font-medium text-slate-700">{fila.usuario || '—'}</span> },
+    { titulo: 'Usuario', render: (fila) => <span className="text-xs font-medium text-slate-700">{fila.usuario || '—'}</span> }
 ];
 
 export default function MovimientosModal({ abierto, onCerrar }) {
@@ -58,39 +43,34 @@ export default function MovimientosModal({ abierto, onCerrar }) {
     const [filtroLibroAplicado, setFiltroLibroAplicado] = useState('');
     const [paginaActual, setPaginaActual] = useState(1);
 
-    useEffect(() => {
-        if (!abierto) return undefined;
-        let activo = true;
-        setLibros([]);
-        listarLibros()
-            .then((datos) => {
-                if (activo) setLibros(datos);
-            })
-            .catch(() => {
-                // El filtro por libro es opcional; si no se pueden cargar, se ignora.
-            });
-        return () => {
-            activo = false;
-        };
-    }, [abierto]);
+    useCarga(
+        async (estaVigente) => {
+            setLibros([]);
+            try {
+                const datos = await listarLibros();
+                if (estaVigente()) setLibros(datos);
+            } catch {}
+        },
+        null,
+        abierto
+    );
 
-    useEffect(() => {
-        if (!abierto) return undefined;
-        setFiltroLibro('');
-        setFiltroLibroAplicado('');
-        setPaginaActual(1);
-        return undefined;
-    }, [abierto]);
+    useCarga(
+        () => {
+            setFiltroLibro('');
+            setFiltroLibroAplicado('');
+            setPaginaActual(1);
+        },
+        null,
+        abierto
+    );
 
-    const cargarMovimientos = async () => {
+    const cargarMovimientos = async (estaVigente = () => true) => {
         try {
             setCargando(true);
             setError('');
-            const resultado = await listarMovimientos({
-                pagina: paginaActual,
-                por_pagina: POR_PAGINA,
-                id_libro: filtroLibroAplicado || undefined,
-            });
+            const resultado = await listarMovimientos({ pagina: paginaActual, por_pagina: POR_PAGINA, id_libro: filtroLibroAplicado || undefined });
+            if (!estaVigente()) return;
             setMovimientos(resultado.movimientos);
             setTotal(resultado.total);
             setTotalPaginas(resultado.paginas);
@@ -98,18 +78,13 @@ export default function MovimientosModal({ abierto, onCerrar }) {
                 setPaginaActual(resultado.paginas);
             }
         } catch (err) {
-            setError(err.response?.data?.mensaje || 'Error al cargar los movimientos');
+            if (estaVigente()) setError(err.response?.data?.mensaje || 'Error al cargar los movimientos');
         } finally {
-            setCargando(false);
+            if (estaVigente()) setCargando(false);
         }
     };
 
-    useEffect(() => {
-        if (abierto) {
-            cargarMovimientos();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [abierto, filtroLibroAplicado, paginaActual]);
+    useCarga(cargarMovimientos, JSON.stringify([filtroLibroAplicado, paginaActual]), abierto);
 
     const cambiarLibro = (valor) => {
         setFiltroLibro(valor);
@@ -132,21 +107,15 @@ export default function MovimientosModal({ abierto, onCerrar }) {
             grande
             footer={
                 <>
-                    <Button variante="secondary" onClick={cargarMovimientos} disabled={cargando}>
+                    <Button variante="secondary" onClick={() => cargarMovimientos()} disabled={cargando}>
                         Actualizar
                     </Button>
                     <Button onClick={onCerrar}>Cerrar</Button>
                 </>
-            }
-        >
+            }>
             <div className="space-y-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                    <Select
-                        label="Filtrar por libro"
-                        value={filtroLibro}
-                        onChange={(e) => cambiarLibro(e.target.value)}
-                        className="sm:w-80"
-                    >
+                    <Select label="Filtrar por libro" value={filtroLibro} onChange={(e) => cambiarLibro(e.target.value)} className="sm:w-80">
                         <option value="">Todos los libros</option>
                         {libros.map((libro) => (
                             <option key={libro.id_libro} value={libro.id_libro}>
@@ -189,10 +158,7 @@ export default function MovimientosModal({ abierto, onCerrar }) {
 
                 {!cargando && !error && movimientos.length > 0 && (
                     <Card>
-                        <CardHeader
-                            titulo="Últimos movimientos"
-                            subtitulo={`${total} ${total === 1 ? 'movimiento' : 'movimientos'} en total`}
-                        />
+                        <CardHeader titulo="Últimos movimientos" subtitulo={`${total} ${total === 1 ? 'movimiento' : 'movimientos'} en total`} />
                         <CardBody className="p-0">
                             <DataTable
                                 columnas={columnasMovimientos}

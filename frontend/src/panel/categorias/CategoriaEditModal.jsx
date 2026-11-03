@@ -1,31 +1,23 @@
 import { useState } from 'react';
-
 import { FaFloppyDisk, FaRotateLeft } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input, Select, Textarea } from '../ui/Form';
 import { Alert } from '../ui/Alert';
-
 import { actualizarCategoria } from './categoriasService';
 import { requerido, validarFormulario } from '../lib/utils/validaciones';
 
-const REGLAS = {
-    nombre: [(v) => requerido(v, 'El nombre de la categoría')],
-};
+const REGLAS = { nombre: [(v) => requerido(v, 'El nombre de la categoría')] };
 
 function inicialFormulario(categoria) {
     return {
         nombre: categoria.nombre || '',
         descripcion: categoria.descripcion || '',
-        estado: categoria.estado !== undefined && categoria.estado !== null ? String(categoria.estado) : '1',
+        estado: categoria.estado !== undefined && categoria.estado !== null ? String(categoria.estado) : '1'
     };
 }
 
 export default function CategoriaEditModal({ categoria, abierto, onCerrar, onActualizado }) {
-    // El formulario se inicializa aquí y se reinicia por completo cuando el
-    // padre cambia la `key` de este componente (una por categoría). Así el
-    // estado nace del registro editado sin necesidad de un efecto.
     const [formulario, setFormulario] = useState(inicialFormulario(categoria || {}));
     const [errores, setErrores] = useState({});
     const [guardando, setGuardando] = useState(false);
@@ -75,7 +67,11 @@ export default function CategoriaEditModal({ categoria, abierto, onCerrar, onAct
 
     return (
         <Modal abierto={abierto} titulo="Editar categoría" subtitulo="Actualiza la información de la categoría" onCerrar={onCerrar}>
-            {error && <div className="mb-5"><Alert tipo="error">{error}</Alert></div>}
+            {error && (
+                <div className="mb-5">
+                    <Alert tipo="error">{error}</Alert>
+                </div>
+            )}
 
             <form onSubmit={actualizar} className="space-y-3">
                 <div className="form-grid">

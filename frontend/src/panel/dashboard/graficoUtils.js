@@ -1,13 +1,14 @@
-// Utilidades de presentación para las gráficas del resumen. No hacen peticiones.
-
 export const num = (valor) => {
     const n = Number(valor);
     return Number.isFinite(n) ? n : 0;
 };
 
 const pad = (n) => String(n).padStart(2, '0');
+
 const claveFecha = (fecha) => `${fecha.getUTCFullYear()}-${pad(fecha.getUTCMonth() + 1)}-${pad(fecha.getUTCDate())}`;
+
 const formatoLima = new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit' });
+
 export function fechaLima(valor) {
     if (typeof valor === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(valor)) return valor;
     const fecha = new Date(valor);
@@ -20,12 +21,9 @@ const formatoMesCorto = new Intl.DateTimeFormat('es-PE', { timeZone: 'UTC', mont
 
 const mayuscula = (texto) => texto.charAt(0).toUpperCase() + texto.slice(1);
 
-// Últimos `dias` días hasta hoy; los días sin ventas quedan en cero.
 export function serieDiaria(ventasPorDia = [], dias = 14, hoy = new Date()) {
     const diaLima = new Date(`${fechaLima(hoy)}T00:00:00Z`);
-    const porClave = new Map(
-        (Array.isArray(ventasPorDia) ? ventasPorDia : []).map((d) => [fechaLima(d.fecha), d]),
-    );
+    const porClave = new Map((Array.isArray(ventasPorDia) ? ventasPorDia : []).map((d) => [fechaLima(d.fecha), d]));
     const serie = [];
     for (let i = dias - 1; i >= 0; i--) {
         const fecha = new Date(Date.UTC(diaLima.getUTCFullYear(), diaLima.getUTCMonth(), diaLima.getUTCDate() - i));
@@ -37,18 +35,15 @@ export function serieDiaria(ventasPorDia = [], dias = 14, hoy = new Date()) {
             etiquetaLarga: mayuscula(formatoDia.format(fecha)),
             total: num(dato?.total_vendido),
             cantidad: num(dato?.cantidad_ventas),
-            actual: i === 0,
+            actual: i === 0
         });
     }
     return serie;
 }
 
-// Últimos `meses` meses hasta el actual; los meses sin ventas quedan en cero.
 export function serieMensual(ventasPorMes = [], meses = 6, hoy = new Date()) {
     const diaLima = new Date(`${fechaLima(hoy)}T00:00:00Z`);
-    const porClave = new Map(
-        (Array.isArray(ventasPorMes) ? ventasPorMes : []).map((m) => [`${num(m.anio)}-${num(m.mes_numero)}`, m]),
-    );
+    const porClave = new Map((Array.isArray(ventasPorMes) ? ventasPorMes : []).map((m) => [`${num(m.anio)}-${num(m.mes_numero)}`, m]));
     const serie = [];
     for (let i = meses - 1; i >= 0; i--) {
         const fecha = new Date(Date.UTC(diaLima.getUTCFullYear(), diaLima.getUTCMonth() - i, 1));
@@ -61,13 +56,12 @@ export function serieMensual(ventasPorMes = [], meses = 6, hoy = new Date()) {
             etiquetaLarga: mayuscula(formatoMes.format(fecha)),
             total: num(dato?.total_vendido),
             cantidad: num(dato?.cantidad_ventas),
-            actual: i === 0,
+            actual: i === 0
         });
     }
     return serie;
 }
 
-// Marcas de eje "limpias" (1, 2, 2.5, 5 × 10^n) que cubren el máximo.
 export function marcasEje(maximo, cantidad = 4) {
     if (!(maximo > 0)) return { tope: 1, marcas: [0, 1] };
     const bruto = maximo / cantidad;
@@ -79,11 +73,4 @@ export function marcasEje(maximo, cantidad = 4) {
     return { tope, marcas };
 }
 
-export const formatoEje = (valor) =>
-    valor >= 1000 ? `${(valor / 1000).toLocaleString('es-PE', { maximumFractionDigits: 1 })} mil` : valor.toLocaleString('es-PE');
-
-// Variación porcentual; null si no hay base para comparar.
-export function variacion(actual, anterior) {
-    if (!(anterior > 0)) return null;
-    return ((actual - anterior) / anterior) * 100;
-}
+export const formatoEje = (valor) => (valor >= 1000 ? `${(valor / 1000).toLocaleString('es-PE', { maximumFractionDigits: 1 })} mil` : valor.toLocaleString('es-PE'));

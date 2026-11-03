@@ -16,12 +16,15 @@ function Etiqueta({ label, requerido, htmlFor }) {
     return (
         <label htmlFor={htmlFor} className="field-label">
             {label}
-            {requerido && <span className="ml-0.5 text-crimson-500" aria-hidden="true">*</span>}
+            {requerido && (
+                <span className="ml-0.5 text-crimson-500" aria-hidden="true">
+                    *
+                </span>
+            )}
         </label>
     );
 }
 
-// Columnas que ocupa un campo en la rejilla de 12 del formulario (clases literales para Tailwind).
 const ANCHOS = {
     2: 'md:col-span-2',
     3: 'md:col-span-3',
@@ -31,7 +34,7 @@ const ANCHOS = {
     7: 'md:col-span-7',
     8: 'md:col-span-8',
     9: 'md:col-span-9',
-    12: 'md:col-span-12',
+    12: 'md:col-span-12'
 };
 
 function CampoAnimado({ children, ancho }) {
@@ -56,7 +59,9 @@ export function Input({ label, error, requerido = false, icono = null, prefijo =
             <Etiqueta label={label} requerido={requerido} htmlFor={id} />
             <div className="relative">
                 {prefijo && (
-                    <span className="campo-prefijo" aria-hidden="true">{prefijo}</span>
+                    <span className="campo-prefijo" aria-hidden="true">
+                        {prefijo}
+                    </span>
                 )}
                 {icono && (
                     <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500" aria-hidden="true">
@@ -65,9 +70,9 @@ export function Input({ label, error, requerido = false, icono = null, prefijo =
                 )}
                 <input
                     id={id}
-                aria-invalid={error ? true : undefined}
-                aria-describedby={idError}
-                aria-required={requerido || undefined}
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={idError}
+                    aria-required={requerido || undefined}
                     className={`field ${icono ? 'pl-9' : ''} ${prefijo ? 'pl-10 tabular-nums' : ''} ${error ? 'border-crimson-400 focus:border-crimson-500 focus:ring-crimson-500/10' : ''} ${className}`}
                     {...props}
                 />
@@ -89,8 +94,7 @@ export function Select({ label, error, requerido = false, children, ancho, class
                 aria-describedby={idError}
                 aria-required={requerido || undefined}
                 className={`field ${error ? 'border-crimson-400 focus:border-crimson-500 focus:ring-crimson-500/10' : ''} ${className}`}
-                {...props}
-            >
+                {...props}>
                 {children}
             </select>
             <MensajeError error={error} id={idError} />

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-
 import { listarAutores, listarCategorias } from './librosService';
 
 export default function useCatalogo() {

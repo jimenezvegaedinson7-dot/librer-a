@@ -2,23 +2,39 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const Module = require('node:module');
 
-// Se sustituye el generador de PDF y se captura el correo armado.
 function cargarMailer({ pdf }) {
     const ruta = require.resolve('../src/utils/mailer');
     delete require.cache[ruta];
     const original = Module._load;
     Module._load = function (pedido, padre, ...resto) {
         if (pedido === './pdf' && padre?.filename === ruta) {
-            return { generarPdfDesdeHtml: async () => { if (!pdf) throw new Error('sin pdf'); return Buffer.from('%PDF-1.4'); } };
+            return {
+                generarPdfDesdeHtml: async () => {
+                    if (!pdf) throw new Error('sin pdf');
+                    return Buffer.from('%PDF-1.4');
+                }
+            };
         }
         return original.call(this, pedido, padre, ...resto);
     };
-    try { return require('../src/utils/mailer'); } finally { Module._load = original; }
+    try {
+        return require('../src/utils/mailer');
+    } finally {
+        Module._load = original;
+    }
 }
 
 const datos = {
-    destinatario: 'cliente@example.invalid', nombre: 'Ana', tipo: 'boleta', serie: 'B001', numero: 25,
-    subtotal: 40, igv: 0, costoEnvio: 0, total: 40, items: [{ titulo: 'Rayuela', cantidad: 1, precio_unitario: 40, subtotal: 40 }],
+    destinatario: 'cliente@example.invalid',
+    nombre: 'Ana',
+    tipo: 'boleta',
+    serie: 'B001',
+    numero: 25,
+    subtotal: 40,
+    igv: 0,
+    costoEnvio: 0,
+    total: 40,
+    items: [{ titulo: 'Rayuela', cantidad: 1, precio_unitario: 40, subtotal: 40 }]
 };
 
 test('el PDF adjunto muestra el total sin desglose tributario ni campos SUNAT', () => {
@@ -35,8 +51,12 @@ test('con PDF, el correo trae solo un aviso breve (sin la vista del comprobante)
     const capturado = [];
     const consola = console.log;
     console.log = (m) => capturado.push(String(m));
-    try { await mailer.enviarComprobantePorEmail(datos); } finally { console.log = consola; }
-    // En modo consola no se envía nada, pero el armado no debe fallar.
+    try {
+        await mailer.enviarComprobantePorEmail(datos);
+    } finally {
+        console.log = consola;
+    }
+
     assert.ok(capturado.some((l) => l.includes('cliente@example.invalid')));
     assert.ok(cuerpoHtml.includes('Rayuela'));
 });
@@ -54,7 +74,13 @@ test('la plantilla de aviso no repite el detalle del comprobante', () => {
 
 test('correos con código: formales, sin cabecera de color y con el nombre escapado', () => {
     const { plantillaCodigo } = require('../src/utils/mailer');
-    const html = plantillaCodigo({ titulo: 'Verifica tu cuenta', saludo: 'Hola &lt;Ana&gt;,', intro: 'Ingresa este código:', codigo: '482915', cierre: 'Ignóralo si no fuiste tú.' });
+    const html = plantillaCodigo({
+        titulo: 'Verifica tu cuenta',
+        saludo: 'Hola &lt;Ana&gt;,',
+        intro: 'Ingresa este código:',
+        codigo: '482915',
+        cierre: 'Ignóralo si no fuiste tú.'
+    });
     assert.match(html, /482915/);
     assert.match(html, /MATIDANA/);
     assert.doesNotMatch(html, /#4f46e5|#4338ca|#eef2ff/i);

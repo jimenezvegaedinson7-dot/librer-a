@@ -2,8 +2,10 @@ let registro;
 
 export function iniciarCacheRecursos() {
     if (!('serviceWorker' in navigator) || !window.isSecureContext) return Promise.resolve(null);
-    registro ??= navigator.serviceWorker.register('/cache-recursos-sw.js', { scope: '/', updateViaCache: 'none' })
-        .then(() => navigator.serviceWorker.ready).catch(() => null);
+    registro ??= navigator.serviceWorker
+        .register('/cache-recursos-sw.js', { scope: '/', updateViaCache: 'none' })
+        .then(() => navigator.serviceWorker.ready)
+        .catch(() => null);
     return registro;
 }
 

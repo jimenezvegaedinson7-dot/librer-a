@@ -1,13 +1,10 @@
 import { Link, NavLink } from 'react-router-dom';
-
 import { ArrowLeft, Globe, X } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { useMemo } from 'react';
-
 import { useAuth } from '../../app/providers/AuthContext';
 import logoLibreria from '../../compartido/assets/logo-f-blanco-96.webp';
 import { navPorRol } from './navConfig';
-
 
 const agruparPorSeccion = (items) =>
     items.reduce((grupos, item) => {
@@ -20,7 +17,6 @@ const agruparPorSeccion = (items) =>
 
 const resorte = { type: 'spring', stiffness: 420, damping: 36, mass: 0.8 };
 
-// Menú izquierdo con un único diseño: marino de la marca y texto blanco.
 const colores = {
     primary: '#ffffff',
     primarySoft: '#16395a',
@@ -29,7 +25,7 @@ const colores = {
     sidebarText: '#ffffff',
     sidebarHover: '#16395a',
     sidebarSection: '#d6e5f5',
-    brandTitle: '#ffffff',
+    brandTitle: '#ffffff'
 };
 
 function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
@@ -37,12 +33,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
     const reducirMovimiento = useReducedMotion();
     const acento = colores.primary || colores.sidebarText;
 
-    // El menú se calcula con el rol real de la sesión y muestra únicamente
-    // los accesos permitidos al administrador.
-    const secciones = useMemo(
-        () => agruparPorSeccion(navPorRol(usuario?.rol)),
-        [usuario?.rol],
-    );
+    const secciones = useMemo(() => agruparPorSeccion(navPorRol(usuario?.rol)), [usuario?.rol]);
 
     const cerrarEnMovil = () => {
         if (window.innerWidth < 1024) onCerrar?.();
@@ -57,7 +48,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 color: colores.sidebarText,
                 '--sb-hover': colores.sidebarHover,
                 '--sb-ink': acento,
-                '--sb-scroll': colores.sidebarText,
+                '--sb-scroll': colores.sidebarText
             }}
             className={`
                 admin-sidebar admin-sidebar-marca
@@ -68,22 +59,14 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 lg:translate-x-0
                 ${abierto ? 'translate-x-0' : '-translate-x-full'}
                 ${colapsado ? 'w-[72px]' : 'w-[250px]'}
-            `}
-        >
-            {/* Marca */}
-            <div
-                style={{ borderBottomColor: colores.sidebarBorder }}
-                className={`relative flex h-16 shrink-0 items-center border-b ${colapsado ? 'justify-center px-2' : 'px-4'}`}
-            >
+            `}>
+            <div style={{ borderBottomColor: colores.sidebarBorder }} className={`relative flex h-16 shrink-0 items-center border-b ${colapsado ? 'justify-center px-2' : 'px-4'}`}>
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center">
                     <img src={logoLibreria} alt="MATIDANA" className="h-full w-full object-contain drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" />
                 </div>
                 {!colapsado && (
                     <div className="ml-3 min-w-0">
-                        <p
-                            className="truncate font-title text-[17px] font-semibold leading-tight tracking-[-0.01em]"
-                            style={{ color: colores.brandTitle || acento }}
-                        >
+                        <p className="truncate font-title text-[17px] font-semibold leading-tight tracking-[-0.01em]" style={{ color: colores.brandTitle || acento }}>
                             MATIDANA
                         </p>
                         <p className="mt-0.5 truncate text-[10.5px] font-medium uppercase tracking-[0.14em]" style={{ color: acento, opacity: 0.85 }}>
@@ -95,21 +78,16 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                     type="button"
                     onClick={onCerrar}
                     aria-label="Cerrar menú"
-                    className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg opacity-70 transition-opacity hover:opacity-100 lg:hidden"
-                >
+                    className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg opacity-70 transition-opacity hover:opacity-100 lg:hidden">
                     <X className="h-4 w-4" />
                 </button>
             </div>
 
-            {/* Navegación */}
             <nav className="sidebar-scroll min-h-0 flex-1 overflow-y-auto px-3 pb-4 pt-4">
                 {secciones.map((seccion) => (
                     <div key={seccion.nombre} className="mb-5 last:mb-0">
                         {!colapsado ? (
-                            <p
-                                style={{ color: colores.sidebarSection }}
-                                className="mb-2 px-3 text-[10.5px] font-semibold uppercase tracking-[0.14em]"
-                            >
+                            <p style={{ color: colores.sidebarSection }} className="mb-2 px-3 text-[10.5px] font-semibold uppercase tracking-[0.14em]">
                                 {seccion.nombre}
                             </p>
                         ) : (
@@ -127,8 +105,7 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                         `group relative flex items-center rounded-lg outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[var(--sb-ink)] ${
                                             colapsado ? 'h-10 justify-center' : 'h-10 gap-3 px-3'
                                         } ${isActive ? 'sidebar-nav-active' : 'hover:bg-[var(--sb-hover)]'}`
-                                    }
-                                >
+                                    }>
                                     {({ isActive }) => (
                                         <>
                                             {isActive && (
@@ -136,29 +113,22 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                                                     layoutId="sidebar-activo"
                                                     transition={reducirMovimiento ? { duration: 0 } : resorte}
                                                     className="absolute inset-0 rounded-lg"
-                                                    style={{ backgroundColor: colores.sidebarHover || colores.primarySoft }}
-                                                >
+                                                    style={{ backgroundColor: colores.sidebarHover || colores.primarySoft }}>
                                                     {!colapsado && (
-                                                        <span
-                                                            className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full"
-                                                            style={{ backgroundColor: acento }}
-                                                        />
+                                                        <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full" style={{ backgroundColor: acento }} />
                                                     )}
                                                 </motion.span>
                                             )}
                                             <Icono
                                                 strokeWidth={isActive ? 2 : 1.7}
-                                                className={`relative shrink-0 transition-[color,opacity] duration-150 ${
-                                                    colapsado ? 'h-5 w-5' : 'h-[18px] w-[18px]'
-                                                }`}
+                                                className={`relative shrink-0 transition-[color,opacity] duration-150 ${colapsado ? 'h-5 w-5' : 'h-[18px] w-[18px]'}`}
                                                 aria-hidden="true"
                                                 style={{ color: acento }}
                                             />
                                             {!colapsado && (
                                                 <span
                                                     className={`relative truncate text-[13.5px] ${isActive ? 'font-semibold' : 'font-medium'}`}
-                                                    style={{ color: isActive ? (colores.brandTitle || acento) : undefined }}
-                                                >
+                                                    style={{ color: isActive ? colores.brandTitle || acento : undefined }}>
                                                     {nombre}
                                                 </span>
                                             )}
@@ -171,19 +141,13 @@ function Sidebar({ abierto = false, onCerrar, colapsado = false }) {
                 ))}
             </nav>
 
-            {/* Pie */}
-            <div
-                style={{ borderTopColor: colores.sidebarBorder }}
-                className={`shrink-0 border-t ${colapsado ? 'px-2 py-3.5' : 'px-5 py-3.5'}`}
-            >
-                {/* Volver a la web pública (la sesión del panel se mantiene). */}
+            <div style={{ borderTopColor: colores.sidebarBorder }} className={`shrink-0 border-t ${colapsado ? 'px-2 py-3.5' : 'px-5 py-3.5'}`}>
                 <Link
                     to="/"
                     title="Volver a la página principal"
                     aria-label="Volver a la página principal"
                     style={{ color: colores.sidebarText, borderColor: colores.sidebarBorder }}
-                    className={`group flex items-center rounded-lg border transition hover:bg-white/10 ${colapsado ? 'h-10 justify-center' : 'gap-2.5 px-3 py-2.5'}`}
-                >
+                    className={`group flex items-center rounded-lg border transition hover:bg-white/10 ${colapsado ? 'h-10 justify-center' : 'gap-2.5 px-3 py-2.5'}`}>
                     {colapsado ? (
                         <Globe size={17} aria-hidden="true" />
                     ) : (

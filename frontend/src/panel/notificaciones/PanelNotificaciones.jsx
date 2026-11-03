@@ -1,30 +1,21 @@
 import { useState } from 'react';
-
 import { motion, useReducedMotion } from 'motion/react';
-
 import { haceCuanto } from './notificacionesService';
 
 const FILTROS = [
     { id: 'todas', texto: 'Todas' },
     { id: 'pago', texto: 'Pagos' },
-    { id: 'stock', texto: 'Stock' },
+    { id: 'stock', texto: 'Stock' }
 ];
 
-const entrada = {
-    oculto: { opacity: 0, y: 4 },
-    visible: (i) => ({ opacity: 1, y: 0, transition: { duration: 0.22, delay: Math.min(i, 8) * 0.025, ease: [0.25, 1, 0.5, 1] } }),
-};
+const entrada = { oculto: { opacity: 0, y: 4 }, visible: (i) => ({ opacity: 1, y: 0, transition: { duration: 0.22, delay: Math.min(i, 8) * 0.025, ease: [0.25, 1, 0.5, 1] } }) };
 
 function Item({ notificacion, nueva, indice, onAbrir }) {
     const reducir = useReducedMotion();
     const cuando = haceCuanto(notificacion.fecha);
     return (
         <motion.li custom={indice} variants={reducir ? undefined : entrada} initial="oculto" animate="visible">
-            <button
-                type="button"
-                onClick={() => onAbrir(notificacion)}
-                className={`notif-item notif--${notificacion.tono} ${nueva ? 'notif-item--nueva' : ''}`}
-            >
+            <button type="button" onClick={() => onAbrir(notificacion)} className={`notif-item notif--${notificacion.tono} ${nueva ? 'notif-item--nueva' : ''}`}>
                 <span className="notif-cabeza">
                     <span className="notif-etiqueta">{notificacion.etiqueta}</span>
                     {nueva && <span className="notif-nueva">Nueva</span>}
@@ -32,7 +23,9 @@ function Item({ notificacion, nueva, indice, onAbrir }) {
                 </span>
                 <span className="notif-titulo">{notificacion.titulo}</span>
                 <span className="notif-detalle">{notificacion.detalle}</span>
-                <span className="notif-abrir" aria-hidden="true">Abrir</span>
+                <span className="notif-abrir" aria-hidden="true">
+                    Abrir
+                </span>
             </button>
         </motion.li>
     );
@@ -61,14 +54,14 @@ export default function PanelNotificaciones({ notificaciones, nuevas, cargando, 
                 <div>
                     <h3 className="notif-titulo-panel">Notificaciones</h3>
                     <p className="notif-subtitulo">
-                        {cantidadNuevas > 0
-                            ? `${cantidadNuevas} ${cantidadNuevas === 1 ? 'nueva' : 'nuevas'} · pagos y stock`
-                            : 'Pagos y stock que requieren atención'}
+                        {cantidadNuevas > 0 ? `${cantidadNuevas} ${cantidadNuevas === 1 ? 'nueva' : 'nuevas'} · pagos y stock` : 'Pagos y stock que requieren atención'}
                     </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                     {cantidadNuevas > 0 && (
-                        <button type="button" onClick={onMarcarLeidas} className="notif-accion">Marcar leídas</button>
+                        <button type="button" onClick={onMarcarLeidas} className="notif-accion">
+                            Marcar leídas
+                        </button>
                     )}
                     <button type="button" onClick={onActualizar} className="notif-accion" disabled={cargando}>
                         {cargando ? 'Actualizando…' : 'Actualizar'}
@@ -84,8 +77,7 @@ export default function PanelNotificaciones({ notificaciones, nuevas, cargando, 
                         role="tab"
                         aria-selected={filtro === f.id}
                         onClick={() => setFiltro(f.id)}
-                        className={`notif-filtro ${filtro === f.id ? 'notif-filtro--activo' : ''}`}
-                    >
+                        className={`notif-filtro ${filtro === f.id ? 'notif-filtro--activo' : ''}`}>
                         {f.texto}
                         <span className="notif-filtro-conteo">{conteo(f.id)}</span>
                     </button>
@@ -93,7 +85,11 @@ export default function PanelNotificaciones({ notificaciones, nuevas, cargando, 
             </div>
 
             <div className="notif-cuerpo scrollbar-light">
-                {error && <p className="notif-vacio-texto p-4" role="alert">{error}</p>}
+                {error && (
+                    <p className="notif-vacio-texto p-4" role="alert">
+                        {error}
+                    </p>
+                )}
                 {cargando && notificaciones.length === 0 ? (
                     <div className="notif-vacio">
                         <span className="skeleton h-3 w-40" />
@@ -103,9 +99,7 @@ export default function PanelNotificaciones({ notificaciones, nuevas, cargando, 
                 ) : visibles.length === 0 && !error ? (
                     <div className="notif-vacio">
                         <p className="notif-vacio-titulo">Todo en orden</p>
-                        <p className="notif-vacio-texto">
-                            {filtro === 'todas' ? 'No hay pagos ni alertas de stock pendientes.' : 'No hay notificaciones de este tipo.'}
-                        </p>
+                        <p className="notif-vacio-texto">{filtro === 'todas' ? 'No hay pagos ni alertas de stock pendientes.' : 'No hay notificaciones de este tipo.'}</p>
                     </div>
                 ) : (
                     <>

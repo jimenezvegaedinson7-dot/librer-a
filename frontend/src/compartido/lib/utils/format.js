@@ -7,14 +7,10 @@ export function formatearFecha(fecha, opciones = {}) {
         month: opciones.soloDia ? '2-digit' : 'short',
         year: opciones.soloDia ? undefined : 'numeric',
         hour: '2-digit',
-        minute: '2-digit',
+        minute: '2-digit'
     });
 }
 
 export function formatearMoneda(valor) {
     return `S/ ${Number(valor || 0).toFixed(2)}`;
-}
-
-export function pluralizar(cantidad, singular, plural) {
-    return cantidad === 1 ? singular : plural;
 }

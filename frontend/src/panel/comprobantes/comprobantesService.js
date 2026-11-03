@@ -1,11 +1,5 @@
 import client from '../lib/api/client';
 
-// ============================================================
-// SERVICIOS: COMPROBANTES DE PAGO (boleta / factura)
-// El backend puede responder con envoltorios (success + data)
-// o directo; todas las funciones toleran ambos formatos.
-// ============================================================
-
 function extraerComprobante(res) {
     if (res?.comprobante) return res.comprobante;
     if (res?.data?.comprobante) return res.data.comprobante;
@@ -16,17 +10,11 @@ function extraerComprobante(res) {
 export async function listarComprobantes(params = {}) {
     const res = await client.get('/comprobantes', { params });
 
-    // Contrato: { comprobantes, total, paginas }; también tolera
-    // { success, data: { comprobantes, total, paginas } }.
     const origen = res?.data && !Array.isArray(res.data) && res.data.comprobantes ? res.data : res;
     if (params.id_venta && Number(origen?.filtro_venta) !== Number(params.id_venta)) {
         throw new Error('La API debe actualizarse para consultar los comprobantes de una venta. Puedes consultar el listado general.');
     }
-    const comprobantes = Array.isArray(origen?.comprobantes)
-        ? origen.comprobantes
-        : Array.isArray(origen)
-          ? origen
-          : [];
+    const comprobantes = Array.isArray(origen?.comprobantes) ? origen.comprobantes : Array.isArray(origen) ? origen : [];
 
     const total = Number(origen?.total ?? comprobantes.length);
     const porPagina = Number(params.por_pagina || 10);
@@ -41,8 +29,6 @@ export async function obtenerComprobante(id) {
 }
 
 export async function emitirComprobante(idVenta, opciones = {}) {
-    // Acepta tanto el formato legacy (string con el tipo) como el nuevo
-    // objeto con { tipo, cliente_tipo_documento, cliente_dni_ruc }.
     const esObjeto = opciones && typeof opciones === 'object' && !Array.isArray(opciones);
     const tipo = esObjeto ? opciones.tipo || 'boleta' : opciones || 'boleta';
 
@@ -74,19 +60,11 @@ export async function enviarComprobanteEmail(idComprobante) {
 export async function obtenerResumen() {
     const res = await client.get('/comprobantes/resumen');
 
-    // Contrato: { success, boletas, facturas, ingresos }; también tolera
-    // la forma { success, data: { boletas, facturas, ingresos } }.
     const origen = res?.data && !Array.isArray(res.data) && res.data.boletas !== undefined ? res.data : res;
 
-    return {
-        boletas: Number(origen?.boletas ?? 0),
-        facturas: Number(origen?.facturas ?? 0),
-        ingresos: Number(origen?.ingresos ?? 0),
-        anulados: Number(origen?.anulados ?? 0),
-    };
+    return { boletas: Number(origen?.boletas ?? 0), facturas: Number(origen?.facturas ?? 0), ingresos: Number(origen?.ingresos ?? 0), anulados: Number(origen?.anulados ?? 0) };
 }
 
-// Anula un comprobante con datos errados sin cancelar la venta.
 export async function anularComprobante(idComprobante, { motivo }) {
     const body = { motivo: motivo.trim() };
     const res = await client.post(`/comprobantes/${idComprobante}/anular`, body);

@@ -10,7 +10,7 @@ export function DataTable({
     orden = null,
     onOrdenar = null,
     onFilaClick = null,
-    etiqueta = 'Tabla de registros',
+    etiqueta = 'Tabla de registros'
 }) {
     const filaClickable = typeof onFilaClick === 'function';
     const contenedor = useRef(null);
@@ -39,12 +39,7 @@ export function DataTable({
         const Icono = activo ? (orden.direccion === 'asc' ? FaSortUp : FaSortDown) : FaSort;
 
         return (
-            <button
-                type="button"
-                onClick={() => onOrdenar(col.campo)}
-                title={`Ordenar por ${col.titulo}`}
-                className={`tabla-orden ${activo ? 'tabla-orden--activo' : ''}`}
-            >
+            <button type="button" onClick={() => onOrdenar(col.campo)} title={`Ordenar por ${col.titulo}`} className={`tabla-orden ${activo ? 'tabla-orden--activo' : ''}`}>
                 {col.titulo}
                 <Icono className="text-[10px]" aria-hidden="true" />
             </button>
@@ -55,79 +50,81 @@ export function DataTable({
 
     return (
         <div className="data-table-contenedor">
-        <div ref={contenedor} className="data-table-shell overflow-x-auto" role="region" aria-label={etiqueta} aria-describedby={desborda ? idAyuda : undefined} tabIndex={0}>
-            <table className="min-w-full border-collapse">
-                <caption className="sr-only">{etiqueta}</caption>
-                <thead>
-                    <tr className="bg-parchment-100">
-                        {columnas.map((col, i) => (
-                            <th
-                                key={i}
-                                scope="col"
-                                aria-sort={ariaSort(col)}
-                                className={`whitespace-nowrap border-b border-primary-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 ${alinear(col)} ${col.className || ''}`}
-                            >
-                                {renderEncabezado(col)}
-                            </th>
-                        ))}
-                        {acciones && (
-                            <th scope="col" className="tabla-col-acciones border-b border-primary-100 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                Acciones
-                            </th>
-                        )}
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-primary-100">
-                    {filas.length === 0 ? (
-                        <tr>
-                            <td colSpan={columnas.length + (acciones ? 1 : 0)} className="px-4 py-14 text-center">
-                                <div className="flex flex-col items-center gap-2.5 text-slate-500">
-                                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-base">
-                                        <FaInbox aria-hidden="true" />
-                                    </span>
-                                    <span className="text-sm">{vacio}</span>
-                                </div>
-                            </td>
+            <div ref={contenedor} className="data-table-shell overflow-x-auto" role="region" aria-label={etiqueta} aria-describedby={desborda ? idAyuda : undefined} tabIndex={0}>
+                <table className="min-w-full border-collapse">
+                    <caption className="sr-only">{etiqueta}</caption>
+                    <thead>
+                        <tr className="bg-parchment-100">
+                            {columnas.map((col, i) => (
+                                <th
+                                    key={i}
+                                    scope="col"
+                                    aria-sort={ariaSort(col)}
+                                    className={`whitespace-nowrap border-b border-primary-100 px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 ${alinear(col)} ${col.className || ''}`}>
+                                    {renderEncabezado(col)}
+                                </th>
+                            ))}
+                            {acciones && (
+                                <th
+                                    scope="col"
+                                    className="tabla-col-acciones border-b border-primary-100 px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                                    Acciones
+                                </th>
+                            )}
                         </tr>
-                    ) : (
-                        filas.map((fila, indice) => (
-                            <tr
-                                key={keyExtractor ? keyExtractor(fila) : fila?.id}
-                                onClick={filaClickable ? () => onFilaClick(fila) : undefined}
-                                onKeyDown={
-                                    filaClickable
-                                        ? (e) => {
-                                              if (e.target !== e.currentTarget) return;
-                                              if (e.key === 'Enter' || e.key === ' ') {
-                                                  e.preventDefault();
-                                                  onFilaClick(fila);
-                                              }
-                                          }
-                                        : undefined
-                                }
-                                tabIndex={filaClickable ? 0 : undefined}
-                                style={{ '--fila-i': Math.min(indice, 12) }}
-                                className={`tabla-fila transition last:border-0 ${
-                                    filaClickable ? 'tabla-fila--clic cursor-pointer' : ''
-                                }`}
-                            >
-                                {columnas.map((col, i) => (
-                                    <td key={i} className={`px-4 py-3 text-sm ${alinear(col)} ${col.className || ''}`}>
-                                        {col.render ? col.render(fila) : String(fila?.[col.campo] ?? '')}
-                                    </td>
-                                ))}
-                                {acciones && (
-                                    <td className="tabla-col-acciones px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                                        <div className="tabla-acciones flex flex-wrap items-center justify-center gap-1.5">{acciones(fila)}</div>
-                                    </td>
-                                )}
+                    </thead>
+                    <tbody className="divide-y divide-primary-100">
+                        {filas.length === 0 ? (
+                            <tr>
+                                <td colSpan={columnas.length + (acciones ? 1 : 0)} className="px-4 py-14 text-center">
+                                    <div className="flex flex-col items-center gap-2.5 text-slate-500">
+                                        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-base">
+                                            <FaInbox aria-hidden="true" />
+                                        </span>
+                                        <span className="text-sm">{vacio}</span>
+                                    </div>
+                                </td>
                             </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
-        </div>
-        {desborda && <p id={idAyuda} className="tabla-scroll-nota">Desplaza la tabla horizontalmente para ver todas las columnas.</p>}
+                        ) : (
+                            filas.map((fila, indice) => (
+                                <tr
+                                    key={keyExtractor ? keyExtractor(fila) : fila?.id}
+                                    onClick={filaClickable ? () => onFilaClick(fila) : undefined}
+                                    onKeyDown={
+                                        filaClickable
+                                            ? (e) => {
+                                                  if (e.target !== e.currentTarget) return;
+                                                  if (e.key === 'Enter' || e.key === ' ') {
+                                                      e.preventDefault();
+                                                      onFilaClick(fila);
+                                                  }
+                                              }
+                                            : undefined
+                                    }
+                                    tabIndex={filaClickable ? 0 : undefined}
+                                    style={{ '--fila-i': Math.min(indice, 12) }}
+                                    className={`tabla-fila transition last:border-0 ${filaClickable ? 'tabla-fila--clic cursor-pointer' : ''}`}>
+                                    {columnas.map((col, i) => (
+                                        <td key={i} className={`px-4 py-3 text-sm ${alinear(col)} ${col.className || ''}`}>
+                                            {col.render ? col.render(fila) : String(fila?.[col.campo] ?? '')}
+                                        </td>
+                                    ))}
+                                    {acciones && (
+                                        <td className="tabla-col-acciones px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                                            <div className="tabla-acciones flex flex-wrap items-center justify-center gap-1.5">{acciones(fila)}</div>
+                                        </td>
+                                    )}
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+            {desborda && (
+                <p id={idAyuda} className="tabla-scroll-nota">
+                    Desplaza la tabla horizontalmente para ver todas las columnas.
+                </p>
+            )}
         </div>
     );
 }

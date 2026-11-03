@@ -2,14 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 
-const {
-    listarAnuncios,
-    obtenerAnuncioActivo,
-    crearAnuncio,
-    actualizarAnuncio,
-    eliminarAnuncio
-} = require('../controllers/anuncio.controller');
-
+const { listarAnuncios, obtenerAnuncioActivo, crearAnuncio, actualizarAnuncio, eliminarAnuncio } = require('../controllers/anuncio.controller');
 const verificarToken = require('../middlewares/auth.middleware');
 const verificarRol = require('../middlewares/rol.middleware');
 const uploadVideo = require('../middlewares/uploadVideo.middleware');
@@ -17,15 +10,8 @@ const carrusel = require('../controllers/carrusel.controller');
 const portada = require('../controllers/portada.controller');
 const { recibir } = require('../middlewares/uploadCarrusel.middleware');
 
-// ========================================
-// WEB PÚBLICA (sin token)
-// ========================================
-
-// Anuncio activo. Es lo único que consume la portada: la web
-// pública no necesita el listado ni los public_id.
 router.get('/', obtenerAnuncioActivo);
 router.get('/carrusel', carrusel.listarPublico);
-// Libro protagonista de la portada 3D (antes de '/:id' para no confundirse).
 router.get('/protagonista', portada.obtenerPublico);
 router.get('/protagonista/panel', verificarToken, verificarRol('administrador'), portada.obtenerPanel);
 router.put('/protagonista', verificarToken, verificarRol('administrador'), portada.guardar);
@@ -34,39 +20,9 @@ router.post('/carrusel', verificarToken, verificarRol('administrador'), recibir,
 router.put('/carrusel/orden', verificarToken, verificarRol('administrador'), carrusel.reordenar);
 router.put('/carrusel/:id', verificarToken, verificarRol('administrador'), recibir, carrusel.actualizar);
 router.delete('/carrusel/:id', verificarToken, verificarRol('administrador'), carrusel.eliminar);
-
-// ========================================
-// ADMINISTRADOR
-// ========================================
-
-router.get(
-    '/todos',
-    verificarToken,
-    verificarRol('administrador'),
-    listarAnuncios
-);
-
-router.post(
-    '/',
-    verificarToken,
-    verificarRol('administrador'),
-    uploadVideo.single('video'),
-    crearAnuncio
-);
-
-router.put(
-    '/:id',
-    verificarToken,
-    verificarRol('administrador'),
-    uploadVideo.single('video'),
-    actualizarAnuncio
-);
-
-router.delete(
-    '/:id',
-    verificarToken,
-    verificarRol('administrador'),
-    eliminarAnuncio
-);
+router.get('/todos', verificarToken, verificarRol('administrador'), listarAnuncios);
+router.post('/', verificarToken, verificarRol('administrador'), uploadVideo.single('video'), crearAnuncio);
+router.put('/:id', verificarToken, verificarRol('administrador'), uploadVideo.single('video'), actualizarAnuncio);
+router.delete('/:id', verificarToken, verificarRol('administrador'), eliminarAnuncio);
 
 module.exports = router;

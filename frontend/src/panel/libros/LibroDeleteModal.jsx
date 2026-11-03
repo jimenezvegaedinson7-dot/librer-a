@@ -1,15 +1,10 @@
 import { useState } from 'react';
-
 import { FaLock, FaTriangleExclamation, FaTrash } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Form';
 
 export default function LibroDeleteModal({ libro, abierto, eliminando, onCerrar, onConfirmar }) {
-    // La contraseña arranca vacía y oculta cada vez que el padre da una `key`
-    // nueva a este componente (una por libro). Al abrir otro registro React
-    // lo remonta, así que no hace falta un efecto que lo reinicie.
     const [password, setPassword] = useState('');
     const [mostrarPassword, setMostrarPassword] = useState(false);
 
@@ -30,9 +25,7 @@ export default function LibroDeleteModal({ libro, abierto, eliminando, onCerrar,
                     <p className="text-sm leading-6 text-red-700">
                         ¿Estás seguro de que deseas eliminar el libro <span className="font-bold">"{libro.titulo}"</span>?
                     </p>
-                    <p className="mt-2 text-xs leading-5 text-red-600">
-                        Si el libro tiene ventas u otros registros relacionados, el sistema no permitirá eliminarlo.
-                    </p>
+                    <p className="mt-2 text-xs leading-5 text-red-600">Si el libro tiene ventas u otros registros relacionados, el sistema no permitirá eliminarlo.</p>
                 </div>
             </div>
 
@@ -57,8 +50,7 @@ export default function LibroDeleteModal({ libro, abierto, eliminando, onCerrar,
                         type="button"
                         onClick={() => setMostrarPassword((a) => !a)}
                         disabled={eliminando}
-                        className="text-xs font-semibold text-primary-500 transition hover:text-slate-700 disabled:opacity-50"
-                    >
+                        className="text-xs font-semibold text-primary-500 transition hover:text-slate-700 disabled:opacity-50">
                         {mostrarPassword ? 'Ocultar' : 'Mostrar'}
                     </button>
                 </div>

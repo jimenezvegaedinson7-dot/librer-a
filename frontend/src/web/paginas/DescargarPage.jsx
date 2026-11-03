@@ -4,5 +4,10 @@ import DownloadSection from '../secciones/DownloadSection';
 
 export default function DescargarPage() {
     const { reducido } = useOutletContext();
-    return <><Migas actual="Descargar" /><DownloadSection reducido={reducido} /></>;
+    return (
+        <>
+            <Migas actual="Descargar" />
+            <DownloadSection reducido={reducido} />
+        </>
+    );
 }

@@ -1,12 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-
 import PortadaLigera from './PortadaLigera';
 
-// La portada 3D pesa (GSAP + escena WebGL). Se descarga después de la primera
-// pintura y solo cuando el navegador está libre; mientras tanto se muestra la
-// portada ligera con el mismo libro real. Si el equipo pide ahorro de datos o
-// la red es lenta, la web se queda en la versión ligera.
 const cargarPortada = () => import('./portada3d/PortadaEspacial');
+
 const PortadaEspacial = lazy(cargarPortada);
 
 function conexionLimitada() {
@@ -25,12 +21,12 @@ export default function PortadaDiferida({ reducido, catalogo }) {
         const activar = () => {
             if (cancelado) return;
             cargarPortada()
-                .then(() => { if (!cancelado) setLista(true); })
-                .catch(() => { /* se conserva la portada ligera */ });
+                .then(() => {
+                    if (!cancelado) setLista(true);
+                })
+                .catch(() => {});
         };
-        const inactivo = window.requestIdleCallback
-            ? window.requestIdleCallback(activar, { timeout: 1500 })
-            : window.setTimeout(activar, 400);
+        const inactivo = window.requestIdleCallback ? window.requestIdleCallback(activar, { timeout: 1500 }) : window.setTimeout(activar, 400);
         return () => {
             cancelado = true;
             if (window.cancelIdleCallback) window.cancelIdleCallback(inactivo);
@@ -46,9 +42,6 @@ export default function PortadaDiferida({ reducido, catalogo }) {
         return () => window.removeEventListener('scroll', medir);
     }, [montada]);
 
-    // Solo se sustituye la portada ligera cuando el visitante sigue arriba:
-    // así la escena de 360svh no aparece a mitad de un desplazamiento. Una vez
-    // montada se mantiene aunque se baje, para no desmontar la animación.
     if (lista && enTope && !montada) setMontada(true);
 
     if (!montada) return <PortadaLigera catalogo={catalogo} />;

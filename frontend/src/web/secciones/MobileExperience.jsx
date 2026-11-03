@@ -1,26 +1,18 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FaMagnifyingGlass, FaBook, FaCartShopping, FaHeart, FaReceipt, FaDownload, FaChevronRight } from 'react-icons/fa6';
-
 import imgCatalogo from '../assets/app/catalogo.webp';
 import imgInicio from '../assets/app/inicio.webp';
 import iconoApp from '../assets/app-icono.webp';
 import { gsap, useGSAP } from '../animacion/scroll';
 import './aplicacion.css';
 
-// ============================================================
-// LA APLICACIÓN
-// Portada verde profunda con el icono real de la app, el título y la
-// descarga; a la derecha, recortes reales del catálogo en teléfonos que se mueven
-// con el scroll. Debajo, las funciones en tarjetas.
-// ============================================================
-
 const FUNCIONES = [
     { Icono: FaMagnifyingGlass, titulo: 'Búsqueda', texto: 'Por título, autor o ISBN, con filtros por categoría.' },
     { Icono: FaBook, titulo: 'Ficha de cada libro', texto: 'Portada, sinopsis, precio y ejemplares disponibles.' },
     { Icono: FaCartShopping, titulo: 'Carrito y pago en línea', texto: 'Pague con PayU y siga sus compras desde la aplicación.' },
     { Icono: FaHeart, titulo: 'Favoritos', texto: 'Guarde los libros que desea leer más adelante.' },
-    { Icono: FaReceipt, titulo: 'Mis compras', texto: 'Consulte el estado del pago y siga la entrega de sus pedidos.' },
+    { Icono: FaReceipt, titulo: 'Mis compras', texto: 'Consulte el estado del pago y siga la entrega de sus pedidos.' }
 ];
 
 function Telefono({ clase, src, alt }) {
@@ -34,14 +26,17 @@ function Telefono({ clase, src, alt }) {
 export default function MobileExperience({ reducido }) {
     const seccion = useRef(null);
 
-    useGSAP(() => {
-        if (reducido) return;
-        const disparo = { trigger: seccion.current, start: 'top bottom', end: 'bottom top', scrub: 0.6 };
-        // Solo suben desde su sitio: si bajaran, la portada (overflow: clip) los recortaría.
-        gsap.fromTo('.telefono--1', { yPercent: 0 }, { yPercent: -8, ease: 'none', scrollTrigger: disparo });
-        gsap.fromTo('.telefono--2', { yPercent: 0, rotateY: 12, rotateZ: -3 }, { yPercent: -10, rotateY: 6, rotateZ: -2, ease: 'none', scrollTrigger: disparo });
-        gsap.from('.app-portada__texto > *', { opacity: 0, y: 24, duration: 0.45, ease: 'expo.out', stagger: 0.05 });
-    }, { scope: seccion, dependencies: [reducido] });
+    useGSAP(
+        () => {
+            if (reducido) return;
+            const disparo = { trigger: seccion.current, start: 'top bottom', end: 'bottom top', scrub: 0.6 };
+
+            gsap.fromTo('.telefono--1', { yPercent: 0 }, { yPercent: -8, ease: 'none', scrollTrigger: disparo });
+            gsap.fromTo('.telefono--2', { yPercent: 0, rotateY: 12, rotateZ: -3 }, { yPercent: -10, rotateY: 6, rotateZ: -2, ease: 'none', scrollTrigger: disparo });
+            gsap.from('.app-portada__texto > *', { opacity: 0, y: 24, duration: 0.45, ease: 'expo.out', stagger: 0.05 });
+        },
+        { scope: seccion, dependencies: [reducido] }
+    );
 
     return (
         <div ref={seccion} className="app-pagina">
@@ -49,11 +44,17 @@ export default function MobileExperience({ reducido }) {
                 <div className="contenedor app__rejilla">
                     <div className="app-portada__texto">
                         <img className="icono-app icono-app--grande" src={iconoApp} alt="Icono de la app MATIDANA Libros y Cultura" width="88" height="88" />
-                        <h1 id="app-titulo" className="app-portada__titulo">Toda la librería cabe en la app</h1>
+                        <h1 id="app-titulo" className="app-portada__titulo">
+                            Toda la librería cabe en la app
+                        </h1>
                         <p className="app-portada__entrada">Compre y siga sus pedidos desde su teléfono.</p>
                         <div className="app-portada__acciones">
-                            <Link to="/descargar" className="boton"><FaDownload aria-hidden="true" /> Descargar la app</Link>
-                            <Link to="/catalogo" className="enlace-mas">Ver el catálogo <FaChevronRight aria-hidden="true" /></Link>
+                            <Link to="/descargar" className="boton">
+                                <FaDownload aria-hidden="true" /> Descargar la app
+                            </Link>
+                            <Link to="/catalogo" className="enlace-mas">
+                                Ver el catálogo <FaChevronRight aria-hidden="true" />
+                            </Link>
                         </div>
                     </div>
 
@@ -66,19 +67,28 @@ export default function MobileExperience({ reducido }) {
 
             <section className="seccion app-funciones-seccion" aria-labelledby="funciones-titulo">
                 <div className="contenedor">
-                    <h2 id="funciones-titulo" className="seccion__titulo">Todo lo que puedes hacer</h2>
+                    <h2 id="funciones-titulo" className="seccion__titulo">
+                        Todo lo que puedes hacer
+                    </h2>
                     <p className="seccion__entrada">Cada función existe hoy en la app: nada de promesas para más adelante.</p>
                     <ul className="app-funciones app__lista">
                         {FUNCIONES.map(({ Icono, titulo, texto }) => (
                             <li key={titulo} className="app-funcion">
-                                <span className="app-funcion__icono" aria-hidden="true"><Icono /></span>
-                                <p><b>{titulo}</b><span>{texto}</span></p>
+                                <span className="app-funcion__icono" aria-hidden="true">
+                                    <Icono />
+                                </span>
+                                <p>
+                                    <b>{titulo}</b>
+                                    <span>{texto}</span>
+                                </p>
                             </li>
                         ))}
                     </ul>
                     <div className="cierre-descarga">
                         <p>La aplicación es gratuita y está disponible para Android.</p>
-                        <Link to="/descargar" className="boton"><FaDownload aria-hidden="true" /> Descargar la app</Link>
+                        <Link to="/descargar" className="boton">
+                            <FaDownload aria-hidden="true" /> Descargar la app
+                        </Link>
                     </div>
                 </div>
             </section>

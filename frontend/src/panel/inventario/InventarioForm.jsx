@@ -1,23 +1,16 @@
 import { FaBoxesStacked } from 'react-icons/fa6';
-
 import { FormularioAlta } from '../ui/FormularioAlta';
 import { Input, Select } from '../ui/Form';
-
 import useLibros from './useLibros';
 import { crearInventario } from './inventarioService';
 import { seleccionRequerida, numeroNoNegativo } from '../lib/utils/validaciones';
 
-const FORMULARIO_VACIO = {
-    id_libro: '',
-    stock: '0',
-    stock_minimo: '5',
-    ubicacion: '',
-};
+const FORMULARIO_VACIO = { id_libro: '', stock: '0', stock_minimo: '5', ubicacion: '' };
 
 const REGLAS = {
     id_libro: [(v) => seleccionRequerida(v, 'Debes seleccionar un libro')],
     stock: [(v) => numeroNoNegativo(v, 'El stock')],
-    stock_minimo: [(v) => numeroNoNegativo(v, 'El stock mínimo')],
+    stock_minimo: [(v) => numeroNoNegativo(v, 'El stock mínimo')]
 };
 
 export default function InventarioForm({ onInventarioCreado, incrustado = false, onCancelar, onGuardandoChange }) {
@@ -43,60 +36,57 @@ export default function InventarioForm({ onInventarioCreado, incrustado = false,
             deshabilitarEnvio={cargandoLibros}
             renderCampos={({ formulario, manejarCambio, errores }) => (
                 <div className="form-grid">
-                        <Select
-                            ancho={5}
-                            label="Libro"
-                            name="id_libro"
-                            value={formulario.id_libro}
-                            onChange={manejarCambio}
-                            error={errores?.id_libro}
-                            disabled={cargandoLibros}
-                            required
-                        >
-                            <option value="">
-                                {cargandoLibros ? 'Cargando libros...' : 'Seleccione un libro'}
+                    <Select
+                        ancho={5}
+                        label="Libro"
+                        name="id_libro"
+                        value={formulario.id_libro}
+                        onChange={manejarCambio}
+                        error={errores?.id_libro}
+                        disabled={cargandoLibros}
+                        required>
+                        <option value="">{cargandoLibros ? 'Cargando libros...' : 'Seleccione un libro'}</option>
+                        {libros.map((libro) => (
+                            <option key={libro.id_libro} value={libro.id_libro}>
+                                {libro.titulo}
                             </option>
-                            {libros.map((libro) => (
-                                <option key={libro.id_libro} value={libro.id_libro}>
-                                    {libro.titulo}
-                                </option>
-                            ))}
-                        </Select>
-                        <Input
-                            ancho={3}
-                            label="Ubicación"
-                            name="ubicacion"
-                            value={formulario.ubicacion}
-                            onChange={manejarCambio}
-                            placeholder="Ej. Estante A - Nivel 2"
-                            maxLength="100"
-                        />
-                        <Input
-                            ancho={2}
-                            label="Stock"
-                            name="stock"
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={formulario.stock}
-                            onChange={manejarCambio}
-                            error={errores?.stock}
-                            placeholder="0"
-                            required
-                        />
-                        <Input
-                            ancho={2}
-                            label="Stock mínimo"
-                            name="stock_minimo"
-                            type="number"
-                            min="0"
-                            step="1"
-                            value={formulario.stock_minimo}
-                            onChange={manejarCambio}
-                            error={errores?.stock_minimo}
-                            placeholder="5"
-                            required
-                        />
+                        ))}
+                    </Select>
+                    <Input
+                        ancho={3}
+                        label="Ubicación"
+                        name="ubicacion"
+                        value={formulario.ubicacion}
+                        onChange={manejarCambio}
+                        placeholder="Ej. Estante A - Nivel 2"
+                        maxLength="100"
+                    />
+                    <Input
+                        ancho={2}
+                        label="Stock"
+                        name="stock"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={formulario.stock}
+                        onChange={manejarCambio}
+                        error={errores?.stock}
+                        placeholder="0"
+                        required
+                    />
+                    <Input
+                        ancho={2}
+                        label="Stock mínimo"
+                        name="stock_minimo"
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={formulario.stock_minimo}
+                        onChange={manejarCambio}
+                        error={errores?.stock_minimo}
+                        placeholder="5"
+                        required
+                    />
                 </div>
             )}
         />

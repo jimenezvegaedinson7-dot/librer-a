@@ -1,7 +1,6 @@
 function celdaSegura(valor) {
     const texto = String(valor ?? '');
-    // Evita la inyección de fórmulas en Excel / LibreOffice: si la celda
-    // empieza con =, +, - o @, se prefija con una comilla simple.
+
     if (/^[=+\-@]/.test(texto)) {
         return `'${texto}`;
     }
@@ -16,7 +15,7 @@ export function exportarCsv({ nombreArchivo, columnas, filas }) {
                 const valor = col.exportar ? col.exportar(fila) : fila?.[col.campo];
                 return `"${celdaSegura(valor).replace(/"/g, '""')}"`;
             })
-            .join(';'),
+            .join(';')
     );
 
     const csv = [encabezados, ...lineas].join('\r\n');

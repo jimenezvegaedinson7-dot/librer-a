@@ -9,8 +9,8 @@
 `<ToastProvider>` → `<AuthProvider>` → `<RouterProvider>` (react-router ^7.18.3).
 
 - **Cliente HTTP**: `panel/lib/api/client.js` (axios). `baseURL = VITE_API_URL`; los valores se configuran por entorno. El interceptor añade `Bearer <token>`, devuelve `response.data` y ante **401 de sesión** limpia la sesión y redirige a `/admin/login`. Los 401 de credencial incorrecta se distinguen con `erroresSesion.js`.
-- **Sesión**: `app/providers/AuthContext.jsx` + `panel/lib/storage/index.js` (`localStorage`: `token`, `usuario`). Solo entra `administrador`; perfil actualiza los datos de sesión desde la API.
-- **Cliente web**: `web/tienda/TiendaContext.jsx` y `clienteApi.js` mantienen sesión exclusiva de `cliente`, carrito por usuario/invitado e intento de compra persistente; nunca usan la sesión administrativa. `PublicLayout` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
+- **Sesión**: `app/providers/AuthProvider.jsx` mantiene el estado; `AuthContext.js` expone el contexto y `useAuth`. `panel/lib/storage/index.js` guarda `token` y `usuario` en localStorage. Solo entra `administrador`; perfil actualiza los datos de sesión desde la API.
+- **Cliente web**: `web/tienda/TiendaProvider.jsx` y `clienteApi.js` mantienen sesión exclusiva de `cliente`, carrito por usuario/invitado e intento de compra persistente; `TiendaContext.js` expone `useTienda`. Nunca usan la sesión administrativa. `PublicLayout` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
 - **Guards**: `app/router/RutaProtegida.jsx` redirige a `/admin/login` sin sesión administrativa; `RutaPorRol.jsx` exige los roles configurados. Un **403** muestra rechazo de permisos.
 - **Layout**: `panel/layout/AdminLayout.jsx` (Sidebar, Topbar, Breadcrumbs, transición con Framer Motion, tema claro fijo).
 - **Altas de catálogo**: Libros, Autores y Categorías muestran botones normales en la cabecera de sus filtros. `AltaFlotante` monta el formulario únicamente al pulsarlos y lo presenta en un `Modal` mediante portal dentro del layout administrativo. Cancelar desmonta el borrador; el éxito cierra el diálogo y refresca el listado; un error conserva los campos. `Modal` contiene el foco del diálogo superior y mantiene el bloqueo de scroll al abrir descuentos sobre el alta de libros.
@@ -24,28 +24,28 @@
 
 ## Portada ligera y carga por rutas
 
-- El inicio monta `web/secciones/PortadaLigera.jsx`: presentación inmediata con un libro real y hasta cinco novedades. No descarga Three.js, no crea canvas ni renderiza reflejos/partículas. `main.jsx` no precarga el motor 3D.
+- El inicio monta `web/secciones/PortadaDiferida.jsx`: presenta primero `PortadaLigera.jsx` con un libro real y hasta cinco novedades. Solicita la escena 3D cuando el navegador queda libre, salvo ahorro de datos o conexión 2G; solo sustituye la portada ligera si el visitante sigue arriba. `main.jsx` no precarga el motor 3D.
 - `web/hooks/useLibroProtagonista.js` consulta el protagonista sin JWT, revalida al volver al foco y respeta libro nulo. El respaldo 404 funciona aunque el catálogo llegue después.
 - Aplicación, Características, Nosotros y Descargar tienen módulos de página separados. `AdminLayout` y el formulario público de reclamaciones se cargan bajo demanda; la tienda y el login no descargan el layout administrativo.
 - `web/estilos/limpia.css` retira vidrio, destellos, facetas y sombras de espejo. El acceso administrativo conserva el libro CSS y su apertura breve, con páginas sólidas y recuperación en la siguiente hoja.
 - `PublicLayout` usa scroll nativo y foco accesible al navegar; no inicia el motor global GSAP ni precarga masivamente todas las portadas.
 
-## Implementación espacial histórica (no montada en el inicio)
+## Portada espacial bajo demanda
 
-- `secciones/portada3d/PortadaEspacial.jsx` permanece como implementación histórica desacoplada del router. Reutiliza GSAP/ScrollTrigger y `escenaLibro.js`; estos módulos no se descargan en el inicio ligero.
+- `secciones/portada3d/PortadaEspacial.jsx` se carga desde `PortadaDiferida.jsx`. Utiliza GSAP/ScrollTrigger y `escenaLibro.js`; el módulo de escena también se descarga bajo demanda y conserva la presentación estática cuando el equipo no admite el efecto.
 - Dirección confirmada por el usuario: **Portal editorial**, tras revisar su video local. `portalEditorial.js` calcula una atmósfera volumétrica en un render target acotado con ruido 3D, cintas reflectantes/refractivas y disolución por material; `cinematografia.js` centraliza los tramos reversibles. El modelo añade tapas biseladas, lomo con datos reales, geometría curva de papel y entorno PMREM. La cara frontal permanece visible durante la ficha.
 - La superficie autoaloja Source Serif 4 (WOFF2 latino de 23.832 bytes, licencia OFL) para títulos; conserva Work Sans en datos y controles. El usuario eligió **Ibero** como referencia principal de navbar/footer y retiró la franja superior de delivery/recojo/PayU. `components/public-header.css` aplica cabecera gris frío #F5F7F9, buscador blanco, menú blanco con texto marino #24304B y detalles turquesa; marca en Work Sans e iconos Lucide de contorno. Los botones de escena son blancos/marino; el catálogo conserva sus controles de compra. El texto principal se recorta contra el contorno proyectado del libro.
-- Primero se presenta el libro a pantalla completa; un gesto corto revela `PublicHeader` fijo a todo ancho mediante tres fases de `estadoReveladoNavegacion`: línea central, cuerpo en perspectiva y enlaces. Reloj GSAP lineal de 1s con curvas por fase y salida de 0,5s; márgenes alineados al contenedor, sin redimensionar el canvas. Foco de teclado y salto al final conservan acceso inmediato. Fuera del 3D, `.navegacion-publica` usa `display:contents` y mantiene el sticky de las páginas interiores; los respaldos estáticos no ocultan navegación.
+- La portada mide cabecera, navegación y barra móvil mediante ResizeObserver para ajustar su composición. La navegación pública permanece disponible tanto en la escena 3D como en su respaldo estático; las rutas interiores conservan scroll nativo y foco accesible.
 - `components/PublicFooter.jsx` y `public-footer.css` usan fondo blanco, títulos marinos y cuatro columnas de identidad/dirección real, navegación, cuenta y atención. Pagos PayU y tarjetas existentes van en una fila independiente; reclamaciones y acceso administrativo siguen disponibles. Móvil usa dos columnas y espacio para barra/asistente. No hay ticker superior ni formulario de suscripción inventado. Buscador, cuenta, carrito y cajón móvil conservan sus funciones.
 - Presupuesto gráfico: render target volumétrico reducido, menor detalle en móvil/renderizado por software, resolución adaptativa en escritorio y pausa según visibilidad del escenario (excluye cabecera/barra fijas). `test-unit/portada-cinematica.test.js` comprueba límites y orden de las fases; Playwright también detecta errores de compilación GLSL.
 - `GET /api/anuncios/protagonista` es público y responde sin caché. El componente usa fetch sin JWT, tiempo límite de 12 s y reintento; revalida al volver al foco/pestaña y cada 60 s mientras está visible. Una respuesta idéntica no reinicia la escena.
 - `backend/src/models/portada.model.js` prioriza el libro manual activo, con título, precio positivo y portada válida; si deja de ser elegible, resuelve el más reciente por `creado_en DESC NULLS LAST, id_libro DESC`. Sin candidato devuelve ninguno, sin inventar datos.
 - Configuración en `portada_config`, creada por `044_portada_protagonista.sql` sin modificar libros ni ventas. `GET /api/anuncios/protagonista/panel` y `PUT /api/anuncios/protagonista` exigen JWT administrador; `panel/anuncios/ProtagonistaPanel.jsx` y `protagonistaService.js` gestionan modo manual/automático, búsqueda, vista previa y guardado. La respuesta del panel incluye `libro_automatico` para previsualizar el cambio de modo antes de guardarlo.
 - Por petición del usuario, el protagonista permanece cerrado durante todo el scroll: `escenaLibro.js` fija la encuadernación a apertura cero, sin mover tapa/hojas ni comprimir el bloque. Se conservan los recorridos de cámara, giro del volumen, cintas, luces, partículas y disolución.
-- La portada ya no importa ni instancia `SonidoEspacial`, no crea AudioContext y no muestra botón ni avisos de sonido. El módulo histórico y sus utilidades unitarias permanecen desacoplados de la interfaz. Las regresiones de `portada-espacial.spec.js` comprueban ausencia de audio y encuadernación cerrada en avance y retroceso a 390/1440px.
+- La portada no crea AudioContext ni muestra controles de sonido. Las regresiones de `portada-espacial.spec.js` comprueban ausencia de audio y encuadernación cerrada en avance y retroceso a 390/1440px.
 - Movimiento reducido, ahorro de datos, pantalla baja, ausencia/pérdida de WebGL 2, error de textura o fallo de carga del motor llevan a una portada estática con el mismo libro. Se liberan geometrías, texturas, RAF, observadores, listeners, audio y ScrollTriggers. Móvil/equipos modestos reducen partículas, resolución y frecuencia de dibujo.
-- Hasta cinco libros recientes proceden del catálogo normalizado (`libroComercial.creadoEn`). En escritorio se despliegan desde el centro hacia una cuadrícula de cinco columnas: solo las tapas se inclinan y títulos, autores y precios permanecen rectos en columnas independientes. En móvil ≤900px se usa un carrusel horizontal nativo. El recorrido del hero es 250svh en escritorio y 225svh en móvil; novedades continúa con espaciado compacto. `MOSTRAR_CARRUSEL_INICIO=false` oculta los banners públicos; CarruselPanel y AnunciosVideo mantienen su administración.
-- Regresiones: `test-browser/portada-espacial.spec.js`, `protagonista-panel.spec.js`, `carrusel.spec.js`, `backend/test/portada-protagonista.test.js` y `backend/test-integration/portada-protagonista.smoke.test.js`.
+- Hasta cinco libros recientes proceden del catálogo normalizado (`libroComercial.creadoEn`). En escritorio se despliegan desde el centro hacia una cuadrícula de cinco columnas: solo las tapas se inclinan y títulos, autores y precios permanecen rectos en columnas independientes. En móvil ≤900px se usa un carrusel horizontal nativo. El recorrido del hero es 250svh en escritorio y 225svh en móvil; novedades continúa con espaciado compacto. El antiguo carrusel de banners y su configuración sin consumidores se retiraron del frontend; Anuncios conserva la gestión de videos y del libro protagonista.
+- Regresiones: `test-browser/portada-espacial.spec.js`, `protagonista-panel.spec.js`, `web-ligera.spec.js`, `backend/test/portada-protagonista.test.js` y `backend/test-integration/portada-protagonista.smoke.test.js`.
 
 ## Caché y prioridad de carga pública
 
@@ -96,6 +96,7 @@ El menú reúne **Gestión de ventas** en `/ventas` con tres vistas cargadas baj
 | `/tarifas-envio` | TarifasEnvioPage | `panel/tarifas/TarifasEnvioPage.jsx` |
 | `/historial` | Navigate | redirección: `para(SOLO_ADMIN, <Navigate to="/dashboard" replace />)` |
 | `/configuracion/empresa` | EmpresaPage | `panel/configuracion/EmpresaPage.jsx` |
+| `/personalizacion` | Navigate | redirección: `<Navigate to="/dashboard" replace />` |
 | `/agencias` | Navigate | redirección: `<Navigate to="/dashboard" replace />` |
 | `/cierre-caja` | Navigate | redirección: `<Navigate to="/dashboard" replace />` |
 | `/reportes` | Navigate | redirección: `<Navigate to="/dashboard" replace />` |
@@ -140,7 +141,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `panel/pedidos/PedidosPage.jsx` | `GET /api/pedidos`<br>`GET /api/pedidos/:param`<br>`PUT /api/pedidos/:param/estado` |
 | `panel/reclamaciones/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `panel/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
-| `panel/reportes/useVentasDiarias.js` | `GET /api/reportes/ventas-por-dia` |
 | `panel/tarifas/TarifasEnvioPage.jsx` | `GET /api/zonas-delivery/todos`<br>`PUT /api/zonas-delivery/:param` |
 | `panel/usuarios/UsuariosPage.jsx` | `GET /api/usuarios`<br>`PATCH /api/usuarios/:param` |
 | `panel/ventas/EmitirComprobanteModal.jsx` | `GET /api/empresa`<br>`POST /api/comprobantes/:param/enviar-email`<br>`POST /api/ventas/:param/comprobante` |
@@ -148,30 +148,25 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `panel/ventas/VentasPage.jsx` | `GET /api/ventas`<br>`GET /api/ventas/:param` |
 | `web/PublicLayout.jsx` | `GET /api/empresa`<br>`GET /api/libros` |
 | `web/asistente/AsistenteTienda.jsx` | `GET /api/libros`<br>`POST /api/asistente` |
-| `web/asistente/useMemoriaAsistente.js` | `DELETE /api/asistente/memoria`<br>`GET /api/asistente/memoria`<br>`PUT /api/asistente/memoria` |
+| `web/asistente/useMemoriaAsistente.js` | `DELETE /api/asistente/memoria`<br>`PUT /api/asistente/memoria` |
 | `web/componentes/ActualizarApp.jsx` | `GET /api/app/version` |
-| `web/hooks/useCarrusel.js` | `GET /api/anuncios/carrusel` |
 | `web/hooks/useLibroProtagonista.js` | `GET /api/anuncios/protagonista` |
-| `web/secciones/Hero.jsx` | `GET /api/anuncios/carrusel` |
 | `web/secciones/VideoSection.jsx` | `GET /api/anuncios` |
 | `web/secciones/portada3d/PortadaEspacial.jsx` | `GET /api/anuncios/protagonista` |
-| `web/tienda/AccionesLibro.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos/:param`<br>`POST /api/favoritos/:param` |
-| `web/tienda/CheckoutPage.jsx` | `GET /api/pagos/capacidades`<br>`GET /api/ventas/:param`<br>`GET /api/zonas-delivery` |
+| `web/tienda/AccionesLibro.jsx` | `DELETE /api/favoritos/:param`<br>`POST /api/favoritos/:param` |
+| `web/tienda/CheckoutPage.jsx` | `GET /api/zonas-delivery` |
 | `web/tienda/CuentaPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reenviar-codigo`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/registro`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-email`<br>`POST /api/auth/verificar-reseteo` |
 | `web/tienda/FavoritosPage.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos` |
-| `web/tienda/LibroPage.jsx` | `GET /api/autores/:param`<br>`GET /api/libros/:param`<br>`GET /api/libros/:param/relacionados` |
 | `web/tienda/MisComprasPage.jsx` | `GET /api/pagos/:param`<br>`GET /api/ventas/:param/pago`<br>`GET /api/ventas/mis-ventas` |
 | `web/tienda/PerfilCliente.jsx` | `PUT /api/usuarios/foto`<br>`PUT /api/usuarios/perfil` |
-| `web/tienda/TiendaContext.jsx` | `GET /api/libros`<br>`GET /api/usuarios/perfil`<br>`GET /api/ventas/:param` |
+| `web/tienda/TiendaProvider.jsx` | `GET /api/libros` |
 | `web/tienda/persistenciaCompra.js` | `POST /api/pagos/crear-orden` |
-| `web/tienda/useDatosCliente.js` | `GET /api/ventas/mis-ventas` |
 
 ## Servicios (`panel/*/*Service.js`)
 
 | Servicio | Función | Endpoint |
 |---|---|---|
 | `panel/anuncios/anunciosService.js` | `listarAnuncios` | `GET /api/anuncios/todos` |
-| `panel/anuncios/anunciosService.js` | `obtenerAnuncioActivo` | `GET /api/anuncios` |
 | `panel/anuncios/anunciosService.js` | `crearAnuncio` | `POST /api/anuncios` |
 | `panel/anuncios/anunciosService.js` | `actualizarAnuncio` | `PUT /api/anuncios/:param` |
 | `panel/anuncios/anunciosService.js` | `eliminarAnuncio` | `DELETE /api/anuncios/:param` |
@@ -253,12 +248,10 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `panel/ventas/ventasService.js` | `listarVentas` | `GET /api/ventas` |
 | `panel/ventas/ventasService.js` | `obtenerVenta` | `GET /api/ventas/:param` |
 | `panel/ventas/ventasService.js` | `reembolsarVenta` | `POST /api/ventas/:param/reembolso` |
-| `panel/ventas/ventasService.js` | `listarLibros` | `GET /api/libros` (vía panel/libros/librosService.js#listarLibros) |
 | `web/hooks/useApiPublica.js` | `useCatalogo` | `GET /api/libros` |
 | `web/hooks/useApiPublica.js` | `useAnuncioActivo` | `GET /api/anuncios` |
 | `web/hooks/useApiPublica.js` | `useEmpresa` | `GET /api/empresa` |
 | `web/hooks/useApiPublica.js` | `useVersionApp` | `GET /api/app/version` |
-| `web/hooks/useCarrusel.js` | `useCarrusel` | `GET /api/anuncios/carrusel` |
 | `web/tienda/clienteApi.js` | `login` | `POST /api/auth/login` |
 | `web/tienda/clienteApi.js` | `registro` | `POST /api/auth/registro` |
 | `web/tienda/clienteApi.js` | `verificarEmail` | `POST /api/auth/verificar-email` |
@@ -303,7 +296,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `web/componentes/ImagenCarga.jsx` | 2 |
 | `web/componentes/MediosPago.jsx` | 1 |
 | `web/componentes/Migas.jsx` | 5 |
-| `web/componentes/Precarga.jsx` | 0 |
 | `web/componentes/PrecioOferta.jsx` | 7 |
 | `web/componentes/PublicFooter.jsx` | 1 |
 | `web/componentes/PublicHeader.jsx` | 1 |
@@ -317,6 +309,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `compartido/lib/utils/seguimientoPedido.js`
 - `compartido/lib/utils/url.js`
 - `panel/lib/api/client.js`
+- `panel/lib/hooks/useCarga.js`
 - `panel/lib/hooks/useFormulario.js`
 - `panel/lib/hooks/useImpresion.js`
 - `panel/lib/hooks/usePaginaPanel.js`
@@ -331,7 +324,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `web/lib/cachePublica.js`
 - `web/lib/cacheRecursos.js`
 - `web/lib/formato.js`
-- `web/lib/precarga.js`
 - `web/lib/useCarruselAutomatico.js`
 
 ## Framer Motion (`motion/react`) — 26 archivos

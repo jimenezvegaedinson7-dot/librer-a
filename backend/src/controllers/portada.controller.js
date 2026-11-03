@@ -3,23 +3,22 @@ const libroModel = require('../models/libro.model');
 const { registrarAuditoria } = require('../utils/auditoria');
 const { validarId } = require('../utils/validaciones');
 
-// Datos públicos del libro protagonista: solo lo que la portada muestra.
-const publico = (libro) => libro && ({
-    id_libro: libro.id_libro,
-    titulo: libro.titulo,
-    autor: libro.autor,
-    categoria: libro.categoria,
-    descripcion: libro.descripcion,
-    portada: libro.portada,
-    precio: libro.precio,
-    precio_final: libro.precio_final,
-    descuento_vigente: libro.descuento_vigente,
-    descuento_porcentaje_efectivo: libro.descuento_porcentaje_efectivo,
-    stock: libro.stock,
-    estado: libro.estado,
-});
+const publico = (libro) =>
+    libro && {
+        id_libro: libro.id_libro,
+        titulo: libro.titulo,
+        autor: libro.autor,
+        categoria: libro.categoria,
+        descripcion: libro.descripcion,
+        portada: libro.portada,
+        precio: libro.precio,
+        precio_final: libro.precio_final,
+        descuento_vigente: libro.descuento_vigente,
+        descuento_porcentaje_efectivo: libro.descuento_porcentaje_efectivo,
+        stock: libro.stock,
+        estado: libro.estado
+    };
 
-// GET /api/anuncios/protagonista (web pública)
 async function obtenerPublico(_req, res) {
     try {
         res.set?.('Cache-Control', 'no-store');
@@ -30,31 +29,28 @@ async function obtenerPublico(_req, res) {
     }
 }
 
-// GET /api/anuncios/protagonista/panel (administrador)
 async function obtenerPanel(_req, res) {
     try {
         const resuelto = await portadaModel.resolverProtagonista();
         const config = await portadaModel.obtenerConfig();
-        const automatico = resuelto.modo === 'manual'
-            ? await portadaModel.resolverProtagonista({ automatico: true }) : resuelto;
+        const automatico = resuelto.modo === 'manual' ? await portadaModel.resolverProtagonista({ automatico: true }) : resuelto;
         return res.json({
             success: true,
             data: {
                 modo: resuelto.modo,
                 id_libro_manual: resuelto.id_libro_manual,
-                // La selección manual existe pero ya no es válida (inactivo o sin portada).
+
                 manual_invalido: Boolean(resuelto.id_libro_manual) && resuelto.modo !== 'manual',
                 actualizado_en: config.actualizado_en,
                 libro: publico(resuelto.libro),
-                libro_automatico: publico(automatico.libro),
-            },
+                libro_automatico: publico(automatico.libro)
+            }
         });
     } catch {
         return res.status(503).json({ success: false, mensaje: 'No se pudo cargar la configuración de la portada.' });
     }
 }
 
-// PUT /api/anuncios/protagonista (administrador). { id_libro: número | null }
 async function guardar(req, res) {
     const body = req.body || {};
     if (Object.keys(body).some((k) => k !== 'id_libro') || !('id_libro' in body)) {

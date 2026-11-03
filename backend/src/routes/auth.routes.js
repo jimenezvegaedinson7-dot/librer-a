@@ -4,81 +4,19 @@ const router = express.Router();
 
 const authController = require('../controllers/auth.controller');
 const auth2faController = require('../controllers/auth2fa.controller');
-
 const verificarToken = require('../middlewares/auth.middleware');
+const { loginLimiter, registroLimiter, verificacionLimiter, twoFaLimiter } = require('../middlewares/rateLimit');
 
-const {
-    loginLimiter,
-    registroLimiter,
-    verificacionLimiter,
-    twoFaLimiter
-} = require('../middlewares/rateLimit');
-
-// ========================================
-// REGISTRO / LOGIN
-// ========================================
 router.post('/registro', registroLimiter, authController.registrar);
-
 router.post('/login', loginLimiter, authController.login);
-
-// ========================================
-// VERIFICAR EMAIL (registro) - NO requiere JWT
-// ========================================
 router.post('/verificar-email', verificacionLimiter, authController.verificarEmail);
-
-// Reenviar código de verificación
 router.post('/reenviar-codigo', verificacionLimiter, authController.reenviarCodigo);
-
-// ========================================
-// RESTABLECER CONTRASEÑA (olvidé mi contraseña) - NO requiere JWT
-// ========================================
-
-// Solicitar código de reseteo (se envía por correo)
 router.post('/solicitar-reseteo', verificacionLimiter, authController.solicitarReseteo);
-
 router.post('/verificar-reseteo', verificacionLimiter, authController.verificarReseteo);
-
-// Validar código y establecer nueva contraseña
 router.post('/reestablecer-contrasena', verificacionLimiter, authController.reestablecerContrasena);
-
-// ========================================
-// VERIFICAR LOGIN CON OTP (2FA)
-// Requiere two_factor_token temporal
-// ========================================
-router.post(
-    '/2fa/verify-login',
-    twoFaLimiter,
-    auth2faController.verificarLogin
-);
-
-// ========================================
-// CONFIGURACIÓN 2FA (requiere JWT)
-// ========================================
-router.post(
-    '/2fa/setup',
-    verificarToken,
-    twoFaLimiter,
-    auth2faController.setup
-);
-
-// ========================================
-// CONFIRMAR 2FA (requiere JWT)
-// ========================================
-router.post(
-    '/2fa/confirm',
-    verificarToken,
-    twoFaLimiter,
-    auth2faController.confirmar
-);
-
-// ========================================
-// DESACTIVAR 2FA (requiere JWT)
-// ========================================
-router.post(
-    '/2fa/disable',
-    verificarToken,
-    twoFaLimiter,
-    auth2faController.desactivar
-);
+router.post('/2fa/verify-login', twoFaLimiter, auth2faController.verificarLogin);
+router.post('/2fa/setup', verificarToken, twoFaLimiter, auth2faController.setup);
+router.post('/2fa/confirm', verificarToken, twoFaLimiter, auth2faController.confirmar);
+router.post('/2fa/disable', verificarToken, twoFaLimiter, auth2faController.desactivar);
 
 module.exports = router;

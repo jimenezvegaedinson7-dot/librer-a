@@ -32,7 +32,7 @@ const storage = {
         localStorage.removeItem(KEY_TOKEN);
         localStorage.removeItem(KEY_USUARIO);
         localStorage.removeItem('ultimoHistorialVisto');
-    },
+    }
 };
 
 export default storage;

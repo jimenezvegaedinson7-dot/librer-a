@@ -1,21 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const {
-    extraerEstadoOrdenPayu,
-    montoPagoCoincide,
-    debeActualizarEstadoPago
-} = require('../src/utils/payuStatus');
+const { extraerEstadoOrdenPayu, montoPagoCoincide, debeActualizarEstadoPago } = require('../src/utils/payuStatus');
 
 test('prioriza pago aprobado en transactionResponse', () => {
-    const estado = extraerEstadoOrdenPayu({
-        transactionResponse: {
-            state: 'APPROVED',
-            value: 12500,
-            transactionId: 'payu-tx-1',
-            pendingReason: null
-        }
-    });
+    const estado = extraerEstadoOrdenPayu({ transactionResponse: { state: 'APPROVED', value: 12500, transactionId: 'payu-tx-1', pendingReason: null } });
 
     assert.equal(estado.status, 'APPROVED');
     assert.equal(estado.pagado, true);
@@ -24,12 +13,7 @@ test('prioriza pago aprobado en transactionResponse', () => {
 });
 
 test('orden rechazada se reconoce como cancelada', () => {
-    const estado = extraerEstadoOrdenPayu({
-        transactionResponse: {
-            state: 'DECLINED',
-            value: 10000
-        }
-    });
+    const estado = extraerEstadoOrdenPayu({ transactionResponse: { state: 'DECLINED', value: 10000 } });
 
     assert.equal(estado.status, 'DECLINED');
     assert.equal(estado.cancelado, true);
@@ -37,12 +21,7 @@ test('orden rechazada se reconoce como cancelada', () => {
 });
 
 test('orden pendiente permanece pendiente', () => {
-    const estado = extraerEstadoOrdenPayu({
-        transactionResponse: {
-            state: 'PENDING',
-            value: 10000
-        }
-    });
+    const estado = extraerEstadoOrdenPayu({ transactionResponse: { state: 'PENDING', value: 10000 } });
 
     assert.equal(estado.status, 'PENDING');
     assert.equal(estado.pagado, false);
@@ -59,9 +38,7 @@ test('estado desconocido no marca pagado ni cancelado', () => {
 });
 
 test('extrae monto desde top-level amount en centavos', () => {
-    const estado = extraerEstadoOrdenPayu({
-        amount: 5000
-    });
+    const estado = extraerEstadoOrdenPayu({ amount: 5000 });
 
     assert.equal(estado.amount, 50);
 });
@@ -74,20 +51,8 @@ test('valida el monto con tolerancia monetaria', () => {
 });
 
 test('un intento tardío no degrada un pago aprobado', () => {
-    assert.equal(
-        debeActualizarEstadoPago('APPROVED', 'DECLINED'),
-        false
-    );
-    assert.equal(
-        debeActualizarEstadoPago('APPROVED', 'PENDING'),
-        false
-    );
-    assert.equal(
-        debeActualizarEstadoPago('APPROVED', 'REFUNDED'),
-        true
-    );
-    assert.equal(
-        debeActualizarEstadoPago('REFUNDED', 'APPROVED'),
-        false
-    );
+    assert.equal(debeActualizarEstadoPago('APPROVED', 'DECLINED'), false);
+    assert.equal(debeActualizarEstadoPago('APPROVED', 'PENDING'), false);
+    assert.equal(debeActualizarEstadoPago('APPROVED', 'REFUNDED'), true);
+    assert.equal(debeActualizarEstadoPago('REFUNDED', 'APPROVED'), false);
 });

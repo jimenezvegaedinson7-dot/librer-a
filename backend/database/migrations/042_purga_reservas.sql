@@ -1,16 +1,6 @@
--- 042 · Retiro total de Reservas. Se ejecuta por aplicarMigracionesDatos
--- dentro de UNA transacción, con advisory lock y registro migraciones_datos.
--- No borra ni reescribe ventas, pagos, comprobantes o clientes.
--- La tabla vacía queda solo para compatibilidad con migraciones previas.
-
--- Estabilizar el apartado y sus posibles vínculos antes de calcular stock.
 LOCK TABLE reservas IN ACCESS EXCLUSIVE MODE;
 LOCK TABLE ventas IN SHARE ROW EXCLUSIVE MODE;
 
--- El esquema canónico no tiene esta FK. Si una instalación histórica la
--- añadió, quitar SOLO ventas.id_reserva -> reservas.id_reserva, conservando
--- el ID y el origen como marcadores históricos. Nunca usar DROP CASCADE:
--- incluso una FK ON DELETE CASCADE debe quitarse antes de borrar reservas.
 DO $$
 DECLARE
     fk RECORD;
@@ -29,10 +19,6 @@ BEGIN
     END LOOP;
 END $$;
 
--- Pendiente/confirmada sin venta vinculada mantiene el apartado.
--- Una reserva vinculada a CUALQUIER venta no libera stock aquí: su apartado
--- pudo transferirse al cobro o liberarse al cancelar/devolver esa venta.
--- Completadas/canceladas nunca reingresan stock.
 DO $$
 DECLARE
     apartado RECORD;
@@ -48,7 +34,7 @@ BEGIN
             AND NOT EXISTS (SELECT 1 FROM ventas v WHERE v.id_reserva = r.id_reserva)
         GROUP BY r.id_libro ORDER BY r.id_libro
     LOOP
-        -- El UPDATE bloquea inventario por libro en orden determinista.
+
         UPDATE inventario SET stock = stock + apartado.cantidad, ultima_actualizacion = NOW()
             WHERE id_libro = apartado.id_libro RETURNING stock INTO stock_nuevo;
         IF NOT FOUND THEN
@@ -60,5 +46,5 @@ BEGIN
 END $$;
 
 DELETE FROM historial_operaciones WHERE lower(btrim(modulo)) IN ('reserva', 'reservas');
--- Última sentencia: el ejecutor registra el número de reservas eliminadas.
+
 DELETE FROM reservas RETURNING id_reserva;

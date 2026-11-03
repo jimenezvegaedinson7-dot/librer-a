@@ -5,21 +5,12 @@ import {
     obtenerVentasPorMes,
     obtenerVentasPorDia,
     obtenerIndicadoresVentas,
-    obtenerStockBajo,
+    obtenerStockBajo
 } from '../reportes/reportesService';
-
 import { listarLibros } from '../libros/librosService';
 
 export async function obtenerLibros() {
     return listarLibros();
 }
 
-export {
-    obtenerResumen,
-    obtenerLibrosMasVendidos,
-    obtenerVentasPorEstado,
-    obtenerVentasPorMes,
-    obtenerVentasPorDia,
-    obtenerIndicadoresVentas,
-    obtenerStockBajo,
-};
+export { obtenerResumen, obtenerLibrosMasVendidos, obtenerVentasPorEstado, obtenerVentasPorMes, obtenerVentasPorDia, obtenerIndicadoresVentas, obtenerStockBajo };

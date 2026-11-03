@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FaArrowLeft, FaArrowRight, FaChevronRight } from 'react-icons/fa6';
-
 import { PrecioOferta } from '../componentes/PrecioOferta';
 import { portada } from '../lib/formato';
 import { EtiquetaNuevo } from '../componentes/EtiquetasLibro';
@@ -14,20 +13,24 @@ function Libro({ libro, indice }) {
     return (
         <li className="libro" style={{ '--i': indice }}>
             <div className="libro__escenario">
-            <div className="libro__tapa">
-                <ImagenCarga
-                    src={portada(libro.portada, 320)}
-                    srcSet={`${portada(libro.portada, 220)} 220w, ${portada(libro.portada, 320)} 320w, ${portada(libro.portada, 440)} 440w`}
-                    sizes="(max-width: 767px) 150px, 200px"
-                    alt={`Portada de ${libro.titulo}`}
-                    width="200"
-                    height="300"
-                    loading="lazy"
-                    decoding="async"
-                />
-                {libro.masVendido && <span className="etiquetas-libro"><span className="etiqueta-top">Más vendido</span></span>}
-                <EtiquetaNuevo libro={libro} />
-            </div>
+                <div className="libro__tapa">
+                    <ImagenCarga
+                        src={portada(libro.portada, 320)}
+                        srcSet={`${portada(libro.portada, 220)} 220w, ${portada(libro.portada, 320)} 320w, ${portada(libro.portada, 440)} 440w`}
+                        sizes="(max-width: 767px) 150px, 200px"
+                        alt={`Portada de ${libro.titulo}`}
+                        width="200"
+                        height="300"
+                        loading="lazy"
+                        decoding="async"
+                    />
+                    {libro.masVendido && (
+                        <span className="etiquetas-libro">
+                            <span className="etiqueta-top">Más vendido</span>
+                        </span>
+                    )}
+                    <EtiquetaNuevo libro={libro} />
+                </div>
             </div>
             <div className="libro__datos">
                 {libro.categoria && <span className="libro__categoria">{libro.categoria}</span>}
@@ -37,26 +40,22 @@ function Libro({ libro, indice }) {
                 <p className="libro__pie">
                     <PrecioOferta libro={libro} />
                 </p>
-                <ComprarLibro libro={libro}/>
+                <ComprarLibro libro={libro} />
             </div>
         </li>
     );
 }
 
-// Carrusel del inicio: libros recomendados del catálogo real y el enlace a
-// la página completa.
 export default function BookShowcase({ catalogo, reducido }) {
     const { cargando, error, libros } = catalogo;
     const ventana = useRef(null);
-    // Recomendados: más vendidos y recién agregados primero (datos reales).
-    // Los libros en descuento tienen su propio estante en el catálogo; aquí
-    // no se mezclan para que todas las tarjetas tengan la misma medida.
+
     const muestra = libros
         .filter((l) => !(l.descuento > 0))
         .map((l, i) => ({ ...l, _i: i }))
-        .sort((a, b) => (b.masVendido - a.masVendido) || (b.esNuevo - a.esNuevo) || a._i - b._i)
+        .sort((a, b) => b.masVendido - a.masVendido || b.esNuevo - a.esNuevo || a._i - b._i)
         .slice(0, 12);
-    // Avanza solo, de uno en uno, y vuelve al inicio al llegar al final.
+
     useCarruselAutomatico(ventana, { activo: !cargando && !error && muestra.length > 1 && !reducido });
 
     const desplazar = (sentido) => {
@@ -69,16 +68,30 @@ export default function BookShowcase({ catalogo, reducido }) {
             <div className="contenedor">
                 <div className="seccion__cabeza">
                     <h2 id="catalogo-titulo" className="seccion__titulo" data-revelar="">
-                        <span className="linea"><span>Libros recomendados</span></span>
+                        <span className="linea">
+                            <span>Libros recomendados</span>
+                        </span>
                     </h2>
                     <div className="catalogo__controles">
-                        <Link to="/catalogo" className="enlace-mas">Ver todo el catálogo <FaChevronRight aria-hidden="true" /></Link>
+                        <Link to="/catalogo" className="enlace-mas">
+                            Ver todo el catálogo <FaChevronRight aria-hidden="true" />
+                        </Link>
                         {!error && muestra.length > 0 && (
                             <>
-                                <button type="button" className="boton boton--linea boton--icono" aria-label="Libros anteriores" aria-controls="catalogo-lista" onClick={() => desplazar(-1)}>
+                                <button
+                                    type="button"
+                                    className="boton boton--linea boton--icono"
+                                    aria-label="Libros anteriores"
+                                    aria-controls="catalogo-lista"
+                                    onClick={() => desplazar(-1)}>
                                     <FaArrowLeft aria-hidden="true" />
                                 </button>
-                                <button type="button" className="boton boton--linea boton--icono" aria-label="Más libros" aria-controls="catalogo-lista" onClick={() => desplazar(1)}>
+                                <button
+                                    type="button"
+                                    className="boton boton--linea boton--icono"
+                                    aria-label="Más libros"
+                                    aria-controls="catalogo-lista"
+                                    onClick={() => desplazar(1)}>
                                     <FaArrowRight aria-hidden="true" />
                                 </button>
                             </>
@@ -93,7 +106,9 @@ export default function BookShowcase({ catalogo, reducido }) {
                         {error
                             ? 'El catálogo no se pudo cargar en este momento. Puedes verlo completo en la app. '
                             : 'Estamos actualizando el catálogo. Mientras tanto, puedes explorarlo en la app. '}
-                        <Link className="subrayado enlace-texto" to="/descargar">Descargar la app</Link>
+                        <Link className="subrayado enlace-texto" to="/descargar">
+                            Descargar la app
+                        </Link>
                     </p>
                 </div>
             ) : (
@@ -102,11 +117,11 @@ export default function BookShowcase({ catalogo, reducido }) {
                         <ul id="catalogo-lista" className="catalogo__pista" data-revelar="" aria-busy={cargando}>
                             {cargando
                                 ? Array.from({ length: 7 }, (_, i) => (
-                                    <li className="libro libro--esqueleto" key={i} aria-hidden="true">
-                                        <div className="libro__tapa" />
-                                        <div className="libro__datos" />
-                                    </li>
-                                ))
+                                      <li className="libro libro--esqueleto" key={i} aria-hidden="true">
+                                          <div className="libro__tapa" />
+                                          <div className="libro__datos" />
+                                      </li>
+                                  ))
                                 : muestra.map((libro, i) => <Libro key={libro.id} libro={libro} indice={i} />)}
                         </ul>
                     </div>

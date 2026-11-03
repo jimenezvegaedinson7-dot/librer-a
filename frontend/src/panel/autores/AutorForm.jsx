@@ -1,17 +1,11 @@
 import { Feather } from 'lucide-react';
-
 import { FormularioAlta } from '../ui/FormularioAlta';
 import { Input, Textarea } from '../ui/Form';
-
 import { crearAutor } from './autoresService';
 import { requerido } from '../lib/utils/validaciones';
 
 const FORMULARIO_VACIO = { nombre: '', apellido: '', nacionalidad: '', biografia: '' };
-
-const REGLAS = {
-    nombre: [(v) => requerido(v, 'El nombre')],
-    apellido: [(v) => requerido(v, 'El apellido')],
-};
+const REGLAS = { nombre: [(v) => requerido(v, 'El nombre')], apellido: [(v) => requerido(v, 'El apellido')] };
 
 export default function AutorForm({ onAutorCreado, incrustado = false, onCancelar, enfocarNombre = false, onGuardandoChange }) {
     return (
@@ -63,14 +57,7 @@ export default function AutorForm({ onAutorCreado, incrustado = false, onCancela
                             Información adicional <span className="font-normal text-slate-500">(opcional)</span>
                         </summary>
                         <div className="form-grid mt-4">
-                            <Input
-                                ancho={12}
-                                label="Nacionalidad"
-                                name="nacionalidad"
-                                value={formulario.nacionalidad}
-                                onChange={manejarCambio}
-                                placeholder="Ej. Colombiana"
-                            />
+                            <Input ancho={12} label="Nacionalidad" name="nacionalidad" value={formulario.nacionalidad} onChange={manejarCambio} placeholder="Ej. Colombiana" />
                             <Textarea
                                 ancho={12}
                                 label="Biografía"

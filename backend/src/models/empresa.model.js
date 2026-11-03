@@ -1,9 +1,5 @@
 const pool = require('../config/database');
 
-// ========================================
-// COLUMNAS EDITABLES DE LA TABLA EMPRESA
-// (whitelist: solo estos campos se actualizan)
-// ========================================
 const CAMPOS_PERMITIDOS = [
     'ruc',
     'razon_social',
@@ -29,48 +25,20 @@ const CAMPOS_SELECT =
     'libros_exonerados, exoneracion_libros_hasta, tasa_igv, ' +
     'created_at, updated_at';
 
-// ========================================
-// OBTENER EMPRESA (EMISOR)
-// Si no existe, crea la fila id=1 (ruc vacío) y la devuelve.
-// ========================================
 const obtenerEmpresa = async () => {
-    const [filas] = await pool.query(`
-        SELECT ${CAMPOS_SELECT}
-        FROM empresa
-        WHERE id = 1
-        LIMIT 1
-    `);
+    const [filas] = await pool.query(`SELECT ${CAMPOS_SELECT} FROM empresa WHERE id = 1 LIMIT 1`);
 
     if (filas.length > 0) {
         return filas[0];
     }
 
-    // ========================================
-    // CREAR FILA POR DEFECTO (id=1, ruc='')
-    // ON CONFLICT DO NOTHING: idempotente ante concurrencia.
-    // ========================================
-    await pool.query(`
-        INSERT INTO empresa (id, ruc)
-        VALUES (1, '')
-        ON CONFLICT (id) DO NOTHING
-    `);
+    await pool.query(`INSERT INTO empresa (id, ruc) VALUES (1, '') ON CONFLICT (id) DO NOTHING`);
 
-    const [creada] = await pool.query(`
-        SELECT ${CAMPOS_SELECT}
-        FROM empresa
-        WHERE id = 1
-        LIMIT 1
-    `);
+    const [creada] = await pool.query(`SELECT ${CAMPOS_SELECT} FROM empresa WHERE id = 1 LIMIT 1`);
 
     return creada[0] || null;
 };
 
-// ========================================
-// ACTUALIZAR EMPRESA
-// Solo aplica los campos permitidos (whitelist) que vengan
-// definidos en `campos`. Actualiza updated_at y devuelve
-// la fila actualizada.
-// ========================================
 const actualizarEmpresa = async (campos = {}) => {
     const asignaciones = [];
     const valores = [];
@@ -88,19 +56,9 @@ const actualizarEmpresa = async (campos = {}) => {
 
     asignaciones.push('updated_at = NOW()');
 
-    await pool.query(`
-        UPDATE empresa
-        SET ${asignaciones.join(', ')}
-        WHERE id = 1
-    `, valores);
+    await pool.query(`UPDATE empresa SET ${asignaciones.join(', ')} WHERE id = 1`, valores);
 
     return obtenerEmpresa();
 };
 
-// ========================================
-// EXPORTAR MODELO
-// ========================================
-module.exports = {
-    obtenerEmpresa,
-    actualizarEmpresa
-};
+module.exports = { obtenerEmpresa, actualizarEmpresa };

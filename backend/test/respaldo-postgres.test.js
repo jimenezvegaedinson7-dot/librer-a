@@ -5,22 +5,30 @@ const os = require('node:os');
 const path = require('node:path');
 const { esCopiaDeHoy, elegirConservadas, semanaIso, esManifiestoPropio, aplicarRetencion } = require('../scripts/respaldarPostgres');
 
-const copia = (fecha, id = '00000000') => ({ version: 1, origen: 'libreria-postgresql', creadoEn: fecha,
-    archivo: `libreria-${fecha.replace(/[-:]/g, '').replace('.000Z', 'Z')}-${id}.dump`, bytes: 6,
-    fuente: 'b'.repeat(64), sha256: 'a'.repeat(64), verificacion: { archivoCompleto: true } });
+const copia = (fecha, id = '00000000') => ({
+    version: 1,
+    origen: 'libreria-postgresql',
+    creadoEn: fecha,
+    archivo: `libreria-${fecha.replace(/[-:]/g, '').replace('.000Z', 'Z')}-${id}.dump`,
+    bytes: 6,
+    fuente: 'b'.repeat(64),
+    sha256: 'a'.repeat(64),
+    verificacion: { archivoCompleto: true }
+});
 
 test('retención conserva siete días distintos y una copia de cada una de las últimas cuatro semanas', () => {
     const copias = Array.from({ length: 40 }, (_, i) => copia(new Date(Date.UTC(2026, 9, 13 - i, 3)).toISOString()));
     const elegidas = elegirConservadas(copias);
     for (const diaria of copias.slice(0, 7)) assert.ok(elegidas.has(diaria.archivo));
-    const semanas = new Set(copias.filter(c => elegidas.has(c.archivo)).map(c => semanaIso(c.creadoEn)));
+    const semanas = new Set(copias.filter((c) => elegidas.has(c.archivo)).map((c) => semanaIso(c.creadoEn)));
     assert.equal(semanas.size, 4);
     assert.ok(elegidas.size <= 11);
     assert.equal(elegidas.has(copias[39].archivo), false);
 });
 
 test('dos copias del mismo día conservan la más reciente sin gastar dos días de retención', () => {
-    const a = copia('2026-10-13T08:00:00.000Z'), b = copia('2026-10-13T13:00:00.000Z', '11111111');
+    const a = copia('2026-10-13T08:00:00.000Z'),
+        b = copia('2026-10-13T13:00:00.000Z', '11111111');
     assert.deepEqual([...elegirConservadas([a, b])], [b.archivo]);
 });
 
@@ -61,6 +69,9 @@ test('la purga solo toca copias propias verificadas; conserva manuales, parciale
         const resultado = aplicarRetencion(directorio);
         assert.ok(resultado.eliminadas > 20);
         assert.ok(resultado.conservadas >= 7);
-        for (const nombre of [ajena.archivo, ajena.archivo + '.json', 'manual.sql', 'copia.dump', 'trabajo.partial', '.conexion.dpapi']) assert.ok(fs.existsSync(path.join(directorio, nombre)), nombre);
-    } finally { fs.rmSync(directorio, { recursive: true, force: true }); }
+        for (const nombre of [ajena.archivo, ajena.archivo + '.json', 'manual.sql', 'copia.dump', 'trabajo.partial', '.conexion.dpapi'])
+            assert.ok(fs.existsSync(path.join(directorio, nombre)), nombre);
+    } finally {
+        fs.rmSync(directorio, { recursive: true, force: true });
+    }
 });

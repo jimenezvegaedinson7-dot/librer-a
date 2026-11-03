@@ -5,10 +5,21 @@ const modelo = require('../src/models/comprobante.model');
 const controlador = require('../src/controllers/comprobante.controller');
 
 function respuesta() {
-    return { codigo: 200, cuerpo: null, status(codigo) { this.codigo = codigo; return this; }, json(cuerpo) { this.cuerpo = cuerpo; return this; } };
+    return {
+        codigo: 200,
+        cuerpo: null,
+        status(codigo) {
+            this.codigo = codigo;
+            return this;
+        },
+        json(cuerpo) {
+            this.cuerpo = cuerpo;
+            return this;
+        }
+    };
 }
 
-test('listado por venta aplica el mismo filtro parametrizado a conteo y filas', async t => {
+test('listado por venta aplica el mismo filtro parametrizado a conteo y filas', async (t) => {
     const consultas = [];
     t.mock.method(pool, 'query', async (sql, parametros) => {
         consultas.push({ sql, parametros });
@@ -24,9 +35,9 @@ test('listado por venta aplica el mismo filtro parametrizado a conteo y filas', 
     }
 });
 
-test('el controlador confirma qué venta filtró sin alterar el listado general', async t => {
+test('el controlador confirma qué venta filtró sin alterar el listado general', async (t) => {
     const filtros = [];
-    t.mock.method(modelo, 'listarComprobantes', async opciones => {
+    t.mock.method(modelo, 'listarComprobantes', async (opciones) => {
         filtros.push(opciones);
         return { comprobantes: [], total: 0, paginas: 0 };
     });
@@ -41,8 +52,10 @@ test('el controlador confirma qué venta filtró sin alterar el listado general'
     assert.equal(filtros[1].idVenta, undefined);
 });
 
-test('un filtro inválido no se convierte en listado de todos los comprobantes', async t => {
-    const consulta = t.mock.method(modelo, 'listarComprobantes', async () => { throw new Error('No debe consultar'); });
+test('un filtro inválido no se convierte en listado de todos los comprobantes', async (t) => {
+    const consulta = t.mock.method(modelo, 'listarComprobantes', async () => {
+        throw new Error('No debe consultar');
+    });
     for (const valor of ['0', '-1', '51x', '51 OR 1=1', ['51', '52'], {}]) {
         const res = respuesta();
         await controlador.listarComprobantes({ query: { id_venta: valor } }, res);

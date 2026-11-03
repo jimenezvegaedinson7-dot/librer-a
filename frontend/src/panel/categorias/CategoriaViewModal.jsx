@@ -1,5 +1,4 @@
 import { FaAlignLeft, FaCircleCheck, FaCircleXmark } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -17,10 +16,7 @@ export default function CategoriaViewModal({ categoria, abierto, onCerrar }) {
             </div>
 
             <div className="mt-5">
-                <Ficha
-                    icono={activa ? <FaCircleCheck className="text-success" /> : <FaCircleXmark className="text-slate-500" />}
-                    etiqueta="Estado"
-                >
+                <Ficha icono={activa ? <FaCircleCheck className="text-success" /> : <FaCircleXmark className="text-slate-500" />} etiqueta="Estado">
                     <Badge color={activa ? 'success' : 'neutral'}>{activa ? 'Activa' : 'Inactiva'}</Badge>
                 </Ficha>
             </div>
@@ -30,14 +26,14 @@ export default function CategoriaViewModal({ categoria, abierto, onCerrar }) {
                     <FaAlignLeft /> Descripción
                 </div>
                 <div className="min-h-[110px] rounded-xl border border-primary-200 bg-parchment-200 px-4 py-3">
-                    <p className="text-sm leading-6 text-primary-500">
-                        {categoria.descripcion || 'No se registró una descripción para esta categoría.'}
-                    </p>
+                    <p className="text-sm leading-6 text-primary-500">{categoria.descripcion || 'No se registró una descripción para esta categoría.'}</p>
                 </div>
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>
+                    Cerrar
+                </Button>
             </div>
         </Modal>
     );

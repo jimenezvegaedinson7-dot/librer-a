@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-
-import { FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
-
-import { FaTags, FaCircleCheck, FaBan } from 'react-icons/fa6';
+import { FaMagnifyingGlass, FaRotate, FaXmark, FaTags, FaCircleCheck, FaBan, FaEye, FaPenToSquare, FaTrash } from 'react-icons/fa6';
 import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
@@ -17,11 +14,7 @@ import { ConfirmarEliminacion } from '../ui/ConfirmarEliminacion';
 import { DataTable } from '../ui/DataTable';
 import { EstadoActivo } from '../ui/Badge';
 import { BtnAccion } from '../ui/Acciones';
-
-import { FaEye, FaPenToSquare, FaTrash } from 'react-icons/fa6';
-
-import { useToast } from '../../app/providers/ToastProvider';
-
+import { useToast } from '../../app/providers/ToastContext';
 import { listarCategorias, obtenerCategoria, eliminarCategoria } from './categoriasService';
 import CategoriaForm from './CategoriaForm';
 import CategoriaViewModal from './CategoriaViewModal';
@@ -33,15 +26,21 @@ const columnasCategorias = [
     { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_categoria}</span> },
     { titulo: 'Nombre', render: (fila) => <span className="font-semibold text-slate-700">{fila.nombre}</span> },
     { titulo: 'Descripción', render: (fila) => <span className="text-slate-700">{fila.descripcion || 'Sin descripción'}</span> },
-    { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
+    { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> }
 ];
 
 function accionesCategoria(fila, { onVer, onEditar, onEliminar }) {
     return (
         <>
-            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver categoría"><FaEye /></BtnAccion>
-            <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar categoría"><FaPenToSquare /></BtnAccion>
-            <BtnAccion tipo="eliminar" onClick={() => onEliminar(fila)} titulo="Eliminar categoría"><FaTrash /></BtnAccion>
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver categoría">
+                <FaEye />
+            </BtnAccion>
+            <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar categoría">
+                <FaPenToSquare />
+            </BtnAccion>
+            <BtnAccion tipo="eliminar" onClick={() => onEliminar(fila)} titulo="Eliminar categoría">
+                <FaTrash />
+            </BtnAccion>
         </>
     );
 }
@@ -59,11 +58,7 @@ function Contador({ cargando, error, total, activas, inactivas }) {
 function TablaCategorias({ titulo, subtitulo, paginadas, contador, pagina, totalPaginas, onCambiarPagina, color, onVer, onEditar, onEliminar }) {
     return (
         <Card>
-            <CardHeader
-                titulo={titulo}
-                subtitulo={subtitulo}
-                acciones={<span className={`rounded-full px-3 py-1 text-xs font-bold ${color}`}>{contador}</span>}
-            />
+            <CardHeader titulo={titulo} subtitulo={subtitulo} acciones={<span className={`rounded-full px-3 py-1 text-xs font-bold ${color}`}>{contador}</span>} />
             <CardBody className="p-0">
                 <DataTable
                     etiqueta={titulo}
@@ -106,9 +101,6 @@ export default function CategoriaPage() {
         }
     };
 
-    // Carga inicial. `cargando` ya nace en true, así que este efecto no
-    // enciende el spinner: solo espera la respuesta y entonces actualiza.
-    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
         let vigente = true;
 
@@ -130,8 +122,6 @@ export default function CategoriaPage() {
         };
     }, []);
 
-    // Al buscar se vuelve a la primera página: se hace aquí, en el
-    // evento, y no en un efecto que la reinicie después del render.
     const alBuscar = (valor) => {
         setBusqueda(valor);
         setPaginaActivas(1);
@@ -153,8 +143,6 @@ export default function CategoriaPage() {
     const totalActivas = Math.ceil(categoriasActivas.length / POR_PAGINA);
     const totalInactivas = Math.ceil(categoriasInactivas.length / POR_PAGINA);
 
-    // Si la lista se acorta (búsqueda o borrado) la página se recorta
-    // durante el render en vez de corregirse después con un efecto.
     const paginaActivasActual = totalActivas > 0 ? Math.min(paginaActivas, totalActivas) : 1;
     const paginaInactivasActual = totalInactivas > 0 ? Math.min(paginaInactivas, totalInactivas) : 1;
 
@@ -205,21 +193,28 @@ export default function CategoriaPage() {
 
     return (
         <div className="space-y-4">
-            <PageHeader
-                titulo="Categorías"
-                descripcion="Administra las categorías de los libros"
-            />
+            <PageHeader titulo="Categorías" descripcion="Administra las categorías de los libros" />
             <Contador cargando={cargando} error={error} total={categorias.length} activas={categoriasActivas.length} inactivas={categoriasInactivas.length} />
 
             <Card>
                 <CardHeader
                     titulo="Catálogo de categorías"
                     subtitulo="Busca categorías por nombre o descripción"
-                    acciones={<div className="tabla-filtros-acciones">
-                        <Button variante="secondary" onClick={cargarCategorias} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
-                        <AltaFlotante etiqueta="Nueva categoría" titulo="Registrar categoría" subtitulo="El nombre es obligatorio; la descripción es opcional."
-                            formulario={CategoriaForm} eventoRegistro="onCategoriaCreada" onRegistrado={categoriaCreada} />
-                    </div>}
+                    acciones={
+                        <div className="tabla-filtros-acciones">
+                            <Button variante="secondary" onClick={cargarCategorias} disabled={cargando}>
+                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
+                            </Button>
+                            <AltaFlotante
+                                etiqueta="Nueva categoría"
+                                titulo="Registrar categoría"
+                                subtitulo="El nombre es obligatorio; la descripción es opcional."
+                                formulario={CategoriaForm}
+                                eventoRegistro="onCategoriaCreada"
+                                onRegistrado={categoriaCreada}
+                            />
+                        </div>
+                    }
                     filtros={
                         <div className="filtros-grid filtros-grid--busqueda">
                             <div className="filtro-busqueda">
@@ -237,8 +232,7 @@ export default function CategoriaPage() {
                                         type="button"
                                         onClick={() => alBuscar('')}
                                         title="Limpiar búsqueda"
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-slate-700"
-                                    >
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-slate-700">
                                         <FaXmark />
                                     </button>
                                 )}
@@ -253,19 +247,11 @@ export default function CategoriaPage() {
             {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarCategorias} />}
 
             {!cargando && !error && categorias.length === 0 && (
-                <EmptyState
-                    titulo="No hay categorías registradas"
-                    descripcion="Pulsa Nueva categoría para completar los datos y registrarla."
-                    icono={<FaMagnifyingGlass />}
-                />
+                <EmptyState titulo="No hay categorías registradas" descripcion="Pulsa Nueva categoría para completar los datos y registrarla." icono={<FaMagnifyingGlass />} />
             )}
 
             {!cargando && !error && categorias.length > 0 && categoriasFiltradas.length === 0 && (
-                <EmptyState
-                    titulo="No se encontraron categorías"
-                    descripcion="Cambia la búsqueda o limpia los filtros."
-                    icono={<FaMagnifyingGlass />}
-                />
+                <EmptyState titulo="No se encontraron categorías" descripcion="Cambia la búsqueda o limpia los filtros." icono={<FaMagnifyingGlass />} />
             )}
 
             {!cargando && !error && categoriasActivas.length > 0 && (
@@ -313,8 +299,7 @@ export default function CategoriaPage() {
                 titulo="Eliminar categoría"
                 mensaje={
                     <>
-                        ¿Estás seguro de que deseas eliminar la categoría{' '}
-                        <span className="font-bold">"{categoriaEliminar?.nombre}"</span>?
+                        ¿Estás seguro de que deseas eliminar la categoría <span className="font-bold">"{categoriaEliminar?.nombre}"</span>?
                     </>
                 }
                 advertencia="Si la categoría tiene libros relacionados, el sistema no permitirá eliminarla."
@@ -327,4 +312,3 @@ export default function CategoriaPage() {
         </div>
     );
 }
-

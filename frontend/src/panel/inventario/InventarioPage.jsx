@@ -1,9 +1,18 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-
-import { FaBoxesStacked, FaClockRotateLeft, FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
-
-import { FaWarehouse, FaCircleCheck, FaTriangleExclamation, FaBoxOpen } from 'react-icons/fa6';
+import {
+    FaBoxesStacked,
+    FaClockRotateLeft,
+    FaMagnifyingGlass,
+    FaRotate,
+    FaXmark,
+    FaWarehouse,
+    FaCircleCheck,
+    FaTriangleExclamation,
+    FaBoxOpen,
+    FaEye,
+    FaPenToSquare
+} from 'react-icons/fa6';
 import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
@@ -18,17 +27,14 @@ import { DataTable } from '../ui/DataTable';
 import { FechaTabla } from '../ui/FechaTabla';
 import { Badge } from '../ui/Badge';
 import { BtnAccion } from '../ui/Acciones';
-
-import { FaEye, FaPenToSquare } from 'react-icons/fa6';
-
-import { useToast } from '../../app/providers/ToastProvider';
+import { useToast } from '../../app/providers/ToastContext';
 import { useRol } from '../auth/useRol';
-
 import { listarInventario, obtenerInventarioLibro } from './inventarioService';
 import InventarioForm from './InventarioForm';
 import InventarioViewModal from './InventarioViewModal';
 import InventarioEditModal from './InventarioEditModal';
 import MovimientosModal from './MovimientosModal';
+import { useCarga } from '../lib/hooks/useCarga';
 
 const POR_PAGINA = 10;
 
@@ -46,15 +52,19 @@ const columnasInventario = [
     { titulo: 'Stock', alineacion: 'centro', render: (fila) => <EstadoStock stock={fila.stock} stockMinimo={fila.stock_minimo} /> },
     { titulo: 'Stock mínimo', alineacion: 'centro', render: (fila) => <span className="font-medium text-slate-700">{Number(fila.stock_minimo)}</span> },
     { titulo: 'Ubicación', render: (fila) => <span className="text-slate-700">{fila.ubicacion || 'No registrada'}</span> },
-    { titulo: 'Última actualización', render: fila => <FechaTabla valor={fila.ultima_actualizacion} vacio="Sin registro" /> },
+    { titulo: 'Última actualización', render: (fila) => <FechaTabla valor={fila.ultima_actualizacion} vacio="Sin registro" /> }
 ];
 
 function accionesInventario(fila, { onVer, onEditar, puedeEditar }) {
     return (
         <>
-            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver inventario"><FaEye /></BtnAccion>
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver inventario">
+                <FaEye />
+            </BtnAccion>
             {puedeEditar && (
-                <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar inventario"><FaPenToSquare /></BtnAccion>
+                <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar inventario">
+                    <FaPenToSquare />
+                </BtnAccion>
             )}
         </>
     );
@@ -84,7 +94,7 @@ export default function InventarioPage() {
 
     const [paginaActual, setPaginaActual] = useState(1);
 
-const [inventarioVer, setInventarioVer] = useState(null);
+    const [inventarioVer, setInventarioVer] = useState(null);
     const [inventarioEditar, setInventarioEditar] = useState(null);
     const [movimientosAbierto, setMovimientosAbierto] = useState(false);
 
@@ -100,9 +110,7 @@ const [inventarioVer, setInventarioVer] = useState(null);
         }
     };
 
-    useEffect(() => {
-        cargarInventario();
-    }, []);
+    useCarga(cargarInventario);
 
     const totalStockBajo = inventario.filter((registro) => {
         const stock = Number(registro.stock);
@@ -150,19 +158,20 @@ const [inventarioVer, setInventarioVer] = useState(null);
         }
     };
 
-    // Desde una notificación: ?ver=... abre directamente el inventario del libro.
     const [parametros, setParametros] = useSearchParams();
-    useEffect(() => {
+    useCarga(() => {
         const ver = parametros.get('ver');
         if (!ver) return;
-        setParametros(actuales => {
-            const siguientes = new URLSearchParams(actuales);
-            siguientes.delete('ver');
-            return siguientes;
-        }, { replace: true });
+        setParametros(
+            (actuales) => {
+                const siguientes = new URLSearchParams(actuales);
+                siguientes.delete('ver');
+                return siguientes;
+            },
+            { replace: true }
+        );
         verInventario({ id_libro: ver });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [parametros]);
+    }, parametros.toString());
 
     const editarInventario = async (registro) => {
         try {
@@ -194,36 +203,42 @@ const [inventarioVer, setInventarioVer] = useState(null);
         <div className="space-y-4">
             <PageHeader
                 titulo="Inventario"
-                descripcion={
-                    puedeEditarStock
-                        ? 'Administra el stock y ubicación de los libros'
-                        : 'Consulta el stock y la ubicación de los libros (solo lectura)'
-                }
+                descripcion={puedeEditarStock ? 'Administra el stock y ubicación de los libros' : 'Consulta el stock y la ubicación de los libros (solo lectura)'}
                 acciones={
                     <Button variante="secondary" onClick={() => setMovimientosAbierto(true)}>
                         <FaClockRotateLeft /> Movimientos
                     </Button>
                 }
             />
-            <Contador
-                cargando={cargando}
-                error={error}
-                total={inventario.length}
-                disponibles={totalDisponibles}
-                stockBajo={totalStockBajo}
-                sinStock={totalSinStock}
-            />
+            <Contador cargando={cargando} error={error} total={inventario.length} disponibles={totalDisponibles} stockBajo={totalStockBajo} sinStock={totalSinStock} />
 
             <Card>
                 <CardHeader
                     titulo="Control de inventario"
                     subtitulo="Busca libros y filtra según el nivel de stock"
-                    acciones={<div className="tabla-filtros-acciones">
-                        {hayFiltros && <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>}
-                        <Button variante="secondary" onClick={cargarInventario} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
-                        {puedeEditarStock && <AltaFlotante etiqueta="Registrar stock" titulo="Registrar stock" subtitulo="Selecciona un libro e indica sus existencias y ubicación." grande
-                            formulario={InventarioForm} eventoRegistro="onInventarioCreado" onRegistrado={inventarioCreado} />}
-                    </div>}
+                    acciones={
+                        <div className="tabla-filtros-acciones">
+                            {hayFiltros && (
+                                <Button variante="secondary" onClick={limpiarFiltros}>
+                                    Limpiar
+                                </Button>
+                            )}
+                            <Button variante="secondary" onClick={cargarInventario} disabled={cargando}>
+                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
+                            </Button>
+                            {puedeEditarStock && (
+                                <AltaFlotante
+                                    etiqueta="Registrar stock"
+                                    titulo="Registrar stock"
+                                    subtitulo="Selecciona un libro e indica sus existencias y ubicación."
+                                    grande
+                                    formulario={InventarioForm}
+                                    eventoRegistro="onInventarioCreado"
+                                    onRegistrado={inventarioCreado}
+                                />
+                            )}
+                        </div>
+                    }
                     filtros={
                         <div className="filtros-grid filtros-grid--dos">
                             <div className="filtro-busqueda">
@@ -231,7 +246,10 @@ const [inventarioVer, setInventarioVer] = useState(null);
                                     label="Libro o ubicación"
                                     type="text"
                                     value={busqueda}
-                                    onChange={(e) => { setBusqueda(e.target.value); setPaginaActual(1); }}
+                                    onChange={(e) => {
+                                        setBusqueda(e.target.value);
+                                        setPaginaActual(1);
+                                    }}
                                     placeholder="Buscar libro o ubicación..."
                                     icono={<FaMagnifyingGlass />}
                                     className="pr-8 sm:w-72"
@@ -239,30 +257,35 @@ const [inventarioVer, setInventarioVer] = useState(null);
                                 {busqueda && (
                                     <button
                                         type="button"
-                                        onClick={() => { setBusqueda(''); setPaginaActual(1); }}
+                                        onClick={() => {
+                                            setBusqueda('');
+                                            setPaginaActual(1);
+                                        }}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
-                                        title="Limpiar búsqueda"
-                                    >
+                                        title="Limpiar búsqueda">
                                         <FaXmark />
                                     </button>
                                 )}
                             </div>
 
-                            <Select label="Nivel de stock" value={filtroStock} onChange={(e) => { setFiltroStock(e.target.value); setPaginaActual(1); }}>
+                            <Select
+                                label="Nivel de stock"
+                                value={filtroStock}
+                                onChange={(e) => {
+                                    setFiltroStock(e.target.value);
+                                    setPaginaActual(1);
+                                }}>
                                 <option value="todos">Todo el stock</option>
                                 <option value="disponible">Disponible</option>
                                 <option value="bajo">Stock bajo</option>
                                 <option value="sin-stock">Sin stock</option>
                             </Select>
-
                         </div>
                     }
                 />
             </Card>
 
-            {cargando && (
-                <TableSkeleton columnas={6} filas={8} titulo />
-            )}
+            {cargando && <TableSkeleton columnas={6} filas={8} titulo />}
 
             {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarInventario} />}
 
@@ -279,7 +302,11 @@ const [inventarioVer, setInventarioVer] = useState(null);
                     titulo="No se encontraron registros"
                     descripcion="Cambia la búsqueda o el filtro seleccionado."
                     icono={<FaMagnifyingGlass />}
-                    acciones={<Button variante="secondary" onClick={limpiarFiltros}>Limpiar filtros</Button>}
+                    acciones={
+                        <Button variante="secondary" onClick={limpiarFiltros}>
+                            Limpiar filtros
+                        </Button>
+                    }
                 />
             )}
 
@@ -321,4 +348,3 @@ const [inventarioVer, setInventarioVer] = useState(null);
         </div>
     );
 }
-

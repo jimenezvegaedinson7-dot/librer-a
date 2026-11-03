@@ -6,11 +6,30 @@ const portada = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAA
 async function preparar(page) {
     const control = {
         autores: [{ id_autor: 1, nombre: 'César', apellido: 'Vallejo', estado: 1 }],
-        libros: [{ id_libro: 1, titulo: 'Los heraldos negros', autor: 'César Vallejo', categoria: 'Poesía',
-            id_autor: 1, id_categoria: 1, precio: '40', stock: 3, estado: 1, portada,
-            descuento_porcentaje: null, precio_oferta: null, descuento_hasta: null,
-            precio_final: 40, descuento_vigente: 0, descuento_porcentaje_efectivo: 0 }],
-        falloAutor: false, altasAutores: [], escriturasLibros: [], portadasSubidas: [],
+        libros: [
+            {
+                id_libro: 1,
+                titulo: 'Los heraldos negros',
+                autor: 'César Vallejo',
+                categoria: 'Poesía',
+                id_autor: 1,
+                id_categoria: 1,
+                precio: '40',
+                stock: 3,
+                estado: 1,
+                portada,
+                descuento_porcentaje: null,
+                precio_oferta: null,
+                descuento_hasta: null,
+                precio_final: 40,
+                descuento_vigente: 0,
+                descuento_porcentaje_efectivo: 0
+            }
+        ],
+        falloAutor: false,
+        altasAutores: [],
+        escriturasLibros: [],
+        portadasSubidas: []
     };
     await page.addInitScript((usuario) => {
         localStorage.setItem('token', 'token-de-prueba');
@@ -44,11 +63,23 @@ async function preparar(page) {
             const id = metodo === 'POST' ? control.libros.length + 1 : Number(ruta.split('/').pop());
             const anterior = control.libros.find((l) => l.id_libro === id) || {};
             const autor = control.autores.find((a) => a.id_autor === Number(campo('id_autor')));
-            const libro = { ...anterior, id_libro: id, titulo: campo('titulo'), id_autor: autor.id_autor,
-                autor: `${autor.nombre} ${autor.apellido}`, id_categoria: 1, categoria: 'Poesía', precio: campo('precio'),
-                estado: 1, stock: anterior.stock ?? 0, descuento_porcentaje: campo('descuento_porcentaje') || null,
-                precio_oferta: campo('precio_oferta') || null, descuento_hasta: campo('descuento_hasta') || null,
-                descuento_vigente: 0, precio_final: Number(campo('precio')) };
+            const libro = {
+                ...anterior,
+                id_libro: id,
+                titulo: campo('titulo'),
+                id_autor: autor.id_autor,
+                autor: `${autor.nombre} ${autor.apellido}`,
+                id_categoria: 1,
+                categoria: 'Poesía',
+                precio: campo('precio'),
+                estado: 1,
+                stock: anterior.stock ?? 0,
+                descuento_porcentaje: campo('descuento_porcentaje') || null,
+                precio_oferta: campo('precio_oferta') || null,
+                descuento_hasta: campo('descuento_hasta') || null,
+                descuento_vigente: 0,
+                precio_final: Number(campo('precio'))
+            };
             control.libros = [...control.libros.filter((l) => l.id_libro !== id), libro];
             control.escriturasLibros.push({ metodo, id_autor: libro.id_autor, titulo: libro.titulo });
             return route.fulfill({ json: { success: true, id_libro: id } });
@@ -108,8 +139,13 @@ for (const width of [390, 1440]) {
         await page.locator('[name="descripcion"]').fill('Descripción conservada');
         await page.locator('[name="precio"]').fill('35');
         await page.locator('[name="id_categoria"]').selectOption('1');
-        await page.locator('input[type="file"]').setInputFiles({ name: 'portada.png', mimeType: 'image/png',
-            buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64') });
+        await page
+            .locator('input[type="file"]')
+            .setInputFiles({
+                name: 'portada.png',
+                mimeType: 'image/png',
+                buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64')
+            });
         await page.getByRole('dialog', { name: 'Registrar libro', exact: true }).screenshot({ path: testInfo.outputPath('registrar-libro.png') });
         await page.getByRole('button', { name: 'Agregar autor', exact: true }).click();
         await expect(page.getByRole('textbox', { name: 'Nombre', exact: true })).toBeFocused();
@@ -164,49 +200,50 @@ test('editar libro: agrega un autor en el mismo diálogo y conserva los cambios 
     await expect(page.getByRole('cell', { name: 'Julio Ramón Ribeyro', exact: true })).toBeVisible();
 });
 
-for (const width of [390, 1440]) test(`descuento flotante ${width}px: cancelar, validar, aplicar, quitar y guardar`, async ({ page }, testInfo) => {
-    await page.setViewportSize({ width, height: 1000 });
-    const control = await preparar(page);
-    await page.goto('/libros');
-    await page.getByRole('button', { name: 'Nuevo libro', exact: true }).click();
-    await page.locator('[name="titulo"]').fill('Libro con descuento');
-    await page.locator('[name="precio"]').fill('100');
-    await page.locator('[name="id_autor"]').selectOption('1');
-    await page.locator('[name="id_categoria"]').selectOption('1');
-    await expect(page.locator('[name="descuento_porcentaje"]')).toHaveCount(0);
-    const abrir = () => page.getByRole('button', { name: /^(Agregar descuento|Editar descuento)$/ }).click();
-    const modal = page.getByRole('dialog', { name: 'Descuento del libro', exact: true });
-    await abrir();
-    await modal.getByLabel('Porcentaje', { exact: true }).fill('25');
-    await expect(modal.getByLabel('Precio de oferta', { exact: true })).toBeDisabled();
-    await modal.getByRole('button', { name: 'Cancelar', exact: true }).click();
-    await expect(modal).toHaveCount(0);
-    await expect(page.locator('[name="titulo"]')).toHaveValue('Libro con descuento');
-    await abrir();
-    await expect(modal.getByLabel('Porcentaje', { exact: true })).toHaveValue('');
-    await modal.getByLabel('Precio de oferta', { exact: true }).fill('120');
-    await expect(modal.getByRole('button', { name: 'Aplicar descuento', exact: true })).toBeDisabled();
-    await modal.getByLabel('Precio de oferta', { exact: true }).fill('');
-    await modal.getByLabel('Porcentaje', { exact: true }).fill('30');
-    await modal.getByLabel('Hasta (incluido)', { exact: true }).fill('2099-12-31');
-    await page.screenshot({ path: testInfo.outputPath('descuento-flotante.png'), fullPage: true });
-    expect(await modal.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
-    expect(await page.locator('form form').count()).toBe(0);
-    await modal.getByRole('button', { name: 'Aplicar descuento', exact: true }).click();
-    await expect(page.getByText('30% de descuento', { exact: true })).toBeVisible();
-    expect(control.escriturasLibros).toEqual([]);
-    await abrir();
-    await modal.getByRole('button', { name: 'Quitar descuento', exact: true }).click();
-    await expect(page.getByText('30% de descuento', { exact: true })).toHaveCount(0);
-    await abrir();
-    await modal.getByLabel('Precio de oferta', { exact: true }).fill('75');
-    await modal.getByRole('button', { name: 'Aplicar descuento', exact: true }).click();
-    await page.getByRole('button', { name: 'Guardar libro', exact: true }).click();
-    await page.getByRole('dialog', { name: 'Falta la imagen de portada', exact: true }).getByRole('button', { name: 'Continuar sin imagen', exact: true }).click();
-    await expect.poll(() => control.libros.length).toBe(2);
-    expect(control.libros[1].precio_oferta).toBe('75');
-    expect(control.libros[1].descuento_hasta).toBeNull();
-});
+for (const width of [390, 1440])
+    test(`descuento flotante ${width}px: cancelar, validar, aplicar, quitar y guardar`, async ({ page }, testInfo) => {
+        await page.setViewportSize({ width, height: 1000 });
+        const control = await preparar(page);
+        await page.goto('/libros');
+        await page.getByRole('button', { name: 'Nuevo libro', exact: true }).click();
+        await page.locator('[name="titulo"]').fill('Libro con descuento');
+        await page.locator('[name="precio"]').fill('100');
+        await page.locator('[name="id_autor"]').selectOption('1');
+        await page.locator('[name="id_categoria"]').selectOption('1');
+        await expect(page.locator('[name="descuento_porcentaje"]')).toHaveCount(0);
+        const abrir = () => page.getByRole('button', { name: /^(Agregar descuento|Editar descuento)$/ }).click();
+        const modal = page.getByRole('dialog', { name: 'Descuento del libro', exact: true });
+        await abrir();
+        await modal.getByLabel('Porcentaje', { exact: true }).fill('25');
+        await expect(modal.getByLabel('Precio de oferta', { exact: true })).toBeDisabled();
+        await modal.getByRole('button', { name: 'Cancelar', exact: true }).click();
+        await expect(modal).toHaveCount(0);
+        await expect(page.locator('[name="titulo"]')).toHaveValue('Libro con descuento');
+        await abrir();
+        await expect(modal.getByLabel('Porcentaje', { exact: true })).toHaveValue('');
+        await modal.getByLabel('Precio de oferta', { exact: true }).fill('120');
+        await expect(modal.getByRole('button', { name: 'Aplicar descuento', exact: true })).toBeDisabled();
+        await modal.getByLabel('Precio de oferta', { exact: true }).fill('');
+        await modal.getByLabel('Porcentaje', { exact: true }).fill('30');
+        await modal.getByLabel('Hasta (incluido)', { exact: true }).fill('2099-12-31');
+        await page.screenshot({ path: testInfo.outputPath('descuento-flotante.png'), fullPage: true });
+        expect(await modal.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+        expect(await page.locator('form form').count()).toBe(0);
+        await modal.getByRole('button', { name: 'Aplicar descuento', exact: true }).click();
+        await expect(page.getByText('30% de descuento', { exact: true })).toBeVisible();
+        expect(control.escriturasLibros).toEqual([]);
+        await abrir();
+        await modal.getByRole('button', { name: 'Quitar descuento', exact: true }).click();
+        await expect(page.getByText('30% de descuento', { exact: true })).toHaveCount(0);
+        await abrir();
+        await modal.getByLabel('Precio de oferta', { exact: true }).fill('75');
+        await modal.getByRole('button', { name: 'Aplicar descuento', exact: true }).click();
+        await page.getByRole('button', { name: 'Guardar libro', exact: true }).click();
+        await page.getByRole('dialog', { name: 'Falta la imagen de portada', exact: true }).getByRole('button', { name: 'Continuar sin imagen', exact: true }).click();
+        await expect.poll(() => control.libros.length).toBe(2);
+        expect(control.libros[1].precio_oferta).toBe('75');
+        expect(control.libros[1].descuento_hasta).toBeNull();
+    });
 
 test('alta flotante: Escape cierra solo el descuento, conserva el libro y devuelve el foco al botón', async ({ page }) => {
     await preparar(page);
@@ -227,79 +264,86 @@ test('alta flotante: Escape cierra solo el descuento, conserva el libro y devuel
     await page.keyboard.press('Escape');
     await expect(libro).toHaveCount(0);
     await expect(boton).toBeFocused();
-    expect(await page.locator('body').evaluate(el => el.style.overflow)).toBe('');
+    expect(await page.locator('body').evaluate((el) => el.style.overflow)).toBe('');
     await boton.click();
     await expect(libro.locator('[name="titulo"]')).toHaveValue('');
 });
 
-for (const width of [390, 1440]) for (const opcion of ['sin descuento', 'con descuento']) {
-    test(`registro ${width}px: ofrecer descuento y continuar ${opcion}`, async ({ page }, info) => {
+for (const width of [390, 1440])
+    for (const opcion of ['sin descuento', 'con descuento']) {
+        test(`registro ${width}px: ofrecer descuento y continuar ${opcion}`, async ({ page }, info) => {
+            await page.setViewportSize({ width, height: 1000 });
+            const control = await preparar(page);
+            await page.goto('/libros');
+            await page.getByRole('button', { name: 'Nuevo libro', exact: true }).click();
+            const libro = page.getByRole('dialog', { name: 'Registrar libro', exact: true });
+            await libro.locator('[name="titulo"]').fill(`Libro ${opcion}`);
+            await libro.locator('[name="precio"]').fill('100');
+            await libro.locator('[name="id_autor"]').selectOption('1');
+            await libro.locator('[name="id_categoria"]').selectOption('1');
+            await libro.getByRole('button', { name: 'Guardar libro', exact: true }).click();
+            await page.getByRole('dialog', { name: 'Falta la imagen de portada', exact: true }).getByRole('button', { name: 'Continuar sin imagen', exact: true }).click();
+            const pregunta = page.getByRole('dialog', { name: '¿Deseas agregar un descuento?', exact: true });
+            await expect(pregunta).toBeVisible();
+            await expect(pregunta).toContainText('S/ 100.00');
+            expect(control.escriturasLibros).toEqual([]);
+            await pregunta.screenshot({ path: info.outputPath('elegir-descuento.png') });
+            expect(await pregunta.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+
+            if (opcion === 'sin descuento') {
+                await pregunta.getByRole('button', { name: 'Volver al formulario', exact: true }).click();
+                await expect(libro.locator('[name="titulo"]')).toHaveValue('Libro sin descuento');
+                expect(control.escriturasLibros).toEqual([]);
+                await libro.getByRole('button', { name: 'Guardar libro', exact: true }).click();
+                await pregunta.getByRole('button', { name: 'Registrar sin descuento', exact: true }).click();
+            } else {
+                await pregunta.getByRole('button', { name: 'Agregar descuento', exact: true }).click();
+                const descuento = page.getByRole('dialog', { name: 'Descuento del libro', exact: true });
+                await descuento.getByLabel('Porcentaje', { exact: true }).fill('20');
+                await descuento.getByRole('button', { name: 'Aplicar descuento', exact: true }).click();
+                await expect(libro).toContainText('20% de descuento');
+                expect(control.escriturasLibros).toEqual([]);
+                await libro.getByRole('button', { name: 'Guardar libro', exact: true }).click();
+            }
+            await expect(libro).toHaveCount(0);
+            await expect(page.getByText(`Libro ${opcion}`, { exact: true })).toBeVisible();
+            expect(control.escriturasLibros).toHaveLength(1);
+            expect(control.libros[1].descuento_porcentaje).toBe(opcion === 'con descuento' ? '20' : null);
+            expect(control.libros[1].precio_oferta).toBeNull();
+        });
+    }
+
+for (const width of [390, 1440])
+    test(`portada ${width}px: avisa antes de guardar y permite seleccionar la imagen`, async ({ page }, info) => {
         await page.setViewportSize({ width, height: 1000 });
         const control = await preparar(page);
         await page.goto('/libros');
         await page.getByRole('button', { name: 'Nuevo libro', exact: true }).click();
         const libro = page.getByRole('dialog', { name: 'Registrar libro', exact: true });
-        await libro.locator('[name="titulo"]').fill(`Libro ${opcion}`);
-        await libro.locator('[name="precio"]').fill('100');
+        await libro.locator('[name="titulo"]').fill('Libro con portada');
+        await libro.locator('[name="precio"]').fill('40');
         await libro.locator('[name="id_autor"]').selectOption('1');
         await libro.locator('[name="id_categoria"]').selectOption('1');
         await libro.getByRole('button', { name: 'Guardar libro', exact: true }).click();
-        await page.getByRole('dialog', { name: 'Falta la imagen de portada', exact: true }).getByRole('button', { name: 'Continuar sin imagen', exact: true }).click();
-        const pregunta = page.getByRole('dialog', { name: '¿Deseas agregar un descuento?', exact: true });
-        await expect(pregunta).toBeVisible();
-        await expect(pregunta).toContainText('S/ 100.00');
+        const aviso = page.getByRole('dialog', { name: 'Falta la imagen de portada', exact: true });
+        await expect(aviso).toBeVisible();
         expect(control.escriturasLibros).toEqual([]);
-        await pregunta.screenshot({ path: info.outputPath('elegir-descuento.png') });
-        expect(await pregunta.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
-
-        if (opcion === 'sin descuento') {
-            await pregunta.getByRole('button', { name: 'Volver al formulario', exact: true }).click();
-            await expect(libro.locator('[name="titulo"]')).toHaveValue('Libro sin descuento');
-            expect(control.escriturasLibros).toEqual([]);
-            await libro.getByRole('button', { name: 'Guardar libro', exact: true }).click();
-            await pregunta.getByRole('button', { name: 'Registrar sin descuento', exact: true }).click();
-        } else {
-            await pregunta.getByRole('button', { name: 'Agregar descuento', exact: true }).click();
-            const descuento = page.getByRole('dialog', { name: 'Descuento del libro', exact: true });
-            await descuento.getByLabel('Porcentaje', { exact: true }).fill('20');
-            await descuento.getByRole('button', { name: 'Aplicar descuento', exact: true }).click();
-            await expect(libro).toContainText('20% de descuento');
-            expect(control.escriturasLibros).toEqual([]);
-            await libro.getByRole('button', { name: 'Guardar libro', exact: true }).click();
-        }
+        await aviso.screenshot({ path: info.outputPath('aviso-portada.png') });
+        const selector = page.waitForEvent('filechooser');
+        await aviso.getByRole('button', { name: 'Seleccionar portada', exact: true }).click();
+        await (
+            await selector
+        ).setFiles({
+            name: 'portada.png',
+            mimeType: 'image/png',
+            buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64')
+        });
+        await expect(libro.locator('img[src^="blob:"]')).toBeVisible();
+        await expect(libro.locator('[name="titulo"]')).toHaveValue('Libro con portada');
+        await libro.getByRole('button', { name: 'Guardar libro', exact: true }).click();
+        await expect(aviso).toHaveCount(0);
+        await page.getByRole('dialog', { name: '¿Deseas agregar un descuento?', exact: true }).getByRole('button', { name: 'Registrar sin descuento', exact: true }).click();
         await expect(libro).toHaveCount(0);
-        await expect(page.getByText(`Libro ${opcion}`, { exact: true })).toBeVisible();
         expect(control.escriturasLibros).toHaveLength(1);
-        expect(control.libros[1].descuento_porcentaje).toBe(opcion === 'con descuento' ? '20' : null);
-        expect(control.libros[1].precio_oferta).toBeNull();
+        expect(control.portadasSubidas).toEqual([true]);
     });
-}
-
-for (const width of [390, 1440]) test(`portada ${width}px: avisa antes de guardar y permite seleccionar la imagen`, async ({ page }, info) => {
-    await page.setViewportSize({ width, height: 1000 });
-    const control = await preparar(page);
-    await page.goto('/libros');
-    await page.getByRole('button', { name: 'Nuevo libro', exact: true }).click();
-    const libro = page.getByRole('dialog', { name: 'Registrar libro', exact: true });
-    await libro.locator('[name="titulo"]').fill('Libro con portada');
-    await libro.locator('[name="precio"]').fill('40');
-    await libro.locator('[name="id_autor"]').selectOption('1');
-    await libro.locator('[name="id_categoria"]').selectOption('1');
-    await libro.getByRole('button', { name: 'Guardar libro', exact: true }).click();
-    const aviso = page.getByRole('dialog', { name: 'Falta la imagen de portada', exact: true });
-    await expect(aviso).toBeVisible();
-    expect(control.escriturasLibros).toEqual([]);
-    await aviso.screenshot({ path: info.outputPath('aviso-portada.png') });
-    const selector = page.waitForEvent('filechooser');
-    await aviso.getByRole('button', { name: 'Seleccionar portada', exact: true }).click();
-    await (await selector).setFiles({ name: 'portada.png', mimeType: 'image/png',
-        buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64') });
-    await expect(libro.locator('img[src^="blob:"]')).toBeVisible();
-    await expect(libro.locator('[name="titulo"]')).toHaveValue('Libro con portada');
-    await libro.getByRole('button', { name: 'Guardar libro', exact: true }).click();
-    await expect(aviso).toHaveCount(0);
-    await page.getByRole('dialog', { name: '¿Deseas agregar un descuento?', exact: true }).getByRole('button', { name: 'Registrar sin descuento', exact: true }).click();
-    await expect(libro).toHaveCount(0);
-    expect(control.escriturasLibros).toHaveLength(1);
-    expect(control.portadasSubidas).toEqual([true]);
-});

@@ -2,14 +2,11 @@ import { formatearMoneda } from '../../compartido/lib/utils/format';
 import { listarPagos } from '../pagos/pagosService';
 import { obtenerStockBajo } from '../reportes/reportesService';
 
-// Notificaciones = solo eventos que piden atención del administrador:
-// pagos en línea aprobados y libros con stock bajo.
-// Se arman con endpoints existentes; cada una lleva a su registro.
-
 const CLAVE_VISTAS = 'notificacionesVistas';
 const MAX_VISTAS = 300;
 
 const numero = (v) => Number(v) || 0;
+
 const nombreCliente = (texto) => String(texto || '').trim() || 'un cliente';
 
 function deStock(item) {
@@ -22,11 +19,9 @@ function deStock(item) {
         tono: agotado ? 'peligro' : 'aviso',
         etiqueta: agotado ? 'Sin stock' : 'Stock bajo',
         titulo: item.titulo || 'Libro sin título',
-        detalle: agotado
-            ? `Agotado · mínimo configurado ${minimo}`
-            : `Quedan ${stock} de un mínimo de ${minimo}${item.ubicacion ? ` · ${item.ubicacion}` : ''}`,
+        detalle: agotado ? `Agotado · mínimo configurado ${minimo}` : `Quedan ${stock} de un mínimo de ${minimo}${item.ubicacion ? ` · ${item.ubicacion}` : ''}`,
         fecha: null,
-        destino: `/inventario?ver=${item.id_libro}`,
+        destino: `/inventario?ver=${item.id_libro}`
     };
 }
 
@@ -39,27 +34,20 @@ function dePago(pago) {
         titulo: `Pago de ${nombreCliente(pago.cliente?.nombre_completo)}`,
         detalle: `${formatearMoneda(pago.monto_total)} · Venta #${pago.id_venta} · PayU`,
         fecha: pago.fecha_creacion ? new Date(pago.fecha_creacion) : null,
-        destino: `/ventas?ver=${encodeURIComponent(pago.external_reference)}`,
+        destino: `/ventas?ver=${encodeURIComponent(pago.external_reference)}`
     };
 }
 
 export async function obtenerNotificaciones() {
-    const [stock, pagos] = await Promise.all([
-        obtenerStockBajo(),
-        listarPagos({ estado: 'pagada', por_pagina: 15 }).then((r) => r.pagos),
-    ]);
+    const [stock, pagos] = await Promise.all([obtenerStockBajo(), listarPagos({ estado: 'pagada', por_pagina: 15 }).then((r) => r.pagos)]);
 
-    const actividad = [
-        // Solo pagos en línea: los cobros que registra el propio admin no se notifican.
-        ...pagos.filter((p) => p.metodo_pago === 'payu' && p.external_reference).map(dePago),
-    ].sort((a, b) => (b.fecha?.getTime() || 0) - (a.fecha?.getTime() || 0));
+    const actividad = [...pagos.filter((p) => p.metodo_pago === 'payu' && p.external_reference).map(dePago)].sort((a, b) => (b.fecha?.getTime() || 0) - (a.fecha?.getTime() || 0));
 
     const inventario = stock.map(deStock).sort((a, b) => (a.tono === 'peligro' ? -1 : 0) - (b.tono === 'peligro' ? -1 : 0));
 
     return [...actividad, ...inventario];
 }
 
-// Primera vez en este navegador: lo existente se toma como ya visto.
 export function esPrimeraVez() {
     try {
         return localStorage.getItem(CLAVE_VISTAS) === null;
@@ -81,9 +69,7 @@ export function marcarVistas(claves) {
     try {
         const todas = [...new Set([...leerVistas(), ...claves])].slice(-MAX_VISTAS);
         localStorage.setItem(CLAVE_VISTAS, JSON.stringify(todas));
-    } catch {
-        // Sin almacenamiento: las notificaciones se muestran igual.
-    }
+    } catch {}
 }
 
 const relativo = new Intl.RelativeTimeFormat('es', { numeric: 'auto' });

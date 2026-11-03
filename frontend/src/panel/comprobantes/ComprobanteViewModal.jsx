@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-
 import { FaPrint, FaReceipt } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
 import { CargandoPantalla } from '../ui/Spinner';
-
 import { montoEnLetras } from '../lib/utils/numeroALetras';
-
 import { obtenerComprobante } from './comprobantesService';
 import { obtenerEmpresa } from '../configuracion/empresaService';
 import { emisorHistorico } from './emisorHistorico';
@@ -16,10 +12,7 @@ import { correoVisible } from '../lib/utils/cuentas';
 import { useImpresion } from '../lib/hooks/useImpresion';
 
 function formatMoney(value) {
-    return Number(value || 0).toLocaleString('es-PE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
+    return Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function fechaEmision(fecha) {
@@ -35,22 +28,13 @@ function fechaEmision(fecha) {
 function TotalFila({ label, value, strong = false }) {
     return (
         <div className="grid grid-cols-[1fr_160px] items-center">
-            <div className={`px-3 py-2 text-right ${strong ? 'font-bold' : ''}`}>
-                {label} :
-            </div>
-            <div className={`border border-black px-3 py-2 text-right ${strong ? 'font-bold' : ''}`}>
-                S/ {formatMoney(value)}
-            </div>
+            <div className={`px-3 py-2 text-right ${strong ? 'font-bold' : ''}`}>{label} :</div>
+            <div className={`border border-black px-3 py-2 text-right ${strong ? 'font-bold' : ''}`}>S/ {formatMoney(value)}</div>
         </div>
     );
 }
 
-export default function ComprobanteViewModal({
-    comprobante,
-    abierto,
-    onCerrar,
-    autoImprimir = false,
-}) {
+export default function ComprobanteViewModal({ comprobante, abierto, onCerrar, autoImprimir = false }) {
     const [detalle, setDetalle] = useState(null);
     const [empresa, setEmpresa] = useState({});
     const [cargando, setCargando] = useState(false);
@@ -71,10 +55,7 @@ export default function ComprobanteViewModal({
             try {
                 setCargando(true);
                 setError('');
-                const [datos, datosEmpresa] = await Promise.all([
-                    obtenerComprobante(idComprobante),
-                    obtenerEmpresa().catch(() => null),
-                ]);
+                const [datos, datosEmpresa] = await Promise.all([obtenerComprobante(idComprobante), obtenerEmpresa().catch(() => null)]);
                 if (!activo) return;
                 if (!datos || String(datos.id_comprobante) !== String(idComprobante)) throw new Error('Comprobante no disponible');
                 setDetalle(datos);
@@ -90,7 +71,9 @@ export default function ComprobanteViewModal({
         };
 
         cargar();
-        return () => { activo = false; };
+        return () => {
+            activo = false;
+        };
     }, [abierto, idComprobante]);
 
     useEffect(() => {
@@ -111,9 +94,7 @@ export default function ComprobanteViewModal({
     if (!abierto) return null;
 
     const esFactura = detalle?.tipo === 'factura';
-    // Denominación temporal: el sistema aún no emite el comprobante
-    // electrónico ante SUNAT, así que boletas y facturas no se presentan como
-    // documento electrónico oficial.
+
     const tipoLabel = 'COMPROBANTE DE VENTA';
 
     const empresaData = emisorHistorico(detalle || {}, empresa);
@@ -143,11 +124,21 @@ export default function ComprobanteViewModal({
             grande
             footer={
                 <div className="no-print flex gap-2">
-                    <Button variante="secondary" onClick={onCerrar} disabled={imprimiendo}>Cerrar</Button>
-                    <Button onClick={() => { impresoRef.current = true; imprimir(); }} icono={<FaPrint />} disabled={!listo} cargando={imprimiendo}>Imprimir</Button>
+                    <Button variante="secondary" onClick={onCerrar} disabled={imprimiendo}>
+                        Cerrar
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            impresoRef.current = true;
+                            imprimir();
+                        }}
+                        icono={<FaPrint />}
+                        disabled={!listo}
+                        cargando={imprimiendo}>
+                        Imprimir
+                    </Button>
                 </div>
-            }
-        >
+            }>
             {(cargando || (!error && !listo && idComprobante)) && (
                 <div className="py-10">
                     <CargandoPantalla texto="Cargando comprobante..." />
@@ -161,42 +152,24 @@ export default function ComprobanteViewModal({
                 <div
                     id="boleta-documento"
                     ref={documentoRef}
-                    className="print-area comprobante-documento relative mx-auto w-full max-w-[1100px] border border-black bg-white p-3 text-[12px] font-sans text-black"
-                >
+                    className="print-area comprobante-documento relative mx-auto w-full max-w-[1100px] border border-black bg-white p-3 text-[12px] font-sans text-black">
                     {anulado && (
-                        <div
-                            className="pointer-events-none absolute inset-0 flex items-center justify-center"
-                            aria-hidden="true"
-                        >
-                            <span className="-rotate-12 rounded-lg border-4 border-red-600 px-6 py-2 text-[48px] font-black tracking-[0.2em] text-red-600 opacity-40">
-                                ANULADO
-                            </span>
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
+                            <span className="-rotate-12 rounded-lg border-4 border-red-600 px-6 py-2 text-[48px] font-black tracking-[0.2em] text-red-600 opacity-40">ANULADO</span>
                         </div>
                     )}
-                    {/* ========================= */}
-                    {/* CABECERA                   */}
-                    {/* ========================= */}
+
                     <div className="comprobante-cabecera border-b border-black pb-5">
                         <div>
-                            <h1 className="text-[20px] font-bold uppercase leading-tight">
-                                {empresaData.razon_social || '—'}
-                            </h1>
-                            {empresaData.nombre_comercial && (
-                                <p className="mt-1 text-[13px]">{empresaData.nombre_comercial}</p>
-                            )}
-                            {empresaData.direccion && (
-                                <p className="mt-1 text-[12px]">{empresaData.direccion}</p>
-                            )}
+                            <h1 className="text-[20px] font-bold uppercase leading-tight">{empresaData.razon_social || '—'}</h1>
+                            {empresaData.nombre_comercial && <p className="mt-1 text-[13px]">{empresaData.nombre_comercial}</p>}
+                            {empresaData.direccion && <p className="mt-1 text-[12px]">{empresaData.direccion}</p>}
                         </div>
 
                         <div className="border-2 border-black px-3 py-2 text-center">
                             <div className="text-[14px] font-bold uppercase">{tipoLabel}</div>
-                            <div className="mt-1 text-[12px] font-bold">
-                                RUC: {empresaData.ruc || '—'}
-                            </div>
-                            <div className="mt-1 text-[16px] font-bold tracking-wide">
-                                {numeroSerie}
-                            </div>
+                            <div className="mt-1 text-[12px] font-bold">RUC: {empresaData.ruc || '—'}</div>
+                            <div className="mt-1 text-[16px] font-bold tracking-wide">{numeroSerie}</div>
                         </div>
                     </div>
 
@@ -206,9 +179,6 @@ export default function ComprobanteViewModal({
                         </p>
                     )}
 
-                    {/* ========================= */}
-                    {/* DATOS DEL COMPRADOR        */}
-                    {/* ========================= */}
                     <div className="py-5">
                         <div className="comprobante-cliente">
                             <span className="font-medium">Fecha de Emisión</span>
@@ -221,11 +191,7 @@ export default function ComprobanteViewModal({
 
                             <span className="font-medium">Documento</span>
                             <span>:</span>
-                            <span>
-                                {clienteDoc
-                                    ? `${clienteTipoDoc} - ${clienteDoc}`
-                                    : '—'}
-                            </span>
+                            <span>{clienteDoc ? `${clienteTipoDoc} - ${clienteDoc}` : '—'}</span>
 
                             <span className="font-medium">Tipo de Moneda</span>
                             <span>:</span>
@@ -237,83 +203,62 @@ export default function ComprobanteViewModal({
                         </div>
                     </div>
 
-                    {/* ========================= */}
-                    {/* DETALLE                    */}
-                    {/* ========================= */}
-                    <div className="comprobante-tabla"><table className="w-full border-collapse border border-black">
-                        <thead>
-                            <tr>
-                                <th className="w-[10%] border-r border-black px-2 py-2 font-bold">Cantidad</th>
-                                <th className="w-[14%] border-r border-black px-2 py-2 font-bold">Unidad Medida</th>
-                                <th className="border-r border-black px-3 py-2 font-bold">Descripción</th>
-                                <th className="w-[15%] border-r border-black px-2 py-2 font-bold">Valor Unitario</th>
-                                <th className="w-[13%] border-r border-black px-2 py-2 font-bold">Descuento</th>
-                                <th className="w-[17%] px-2 py-2 font-bold">Importe de Venta</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {detalles.map((item, index) => {
-                                const cantidad = Number(item.cantidad || 0);
-                                const precio = Number(item.precio_unitario ?? 0);
-                                const descuento = Number(item.descuento || 0);
-                                const importe = Number(item.subtotal ?? (cantidad * precio - descuento));
+                    <div className="comprobante-tabla">
+                        <table className="w-full border-collapse border border-black">
+                            <thead>
+                                <tr>
+                                    <th className="w-[10%] border-r border-black px-2 py-2 font-bold">Cantidad</th>
+                                    <th className="w-[14%] border-r border-black px-2 py-2 font-bold">Unidad Medida</th>
+                                    <th className="border-r border-black px-3 py-2 font-bold">Descripción</th>
+                                    <th className="w-[15%] border-r border-black px-2 py-2 font-bold">Valor Unitario</th>
+                                    <th className="w-[13%] border-r border-black px-2 py-2 font-bold">Descuento</th>
+                                    <th className="w-[17%] px-2 py-2 font-bold">Importe de Venta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {detalles.map((item, index) => {
+                                    const cantidad = Number(item.cantidad || 0);
+                                    const precio = Number(item.precio_unitario ?? 0);
+                                    const descuento = Number(item.descuento || 0);
+                                    const importe = Number(item.subtotal ?? cantidad * precio - descuento);
 
-                                return (
-                                    <tr
-                                        key={item.id_detalle || item.id_libro || index}
-                                        className="border-t border-black"
-                                    >
-                                        <td className="border-r border-black px-2 py-3 text-center">
-                                            {cantidad.toFixed(2)}
-                                        </td>
-                                        <td className="border-r border-black px-2 py-3 text-center">
-                                            UNIDAD
-                                        </td>
-                                        <td className="border-r border-black px-3 py-3">
-                                            {item.titulo || '—'}
-                                        </td>
-                                        <td className="border-r border-black px-3 py-3 text-right">
-                                            {formatMoney(precio)}
-                                        </td>
-                                        <td className="border-r border-black px-3 py-3 text-right">
-                                            {formatMoney(descuento)}
-                                        </td>
-                                        <td className="px-3 py-3 text-right">
-                                            {formatMoney(importe)}
+                                    return (
+                                        <tr key={item.id_detalle || item.id_libro || index} className="border-t border-black">
+                                            <td className="border-r border-black px-2 py-3 text-center">{cantidad.toFixed(2)}</td>
+                                            <td className="border-r border-black px-2 py-3 text-center">UNIDAD</td>
+                                            <td className="border-r border-black px-3 py-3">{item.titulo || '—'}</td>
+                                            <td className="border-r border-black px-3 py-3 text-right">{formatMoney(precio)}</td>
+                                            <td className="border-r border-black px-3 py-3 text-right">{formatMoney(descuento)}</td>
+                                            <td className="px-3 py-3 text-right">{formatMoney(importe)}</td>
+                                        </tr>
+                                    );
+                                })}
+                                {costoEnvio > 0 && (
+                                    <tr className="border-t border-black">
+                                        <td className="border-r border-black px-2 py-3 text-center">1.00</td>
+                                        <td className="border-r border-black px-2 py-3 text-center">SERVICIO</td>
+                                        <td className="border-r border-black px-3 py-3">Servicio de envío a domicilio</td>
+                                        <td className="border-r border-black px-3 py-3 text-right">{formatMoney(costoEnvio)}</td>
+                                        <td className="border-r border-black px-3 py-3 text-right">{formatMoney(0)}</td>
+                                        <td className="px-3 py-3 text-right">{formatMoney(costoEnvio)}</td>
+                                    </tr>
+                                )}
+                                {detalles.length === 0 && (
+                                    <tr className="border-t border-black">
+                                        <td colSpan={6} className="px-3 py-6 text-center">
+                                            Sin detalle registrado.
                                         </td>
                                     </tr>
-                                );
-                            })}
-                            {costoEnvio > 0 && (
-                                <tr className="border-t border-black">
-                                    <td className="border-r border-black px-2 py-3 text-center">1.00</td>
-                                    <td className="border-r border-black px-2 py-3 text-center">SERVICIO</td>
-                                    <td className="border-r border-black px-3 py-3">Servicio de envío a domicilio</td>
-                                    <td className="border-r border-black px-3 py-3 text-right">{formatMoney(costoEnvio)}</td>
-                                    <td className="border-r border-black px-3 py-3 text-right">{formatMoney(0)}</td>
-                                    <td className="px-3 py-3 text-right">{formatMoney(costoEnvio)}</td>
-                                </tr>
-                            )}
-                            {detalles.length === 0 && (
-                                <tr className="border-t border-black">
-                                    <td colSpan={6} className="px-3 py-6 text-center">Sin detalle registrado.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table></div>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
 
-                    {/* ========================= */}
-                    {/* PARTE INFERIOR             */}
-                    {/* ========================= */}
                     <div className="comprobante-totales">
-                        {/* MONTO EN LETRAS */}
                         <div className="flex items-end">
-                            <p className="text-[16px] font-bold uppercase leading-snug">
-                                SON: {montoLetras}
-                            </p>
+                            <p className="text-[16px] font-bold uppercase leading-snug">SON: {montoLetras}</p>
                         </div>
 
-                        {/* TOTALES */}
                         <div className="border border-black p-2">
                             <TotalFila label="Importe Total" value={total} strong />
                         </div>

@@ -1,21 +1,3 @@
--- ============================================================
--- MIGRACIÓN 017: COMPROBANTES Y FACTURACIÓN
--- ============================================================
--- Objetivos:
---   1) Agregar cliente_email a comprobantes (snapshot del
---      comprador para facturas con identidad del comprador).
---   2) Agregar UNIQUE uq_comprobante_venta_tipo (id_venta, tipo)
---      para impedir la doble emisión del mismo comprobante sobre
---      la misma venta (refuerza el chequeo en comprobante.model).
---
--- SEGURO E IDEMPOTENTE (ejecutable 2 veces sin error):
---   - La columna se agrega con ADD COLUMN IF NOT EXISTS.
---   - El índice UNIQUE se crea con guard: MySQL/MariaDB no
---     soportan ADD CONSTRAINT ... IF NOT EXISTS, por eso se
---     verifica primero con INFORMATION_SCHEMA.STATISTICS vía
---     una sentencia preparada.
--- ============================================================
-
 ALTER TABLE comprobantes
     ADD COLUMN IF NOT EXISTS cliente_email VARCHAR(255) NULL;
 

@@ -1,4 +1,3 @@
--- Solo amplía el contrato. No reescribe ni elimina ventas históricas.
 BEGIN;
 ALTER TABLE ventas ADD COLUMN IF NOT EXISTS estado_reembolso VARCHAR(30) NULL;
 ALTER TABLE ventas ADD COLUMN IF NOT EXISTS fecha_solicitud_reembolso TIMESTAMP NULL;

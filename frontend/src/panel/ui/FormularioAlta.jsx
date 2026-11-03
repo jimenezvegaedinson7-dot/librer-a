@@ -1,17 +1,10 @@
 import { useRef, useState } from 'react';
-
 import { FaFloppyDisk, FaRotateLeft } from 'react-icons/fa6';
-
 import { Card, CardBody, CardHeader } from './Card';
 import { Button } from './Button';
 import { Alert } from './Alert';
 import { useFormulario } from '../lib/hooks/useFormulario';
 
-// ============================================================
-// FormularioAlta: formulario de creación genérico con
-// validación por campo, mensajes pulidos y manejo de errores
-// del servidor (incluidos registros duplicados).
-// ============================================================
 export function FormularioAlta({
     titulo,
     subtitulo,
@@ -30,13 +23,9 @@ export function FormularioAlta({
     deshabilitarEnvio,
     incrustado = false,
     onCancelar,
-    onGuardandoChange,
+    onGuardandoChange
 }) {
-    const { formulario, errores, manejarCambio, validarTodos, marcarErrores, restablecer } = useFormulario({
-        inicial: formularioVacio,
-        reglas,
-        sanitizar,
-    });
+    const { formulario, errores, manejarCambio, validarTodos, marcarErrores, restablecer } = useFormulario({ inicial: formularioVacio, reglas, sanitizar });
 
     const [guardando, setGuardando] = useState(false);
     const envioEnCurso = useRef(false);
@@ -66,8 +55,7 @@ export function FormularioAlta({
             setGuardando(true);
             onGuardandoChange?.(true);
             const respuesta = await guardar(formulario);
-            // El botón deja de cargar apenas el servidor confirma el guardado;
-            // el refresco de la lista ocurre en segundo plano (onRegistrado).
+
             setGuardando(false);
             restablecer();
             setMensaje(respuesta?.mensaje || mensajeExito || 'Registro correcto');
@@ -75,12 +63,8 @@ export function FormularioAlta({
         } catch (err) {
             const mensajeServidor = err.response?.data?.mensaje;
             setError(mensajeServidor || mensajeError || 'Error al registrar');
-            // Si el backend reportó un duplicado/conflicto, mostrarlo destacado.
-            marcarErrores(
-                mensajeServidor && /(ya está registrado|ya se encuentra|duplicad|existe|registrado)/i.test(mensajeServidor)
-                    ? { servidor: mensajeServidor }
-                    : {},
-            );
+
+            marcarErrores(mensajeServidor && /(ya está registrado|ya se encuentra|duplicad|existe|registrado)/i.test(mensajeServidor) ? { servidor: mensajeServidor } : {});
         } finally {
             envioEnCurso.current = false;
             setGuardando(false);
@@ -93,20 +77,20 @@ export function FormularioAlta({
 
     return (
         <Contenedor className={incrustado ? undefined : 'admin-form-card'}>
-            {!incrustado && <CardHeader
-                titulo={titulo}
-                subtitulo={subtitulo}
-                icono={icono}
-                acciones={
-                    etiquetaAlta ? <span className="text-xs font-medium text-slate-500">
-                        {etiquetaAlta}
-                    </span> : undefined
-                }
-            />}
+            {!incrustado && (
+                <CardHeader
+                    titulo={titulo}
+                    subtitulo={subtitulo}
+                    icono={icono}
+                    acciones={etiquetaAlta ? <span className="text-xs font-medium text-slate-500">{etiquetaAlta}</span> : undefined}
+                />
+            )}
             <Cuerpo>
                 {errorExterno && (
                     <div className="mb-5">
-                        <Alert tipo="error" cerrar>{errorExterno}</Alert>
+                        <Alert tipo="error" cerrar>
+                            {errorExterno}
+                        </Alert>
                     </div>
                 )}
                 {mensaje && (
@@ -129,7 +113,13 @@ export function FormularioAlta({
 
                     <div className="form-actions flex items-center justify-end gap-3 border-t border-primary-200 pt-5">
                         <Button variante="secondary" type="button" onClick={onCancelar || limpiar} disabled={guardando}>
-                            {onCancelar ? 'Cancelar' : <><FaRotateLeft /> Limpiar</>}
+                            {onCancelar ? (
+                                'Cancelar'
+                            ) : (
+                                <>
+                                    <FaRotateLeft /> Limpiar
+                                </>
+                            )}
                         </Button>
                         <Button type="submit" cargando={guardando} disabled={guardando || deshabilitarEnvio}>
                             <FaFloppyDisk /> {guardando ? 'Guardando...' : botonGuardar || 'Guardar'}

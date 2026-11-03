@@ -1,16 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-
-import {
-    FaCloudArrowUp,
-    FaEye,
-    FaEyeSlash,
-    FaPen,
-    FaPlus,
-    FaRotate,
-    FaTrashCan,
-} from 'react-icons/fa6';
-
-import { FaBullhorn, FaHouse } from 'react-icons/fa6';
+import { FaCloudArrowUp, FaEye, FaEyeSlash, FaPen, FaPlus, FaRotate, FaTrashCan, FaBullhorn, FaHouse } from 'react-icons/fa6';
 import { Indicador, Indicadores } from '../ui/Indicadores';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
@@ -25,19 +14,12 @@ import { Badge } from '../ui/Badge';
 import { BtnAccion } from '../ui/Acciones';
 import { Modal } from '../ui/Modal';
 import { ConfirmarEliminacion } from '../ui/ConfirmarEliminacion';
-import { useToast } from '../../app/providers/ToastProvider';
+import { useToast } from '../../app/providers/ToastContext';
 import { formatearFecha } from '../../compartido/lib/utils/format';
 import ProtagonistaPanel from './ProtagonistaPanel';
+import { listarAnuncios, crearAnuncio, actualizarAnuncio, eliminarAnuncio } from './anunciosService';
+import { useCarga } from '../lib/hooks/useCarga';
 
-import {
-    listarAnuncios,
-    crearAnuncio,
-    actualizarAnuncio,
-    eliminarAnuncio,
-} from './anunciosService';
-
-// El backend valida los magic bytes, pero avisar aquí evita subir 40 MB
-// para que el servidor los rechace. Es una cortesía, no la validación.
 const TIPOS_ACEPTADOS = ['video/mp4', 'video/webm', 'video/quicktime'];
 const LIMITE_MB = 50;
 
@@ -64,12 +46,12 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
 
     const [titulo, setTitulo] = useState(anuncio?.titulo || '');
     const [estado, setEstado] = useState(anuncio ? String(anuncio.estado) : '1');
-    // Textos junto al video en la portada; vacíos usan los de la web.
+
     const [textos, setTextos] = useState({
         etiqueta: anuncio?.etiqueta || '',
         descripcion: anuncio?.descripcion || '',
         boton_texto: anuncio?.boton_texto || '',
-        boton_enlace: anuncio?.boton_enlace || '',
+        boton_enlace: anuncio?.boton_enlace || ''
     });
     const cambiarTexto = (campo) => (e) => {
         setTextos((t) => ({ ...t, [campo]: e.target.value }));
@@ -82,7 +64,9 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
     const previewRef = useRef(null);
     const enviandoRef = useRef(false);
     useEffect(() => {
-        return () => { if (previewRef.current) URL.revokeObjectURL(previewRef.current); };
+        return () => {
+            if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+        };
     }, []);
 
     const asignarVideo = (archivo) => {
@@ -92,8 +76,6 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
         setVideo(archivo);
     };
 
-    // Al elegir un archivo se muestra la vista previa, y cancelar
-    // devuelve el input a vacío para poder resubir el mismo archivo.
     const alElegir = (e) => {
         const archivo = e.target.files?.[0];
         if (!archivo) return;
@@ -115,7 +97,7 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
             setError('Escribe un título para el anuncio');
             return;
         }
-        // En alta no hay archivo previo, así que el video es obligatorio.
+
         if (!esEdicion && !video) {
             setError('Selecciona el video del anuncio');
             return;
@@ -130,9 +112,7 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
             enviandoRef.current = true;
             setGuardando(true);
             setError('');
-            const res = esEdicion
-                ? await actualizarAnuncio(anuncio.id_anuncio, { titulo, estado, video, ...textos })
-                : await crearAnuncio({ titulo, estado, video, ...textos });
+            const res = esEdicion ? await actualizarAnuncio(anuncio.id_anuncio, { titulo, estado, video, ...textos }) : await crearAnuncio({ titulo, estado, video, ...textos });
             exito(res?.mensaje || 'Anuncio guardado');
             await onGuardado();
             onCerrar();
@@ -159,8 +139,7 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
                         {esEdicion ? 'Guardar cambios' : 'Publicar anuncio'}
                     </Button>
                 </>
-            }
-        >
+            }>
             <form id="form-anuncio" onSubmit={enviar} className="space-y-4">
                 <Input
                     label="Título"
@@ -173,19 +152,11 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
                     maxLength={200}
                     requerido
                 />
-                <p className="-mt-2 text-xs text-slate-500">
-                    Se muestra como título grande al lado del video en la portada.
-                </p>
+                <p className="-mt-2 text-xs text-slate-500">Se muestra como título grande al lado del video en la portada.</p>
 
                 <fieldset className="space-y-3 rounded-lg border border-slate-200 p-4">
                     <legend className="px-1 text-sm font-medium text-slate-700">Textos junto al video (opcionales)</legend>
-                    <Input
-                        label="Etiqueta superior"
-                        value={textos.etiqueta}
-                        onChange={cambiarTexto('etiqueta')}
-                        placeholder="Descubre nuestra librería"
-                        maxLength={80}
-                    />
+                    <Input label="Etiqueta superior" value={textos.etiqueta} onChange={cambiarTexto('etiqueta')} placeholder="Descubre nuestra librería" maxLength={80} />
                     <Textarea
                         label="Descripción"
                         value={textos.descripcion}
@@ -195,32 +166,15 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
                         rows={3}
                     />
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <Input
-                            label="Texto del botón"
-                            value={textos.boton_texto}
-                            onChange={cambiarTexto('boton_texto')}
-                            placeholder="Explorar libros"
-                            maxLength={40}
-                        />
-                        <Input
-                            label="Enlace del botón"
-                            value={textos.boton_enlace}
-                            onChange={cambiarTexto('boton_enlace')}
-                            placeholder="/catalogo"
-                            maxLength={200}
-                        />
+                        <Input label="Texto del botón" value={textos.boton_texto} onChange={cambiarTexto('boton_texto')} placeholder="Explorar libros" maxLength={40} />
+                        <Input label="Enlace del botón" value={textos.boton_enlace} onChange={cambiarTexto('boton_enlace')} placeholder="/catalogo" maxLength={200} />
                     </div>
                     <p className="text-xs text-slate-500">
                         Si dejas un campo vacío, la web usa el texto de ejemplo. El enlace debe ser una página de la web, como /catalogo o /nosotros.
                     </p>
                 </fieldset>
 
-                <Select
-                    label="Visibilidad"
-                    value={estado}
-                    onChange={(e) => setEstado(e.target.value)}
-                    requerido
-                >
+                <Select label="Visibilidad" value={estado} onChange={(e) => setEstado(e.target.value)} requerido>
                     <option value="1">Activo — se muestra en la portada</option>
                     <option value="0">Inactivo — oculto</option>
                 </Select>
@@ -237,22 +191,16 @@ function Formulario({ anuncio, onCerrar, onGuardado }) {
                         onChange={alElegir}
                         className="block w-full cursor-pointer rounded-lg border border-slate-300 bg-white text-sm text-slate-600 file:mr-3 file:cursor-pointer file:border-0 file:bg-slate-100 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
                     />
-                    <p className="text-xs text-slate-500">
-                        MP4, WebM o MOV, hasta {LIMITE_MB} MB. Se reproduce sin sonido automáticamente.
-                    </p>
+                    <p className="text-xs text-slate-500">MP4, WebM o MOV, hasta {LIMITE_MB} MB. Se reproduce sin sonido automáticamente.</p>
                 </div>
 
                 {video && (
                     <div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-900">
-                        <video
-                            src={vistaPrevia || undefined}
-                            controls
-                            muted
-                            playsInline
-                            className="aspect-video w-full"
-                        />
+                        <video src={vistaPrevia || undefined} controls muted playsInline className="aspect-video w-full" />
                         <div className="flex items-center justify-between gap-2 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-                            <span>{video.name} — {tamanoLegible(video.size)}</span>
+                            <span>
+                                {video.name} — {tamanoLegible(video.size)}
+                            </span>
                             <button type="button" onClick={quitarVideo} className="font-medium text-[#004d43] hover:underline">
                                 Quitar
                             </button>
@@ -281,34 +229,25 @@ const columnas = (enPortada) => [
                 <span className="block font-semibold text-slate-800">{f.titulo}</span>
                 <span className="block font-mono text-xs text-slate-500">#{f.id_anuncio}</span>
             </p>
-        ),
+        )
     },
     {
         titulo: 'Vista previa',
-        render: (f) => (
-            <video
-                src={f.video_url}
-                muted
-                playsInline
-                preload="metadata"
-                className="aspect-video w-32 rounded border border-slate-200 bg-slate-900 object-cover"
-            />
-        ),
+        render: (f) => <video src={f.video_url} muted playsInline preload="metadata" className="aspect-video w-32 rounded border border-slate-200 bg-slate-900 object-cover" />
     },
     {
         titulo: 'Estado',
         alineacion: 'centro',
-        render: (f) => (Number(f.estado) !== 1
-            ? <Badge color="neutral">Inactivo</Badge>
-            : f.id_anuncio === enPortada?.id_anuncio
-                ? <Badge color="success">En portada</Badge>
-                : <Badge color="warning">Activo · en espera</Badge>),
+        render: (f) =>
+            Number(f.estado) !== 1 ? (
+                <Badge color="neutral">Inactivo</Badge>
+            ) : f.id_anuncio === enPortada?.id_anuncio ? (
+                <Badge color="success">En portada</Badge>
+            ) : (
+                <Badge color="warning">Activo · en espera</Badge>
+            )
     },
-    {
-        titulo: 'Publicado',
-        alineacion: 'centro',
-        render: (f) => <span className="text-xs text-slate-600">{formatearFecha(f.created_at)}</span>,
-    },
+    { titulo: 'Publicado', alineacion: 'centro', render: (f) => <span className="text-xs text-slate-600">{formatearFecha(f.created_at)}</span> }
 ];
 
 function AnunciosVideo() {
@@ -333,13 +272,8 @@ function AnunciosVideo() {
         }
     };
 
-    useEffect(() => {
-        cargar();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    useCarga(cargar);
 
-    // La lista llega del más reciente al más antiguo: el primero activo es el
-    // que se ve en la portada.
     const enPortada = useMemo(() => lista.find((a) => Number(a.estado) === 1) || null, [lista]);
 
     const abrirNuevo = () => {
@@ -352,16 +286,10 @@ function AnunciosVideo() {
         setFormAbierto(true);
     };
 
-    // La web pública solo muestra un anuncio, así que activar un segundo
-    // sin desactivar el primero deja de lado el que ya se estaba viendo.
-    // Se avisa antes en vez de dejarlo pasar en silencio.
     const cambiarEstado = async (anuncio) => {
         const nuevoEstado = Number(anuncio.estado) === 1 ? 0 : 1;
         try {
-            const res = await actualizarAnuncio(anuncio.id_anuncio, {
-                titulo: anuncio.titulo,
-                estado: nuevoEstado,
-            });
+            const res = await actualizarAnuncio(anuncio.id_anuncio, { titulo: anuncio.titulo, estado: nuevoEstado });
             exito(res?.mensaje || 'Estado actualizado');
             await cargar();
         } catch (err) {
@@ -396,9 +324,7 @@ function AnunciosVideo() {
                 />
             </Indicadores>
 
-            <Alert tipo="info">
-                La portada muestra el anuncio activo más reciente. Si activas otro, reemplaza al que se está viendo.
-            </Alert>
+            <Alert tipo="info">La portada muestra el anuncio activo más reciente. Si activas otro, reemplaza al que se está viendo.</Alert>
 
             <Card>
                 <CardHeader
@@ -423,11 +349,7 @@ function AnunciosVideo() {
                         </div>
                     )}
                     {!cargando && !error && lista.length === 0 && (
-                        <EmptyState
-                            titulo="Sin anuncios"
-                            descripcion="Sube el primer video para que aparezca en la portada de la web pública."
-                            icono={<FaCloudArrowUp />}
-                        />
+                        <EmptyState titulo="Sin anuncios" descripcion="Sube el primer video para que aparezca en la portada de la web pública." icono={<FaCloudArrowUp />} />
                     )}
                     {!cargando && !error && lista.length > 0 && (
                         <DataTable
@@ -453,22 +375,12 @@ function AnunciosVideo() {
                 </CardBody>
             </Card>
 
-            {formAbierto && (
-                <Formulario
-                    anuncio={editando}
-                    onCerrar={() => setFormAbierto(false)}
-                    onGuardado={cargar}
-                />
-            )}
+            {formAbierto && <Formulario anuncio={editando} onCerrar={() => setFormAbierto(false)} onGuardado={cargar} />}
 
             <ConfirmarEliminacion
                 abierto={Boolean(aEliminar)}
                 titulo="Eliminar anuncio"
-                mensaje={
-                    aEliminar
-                        ? `Se eliminará "${aEliminar.titulo}" junto con su video.`
-                        : ''
-                }
+                mensaje={aEliminar ? `Se eliminará "${aEliminar.titulo}" junto con su video.` : ''}
                 advertencia="El video se borra de Cloudinary y habría que volver a subirlo."
                 eliminando={eliminando}
                 onCerrar={() => setAEliminar(null)}
@@ -478,20 +390,57 @@ function AnunciosVideo() {
     );
 }
 
-export default function AnunciosPage(){
-    const [tipo,setTipo]=useState('protagonista');
-    const TIPOS=['protagonista','videos'];
-    function navegarTabs(e){if(['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();const i=TIPOS.indexOf(tipo);const nuevo=TIPOS[(i+(e.key==='ArrowRight'?1:TIPOS.length-1))%TIPOS.length];setTipo(nuevo);document.getElementById(`tab-anuncios-${nuevo}`)?.focus();}}
-    return <div className="space-y-4">
-        <PageHeader titulo="Anuncios de la web" descripcion="Libro protagonista de la portada y anuncios en video" icono={<FaCloudArrowUp/>}/>
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Tipo de anuncios">
-            <button type="button" role="tab" tabIndex={tipo==='protagonista'?0:-1} onKeyDown={navegarTabs} aria-selected={tipo==='protagonista'} aria-controls="anuncios-protagonista" id="tab-anuncios-protagonista"
-                className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50" onClick={()=>setTipo('protagonista')}>Libro protagonista</button>
-            {/* Botón de carrusel eliminado */}
-            <button type="button" role="tab" tabIndex={tipo==='videos'?0:-1} onKeyDown={navegarTabs} aria-selected={tipo==='videos'} aria-controls="anuncios-videos" id="tab-anuncios-videos"
-                className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50" onClick={()=>setTipo('videos')}>Anuncios en video</button>
+export default function AnunciosPage() {
+    const [tipo, setTipo] = useState('protagonista');
+    const TIPOS = ['protagonista', 'videos'];
+    function navegarTabs(e) {
+        if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            e.preventDefault();
+            const i = TIPOS.indexOf(tipo);
+            const nuevo = TIPOS[(i + (e.key === 'ArrowRight' ? 1 : TIPOS.length - 1)) % TIPOS.length];
+            setTipo(nuevo);
+            document.getElementById(`tab-anuncios-${nuevo}`)?.focus();
+        }
+    }
+    return (
+        <div className="space-y-4">
+            <PageHeader titulo="Anuncios de la web" descripcion="Libro protagonista de la portada y anuncios en video" icono={<FaCloudArrowUp />} />
+            <div className="flex flex-wrap gap-2" role="tablist" aria-label="Tipo de anuncios">
+                <button
+                    type="button"
+                    role="tab"
+                    tabIndex={tipo === 'protagonista' ? 0 : -1}
+                    onKeyDown={navegarTabs}
+                    aria-selected={tipo === 'protagonista'}
+                    aria-controls="anuncios-protagonista"
+                    id="tab-anuncios-protagonista"
+                    className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50"
+                    onClick={() => setTipo('protagonista')}>
+                    Libro protagonista
+                </button>
+
+                <button
+                    type="button"
+                    role="tab"
+                    tabIndex={tipo === 'videos' ? 0 : -1}
+                    onKeyDown={navegarTabs}
+                    aria-selected={tipo === 'videos'}
+                    aria-controls="anuncios-videos"
+                    id="tab-anuncios-videos"
+                    className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50"
+                    onClick={() => setTipo('videos')}>
+                    Anuncios en video
+                </button>
+            </div>
+            {tipo === 'protagonista' ? (
+                <section role="tabpanel" id="anuncios-protagonista" aria-labelledby="tab-anuncios-protagonista">
+                    <ProtagonistaPanel />
+                </section>
+            ) : (
+                <section role="tabpanel" id="anuncios-videos" aria-labelledby="tab-anuncios-videos">
+                    <AnunciosVideo />
+                </section>
+            )}
         </div>
-        {tipo==='protagonista'?<section role="tabpanel" id="anuncios-protagonista" aria-labelledby="tab-anuncios-protagonista"><ProtagonistaPanel/></section>
-            :<section role="tabpanel" id="anuncios-videos" aria-labelledby="tab-anuncios-videos"><AnunciosVideo/></section>}
-    </div>;
+    );
 }

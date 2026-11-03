@@ -9,16 +9,18 @@ const path = require('node:path');
 
 const archivo = '042_purga_reservas.sql';
 const silencio = { log() {}, error() {} };
-test('042 elimina reservas e historial sin borrar ventas ni duplicar existencias', async t => {
+test('042 elimina reservas e historial sin borrar ventas ni duplicar existencias', async (t) => {
     assert.equal(process.env.NODE_ENV, 'test');
     assert.match(process.env.DATABASE_URL, /@127\.0\.0\.1:\d+\/audit$/);
     const sufijo = randomUUID().replaceAll('-', '');
-    const fk = `purga_fk_${sufijo}`, tabla = `purga_rel_${sufijo}`, fallo = `purga_fallo_${sufijo}`;
+    const fk = `purga_fk_${sufijo}`,
+        tabla = `purga_rel_${sufijo}`,
+        fallo = `purga_fallo_${sufijo}`;
     const ids = { usuarios: [], libros: [], reservas: [], venta: null };
     let autor, categoria;
     const aplicar = () => aplicarMigracionesDatos(pool, { lista: [archivo], registro: silencio });
     const sql = readFileSync(path.join(__dirname, '../database/migrations', archivo), 'utf8');
-    const consultar = async sql => Array.from((await pool.query(sql))[0]);
+    const consultar = async (sql) => Array.from((await pool.query(sql))[0]);
     const snapshot = async () => ({
         reservas: await consultar('SELECT * FROM reservas ORDER BY id_reserva'),
         stock: await consultar('SELECT * FROM inventario ORDER BY id_libro'),
@@ -26,43 +28,60 @@ test('042 elimina reservas e historial sin borrar ventas ni duplicar existencias
         historial: await consultar('SELECT * FROM historial_operaciones ORDER BY id_historial'),
         ventas: await consultar('SELECT * FROM ventas ORDER BY id_venta'),
         comprobantes: await consultar('SELECT * FROM comprobantes ORDER BY id_comprobante'),
-        usuarios: await consultar('SELECT * FROM usuarios ORDER BY id_usuario'),
+        usuarios: await consultar('SELECT * FROM usuarios ORDER BY id_usuario')
     });
     try {
         await aplicarMigracionesDatos(pool, { lista: [], registro: silencio });
         await pool.query('DELETE FROM migraciones_datos WHERE nombre=?', [archivo]);
-        for (const rol of ['administrador', 'cliente']) ids.usuarios.push((await pool.query(
-            "INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES ('Purga','Audit',?,'hash-prueba',?)",
-            [`${randomUUID()}@example.test`, rol]))[0].insertId);
+        for (const rol of ['administrador', 'cliente'])
+            ids.usuarios.push(
+                (await pool.query("INSERT INTO usuarios(nombre,apellido,email,password,rol) VALUES ('Purga','Audit',?,'hash-prueba',?)", [`${randomUUID()}@example.test`, rol]))[0]
+                    .insertId
+            );
         autor = (await pool.query("INSERT INTO autores(nombre,apellido) VALUES ('Purga','Audit')"))[0].insertId;
         categoria = (await pool.query('INSERT INTO categorias(nombre) VALUES (?)', [randomUUID()]))[0].insertId;
         for (const stock of [10, 4]) {
-            const id = (await pool.query('INSERT INTO libros(titulo,precio,id_autor,id_categoria) VALUES (?,25,?,?)',
-                [randomUUID(), autor, categoria]))[0].insertId;
+            const id = (await pool.query('INSERT INTO libros(titulo,precio,id_autor,id_categoria) VALUES (?,25,?,?)', [randomUUID(), autor, categoria]))[0].insertId;
             ids.libros.push(id);
             await pool.query('INSERT INTO inventario(id_libro,stock) VALUES (?,?)', [id, stock]);
         }
-        for (const [libro, cantidad, estado] of [[0, 2, 'pendiente'], [0, 3, 'confirmada'], [0, 7, 'completada'],
-            [0, 8, 'cancelada'], [0, 4, 'confirmada'], [1, 1, 'pendiente']]) {
-            ids.reservas.push((await pool.query('INSERT INTO reservas(id_usuario,id_libro,cantidad,estado) VALUES (?,?,?,?)',
-                [ids.usuarios[1], ids.libros[libro], cantidad, estado]))[0].insertId);
+        for (const [libro, cantidad, estado] of [
+            [0, 2, 'pendiente'],
+            [0, 3, 'confirmada'],
+            [0, 7, 'completada'],
+            [0, 8, 'cancelada'],
+            [0, 4, 'confirmada'],
+            [1, 1, 'pendiente']
+        ]) {
+            ids.reservas.push(
+                (await pool.query('INSERT INTO reservas(id_usuario,id_libro,cantidad,estado) VALUES (?,?,?,?)', [ids.usuarios[1], ids.libros[libro], cantidad, estado]))[0].insertId
+            );
         }
-        ids.venta = (await pool.query("INSERT INTO ventas(id_usuario,total,estado,origen,id_reserva,metodo_pago,tipo_entrega) VALUES (?,100,'pagada','reserva',?,'efectivo','tienda')",
-            [ids.usuarios[1], ids.reservas[4]]))[0].insertId;
+        ids.venta = (
+            await pool.query("INSERT INTO ventas(id_usuario,total,estado,origen,id_reserva,metodo_pago,tipo_entrega) VALUES (?,100,'pagada','reserva',?,'efectivo','tienda')", [
+                ids.usuarios[1],
+                ids.reservas[4]
+            ])
+        )[0].insertId;
         await pool.query('INSERT INTO detalle_venta(id_venta,id_libro,cantidad,precio_unitario,subtotal) VALUES (?,?,4,25,100)', [ids.venta, ids.libros[0]]);
-        for (const modulo of ['reserva', 'reservas', 'inventario']) await pool.query(
-            "INSERT INTO historial_operaciones(id_usuario,modulo,descripcion) VALUES (?,?,'Operación de prueba')", [ids.usuarios[0], modulo]);
-        // Un ON DELETE CASCADE heredado no debe borrar la venta al purgar.
+        for (const modulo of ['reserva', 'reservas', 'inventario'])
+            await pool.query("INSERT INTO historial_operaciones(id_usuario,modulo,descripcion) VALUES (?,?,'Operación de prueba')", [ids.usuarios[0], modulo]);
+
         await pool.query(`ALTER TABLE ventas ADD CONSTRAINT ${fk} FOREIGN KEY(id_reserva) REFERENCES reservas(id_reserva) ON DELETE CASCADE NOT VALID`);
         const antes = await snapshot();
 
         await t.test('contratos viejos: JWT obligatorio, 410 para cualquier método y ningún dato expuesto', async () => {
             for (const id of ids.usuarios) {
                 const token = jwt.sign({ id_usuario: id }, process.env.JWT_SECRET);
-                for (const ruta of ['/reservas', '/reservas/mis-reservas', `/reservas/${ids.reservas[0]}`, `/reservas/${ids.reservas[0]}/estado`, '/reportes/reservas-por-estado']) {
+                for (const ruta of [
+                    '/reservas',
+                    '/reservas/mis-reservas',
+                    `/reservas/${ids.reservas[0]}`,
+                    `/reservas/${ids.reservas[0]}/estado`,
+                    '/reportes/reservas-por-estado'
+                ]) {
                     for (const method of ['GET', 'POST', 'PUT', 'DELETE']) {
-                        const respuesta = await fetch(`${process.env.TEST_BASE_URL}/api${ruta}`, { method,
-                            headers: { Authorization: `Bearer ${token}` } });
+                        const respuesta = await fetch(`${process.env.TEST_BASE_URL}/api${ruta}`, { method, headers: { Authorization: `Bearer ${token}` } });
                         assert.equal(respuesta.status, 410, `${method} ${ruta}`);
                         assert.equal(Object.hasOwn(await respuesta.json(), 'data'), false);
                     }
@@ -79,7 +98,9 @@ test('042 elimina reservas e historial sin borrar ventas ni duplicar existencias
                 assert.match(resultado.error, /FK entrante no compatible/);
                 assert.deepEqual(await snapshot(), antes);
                 assert.equal((await pool.query('SELECT count(*)::int AS n FROM pg_constraint WHERE conname=?', [fk]))[0][0].n, 1);
-            } finally { await pool.query(`DROP TABLE ${tabla}`); }
+            } finally {
+                await pool.query(`DROP TABLE ${tabla}`);
+            }
         });
         await t.test('un fallo de kardex revierte toda la purga y permite reintentar', async () => {
             await pool.query(`CREATE FUNCTION ${fallo}() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Fallo de purga de prueba'; END $$`);
@@ -96,28 +117,41 @@ test('042 elimina reservas e historial sin borrar ventas ni duplicar existencias
         });
         await t.test('dos instancias eliminan una sola vez; solo apartados activos sin venta reingresan', async () => {
             const resultados = (await Promise.all([aplicar(), aplicar()])).flat();
-            assert.equal(resultados.filter(r => r.aplicada).length, 1);
-            assert.equal(resultados.find(r => r.aplicada).filas, antes.reservas.length);
+            assert.equal(resultados.filter((r) => r.aplicada).length, 1);
+            assert.equal(resultados.find((r) => r.aplicada).filas, antes.reservas.length);
             const despues = await snapshot();
             assert.deepEqual(despues.reservas, []);
-            assert.equal(despues.stock.find(i => i.id_libro === ids.libros[0]).stock, 15);
-            assert.equal(despues.stock.find(i => i.id_libro === ids.libros[1]).stock, 5);
-            const movimientos = despues.movimientos.filter(m => m.motivo === 'retiro_reservas_042');
+            assert.equal(despues.stock.find((i) => i.id_libro === ids.libros[0]).stock, 15);
+            assert.equal(despues.stock.find((i) => i.id_libro === ids.libros[1]).stock, 5);
+            const movimientos = despues.movimientos.filter((m) => m.motivo === 'retiro_reservas_042');
             assert.equal(movimientos.length, 2);
-            assert.deepEqual(movimientos.map(m => m.cantidad), [5, 1]);
+            assert.deepEqual(
+                movimientos.map((m) => m.cantidad),
+                [5, 1]
+            );
             assert.deepEqual(despues.ventas, antes.ventas);
             assert.deepEqual(despues.comprobantes, antes.comprobantes);
             assert.deepEqual(despues.usuarios, antes.usuarios);
-            assert.deepEqual(despues.historial, antes.historial.filter(h => !['reserva', 'reservas'].includes(h.modulo)));
+            assert.deepEqual(
+                despues.historial,
+                antes.historial.filter((h) => !['reserva', 'reservas'].includes(h.modulo))
+            );
             assert.equal((await pool.query('SELECT count(*)::int AS n FROM pg_constraint WHERE conname=?', [fk]))[0][0].n, 0);
             assert.equal((await pool.query('SELECT filas FROM migraciones_datos WHERE nombre=?', [archivo]))[0][0].filas, antes.reservas.length);
         });
         await t.test('repetir incluso el SQL de purga no cambia otra vez stock ni ventas', async () => {
             const previo = await snapshot();
             const conexion = await pool.getConnection();
-            try { await conexion.beginTransaction(); await conexion.pgQuery(sql); await conexion.commit(); }
-            catch (error) { await conexion.rollback(); throw error; }
-            finally { conexion.release(); }
+            try {
+                await conexion.beginTransaction();
+                await conexion.pgQuery(sql);
+                await conexion.commit();
+            } catch (error) {
+                await conexion.rollback();
+                throw error;
+            } finally {
+                conexion.release();
+            }
             assert.deepEqual(await snapshot(), previo);
         });
     } finally {

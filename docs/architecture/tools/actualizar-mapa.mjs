@@ -113,7 +113,7 @@ const MODULOS = [
 // ════════════════════════ 05-API-MAP ════════════════════════
 {
     let md = cab('Mapa de API');
-    md += `Total de endpoints registrados en el backend: **${E.length}** (incluye 4 definidos directamente en \`server.js\`).\n\n`;
+    md += `Total de endpoints registrados en el backend: **${E.length}** (incluye ${E.filter(e => e.routeFile === 'backend/server.js').length} definidos directamente en \`server.js\`).\n\n`;
     md += `- **Auth**: \`Pública\` = sin JWT · \`JWT\` = requiere \`Authorization: Bearer\` · \`JWT + admin\` / \`JWT + cliente\` = además el rol indicado. Los arrays de middleware compartidos se expanden desde el router real.\n`;
     md += `- **React / Flutter**: archivos que llaman al endpoint (directamente o a través de su servicio). \`—\` = ningún cliente lo usa.\n`;
     md += `- Los parámetros se escriben como en el backend (\`:id\`); los clientes los construyen con interpolación.\n\n`;
@@ -135,7 +135,6 @@ const MODULOS = [
         'GET /': 'Salud del servidor.',
         'GET /api': 'Salud de la API.',
         'GET /api/test-db': 'Diagnóstico de conexión a BD (solo admin).',
-        'GET /api/debug-egress': 'Diagnóstico manual SMTP (JWT + administrador). DNS, TCP y salida HTTPS; sin consumidor en React/Flutter.',
         'GET /api/pagos/checkout/:x': 'Lo abre el navegador web o la WebView de Flutter con la `checkout_url` que devuelve `POST /api/pagos/crear-orden`.',
         'GET /api/pagos/respuesta/:x': 'Página de retorno (responseUrl) de PayU.',
         'POST /api/pagos/webhook': 'Confirmación de PayU (servidor a servidor).',
@@ -152,7 +151,7 @@ const MODULOS = [
     md += `1. \`dotenv\` y comprobación obligatoria de \`TWO_FACTOR_ENCRYPTION_KEY\` (≥ 16 caracteres; si falta, el proceso no arranca).
 2. \`helmet\` (sin CSP, CORP cross-origin) → \`config/cors.js\` con lista \`FRONTEND_ORIGINS\` y patrón \`FRONTEND_ORIGINS_REGEX\` (regex inválida desactiva previews y conserva lista explícita) → \`express.json({ limit: '1mb' })\` → \`baseLimiter\`.
 3. Estáticos: \`/uploads\` → \`backend/uploads\` (portadas y fotos locales cuando Cloudinary no está configurado).
-4. Endpoints en línea: \`GET /\`, \`GET /api\`, \`GET /api/test-db\` y \`GET /api/debug-egress\` (ambos JWT + admin).
+4. Endpoints en línea: \`GET /\` y \`GET /api\` (salud pública), y \`GET /api/test-db\` (JWT + admin).
 5. Montaje de ${Object.keys(H.backend.montajes).length} routers bajo \`/api/*\` → 404 JSON → \`error.middleware\`.
 6. \`iniciarJobs()\` programa limpieza cada 5 min. \`iniciar()\` espera \`aplicarMigraciones\` y \`aplicarMigracionesDatos\` antes de aceptar tráfico; en test se usa el esquema preparado por el runner. Un fallo en producción aborta el arranque.
 7. \`app.listen(PORT || 3000)\` después de comprobar el esquema. Las migraciones base e incrementales están en \`config/migraciones.js\`; los backfills se registran en \`migraciones_datos\`.
@@ -238,11 +237,10 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 ## Observaciones
 
-- \`GET /api/debug-egress\` es un diagnóstico manual **JWT + admin**, con conexiones TCP acotadas y timeout HTTPS.
 ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún archivo importa**: ${listaDeps(depsBackendSinUso)}.\n` : ''}- La pasarela de pagos (\`/api/pagos\`) es **PayU**.
 - \`GET /api/test-db\` verifica PostgreSQL con \`SELECT 1\`, protegido por JWT + administrador.
 - Endpoints sin cliente: ver la sección correspondiente en \`05-API-MAP.md\`.
-- Scripts auxiliares (no forman parte del servidor): \`scripts/migrarImagenesCloudinary.js\`, \`scripts/resetearPrecios.js\`, \`run_migration_021.js\`, \`_test_smtp.js\` (sin seguimiento en git).
+- Herramientas de mantenimiento (no forman parte del servidor): \`scripts/resetearPrecios.js\`, \`scripts/semillaLibros.js\`, \`scripts/publicarVersionApp.js\` y \`scripts/respaldarPostgres.js\`.
 - Pruebas: \`test/*.test.js\` (node --test) y \`test-integration/http.smoke.test.js\`.
 `;
     escribir('02-BACKEND-MAP.md', md);
@@ -260,8 +258,8 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 \`<ToastProvider>\` → \`<AuthProvider>\` → \`<RouterProvider>\` (react-router ${pkg.dependencies['react-router-dom']}).
 
 - **Cliente HTTP**: \`panel/lib/api/client.js\` (axios). \`baseURL = VITE_API_URL\`; los valores se configuran por entorno. El interceptor añade \`Bearer <token>\`, devuelve \`response.data\` y ante **401 de sesión** limpia la sesión y redirige a \`/admin/login\`. Los 401 de credencial incorrecta se distinguen con \`erroresSesion.js\`.
-- **Sesión**: \`app/providers/AuthContext.jsx\` + \`panel/lib/storage/index.js\` (\`localStorage\`: \`token\`, \`usuario\`). Solo entra \`administrador\`; perfil actualiza los datos de sesión desde la API.
-- **Cliente web**: \`web/tienda/TiendaContext.jsx\` y \`clienteApi.js\` mantienen sesión exclusiva de \`cliente\`, carrito por usuario/invitado e intento de compra persistente; nunca usan la sesión administrativa. \`PublicLayout\` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
+- **Sesión**: \`app/providers/AuthProvider.jsx\` mantiene el estado; \`AuthContext.js\` expone el contexto y \`useAuth\`. \`panel/lib/storage/index.js\` guarda \`token\` y \`usuario\` en localStorage. Solo entra \`administrador\`; perfil actualiza los datos de sesión desde la API.
+- **Cliente web**: \`web/tienda/TiendaProvider.jsx\` y \`clienteApi.js\` mantienen sesión exclusiva de \`cliente\`, carrito por usuario/invitado e intento de compra persistente; \`TiendaContext.js\` expone \`useTienda\`. Nunca usan la sesión administrativa. \`PublicLayout\` los proporciona a cuenta, carrito, checkout, compras y detalle del libro.
 - **Guards**: \`app/router/RutaProtegida.jsx\` redirige a \`/admin/login\` sin sesión administrativa; \`RutaPorRol.jsx\` exige los roles configurados. Un **403** muestra rechazo de permisos.
 - **Layout**: \`panel/layout/AdminLayout.jsx\` (Sidebar, Topbar, Breadcrumbs, transición con Framer Motion${personalizable ? ', proveedor de tema' : ', tema claro fijo'}).
 - **Altas de catálogo**: Libros, Autores y Categorías muestran botones normales en la cabecera de sus filtros. \`AltaFlotante\` monta el formulario únicamente al pulsarlos y lo presenta en un \`Modal\` mediante portal dentro del layout administrativo. Cancelar desmonta el borrador; el éxito cierra el diálogo y refresca el listado; un error conserva los campos. \`Modal\` contiene el foco del diálogo superior y mantiene el bloqueo de scroll al abrir descuentos sobre el alta de libros.
@@ -275,28 +273,28 @@ ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún a
 
 ## Portada ligera y carga por rutas
 
-- El inicio monta \`web/secciones/PortadaLigera.jsx\`: presentación inmediata con un libro real y hasta cinco novedades. No descarga Three.js, no crea canvas ni renderiza reflejos/partículas. \`main.jsx\` no precarga el motor 3D.
+- El inicio monta \`web/secciones/PortadaDiferida.jsx\`: presenta primero \`PortadaLigera.jsx\` con un libro real y hasta cinco novedades. Solicita la escena 3D cuando el navegador queda libre, salvo ahorro de datos o conexión 2G; solo sustituye la portada ligera si el visitante sigue arriba. \`main.jsx\` no precarga el motor 3D.
 - \`web/hooks/useLibroProtagonista.js\` consulta el protagonista sin JWT, revalida al volver al foco y respeta libro nulo. El respaldo 404 funciona aunque el catálogo llegue después.
 - Aplicación, Características, Nosotros y Descargar tienen módulos de página separados. \`AdminLayout\` y el formulario público de reclamaciones se cargan bajo demanda; la tienda y el login no descargan el layout administrativo.
 - \`web/estilos/limpia.css\` retira vidrio, destellos, facetas y sombras de espejo. El acceso administrativo conserva el libro CSS y su apertura breve, con páginas sólidas y recuperación en la siguiente hoja.
 - \`PublicLayout\` usa scroll nativo y foco accesible al navegar; no inicia el motor global GSAP ni precarga masivamente todas las portadas.
 
-## Implementación espacial histórica (no montada en el inicio)
+## Portada espacial bajo demanda
 
-- \`secciones/portada3d/PortadaEspacial.jsx\` permanece como implementación histórica desacoplada del router. Reutiliza GSAP/ScrollTrigger y \`escenaLibro.js\`; estos módulos no se descargan en el inicio ligero.
+- \`secciones/portada3d/PortadaEspacial.jsx\` se carga desde \`PortadaDiferida.jsx\`. Utiliza GSAP/ScrollTrigger y \`escenaLibro.js\`; el módulo de escena también se descarga bajo demanda y conserva la presentación estática cuando el equipo no admite el efecto.
 - Dirección confirmada por el usuario: **Portal editorial**, tras revisar su video local. \`portalEditorial.js\` calcula una atmósfera volumétrica en un render target acotado con ruido 3D, cintas reflectantes/refractivas y disolución por material; \`cinematografia.js\` centraliza los tramos reversibles. El modelo añade tapas biseladas, lomo con datos reales, geometría curva de papel y entorno PMREM. La cara frontal permanece visible durante la ficha.
 - La superficie autoaloja Source Serif 4 (WOFF2 latino de 23.832 bytes, licencia OFL) para títulos; conserva Work Sans en datos y controles. El usuario eligió **Ibero** como referencia principal de navbar/footer y retiró la franja superior de delivery/recojo/PayU. \`components/public-header.css\` aplica cabecera gris frío #F5F7F9, buscador blanco, menú blanco con texto marino #24304B y detalles turquesa; marca en Work Sans e iconos Lucide de contorno. Los botones de escena son blancos/marino; el catálogo conserva sus controles de compra. El texto principal se recorta contra el contorno proyectado del libro.
-- Primero se presenta el libro a pantalla completa; un gesto corto revela \`PublicHeader\` fijo a todo ancho mediante tres fases de \`estadoReveladoNavegacion\`: línea central, cuerpo en perspectiva y enlaces. Reloj GSAP lineal de 1s con curvas por fase y salida de 0,5s; márgenes alineados al contenedor, sin redimensionar el canvas. Foco de teclado y salto al final conservan acceso inmediato. Fuera del 3D, \`.navegacion-publica\` usa \`display:contents\` y mantiene el sticky de las páginas interiores; los respaldos estáticos no ocultan navegación.
+- La portada mide cabecera, navegación y barra móvil mediante ResizeObserver para ajustar su composición. La navegación pública permanece disponible tanto en la escena 3D como en su respaldo estático; las rutas interiores conservan scroll nativo y foco accesible.
 - \`components/PublicFooter.jsx\` y \`public-footer.css\` usan fondo blanco, títulos marinos y cuatro columnas de identidad/dirección real, navegación, cuenta y atención. Pagos PayU y tarjetas existentes van en una fila independiente; reclamaciones y acceso administrativo siguen disponibles. Móvil usa dos columnas y espacio para barra/asistente. No hay ticker superior ni formulario de suscripción inventado. Buscador, cuenta, carrito y cajón móvil conservan sus funciones.
 - Presupuesto gráfico: render target volumétrico reducido, menor detalle en móvil/renderizado por software, resolución adaptativa en escritorio y pausa según visibilidad del escenario (excluye cabecera/barra fijas). \`test-unit/portada-cinematica.test.js\` comprueba límites y orden de las fases; Playwright también detecta errores de compilación GLSL.
 - \`GET /api/anuncios/protagonista\` es público y responde sin caché. El componente usa fetch sin JWT, tiempo límite de 12 s y reintento; revalida al volver al foco/pestaña y cada 60 s mientras está visible. Una respuesta idéntica no reinicia la escena.
 - \`backend/src/models/portada.model.js\` prioriza el libro manual activo, con título, precio positivo y portada válida; si deja de ser elegible, resuelve el más reciente por \`creado_en DESC NULLS LAST, id_libro DESC\`. Sin candidato devuelve ninguno, sin inventar datos.
 - Configuración en \`portada_config\`, creada por \`044_portada_protagonista.sql\` sin modificar libros ni ventas. \`GET /api/anuncios/protagonista/panel\` y \`PUT /api/anuncios/protagonista\` exigen JWT administrador; \`panel/anuncios/ProtagonistaPanel.jsx\` y \`protagonistaService.js\` gestionan modo manual/automático, búsqueda, vista previa y guardado. La respuesta del panel incluye \`libro_automatico\` para previsualizar el cambio de modo antes de guardarlo.
 - Por petición del usuario, el protagonista permanece cerrado durante todo el scroll: \`escenaLibro.js\` fija la encuadernación a apertura cero, sin mover tapa/hojas ni comprimir el bloque. Se conservan los recorridos de cámara, giro del volumen, cintas, luces, partículas y disolución.
-- La portada ya no importa ni instancia \`SonidoEspacial\`, no crea AudioContext y no muestra botón ni avisos de sonido. El módulo histórico y sus utilidades unitarias permanecen desacoplados de la interfaz. Las regresiones de \`portada-espacial.spec.js\` comprueban ausencia de audio y encuadernación cerrada en avance y retroceso a 390/1440px.
+- La portada no crea AudioContext ni muestra controles de sonido. Las regresiones de \`portada-espacial.spec.js\` comprueban ausencia de audio y encuadernación cerrada en avance y retroceso a 390/1440px.
 - Movimiento reducido, ahorro de datos, pantalla baja, ausencia/pérdida de WebGL 2, error de textura o fallo de carga del motor llevan a una portada estática con el mismo libro. Se liberan geometrías, texturas, RAF, observadores, listeners, audio y ScrollTriggers. Móvil/equipos modestos reducen partículas, resolución y frecuencia de dibujo.
-- Hasta cinco libros recientes proceden del catálogo normalizado (\`libroComercial.creadoEn\`). En escritorio se despliegan desde el centro hacia una cuadrícula de cinco columnas: solo las tapas se inclinan y títulos, autores y precios permanecen rectos en columnas independientes. En móvil ≤900px se usa un carrusel horizontal nativo. El recorrido del hero es 250svh en escritorio y 225svh en móvil; novedades continúa con espaciado compacto. \`MOSTRAR_CARRUSEL_INICIO=false\` oculta los banners públicos; CarruselPanel y AnunciosVideo mantienen su administración.
-- Regresiones: \`test-browser/portada-espacial.spec.js\`, \`protagonista-panel.spec.js\`, \`carrusel.spec.js\`, \`backend/test/portada-protagonista.test.js\` y \`backend/test-integration/portada-protagonista.smoke.test.js\`.
+- Hasta cinco libros recientes proceden del catálogo normalizado (\`libroComercial.creadoEn\`). En escritorio se despliegan desde el centro hacia una cuadrícula de cinco columnas: solo las tapas se inclinan y títulos, autores y precios permanecen rectos en columnas independientes. En móvil ≤900px se usa un carrusel horizontal nativo. El recorrido del hero es 250svh en escritorio y 225svh en móvil; novedades continúa con espaciado compacto. El antiguo carrusel de banners y su configuración sin consumidores se retiraron del frontend; Anuncios conserva la gestión de videos y del libro protagonista.
+- Regresiones: \`test-browser/portada-espacial.spec.js\`, \`protagonista-panel.spec.js\`, \`web-ligera.spec.js\`, \`backend/test/portada-protagonista.test.js\` y \`backend/test-integration/portada-protagonista.smoke.test.js\`.
 
 ## Caché y prioridad de carga pública
 
@@ -509,7 +507,7 @@ Ejemplos de caminos:\n\n${H.flutter.ciclos.slice(0, 4).map((c) => `- ${c.map(cor
     md += `\n## Posiblemente no utilizado\n
 - Flutter: ${H.posiblesNoUsados.flutter.map((f) => `\`${corto(f)}\` (ningún archivo lo importa)`).join(', ') || 'ninguno'}.
 - React: funciones de servicio no importadas: \`agenciasService#obtenerAgencia\`, \`ubicacionesService#listarProvincias\`/\`listarDistritos\` (se usan solo internamente por \`listarDistritosParaEnvio\`).
-- Backend: ${depsBackendSinUso.length ? `dependencias ${listaDeps(depsBackendSinUso)}; ` : ''}endpoints \`GET /api/historial/mi-historial\`, \`POST /api/historial\`, \`PUT /api/inventario/libro/:id/stock\` sin consumidor React/Flutter; \`GET /api/debug-egress\` es diagnóstico manual protegido.
+- Backend: ${depsBackendSinUso.length ? `dependencias ${listaDeps(depsBackendSinUso)}; ` : ''}endpoints \`GET /api/historial/mi-historial\`, \`POST /api/historial\`, \`PUT /api/inventario/libro/:id/stock\` sin consumidor React/Flutter.
 - Estilos: las reglas de la antigua página Reportes sin consumidores se retiraron. \`tabla-reporte\`, \`reporte-barra\`, \`reporte-puesto\` y \`reporte-contador\` se conservan porque los usan Dashboard y Ventas.
 `;
     escribir('07-DEPENDENCIES.md', md);
@@ -650,7 +648,6 @@ Regenera todos los archivos a partir del código (solo lectura del código). Si 
 
 Ver detalle en \`05-API-MAP.md\` y \`07-DEPENDENCIES.md\`.
 ${endpointsClienteSinRuta.length ? `- Endpoints declarados por clientes sin ruta detectada: ${endpointsClienteSinRuta.map(e => `\`${e}\``).join(', ')}.` : '- No se detectaron endpoints declarados por clientes sin ruta correspondiente en el backend.'}
-- \`GET /api/debug-egress\` es diagnóstico manual protegido (JWT + admin), sin consumidor React/Flutter.
 ${depsBackendSinUso.length ? `- Dependencias npm sin uso en backend: ${listaDeps(depsBackendSinUso)}.\n` : ''}- La memoria del asistente requiere **JWT + cliente**; el router comparte esos middlewares mediante un array.
 - Los endpoints sin consumidor detectado se detallan en \`05-API-MAP.md\`; stock bajo sí tiene consumidores en Dashboard y notificaciones.
 - Flutter: solo quedan ciclos de navegación entre pantallas (sin ciclo servicios ↔ pantallas).

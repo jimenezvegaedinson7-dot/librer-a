@@ -1,20 +1,3 @@
--- ============================================================
--- MIGRACIÓN 013: EMPRESA EMISORA Y COMPROBANTES DE PAGO
--- ============================================================
--- Creada copia EXACTA de las tablas empresa y comprobantes del
--- schema.sql para permitir reproducirlas como migración.
--- SEGURO: CREATE TABLE IF NOT EXISTS + INSERT ... ON DUPLICATE KEY.
---
--- NOTA: si las tablas ya existen en la BD (comprobantes presente),
--- el script de aplicación ejecuta SOLO:
---   ALTER TABLE comprobantes
---       ADD COLUMN IF NOT EXISTS cliente_tipo_documento VARCHAR(10) NULL;
--- ============================================================
-
--- ============================================================
--- EMPRESA (EMISOR ELECTRÓNICO) — migración 013
--- Configuración del emisor de comprobantes (1 fila, id=1).
--- ============================================================
 CREATE TABLE IF NOT EXISTS empresa (
     id INT NOT NULL PRIMARY KEY,
     ruc VARCHAR(11) NOT NULL DEFAULT '',
@@ -33,9 +16,6 @@ CREATE TABLE IF NOT EXISTS empresa (
         ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ============================================================
--- COMPROBANTES DE PAGO (BOLETA / FACTURA) — migración 013
--- ============================================================
 CREATE TABLE IF NOT EXISTS comprobantes (
     id_comprobante INT AUTO_INCREMENT PRIMARY KEY,
     id_venta INT NOT NULL,
@@ -59,9 +39,6 @@ CREATE TABLE IF NOT EXISTS comprobantes (
         REFERENCES ventas (id_venta)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ============================================================
--- DATOS INICIALES: EMPRESA EMISORA (migración 013)
--- ============================================================
 INSERT INTO empresa (id, ruc)
 VALUES (1, '10447545387')
 ON DUPLICATE KEY UPDATE id = VALUES(id);

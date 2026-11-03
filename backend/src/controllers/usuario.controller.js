@@ -3,755 +3,312 @@ const fs = require('fs');
 const path = require('path');
 
 const pool = require('../config/database');
-
 const usuarioModel = require('../models/usuario.model');
 const historialModel = require('../models/historial.model');
-const {
-    esEmailValido,
-    esTextoValido,
-    esEstadoValido,
-    validarId
-} = require('../utils/validaciones');
-const {
-    ROLES_ASIGNABLES,
-    esCliente,
-    esRolValido,
-    normalizar
-} = require('../utils/roles');
-const {
-    validarPassword
-} = require('./auth.controller');
-const {
-    eliminarImagen,
-    publicIdDesdeUrl
-} = require('../utils/cloudinary');
+const { esEmailValido, esTextoValido, esEstadoValido, validarId } = require('../utils/validaciones');
+const { ROLES_ASIGNABLES, esCliente, esRolValido, normalizar } = require('../utils/roles');
+const { validarPassword } = require('./auth.controller');
+const { eliminarImagen, publicIdDesdeUrl } = require('../utils/cloudinary');
 
-// ========================================
-// ESTADO 2FA DEL USUARIO
-// (misma fuente que usa auth2fa: columna two_factor_enabled)
-// ========================================
 const obtenerTwoFactorEnabled = async (idUsuario) => {
-    const [filas] = await pool.query(`
-        SELECT two_factor_enabled
-        FROM usuarios
-        WHERE id_usuario = ?
-        LIMIT 1
-    `, [idUsuario]);
+    const [filas] = await pool.query(`SELECT two_factor_enabled FROM usuarios WHERE id_usuario = ? LIMIT 1`, [idUsuario]);
 
-    return filas.length > 0
-        ? Number(filas[0].two_factor_enabled) === 1
-        : false;
+    return filas.length > 0 ? Number(filas[0].two_factor_enabled) === 1 : false;
 };
 
-// ========================================
-// LISTAR TODOS LOS USUARIOS (ADMIN)
-// ========================================
 const listarUsuarios = async (req, res) => {
     try {
         const incluirCompras = req.query.detalles === 'true';
 
-        const usuarios =
-            incluirCompras
-                ? await usuarioModel.listarConCompras()
-                : await usuarioModel.listarTodos();
+        const usuarios = incluirCompras ? await usuarioModel.listarConCompras() : await usuarioModel.listarTodos();
 
-        return res.json({
-            success: true,
-            data: usuarios
-        });
-
+        return res.json({ success: true, data: usuarios });
     } catch (error) {
-        console.error(
-            'Error al listar usuarios:',
-            error
-        );
+        console.error('Error al listar usuarios:', error);
 
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al listar los usuarios',
-            error: 'Error interno del servidor'
-        });
+        return res.status(500).json({ success: false, mensaje: 'Error al listar los usuarios', error: 'Error interno del servidor' });
     }
 };
 
-// ========================================
-// ACTUALIZAR ESTADO / ROL DE UN USUARIO (ADMIN)
-// PATCH /api/usuarios/:id
-// ========================================
 const adminUpdateUsuario = async (req, res) => {
     try {
-        const idUsuario =
-            validarId(req.params.id);
+        const idUsuario = validarId(req.params.id);
 
         if (!idUsuario) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'ID de usuario inválido'
-            });
+            return res.status(400).json({ success: false, mensaje: 'ID de usuario inválido' });
         }
 
-        // ========================================
-        // VERIFICAR QUE EL USUARIO EXISTE
-        // ========================================
-        const usuario =
-            await usuarioModel.buscarPorId(
-                idUsuario
-            );
+        const usuario = await usuarioModel.buscarPorId(idUsuario);
 
         if (!usuario) {
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Usuario no encontrado'
-            });
+            return res.status(404).json({ success: false, mensaje: 'Usuario no encontrado' });
         }
 
-        // ========================================
-        // NADIE PUEDE MODIFICAR SU PROPIO ESTADO/ROL
-        // ========================================
-        if (
-            Number(
-                req.usuario.id_usuario
-            ) === Number(idUsuario)
-        ) {
-            return res.status(403).json({
-                success: false,
-                mensaje:
-                    'No puedes modificar tu propio estado o rol'
-            });
+        if (Number(req.usuario.id_usuario) === Number(idUsuario)) {
+            return res.status(403).json({ success: false, mensaje: 'No puedes modificar tu propio estado o rol' });
         }
 
-        // ========================================
-        // UNA CUENTA ELIMINADA ES DEFINITIVA
-        // El titular pidió su cancelación (Ley 29733): la fila se
-        // anonimiza y queda inactiva. No se reactiva, no cambia de
-        // rol y no vuelve a ser cliente. Solo la restringe el
-        // backend, no la interfaz.
-        // ========================================
         if (usuario.fecha_eliminacion) {
-            return res.status(403).json({
-                success: false,
-                mensaje:
-                    'Esta cuenta fue eliminada por su titular: no se puede reactivar ni cambiar de rol'
-            });
+            return res.status(403).json({ success: false, mensaje: 'Esta cuenta fue eliminada por su titular: no se puede reactivar ni cambiar de rol' });
         }
 
-        const { estado, rol } =
-            req.body;
+        const { estado, rol } = req.body;
 
-        if (
-            estado === undefined &&
-            rol === undefined
-        ) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'Debes enviar al menos un campo para actualizar (estado o rol)'
-            });
+        if (estado === undefined && rol === undefined) {
+            return res.status(400).json({ success: false, mensaje: 'Debes enviar al menos un campo para actualizar (estado o rol)' });
         }
 
-        // ========================================
-        // VALIDAR ROL
-        // ========================================
-        if (
-            rol !== undefined &&
-            !esRolValido(rol)
-        ) {
-            return res.status(400).json({
-                success: false,
-                mensaje: `El rol debe ser ${ROLES_ASIGNABLES.map((r) => `"${r}"`).join(', ')}`
-            });
+        if (rol !== undefined && !esRolValido(rol)) {
+            return res.status(400).json({ success: false, mensaje: `El rol debe ser ${ROLES_ASIGNABLES.map((r) => `"${r}"`).join(', ')}` });
         }
 
-        // ========================================
-        // VALIDAR ESTADO (0 o 1)
-        // ========================================
-        if (
-            estado !== undefined &&
-            !esEstadoValido(estado)
-        ) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'El estado debe ser 0 o 1'
-            });
+        if (estado !== undefined && !esEstadoValido(estado)) {
+            return res.status(400).json({ success: false, mensaje: 'El estado debe ser 0 o 1' });
         }
 
-        // ========================================
-        // ACTUALIZAR
-        // ========================================
-        await usuarioModel.actualizarEstadoRol(
-            idUsuario,
-            {
-                estado:
-                    estado === undefined
-                        ? undefined
-                        : Number(estado),
+        await usuarioModel.actualizarEstadoRol(idUsuario, {
+            estado: estado === undefined ? undefined : Number(estado),
 
-                rol: rol === undefined
-                    ? null
-                    : normalizar(rol)
-            }
-        );
+            rol: rol === undefined ? null : normalizar(rol)
+        });
 
-        const actualizado =
-            await usuarioModel.buscarPorId(
-                idUsuario
-            );
+        const actualizado = await usuarioModel.buscarPorId(idUsuario);
 
         if (usuario.rol !== actualizado.rol || Number(usuario.estado) !== Number(actualizado.estado)) {
             try {
-                await historialModel.crear({ id_usuario: req.usuario.id_usuario, tipo_operacion: 'ACTUALIZAR', modulo: 'usuarios',
-                    descripcion: `Usuario #${idUsuario}: rol ${usuario.rol} → ${actualizado.rol}; estado ${usuario.estado} → ${actualizado.estado}` });
-            } catch (errorHistorial) { console.error('No se pudo registrar el historial:', errorHistorial.message); }
+                await historialModel.crear({
+                    id_usuario: req.usuario.id_usuario,
+                    tipo_operacion: 'ACTUALIZAR',
+                    modulo: 'usuarios',
+                    descripcion: `Usuario #${idUsuario}: rol ${usuario.rol} → ${actualizado.rol}; estado ${usuario.estado} → ${actualizado.estado}`
+                });
+            } catch (errorHistorial) {
+                console.error('No se pudo registrar el historial:', errorHistorial.message);
+            }
         }
 
         return res.json({
             success: true,
-            mensaje:
-                'Usuario actualizado correctamente',
+            mensaje: 'Usuario actualizado correctamente',
             data: {
-                id_usuario:
-                    actualizado.id_usuario,
-                nombre_completo:
-                    `${actualizado.nombre} ${actualizado.apellido}`.trim(),
+                id_usuario: actualizado.id_usuario,
+                nombre_completo: `${actualizado.nombre} ${actualizado.apellido}`.trim(),
                 email: actualizado.email,
                 rol: actualizado.rol,
                 estado: actualizado.estado,
-                fecha_registro:
-                    actualizado.fecha_registro
+                fecha_registro: actualizado.fecha_registro
             }
         });
-
     } catch (error) {
-        console.error(
-            'Error al actualizar usuario (admin):',
-            error
-        );
+        console.error('Error al actualizar usuario (admin):', error);
 
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al actualizar el usuario',
-            error: 'Error interno del servidor'
-        });
+        return res.status(500).json({ success: false, mensaje: 'Error al actualizar el usuario', error: 'Error interno del servidor' });
     }
 };
 
-// ========================================
-// OBTENER PERFIL DEL USUARIO AUTENTICADO
-// ========================================
 const obtenerPerfil = async (req, res) => {
     try {
-        const idUsuario =
-            req.usuario.id_usuario;
+        const idUsuario = req.usuario.id_usuario;
 
-        const usuario =
-            await usuarioModel.buscarPorId(
-                idUsuario
-            );
+        const usuario = await usuarioModel.buscarPorId(idUsuario);
 
         if (!usuario) {
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Usuario no encontrado'
-            });
+            return res.status(404).json({ success: false, mensaje: 'Usuario no encontrado' });
         }
 
-        const twoFactorEnabled =
-            await obtenerTwoFactorEnabled(
-                idUsuario
-            );
+        const twoFactorEnabled = await obtenerTwoFactorEnabled(idUsuario);
 
-        return res.json({
-            success: true,
-            data: {
-                ...usuario,
-                two_factor_enabled:
-                    twoFactorEnabled
-            }
-        });
-
+        return res.json({ success: true, data: { ...usuario, two_factor_enabled: twoFactorEnabled } });
     } catch (error) {
-        console.error(
-            'Error al obtener perfil:',
-            error
-        );
+        console.error('Error al obtener perfil:', error);
 
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al obtener el perfil',
-            error: 'Error interno del servidor'
-        });
+        return res.status(500).json({ success: false, mensaje: 'Error al obtener el perfil', error: 'Error interno del servidor' });
     }
 };
 
-// ========================================
-// ACTUALIZAR PERFIL
-// ========================================
 const actualizarPerfil = async (req, res) => {
     try {
-        const idUsuario =
-            req.usuario.id_usuario;
+        const idUsuario = req.usuario.id_usuario;
 
-        const {
-            nombre,
-            apellido,
-            email,
-            telefono
-        } = req.body;
+        const { nombre, apellido, email, telefono } = req.body;
 
-        // ========================================
-        // VALIDACIONES
-        // ========================================
-        if ((nombre !== undefined && !esTextoValido(nombre, 80)) ||
+        if (
+            (nombre !== undefined && !esTextoValido(nombre, 80)) ||
             (apellido !== undefined && !esTextoValido(apellido, 80)) ||
-            (telefono !== undefined && telefono !== null && !esTextoValido(telefono, 20, true))) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'Nombre, apellido o teléfono inválidos'
-            });
+            (telefono !== undefined && telefono !== null && !esTextoValido(telefono, 20, true))
+        ) {
+            return res.status(400).json({ success: false, mensaje: 'Nombre, apellido o teléfono inválidos' });
         }
 
         if (email !== undefined && !esEmailValido(email)) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'El correo electrónico no es válido'
-            });
+            return res.status(400).json({ success: false, mensaje: 'El correo electrónico no es válido' });
         }
 
-        // ========================================
-        // VERIFICAR EMAIL DUPLICADO
-        // ========================================
         const emailNormalizado = email === undefined ? undefined : email.trim().toLowerCase();
         const emailExiste = emailNormalizado === undefined ? false : await usuarioModel.existeEmail(emailNormalizado, idUsuario);
 
         if (emailExiste) {
-            return res.status(409).json({
-                success: false,
-                mensaje:
-                    'El correo ingresado ya está registrado'
-            });
+            return res.status(409).json({ success: false, mensaje: 'El correo ingresado ya está registrado' });
         }
 
-        // ========================================
-        // ACTUALIZAR
-        // ========================================
-        await usuarioModel.actualizarPerfil(
-            idUsuario,
-            {
-                nombre:
-                    nombre === undefined ? undefined : nombre.trim(),
+        await usuarioModel.actualizarPerfil(idUsuario, {
+            nombre: nombre === undefined ? undefined : nombre.trim(),
 
-                apellido:
-                    apellido === undefined ? undefined : apellido.trim(),
+            apellido: apellido === undefined ? undefined : apellido.trim(),
 
-                email:
-                    emailNormalizado,
+            email: emailNormalizado,
 
-                telefono:
-                    telefono === undefined ? undefined : telefono === null ? null : telefono.trim() || null
-            }
-        );
-
-        // ========================================
-        // OBTENER DATOS ACTUALIZADOS
-        // ========================================
-        const usuarioActualizado =
-            await usuarioModel.buscarPorId(
-                idUsuario
-            );
-
-        const twoFactorEnabled =
-            await obtenerTwoFactorEnabled(
-                idUsuario
-            );
-
-        return res.json({
-            success: true,
-            mensaje:
-                'Perfil actualizado correctamente',
-            data: {
-                ...usuarioActualizado,
-                two_factor_enabled:
-                    twoFactorEnabled
-            }
+            telefono: telefono === undefined ? undefined : telefono === null ? null : telefono.trim() || null
         });
 
+        const usuarioActualizado = await usuarioModel.buscarPorId(idUsuario);
+
+        const twoFactorEnabled = await obtenerTwoFactorEnabled(idUsuario);
+
+        return res.json({ success: true, mensaje: 'Perfil actualizado correctamente', data: { ...usuarioActualizado, two_factor_enabled: twoFactorEnabled } });
     } catch (error) {
-        console.error(
-            'Error al actualizar perfil:',
-            error
-        );
+        console.error('Error al actualizar perfil:', error);
         if (error.code === '23505') return res.status(409).json({ success: false, mensaje: 'El correo ingresado ya está registrado' });
 
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al actualizar el perfil',
-            error: 'Error interno del servidor'
-        });
+        return res.status(500).json({ success: false, mensaje: 'Error al actualizar el perfil', error: 'Error interno del servidor' });
     }
 };
 
-// ========================================
-// SUBIR / ACTUALIZAR FOTO DE PERFIL
-// ========================================
 const subirFotoPerfil = async (req, res) => {
     try {
-        const idUsuario =
-            req.usuario.id_usuario;
+        const idUsuario = req.usuario.id_usuario;
 
-        // ========================================
-        // VALIDAR ARCHIVO
-        // ========================================
         if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'Debes seleccionar una imagen'
-            });
+            return res.status(400).json({ success: false, mensaje: 'Debes seleccionar una imagen' });
         }
 
-        // ========================================
-        // OBTENER USUARIO ACTUAL
-        // ========================================
-        const usuario =
-            await usuarioModel.buscarPorId(
-                idUsuario
-            );
+        const usuario = await usuarioModel.buscarPorId(idUsuario);
 
         if (!usuario) {
-            // limpiar archivo recién subido
             if (req.file?.cloudinaryUrl) {
                 try {
-                    await eliminarImagen(
-                        publicIdDesdeUrl(req.file.cloudinaryUrl)
-                    );
+                    await eliminarImagen(publicIdDesdeUrl(req.file.cloudinaryUrl));
                 } catch (errorEliminar) {
-                    console.error(
-                        'No se pudo eliminar la foto en Cloudinary:',
-                        errorEliminar.message
-                    );
+                    console.error('No se pudo eliminar la foto en Cloudinary:', errorEliminar.message);
                 }
-            } else if (
-                req.file?.path &&
-                fs.existsSync(req.file.path)
-            ) {
+            } else if (req.file?.path && fs.existsSync(req.file.path)) {
                 fs.unlinkSync(req.file.path);
             }
 
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Usuario no encontrado'
-            });
+            return res.status(404).json({ success: false, mensaje: 'Usuario no encontrado' });
         }
 
-        // ========================================
-        // NUEVA RUTA
-        // ========================================
-        const nuevaFoto =
-            req.file.cloudinaryUrl ||
-            `/uploads/perfiles/${req.file.filename}`;
+        const nuevaFoto = req.file.cloudinaryUrl || `/uploads/perfiles/${req.file.filename}`;
 
-        // ========================================
-        // ACTUALIZAR EN BD
-        // ========================================
-        await usuarioModel.actualizarFotoPerfil(
-            idUsuario,
-            nuevaFoto
-        );
+        await usuarioModel.actualizarFotoPerfil(idUsuario, nuevaFoto);
 
-        // ========================================
-        // ELIMINAR FOTO ANTERIOR
-        // ========================================
-        if (
-            usuario.foto_perfil &&
-            usuario.foto_perfil !== nuevaFoto
-        ) {
+        if (usuario.foto_perfil && usuario.foto_perfil !== nuevaFoto) {
             try {
-                const publicIdAnterior =
-                    publicIdDesdeUrl(
-                        usuario.foto_perfil
-                    );
+                const publicIdAnterior = publicIdDesdeUrl(usuario.foto_perfil);
 
                 if (publicIdAnterior) {
                     await eliminarImagen(publicIdAnterior);
                 } else {
-                    const rutaAnterior =
-                        path.join(
-                            __dirname,
-                            '../..',
-                            usuario.foto_perfil.replace(
-                                /^\/+/,
-                                ''
-                            )
-                        );
+                    const rutaAnterior = path.join(__dirname, '../..', usuario.foto_perfil.replace(/^\/+/, ''));
 
-                    if (
-                        fs.existsSync(
-                            rutaAnterior
-                        )
-                    ) {
-                        fs.unlinkSync(
-                            rutaAnterior
-                        );
+                    if (fs.existsSync(rutaAnterior)) {
+                        fs.unlinkSync(rutaAnterior);
                     }
                 }
-
             } catch (errorEliminar) {
-                console.error(
-                    'No se pudo eliminar la foto anterior:',
-                    errorEliminar.message
-                );
+                console.error('No se pudo eliminar la foto anterior:', errorEliminar.message);
             }
         }
 
-        // ========================================
-        // OBTENER PERFIL ACTUALIZADO
-        // ========================================
-        const usuarioActualizado =
-            await usuarioModel.buscarPorId(
-                idUsuario
-            );
+        const usuarioActualizado = await usuarioModel.buscarPorId(idUsuario);
 
-        const twoFactorEnabled =
-            await obtenerTwoFactorEnabled(
-                idUsuario
-            );
+        const twoFactorEnabled = await obtenerTwoFactorEnabled(idUsuario);
 
-        return res.json({
-            success: true,
-            mensaje:
-                'Foto de perfil actualizada correctamente',
-            data: {
-                ...usuarioActualizado,
-                two_factor_enabled:
-                    twoFactorEnabled
-            }
-        });
-
+        return res.json({ success: true, mensaje: 'Foto de perfil actualizada correctamente', data: { ...usuarioActualizado, two_factor_enabled: twoFactorEnabled } });
     } catch (error) {
-        console.error(
-            'Error al actualizar foto de perfil:',
-            error
-        );
+        console.error('Error al actualizar foto de perfil:', error);
 
-        // ========================================
-        // SI FALLA, BORRAR ARCHIVO NUEVO
-        // ========================================
         try {
             if (req.file?.cloudinaryUrl) {
-                await eliminarImagen(
-                    publicIdDesdeUrl(req.file.cloudinaryUrl)
-                );
-            } else if (
-                req.file?.path &&
-                fs.existsSync(req.file.path)
-            ) {
-                fs.unlinkSync(
-                    req.file.path
-                );
+                await eliminarImagen(publicIdDesdeUrl(req.file.cloudinaryUrl));
+            } else if (req.file?.path && fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
             }
         } catch (errorEliminar) {
-            console.error(
-                'Error al eliminar archivo temporal:',
-                errorEliminar.message
-            );
+            console.error('Error al eliminar archivo temporal:', errorEliminar.message);
         }
 
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al actualizar la foto de perfil',
-            error: 'Error interno del servidor'
-        });
+        return res.status(500).json({ success: false, mensaje: 'Error al actualizar la foto de perfil', error: 'Error interno del servidor' });
     }
 };
 
-// ========================================
-// CAMBIAR CONTRASEÑA
-// ========================================
 const cambiarPassword = async (req, res) => {
     try {
-        const idUsuario =
-            req.usuario.id_usuario;
+        const idUsuario = req.usuario.id_usuario;
 
-        const {
-            password_actual,
-            password_nueva,
-            confirmar_password
-        } = req.body;
+        const { password_actual, password_nueva, confirmar_password } = req.body;
 
-        // ========================================
-        // VALIDAR CAMPOS
-        // ========================================
-        if (
-            !password_actual ||
-            !password_nueva ||
-            !confirmar_password
-        ) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'Debes completar todos los campos'
-            });
+        if (!password_actual || !password_nueva || !confirmar_password) {
+            return res.status(400).json({ success: false, mensaje: 'Debes completar todos los campos' });
         }
 
-        if (
-            password_nueva !==
-            confirmar_password
-        ) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'Las nuevas contraseñas no coinciden'
-            });
+        if (password_nueva !== confirmar_password) {
+            return res.status(400).json({ success: false, mensaje: 'Las nuevas contraseñas no coinciden' });
         }
 
-        // ========================================
-        // POLÍTICA DE CONTRASEÑAS
-        // (mínimo 8 caracteres, al menos una letra y un número)
-        // ========================================
-        const resultadoPassword =
-            validarPassword(password_nueva);
+        const resultadoPassword = validarPassword(password_nueva);
 
         if (resultadoPassword !== true) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    resultadoPassword
-            });
+            return res.status(400).json({ success: false, mensaje: resultadoPassword });
         }
 
-        // ========================================
-        // BUSCAR USUARIO CON PASSWORD
-        // ========================================
-        const usuario =
-            await usuarioModel.buscarPorIdConPassword(
-                idUsuario
-            );
+        const usuario = await usuarioModel.buscarPorIdConPassword(idUsuario);
 
         if (!usuario) {
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Usuario no encontrado'
-            });
+            return res.status(404).json({ success: false, mensaje: 'Usuario no encontrado' });
         }
 
-        // ========================================
-        // VALIDAR CONTRASEÑA ACTUAL
-        // ========================================
-        const passwordCorrecta =
-            await bcrypt.compare(
-                password_actual,
-                usuario.password
-            );
+        const passwordCorrecta = await bcrypt.compare(password_actual, usuario.password);
 
         if (!passwordCorrecta) {
-            return res.status(401).json({
-                success: false,
-                mensaje:
-                    'La contraseña actual es incorrecta'
-            });
+            return res.status(401).json({ success: false, mensaje: 'La contraseña actual es incorrecta' });
         }
 
-        // ========================================
-        // EVITAR MISMA CONTRASEÑA
-        // ========================================
-        const mismaPassword =
-            await bcrypt.compare(
-                password_nueva,
-                usuario.password
-            );
+        const mismaPassword = await bcrypt.compare(password_nueva, usuario.password);
 
         if (mismaPassword) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'La nueva contraseña debe ser diferente a la actual'
-            });
+            return res.status(400).json({ success: false, mensaje: 'La nueva contraseña debe ser diferente a la actual' });
         }
 
-        // ========================================
-        // ENCRIPTAR NUEVA CONTRASEÑA
-        // ========================================
-        const passwordHash =
-            await bcrypt.hash(
-                password_nueva,
-                10
-            );
+        const passwordHash = await bcrypt.hash(password_nueva, 10);
 
-        // ========================================
-        // ACTUALIZAR
-        // ========================================
-        await usuarioModel.actualizarPassword(
-            idUsuario,
-            passwordHash
-        );
+        await usuarioModel.actualizarPassword(idUsuario, passwordHash);
 
-        return res.json({
-            success: true,
-            mensaje:
-                'Contraseña actualizada. Inicia sesión nuevamente.',
-            sesiones_revocadas: true
-        });
-
+        return res.json({ success: true, mensaje: 'Contraseña actualizada. Inicia sesión nuevamente.', sesiones_revocadas: true });
     } catch (error) {
-        console.error(
-            'Error al cambiar contraseña:',
-            error
-        );
+        console.error('Error al cambiar contraseña:', error);
 
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al cambiar la contraseña',
-            error: 'Error interno del servidor'
-        });
+        return res.status(500).json({ success: false, mensaje: 'Error al cambiar la contraseña', error: 'Error interno del servidor' });
     }
 };
 
-// ========================================
-// EXPORTAR
-// ========================================
-// ========================================
-// ELIMINAR MI CUENTA (cliente)
-// DELETE /api/usuarios/cuenta  { password, confirmacion: "ELIMINAR" }
-// ----------------------------------------
-// Contraseña incorrecta → 400 (no 401): la app no debe tratarlo como
-// sesión vencida.
-// ========================================
 const eliminarMiCuenta = async (req, res) => {
     try {
         const idUsuario = req.usuario.id_usuario;
         const { password, confirmacion } = req.body || {};
 
         if (!esCliente(req.usuario.rol)) {
-            return res.status(403).json({
-                success: false,
-                mensaje: 'Solo las cuentas de cliente pueden eliminarse desde aquí'
-            });
+            return res.status(403).json({ success: false, mensaje: 'Solo las cuentas de cliente pueden eliminarse desde aquí' });
         }
-        if (String(confirmacion || '').trim().toUpperCase() !== 'ELIMINAR') {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'Escribe ELIMINAR para confirmar'
-            });
+        if (
+            String(confirmacion || '')
+                .trim()
+                .toUpperCase() !== 'ELIMINAR'
+        ) {
+            return res.status(400).json({ success: false, mensaje: 'Escribe ELIMINAR para confirmar' });
         }
         if (!password) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'Ingresa tu contraseña'
-            });
+            return res.status(400).json({ success: false, mensaje: 'Ingresa tu contraseña' });
         }
 
         const usuario = await usuarioModel.buscarPorIdConPassword(idUsuario);
@@ -763,10 +320,7 @@ const eliminarMiCuenta = async (req, res) => {
         }
 
         const aleatoria = require('crypto').randomBytes(32).toString('hex');
-        await usuarioModel.eliminarCuenta(
-            idUsuario,
-            await bcrypt.hash(aleatoria, 10)
-        );
+        await usuarioModel.eliminarCuenta(idUsuario, await bcrypt.hash(aleatoria, 10));
 
         try {
             await historialModel.crear({
@@ -779,22 +333,11 @@ const eliminarMiCuenta = async (req, res) => {
             console.error('No se pudo registrar el historial:', errorHistorial.message);
         }
 
-        return res.json({
-            success: true,
-            mensaje: 'Tu cuenta fue eliminada. Tus compras se conservan solo por obligación tributaria.'
-        });
+        return res.json({ success: true, mensaje: 'Tu cuenta fue eliminada. Tus compras se conservan solo por obligación tributaria.' });
     } catch (error) {
         console.error('Error al eliminar cuenta:', error);
         return res.status(500).json({ success: false, mensaje: 'No se pudo eliminar la cuenta' });
     }
 };
 
-module.exports = {
-    listarUsuarios,
-    adminUpdateUsuario,
-    obtenerPerfil,
-    actualizarPerfil,
-    subirFotoPerfil,
-    cambiarPassword,
-    eliminarMiCuenta
-};
+module.exports = { listarUsuarios, adminUpdateUsuario, obtenerPerfil, actualizarPerfil, subirFotoPerfil, cambiarPassword, eliminarMiCuenta };

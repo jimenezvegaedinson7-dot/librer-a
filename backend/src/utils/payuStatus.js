@@ -1,53 +1,15 @@
-// ========================================
-// CONSULTAR ESTADO DE UNA ORDEN EN PAYU
-// ========================================
-// Usado por el job de limpieza (cancelarOrdenesAbandonadas) para
-// NO liberar el stock de ventas que en realidad ya están pagadas
-// en PayU aunque el webhook aún no haya llegado a la BD.
-//
-// Firma: consultarEstadoOrdenPayu({ externalReference, orderId })
-//
-// Devuelve SIEMPRE un objeto (no lanza):
-//   { pagado: true/false, status, error: false, mensaje }
-//   { pagado: false, status, error: true, mensaje }  (API caída)
-//
-// El job consulta por id de orden (payu_order_id) cuando existe;
-// si no, intenta localizar pagos por external_reference.
-// ========================================
-
 const { cliente } = require('../config/payu');
 const { consultarReporte, elegirOrdenReports } = require('../services/payu.service');
 
-const ESTADOS_PAGADOS = [
-    'APPROVED',
-    'CAPTURED'
-];
-
-const ESTADOS_CANCELADOS = [
-    'DECLINED',
-    'ERROR',
-    'EXPIRED',
-    'VOIDED',
-    'REFUNDED'
-];
-
-const ESTADOS_PENDIENTES = [
-    'PENDING',
-    'PENDING_TRANSACTION_REVIEW',
-    'PENDING_TRANSACTION_CONFIRMATION'
-];
+const ESTADOS_PAGADOS = ['APPROVED', 'CAPTURED'];
+const ESTADOS_CANCELADOS = ['DECLINED', 'ERROR', 'EXPIRED', 'VOIDED', 'REFUNDED'];
+const ESTADOS_PENDIENTES = ['PENDING', 'PENDING_TRANSACTION_REVIEW', 'PENDING_TRANSACTION_CONFIRMATION'];
 
 const normalizarEstado = (estado) => {
-    return typeof estado === 'string'
-        ? estado.toUpperCase().trim()
-        : null;
+    return typeof estado === 'string' ? estado.toUpperCase().trim() : null;
 };
 
-const montoPagoCoincide = (
-    montoPago,
-    montoVenta,
-    tolerancia = 0.02
-) => {
+const montoPagoCoincide = (montoPago, montoVenta, tolerancia = 0.02) => {
     if (montoPago == null || montoVenta == null) {
         return false;
     }
@@ -55,15 +17,10 @@ const montoPagoCoincide = (
     const pago = Number(montoPago);
     const venta = Number(montoVenta);
 
-    return Number.isFinite(pago) &&
-        Number.isFinite(venta) &&
-        Math.abs(Math.round(pago * 100) - Math.round(venta * 100)) <= Math.round(tolerancia * 100);
+    return Number.isFinite(pago) && Number.isFinite(venta) && Math.abs(Math.round(pago * 100) - Math.round(venta * 100)) <= Math.round(tolerancia * 100);
 };
 
-const debeActualizarEstadoPago = (
-    estadoActual,
-    estadoNuevo
-) => {
+const debeActualizarEstadoPago = (estadoActual, estadoNuevo) => {
     const actual = normalizarEstado(estadoActual);
     const nuevo = normalizarEstado(estadoNuevo);
     const reversiones = ['REFUNDED', 'CHARGED_BACK'];
@@ -91,7 +48,7 @@ const debeActualizarEstadoPago = (
 const extraerEstadoOrdenPayu = (orden) => {
     const transactionResponse = orden?.transactionResponse || orden;
     const status = normalizarEstado(transactionResponse?.state || orden?.status) || 'UNKNOWN';
-    const amount = transactionResponse?.value != null ? Number(transactionResponse.value) / 100 : (orden?.amount != null ? Number(orden.amount) / 100 : null);
+    const amount = transactionResponse?.value != null ? Number(transactionResponse.value) / 100 : orden?.amount != null ? Number(orden.amount) / 100 : null;
     const paymentId = transactionResponse?.transactionId || transactionResponse?.orderId || null;
 
     const pagado = ESTADOS_PAGADOS.includes(status);
@@ -114,96 +71,49 @@ const extraerEstadoOrdenPayu = (orden) => {
     };
 };
 
-const consultarEstadoOrdenPayu = async ({
-    externalReference,
-    orderId
-}) => {
+const consultarEstadoOrdenPayu = async ({ externalReference, orderId }) => {
     try {
         if (!cliente) {
-            return {
-                pagado: false,
-                error: true,
-                status: null,
-                mensaje:
-                    'PayU no está configurado en el servidor'
-            };
+            return { pagado: false, error: true, status: null, mensaje: 'PayU no está configurado en el servidor' };
         }
 
         let ordenes = [];
 
-        // 1) POR ID DE ORDEN (payu_order_id)
         if (orderId && !externalReference) {
-            const consulta =
-                await consultarReporte('ORDER_DETAIL', {
-                    orderId: Number(orderId)
-                });
+            const consulta = await consultarReporte('ORDER_DETAIL', { orderId: Number(orderId) });
 
             const payload = consulta?.result?.payload;
-            ordenes = Array.isArray(payload) ? payload : (payload ? [payload] : []);
+            ordenes = Array.isArray(payload) ? payload : payload ? [payload] : [];
         } else if (externalReference) {
-            // 2) POR REFERENCIA EXTERNA (ORDER_DETAIL_BY_REFERENCE_CODE)
-            const consulta =
-                await consultarReporte(
-                    'ORDER_DETAIL_BY_REFERENCE_CODE',
-                    {
-                        referenceCode: String(
-                            externalReference
-                        )
-                    }
-                );
+            const consulta = await consultarReporte('ORDER_DETAIL_BY_REFERENCE_CODE', { referenceCode: String(externalReference) });
 
-            const payload =
-                consulta?.result?.payload;
-            ordenes = Array.isArray(payload) ? payload : (payload ? [payload] : []);
+            const payload = consulta?.result?.payload;
+            ordenes = Array.isArray(payload) ? payload : payload ? [payload] : [];
         }
 
         if (ordenes.length === 0) {
-            return {
-                pagado: false,
-                error: false,
-                status: null,
-                mensaje:
-                    'No se encontró la orden en PayU o no tiene estado'
-            };
+            return { pagado: false, error: false, status: null, mensaje: 'No se encontró la orden en PayU o no tiene estado' };
         }
 
         const detalle = extraerEstadoOrdenPayu(elegirOrdenReports(ordenes));
         const status = detalle.status;
-        if (!status || (!ESTADOS_PAGADOS.includes(status) &&
-            !ESTADOS_PENDIENTES.includes(status) && !ESTADOS_CANCELADOS.includes(status))) {
+        if (!status || (!ESTADOS_PAGADOS.includes(status) && !ESTADOS_PENDIENTES.includes(status) && !ESTADOS_CANCELADOS.includes(status))) {
             throw new Error('PayU devolvió una orden sin estado reconocido');
         }
 
-        const pagado =
-            ESTADOS_PAGADOS.includes(status);
+        const pagado = ESTADOS_PAGADOS.includes(status);
 
         return {
             pagado,
             ...detalle,
-            pendiente:
-                ESTADOS_PENDIENTES.includes(status),
+            pendiente: ESTADOS_PENDIENTES.includes(status),
             status,
             error: false,
-            mensaje: pagado
-                ? `La orden está pagada (${status})`
-                : `La orden no está pagada (${status})`
+            mensaje: pagado ? `La orden está pagada (${status})` : `La orden no está pagada (${status})`
         };
-
     } catch (error) {
-        return {
-            pagado: false,
-            error: true,
-            status: null,
-            mensaje:
-                error?.message ||
-                'Error al consultar PayU'
-        };
+        return { pagado: false, error: true, status: null, mensaje: error?.message || 'Error al consultar PayU' };
     }
 };
 
-module.exports = {
-    consultarEstadoOrdenPayu,
-    extraerEstadoOrdenPayu,
-    montoPagoCoincide,
-    debeActualizarEstadoPago
-};
+module.exports = { consultarEstadoOrdenPayu, extraerEstadoOrdenPayu, montoPagoCoincide, debeActualizarEstadoPago };

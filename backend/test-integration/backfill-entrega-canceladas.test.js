@@ -15,28 +15,35 @@ test('041: backfill de entrega en ventas canceladas (PostgreSQL real)', async (t
     const ids = { usuario: null, autor: null, categoria: null, libro: null, ventas: [] };
     const sufijo = randomUUID().slice(0, 8);
     try {
-        const [[usuario]] = await pool.query(`INSERT INTO usuarios (nombre, apellido, email, password, rol, estado)
-            VALUES ('Backfill','Prueba',?, 'x', 'cliente', 1) RETURNING id_usuario`, [`backfill-${sufijo}@example.test`]);
+        const [[usuario]] = await pool.query(
+            `INSERT INTO usuarios (nombre, apellido, email, password, rol, estado) VALUES ('Backfill','Prueba',?, 'x', 'cliente', 1) RETURNING id_usuario`,
+            [`backfill-${sufijo}@example.test`]
+        );
         ids.usuario = usuario.id_usuario;
         ids.autor = (await pool.query(`INSERT INTO autores (nombre, apellido) VALUES ('Autor', ?) RETURNING id_autor`, [sufijo]))[0][0].id_autor;
         ids.categoria = (await pool.query(`INSERT INTO categorias (nombre) VALUES (?) RETURNING id_categoria`, [`Backfill ${sufijo}`]))[0][0].id_categoria;
-        ids.libro = (await pool.query(`INSERT INTO libros (titulo, precio, stock, id_autor, id_categoria, estado)
-            VALUES (?, 40, 7, ?, ?, 1) RETURNING id_libro`, [`Libro backfill ${sufijo}`, ids.autor, ids.categoria]))[0][0].id_libro;
+        ids.libro = (
+            await pool.query(`INSERT INTO libros (titulo, precio, stock, id_autor, id_categoria, estado) VALUES (?, 40, 7, ?, ?, 1) RETURNING id_libro`, [
+                `Libro backfill ${sufijo}`,
+                ids.autor,
+                ids.categoria
+            ])
+        )[0][0].id_libro;
         await pool.query('INSERT INTO inventario (id_libro, stock, stock_minimo) VALUES (?, 7, 1)', [ids.libro]);
 
-        // Casos pedidos: estado de la venta + estado de la entrega.
         const casos = [
             { nombre: 'cancelada + pendiente', estado: 'cancelada', entrega: 'pendiente', tipo: 'tienda', esperado: 'cancelado' },
             { nombre: 'cancelada + preparando', estado: 'cancelada', entrega: 'preparando', tipo: 'tienda', esperado: 'cancelado' },
             { nombre: 'cancelada + en_camino (domicilio)', estado: 'cancelada', entrega: 'en_camino', tipo: 'domicilio', esperado: 'cancelado' },
             { nombre: 'cancelada + cancelado', estado: 'cancelada', entrega: 'cancelado', tipo: 'tienda', esperado: 'cancelado' },
             { nombre: 'cancelada + entregado', estado: 'cancelada', entrega: 'entregado', tipo: 'tienda', esperado: 'entregado' },
-            { nombre: 'pagada + pendiente', estado: 'pagada', entrega: 'pendiente', tipo: 'tienda', esperado: 'pendiente' },
+            { nombre: 'pagada + pendiente', estado: 'pagada', entrega: 'pendiente', tipo: 'tienda', esperado: 'pendiente' }
         ];
         for (const caso of casos) {
-            const [[venta]] = await pool.query(`INSERT INTO ventas (id_usuario, total, estado, estado_entrega, tipo_entrega, payu_payment_status, external_reference)
-                VALUES (?, 40, ?, ?, ?, ?, ?) RETURNING id_venta`,
-            [ids.usuario, caso.estado, caso.entrega, caso.tipo, caso.estado === 'pagada' ? 'APPROVED' : 'DECLINED', `BF-${sufijo}-${caso.entrega}-${caso.estado}`]);
+            const [[venta]] = await pool.query(
+                `INSERT INTO ventas (id_usuario, total, estado, estado_entrega, tipo_entrega, payu_payment_status, external_reference) VALUES (?, 40, ?, ?, ?, ?, ?) RETURNING id_venta`,
+                [ids.usuario, caso.estado, caso.entrega, caso.tipo, caso.estado === 'pagada' ? 'APPROVED' : 'DECLINED', `BF-${sufijo}-${caso.entrega}-${caso.estado}`]
+            );
             caso.id = venta.id_venta;
             ids.ventas.push(venta.id_venta);
         }
@@ -76,7 +83,10 @@ test('041: backfill de entrega en ventas canceladas (PostgreSQL real)', async (t
         });
     } finally {
         if (ids.ventas.length) await pool.query('DELETE FROM ventas WHERE id_venta = ANY(?)', [ids.ventas]);
-        if (ids.libro) { await pool.query('DELETE FROM inventario WHERE id_libro = ?', [ids.libro]); await pool.query('DELETE FROM libros WHERE id_libro = ?', [ids.libro]); }
+        if (ids.libro) {
+            await pool.query('DELETE FROM inventario WHERE id_libro = ?', [ids.libro]);
+            await pool.query('DELETE FROM libros WHERE id_libro = ?', [ids.libro]);
+        }
         if (ids.categoria) await pool.query('DELETE FROM categorias WHERE id_categoria = ?', [ids.categoria]);
         if (ids.autor) await pool.query('DELETE FROM autores WHERE id_autor = ?', [ids.autor]);
         if (ids.usuario) await pool.query('DELETE FROM usuarios WHERE id_usuario = ?', [ids.usuario]);

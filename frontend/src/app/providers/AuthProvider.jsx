@@ -1,9 +1,6 @@
-/* oxlint-disable react/only-export-components */
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-
+import { useCallback, useMemo, useState } from 'react';
 import storage from '../../panel/lib/storage/index';
-
-const AuthContext = createContext(null);
+import { AuthContext } from './AuthContext';
 
 export function AuthProvider({ children }) {
     const [usuario, setUsuario] = useState(() => storage.getUsuario());
@@ -25,23 +22,9 @@ export function AuthProvider({ children }) {
     }, []);
 
     const value = useMemo(
-        () => ({
-            usuario,
-            autenticado: Boolean(storage.getToken()),
-            iniciarSesion,
-            actualizarUsuario,
-            cerrarSesion,
-        }),
-        [usuario, iniciarSesion, actualizarUsuario, cerrarSesion],
+        () => ({ usuario, autenticado: Boolean(storage.getToken()), iniciarSesion, actualizarUsuario, cerrarSesion }),
+        [usuario, iniciarSesion, actualizarUsuario, cerrarSesion]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth debe usarse dentro de <AuthProvider>');
-    }
-    return context;
 }

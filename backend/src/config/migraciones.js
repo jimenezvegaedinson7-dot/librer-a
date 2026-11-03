@@ -1,92 +1,27 @@
-// ============================================================
-// MIGRACIONES INCREMENTALES AL ARRANQUE (PostgreSQL)
-// ============================================================
-// Estrategia del proyecto:
-//
-//   INSTALACIÓN NUEVA   -> database/schema.sql (esquema canónico
-//                          completo). No requiere migraciones.
-//   ACTUALIZACIÓN       -> se aplican aquí las migraciones
-//     (producción)        incrementales de la lista MIGRACIONES.
-//   TEST                -> no se autoejecuta nada. La base de
-//                          pruebas se crea desde schema.sql.
-//
-// IMPORTANTE
-//   Solo se autoejecutan migraciones escritas en dialecto PostgreSQL
-//   y declaradas explícitamente en MIGRACIONES. Los archivos
-//   006-022 son heredados de MySQL (AUTO_INCREMENT, MODIFY COLUMN,
-//   INSERT IGNORE, variables @) y NO se ejecutan jamás de forma
-//   automática: fallarían contra PostgreSQL. Si alguna vez hacen
-//   falta, deben reescribirse a PostgreSQL y añadirse a la lista.
-//
-//   Todas las migraciones de la lista son idempotentes: se pueden
-//   ejecutar muchas veces sin duplicar efectos. Las purgas de datos
-//   se declaran aparte, se aplican una sola vez y quedan registradas.
-// ============================================================
-
 const fs = require('fs');
 const path = require('path');
 
-// Rutas absolutas desde la raíz del backend.
-const MIGRACIONES_DIR = path.join(
-    __dirname,
-    '..',
-    '..',
-    'database',
-    'migrations'
-);
+const MIGRACIONES_DIR = path.join(__dirname, '..', '..', 'database', 'migrations');
 
-// Sentencias de esquema que se garantizan en cada arranque.
 const SENTENCIAS_BASE = [
     {
         nombre: 'favoritos',
-        sql: `
-            CREATE TABLE IF NOT EXISTS favoritos (
-                id_usuario INT NOT NULL,
-                id_libro   INT NOT NULL,
-                fecha      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (id_usuario, id_libro),
-                CONSTRAINT fk_favoritos_usuario
-                    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
-                    ON DELETE CASCADE,
-                CONSTRAINT fk_favoritos_libro
-                    FOREIGN KEY (id_libro) REFERENCES libros(id_libro)
-                    ON DELETE CASCADE
-            );
-            CREATE INDEX IF NOT EXISTS idx_favoritos_usuario ON favoritos (id_usuario);
-            CREATE INDEX IF NOT EXISTS idx_favoritos_libro ON favoritos (id_libro);
-        `
+        sql: `CREATE TABLE IF NOT EXISTS favoritos (id_usuario INT NOT NULL, id_libro INT NOT NULL, fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id_usuario, id_libro), CONSTRAINT fk_favoritos_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE, CONSTRAINT fk_favoritos_libro FOREIGN KEY (id_libro) REFERENCES libros(id_libro) ON DELETE CASCADE); CREATE INDEX IF NOT EXISTS idx_favoritos_usuario ON favoritos (id_usuario); CREATE INDEX IF NOT EXISTS idx_favoritos_libro ON favoritos (id_libro);`
     },
     {
         nombre: 'ventas.cliente_documento',
-        sql: `
-            ALTER TABLE ventas ADD COLUMN IF NOT EXISTS cliente_documento VARCHAR(20) NULL;
-            ALTER TABLE ventas ADD COLUMN IF NOT EXISTS cliente_tipo_documento VARCHAR(10) NULL;
-        `
+        sql: `ALTER TABLE ventas ADD COLUMN IF NOT EXISTS cliente_documento VARCHAR(20) NULL; ALTER TABLE ventas ADD COLUMN IF NOT EXISTS cliente_tipo_documento VARCHAR(10) NULL;`
     },
     {
         nombre: 'comprobantes.envio_email',
-        sql: `
-            ALTER TABLE comprobantes ADD COLUMN IF NOT EXISTS enviado_por_email BOOLEAN DEFAULT FALSE;
-            ALTER TABLE comprobantes ADD COLUMN IF NOT EXISTS fecha_envio_email TIMESTAMP NULL;
-        `
+        sql: `ALTER TABLE comprobantes ADD COLUMN IF NOT EXISTS enviado_por_email BOOLEAN DEFAULT FALSE; ALTER TABLE comprobantes ADD COLUMN IF NOT EXISTS fecha_envio_email TIMESTAMP NULL;`
     },
     {
-        // Lo que el asistente aprende de cada cliente (apodo y gustos).
         nombre: 'asistente_memoria',
-        sql: `
-            CREATE TABLE IF NOT EXISTS asistente_memoria (
-                id_usuario  INT PRIMARY KEY,
-                datos       JSONB NOT NULL DEFAULT '{}'::jsonb,
-                actualizado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                CONSTRAINT fk_asistente_memoria_usuario
-                    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
-                    ON DELETE CASCADE
-            );
-        `
+        sql: `CREATE TABLE IF NOT EXISTS asistente_memoria (id_usuario INT PRIMARY KEY, datos JSONB NOT NULL DEFAULT '{}'::jsonb, actualizado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT fk_asistente_memoria_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE);`
     }
 ];
 
-// Migraciones incrementales, en orden. PostgreSQL únicamente.
 const MIGRACIONES = [
     '023_control_ventas.sql',
     '024_reclamaciones_y_cuentas.sql',
@@ -108,36 +43,13 @@ const MIGRACIONES = [
     '044_portada_protagonista.sql'
 ];
 
-// Migraciones de DATOS (backfills): a diferencia de las de esquema, se
-// aplican UNA sola vez y quedan registradas en migraciones_datos con la
-// cantidad de filas que cambiaron. Cada una corre en su propia transacción
-// con un bloqueo, así dos instancias del servicio no la aplican a la vez.
-const MIGRACIONES_DATOS = [
-    '041_backfill_entrega_ventas_canceladas.sql',
-    '042_purga_reservas.sql',
-    '043_delivery_fijo_pallasca.sql'
-];
+const MIGRACIONES_DATOS = ['041_backfill_entrega_ventas_canceladas.sql', '042_purga_reservas.sql', '043_delivery_fijo_pallasca.sql'];
+const TABLA_MIGRACIONES_DATOS = `CREATE TABLE IF NOT EXISTS migraciones_datos (nombre VARCHAR(120) PRIMARY KEY, aplicada_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, filas INT NOT NULL DEFAULT 0)`;
 
-const TABLA_MIGRACIONES_DATOS = `
-    CREATE TABLE IF NOT EXISTS migraciones_datos (
-        nombre      VARCHAR(120) PRIMARY KEY,
-        aplicada_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        filas       INT NOT NULL DEFAULT 0
-    )
-`;
-
-// En producción un fallo de migración debe detener el arranque:
-// seguir sirviendo tráfico contra un esquema incompleto es peor que
-// no arrancar. En desarrollo solo se avisa, para no bloquear el
-// trabajo local por un detalle de esquema.
 function esFalloFatal() {
     return process.env.NODE_ENV === 'production';
 }
 
-// Un error de PostgreSQL puede llegar con message vacío (por ejemplo
-// cuando lo que falla es la conexión o una sentencia multi-consulta).
-// Sin code/detail el diagnóstico en producción sería imposible, así que
-// se reconstruye un mensaje utilizable a partir de lo que sí exista.
 function describirError(error) {
     if (!error) {
         return 'error desconocido';
@@ -162,7 +74,6 @@ function describirError(error) {
     }
 
     if (partes.length === 0) {
-        // Último recurso: al menos el tipo de fallo.
         partes.push(error.name || 'Error');
     }
 
@@ -173,15 +84,10 @@ async function aplicarMigraciones(pool) {
     const entorno = process.env.NODE_ENV || 'development';
     const pasos = [
         ...SENTENCIAS_BASE.map((s) => ({ nombre: s.nombre, sql: s.sql })),
-        ...MIGRACIONES.map((archivo) => ({
-            nombre: archivo,
-            sql: fs.readFileSync(path.join(MIGRACIONES_DIR, archivo), 'utf8')
-        }))
+        ...MIGRACIONES.map((archivo) => ({ nombre: archivo, sql: fs.readFileSync(path.join(MIGRACIONES_DIR, archivo), 'utf8') }))
     ];
 
-    console.log(
-        `[bootstrap] Aplicando ${pasos.length} pasos de esquema (${entorno})...`
-    );
+    console.log(`[bootstrap] Aplicando ${pasos.length} pasos de esquema (${entorno})...`);
 
     for (const paso of pasos) {
         try {
@@ -190,16 +96,10 @@ async function aplicarMigraciones(pool) {
         } catch (error) {
             const motivo = describirError(error);
 
-            console.error(
-                `[bootstrap] ERROR ${paso.nombre}: ${motivo}`
-            );
+            console.error(`[bootstrap] ERROR ${paso.nombre}: ${motivo}`);
 
             if (esFalloFatal()) {
-                throw new Error(
-                    `Migración "${paso.nombre}" falló en producción. ` +
-                    'No se arranca el servidor para no operar con un esquema ' +
-                    `incompleto. Detalle: ${motivo}`
-                );
+                throw new Error(`Migración "${paso.nombre}" falló en producción. ` + 'No se arranca el servidor para no operar con un esquema ' + `incompleto. Detalle: ${motivo}`);
             }
         }
     }
@@ -207,11 +107,10 @@ async function aplicarMigraciones(pool) {
     console.log('[bootstrap] Esquema verificado.');
 }
 
-async function aplicarMigracionesDatos(pool, {
-    lista = MIGRACIONES_DATOS,
-    leer = (archivo) => fs.readFileSync(path.join(MIGRACIONES_DIR, archivo), 'utf8'),
-    registro = console
-} = {}) {
+async function aplicarMigracionesDatos(
+    pool,
+    { lista = MIGRACIONES_DATOS, leer = (archivo) => fs.readFileSync(path.join(MIGRACIONES_DIR, archivo), 'utf8'), registro = console } = {}
+) {
     await pool.query(TABLA_MIGRACIONES_DATOS);
     const resultados = [];
 
@@ -219,7 +118,7 @@ async function aplicarMigracionesDatos(pool, {
         const conexion = await pool.getConnection();
         try {
             await conexion.beginTransaction();
-            // Bloqueo por nombre: la otra instancia espera y luego ve el registro.
+
             await conexion.pgQuery('SELECT pg_advisory_xact_lock(hashtext($1))', [archivo]);
             const aplicada = await conexion.pgQuery('SELECT filas FROM migraciones_datos WHERE nombre = $1', [archivo]);
             if (aplicada.rowCount > 0) {
@@ -228,8 +127,7 @@ async function aplicarMigracionesDatos(pool, {
                 continue;
             }
             const resultado = await conexion.pgQuery(leer(archivo));
-            // Los scripts con varios pasos (bloqueos/DDL/kardex/purga) terminan
-            // en la sentencia cuyo rowCount registra la migración.
+
             const ultimoResultado = Array.isArray(resultado) ? resultado.at(-1) : resultado;
             const filas = ultimoResultado.rowCount ?? 0;
             await conexion.pgQuery('INSERT INTO migraciones_datos (nombre, filas) VALUES ($1, $2)', [archivo, filas]);
@@ -251,11 +149,4 @@ async function aplicarMigracionesDatos(pool, {
     return resultados;
 }
 
-module.exports = {
-    aplicarMigraciones,
-    aplicarMigracionesDatos,
-    MIGRACIONES_DATOS,
-    describirError,
-    MIGRACIONES,
-    SENTENCIAS_BASE
-};
+module.exports = { aplicarMigraciones, aplicarMigracionesDatos, MIGRACIONES_DATOS, describirError, MIGRACIONES, SENTENCIAS_BASE };

@@ -1,22 +1,5 @@
--- ============================================================
--- SCHEMA COMPLETO DE LA BASE DE DATOS
--- MATIDANA — Backend (Express + PostgreSQL)
--- ============================================================
--- Reconstruye TODA la base desde los modelos y las migraciones
--- 001 a 019. Este archivo NO se ejecuta automáticamente: se usa
--- para reproducir la BD desde cero.
---
---   psql -h localhost -U postgres -d libreria_db -f database/schema.sql
---
--- Orden de creación respetando las dependencias por FK.
--- ============================================================
-
--- Extensión para UUID si se necesita
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- ============================================================
--- USUARIOS (migraciones 001 y 002)
--- ============================================================
 CREATE TABLE IF NOT EXISTS usuarios (
     id_usuario SERIAL PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL,
@@ -42,9 +25,6 @@ CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios (email);
 CREATE UNIQUE INDEX IF NOT EXISTS usuarios_email_normalizado_unique ON usuarios (LOWER(email));
 CREATE INDEX IF NOT EXISTS idx_usuarios_rol ON usuarios (rol);
 
--- ============================================================
--- CATEGORÍAS
--- ============================================================
 CREATE TABLE IF NOT EXISTS categorias (
     id_categoria SERIAL PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL,
@@ -53,9 +33,6 @@ CREATE TABLE IF NOT EXISTS categorias (
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================
--- AUTORES
--- ============================================================
 CREATE TABLE IF NOT EXISTS autores (
     id_autor SERIAL PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL,
@@ -66,10 +43,6 @@ CREATE TABLE IF NOT EXISTS autores (
     estado SMALLINT NOT NULL DEFAULT 1
 );
 
--- ============================================================
--- UBICACIONES DE LIMA + AGENCIAS COURIER (migración 006)
--- (antes que ventas por las FKs)
--- ============================================================
 CREATE TABLE IF NOT EXISTS provincias_lima (
     id_provincia SERIAL PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL UNIQUE,
@@ -98,9 +71,6 @@ CREATE TABLE IF NOT EXISTS agencias_courier (
     estado SMALLINT NOT NULL DEFAULT 1
 );
 
--- ============================================================
--- LIBROS
--- ============================================================
 CREATE TABLE IF NOT EXISTS libros (
     id_libro SERIAL PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,
@@ -112,7 +82,7 @@ CREATE TABLE IF NOT EXISTS libros (
     id_autor INT NOT NULL,
     id_categoria INT NOT NULL,
     estado SMALLINT NOT NULL DEFAULT 1,
-    -- Promoción opcional. Los tres campos en NULL = sin descuento.
+
     creado_en TIMESTAMPTZ NULL DEFAULT CURRENT_TIMESTAMP,
     descuento_porcentaje SMALLINT NULL,
     precio_oferta NUMERIC(10,2) NULL,
@@ -125,10 +95,7 @@ CREATE TABLE IF NOT EXISTS libros (
         REFERENCES categorias (id_categoria),
     CONSTRAINT libros_descuento_porcentaje_check
         CHECK (descuento_porcentaje IS NULL OR descuento_porcentaje BETWEEN 1 AND 99),
-    -- Una oferta mas cara que el precio de lista es un dato mal
-    -- capturado, no un descuento. Mismo criterio que aplica la
-    -- migracion 030, para que las dos rutas de creacion de esquema
-    -- dejen la base igual.
+
     CONSTRAINT libros_precio_oferta_check
         CHECK (
             precio_oferta IS NULL
@@ -140,11 +107,6 @@ CREATE INDEX IF NOT EXISTS idx_libros_autor ON libros (id_autor);
 CREATE INDEX IF NOT EXISTS idx_libros_categoria ON libros (id_categoria);
 CREATE INDEX IF NOT EXISTS idx_libros_descuento ON libros (descuento_porcentaje);
 
--- ============================================================
--- ANUNCIOS EN VIDEO (WEB PÚBLICA)
--- ============================================================
--- Los videos de publicidad que el administrador sube desde el panel.
--- La web pública lee el activo con GET /api/anuncios.
 CREATE TABLE IF NOT EXISTS anuncios (
     id_anuncio SERIAL PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,
@@ -163,8 +125,6 @@ CREATE TABLE IF NOT EXISTS anuncios (
 
 CREATE INDEX IF NOT EXISTS idx_anuncios_estado ON anuncios (estado, id_anuncio DESC);
 
--- Carrusel de imágenes del inicio, gestionado desde Anuncios.
--- Libro protagonista de la portada web (una sola fila; NULL = automático).
 CREATE TABLE IF NOT EXISTS portada_config (
     id SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
     id_libro_protagonista INT NULL REFERENCES libros (id_libro) ON DELETE SET NULL,
@@ -186,9 +146,6 @@ CREATE TABLE IF NOT EXISTS carrusel_anuncios (
 );
 CREATE INDEX IF NOT EXISTS idx_carrusel_visible_orden ON carrusel_anuncios (estado,orden,id_imagen);
 
--- ============================================================
--- INVENTARIO
--- ============================================================
 CREATE TABLE IF NOT EXISTS inventario (
     id_inventario SERIAL PRIMARY KEY,
     id_libro INT NOT NULL UNIQUE,
@@ -201,9 +158,6 @@ CREATE TABLE IF NOT EXISTS inventario (
         REFERENCES libros (id_libro)
 );
 
--- ============================================================
--- MOVIMIENTOS DE INVENTARIO / KARDEX (migración 015)
--- ============================================================
 CREATE TABLE IF NOT EXISTS movimientos_inventario (
     id_movimiento SERIAL PRIMARY KEY,
     id_libro INT NOT NULL,
@@ -217,11 +171,6 @@ CREATE TABLE IF NOT EXISTS movimientos_inventario (
 
 CREATE INDEX IF NOT EXISTS idx_mov_libro_fecha ON movimientos_inventario (id_libro, fecha_movimiento);
 
--- ============================================================
--- RESERVAS: TABLA VACÍA LEGACY, SIN API NI CONSUMIDORES RUNTIME
--- Se conserva solo para compatibilidad con migraciones antiguas.
--- Los datos existentes se eliminan con 042_purga_reservas.sql.
--- ============================================================
 CREATE TABLE IF NOT EXISTS reservas (
     id_reserva SERIAL PRIMARY KEY,
     id_usuario INT NOT NULL,
@@ -242,11 +191,6 @@ CREATE INDEX IF NOT EXISTS idx_reservas_usuario ON reservas (id_usuario);
 CREATE INDEX IF NOT EXISTS idx_reservas_libro ON reservas (id_libro);
 CREATE INDEX IF NOT EXISTS idx_reservas_venc_estado ON reservas (fecha_vencimiento, estado);
 
--- ============================================================
--- VENTAS (migraciones 003, 004, 005, 007, 008, 011, 012, 014,
--- índice estado/fecha, y 016 idempotencia_clave)
--- ============================================================
--- Cobertura única de la ciudad. Las zonas anteriores se conservan por historial.
 CREATE TABLE IF NOT EXISTS zonas_delivery_pallasca (
     id_zona SERIAL PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL CHECK (length(btrim(nombre)) BETWEEN 1 AND 80),
@@ -291,8 +235,7 @@ CREATE TABLE IF NOT EXISTS ventas (
     referencia_pago VARCHAR(100) NULL,
     fecha_pago TIMESTAMP NULL,
     cliente_nombre VARCHAR(255) NULL,
-    -- Marcador histórico, deliberadamente sin FK a la tabla vacía reservas.
-    -- No eliminarlo ni cambiar el origen: no habilita operaciones nuevas.
+
     id_reserva INT NULL,
     motivo_reembolso VARCHAR(255) NULL,
     fecha_reembolso TIMESTAMP NULL,
@@ -319,12 +262,7 @@ CREATE TABLE IF NOT EXISTS ventas (
         CHECK (estado_entrega IN ('pendiente', 'preparando', 'listo_recojo', 'en_camino', 'entregado', 'cancelado')),
     CONSTRAINT ventas_tipo_entrega_check
         CHECK (tipo_entrega IS NULL OR tipo_entrega IN ('domicilio', 'tienda')),
-    -- Coherencia entre el tipo de entrega y el estado en que está.
-    -- 'listo_recojo' solo tiene sentido para recojo en tienda y
-    -- 'en_camino' solo para envío a domicilio. La API ya lo valida;
-    -- esto impide además que un UPDATE directo por SQL deje un pedido
-    -- en un estado que nunca ocurriría en el flujo real.
-    -- Las ventas legacy con tipo_entrega NULL quedan fuera de esta regla.
+
     CONSTRAINT ventas_tipo_estado_entrega_check
         CHECK (
             tipo_entrega IS NULL
@@ -373,9 +311,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_ventas_usuario_idempotencia ON ventas (id_u
 CREATE INDEX IF NOT EXISTS idx_ventas_estado_fecha ON ventas (estado, fecha_venta);
 CREATE INDEX IF NOT EXISTS idx_ventas_estado_entrega ON ventas (estado_entrega);
 
--- ============================================================
--- DETALLE DE VENTA
--- ============================================================
 CREATE TABLE IF NOT EXISTS detalle_venta (
     id_detalle SERIAL PRIMARY KEY,
     id_venta INT NOT NULL,
@@ -396,13 +331,6 @@ CREATE TABLE IF NOT EXISTS detalle_venta (
 CREATE INDEX IF NOT EXISTS idx_detalle_venta ON detalle_venta (id_venta);
 CREATE INDEX IF NOT EXISTS idx_detalle_libro ON detalle_venta (id_libro);
 
--- ============================================================
--- FAVORITOS
--- ============================================================
--- Deben existir en el esquema canónico: el arranque en test no ejecuta
--- src/config/migraciones.js (la base de pruebas se crea desde este
--- archivo), así que si la tabla viviera solo allí, /api/favoritos
--- fallaría en las pruebas y en cualquier base creada desde el esquema.
 CREATE TABLE IF NOT EXISTS favoritos (
     id_usuario INT NOT NULL,
     id_libro   INT NOT NULL,
@@ -419,9 +347,6 @@ CREATE TABLE IF NOT EXISTS favoritos (
 CREATE INDEX IF NOT EXISTS idx_favoritos_usuario ON favoritos (id_usuario);
 CREATE INDEX IF NOT EXISTS idx_favoritos_libro ON favoritos (id_libro);
 
--- ============================================================
--- MEMORIA DEL ASISTENTE (preferencias aprendidas por cliente)
--- ============================================================
 CREATE TABLE IF NOT EXISTS asistente_memoria (
     id_usuario  INT PRIMARY KEY,
     datos       JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -431,9 +356,6 @@ CREATE TABLE IF NOT EXISTS asistente_memoria (
         ON DELETE CASCADE
 );
 
--- ============================================================
--- HISTORIAL DE OPERACIONES
--- ============================================================
 CREATE TABLE IF NOT EXISTS historial_operaciones (
     id_historial SERIAL PRIMARY KEY,
     id_usuario INT NULL,
@@ -448,9 +370,6 @@ CREATE TABLE IF NOT EXISTS historial_operaciones (
 
 CREATE INDEX IF NOT EXISTS idx_historial_usuario ON historial_operaciones (id_usuario);
 
--- ============================================================
--- DATOS INICIALES: PROVINCIAS DE LIMA (migración 006)
--- ============================================================
 INSERT INTO provincias_lima (nombre, orden) VALUES
 ('Lima', 1),
 ('Barranca', 2),
@@ -464,9 +383,6 @@ INSERT INTO provincias_lima (nombre, orden) VALUES
 ('Yauyos', 10)
 ON CONFLICT (nombre) DO NOTHING;
 
--- ============================================================
--- DATOS INICIALES: DISTRITOS (migraciones 006 y 010)
--- ============================================================
 INSERT INTO distritos_lima (id_provincia, nombre) VALUES
 (1, 'Ancón'),
 (1, 'Ate'),
@@ -689,20 +605,12 @@ INSERT INTO distritos_lima (id_provincia, nombre) VALUES
 (10, 'Vitis')
 ON CONFLICT (id_provincia, nombre) DO NOTHING;
 
--- ============================================================
--- DATOS INICIALES: AGENCIAS COURIER (migración 006)
--- ============================================================
 INSERT INTO agencias_courier (nombre, tarifa_base, descripcion, estado) VALUES
 ('Olva Courier', 12.00, 'Envío a agencia Olva', 1),
 ('Shalom', 10.00, 'Envío a agencia Shalom', 1),
 ('Shalom Moto', 15.00, 'Envío exprés urbano', 1)
 ON CONFLICT (nombre) DO NOTHING;
 
--- ============================================================
--- TARIFAS DE ENVÍO A DOMICILIO (migraciones 008 y 010)
--- ============================================================
-
--- Zona A (centro / este próximo): S/ 6.00
 UPDATE distritos_lima SET tarifa_envio = 6.00 WHERE nombre IN (
     'Barranco', 'Breña', 'Jesús María', 'La Victoria', 'Lima',
     'Lince', 'Magdalena del Mar', 'Miraflores', 'Pueblo Libre',
@@ -710,7 +618,6 @@ UPDATE distritos_lima SET tarifa_envio = 6.00 WHERE nombre IN (
     'Santiago de Surco', 'Surquillo'
 );
 
--- Zona B (conos y cercanías): S/ 9.00
 UPDATE distritos_lima SET tarifa_envio = 9.00 WHERE nombre IN (
     'Ate', 'Carabayllo', 'Comas', 'El Agustino', 'Independencia',
     'La Molina', 'Los Olivos', 'Lurigancho', 'Pachacamac',
@@ -719,29 +626,21 @@ UPDATE distritos_lima SET tarifa_envio = 9.00 WHERE nombre IN (
     'Villa María del Triunfo'
 );
 
--- Zona C (extremos / playas / sierra): S/ 12.00
 UPDATE distritos_lima SET tarifa_envio = 12.00 WHERE nombre IN (
     'Ancón', 'Chaclacayo', 'Chorrillos', 'Cieneguilla', 'Lurín',
     'Pucusana', 'Puente Piedra', 'Punta Hermosa', 'Punta Negra',
     'San Bartolo', 'Santa María del Mar', 'Santa Rosa'
 );
 
--- Costeras (Barranca, Cañete, Huaral, Huaura): S/ 15.00
 UPDATE distritos_lima SET tarifa_envio = 15.00
 WHERE id_provincia IN (2, 5, 6, 8);
 
--- Sierra cercana (Canta, Huarochirí): S/ 18.00
 UPDATE distritos_lima SET tarifa_envio = 18.00
 WHERE id_provincia IN (4, 7);
 
--- Sierra lejana (Cajatambo, Oyón, Yauyos): S/ 20.00
 UPDATE distritos_lima SET tarifa_envio = 20.00
 WHERE id_provincia IN (3, 9, 10);
 
--- ============================================================
--- EMPRESA (EMISOR ELECTRÓNICO) — migración 013
--- Configuración del emisor de comprobantes (1 fila, id=1).
--- ============================================================
 CREATE TABLE IF NOT EXISTS empresa (
     id INT NOT NULL PRIMARY KEY,
     ruc VARCHAR(11) NOT NULL DEFAULT '',
@@ -753,7 +652,7 @@ CREATE TABLE IF NOT EXISTS empresa (
     sistema_emision VARCHAR(50) NULL,
     emisor_electronico VARCHAR(255) NULL,
     aplica_igv SMALLINT NOT NULL DEFAULT 0,
-    -- Ley 31053: venta de libros exonerada del IGV hasta esta fecha.
+
     libros_exonerados SMALLINT NOT NULL DEFAULT 1,
     exoneracion_libros_hasta DATE NULL DEFAULT '2026-10-17',
     tasa_igv NUMERIC(5,2) NOT NULL DEFAULT 18.00,
@@ -763,7 +662,6 @@ CREATE TABLE IF NOT EXISTS empresa (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Trigger para updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -784,10 +682,6 @@ CREATE TRIGGER update_anuncios_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
--- ============================================================
--- COMPROBANTES DE PAGO (BOLETA / FACTURA) — migraciones 013 y 017
--- (017: cliente_email; 018: un comprobante por venta)
--- ============================================================
 CREATE TABLE IF NOT EXISTS comprobantes (
     id_comprobante SERIAL PRIMARY KEY,
     id_venta INT NOT NULL,
@@ -823,21 +717,15 @@ CREATE TABLE IF NOT EXISTS comprobantes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_comprobantes_venta ON comprobantes (id_venta);
--- Un solo comprobante emitido por venta (uno anulado permite reemitir).
+
 CREATE UNIQUE INDEX IF NOT EXISTS uq_comprobante_venta_emitido
     ON comprobantes (id_venta)
     WHERE estado = 'emitido';
 
--- ============================================================
--- DATOS INICIALES: EMPRESA EMISORA (migración 013)
--- ============================================================
 INSERT INTO empresa (id, ruc)
 VALUES (1, '10447545387')
 ON CONFLICT (id) DO UPDATE SET ruc = EXCLUDED.ruc;
 
--- ============================================================
--- LIBRO DE RECLAMACIONES (migración 024)
--- ============================================================
 CREATE TABLE IF NOT EXISTS reclamaciones (
     id_reclamacion SERIAL PRIMARY KEY,
     anio INT NOT NULL,

@@ -1,142 +1,60 @@
-/* Capa común de listados. .tabla-panel permite incorporar un cuadro concreto. */
-.admin-shell[data-theme] {
-    --tabla-tinta: #24354a;
-    --tabla-cabecera: #f1f4f7;
-}
-.admin-main[data-tablas-formales="true"],
-.tabla-panel {
-    --tabla-nota: #59677a;
-    --tabla-linea: #dce3ea;
-    --tabla-alterna: #fafbfc;
-    --tabla-hover: #eff5f8;
-}
+.admin-shell[data-theme] { --tabla-tinta: #24354a; --tabla-cabecera: #f1f4f7; }
+.admin-main[data-tablas-formales="true"], .tabla-panel { --tabla-nota: #59677a; --tabla-linea: #dce3ea; --tabla-alterna: #fafbfc; --tabla-hover: #eff5f8; }
 .tabla-panel { min-width: 0; }
-
-/* El mismo encabezado con datos, sin registros y durante la carga. */
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card > .card-header {
-    background: var(--tabla-cabecera) !important;
-    box-shadow: none !important;
+    background: var(--tabla-cabecera) !important; box-shadow: none !important;
 }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card > .card-header::after { display: none !important; }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card > .card-header .card-title { color: var(--tabla-tinta) !important; }
-
-.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table),
-.admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card:has(.card-header--filtros) {
-    min-width: 0;
-    overflow: hidden;
-    border: 1px solid var(--tabla-linea) !important;
-    border-radius: 10px;
-    background: #fff !important;
+.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table), .admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card:has(.card-header--filtros) {
+    min-width: 0; overflow: hidden; border: 1px solid var(--tabla-linea) !important; border-radius: 10px; background: #fff !important;
     box-shadow: 0 2px 5px rgb(24 43 63 / 0.035) !important;
 }
-.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header,
-.admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card-header.card-header--filtros {
-    gap: 16px;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--tabla-linea) !important;
-    background: var(--tabla-cabecera) !important;
-    box-shadow: none !important;
+.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header, .admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card-header.card-header--filtros {
+    gap: 16px; padding: 20px 24px; border-bottom: 1px solid var(--tabla-linea) !important; background: var(--tabla-cabecera) !important; box-shadow: none !important;
 }
-.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header::after,
-.admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card-header.card-header--filtros::after { display: none !important; }
-.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header .card-title,
-.admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card-header.card-header--filtros .card-title {
-    color: var(--tabla-tinta) !important;
-    font-family: var(--font-sans);
-    font-size: 16px;
-    font-weight: 650;
-    line-height: 1.35;
-    letter-spacing: -0.015em;
+.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header::after, .admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card-header.card-header--filtros::after { display: none !important; }
+.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header .card-title, .admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card-header.card-header--filtros .card-title {
+    color: var(--tabla-tinta) !important; font-family: var(--font-sans); font-size: 16px; font-weight: 650; line-height: 1.35; letter-spacing: -0.015em;
 }
-.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header .card-subtitle,
-.admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card-header.card-header--filtros .card-subtitle {
-    max-width: 70ch;
-    margin-top: 4px;
-    color: var(--tabla-nota) !important;
-    font-size: 12px;
-    line-height: 1.55;
+.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header .card-subtitle, .admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card-header.card-header--filtros .card-subtitle {
+    max-width: 70ch; margin-top: 4px; color: var(--tabla-nota) !important; font-size: 12px; line-height: 1.55;
 }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header :is(span, div)[class*="rounded-full"] {
-    border-color: var(--tabla-linea) !important;
-    background: var(--tabla-cabecera) !important;
-    color: var(--tabla-tinta) !important;
+    border-color: var(--tabla-linea) !important; background: var(--tabla-cabecera) !important; color: var(--tabla-tinta) !important;
 }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header :is(button, a):not(.admin-primary-button) {
-    border-color: var(--tabla-linea) !important;
-    background: #fff !important;
-    color: var(--tabla-tinta) !important;
+    border-color: var(--tabla-linea) !important; background: #fff !important; color: var(--tabla-tinta) !important;
 }
-
-/* Un encabezado y, debajo, una rejilla exclusiva para filtros etiquetados. */
 .admin-main[data-tablas-formales="true"] .card-header--filtros { display: block; }
-.admin-main[data-tablas-formales="true"] .tabla-filtros-cabecera {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    min-width: 0;
-}
+.admin-main[data-tablas-formales="true"] .tabla-filtros-cabecera { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; min-width: 0; }
 .admin-main[data-tablas-formales="true"] .tabla-filtros { width: 100%; margin-top: 20px; }
 .admin-main[data-tablas-formales="true"] .filtros-grid {
-    display: grid;
-    grid-template-columns: minmax(240px, 2fr) repeat(2, minmax(160px, 1fr));
-    align-items: end;
-    gap: 16px;
-    min-width: 0;
+    display: grid; grid-template-columns: minmax(240px, 2fr) repeat(2, minmax(160px, 1fr)); align-items: end; gap: 16px; min-width: 0;
 }
 .admin-main[data-tablas-formales="true"] .filtros-grid--dos { grid-template-columns: minmax(240px, 2fr) minmax(180px, 1fr); }
 .admin-main[data-tablas-formales="true"] .filtros-grid--cuatro { grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(140px, 1fr)); }
 .admin-main[data-tablas-formales="true"] .filtros-grid--busqueda { grid-template-columns: minmax(0, 560px); }
-.admin-main[data-tablas-formales="true"] .filtros-grid > *,
-.admin-main[data-tablas-formales="true"] .filtros-grid .form-field-group { min-width: 0; width: 100%; }
+.admin-main[data-tablas-formales="true"] .filtros-grid > *, .admin-main[data-tablas-formales="true"] .filtros-grid .form-field-group { min-width: 0; width: 100%; }
 .admin-main[data-tablas-formales="true"] .filtros-grid .field {
-    width: 100%;
-    height: 42px !important;
-    min-width: 0;
-    border-color: #ced7e0;
-    border-radius: 6px;
-    background-color: #fff;
-    font-size: 13px;
+    width: 100%; height: 42px !important; min-width: 0; border-color: #ced7e0; border-radius: 6px; background-color: #fff; font-size: 13px;
 }
 .admin-main[data-tablas-formales="true"] .filtros-grid .field-label {
-    display: block;
-    margin-bottom: 7px;
-    color: var(--tabla-nota);
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: none;
-    letter-spacing: 0;
+    display: block; margin-bottom: 7px; color: var(--tabla-nota); font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0;
 }
 .admin-main[data-tablas-formales="true"] .filtro-busqueda { position: relative; }
 .admin-main[data-tablas-formales="true"] .filtro-busqueda > button {
-    position: absolute;
-    inset: auto 6px 4px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    transform: none;
-    color: var(--tabla-nota);
-    border-radius: 4px;
+    position: absolute; inset: auto 6px 4px auto; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; transform: none;
+    color: var(--tabla-nota); border-radius: 4px;
 }
 .admin-main[data-tablas-formales="true"] .tabla-filtros-acciones { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
 .admin-main[data-tablas-formales="true"] .filtro-busqueda-envio { display: flex; align-items: flex-end; gap: 8px; }
 .admin-main[data-tablas-formales="true"] .filtro-busqueda-envio > :first-child { flex: 1; min-width: 0; }
 .admin-main[data-tablas-formales="true"] .filtro-busqueda-envio > button { height: 42px; }
-
-/* Datos alineados, separadores finos y acciones siempre reconocibles. */
 .tabla-scroll-nota { display: none; }
 :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .data-table-contenedor { min-width: 0; }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .data-table-shell {
-    max-height: 680px;
-    overflow: auto;
-    border: 0;
-    border-radius: 0;
-    background: #fff !important;
-    scrollbar-width: thin;
-    scrollbar-color: #aebdcc #f1f4f7;
+    max-height: 680px; overflow: auto; border: 0; border-radius: 0; background: #fff !important; scrollbar-width: thin; scrollbar-color: #aebdcc #f1f4f7;
     overscroll-behavior-x: contain;
 }
 :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .data-table-shell:focus-visible { outline: 2px solid #8d733b; outline-offset: -2px; }
@@ -144,39 +62,18 @@
 :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .data-table-shell thead { position: sticky; top: 0; z-index: 2; }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card .data-table-shell thead tr { background: var(--tabla-cabecera) !important; }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card .data-table-shell thead th {
-    height: 46px;
-    padding: 12px 18px;
-    border: 0 !important;
-    border-bottom: 1px solid #ced7e0 !important;
-    color: var(--tabla-tinta) !important;
-    background: var(--tabla-cabecera) !important;
-    font-size: 11px;
-    font-weight: 650;
-    letter-spacing: 0.045em;
-    vertical-align: middle;
+    height: 46px; padding: 12px 18px; border: 0 !important; border-bottom: 1px solid #ced7e0 !important; color: var(--tabla-tinta) !important;
+    background: var(--tabla-cabecera) !important; font-size: 11px; font-weight: 650; letter-spacing: 0.045em; vertical-align: middle;
 }
-/* Tablas de detalle y movimientos; el comprobante imprimible conserva su plantilla. */
 .admin-shell[data-theme] .modal-panel table:not(.print-area table) :is(thead, thead tr, thead th) {
-    background: var(--tabla-cabecera) !important;
-    color: var(--tabla-tinta) !important;
+    background: var(--tabla-cabecera) !important; color: var(--tabla-tinta) !important;
 }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card .data-table-shell th button { color: inherit !important; min-height: 24px; }
-.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card .data-table-shell tbody tr {
-    border: 0 !important;
-    background: #fff;
-    animation: none;
-}
+.admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card .data-table-shell tbody tr { border: 0 !important; background: #fff; animation: none; }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card .data-table-shell tbody tr:nth-child(even) { background: var(--tabla-alterna); }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card .data-table-shell tbody tr:hover { background: var(--tabla-hover) !important; }
 .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card .data-table-shell tbody td {
-    max-width: 320px;
-    padding: 16px 18px;
-    border: 0;
-    border-bottom: 1px solid #e5eaf0;
-    color: var(--tabla-tinta);
-    font-size: 13px;
-    line-height: 1.55;
-    vertical-align: middle;
+    max-width: 320px; padding: 16px 18px; border: 0; border-bottom: 1px solid #e5eaf0; color: var(--tabla-tinta); font-size: 13px; line-height: 1.55; vertical-align: middle;
     overflow-wrap: anywhere;
 }
 :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .data-table-shell :is(.text-right, .text-center) { font-variant-numeric: tabular-nums; }
@@ -191,20 +88,28 @@
 .admin-main[data-tablas-formales="true"] .tabla-acciones > button { flex-shrink: 0; }
 :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .tabla-dato { display: block; font-weight: 600; }
 .admin-main[data-tablas-formales="true"] .tabla-nota { display: block; margin-top: 4px; color: var(--tabla-nota); font-size: 11px; line-height: 1.5; }
-.admin-main[data-tablas-formales="true"] .tabla-fecha { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; color: var(--tabla-nota); font-size: 11px; line-height: 1.5; white-space: nowrap; }
+.admin-main[data-tablas-formales="true"] .tabla-fecha {
+    display: flex; flex-direction: column; gap: 2px; margin-top: 4px; color: var(--tabla-nota); font-size: 11px; line-height: 1.5; white-space: nowrap;
+}
 .admin-main[data-tablas-formales="true"] .tabla-celda-grupo { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .admin-main[data-tablas-formales="true"] .tabla-celda-grupo--derecha { align-items: flex-end; }
-.admin-main[data-tablas-formales="true"] .tabla-enlace { display: inline-flex; align-items: center; min-height: 32px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.admin-main[data-tablas-formales="true"] .tabla-enlace {
+    display: inline-flex; align-items: center; min-height: 32px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px;
+}
 .admin-main[data-tablas-formales="true"] .pagination-bar { background: #f8fafb; border-color: var(--tabla-linea); padding: 16px 20px; }
-.admin-main[data-tablas-formales="true"] .tabla-filtros-resumen { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 24px; border-top: 1px solid var(--tabla-linea); font-size: 12px; color: var(--tabla-nota); }
+.admin-main[data-tablas-formales="true"] .tabla-filtros-resumen {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 12px 24px; border-top: 1px solid var(--tabla-linea); font-size: 12px;
+    color: var(--tabla-nota);
+}
 .admin-main[data-tablas-formales="true"] .tabla-estados-rapidos { padding: 16px 24px; background: #fafbfc; }
 .admin-main[data-tablas-formales="true"] .tabla-estados-etiqueta { display: block; margin-bottom: 10px; color: var(--tabla-nota); font-size: 12px; font-weight: 600; }
 .admin-main[data-tablas-formales="true"] .tabla-estados-rapidos .filtro-chip { min-height: 34px; border-radius: 6px; }
 .admin-main[data-tablas-formales="true"] .correo-panel { align-items: center; gap: 16px; border-color: var(--tabla-linea); border-radius: 8px; background: #f8fafb; }
 .admin-main[data-tablas-formales="true"] .correo-filtros { flex-wrap: wrap; }
 .admin-main[data-tablas-formales="true"] .correo-controles { flex-wrap: wrap; gap: 16px; }
-:is(.admin-main[data-tablas-formales="true"], .tabla-panel) .tabla-scroll-nota { display: block; margin: 0; padding: 10px 16px; border-top: 1px solid var(--tabla-linea); color: var(--tabla-nota); background: #fafbfc; font-size: 11px; }
-
+:is(.admin-main[data-tablas-formales="true"], .tabla-panel) .tabla-scroll-nota {
+    display: block; margin: 0; padding: 10px 16px; border-top: 1px solid var(--tabla-linea); color: var(--tabla-nota); background: #fafbfc; font-size: 11px;
+}
 @media (max-width: 900px) {
     .admin-main[data-tablas-formales="true"] .filtros-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .admin-main[data-tablas-formales="true"] .filtros-grid > :first-child { grid-column: 1 / -1; }
@@ -213,8 +118,7 @@
     :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .data-table-shell { max-height: none; }
 }
 @media (max-width: 480px) {
-    .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header,
-    .admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card-header.card-header--filtros { padding: 16px; }
+    .admin-shell[data-theme] :is(.admin-main[data-tablas-formales="true"], .tabla-panel) .card:has(table) > .card-header, .admin-shell[data-theme] .admin-main[data-tablas-formales="true"] .card-header.card-header--filtros { padding: 16px; }
     .admin-main[data-tablas-formales="true"] .filtros-grid { gap: 12px; }
     .admin-main[data-tablas-formales="true"] .tabla-filtros-cabecera > :last-child:not(:first-child) { width: 100%; }
     .admin-main[data-tablas-formales="true"] .tabla-filtros-acciones { justify-content: flex-start; }

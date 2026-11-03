@@ -1,4 +1,3 @@
--- Solo columnas nuevas; no reescribe documentos ni ventas legacy.
 BEGIN;
 ALTER TABLE ventas ADD COLUMN IF NOT EXISTS pago_revision_motivo VARCHAR(80) NULL;
 ALTER TABLE ventas ADD COLUMN IF NOT EXISTS pago_revision_fecha TIMESTAMP NULL;

@@ -1,12 +1,3 @@
-// ============================================================
-// TESTS DE POLÍTICA DE CONTRASEÑAS (reseteo)
-// ============================================================
-// Sin BD: solo se prueba la función pura validarPassword usada
-// por el registro y por el restablecimiento de contraseña.
-// Requerir el controlador no abre conexiones (el pool de pg se
-// crea de forma perezosa y no conecta en el import).
-// ============================================================
-
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
@@ -19,18 +10,9 @@ test('acepta contraseñas válidas (al menos 8, con letra y número)', () => {
 });
 
 test('rechaza contraseñas demasiado cortas', () => {
-    assert.equal(
-        validarPassword('clave12'),
-        'La contraseña debe tener al menos 8 caracteres'
-    );
-    assert.equal(
-        validarPassword(''),
-        'La contraseña debe tener al menos 8 caracteres'
-    );
-    assert.equal(
-        validarPassword(null),
-        'La contraseña debe tener al menos 8 caracteres'
-    );
+    assert.equal(validarPassword('clave12'), 'La contraseña debe tener al menos 8 caracteres');
+    assert.equal(validarPassword(''), 'La contraseña debe tener al menos 8 caracteres');
+    assert.equal(validarPassword(null), 'La contraseña debe tener al menos 8 caracteres');
 });
 
 test('rechaza contraseñas sin números', () => {

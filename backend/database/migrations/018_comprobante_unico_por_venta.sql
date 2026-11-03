@@ -1,10 +1,3 @@
--- ============================================================
--- MIGRACIÓN 018: UN COMPROBANTE POR VENTA
--- ============================================================
-
--- Si hay duplicados históricos no se borra información. El modelo ya
--- serializa la emisión con FOR UPDATE; después de depurar esos registros se
--- puede volver a ejecutar esta migración para crear el índice.
 SET @ventas_duplicadas = (
     SELECT COUNT(*)
     FROM (

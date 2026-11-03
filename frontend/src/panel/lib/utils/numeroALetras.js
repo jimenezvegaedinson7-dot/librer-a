@@ -1,25 +1,29 @@
-// ============================================================
-// MONTO EN LETRAS (SOLES)
-// Convierte un numero a su representacion en letras.
-// Ej: 36.50 -> "TREINTA Y SEIS CON 50/100 SOLES"
-// ============================================================
-
 const UNIDADES = [
-    '', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO',
-    'SEIS', 'SIETE', 'OCHO', 'NUEVE', 'DIEZ',
-    'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE',
-    'DIECISEIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE', 'VEINTE'
+    '',
+    'UN',
+    'DOS',
+    'TRES',
+    'CUATRO',
+    'CINCO',
+    'SEIS',
+    'SIETE',
+    'OCHO',
+    'NUEVE',
+    'DIEZ',
+    'ONCE',
+    'DOCE',
+    'TRECE',
+    'CATORCE',
+    'QUINCE',
+    'DIECISEIS',
+    'DIECISIETE',
+    'DIECIOCHO',
+    'DIECINUEVE',
+    'VEINTE'
 ];
 
-const DECENAS = [
-    '', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA',
-    'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'
-];
-
-const CENTENAS = [
-    '', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS',
-    'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'
-];
+const DECENAS = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+const CENTENAS = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
 
 function convertirCentenas(n) {
     if (n === 0) return '';

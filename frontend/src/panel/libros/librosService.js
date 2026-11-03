@@ -14,9 +14,6 @@ export async function obtenerLibro(id) {
     return res?.data ?? null;
 }
 
-// Los descuentos viajan siempre, aunque estén vacíos. Mandarlos en vacío
-// es lo que permite quitar una promoción: si el campo simplemente se
-// omitiera, el backend no podría distinguir "no lo toqué" de "borralo".
 function agregarDescuentos(datos, formulario) {
     datos.append('descuento_porcentaje', formulario.descuento_porcentaje || '');
     datos.append('precio_oferta', formulario.precio_oferta || '');
@@ -24,8 +21,6 @@ function agregarDescuentos(datos, formulario) {
 }
 
 export async function crearLibro(formulario, imagen) {
-    // El backend anterior aceptaba el formulario pero omitía la promoción.
-    // Comprobar la capacidad antes del POST evita crear un libro incompleto.
     const api = await client.get('');
     if (api?.capacidades?.descuentos_libros !== true) {
         throw errorPromocion(MENSAJE_API_SIN_PROMOCIONES);

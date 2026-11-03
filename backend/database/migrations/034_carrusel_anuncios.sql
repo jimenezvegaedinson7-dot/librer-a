@@ -1,5 +1,3 @@
--- Carrusel de imágenes independiente de los anuncios de video existentes.
--- Sin imágenes de ejemplo ni cambios en libros, ventas o inventario.
 CREATE TABLE IF NOT EXISTS carrusel_anuncios (
     id_imagen SERIAL PRIMARY KEY,
     titulo VARCHAR(200) NOT NULL,

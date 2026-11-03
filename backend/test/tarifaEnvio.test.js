@@ -1,17 +1,7 @@
-// ============================================================
-// TESTS DE PUT /api/ubicaciones/distritos/:id (TARIFA DE ENVÍO)
-// ============================================================
-// Sin BD: se reemplazan los modelos por dobles en memoria y se
-// llama directamente al controlador y al middleware de rol.
-// ============================================================
-
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 
-// ----------------------------------------
-// DOBLES DE LOS MODELOS (antes de cargar el controlador)
-// ----------------------------------------
 const DISTRITOS = {
     21: { id_distrito: 21, nombre: 'Miraflores', id_provincia: 1, tarifa_envio: '6.00', provincia: 'Lima' },
     99: { id_distrito: 99, nombre: 'San Vicente de Cañete', id_provincia: 5, tarifa_envio: '15.00', provincia: 'Cañete' }
@@ -35,28 +25,32 @@ require.cache[rutaHistorial] = {
     id: rutaHistorial,
     filename: rutaHistorial,
     loaded: true,
-    exports: { crear: async (datos) => { llamadas.historial.push(datos); } }
+    exports: {
+        crear: async (datos) => {
+            llamadas.historial.push(datos);
+        }
+    }
 };
 
 const { actualizarTarifaDistrito } = require('../src/controllers/ubicacion.controller');
 const verificarRol = require('../src/middlewares/rol.middleware');
 
-// ----------------------------------------
-// UTILIDADES
-// ----------------------------------------
 const respuesta = () => {
     const res = { statusCode: 200, body: null };
-    res.status = (code) => { res.statusCode = code; return res; };
-    res.json = (body) => { res.body = body; return res; };
+    res.status = (code) => {
+        res.statusCode = code;
+        return res;
+    };
+    res.json = (body) => {
+        res.body = body;
+        return res;
+    };
     return res;
 };
 
 const llamar = async (id, body) => {
     const res = respuesta();
-    await actualizarTarifaDistrito(
-        { params: { id: String(id) }, body, usuario: { id_usuario: 1, rol: 'administrador' } },
-        res
-    );
+    await actualizarTarifaDistrito({ params: { id: String(id) }, body, usuario: { id_usuario: 1, rol: 'administrador' } }, res);
     return res;
 };
 
@@ -65,26 +59,24 @@ test.beforeEach(() => {
     llamadas.historial.length = 0;
 });
 
-// ----------------------------------------
-// PERMISOS
-// ----------------------------------------
 test('un cliente recibe 403 al intentar modificar tarifas', () => {
     const res = respuesta();
     let siguio = false;
-    verificarRol('administrador')({ usuario: { rol: 'cliente' } }, res, () => { siguio = true; });
+    verificarRol('administrador')({ usuario: { rol: 'cliente' } }, res, () => {
+        siguio = true;
+    });
     assert.equal(res.statusCode, 403);
     assert.equal(siguio, false);
 });
 
 test('un administrador pasa el control de rol', () => {
     let siguio = false;
-    verificarRol('administrador')({ usuario: { rol: 'administrador' } }, respuesta(), () => { siguio = true; });
+    verificarRol('administrador')({ usuario: { rol: 'administrador' } }, respuesta(), () => {
+        siguio = true;
+    });
     assert.equal(siguio, true);
 });
 
-// ----------------------------------------
-// ACTUALIZACIÓN CORRECTA
-// ----------------------------------------
 test('actualiza la tarifa de un distrito de Lima', async () => {
     const res = await llamar(21, { tarifa_envio: 7.5 });
     assert.equal(res.statusCode, 200);
@@ -106,9 +98,6 @@ test('acepta tarifa 0 (envío gratuito)', async () => {
     assert.deepEqual(llamadas.actualizar, [{ id: 21, tarifa: 0 }]);
 });
 
-// ----------------------------------------
-// VALIDACIONES (nunca llegan a actualizar)
-// ----------------------------------------
 const casosInvalidos = [
     ['id no válido', 'abc', { tarifa_envio: 5 }, 400],
     ['tarifa negativa', 21, { tarifa_envio: -1 }, 400],
@@ -132,9 +121,6 @@ for (const [nombre, id, body, estado] of casosInvalidos) {
     });
 }
 
-// ----------------------------------------
-// ¿DISTRITO DE LIMA?
-// ----------------------------------------
 test('esDistritoDeLima solo acepta la provincia de Lima', () => {
     const { esDistritoDeLima } = modeloReal;
     assert.equal(esDistritoDeLima({ provincia: 'Lima' }), true);

@@ -1,14 +1,7 @@
-
 import { motion, useReducedMotion } from 'motion/react';
-
 import { ColumnasMini } from './DetalleTarjeta';
 
-
-const entrada = {
-    oculto: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } },
-};
-
+const entrada = { oculto: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 1, 0.5, 1] } } };
 const estatica = { oculto: { opacity: 1 }, visible: { opacity: 1 } };
 
 export default function MejorRegistro({ icono, etiqueta, principal, detalle, vacio, serie = [], etiquetaSerie, tono = 'oro' }) {

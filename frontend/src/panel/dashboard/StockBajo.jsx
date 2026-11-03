@@ -1,34 +1,28 @@
 import { motion } from 'motion/react';
 import { FaBoxOpen, FaLocationDot, FaTriangleExclamation } from 'react-icons/fa6';
-
 import { Destello } from './Decoraciones';
 import { num } from './graficoUtils';
 
 const plural = (n, uno, varios) => `${n} ${Number(n) === 1 ? uno : varios}`;
 
 export default function StockBajo({ items = [] }) {
-    // items null = la consulta falló; no se afirma que el inventario esté en orden.
     const sinDatos = items === null;
     const lista = Array.isArray(items) ? items : [];
     const sinStock = lista.filter((i) => num(i.stock) <= 0).length;
-    // Rojo solo si hay libros agotados; ámbar si solo están bajo el mínimo.
+
     const severidad = sinStock > 0 ? 'estado--peligro' : lista.length > 0 ? 'estado--aviso' : '';
 
     return (
-        <motion.section
-            className="grafico-card panel-analitico flex h-full flex-col"
-            aria-labelledby="titulo-stock-bajo"
-            initial="visible"
-            animate="visible"
-            whileHover="hover"
-        >
+        <motion.section className="grafico-card panel-analitico flex h-full flex-col" aria-labelledby="titulo-stock-bajo" initial="visible" animate="visible" whileHover="hover">
             <header className="panel-cabecera">
                 <div className="flex min-w-0 items-center gap-3">
                     <span className={`panel-icono ${severidad ? `panel-icono--estado ${severidad}` : ''}`} aria-hidden="true">
                         <FaTriangleExclamation />
                     </span>
                     <div className="min-w-0">
-                        <h2 id="titulo-stock-bajo" className="panel-titulo">Libros con stock bajo</h2>
+                        <h2 id="titulo-stock-bajo" className="panel-titulo">
+                            Libros con stock bajo
+                        </h2>
                         <p className="panel-subtitulo">Stock igual o menor al mínimo configurado</p>
                     </div>
                 </div>
@@ -66,7 +60,9 @@ export default function StockBajo({ items = [] }) {
                             return (
                                 <li key={item.id_inventario} className={`stock-fila ${clase}`}>
                                     <div className="flex items-start justify-between gap-3">
-                                        <p className="stock-titulo" title={item.titulo}>{item.titulo}</p>
+                                        <p className="stock-titulo" title={item.titulo}>
+                                            {item.titulo}
+                                        </p>
                                         <span className={`estado-pildora shrink-0 ${clase}`}>{agotado ? 'Sin stock' : 'Stock bajo'}</span>
                                     </div>
 
@@ -87,12 +83,8 @@ export default function StockBajo({ items = [] }) {
                                             aria-valuemin={0}
                                             aria-valuemax={minimo}
                                             aria-valuenow={stock}
-                                            aria-label={`Stock de ${item.titulo}: ${stock} de un mínimo de ${minimo}`}
-                                        >
-                                            <span
-                                                className="stock-nivel reporte-barra-h"
-                                                style={{ width: `${Math.max(porcentaje, agotado ? 0 : 4)}%` }}
-                                            />
+                                            aria-label={`Stock de ${item.titulo}: ${stock} de un mínimo de ${minimo}`}>
+                                            <span className="stock-nivel reporte-barra-h" style={{ width: `${Math.max(porcentaje, agotado ? 0 : 4)}%` }} />
                                             <Destello />
                                         </div>
                                     </div>

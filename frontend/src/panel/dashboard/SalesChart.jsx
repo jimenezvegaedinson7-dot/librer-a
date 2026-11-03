@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react';
-
 import { motion, useReducedMotion } from 'motion/react';
 import { FaChartColumn, FaTable } from 'react-icons/fa6';
-
 import { formatearMoneda } from '../../compartido/lib/utils/format';
 import { formatoEje, marcasEje, serieDiaria, serieMensual } from './graficoUtils';
 
@@ -14,8 +12,8 @@ const METRICAS = {
             const n = Math.round(v * 10) / 10;
             return `${n.toLocaleString('es-PE')} ${n === 1 ? 'venta' : 'ventas'}`;
         },
-        eje: (v) => String(v),
-    },
+        eje: (v) => String(v)
+    }
 };
 
 const plural = (n) => `${n} ${n === 1 ? 'venta' : 'ventas'}`;
@@ -30,9 +28,6 @@ function Estadistica({ etiqueta, valor, detalle }) {
     );
 }
 
-// Línea de tendencia sobre las columnas: une la cima de cada barra y
-// sombrea el área de abajo. Se dibuja al aparecer (quieta con
-// "reducir movimiento") y está siempre visible, sin pasar el mouse.
 function LineaTendencia({ serie, valorDe, alto }) {
     const reducir = useReducedMotion();
     if (serie.length < 2) return null;
@@ -47,8 +42,7 @@ function LineaTendencia({ serie, valorDe, alto }) {
             aria-hidden="true"
             initial={reducir ? false : { clipPath: 'inset(0 100% 0 0)' }}
             animate={{ clipPath: 'inset(0 0% 0 0)' }}
-            transition={{ duration: 1.1, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}
-        >
+            transition={{ duration: 1.1, ease: [0.25, 1, 0.5, 1], delay: 0.2 }}>
             <defs>
                 <linearGradient id="evolucion-area" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.28" />
@@ -61,15 +55,7 @@ function LineaTendencia({ serie, valorDe, alto }) {
     );
 }
 
-function SalesChart({
-    ventasPorMes = [],
-    ventasPorDia = [],
-    dias = 14,
-    meses = 6,
-    titulo = 'Ingresos por ventas',
-    idBase = 'ingresos',
-    conMetrica = false,
-}) {
+function SalesChart({ ventasPorMes = [], ventasPorDia = [], dias = 14, meses = 6, titulo = 'Ingresos por ventas', idBase = 'ingresos', conMetrica = false }) {
     const [periodo, setPeriodo] = useState(ventasPorDia === null ? 'mes' : 'dia');
     const [metrica, setMetrica] = useState('total');
     const [verTabla, setVerTabla] = useState(false);
@@ -77,13 +63,13 @@ function SalesChart({
 
     const periodos = [
         { id: 'dia', texto: `${dias} días`, unidad: 'día', actual: 'Hoy', resto: 'Días anteriores' },
-        { id: 'mes', texto: `${meses} meses`, unidad: 'mes', actual: 'Mes actual', resto: 'Meses anteriores' },
+        { id: 'mes', texto: `${meses} meses`, unidad: 'mes', actual: 'Mes actual', resto: 'Meses anteriores' }
     ];
 
     const periodoDisponible = periodo === 'dia' && ventasPorDia === null ? 'mes' : periodo;
     const serie = useMemo(
         () => (periodoDisponible === 'dia' ? serieDiaria(ventasPorDia, dias) : serieMensual(ventasPorMes, meses)),
-        [periodoDisponible, ventasPorDia, ventasPorMes, dias, meses],
+        [periodoDisponible, ventasPorDia, ventasPorMes, dias, meses]
     );
 
     const config = periodos.find((p) => p.id === periodoDisponible);
@@ -99,11 +85,13 @@ function SalesChart({
     const { tope, marcas } = marcasEje(mejor ? valorDe(mejor) : 0);
     const alto = (v) => (tope > 0 ? (v / tope) * 100 : 0);
 
-    // Con muchas columnas se rotula una de cada N (siempre la actual).
     const pasoEscritorio = serie.length > 20 ? 3 : 1;
     const pasoMovil = serie.length > 20 ? 5 : 2;
 
-    const cambiarPeriodo = (id) => { setPeriodo(id); setActivo(null); };
+    const cambiarPeriodo = (id) => {
+        setPeriodo(id);
+        setActivo(null);
+    };
 
     return (
         <section className="grafico-card flex h-full flex-col" aria-labelledby={`titulo-${idBase}`}>
@@ -130,9 +118,11 @@ function SalesChart({
                                     key={id}
                                     type="button"
                                     aria-pressed={metrica === id}
-                                    onClick={() => { setMetrica(id); setActivo(null); }}
-                                    className={`segmentado-opcion ${metrica === id ? 'segmentado-opcion--activa' : ''}`}
-                                >
+                                    onClick={() => {
+                                        setMetrica(id);
+                                        setActivo(null);
+                                    }}
+                                    className={`segmentado-opcion ${metrica === id ? 'segmentado-opcion--activa' : ''}`}>
                                     {info.texto}
                                 </button>
                             ))}
@@ -147,8 +137,7 @@ function SalesChart({
                                 disabled={p.id === 'dia' && ventasPorDia === null}
                                 title={p.id === 'dia' && ventasPorDia === null ? 'No se pudo consultar la serie diaria' : undefined}
                                 onClick={() => cambiarPeriodo(p.id)}
-                                className={`segmentado-opcion ${periodoDisponible === p.id ? 'segmentado-opcion--activa' : ''}`}
-                            >
+                                className={`segmentado-opcion ${periodoDisponible === p.id ? 'segmentado-opcion--activa' : ''}`}>
                                 {p.texto}
                             </button>
                         ))}
@@ -159,8 +148,7 @@ function SalesChart({
                         aria-pressed={verTabla}
                         aria-label={verTabla ? 'Ver gráfico' : 'Ver tabla'}
                         title={verTabla ? 'Ver gráfico' : 'Ver tabla'}
-                        className={`grafico-boton ${verTabla ? 'grafico-boton--activo' : ''}`}
-                    >
+                        className={`grafico-boton ${verTabla ? 'grafico-boton--activo' : ''}`}>
                         {verTabla ? <FaChartColumn /> : <FaTable />}
                     </button>
                 </div>
@@ -178,11 +166,7 @@ function SalesChart({
                     valor={mejor ? m.formato(valorDe(mejor)) : '—'}
                     detalle={mejor ? mejor.etiquetaLarga : 'Sin ventas en el periodo'}
                 />
-                <Estadistica
-                    etiqueta="Promedio por venta"
-                    valor={ventas > 0 ? formatearMoneda(total / ventas) : '—'}
-                    detalle="por venta pagada"
-                />
+                <Estadistica etiqueta="Promedio por venta" valor={ventas > 0 ? formatearMoneda(total / ventas) : '—'} detalle="por venta pagada" />
             </div>
 
             {verTabla ? (
@@ -191,10 +175,18 @@ function SalesChart({
                         <caption className="sr-only">Ventas cobradas por {config.unidad}</caption>
                         <thead className="sticky top-0">
                             <tr>
-                                <th scope="col" className="text-left">{config.unidad === 'día' ? 'Día' : 'Mes'}</th>
-                                <th scope="col" className="text-center">Ventas</th>
-                                <th scope="col" className="text-right">Ingresos</th>
-                                <th scope="col" className="text-right">Ticket</th>
+                                <th scope="col" className="text-left">
+                                    {config.unidad === 'día' ? 'Día' : 'Mes'}
+                                </th>
+                                <th scope="col" className="text-center">
+                                    Ventas
+                                </th>
+                                <th scope="col" className="text-right">
+                                    Ingresos
+                                </th>
+                                <th scope="col" className="text-right">
+                                    Ticket
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -214,15 +206,15 @@ function SalesChart({
                     {suma === 0 ? (
                         <div className="flex h-[240px] flex-col items-center justify-center text-center">
                             <p className="font-title text-[16px] font-semibold text-[#1c1814]">Sin ventas cobradas en este periodo</p>
-                            <p className="mt-1 text-[13px] text-[#766d62]">
-                                {periodo === 'dia' ? `Prueba con el periodo de ${meses} meses.` : 'Aún no hay ventas registradas.'}
-                            </p>
+                            <p className="mt-1 text-[13px] text-[#766d62]">{periodo === 'dia' ? `Prueba con el periodo de ${meses} meses.` : 'Aún no hay ventas registradas.'}</p>
                         </div>
                     ) : (
                         <div className="grafico-area" onPointerLeave={() => setActivo(null)}>
                             <div className="grafico-eje-y" aria-hidden="true">
                                 {marcas.map((marca) => (
-                                    <span key={marca} style={{ bottom: `${alto(marca)}%` }}>{m.eje(marca)}</span>
+                                    <span key={marca} style={{ bottom: `${alto(marca)}%` }}>
+                                        {m.eje(marca)}
+                                    </span>
                                 ))}
                             </div>
 
@@ -254,14 +246,12 @@ function SalesChart({
                                                 aria-label={texto}
                                                 onPointerEnter={() => setActivo(d.clave)}
                                                 onFocus={() => setActivo(d.clave)}
-                                                onBlur={() => setActivo(null)}
-                                            >
+                                                onBlur={() => setActivo(null)}>
                                                 <div className="grafico-columna-zona">
                                                     {valor > 0 ? (
                                                         <span
                                                             className={`grafico-barra reporte-barra ${d.actual ? 'grafico-barra--actual' : ''} ${esMejor ? 'grafico-barra--mejor' : ''} ${conTooltip ? 'grafico-barra--activa' : ''}`}
-                                                            style={{ height: `${alto(valor)}%`, '--barra-i': Math.min(i, 16) }}
-                                                        >
+                                                            style={{ height: `${alto(valor)}%`, '--barra-i': Math.min(i, 16) }}>
                                                             <span className="grafico-punto" aria-hidden="true" />
                                                             {!conTooltip && (
                                                                 <span className={`grafico-etiqueta-valor ${esMejor || d.actual ? 'grafico-etiqueta-valor--clave' : ''}`}>
@@ -275,8 +265,7 @@ function SalesChart({
                                                     {conTooltip && (
                                                         <span
                                                             className={`grafico-tooltip ${i < 2 ? 'grafico-tooltip--inicio' : ''} ${desdeFin < 2 ? 'grafico-tooltip--fin' : ''}`}
-                                                            style={{ bottom: `calc(${alto(valor)}% + 10px)` }}
-                                                        >
+                                                            style={{ bottom: `calc(${alto(valor)}% + 10px)` }}>
                                                             <strong>{metrica === 'total' ? formatearMoneda(d.total) : plural(d.cantidad)}</strong>
                                                             <span>{metrica === 'total' ? plural(d.cantidad) : formatearMoneda(d.total)}</span>
                                                             <span>{d.etiquetaLarga}</span>
@@ -287,8 +276,7 @@ function SalesChart({
                                                     className={`grafico-eje-x ${d.actual ? 'grafico-eje-x--actual' : ''} ${
                                                         !d.actual && desdeFin % pasoEscritorio !== 0 ? 'grafico-eje-x--oculta' : ''
                                                     } ${!d.actual && desdeFin % pasoMovil !== 0 ? 'grafico-eje-x--alterna' : ''}`}
-                                                    aria-hidden="true"
-                                                >
+                                                    aria-hidden="true">
                                                     {d.etiqueta}
                                                 </span>
                                             </li>

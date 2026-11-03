@@ -14,18 +14,11 @@ export async function obtenerCategoria(id) {
 }
 
 export async function crearCategoria(formulario) {
-    return client.post('/categorias', {
-        nombre: formulario.nombre.trim(),
-        descripcion: formulario.descripcion.trim(),
-    });
+    return client.post('/categorias', { nombre: formulario.nombre.trim(), descripcion: formulario.descripcion.trim() });
 }
 
 export async function actualizarCategoria(id, formulario) {
-    return client.put(`/categorias/${id}`, {
-        nombre: formulario.nombre.trim(),
-        descripcion: formulario.descripcion.trim(),
-        estado: formulario.estado,
-    });
+    return client.put(`/categorias/${id}`, { nombre: formulario.nombre.trim(), descripcion: formulario.descripcion.trim(), estado: formulario.estado });
 }
 
 export async function eliminarCategoria(id, password) {

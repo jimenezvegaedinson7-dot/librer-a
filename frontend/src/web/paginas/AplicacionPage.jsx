@@ -4,5 +4,10 @@ import MobileExperience from '../secciones/MobileExperience';
 
 export default function AplicacionPage() {
     const { reducido } = useOutletContext();
-    return <><Migas actual="Aplicación" /><MobileExperience reducido={reducido} /></>;
+    return (
+        <>
+            <Migas actual="Aplicación" />
+            <MobileExperience reducido={reducido} />
+        </>
+    );
 }

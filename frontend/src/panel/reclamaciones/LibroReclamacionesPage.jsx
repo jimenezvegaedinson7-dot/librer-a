@@ -1,23 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-
 import { FaArrowLeft, FaCircleCheck, FaPaperPlane } from 'react-icons/fa6';
 import logoWeb from '../../compartido/assets/logo-f-verde-96.webp';
-
 import { Input, Select, Textarea } from '../ui/Form';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
-
 import { obtenerEmpresaPublica, registrarReclamacion } from './reclamacionesService';
 import './reclamaciones-publica.css';
 import { useTienda } from '../../web/tienda/TiendaContext';
 import { useDatosCliente } from '../../web/tienda/useDatosCliente';
-
-// ============================================================
-// LIBRO DE RECLAMACIONES VIRTUAL (página pública, sin sesión)
-// Código de Protección y Defensa del Consumidor (Ley 29571),
-// D.S. 011-2011-PCM y D.S. 101-2022-PCM.
-// ============================================================
 
 const INICIAL = {
     tipo: 'reclamo',
@@ -34,7 +25,7 @@ const INICIAL = {
     monto_reclamado: '',
     id_venta: '',
     detalle: '',
-    pedido: '',
+    pedido: ''
 };
 
 function Seccion({ numero, titulo, children }) {
@@ -65,10 +56,15 @@ function FormularioReclamaciones({ tienda }) {
     const [registrada, setRegistrada] = useState(null);
 
     useEffect(() => {
-        const predeterminados = { consumidor_nombre: datos.nombre, consumidor_email: datos.email,
-            consumidor_telefono: datos.telefono, consumidor_domicilio: datos.direccion,
-            consumidor_documento: datos.documento, consumidor_tipo_documento: datos.tipoDocumento };
-        setHoja(actual => {
+        const predeterminados = {
+            consumidor_nombre: datos.nombre,
+            consumidor_email: datos.email,
+            consumidor_telefono: datos.telefono,
+            consumidor_domicilio: datos.direccion,
+            consumidor_documento: datos.documento,
+            consumidor_tipo_documento: datos.tipoDocumento
+        };
+        setHoja((actual) => {
             const nueva = { ...actual };
             for (const [campo, valor] of Object.entries(predeterminados)) {
                 if (valor && !editados.current.has(campo) && (!actual[campo] || actual[campo] === INICIAL[campo])) nueva[campo] = valor;
@@ -93,8 +89,6 @@ function FormularioReclamaciones({ tienda }) {
         setHoja((actual) => ({ ...actual, [name]: type === 'checkbox' ? checked : value }));
     };
 
-    // Con sesión, el N.° de pedido se elige entre las compras propias: al
-    // elegir una se completan el bien y el monto (si no se escribieron).
     const elegirCompra = (e) => {
         const id = e.target.value;
         editados.current.add('id_venta');
@@ -102,7 +96,10 @@ function FormularioReclamaciones({ tienda }) {
         setHoja((actual) => {
             const nueva = { ...actual, id_venta: id };
             if (!compra) return nueva;
-            const titulos = (compra.detalle || []).map((d) => d.titulo).filter(Boolean).join(', ');
+            const titulos = (compra.detalle || [])
+                .map((d) => d.titulo)
+                .filter(Boolean)
+                .join(', ');
             if (titulos && !editados.current.has('bien_descripcion')) {
                 nueva.bien_descripcion = titulos.length > 250 ? `${titulos.slice(0, 247)}...` : titulos;
             }
@@ -125,7 +122,7 @@ function FormularioReclamaciones({ tienda }) {
             const respuesta = await registrarReclamacion({
                 ...hoja,
                 monto_reclamado: hoja.monto_reclamado === '' ? undefined : hoja.monto_reclamado,
-                id_venta: hoja.id_venta === '' ? undefined : hoja.id_venta,
+                id_venta: hoja.id_venta === '' ? undefined : hoja.id_venta
             });
             setRegistrada(respuesta?.data ? { ...respuesta.data, mensaje: respuesta.mensaje } : { mensaje: respuesta?.mensaje });
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -174,21 +171,28 @@ function FormularioReclamaciones({ tienda }) {
                         <Button
                             variante="secondary"
                             onClick={() => {
-                                 setRegistrada(null);
-                                 editados.current.clear();
-                                 setHoja({ ...INICIAL, consumidor_nombre: datos.nombre || '', consumidor_email: datos.email || '',
-                                     consumidor_telefono: datos.telefono || '', consumidor_documento: datos.documento || '',
-                                     consumidor_domicilio: datos.direccion || '', consumidor_tipo_documento: datos.tipoDocumento || 'DNI' });
+                                setRegistrada(null);
+                                editados.current.clear();
+                                setHoja({
+                                    ...INICIAL,
+                                    consumidor_nombre: datos.nombre || '',
+                                    consumidor_email: datos.email || '',
+                                    consumidor_telefono: datos.telefono || '',
+                                    consumidor_documento: datos.documento || '',
+                                    consumidor_domicilio: datos.direccion || '',
+                                    consumidor_tipo_documento: datos.tipoDocumento || 'DNI'
+                                });
                                 setAcepta(false);
-                            }}
-                        >
+                            }}>
                             Registrar otra hoja
                         </Button>
                     </div>
                 ) : (
                     <form onSubmit={enviar} className="mt-4 space-y-4" noValidate>
                         <Seccion numero="1" titulo="Identificación del consumidor">
-                            {tienda.usuario && !tienda.revisando && !tienda.errorSesion && <p className="text-sm text-slate-600">Completamos los datos disponibles de tu cuenta y tus compras. Puedes corregirlos antes de enviar.</p>}
+                            {tienda.usuario && !tienda.revisando && !tienda.errorSesion && (
+                                <p className="text-sm text-slate-600">Completamos los datos disponibles de tu cuenta y tus compras. Puedes corregirlos antes de enviar.</p>
+                            )}
                             <div className="form-grid">
                                 <Input ancho={12} label="Nombre completo" name="consumidor_nombre" value={hoja.consumidor_nombre} onChange={cambiar} requerido maxLength={160} />
                                 <Select ancho={4} label="Documento" name="consumidor_tipo_documento" value={hoja.consumidor_tipo_documento} onChange={cambiar}>
@@ -197,17 +201,41 @@ function FormularioReclamaciones({ tienda }) {
                                     <option value="PASAPORTE">Pasaporte</option>
                                     <option value="RUC">RUC</option>
                                 </Select>
-                                <Input ancho={8} label="Número de documento" name="consumidor_documento" value={hoja.consumidor_documento} onChange={cambiar} requerido maxLength={20} />
+                                <Input
+                                    ancho={8}
+                                    label="Número de documento"
+                                    name="consumidor_documento"
+                                    value={hoja.consumidor_documento}
+                                    onChange={cambiar}
+                                    requerido
+                                    maxLength={20}
+                                />
                                 <Input ancho={12} label="Domicilio" name="consumidor_domicilio" value={hoja.consumidor_domicilio} onChange={cambiar} requerido maxLength={255} />
                                 <Input ancho={6} label="Teléfono" name="consumidor_telefono" value={hoja.consumidor_telefono} onChange={cambiar} maxLength={20} inputMode="tel" />
-                                <Input ancho={6} label="Correo electrónico" type="email" name="consumidor_email" value={hoja.consumidor_email} onChange={cambiar} requerido maxLength={255} />
+                                <Input
+                                    ancho={6}
+                                    label="Correo electrónico"
+                                    type="email"
+                                    name="consumidor_email"
+                                    value={hoja.consumidor_email}
+                                    onChange={cambiar}
+                                    requerido
+                                    maxLength={255}
+                                />
                             </div>
                             <label className="flex items-center gap-2 text-sm text-slate-700">
                                 <input type="checkbox" name="es_menor" checked={hoja.es_menor} onChange={cambiar} className="h-4 w-4" />
                                 Soy menor de edad
                             </label>
                             {hoja.es_menor && (
-                                <Input label="Nombre del padre, madre o apoderado" name="apoderado_nombre" value={hoja.apoderado_nombre} onChange={cambiar} requerido maxLength={160} />
+                                <Input
+                                    label="Nombre del padre, madre o apoderado"
+                                    name="apoderado_nombre"
+                                    value={hoja.apoderado_nombre}
+                                    onChange={cambiar}
+                                    requerido
+                                    maxLength={160}
+                                />
                             )}
                         </Seccion>
 
@@ -217,8 +245,26 @@ function FormularioReclamaciones({ tienda }) {
                                     <option value="producto">Producto</option>
                                     <option value="servicio">Servicio</option>
                                 </Select>
-                                <Input ancho={8} label="Descripción" name="bien_descripcion" value={hoja.bien_descripcion} onChange={cambiar} requerido maxLength={255} placeholder="Ej. Libro «Cien años de soledad»" />
-                                <Input ancho={6} label="Monto reclamado (S/)" type="number" min="0" step="0.01" name="monto_reclamado" value={hoja.monto_reclamado} onChange={cambiar} />
+                                <Input
+                                    ancho={8}
+                                    label="Descripción"
+                                    name="bien_descripcion"
+                                    value={hoja.bien_descripcion}
+                                    onChange={cambiar}
+                                    requerido
+                                    maxLength={255}
+                                    placeholder="Ej. Libro «Cien años de soledad»"
+                                />
+                                <Input
+                                    ancho={6}
+                                    label="Monto reclamado (S/)"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    name="monto_reclamado"
+                                    value={hoja.monto_reclamado}
+                                    onChange={cambiar}
+                                />
                                 {datos.compras?.length ? (
                                     <Select ancho={6} label="Compra relacionada" name="id_venta" value={hoja.id_venta} onChange={elegirCompra}>
                                         <option value="">Ninguna / otra</option>
@@ -238,7 +284,7 @@ function FormularioReclamaciones({ tienda }) {
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Tipo de hoja">
                                 {[
                                     { valor: 'reclamo', titulo: 'Reclamo', texto: 'Disconformidad con los productos o servicios.' },
-                                    { valor: 'queja', titulo: 'Queja', texto: 'Malestar o descontento con la atención al público.' },
+                                    { valor: 'queja', titulo: 'Queja', texto: 'Malestar o descontento con la atención al público.' }
                                 ].map((op) => (
                                     <button
                                         key={op.valor}
@@ -246,8 +292,7 @@ function FormularioReclamaciones({ tienda }) {
                                         role="radio"
                                         aria-checked={hoja.tipo === op.valor}
                                         onClick={() => setHoja((a) => ({ ...a, tipo: op.valor }))}
-                                        className={`venta-opcion ${hoja.tipo === op.valor ? 'venta-opcion--activa' : ''}`}
-                                    >
+                                        className={`venta-opcion ${hoja.tipo === op.valor ? 'venta-opcion--activa' : ''}`}>
                                         <span className="text-sm font-semibold text-slate-800">{op.titulo}</span>
                                         <span className="text-xs text-slate-500">{op.texto}</span>
                                     </button>
@@ -259,15 +304,23 @@ function FormularioReclamaciones({ tienda }) {
 
                         <div className="space-y-2 border-t border-slate-200 pt-4 text-xs leading-relaxed text-slate-600">
                             <p>
-                                La formulación del reclamo no impide acudir a otras vías de solución de controversias ni es requisito previo
-                                para interponer una denuncia ante el INDECOPI.
+                                La formulación del reclamo no impide acudir a otras vías de solución de controversias ni es requisito previo para interponer una denuncia ante el
+                                INDECOPI.
                             </p>
                             <p>
-                                El proveedor deberá dar respuesta al reclamo en un plazo no mayor a quince (15) días hábiles. Recibirás una
-                                copia de esta hoja y la respuesta en tu correo electrónico.
+                                El proveedor deberá dar respuesta al reclamo en un plazo no mayor a quince (15) días hábiles. Recibirás una copia de esta hoja y la respuesta en tu
+                                correo electrónico.
                             </p>
                             <label className="flex items-start gap-2 text-sm text-slate-700">
-                                <input type="checkbox" checked={acepta} onChange={(e) => { setAcepta(e.target.checked); setError(''); }} className="mt-0.5 h-4 w-4" />
+                                <input
+                                    type="checkbox"
+                                    checked={acepta}
+                                    onChange={(e) => {
+                                        setAcepta(e.target.checked);
+                                        setError('');
+                                    }}
+                                    className="mt-0.5 h-4 w-4"
+                                />
                                 Declaro que los datos consignados son verdaderos y acepto que se usen para atender esta hoja.
                             </label>
                         </div>

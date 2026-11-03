@@ -1,20 +1,3 @@
--- ============================================================
--- MIGRACIÓN 024: LIBRO DE RECLAMACIONES Y ELIMINACIÓN DE CUENTAS
--- (PostgreSQL). Se aplica sola al arrancar el servidor; idempotente.
--- ============================================================
---
--- Libro de Reclamaciones virtual (Código de Protección y Defensa del
--- Consumidor, Ley 29571; D.S. 011-2011-PCM y D.S. 101-2022-PCM):
---   - Hoja con número correlativo por año (000001-2026).
---   - Datos del proveedor, del consumidor, del bien y del reclamo/queja.
---   - Respuesta del proveedor en un plazo no mayor a 15 días hábiles.
---   - Se conserva al menos 2 años (no se elimina desde el sistema).
---
--- Eliminación de cuenta (Ley 29733, derecho de cancelación): los datos
--- personales se anonimizan; las ventas se conservan por obligación
--- tributaria.
--- ============================================================
-
 CREATE TABLE IF NOT EXISTS reclamaciones (
     id_reclamacion SERIAL PRIMARY KEY,
     anio INT NOT NULL,

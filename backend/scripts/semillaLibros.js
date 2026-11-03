@@ -1,30 +1,3 @@
-// ============================================================
-// SEMILLA DE CATÁLOGO DE LIBROS (utilidad CLI de mantenimiento)
-// ============================================================
-// Inserta el catálogo verificado de `database/seeds/libros-catalogo.json`
-// SOLO para los libros que falten. Nunca modifica libros existentes.
-//
-// USO (desde backend/):
-//   node scripts/semillaLibros.js --dry-run
-//   node scripts/semillaLibros.js --confirmar
-//   node scripts/semillaLibros.js --dry-run --categoria "Misterio / Suspenso"
-//
-// OPCIONES:
-//   --dry-run           Simula y muestra el plan SIN escribir nada.
-//   --confirmar         Omite la confirmación interactiva (scripts/CI).
-//   --categoria <n>     Limita la siembra a una categoría exacta.
-//   --autor <n>         Limita la siembra a un autor exacto.
-//   --help              Muestra esta ayuda.
-//
-// SEGURIDAD:
-//   - TRANSACCIÓN ÚNICA: si un libro falla, no se inserta ninguno.
-//   - Idempotente: reejecutarlo no duplica nada (dedupe por ISBN y por
-//     título normalizado + autor).
-//   - No crea autores ni categorías: si falta alguno, falla y lo reporta.
-//   - No toca libros ni inventarios que ya existen.
-//   - No inventa metadatos: el JSON es la única fuente de ISBN/editorial.
-// ============================================================
-
 const path = require('path');
 const fs = require('fs');
 const readline = require('readline');
@@ -36,9 +9,6 @@ const pool = require('../src/config/database');
 const CATALOGO = path.join(__dirname, '..', 'database', 'seeds', 'libros-catalogo.json');
 const STOCK_MINIMO = 5;
 
-// ------------------------------------------------------------
-// Normalización para comparar autores y categorías.
-// ------------------------------------------------------------
 const normalizar = (texto) =>
     String(texto || '')
         .normalize('NFD')
@@ -132,19 +102,12 @@ async function cargarIndices(conexion) {
 
 async function cargarExistentes(conexion) {
     const [porIsbn] = await conexion.query(
-        `SELECT l.id_libro, l.titulo, l.isbn, l.id_autor, a.nombre, a.apellido
-         FROM libros l
-         JOIN autores a ON a.id_autor = l.id_autor
-         WHERE l.isbn IS NOT NULL`
+        `SELECT l.id_libro, l.titulo, l.isbn, l.id_autor, a.nombre, a.apellido FROM libros l JOIN autores a ON a.id_autor = l.id_autor WHERE l.isbn IS NOT NULL`
     );
-    const [porObra] = await conexion.query(
-        `SELECT l.id_libro, l.titulo, l.isbn, l.id_autor, a.nombre, a.apellido
-         FROM libros l
-         JOIN autores a ON a.id_autor = l.id_autor`
-    );
+    const [porObra] = await conexion.query(`SELECT l.id_libro, l.titulo, l.isbn, l.id_autor, a.nombre, a.apellido FROM libros l JOIN autores a ON a.id_autor = l.id_autor`);
     return {
         isbns: new Set(porIsbn.map((f) => String(f.isbn).replace(/[^0-9]/g, ''))),
-        obras: new Set(porObra.map((f) => `${normalizar(`${f.nombre} ${f.apellido}`)}|${normalizar(f.titulo)}`)),
+        obras: new Set(porObra.map((f) => `${normalizar(`${f.nombre} ${f.apellido}`)}|${normalizar(f.titulo)}`))
     };
 }
 
@@ -278,25 +241,13 @@ Ejemplos:
         let insertados = 0;
         try {
             for (const l of aInsertar) {
-                const precioOferta = l.descuento_porcentaje
-                    ? (Number(l.precio) * (1 - Number(l.descuento_porcentaje) / 100)).toFixed(2)
-                    : null;
+                const precioOferta = l.descuento_porcentaje ? (Number(l.precio) * (1 - Number(l.descuento_porcentaje) / 100)).toFixed(2) : null;
                 const [res] = await conexion.query(
-                    `INSERT INTO libros
-                        (titulo, isbn, descripcion, precio, stock, portada, id_autor, id_categoria,
-                         descuento_porcentaje, precio_oferta)
-                     VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?)
-                     RETURNING id_libro`,
-                    [l.titulo, l.isbn, l.descripcion, l.precio, l.stock, l.id_autor, l.id_categoria,
-                        l.descuento_porcentaje || null, precioOferta]
+                    `INSERT INTO libros (titulo, isbn, descripcion, precio, stock, portada, id_autor, id_categoria, descuento_porcentaje, precio_oferta) VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?) RETURNING id_libro`,
+                    [l.titulo, l.isbn, l.descripcion, l.precio, l.stock, l.id_autor, l.id_categoria, l.descuento_porcentaje || null, precioOferta]
                 );
                 const idLibro = res.insertId;
-                await conexion.query(
-                    `INSERT INTO inventario (id_libro, stock, stock_minimo)
-                     VALUES (?, ?, ?)
-                     ON CONFLICT (id_libro) DO NOTHING`,
-                    [idLibro, l.stock, STOCK_MINIMO]
-                );
+                await conexion.query(`INSERT INTO inventario (id_libro, stock, stock_minimo) VALUES (?, ?, ?) ON CONFLICT (id_libro) DO NOTHING`, [idLibro, l.stock, STOCK_MINIMO]);
                 insertados++;
             }
             await conexion.commit();
@@ -318,6 +269,8 @@ Ejemplos:
 
 main().catch(async (error) => {
     console.error('❌ Error inesperado:', error.message);
-    try { await pool.end(); } catch {}
+    try {
+        await pool.end();
+    } catch {}
     process.exit(1);
 });

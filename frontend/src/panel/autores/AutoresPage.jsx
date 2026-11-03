@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-
-import { FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
-
+import { FaMagnifyingGlass, FaRotate, FaXmark, FaEye, FaPenToSquare, FaTrash } from 'react-icons/fa6';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -15,11 +13,7 @@ import { ConfirmarEliminacion } from '../ui/ConfirmarEliminacion';
 import { DataTable } from '../ui/DataTable';
 import { EstadoActivo } from '../ui/Badge';
 import { BtnAccion } from '../ui/Acciones';
-
-import { FaEye, FaPenToSquare, FaTrash } from 'react-icons/fa6';
-
-import { useToast } from '../../app/providers/ToastProvider';
-
+import { useToast } from '../../app/providers/ToastContext';
 import { listarAutores, obtenerAutor, eliminarAutor } from './autoresService';
 import AutorForm from './AutorForm';
 import AutorViewModal from './AutorViewModal';
@@ -29,17 +23,30 @@ const POR_PAGINA = 10;
 
 const columnasAutores = [
     { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_autor}</span> },
-    { titulo: 'Autor', render: (fila) => <span className="font-semibold text-slate-700">{fila.nombre} {fila.apellido}</span> },
+    {
+        titulo: 'Autor',
+        render: (fila) => (
+            <span className="font-semibold text-slate-700">
+                {fila.nombre} {fila.apellido}
+            </span>
+        )
+    },
     { titulo: 'Nacionalidad', render: (fila) => <span className="text-slate-700">{fila.nacionalidad || 'No registrada'}</span> },
-    { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
+    { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> }
 ];
 
 function accionesAutor(fila, { onVer, onEditar, onEliminar }) {
     return (
         <>
-            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver autor"><FaEye /></BtnAccion>
-            <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar autor"><FaPenToSquare /></BtnAccion>
-            <BtnAccion tipo="eliminar" onClick={() => onEliminar(fila)} titulo="Eliminar autor"><FaTrash /></BtnAccion>
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver autor">
+                <FaEye />
+            </BtnAccion>
+            <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar autor">
+                <FaPenToSquare />
+            </BtnAccion>
+            <BtnAccion tipo="eliminar" onClick={() => onEliminar(fila)} titulo="Eliminar autor">
+                <FaTrash />
+            </BtnAccion>
         </>
     );
 }
@@ -47,11 +54,7 @@ function accionesAutor(fila, { onVer, onEditar, onEliminar }) {
 function TablaAutores({ titulo, subtitulo, paginados, contador, pagina, totalPaginas, onCambiarPagina, color, onVer, onEditar, onEliminar }) {
     return (
         <Card>
-            <CardHeader
-                titulo={titulo}
-                subtitulo={subtitulo}
-                acciones={<span className={`rounded-full px-3 py-1 text-xs font-bold ${color}`}>{contador}</span>}
-            />
+            <CardHeader titulo={titulo} subtitulo={subtitulo} acciones={<span className={`rounded-full px-3 py-1 text-xs font-bold ${color}`}>{contador}</span>} />
             <CardBody className="p-0">
                 <DataTable
                     etiqueta={titulo}
@@ -94,9 +97,6 @@ export default function AutoresPage({ incrustado = false }) {
         }
     };
 
-    // Carga inicial. `cargando` ya nace en true, así que este efecto no
-    // enciende el spinner: solo espera la respuesta y entonces actualiza.
-    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
         let vigente = true;
 
@@ -118,8 +118,6 @@ export default function AutoresPage({ incrustado = false }) {
         };
     }, []);
 
-    // Al buscar se vuelve a la primera página: se hace aquí, en el
-    // evento, y no en un efecto que la reinicie después del render.
     const alBuscar = (valor) => {
         setBusqueda(valor);
         setPaginaActivos(1);
@@ -143,8 +141,6 @@ export default function AutoresPage({ incrustado = false }) {
     const totalActivos = Math.ceil(autoresActivos.length / POR_PAGINA);
     const totalInactivos = Math.ceil(autoresInactivos.length / POR_PAGINA);
 
-    // Si la lista se acorta (búsqueda o borrado) la página se recorta
-    // durante el render en vez de corregirse después con un efecto.
     const paginaActivosActual = totalActivos > 0 ? Math.min(paginaActivos, totalActivos) : 1;
     const paginaInactivosActual = totalInactivos > 0 ? Math.min(paginaInactivos, totalInactivos) : 1;
 
@@ -195,20 +191,28 @@ export default function AutoresPage({ incrustado = false }) {
 
     return (
         <div className="space-y-4">
-            {!incrustado && <PageHeader
-                titulo="Autores"
-                descripcion="Administra los autores registrados en la librería"
-            />}
+            {!incrustado && <PageHeader titulo="Autores" descripcion="Administra los autores registrados en la librería" />}
 
             <Card>
                 <CardHeader
                     titulo="Catálogo de autores"
                     subtitulo="Busca autores por nombre, apellido o nacionalidad"
-                    acciones={<div className="tabla-filtros-acciones">
-                        <Button variante="secondary" onClick={cargarAutores} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
-                        <AltaFlotante etiqueta="Nuevo autor" titulo="Registrar autor" subtitulo="Introduce el nombre y apellido. La información adicional es opcional."
-                            formulario={AutorForm} formularioProps={{ enfocarNombre: true }} eventoRegistro="onAutorCreado" onRegistrado={autorCreado} />
-                    </div>}
+                    acciones={
+                        <div className="tabla-filtros-acciones">
+                            <Button variante="secondary" onClick={cargarAutores} disabled={cargando}>
+                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
+                            </Button>
+                            <AltaFlotante
+                                etiqueta="Nuevo autor"
+                                titulo="Registrar autor"
+                                subtitulo="Introduce el nombre y apellido. La información adicional es opcional."
+                                formulario={AutorForm}
+                                formularioProps={{ enfocarNombre: true }}
+                                eventoRegistro="onAutorCreado"
+                                onRegistrado={autorCreado}
+                            />
+                        </div>
+                    }
                     filtros={
                         <div className="filtros-grid filtros-grid--busqueda">
                             <div className="filtro-busqueda">
@@ -226,8 +230,7 @@ export default function AutoresPage({ incrustado = false }) {
                                         type="button"
                                         onClick={() => alBuscar('')}
                                         title="Limpiar búsqueda"
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-slate-700"
-                                    >
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 hover:text-slate-700">
                                         <FaXmark />
                                     </button>
                                 )}
@@ -241,16 +244,10 @@ export default function AutoresPage({ incrustado = false }) {
 
             {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarAutores} />}
 
-            {!cargando && !error && autores.length === 0 && (
-                <EmptyState titulo="No hay autores registrados" descripcion="Pulsa Nuevo autor para registrar el primer autor." />
-            )}
+            {!cargando && !error && autores.length === 0 && <EmptyState titulo="No hay autores registrados" descripcion="Pulsa Nuevo autor para registrar el primer autor." />}
 
             {!cargando && !error && autores.length > 0 && autoresFiltrados.length === 0 && (
-                <EmptyState
-                    titulo="No se encontraron autores"
-                    descripcion="Cambia la búsqueda o limpia los filtros."
-                    icono={<FaMagnifyingGlass />}
-                />
+                <EmptyState titulo="No se encontraron autores" descripcion="Cambia la búsqueda o limpia los filtros." icono={<FaMagnifyingGlass />} />
             )}
 
             {!cargando && !error && autoresActivos.length > 0 && (
@@ -286,20 +283,17 @@ export default function AutoresPage({ incrustado = false }) {
             )}
 
             <AutorViewModal autor={autorVer} abierto={Boolean(autorVer)} onCerrar={() => setAutorVer(null)} />
-            <AutorEditModal
-                key={autorEditar?.id_autor}
-                autor={autorEditar}
-                abierto={Boolean(autorEditar)}
-                onCerrar={() => setAutorEditar(null)}
-                onActualizado={autorActualizado}
-            />
+            <AutorEditModal key={autorEditar?.id_autor} autor={autorEditar} abierto={Boolean(autorEditar)} onCerrar={() => setAutorEditar(null)} onActualizado={autorActualizado} />
             <ConfirmarEliminacion
                 abierto={Boolean(autorEliminar)}
                 titulo="Eliminar autor"
                 mensaje={
                     <>
                         ¿Estás seguro de que deseas eliminar al autor{' '}
-                        <span className="font-bold">"{autorEliminar?.nombre} {autorEliminar?.apellido}"</span>?
+                        <span className="font-bold">
+                            "{autorEliminar?.nombre} {autorEliminar?.apellido}"
+                        </span>
+                        ?
                     </>
                 }
                 advertencia="Si el autor tiene libros relacionados, el sistema no permitirá eliminarlo."
@@ -312,4 +306,3 @@ export default function AutoresPage({ incrustado = false }) {
         </div>
     );
 }
-

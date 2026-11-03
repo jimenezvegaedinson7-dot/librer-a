@@ -1,17 +1,7 @@
-// ============================================================
-// TESTS DE GET /api/app/version (actualizaciones del APK)
-// ============================================================
-// Sin BD ni red: valida la configuración y el archivo real
-// src/config/app-version.json.
-// ============================================================
-
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const {
-    validarConfiguracion,
-    PREFIJO_APK_AUTORIZADO
-} = require('../src/controllers/app.controller');
+const { validarConfiguracion, PREFIJO_APK_AUTORIZADO } = require('../src/controllers/app.controller');
 
 const base = {
     version: '1.0.1',

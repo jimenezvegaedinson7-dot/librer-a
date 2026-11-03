@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-
-import { FaBook, FaMagnifyingGlass, FaRotate, FaXmark } from 'react-icons/fa6';
-
+import { FaBook, FaMagnifyingGlass, FaRotate, FaXmark, FaEye, FaPenToSquare, FaTrash } from 'react-icons/fa6';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -15,13 +13,9 @@ import { TableSkeleton } from '../ui/TableSkeleton';
 import { DataTable } from '../ui/DataTable';
 import { EstadoActivo } from '../ui/Badge';
 import { BtnAccion } from '../ui/Acciones';
-
-import { FaEye, FaPenToSquare, FaTrash } from 'react-icons/fa6';
 import { formatearMoneda } from '../../compartido/lib/utils/format';
-
-import { useToast } from '../../app/providers/ToastProvider';
+import { useToast } from '../../app/providers/ToastContext';
 import { useRol } from '../auth/useRol';
-
 import { listarLibros, obtenerLibro, eliminarLibro } from './librosService';
 import LibroForm from './LibroForm';
 import { StockBadge } from './libroUi';
@@ -35,9 +29,6 @@ import { referenciaPortadaLibro, AVISO_PORTADA_REFERENCIA } from '../../comparti
 
 const POR_PAGINA = 10;
 
-// El precio en oferta se lee de precio_final y del porcentaje efectivo que
-// ya calculó el backend. Recalcularlo aquí duplicaría la regla y volvería a
-// abrir la puerta a que el panel y la web se contradigan.
 function PrecioCelda({ fila }) {
     if (Number(fila.descuento_vigente) !== 1) {
         return <span className="font-semibold text-slate-700">{formatearMoneda(fila.precio)}</span>;
@@ -45,9 +36,7 @@ function PrecioCelda({ fila }) {
 
     return (
         <span className="flex flex-col items-end gap-0.5">
-            <span className="descuento-resaltado rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-bold">
-                -{fila.descuento_porcentaje_efectivo}%
-            </span>
+            <span className="descuento-resaltado rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-bold">-{fila.descuento_porcentaje_efectivo}%</span>
             <span className="text-[11px] text-slate-400 line-through">{formatearMoneda(fila.precio)}</span>
             <span className="descuento-resaltado font-bold">{formatearMoneda(fila.precio_final)}</span>
         </span>
@@ -56,25 +45,40 @@ function PrecioCelda({ fila }) {
 
 const columnasLibros = [
     { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_libro}</span> },
-    { titulo: 'Título', className: 'tabla-col-principal', render: (fila) => <span className="flex items-center gap-3"><PortadaCatalogo libro={fila} mostrarTexto={false} className="h-16 w-11 shrink-0 rounded bg-slate-50 object-contain"/>
-        <span className="font-semibold text-slate-700">{fila.titulo}
-            {referenciaPortadaLibro(fila) && <span className="mt-1 block text-xs font-normal text-slate-600">{AVISO_PORTADA_REFERENCIA}</span>}
-        </span></span> },
+    {
+        titulo: 'Título',
+        className: 'tabla-col-principal',
+        render: (fila) => (
+            <span className="flex items-center gap-3">
+                <PortadaCatalogo libro={fila} mostrarTexto={false} className="h-16 w-11 shrink-0 rounded bg-slate-50 object-contain" />
+                <span className="font-semibold text-slate-700">
+                    {fila.titulo}
+                    {referenciaPortadaLibro(fila) && <span className="mt-1 block text-xs font-normal text-slate-600">{AVISO_PORTADA_REFERENCIA}</span>}
+                </span>
+            </span>
+        )
+    },
     { titulo: 'Autor', render: (fila) => <span className="text-slate-700">{fila.autor}</span> },
     { titulo: 'Categoría', render: (fila) => <span className="text-slate-700">{fila.categoria}</span> },
     { titulo: 'Precio', className: 'tabla-col-importe', alineacion: 'derecha', render: (fila) => <PrecioCelda fila={fila} /> },
     { titulo: 'Stock', alineacion: 'centro', render: (fila) => <StockBadge stock={fila.stock} stockMinimo={fila.stock_minimo} /> },
-    { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> },
+    { titulo: 'Estado', alineacion: 'centro', render: (fila) => <EstadoActivo activo={fila.estado} /> }
 ];
 
 function accionesLibro(fila, { onVer, onEditar, onEliminar, puedeEditar }) {
     return (
         <>
-            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver libro"><FaEye /></BtnAccion>
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver libro">
+                <FaEye />
+            </BtnAccion>
             {puedeEditar && (
                 <>
-                    <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar libro"><FaPenToSquare /></BtnAccion>
-                    <BtnAccion tipo="eliminar" onClick={() => onEliminar(fila)} titulo="Eliminar libro"><FaTrash /></BtnAccion>
+                    <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar libro">
+                        <FaPenToSquare />
+                    </BtnAccion>
+                    <BtnAccion tipo="eliminar" onClick={() => onEliminar(fila)} titulo="Eliminar libro">
+                        <FaTrash />
+                    </BtnAccion>
                 </>
             )}
         </>
@@ -133,13 +137,8 @@ export default function LibrosPage({ incrustado = false }) {
             setCargando(true);
             setError('');
             setAvisoMinimos('');
-            // El mínimo de stock vive en Inventario: se une para usar el mismo
-            // criterio de "stock bajo" que esa sección.
-            const [lista, inventario] = await Promise.all([
-                listarLibros(),
-                // Si Inventario falla no se inventa un mínimo: queda sin dato.
-                listarInventario().catch(() => null),
-            ]);
+
+            const [lista, inventario] = await Promise.all([listarLibros(), listarInventario().catch(() => null)]);
             if (!inventario) {
                 setAvisoMinimos('No se pudo consultar Inventario: el nivel de stock bajo no está disponible por ahora.');
                 setLibros(lista.map((libro) => ({ ...libro, stock_minimo: undefined })));
@@ -154,9 +153,6 @@ export default function LibrosPage({ incrustado = false }) {
         }
     };
 
-    // Carga inicial. `cargando` ya nace en true, así que este efecto no
-    // enciende el spinner: solo espera la respuesta y entonces actualiza.
-    // El bandera `vigente` evita fijar estado si el componente se desmonta.
     useEffect(() => {
         let vigente = true;
 
@@ -178,8 +174,6 @@ export default function LibrosPage({ incrustado = false }) {
         };
     }, []);
 
-    // Al cambiar cualquier filtro se vuelve a la primera página: se hace
-    // aquí, en el evento, y no en un efecto que la reinicie tras el render.
     const alBuscar = (valor) => {
         setBusqueda(valor);
         setPaginaActivos(1);
@@ -202,15 +196,10 @@ export default function LibrosPage({ incrustado = false }) {
         const texto = busqueda.toLowerCase().trim();
         return libros.filter((libro) => {
             const en = (valor) => String(valor || '').toLowerCase();
-            const coincideBusqueda =
-                !texto ||
-                [en(libro.titulo), en(libro.autor), en(libro.categoria), en(libro.isbn)].some((v) => v.includes(texto));
+            const coincideBusqueda = !texto || [en(libro.titulo), en(libro.autor), en(libro.categoria), en(libro.isbn)].some((v) => v.includes(texto));
 
             const estado = Number(libro.estado);
-            const coincideEstado =
-                filtroEstado === 'todos' ||
-                (filtroEstado === 'activo' && estado === 1) ||
-                (filtroEstado === 'inactivo' && estado !== 1);
+            const coincideEstado = filtroEstado === 'todos' || (filtroEstado === 'activo' && estado === 1) || (filtroEstado === 'inactivo' && estado !== 1);
 
             const coincideStock = filtroStock === 'todos' || nivelStock(libro.stock, libro.stock_minimo) === filtroStock;
 
@@ -224,8 +213,6 @@ export default function LibrosPage({ incrustado = false }) {
     const totalActivos = Math.ceil(librosActivos.length / POR_PAGINA);
     const totalInactivos = Math.ceil(librosInactivos.length / POR_PAGINA);
 
-    // Si la lista se acorta (búsqueda o borrado) la página se recorta
-    // durante el render en vez de corregirse después con un efecto.
     const paginaActivosActual = totalActivos > 0 ? Math.min(paginaActivos, totalActivos) : 1;
     const paginaInactivosActual = totalInactivos > 0 ? Math.min(paginaInactivos, totalInactivos) : 1;
 
@@ -286,25 +273,37 @@ export default function LibrosPage({ incrustado = false }) {
 
     return (
         <div className="libros-pagina space-y-4">
-            {!incrustado && <PageHeader
-                titulo="Libros"
-                descripcion={
-                    puedeEditarCatalogo
-                        ? 'Administra el catálogo de la librería'
-                        : 'Consulta el catálogo de la librería (solo lectura)'
-                }
-            />}
+            {!incrustado && (
+                <PageHeader titulo="Libros" descripcion={puedeEditarCatalogo ? 'Administra el catálogo de la librería' : 'Consulta el catálogo de la librería (solo lectura)'} />
+            )}
 
             <Card className="libros-filtros">
                 <CardHeader
                     titulo="Catálogo de libros"
                     subtitulo="Busca y filtra los libros registrados"
-                    acciones={<div className="tabla-filtros-acciones">
-                        {hayFiltros && <Button variante="secondary" onClick={limpiarFiltros}>Limpiar</Button>}
-                        <Button variante="secondary" onClick={cargarLibros} disabled={cargando}><FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}</Button>
-                        {puedeEditarCatalogo && <AltaFlotante etiqueta="Nuevo libro" titulo="Registrar libro" subtitulo="Completa los datos del libro y confirma el registro." grande
-                            formulario={LibroForm} eventoRegistro="onLibroCreado" onRegistrado={libroCreado} />}
-                    </div>}
+                    acciones={
+                        <div className="tabla-filtros-acciones">
+                            {hayFiltros && (
+                                <Button variante="secondary" onClick={limpiarFiltros}>
+                                    Limpiar
+                                </Button>
+                            )}
+                            <Button variante="secondary" onClick={cargarLibros} disabled={cargando}>
+                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
+                            </Button>
+                            {puedeEditarCatalogo && (
+                                <AltaFlotante
+                                    etiqueta="Nuevo libro"
+                                    titulo="Registrar libro"
+                                    subtitulo="Completa los datos del libro y confirma el registro."
+                                    grande
+                                    formulario={LibroForm}
+                                    eventoRegistro="onLibroCreado"
+                                    onRegistrado={libroCreado}
+                                />
+                            )}
+                        </div>
+                    }
                     filtros={
                         <div className="filtros-grid">
                             <div className="filtro-busqueda">
@@ -322,8 +321,7 @@ export default function LibrosPage({ incrustado = false }) {
                                         type="button"
                                         onClick={() => alBuscar('')}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
-                                        title="Limpiar búsqueda"
-                                    >
+                                        title="Limpiar búsqueda">
                                         <FaXmark />
                                     </button>
                                 )}
@@ -341,15 +339,12 @@ export default function LibrosPage({ incrustado = false }) {
                                 <option value="bajo">Stock bajo</option>
                                 <option value="sin-stock">Sin stock</option>
                             </Select>
-
                         </div>
                     }
                 />
             </Card>
 
-            {cargando && (
-                <TableSkeleton columnas={6} filas={8} titulo />
-            )}
+            {cargando && <TableSkeleton columnas={6} filas={8} titulo />}
 
             {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarLibros} />}
             {!cargando && !error && avisoMinimos && <Alert tipo="warning">{avisoMinimos}</Alert>}
@@ -357,11 +352,7 @@ export default function LibrosPage({ incrustado = false }) {
             {!cargando && !error && libros.length === 0 && (
                 <EmptyState
                     titulo="No hay libros registrados"
-                    descripcion={
-                        puedeEditarCatalogo
-                            ? 'Pulsa Nuevo libro para completar los datos y registrarlo.'
-                            : 'Todavía no hay libros en el catálogo.'
-                    }
+                    descripcion={puedeEditarCatalogo ? 'Pulsa Nuevo libro para completar los datos y registrarlo.' : 'Todavía no hay libros en el catálogo.'}
                     icono={<FaBook />}
                 />
             )}
@@ -371,7 +362,11 @@ export default function LibrosPage({ incrustado = false }) {
                     titulo="No se encontraron libros"
                     descripcion="Cambia la búsqueda o los filtros seleccionados."
                     icono={<FaMagnifyingGlass />}
-                    acciones={<Button variante="secondary" onClick={limpiarFiltros}>Limpiar filtros</Button>}
+                    acciones={
+                        <Button variante="secondary" onClick={limpiarFiltros}>
+                            Limpiar filtros
+                        </Button>
+                    }
                 />
             )}
 
@@ -410,13 +405,7 @@ export default function LibrosPage({ incrustado = false }) {
             )}
 
             <LibroViewModal libro={libroVer} abierto={Boolean(libroVer)} onCerrar={() => setLibroVer(null)} />
-            <LibroEditModal
-                key={libroEditar?.id_libro}
-                libro={libroEditar}
-                abierto={Boolean(libroEditar)}
-                onCerrar={() => setLibroEditar(null)}
-                onActualizado={libroActualizado}
-            />
+            <LibroEditModal key={libroEditar?.id_libro} libro={libroEditar} abierto={Boolean(libroEditar)} onCerrar={() => setLibroEditar(null)} onActualizado={libroActualizado} />
             <LibroDeleteModal
                 key={libroEliminar?.id_libro}
                 libro={libroEliminar}

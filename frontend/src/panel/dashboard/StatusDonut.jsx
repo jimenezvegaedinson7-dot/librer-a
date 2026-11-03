@@ -1,18 +1,15 @@
 import { motion, useReducedMotion } from 'motion/react';
 import { FaCartShopping, FaCircleCheck, FaCircleXmark, FaClock, FaRotateLeft, FaTruck } from 'react-icons/fa6';
-
 import { formatearMoneda } from '../../compartido/lib/utils/format';
 import Pastel3D from './Pastel3D';
 import { num } from './graficoUtils';
 
-// Estados como paleta de estado (validada con el validador de dataviz en claro y oscuro).
-// Orden fijo: el color sigue al estado, nunca a su posición en la lista.
 const ESTADOS = {
     pagada: { texto: 'Pagada', clase: 'estado--exito', Icono: FaCircleCheck, orden: 1 },
     entregada: { texto: 'Entregada', clase: 'estado--info', Icono: FaTruck, orden: 2 },
     pendiente: { texto: 'Pendiente', clase: 'estado--aviso', Icono: FaClock, orden: 3 },
     cancelada: { texto: 'Cancelada', clase: 'estado--peligro', Icono: FaCircleXmark, orden: 4 },
-    reembolsada: { texto: 'Reembolsada', clase: 'estado--neutro', Icono: FaRotateLeft, orden: 5 },
+    reembolsada: { texto: 'Reembolsada', clase: 'estado--neutro', Icono: FaRotateLeft, orden: 5 }
 };
 
 const configEstado = (estado) => {
@@ -21,7 +18,6 @@ const configEstado = (estado) => {
     return ESTADOS[clave] || { texto, clase: 'estado--neutro', Icono: FaClock, orden: 9 };
 };
 
-// Donut de proporciones: segmentos con separación de 1 unidad sobre 100.
 function DonutEstados({ lista, total, unidad }) {
     const reducir = useReducedMotion();
     const separacion = lista.length > 1 ? 1.2 : 0;
@@ -36,18 +32,20 @@ function DonutEstados({ lista, total, unidad }) {
         <div className="donut" role="img" aria-label={lista.map((i) => `${i.texto}: ${i.cantidad}`).join(', ')}>
             <svg viewBox="0 0 100 100" aria-hidden="true">
                 <circle className="donut-pista" cx="50" cy="50" r="40" pathLength="100" />
-                {segmentos.filter((s) => s.largo > 0).map((s) => (
-                    <circle
-                        key={s.estado}
-                        className={`donut-segmento ${s.clase}`}
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        pathLength="100"
-                        strokeDasharray={`${Math.max(s.largo - separacion, 0.5)} ${100 - Math.max(s.largo - separacion, 0.5)}`}
-                        strokeDashoffset={-s.inicio}
-                    />
-                ))}
+                {segmentos
+                    .filter((s) => s.largo > 0)
+                    .map((s) => (
+                        <circle
+                            key={s.estado}
+                            className={`donut-segmento ${s.clase}`}
+                            cx="50"
+                            cy="50"
+                            r="40"
+                            pathLength="100"
+                            strokeDasharray={`${Math.max(s.largo - separacion, 0.5)} ${100 - Math.max(s.largo - separacion, 0.5)}`}
+                            strokeDashoffset={-s.inicio}
+                        />
+                    ))}
                 <motion.circle
                     className="donut-brillo"
                     cx="50"
@@ -57,9 +55,7 @@ function DonutEstados({ lista, total, unidad }) {
                     strokeDasharray="10 90"
                     variants={{
                         visible: { strokeDashoffset: 0, opacity: 0 },
-                        hover: reducir
-                            ? { opacity: 0 }
-                            : { strokeDashoffset: [0, -100], opacity: [0, 1, 0], transition: { duration: 0.6, ease: 'easeInOut' } },
+                        hover: reducir ? { opacity: 0 } : { strokeDashoffset: [0, -100], opacity: [0, 1, 0], transition: { duration: 0.6, ease: 'easeInOut' } }
                     }}
                 />
             </svg>
@@ -73,18 +69,13 @@ function DonutEstados({ lista, total, unidad }) {
 }
 
 function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas', variante = 'barra' }) {
-    const lista = (Array.isArray(datos) ? datos : [])
-        .map((item) => ({ ...item, ...configEstado(item.estado), cantidad: num(item.cantidad) }))
-        .sort((a, b) => a.orden - b.orden);
+    const lista = (Array.isArray(datos) ? datos : []).map((item) => ({ ...item, ...configEstado(item.estado), cantidad: num(item.cantidad) })).sort((a, b) => a.orden - b.orden);
 
     const total = lista.reduce((acc, item) => acc + item.cantidad, 0);
     const unidad = 'ventas';
     const IconoTitulo = FaCartShopping;
 
-    // Pie: ventas efectivamente cobradas.
-    const suma = (estados, campo) => lista
-        .filter((i) => estados.includes(String(i.estado).toLowerCase()))
-        .reduce((acc, i) => acc + num(i[campo]), 0);
+    const suma = (estados, campo) => lista.filter((i) => estados.includes(String(i.estado).toLowerCase())).reduce((acc, i) => acc + num(i[campo]), 0);
     const resumenPie = { etiqueta: `Cobradas: ${suma(['pagada', 'entregada'], 'cantidad')} ventas`, valor: formatearMoneda(suma(['pagada', 'entregada'], 'total')) };
 
     const esDonut = variante === 'donut';
@@ -95,15 +86,16 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas', variante 
             aria-labelledby={`titulo-estado-${tipo}`}
             initial="visible"
             animate="visible"
-            whileHover="hover"
-        >
+            whileHover="hover">
             <header className="panel-cabecera">
                 <div className="flex min-w-0 items-center gap-3">
                     <span className="panel-icono" aria-hidden="true">
                         <IconoTitulo />
                     </span>
                     <div className="min-w-0">
-                        <h2 id={`titulo-estado-${tipo}`} className="panel-titulo">{titulo}</h2>
+                        <h2 id={`titulo-estado-${tipo}`} className="panel-titulo">
+                            {titulo}
+                        </h2>
                         <p className="panel-subtitulo">{subtitulo}</p>
                     </div>
                 </div>
@@ -126,12 +118,12 @@ function StatusDonut({ titulo, subtitulo, datos = [], tipo = 'ventas', variante 
                                 const { Icono } = item;
                                 return (
                                     <li key={item.estado} className={`estado-fila ${item.clase}`}>
-                                        <span className="estado-chip" aria-hidden="true"><Icono /></span>
+                                        <span className="estado-chip" aria-hidden="true">
+                                            <Icono />
+                                        </span>
                                         <div className="min-w-0 flex-1">
                                             <p className="estado-nombre">{item.texto}</p>
-                                            {tipo === 'ventas' && item.total != null && (
-                                                <p className="estado-monto">{formatearMoneda(item.total)}</p>
-                                            )}
+                                            {tipo === 'ventas' && item.total != null && <p className="estado-monto">{formatearMoneda(item.total)}</p>}
                                         </div>
                                         {!esDonut && (
                                             <span className="estado-mini-pista" aria-hidden="true">

@@ -1,31 +1,11 @@
-/* Acabado ligero: superficies sólidas, sin vidrio, espejo ni destellos. */
-.sitio *, .sitio *::before, .sitio *::after {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
+.sitio *, .sitio *::before, .sitio *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.sitio [data-reveal], .sitio [data-revelar], .sitio [data-revelar] > *, .sitio [data-revelar] .linea > span {
+    opacity: 1 !important; visibility: visible !important; transform: none !important; filter: none !important; clip-path: none !important; transition-delay: 0s !important;
 }
-
-/* El catálogo se puede leer y usar sin esperar a un observador de scroll. */
-.sitio [data-reveal], .sitio [data-revelar], .sitio [data-revelar] > *,
-.sitio [data-revelar] .linea > span {
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    filter: none !important;
-    clip-path: none !important;
-    transition-delay: 0s !important;
+.sitio :is(.seccion__titulo, .categorias__titulo, .comprar__titulo, .categorias__item, .comprar__paso, .categoria__libro, .comprar__icono, .acceso-catalogo__boton) {
+    animation: none !important; translate: none !important; scale: none !important; opacity: 1 !important;
 }
-.sitio :is(.seccion__titulo, .categorias__titulo, .comprar__titulo, .categorias__item,
-    .comprar__paso, .categoria__libro, .comprar__icono, .acceso-catalogo__boton) {
-    animation: none !important;
-    translate: none !important;
-    scale: none !important;
-    opacity: 1 !important;
-}
-
-.sitio .cabecera, .sitio .navegacion-publica .cabecera, .sitio footer.pie {
-    background-image: none !important;
-    animation: none !important;
-}
+.sitio .cabecera, .sitio .navegacion-publica .cabecera, .sitio footer.pie { background-image: none !important; animation: none !important; }
 .sitio .cabecera .marca span { text-shadow: none; }
 .sitio footer.pie::before { background: var(--pie-filete); }
 .sitio .barra-movil, .sitio .pf-tarjeta { background: #ffffff !important; box-shadow: none; }
@@ -33,20 +13,11 @@
 .sitio .banda-catalogo :is(h2, p) { text-shadow: none; }
 .sitio .vitrina::before { display: none; }
 .sitio :is(.vitrina__principal, .vitrina__tarjeta--crema, .vitrina__tarjeta--marino) { background: #ffffff; box-shadow: none; }
-
-.sitio :is(.app-funcion, .instalar__paso),
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover,
-.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]),
-.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]):hover {
-    background: #ffffff !important;
-    border: 1px solid #e4e8ee !important;
-    box-shadow: none !important;
-    text-shadow: none;
-    transform: none !important;
-    transform-style: flat;
-    animation: none !important;
-    transition: border-color 150ms ease !important;
+.sitio :is(.app-funcion, .instalar__paso), .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover, .sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]), .sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]):hover {
+    background: #ffffff !important; border: 1px solid #e4e8ee !important; box-shadow: none !important; text-shadow: none; transform: none !important; transform-style: flat;
+    animation: none !important; transition: border-color 150ms ease !important;
 }
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga)::before,
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga)::after { display: none !important; content: none !important; }
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga)::before, .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga)::after {
+    display: none !important; content: none !important;
+}
 .sitio :is(.app-funcion__icono, .instalar__numero) { background: #f3f3f3 !important; box-shadow: none !important; }

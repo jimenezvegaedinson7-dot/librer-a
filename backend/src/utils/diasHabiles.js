@@ -1,33 +1,5 @@
-// ========================================
-// DÍAS HÁBILES (PERÚ)
-// ========================================
-// Plazo del Libro de Reclamaciones: la respuesta se debe dar en un plazo
-// no mayor a 15 días hábiles (D.S. 011-2011-PCM, modificado por el
-// D.S. 101-2022-PCM). No cuentan sábados, domingos ni feriados nacionales.
-//
-// Feriados fijos (Ley 31513 y normas vigentes) + Jueves y Viernes Santo
-// (móviles). Si el Gobierno declara un feriado extraordinario, el plazo
-// calculado queda un día antes: es el lado seguro.
-// ========================================
+const FERIADOS_FIJOS = ['01-01', '05-01', '06-07', '06-29', '07-23', '07-28', '07-29', '08-06', '08-30', '10-08', '11-01', '12-08', '12-09', '12-25'];
 
-const FERIADOS_FIJOS = [
-    '01-01', // Año Nuevo
-    '05-01', // Día del Trabajo
-    '06-07', // Batalla de Arica y Día de la Bandera
-    '06-29', // San Pedro y San Pablo
-    '07-23', // Fuerza Aérea del Perú
-    '07-28', // Fiestas Patrias
-    '07-29', // Fiestas Patrias
-    '08-06', // Batalla de Junín
-    '08-30', // Santa Rosa de Lima
-    '10-08', // Combate de Angamos
-    '11-01', // Todos los Santos
-    '12-08', // Inmaculada Concepción
-    '12-09', // Batalla de Ayacucho
-    '12-25' // Navidad
-];
-
-// Domingo de Pascua (algoritmo anónimo gregoriano).
 const domingoDePascua = (anio) => {
     const a = anio % 19;
     const b = Math.floor(anio / 100);
@@ -52,11 +24,7 @@ const feriadosDelAnio = (anio) => {
     const pascua = domingoDePascua(anio);
     const jueves = new Date(pascua.getTime() - 3 * 86400000);
     const viernes = new Date(pascua.getTime() - 2 * 86400000);
-    return new Set([
-        ...FERIADOS_FIJOS.map((md) => `${anio}-${md}`),
-        iso(jueves),
-        iso(viernes)
-    ]);
+    return new Set([...FERIADOS_FIJOS.map((md) => `${anio}-${md}`), iso(jueves), iso(viernes)]);
 };
 
 const esDiaHabil = (fecha) => {
@@ -67,14 +35,11 @@ const esDiaHabil = (fecha) => {
     return !feriadosDelAnio(fecha.getUTCFullYear()).has(iso(fecha));
 };
 
-// Fecha de hoy en Perú (UTC-5) como Date UTC a medianoche.
 const hoyEnPeru = (ahora = new Date()) => {
     const peru = new Date(ahora.getTime() - 5 * 3600 * 1000);
     return new Date(Date.UTC(peru.getUTCFullYear(), peru.getUTCMonth(), peru.getUTCDate()));
 };
 
-// Suma `dias` hábiles a partir del día siguiente a `desde` (el día del
-// reclamo no cuenta). Devuelve "YYYY-MM-DD".
 const sumarDiasHabiles = (desde, dias) => {
     let fecha = new Date(desde.getTime());
     let contados = 0;
@@ -87,10 +52,4 @@ const sumarDiasHabiles = (desde, dias) => {
     return iso(fecha);
 };
 
-module.exports = {
-    PLAZO_RECLAMO_DIAS_HABILES: 15,
-    domingoDePascua,
-    esDiaHabil,
-    hoyEnPeru,
-    sumarDiasHabiles
-};
+module.exports = { PLAZO_RECLAMO_DIAS_HABILES: 15, domingoDePascua, esDiaHabil, hoyEnPeru, sumarDiasHabiles };

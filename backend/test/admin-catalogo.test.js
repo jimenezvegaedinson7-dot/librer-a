@@ -2,17 +2,30 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const ruta = require.resolve('../src/config/database');
 let consultas = [];
-require.cache[ruta] = { id: ruta, filename: ruta, loaded: true, exports: { query: async (sql, params) => {
-    consultas.push({ sql, params }); return [sql.includes('SELECT') ? [] : { affectedRows: 1 }];
-} } };
+require.cache[ruta] = {
+    id: ruta,
+    filename: ruta,
+    loaded: true,
+    exports: {
+        query: async (sql, params) => {
+            consultas.push({ sql, params });
+            return [sql.includes('SELECT') ? [] : { affectedRows: 1 }];
+        }
+    }
+};
 const usuario = require('../src/models/usuario.model');
 const autor = require('../src/models/autor.model');
 const categoria = require('../src/models/categoria.model');
-test.beforeEach(() => { consultas = []; });
+test.beforeEach(() => {
+    consultas = [];
+});
 test('correo legacy y duplicados se buscan sin distinción de mayúsculas', async () => {
     await usuario.buscarPorEmail(' ADMIN@EXAMPLE.INVALID ');
     await usuario.existeEmail(' ADMIN@EXAMPLE.INVALID ', 71);
-    for (const q of consultas) { assert.match(q.sql, /LOWER\(email\) = LOWER\(\?\)/); assert.equal(q.params[0], 'admin@example.invalid'); }
+    for (const q of consultas) {
+        assert.match(q.sql, /LOWER\(email\) = LOWER\(\?\)/);
+        assert.equal(q.params[0], 'admin@example.invalid');
+    }
 });
 test('perfil normaliza correo, borra teléfono y no pisa campos omitidos', async () => {
     await usuario.actualizarPerfil(71, { email: ' ADMIN@EXAMPLE.INVALID ', telefono: null });

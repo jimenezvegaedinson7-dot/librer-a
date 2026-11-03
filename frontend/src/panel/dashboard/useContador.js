@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
 
-// Cuenta desde 0 hasta el valor al aparecer la tarjeta. Con "reducir
-// movimiento" (o un valor 0) muestra el número final directamente.
 export function useContador(valor, duracion = 900) {
     const reducir = useReducedMotion();
     const destino = Number(valor) || 0;

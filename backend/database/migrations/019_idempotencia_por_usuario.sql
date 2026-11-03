@@ -1,7 +1,3 @@
--- ============================================================
--- MIGRACIÓN 019: IDEMPOTENCIA POR USUARIO
--- ============================================================
-
 SET @existe_indice_global = (
     SELECT COUNT(*)
     FROM INFORMATION_SCHEMA.STATISTICS

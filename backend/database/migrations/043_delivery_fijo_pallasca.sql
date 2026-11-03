@@ -1,5 +1,3 @@
--- Una sola cobertura para compras nuevas. No modifica ventas, pagos, stock,
--- comprobantes ni las zonas antiguas referenciadas por compras existentes.
 INSERT INTO zonas_delivery_pallasca(nombre, tarifa, estado)
 VALUES ('Ciudad de Pallasca', 5.00, 1)
 ON CONFLICT (lower(btrim(nombre))) DO UPDATE

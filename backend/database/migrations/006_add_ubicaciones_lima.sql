@@ -1,14 +1,3 @@
--- ============================================================
--- MIGRACIÓN 006: UBICACIONES DE LIMA + AGENCIAS COURIER
--- ============================================================
--- Tablas de provincias y distritos de Lima (solo Lima).
--- Tabla de agencias courier (Olva, Shalom, etc.) para envios.
--- SEGURO: CREATE TABLE IF NOT EXISTS + INSERT IGNORE (no duplica ni borra).
--- ============================================================
-
--- ------------------------------------------------------------------
--- PROVINCIAS DE LIMA
--- ------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS provincias_lima (
     id_provincia INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL UNIQUE,
@@ -27,9 +16,6 @@ INSERT IGNORE INTO provincias_lima (nombre, orden) VALUES
 ('Oyón', 9),
 ('Yauyos', 10);
 
--- ------------------------------------------------------------------
--- DISTRITOS DE LIMA PROVINCIA (la más populosa)
--- ------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS distritos_lima (
     id_distrito INT AUTO_INCREMENT PRIMARY KEY,
     id_provincia INT NOT NULL,
@@ -39,7 +25,6 @@ CREATE TABLE IF NOT EXISTS distritos_lima (
     UNIQUE KEY uq_distrito_provincia (id_provincia, nombre)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Lima (id 1)
 INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (1, 'Ancón'),
 (1, 'Ate'),
@@ -85,9 +70,6 @@ INSERT IGNORE INTO distritos_lima (id_provincia, nombre) VALUES
 (1, 'Villa El Salvador'),
 (1, 'Villa María del Triunfo');
 
--- ------------------------------------------------------------------
--- AGENCIAS COURIER
--- ------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS agencias_courier (
     id_agencia INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL UNIQUE,

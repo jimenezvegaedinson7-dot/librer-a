@@ -2,31 +2,41 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { aplicarMigracionesDatos, MIGRACIONES_DATOS } = require('../src/config/migraciones');
 
-// Pool falso: registra las sentencias y simula la tabla migraciones_datos.
 function poolFalso({ yaAplicadas = [], filas = 3, falla = false } = {}) {
     const aplicadas = new Set(yaAplicadas);
     const log = [];
     const pool = {
         log,
         aplicadas,
-        query: async (sql) => { log.push(`pool: ${sql.trim().split('\n')[0]}`); return [[]]; },
+        query: async (sql) => {
+            log.push(`pool: ${sql.trim().split('\n')[0]}`);
+            return [[]];
+        },
         getConnection: async () => ({
             beginTransaction: async () => log.push('BEGIN'),
             commit: async () => log.push('COMMIT'),
             rollback: async () => log.push('ROLLBACK'),
             release: () => log.push('RELEASE'),
             pgQuery: async (sql, params = []) => {
-                if (/pg_advisory_xact_lock/.test(sql)) { log.push('LOCK'); return { rowCount: 1 }; }
+                if (/pg_advisory_xact_lock/.test(sql)) {
+                    log.push('LOCK');
+                    return { rowCount: 1 };
+                }
                 if (/SELECT filas FROM migraciones_datos/.test(sql)) return { rowCount: aplicadas.has(params[0]) ? 1 : 0 };
-                if (/INSERT INTO migraciones_datos/.test(sql)) { aplicadas.add(params[0]); log.push(`REGISTRO ${params[0]}=${params[1]}`); return { rowCount: 1 }; }
+                if (/INSERT INTO migraciones_datos/.test(sql)) {
+                    aplicadas.add(params[0]);
+                    log.push(`REGISTRO ${params[0]}=${params[1]}`);
+                    return { rowCount: 1 };
+                }
                 if (falla) throw new Error('fallo simulado');
                 log.push('BACKFILL');
                 return { rowCount: filas };
-            },
-        }),
+            }
+        })
     };
     return pool;
 }
+
 const silencio = { log() {}, error() {} };
 
 test('el backfill y la purga autorizada están registrados como migraciones de datos en orden', () => {
@@ -58,16 +68,17 @@ test('migración de datos: un error deshace la transacción y no la registra', a
         assert.equal(r[0].aplicada, false);
         assert.equal(pool.aplicadas.has('041_x.sql'), false);
         assert.equal(pool.log.includes('ROLLBACK'), true);
-    } finally { process.env.NODE_ENV = anterior; }
+    } finally {
+        process.env.NODE_ENV = anterior;
+    }
 });
 
 test('migración de datos: en producción un error detiene el arranque', async () => {
     const anterior = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
     try {
-        await assert.rejects(
-            aplicarMigracionesDatos(poolFalso({ falla: true }), { lista: ['041_x.sql'], leer: () => 'UPDATE ...', registro: silencio }),
-            /falló en producción/,
-        );
-    } finally { process.env.NODE_ENV = anterior; }
+        await assert.rejects(aplicarMigracionesDatos(poolFalso({ falla: true }), { lista: ['041_x.sql'], leer: () => 'UPDATE ...', registro: silencio }), /falló en producción/);
+    } finally {
+        process.env.NODE_ENV = anterior;
+    }
 });

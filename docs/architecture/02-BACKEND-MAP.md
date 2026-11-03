@@ -8,7 +8,7 @@
 1. `dotenv` y comprobación obligatoria de `TWO_FACTOR_ENCRYPTION_KEY` (≥ 16 caracteres; si falta, el proceso no arranca).
 2. `helmet` (sin CSP, CORP cross-origin) → `config/cors.js` con lista `FRONTEND_ORIGINS` y patrón `FRONTEND_ORIGINS_REGEX` (regex inválida desactiva previews y conserva lista explícita) → `express.json({ limit: '1mb' })` → `baseLimiter`.
 3. Estáticos: `/uploads` → `backend/uploads` (portadas y fotos locales cuando Cloudinary no está configurado).
-4. Endpoints en línea: `GET /`, `GET /api`, `GET /api/test-db` y `GET /api/debug-egress` (ambos JWT + admin).
+4. Endpoints en línea: `GET /` y `GET /api` (salud pública), y `GET /api/test-db` (JWT + admin).
 5. Montaje de 22 routers bajo `/api/*` → 404 JSON → `error.middleware`.
 6. `iniciarJobs()` programa limpieza cada 5 min. `iniciar()` espera `aplicarMigraciones` y `aplicarMigracionesDatos` antes de aceptar tráfico; en test se usa el esquema preparado por el runner. Un fallo en producción aborta el arranque.
 7. `app.listen(PORT || 3000)` después de comprobar el esquema. Las migraciones base e incrementales están en `config/migraciones.js`; los backfills se registran en `migraciones_datos`.
@@ -107,12 +107,6 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/test-db` | JWT + rol:administrador | inline (server.js) | — | — |
-
-### /api/debug-egress
-
-| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
-|---|---|---|---|---|---|
-| GET | `/api/debug-egress` | JWT + rol:administrador | inline (server.js) | — | — |
 
 ### /api/agencias
 
@@ -387,9 +381,8 @@ Esquema canónico: **22 tablas** en `backend/database/schema.sql`. Declaraciones
 
 ## Observaciones
 
-- `GET /api/debug-egress` es un diagnóstico manual **JWT + admin**, con conexiones TCP acotadas y timeout HTTPS.
 - La pasarela de pagos (`/api/pagos`) es **PayU**.
 - `GET /api/test-db` verifica PostgreSQL con `SELECT 1`, protegido por JWT + administrador.
 - Endpoints sin cliente: ver la sección correspondiente en `05-API-MAP.md`.
-- Scripts auxiliares (no forman parte del servidor): `scripts/migrarImagenesCloudinary.js`, `scripts/resetearPrecios.js`, `run_migration_021.js`, `_test_smtp.js` (sin seguimiento en git).
+- Herramientas de mantenimiento (no forman parte del servidor): `scripts/resetearPrecios.js`, `scripts/semillaLibros.js`, `scripts/publicarVersionApp.js` y `scripts/respaldarPostgres.js`.
 - Pruebas: `test/*.test.js` (node --test) y `test-integration/http.smoke.test.js`.

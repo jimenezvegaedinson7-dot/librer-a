@@ -1,4 +1,3 @@
-// Un formulario abierto no debe reenviar existencias que ya pudieron cambiar.
 export function cambiosInventario(formulario, anterior) {
     const cambios = {};
     for (const campo of ['stock', 'stock_minimo']) {

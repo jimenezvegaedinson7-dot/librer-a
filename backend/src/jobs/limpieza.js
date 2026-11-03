@@ -1,61 +1,29 @@
-// ============================================================
-// JOBS DE LIMPIEZA / MANTENIMIENTO
-// ============================================================
-// Se ejecuta cada 5 minutos:
-// Cancela órdenes de venta abandonadas (pendientes con
-//      más de 30 minutos de antigüedad) y devuelve stock.
-// ============================================================
-
 const ventaModel = require('../models/venta.model');
 
 const INTERVALO_MS = 5 * 60 * 1000;
 
-// ========================================
-// EJECUTAR LIMPIEZA
-// ========================================
 const ejecutarLimpieza = async () => {
-    // ========================================
-    // VENTAS ABANDONADAS
-    // ========================================
     try {
-        const resultado =
-            await ventaModel.cancelarOrdenesAbandonadas(30, {
-                alSincronizarPago: resultado => require('../controllers/pago.controller').notificarResultadoPago(resultado)
-            });
+        const resultado = await ventaModel.cancelarOrdenesAbandonadas(30, {
+            alSincronizarPago: (resultado) => require('../controllers/pago.controller').notificarResultadoPago(resultado)
+        });
 
         if (resultado.canceladas > 0) {
-            console.log(
-                `[jobs] Ventas abandonadas canceladas: ${resultado.canceladas}`
-            );
+            console.log(`[jobs] Ventas abandonadas canceladas: ${resultado.canceladas}`);
         }
 
         if (resultado.conPagoPendienteEnPayU > 0) {
-            console.log(
-                `[jobs] Ventas con orden PayU pagada detectadas (no canceladas): ${resultado.conPagoPendienteEnPayU}`
-            );
+            console.log(`[jobs] Ventas con orden PayU pagada detectadas (no canceladas): ${resultado.conPagoPendienteEnPayU}`);
         }
     } catch (error) {
-        console.error(
-            '[jobs] Error al cancelar ventas abandonadas:',
-            error.message
-        );
+        console.error('[jobs] Error al cancelar ventas abandonadas:', error.message);
     }
 };
 
-// ========================================
-// INICIAR JOBS
-// ========================================
 const iniciarJobs = () => {
-    setInterval(
-        ejecutarLimpieza,
-        INTERVALO_MS
-    );
+    setInterval(ejecutarLimpieza, INTERVALO_MS);
 
-    console.log(
-        `[jobs] Limpieza programada cada ${INTERVALO_MS / 60000} minutos`
-    );
+    console.log(`[jobs] Limpieza programada cada ${INTERVALO_MS / 60000} minutos`);
 };
 
-module.exports = {
-    iniciarJobs
-};
+module.exports = { iniciarJobs };

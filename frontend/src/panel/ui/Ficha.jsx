@@ -7,9 +7,7 @@ export function Ficha({ icono, etiqueta, children }) {
                         {icono}
                     </div>
                 )}
-                <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">
-                    {etiqueta}
-                </span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">{etiqueta}</span>
             </div>
             <div className="ficha-valor mt-2.5 text-[17px] font-semibold leading-snug text-slate-900">{children}</div>
         </div>

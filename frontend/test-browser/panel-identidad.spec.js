@@ -5,84 +5,98 @@ const admin = { id_usuario: 1, nombre: 'Prueba', apellido: 'Administrador', rol:
 const autor = { id_autor: 1, nombre: 'Gabriel', apellido: 'García Márquez', nacionalidad: 'Colombiana', estado: 1, biografia: 'Autor de prueba para revisar la presentación.' };
 
 async function preparar(page, tema, guardado) {
-    await page.addInitScript(({admin, tema, guardado}) => {
-        localStorage.setItem('token', 'token-de-prueba');
-        localStorage.setItem('usuario', JSON.stringify(admin));
-        localStorage.setItem('libreria-admin-theme', tema);
-        if (guardado) localStorage.setItem('libreria-theme-customization', JSON.stringify({
-            zonas: {sidebar:'default',topbar:'default',buttons:'default',icons:'default'}
-        }));
-    }, {admin, tema, guardado});
-    await page.route(`${API}/**`, route => {
+    await page.addInitScript(
+        ({ admin, tema, guardado }) => {
+            localStorage.setItem('token', 'token-de-prueba');
+            localStorage.setItem('usuario', JSON.stringify(admin));
+            localStorage.setItem('libreria-admin-theme', tema);
+            if (guardado)
+                localStorage.setItem('libreria-theme-customization', JSON.stringify({ zonas: { sidebar: 'default', topbar: 'default', buttons: 'default', icons: 'default' } }));
+        },
+        { admin, tema, guardado }
+    );
+    await page.route(`${API}/**`, (route) => {
         const ruta = new URL(route.request().url()).pathname;
-        if (ruta.endsWith('/usuarios/perfil')) return route.fulfill({json:{success:true,data:admin}});
-        if (ruta === '/api/autores') return route.fulfill({json:{success:true,data:[autor]}});
-        if (ruta === '/api/autores/1') return route.fulfill({json:{success:true,data:autor}});
-        if (ruta === '/api/pagos') return route.fulfill({json:{success:true,pagos:[],total:0,paginas:1}});
-        if (ruta.endsWith('/resumen') || ruta.endsWith('/indicadores-ventas')) return route.fulfill({json:{success:true,data:{}}});
-        return route.fulfill({json:{success:true,data:[]}});
+        if (ruta.endsWith('/usuarios/perfil')) return route.fulfill({ json: { success: true, data: admin } });
+        if (ruta === '/api/autores') return route.fulfill({ json: { success: true, data: [autor] } });
+        if (ruta === '/api/autores/1') return route.fulfill({ json: { success: true, data: autor } });
+        if (ruta === '/api/pagos') return route.fulfill({ json: { success: true, pagos: [], total: 0, paginas: 1 } });
+        if (ruta.endsWith('/resumen') || ruta.endsWith('/indicadores-ventas')) return route.fulfill({ json: { success: true, data: {} } });
+        return route.fulfill({ json: { success: true, data: [] } });
     });
 }
 
 async function contraste(locator) {
-    return locator.evaluate(el => {
+    return locator.evaluate((el) => {
         const estilo = getComputedStyle(el);
-        const luminancia = rgb => {
-            const canales = rgb.match(/[\d.]+/g).slice(0,3).map(Number).map(n => {
-                n /= 255; return n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
-            });
-            return canales[0]*0.2126 + canales[1]*0.7152 + canales[2]*0.0722;
+        const luminancia = (rgb) => {
+            const canales = rgb
+                .match(/[\d.]+/g)
+                .slice(0, 3)
+                .map(Number)
+                .map((n) => {
+                    n /= 255;
+                    return n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+                });
+            return canales[0] * 0.2126 + canales[1] * 0.7152 + canales[2] * 0.0722;
         };
-        const a = luminancia(estilo.color), b = luminancia(estilo.backgroundColor);
-        return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05);
+        const a = luminancia(estilo.color),
+            b = luminancia(estilo.backgroundColor);
+        return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
     });
 }
 
 for (const ancho of [390, 1440]) {
     for (const tema of ['light']) {
-        test(`panel editorial ${tema} a ${ancho}px: marca, iconos, contraste y detalle`, async ({page}) => {
-            await page.setViewportSize({width:ancho,height:1000});
-            const errores=[]; page.on('pageerror', e => errores.push(e.message));
+        test(`panel editorial ${tema} a ${ancho}px: marca, iconos, contraste y detalle`, async ({ page }) => {
+            await page.setViewportSize({ width: ancho, height: 1000 });
+            const errores = [];
+            page.on('pageerror', (e) => errores.push(e.message));
             await preparar(page, tema, ancho === 1440);
             await page.goto('/autores');
             await expect(page.locator('.admin-shell')).toHaveAttribute('data-theme', tema);
             await expect(page.locator('.admin-main')).toHaveCSS('background-color', tema === 'dark' ? 'rgb(10, 31, 49)' : 'rgb(255, 249, 239)');
-            await page.getByRole('button',{name:'Nuevo autor',exact:true}).click();
-            const guardar=page.getByRole('dialog').getByRole('button',{name:'Guardar autor',exact:true});
-            await expect(guardar).toHaveCSS('background-color','rgb(213, 164, 71)');
-            await expect(guardar).toHaveCSS('color','rgb(10, 31, 49)');
+            await page.getByRole('button', { name: 'Nuevo autor', exact: true }).click();
+            const guardar = page.getByRole('dialog').getByRole('button', { name: 'Guardar autor', exact: true });
+            await expect(guardar).toHaveCSS('background-color', 'rgb(213, 164, 71)');
+            await expect(guardar).toHaveCSS('color', 'rgb(10, 31, 49)');
             expect(await contraste(guardar)).toBeGreaterThanOrEqual(4.5);
-            await expect(page.getByLabel('Nombre',{exact:true})).toHaveCSS('background-color',tema === 'dark' ? 'rgb(13, 41, 64)' : 'rgb(255, 255, 255)');
-            await page.getByRole('dialog').getByRole('button',{name:'Cancelar',exact:true}).click();
-            if (ancho < 1024) await page.getByRole('button',{name:'Alternar menú',exact:true}).click();
-            const menu=page.getByRole('complementary',{name:'Navegación principal'});
+            await expect(page.getByLabel('Nombre', { exact: true })).toHaveCSS('background-color', tema === 'dark' ? 'rgb(13, 41, 64)' : 'rgb(255, 255, 255)');
+            await page.getByRole('dialog').getByRole('button', { name: 'Cancelar', exact: true }).click();
+            if (ancho < 1024) await page.getByRole('button', { name: 'Alternar menú', exact: true }).click();
+            const menu = page.getByRole('complementary', { name: 'Navegación principal' });
             await expect(menu).toBeVisible();
-            await expect(menu).toHaveCSS('background-color',tema === 'dark' ? 'rgb(10, 31, 49)' : 'rgb(13, 41, 64)');
-            await expect(menu.locator('a[href="/libros"] svg')).toHaveCSS('color','rgb(255, 255, 255)');
+            await expect(menu).toHaveCSS('background-color', tema === 'dark' ? 'rgb(10, 31, 49)' : 'rgb(13, 41, 64)');
+            await expect(menu.locator('a[href="/libros"] svg')).toHaveCSS('color', 'rgb(255, 255, 255)');
             for (const [ruta, icono] of [
-                ['/dashboard','layout-dashboard'], ['/libros','book'],
-                ['/categorias','tags'], ['/inventario','boxes'],
-                ['/ventas','shopping-bag'],
-                ['/tarifas-envio','truck'], ['/usuarios','users'], ['/anuncios','film'],
-                ['/reclamaciones','message-square-warning'], ['/configuracion/empresa','building-2']
+                ['/dashboard', 'layout-dashboard'],
+                ['/libros', 'book'],
+                ['/categorias', 'tags'],
+                ['/inventario', 'boxes'],
+                ['/ventas', 'shopping-bag'],
+                ['/tarifas-envio', 'truck'],
+                ['/usuarios', 'users'],
+                ['/anuncios', 'film'],
+                ['/reclamaciones', 'message-square-warning'],
+                ['/configuracion/empresa', 'building-2']
             ]) {
                 await expect(menu.locator(`a[href="${ruta}"] svg.lucide-${icono}`)).toHaveCount(1);
             }
             await expect(menu.locator('.lucide-pen-tool')).toHaveCount(0);
-            await page.screenshot({path:test.info().outputPath(`autores-${tema}-${ancho}.png`),fullPage:true});
-            if (ancho < 1024) await menu.getByRole('button',{name:'Cerrar menú',exact:true}).click();
-            await page.getByTitle('Ver autor',{exact:true}).click();
-            const modal=page.getByRole('dialog');
-            await expect(modal.getByText('Gabriel García Márquez',{exact:true})).toBeVisible();
-            await expect(modal).toHaveCSS('background-color',tema === 'dark' ? 'rgb(13, 41, 64)' : 'rgb(255, 255, 255)');
-            await expect(modal).toHaveCSS('opacity','1');
-            await page.screenshot({path:test.info().outputPath(`detalle-${tema}-${ancho}.png`),fullPage:true});
-            await modal.getByRole('button',{name:'Cerrar',exact:true}).last().click();
+            await page.screenshot({ path: test.info().outputPath(`autores-${tema}-${ancho}.png`), fullPage: true });
+            if (ancho < 1024) await menu.getByRole('button', { name: 'Cerrar menú', exact: true }).click();
+            await page.getByTitle('Ver autor', { exact: true }).click();
+            const modal = page.getByRole('dialog');
+            await expect(modal.getByText('Gabriel García Márquez', { exact: true })).toBeVisible();
+            await expect(modal).toHaveCSS('background-color', tema === 'dark' ? 'rgb(13, 41, 64)' : 'rgb(255, 255, 255)');
+            await expect(modal).toHaveCSS('opacity', '1');
+            await page.screenshot({ path: test.info().outputPath(`detalle-${tema}-${ancho}.png`), fullPage: true });
+            await modal.getByRole('button', { name: 'Cerrar', exact: true }).last().click();
             await page.goto('/dashboard');
-            await expect(page.locator('.kpi-card--destacada').first()).toHaveCSS('background-color','rgb(13, 41, 64)');
-            await expect(page.locator('.kpi-card').last()).toHaveCSS('opacity','1');
-            await expect(page.locator('.mini-stat').last()).toHaveCSS('opacity','1');
-            await page.screenshot({path:test.info().outputPath(`resumen-${tema}-${ancho}.png`),fullPage:true});
+            await expect(page.locator('.kpi-card--destacada').first()).toHaveCSS('background-color', 'rgb(13, 41, 64)');
+            await expect(page.locator('.kpi-card').last()).toHaveCSS('opacity', '1');
+            await expect(page.locator('.mini-stat').last()).toHaveCSS('opacity', '1');
+            await page.screenshot({ path: test.info().outputPath(`resumen-${tema}-${ancho}.png`), fullPage: true });
             expect(errores).toEqual([]);
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         });

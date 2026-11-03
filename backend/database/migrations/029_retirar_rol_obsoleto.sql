@@ -1,6 +1,3 @@
--- Dominio actual: administrador y cliente. Conserva IDs, compras y datos.
--- Las cuentas del rol retirado pasan a cliente INACTIVO; nunca a admin.
--- Migración transaccional e idempotente, para bases de versiones previas.
 BEGIN;
 LOCK TABLE usuarios IN ACCESS EXCLUSIVE MODE;
 
@@ -11,7 +8,6 @@ BEGIN
     END IF;
 END $$;
 
--- Solo sustituye CHECKs del dominio de rol, incluyendo nombres personalizados.
 DO $$
 DECLARE restriccion TEXT;
 BEGIN

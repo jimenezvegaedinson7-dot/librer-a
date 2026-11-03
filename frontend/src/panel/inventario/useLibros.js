@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-
 import { listarLibros } from './inventarioService';
 
 export default function useLibros() {

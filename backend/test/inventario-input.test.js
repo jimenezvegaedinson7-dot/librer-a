@@ -5,23 +5,44 @@ const path = require('node:path');
 let escrituras = [];
 const modelo = {
     obtenerPorLibro: async () => ({ stock: 3 }),
-    crear: async (datos) => { escrituras.push(datos); return 1; },
-    actualizar: async (_, datos) => { escrituras.push(datos); return 1; },
-    actualizarStock: async (_, stock) => { escrituras.push({ stock }); return 1; }
+    crear: async (datos) => {
+        escrituras.push(datos);
+        return 1;
+    },
+    actualizar: async (_, datos) => {
+        escrituras.push(datos);
+        return 1;
+    },
+    actualizarStock: async (_, stock) => {
+        escrituras.push({ stock });
+        return 1;
+    }
 };
-for (const [nombre, exports] of Object.entries({
-    inventario: modelo, historial: { crear: async () => {} }
-})) {
+for (const [nombre, exports] of Object.entries({ inventario: modelo, historial: { crear: async () => {} } })) {
     const id = path.resolve(__dirname, `../src/models/${nombre}.model.js`);
     require.cache[id] = { id, filename: id, loaded: true, exports };
 }
 const controller = require('../src/controllers/inventario.controller');
+
 const llamar = async (accion, body) => {
-    const res = { statusCode: 200, status(code) { this.statusCode = code; return this; }, json(data) { this.body = data; return this; } };
+    const res = {
+        statusCode: 200,
+        status(code) {
+            this.statusCode = code;
+            return this;
+        },
+        json(data) {
+            this.body = data;
+            return this;
+        }
+    };
     await controller[accion]({ params: { id: '1' }, body, usuario: { id_usuario: 1 } }, res);
     return res;
 };
-test.beforeEach(() => { escrituras = []; });
+
+test.beforeEach(() => {
+    escrituras = [];
+});
 const invalidos = [-1, 'abc', NaN, Infinity, -Infinity, 1.5, '', '   ', null, true, [], {}, 2147483648];
 for (const campo of ['stock', 'stock_minimo']) {
     for (const valor of invalidos) {

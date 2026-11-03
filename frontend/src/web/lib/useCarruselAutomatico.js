@@ -1,9 +1,5 @@
 import { useEffect } from 'react';
 
-// Avanza un carrusel desplazable de uno en uno, con un recorrido lento, y al
-// llegar al final vuelve al inicio. Se detiene mientras la persona lo usa
-// (cursor encima, foco, toque), cuando la pestaña no está visible y si el
-// sistema pide reducir el movimiento. Si todo cabe en pantalla no hace nada.
 export function useCarruselAutomatico(ref, { intervalo = 2600, duracion = 600, activo = true } = {}) {
     useEffect(() => {
         const el = ref.current;
@@ -31,8 +27,6 @@ export function useCarruselAutomatico(ref, { intervalo = 2600, duracion = 600, a
             return Math.abs(items[1].getBoundingClientRect().left - items[0].getBoundingClientRect().left) || el.clientWidth;
         };
 
-        // Desplazamiento suave y lento (ease-in-out) hecho a mano: el "smooth"
-        // del navegador es demasiado rápido para un carrusel automático.
         const ir = (destino) => {
             const inicio = el.scrollLeft;
             const distancia = destino - inicio;
@@ -60,12 +54,27 @@ export function useCarruselAutomatico(ref, { intervalo = 2600, duracion = 600, a
             else ir(Math.min(maximo, el.scrollLeft + paso()));
         };
 
-        const pausar = () => { cursorDentro = true; detener(); };
-        const alSalir = () => { cursorDentro = false; };
-        const alTocar = () => { pausaHasta = Date.now() + 6000; detener(); };
-        const alFoco = () => { focoDentro = true; detener(); };
-        const alPerderFoco = (e) => { focoDentro = el.contains(e.relatedTarget); };
-        const alEntorno = () => { if (pausado()) detener(); };
+        const pausar = () => {
+            cursorDentro = true;
+            detener();
+        };
+        const alSalir = () => {
+            cursorDentro = false;
+        };
+        const alTocar = () => {
+            pausaHasta = Date.now() + 6000;
+            detener();
+        };
+        const alFoco = () => {
+            focoDentro = true;
+            detener();
+        };
+        const alPerderFoco = (e) => {
+            focoDentro = el.contains(e.relatedTarget);
+        };
+        const alEntorno = () => {
+            if (pausado()) detener();
+        };
 
         const reloj = setInterval(tic, intervalo);
         el.addEventListener('pointerenter', pausar);
@@ -77,7 +86,8 @@ export function useCarruselAutomatico(ref, { intervalo = 2600, duracion = 600, a
         document.addEventListener('visibilitychange', alEntorno);
         movimiento?.addEventListener?.('change', alEntorno);
         return () => {
-            clearInterval(reloj); detener();
+            clearInterval(reloj);
+            detener();
             el.removeEventListener('pointerenter', pausar);
             el.removeEventListener('pointerleave', alSalir);
             el.removeEventListener('touchstart', alTocar);

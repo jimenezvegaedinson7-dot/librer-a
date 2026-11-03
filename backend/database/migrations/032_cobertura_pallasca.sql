@@ -1,4 +1,3 @@
--- Cobertura exclusiva de compras nuevas. Sin semillas ni UPDATE del historial.
 CREATE TABLE IF NOT EXISTS zonas_delivery_pallasca (
     id_zona SERIAL PRIMARY KEY,
     nombre VARCHAR(80) NOT NULL CHECK (length(btrim(nombre)) BETWEEN 1 AND 80),
@@ -8,7 +7,6 @@ CREATE TABLE IF NOT EXISTS zonas_delivery_pallasca (
 CREATE UNIQUE INDEX IF NOT EXISTS uq_zonas_delivery_nombre
     ON zonas_delivery_pallasca (lower(btrim(nombre)));
 
--- NULL identifica ventas anteriores; nunca se deduce cobertura por fecha o tipo.
 ALTER TABLE ventas ADD COLUMN IF NOT EXISTS cobertura_entrega VARCHAR(20) NULL;
 ALTER TABLE ventas ADD COLUMN IF NOT EXISTS id_zona_delivery INT NULL;
 ALTER TABLE ventas ADD COLUMN IF NOT EXISTS zona_delivery_nombre VARCHAR(80) NULL;

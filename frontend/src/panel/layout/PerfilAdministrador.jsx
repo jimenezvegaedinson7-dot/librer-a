@@ -1,36 +1,16 @@
 import { useEffect, useRef, useState, useId } from 'react';
-
 import { AnimatePresence, motion } from 'motion/react';
-
-import {
-    FaCamera,
-    FaCircleCheck,
-    FaCircleXmark,
-    FaEnvelope,
-    FaEye,
-    FaEyeSlash,
-    FaFloppyDisk,
-    FaKey,
-    FaLock,
-    FaPhone,
-    FaShieldHalved,
-    FaUser,
-} from 'react-icons/fa6';
-
+import { FaCamera, FaCircleCheck, FaCircleXmark, FaEnvelope, FaEye, FaEyeSlash, FaFloppyDisk, FaKey, FaLock, FaPhone, FaShieldHalved, FaUser } from 'react-icons/fa6';
 import { construirUrlArchivo } from '../lib/api/client';
-import {
-    actualizarFoto,
-    actualizarPerfil,
-    cambiarPassword,
-    obtenerPerfil,
-} from '../auth/perfilService';
+import { actualizarFoto, actualizarPerfil, cambiarPassword, obtenerPerfil } from '../auth/perfilService';
 import { confirmar2fa, desactivar2fa, setup2fa } from '../auth/authService';
 import { useAuth } from '../../app/providers/AuthContext';
-import { useToast } from '../../app/providers/ToastProvider';
+import { useToast } from '../../app/providers/ToastContext';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Form';
 import { ExitoAnimado } from '../ui/Celebracion';
+import { useCarga } from '../lib/hooks/useCarga';
 
 function Avatar({ foto, inicial, className = 'h-10 w-10' }) {
     return (
@@ -38,9 +18,7 @@ function Avatar({ foto, inicial, className = 'h-10 w-10' }) {
             {foto ? (
                 <img src={foto} alt="Foto del administrador" className="h-full w-full object-cover" />
             ) : (
-                <div className="flex h-full w-full items-center justify-center bg-mahogany-700 text-sm font-bold text-parchment-100">
-                    {inicial}
-                </div>
+                <div className="flex h-full w-full items-center justify-center bg-mahogany-700 text-sm font-bold text-parchment-100">{inicial}</div>
             )}
         </div>
     );
@@ -62,13 +40,7 @@ function Dato({ icono, etiqueta, valor }) {
 
 function BotonOjo({ mostrar, onClick }) {
     return (
-        <button
-            type="button"
-            onClick={onClick}
-            aria-label={mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-            aria-pressed={mostrar}
-            className="campo-clave-ojo"
-        >
+        <button type="button" onClick={onClick} aria-label={mostrar ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={mostrar} className="campo-clave-ojo">
             {mostrar ? <FaEyeSlash /> : <FaEye />}
         </button>
     );
@@ -78,16 +50,11 @@ function CampoPassword({ label, name, value, mostrar, onMostrar, onChange }) {
     const id = useId();
     return (
         <div>
-            <label htmlFor={id} className="field-label">{label}</label>
+            <label htmlFor={id} className="field-label">
+                {label}
+            </label>
             <div className="campo-clave">
-                <input
-                    id={id}
-                    type={mostrar ? 'text' : 'password'}
-                    name={name}
-                    value={value}
-                    onChange={onChange}
-                    className="campo-clave-input"
-                />
+                <input id={id} type={mostrar ? 'text' : 'password'} name={name} value={value} onChange={onChange} className="campo-clave-input" />
                 <BotonOjo mostrar={mostrar} onClick={onMostrar} />
             </div>
         </div>
@@ -108,11 +75,7 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
     const [subiendoFoto, setSubiendoFoto] = useState(false);
     const inputFotoRef = useRef(null);
 
-    const [formularioPassword, setFormularioPassword] = useState({
-        password_actual: '',
-        password_nueva: '',
-        confirmar_password: '',
-    });
+    const [formularioPassword, setFormularioPassword] = useState({ password_actual: '', password_nueva: '', confirmar_password: '' });
     const [mostrarPwd, setMostrarPwd] = useState({ actual: false, nueva: false, confirmar: false });
     const [cambiandoPassword, setCambiandoPassword] = useState(false);
     const [passwordGuardada, setPasswordGuardada] = useState(false);
@@ -133,18 +96,10 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
         if (!datos) return;
         setPerfil(datos);
         actualizarUsuario(datos);
-        setFormularioPerfil({
-            nombre: datos.nombre || '',
-            apellido: datos.apellido || '',
-            email: datos.email || '',
-            telefono: datos.telefono || '',
-        });
+        setFormularioPerfil({ nombre: datos.nombre || '', apellido: datos.apellido || '', email: datos.email || '', telefono: datos.telefono || '' });
     };
 
-    useEffect(() => {
-        cargarPerfil();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    useCarga(cargarPerfil);
 
     const inicial = (perfil?.nombre || usuario?.nombre || 'A').charAt(0).toUpperCase();
     const foto = construirUrlArchivo(perfil?.foto_perfil || usuario?.foto_perfil);
@@ -314,7 +269,6 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
 
     return (
         <>
-            {/* MODAL DATOS DEL ADMINISTRADOR */}
             <Modal titulo="Datos del administrador" subtitulo="Información registrada en el sistema" abierto={perfilAbierto} onCerrar={onCerrarPerfil}>
                 <div className="mb-5 flex justify-center">
                     <Avatar foto={foto} inicial={inicial} className="h-24 w-24" />
@@ -328,34 +282,16 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                 </div>
             </Modal>
 
-            {/* MODAL CONFIGURACIÓN */}
-            <Modal
-                titulo="Configuración"
-                subtitulo="Administra tu perfil y seguridad"
-                grande
-                abierto={configAbierta}
-                onCerrar={cerrarConfig}
-            >
+            <Modal titulo="Configuración" subtitulo="Administra tu perfil y seguridad" grande abierto={configAbierta} onCerrar={cerrarConfig}>
                 <div className="space-y-6">
-                    {/* FOTO */}
                     <section>
                         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Foto de perfil</h3>
                         <div className="flex flex-col items-center gap-4 rounded-xl border border-primary-200 bg-parchment-200 p-4 sm:flex-row">
                             <Avatar foto={previewFoto || foto} inicial={inicial} className="h-20 w-20" />
                             <div className="flex-1">
-                                <input
-                                    ref={inputFotoRef}
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp"
-                                    onChange={seleccionarFoto}
-                                    className="hidden"
-                                />
+                                <input ref={inputFotoRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={seleccionarFoto} className="hidden" />
                                 <div className="flex flex-wrap gap-2">
-                                    <Button
-                                        variante="secondary"
-                                        icono={<FaCamera />}
-                                        onClick={() => inputFotoRef.current?.click()}
-                                    >
+                                    <Button variante="secondary" icono={<FaCamera />} onClick={() => inputFotoRef.current?.click()}>
                                         Seleccionar foto
                                     </Button>
                                     {fotoSeleccionada && (
@@ -364,13 +300,16 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                                         </Button>
                                     )}
                                 </div>
-                                {subiendoFoto && <div className="upload-progress mt-3" role="progressbar" aria-label="Subiendo foto"><span /></div>}
+                                {subiendoFoto && (
+                                    <div className="upload-progress mt-3" role="progressbar" aria-label="Subiendo foto">
+                                        <span />
+                                    </div>
+                                )}
                                 <p className="mt-2 text-xs text-slate-500">JPG, PNG o WEBP. Máximo 5 MB.</p>
                             </div>
                         </div>
                     </section>
 
-                    {/* DATOS PERSONALES */}
                     <section>
                         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Información personal</h3>
                         <form onSubmit={guardarPerfil} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -386,77 +325,70 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                         </form>
                     </section>
 
-                    {/* SEGURIDAD */}
                     <section className="border-t border-primary-200 pt-5">
                         <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Seguridad</h3>
                         <AnimatePresence mode="wait" initial={false}>
-                        {passwordGuardada ? (
-                            <motion.div
-                                key="guardada"
-                                initial={{ opacity: 0, scale: 0.97 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.97 }}
-                                transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-                                className="perfil-exito"
-                            >
-                                <ExitoAnimado
-                                    titulo="Contraseña guardada correctamente"
-                                    detalle="Usa tu nueva contraseña la próxima vez que inicies sesión."
-                                >
-                                    <div className="mt-4">
-                                        <Button type="button" variante="secondary" onClick={() => setPasswordGuardada(false)}>
-                                            Listo
+                            {passwordGuardada ? (
+                                <motion.div
+                                    key="guardada"
+                                    initial={{ opacity: 0, scale: 0.97 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.97 }}
+                                    transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+                                    className="perfil-exito">
+                                    <ExitoAnimado titulo="Contraseña guardada correctamente" detalle="Usa tu nueva contraseña la próxima vez que inicies sesión.">
+                                        <div className="mt-4">
+                                            <Button type="button" variante="secondary" onClick={() => setPasswordGuardada(false)}>
+                                                Listo
+                                            </Button>
+                                        </div>
+                                    </ExitoAnimado>
+                                </motion.div>
+                            ) : (
+                                <motion.form
+                                    key="formulario"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    onSubmit={guardarPassword}
+                                    className="space-y-4">
+                                    <CampoPassword
+                                        label="Contraseña actual"
+                                        name="password_actual"
+                                        value={formularioPassword.password_actual}
+                                        mostrar={mostrarPwd.actual}
+                                        onMostrar={() => setMostrarPwd((p) => ({ ...p, actual: !p.actual }))}
+                                        onChange={(e) => cambioCampo(e, setFormularioPassword)}
+                                    />
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <CampoPassword
+                                            label="Nueva contraseña"
+                                            name="password_nueva"
+                                            value={formularioPassword.password_nueva}
+                                            mostrar={mostrarPwd.nueva}
+                                            onMostrar={() => setMostrarPwd((p) => ({ ...p, nueva: !p.nueva }))}
+                                            onChange={(e) => cambioCampo(e, setFormularioPassword)}
+                                        />
+                                        <CampoPassword
+                                            label="Confirmar contraseña"
+                                            name="confirmar_password"
+                                            value={formularioPassword.confirmar_password}
+                                            mostrar={mostrarPwd.confirmar}
+                                            onMostrar={() => setMostrarPwd((p) => ({ ...p, confirmar: !p.confirmar }))}
+                                            onChange={(e) => cambioCampo(e, setFormularioPassword)}
+                                        />
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <Button type="submit" variante="primary" cargando={cambiandoPassword} icono={<FaLock />}>
+                                            Cambiar contraseña
                                         </Button>
                                     </div>
-                                </ExitoAnimado>
-                            </motion.div>
-                        ) : (
-                        <motion.form
-                            key="formulario"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            onSubmit={guardarPassword}
-                            className="space-y-4"
-                        >
-                            <CampoPassword
-                                label="Contraseña actual"
-                                name="password_actual"
-                                value={formularioPassword.password_actual}
-                                mostrar={mostrarPwd.actual}
-                                onMostrar={() => setMostrarPwd((p) => ({ ...p, actual: !p.actual }))}
-                                onChange={(e) => cambioCampo(e, setFormularioPassword)}
-                            />
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <CampoPassword
-                                    label="Nueva contraseña"
-                                    name="password_nueva"
-                                    value={formularioPassword.password_nueva}
-                                    mostrar={mostrarPwd.nueva}
-                                    onMostrar={() => setMostrarPwd((p) => ({ ...p, nueva: !p.nueva }))}
-                                    onChange={(e) => cambioCampo(e, setFormularioPassword)}
-                                />
-                                <CampoPassword
-                                    label="Confirmar contraseña"
-                                    name="confirmar_password"
-                                    value={formularioPassword.confirmar_password}
-                                    mostrar={mostrarPwd.confirmar}
-                                    onMostrar={() => setMostrarPwd((p) => ({ ...p, confirmar: !p.confirmar }))}
-                                    onChange={(e) => cambioCampo(e, setFormularioPassword)}
-                                />
-                            </div>
-                            <div className="flex justify-end">
-                                <Button type="submit" variante="primary" cargando={cambiandoPassword} icono={<FaLock />}>
-                                    Cambiar contraseña
-                                </Button>
-                            </div>
-                        </motion.form>
-                        )}
+                                </motion.form>
+                            )}
                         </AnimatePresence>
                     </section>
 
-                    {/* DOBLE FACTOR */}
                     <section className="border-t border-primary-200 pt-5">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                             <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-700">Doble factor de autenticación</h3>
@@ -472,10 +404,23 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                         </div>
 
                         {!setupInfo && !estado2FA && (
-                            <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); iniciarConfiguracion2FA(); }}>
-                                <Input label="Contraseña actual para activar 2FA" type="password" autoComplete="current-password"
-                                    value={passwordSetup} onChange={(e) => setPasswordSetup(e.target.value)} required />
-                                <Button type="submit" icono={<FaShieldHalved />} cargando={configurando2FA}>Activar doble factor</Button>
+                            <form
+                                className="space-y-3"
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    iniciarConfiguracion2FA();
+                                }}>
+                                <Input
+                                    label="Contraseña actual para activar 2FA"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    value={passwordSetup}
+                                    onChange={(e) => setPasswordSetup(e.target.value)}
+                                    required
+                                />
+                                <Button type="submit" icono={<FaShieldHalved />} cargando={configurando2FA}>
+                                    Activar doble factor
+                                </Button>
                             </form>
                         )}
 
@@ -483,15 +428,12 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                             <div className="space-y-4">
                                 <div className="flex flex-col items-center gap-4 rounded-xl border border-primary-200 bg-parchment-200 p-4 sm:flex-row">
                                     {setupInfo.qr && (
-                                        <img
-                                            src={setupInfo.qr}
-                                            alt="Código QR del doble factor"
-                                            className="h-44 w-44 rounded-lg border border-primary-200 bg-parchment-50 p-1"
-                                        />
+                                        <img src={setupInfo.qr} alt="Código QR del doble factor" className="h-44 w-44 rounded-lg border border-primary-200 bg-parchment-50 p-1" />
                                     )}
                                     <div className="flex-1 space-y-2 text-sm text-primary-500">
                                         <p className="text-xs text-slate-500">
-                                            Escanea el código QR con tu app de autenticación (Google Authenticator, Authy, etc.). Si no puedes escanearlo, ingresa el código secreto manualmente.
+                                            Escanea el código QR con tu app de autenticación (Google Authenticator, Authy, etc.). Si no puedes escanearlo, ingresa el código secreto
+                                            manualmente.
                                         </p>
                                         <div className="rounded-lg border border-dashed border-primary-300 bg-parchment-50 px-3 py-2">
                                             <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Código secreto</p>
@@ -536,7 +478,9 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                                 ) : (
                                     <form onSubmit={enviarDesactivacion2FA} className="space-y-3 rounded-xl border border-primary-200 bg-parchment-200 p-4">
                                         <div>
-                                            <label htmlFor="desactivar-2fa-clave" className="field-label">Contraseña actual</label>
+                                            <label htmlFor="desactivar-2fa-clave" className="field-label">
+                                                Contraseña actual
+                                            </label>
                                             <div className="campo-clave">
                                                 <input
                                                     id="desactivar-2fa-clave"
@@ -569,8 +513,7 @@ export default function PerfilAdministrador({ perfilAbierto, onCerrarPerfil, con
                                                     setMostrarFormDesactivar(false);
                                                     setPasswordDesactivar('');
                                                     setCodigoDesactivar('');
-                                                }}
-                                            >
+                                                }}>
                                                 Cancelar
                                             </Button>
                                             <Button type="submit" variante="danger" cargando={desactivando2FA} icono={<FaCircleXmark />}>

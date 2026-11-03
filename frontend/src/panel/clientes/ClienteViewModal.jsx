@@ -1,9 +1,7 @@
 import { FaCartShopping, FaEnvelope, FaMoneyBillWave, FaCalendarDays, FaUser } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Ficha } from '../ui/Ficha';
-
 import { formatearMoneda, formatearFecha } from '../../compartido/lib/utils/format';
 import { correoVisible, esCuentaEliminada } from '../lib/utils/cuentas';
 
@@ -47,7 +45,9 @@ export default function ClienteViewModal({ cliente, abierto, onCerrar }) {
             </div>
 
             <div className="mt-6 flex justify-end border-t border-primary-200 pt-5">
-                <Button variante="secondary" onClick={onCerrar}>Cerrar</Button>
+                <Button variante="secondary" onClick={onCerrar}>
+                    Cerrar
+                </Button>
             </div>
         </Modal>
     );

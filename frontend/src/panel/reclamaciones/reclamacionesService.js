@@ -1,11 +1,6 @@
 import client from '../lib/api/client';
 import { peticionCliente } from '../../web/tienda/clienteApi';
 
-// ============================================================
-// LIBRO DE RECLAMACIONES
-// POST público; el resto solo administrador.
-// ============================================================
-
 export async function registrarReclamacion(hoja) {
     return peticionCliente('/reclamaciones', { method: 'POST', body: hoja, autenticada: false });
 }

@@ -1,23 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-
 import { motion, useReducedMotion } from 'motion/react';
 import { FaCheck, FaEnvelope } from 'react-icons/fa6';
 
 const LINEAS = 36;
 const EASE = [0.25, 1, 0.5, 1];
-
-// Color de cada línea: recorre burdeos → dorado → verde de la marca.
 const PALETA = ['#0b5c51', '#a8423c', '#c2780a', '#c98f12', '#8f9a3a', '#15803d'];
+
 function colorLinea(i) {
     const posicion = (i / (LINEAS - 1)) * (PALETA.length - 1);
     return PALETA[Math.round(posicion)];
 }
 
-/**
- * Cargador circular de líneas de colores. Mientras `enviado` es falso las
- * líneas avanzan sin llegar al final; cuando pasa a verdadero terminan de
- * llenarse y aparece "Correo enviado". Llama a `onCompleto` al terminar.
- */
 export function CargaCorreo({ enviado = false, onCompleto }) {
     const [progreso, setProgreso] = useState(0);
     const [completo, setCompleto] = useState(false);
@@ -29,12 +22,15 @@ export function CargaCorreo({ enviado = false, onCompleto }) {
     }, [onCompleto]);
 
     useEffect(() => {
-        const intervalo = setInterval(() => {
-            setProgreso((p) => {
-                if (enviado) return Math.min(1, p + 0.045);
-                return p + (0.82 - p) * 0.06;
-            });
-        }, enviado ? 22 : 90);
+        const intervalo = setInterval(
+            () => {
+                setProgreso((p) => {
+                    if (enviado) return Math.min(1, p + 0.045);
+                    return p + (0.82 - p) * 0.06;
+                });
+            },
+            enviado ? 22 : 90
+        );
         return () => clearInterval(intervalo);
     }, [enviado]);
 
@@ -43,7 +39,10 @@ export function CargaCorreo({ enviado = false, onCompleto }) {
         avisado.current = true;
         const t1 = setTimeout(() => setCompleto(true), 120);
         const t2 = setTimeout(() => alCompletar.current?.(), 1500);
-        return () => { clearTimeout(t1); clearTimeout(t2); };
+        return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+        };
     }, [progreso]);
 
     const encendidas = Math.floor(progreso * LINEAS);
@@ -77,8 +76,7 @@ export function CargaCorreo({ enviado = false, onCompleto }) {
                 <motion.span
                     className={`carga-correo-centro ${completo ? 'carga-correo-centro--listo' : ''}`}
                     animate={completo ? { scale: [0.7, 1.12, 1] } : { scale: [1, 1.06, 1] }}
-                    transition={completo ? { duration: 0.45, ease: EASE } : { duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-                >
+                    transition={completo ? { duration: 0.45, ease: EASE } : { duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}>
                     {completo ? <FaCheck /> : <FaEnvelope />}
                 </motion.span>
             </div>
@@ -88,8 +86,7 @@ export function CargaCorreo({ enviado = false, onCompleto }) {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, ease: EASE }}
-                className={`carga-correo-texto ${completo ? 'carga-correo-texto--listo' : ''}`}
-            >
+                className={`carga-correo-texto ${completo ? 'carga-correo-texto--listo' : ''}`}>
                 {completo ? 'Correo enviado' : 'Enviando correo…'}
             </motion.p>
             <p className="carga-correo-porcentaje">{completo ? 'Revisa tu bandeja de entrada' : `${Math.round(progreso * 100)} %`}</p>
@@ -97,13 +94,8 @@ export function CargaCorreo({ enviado = false, onCompleto }) {
     );
 }
 
-// Destellos dorados que salen del check.
 const DESTELLOS = Array.from({ length: 10 }, (_, i) => (i / 10) * Math.PI * 2);
 
-/**
- * Confirmación animada: anillo dorado que se dibuja, disco verde, check
- * trazado, onda expansiva y destellos. Respeta reduced motion.
- */
 export function ExitoAnimado({ titulo, detalle, children }) {
     const reducir = useReducedMotion();
     const t = (s) => (reducir ? 0 : s);
@@ -150,29 +142,24 @@ export function ExitoAnimado({ titulo, detalle, children }) {
                     />
                 </svg>
 
-                {!reducir && DESTELLOS.map((angulo, i) => (
-                    <span
-                        key={i}
-                        className="exito-animado-eje"
-                        style={{ transform: `rotate(${(angulo * 180) / Math.PI}deg)` }}
-                        aria-hidden="true"
-                    >
-                        <motion.span
-                            className="exito-animado-destello"
-                            initial={{ opacity: 0, scaleY: 0.2, y: -40 }}
-                            animate={{ opacity: [0, 1, 0], scaleY: [0.2, 1, 0.4], y: [-40, -58, -66] }}
-                            transition={{ duration: 0.7, delay: 0.7 + (i % 2) * 0.06, ease: 'easeOut' }}
-                        />
-                    </span>
-                ))}
+                {!reducir &&
+                    DESTELLOS.map((angulo, i) => (
+                        <span key={i} className="exito-animado-eje" style={{ transform: `rotate(${(angulo * 180) / Math.PI}deg)` }} aria-hidden="true">
+                            <motion.span
+                                className="exito-animado-destello"
+                                initial={{ opacity: 0, scaleY: 0.2, y: -40 }}
+                                animate={{ opacity: [0, 1, 0], scaleY: [0.2, 1, 0.4], y: [-40, -58, -66] }}
+                                transition={{ duration: 0.7, delay: 0.7 + (i % 2) * 0.06, ease: 'easeOut' }}
+                            />
+                        </span>
+                    ))}
             </div>
 
             <motion.div
                 initial={reducir ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: t(0.75), ease: EASE }}
-                className="text-center"
-            >
+                className="text-center">
                 <p className="exito-animado-titulo">{titulo}</p>
                 {detalle && <p className="exito-animado-detalle">{detalle}</p>}
                 {children}

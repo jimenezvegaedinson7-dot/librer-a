@@ -1,19 +1,13 @@
 import { useState } from 'react';
-
 import { FaFloppyDisk, FaRotateLeft } from 'react-icons/fa6';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input, Select, Textarea } from '../ui/Form';
 import { Alert } from '../ui/Alert';
-
 import { actualizarAutor } from './autoresService';
 import { requerido, validarFormulario } from '../lib/utils/validaciones';
 
-const REGLAS = {
-    nombre: [(v) => requerido(v, 'El nombre')],
-    apellido: [(v) => requerido(v, 'El apellido')],
-};
+const REGLAS = { nombre: [(v) => requerido(v, 'El nombre')], apellido: [(v) => requerido(v, 'El apellido')] };
 
 function inicialFormulario(autor) {
     return {
@@ -21,14 +15,11 @@ function inicialFormulario(autor) {
         apellido: autor.apellido || '',
         nacionalidad: autor.nacionalidad || '',
         biografia: autor.biografia || '',
-        estado: autor.estado !== undefined && autor.estado !== null ? String(autor.estado) : '1',
+        estado: autor.estado !== undefined && autor.estado !== null ? String(autor.estado) : '1'
     };
 }
 
 export default function AutorEditModal({ autor, abierto, onCerrar, onActualizado }) {
-    // El formulario se inicializa aquí y se reinicia por completo cuando el
-    // padre cambia la `key` de este componente (una por autor). Así el
-    // estado nace del registro editado sin necesidad de un efecto.
     const [formulario, setFormulario] = useState(inicialFormulario(autor || {}));
     const [errores, setErrores] = useState({});
     const [guardando, setGuardando] = useState(false);
@@ -86,7 +77,11 @@ export default function AutorEditModal({ autor, abierto, onCerrar, onActualizado
 
     return (
         <Modal abierto={abierto} titulo="Editar autor" subtitulo="Actualiza la información del autor" onCerrar={onCerrar}>
-            {error && <div className="mb-5"><Alert tipo="error">{error}</Alert></div>}
+            {error && (
+                <div className="mb-5">
+                    <Alert tipo="error">{error}</Alert>
+                </div>
+            )}
 
             <form onSubmit={actualizar} className="space-y-3">
                 <div className="form-grid">

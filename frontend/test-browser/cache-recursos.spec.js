@@ -14,14 +14,19 @@ async function preparar(page) {
     });
 }
 
-const cargarImagen = (page, ruta) => page.evaluate((ruta) => new Promise((resolver, rechazar) => {
-    const imagen = new Image();
-    imagen.crossOrigin = 'anonymous';
-    imagen.onload = () => resolver({ ancho: imagen.naturalWidth, alto: imagen.naturalHeight });
-    imagen.onerror = () => rechazar(new Error('No cargó la imagen'));
-    imagen.src = ruta;
-    document.body.appendChild(imagen);
-}), ruta);
+const cargarImagen = (page, ruta) =>
+    page.evaluate(
+        (ruta) =>
+            new Promise((resolver, rechazar) => {
+                const imagen = new Image();
+                imagen.crossOrigin = 'anonymous';
+                imagen.onload = () => resolver({ ancho: imagen.naturalWidth, alto: imagen.naturalHeight });
+                imagen.onerror = () => rechazar(new Error('No cargó la imagen'));
+                imagen.src = ruta;
+                document.body.appendChild(imagen);
+            }),
+        ruta
+    );
 
 test('portada persistente: otra página la obtiene del SW incluso sin red', async ({ page, context }) => {
     test.setTimeout(60000);
@@ -41,11 +46,14 @@ test('portada persistente: otra página la obtiene del SW incluso sin red', asyn
 test('precarga en segundo plano guarda portadas y excluye HTML, errores y API JSON', async ({ page }) => {
     test.setTimeout(60000);
     await preparar(page);
-    await page.evaluate((ruta) => navigator.serviceWorker.controller.postMessage({
-        tipo: 'PRECARGAR_PORTADAS', urls: [new URL(ruta, location.origin).href,
-            new URL('/portada-que-no-existe.jpg', location.origin).href,
-            'http://127.0.0.1:59999/api/libros'],
-    }), IMAGEN);
+    await page.evaluate(
+        (ruta) =>
+            navigator.serviceWorker.controller.postMessage({
+                tipo: 'PRECARGAR_PORTADAS',
+                urls: [new URL(ruta, location.origin).href, new URL('/portada-que-no-existe.jpg', location.origin).href, 'http://127.0.0.1:59999/api/libros']
+            }),
+        IMAGEN
+    );
     await expect.poll(() => page.evaluate(async (ruta) => Boolean(await (await caches.open('lds-recursos-v1')).match(new URL(ruta, location.origin).href)), IMAGEN)).toBe(true);
     const claves = await page.evaluate(async () => (await (await caches.open('lds-recursos-v1')).keys()).map((r) => r.url));
     expect(claves.some((u) => u.includes('portada-que-no-existe'))).toBe(false);

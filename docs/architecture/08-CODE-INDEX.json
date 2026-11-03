@@ -2,10 +2,10 @@
  "generated": "2026-11-03",
  "howToUse": "Buscar por \"file\", \"module\" o \"endpoints\". Verificar siempre el archivo real antes de modificar.",
  "stats": {
-  "backendFiles": 187,
-  "frontendFiles": 230,
+  "backendFiles": 183,
+  "frontendFiles": 227,
   "flutterFiles": 76,
-  "endpoints": 122,
+  "endpoints": 121,
   "schemaTables": 22,
   "declaredTables": 23
  },
@@ -152,7 +152,7 @@
    "path": "/",
    "middleware": [],
    "routeFile": "backend/server.js",
-   "line": 119,
+   "line": 55,
    "controller": "inline (server.js)",
    "handler": "inline",
    "auth": "Pública",
@@ -164,7 +164,7 @@
    "path": "/api",
    "middleware": [],
    "routeFile": "backend/server.js",
-   "line": 128,
+   "line": 59,
    "controller": "inline (server.js)",
    "handler": "inline",
    "auth": "Pública",
@@ -179,22 +179,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/server.js",
-   "line": 139,
-   "controller": "inline (server.js)",
-   "handler": "inline",
-   "auth": "JWT + admin",
-   "reactConsumers": [],
-   "flutterConsumers": []
-  },
-  {
-   "method": "GET",
-   "path": "/api/debug-egress",
-   "middleware": [
-    "JWT",
-    "rol:administrador"
-   ],
-   "routeFile": "backend/server.js",
-   "line": 170,
+   "line": 63,
    "controller": "inline (server.js)",
    "handler": "inline",
    "auth": "JWT + admin",
@@ -208,7 +193,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/agencia.routes.js",
-   "line": 21,
+   "line": 9,
    "controller": "backend/src/controllers/agencia.controller.js",
    "handler": "listarAgencias",
    "calls": [
@@ -229,7 +214,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/agencia.routes.js",
-   "line": 28,
+   "line": 10,
    "controller": "backend/src/controllers/agencia.controller.js",
    "handler": "listarTodasAgencias",
    "calls": [
@@ -249,7 +234,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/agencia.routes.js",
-   "line": 36,
+   "line": 11,
    "controller": "backend/src/controllers/agencia.controller.js",
    "handler": "obtenerAgencia",
    "calls": [
@@ -270,7 +255,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/agencia.routes.js",
-   "line": 47,
+   "line": 12,
    "controller": "backend/src/controllers/agencia.controller.js",
    "handler": "crearAgencia",
    "calls": [
@@ -291,7 +276,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/agencia.routes.js",
-   "line": 55,
+   "line": 13,
    "controller": "backend/src/controllers/agencia.controller.js",
    "handler": "actualizarAgencia",
    "calls": [
@@ -310,7 +295,7 @@
    "path": "/api/anuncios",
    "middleware": [],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 26,
+   "line": 13,
    "controller": "backend/src/controllers/anuncio.controller.js",
    "handler": "obtenerAnuncioActivo",
    "calls": [],
@@ -326,7 +311,7 @@
    "path": "/api/anuncios/carrusel",
    "middleware": [],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 27,
+   "line": 14,
    "controller": "backend/src/controllers/carrusel.controller.js",
    "handler": "listarPublico",
    "calls": [
@@ -337,10 +322,7 @@
     "libros"
    ],
    "auth": "Pública",
-   "reactConsumers": [
-    "frontend/src/web/secciones/Hero.jsx",
-    "frontend/src/web/hooks/useCarrusel.js"
-   ],
+   "reactConsumers": [],
    "flutterConsumers": []
   },
   {
@@ -348,7 +330,7 @@
    "path": "/api/anuncios/protagonista",
    "middleware": [],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 29,
+   "line": 15,
    "controller": "backend/src/controllers/portada.controller.js",
    "handler": "obtenerPublico",
    "calls": [
@@ -370,7 +352,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 30,
+   "line": 16,
    "controller": "backend/src/controllers/portada.controller.js",
    "handler": "obtenerPanel",
    "calls": [
@@ -394,7 +376,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 31,
+   "line": 17,
    "controller": "backend/src/controllers/portada.controller.js",
    "handler": "guardar",
    "calls": [
@@ -428,7 +410,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 32,
+   "line": 18,
    "controller": "backend/src/controllers/carrusel.controller.js",
    "handler": "listarPanel",
    "calls": [
@@ -451,7 +433,7 @@
     "recibir"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 33,
+   "line": 19,
    "controller": "backend/src/controllers/carrusel.controller.js",
    "handler": "crear",
    "calls": [
@@ -472,7 +454,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 34,
+   "line": 20,
    "controller": "backend/src/controllers/carrusel.controller.js",
    "handler": "reordenar",
    "calls": [
@@ -494,7 +476,7 @@
     "recibir"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 35,
+   "line": 21,
    "controller": "backend/src/controllers/carrusel.controller.js",
    "handler": "actualizar",
    "calls": [
@@ -515,7 +497,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 36,
+   "line": 22,
    "controller": "backend/src/controllers/carrusel.controller.js",
    "handler": "eliminar",
    "calls": [
@@ -538,7 +520,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 42,
+   "line": 23,
    "controller": "backend/src/controllers/anuncio.controller.js",
    "handler": "listarAnuncios",
    "calls": [],
@@ -558,7 +540,7 @@
     "uploadVideo(video)"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 49,
+   "line": 24,
    "controller": "backend/src/controllers/anuncio.controller.js",
    "handler": "crearAnuncio",
    "calls": [],
@@ -578,7 +560,7 @@
     "uploadVideo(video)"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 57,
+   "line": 25,
    "controller": "backend/src/controllers/anuncio.controller.js",
    "handler": "actualizarAnuncio",
    "calls": [],
@@ -597,7 +579,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/anuncio.routes.js",
-   "line": 65,
+   "line": 26,
    "controller": "backend/src/controllers/anuncio.controller.js",
    "handler": "eliminarAnuncio",
    "calls": [
@@ -617,7 +599,7 @@
    "path": "/api/app/version",
    "middleware": [],
    "routeFile": "backend/src/routes/app.routes.js",
-   "line": 11,
+   "line": 7,
    "controller": "backend/src/controllers/app.controller.js",
    "handler": "obtenerVersion",
    "calls": [],
@@ -635,7 +617,7 @@
     "limite"
    ],
    "routeFile": "backend/src/routes/asistente.routes.js",
-   "line": 10,
+   "line": 15,
    "controller": "backend/src/controllers/asistente.controller.js",
    "handler": "conversar",
    "calls": [
@@ -662,7 +644,7 @@
     "rol:cliente"
    ],
    "routeFile": "backend/src/routes/asistente.routes.js",
-   "line": 15,
+   "line": 25,
    "controller": "backend/src/controllers/asistente.controller.js",
    "handler": "obtenerMemoria",
    "calls": [
@@ -672,9 +654,7 @@
     "asistente_memoria"
    ],
    "auth": "JWT + cliente",
-   "reactConsumers": [
-    "frontend/src/web/asistente/useMemoriaAsistente.js"
-   ],
+   "reactConsumers": [],
    "flutterConsumers": []
   },
   {
@@ -686,7 +666,7 @@
     "rol:cliente"
    ],
    "routeFile": "backend/src/routes/asistente.routes.js",
-   "line": 16,
+   "line": 26,
    "controller": "backend/src/controllers/asistente.controller.js",
    "handler": "guardarMemoria",
    "calls": [
@@ -710,7 +690,7 @@
     "rol:cliente"
    ],
    "routeFile": "backend/src/routes/asistente.routes.js",
-   "line": 17,
+   "line": 27,
    "controller": "backend/src/controllers/asistente.controller.js",
    "handler": "borrarMemoria",
    "calls": [
@@ -732,7 +712,7 @@
     "registroLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 20,
+   "line": 10,
    "controller": "backend/src/controllers/auth.controller.js",
    "handler": "registrar",
    "calls": [
@@ -758,7 +738,7 @@
     "loginLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 22,
+   "line": 11,
    "controller": "backend/src/controllers/auth.controller.js",
    "handler": "login",
    "calls": [
@@ -783,7 +763,7 @@
     "verificacionLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 27,
+   "line": 12,
    "controller": "backend/src/controllers/auth.controller.js",
    "handler": "verificarEmail",
    "calls": [
@@ -809,7 +789,7 @@
     "verificacionLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 30,
+   "line": 13,
    "controller": "backend/src/controllers/auth.controller.js",
    "handler": "reenviarCodigo",
    "calls": [
@@ -835,7 +815,7 @@
     "verificacionLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 37,
+   "line": 14,
    "controller": "backend/src/controllers/auth.controller.js",
    "handler": "solicitarReseteo",
    "calls": [
@@ -862,7 +842,7 @@
     "verificacionLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 39,
+   "line": 15,
    "controller": "backend/src/controllers/auth.controller.js",
    "handler": "verificarReseteo",
    "calls": [
@@ -886,7 +866,7 @@
     "verificacionLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 42,
+   "line": 16,
    "controller": "backend/src/controllers/auth.controller.js",
    "handler": "reestablecerContrasena",
    "calls": [
@@ -912,7 +892,7 @@
     "twoFaLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 48,
+   "line": 17,
    "controller": "backend/src/controllers/auth2fa.controller.js",
    "handler": "verificarLogin",
    "calls": [
@@ -940,7 +920,7 @@
     "twoFaLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 57,
+   "line": 18,
    "controller": "backend/src/controllers/auth2fa.controller.js",
    "handler": "setup",
    "calls": [
@@ -966,7 +946,7 @@
     "twoFaLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 67,
+   "line": 19,
    "controller": "backend/src/controllers/auth2fa.controller.js",
    "handler": "confirmar",
    "calls": [
@@ -993,7 +973,7 @@
     "twoFaLimiter"
    ],
    "routeFile": "backend/src/routes/auth.routes.js",
-   "line": 77,
+   "line": 20,
    "controller": "backend/src/controllers/auth2fa.controller.js",
    "handler": "desactivar",
    "calls": [
@@ -1018,7 +998,7 @@
    "path": "/api/autores",
    "middleware": [],
    "routeFile": "backend/src/routes/autor.routes.js",
-   "line": 21,
+   "line": 9,
    "controller": "backend/src/controllers/autor.controller.js",
    "handler": "obtenerAutores",
    "calls": [
@@ -1040,7 +1020,7 @@
    "path": "/api/autores/:id",
    "middleware": [],
    "routeFile": "backend/src/routes/autor.routes.js",
-   "line": 24,
+   "line": 10,
    "controller": "backend/src/controllers/autor.controller.js",
    "handler": "obtenerAutor",
    "calls": [
@@ -1051,8 +1031,7 @@
    ],
    "auth": "Pública",
    "reactConsumers": [
-    "frontend/src/panel/autores/AutoresPage.jsx",
-    "frontend/src/web/tienda/LibroPage.jsx"
+    "frontend/src/panel/autores/AutoresPage.jsx"
    ],
    "flutterConsumers": []
   },
@@ -1064,7 +1043,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/autor.routes.js",
-   "line": 31,
+   "line": 11,
    "controller": "backend/src/controllers/autor.controller.js",
    "handler": "crearAutor",
    "calls": [
@@ -1089,7 +1068,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/autor.routes.js",
-   "line": 39,
+   "line": 12,
    "controller": "backend/src/controllers/autor.controller.js",
    "handler": "actualizarAutor",
    "calls": [
@@ -1115,7 +1094,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/autor.routes.js",
-   "line": 47,
+   "line": 13,
    "controller": "backend/src/controllers/autor.controller.js",
    "handler": "eliminarAutor",
    "calls": [
@@ -1140,7 +1119,7 @@
    "path": "/api/categorias",
    "middleware": [],
    "routeFile": "backend/src/routes/categoria.routes.js",
-   "line": 21,
+   "line": 9,
    "controller": "backend/src/controllers/categoria.controller.js",
    "handler": "obtenerCategorias",
    "calls": [
@@ -1162,7 +1141,7 @@
    "path": "/api/categorias/:id",
    "middleware": [],
    "routeFile": "backend/src/routes/categoria.routes.js",
-   "line": 24,
+   "line": 10,
    "controller": "backend/src/controllers/categoria.controller.js",
    "handler": "obtenerCategoria",
    "calls": [
@@ -1185,7 +1164,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/categoria.routes.js",
-   "line": 31,
+   "line": 11,
    "controller": "backend/src/controllers/categoria.controller.js",
    "handler": "crearCategoria",
    "calls": [
@@ -1210,7 +1189,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/categoria.routes.js",
-   "line": 39,
+   "line": 12,
    "controller": "backend/src/controllers/categoria.controller.js",
    "handler": "actualizarCategoria",
    "calls": [
@@ -1236,7 +1215,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/categoria.routes.js",
-   "line": 47,
+   "line": 13,
    "controller": "backend/src/controllers/categoria.controller.js",
    "handler": "eliminarCategoria",
    "calls": [
@@ -1264,7 +1243,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/cliente.routes.js",
-   "line": 22,
+   "line": 10,
    "controller": "backend/src/controllers/cliente.controller.js",
    "handler": "listarClientes",
    "calls": [
@@ -1288,7 +1267,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/comprobante.routes.js",
-   "line": 31,
+   "line": 12,
    "controller": "backend/src/controllers/comprobante.controller.js",
    "handler": "listarComprobantes",
    "calls": [
@@ -1313,7 +1292,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/comprobante.routes.js",
-   "line": 38,
+   "line": 14,
    "controller": "inline (comprobante.routes.js)",
    "handler": "inline",
    "calls": [
@@ -1336,7 +1315,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/comprobante.routes.js",
-   "line": 68,
+   "line": 26,
    "controller": "backend/src/controllers/comprobante.controller.js",
    "handler": "enviarComprobanteEmail",
    "calls": [
@@ -1364,7 +1343,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/comprobante.routes.js",
-   "line": 77,
+   "line": 27,
    "controller": "backend/src/controllers/comprobante.controller.js",
    "handler": "obtenerComprobante",
    "calls": [
@@ -1389,7 +1368,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/comprobante.routes.js",
-   "line": 87,
+   "line": 28,
    "controller": "backend/src/controllers/comprobante.controller.js",
    "handler": "anularComprobante",
    "calls": [
@@ -1411,7 +1390,7 @@
    "path": "/api/empresa",
    "middleware": [],
    "routeFile": "backend/src/routes/empresa.routes.js",
-   "line": 16,
+   "line": 9,
    "controller": "backend/src/controllers/empresa.controller.js",
    "handler": "obtenerEmpresa",
    "calls": [
@@ -1438,7 +1417,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/empresa.routes.js",
-   "line": 21,
+   "line": 10,
    "controller": "backend/src/controllers/empresa.controller.js",
    "handler": "actualizarEmpresa",
    "calls": [
@@ -1463,7 +1442,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/favorito.routes.js",
-   "line": 21,
+   "line": 9,
    "controller": "backend/src/controllers/favorito.controller.js",
    "handler": "listarMisFavoritos",
    "calls": [
@@ -1491,7 +1470,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/favorito.routes.js",
-   "line": 24,
+   "line": 10,
    "controller": "backend/src/controllers/favorito.controller.js",
    "handler": "estadoFavorito",
    "calls": [
@@ -1501,9 +1480,7 @@
     "favoritos"
    ],
    "auth": "JWT",
-   "reactConsumers": [
-    "frontend/src/web/tienda/AccionesLibro.jsx"
-   ],
+   "reactConsumers": [],
    "flutterConsumers": [
     "flutter_app/lib/screens/detalle_libro_screen.dart"
    ]
@@ -1515,7 +1492,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/favorito.routes.js",
-   "line": 27,
+   "line": 11,
    "controller": "backend/src/controllers/favorito.controller.js",
    "handler": "agregarFavorito",
    "calls": [
@@ -1546,7 +1523,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/favorito.routes.js",
-   "line": 30,
+   "line": 12,
    "controller": "backend/src/controllers/favorito.controller.js",
    "handler": "quitarFavorito",
    "calls": [
@@ -1572,7 +1549,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/historial.routes.js",
-   "line": 24,
+   "line": 10,
    "controller": "backend/src/controllers/historial.controller.js",
    "handler": "obtenerMiHistorial",
    "calls": [
@@ -1593,7 +1570,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/historial.routes.js",
-   "line": 30,
+   "line": 11,
    "controller": "backend/src/controllers/historial.controller.js",
    "handler": "crearHistorial",
    "calls": [
@@ -1614,7 +1591,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/historial.routes.js",
-   "line": 41,
+   "line": 12,
    "controller": "backend/src/controllers/historial.controller.js",
    "handler": "obtenerHistorial",
    "calls": [
@@ -1636,7 +1613,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/inventario.routes.js",
-   "line": 27,
+   "line": 19,
    "controller": "backend/src/controllers/inventario.controller.js",
    "handler": "obtenerInventario",
    "calls": [
@@ -1661,7 +1638,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/inventario.routes.js",
-   "line": 35,
+   "line": 20,
    "controller": "backend/src/controllers/inventario.controller.js",
    "handler": "obtenerStockBajo",
    "calls": [
@@ -1687,7 +1664,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/inventario.routes.js",
-   "line": 45,
+   "line": 21,
    "controller": "backend/src/controllers/inventario.controller.js",
    "handler": "listarMovimientos",
    "calls": [
@@ -1712,7 +1689,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/inventario.routes.js",
-   "line": 53,
+   "line": 22,
    "controller": "backend/src/controllers/inventario.controller.js",
    "handler": "obtenerInventarioPorLibro",
    "calls": [
@@ -1736,7 +1713,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/inventario.routes.js",
-   "line": 65,
+   "line": 23,
    "controller": "backend/src/controllers/inventario.controller.js",
    "handler": "crearInventario",
    "calls": [
@@ -1763,7 +1740,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/inventario.routes.js",
-   "line": 73,
+   "line": 24,
    "controller": "backend/src/controllers/inventario.controller.js",
    "handler": "actualizarStock",
    "calls": [
@@ -1786,7 +1763,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/inventario.routes.js",
-   "line": 81,
+   "line": 25,
    "controller": "backend/src/controllers/inventario.controller.js",
    "handler": "actualizarInventario",
    "calls": [
@@ -1810,7 +1787,7 @@
    "path": "/api/libros",
    "middleware": [],
    "routeFile": "backend/src/routes/libro.routes.js",
-   "line": 23,
+   "line": 10,
    "controller": "backend/src/controllers/libro.controller.js",
    "handler": "obtenerLibros",
    "calls": [
@@ -1834,7 +1811,7 @@
     "frontend/src/panel/libros/LibrosPage.jsx",
     "frontend/src/web/asistente/AsistenteTienda.jsx",
     "frontend/src/web/PublicLayout.jsx",
-    "frontend/src/web/tienda/TiendaContext.jsx"
+    "frontend/src/web/tienda/TiendaProvider.jsx"
    ],
    "flutterConsumers": [
     "flutter_app/lib/screens/carrito_screen.dart",
@@ -1848,7 +1825,7 @@
    "path": "/api/libros/:id/relacionados",
    "middleware": [],
    "routeFile": "backend/src/routes/libro.routes.js",
-   "line": 24,
+   "line": 11,
    "controller": "backend/src/controllers/libro.controller.js",
    "handler": "obtenerRelacionados",
    "calls": [
@@ -1861,9 +1838,7 @@
     "libros"
    ],
    "auth": "Pública",
-   "reactConsumers": [
-    "frontend/src/web/tienda/LibroPage.jsx"
-   ],
+   "reactConsumers": [],
    "flutterConsumers": []
   },
   {
@@ -1871,7 +1846,7 @@
    "path": "/api/libros/:id",
    "middleware": [],
    "routeFile": "backend/src/routes/libro.routes.js",
-   "line": 27,
+   "line": 12,
    "controller": "backend/src/controllers/libro.controller.js",
    "handler": "obtenerLibro",
    "calls": [
@@ -1889,8 +1864,7 @@
    "reactConsumers": [
     "frontend/src/panel/libros/LibroEditModal.jsx",
     "frontend/src/panel/libros/LibroForm.jsx",
-    "frontend/src/panel/libros/LibrosPage.jsx",
-    "frontend/src/web/tienda/LibroPage.jsx"
+    "frontend/src/panel/libros/LibrosPage.jsx"
    ],
    "flutterConsumers": [
     "flutter_app/lib/screens/detalle_libro_screen.dart"
@@ -1905,7 +1879,7 @@
     "upload(portada)"
    ],
    "routeFile": "backend/src/routes/libro.routes.js",
-   "line": 34,
+   "line": 13,
    "controller": "backend/src/controllers/libro.controller.js",
    "handler": "crearLibro",
    "calls": [
@@ -1939,7 +1913,7 @@
     "upload(portada)"
    ],
    "routeFile": "backend/src/routes/libro.routes.js",
-   "line": 43,
+   "line": 14,
    "controller": "backend/src/controllers/libro.controller.js",
    "handler": "actualizarLibro",
    "calls": [
@@ -1972,7 +1946,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/libro.routes.js",
-   "line": 52,
+   "line": 15,
    "controller": "backend/src/controllers/libro.controller.js",
    "handler": "eliminarLibro",
    "calls": [
@@ -2004,7 +1978,7 @@
    "path": "/api/pagos/checkout/:externalReference",
    "middleware": [],
    "routeFile": "backend/src/routes/pago.routes.js",
-   "line": 29,
+   "line": 11,
    "controller": "backend/src/controllers/pago.controller.js",
    "handler": "renderCheckoutPage",
    "calls": [
@@ -2023,7 +1997,7 @@
    "path": "/api/pagos/respuesta/:externalReference",
    "middleware": [],
    "routeFile": "backend/src/routes/pago.routes.js",
-   "line": 34,
+   "line": 12,
    "controller": "backend/src/controllers/pago.controller.js",
    "handler": "renderRespuestaPage",
    "calls": [
@@ -2041,7 +2015,7 @@
    "path": "/api/pagos/capacidades",
    "middleware": [],
    "routeFile": "backend/src/routes/pago.routes.js",
-   "line": 39,
+   "line": 13,
    "controller": "backend/src/controllers/pago.controller.js",
    "handler": "obtenerCapacidadesCompra",
    "calls": [
@@ -2051,9 +2025,7 @@
     "zonas_delivery_pallasca"
    ],
    "auth": "Pública",
-   "reactConsumers": [
-    "frontend/src/web/tienda/CheckoutPage.jsx"
-   ],
+   "reactConsumers": [],
    "flutterConsumers": []
   },
   {
@@ -2065,7 +2037,7 @@
     "express.json"
    ],
    "routeFile": "backend/src/routes/pago.routes.js",
-   "line": 45,
+   "line": 14,
    "controller": "backend/src/controllers/pago.controller.js",
    "handler": "webhookPago",
    "calls": [
@@ -2091,7 +2063,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/pago.routes.js",
-   "line": 61,
+   "line": 16,
    "controller": "backend/src/controllers/pago.controller.js",
    "handler": "listarPagosAdmin",
    "calls": [
@@ -2115,7 +2087,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/pago.routes.js",
-   "line": 72,
+   "line": 18,
    "controller": "inline (pago.routes.js)",
    "handler": "inline",
    "calls": [
@@ -2135,7 +2107,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/pago.routes.js",
-   "line": 106,
+   "line": 30,
    "controller": "backend/src/controllers/pago.controller.js",
    "handler": "crearOrden",
    "calls": [
@@ -2169,7 +2141,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/pago.routes.js",
-   "line": 114,
+   "line": 31,
    "controller": "backend/src/controllers/pago.controller.js",
    "handler": "obtenerOrden",
    "calls": [
@@ -2202,7 +2174,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/pedido.routes.js",
-   "line": 18,
+   "line": 8,
    "controller": "backend/src/controllers/pedido.controller.js",
    "handler": "obtenerPedidos",
    "calls": [
@@ -2229,7 +2201,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/pedido.routes.js",
-   "line": 24,
+   "line": 9,
    "controller": "backend/src/controllers/pedido.controller.js",
    "handler": "obtenerMisPedidos",
    "calls": [
@@ -2256,7 +2228,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/pedido.routes.js",
-   "line": 29,
+   "line": 10,
    "controller": "backend/src/controllers/pedido.controller.js",
    "handler": "obtenerPedido",
    "calls": [
@@ -2286,7 +2258,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/pedido.routes.js",
-   "line": 34,
+   "line": 11,
    "controller": "backend/src/controllers/pedido.controller.js",
    "handler": "actualizarEstadoPedido",
    "calls": [
@@ -2312,7 +2284,7 @@
     "reclamacionLimiter"
    ],
    "routeFile": "backend/src/routes/reclamacion.routes.js",
-   "line": 22,
+   "line": 10,
    "controller": "backend/src/controllers/reclamacion.controller.js",
    "handler": "registrar",
    "calls": [
@@ -2339,7 +2311,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/reclamacion.routes.js",
-   "line": 25,
+   "line": 11,
    "controller": "backend/src/controllers/reclamacion.controller.js",
    "handler": "listar",
    "calls": [
@@ -2362,7 +2334,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/reclamacion.routes.js",
-   "line": 26,
+   "line": 12,
    "controller": "backend/src/controllers/reclamacion.controller.js",
    "handler": "resumen",
    "calls": [
@@ -2385,7 +2357,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/reclamacion.routes.js",
-   "line": 27,
+   "line": 13,
    "controller": "backend/src/controllers/reclamacion.controller.js",
    "handler": "obtener",
    "calls": [
@@ -2406,7 +2378,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/reclamacion.routes.js",
-   "line": 28,
+   "line": 14,
    "controller": "backend/src/controllers/reclamacion.controller.js",
    "handler": "responder",
    "calls": [
@@ -2433,7 +2405,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/reporte.routes.js",
-   "line": 41,
+   "line": 21,
    "controller": "backend/src/controllers/reporte.controller.js",
    "handler": "obtenerVentasPorEstado",
    "calls": [
@@ -2459,7 +2431,7 @@
     "soloAdmin"
    ],
    "routeFile": "backend/src/routes/reporte.routes.js",
-   "line": 65,
+   "line": 23,
    "controller": "backend/src/controllers/reporte.controller.js",
    "handler": "obtenerResumenGeneral",
    "calls": [
@@ -2490,7 +2462,7 @@
     "soloAdmin"
    ],
    "routeFile": "backend/src/routes/reporte.routes.js",
-   "line": 75,
+   "line": 24,
    "controller": "backend/src/controllers/reporte.controller.js",
    "handler": "obtenerLibrosMasVendidos",
    "calls": [
@@ -2518,7 +2490,7 @@
     "soloAdmin"
    ],
    "routeFile": "backend/src/routes/reporte.routes.js",
-   "line": 85,
+   "line": 25,
    "controller": "backend/src/controllers/reporte.controller.js",
    "handler": "obtenerVentasPorMes",
    "calls": [
@@ -2544,7 +2516,7 @@
     "soloAdmin"
    ],
    "routeFile": "backend/src/routes/reporte.routes.js",
-   "line": 95,
+   "line": 26,
    "controller": "backend/src/controllers/reporte.controller.js",
    "handler": "obtenerVentasPorDia",
    "calls": [
@@ -2556,8 +2528,7 @@
    "auth": "JWT + admin",
    "reactConsumers": [
     "frontend/src/panel/dashboard/DashboardPage.jsx",
-    "frontend/src/panel/dashboard/dashboardService.js",
-    "frontend/src/panel/reportes/useVentasDiarias.js"
+    "frontend/src/panel/dashboard/dashboardService.js"
    ],
    "flutterConsumers": []
   },
@@ -2571,7 +2542,7 @@
     "soloAdmin"
    ],
    "routeFile": "backend/src/routes/reporte.routes.js",
-   "line": 105,
+   "line": 27,
    "controller": "backend/src/controllers/reporte.controller.js",
    "handler": "obtenerIndicadoresVentas",
    "calls": [
@@ -2594,7 +2565,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/ubicacion.routes.js",
-   "line": 22,
+   "line": 10,
    "controller": "backend/src/controllers/ubicacion.controller.js",
    "handler": "listarProvincias",
    "calls": [
@@ -2614,7 +2585,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/ubicacion.routes.js",
-   "line": 30,
+   "line": 11,
    "controller": "backend/src/controllers/ubicacion.controller.js",
    "handler": "listarDistritos",
    "calls": [
@@ -2635,7 +2606,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/ubicacion.routes.js",
-   "line": 38,
+   "line": 12,
    "controller": "backend/src/controllers/ubicacion.controller.js",
    "handler": "actualizarTarifaDistrito",
    "calls": [
@@ -2661,7 +2632,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/usuario.routes.js",
-   "line": 31,
+   "line": 11,
    "controller": "backend/src/controllers/usuario.controller.js",
    "handler": "listarUsuarios",
    "calls": [
@@ -2685,7 +2656,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/usuario.routes.js",
-   "line": 40,
+   "line": 12,
    "controller": "backend/src/controllers/usuario.controller.js",
    "handler": "obtenerPerfil",
    "calls": [
@@ -2696,8 +2667,7 @@
    ],
    "auth": "JWT",
    "reactConsumers": [
-    "frontend/src/panel/layout/PerfilAdministrador.jsx",
-    "frontend/src/web/tienda/TiendaContext.jsx"
+    "frontend/src/panel/layout/PerfilAdministrador.jsx"
    ],
    "flutterConsumers": [
     "flutter_app/lib/screens/perfil_screen.dart",
@@ -2711,7 +2681,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/usuario.routes.js",
-   "line": 48,
+   "line": 13,
    "controller": "backend/src/controllers/usuario.controller.js",
    "handler": "actualizarPerfil",
    "calls": [
@@ -2739,7 +2709,7 @@
     "uploadPerfil(foto)"
    ],
    "routeFile": "backend/src/routes/usuario.routes.js",
-   "line": 56,
+   "line": 14,
    "controller": "backend/src/controllers/usuario.controller.js",
    "handler": "subirFotoPerfil",
    "calls": [
@@ -2765,7 +2735,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/usuario.routes.js",
-   "line": 65,
+   "line": 15,
    "controller": "backend/src/controllers/usuario.controller.js",
    "handler": "cambiarPassword",
    "calls": [
@@ -2790,7 +2760,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/usuario.routes.js",
-   "line": 73,
+   "line": 16,
    "controller": "backend/src/controllers/usuario.controller.js",
    "handler": "eliminarMiCuenta",
    "calls": [
@@ -2819,7 +2789,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/usuario.routes.js",
-   "line": 81,
+   "line": 17,
    "controller": "backend/src/controllers/usuario.controller.js",
    "handler": "adminUpdateUsuario",
    "calls": [
@@ -2844,7 +2814,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/venta.routes.js",
-   "line": 35,
+   "line": 12,
    "controller": "backend/src/controllers/venta.controller.js",
    "handler": "obtenerMisVentas",
    "calls": [
@@ -2861,8 +2831,7 @@
    ],
    "auth": "JWT",
    "reactConsumers": [
-    "frontend/src/web/tienda/MisComprasPage.jsx",
-    "frontend/src/web/tienda/useDatosCliente.js"
+    "frontend/src/web/tienda/MisComprasPage.jsx"
    ],
    "flutterConsumers": [
     "flutter_app/lib/screens/mis_compras_screen.dart",
@@ -2876,7 +2845,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/venta.routes.js",
-   "line": 58,
+   "line": 14,
    "controller": "inline (venta.routes.js)",
    "handler": "inline",
    "calls": [],
@@ -2893,7 +2862,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/venta.routes.js",
-   "line": 72,
+   "line": 18,
    "controller": "backend/src/controllers/venta.controller.js",
    "handler": "obtenerVentas",
    "calls": [
@@ -2920,7 +2889,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/venta.routes.js",
-   "line": 80,
+   "line": 19,
    "controller": "backend/src/controllers/venta.controller.js",
    "handler": "obtenerVenta",
    "calls": [
@@ -2938,9 +2907,7 @@
    ],
    "auth": "JWT",
    "reactConsumers": [
-    "frontend/src/panel/ventas/VentasPage.jsx",
-    "frontend/src/web/tienda/CheckoutPage.jsx",
-    "frontend/src/web/tienda/TiendaContext.jsx"
+    "frontend/src/panel/ventas/VentasPage.jsx"
    ],
    "flutterConsumers": []
   },
@@ -2951,7 +2918,7 @@
     "JWT"
    ],
    "routeFile": "backend/src/routes/venta.routes.js",
-   "line": 87,
+   "line": 20,
    "controller": "backend/src/controllers/venta.controller.js",
    "handler": "obtenerPagoVenta",
    "calls": [
@@ -2976,7 +2943,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/venta.routes.js",
-   "line": 93,
+   "line": 21,
    "controller": "backend/src/controllers/venta.controller.js",
    "handler": "actualizarEstadoVenta",
    "calls": [],
@@ -2993,7 +2960,7 @@
     "verificarPanel"
    ],
    "routeFile": "backend/src/routes/venta.routes.js",
-   "line": 100,
+   "line": 22,
    "controller": "backend/src/controllers/comprobante.controller.js",
    "handler": "generarComprobante",
    "calls": [
@@ -3017,7 +2984,7 @@
     "rol:administrador"
    ],
    "routeFile": "backend/src/routes/venta.routes.js",
-   "line": 112,
+   "line": 23,
    "controller": "backend/src/controllers/venta.controller.js",
    "handler": "reembolsarVenta",
    "calls": [
@@ -3534,6 +3501,11 @@
    "file": "frontend/src/panel/configuracion/EmpresaPage.jsx"
   },
   {
+   "path": "/personalizacion",
+   "component": "Navigate",
+   "file": null
+  },
+  {
    "path": "/agencias",
    "component": "Navigate",
    "file": null
@@ -3555,9 +3527,9 @@
   }
  ],
  "files": [
-  {"file":"backend/server.js","module":"backend","responsibility":"Punto de entrada Express: middlewares globales, montaje de routers, jobs y migraciones en línea","imports":["backend/src/config/cors.js","backend/src/config/database.js","backend/src/middlewares/error.middleware.js","backend/src/middlewares/rateLimit.js","backend/src/middlewares/auth.middleware.js","backend/src/middlewares/rol.middleware.js","backend/src/jobs/limpieza.js","backend/src/routes/libro.routes.js","backend/src/routes/autor.routes.js","backend/src/routes/categoria.routes.js","backend/src/routes/inventario.routes.js","backend/src/routes/venta.routes.js","backend/src/routes/auth.routes.js","backend/src/routes/historial.routes.js","backend/src/routes/reporte.routes.js","backend/src/routes/usuario.routes.js","backend/src/routes/favorito.routes.js","backend/src/routes/pago.routes.js","backend/src/routes/pedido.routes.js","backend/src/routes/ubicacion.routes.js","backend/src/routes/zonaDelivery.routes.js","backend/src/routes/agencia.routes.js","backend/src/routes/empresa.routes.js","backend/src/routes/comprobante.routes.js","backend/src/routes/cliente.routes.js","backend/src/routes/app.routes.js","backend/src/routes/reclamacion.routes.js","backend/src/routes/anuncio.routes.js","backend/src/routes/asistente.routes.js","backend/src/config/migraciones.js"],"usedBy":[],"endpoints":["GET /","GET /api","GET /api/test-db","GET /api/debug-egress"],"relatedFiles":[]},
+  {"file":"backend/server.js","module":"backend","responsibility":"Punto de entrada Express: middlewares globales, montaje de routers, jobs y migraciones en línea","imports":["backend/src/config/cors.js","backend/src/config/database.js","backend/src/middlewares/error.middleware.js","backend/src/middlewares/rateLimit.js","backend/src/middlewares/auth.middleware.js","backend/src/middlewares/rol.middleware.js","backend/src/jobs/limpieza.js","backend/src/routes/libro.routes.js","backend/src/routes/autor.routes.js","backend/src/routes/categoria.routes.js","backend/src/routes/inventario.routes.js","backend/src/routes/venta.routes.js","backend/src/routes/auth.routes.js","backend/src/routes/historial.routes.js","backend/src/routes/reporte.routes.js","backend/src/routes/usuario.routes.js","backend/src/routes/favorito.routes.js","backend/src/routes/pago.routes.js","backend/src/routes/pedido.routes.js","backend/src/routes/ubicacion.routes.js","backend/src/routes/zonaDelivery.routes.js","backend/src/routes/agencia.routes.js","backend/src/routes/empresa.routes.js","backend/src/routes/comprobante.routes.js","backend/src/routes/cliente.routes.js","backend/src/routes/app.routes.js","backend/src/routes/reclamacion.routes.js","backend/src/routes/anuncio.routes.js","backend/src/routes/asistente.routes.js","backend/src/config/migraciones.js"],"usedBy":[],"endpoints":["GET /","GET /api","GET /api/test-db"],"relatedFiles":[]},
   {"file":"backend/src/config/cors.js","module":"config","responsibility":"Configuración cors","imports":[],"usedBy":["backend/server.js","backend/test/cors-http.test.js"],"endpoints":[],"relatedFiles":[]},
-  {"file":"backend/src/config/database.js","module":"config","responsibility":"Configuración database","imports":[],"usedBy":["backend/scripts/limpiarIsbnFicticios.js","backend/scripts/migrarImagenesCloudinary.js","backend/scripts/resetearPrecios.js","backend/scripts/semillaLibros.js","backend/server.js","backend/src/controllers/comprobante.controller.js","backend/src/controllers/libro.controller.js","backend/src/controllers/pago.controller.js","backend/src/controllers/usuario.controller.js","backend/src/middlewares/auth.middleware.js","backend/src/models/agencia.model.js","backend/src/models/anuncio.model.js","backend/src/models/asistente.model.js","backend/src/models/asistenteMemoria.model.js","backend/src/models/autor.model.js","backend/src/models/carrusel.model.js","backend/src/models/categoria.model.js","backend/src/models/cliente.model.js","backend/src/models/comprobante.model.js","backend/src/models/empresa.model.js","backend/src/models/favorito.model.js","backend/src/models/historial.model.js","backend/src/models/inventario.model.js","backend/src/models/libro.model.js","backend/src/models/pago.model.js","backend/src/models/portada.model.js","backend/src/models/reclamacion.model.js","backend/src/models/reporte.model.js","backend/src/models/ubicacion.model.js","backend/src/models/usuario.model.js","backend/src/models/venta.model.js","backend/src/models/zonaDelivery.model.js","backend/test/comprobantes-por-venta.test.js","backend/test-integration/asistente.smoke.test.js","backend/test-integration/auth-tipo-token.smoke.test.js","backend/test-integration/backfill-entrega-canceladas.test.js","backend/test-integration/cancelacion-pedidos.smoke.test.js","backend/test-integration/carrusel.smoke.test.js","backend/test-integration/compra-web.smoke.test.js","backend/test-integration/correcciones-comerciales.test.js","backend/test-integration/dashboard.smoke.test.js","backend/test-integration/ficha-libro.smoke.test.js","backend/test-integration/flujo-comercial.smoke.test.js","backend/test-integration/http.smoke.test.js","backend/test-integration/inputs.smoke.test.js","backend/test-integration/modulos.smoke.test.js","backend/test-integration/pallasca.smoke.test.js","backend/test-integration/panel-empresa.smoke.test.js","backend/test-integration/payu-abandonadas.test.js","backend/test-integration/pedidos-flujo-simplificado.test.js","backend/test-integration/pedidos.smoke.test.js","backend/test-integration/permisos.smoke.test.js","backend/test-integration/portada-protagonista.smoke.test.js","backend/test-integration/portadas-api.smoke.test.js","backend/test-integration/promociones.smoke.test.js","backend/test-integration/purga-reservas.smoke.test.js","backend/test-integration/retiro-legacy.smoke.test.js","backend/test-integration/reversiones-pedidos.smoke.test.js","backend/test-integration/roles-retiro.smoke.test.js","backend/test-integration/sesiones.smoke.test.js","backend/test-integration/tarifa-editable.smoke.test.js"],"endpoints":[],"relatedFiles":[]},
+  {"file":"backend/src/config/database.js","module":"config","responsibility":"Configuración database","imports":[],"usedBy":["backend/scripts/resetearPrecios.js","backend/scripts/semillaLibros.js","backend/server.js","backend/src/controllers/comprobante.controller.js","backend/src/controllers/libro.controller.js","backend/src/controllers/pago.controller.js","backend/src/controllers/usuario.controller.js","backend/src/middlewares/auth.middleware.js","backend/src/models/agencia.model.js","backend/src/models/anuncio.model.js","backend/src/models/asistente.model.js","backend/src/models/asistenteMemoria.model.js","backend/src/models/autor.model.js","backend/src/models/carrusel.model.js","backend/src/models/categoria.model.js","backend/src/models/cliente.model.js","backend/src/models/comprobante.model.js","backend/src/models/empresa.model.js","backend/src/models/favorito.model.js","backend/src/models/historial.model.js","backend/src/models/inventario.model.js","backend/src/models/libro.model.js","backend/src/models/pago.model.js","backend/src/models/portada.model.js","backend/src/models/reclamacion.model.js","backend/src/models/reporte.model.js","backend/src/models/ubicacion.model.js","backend/src/models/usuario.model.js","backend/src/models/venta.model.js","backend/src/models/zonaDelivery.model.js","backend/test/comprobantes-por-venta.test.js","backend/test-integration/asistente.smoke.test.js","backend/test-integration/auth-tipo-token.smoke.test.js","backend/test-integration/backfill-entrega-canceladas.test.js","backend/test-integration/cancelacion-pedidos.smoke.test.js","backend/test-integration/carrusel.smoke.test.js","backend/test-integration/compra-web.smoke.test.js","backend/test-integration/correcciones-comerciales.test.js","backend/test-integration/dashboard.smoke.test.js","backend/test-integration/ficha-libro.smoke.test.js","backend/test-integration/flujo-comercial.smoke.test.js","backend/test-integration/http.smoke.test.js","backend/test-integration/inputs.smoke.test.js","backend/test-integration/modulos.smoke.test.js","backend/test-integration/pallasca.smoke.test.js","backend/test-integration/panel-empresa.smoke.test.js","backend/test-integration/payu-abandonadas.test.js","backend/test-integration/pedidos-flujo-simplificado.test.js","backend/test-integration/pedidos.smoke.test.js","backend/test-integration/permisos.smoke.test.js","backend/test-integration/portada-protagonista.smoke.test.js","backend/test-integration/portadas-api.smoke.test.js","backend/test-integration/promociones.smoke.test.js","backend/test-integration/purga-reservas.smoke.test.js","backend/test-integration/retiro-legacy.smoke.test.js","backend/test-integration/reversiones-pedidos.smoke.test.js","backend/test-integration/roles-retiro.smoke.test.js","backend/test-integration/sesiones.smoke.test.js","backend/test-integration/tarifa-editable.smoke.test.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/config/migraciones.js","module":"config","responsibility":"Configuración migraciones","imports":[],"usedBy":["backend/server.js","backend/test/migraciones-datos.test.js","backend/test-integration/backfill-entrega-canceladas.test.js","backend/test-integration/purga-reservas.smoke.test.js","backend/test-integration/roles-retiro.smoke.test.js","backend/test-integration/tarifa-editable.smoke.test.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/config/payu.js","module":"config","responsibility":"Configuración payu","imports":[],"usedBy":["backend/src/controllers/pago.controller.js","backend/src/controllers/venta.controller.js","backend/src/services/payu.service.js","backend/src/utils/payuStatus.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/controllers/agencia.controller.js","module":"agencia","responsibility":"Controlador HTTP de agencia","imports":["backend/src/models/agencia.model.js","backend/src/utils/validaciones.js"],"usedBy":["backend/src/routes/agencia.routes.js"],"endpoints":["GET /api/agencias/activas","GET /api/agencias","GET /api/agencias/:id","POST /api/agencias","PUT /api/agencias/:id"],"relatedFiles":["backend/src/models/agencia.model.js","backend/src/routes/agencia.routes.js"]},
@@ -3646,7 +3618,7 @@
   {"file":"backend/src/utils/asistenteMemoria.js","module":"utils","responsibility":"Utilidad backend asistenteMemoria","imports":[],"usedBy":["backend/src/controllers/asistente.controller.js","backend/test/asistente.test.js"],"endpoints":[],"relatedFiles":["backend/src/models/asistenteMemoria.model.js"]},
   {"file":"backend/src/utils/auditoria.js","module":"utils","responsibility":"Utilidad backend auditoria","imports":["backend/src/models/historial.model.js"],"usedBy":["backend/src/controllers/anuncio.controller.js","backend/src/controllers/carrusel.controller.js","backend/src/controllers/portada.controller.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/utils/carruselArchivos.js","module":"utils","responsibility":"Utilidad backend carruselArchivos","imports":["backend/src/utils/cloudinary.js"],"usedBy":["backend/src/controllers/carrusel.controller.js","backend/src/middlewares/uploadCarrusel.middleware.js","backend/test-integration/carrusel.smoke.test.js"],"endpoints":[],"relatedFiles":[]},
-  {"file":"backend/src/utils/cloudinary.js","module":"utils","responsibility":"Utilidad backend cloudinary","imports":[],"usedBy":["backend/scripts/migrarImagenesCloudinary.js","backend/src/controllers/anuncio.controller.js","backend/src/controllers/libro.controller.js","backend/src/controllers/usuario.controller.js","backend/src/middlewares/upload.middleware.js","backend/src/middlewares/uploadCarrusel.middleware.js","backend/src/middlewares/uploadPerfil.middleware.js","backend/src/middlewares/uploadVideo.middleware.js","backend/src/utils/carruselArchivos.js"],"endpoints":[],"relatedFiles":[]},
+  {"file":"backend/src/utils/cloudinary.js","module":"utils","responsibility":"Utilidad backend cloudinary","imports":[],"usedBy":["backend/src/controllers/anuncio.controller.js","backend/src/controllers/libro.controller.js","backend/src/controllers/usuario.controller.js","backend/src/middlewares/upload.middleware.js","backend/src/middlewares/uploadCarrusel.middleware.js","backend/src/middlewares/uploadPerfil.middleware.js","backend/src/middlewares/uploadVideo.middleware.js","backend/src/utils/carruselArchivos.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/utils/crypto.js","module":"utils","responsibility":"Utilidad backend crypto","imports":[],"usedBy":["backend/src/controllers/auth2fa.controller.js","backend/test/auth-seguridad.test.js","backend/test/crypto.test.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/utils/descuentos.js","module":"utils","responsibility":"Utilidad backend descuentos","imports":[],"usedBy":["backend/src/controllers/libro.controller.js","backend/test/descuentos.test.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/utils/devoluciones.js","module":"utils","responsibility":"Utilidad backend devoluciones","imports":[],"usedBy":["backend/src/controllers/pago.controller.js","backend/src/models/venta.model.js","backend/src/utils/pedidos.js","backend/test/devoluciones-reversiones.test.js","backend/test/retiro-legacy.test.js"],"endpoints":[],"relatedFiles":[]},
@@ -3655,7 +3627,6 @@
   {"file":"backend/src/utils/fileType.js","module":"utils","responsibility":"Utilidad backend fileType","imports":[],"usedBy":["backend/src/middlewares/upload.middleware.js","backend/src/middlewares/uploadCarrusel.middleware.js","backend/src/middlewares/uploadPerfil.middleware.js","backend/src/middlewares/uploadVideo.middleware.js","backend/test/fileType.test.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/utils/impuestos.js","module":"utils","responsibility":"Utilidad backend impuestos","imports":[],"usedBy":["backend/src/models/comprobante.model.js","backend/test/impuestos.test.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/utils/mailer.js","module":"utils","responsibility":"Utilidad backend mailer","imports":["backend/src/utils/pdf.js","backend/src/utils/numeroALetras.js"],"usedBy":["backend/src/controllers/auth.controller.js","backend/src/controllers/comprobante.controller.js","backend/src/controllers/pago.controller.js","backend/src/controllers/pedido.controller.js","backend/src/controllers/reclamacion.controller.js","backend/test/avisos-pedido.test.js","backend/test/correo-comprobante.test.js","backend/test/mailer-timeout.test.js"],"endpoints":[],"relatedFiles":[]},
-  {"file":"backend/src/utils/metodosPago.js","module":"utils","responsibility":"Utilidad backend metodosPago","imports":[],"usedBy":["backend/test/retiro-legacy.test.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/utils/numeroALetras.js","module":"utils","responsibility":"Utilidad backend numeroALetras","imports":[],"usedBy":["backend/src/utils/mailer.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/utils/payuStatus.js","module":"utils","responsibility":"Utilidad backend payuStatus","imports":["backend/src/config/payu.js","backend/src/services/payu.service.js"],"usedBy":["backend/src/controllers/pago.controller.js","backend/src/models/venta.model.js","backend/test/payuStatus.test.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"backend/src/utils/pdf.js","module":"utils","responsibility":"Utilidad backend pdf","imports":[],"usedBy":["backend/src/utils/mailer.js","backend/test/pdf.test.js"],"endpoints":[],"relatedFiles":[]},
@@ -3666,55 +3637,57 @@
   {"file":"backend/src/utils/validaciones.js","module":"utils","responsibility":"Utilidad backend validaciones","imports":[],"usedBy":["backend/src/controllers/agencia.controller.js","backend/src/controllers/anuncio.controller.js","backend/src/controllers/auth.controller.js","backend/src/controllers/auth2fa.controller.js","backend/src/controllers/autor.controller.js","backend/src/controllers/carrusel.controller.js","backend/src/controllers/categoria.controller.js","backend/src/controllers/comprobante.controller.js","backend/src/controllers/empresa.controller.js","backend/src/controllers/favorito.controller.js","backend/src/controllers/historial.controller.js","backend/src/controllers/inventario.controller.js","backend/src/controllers/libro.controller.js","backend/src/controllers/pago.controller.js","backend/src/controllers/pedido.controller.js","backend/src/controllers/portada.controller.js","backend/src/controllers/reclamacion.controller.js","backend/src/controllers/ubicacion.controller.js","backend/src/controllers/usuario.controller.js","backend/src/controllers/venta.controller.js","backend/src/controllers/zonaDelivery.controller.js","backend/src/models/venta.model.js","backend/src/models/zonaDelivery.model.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/app/ErrorBoundary.jsx","module":"app","responsibility":"ErrorBoundary","imports":[],"usedBy":["frontend/src/app/main.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/app/main.jsx","module":"app","responsibility":"main","imports":["frontend/src/app/index.css","frontend/src/app/router/AppRouter.jsx","frontend/src/app/ErrorBoundary.jsx"],"usedBy":[],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/app/providers/AuthContext.jsx","module":"providers","responsibility":"Provider de contexto AuthContext","imports":["frontend/src/panel/lib/storage/index.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx","frontend/src/app/router/RutaPorRol.jsx","frontend/src/app/router/RutaProtegida.jsx","frontend/src/panel/auth/LoginPage.jsx","frontend/src/panel/auth/useRol.js","frontend/src/panel/layout/PerfilAdministrador.jsx","frontend/src/panel/layout/Sidebar.jsx","frontend/src/panel/layout/Topbar.jsx","frontend/src/panel/usuarios/UsuariosPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/app/providers/ToastProvider.jsx","module":"providers","responsibility":"Provider de contexto ToastProvider","imports":[],"usedBy":["frontend/src/app/router/AppRouter.jsx","frontend/src/panel/anuncios/AnunciosPage.jsx","frontend/src/panel/anuncios/ProtagonistaPanel.jsx","frontend/src/panel/autores/AutoresPage.jsx","frontend/src/panel/categorias/CategoriasPage.jsx","frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/configuracion/EmpresaPage.jsx","frontend/src/panel/inventario/InventarioPage.jsx","frontend/src/panel/layout/PerfilAdministrador.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/panel/reclamaciones/ReclamacionesPage.jsx","frontend/src/panel/usuarios/UsuariosPage.jsx","frontend/src/panel/ventas/EmitirComprobanteModal.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/app/router/AppRouter.jsx","module":"router","responsibility":"Enrutamiento y guardas React AppRouter","imports":["frontend/src/app/providers/AuthContext.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/app/router/RutaProtegida.jsx","frontend/src/app/router/RutaPorRol.jsx","frontend/src/panel/lib/roles.js","frontend/src/panel/ui/Spinner.jsx","frontend/src/web/PublicLayout.jsx","frontend/src/panel/layout/AdminLayout.jsx","frontend/src/web/paginas/paginas.jsx","frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/paginas/AplicacionPage.jsx","frontend/src/web/paginas/CaracteristicasPage.jsx","frontend/src/web/paginas/NosotrosPage.jsx","frontend/src/web/paginas/DescargarPage.jsx","frontend/src/web/tienda/CuentaPage.jsx","frontend/src/web/tienda/CarritoPage.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/MisComprasPage.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx","frontend/src/panel/auth/LoginPage.jsx","frontend/src/panel/auth/VerificarEmailPage.jsx","frontend/src/panel/dashboard/DashboardPage.jsx","frontend/src/panel/libros/LibrosAutoresPage.jsx","frontend/src/panel/categorias/CategoriasPage.jsx","frontend/src/panel/inventario/InventarioPage.jsx","frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/panel/ventas/VentasPage.jsx","frontend/src/panel/ventas/GestionVentasPage.jsx","frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/usuarios/UsuariosClientesPage.jsx","frontend/src/panel/tarifas/TarifasEnvioPage.jsx","frontend/src/panel/configuracion/EmpresaPage.jsx","frontend/src/web/paginas/ReclamacionesPublicasPage.jsx","frontend/src/panel/reclamaciones/ReclamacionesPage.jsx","frontend/src/panel/anuncios/AnunciosPage.jsx"],"usedBy":["frontend/src/app/main.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/app/router/RutaPorRol.jsx","module":"router","responsibility":"Enrutamiento y guardas React RutaPorRol","imports":["frontend/src/app/providers/AuthContext.jsx","frontend/src/panel/lib/roles.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/app/router/RutaProtegida.jsx","module":"router","responsibility":"Enrutamiento y guardas React RutaProtegida","imports":["frontend/src/app/providers/AuthContext.jsx","frontend/src/panel/lib/roles.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/compartido/config/env.js","module":"config","responsibility":"env","imports":[],"usedBy":["frontend/src/compartido/lib/utils/url.js","frontend/src/panel/lib/api/client.js","frontend/src/web/hooks/useApiPublica.js","frontend/src/web/hooks/useCarrusel.js","frontend/src/web/hooks/useLibroProtagonista.js","frontend/src/web/lib/cachePublica.js","frontend/src/web/lib/formato.js","frontend/src/web/secciones/portada3d/cachePortada.js","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx","frontend/src/web/tienda/clienteApi.js"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/app/providers/AuthContext.js","module":"providers","responsibility":"Provider de contexto AuthContext","imports":[],"usedBy":["frontend/src/app/providers/AuthProvider.jsx","frontend/src/app/router/RutaPorRol.jsx","frontend/src/app/router/RutaProtegida.jsx","frontend/src/panel/auth/LoginPage.jsx","frontend/src/panel/auth/useRol.js","frontend/src/panel/layout/PerfilAdministrador.jsx","frontend/src/panel/layout/Sidebar.jsx","frontend/src/panel/layout/Topbar.jsx","frontend/src/panel/usuarios/UsuariosPage.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/app/providers/AuthProvider.jsx","module":"providers","responsibility":"Provider de contexto AuthProvider","imports":["frontend/src/panel/lib/storage/index.js","frontend/src/app/providers/AuthContext.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/app/providers/ToastContext.js","module":"providers","responsibility":"Provider de contexto ToastContext","imports":[],"usedBy":["frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/anuncios/AnunciosPage.jsx","frontend/src/panel/anuncios/ProtagonistaPanel.jsx","frontend/src/panel/autores/AutoresPage.jsx","frontend/src/panel/categorias/CategoriasPage.jsx","frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/configuracion/EmpresaPage.jsx","frontend/src/panel/inventario/InventarioPage.jsx","frontend/src/panel/layout/PerfilAdministrador.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/panel/reclamaciones/ReclamacionesPage.jsx","frontend/src/panel/usuarios/UsuariosPage.jsx","frontend/src/panel/ventas/EmitirComprobanteModal.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/app/providers/ToastProvider.jsx","module":"providers","responsibility":"Provider de contexto ToastProvider","imports":["frontend/src/app/providers/ToastContext.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/app/router/AppRouter.jsx","module":"router","responsibility":"Enrutamiento y guardas React AppRouter","imports":["frontend/src/app/providers/AuthProvider.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/app/router/RutaProtegida.jsx","frontend/src/app/router/RutaPorRol.jsx","frontend/src/panel/lib/roles.js","frontend/src/panel/ui/Spinner.jsx","frontend/src/web/PublicLayout.jsx","frontend/src/panel/layout/AdminLayout.jsx","frontend/src/web/paginas/paginas.jsx","frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/paginas/AplicacionPage.jsx","frontend/src/web/paginas/CaracteristicasPage.jsx","frontend/src/web/paginas/NosotrosPage.jsx","frontend/src/web/paginas/DescargarPage.jsx","frontend/src/web/tienda/CuentaPage.jsx","frontend/src/web/tienda/CarritoPage.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/MisComprasPage.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx","frontend/src/panel/auth/LoginPage.jsx","frontend/src/panel/auth/VerificarEmailPage.jsx","frontend/src/panel/dashboard/DashboardPage.jsx","frontend/src/panel/libros/LibrosAutoresPage.jsx","frontend/src/panel/categorias/CategoriasPage.jsx","frontend/src/panel/inventario/InventarioPage.jsx","frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/panel/ventas/VentasPage.jsx","frontend/src/panel/ventas/GestionVentasPage.jsx","frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/usuarios/UsuariosClientesPage.jsx","frontend/src/panel/tarifas/TarifasEnvioPage.jsx","frontend/src/panel/configuracion/EmpresaPage.jsx","frontend/src/web/paginas/ReclamacionesPublicasPage.jsx","frontend/src/panel/reclamaciones/ReclamacionesPage.jsx","frontend/src/panel/anuncios/AnunciosPage.jsx"],"usedBy":["frontend/src/app/main.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/app/router/RutaPorRol.jsx","module":"router","responsibility":"Enrutamiento y guardas React RutaPorRol","imports":["frontend/src/app/providers/AuthContext.js","frontend/src/panel/lib/roles.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/app/router/RutaProtegida.jsx","module":"router","responsibility":"Enrutamiento y guardas React RutaProtegida","imports":["frontend/src/app/providers/AuthContext.js","frontend/src/panel/lib/roles.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/compartido/config/env.js","module":"config","responsibility":"env","imports":[],"usedBy":["frontend/src/compartido/lib/utils/url.js","frontend/src/panel/lib/api/client.js","frontend/src/web/hooks/useApiPublica.js","frontend/src/web/hooks/useLibroProtagonista.js","frontend/src/web/lib/cachePublica.js","frontend/src/web/lib/formato.js","frontend/src/web/secciones/portada3d/cachePortada.js","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx","frontend/src/web/tienda/clienteApi.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/compartido/lib/utils/entrega.js","module":"utils","responsibility":"Utilidad frontend entrega","imports":[],"usedBy":["frontend/src/panel/pagos/PagoBadges.jsx","frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/panel/ventas/VentasPage.jsx","frontend/src/panel/ventas/VentaViewModal.jsx","frontend/src/web/tienda/MisComprasPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/compartido/lib/utils/estadoEntrega.js","module":"utils","responsibility":"Utilidad frontend estadoEntrega","imports":[],"usedBy":["frontend/src/compartido/lib/utils/seguimientoPedido.js","frontend/src/panel/pedidos/estadosPedido.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/compartido/lib/utils/format.js","module":"utils","responsibility":"Utilidad frontend format","imports":[],"usedBy":["frontend/src/panel/anuncios/AnunciosPage.jsx","frontend/src/panel/anuncios/ProtagonistaPanel.jsx","frontend/src/panel/clientes/ClientesPage.jsx","frontend/src/panel/clientes/ClienteViewModal.jsx","frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/dashboard/DashboardPage.jsx","frontend/src/panel/dashboard/SalesChart.jsx","frontend/src/panel/dashboard/StatusDonut.jsx","frontend/src/panel/dashboard/TopBooks.jsx","frontend/src/panel/inventario/InventarioViewModal.jsx","frontend/src/panel/inventario/MovimientosModal.jsx","frontend/src/panel/libros/DescuentoLibroModal.jsx","frontend/src/panel/libros/LibroForm.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/libros/LibroViewModal.jsx","frontend/src/panel/notificaciones/notificacionesService.js","frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/panel/reclamaciones/ReclamacionesPage.jsx","frontend/src/panel/tarifas/TarifasEnvioPage.jsx","frontend/src/panel/ui/FechaTabla.jsx","frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/usuarios/UsuariosPage.jsx","frontend/src/panel/usuarios/UsuarioViewModal.jsx","frontend/src/panel/ventas/EmitirComprobanteModal.jsx","frontend/src/panel/ventas/ReembolsoModal.jsx","frontend/src/panel/ventas/VentasPage.jsx","frontend/src/panel/ventas/VentaViewModal.jsx","frontend/src/web/tienda/MisComprasPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/compartido/lib/utils/portadasLibro.js","module":"utils","responsibility":"Utilidad frontend portadasLibro","imports":["frontend/src/web/tienda/portadasCatalogo.json","frontend/src/web/tienda/portadasReferencia.json","frontend/src/compartido/lib/utils/url.js"],"usedBy":["frontend/src/panel/componentes/PortadaCatalogo.jsx","frontend/src/panel/libros/LibroEditModal.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/secciones/BookShowcase.jsx","frontend/src/web/secciones/OfertasDestacadas.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/libroComercial.js","frontend/src/web/tienda/PortadaLibro.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/compartido/lib/utils/seguimientoPedido.js","module":"utils","responsibility":"Utilidad frontend seguimientoPedido","imports":["frontend/src/compartido/lib/utils/estadoEntrega.js"],"usedBy":["frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/web/tienda/MisComprasPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/compartido/lib/utils/url.js","module":"utils","responsibility":"Utilidad frontend url","imports":["frontend/src/compartido/config/env.js"],"usedBy":["frontend/src/compartido/lib/utils/portadasLibro.js","frontend/src/panel/componentes/PortadaCatalogo.jsx","frontend/src/panel/dashboard/TopBooks.jsx","frontend/src/panel/lib/api/client.js"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/anuncios/AnunciosPage.jsx","module":"anuncios","responsibility":"Página del panel: Anuncios (ruta /anuncios)","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/ConfirmarEliminacion.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/anuncios/ProtagonistaPanel.jsx","frontend/src/panel/anuncios/anunciosService.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["DELETE /api/anuncios/:param","GET /api/anuncios/todos","POST /api/anuncios","PUT /api/anuncios/:param"],"relatedFiles":["frontend/src/panel/anuncios/anunciosService.js"]},
-  {"file":"frontend/src/panel/anuncios/anunciosService.js","module":"anuncios","responsibility":"Servicio HTTP del panel (anunciosService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/anuncios/AnunciosPage.jsx"],"endpoints":["GET /api/anuncios/todos","GET /api/anuncios","POST /api/anuncios","PUT /api/anuncios/:param","DELETE /api/anuncios/:param"],"relatedFiles":[]},
-  {"file":"frontend/src/panel/anuncios/ProtagonistaPanel.jsx","module":"anuncios","responsibility":"ProtagonistaPanel","imports":["frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/componentes/PortadaCatalogo.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/libros/librosService.js","frontend/src/panel/anuncios/protagonistaService.js"],"usedBy":["frontend/src/panel/anuncios/AnunciosPage.jsx"],"endpoints":["GET /api/anuncios/protagonista/panel","GET /api/libros","PUT /api/anuncios/protagonista"],"relatedFiles":["frontend/src/panel/libros/librosService.js","frontend/src/panel/anuncios/protagonistaService.js"]},
+  {"file":"frontend/src/panel/anuncios/AnunciosPage.jsx","module":"anuncios","responsibility":"Página del panel: Anuncios (ruta /anuncios)","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/ConfirmarEliminacion.jsx","frontend/src/app/providers/ToastContext.js","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/anuncios/ProtagonistaPanel.jsx","frontend/src/panel/anuncios/anunciosService.js","frontend/src/panel/lib/hooks/useCarga.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["DELETE /api/anuncios/:param","GET /api/anuncios/todos","POST /api/anuncios","PUT /api/anuncios/:param"],"relatedFiles":["frontend/src/panel/anuncios/anunciosService.js"]},
+  {"file":"frontend/src/panel/anuncios/anunciosService.js","module":"anuncios","responsibility":"Servicio HTTP del panel (anunciosService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/anuncios/AnunciosPage.jsx"],"endpoints":["GET /api/anuncios/todos","POST /api/anuncios","PUT /api/anuncios/:param","DELETE /api/anuncios/:param"],"relatedFiles":[]},
+  {"file":"frontend/src/panel/anuncios/ProtagonistaPanel.jsx","module":"anuncios","responsibility":"ProtagonistaPanel","imports":["frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/app/providers/ToastContext.js","frontend/src/panel/componentes/PortadaCatalogo.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/libros/librosService.js","frontend/src/panel/anuncios/protagonistaService.js"],"usedBy":["frontend/src/panel/anuncios/AnunciosPage.jsx"],"endpoints":["GET /api/anuncios/protagonista/panel","GET /api/libros","PUT /api/anuncios/protagonista"],"relatedFiles":["frontend/src/panel/libros/librosService.js","frontend/src/panel/anuncios/protagonistaService.js"]},
   {"file":"frontend/src/panel/anuncios/protagonistaService.js","module":"anuncios","responsibility":"Servicio HTTP del panel (protagonistaService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/anuncios/ProtagonistaPanel.jsx"],"endpoints":["GET /api/anuncios/protagonista/panel","PUT /api/anuncios/protagonista"],"relatedFiles":[]},
   {"file":"frontend/src/panel/auth/authService.js","module":"auth","responsibility":"Servicio HTTP del panel (authService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/auth/LoginPage.jsx","frontend/src/panel/auth/VerificarEmailPage.jsx","frontend/src/panel/layout/PerfilAdministrador.jsx"],"endpoints":["POST /api/auth/login","POST /api/auth/verificar-email","POST /api/auth/reenviar-codigo","POST /api/auth/2fa/verify-login","POST /api/auth/2fa/setup","POST /api/auth/2fa/confirm","POST /api/auth/2fa/disable","POST /api/auth/solicitar-reseteo","POST /api/auth/reestablecer-contrasena"],"relatedFiles":[]},
   {"file":"frontend/src/panel/auth/erroresSesion.js","module":"auth","responsibility":"erroresSesion","imports":[],"usedBy":["frontend/src/panel/lib/api/client.js"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/auth/LoginPage.jsx","module":"auth","responsibility":"Página del panel: Login (ruta /admin/login)","imports":["frontend/src/panel/auth/authService.js","frontend/src/app/providers/AuthContext.jsx","frontend/src/panel/lib/hooks/usePaginaPanel.js","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/Celebracion.jsx","frontend/src/panel/lib/utils/sonido.js","frontend/src/panel/lib/roles.js","frontend/src/compartido/assets/logo-principal-oscuro.png","frontend/src/compartido/assets/fondo-login.webp","frontend/src/panel/auth/login.css"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["POST /api/auth/2fa/verify-login","POST /api/auth/login","POST /api/auth/reestablecer-contrasena","POST /api/auth/solicitar-reseteo"],"relatedFiles":["frontend/src/panel/auth/authService.js"]},
+  {"file":"frontend/src/panel/auth/LoginPage.jsx","module":"auth","responsibility":"Página del panel: Login (ruta /admin/login)","imports":["frontend/src/panel/auth/authService.js","frontend/src/app/providers/AuthContext.js","frontend/src/panel/lib/hooks/usePaginaPanel.js","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/Celebracion.jsx","frontend/src/panel/lib/utils/sonido.js","frontend/src/panel/lib/roles.js","frontend/src/compartido/assets/logo-principal-oscuro.png","frontend/src/compartido/assets/fondo-login.webp","frontend/src/panel/auth/login.css"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["POST /api/auth/2fa/verify-login","POST /api/auth/login","POST /api/auth/reestablecer-contrasena","POST /api/auth/solicitar-reseteo"],"relatedFiles":["frontend/src/panel/auth/authService.js"]},
   {"file":"frontend/src/panel/auth/perfilService.js","module":"auth","responsibility":"Servicio HTTP del panel (perfilService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/layout/PerfilAdministrador.jsx"],"endpoints":["GET /api/usuarios/perfil","PUT /api/usuarios/perfil","PUT /api/usuarios/foto","PUT /api/usuarios/password"],"relatedFiles":[]},
-  {"file":"frontend/src/panel/auth/useRol.js","module":"auth","responsibility":"useRol","imports":["frontend/src/app/providers/AuthContext.jsx","frontend/src/panel/lib/roles.js"],"usedBy":["frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/inventario/InventarioPage.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/panel/auth/useRol.js","module":"auth","responsibility":"useRol","imports":["frontend/src/app/providers/AuthContext.js","frontend/src/panel/lib/roles.js"],"usedBy":["frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/inventario/InventarioPage.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/auth/VerificarEmailPage.jsx","module":"auth","responsibility":"Página del panel: VerificarEmail (ruta /verificar-email)","imports":["frontend/src/panel/auth/authService.js","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/compartido/assets/fondo-login.webp","frontend/src/compartido/assets/logo-principal-oscuro.png"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["POST /api/auth/reenviar-codigo","POST /api/auth/verificar-email"],"relatedFiles":["frontend/src/panel/auth/authService.js"]},
   {"file":"frontend/src/panel/autores/AutorEditModal.jsx","module":"autores","responsibility":"Modal: AutorEditModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/autores/autoresService.js","frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/panel/autores/AutoresPage.jsx"],"endpoints":["PUT /api/autores/:param"],"relatedFiles":["frontend/src/panel/autores/autoresService.js"]},
-  {"file":"frontend/src/panel/autores/AutoresPage.jsx","module":"autores","responsibility":"Página del panel: Autores","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/AltaFlotante.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/ConfirmarEliminacion.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/autores/autoresService.js","frontend/src/panel/autores/AutorForm.jsx","frontend/src/panel/autores/AutorViewModal.jsx","frontend/src/panel/autores/AutorEditModal.jsx"],"usedBy":["frontend/src/panel/libros/LibrosAutoresPage.jsx"],"endpoints":["DELETE /api/autores/:param","GET /api/autores","GET /api/autores/:param"],"relatedFiles":["frontend/src/panel/autores/autoresService.js"]},
+  {"file":"frontend/src/panel/autores/AutoresPage.jsx","module":"autores","responsibility":"Página del panel: Autores","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/AltaFlotante.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/ConfirmarEliminacion.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/app/providers/ToastContext.js","frontend/src/panel/autores/autoresService.js","frontend/src/panel/autores/AutorForm.jsx","frontend/src/panel/autores/AutorViewModal.jsx","frontend/src/panel/autores/AutorEditModal.jsx"],"usedBy":["frontend/src/panel/libros/LibrosAutoresPage.jsx"],"endpoints":["DELETE /api/autores/:param","GET /api/autores","GET /api/autores/:param"],"relatedFiles":["frontend/src/panel/autores/autoresService.js"]},
   {"file":"frontend/src/panel/autores/autoresService.js","module":"autores","responsibility":"Servicio HTTP del panel (autoresService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/autores/AutorEditModal.jsx","frontend/src/panel/autores/AutoresPage.jsx","frontend/src/panel/autores/AutorForm.jsx"],"endpoints":["GET /api/autores","GET /api/autores/:param","POST /api/autores","PUT /api/autores/:param","DELETE /api/autores/:param"],"relatedFiles":[]},
   {"file":"frontend/src/panel/autores/AutorForm.jsx","module":"autores","responsibility":"Formulario: AutorForm","imports":["frontend/src/panel/ui/FormularioAlta.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/autores/autoresService.js","frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/panel/autores/AutoresPage.jsx","frontend/src/panel/libros/LibroEditModal.jsx","frontend/src/panel/libros/LibroForm.jsx"],"endpoints":["POST /api/autores"],"relatedFiles":["frontend/src/panel/autores/autoresService.js"]},
   {"file":"frontend/src/panel/autores/AutorViewModal.jsx","module":"autores","responsibility":"Modal: AutorViewModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Ficha.jsx"],"usedBy":["frontend/src/panel/autores/AutoresPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/categorias/CategoriaEditModal.jsx","module":"categorias","responsibility":"Modal: CategoriaEditModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/categorias/categoriasService.js","frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/panel/categorias/CategoriasPage.jsx"],"endpoints":["PUT /api/categorias/:param"],"relatedFiles":["frontend/src/panel/categorias/categoriasService.js"]},
   {"file":"frontend/src/panel/categorias/CategoriaForm.jsx","module":"categorias","responsibility":"Formulario: CategoriaForm","imports":["frontend/src/panel/ui/FormularioAlta.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/categorias/categoriasService.js","frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/panel/categorias/CategoriasPage.jsx"],"endpoints":["POST /api/categorias"],"relatedFiles":["frontend/src/panel/categorias/categoriasService.js"]},
-  {"file":"frontend/src/panel/categorias/CategoriasPage.jsx","module":"categorias","responsibility":"Página del panel: Categorias (ruta /categorias)","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/AltaFlotante.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/ConfirmarEliminacion.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/categorias/categoriasService.js","frontend/src/panel/categorias/CategoriaForm.jsx","frontend/src/panel/categorias/CategoriaViewModal.jsx","frontend/src/panel/categorias/CategoriaEditModal.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["DELETE /api/categorias/:param","GET /api/categorias","GET /api/categorias/:param"],"relatedFiles":["frontend/src/panel/categorias/categoriasService.js"]},
+  {"file":"frontend/src/panel/categorias/CategoriasPage.jsx","module":"categorias","responsibility":"Página del panel: Categorias (ruta /categorias)","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/AltaFlotante.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/ConfirmarEliminacion.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/app/providers/ToastContext.js","frontend/src/panel/categorias/categoriasService.js","frontend/src/panel/categorias/CategoriaForm.jsx","frontend/src/panel/categorias/CategoriaViewModal.jsx","frontend/src/panel/categorias/CategoriaEditModal.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["DELETE /api/categorias/:param","GET /api/categorias","GET /api/categorias/:param"],"relatedFiles":["frontend/src/panel/categorias/categoriasService.js"]},
   {"file":"frontend/src/panel/categorias/categoriasService.js","module":"categorias","responsibility":"Servicio HTTP del panel (categoriasService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/categorias/CategoriaEditModal.jsx","frontend/src/panel/categorias/CategoriaForm.jsx","frontend/src/panel/categorias/CategoriasPage.jsx"],"endpoints":["GET /api/categorias","GET /api/categorias/:param","POST /api/categorias","PUT /api/categorias/:param","DELETE /api/categorias/:param"],"relatedFiles":[]},
   {"file":"frontend/src/panel/categorias/CategoriaViewModal.jsx","module":"categorias","responsibility":"Modal: CategoriaViewModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Ficha.jsx"],"usedBy":["frontend/src/panel/categorias/CategoriasPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/clientes/ClientesPage.jsx","module":"clientes","responsibility":"Página del panel: Clientes","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/exportarCsv.js","frontend/src/panel/clientes/clientesService.js","frontend/src/panel/clientes/ClienteViewModal.jsx","frontend/src/panel/lib/utils/cuentas.js"],"usedBy":["frontend/src/panel/usuarios/UsuariosClientesPage.jsx"],"endpoints":["GET /api/clientes"],"relatedFiles":["frontend/src/panel/clientes/clientesService.js"]},
+  {"file":"frontend/src/panel/clientes/ClientesPage.jsx","module":"clientes","responsibility":"Página del panel: Clientes","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/exportarCsv.js","frontend/src/panel/clientes/clientesService.js","frontend/src/panel/clientes/ClienteViewModal.jsx","frontend/src/panel/lib/utils/cuentas.js","frontend/src/panel/lib/hooks/useCarga.js"],"usedBy":["frontend/src/panel/usuarios/UsuariosClientesPage.jsx"],"endpoints":["GET /api/clientes"],"relatedFiles":["frontend/src/panel/clientes/clientesService.js"]},
   {"file":"frontend/src/panel/clientes/clientesService.js","module":"clientes","responsibility":"Servicio HTTP del panel (clientesService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/clientes/ClientesPage.jsx"],"endpoints":["GET /api/clientes"],"relatedFiles":[]},
   {"file":"frontend/src/panel/clientes/ClienteViewModal.jsx","module":"clientes","responsibility":"Modal: ClienteViewModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Ficha.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/cuentas.js"],"usedBy":["frontend/src/panel/clientes/ClientesPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/componentes/PortadaCatalogo.jsx","module":"componentes","responsibility":"PortadaCatalogo","imports":["frontend/src/compartido/lib/utils/portadasLibro.js","frontend/src/compartido/lib/utils/url.js"],"usedBy":["frontend/src/panel/anuncios/ProtagonistaPanel.jsx","frontend/src/panel/libros/CamposLibro.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/libros/LibroViewModal.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/comprobantes/AnularComprobanteModal.jsx","module":"comprobantes","responsibility":"Modal: AnularComprobanteModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/comprobantes/comprobantesService.js"],"usedBy":["frontend/src/panel/comprobantes/ComprobantesPage.jsx"],"endpoints":["POST /api/comprobantes/:param/anular"],"relatedFiles":["frontend/src/panel/comprobantes/comprobantesService.js"]},
-  {"file":"frontend/src/panel/comprobantes/ComprobantesPage.jsx","module":"comprobantes","responsibility":"Página del panel: Comprobantes (ruta /ventas/comprobantes)","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/panel/ui/ConfirmarAccion.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/cuentas.js","frontend/src/panel/comprobantes/comprobantesService.js","frontend/src/panel/comprobantes/envioAutomatico.js","frontend/src/panel/comprobantes/ComprobanteViewModal.jsx","frontend/src/panel/comprobantes/AnularComprobanteModal.jsx","frontend/src/panel/auth/useRol.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/comprobantes","GET /api/comprobantes/resumen","POST /api/comprobantes/:param/enviar-email"],"relatedFiles":["frontend/src/panel/comprobantes/comprobantesService.js"]},
+  {"file":"frontend/src/panel/comprobantes/ComprobantesPage.jsx","module":"comprobantes","responsibility":"Página del panel: Comprobantes (ruta /ventas/comprobantes)","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/panel/ui/ConfirmarAccion.jsx","frontend/src/app/providers/ToastContext.js","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/cuentas.js","frontend/src/panel/comprobantes/comprobantesService.js","frontend/src/panel/comprobantes/envioAutomatico.js","frontend/src/panel/comprobantes/ComprobanteViewModal.jsx","frontend/src/panel/comprobantes/AnularComprobanteModal.jsx","frontend/src/panel/auth/useRol.js","frontend/src/panel/lib/hooks/useCarga.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/comprobantes","GET /api/comprobantes/resumen","POST /api/comprobantes/:param/enviar-email"],"relatedFiles":["frontend/src/panel/comprobantes/comprobantesService.js"]},
   {"file":"frontend/src/panel/comprobantes/comprobantesService.js","module":"comprobantes","responsibility":"Servicio HTTP del panel (comprobantesService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/comprobantes/AnularComprobanteModal.jsx","frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/comprobantes/ComprobanteViewModal.jsx","frontend/src/panel/ventas/EmitirComprobanteModal.jsx"],"endpoints":["GET /api/comprobantes","GET /api/comprobantes/:param","POST /api/ventas/:param/comprobante","POST /api/comprobantes/:param/enviar-email","GET /api/comprobantes/resumen","POST /api/comprobantes/:param/anular"],"relatedFiles":[]},
   {"file":"frontend/src/panel/comprobantes/ComprobanteViewModal.jsx","module":"comprobantes","responsibility":"Modal: ComprobanteViewModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/Spinner.jsx","frontend/src/panel/lib/utils/numeroALetras.js","frontend/src/panel/comprobantes/comprobantesService.js","frontend/src/panel/configuracion/empresaService.js","frontend/src/panel/comprobantes/emisorHistorico.js","frontend/src/panel/lib/utils/cuentas.js","frontend/src/panel/lib/hooks/useImpresion.js"],"usedBy":["frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":["GET /api/comprobantes/:param","GET /api/empresa"],"relatedFiles":["frontend/src/panel/comprobantes/comprobantesService.js","frontend/src/panel/configuracion/empresaService.js"]},
   {"file":"frontend/src/panel/comprobantes/emisorHistorico.js","module":"comprobantes","responsibility":"emisorHistorico","imports":[],"usedBy":["frontend/src/panel/comprobantes/ComprobanteViewModal.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/comprobantes/envioAutomatico.js","module":"comprobantes","responsibility":"envioAutomatico","imports":[],"usedBy":["frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/ventas/EmitirComprobanteModal.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/configuracion/EmpresaPage.jsx","module":"configuracion","responsibility":"Página del panel: Empresa (ruta /configuracion/empresa)","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/configuracion/empresaService.js","frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/empresa","PUT /api/empresa"],"relatedFiles":["frontend/src/panel/configuracion/empresaService.js"]},
+  {"file":"frontend/src/panel/configuracion/EmpresaPage.jsx","module":"configuracion","responsibility":"Página del panel: Empresa (ruta /configuracion/empresa)","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/app/providers/ToastContext.js","frontend/src/panel/configuracion/empresaService.js","frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/empresa","PUT /api/empresa"],"relatedFiles":["frontend/src/panel/configuracion/empresaService.js"]},
   {"file":"frontend/src/panel/configuracion/empresaService.js","module":"configuracion","responsibility":"Servicio HTTP del panel (empresaService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/comprobantes/ComprobanteViewModal.jsx","frontend/src/panel/configuracion/EmpresaPage.jsx","frontend/src/panel/ventas/EmitirComprobanteModal.jsx"],"endpoints":["GET /api/empresa","PUT /api/empresa"],"relatedFiles":[]},
   {"file":"frontend/src/panel/dashboard/DashboardPage.jsx","module":"dashboard","responsibility":"Página del panel: Dashboard (ruta /dashboard)","imports":["frontend/src/panel/dashboard/dashboardService.js","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/dashboard/graficoUtils.js","frontend/src/panel/dashboard/StatCard.jsx","frontend/src/panel/dashboard/MejorRegistro.jsx","frontend/src/panel/dashboard/DetalleTarjeta.jsx","frontend/src/panel/dashboard/RecentBooks.jsx","frontend/src/panel/dashboard/SalesChart.jsx","frontend/src/panel/dashboard/StatusDonut.jsx","frontend/src/panel/dashboard/StockBajo.jsx","frontend/src/panel/dashboard/TopBooks.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/inventario/stock-bajo","GET /api/libros","GET /api/reportes/indicadores-ventas","GET /api/reportes/libros-mas-vendidos","GET /api/reportes/resumen","GET /api/reportes/ventas-por-dia","GET /api/reportes/ventas-por-estado","GET /api/reportes/ventas-por-mes"],"relatedFiles":["frontend/src/panel/dashboard/dashboardService.js"]},
   {"file":"frontend/src/panel/dashboard/dashboardService.js","module":"dashboard","responsibility":"Servicio HTTP del panel (dashboardService)","imports":["frontend/src/panel/reportes/reportesService.js","frontend/src/panel/libros/librosService.js"],"usedBy":["frontend/src/panel/dashboard/DashboardPage.jsx"],"endpoints":["GET /api/inventario/stock-bajo","GET /api/libros","GET /api/reportes/indicadores-ventas","GET /api/reportes/libros-mas-vendidos","GET /api/reportes/resumen","GET /api/reportes/ventas-por-dia","GET /api/reportes/ventas-por-estado","GET /api/reportes/ventas-por-mes"],"relatedFiles":["frontend/src/panel/reportes/reportesService.js","frontend/src/panel/libros/librosService.js"]},
   {"file":"frontend/src/panel/dashboard/Decoraciones.jsx","module":"dashboard","responsibility":"Decoraciones","imports":[],"usedBy":["frontend/src/panel/dashboard/StatCard.jsx","frontend/src/panel/dashboard/StockBajo.jsx","frontend/src/panel/ui/Indicadores.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/dashboard/DetalleTarjeta.jsx","module":"dashboard","responsibility":"DetalleTarjeta","imports":[],"usedBy":["frontend/src/panel/dashboard/DashboardPage.jsx","frontend/src/panel/dashboard/MejorRegistro.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/dashboard/graficoUtils.js","module":"dashboard","responsibility":"graficoUtils","imports":[],"usedBy":["frontend/src/panel/dashboard/DashboardPage.jsx","frontend/src/panel/dashboard/SalesChart.jsx","frontend/src/panel/dashboard/StatusDonut.jsx","frontend/src/panel/dashboard/StockBajo.jsx","frontend/src/panel/dashboard/TopBooks.jsx","frontend/src/panel/reportes/useVentasDiarias.js","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/panel/dashboard/graficoUtils.js","module":"dashboard","responsibility":"graficoUtils","imports":[],"usedBy":["frontend/src/panel/dashboard/DashboardPage.jsx","frontend/src/panel/dashboard/SalesChart.jsx","frontend/src/panel/dashboard/StatusDonut.jsx","frontend/src/panel/dashboard/StockBajo.jsx","frontend/src/panel/dashboard/TopBooks.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/dashboard/MejorRegistro.jsx","module":"dashboard","responsibility":"MejorRegistro","imports":["frontend/src/panel/dashboard/DetalleTarjeta.jsx"],"usedBy":["frontend/src/panel/dashboard/DashboardPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/dashboard/Pastel3D.jsx","module":"dashboard","responsibility":"Pastel3D","imports":[],"usedBy":["frontend/src/panel/dashboard/StatusDonut.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/dashboard/RecentBooks.jsx","module":"dashboard","responsibility":"RecentBooks","imports":["frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/DataTable.jsx"],"usedBy":["frontend/src/panel/dashboard/DashboardPage.jsx"],"endpoints":[],"relatedFiles":[]},
@@ -3727,23 +3700,24 @@
   {"file":"frontend/src/panel/inventario/cambiosInventario.js","module":"inventario","responsibility":"cambiosInventario","imports":[],"usedBy":["frontend/src/panel/inventario/InventarioEditModal.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/inventario/InventarioEditModal.jsx","module":"inventario","responsibility":"Modal: InventarioEditModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/inventario/inventarioService.js","frontend/src/panel/inventario/cambiosInventario.js","frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/panel/inventario/InventarioPage.jsx"],"endpoints":["PUT /api/inventario/libro/:param"],"relatedFiles":["frontend/src/panel/inventario/inventarioService.js"]},
   {"file":"frontend/src/panel/inventario/InventarioForm.jsx","module":"inventario","responsibility":"Formulario: InventarioForm","imports":["frontend/src/panel/ui/FormularioAlta.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/inventario/useLibros.js","frontend/src/panel/inventario/inventarioService.js","frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/panel/inventario/InventarioPage.jsx"],"endpoints":["POST /api/inventario"],"relatedFiles":["frontend/src/panel/inventario/inventarioService.js"]},
-  {"file":"frontend/src/panel/inventario/InventarioPage.jsx","module":"inventario","responsibility":"Página del panel: Inventario (ruta /inventario)","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/AltaFlotante.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/FechaTabla.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/auth/useRol.js","frontend/src/panel/inventario/inventarioService.js","frontend/src/panel/inventario/InventarioForm.jsx","frontend/src/panel/inventario/InventarioViewModal.jsx","frontend/src/panel/inventario/InventarioEditModal.jsx","frontend/src/panel/inventario/MovimientosModal.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/inventario","GET /api/inventario/libro/:param"],"relatedFiles":["frontend/src/panel/inventario/inventarioService.js"]},
+  {"file":"frontend/src/panel/inventario/InventarioPage.jsx","module":"inventario","responsibility":"Página del panel: Inventario (ruta /inventario)","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/AltaFlotante.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/FechaTabla.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/app/providers/ToastContext.js","frontend/src/panel/auth/useRol.js","frontend/src/panel/inventario/inventarioService.js","frontend/src/panel/inventario/InventarioForm.jsx","frontend/src/panel/inventario/InventarioViewModal.jsx","frontend/src/panel/inventario/InventarioEditModal.jsx","frontend/src/panel/inventario/MovimientosModal.jsx","frontend/src/panel/lib/hooks/useCarga.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/inventario","GET /api/inventario/libro/:param"],"relatedFiles":["frontend/src/panel/inventario/inventarioService.js"]},
   {"file":"frontend/src/panel/inventario/inventarioService.js","module":"inventario","responsibility":"Servicio HTTP del panel (inventarioService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/inventario/InventarioEditModal.jsx","frontend/src/panel/inventario/InventarioForm.jsx","frontend/src/panel/inventario/InventarioPage.jsx","frontend/src/panel/inventario/MovimientosModal.jsx","frontend/src/panel/inventario/useLibros.js","frontend/src/panel/libros/LibrosPage.jsx"],"endpoints":["GET /api/inventario","GET /api/inventario/libro/:param","POST /api/inventario","PUT /api/inventario/libro/:param","GET /api/inventario/movimientos","GET /api/libros"],"relatedFiles":[]},
   {"file":"frontend/src/panel/inventario/InventarioViewModal.jsx","module":"inventario","responsibility":"Modal: InventarioViewModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Ficha.jsx","frontend/src/compartido/lib/utils/format.js"],"usedBy":["frontend/src/panel/inventario/InventarioPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/inventario/MovimientosModal.jsx","module":"inventario","responsibility":"Modal: MovimientosModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/inventario/inventarioService.js"],"usedBy":["frontend/src/panel/inventario/InventarioPage.jsx"],"endpoints":["GET /api/inventario/movimientos","GET /api/libros"],"relatedFiles":["frontend/src/panel/inventario/inventarioService.js"]},
+  {"file":"frontend/src/panel/inventario/MovimientosModal.jsx","module":"inventario","responsibility":"Modal: MovimientosModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/inventario/inventarioService.js","frontend/src/panel/lib/hooks/useCarga.js"],"usedBy":["frontend/src/panel/inventario/InventarioPage.jsx"],"endpoints":["GET /api/inventario/movimientos","GET /api/libros"],"relatedFiles":["frontend/src/panel/inventario/inventarioService.js"]},
   {"file":"frontend/src/panel/inventario/useLibros.js","module":"inventario","responsibility":"useLibros","imports":["frontend/src/panel/inventario/inventarioService.js"],"usedBy":["frontend/src/panel/inventario/InventarioForm.jsx"],"endpoints":["GET /api/libros"],"relatedFiles":["frontend/src/panel/inventario/inventarioService.js"]},
   {"file":"frontend/src/panel/layout/AdminLayout.jsx","module":"layout","responsibility":"Layout del panel: AdminLayout","imports":["frontend/src/panel/layout/Sidebar.jsx","frontend/src/panel/layout/Topbar.jsx","frontend/src/panel/layout/Breadcrumbs.jsx","frontend/src/panel/lib/hooks/usePaginaPanel.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/layout/Breadcrumbs.jsx","module":"layout","responsibility":"Layout del panel: Breadcrumbs","imports":["frontend/src/panel/layout/navConfig.js"],"usedBy":["frontend/src/panel/layout/AdminLayout.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/layout/navConfig.js","module":"layout","responsibility":"Layout del panel: navConfig","imports":["frontend/src/panel/lib/roles.js"],"usedBy":["frontend/src/panel/layout/Breadcrumbs.jsx","frontend/src/panel/layout/Sidebar.jsx","frontend/src/panel/layout/Topbar.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/layout/PerfilAdministrador.jsx","module":"layout","responsibility":"Layout del panel: PerfilAdministrador","imports":["frontend/src/panel/lib/api/client.js","frontend/src/panel/auth/perfilService.js","frontend/src/panel/auth/authService.js","frontend/src/app/providers/AuthContext.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Celebracion.jsx"],"usedBy":["frontend/src/panel/layout/Topbar.jsx"],"endpoints":["GET /api/usuarios/perfil","POST /api/auth/2fa/confirm","POST /api/auth/2fa/disable","POST /api/auth/2fa/setup","PUT /api/usuarios/foto","PUT /api/usuarios/password","PUT /api/usuarios/perfil"],"relatedFiles":["frontend/src/panel/auth/perfilService.js","frontend/src/panel/auth/authService.js"]},
-  {"file":"frontend/src/panel/layout/Sidebar.jsx","module":"layout","responsibility":"Layout del panel: Sidebar","imports":["frontend/src/app/providers/AuthContext.jsx","frontend/src/compartido/assets/logo-f-blanco-96.webp","frontend/src/panel/layout/navConfig.js"],"usedBy":["frontend/src/panel/layout/AdminLayout.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/layout/Topbar.jsx","module":"layout","responsibility":"Layout del panel: Topbar","imports":["frontend/src/panel/lib/api/client.js","frontend/src/panel/notificaciones/PanelNotificaciones.jsx","frontend/src/panel/notificaciones/notificacionesService.js","frontend/src/app/providers/AuthContext.jsx","frontend/src/panel/layout/PerfilAdministrador.jsx","frontend/src/panel/layout/navConfig.js"],"usedBy":["frontend/src/panel/layout/AdminLayout.jsx"],"endpoints":[],"relatedFiles":["frontend/src/panel/notificaciones/notificacionesService.js"]},
+  {"file":"frontend/src/panel/layout/PerfilAdministrador.jsx","module":"layout","responsibility":"Layout del panel: PerfilAdministrador","imports":["frontend/src/panel/lib/api/client.js","frontend/src/panel/auth/perfilService.js","frontend/src/panel/auth/authService.js","frontend/src/app/providers/AuthContext.js","frontend/src/app/providers/ToastContext.js","frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Celebracion.jsx","frontend/src/panel/lib/hooks/useCarga.js"],"usedBy":["frontend/src/panel/layout/Topbar.jsx"],"endpoints":["GET /api/usuarios/perfil","POST /api/auth/2fa/confirm","POST /api/auth/2fa/disable","POST /api/auth/2fa/setup","PUT /api/usuarios/foto","PUT /api/usuarios/password","PUT /api/usuarios/perfil"],"relatedFiles":["frontend/src/panel/auth/perfilService.js","frontend/src/panel/auth/authService.js"]},
+  {"file":"frontend/src/panel/layout/Sidebar.jsx","module":"layout","responsibility":"Layout del panel: Sidebar","imports":["frontend/src/app/providers/AuthContext.js","frontend/src/compartido/assets/logo-f-blanco-96.webp","frontend/src/panel/layout/navConfig.js"],"usedBy":["frontend/src/panel/layout/AdminLayout.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/panel/layout/Topbar.jsx","module":"layout","responsibility":"Layout del panel: Topbar","imports":["frontend/src/panel/lib/api/client.js","frontend/src/panel/notificaciones/PanelNotificaciones.jsx","frontend/src/panel/notificaciones/notificacionesService.js","frontend/src/app/providers/AuthContext.js","frontend/src/panel/layout/PerfilAdministrador.jsx","frontend/src/panel/layout/navConfig.js","frontend/src/panel/lib/hooks/useCarga.js"],"usedBy":["frontend/src/panel/layout/AdminLayout.jsx"],"endpoints":[],"relatedFiles":["frontend/src/panel/notificaciones/notificacionesService.js"]},
   {"file":"frontend/src/panel/lib/api/client.js","module":"api","responsibility":"Utilidad frontend client","imports":["frontend/src/compartido/config/env.js","frontend/src/panel/lib/storage/index.js","frontend/src/compartido/lib/utils/url.js","frontend/src/panel/auth/erroresSesion.js"],"usedBy":["frontend/src/panel/anuncios/anunciosService.js","frontend/src/panel/anuncios/protagonistaService.js","frontend/src/panel/auth/authService.js","frontend/src/panel/auth/perfilService.js","frontend/src/panel/autores/autoresService.js","frontend/src/panel/categorias/categoriasService.js","frontend/src/panel/clientes/clientesService.js","frontend/src/panel/comprobantes/comprobantesService.js","frontend/src/panel/configuracion/empresaService.js","frontend/src/panel/inventario/inventarioService.js","frontend/src/panel/layout/PerfilAdministrador.jsx","frontend/src/panel/layout/Topbar.jsx","frontend/src/panel/libros/librosService.js","frontend/src/panel/pagos/pagosService.js","frontend/src/panel/pedidos/pedidosService.js","frontend/src/panel/reclamaciones/reclamacionesService.js","frontend/src/panel/reportes/reportesService.js","frontend/src/panel/tarifas/tarifasService.js","frontend/src/panel/usuarios/usuariosService.js","frontend/src/panel/ventas/ventasService.js"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/panel/lib/hooks/useCarga.js","module":"hooks","responsibility":"Utilidad frontend useCarga","imports":[],"usedBy":["frontend/src/panel/anuncios/AnunciosPage.jsx","frontend/src/panel/clientes/ClientesPage.jsx","frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/inventario/InventarioPage.jsx","frontend/src/panel/inventario/MovimientosModal.jsx","frontend/src/panel/layout/PerfilAdministrador.jsx","frontend/src/panel/layout/Topbar.jsx","frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/panel/reclamaciones/ReclamacionesPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/lib/hooks/useFormulario.js","module":"hooks","responsibility":"Utilidad frontend useFormulario","imports":["frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/panel/ui/FormularioAlta.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/lib/hooks/useImpresion.js","module":"hooks","responsibility":"Utilidad frontend useImpresion","imports":["frontend/src/panel/lib/utils/imprimirDocumento.js"],"usedBy":["frontend/src/panel/comprobantes/ComprobanteViewModal.jsx","frontend/src/panel/reclamaciones/ReclamacionesPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/lib/hooks/usePaginaPanel.js","module":"hooks","responsibility":"Utilidad frontend usePaginaPanel","imports":[],"usedBy":["frontend/src/panel/auth/LoginPage.jsx","frontend/src/panel/layout/AdminLayout.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/lib/roles.js","module":"lib","responsibility":"Utilidad frontend roles","imports":[],"usedBy":["frontend/src/app/router/AppRouter.jsx","frontend/src/app/router/RutaPorRol.jsx","frontend/src/app/router/RutaProtegida.jsx","frontend/src/panel/auth/LoginPage.jsx","frontend/src/panel/auth/useRol.js","frontend/src/panel/layout/navConfig.js","frontend/src/panel/usuarios/UsuariosPage.jsx","frontend/src/panel/usuarios/UsuarioViewModal.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/lib/storage/index.js","module":"storage","responsibility":"Utilidad frontend index","imports":[],"usedBy":["frontend/src/app/providers/AuthContext.jsx","frontend/src/panel/lib/api/client.js"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/panel/lib/storage/index.js","module":"storage","responsibility":"Utilidad frontend index","imports":[],"usedBy":["frontend/src/app/providers/AuthProvider.jsx","frontend/src/panel/lib/api/client.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/lib/utils/cuentas.js","module":"utils","responsibility":"Utilidad frontend cuentas","imports":[],"usedBy":["frontend/src/panel/clientes/ClientesPage.jsx","frontend/src/panel/clientes/ClienteViewModal.jsx","frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/comprobantes/ComprobanteViewModal.jsx","frontend/src/panel/pagos/pagoPresentacion.js","frontend/src/panel/usuarios/UsuariosPage.jsx","frontend/src/panel/usuarios/UsuarioViewModal.jsx","frontend/src/panel/ventas/VentasPage.jsx","frontend/src/panel/ventas/VentaViewModal.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/lib/utils/exportarCsv.js","module":"utils","responsibility":"Utilidad frontend exportarCsv","imports":[],"usedBy":["frontend/src/panel/clientes/ClientesPage.jsx","frontend/src/panel/usuarios/UsuariosPage.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/lib/utils/imprimirDocumento.js","module":"utils","responsibility":"Utilidad frontend imprimirDocumento","imports":["frontend/src/panel/estilos/impresion.css"],"usedBy":["frontend/src/panel/lib/hooks/useImpresion.js"],"endpoints":[],"relatedFiles":[]},
@@ -3756,7 +3730,7 @@
   {"file":"frontend/src/panel/libros/LibroEditModal.jsx","module":"libros","responsibility":"Modal: LibroEditModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/libros/librosService.js","frontend/src/compartido/lib/utils/portadasLibro.js","frontend/src/panel/libros/CamposLibro.jsx","frontend/src/panel/libros/DescuentoLibroModal.jsx","frontend/src/panel/autores/AutorForm.jsx","frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/panel/libros/LibrosPage.jsx"],"endpoints":["GET /api/autores","GET /api/categorias","GET /api/libros/:param","PUT /api/libros/:param"],"relatedFiles":["frontend/src/panel/libros/librosService.js"]},
   {"file":"frontend/src/panel/libros/LibroForm.jsx","module":"libros","responsibility":"Formulario: LibroForm","imports":["frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/Modal.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/libros/useCatalogo.js","frontend/src/panel/libros/librosService.js","frontend/src/panel/libros/CamposLibro.jsx","frontend/src/panel/libros/DescuentoLibroModal.jsx","frontend/src/panel/autores/AutorForm.jsx","frontend/src/panel/lib/utils/validaciones.js"],"usedBy":["frontend/src/panel/libros/LibrosPage.jsx"],"endpoints":["GET /api/libros/:param","POST /api/libros"],"relatedFiles":["frontend/src/panel/libros/librosService.js"]},
   {"file":"frontend/src/panel/libros/LibrosAutoresPage.jsx","module":"libros","responsibility":"Página del panel: LibrosAutores (ruta /libros)","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/autores/AutoresPage.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/libros/LibrosPage.jsx","module":"libros","responsibility":"Página del panel: Libros","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/AltaFlotante.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/auth/useRol.js","frontend/src/panel/libros/librosService.js","frontend/src/panel/libros/LibroForm.jsx","frontend/src/panel/libros/libroUi.jsx","frontend/src/panel/libros/nivelStock.js","frontend/src/panel/inventario/inventarioService.js","frontend/src/panel/libros/LibroViewModal.jsx","frontend/src/panel/libros/LibroEditModal.jsx","frontend/src/panel/libros/LibroDeleteModal.jsx","frontend/src/panel/componentes/PortadaCatalogo.jsx","frontend/src/compartido/lib/utils/portadasLibro.js"],"usedBy":["frontend/src/panel/libros/LibrosAutoresPage.jsx"],"endpoints":["DELETE /api/libros/:param","GET /api/inventario","GET /api/libros","GET /api/libros/:param"],"relatedFiles":["frontend/src/panel/libros/librosService.js","frontend/src/panel/inventario/inventarioService.js"]},
+  {"file":"frontend/src/panel/libros/LibrosPage.jsx","module":"libros","responsibility":"Página del panel: Libros","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/AltaFlotante.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/app/providers/ToastContext.js","frontend/src/panel/auth/useRol.js","frontend/src/panel/libros/librosService.js","frontend/src/panel/libros/LibroForm.jsx","frontend/src/panel/libros/libroUi.jsx","frontend/src/panel/libros/nivelStock.js","frontend/src/panel/inventario/inventarioService.js","frontend/src/panel/libros/LibroViewModal.jsx","frontend/src/panel/libros/LibroEditModal.jsx","frontend/src/panel/libros/LibroDeleteModal.jsx","frontend/src/panel/componentes/PortadaCatalogo.jsx","frontend/src/compartido/lib/utils/portadasLibro.js"],"usedBy":["frontend/src/panel/libros/LibrosAutoresPage.jsx"],"endpoints":["DELETE /api/libros/:param","GET /api/inventario","GET /api/libros","GET /api/libros/:param"],"relatedFiles":["frontend/src/panel/libros/librosService.js","frontend/src/panel/inventario/inventarioService.js"]},
   {"file":"frontend/src/panel/libros/librosService.js","module":"libros","responsibility":"Servicio HTTP del panel (librosService)","imports":["frontend/src/panel/lib/api/client.js","frontend/src/panel/libros/promocion.js"],"usedBy":["frontend/src/panel/anuncios/ProtagonistaPanel.jsx","frontend/src/panel/dashboard/dashboardService.js","frontend/src/panel/libros/LibroEditModal.jsx","frontend/src/panel/libros/LibroForm.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/libros/useCatalogo.js"],"endpoints":["GET /api/libros","GET /api/libros/:param","POST /api/libros","PUT /api/libros/:param","DELETE /api/libros/:param","GET /api/autores","GET /api/categorias"],"relatedFiles":[]},
   {"file":"frontend/src/panel/libros/libroUi.jsx","module":"libros","responsibility":"libroUi","imports":["frontend/src/panel/ui/Badge.jsx","frontend/src/panel/libros/nivelStock.js"],"usedBy":["frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/libros/LibroViewModal.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/libros/LibroViewModal.jsx","module":"libros","responsibility":"Modal: LibroViewModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Ficha.jsx","frontend/src/panel/componentes/PortadaCatalogo.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/libros/libroUi.jsx","frontend/src/panel/libros/promocion.js"],"usedBy":["frontend/src/panel/libros/LibrosPage.jsx"],"endpoints":[],"relatedFiles":[]},
@@ -3769,13 +3743,12 @@
   {"file":"frontend/src/panel/pagos/pagoPresentacion.js","module":"pagos","responsibility":"pagoPresentacion","imports":["frontend/src/panel/lib/utils/cuentas.js","frontend/src/panel/ventas/metodosPago.js"],"usedBy":["frontend/src/panel/pagos/PagoBadges.jsx","frontend/src/panel/ventas/VentasPage.jsx","frontend/src/panel/ventas/VentaViewModal.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/pagos/pagosService.js","module":"pagos","responsibility":"Servicio HTTP del panel (pagosService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/notificaciones/notificacionesService.js"],"endpoints":["GET /api/pagos"],"relatedFiles":[]},
   {"file":"frontend/src/panel/pedidos/estadosPedido.js","module":"pedidos","responsibility":"estadosPedido","imports":["frontend/src/compartido/lib/utils/estadoEntrega.js"],"usedBy":["frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/panel/ventas/EstadoEntregaVenta.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/pedidos/PedidosPage.jsx","module":"pedidos","responsibility":"Página del panel: Pedidos (ruta /ventas/pedidos)","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/FechaTabla.jsx","frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/ConfirmarAccion.jsx","frontend/src/panel/ui/Ficha.jsx","frontend/src/compartido/lib/utils/seguimientoPedido.js","frontend/src/panel/pedidos/pedidos.css","frontend/src/app/providers/ToastProvider.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/compartido/lib/utils/entrega.js","frontend/src/panel/pedidos/pedidosService.js","frontend/src/panel/pedidos/estadosPedido.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/pedidos","GET /api/pedidos/:param","PUT /api/pedidos/:param/estado"],"relatedFiles":["frontend/src/panel/pedidos/pedidosService.js"]},
+  {"file":"frontend/src/panel/pedidos/PedidosPage.jsx","module":"pedidos","responsibility":"Página del panel: Pedidos (ruta /ventas/pedidos)","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/lib/hooks/useCarga.js","frontend/src/panel/ui/FechaTabla.jsx","frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/ConfirmarAccion.jsx","frontend/src/panel/ui/Ficha.jsx","frontend/src/compartido/lib/utils/seguimientoPedido.js","frontend/src/panel/pedidos/pedidos.css","frontend/src/app/providers/ToastContext.js","frontend/src/compartido/lib/utils/format.js","frontend/src/compartido/lib/utils/entrega.js","frontend/src/panel/pedidos/pedidosService.js","frontend/src/panel/pedidos/estadosPedido.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/pedidos","GET /api/pedidos/:param","PUT /api/pedidos/:param/estado"],"relatedFiles":["frontend/src/panel/pedidos/pedidosService.js"]},
   {"file":"frontend/src/panel/pedidos/pedidosService.js","module":"pedidos","responsibility":"Servicio HTTP del panel (pedidosService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/pedidos/PedidosPage.jsx"],"endpoints":["GET /api/pedidos","GET /api/pedidos/:param","PUT /api/pedidos/:param/estado"],"relatedFiles":[]},
-  {"file":"frontend/src/panel/reclamaciones/LibroReclamacionesPage.jsx","module":"reclamaciones","responsibility":"Página del panel: LibroReclamaciones","imports":["frontend/src/compartido/assets/logo-f-verde-96.webp","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/reclamaciones/reclamacionesService.js","frontend/src/panel/reclamaciones/reclamaciones-publica.css","frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/tienda/useDatosCliente.js"],"usedBy":["frontend/src/web/paginas/ReclamacionesPublicasPage.jsx"],"endpoints":["GET /api/empresa","POST /api/reclamaciones"],"relatedFiles":["frontend/src/panel/reclamaciones/reclamacionesService.js"]},
-  {"file":"frontend/src/panel/reclamaciones/ReclamacionesPage.jsx","module":"reclamaciones","responsibility":"Página del panel: Reclamaciones (ruta /reclamaciones)","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/lib/hooks/useImpresion.js","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/reclamaciones/reclamacionesService.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/reclamaciones","GET /api/reclamaciones/resumen","PUT /api/reclamaciones/:param/respuesta"],"relatedFiles":["frontend/src/panel/reclamaciones/reclamacionesService.js"]},
+  {"file":"frontend/src/panel/reclamaciones/LibroReclamacionesPage.jsx","module":"reclamaciones","responsibility":"Página del panel: LibroReclamaciones","imports":["frontend/src/compartido/assets/logo-f-verde-96.webp","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/reclamaciones/reclamacionesService.js","frontend/src/panel/reclamaciones/reclamaciones-publica.css","frontend/src/web/tienda/TiendaContext.js","frontend/src/web/tienda/useDatosCliente.js"],"usedBy":["frontend/src/web/paginas/ReclamacionesPublicasPage.jsx"],"endpoints":["GET /api/empresa","POST /api/reclamaciones"],"relatedFiles":["frontend/src/panel/reclamaciones/reclamacionesService.js"]},
+  {"file":"frontend/src/panel/reclamaciones/ReclamacionesPage.jsx","module":"reclamaciones","responsibility":"Página del panel: Reclamaciones (ruta /reclamaciones)","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/app/providers/ToastContext.js","frontend/src/panel/lib/hooks/useImpresion.js","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/reclamaciones/reclamacionesService.js","frontend/src/panel/lib/hooks/useCarga.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/reclamaciones","GET /api/reclamaciones/resumen","PUT /api/reclamaciones/:param/respuesta"],"relatedFiles":["frontend/src/panel/reclamaciones/reclamacionesService.js"]},
   {"file":"frontend/src/panel/reclamaciones/reclamacionesService.js","module":"reclamaciones","responsibility":"Servicio HTTP del panel (reclamacionesService)","imports":["frontend/src/panel/lib/api/client.js","frontend/src/web/tienda/clienteApi.js"],"usedBy":["frontend/src/panel/reclamaciones/LibroReclamacionesPage.jsx","frontend/src/panel/reclamaciones/ReclamacionesPage.jsx"],"endpoints":["POST /api/reclamaciones","GET /api/reclamaciones","GET /api/reclamaciones/resumen","PUT /api/reclamaciones/:param/respuesta","GET /api/empresa"],"relatedFiles":[]},
-  {"file":"frontend/src/panel/reportes/reportesService.js","module":"reportes","responsibility":"Servicio HTTP del panel (reportesService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/dashboard/dashboardService.js","frontend/src/panel/notificaciones/notificacionesService.js","frontend/src/panel/reportes/useVentasDiarias.js"],"endpoints":["GET /api/reportes/resumen","GET /api/reportes/libros-mas-vendidos","GET /api/reportes/ventas-por-estado","GET /api/inventario/stock-bajo","GET /api/reportes/ventas-por-mes","GET /api/reportes/ventas-por-dia","GET /api/reportes/indicadores-ventas"],"relatedFiles":[]},
-  {"file":"frontend/src/panel/reportes/useVentasDiarias.js","module":"reportes","responsibility":"useVentasDiarias","imports":["frontend/src/panel/reportes/reportesService.js","frontend/src/panel/dashboard/graficoUtils.js"],"usedBy":[],"endpoints":["GET /api/reportes/ventas-por-dia"],"relatedFiles":["frontend/src/panel/reportes/reportesService.js"]},
+  {"file":"frontend/src/panel/reportes/reportesService.js","module":"reportes","responsibility":"Servicio HTTP del panel (reportesService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/dashboard/dashboardService.js","frontend/src/panel/notificaciones/notificacionesService.js"],"endpoints":["GET /api/reportes/resumen","GET /api/reportes/libros-mas-vendidos","GET /api/reportes/ventas-por-estado","GET /api/inventario/stock-bajo","GET /api/reportes/ventas-por-mes","GET /api/reportes/ventas-por-dia","GET /api/reportes/indicadores-ventas"],"relatedFiles":[]},
   {"file":"frontend/src/panel/tarifas/TarifasEnvioPage.jsx","module":"tarifas","responsibility":"Página del panel: TarifasEnvio (ruta /tarifas-envio)","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/tarifas/tarifasService.js","frontend/src/compartido/lib/utils/format.js","frontend/src/web/config/site.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/zonas-delivery/todos","PUT /api/zonas-delivery/:param"],"relatedFiles":["frontend/src/panel/tarifas/tarifasService.js"]},
   {"file":"frontend/src/panel/tarifas/tarifasService.js","module":"tarifas","responsibility":"Servicio HTTP del panel (tarifasService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/tarifas/TarifasEnvioPage.jsx"],"endpoints":["GET /api/zonas-delivery/todos","PUT /api/zonas-delivery/:param"],"relatedFiles":[]},
   {"file":"frontend/src/panel/ui/Acciones.jsx","module":"ui","responsibility":"Acciones","imports":["frontend/src/panel/ui/Button.jsx"],"usedBy":["frontend/src/panel/anuncios/AnunciosPage.jsx","frontend/src/panel/autores/AutoresPage.jsx","frontend/src/panel/categorias/CategoriasPage.jsx","frontend/src/panel/clientes/ClientesPage.jsx","frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/inventario/InventarioPage.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/panel/reclamaciones/ReclamacionesPage.jsx","frontend/src/panel/usuarios/UsuariosPage.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":[],"relatedFiles":[]},
@@ -3802,49 +3775,44 @@
   {"file":"frontend/src/panel/ui/Spinner.jsx","module":"ui","responsibility":"Spinner","imports":[],"usedBy":["frontend/src/app/router/AppRouter.jsx","frontend/src/panel/comprobantes/ComprobanteViewModal.jsx","frontend/src/panel/libros/CamposLibro.jsx","frontend/src/panel/ui/Button.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/ui/TableSkeleton.jsx","module":"ui","responsibility":"TableSkeleton","imports":[],"usedBy":["frontend/src/panel/anuncios/AnunciosPage.jsx","frontend/src/panel/autores/AutoresPage.jsx","frontend/src/panel/categorias/CategoriasPage.jsx","frontend/src/panel/clientes/ClientesPage.jsx","frontend/src/panel/comprobantes/ComprobantesPage.jsx","frontend/src/panel/inventario/InventarioPage.jsx","frontend/src/panel/inventario/MovimientosModal.jsx","frontend/src/panel/libros/LibrosPage.jsx","frontend/src/panel/pedidos/PedidosPage.jsx","frontend/src/panel/reclamaciones/ReclamacionesPage.jsx","frontend/src/panel/usuarios/UsuariosPage.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/usuarios/UsuariosClientesPage.jsx","module":"usuarios","responsibility":"Página del panel: UsuariosClientes (ruta /usuarios)","imports":["frontend/src/panel/clientes/ClientesPage.jsx","frontend/src/panel/usuarios/UsuariosPage.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/usuarios/UsuariosPage.jsx","module":"usuarios","responsibility":"Página del panel: Usuarios","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/panel/ui/ConfirmarAccion.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/exportarCsv.js","frontend/src/panel/lib/utils/cuentas.js","frontend/src/app/providers/ToastProvider.jsx","frontend/src/app/providers/AuthContext.jsx","frontend/src/panel/lib/roles.js","frontend/src/panel/usuarios/usuariosService.js","frontend/src/panel/usuarios/UsuarioViewModal.jsx"],"usedBy":["frontend/src/panel/usuarios/UsuariosClientesPage.jsx"],"endpoints":["GET /api/usuarios","PATCH /api/usuarios/:param"],"relatedFiles":["frontend/src/panel/usuarios/usuariosService.js"]},
+  {"file":"frontend/src/panel/usuarios/UsuariosPage.jsx","module":"usuarios","responsibility":"Página del panel: Usuarios","imports":["frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/panel/ui/ConfirmarAccion.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/exportarCsv.js","frontend/src/panel/lib/utils/cuentas.js","frontend/src/app/providers/ToastContext.js","frontend/src/app/providers/AuthContext.js","frontend/src/panel/lib/roles.js","frontend/src/panel/usuarios/usuariosService.js","frontend/src/panel/usuarios/UsuarioViewModal.jsx"],"usedBy":["frontend/src/panel/usuarios/UsuariosClientesPage.jsx"],"endpoints":["GET /api/usuarios","PATCH /api/usuarios/:param"],"relatedFiles":["frontend/src/panel/usuarios/usuariosService.js"]},
   {"file":"frontend/src/panel/usuarios/usuariosService.js","module":"usuarios","responsibility":"Servicio HTTP del panel (usuariosService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/usuarios/UsuariosPage.jsx"],"endpoints":["GET /api/usuarios","PATCH /api/usuarios/:param"],"relatedFiles":[]},
   {"file":"frontend/src/panel/usuarios/UsuarioViewModal.jsx","module":"usuarios","responsibility":"Modal: UsuarioViewModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Ficha.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/cuentas.js","frontend/src/panel/lib/roles.js"],"usedBy":["frontend/src/panel/usuarios/UsuariosPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/panel/ventas/EmitirComprobanteModal.jsx","module":"ventas","responsibility":"Modal: EmitirComprobanteModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/validaciones.js","frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/comprobantes/comprobantesService.js","frontend/src/panel/comprobantes/envioAutomatico.js","frontend/src/panel/configuracion/empresaService.js"],"usedBy":["frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":["GET /api/empresa","POST /api/comprobantes/:param/enviar-email","POST /api/ventas/:param/comprobante"],"relatedFiles":["frontend/src/panel/comprobantes/comprobantesService.js","frontend/src/panel/configuracion/empresaService.js"]},
+  {"file":"frontend/src/panel/ventas/EmitirComprobanteModal.jsx","module":"ventas","responsibility":"Modal: EmitirComprobanteModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/validaciones.js","frontend/src/app/providers/ToastContext.js","frontend/src/panel/comprobantes/comprobantesService.js","frontend/src/panel/comprobantes/envioAutomatico.js","frontend/src/panel/configuracion/empresaService.js"],"usedBy":["frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":["GET /api/empresa","POST /api/comprobantes/:param/enviar-email","POST /api/ventas/:param/comprobante"],"relatedFiles":["frontend/src/panel/comprobantes/comprobantesService.js","frontend/src/panel/configuracion/empresaService.js"]},
   {"file":"frontend/src/panel/ventas/EstadoEntregaVenta.jsx","module":"ventas","responsibility":"EstadoEntregaVenta","imports":["frontend/src/panel/ui/Badge.jsx","frontend/src/panel/pedidos/estadosPedido.js"],"usedBy":["frontend/src/panel/ventas/VentasPage.jsx","frontend/src/panel/ventas/VentaViewModal.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/ventas/GestionVentasPage.jsx","module":"ventas","responsibility":"Página del panel: GestionVentas (ruta /ventas)","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ventas/gestion-ventas.css"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/ventas/metodosPago.js","module":"ventas","responsibility":"metodosPago","imports":[],"usedBy":["frontend/src/panel/pagos/pagoPresentacion.js","frontend/src/panel/ventas/VentasPage.jsx","frontend/src/panel/ventas/VentaViewModal.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/panel/ventas/ReembolsoModal.jsx","module":"ventas","responsibility":"Modal: ReembolsoModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Alert.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/ventas/ventasService.js"],"usedBy":["frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":["POST /api/ventas/:param/reembolso"],"relatedFiles":["frontend/src/panel/ventas/ventasService.js"]},
-  {"file":"frontend/src/panel/ventas/VentasPage.jsx","module":"ventas","responsibility":"Página del panel: Ventas (ruta /ventas)","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/dashboard/graficoUtils.js","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/exportarCsv.js","frontend/src/compartido/lib/utils/entrega.js","frontend/src/app/providers/ToastProvider.jsx","frontend/src/panel/auth/useRol.js","frontend/src/panel/ventas/ventasService.js","frontend/src/panel/comprobantes/ComprobanteViewModal.jsx","frontend/src/panel/ventas/VentaViewModal.jsx","frontend/src/panel/ventas/EmitirComprobanteModal.jsx","frontend/src/panel/ventas/ReembolsoModal.jsx","frontend/src/panel/ventas/metodosPago.js","frontend/src/panel/lib/utils/cuentas.js","frontend/src/panel/pagos/pagoPresentacion.js","frontend/src/panel/pagos/PagoBadges.jsx","frontend/src/panel/ventas/EstadoEntregaVenta.jsx","frontend/src/panel/ui/FechaTabla.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/ventas","GET /api/ventas/:param"],"relatedFiles":["frontend/src/panel/ventas/ventasService.js"]},
-  {"file":"frontend/src/panel/ventas/ventasService.js","module":"ventas","responsibility":"Servicio HTTP del panel (ventasService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/ventas/ReembolsoModal.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":["GET /api/ventas","GET /api/ventas/:param","POST /api/ventas/:param/reembolso","GET /api/libros"],"relatedFiles":[]},
+  {"file":"frontend/src/panel/ventas/VentasPage.jsx","module":"ventas","responsibility":"Página del panel: Ventas (ruta /ventas)","imports":["frontend/src/panel/ui/PageHeader.jsx","frontend/src/panel/ui/Card.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Form.jsx","frontend/src/panel/ui/Indicadores.jsx","frontend/src/panel/dashboard/graficoUtils.js","frontend/src/panel/ui/Alert.jsx","frontend/src/panel/ui/ErrorCarga.jsx","frontend/src/panel/ui/Pagination.jsx","frontend/src/panel/ui/EmptyState.jsx","frontend/src/panel/ui/TableSkeleton.jsx","frontend/src/panel/ui/DataTable.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Acciones.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/lib/utils/exportarCsv.js","frontend/src/compartido/lib/utils/entrega.js","frontend/src/app/providers/ToastContext.js","frontend/src/panel/auth/useRol.js","frontend/src/panel/ventas/ventasService.js","frontend/src/panel/comprobantes/ComprobanteViewModal.jsx","frontend/src/panel/ventas/VentaViewModal.jsx","frontend/src/panel/ventas/EmitirComprobanteModal.jsx","frontend/src/panel/ventas/ReembolsoModal.jsx","frontend/src/panel/ventas/metodosPago.js","frontend/src/panel/lib/utils/cuentas.js","frontend/src/panel/pagos/pagoPresentacion.js","frontend/src/panel/pagos/PagoBadges.jsx","frontend/src/panel/ventas/EstadoEntregaVenta.jsx","frontend/src/panel/ui/FechaTabla.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/ventas","GET /api/ventas/:param"],"relatedFiles":["frontend/src/panel/ventas/ventasService.js"]},
+  {"file":"frontend/src/panel/ventas/ventasService.js","module":"ventas","responsibility":"Servicio HTTP del panel (ventasService)","imports":["frontend/src/panel/lib/api/client.js"],"usedBy":["frontend/src/panel/ventas/ReembolsoModal.jsx","frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":["GET /api/ventas","GET /api/ventas/:param","POST /api/ventas/:param/reembolso"],"relatedFiles":[]},
   {"file":"frontend/src/panel/ventas/VentaViewModal.jsx","module":"ventas","responsibility":"Modal: VentaViewModal","imports":["frontend/src/panel/ui/Modal.jsx","frontend/src/panel/ui/Button.jsx","frontend/src/panel/ui/Badge.jsx","frontend/src/panel/ui/Ficha.jsx","frontend/src/compartido/lib/utils/format.js","frontend/src/panel/ventas/metodosPago.js","frontend/src/panel/lib/utils/cuentas.js","frontend/src/compartido/lib/utils/entrega.js","frontend/src/panel/pagos/pagoPresentacion.js","frontend/src/panel/pagos/PagoBadges.jsx","frontend/src/panel/ventas/EstadoEntregaVenta.jsx"],"usedBy":["frontend/src/panel/ventas/VentasPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/animacion/aplicar-animaciones-globales.js","module":"animacion","responsibility":"Componente o servicio de la tienda aplicar-animaciones-globales","imports":["frontend/src/web/animacion/motion-profesional.js"],"usedBy":[],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/animacion/motion-profesional.js","module":"animacion","responsibility":"Componente o servicio de la tienda motion-profesional","imports":["frontend/src/web/animacion/scroll.js","frontend/src/web/animacion/motion-profesional.css"],"usedBy":["frontend/src/web/animacion/aplicar-animaciones-globales.js"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/animacion/scroll.js","module":"animacion","responsibility":"Componente o servicio de la tienda scroll","imports":[],"usedBy":["frontend/src/web/animacion/motion-profesional.js","frontend/src/web/secciones/AboutSection.jsx","frontend/src/web/secciones/DownloadSection.jsx","frontend/src/web/secciones/FeatureStory.jsx","frontend/src/web/secciones/MobileExperience.jsx","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/animacion/scroll.js","module":"animacion","responsibility":"Componente o servicio de la tienda scroll","imports":[],"usedBy":["frontend/src/web/secciones/AboutSection.jsx","frontend/src/web/secciones/DownloadSection.jsx","frontend/src/web/secciones/FeatureStory.jsx","frontend/src/web/secciones/MobileExperience.jsx","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/asistente/AsistenteTienda.jsx","module":"asistente","responsibility":"Componente o servicio de la tienda AsistenteTienda","imports":["frontend/src/web/asistente/IconoIA.jsx","frontend/src/web/asistente/sonidoPortal.js","frontend/src/web/assets/asistente/anime-poster.webp","frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/libroComercial.js","frontend/src/web/tienda/ComprarLibro.jsx","frontend/src/web/asistente/respuestasAsistente.js","frontend/src/web/asistente/charla.js","frontend/src/web/asistente/useMemoriaAsistente.js","frontend/src/web/lib/formato.js","frontend/src/web/asistente/asistente.css"],"usedBy":["frontend/src/web/PublicLayout.jsx"],"endpoints":["GET /api/libros","POST /api/asistente"],"relatedFiles":[]},
   {"file":"frontend/src/web/asistente/charla.js","module":"asistente","responsibility":"Componente o servicio de la tienda charla","imports":["frontend/src/web/asistente/respuestasAsistente.js"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/asistente/IconoIA.jsx","module":"asistente","responsibility":"Componente o servicio de la tienda IconoIA","imports":["frontend/src/web/assets/asistente/anime-reposo.webm","frontend/src/web/assets/asistente/anime-reposo.mp4","frontend/src/web/assets/asistente/anime-pensar.webm","frontend/src/web/assets/asistente/anime-pensar.mp4","frontend/src/web/assets/asistente/anime-poster.webp"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/asistente/respuestasAsistente.js","module":"asistente","responsibility":"Componente o servicio de la tienda respuestasAsistente","imports":["frontend/src/web/config/site.js"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx","frontend/src/web/asistente/charla.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/asistente/sonidoPortal.js","module":"asistente","responsibility":"Componente o servicio de la tienda sonidoPortal","imports":[],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/asistente/useMemoriaAsistente.js","module":"asistente","responsibility":"Componente o servicio de la tienda useMemoriaAsistente","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/TiendaContext.jsx"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx"],"endpoints":["DELETE /api/asistente/memoria","GET /api/asistente/memoria","PUT /api/asistente/memoria"],"relatedFiles":[]},
+  {"file":"frontend/src/web/asistente/useMemoriaAsistente.js","module":"asistente","responsibility":"Componente o servicio de la tienda useMemoriaAsistente","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/TiendaContext.js"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx"],"endpoints":["DELETE /api/asistente/memoria","PUT /api/asistente/memoria"],"relatedFiles":[]},
   {"file":"frontend/src/web/componentes/ActualizarApp.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda ActualizarApp","imports":["frontend/src/web/assets/qr-actualizar.png","frontend/src/web/config/downloads.js","frontend/src/web/hooks/useApiPublica.js"],"usedBy":["frontend/src/web/secciones/DownloadSection.jsx"],"endpoints":["GET /api/app/version"],"relatedFiles":[]},
-  {"file":"frontend/src/web/componentes/BarraMovil.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda BarraMovil","imports":["frontend/src/web/tienda/TiendaContext.jsx"],"usedBy":["frontend/src/web/PublicLayout.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/componentes/BarraMovil.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda BarraMovil","imports":["frontend/src/web/tienda/TiendaContext.js"],"usedBy":["frontend/src/web/PublicLayout.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/componentes/CierreDescarga.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda CierreDescarga","imports":[],"usedBy":["frontend/src/web/secciones/FeatureStory.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/componentes/EnlacesApp.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda EnlacesApp","imports":["frontend/src/web/config/downloads.js","frontend/src/web/componentes/enlaces-app.css"],"usedBy":["frontend/src/web/componentes/PublicFooter.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/componentes/EtiquetasLibro.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda EtiquetasLibro","imports":[],"usedBy":["frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/secciones/BookShowcase.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/componentes/ImagenCarga.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda ImagenCarga","imports":[],"usedBy":["frontend/src/web/secciones/BookShowcase.jsx","frontend/src/web/secciones/ExplorarCategorias.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/componentes/MediosPago.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda MediosPago","imports":["frontend/src/compartido/assets/pagos/visa-blanco.svg","frontend/src/compartido/assets/pagos/mastercard.svg","frontend/src/compartido/assets/pagos/americanexpress.svg","frontend/src/compartido/assets/pagos/dinersclub.svg","frontend/src/compartido/assets/tarjeta-bcp.webp"],"usedBy":["frontend/src/web/componentes/PublicFooter.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/componentes/Migas.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda Migas","imports":[],"usedBy":["frontend/src/web/paginas/AplicacionPage.jsx","frontend/src/web/paginas/CaracteristicasPage.jsx","frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/paginas/DescargarPage.jsx","frontend/src/web/paginas/NosotrosPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/componentes/Precarga.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda Precarga","imports":["frontend/src/web/lib/precarga.js"],"usedBy":[],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/componentes/PrecioOferta.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda PrecioOferta","imports":["frontend/src/web/lib/formato.js"],"usedBy":["frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/secciones/BookShowcase.jsx","frontend/src/web/secciones/OfertasDestacadas.jsx","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx","frontend/src/web/secciones/PortadaLigera.jsx","frontend/src/web/tienda/DescubrimientosLibro.jsx","frontend/src/web/tienda/LibroPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/componentes/PublicFooter.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda PublicFooter","imports":["frontend/src/compartido/assets/logo-f-verde-96.webp","frontend/src/compartido/assets/libro-reclamaciones.webp","frontend/src/web/config/site.js","frontend/src/web/componentes/EnlacesApp.jsx","frontend/src/web/componentes/MediosPago.jsx"],"usedBy":["frontend/src/web/PublicLayout.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/componentes/PublicHeader.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda PublicHeader","imports":["frontend/src/compartido/assets/logo-f-verde-96.webp","frontend/src/web/config/site.js","frontend/src/web/config/motion.js","frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/componentes/public-header.css"],"usedBy":["frontend/src/web/PublicLayout.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/componentes/PublicHeader.jsx","module":"componentes","responsibility":"Componente o servicio de la tienda PublicHeader","imports":["frontend/src/compartido/assets/logo-f-verde-96.webp","frontend/src/web/config/site.js","frontend/src/web/config/motion.js","frontend/src/web/tienda/TiendaContext.js","frontend/src/web/componentes/public-header.css"],"usedBy":["frontend/src/web/PublicLayout.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/config/downloads.js","module":"config","responsibility":"Componente o servicio de la tienda downloads","imports":[],"usedBy":["frontend/src/web/componentes/ActualizarApp.jsx","frontend/src/web/componentes/EnlacesApp.jsx","frontend/src/web/secciones/DownloadSection.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/config/motion.js","module":"config","responsibility":"Componente o servicio de la tienda motion","imports":[],"usedBy":["frontend/src/web/componentes/PublicHeader.jsx","frontend/src/web/secciones/FeatureStory.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/config/site.js","module":"config","responsibility":"Componente o servicio de la tienda site","imports":[],"usedBy":["frontend/src/panel/tarifas/TarifasEnvioPage.jsx","frontend/src/web/asistente/respuestasAsistente.js","frontend/src/web/componentes/PublicFooter.jsx","frontend/src/web/componentes/PublicHeader.jsx","frontend/src/web/hooks/useApiPublica.js","frontend/src/web/PublicLayout.jsx","frontend/src/web/secciones/AboutSection.jsx","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/useSeoLibro.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/hooks/useApiPublica.js","module":"hooks","responsibility":"Componente o servicio de la tienda useApiPublica","imports":["frontend/src/compartido/config/env.js","frontend/src/web/config/site.js","frontend/src/web/tienda/libroComercial.js","frontend/src/web/lib/cachePublica.js"],"usedBy":["frontend/src/web/componentes/ActualizarApp.jsx","frontend/src/web/PublicLayout.jsx","frontend/src/web/secciones/VideoSection.jsx"],"endpoints":["GET /api/libros","GET /api/anuncios","GET /api/empresa","GET /api/app/version"],"relatedFiles":[]},
-  {"file":"frontend/src/web/hooks/useCarrusel.js","module":"hooks","responsibility":"Componente o servicio de la tienda useCarrusel","imports":["frontend/src/compartido/config/env.js","frontend/src/web/lib/cachePublica.js"],"usedBy":["frontend/src/web/secciones/Hero.jsx"],"endpoints":["GET /api/anuncios/carrusel"],"relatedFiles":[]},
   {"file":"frontend/src/web/hooks/useEntorno.js","module":"hooks","responsibility":"Componente o servicio de la tienda useEntorno","imports":[],"usedBy":["frontend/src/web/PublicLayout.jsx","frontend/src/web/secciones/DownloadSection.jsx","frontend/src/web/secciones/VideoSection.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/hooks/useLibroProtagonista.js","module":"hooks","responsibility":"Componente o servicio de la tienda useLibroProtagonista","imports":["frontend/src/compartido/config/env.js","frontend/src/web/tienda/libroComercial.js","frontend/src/web/lib/formato.js","frontend/src/web/secciones/portada3d/cachePortada.js"],"usedBy":["frontend/src/web/secciones/PortadaLigera.jsx"],"endpoints":["GET /api/anuncios/protagonista"],"relatedFiles":[]},
-  {"file":"frontend/src/web/lib/cachePublica.js","module":"lib","responsibility":"Componente o servicio de la tienda cachePublica","imports":["frontend/src/compartido/config/env.js"],"usedBy":["frontend/src/web/hooks/useApiPublica.js","frontend/src/web/hooks/useCarrusel.js","frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/LibroPage.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/lib/cachePublica.js","module":"lib","responsibility":"Componente o servicio de la tienda cachePublica","imports":["frontend/src/compartido/config/env.js"],"usedBy":["frontend/src/web/hooks/useApiPublica.js","frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/LibroPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/lib/cacheRecursos.js","module":"lib","responsibility":"Componente o servicio de la tienda cacheRecursos","imports":[],"usedBy":["frontend/src/web/PublicLayout.jsx","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/lib/formato.js","module":"lib","responsibility":"Componente o servicio de la tienda formato","imports":["frontend/src/compartido/config/env.js"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx","frontend/src/web/componentes/PrecioOferta.jsx","frontend/src/web/hooks/useLibroProtagonista.js","frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/secciones/BookShowcase.jsx","frontend/src/web/secciones/DownloadSection.jsx","frontend/src/web/secciones/ExplorarCategorias.jsx","frontend/src/web/secciones/Hero.jsx","frontend/src/web/secciones/OfertasDestacadas.jsx","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx","frontend/src/web/secciones/PortadaLigera.jsx","frontend/src/web/tienda/CarritoPage.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/FichaTecnicaLibro.jsx","frontend/src/web/tienda/MisComprasPage.jsx","frontend/src/web/tienda/PerfilCliente.jsx","frontend/src/web/tienda/PilaCarrito.jsx","frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/tienda/useSeoLibro.js"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/lib/precarga.js","module":"lib","responsibility":"Componente o servicio de la tienda precarga","imports":[],"usedBy":["frontend/src/web/componentes/Precarga.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/lib/formato.js","module":"lib","responsibility":"Componente o servicio de la tienda formato","imports":["frontend/src/compartido/config/env.js"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx","frontend/src/web/componentes/PrecioOferta.jsx","frontend/src/web/hooks/useLibroProtagonista.js","frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/secciones/BookShowcase.jsx","frontend/src/web/secciones/DownloadSection.jsx","frontend/src/web/secciones/ExplorarCategorias.jsx","frontend/src/web/secciones/OfertasDestacadas.jsx","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx","frontend/src/web/secciones/PortadaLigera.jsx","frontend/src/web/tienda/CarritoPage.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/FichaTecnicaLibro.jsx","frontend/src/web/tienda/MisComprasPage.jsx","frontend/src/web/tienda/PerfilCliente.jsx","frontend/src/web/tienda/PilaCarrito.jsx","frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/tienda/useSeoLibro.js"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/lib/useCarruselAutomatico.js","module":"lib","responsibility":"Componente o servicio de la tienda useCarruselAutomatico","imports":[],"usedBy":["frontend/src/web/secciones/BookShowcase.jsx","frontend/src/web/secciones/ExplorarCategorias.jsx","frontend/src/web/secciones/OfertasDestacadas.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/paginas/AplicacionPage.jsx","module":"paginas","responsibility":"Página de la tienda pública AplicacionPage (ruta /aplicacion)","imports":["frontend/src/web/componentes/Migas.jsx","frontend/src/web/secciones/MobileExperience.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/paginas/CaracteristicasPage.jsx","module":"paginas","responsibility":"Página de la tienda pública CaracteristicasPage (ruta /caracteristicas)","imports":["frontend/src/web/componentes/Migas.jsx","frontend/src/web/secciones/FeatureStory.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
@@ -3852,8 +3820,8 @@
   {"file":"frontend/src/web/paginas/DescargarPage.jsx","module":"paginas","responsibility":"Página de la tienda pública DescargarPage (ruta /descargar)","imports":["frontend/src/web/componentes/Migas.jsx","frontend/src/web/secciones/DownloadSection.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/paginas/NosotrosPage.jsx","module":"paginas","responsibility":"Página de la tienda pública NosotrosPage (ruta /nosotros)","imports":["frontend/src/web/componentes/Migas.jsx","frontend/src/web/secciones/AboutSection.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/paginas/paginas.jsx","module":"paginas","responsibility":"Componente o servicio de la tienda paginas (ruta /)","imports":["frontend/src/web/secciones/PortadaDiferida.jsx","frontend/src/web/secciones/BookShowcase.jsx","frontend/src/web/secciones/VideoSection.jsx","frontend/src/web/secciones/ExplorarCategorias.jsx","frontend/src/web/secciones/ComoComprar.jsx","frontend/src/web/secciones/BandaCatalogo.jsx","frontend/src/web/secciones/OfertasDestacadas.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/paginas/ReclamacionesPublicasPage.jsx","module":"paginas","responsibility":"Página de la tienda pública ReclamacionesPublicasPage (ruta /libro-de-reclamaciones)","imports":["frontend/src/web/tienda/TiendaContext.jsx","frontend/src/panel/reclamaciones/LibroReclamacionesPage.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/PublicLayout.jsx","module":"web","responsibility":"Componente o servicio de la tienda PublicLayout","imports":["frontend/src/web/estilos/public-site.css","frontend/src/web/estilos/tema-editorial.css","frontend/src/web/componentes/PublicHeader.jsx","frontend/src/web/componentes/PublicFooter.jsx","frontend/src/web/componentes/BarraMovil.jsx","frontend/src/web/lib/cacheRecursos.js","frontend/src/web/hooks/useApiPublica.js","frontend/src/web/hooks/useEntorno.js","frontend/src/web/config/site.js","frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/tienda/PilaCarrito.jsx","frontend/src/web/tienda/tienda.css","frontend/src/web/estilos/formal.css","frontend/src/web/estilos/editorial-luminoso.css","frontend/src/web/estilos/editorial-ajustes.css","frontend/src/web/estilos/app-descarga.css","frontend/src/web/componentes/public-footer.css","frontend/src/web/estilos/responsive-movil.css","frontend/src/web/estilos/limpia.css","frontend/src/web/asistente/AsistenteTienda.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/empresa","GET /api/libros"],"relatedFiles":[]},
+  {"file":"frontend/src/web/paginas/ReclamacionesPublicasPage.jsx","module":"paginas","responsibility":"Página de la tienda pública ReclamacionesPublicasPage (ruta /libro-de-reclamaciones)","imports":["frontend/src/web/tienda/TiendaProvider.jsx","frontend/src/panel/reclamaciones/LibroReclamacionesPage.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/PublicLayout.jsx","module":"web","responsibility":"Componente o servicio de la tienda PublicLayout","imports":["frontend/src/web/estilos/public-site.css","frontend/src/web/estilos/tema-editorial.css","frontend/src/web/componentes/PublicHeader.jsx","frontend/src/web/componentes/PublicFooter.jsx","frontend/src/web/componentes/BarraMovil.jsx","frontend/src/web/lib/cacheRecursos.js","frontend/src/web/hooks/useApiPublica.js","frontend/src/web/hooks/useEntorno.js","frontend/src/web/config/site.js","frontend/src/web/tienda/TiendaProvider.jsx","frontend/src/web/tienda/PilaCarrito.jsx","frontend/src/web/tienda/tienda.css","frontend/src/web/estilos/formal.css","frontend/src/web/estilos/editorial-luminoso.css","frontend/src/web/estilos/editorial-ajustes.css","frontend/src/web/estilos/app-descarga.css","frontend/src/web/componentes/public-footer.css","frontend/src/web/estilos/responsive-movil.css","frontend/src/web/estilos/limpia.css","frontend/src/web/asistente/AsistenteTienda.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/empresa","GET /api/libros"],"relatedFiles":[]},
   {"file":"frontend/src/web/secciones/AboutSection.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda AboutSection","imports":["frontend/src/web/config/site.js","frontend/src/web/animacion/scroll.js","frontend/src/web/secciones/nosotros.css"],"usedBy":["frontend/src/web/paginas/NosotrosPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/secciones/BandaCatalogo.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda BandaCatalogo","imports":[],"usedBy":["frontend/src/web/paginas/paginas.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/secciones/BookShowcase.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda BookShowcase","imports":["frontend/src/web/componentes/PrecioOferta.jsx","frontend/src/web/lib/formato.js","frontend/src/web/componentes/EtiquetasLibro.jsx","frontend/src/web/tienda/ComprarLibro.jsx","frontend/src/web/componentes/ImagenCarga.jsx","frontend/src/web/lib/useCarruselAutomatico.js","frontend/src/compartido/lib/utils/portadasLibro.js"],"usedBy":["frontend/src/web/paginas/paginas.jsx"],"endpoints":[],"relatedFiles":[]},
@@ -3861,7 +3829,6 @@
   {"file":"frontend/src/web/secciones/DownloadSection.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda DownloadSection","imports":["frontend/src/web/assets/app-icono.webp","frontend/src/web/assets/app/inicio.webp","frontend/src/web/config/downloads.js","frontend/src/web/hooks/useEntorno.js","frontend/src/web/lib/formato.js","frontend/src/web/animacion/scroll.js","frontend/src/web/componentes/ActualizarApp.jsx","frontend/src/web/secciones/aplicacion.css","frontend/src/web/secciones/descargar.css"],"usedBy":["frontend/src/web/paginas/DescargarPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/secciones/ExplorarCategorias.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda ExplorarCategorias","imports":["frontend/src/web/lib/formato.js","frontend/src/web/componentes/ImagenCarga.jsx","frontend/src/web/lib/useCarruselAutomatico.js"],"usedBy":["frontend/src/web/paginas/paginas.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/secciones/FeatureStory.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda FeatureStory","imports":["frontend/src/web/assets/app/entrega.webp","frontend/src/web/config/motion.js","frontend/src/web/animacion/scroll.js","frontend/src/web/componentes/CierreDescarga.jsx"],"usedBy":["frontend/src/web/paginas/CaracteristicasPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/secciones/Hero.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda Hero","imports":["frontend/src/web/hooks/useCarrusel.js","frontend/src/web/lib/formato.js","frontend/src/web/secciones/carrusel-inicio.css"],"usedBy":[],"endpoints":["GET /api/anuncios/carrusel"],"relatedFiles":[]},
   {"file":"frontend/src/web/secciones/MobileExperience.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda MobileExperience","imports":["frontend/src/web/assets/app/catalogo.webp","frontend/src/web/assets/app/inicio.webp","frontend/src/web/assets/app-icono.webp","frontend/src/web/animacion/scroll.js","frontend/src/web/secciones/aplicacion.css"],"usedBy":["frontend/src/web/paginas/AplicacionPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/secciones/OfertasDestacadas.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda OfertasDestacadas","imports":["frontend/src/web/lib/useCarruselAutomatico.js","frontend/src/web/componentes/PrecioOferta.jsx","frontend/src/web/lib/formato.js","frontend/src/web/tienda/ComprarLibro.jsx","frontend/src/compartido/lib/utils/portadasLibro.js"],"usedBy":["frontend/src/web/paginas/paginas.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/secciones/portada3d/cachePortada.js","module":"portada3d","responsibility":"Componente o servicio de la tienda cachePortada","imports":["frontend/src/compartido/config/env.js"],"usedBy":["frontend/src/web/hooks/useLibroProtagonista.js","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx","frontend/src/web/secciones/PortadaLigera.jsx"],"endpoints":[],"relatedFiles":[]},
@@ -3872,27 +3839,28 @@
   {"file":"frontend/src/web/secciones/PortadaDiferida.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda PortadaDiferida","imports":["frontend/src/web/secciones/PortadaLigera.jsx","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx"],"usedBy":["frontend/src/web/paginas/paginas.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/secciones/PortadaLigera.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda PortadaLigera","imports":["frontend/src/web/componentes/PrecioOferta.jsx","frontend/src/web/hooks/useLibroProtagonista.js","frontend/src/web/lib/formato.js","frontend/src/web/secciones/portada3d/cachePortada.js","frontend/src/web/secciones/portada-ligera.css"],"usedBy":["frontend/src/web/secciones/PortadaDiferida.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/secciones/VideoSection.jsx","module":"secciones","responsibility":"Componente o servicio de la tienda VideoSection","imports":["frontend/src/web/hooks/useApiPublica.js","frontend/src/web/hooks/useEntorno.js"],"usedBy":["frontend/src/web/paginas/paginas.jsx"],"endpoints":["GET /api/anuncios"],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/AccionesLibro.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda AccionesLibro","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/TiendaContext.jsx"],"usedBy":["frontend/src/web/tienda/LibroPage.jsx"],"endpoints":["DELETE /api/favoritos/:param","GET /api/favoritos/:param","POST /api/favoritos/:param"],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/carritoCompra.js","module":"tienda","responsibility":"Componente o servicio de la tienda carritoCompra","imports":[],"usedBy":["frontend/src/web/tienda/persistenciaCompra.js","frontend/src/web/tienda/TiendaContext.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/CarritoPage.jsx","module":"tienda","responsibility":"Página de la tienda pública CarritoPage (ruta /carrito)","imports":["frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/lib/formato.js","frontend/src/web/tienda/libroComercial.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/CheckoutPage.jsx","module":"tienda","responsibility":"Página de la tienda pública CheckoutPage (ruta /checkout)","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/persistenciaCompra.js","frontend/src/web/tienda/libroComercial.js","frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/lib/formato.js","frontend/src/web/tienda/EstadoSesion.jsx","frontend/src/web/tienda/useDatosCliente.js","frontend/src/web/config/site.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/pagos/capacidades","GET /api/ventas/:param","GET /api/zonas-delivery"],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/clienteApi.js","module":"tienda","responsibility":"Componente o servicio de la tienda clienteApi","imports":["frontend/src/compartido/config/env.js","frontend/src/web/tienda/recomendacionesLibro.js","frontend/src/web/lib/cachePublica.js"],"usedBy":["frontend/src/panel/reclamaciones/reclamacionesService.js","frontend/src/web/asistente/AsistenteTienda.jsx","frontend/src/web/asistente/useMemoriaAsistente.js","frontend/src/web/tienda/AccionesLibro.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/CuentaPage.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx","frontend/src/web/tienda/MisComprasPage.jsx","frontend/src/web/tienda/PerfilCliente.jsx","frontend/src/web/tienda/persistenciaCompra.js","frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/tienda/useDatosCliente.js"],"endpoints":["POST /api/auth/login","POST /api/auth/registro","POST /api/auth/verificar-email","POST /api/auth/reenviar-codigo","POST /api/auth/solicitar-reseteo","POST /api/auth/verificar-reseteo","POST /api/auth/reestablecer-contrasena","POST /api/auth/2fa/verify-login","GET /api/usuarios/perfil","PUT /api/usuarios/perfil","PUT /api/usuarios/foto","GET /api/libros","POST /api/asistente","GET /api/libros/:param","GET /api/libros/:param/relacionados","GET /api/autores/:param","GET /api/favoritos","GET /api/asistente/memoria","PUT /api/asistente/memoria","DELETE /api/asistente/memoria","GET /api/favoritos/:param","POST /api/favoritos/:param","DELETE /api/favoritos/:param","GET /api/zonas-delivery","GET /api/pagos/capacidades","POST /api/pagos/crear-orden","GET /api/ventas/mis-ventas","GET /api/ventas/:param","GET /api/ventas/:param/pago","GET /api/pagos/:param"],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/ComprarLibro.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda ComprarLibro","imports":["frontend/src/web/tienda/TiendaContext.jsx"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx","frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/secciones/BookShowcase.jsx","frontend/src/web/secciones/OfertasDestacadas.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/CuentaPage.jsx","module":"tienda","responsibility":"Página de la tienda pública CuentaPage (ruta /cuenta)","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/tienda/PerfilCliente.jsx","frontend/src/web/tienda/EstadoSesion.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["POST /api/auth/2fa/verify-login","POST /api/auth/login","POST /api/auth/reenviar-codigo","POST /api/auth/reestablecer-contrasena","POST /api/auth/registro","POST /api/auth/solicitar-reseteo","POST /api/auth/verificar-email","POST /api/auth/verificar-reseteo"],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/AccionesLibro.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda AccionesLibro","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/TiendaContext.js"],"usedBy":["frontend/src/web/tienda/LibroPage.jsx"],"endpoints":["DELETE /api/favoritos/:param","POST /api/favoritos/:param"],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/carritoCompra.js","module":"tienda","responsibility":"Componente o servicio de la tienda carritoCompra","imports":[],"usedBy":["frontend/src/web/tienda/persistenciaCompra.js","frontend/src/web/tienda/TiendaProvider.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/CarritoPage.jsx","module":"tienda","responsibility":"Página de la tienda pública CarritoPage (ruta /carrito)","imports":["frontend/src/web/tienda/TiendaContext.js","frontend/src/web/lib/formato.js","frontend/src/web/tienda/libroComercial.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/CheckoutPage.jsx","module":"tienda","responsibility":"Página de la tienda pública CheckoutPage (ruta /checkout)","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/persistenciaCompra.js","frontend/src/web/tienda/libroComercial.js","frontend/src/web/tienda/TiendaContext.js","frontend/src/web/lib/formato.js","frontend/src/web/tienda/EstadoSesion.jsx","frontend/src/web/tienda/useDatosCliente.js","frontend/src/web/config/site.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/zonas-delivery"],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/clienteApi.js","module":"tienda","responsibility":"Componente o servicio de la tienda clienteApi","imports":["frontend/src/compartido/config/env.js","frontend/src/web/tienda/recomendacionesLibro.js","frontend/src/web/lib/cachePublica.js"],"usedBy":["frontend/src/panel/reclamaciones/reclamacionesService.js","frontend/src/web/asistente/AsistenteTienda.jsx","frontend/src/web/asistente/useMemoriaAsistente.js","frontend/src/web/tienda/AccionesLibro.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/CuentaPage.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx","frontend/src/web/tienda/MisComprasPage.jsx","frontend/src/web/tienda/PerfilCliente.jsx","frontend/src/web/tienda/persistenciaCompra.js","frontend/src/web/tienda/TiendaProvider.jsx","frontend/src/web/tienda/useDatosCliente.js"],"endpoints":["POST /api/auth/login","POST /api/auth/registro","POST /api/auth/verificar-email","POST /api/auth/reenviar-codigo","POST /api/auth/solicitar-reseteo","POST /api/auth/verificar-reseteo","POST /api/auth/reestablecer-contrasena","POST /api/auth/2fa/verify-login","GET /api/usuarios/perfil","PUT /api/usuarios/perfil","PUT /api/usuarios/foto","GET /api/libros","POST /api/asistente","GET /api/libros/:param","GET /api/libros/:param/relacionados","GET /api/autores/:param","GET /api/favoritos","GET /api/asistente/memoria","PUT /api/asistente/memoria","DELETE /api/asistente/memoria","GET /api/favoritos/:param","POST /api/favoritos/:param","DELETE /api/favoritos/:param","GET /api/zonas-delivery","GET /api/pagos/capacidades","POST /api/pagos/crear-orden","GET /api/ventas/mis-ventas","GET /api/ventas/:param","GET /api/ventas/:param/pago","GET /api/pagos/:param"],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/ComprarLibro.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda ComprarLibro","imports":["frontend/src/web/tienda/TiendaContext.js"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx","frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/secciones/BookShowcase.jsx","frontend/src/web/secciones/OfertasDestacadas.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/CuentaPage.jsx","module":"tienda","responsibility":"Página de la tienda pública CuentaPage (ruta /cuenta)","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/TiendaContext.js","frontend/src/web/tienda/PerfilCliente.jsx","frontend/src/web/tienda/EstadoSesion.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["POST /api/auth/2fa/verify-login","POST /api/auth/login","POST /api/auth/reenviar-codigo","POST /api/auth/reestablecer-contrasena","POST /api/auth/registro","POST /api/auth/solicitar-reseteo","POST /api/auth/verificar-email","POST /api/auth/verificar-reseteo"],"relatedFiles":[]},
   {"file":"frontend/src/web/tienda/DescubrimientosLibro.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda DescubrimientosLibro","imports":["frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/componentes/PrecioOferta.jsx","frontend/src/web/paginas/CatalogoPage.jsx"],"usedBy":["frontend/src/web/tienda/LibroPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/EstadoSesion.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda EstadoSesion","imports":["frontend/src/web/tienda/TiendaContext.jsx"],"usedBy":["frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/CuentaPage.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/MisComprasPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/FavoritosPage.jsx","module":"tienda","responsibility":"Página de la tienda pública FavoritosPage (ruta /favoritos)","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/tienda/libroComercial.js","frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/tienda/ComprarLibro.jsx","frontend/src/web/lib/formato.js","frontend/src/web/tienda/EstadoSesion.jsx","frontend/src/compartido/lib/utils/portadasLibro.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["DELETE /api/favoritos/:param","GET /api/favoritos"],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/EstadoSesion.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda EstadoSesion","imports":["frontend/src/web/tienda/TiendaContext.js"],"usedBy":["frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/CuentaPage.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/MisComprasPage.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/FavoritosPage.jsx","module":"tienda","responsibility":"Página de la tienda pública FavoritosPage (ruta /favoritos)","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/TiendaContext.js","frontend/src/web/tienda/libroComercial.js","frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/tienda/ComprarLibro.jsx","frontend/src/web/lib/formato.js","frontend/src/web/tienda/EstadoSesion.jsx","frontend/src/compartido/lib/utils/portadasLibro.js"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["DELETE /api/favoritos/:param","GET /api/favoritos"],"relatedFiles":[]},
   {"file":"frontend/src/web/tienda/FichaTecnicaLibro.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda FichaTecnicaLibro","imports":["frontend/src/web/lib/formato.js"],"usedBy":["frontend/src/web/tienda/LibroPage.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/libroComercial.js","module":"tienda","responsibility":"Componente o servicio de la tienda libroComercial","imports":["frontend/src/compartido/lib/utils/portadasLibro.js"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx","frontend/src/web/hooks/useApiPublica.js","frontend/src/web/hooks/useLibroProtagonista.js","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx","frontend/src/web/tienda/CarritoPage.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx","frontend/src/web/tienda/TiendaContext.jsx"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/LibroPage.jsx","module":"tienda","responsibility":"Página de la tienda pública LibroPage (ruta /libro/:id)","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/libroComercial.js","frontend/src/web/componentes/PrecioOferta.jsx","frontend/src/web/tienda/ComprarLibro.jsx","frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/tienda/FichaTecnicaLibro.jsx","frontend/src/web/tienda/AccionesLibro.jsx","frontend/src/web/tienda/DescubrimientosLibro.jsx","frontend/src/web/tienda/useSeoLibro.js","frontend/src/web/lib/cachePublica.js","frontend/src/web/tienda/ficha-libro.css"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/autores/:param","GET /api/libros/:param","GET /api/libros/:param/relacionados"],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/MisComprasPage.jsx","module":"tienda","responsibility":"Página de la tienda pública MisComprasPage (ruta /mis-compras)","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/lib/formato.js","frontend/src/compartido/lib/utils/entrega.js","frontend/src/compartido/lib/utils/format.js","frontend/src/compartido/lib/utils/seguimientoPedido.js","frontend/src/web/tienda/EstadoSesion.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/pagos/:param","GET /api/ventas/:param/pago","GET /api/ventas/mis-ventas"],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/libroComercial.js","module":"tienda","responsibility":"Componente o servicio de la tienda libroComercial","imports":["frontend/src/compartido/lib/utils/portadasLibro.js"],"usedBy":["frontend/src/web/asistente/AsistenteTienda.jsx","frontend/src/web/hooks/useApiPublica.js","frontend/src/web/hooks/useLibroProtagonista.js","frontend/src/web/secciones/portada3d/PortadaEspacial.jsx","frontend/src/web/tienda/CarritoPage.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx","frontend/src/web/tienda/TiendaProvider.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/LibroPage.jsx","module":"tienda","responsibility":"Página de la tienda pública LibroPage (ruta /libro/:id)","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/libroComercial.js","frontend/src/web/componentes/PrecioOferta.jsx","frontend/src/web/tienda/ComprarLibro.jsx","frontend/src/web/tienda/TiendaContext.js","frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/tienda/FichaTecnicaLibro.jsx","frontend/src/web/tienda/AccionesLibro.jsx","frontend/src/web/tienda/DescubrimientosLibro.jsx","frontend/src/web/tienda/useSeoLibro.js","frontend/src/web/lib/cachePublica.js","frontend/src/web/tienda/ficha-libro.css"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/MisComprasPage.jsx","module":"tienda","responsibility":"Página de la tienda pública MisComprasPage (ruta /mis-compras)","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/TiendaContext.js","frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/lib/formato.js","frontend/src/compartido/lib/utils/entrega.js","frontend/src/compartido/lib/utils/format.js","frontend/src/compartido/lib/utils/seguimientoPedido.js","frontend/src/web/tienda/EstadoSesion.jsx"],"usedBy":["frontend/src/app/router/AppRouter.jsx"],"endpoints":["GET /api/pagos/:param","GET /api/ventas/:param/pago","GET /api/ventas/mis-ventas"],"relatedFiles":[]},
   {"file":"frontend/src/web/tienda/PerfilCliente.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda PerfilCliente","imports":["frontend/src/web/lib/formato.js","frontend/src/web/tienda/clienteApi.js","frontend/src/web/assets/perfil/cabecera-biblioteca.webp","frontend/src/web/assets/perfil/acceso-compras.webp","frontend/src/web/assets/perfil/acceso-favoritos.webp","frontend/src/web/assets/perfil/acceso-carrito.webp","frontend/src/web/assets/perfil/acceso-catalogo.webp","frontend/src/web/tienda/perfil.css"],"usedBy":["frontend/src/web/tienda/CuentaPage.jsx"],"endpoints":["PUT /api/usuarios/foto","PUT /api/usuarios/perfil"],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/persistenciaCompra.js","module":"tienda","responsibility":"Componente o servicio de la tienda persistenciaCompra","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/carritoCompra.js"],"usedBy":["frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/TiendaContext.jsx"],"endpoints":["POST /api/pagos/crear-orden"],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/PilaCarrito.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda PilaCarrito","imports":["frontend/src/web/tienda/TiendaContext.jsx","frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/lib/formato.js","frontend/src/web/tienda/pila-carrito.css"],"usedBy":["frontend/src/web/PublicLayout.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/persistenciaCompra.js","module":"tienda","responsibility":"Componente o servicio de la tienda persistenciaCompra","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/carritoCompra.js"],"usedBy":["frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/TiendaProvider.jsx"],"endpoints":["POST /api/pagos/crear-orden"],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/PilaCarrito.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda PilaCarrito","imports":["frontend/src/web/tienda/TiendaContext.js","frontend/src/web/tienda/PortadaLibro.jsx","frontend/src/web/lib/formato.js","frontend/src/web/tienda/pila-carrito.css"],"usedBy":["frontend/src/web/PublicLayout.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/tienda/PortadaLibro.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda PortadaLibro","imports":["frontend/src/web/lib/formato.js","frontend/src/compartido/lib/utils/portadasLibro.js"],"usedBy":["frontend/src/web/paginas/CatalogoPage.jsx","frontend/src/web/tienda/DescubrimientosLibro.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx","frontend/src/web/tienda/MisComprasPage.jsx","frontend/src/web/tienda/PilaCarrito.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/tienda/recomendacionesLibro.js","module":"tienda","responsibility":"Componente o servicio de la tienda recomendacionesLibro","imports":[],"usedBy":["frontend/src/web/tienda/clienteApi.js"],"endpoints":[],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/TiendaContext.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda TiendaContext","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/libroComercial.js","frontend/src/web/tienda/carritoCompra.js","frontend/src/web/tienda/persistenciaCompra.js"],"usedBy":["frontend/src/panel/reclamaciones/LibroReclamacionesPage.jsx","frontend/src/web/asistente/useMemoriaAsistente.js","frontend/src/web/componentes/BarraMovil.jsx","frontend/src/web/componentes/PublicHeader.jsx","frontend/src/web/paginas/ReclamacionesPublicasPage.jsx","frontend/src/web/PublicLayout.jsx","frontend/src/web/tienda/AccionesLibro.jsx","frontend/src/web/tienda/CarritoPage.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/ComprarLibro.jsx","frontend/src/web/tienda/CuentaPage.jsx","frontend/src/web/tienda/EstadoSesion.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx","frontend/src/web/tienda/MisComprasPage.jsx","frontend/src/web/tienda/PilaCarrito.jsx"],"endpoints":["GET /api/libros","GET /api/usuarios/perfil","GET /api/ventas/:param"],"relatedFiles":[]},
-  {"file":"frontend/src/web/tienda/useDatosCliente.js","module":"tienda","responsibility":"Componente o servicio de la tienda useDatosCliente","imports":["frontend/src/web/tienda/clienteApi.js"],"usedBy":["frontend/src/panel/reclamaciones/LibroReclamacionesPage.jsx","frontend/src/web/tienda/CheckoutPage.jsx"],"endpoints":["GET /api/ventas/mis-ventas"],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/TiendaContext.js","module":"tienda","responsibility":"Componente o servicio de la tienda TiendaContext","imports":[],"usedBy":["frontend/src/panel/reclamaciones/LibroReclamacionesPage.jsx","frontend/src/web/asistente/useMemoriaAsistente.js","frontend/src/web/componentes/BarraMovil.jsx","frontend/src/web/componentes/PublicHeader.jsx","frontend/src/web/tienda/AccionesLibro.jsx","frontend/src/web/tienda/CarritoPage.jsx","frontend/src/web/tienda/CheckoutPage.jsx","frontend/src/web/tienda/ComprarLibro.jsx","frontend/src/web/tienda/CuentaPage.jsx","frontend/src/web/tienda/EstadoSesion.jsx","frontend/src/web/tienda/FavoritosPage.jsx","frontend/src/web/tienda/LibroPage.jsx","frontend/src/web/tienda/MisComprasPage.jsx","frontend/src/web/tienda/PilaCarrito.jsx","frontend/src/web/tienda/TiendaProvider.jsx"],"endpoints":[],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/TiendaProvider.jsx","module":"tienda","responsibility":"Componente o servicio de la tienda TiendaProvider","imports":["frontend/src/web/tienda/clienteApi.js","frontend/src/web/tienda/libroComercial.js","frontend/src/web/tienda/carritoCompra.js","frontend/src/web/tienda/persistenciaCompra.js","frontend/src/web/tienda/TiendaContext.js"],"usedBy":["frontend/src/web/paginas/ReclamacionesPublicasPage.jsx","frontend/src/web/PublicLayout.jsx"],"endpoints":["GET /api/libros"],"relatedFiles":[]},
+  {"file":"frontend/src/web/tienda/useDatosCliente.js","module":"tienda","responsibility":"Componente o servicio de la tienda useDatosCliente","imports":["frontend/src/web/tienda/clienteApi.js"],"usedBy":["frontend/src/panel/reclamaciones/LibroReclamacionesPage.jsx","frontend/src/web/tienda/CheckoutPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"frontend/src/web/tienda/useSeoLibro.js","module":"tienda","responsibility":"Componente o servicio de la tienda useSeoLibro","imports":["frontend/src/web/config/site.js","frontend/src/web/lib/formato.js"],"usedBy":["frontend/src/web/tienda/LibroPage.jsx"],"endpoints":[],"relatedFiles":[]},
   {"file":"flutter_app/lib/main.dart","module":"lib","responsibility":"Arranque Flutter main","imports":["flutter_app/lib/screens/login_screen.dart","flutter_app/lib/screens/splash_screen.dart","flutter_app/lib/services/carrito_service.dart","flutter_app/lib/services/navigation.dart","flutter_app/lib/services/tema_controller.dart","flutter_app/lib/utils/app_theme.dart"],"usedBy":[],"endpoints":[],"relatedFiles":[]},
   {"file":"flutter_app/lib/models/carrito_item.dart","module":"carrito_item","responsibility":"Modelo de datos Flutter carrito_item","imports":["flutter_app/lib/models/libro.dart","flutter_app/lib/utils/idempotencia.dart"],"usedBy":["flutter_app/lib/screens/carrito_screen.dart","flutter_app/lib/services/carrito_service.dart"],"endpoints":[],"relatedFiles":[]},

@@ -1,5 +1,4 @@
 import { FaCircleQuestion } from 'react-icons/fa6';
-
 import { Modal } from './Modal';
 import { Button } from './Button';
 
@@ -13,7 +12,7 @@ export function ConfirmarAccion({
     variante = 'primary',
     onCerrar,
     onConfirmar,
-    cargando = false,
+    cargando = false
 }) {
     if (!abierto) return null;
 

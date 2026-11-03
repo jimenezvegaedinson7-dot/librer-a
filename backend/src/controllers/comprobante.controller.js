@@ -4,10 +4,6 @@ const empresaModel = require('../models/empresa.model');
 const { validarId } = require('../utils/validaciones');
 const { enviarComprobantePorEmail } = require('../utils/mailer');
 
-// ========================================
-// GENERAR COMPROBANTE (BOLETA / FACTURA)
-// POST /api/ventas/:id/comprobante (admin)
-// ========================================
 const generarComprobante = async (req, res) => {
     try {
         const { id } = req.params;
@@ -15,143 +11,70 @@ const generarComprobante = async (req, res) => {
         const idVenta = validarId(id);
 
         if (!idVenta) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'ID de venta inválido'
-            });
+            return res.status(400).json({ success: false, mensaje: 'ID de venta inválido' });
         }
 
-        const {
-            tipo,
-            cliente_dni_ruc,
-            cliente_tipo_documento,
-            cliente_nombre,
-            cliente_email
-        } = req.body;
+        const { tipo, cliente_dni_ruc, cliente_tipo_documento, cliente_nombre, cliente_email } = req.body;
 
         for (const [campo, valor, maximo] of [
-            ['cliente_dni_ruc', cliente_dni_ruc, 20], ['cliente_tipo_documento', cliente_tipo_documento, 10],
-            ['cliente_nombre', cliente_nombre, 255], ['cliente_email', cliente_email, 255]
+            ['cliente_dni_ruc', cliente_dni_ruc, 20],
+            ['cliente_tipo_documento', cliente_tipo_documento, 10],
+            ['cliente_nombre', cliente_nombre, 255],
+            ['cliente_email', cliente_email, 255]
         ]) {
             if (valor !== undefined && (typeof valor !== 'string' || valor.trim().length > maximo)) {
                 return res.status(400).json({ success: false, mensaje: `El campo ${campo} no es válido` });
             }
         }
 
-        const emailCliente =
-            typeof cliente_email === 'string'
-                ? cliente_email.trim()
-                : '';
+        const emailCliente = typeof cliente_email === 'string' ? cliente_email.trim() : '';
 
-        if (
-            emailCliente &&
-            (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailCliente) ||
-                emailCliente.length > 255)
-        ) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'El correo del cliente no es válido'
-            });
+        if (emailCliente && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailCliente) || emailCliente.length > 255)) {
+            return res.status(400).json({ success: false, mensaje: 'El correo del cliente no es válido' });
         }
 
-        const comprobante =
-            await comprobanteModel.generarComprobante({
-                id_venta: idVenta,
-                tipo: tipo || 'boleta',
-                cliente_dni_ruc,
-                cliente_tipo_documento,
-                cliente_nombre,
-                cliente_email: emailCliente || undefined
-            });
-
-        return res.status(201).json({
-            success: true,
-            comprobante
+        const comprobante = await comprobanteModel.generarComprobante({
+            id_venta: idVenta,
+            tipo: tipo || 'boleta',
+            cliente_dni_ruc,
+            cliente_tipo_documento,
+            cliente_nombre,
+            cliente_email: emailCliente || undefined
         });
 
+        return res.status(201).json({ success: true, comprobante });
     } catch (error) {
         const status = error.status || 500;
 
         if (status >= 400 && status < 500) {
-            return res.status(status).json({
-                success: false,
-                mensaje:
-                    error.message ||
-                    'Error al generar el comprobante'
-            });
+            return res.status(status).json({ success: false, mensaje: error.message || 'Error al generar el comprobante' });
         }
 
-        console.error(
-            'Error al generar comprobante:',
-            error
-        );
+        console.error('Error al generar comprobante:', error);
 
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al generar el comprobante'
-        });
+        return res.status(500).json({ success: false, mensaje: 'Error al generar el comprobante' });
     }
 };
 
-// ========================================
-// LISTAR COMPROBANTES (ADMIN)
-// GET /api/comprobantes
-// ========================================
 const listarComprobantes = async (req, res) => {
     try {
-        const {
-            tipo,
-            q,
-            envio,
-            estado,
-            pagina,
-            por_pagina
-        } = req.query;
+        const { tipo, q, envio, estado, pagina, por_pagina } = req.query;
 
         const idVenta = req.query.id_venta === undefined ? undefined : validarId(req.query.id_venta);
         if (req.query.id_venta !== undefined && !idVenta) {
             return res.status(400).json({ success: false, mensaje: 'ID de venta inválido' });
         }
 
-        const resultado =
-            await comprobanteModel.listarComprobantes({
-                idVenta,
-                tipo,
-                q,
-                envio,
-                estado,
-                pagina,
-                porPagina: por_pagina
-            });
+        const resultado = await comprobanteModel.listarComprobantes({ idVenta, tipo, q, envio, estado, pagina, porPagina: por_pagina });
 
-        return res.json({
-            success: true,
-            comprobantes:
-                resultado.comprobantes,
-            total: resultado.total,
-            filtro_venta: idVenta ?? null,
-            paginas: resultado.paginas
-        });
-
+        return res.json({ success: true, comprobantes: resultado.comprobantes, total: resultado.total, filtro_venta: idVenta ?? null, paginas: resultado.paginas });
     } catch (error) {
-        console.error(
-            'Error al listar comprobantes:',
-            error
-        );
+        console.error('Error al listar comprobantes:', error);
 
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al listar los comprobantes'
-        });
+        return res.status(500).json({ success: false, mensaje: 'Error al listar los comprobantes' });
     }
 };
 
-// ========================================
-// OBTENER COMPROBANTE POR ID (ADMIN)
-// GET /api/comprobantes/:id
-// ========================================
 const obtenerComprobante = async (req, res) => {
     try {
         const { id } = req.params;
@@ -159,49 +82,23 @@ const obtenerComprobante = async (req, res) => {
         const idComprobante = validarId(id);
 
         if (!idComprobante) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'ID de comprobante inválido'
-            });
+            return res.status(400).json({ success: false, mensaje: 'ID de comprobante inválido' });
         }
 
-        const comprobante =
-            await comprobanteModel.obtenerComprobante(
-                idComprobante
-            );
+        const comprobante = await comprobanteModel.obtenerComprobante(idComprobante);
 
         if (!comprobante) {
-            return res.status(404).json({
-                success: false,
-                mensaje:
-                    'Comprobante no encontrado'
-            });
+            return res.status(404).json({ success: false, mensaje: 'Comprobante no encontrado' });
         }
 
-        return res.json({
-            success: true,
-            comprobante
-        });
-
+        return res.json({ success: true, comprobante });
     } catch (error) {
-        console.error(
-            'Error al obtener comprobante:',
-            error
-        );
+        console.error('Error al obtener comprobante:', error);
 
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al obtener el comprobante'
-        });
+        return res.status(500).json({ success: false, mensaje: 'Error al obtener el comprobante' });
     }
 };
 
-// ========================================
-// ENVIAR COMPROBANTE POR CORREO
-// POST /api/comprobantes/:id/enviar-email
-// ========================================
 const enviarComprobanteEmail = async (req, res) => {
     try {
         const { id } = req.params;
@@ -209,116 +106,69 @@ const enviarComprobanteEmail = async (req, res) => {
         const idComprobante = validarId(id);
 
         if (!idComprobante) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'ID de comprobante inválido'
-            });
+            return res.status(400).json({ success: false, mensaje: 'ID de comprobante inválido' });
         }
 
-        const comprobante =
-            await comprobanteModel.obtenerComprobante(
-                idComprobante
-            );
+        const comprobante = await comprobanteModel.obtenerComprobante(idComprobante);
 
         if (!comprobante) {
-            return res.status(404).json({
-                success: false,
-                mensaje: 'Comprobante no encontrado'
-            });
+            return res.status(404).json({ success: false, mensaje: 'Comprobante no encontrado' });
         }
 
         if (comprobante.estado === 'anulado') {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'Este comprobante está anulado: no se envía al cliente'
-            });
+            return res.status(400).json({ success: false, mensaje: 'Este comprobante está anulado: no se envía al cliente' });
         }
 
-        // En ventas de mostrador la cuenta de la venta es la del
-        // administrador: nunca se usa como destinatario.
         const esMostrador = comprobante.origen === 'panel';
 
-        const emailDestino =
-            comprobante.cliente_email ||
-            comprobante.correo_compra ||
-            (esMostrador ? null : comprobante.correo_usuario);
+        const emailDestino = comprobante.cliente_email || comprobante.correo_compra || (esMostrador ? null : comprobante.correo_usuario);
 
         if (!emailDestino) {
-            return res.status(400).json({
-                success: false,
-                mensaje:
-                    'No hay correo electrónico registrado para este cliente'
-            });
+            return res.status(400).json({ success: false, mensaje: 'No hay correo electrónico registrado para este cliente' });
         }
 
-        const nombreCliente =
-            comprobante.cliente_nombre ||
-            (esMostrador
-                ? ''
-                : `${comprobante.nombre_usuario || ''} ${comprobante.apellido_usuario || ''}`.trim()) ||
-            'Cliente';
+        const nombreCliente = comprobante.cliente_nombre || (esMostrador ? '' : `${comprobante.nombre_usuario || ''} ${comprobante.apellido_usuario || ''}`.trim()) || 'Cliente';
 
         const empresa = await empresaModel.obtenerEmpresa().catch(() => ({}));
 
-        const resultado =
-            await enviarComprobantePorEmail({
-                destinatario: emailDestino,
-                nombre: nombreCliente,
-                tipo: comprobante.tipo,
-                serie: comprobante.serie,
-                numero: comprobante.numero,
-                clienteDniRuc: comprobante.cliente_dni_ruc,
-                clienteTipoDocumento: comprobante.cliente_tipo_documento,
-                clienteEmail: comprobante.cliente_email || comprobante.correo_compra,
-                subtotal: comprobante.subtotal,
-                costoEnvio: comprobante.costo_envio,
-                total: comprobante.total,
-                items: comprobante.detalle || [],
-                empresaRazon: comprobante.razon_social ?? empresa.razon_social,
-                empresaRuc: comprobante.ruc ?? empresa.ruc,
-                empresaNombreComercial: comprobante.empresa_snapshot ? comprobante.empresa_snapshot.nombre_comercial : empresa.nombre_comercial,
-                empresaDireccion: comprobante.empresa_snapshot ? comprobante.empresa_snapshot.direccion : empresa.direccion,
-                fechaEmision: comprobante.fecha_emision
-            });
+        const resultado = await enviarComprobantePorEmail({
+            destinatario: emailDestino,
+            nombre: nombreCliente,
+            tipo: comprobante.tipo,
+            serie: comprobante.serie,
+            numero: comprobante.numero,
+            clienteDniRuc: comprobante.cliente_dni_ruc,
+            clienteTipoDocumento: comprobante.cliente_tipo_documento,
+            clienteEmail: comprobante.cliente_email || comprobante.correo_compra,
+            subtotal: comprobante.subtotal,
+            costoEnvio: comprobante.costo_envio,
+            total: comprobante.total,
+            items: comprobante.detalle || [],
+            empresaRazon: comprobante.razon_social ?? empresa.razon_social,
+            empresaRuc: comprobante.ruc ?? empresa.ruc,
+            empresaNombreComercial: comprobante.empresa_snapshot ? comprobante.empresa_snapshot.nombre_comercial : empresa.nombre_comercial,
+            empresaDireccion: comprobante.empresa_snapshot ? comprobante.empresa_snapshot.direccion : empresa.direccion,
+            fechaEmision: comprobante.fecha_emision
+        });
 
         if (resultado.enviado) {
             const pool = require('../config/database');
-            await pool.query(
-                'UPDATE comprobantes SET enviado_por_email = TRUE, fecha_envio_email = NOW() WHERE id_comprobante = ?',
-                [idComprobante]
-            );
+            await pool.query('UPDATE comprobantes SET enviado_por_email = TRUE, fecha_envio_email = NOW() WHERE id_comprobante = ?', [idComprobante]);
         }
 
         if (!resultado.enviado) {
-            return res.status(409).json({ success: false, enviado: false,
-                mensaje: 'No se pudo enviar el comprobante por correo. Intenta nuevamente o verifica la configuración del servicio.' });
+            return res
+                .status(409)
+                .json({ success: false, enviado: false, mensaje: 'No se pudo enviar el comprobante por correo. Intenta nuevamente o verifica la configuración del servicio.' });
         }
-        return res.json({
-            success: true,
-            mensaje: `Comprobante enviado a ${emailDestino}`,
-            enviado: resultado.enviado,
-            consola: resultado.consola || false
-        });
-
+        return res.json({ success: true, mensaje: `Comprobante enviado a ${emailDestino}`, enviado: resultado.enviado, consola: resultado.consola || false });
     } catch (error) {
-        console.error(
-            'Error al enviar comprobante por correo:',
-            error
-        );
+        console.error('Error al enviar comprobante por correo:', error);
 
-        return res.status(500).json({
-            success: false,
-            mensaje:
-                'Error al enviar el comprobante por correo'
-        });
+        return res.status(500).json({ success: false, mensaje: 'Error al enviar el comprobante por correo' });
     }
 };
 
-// ========================================
-// ANULAR COMPROBANTE (ADMIN)
-// POST /api/comprobantes/:id/anular
-// { motivo }
-// ========================================
 const anularComprobante = async (req, res) => {
     try {
         const idComprobante = validarId(req.params.id);
@@ -328,10 +178,7 @@ const anularComprobante = async (req, res) => {
 
         const motivo = typeof req.body.motivo === 'string' ? req.body.motivo.trim() : '';
         if (motivo.length < 5 || motivo.length > 255) {
-            return res.status(400).json({
-                success: false,
-                mensaje: 'Indica el motivo de la anulación (entre 5 y 255 caracteres)'
-            });
+            return res.status(400).json({ success: false, mensaje: 'Indica el motivo de la anulación (entre 5 y 255 caracteres)' });
         }
 
         const comprobante = await comprobanteModel.anular(idComprobante, { motivo });
@@ -339,8 +186,7 @@ const anularComprobante = async (req, res) => {
             return res.status(404).json({ success: false, mensaje: 'Comprobante no encontrado' });
         }
 
-        await registrarHistorialComprobante(req, idComprobante,
-            `Comprobante ${comprobante.serie}-${String(comprobante.numero).padStart(8, '0')} anulado. Motivo: ${motivo}`);
+        await registrarHistorialComprobante(req, idComprobante, `Comprobante ${comprobante.serie}-${String(comprobante.numero).padStart(8, '0')} anulado. Motivo: ${motivo}`);
 
         return res.json({ success: true, mensaje: 'Comprobante anulado', comprobante });
     } catch (error) {
@@ -350,12 +196,7 @@ const anularComprobante = async (req, res) => {
 
 const registrarHistorialComprobante = async (req, idComprobante, descripcion) => {
     try {
-        await historialModel.crear({
-            id_usuario: req.usuario?.id_usuario || null,
-            tipo_operacion: 'ACTUALIZAR',
-            modulo: 'comprobantes',
-            descripcion
-        });
+        await historialModel.crear({ id_usuario: req.usuario?.id_usuario || null, tipo_operacion: 'ACTUALIZAR', modulo: 'comprobantes', descripcion });
     } catch (error) {
         console.error(`No se pudo registrar el historial del comprobante #${idComprobante}:`, error.message);
     }
@@ -370,13 +211,4 @@ const responderError = (res, error, mensajeGenerico) => {
     return res.status(500).json({ success: false, mensaje: mensajeGenerico });
 };
 
-// ========================================
-// EXPORTAR CONTROLADORES
-// ========================================
-module.exports = {
-    generarComprobante,
-    listarComprobantes,
-    obtenerComprobante,
-    enviarComprobanteEmail,
-    anularComprobante
-};
+module.exports = { generarComprobante, listarComprobantes, obtenerComprobante, enviarComprobanteEmail, anularComprobante };

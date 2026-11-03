@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react';
-
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input, Select } from '../ui/Form';
 import { Alert } from '../ui/Alert';
-
 import { formatearMoneda } from '../../compartido/lib/utils/format';
 import { emailValido } from '../lib/utils/validaciones';
-
-import { useToast } from '../../app/providers/ToastProvider';
-
+import { useToast } from '../../app/providers/ToastContext';
 import { emitirComprobante, enviarComprobanteEmail } from '../comprobantes/comprobantesService';
 import { envioAutomaticoActivo } from '../comprobantes/envioAutomatico';
 import { obtenerEmpresa } from '../configuracion/empresaService';
@@ -33,9 +29,6 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
     const [empresa, setEmpresa] = useState(null);
     const [cargandoEmpresa, setCargandoEmpresa] = useState(false);
 
-    // Datos del emisor: vienen del servidor, así que se sincronizan con un
-    // efecto. `vigente` evita fijar estado si el modal se cerró antes de que
-    // la empresa respondiera.
     useEffect(() => {
         if (!abierto) return undefined;
 
@@ -57,16 +50,11 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
         };
     }, [abierto]);
 
-    // El formulario se prepara de los datos de la venta al abrir el modal. Se
-    // ajusta durante el render en vez de en un efecto, para que el modal
-    // muestre el cliente y el documento ya cargados en el mismo pintado.
     const [abiertoAnterior, setAbiertoAnterior] = useState(abierto);
     const [ventaAnterior, setVentaAnterior] = useState(venta);
     const [tipoInicialAnterior, setTipoInicialAnterior] = useState(tipoInicial);
 
-    const debePreparar =
-        abiertoAnterior !== abierto ||
-        (abierto && (ventaAnterior !== venta || tipoInicialAnterior !== tipoInicial));
+    const debePreparar = abiertoAnterior !== abierto || (abierto && (ventaAnterior !== venta || tipoInicialAnterior !== tipoInicial));
 
     if (debePreparar) {
         setAbiertoAnterior(abierto);
@@ -80,23 +68,15 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
             setErrorEmail('');
             setEjecutando(false);
 
-            // El emisor se vuelve a pedir en cada apertura; se marca como
-            // pendiente aquí para que el botón no espere al efecto.
             setEmpresa(null);
             setCargandoEmpresa(true);
 
-            // En una venta de mostrador la cuenta de la venta es la del
-            // administrador que la registró: el cliente es el anotado en la venta.
             const esMostrador = venta?.origen === 'panel';
-            const nombreCuenta = esMostrador
-                ? ''
-                : [venta?.nombre_usuario, venta?.apellido_usuario].filter(Boolean).join(' ').trim();
+            const nombreCuenta = esMostrador ? '' : [venta?.nombre_usuario, venta?.apellido_usuario].filter(Boolean).join(' ').trim();
 
             setClienteNombre(venta?.cliente_nombre || nombreCuenta);
             setClienteEmail(venta?.correo_compra || (esMostrador ? '' : venta?.correo_usuario) || '');
 
-            // El número de documento es el mismo en ambos casos; lo que cambia
-            // con el tipo de comprobante es la etiqueta del tipo (RUC o DNI).
             setTipoDocumento(tipoInicial === 'factura' ? 'RUC' : venta?.cliente_tipo_documento || 'DNI');
             setDocumento(venta?.cliente_documento || '');
         }
@@ -165,24 +145,19 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                 cliente_tipo_documento: tipoDocumento,
                 cliente_dni_ruc: documento.trim() || undefined,
                 cliente_nombre: clienteNombre.trim() || undefined,
-                cliente_email: correo || undefined,
+                cliente_email: correo || undefined
             });
             exito(`${tipo === 'factura' ? 'Factura' : 'Boleta'} emitida correctamente`);
             onEmitido?.(comprobante);
             onCerrar();
-            // Modo automático: se envía por correo sin bloquear la ventana.
+
             if (envioAutomaticoActivo() && comprobante?.id_comprobante) {
                 enviarComprobanteEmail(comprobante.id_comprobante)
                     .then((r) => exito(r?.mensaje || 'Comprobante enviado por correo'))
                     .catch((err) => mostrarError(err.response?.data?.mensaje || 'Se emitió, pero no se pudo enviar por correo'));
             }
         } catch (err) {
-            mostrarError(
-                err.response?.data?.mensaje ||
-                    (err.response?.status === 409
-                        ? 'La venta ya tiene un comprobante emitido'
-                        : 'Error al emitir el comprobante'),
-            );
+            mostrarError(err.response?.data?.mensaje || (err.response?.status === 409 ? 'La venta ya tiene un comprobante emitido' : 'Error al emitir el comprobante'));
         } finally {
             setEjecutando(false);
         }
@@ -204,22 +179,13 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                         {tipo === 'factura' ? 'Emitir factura' : 'Emitir boleta'}
                     </Button>
                 </>
-            }
-        >
+            }>
             <div className="space-y-5">
-
-                {/* TIPO DE COMPROBANTE */}
-                <Select
-                    label="Tipo de comprobante"
-                    value={tipo}
-                    onChange={(e) => cambiarTipo(e.target.value)}
-                    required
-                >
+                <Select label="Tipo de comprobante" value={tipo} onChange={(e) => cambiarTipo(e.target.value)} required>
                     <option value="boleta">Boleta</option>
                     <option value="factura">Factura (requiere RUC del cliente)</option>
                 </Select>
 
-                {/* DATOS DEL EMISOR */}
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
                     <p className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-3">Datos del emisor (empresa)</p>
                     {cargandoEmpresa ? (
@@ -228,21 +194,14 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <Input label="RUC" value={empresa.ruc || ''} readOnly />
                             <Input label="Razon social" value={empresa.razon_social || ''} readOnly />
-                            {empresa.nombre_comercial && (
-                                <Input label="Nombre comercial" value={empresa.nombre_comercial} readOnly />
-                            )}
-                            {empresa.direccion && (
-                                <Input label="Direccion" value={empresa.direccion} readOnly />
-                            )}
+                            {empresa.nombre_comercial && <Input label="Nombre comercial" value={empresa.nombre_comercial} readOnly />}
+                            {empresa.direccion && <Input label="Direccion" value={empresa.direccion} readOnly />}
                         </div>
                     ) : (
-                        <Alert tipo="warning">
-                            No se encontraron datos de la empresa. Configuralos en Configuracion &gt; Datos de la empresa.
-                        </Alert>
+                        <Alert tipo="warning">No se encontraron datos de la empresa. Configuralos en Configuracion &gt; Datos de la empresa.</Alert>
                     )}
                 </div>
 
-                {/* DATOS DEL COMPRADOR */}
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
                     <p className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-3">Datos del comprador</p>
 
@@ -253,21 +212,21 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                     )}
 
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <Select
-                            label="Tipo de documento"
-                            value={tipoDocumento}
-                            onChange={(e) => setTipoDocumento(e.target.value)}
-                            required
-                        >
+                        <Select label="Tipo de documento" value={tipoDocumento} onChange={(e) => setTipoDocumento(e.target.value)} required>
                             {(tipo === 'factura' ? TIPOS_DOCUMENTO_FACTURA : TIPOS_DOCUMENTO_BOLETA).map((opcion) => (
-                                <option key={opcion} value={opcion}>{opcion}</option>
+                                <option key={opcion} value={opcion}>
+                                    {opcion}
+                                </option>
                             ))}
                         </Select>
 
                         <Input
                             label={tipo === 'factura' ? 'RUC del cliente' : 'Numero de documento (opcional)'}
                             value={documento}
-                            onChange={(e) => { setDocumento(e.target.value); setErrorDocumento(''); }}
+                            onChange={(e) => {
+                                setDocumento(e.target.value);
+                                setErrorDocumento('');
+                            }}
                             error={errorDocumento}
                             placeholder={tipo === 'factura' ? 'Ej. 20123456789' : 'Ej. 12345678'}
                             maxLength="20"
@@ -277,7 +236,10 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                         <Input
                             label={tipo === 'factura' ? 'Razon social del cliente' : 'Nombre completo'}
                             value={clienteNombre}
-                            onChange={(e) => { setClienteNombre(e.target.value); setErrorNombre(''); }}
+                            onChange={(e) => {
+                                setClienteNombre(e.target.value);
+                                setErrorNombre('');
+                            }}
                             error={errorNombre}
                             placeholder={tipo === 'factura' ? 'Razon social del cliente' : 'Nombre del comprador'}
                             maxLength="150"
@@ -288,20 +250,18 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                             label="Correo electronico"
                             type="email"
                             value={clienteEmail}
-                            onChange={(e) => { setClienteEmail(e.target.value); setErrorEmail(''); }}
+                            onChange={(e) => {
+                                setClienteEmail(e.target.value);
+                                setErrorEmail('');
+                            }}
                             error={errorEmail}
                             placeholder="correo@ejemplo.com"
                             maxLength="120"
                         />
-                        {envioAutomaticoActivo() && (
-                            <p className="envio-auto-nota sm:col-span-2">
-                                Envío automático activado: el comprobante se enviará por correo al emitirlo.
-                            </p>
-                        )}
+                        {envioAutomaticoActivo() && <p className="envio-auto-nota sm:col-span-2">Envío automático activado: el comprobante se enviará por correo al emitirlo.</p>}
                     </div>
                 </div>
 
-                {/* DETALLE DE LA VENTA */}
                 <div className="rounded-xl border border-primary-200 bg-parchment-200 p-4">
                     <p className="text-xs font-bold uppercase tracking-wide text-slate-500 mb-3">Detalle de la venta</p>
                     {detalle.length > 0 ? (
@@ -345,7 +305,6 @@ export default function EmitirComprobanteModal({ venta, tipoInicial = 'boleta', 
                         <p className="text-sm text-slate-500">No hay detalle de productos para esta venta.</p>
                     )}
                 </div>
-
             </div>
         </Modal>
     );

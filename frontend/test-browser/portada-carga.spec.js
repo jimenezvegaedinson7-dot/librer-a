@@ -6,13 +6,22 @@ const API = 'http://127.0.0.1:59999/api';
 const CLAVE = `lds:portada-animacion:v1:${API}`;
 const IMAGEN = Buffer.from('R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==', 'base64');
 const LIBRO = {
-    id_libro: 7, titulo: 'El principito', autor: 'Antoine de Saint-Exupéry',
-    categoria: 'Infantil', precio: '40.00', stock: 4, estado: 1,
-    portada: `${API}/portada-carga.gif`, creado_en: '2026-10-20T00:00:00Z',
+    id_libro: 7,
+    titulo: 'El principito',
+    autor: 'Antoine de Saint-Exupéry',
+    categoria: 'Infantil',
+    precio: '40.00',
+    stock: 4,
+    estado: 1,
+    portada: `${API}/portada-carga.gif`,
+    creado_en: '2026-10-20T00:00:00Z'
 };
+
 const pausa = () => {
     let liberar;
-    const espera = new Promise((resolver) => { liberar = resolver; });
+    const espera = new Promise((resolver) => {
+        liberar = resolver;
+    });
     return { espera, liberar };
 };
 
@@ -30,7 +39,9 @@ for (const width of [1440, 390]) {
         test.setTimeout(90000);
         await page.setViewportSize({ width, height: 900 });
         await preparar(page);
-        const datos = pausa(), textura = pausa(), fuente = pausa();
+        const datos = pausa(),
+            textura = pausa(),
+            fuente = pausa();
         const errores = [];
         page.on('pageerror', (e) => errores.push(e.message));
         await page.route(`${API}/anuncios/protagonista`, async (r) => {
@@ -56,7 +67,7 @@ for (const width of [1440, 390]) {
         await expect(page.locator('.portada3d__titulo')).toBeHidden();
         await expect(page.locator('.portada3d__respaldo')).toHaveCount(0);
         textura.liberar();
-        // La textura sola no basta: el titular no debe aparecer en otra fuente.
+
         await expect(page.locator('.portada3d--lista')).toHaveCount(0);
         fuente.liberar();
         await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });
@@ -86,7 +97,7 @@ test('recarga: usa el protagonista guardado mientras Render responde y respeta s
         await r.fulfill({ json: { success: true, data: { libro: null } } });
     });
     await page.reload({ waitUntil: 'domcontentloaded' });
-    // La escena puede estar lista aunque todavía no contestó el servidor.
+
     await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });
     await expect(page.locator('.portada3d__acceso-titulo')).toHaveText(LIBRO.titulo);
     respuesta.liberar();
@@ -124,11 +135,12 @@ test('API antigua 404: guarda el respaldo con su oferta y arranca antes de la co
 for (const caso of ['vencida', 'corrupta']) {
     test(`caché ${caso}: espera datos nuevos con spinner`, async ({ page }) => {
         await preparar(page);
-        await page.addInitScript(({ clave, libro, caso }) => {
-            localStorage.setItem(clave, caso === 'corrupta' ? '{incompleto' : JSON.stringify({
-                protagonista: { fecha: Date.now() - 16 * 60 * 1000, valor: libro },
-            }));
-        }, { clave: CLAVE, libro: LIBRO, caso });
+        await page.addInitScript(
+            ({ clave, libro, caso }) => {
+                localStorage.setItem(clave, caso === 'corrupta' ? '{incompleto' : JSON.stringify({ protagonista: { fecha: Date.now() - 16 * 60 * 1000, valor: libro } }));
+            },
+            { clave: CLAVE, libro: LIBRO, caso }
+        );
         const respuesta = pausa();
         await page.route(`${API}/anuncios/protagonista`, async (r) => {
             await respuesta.espera;
