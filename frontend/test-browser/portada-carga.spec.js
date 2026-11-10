@@ -35,7 +35,7 @@ async function preparar(page) {
 }
 
 for (const width of [1440, 390]) {
-    test(`carga ${width}px: spinner durante API, textura y fuente, sin portada provisional`, async ({ page }, testInfo) => {
+    test(`carga ${width}px: datos visibles mientras se preparan la textura y la fuente del 3D`, async ({ page }, testInfo) => {
         test.setTimeout(90000);
         await page.setViewportSize({ width, height: 900 });
         await preparar(page);
@@ -58,21 +58,35 @@ for (const width of [1440, 390]) {
         });
         await page.goto('/', { waitUntil: 'domcontentloaded' });
         await expect(page.locator('#precarga')).toHaveCount(0);
-        await expect(page.locator('.portada3d--cargando .portada3d__spinner')).toBeVisible();
-        await expect(page.locator('.portada3d__cargando')).toHaveCSS('background-color', 'rgb(247, 241, 232)');
+        await expect(page.locator('.portada3d__presentacion [role="status"]')).toBeVisible();
+        await expect(page.locator('.portada3d__presentacion').getByRole('link', { name: 'Ver catálogo', exact: true })).toBeVisible();
         await expect(page.locator('main > div')).toHaveCSS('animation-name', 'none');
         await expect(page.locator('.portada3d--estatica')).toHaveCount(0);
         datos.liberar();
-        await expect(page.locator('.portada3d--3d .portada3d__spinner')).toBeVisible();
-        await expect(page.locator('.portada3d__titulo')).toBeHidden();
+        await expect(page.locator('.portada3d__acceso-titulo')).toHaveText(LIBRO.titulo);
+        await expect(page.locator('.portada3d__acceso')).toBeVisible();
+        await expect(page.locator('.portada-unica__poster')).toHaveCSS('opacity', '1');
+        await expect(page.locator('.portada3d__lienzo')).toHaveCSS('opacity', '0');
+        await expect(page.locator('.portada3d__titulo')).toBeVisible();
+        const acceso = page.locator('.portada3d__presentacion .portada3d__boton');
+        await acceso.focus();
+        const posicion = await acceso.boundingBox();
+        await page.evaluate(() => {
+            window.__accesoInicial = document.querySelector('.portada3d__presentacion .portada3d__boton');
+        });
         await expect(page.locator('.portada3d__respaldo')).toHaveCount(0);
         textura.liberar();
 
         await expect(page.locator('.portada3d--lista')).toHaveCount(0);
+        await expect(page.locator('.portada3d__acceso')).toBeVisible();
         fuente.liberar();
         await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });
+        await expect(acceso).toBeFocused();
+        expect(await page.evaluate(() => window.__accesoInicial === document.querySelector('.portada3d__presentacion .portada3d__boton'))).toBe(true);
+        const final = await acceso.boundingBox();
+        for (const medida of ['x', 'y', 'width', 'height']) expect(Math.abs(posicion[medida] - final[medida])).toBeLessThan(1);
         await expect(page.locator('.portada3d__lienzo')).toHaveCSS('opacity', '1');
-        await expect(page.locator('.portada3d__lienzo')).toHaveCSS('transition-duration', '0s');
+        await expect(page.locator('.portada3d__lienzo')).toHaveCSS('transition-duration', '0.18s');
         await expect(page.locator('.portada3d__spinner')).toHaveCount(0);
         await expect(page.locator('.portada3d__titulo')).toBeVisible();
         await expect(page.locator('.portada3d--lista')).toHaveAttribute('aria-busy', 'false');
@@ -102,7 +116,9 @@ test('recarga: usa el protagonista guardado mientras Render responde y respeta s
     await expect(page.locator('.portada3d__acceso-titulo')).toHaveText(LIBRO.titulo);
     respuesta.liberar();
     await expect(page.locator('.portada3d--estatica')).toBeVisible();
-    await expect(page.locator('.portada3d__acceso')).toHaveCount(0);
+    await expect(page.locator('.portada3d__acceso-titulo')).toHaveText('');
+    await expect(page.locator('.portada3d__presentacion .portada3d__boton')).toHaveAttribute('href', '/catalogo');
+    await expect(page.locator('.portada-unica__poster')).toHaveCount(0);
     await expect.poll(() => page.evaluate((clave) => JSON.parse(localStorage.getItem(clave)).protagonista.valor, CLAVE)).toBeNull();
 });
 
@@ -133,7 +149,7 @@ test('API antigua 404: guarda el respaldo con su oferta y arranca antes de la co
 });
 
 for (const caso of ['vencida', 'corrupta']) {
-    test(`caché ${caso}: espera datos nuevos con spinner`, async ({ page }) => {
+    test(`caché ${caso}: espera datos nuevos sin bloquear la navegación`, async ({ page }) => {
         await preparar(page);
         await page.addInitScript(
             ({ clave, libro, caso }) => {
@@ -147,7 +163,7 @@ for (const caso of ['vencida', 'corrupta']) {
             await r.fulfill({ json: { success: true, data: { libro: LIBRO } } });
         });
         await page.goto('/', { waitUntil: 'domcontentloaded' });
-        await expect(page.locator('.portada3d--cargando .portada3d__spinner')).toBeVisible();
+        await expect(page.locator('.portada3d__presentacion [role="status"]')).toBeVisible();
         await expect(page.locator('.portada3d--estatica')).toHaveCount(0);
         respuesta.liberar();
         await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });

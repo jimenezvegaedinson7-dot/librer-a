@@ -302,8 +302,6 @@
 .sitio .oferta-tarjeta .precio.oferta .oferta__anterior { color: var(--texto-3); }
 .sitio .oferta-tarjeta .precio.oferta, .sitio .oferta-tarjeta .precio.oferta .oferta__final { color: #b12704; }
 .sitio .oferta-tarjeta__ahorro { color: #b12704; font-weight: 500; }
-.sitio .oferta-tarjeta .boton--compra { background: var(--marino-900); border-color: var(--marino-900); color: var(--blanco); }
-.sitio .oferta-tarjeta .boton--compra:hover { background: var(--marino-700); border-color: var(--marino-700); }
 .sitio .oferta-tarjeta .compra-libro__detalle { color: var(--marino-900); }
 @media (max-width: 1023px) {
     .sitio .app-portada::before, .sitio .descargar-portada::before { background: linear-gradient(180deg, rgba(233, 223, 205, 0.9) 0%, rgba(233, 223, 205, 0.65) 55%, rgba(233, 223, 205, 0.3) 100%), url('../assets/estanteria-clara.svg') center bottom / auto 100% repeat-x; }
@@ -316,19 +314,14 @@
     .sitio .app-portada__texto { order: -1; }
 }
 .sitio .icono-ia {
-    position: relative; display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #dde6f0;
+    position: relative; display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: var(--marino-900);
     box-shadow: 0 0 0 2px #fff, 0 6px 16px -4px rgba(13, 41, 64, 0.5);
 }
-.sitio .icono-ia__video {
-    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; transform-origin: 50% 0; transform: scale(1.4) translateY(2%);
-    transition: opacity 0.35s ease; pointer-events: none;
-}
-.sitio .icono-ia__video--pensar { opacity: 0; }
-.sitio .icono-ia--pensando .icono-ia__video--pensar { opacity: 1; }
-.sitio .icono-ia--pensando .icono-ia__video--reposo { opacity: 0; }
-@keyframes ia-titilar {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.45; transform: scale(0.6); }
+.sitio .asistente-tienda .icono-ia svg { display: block; width: 100%; height: 100%; pointer-events: none; }
+.sitio .icono-ia--pensando .icono-ia__renglones { animation: ia-leer 1.2s ease-in-out infinite; }
+@keyframes ia-leer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
 }
 .sitio .asistente-tienda .asistente-abrir {
     width: 72px; height: 72px; min-height: 0; padding: 0; justify-content: center; border-radius: 50%; border: 0; background: transparent; box-shadow: none;
@@ -375,7 +368,7 @@
 }
 .sitio .asistente-extras { animation: ia-frase 0.35s ease-out; }
 @media (prefers-reduced-motion: reduce) {
-    .sitio .asistente-tienda .asistente-abrir__icono::after, .sitio .asistente-pensando__frase, .sitio .asistente-pensando__puntos i, .sitio .asistente-cursor, .sitio .asistente-extras { animation: none; }
+    .sitio .asistente-tienda .asistente-abrir__icono::after, .sitio .asistente-pensando__frase, .sitio .asistente-pensando__puntos i, .sitio .asistente-cursor, .sitio .asistente-extras, .sitio .icono-ia--pensando .icono-ia__renglones { animation: none; }
 }
 @media (max-width: 480px) {
     .sitio .asistente-tienda .asistente-abrir { width: 60px; height: 60px; }
@@ -496,22 +489,7 @@
     100% { opacity: 0; visibility: hidden; }
 }
 .sitio .asistente-intro__avatar { position: relative; width: 132px; height: 132px; }
-.sitio .asistente-intro__piezas {
-    position: absolute; inset: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); animation: intro-unir 0.6s ease forwards;
-}
-.sitio .asistente-intro__piezas i {
-    background-size: 184.8px 184.8px; background-position: calc((var(--px) + 0.8) * -33px) calc(var(--py) * -33px + 2.64px); opacity: 0;
-    animation: intro-pieza 0.42s cubic-bezier(0.2, 0.9, 0.25, 1) var(--retraso) forwards;
-}
-@keyframes intro-pieza {
-    from { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--giro)) scale(0.6); }
-    to { opacity: 1; transform: none; }
-}
-@keyframes intro-unir {
-    0%, 80% { clip-path: inset(-200%); }
-    100% { clip-path: circle(50%); opacity: 0; }
-}
-.sitio .asistente-intro__vivo { position: absolute; inset: 0; opacity: 0; transform: scale(0.96); animation: intro-vivo 0.25s ease 0.5s forwards; }
+.sitio .asistente-intro__vivo { position: absolute; inset: 0; opacity: 0; transform: scale(0.96); animation: intro-vivo 0.25s ease 0.05s forwards; }
 .sitio .asistente-intro__vivo .icono-ia { box-shadow: 0 0 0 3px #fff, 0 14px 32px -12px rgba(40, 28, 20, 0.55); }
 @keyframes intro-vivo {
     to { opacity: 1; transform: none; }

@@ -11,13 +11,13 @@ import {
     DoubleSide,
     FogExp2,
     Group,
+    HemisphereLight,
     Mesh,
     MeshBasicMaterial,
     MeshPhysicalMaterial,
     MeshStandardMaterial,
     PerspectiveCamera,
     PlaneGeometry,
-    PMREMGenerator,
     PointLight,
     Points,
     PointsMaterial,
@@ -30,9 +30,9 @@ import {
     WebGLRenderer
 } from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { PortalEditorial, prepararDisolucion, crearTexturaLomo } from './portalEditorial';
-import { estadoCinematico, estadoEncuadernacion, tramoCine, ENCUADERNACION } from './cinematografia';
+import { amortiguarProgreso, estadoCinematico, estadoEncuadernacion, tramoCine, ENCUADERNACION } from './cinematografia';
+import { poseInicialLibro } from './poseLibro';
 
 const COLOR = { fondo: 0xf7f1e8, violeta: 0x6d4aff, azul: 0x568cff, papel: 0xf1e9d8, tapa: 0x1b1830 };
 
@@ -112,10 +112,12 @@ export default class EscenaLibro {
         this.movil = movil;
         this.compacto = compacto;
         this.progreso = 0;
+        this.objetivoProgreso = 0;
         this.entrada = 0;
         this.puntero = { x: 0, y: 0, ox: 0, oy: 0 };
         this.reloj = new Clock();
         this.tiempo = 0;
+        this.animando = false;
         this.desechables = [];
         this.titulo = titulo;
         this.autor = autor;
@@ -134,7 +136,7 @@ export default class EscenaLibro {
         const dispositivo = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
         this.software = /swiftshader|llvmpipe|software|basic render/i.test(dispositivo);
         this.economico = movil || this.software;
-        if (this.economico) r.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.software ? Math.min(1, 900 / window.innerWidth) : 1.15));
+        if (this.economico) r.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.software ? Math.min(0.85, 600 / window.innerWidth) : 1.15));
 
         this.escena = new Scene();
         this.escena.fog = new FogExp2(COLOR.fondo, 0.012);
@@ -142,23 +144,27 @@ export default class EscenaLibro {
         this.camara.position.set(0, 0, 10);
 
         this.crearLuces();
-        const generador = new PMREMGenerator(r),
-            sala = new RoomEnvironment();
-        this.entorno = this.registrar(generador.fromScene(sala, 0.06));
-        this.escena.environment = this.entorno.texture;
-        this.escena.environmentIntensity = 0.45;
-        sala.dispose();
-        generador.dispose();
         this.portal = new PortalEditorial(r, this.economico, COLOR.fondo);
-        if (this.software) {
-            this.escena.environment = null;
-        }
         this.escena.background = this.portal.destino.texture;
         this.crearLibro();
+        this.encuadernacion = estadoEncuadernacion(0, this.hojas.length);
+        this.hojasCerradas = this.encuadernacion.hojas.map((hoja) => hoja.angulo);
         this.crearPedestal();
         this.crearParticulas();
         this.crearBrillos();
-        this.cargarPortada(portadaUrl, alCargarPortada);
+        this.portadaLista = new Promise((resolver) =>
+            this.cargarPortada(portadaUrl, (correcta) => {
+                alCargarPortada?.(correcta);
+                resolver(correcta);
+            })
+        );
+    }
+
+    async preparar() {
+        if (!(await this.portadaLista) || this.destruida) return false;
+        this.actualizar();
+        await Promise.all([this.renderer.compileAsync(this.escena, this.camara), this.renderer.compileAsync(this.portal.escena, this.portal.camara)]);
+        return !this.destruida;
     }
 
     registrar(...objetos) {
@@ -173,7 +179,7 @@ export default class EscenaLibro {
 
         this.matPedestal = this.registrar(new Fisico({ map: piedra, color: 0xf6ece0, roughness: 0.22, metalness: 0.02, transparent: true, ...pulido }));
         const matFuste = this.registrar(new Fisico({ map: piedra, color: 0xe9dccb, roughness: 0.35, metalness: 0.02, transparent: true, ...pulido }));
-        const matOro = this.registrar(new MeshStandardMaterial({ color: 0xd9b26b, roughness: 0.18, metalness: 1, transparent: true, envMapIntensity: 1.6 }));
+        const matOro = this.registrar(new MeshStandardMaterial({ color: 0xd9b26b, roughness: 0.24, metalness: 0.72, transparent: true }));
         const matLuz = this.registrar(new MeshBasicMaterial({ color: 0xfff1d6, transparent: true, opacity: 0.9, blending: AdditiveBlending, depthWrite: false }));
         this.matsPedestal = [this.matPedestal, matFuste, matOro, matLuz];
         this.pedestal = new Group();
@@ -200,6 +206,7 @@ export default class EscenaLibro {
     crearLuces() {
         const e = this.escena;
         e.add(new AmbientLight(0xf3ead8, 0.42));
+        e.add(new HemisphereLight(0xfffaf0, 0xb3a28e, 0.65));
 
         const clave = new DirectionalLight(0xfff2dd, 3.1);
         clave.position.set(-4.5, 5, 5);
@@ -271,6 +278,7 @@ export default class EscenaLibro {
         const total = this.movil ? 9 : 16;
         for (let i = 0; i < total; i++) {
             const piv = new Group();
+            piv.visible = false;
             const orden = total === 1 ? 0 : i / (total - 1);
             piv.position.set(-W / 2 + ENCUADERNACION.offsetLomo, 0, T / 2 - ENCUADERNACION.offsetPrimeraHoja - orden * ENCUADERNACION.profundidadHojas);
             const geoHoja = this.registrar(new PlaneGeometry(W - 0.14, H - 0.16, this.movil ? 14 : 24, this.movil ? 3 : 5));
@@ -484,16 +492,21 @@ export default class EscenaLibro {
         this.camara.aspect = ancho / alto;
         this.portal.redimensionar(ancho, alto);
 
-        const distanciaAncho = this.medidas.W / (2 * Math.tan((this.camara.fov * Math.PI) / 360) * this.camara.aspect * 0.62);
-        this.distanciaBase = Math.max(10, distanciaAncho);
+        this.poseInicial = poseInicialLibro(ancho, alto, this.medidas.W / this.medidas.H, this.compacto);
+        this.distanciaBase = this.poseInicial.distancia;
+        this.camara.fov = this.poseInicial.fov;
         this.camara.updateProjectionMatrix();
     }
 
     setProgreso(p) {
-        this.progreso = clamp(p);
+        this.objetivoProgreso = clamp(p);
     }
     setEntrada(e) {
         this.entrada = Math.max(this.entrada, clamp(e));
+    }
+    setAnimando(animando) {
+        this.animando = animando;
+        this.reloj.getDelta();
     }
     setPuntero(x, y) {
         this.puntero.x = clamp(x, -1, 1);
@@ -502,14 +515,15 @@ export default class EscenaLibro {
 
     actualizar() {
         const dt = Math.min(this.reloj.getDelta(), 0.05);
-        const t = (this.tiempo += dt);
+        const t = this.animando ? (this.tiempo += dt) : this.tiempo;
+        if (this.animando) this.progreso = amortiguarProgreso(this.progreso, this.objetivoProgreso, dt);
 
         this.setEntrada(tramoCine(this.progreso, 0, 0.14));
         const estado = estadoCinematico(this.progreso, this.entrada);
         const { entrada: e, acercamiento: rot, apertura: abre, energia: luz, salida: sale, disolucion: funde } = estado;
         const { W } = this.medidas;
 
-        const inercia = 1 - Math.exp(-2.8 * dt);
+        const inercia = this.animando ? 1 - Math.exp(-2.8 * dt) : 0;
         this.puntero.ox += (this.puntero.x - this.puntero.ox) * inercia;
         this.puntero.oy += (this.puntero.y - this.puntero.oy) * inercia;
         const px = this.puntero.ox,
@@ -519,19 +533,20 @@ export default class EscenaLibro {
         const base = this.distanciaBase || 10;
         const anchoEscena = 2 * base * Math.tan((this.camara.fov * Math.PI) / 360) * this.camara.aspect;
         const inicioX = this.compacto ? 0 : anchoEscena * 0.225;
-        const inicioY = this.compacto ? 0.05 : 0.12;
+        const inicioY = this.poseInicial.y;
 
-        const reposoX = this.compacto ? 0 : anchoEscena * 0.17;
-        const escalaReposo = this.compacto ? 0.74 : 0.94;
+        const reposoX = this.poseInicial.x;
+        const escalaReposo = this.poseInicial.escala;
 
         const r = 1 - e;
+        const vida = tramoCine(t, 0, 0.8);
         L.scale.setScalar(mezcla(0.32, escalaReposo, e) * mezcla(1, 1.12 / escalaReposo, rot) * mezcla(1, 0.91, abre));
-        L.position.y = Math.sin(t * 0.65) * 0.022 + inicioY + rot * (this.compacto ? 0.25 : -0.05) - r * r * 1.4;
+        L.position.y = Math.sin(t * 0.8) * 0.038 * vida + inicioY + rot * (this.compacto ? 0.25 : -0.05) - r * r * 1.4;
         L.position.x = this.compacto ? 0 : mezcla(inicioX * (1 - e) + reposoX * e, -1, rot) * (1 - abre) + abre * W * 0.12;
         L.position.z = -r * r * 6;
-        L.rotation.y = mezcla(-0.62, -0.18, e) - r * Math.PI * 2.5 + rot * 0.42 - abre * 0.62 + px * 0.06 + Math.sin(t * 0.3) * 0.02;
-        L.rotation.x = mezcla(0.08, 0.24, abre) + r * 0.45 - py * 0.05;
-        L.rotation.z = mezcla(-0.04, 0.035, rot) + Math.sin(t * 0.4) * 0.006;
+        L.rotation.y = mezcla(-0.62, this.poseInicial.rotacion.y, e) - r * Math.PI * 2.5 + rot * 0.42 - abre * 0.62 + px * 0.06 + Math.sin(t * 0.3) * 0.024 * vida;
+        L.rotation.x = mezcla(this.poseInicial.rotacion.x, 0.24, abre) + r * 0.45 - py * 0.05;
+        L.rotation.z = mezcla(this.poseInicial.rotacion.z, 0.035, rot) + Math.sin(t * 0.4) * 0.008 * vida;
         const tope = inicioY - (this.medidas.H * 1.34) / 2 - 0.22 - L.position.y;
         this.pedestal.position.y = tope;
         const opacidadPedestal = (1 - tramoCine(rot, 0, 0.8)) * tramoCine(e, 0.35, 0.9);
@@ -541,36 +556,7 @@ export default class EscenaLibro {
         });
         this.pedestal.visible = this.matPedestal.opacity > 0.005;
 
-        const encuadernacion = estadoEncuadernacion(0, this.hojas.length);
-        this.bisagra.rotation.y = -encuadernacion.tapa;
-        this.bloque.scale.z = encuadernacion.escalaBloque;
-        this.bloque.position.z = (-(this.medidas.T - 0.09) / 2) * (1 - encuadernacion.escalaBloque);
-        this.hojas.forEach((piv, i) => {
-            const movimiento = encuadernacion.hojas[i];
-            piv.rotation.y = -movimiento.angulo;
-            const g = piv.children[0].geometry,
-                original = g.userData.original;
-            const posiciones = g.attributes.position,
-                normales = g.attributes.normal,
-                w = g.userData.ancho,
-                h = g.userData.alto;
-            const curvatura = movimiento.curvatura;
-            for (let j = 0; j < posiciones.count; j++) {
-                const x = original[j * 3],
-                    y = original[j * 3 + 1],
-                    u = (x + w / 2) / w;
-                const ondulacion = 1 + 0.06 * Math.sin((Math.PI * y) / h);
-                posiciones.setZ(j, -curvatura * Math.sin(u * Math.PI) * ondulacion);
-                const nx = ((curvatura * Math.PI) / w) * Math.cos(u * Math.PI) * ondulacion;
-                const ny = ((curvatura * Math.sin(u * Math.PI) * 0.06 * Math.PI) / h) * Math.cos((Math.PI * y) / h);
-                const longitud = Math.sqrt(1 + nx * nx + ny * ny);
-                normales.setXYZ(j, nx / longitud, ny / longitud, 1 / longitud);
-            }
-            posiciones.needsUpdate = true;
-            normales.needsUpdate = true;
-        });
-
-        this.uniformeDisolver.value = 0;
+        this.uniformeDisolver.value = funde;
         const visible = 1 - funde;
         this.matsLibro.forEach((m) => {
             m.opacity = visible;
@@ -585,7 +571,7 @@ export default class EscenaLibro {
         this.luzAzul.intensity = e * mezcla(3, 7, rot) * (1 - sale);
         this.luzInterior.intensity = luz * 12 * (1 - sale);
         this.luzInterior.position.set(L.position.x * 0.3, L.position.y, 0.9);
-        this.portal.actualizar(t, e, luz, sale, abre);
+        this.portal.actualizar(t, e, luz, sale, this.compacto);
 
         this.brillo.position.set(-W * 0.02, 0, this.medidas.T / 2 + 0.25);
         this.brillo.scale.setScalar(0.05 + luz * 1.2);
@@ -607,7 +593,7 @@ export default class EscenaLibro {
             if (!d.sprite.visible) continue;
             d.sprite.position.set(d.u * anchoTapa, d.v * altoTapa, grosor / 2 + 0.06);
             d.sprite.scale.setScalar(d.tam * (0.35 + pulso));
-            d.sprite.material.opacity = pulso * e * visible;
+            d.sprite.material.opacity = pulso * e * visible * (0.2 + 0.55 * vida);
         }
 
         this.particulas.rotation.y = t * 0.012 + px * 0.06;
@@ -624,7 +610,7 @@ export default class EscenaLibro {
         c.position.y = py * 0.12 + rot * 0.22 + abre * 0.75 * (1 - luz);
         c.lookAt(L.position.x * mezcla(0, 0.85, abre), L.position.y * rot * 0.5, 0);
         this.renderer.toneMappingExposure = 1.05;
-        return { ...estado, tapa: encuadernacion.tapa, hojas: encuadernacion.hojas.map((h) => h.angulo) };
+        return { ...estado, tapa: this.encuadernacion.tapa, hojas: this.hojasCerradas };
     }
 
     dibujar() {
@@ -648,7 +634,7 @@ export default class EscenaLibro {
         this.portal.dibujar();
 
         this.renderer.render(this.escena, this.camara);
-        if (this.alDibujar && this.progreso < 0.26) {
+        if (this.alDibujar && this.progreso < 0.14) {
             const { W, H, T } = this.medidas,
                 puntos = [];
             for (const x of [-W / 2, W / 2])

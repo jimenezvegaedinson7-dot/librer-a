@@ -2,6 +2,14 @@ const limitar = (n) => Math.max(0, Math.min(1, n));
 
 export const tramoCine = (p, a, b) => limitar((p - a) / (b - a));
 
+export function amortiguarProgreso(actual, objetivo, segundos) {
+    const origen = Number.isFinite(actual) ? limitar(actual) : 0;
+    const destino = Number.isFinite(objetivo) ? limitar(objetivo) : origen;
+    const dt = Number.isFinite(segundos) ? Math.max(0, Math.min(0.1, segundos)) : 0;
+    const siguiente = origen + (destino - origen) * (1 - Math.exp(-12 * dt));
+    return Math.abs(destino - siguiente) < 0.0001 ? destino : siguiente;
+}
+
 const suavizarCine = (p) => {
     const t = limitar(p);
     return t * t * (3 - 2 * t);
@@ -18,10 +26,10 @@ export function estadoCinematico(progreso, entrada = 1) {
         navegacion: suavizarCine(tramoCine(p, 0.01, 0.09)),
         acercamiento: suavizarCine(tramoCine(p, 0.13, 0.38)),
         apertura: suavizarCine(tramoCine(p, 0.39, 0.64)),
-        energia: suavizarCine(tramoCine(p, 0.59, 0.8)),
-        disolucion: suavizarCine(tramoCine(p, 0.76, 0.9)),
+        energia: suavizarCine(tramoCine(p, 0.52, 0.75)),
+        disolucion: suavizarCine(tramoCine(p, 0.7, 0.84)),
 
-        presentacionFinal: suavizarCine(tramoCine(p, 0.72, 0.86)),
+        presentacionFinal: suavizarCine(tramoCine(p, 0.76, 0.88)),
         salida: suavizarCine(tramoCine(p, 0.87, 1))
     };
 }

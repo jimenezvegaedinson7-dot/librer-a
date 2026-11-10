@@ -1,0 +1,37 @@
+.sitio .ofertas .ofertas__carrusel { grid-auto-columns: calc((100% - 72px) / 4); gap: 24px; padding: 10px 0 22px; }
+.sitio .ofertas .ofertas__carrusel .oferta-tarjeta {
+    display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; align-items: start; gap: 16px; padding: 8px 4px 4px; overflow: visible;
+    transform: none;
+}
+.sitio .ofertas .oferta-tarjeta__visual { position: relative; justify-self: start; width: min(100%, 200px); aspect-ratio: 2 / 3; }
+.sitio .ofertas .oferta-tarjeta__tapa { display: block; width: 100%; height: 100%; margin: 0; border-radius: 2px 5px 5px 2px; box-shadow: 0 10px 20px -12px rgb(60 40 20 / 0.45); }
+.sitio .ofertas .oferta-tarjeta__tapa img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: inherit; box-shadow: none; transform: none; }
+.sitio .ofertas .oferta-tarjeta:hover .oferta-tarjeta__tapa { transform: translateY(-3px); box-shadow: 0 16px 24px -14px rgb(60 40 20 / 0.5); }
+.sitio .ofertas .oferta-tarjeta:hover .oferta-tarjeta__tapa img { transform: none; }
+.sitio .ofertas .oferta-tarjeta__porcentaje { top: 8px; right: 8px; padding: 5px 8px; border-radius: 4px; font-size: 0.75rem; line-height: 1.2; pointer-events: none; }
+.sitio .ofertas .oferta-tarjeta__datos { display: flex; flex-direction: column; align-self: stretch; align-items: flex-start; gap: 5px; min-width: 0; }
+.sitio .ofertas .oferta-tarjeta .libro__categoria { font-size: 0.6875rem; line-height: 1.4; }
+.sitio .ofertas .oferta-tarjeta h3 { min-height: 0; margin: 0; padding: 0; font-family: var(--ed-serif, Georgia, serif); font-size: 1.1875rem; font-weight: 400; line-height: 1.3; }
+.sitio .ofertas .oferta-tarjeta h3 a { color: inherit; text-decoration: none; }
+.sitio .ofertas .oferta-tarjeta h3 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.sitio .ofertas .oferta-tarjeta__autor { margin: 0; font-size: 0.8125rem; line-height: 1.5; }
+.sitio .ofertas .oferta-tarjeta .precio.oferta { align-self: flex-start; justify-content: flex-start; gap: 4px 8px; margin-top: auto; padding-top: 8px; }
+.sitio .ofertas .oferta-tarjeta .precio.oferta .oferta__anterior { font-size: 0.8125rem; }
+.sitio .ofertas .oferta-tarjeta .precio.oferta .oferta__final { font-size: 1.125rem; }
+.sitio .ofertas .oferta-tarjeta__ahorro { margin: 0; font-size: 0.75rem; line-height: 1.5; font-weight: 500; }
+.sitio .ofertas .oferta-tarjeta > .compra-libro:has(> .compra-libro__detalle) { position: static; grid-column: 1; width: 100%; margin: 0; padding: 0; }
+.sitio .ofertas .oferta-tarjeta .compra-libro > .compra-libro__detalle { text-decoration: none; }
+.sitio .ofertas .oferta-tarjeta .compra-libro > .compra-libro__detalle:hover { text-decoration: underline; text-underline-offset: 3px; }
+.sitio .ofertas .oferta-tarjeta :is(a, button):focus-visible { outline: 2px solid var(--marino-900); outline-offset: 4px; }
+@media (min-width: 641px) and (max-width: 1100px) {
+    .sitio .ofertas .ofertas__carrusel { grid-auto-columns: calc((100% - 40px) / 3); gap: 20px; }
+}
+@media (max-width: 640px) {
+    .sitio .ofertas .ofertas__carrusel { grid-auto-columns: calc((100% - 16px) / 2); gap: 16px; }
+    .sitio .ofertas .ofertas__carrusel .oferta-tarjeta { gap: 12px; padding-inline: 4px; }
+    .sitio .ofertas .oferta-tarjeta h3 { font-size: 1.0625rem; }
+    .sitio .ofertas .oferta-tarjeta .precio.oferta .oferta__final { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sitio .ofertas .oferta-tarjeta:hover .oferta-tarjeta__tapa { transform: none; }
+}

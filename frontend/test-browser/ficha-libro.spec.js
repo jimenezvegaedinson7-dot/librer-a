@@ -156,11 +156,15 @@ test('ficha: cantidad y agregar reutilizan el carrito, comprar ahora reutiliza c
     await expect(page).toHaveURL(/\/checkout$/);
     await expect(page.locator('.compra-carrito')).toHaveAttribute('aria-label', 'Carrito (3)');
 });
-test('tarjeta del catálogo: clic en cualquier parte abre la ficha y no queda el enlace "Ver detalle"', async ({ page }) => {
+test('tarjeta del catálogo: cuerpo y enlace de detalle abren la ficha del libro', async ({ page }) => {
     await preparar(page);
     await page.goto('/catalogo');
     const tarjeta = page.locator('.rejilla-libros--todos .tarjeta-libro').first();
-    await expect(tarjeta.getByText('Ver detalle', { exact: true })).toHaveCount(0);
+    await expect(tarjeta.locator('.libro__titulo')).toHaveText(principal.titulo);
+    await tarjeta.getByRole('link', { name: `Ver detalle de ${principal.titulo}`, exact: true }).click();
+    await expect(page).toHaveURL(/\/libro\/1$/);
+    await expect(page.getByRole('heading', { level: 1, name: principal.titulo, exact: true })).toBeVisible();
+    await page.goto('/catalogo');
     await tarjeta.locator('.tarjeta-libro__cuerpo').click();
     await expect(page).toHaveURL(/\/libro\/\d+$/);
 });

@@ -130,7 +130,7 @@ for (const ancho of [390, 1440]) {
         page.on('pageerror', (e) => errores.push(e.message));
         const peticiones = [];
         page.on('request', (r) => {
-            if (r.url().includes('/api/libros')) peticiones.push(r.headers().authorization);
+            if (r.url().includes('/api/libros') && new URL(r.url()).pathname !== '/api/libros/recomendados') peticiones.push(r.headers().authorization);
         });
         const control = await api(page);
         await hastaCheckout(page);

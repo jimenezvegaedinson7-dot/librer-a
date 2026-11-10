@@ -64,5 +64,10 @@ export const PAGINAS = {
     '/carrito': { titulo: 'Mi carrito · MATIDANA Libros y Cultura', descripcion: 'Revisa tus libros, cantidades y precios antes de comprar.' },
     '/checkout': { titulo: 'Entrega y pago · MATIDANA Libros y Cultura', descripcion: 'Recojo gratuito o delivery en Pallasca. Pago seguro con PayU.' },
     '/mis-compras': { titulo: 'Mis compras · MATIDANA Libros y Cultura', descripcion: 'Consulta tus compras, pagos y estados de entrega.' },
+    '/favoritos': { titulo: 'Mis favoritos · MATIDANA Libros y Cultura', descripcion: 'Consulta tus libros favoritos y abre su ficha para revisar el precio y la disponibilidad.' },
+    '/libro-de-reclamaciones': {
+        titulo: 'Libro de Reclamaciones · MATIDANA Libros y Cultura',
+        descripcion: 'Registra una queja o reclamación sobre tu compra en MATIDANA Libros y Cultura.'
+    },
     '/libro': { titulo: 'Detalle del libro · MATIDANA Libros y Cultura', descripcion: 'Consulta el precio, la descripción y el stock real del libro.' }
 };

@@ -267,7 +267,7 @@ for (const p of archivosFront) {
     }
     for (const m of txt.matchAll(/import\s*\{[^}]*\bclienteApi\b[^}]*\}\s*from\s*'([^']+)'/g)) {
         const destino = rel(path.resolve(path.dirname(p),m[1])) + '.js';
-        for (const llamada of txt.matchAll(/clienteApi\.(\w+)\(/g)) {
+        for (const llamada of txt.matchAll(/\bclienteApi\s*\.\s*(\w+)\s*\(/g)) {
             (usoServicios[rel(p)] ||= []).push(`${destino}#${llamada[1]}`);
         }
     }
@@ -278,6 +278,20 @@ for (const p of archivosFront) {
         }
     }
 }
+
+const integracionesFront = archivosFront.flatMap((p) => {
+    const txt = leer(p);
+    if (!txt.includes('https://www.googletagmanager.com/gtag/js?id=')) return [];
+    return [{
+        provider: 'Google Analytics 4',
+        file: rel(p),
+        transport: 'gtag.js',
+        url: 'https://www.googletagmanager.com/gtag/js',
+        environmentVariables: [...new Set([...txt.matchAll(/import\.meta\.env\??\.(VITE_\w+)/g)].map((m) => m[1]))].sort(),
+        events: [...new Set([...txt.matchAll(/\b(?:evento|productos)\(\s*'([^']+)'/g)].map((m) => m[1]))].sort(),
+        consumers: Object.entries(grafoFront).filter(([, imports]) => imports.includes(rel(p))).map(([file]) => file).sort()
+    }];
+});
 
 // Rutas del router
 const ROUTER = `${FRONT}/app/router/AppRouter.jsx`;
@@ -388,7 +402,7 @@ const salida = {
     generado: new Date().toISOString(),
     backend: { montajes, endpoints, controladores, modelos, grafo: grafoBack, ciclos: ciclos(grafoBack), archivos: Object.keys(grafoBack).length,
         tablasEsquema, tablasDeclaradas: [...TABLAS_REALES].sort(), fuentesPorTabla, migraciones: archivosMigraciones.map(rel) },
-    frontend: { rutas: rutasFront, servicios, usoServicios, endpointsPorArchivo: endpointsPorArchivoFront, grafo: grafoFront, ciclos: ciclos(grafoFront), archivos: archivosFront.length },
+    frontend: { rutas: rutasFront, servicios, usoServicios, endpointsPorArchivo: endpointsPorArchivoFront, integraciones: integracionesFront, grafo: grafoFront, ciclos: ciclos(grafoFront), archivos: archivosFront.length },
     flutter: { constantes, metodosApi, usoApi: usoApiDart, grafo: grafoDart, ciclos: ciclos(grafoDart), paquetes: paquetesDart, archivos: archivosDart.length,
         dependencias: dependenciasPubspec(leer(path.join(FL, '../pubspec.yaml')), 'dependencies'), devDependencias: dependenciasPubspec(leer(path.join(FL, '../pubspec.yaml')), 'dev_dependencies') },
     posiblesNoUsados: {

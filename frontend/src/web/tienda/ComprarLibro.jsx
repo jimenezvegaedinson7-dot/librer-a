@@ -1,8 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaCartPlus, FaChevronRight } from 'react-icons/fa6';
 import { useTienda } from './TiendaContext';
 
-export default function ComprarLibro({ libro, detalle = false, cantidad = 1, onCantidadChange }) {
+export default function ComprarLibro({ libro, detalle = false, enlaceDetalle = false, cantidad = 1, onCantidadChange, onDetalle }) {
     const { agregar } = useTienda();
     const navigate = useNavigate();
     const valida = Number.isInteger(cantidad) && cantidad >= 1 && cantidad <= Math.min(libro.stock, 999);
@@ -28,7 +28,7 @@ export default function ComprarLibro({ libro, detalle = false, cantidad = 1, onC
                 disabled={!libro.disponible || !valida}
                 aria-label={`Agregar ${libro.titulo} al carrito`}
                 onClick={() => agregar(libro, cantidad)}>
-                <FaCartPlus aria-hidden="true" /> {libro.disponible ? 'Agregar' : 'Agotado'}
+                <FaCartPlus aria-hidden="true" /> <span className="compra-libro__etiqueta">{libro.disponible ? 'Agregar' : 'Agotado'}</span>
             </button>
             {detalle ? (
                 <button
@@ -40,6 +40,10 @@ export default function ComprarLibro({ libro, detalle = false, cantidad = 1, onC
                     }}>
                     Comprar ahora
                 </button>
+            ) : enlaceDetalle ? (
+                <Link to={`/libro/${libro.id}`} className="compra-libro__detalle" aria-label={`Ver detalle de ${libro.titulo}`} onClick={onDetalle}>
+                    Ver detalle <FaChevronRight aria-hidden="true" />
+                </Link>
             ) : (
                 <span className="compra-libro__detalle" aria-hidden="true">
                     Ver detalle <FaChevronRight />

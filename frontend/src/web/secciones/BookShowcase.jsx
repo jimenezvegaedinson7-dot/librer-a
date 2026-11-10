@@ -40,7 +40,7 @@ function Libro({ libro, indice }) {
                 <p className="libro__pie">
                     <PrecioOferta libro={libro} />
                 </p>
-                <ComprarLibro libro={libro} />
+                <ComprarLibro libro={libro} enlaceDetalle />
             </div>
         </li>
     );

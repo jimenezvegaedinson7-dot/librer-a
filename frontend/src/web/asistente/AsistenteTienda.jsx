@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { FaPaperPlane, FaXmark, FaArrowRotateLeft } from 'react-icons/fa6';
 import IconoIA from './IconoIA';
 import { sonarPortal } from './sonidoPortal';
-import posterAvatar from '../assets/asistente/anime-poster.webp';
 import { clienteApi } from '../tienda/clienteApi';
 import { listaLibros, libroComercial } from '../tienda/libroComercial';
 import ComprarLibro from '../tienda/ComprarLibro';
@@ -23,20 +22,6 @@ const sugerencias = [
     { texto: 'Ver ofertas', pregunta: '¿Qué libros están en oferta?' },
     { texto: 'Entrega y recojo', pregunta: '¿Cómo funciona la entrega?' }
 ];
-
-const PIEZAS = Array.from({ length: 16 }, (_, i) => {
-    const angulo = (i * 137.5 * Math.PI) / 180,
-        distancia = 110 + (i % 3) * 30;
-    return {
-        i,
-        x: i % 4,
-        y: Math.floor(i / 4),
-        dx: Math.round(Math.cos(angulo) * distancia),
-        dy: Math.round(Math.sin(angulo) * distancia),
-        giro: (i % 2 ? 1 : -1) * (40 + i * 7),
-        retraso: (i % 5) * 0.025
-    };
-});
 
 const FRASES_PENSANDO = ['Pensando…', 'Buscando en el catálogo…', 'Revisando precios y stock…', 'Preparando tu respuesta…'];
 
@@ -440,24 +425,8 @@ export default function AsistenteTienda({ legal }) {
                     {intro && (
                         <div className="asistente-intro" aria-hidden="true">
                             <span className="asistente-intro__avatar">
-                                <span className="asistente-intro__piezas">
-                                    {PIEZAS.map((p) => (
-                                        <i
-                                            key={p.i}
-                                            style={{
-                                                '--px': p.x,
-                                                '--py': p.y,
-                                                '--dx': `${p.dx}px`,
-                                                '--dy': `${p.dy}px`,
-                                                '--giro': `${p.giro}deg`,
-                                                '--retraso': `${p.retraso}s`,
-                                                backgroundImage: `url(${posterAvatar})`
-                                            }}
-                                        />
-                                    ))}
-                                </span>
                                 <span className="asistente-intro__vivo">
-                                    <IconoIA desde={4.4} />
+                                    <IconoIA />
                                 </span>
                             </span>
                             <p className="asistente-intro__texto">¡Hola! Soy tu asistente</p>
@@ -533,7 +502,14 @@ export default function AsistenteTienda({ legal }) {
                                                                 : 'Agotado en el catálogo consultado'}
                                                         </p>
                                                         {m.motivos?.[l.id] && <p className="asistente-motivo">{m.motivos[l.id]}</p>}
-                                                        <ComprarLibro libro={l} />
+                                                        <ComprarLibro
+                                                            libro={l}
+                                                            enlaceDetalle
+                                                            onDetalle={() => {
+                                                                memoria.aprenderVisto(l);
+                                                                cerrar();
+                                                            }}
+                                                        />
                                                     </li>
                                                 ))}
                                             </ul>

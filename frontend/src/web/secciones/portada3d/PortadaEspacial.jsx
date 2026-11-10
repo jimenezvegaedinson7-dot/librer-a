@@ -1,188 +1,56 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaArrowDown, FaArrowRight } from 'react-icons/fa6';
-import { SITIO } from '../../config/site';
-import env from '../../../compartido/config/env';
-import { gsap, ScrollTrigger } from '../../animacion/scroll';
-import { libroComercial } from '../../tienda/libroComercial';
 import { PrecioOferta } from '../../componentes/PrecioOferta';
+import LibroInicial from '../LibroInicial';
 import { urlPortada } from '../../lib/formato';
-import { estadoCinematico } from './cinematografia';
-import { leerProtagonista, guardarProtagonista, leerRecientes, guardarRecientes } from './cachePortada';
 import { precargarImagenes } from '../../lib/cacheRecursos';
+import { estadoCinematico } from './cinematografia';
 import './portada3d.css';
 
 const cargarEscena = () => import('./escenaLibro');
 
-function ultimosAgregados(libros = [], cantidad = 5) {
-    const fecha = (l) => {
-        const f = Date.parse(l.creadoEn);
-        return Number.isFinite(f) ? f : -Infinity;
-    };
-    return libros
-        .filter((l) => l.estado === 1 && l.portada && urlPortada(l.portada) && l.precio > 0)
-        .sort((a, b) => fecha(b) - fecha(a) || b.id - a.id)
-        .slice(0, cantidad);
-}
+const cargarMovimiento = () => import('../../animacion/scroll');
 
-function UltimosLibros({ libros = [], className = '' }) {
-    const seccion = useRef(null);
-    const escena = useRef(null);
+const tramo = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
 
-    const fecha = (l) => {
-        const f = Date.parse(l.creadoEn);
-        return Number.isFinite(f) ? f : -Infinity;
-    };
-    const recientes = [...libros]
-        .filter((l) => l.estado === 1 && l.portada && urlPortada(l.portada) && l.precio > 0)
+const campana = (p, a, b, c, d) => Math.min(tramo(p, a, b), 1 - tramo(p, c, d));
+
+const suave = (p) => p * p * (3 - 2 * p);
+
+function ultimosAgregados(libros = []) {
+    const fecha = (libro) => Date.parse(libro.creadoEn) || 0;
+    return [...libros]
+        .filter((libro) => libro.estado === 1 && urlPortada(libro.portada) && libro.precio > 0)
         .sort((a, b) => fecha(b) - fecha(a) || b.id - a.id)
         .slice(0, 5);
-
-    const central = recientes[0];
-    const lista = central ? [recientes[3], recientes[1], central, recientes[2], recientes[4]].filter(Boolean) : [];
-
-    useEffect(() => {
-        const sec = seccion.current;
-        const cont = escena.current;
-        if (!sec || !cont || lista.length < 1) return undefined;
-        const media = gsap.matchMedia();
-        media.add(
-            { reducido: '(prefers-reduced-motion: reduce)', movil: '(max-width: 900px)', normal: '(prefers-reduced-motion: no-preference)' },
-            (ctx) => {
-                if (ctx.conditions.reducido || ctx.conditions.movil || lista.length !== 5) {
-                    cont.setAttribute('data-final', 'true');
-                    return () => cont.removeAttribute('data-final');
-                }
-                const items = Array.from(cont.querySelectorAll('.portada3d__apilar-item'));
-                if (items.length !== 5) return;
-
-                const tapas = items.map((el) => el.querySelector('.portada3d__apilar-tapa'));
-                gsap.set(items, { x: (_, el) => cont.clientWidth / 2 - el.offsetLeft - el.offsetWidth / 2, y: 0, z: -80, scale: 0.9, opacity: 0.9, transformOrigin: '50% 50%' });
-                gsap.set(tapas, { rotateY: 0, rotateZ: 0, transformPerspective: 1600 });
-                gsap.set(items[2], { z: 0, scale: 1, opacity: 1, zIndex: 5 });
-
-                const tl = gsap.timeline({ paused: true, defaults: { duration: 1.55, ease: 'power3.out' }, onComplete: () => cont.setAttribute('data-final', 'true') });
-
-                items.forEach((el, i) => {
-                    const inicio = Math.abs(i - 2) * 0.16;
-                    tl.to(el, { x: 0, y: 0, z: 0, scale: 1, opacity: 1 }, inicio);
-                    tl.to(tapas[i], { rotateY: (i - 2) * 7, rotateZ: (i - 2) * 2.5 }, inicio);
-                });
-
-                tl.fromTo(
-                    cont.querySelectorAll('.portada3d__apilar-info'),
-                    { opacity: 0, y: 12 },
-                    { opacity: 1, y: 0, duration: 0.55, stagger: { each: 0.05, from: 'center' }, ease: 'expo.out' },
-                    1.05
-                );
-                let iniciada = false;
-                const iniciar = () => {
-                    if (iniciada) return;
-                    iniciada = true;
-                    cont.classList.add('portada3d__apilar--final');
-                    tl.play();
-                    io.disconnect();
-                };
-                const io = new IntersectionObserver(
-                    ([e]) => {
-                        if (e.isIntersecting) iniciar();
-                    },
-                    { threshold: 0.2 }
-                );
-                const enfocar = () => {
-                    iniciar();
-                    tl.progress(1);
-                };
-                cont.addEventListener('focusin', enfocar);
-                io.observe(cont);
-                return () => {
-                    io.disconnect();
-                    cont.removeEventListener('focusin', enfocar);
-                    cont.removeAttribute('data-final');
-                    cont.classList.remove('portada3d__apilar--final');
-                };
-            },
-            sec
-        );
-
-        return () => media.revert();
-    }, [lista.length]);
-
-    if (recientes.length === 0) return null;
-
-    return (
-        <section ref={seccion} className={`portada3d__ultimos portada3d__ultimos--apilado ${className}`} aria-label="Últimos libros agregados">
-            <div className="portada3d__ultimos-fondo portada3d__ultimos-fondo--hueso" aria-hidden="true" />
-            <div className="portada3d__ultimos-contenido">
-                <div className="seccion__cabeza portada3d__ultimos-cabeza">
-                    <h2 className="seccion__titulo">Últimos libros agregados</h2>
-                </div>
-                <div ref={escena} className="portada3d__apilar" role="list" aria-live="polite">
-                    {lista.map((l, i) => (
-                        <article
-                            key={l.id}
-                            className={`portada3d__apilar-item portada3d__apilar-item--${i}`}
-                            role="listitem"
-                            style={{ '--posicion': i - (lista.length - 1) / 2, zIndex: i === 2 ? 5 : 3 - Math.abs(i - 2) }}>
-                            <Link to={`/libro/${l.id}`} className="portada3d__apilar-link">
-                                <div className="portada3d__apilar-tapa">
-                                    <img src={urlPortada(l.portada, 420)} alt={`Portada de ${l.titulo}`} width="200" height="300" loading="lazy" decoding="async" />
-                                    {l.descuento > 0 && <span className="portada3d__apilar-descuento">-{l.descuento}%</span>}
-                                </div>
-                                <div className="portada3d__apilar-info">
-                                    <h3 className="portada3d__apilar-titulo">{l.titulo}</h3>
-                                    {l.autor && <p className="portada3d__apilar-autor">{l.autor}</p>}
-                                    <PrecioOferta libro={l} clase="portada3d__apilar-precio" />
-                                </div>
-                            </Link>
-                        </article>
-                    ))}
-                </div>
-                <div className="portada3d__apilar-carrusel" role="region" aria-label="Últimos libros agregados en carrusel">
-                    <ul>
-                        {recientes.map((l) => (
-                            <li key={l.id}>
-                                <Link to={`/libro/${l.id}`} className="portada3d__apilar-link portada3d__apilar-link--móvil">
-                                    <div className="portada3d__apilar-tapa">
-                                        <img src={urlPortada(l.portada, 320)} alt={`Portada de ${l.titulo}`} width="160" height="240" loading="lazy" />
-                                        {l.descuento > 0 && <span className="portada3d__apilar-descuento">-{l.descuento}%</span>}
-                                    </div>
-                                    <div className="portada3d__apilar-info">
-                                        <h3 className="portada3d__apilar-titulo">{l.titulo}</h3>
-                                        {l.autor && <p className="portada3d__apilar-autor">{l.autor}</p>}
-                                        <PrecioOferta libro={l} clase="portada3d__apilar-precio" />
-                                    </div>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-        </section>
-    );
 }
 
-function UltimosEnEscena({ libros = [], protagonista = null }) {
+function Recientes({ libros, protagonista = null, enEscena = false }) {
     const ordenados = ultimosAgregados(libros);
-    const recientes = protagonista ? [protagonista, ...ordenados.filter((l) => l.id !== protagonista.id)].slice(0, 5) : ordenados;
-    if (recientes.length === 0) return null;
-    const central = recientes[0];
-    const lista = [recientes[3], recientes[1], central, recientes[2], recientes[4]].filter(Boolean);
-    const medio = (lista.length - 1) / 2;
+    const recientes = protagonista && enEscena ? [protagonista, ...ordenados.filter((libro) => libro.id !== protagonista.id)].slice(0, 5) : ordenados;
+    if (!recientes.length) return null;
+    const muestra = enEscena ? [recientes[3], recientes[1], recientes[0], recientes[2], recientes[4]].filter(Boolean) : recientes;
+    const medio = (muestra.length - 1) / 2;
     return (
-        <section className="portada3d__escena-libros" aria-label="Últimos libros agregados">
-            <p className="portada3d__escena-libros-titulo">Últimos libros agregados</p>
-            <div className="portada3d__apilar" role="list" data-final="true">
-                {lista.map((l, i) => (
-                    <article key={l.id} className="portada3d__apilar-item" role="listitem" style={{ '--lado': i - medio, '--orden': Math.abs(i - medio) }}>
-                        <Link to={`/libro/${l.id}`} className="portada3d__apilar-link">
+        <section className={enEscena ? 'portada3d__escena-libros' : 'portada-unica__recientes portada3d__ultimos'} aria-label="Últimos libros agregados">
+            {enEscena ? <p className="portada3d__escena-libros-titulo">Últimos libros agregados</p> : <h2>Últimos libros agregados</h2>}
+            <div className={enEscena ? 'portada3d__apilar' : 'portada-unica__rejilla'} role="list" data-final="true">
+                {muestra.map((libro, i) => (
+                    <article
+                        key={libro.id}
+                        className={enEscena ? 'portada3d__apilar-item' : 'portada-unica__reciente'}
+                        role="listitem"
+                        style={enEscena ? { '--lado': i - medio, '--orden': Math.abs(i - medio) } : undefined}>
+                        <Link to={`/libro/${libro.id}`} className="portada3d__apilar-link">
                             <div className="portada3d__apilar-tapa">
-                                <img src={urlPortada(l.portada, 320)} alt={`Portada de ${l.titulo}`} width="160" height="240" loading="lazy" decoding="async" />
-                                {l.descuento > 0 && <span className="portada3d__apilar-descuento">-{l.descuento}%</span>}
+                                <img src={urlPortada(libro.portada, 320)} alt={`Portada de ${libro.titulo}`} width="160" height="240" loading="lazy" decoding="async" />
+                                {libro.descuento > 0 && <span className="portada3d__apilar-descuento">-{libro.descuento}%</span>}
                             </div>
                             <div className="portada3d__apilar-info">
-                                <h3 className="portada3d__apilar-titulo">{l.titulo}</h3>
-                                <PrecioOferta libro={l} clase="portada3d__apilar-precio" />
+                                <h3 className="portada3d__apilar-titulo">{libro.titulo}</h3>
+                                {!enEscena && libro.autor && <p className="portada3d__apilar-autor">{libro.autor}</p>}
+                                <PrecioOferta libro={libro} clase="portada3d__apilar-precio" />
                             </div>
                         </Link>
                     </article>
@@ -192,124 +60,9 @@ function UltimosEnEscena({ libros = [], protagonista = null }) {
     );
 }
 
-const tramo = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
-
-const campana = (p, a, b, c, d) => Math.min(tramo(p, a, b), 1 - tramo(p, c, d));
-
-function contornoProyectado(puntos) {
-    const ordenados = [...puntos].sort((a, b) => a.x - b.x || a.y - b.y);
-    const cruz = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-    const mitad = (lista) => {
-        const r = [];
-        for (const p of lista) {
-            while (r.length > 1 && cruz(r.at(-2), r.at(-1), p) <= 0) r.pop();
-            r.push(p);
-        }
-        return r.slice(0, -1);
-    };
-    return [...mitad(ordenados), ...mitad([...ordenados].reverse())];
-}
-
-function soportaWebGL() {
-    try {
-        const c = document.createElement('canvas');
-
-        const gl = c.getContext('webgl2');
-        gl?.getExtension('WEBGL_lose_context')?.loseContext();
-        return Boolean(gl);
-    } catch {
-        return false;
-    }
-}
-
-function useLibroProtagonista(respaldo = null, catalogoPendiente = false) {
-    const [estado, setEstado] = useState(() => {
-        const crudo = leerProtagonista();
-        const libro = crudo && typeof crudo === 'object' ? libroComercial(crudo) : null;
-        const valido = libro && libro.estado === 1 && typeof libro.titulo === 'string' && libro.titulo.trim() && urlPortada(libro.portada) && libro.precioFinal > 0;
-        return { cargando: crudo !== null && !valido, libro: valido ? libro : null, crudo: valido ? crudo : null, error: false };
-    });
-    const [revision, setRevision] = useState(0);
-    useEffect(() => {
-        let vivo = true,
-            consulta = null,
-            ultima = 0;
-        const cargar = async () => {
-            if (consulta || !vivo) return;
-            ultima = Date.now();
-            consulta = new AbortController();
-            const limite = setTimeout(() => consulta?.abort(), 12000);
-            try {
-                const r = await fetch(`${env.apiUrl}/anuncios/protagonista`, { signal: consulta.signal, cache: 'no-store', headers: { Accept: 'application/json' } });
-                if (!r.ok) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status });
-                const json = await r.json();
-                const crudo = json?.data?.libro || null;
-                const libro = crudo ? libroComercial(crudo) : null;
-                if (libro && (libro.estado !== 1 || !libro.titulo?.trim() || !urlPortada(libro.portada) || !(libro.precioFinal > 0))) throw new Error('Libro no elegible');
-                if (vivo) {
-                    setEstado((anterior) =>
-                        !anterior.error && !anterior.cargando && JSON.stringify(anterior.libro) === JSON.stringify(libro)
-                            ? anterior.revalidado
-                                ? anterior
-                                : { ...anterior, revalidado: true }
-                            : { cargando: false, crudo, libro, error: false, revalidado: true }
-                    );
-                }
-            } catch (e) {
-                if (vivo)
-                    setEstado((previo) =>
-                        e.status === 404
-                            ? { ...previo, cargando: false, error: !previo.libro, sinEndpoint: true }
-                            : { cargando: false, libro: null, crudo: null, error: true, sinEndpoint: false }
-                    );
-            } finally {
-                clearTimeout(limite);
-                consulta = null;
-            }
-        };
-        const actualizar = () => {
-            if (!document.hidden && Date.now() - ultima > 1000) cargar();
-        };
-        cargar();
-        const intervalo = setInterval(actualizar, 60000);
-        window.addEventListener('focus', actualizar);
-        document.addEventListener('visibilitychange', actualizar);
-        return () => {
-            vivo = false;
-            consulta?.abort();
-            clearInterval(intervalo);
-            window.removeEventListener('focus', actualizar);
-            document.removeEventListener('visibilitychange', actualizar);
-        };
-    }, [revision]);
-
-    const actual = estado.sinEndpoint
-        ? respaldo
-            ? JSON.stringify(estado.libro) === JSON.stringify(respaldo.libro)
-                ? { ...estado, error: false, respaldo: true }
-                : { ...estado, ...respaldo, error: false, respaldo: true }
-            : catalogoPendiente
-              ? { ...estado, cargando: !estado.libro, error: false }
-              : { ...estado, cargando: false, libro: null, crudo: null, error: false, respaldo: true }
-        : estado;
-    useEffect(() => {
-        if (actual.respaldo || actual.revalidado) guardarProtagonista(actual.crudo);
-    }, [actual.respaldo, actual.revalidado, actual.crudo]);
-    return { ...actual, reintentar: () => setRevision((n) => n + 1) };
-}
-
-function CargaPortada() {
+function FichaLibro({ libro, fichaRef }) {
     return (
-        <div className="portada3d__cargando" role="status" aria-live="polite">
-            <span className="portada3d__spinner" aria-hidden="true" />
-            <span className="portada3d__cargando-texto">Preparando la portada…</span>
-        </div>
-    );
-}
-
-function FichaLibro({ libro, className = '', fichaRef }) {
-    return (
-        <div className={`portada3d__ficha ${className}`} ref={fichaRef}>
+        <div className="portada3d__ficha portada3d__ficha--flotante" ref={fichaRef}>
             <h2 className="portada3d__libro-titulo">{libro.titulo}</h2>
             {libro.autor && <p className="portada3d__autor">{libro.autor}</p>}
             <PrecioOferta libro={libro} clase="portada3d__precio" />
@@ -324,410 +77,349 @@ function FichaLibro({ libro, className = '', fichaRef }) {
     );
 }
 
-function PortadaEstatica({ libro, crudo, recientes, cargando, error, reintentar }) {
-    const portada = crudo ? urlPortada(crudo.portada, 700) : null;
-    const [imagenFallida, setImagenFallida] = useState(false);
-    return (
-        <>
-            <section className="portada3d portada3d--estatica" aria-label="Portada de MATIDANA Libros y Cultura">
-                <h1 className="sr-only">Libros y anuncios de MATIDANA Libros y Cultura</h1>
-                <div className="portada3d__estatica">
-                    <div className="portada3d__estatica-texto">
-                        <p className="portada3d__marca">{SITIO.nombre}</p>
-                        <p className="portada3d__lema">Libros físicos con delivery en Pallasca y recojo gratuito en tienda.</p>
-                        {cargando && <p role="status">Cargando el libro protagonista…</p>}
-                        {error && (
-                            <p role="status">
-                                No pudimos cargar el libro destacado. Puedes explorar el catálogo o{' '}
-                                <button className="portada3d__reintentar" type="button" onClick={reintentar}>
-                                    reintentar
-                                </button>
-                                .
-                            </p>
-                        )}
-                        {!libro && (
-                            <Link to="/catalogo" className="portada3d__boton">
-                                Ver catálogo <FaArrowRight aria-hidden="true" />
-                            </Link>
-                        )}
-                    </div>
-                    {libro && (
-                        <div className="portada3d__estatica-libro">
-                            {portada && !imagenFallida ? (
-                                <img src={portada} alt={`Portada de ${libro.titulo}`} width="320" height="480" onError={() => setImagenFallida(true)} />
-                            ) : (
-                                <p className="portada3d__sin-imagen">Portada no disponible</p>
-                            )}
-                            <FichaLibro libro={libro} />
-                        </div>
-                    )}
-                </div>
-                <UltimosLibros libros={recientes} className="portada3d__ultimos--estatica" />
-            </section>
-        </>
-    );
+function contornoProyectado(puntos) {
+    const ordenados = [...puntos].sort((a, b) => a.x - b.x || a.y - b.y);
+    const cruz = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+    const mitad = (lista) => {
+        const resultado = [];
+        for (const punto of lista) {
+            while (resultado.length > 1 && cruz(resultado.at(-2), resultado.at(-1), punto) <= 0) resultado.pop();
+            resultado.push(punto);
+        }
+        return resultado.slice(0, -1);
+    };
+    return [...mitad(ordenados), ...mitad([...ordenados].reverse())];
 }
 
-export default function PortadaEspacial({ reducido, catalogo }) {
-    const [recientesGuardados] = useState(leerRecientes);
-    const recientes = useMemo(
-        () => (catalogo?.cargando ? recientesGuardados : ultimosAgregados(catalogo?.libros || [])),
-        [catalogo?.libros, catalogo?.cargando, recientesGuardados]
-    );
-    useEffect(() => {
-        if (catalogo && !catalogo.cargando && !catalogo.error) guardarRecientes(recientes);
-    }, [catalogo, recientes]);
-    const primero = recientes[0];
-    const respaldo = useMemo(() => {
-        if (!primero) return null;
-        return {
-            libro: primero,
-            crudo: {
-                id_libro: primero.id,
-                titulo: primero.titulo,
-                autor: primero.autor,
-                categoria: primero.categoria,
-                isbn: primero.isbn,
-                id_autor: primero.idAutor,
-                id_categoria: primero.idCategoria,
-                estado: primero.estado,
-                precio: primero.precio,
-                precio_final: primero.precioFinal,
-                descuento_vigente: primero.descuento > 0 ? 1 : 0,
-                descuento_porcentaje_efectivo: primero.descuento,
-                stock: primero.stock,
-                portada: primero.portada,
-                descripcion: primero.sinopsis,
-                creado_en: primero.creadoEn,
-                es_nuevo: primero.esNuevo ? 1 : 0,
-                mas_vendido: primero.masVendido ? 1 : 0
-            }
-        };
-    }, [primero]);
-    const { cargando, libro, crudo, error, reintentar } = useLibroProtagonista(respaldo, catalogo?.cargando);
-    const [webgl] = useState(() => typeof window !== 'undefined' && soportaWebGL());
+function soportaWebGL() {
+    try {
+        const contexto = document.createElement('canvas').getContext('webgl2');
+        contexto?.getExtension('WEBGL_lose_context')?.loseContext();
+        return Boolean(contexto);
+    } catch {
+        return false;
+    }
+}
+
+export default function PortadaEspacial({ reducido, protagonista, recientes = [] }) {
+    const { cargando, libro, crudo, error, reintentar } = protagonista;
+    const [webgl] = useState(soportaWebGL);
     const mediaEstatica = '(max-height: 600px), (max-width: 360px) and (max-height: 740px)';
     const [pantallaBaja, setPantallaBaja] = useState(() => window.matchMedia(mediaEstatica).matches);
-    const modo3d = webgl && !reducido && !pantallaBaja && !navigator.connection?.saveData;
-
-    useEffect(() => {
-        if (modo3d) cargarEscena().catch(() => {});
-    }, [modo3d]);
-    useEffect(() => {
-        const media = window.matchMedia(mediaEstatica);
-        const actualizar = () => setPantallaBaja(media.matches);
-        media.addEventListener('change', actualizar);
-        return () => media.removeEventListener('change', actualizar);
-    }, []);
-    const [lista, setLista] = useState(false);
     const [fallo, setFallo] = useState(false);
-
-    useEffect(() => {
-        if (!crudo) return undefined;
-        const url = urlPortada(crudo.portada, 1024);
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.fetchPriority = 'high';
-        if (url) img.src = url;
-        if (lista) {
-            const ancho = window.matchMedia('(max-width: 900px)').matches ? 320 : 420;
-            precargarImagenes([url, ...recientes.map((l) => urlPortada(l.portada, ancho))]);
-        }
-        return () => {
-            img.onload = null;
-            img.onerror = null;
-        };
-    }, [crudo, recientes, lista]);
-
+    const conexion = navigator.connection;
+    const modo3d = webgl && !reducido && !pantallaBaja && !conexion?.saveData && !/(^|-)2g$/.test(conexion?.effectiveType || '');
+    const reservaEspacial = modo3d && (cargando || Boolean(libro));
+    const espacial = reservaEspacial && !fallo;
+    const idLibro = libro?.id;
+    const tituloLibro = libro?.titulo;
+    const autorLibro = libro?.autor;
+    const portadaLibro = crudo?.portada;
+    const clave = JSON.stringify([espacial, idLibro, portadaLibro, tituloLibro, autorLibro]);
+    const [preparacion, setPreparacion] = useState({ clave, lista: false });
+    if (preparacion.clave !== clave) setPreparacion({ clave, lista: false });
+    const lista = espacial && preparacion.clave === clave && preparacion.lista;
     const seccion = useRef(null);
-    const escenario = useRef(null);
     const lienzo = useRef(null);
     const tituloRef = useRef(null);
     const lemaRef = useRef(null);
     const fichaRef = useRef(null);
     const finalRef = useRef(null);
     const pistaRef = useRef(null);
-    const veloRef = useRef(null);
     const compraRef = useRef(null);
     const motor = useRef(null);
+    const [escenario, setEscenario] = useState(null);
 
     useEffect(() => {
+        const media = window.matchMedia(mediaEstatica);
+        const actualizar = () => setPantallaBaja(media.matches);
+        media.addEventListener('change', actualizar);
+        return () => media.removeEventListener('change', actualizar);
+    }, []);
+
+    useLayoutEffect(() => {
         const sec = seccion.current;
-        if (!modo3d || fallo || !sec) return undefined;
-        const cab = document.querySelector('.cabecera');
+        const cabecera = document.querySelector('.cabecera');
         const navegacion = document.querySelector('.navegacion-publica');
         const sitio = sec.closest('.sitio');
         const barra = document.querySelector('.barra-movil');
         const medir = () => {
-            const altura = navegacion?.offsetHeight || cab?.offsetHeight || 0;
+            const altura = navegacion?.offsetHeight || cabecera?.offsetHeight || 0;
             sec.style.setProperty('--cabecera', `${altura}px`);
-            sec.style.setProperty('--margen-inicial', '0px');
+            const fija = barra && getComputedStyle(barra).display !== 'none' && ['fixed', 'sticky'].includes(getComputedStyle(barra).position);
+            sec.style.setProperty('--barra', `${fija ? barra.offsetHeight : 0}px`);
             sitio?.style.setProperty('--altura-nav', `${altura}px`);
-            const visible = barra && getComputedStyle(barra).display !== 'none' && ['fixed', 'sticky'].includes(getComputedStyle(barra).position);
-            sec.style.setProperty('--barra', `${visible ? barra.offsetHeight : 0}px`);
         };
-        medir();
-        const ro = new ResizeObserver(medir);
-        if (cab) ro.observe(cab);
-        if (navegacion) ro.observe(navegacion);
-        if (barra) ro.observe(barra);
-        window.addEventListener('resize', medir);
-        return () => {
-            ro.disconnect();
-            window.removeEventListener('resize', medir);
-            sitio?.style.removeProperty('--altura-nav');
-        };
-    }, [modo3d, fallo, cargando, libro]);
-
-    useEffect(() => {
-        if (!modo3d || fallo || cargando || !libro || !crudo) return undefined;
-        const sec = seccion.current,
-            espacio = escenario.current,
-            canvas = lienzo.current;
-        if (!sec || !espacio || !canvas) return undefined;
-        const sitio = sec.closest('.sitio');
-        let vivo = true;
-        let escena = null,
-            marco = 0,
-            visible = true,
-            tween = null,
-            entrada = null,
-            ultimoCuadro = 0,
-            ultimoProgreso = null;
-        let portadaCargada = false,
-            fuentesListas = false,
-            presentada = false;
-        const estiloTitulo = getComputedStyle(tituloRef.current);
-        const fuentes = document.fonts
-            ? Promise.all([document.fonts.load(`${estiloTitulo.fontWeight} ${estiloTitulo.fontSize} ${estiloTitulo.fontFamily}`), document.fonts.load('400 16px "Work Sans"')])
-            : Promise.resolve();
-        fuentes
-            .catch(() => {})
-            .then(() => {
-                fuentesListas = true;
-            });
         if (sitio) {
             sitio.style.setProperty('--revelar-nav', '1');
             for (const fase of ['linea', 'cuerpo', 'enlaces']) sitio.style.setProperty(`--nav-${fase}`, '1');
             sitio.dataset.navVisible = 'true';
         }
+        medir();
+        const observador = new ResizeObserver(medir);
+        for (const nodo of [cabecera, navegacion, barra]) if (nodo) observador.observe(nodo);
+        window.addEventListener('resize', medir);
+        return () => {
+            observador.disconnect();
+            window.removeEventListener('resize', medir);
+            for (const propiedad of ['--altura-nav', '--revelar-nav', '--nav-linea', '--nav-cuerpo', '--nav-enlaces']) sitio?.style.removeProperty(propiedad);
+            if (sitio) delete sitio.dataset.navVisible;
+        };
+    }, []);
 
-        const compacto = window.matchMedia('(max-width: 900px)').matches;
-        const movil =
-            compacto || window.matchMedia('(pointer: coarse)').matches || navigator.deviceMemory <= 4 || navigator.hardwareConcurrency <= 4 || navigator.connection?.saveData;
+    useEffect(() => {
+        if (!espacial || cargando || !idLibro || !portadaLibro || !escenario || !lienzo.current) return undefined;
+        const sec = seccion.current;
+        const canvas = lienzo.current;
+        let vivo = true,
+            escena = null,
+            marco = 0,
+            visible = true,
+            controlScroll = null,
+            ultimoCuadro = 0,
+            ultimoProgreso = null,
+            cajaTitulo = null,
+            ultimoRecorte = '';
+        let presentada = false,
+            recientesPreparados = false;
         const limpiar = [];
-        setLista(false);
-        const limite = setTimeout(() => vivo && setFallo(true), 10000);
-        limpiar.push(() => clearTimeout(limite));
-
+        const estilo = getComputedStyle(tituloRef.current);
+        const fuentes = document.fonts
+            ? Promise.all([document.fonts.load(`${estilo.fontWeight} ${estilo.fontSize} ${estilo.fontFamily}`), document.fonts.load('400 16px "Work Sans"')]).catch(() => {})
+            : Promise.resolve();
+        const compacto = window.matchMedia('(max-width: 900px)').matches;
+        const movil = compacto || window.matchMedia('(pointer: coarse)').matches || navigator.deviceMemory <= 4 || navigator.hardwareConcurrency <= 4;
         const aplicar = (p) => {
             sec.style.setProperty('--recorrido', p.toFixed(4));
             const estado = estadoCinematico(p);
-            const op = (ref, v, y = 0) => {
-                if (ref.current) {
-                    ref.current.style.opacity = v.toFixed(3);
-                    ref.current.style.setProperty('--desplazamiento', `${y.toFixed(1)}px`);
-                    ref.current.style.visibility = v < 0.01 ? 'hidden' : 'visible';
-                }
+            const op = (ref, valor, y = 0) => {
+                if (!ref.current) return;
+                ref.current.style.opacity = valor.toFixed(3);
+                ref.current.style.setProperty('--desplazamiento', `${y.toFixed(1)}px`);
+                ref.current.style.visibility = valor < 0.01 ? 'hidden' : 'visible';
             };
-            const t = 1 - tramo(p, 0.02, 0.12);
-            op(tituloRef, t, -40 * (1 - t));
-            op(lemaRef, t * (1 - tramo(p, 0.08, 0.2)), -20 * (1 - t));
+            const titulo = 1 - suave(tramo(p, 0.02, 0.12));
+            op(tituloRef, titulo, -40 * (1 - titulo));
+            op(lemaRef, titulo * (1 - tramo(p, 0.08, 0.2)), -20 * (1 - titulo));
             op(pistaRef, 1 - tramo(p, 0.02, 0.08));
-            op(compraRef, 1 - tramo(p, 0.12, 0.2));
-            const f = campana(p, 0.18, 0.26, 0.42, 0.5);
-            op(fichaRef, f, 24 * (1 - f));
-            const fin = estado.presentacionFinal;
-
-            op(finalRef, Math.min(1, fin * 6), 0);
-            finalRef.current?.style.setProperty('--formar', fin.toFixed(4));
-
-            finalRef.current?.style.setProperty('--libros', tramo(p, 0.8, 0.94).toFixed(4));
-            if (veloRef.current) veloRef.current.style.opacity = '0';
-        };
-
-        const bucle = (ahora) => {
-            marco = 0;
-            if (!vivo || !escena || !visible || document.hidden || !espacio.isConnected) return;
-            try {
-                if ((!movil && !escena.economico) || ahora - ultimoCuadro >= 1000 / 30) {
-                    const estado = escena.dibujar();
-                    ultimoCuadro = ahora;
-                    if (estado) {
-                        if (ultimoProgreso !== estado.p) {
-                            aplicar(estado.p);
-                            ultimoProgreso = estado.p;
-                        }
-                        if (!presentada && portadaCargada && fuentesListas) {
-                            presentada = true;
-                            clearTimeout(limite);
-                            setLista(true);
-                            entrada?.play();
-                            requestAnimationFrame(() => vivo && ScrollTrigger.refresh());
-                        }
-                    }
-                }
-            } catch {
-                setFallo(true);
-                return;
+            op(compraRef, 1 - suave(tramo(p, 0.12, 0.2)));
+            const ficha = suave(campana(p, 0.18, 0.26, 0.42, 0.5));
+            op(fichaRef, ficha, 24 * (1 - ficha));
+            op(finalRef, estado.presentacionFinal, 24 * (1 - estado.presentacionFinal));
+            if (finalRef.current) finalRef.current.inert = estado.presentacionFinal < 0.05;
+            finalRef.current?.style.setProperty('--formar', estado.presentacionFinal.toFixed(4));
+            finalRef.current?.style.setProperty('--libros', suave(tramo(p, 0.76, 0.9)).toFixed(4));
+            if (!recientesPreparados && p > 0.4) {
+                recientesPreparados = true;
+                finalRef.current?.querySelectorAll('img').forEach((imagen) => {
+                    imagen.loading = 'eager';
+                });
             }
-            marco = requestAnimationFrame(bucle);
         };
-        const arrancar = () => {
-            if (!marco && vivo && escena && visible && !document.hidden) marco = requestAnimationFrame(bucle);
-        };
-
-        cargarEscena()
-            .then(({ default: EscenaLibro }) => {
+        const preparar = async () => {
+            try {
+                const [{ default: EscenaLibro }, { ScrollTrigger }] = await Promise.all([cargarEscena(), cargarMovimiento()]);
                 if (!vivo || !canvas.isConnected) return;
+                const limite = setTimeout(() => vivo && setFallo(true), 10000);
+                limpiar.push(() => clearTimeout(limite));
                 escena = new EscenaLibro(canvas, {
-                    portadaUrl: urlPortada(crudo.portada, 1024),
-                    titulo: libro.titulo,
-                    autor: libro.autor,
+                    portadaUrl: urlPortada(portadaLibro, 1024),
+                    titulo: tituloLibro,
+                    autor: autorLibro,
                     movil,
                     compacto,
                     alDibujar: (puntos, ancho, alto) => {
-                        if (!vivo || !tituloRef.current || !ancho || !alto) return;
-                        const titulo = tituloRef.current.getBoundingClientRect();
-                        const marco = espacio.getBoundingClientRect();
-                        const contorno = contornoProyectado(puntos.map((p) => ({ x: p.x - titulo.left + marco.left, y: p.y - titulo.top + marco.top })));
-                        const agujero = contorno.map((v, i) => `${i ? 'L' : 'M'}${v.x.toFixed(1)} ${v.y.toFixed(1)}`).join(' ');
-                        tituloRef.current.style.clipPath = `path(evenodd, "M0 0 H${titulo.width} V${titulo.height} H0 Z ${agujero} Z")`;
-                    },
-                    alCargarPortada: (ok) => {
-                        if (!vivo) return;
-                        if (!ok) {
-                            setFallo(true);
+                        if (!vivo || !tituloRef.current || !cajaTitulo || !ancho || !alto) return;
+                        const titulo = tituloRef.current;
+                        const desplazamiento = parseFloat(titulo.style.getPropertyValue('--desplazamiento')) || 0;
+                        const superior = cajaTitulo.top + desplazamiento;
+                        const xs = puntos.map((punto) => punto.x),
+                            ys = puntos.map((punto) => punto.y);
+                        if (
+                            Math.max(...xs) < cajaTitulo.left ||
+                            Math.min(...xs) > cajaTitulo.left + cajaTitulo.width ||
+                            Math.max(...ys) < superior ||
+                            Math.min(...ys) > superior + cajaTitulo.height
+                        ) {
+                            if (ultimoRecorte) titulo.style.removeProperty('clip-path');
+                            ultimoRecorte = '';
                             return;
                         }
-                        portadaCargada = true;
+                        const contorno = contornoProyectado(puntos.map((punto) => ({ x: punto.x - cajaTitulo.left, y: punto.y - superior })));
+                        const agujero = contorno.map((punto, i) => `${i ? 'L' : 'M'}${punto.x.toFixed(1)} ${punto.y.toFixed(1)}`).join(' ');
+                        const recorte = `path(evenodd, "M0 0 H${cajaTitulo.width} V${cajaTitulo.height} H0 Z ${agujero} Z")`;
+                        if (recorte !== ultimoRecorte) titulo.style.clipPath = recorte;
+                        ultimoRecorte = recorte;
+                    },
+                    alCargarPortada: (correcta) => {
+                        if (vivo) {
+                            if (!correcta) setFallo(true);
+                        }
                     }
                 });
+                escena.setEntrada(1);
                 motor.current = escena;
                 const medir = () => {
-                    if (!vivo || !espacio.isConnected) return;
-                    const r = espacio.getBoundingClientRect();
-                    escena.redimensionar(r.width, r.height);
+                    if (!vivo || !escenario.isConnected) return;
+                    const caja = escenario.getBoundingClientRect();
+                    if (escena.ancho !== caja.width || escena.alto !== caja.height) escena.redimensionar(caja.width, caja.height);
+                    const titulo = tituloRef.current.getBoundingClientRect();
+                    const desplazamiento = parseFloat(tituloRef.current.style.getPropertyValue('--desplazamiento')) || 0;
+                    cajaTitulo = { left: titulo.left - caja.left, top: titulo.top - caja.top - desplazamiento, width: titulo.width, height: titulo.height };
                 };
                 medir();
-                const ro = new ResizeObserver(medir);
-                ro.observe(espacio);
-                limpiar.push(() => ro.disconnect());
-
-                const proxy = { e: 0, p: 0 };
-                entrada = gsap.to(proxy, { e: 1, duration: 3.4, ease: 'expo.out', paused: true, onUpdate: () => escena.setEntrada(proxy.e) });
-                tween = gsap.to(proxy, {
-                    p: 1,
-                    ease: 'none',
-                    scrollTrigger: { trigger: sec, start: 'top top', end: 'bottom bottom', scrub: 0.65, invalidateOnRefresh: true },
-                    onUpdate: () => escena.setProgreso(proxy.p)
+                const [preparada] = await Promise.all([escena.preparar(), fuentes]);
+                if (!vivo || !preparada) return;
+                medir();
+                const observador = new ResizeObserver(medir);
+                observador.observe(escenario);
+                limpiar.push(() => observador.disconnect());
+                controlScroll = ScrollTrigger.create({
+                    trigger: sec,
+                    start: 'top top',
+                    end: 'bottom bottom',
+                    invalidateOnRefresh: true,
+                    onUpdate: (control) => escena.setProgreso(control.progress)
                 });
                 aplicar(0);
-                const perderContexto = (e) => {
-                    e.preventDefault();
+                const bucle = (ahora) => {
+                    marco = 0;
+                    if (!vivo || !visible || document.hidden || !escenario.isConnected) return;
+                    try {
+                        const intervalo = 1000 / 30;
+                        if (!escena.software || ahora - ultimoCuadro >= intervalo - 0.5) {
+                            const estado = escena.dibujar();
+                            ultimoCuadro = escena.software ? ahora - ((ahora - ultimoCuadro) % intervalo) : ahora;
+                            if (estado && ultimoProgreso !== estado.p) {
+                                aplicar(estado.p);
+                                ultimoProgreso = estado.p;
+                            }
+                            if (!presentada && estado) {
+                                presentada = true;
+                                clearTimeout(limite);
+                                setPreparacion((anterior) => (anterior.clave === clave ? { clave, lista: true } : anterior));
+                                precargarImagenes([urlPortada(portadaLibro, 1024)]);
+                                const activar = setTimeout(() => {
+                                    if (vivo) escena.setAnimando(true);
+                                }, 200);
+                                limpiar.push(() => clearTimeout(activar));
+                                requestAnimationFrame(() => vivo && ScrollTrigger.refresh());
+                            }
+                        }
+                    } catch {
+                        setFallo(true);
+                        return;
+                    }
+                    marco = requestAnimationFrame(bucle);
+                };
+                const arrancar = () => {
+                    if (!marco && vivo && visible && !document.hidden) marco = requestAnimationFrame(bucle);
+                };
+                const perderContexto = (evento) => {
+                    evento.preventDefault();
                     if (vivo) setFallo(true);
                 };
                 canvas.addEventListener('webglcontextlost', perderContexto);
                 limpiar.push(() => canvas.removeEventListener('webglcontextlost', perderContexto));
-
-                const mover = (ev) => {
-                    if (!vivo || !espacio.isConnected) return;
-                    const r = espacio.getBoundingClientRect();
-                    if (!r.width || !r.height) return;
-                    escena.setPuntero(((ev.clientX - r.left) / r.width) * 2 - 1, ((ev.clientY - r.top) / r.height) * 2 - 1);
+                const mover = (evento) => {
+                    if (!vivo || !escenario.isConnected) return;
+                    const caja = escenario.getBoundingClientRect();
+                    if (caja.width && caja.height) escena.setPuntero(((evento.clientX - caja.left) / caja.width) * 2 - 1, ((evento.clientY - caja.top) / caja.height) * 2 - 1);
                 };
                 window.addEventListener('pointermove', mover, { passive: true });
                 limpiar.push(() => window.removeEventListener('pointermove', mover));
-
-                const superior = parseFloat(getComputedStyle(sec).getPropertyValue('--cabecera')) || 0;
-                const inferior = parseFloat(getComputedStyle(sec).getPropertyValue('--barra')) || 0;
-                const io = new IntersectionObserver(
-                    ([e]) => {
-                        visible = e.isIntersecting;
-                        if (visible) ultimoProgreso = null;
-                        arrancar();
-                    },
-                    { rootMargin: `-${superior}px 0px -${inferior}px 0px` }
-                );
-                io.observe(espacio);
-                limpiar.push(() => io.disconnect());
-                const alVer = () => arrancar();
-                document.addEventListener('visibilitychange', alVer);
-                limpiar.push(() => document.removeEventListener('visibilitychange', alVer));
-
+                const interseccion = new IntersectionObserver(([entrada]) => {
+                    visible = entrada.isIntersecting;
+                    if (visible) ultimoProgreso = null;
+                    arrancar();
+                });
+                interseccion.observe(escenario);
+                limpiar.push(() => interseccion.disconnect());
+                document.addEventListener('visibilitychange', arrancar);
+                limpiar.push(() => document.removeEventListener('visibilitychange', arrancar));
                 arrancar();
                 requestAnimationFrame(() => vivo && ScrollTrigger.refresh());
-            })
-            .catch(() => vivo && setFallo(true));
-
+            } catch {
+                if (vivo) setFallo(true);
+            }
+        };
+        const espera = window.requestIdleCallback ? window.requestIdleCallback(preparar, { timeout: 500 }) : window.setTimeout(preparar, 0);
         return () => {
             vivo = false;
+            if (window.cancelIdleCallback) window.cancelIdleCallback(espera);
+            else window.clearTimeout(espera);
             cancelAnimationFrame(marco);
-            entrada?.kill();
-            tween?.scrollTrigger?.kill();
-            tween?.kill();
-            limpiar.forEach((f) => f());
+            controlScroll?.kill();
+            limpiar.forEach((terminar) => terminar());
             escena?.destruir();
             motor.current = null;
-            sitio?.style.removeProperty('--revelar-nav');
-            for (const fase of ['linea', 'cuerpo', 'enlaces']) sitio?.style.removeProperty(`--nav-${fase}`);
-            if (sitio) delete sitio.dataset.navVisible;
-            if (sitio) delete sitio.dataset.navPosterior;
+            for (const ref of [tituloRef, lemaRef, compraRef, pistaRef]) {
+                for (const propiedad of ['opacity', 'visibility', '--desplazamiento', 'clip-path']) ref.current?.style.removeProperty(propiedad);
+            }
         };
-    }, [modo3d, fallo, cargando, libro, crudo]);
-
-    if (cargando && !libro)
-        return (
-            <section ref={seccion} className="portada3d portada3d--cargando" aria-label="Portada de MATIDANA Libros y Cultura" aria-busy="true">
-                <h1 className="sr-only">Libros y anuncios de MATIDANA Libros y Cultura</h1>
-                <CargaPortada />
-            </section>
-        );
-    if (!modo3d || fallo || !libro)
-        return <PortadaEstatica key={libro?.id || 'vacia'} libro={libro} crudo={crudo} recientes={recientes} cargando={cargando} error={error} reintentar={reintentar} />;
+    }, [espacial, cargando, idLibro, tituloLibro, autorLibro, portadaLibro, escenario, clave]);
 
     return (
-        <>
-            <section
-                ref={seccion}
-                className={`portada3d portada3d--3d ${lista ? 'portada3d--lista' : ''}`}
-                aria-busy={!lista}
-                aria-label={`Portada de MATIDANA Libros y Cultura con el libro destacado: ${libro.titulo}`}>
-                <h1 className="sr-only">Libros y anuncios de MATIDANA Libros y Cultura</h1>
-                <div ref={escenario} className="portada3d__escenario">
-                    <canvas ref={lienzo} className="portada3d__lienzo" aria-hidden="true" />
-                    <span className="portada3d__destello" aria-hidden="true" />
-                    {!lista && <CargaPortada />}
-                    <div className="portada3d__presentacion">
-                        <div ref={tituloRef} className="portada3d__titulo" aria-hidden="true">
-                            <span>MATIDANA</span>
-                            <span>Libros y Cultura</span>
-                        </div>
-                        <div ref={compraRef} className="portada3d__acceso">
-                            <span className="portada3d__acceso-titulo">{libro.titulo}</span>
-                            {libro.autor && <span className="portada3d__autor">{libro.autor}</span>}
-                            <PrecioOferta libro={libro} clase="portada3d__precio" />
-                            <Link to={`/libro/${libro.id}`} className="portada3d__boton">
-                                Ver este libro <FaArrowRight aria-hidden="true" />
+        <section
+            ref={seccion}
+            className={`portada3d portada-unica ${reservaEspacial ? 'portada3d--3d' : ''} ${!espacial ? 'portada3d--estatica' : ''} ${lista ? 'portada3d--lista' : ''}`}
+            aria-busy={cargando && !libro}
+            aria-label={libro ? `Portada de MATIDANA Libros y Cultura con el libro destacado: ${libro.titulo}` : 'Portada de MATIDANA Libros y Cultura'}>
+            <h1 className="sr-only">Libros y anuncios de MATIDANA Libros y Cultura</h1>
+            <div ref={setEscenario} className="portada3d__escenario">
+                {espacial && libro && <canvas ref={lienzo} className="portada3d__lienzo" aria-hidden="true" />}
+                {libro && <LibroInicial key={`${libro.id}:${libro.portada}`} libro={libro} escenario={escenario} />}
+                <div className="portada3d__presentacion">
+                    <div ref={tituloRef} className="portada3d__titulo" aria-hidden="true">
+                        <span>MATIDANA</span>
+                        <span>Libros y Cultura</span>
+                    </div>
+                    <div ref={compraRef} className="portada3d__acceso portada3d__ficha">
+                        <h2 className="portada3d__acceso-titulo portada3d__libro-titulo" aria-hidden={!libro}>
+                            {libro?.titulo || ''}
+                        </h2>
+                        <span className="portada3d__autor" aria-hidden={!libro?.autor}>
+                            {libro?.autor || ''}
+                        </span>
+                        {libro ? <PrecioOferta libro={libro} clase="portada3d__precio" /> : <span className="precio portada3d__precio" aria-hidden="true" />}
+                        <Link to={libro ? `/libro/${libro.id}` : '/catalogo'} className="portada3d__boton">
+                            {libro ? 'Ver este libro' : 'Ver catálogo'} <FaArrowRight aria-hidden="true" />
+                        </Link>
+                        <p className="portada-unica__estado" role="status">
+                            {cargando && !libro ? (
+                                'Cargando el libro destacado…'
+                            ) : error ? (
+                                <>
+                                    No pudimos actualizar el libro.{' '}
+                                    <button type="button" onClick={reintentar}>
+                                        Reintentar
+                                    </button>
+                                </>
+                            ) : (
+                                ''
+                            )}
+                        </p>
+                    </div>
+                </div>
+                <p ref={lemaRef} className="portada3d__lema portada3d__lema--flotante">
+                    Historias que abren otros mundos.
+                </p>
+                {espacial && libro && (
+                    <>
+                        <FichaLibro libro={libro} fichaRef={fichaRef} />
+                        <div ref={finalRef} className="portada3d__final">
+                            <Recientes libros={recientes} protagonista={libro} enEscena />
+                            <Link to="/catalogo" className="portada3d__boton">
+                                Ver catálogo <FaArrowRight aria-hidden="true" />
                             </Link>
                         </div>
-                    </div>
-                    <p ref={lemaRef} className="portada3d__lema portada3d__lema--flotante">
-                        Historias que abren otros mundos.
-                    </p>
-                    <FichaLibro libro={libro} className="portada3d__ficha--flotante" fichaRef={fichaRef} />
-                    <div ref={finalRef} className="portada3d__final">
-                        <UltimosEnEscena libros={recientes} protagonista={libro} />
-                        <Link to="/catalogo" className="portada3d__boton">
-                            Ver catálogo <FaArrowRight aria-hidden="true" />
-                        </Link>
-                    </div>
-                    <p ref={pistaRef} className="portada3d__pista" aria-hidden="true">
-                        <FaArrowDown /> Desliza para descubrir
-                    </p>
-                    <span ref={veloRef} className="portada3d__velo" aria-hidden="true" />
-                </div>
-            </section>
-        </>
+                        <p ref={pistaRef} className="portada3d__pista" aria-hidden="true">
+                            <FaArrowDown /> Desliza para descubrir
+                        </p>
+                    </>
+                )}
+            </div>
+            {!espacial && <Recientes libros={recientes} />}
+        </section>
     );
 }

@@ -212,13 +212,62 @@ Alcance: la web pública (`src/web/`, todo bajo la clase raíz `.sitio`, tokens 
 
 ### Prioridad vigente: web ligera y sin espejo (27/10/2026)
 
-El usuario pide aligerar la carga y retirar el espejo/vidrio en **toda la web**. Esta decisión sustituye la portada espacial y los acabados reflectantes descritos históricamente más abajo.
+El usuario pide aligerar la carga y retirar el espejo/vidrio en **toda la web**. La portada espacial se incorpora progresivamente dentro de una composición única; los acabados reflectantes descritos históricamente más abajo quedan sustituidos por superficies sólidas.
 
-- El inicio pinta primero `PortadaLigera`: texto, libro destacado real con precio/stock y cinco novedades. Después, `PortadaDiferida` sustituye esa vista por la animación 3D original cuando el navegador está libre (`requestIdleCallback`), el visitante sigue arriba y no hay ahorro de datos ni red 2G; si algo falla se conserva la versión ligera. Catálogo y fichas conservan sus datos y acciones.
+- `PortadaDiferida` obtiene los datos y monta una sola `PortadaEspacial`: identidad, título, precio y acceso al libro se conservan mientras `LibroInicial` muestra la cubierta proyectada con CSS. El motor 3D se descarga durante tiempo libre del navegador, con datos utilizables, WebGL y sin ahorro de datos ni red 2G. Si el equipo no admite el efecto o algo falla, se conserva la misma composición estática con novedades desplazables. Catálogo y fichas conservan sus datos y acciones.
 - `limpia.css` elimina el desenfoque de fondos, las facetas animadas de cabecera/pie y el cristal de las tarjetas. Se conservan los colores y componentes de la implementación vigente, con superficies sólidas y legibles.
 - El libro del login mantiene su apertura CSS de 400ms y la recuperación en otra hoja; páginas y campos pasan a ser sólidos, sin filtro de vidrio.
 - No hay pantalla de precarga que bloquee la navegación. No se descargan todas las portadas anticipadamente, el panel se carga bajo demanda y las páginas informativas tienen módulos separados. Las fuentes del panel se piden solamente al abrirlo.
 - Medición local de recursos de producción con la misma API simulada: el JavaScript inicial pasa de 1.459.497 a 629.822 bytes (aprox. −57%); acceso administrativo de 651.665 a 575.597 bytes (aprox. −12%). No es una medición de latencia de Render ni de dispositivos físicos.
+
+### Carga progresiva de información (03/11/2026)
+
+`PortadaDiferida` mantiene una sola fuente de datos para protagonista, recientes y respaldo del catálogo. No se reemplaza el árbol de la portada: título, precio, acceso y foco permanecen en su sitio mientras se preparan textura, tipografía y primer cuadro del 3D. `LibroInicial` y `escenaLibro` comparten cámara, escala y proyección mediante `poseInicialLibro`. Solo las capas del libro CSS y el canvas se funden durante 180ms; los textos no tienen otra animación de entrada ni se reinicia la consulta del protagonista.
+
+Verificación de la composición única con catálogo real: los nodos se conservan y el cambio de posición y tamaño de identidad, título, precio y botón es de 0px en escritorio 1440×1000 y móvil 390×844. La diferencia entre la cubierta CSS y el primer cuadro 3D es inferior a 0,02px; el poster termina con opacidad 0 al completarse el fundido. Sin errores JS ni desbordamiento horizontal en esos dos tamaños.
+
+Las imágenes lazy de `ImagenCarga` esperan a estar a 300px del viewport antes de recibir sus URL; las imágenes prioritarias siguen cargándose inmediatamente. La portada utiliza iluminación de estudio direccional y hemisférica, sin generar un entorno PMREM al entrar. El modo WebGL por software usa menor resolución. Las hojas interiores del libro cerrado conservan su geometría y quedan fuera del dibujo, evitando procesar superficies que las tapas ocultan.
+
+Comparación de la primera optimización de carga, anterior a la composición única, en Chromium headless, Vite y API real, con contextos nuevos de escritorio 1440×1000 y móvil 390×844:
+
+| Medida | Antes | Después |
+|---|---:|---:|
+| Primera pintura con contenido, escritorio | 1,14 s | 0,71 s |
+| Primera pintura con contenido, móvil | 1,13 s | 0,73 s |
+| Tarea individual más larga, escritorio | 3,52 s | 0,37 s |
+| Tarea individual más larga, móvil | 3,50 s | 0,51 s |
+| Peticiones durante 30 s, escritorio / móvil | 177 / 180 | 159 / 156 |
+
+Son mediciones locales de desarrollo; la latencia de la API y del servidor de imágenes varía. Se verifican además carga lenta de datos, fuentes y texturas, caché, libro retirado, respaldo 404, compras y tamaños de pantalla. El 3D conserva su composición y los datos no dependen de que termine la animación.
+
+### Movimiento continuo de la portada (04/11/2026)
+
+La secuencia central nace del propio libro: un reflejo suave sobre la cubierta durante la preparación, entrega al canvas con la misma pose, flotación y luz editorial, acercamiento con el gesto y disolución material hacia los últimos libros. El título, precio y acceso inicial conservan su posición. El fundido dura 180ms y el movimiento espacial comienza después, evitando que el canvas se adelante al libro CSS.
+
+`EscenaLibro.preparar()` espera la textura y compila los programas WebGL con `compileAsync` antes del primer cuadro visible. El scroll tiene un único amortiguador temporal (`amortiguarProgreso`), independiente de la frecuencia de cuadros; se elimina el scrub adicional y el limitador que en móvil acababa dibujando cada 48–50ms. El navegador gobierna los cuadros con aceleración gráfica; el renderizado por software conserva su presupuesto de 30 cuadros/s. La oclusión del título usa medidas cacheadas y solo aplica recorte cuando hay intersección con el libro.
+
+Las novedades comienzan a preparar sus imágenes durante el recorrido, antes de ser visibles. Llegan mediante un desplazamiento corto y progresivo, con títulos y precios legibles al terminar; el acceso del grupo se desactiva mientras está oculto. La entrada CSS es de una sola pasada y el movimiento reducido mantiene una composición estática accesible. Los ciclos del motor se pausan fuera de pantalla y con la pestaña oculta.
+
+Medición local en Chrome headless con aceleración gráfica, datos reales del catálogo servidos de forma controlada y contextos nuevos a 1440×1000 y 390×844:
+
+| Medida | Antes | Después |
+|---|---:|---:|
+| Preparación síncrona del motor, escritorio | 699 ms | 32 ms |
+| Mayor tarea del hilo principal, escritorio | 1.538 ms | 159 ms |
+| Mayor tarea del hilo principal, móvil | 223 ms | 98 ms |
+| Espera del 3D tras disponer de datos, escritorio | 2,92 s | 1,60 s |
+| Espera del 3D tras disponer de datos, móvil | 1,21 s | 0,45 s |
+| Llamadas de dibujo del primer cuadro, escritorio / móvil | 63 / 48 | 31 / 30 |
+
+Son mediciones del equipo local; no representan dispositivos físicos ni la latencia de Render. La continuidad temporal y la reversibilidad se comprueban también a 30, 60 y 120 cuadros/s mediante pruebas unitarias.
+
+### Ofertas y asistente (04/11/2026)
+
+«Ofertas vigentes» utiliza tarjetas editoriales verticales: cuatro libros por ancho de escritorio, tres en tabletas y dos en teléfonos. Las cubiertas conservan la imagen completa (`object-fit: contain`), hasta 200×300px, con descuento sobre la propia portada y sombras suaves. Portada y título enlazan a la ficha. Título, autor, precio y ahorro comparten alineación izquierda, con las acciones agrupadas al pie.
+
+Los botones de carrito de las ofertas heredan los mismos estilos compartidos que las demás tarjetas: forma de píldora, colores, tipografía, padding, altura mínima de 44px y ancho adaptable al espacio disponible. Conservan el texto «Agregar» en móvil y «Agotado» cuando corresponde, sin una variante de solo icono ni medidas especiales. «Ver detalle» es un enlace real a la ficha y se mantiene junto al botón: en fila en tarjetas amplias y debajo, con separación corta, en tarjetas estrechas. Los libros agotados mantienen el botón desactivado y permiten consultar el detalle. Los estilos propios de presentación están en `secciones/ofertas-destacadas.css`; el botón utiliza las reglas comunes de la tienda.
+
+El asistente utiliza un libro abierto ilustrado en SVG con páginas marfil, cubierta dorada y fondo marino. El mismo avatar aparece en el acceso flotante, la bienvenida, la cabecera y el estado de consulta. No carga videos ni el poster anime; los renglones indican actividad mediante una animación de opacidad desactivada con movimiento reducido. Conserva etiquetas accesibles, controles, conversación y compras existentes.
 
 ### Adaptación a celulares y tabletas (23/10/2026)
 

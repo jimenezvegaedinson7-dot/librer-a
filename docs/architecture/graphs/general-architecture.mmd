@@ -1,4 +1,4 @@
-%% Generado 2026-11-03 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-11-10 desde el código real (actualizar-mapa.mjs)
 flowchart TB
     DB[("PostgreSQL · 22 tablas del esquema<br/>23 declaradas con auxiliares")]
     subgraph API["Backend Node/Express (Render)"]
@@ -17,4 +17,5 @@ flowchart TB
     EXT1 -. webhook .-> R
     REACT["React Admin (Vercel)<br/>rol administrador"] -->|"axios + Bearer"| MW
     TIENDA["Tienda React (Vercel)<br/>cliente / visitante"] -->|"fetch público o JWT cliente"| MW
+    TIENDA -->|"Eventos opcionales de comercio"| GA4["Google Analytics 4<br/>gtag.js"]
     FLUTTER["Flutter Android<br/>rol cliente"] -->|"Dio + Bearer"| MW

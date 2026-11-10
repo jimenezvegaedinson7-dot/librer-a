@@ -1,6 +1,6 @@
 # Flujos de datos
 
-> Generado desde el código real el 2026-11-03 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-10 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arquitectura general
@@ -54,6 +54,7 @@
 - Ficha pública `/libro/:id`: amplía `LibroPage` reutilizando `PrecioOferta`, `ComprarLibro`, `Stock` y `TarjetaLibro`. Cantidad opcional en el mismo `TiendaContext.agregar`; Comprar ahora conduce al checkout existente. Datos técnicos disponibles: título, autor, categoría, ISBN, precio, estado y stock; descripción y biografía se conservan sin resumir.
 - Descubrimiento: `GET /api/libros/:id/relacionados` consulta el autor y la categoría con los índices existentes y LIMIT 8 por grupo; entrega hasta 4 relacionados, 4 títulos adicionales del autor y 4 de categoría, sin duplicados. Solo libros activos, disponibilidad real y el mismo precio SQL del catálogo. La entrada directa a una ficha no carga el catálogo completo. Autor interactivo filtra `/catalogo?autor=:id`.
 - Favoritos de la ficha usan GET/POST/DELETE `/api/favoritos/:idLibro` con la sesión cliente y ownership JWT existentes; no hay persistencia nueva. Sin sesión, Cuenta permite retorno interno al libro. Compartir usa Web Share API o copiar enlace/WhatsApp/Facebook. SEO amplía los metadatos existentes y genera Book/Product con datos reales. No modifica pagos, inventario ni migraciones.
+- Tras confirmar una compra web, `TiendaProvider` encola `purchase` en GA4 solo para el intento correspondiente. `RecomendacionesCompra` consulta `GET /api/libros/recomendados` (JWT cliente y sin caché), que deriva autores/categorías de compras pagadas o entregadas y excluye lo ya comprado y lo no disponible. La selección de libros funciona aunque GA4 no esté configurado o esté bloqueado.
 
 ## 5. Retiro total de Reservas
 - API, panel y Flutter no ofrecen creación, lectura ni cancelación. Los namespaces antiguos `/api/reservas` y `/api/reportes/reservas-por-estado` exigen JWT y responden 410 sin consultar datos.

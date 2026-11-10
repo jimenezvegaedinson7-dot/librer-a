@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useOutletContext, useSearchParams } from 'react-router-dom';
 import { FaArrowsRotate, FaReceipt } from 'react-icons/fa6';
 import { CLAVE_CLIENTE, clienteApi, checkoutSeguro, exigirSesion, firmaSesion, leer } from './clienteApi';
@@ -9,6 +9,7 @@ import { descripcionEntrega, ubicacionEntrega } from '../../compartido/lib/utils
 import { formatearFecha } from '../../compartido/lib/utils/format';
 import { seguimientoPedido } from '../../compartido/lib/utils/seguimientoPedido';
 import EstadoSesion from './EstadoSesion';
+import RecomendacionesCompra from './RecomendacionesCompra';
 
 const estados = { pendiente: 'Pendiente de pago', pagada: 'Pagada', entregada: 'Pagada', cancelada: 'Cancelada', reembolsada: 'Reembolsada' };
 
@@ -208,93 +209,96 @@ function ComprasCliente({ t }) {
                         </div>
                     ) : (
                         <div className="compras-lista">
-                            {compras.map((v) => (
-                                <article key={v.id_venta} className="compra-registro">
-                                    <header>
-                                        <div>
-                                            <h2>Compra #{v.id_venta}</h2>
-                                            <p className="compra-registro__meta">
-                                                {v.fecha_venta && <>{formatearFecha(v.fecha_venta)} · </>}
-                                                {v.canal_compra === 'web' ? 'Web' : 'App'}
-                                            </p>
-                                        </div>
-                                        <strong className={`compra-estado compra-estado--${v.estado}`}>{estados[v.estado] || v.estado}</strong>
-                                    </header>
-                                    <Seguimiento v={v} />
-                                    <div className="compra-registro__cuerpo">
-                                        <ul className="compra-registro__libros">
-                                            {(v.detalle || []).map((i) => (
-                                                <li key={i.id_libro}>
-                                                    <Link to={`/libro/${Number(i.id_libro)}`} className="compra-registro__portada" aria-label={`Ver ${i.titulo}`}>
-                                                        <PortadaLibro key={conPortada(i).portada || 'sin'} libro={conPortada(i)} mini />
-                                                    </Link>
-                                                    <div className="compra-registro__titulo">
-                                                        <Link to={`/libro/${Number(i.id_libro)}`}>{i.titulo}</Link>
-                                                        <small>
-                                                            Cantidad: {i.cantidad}
-                                                            {Number(i.precio_unitario) > 0 && <> · {soles(i.precio_unitario)} c/u</>}
-                                                        </small>
+                            {compras.map((v, indice) => (
+                                <Fragment key={v.id_venta}>
+                                    <article className="compra-registro">
+                                        <header>
+                                            <div>
+                                                <h2>Compra #{v.id_venta}</h2>
+                                                <p className="compra-registro__meta">
+                                                    {v.fecha_venta && <>{formatearFecha(v.fecha_venta)} · </>}
+                                                    {v.canal_compra === 'web' ? 'Web' : 'App'}
+                                                </p>
+                                            </div>
+                                            <strong className={`compra-estado compra-estado--${v.estado}`}>{estados[v.estado] || v.estado}</strong>
+                                        </header>
+                                        <Seguimiento v={v} />
+                                        <div className="compra-registro__cuerpo">
+                                            <ul className="compra-registro__libros">
+                                                {(v.detalle || []).map((i) => (
+                                                    <li key={i.id_libro}>
+                                                        <Link to={`/libro/${Number(i.id_libro)}`} className="compra-registro__portada" aria-label={`Ver ${i.titulo}`}>
+                                                            <PortadaLibro key={conPortada(i).portada || 'sin'} libro={conPortada(i)} mini />
+                                                        </Link>
+                                                        <div className="compra-registro__titulo">
+                                                            <Link to={`/libro/${Number(i.id_libro)}`}>{i.titulo}</Link>
+                                                            <small>
+                                                                Cantidad: {i.cantidad}
+                                                                {Number(i.precio_unitario) > 0 && <> · {soles(i.precio_unitario)} c/u</>}
+                                                            </small>
+                                                        </div>
+                                                        <span className="compra-registro__subtotal">{soles(i.subtotal)}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <dl className="compra-registro__entrega">
+                                                <div>
+                                                    <dt>Entrega</dt>
+                                                    <dd>{descripcionEntrega(v)}</dd>
+                                                </div>
+                                                {v.tipo_entrega === 'domicilio' && (ubicacionEntrega(v) || v.direccion) && (
+                                                    <div>
+                                                        <dt>Dirección</dt>
+                                                        <dd>{[v.direccion, ubicacionEntrega(v)].filter(Boolean).join(', ')}</dd>
                                                     </div>
-                                                    <span className="compra-registro__subtotal">{soles(i.subtotal)}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <dl className="compra-registro__entrega">
-                                            <div>
-                                                <dt>Entrega</dt>
-                                                <dd>{descripcionEntrega(v)}</dd>
-                                            </div>
-                                            {v.tipo_entrega === 'domicilio' && (ubicacionEntrega(v) || v.direccion) && (
+                                                )}
+                                                {v.referencia && (
+                                                    <div>
+                                                        <dt>Referencia</dt>
+                                                        <dd>{v.referencia}</dd>
+                                                    </div>
+                                                )}
+                                            </dl>
+                                        </div>
+                                        <footer className="compra-registro__pie">
+                                            <dl className="compra-registro__importes">
                                                 <div>
-                                                    <dt>Dirección</dt>
-                                                    <dd>{[v.direccion, ubicacionEntrega(v)].filter(Boolean).join(', ')}</dd>
+                                                    <dt>Libros</dt>
+                                                    <dd>{soles((v.detalle || []).reduce((s, i) => s + Number(i.subtotal || 0), 0))}</dd>
+                                                </div>
+                                                <div>
+                                                    <dt>Costo de entrega</dt>
+                                                    <dd>{soles(v.costo_envio)}</dd>
+                                                </div>
+                                                <div className="compra-registro__total">
+                                                    <dt>Total</dt>
+                                                    <dd>
+                                                        <strong>{soles(v.total)}</strong>
+                                                    </dd>
+                                                </div>
+                                            </dl>
+                                            {v.estado === 'pendiente' && v.external_reference && (
+                                                <div className="compra-acciones">
+                                                    <button
+                                                        className="boton boton--compra boton--chico"
+                                                        disabled={ocupado}
+                                                        onClick={() => continuar(v)}
+                                                        aria-label={`Continuar pago de compra #${v.id_venta}`}>
+                                                        Continuar el pago
+                                                    </button>
+                                                    <button
+                                                        className="boton boton--linea boton--chico"
+                                                        disabled={ocupado}
+                                                        onClick={() => verificar(v)}
+                                                        aria-label={`Verificar pago de compra #${v.id_venta}`}>
+                                                        Verificar pago
+                                                    </button>
                                                 </div>
                                             )}
-                                            {v.referencia && (
-                                                <div>
-                                                    <dt>Referencia</dt>
-                                                    <dd>{v.referencia}</dd>
-                                                </div>
-                                            )}
-                                        </dl>
-                                    </div>
-                                    <footer className="compra-registro__pie">
-                                        <dl className="compra-registro__importes">
-                                            <div>
-                                                <dt>Libros</dt>
-                                                <dd>{soles((v.detalle || []).reduce((s, i) => s + Number(i.subtotal || 0), 0))}</dd>
-                                            </div>
-                                            <div>
-                                                <dt>Costo de entrega</dt>
-                                                <dd>{soles(v.costo_envio)}</dd>
-                                            </div>
-                                            <div className="compra-registro__total">
-                                                <dt>Total</dt>
-                                                <dd>
-                                                    <strong>{soles(v.total)}</strong>
-                                                </dd>
-                                            </div>
-                                        </dl>
-                                        {v.estado === 'pendiente' && v.external_reference && (
-                                            <div className="compra-acciones">
-                                                <button
-                                                    className="boton boton--compra boton--chico"
-                                                    disabled={ocupado}
-                                                    onClick={() => continuar(v)}
-                                                    aria-label={`Continuar pago de compra #${v.id_venta}`}>
-                                                    Continuar el pago
-                                                </button>
-                                                <button
-                                                    className="boton boton--linea boton--chico"
-                                                    disabled={ocupado}
-                                                    onClick={() => verificar(v)}
-                                                    aria-label={`Verificar pago de compra #${v.id_venta}`}>
-                                                    Verificar pago
-                                                </button>
-                                            </div>
-                                        )}
-                                    </footer>
-                                </article>
+                                        </footer>
+                                    </article>
+                                    {indice === 0 && <RecomendacionesCompra compras={compras} sesion={t.sesion} />}
+                                </Fragment>
                             ))}
                         </div>
                     )}

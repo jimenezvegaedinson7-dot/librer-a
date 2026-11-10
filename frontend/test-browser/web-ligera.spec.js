@@ -29,7 +29,30 @@ async function preparar(page, protagonista = libros[0]) {
     });
 }
 
-const titulo = (page) => page.locator('.portada-ligera__ficha h2, .portada3d__acceso-titulo, .portada3d__libro-titulo').first();
+const titulo = (page) => page.locator('.portada3d__acceso-titulo');
+
+test('la transición al 3D comparte el protagonista sin repetir la consulta', async ({ page }) => {
+    let consultas = 0;
+    await preparar(page);
+    await page.route(`${API}/anuncios/protagonista`, async (route) => {
+        consultas++;
+        await route.fulfill({ json: { success: true, data: { libro: libros[0] } } });
+    });
+    let liberar;
+    const espera = new Promise((resolve) => {
+        liberar = resolve;
+    });
+    await page.route(/escenaLibro/, async (route) => {
+        await espera;
+        await route.continue();
+    });
+    await page.goto('/');
+    await expect(titulo(page)).toHaveText(libros[0].titulo);
+    const iniciales = consultas;
+    liberar();
+    await expect(page.locator('.portada3d--lista, .portada3d--estatica')).toBeVisible({ timeout: 30000 });
+    expect(consultas).toBe(iniciales);
+});
 
 async function sinAnimacion3D(page) {
     await page.addInitScript(() => {
@@ -61,22 +84,23 @@ for (const width of [390, 1440])
         const espera = new Promise((r) => {
             liberar = r;
         });
-        await page.route(/PortadaEspacial/, async (r) => {
+        await page.route(/escenaLibro/, async (r) => {
             await espera;
             await r.continue();
         });
         await page.goto('/');
 
-        await expect(page.locator('.portada-ligera__ficha h2')).toHaveText('Libro de prueba 1');
-        await expect(page.locator('.portada-ligera__ficha .oferta__final')).toHaveText('S/ 75.00');
-        await expect(page.locator('.portada-ligera__recientes li')).toHaveCount(5);
+        await expect(titulo(page)).toHaveText('Libro de prueba 1');
+        await expect(page.locator('.portada3d__acceso .oferta__final')).toHaveText('S/ 75.00');
+        await expect(page.locator('.portada3d__escena-libros [role="listitem"]')).toHaveCount(5);
         await expect(page.locator('.oferta-tarjeta').first()).toHaveCSS('opacity', '1');
         await expect(page.locator('.ofertas .seccion__titulo')).toHaveCSS('animation-name', 'none');
-        await expect(page.locator('canvas')).toHaveCount(0);
+        await expect(page.locator('.portada-unica__poster')).toHaveCSS('opacity', '1');
+        await expect(page.locator('.portada3d--lista')).toHaveCount(0);
         await expect(page.locator('html')).not.toHaveAttribute('data-precarga');
         await expect(page.locator('.cabecera')).toHaveCSS('background-image', 'none');
         await expect(page.locator('footer.pie')).toHaveCSS('animation-name', 'none');
-        expect(peticiones.some((u) => /escenaLibro|portalEditorial|three|AdminLayout|fonts\.googleapis/.test(u))).toBe(false);
+        expect(peticiones.some((u) => /portalEditorial|three|AdminLayout|fonts\.googleapis/.test(u))).toBe(false);
         await sinVidrio(page);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         await page.screenshot({ path: testInfo.outputPath('inicio-ligero.png'), fullPage: true });
@@ -112,7 +136,7 @@ test('portada: navegación disponible incluso si la API tarda', async ({ page })
         await r.fulfill({ json: { success: true, data: { libro: libros[0] } } });
     });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.portada-ligera__texto').getByRole('link', { name: 'Ver catálogo', exact: true })).toBeVisible();
+    await expect(page.locator('.portada3d__presentacion').getByRole('link', { name: 'Ver catálogo', exact: true })).toBeVisible();
     await expect(page.locator('.cabecera')).toBeVisible();
     liberar();
     await expect(titulo(page)).toHaveText('Libro de prueba 1');
@@ -122,8 +146,8 @@ test('portada: respeta libro nulo y el respaldo 404 cuando el catálogo llega de
     await preparar(page, null);
     await sinAnimacion3D(page);
     await page.goto('/');
-    await expect(page.locator('.portada-ligera__recientes li')).toHaveCount(5);
-    await expect(page.locator('.portada-ligera__destacado')).toHaveCount(0);
+    await expect(page.locator('.portada-unica__recientes [role="listitem"]')).toHaveCount(5);
+    await expect(page.locator('.portada-unica__poster')).toHaveCount(0);
     await page.route(`${API}/anuncios/protagonista`, (r) => r.fulfill({ status: 404, json: {} }));
     let liberar;
     const espera = new Promise((r) => {
@@ -135,7 +159,7 @@ test('portada: respeta libro nulo y el respaldo 404 cuando el catálogo llega de
     });
     await page.evaluate(() => localStorage.clear());
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.portada-ligera__texto').getByRole('link', { name: 'Ver catálogo', exact: true })).toBeVisible();
+    await expect(page.locator('.portada3d__presentacion').getByRole('link', { name: 'Ver catálogo', exact: true })).toBeVisible();
     liberar();
     await expect(titulo(page)).toHaveText('Libro de prueba 8');
 });

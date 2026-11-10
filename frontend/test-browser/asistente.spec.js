@@ -231,7 +231,9 @@ test('endpoint Gemini: POST sin token, contexto corto, portada, ficha y carrito 
         .getByRole('button', { name: `Agregar ${cronica.titulo} al carrito`, exact: true })
         .click();
     await expect(page.locator('.compra-carrito')).toHaveAttribute('aria-label', 'Carrito (1)');
-    await ultima(chat).getByRole('link', { name: cronica.titulo, exact: true }).click();
+    await ultima(chat)
+        .getByRole('link', { name: `Ver detalle de ${cronica.titulo}`, exact: true })
+        .click();
     await expect(page).toHaveURL(/\/libro\/9$/);
     await expect(chat).toHaveCount(0);
 });

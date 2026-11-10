@@ -134,7 +134,7 @@ test('inicio: web pública con metadatos, menú de páginas y sin errores', asyn
     page.on('pageerror', (e) => errores.push(e.message));
     await apiPublica(page);
     await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Historias que abren otros mundos.');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Libros y anuncios de MATIDANA Libros y Cultura');
     await expect(page).toHaveTitle(/MATIDANA Libros y Cultura/);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /PayU/);
     for (const texto of ['Inicio', 'Catálogo', 'Aplicación', 'Características', 'Nosotros', 'Descargar']) {
@@ -476,7 +476,7 @@ test('catálogo: sin descuento no hay precio tachado en ninguna tarjeta', async 
     await expect(page.locator('.rejilla-libros .oferta__anterior')).toHaveCount(0);
 });
 
-test('inicio: Libros recomendados no mezcla libros en descuento', async ({ page }) => {
+test('inicio: recomendados excluye ofertas y sus enlaces de detalle abren la ficha', async ({ page }) => {
     const errores = [];
     page.on('pageerror', (e) => errores.push(String(e)));
     await apiPublica(page, { libros: [enOferta, ...LIBROS.slice(1)] });
@@ -486,7 +486,32 @@ test('inicio: Libros recomendados no mezcla libros en descuento', async ({ page 
     await expect(page.locator('.libro').first()).toBeVisible();
     await expect(page.locator('.libro .oferta__pastilla')).toHaveCount(0);
     await expect(page.locator('.libro', { hasText: enOferta.titulo })).toHaveCount(0);
+    const libro = LIBROS[1];
+    await page.route(`${API}/libros/${libro.id_libro}`, (r) => r.fulfill({ json: { success: true, data: libro } }));
+    await page
+        .locator('.libro')
+        .first()
+        .getByRole('link', { name: `Ver detalle de ${libro.titulo}`, exact: true })
+        .click();
+    await expect(page).toHaveURL(new RegExp(`/libro/${libro.id_libro}$`));
+    await expect(page.getByRole('heading', { level: 1, name: libro.titulo, exact: true })).toBeVisible();
     expect(errores).toHaveLength(0);
+});
+
+test('favoritos y reclamaciones usan sus propios metadatos y conservan la navegación', async ({ page }) => {
+    await apiPublica(page);
+    for (const [ruta, titulo] of [
+        ['/favoritos', 'Mis favoritos'],
+        ['/libro-de-reclamaciones', 'Libro de Reclamaciones']
+    ]) {
+        await page.goto(ruta);
+        await expect(page.getByRole('heading', { level: 1, name: titulo, exact: true })).toBeVisible();
+        await expect(page).toHaveTitle(`${titulo} · MATIDANA Libros y Cultura`);
+        await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://libreria.my${ruta}`);
+    }
+    await page.getByRole('link', { name: 'Volver a MATIDANA', exact: true }).click();
+    await expect(page).toHaveURL('/');
+    await expect(page).toHaveTitle('MATIDANA Libros y Cultura · Delivery y recojo en Pallasca');
 });
 
 test('catálogo: el precio es texto sobrio sin pastilla de color', async ({ page }) => {

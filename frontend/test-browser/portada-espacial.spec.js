@@ -304,6 +304,8 @@ test('sin WebGL ni altura suficiente no descarga el motor 3D ni oculta el conten
     await expect(page.locator('.portada3d--estatica')).toBeVisible();
     expect(recursos.some((url) => url.includes('escenaLibro'))).toBe(false);
     await expect(page.getByRole('link', { name: /Ver este libro/ })).toBeVisible();
+    await page.getByRole('link', { name: /Ver este libro/ }).scrollIntoViewIfNeeded();
+    await expect(page.getByRole('link', { name: /Ver este libro/ })).toBeInViewport();
 });
 
 test('la portada rota degrada a una ficha sin imagen y un fallo de red se puede reintentar', async ({ page }) => {
@@ -317,12 +319,12 @@ test('la portada rota degrada a una ficha sin imagen y un fallo de red se puede 
     await expect(page.getByText('Portada no disponible', { exact: true })).toBeVisible();
     await page.route(`${API}/anuncios/protagonista`, (r) => r.fulfill({ status: 503, json: {} }));
     await page.reload();
-    await expect(page.getByRole('button', { name: 'reintentar', exact: true })).toBeVisible({ timeout: 30000 });
+    await expect(page.getByRole('button', { name: /^reintentar$/i })).toBeVisible({ timeout: 30000 });
     await page.route(`${API}/anuncios/protagonista`, (r) =>
         r.fulfill({ json: { success: true, data: { modo: 'automatico', libro: { ...LIBRO, portada: `${API}/portada-ok.png` } } } })
     );
     await page.route(`${API}/portada-ok.png`, (r) => r.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('') }));
-    await page.getByRole('button', { name: 'reintentar', exact: true }).click();
+    await page.getByRole('button', { name: /^reintentar$/i }).click();
     await expect(page.locator('.portada3d--estatica .portada3d__ficha')).toBeVisible({ timeout: 30000 });
 });
 
@@ -367,7 +369,9 @@ test('sin libros elegibles no inventa un libro: portada sin libro con acceso al 
     await page.goto('/');
     const portada = page.locator('.portada3d--estatica');
     await expect(portada).toBeVisible({ timeout: 30000 });
-    await expect(portada.locator('.portada3d__libro-titulo')).toHaveCount(0);
+    await expect(portada.locator('.portada3d__libro-titulo')).toHaveText('');
+    await expect(portada.locator('.portada3d__libro-titulo')).toHaveAttribute('aria-hidden', 'true');
+    await expect(portada.locator('.portada-unica__poster')).toHaveCount(0);
     await expect(portada.getByRole('link', { name: /Ver catálogo/ })).toHaveAttribute('href', '/catalogo');
 });
 

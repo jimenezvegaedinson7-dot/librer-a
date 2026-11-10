@@ -1,6 +1,6 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-11-03 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-10 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
@@ -245,6 +245,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/libros` | — | controllers/libro.controller.js#obtenerLibros | `libro.model.js#obtenerTodos` | autores, categorias, detalle_venta, inventario, libros, ventas |
+| GET | `/api/libros/recomendados` | JWT + rol:cliente | controllers/libro.controller.js#obtenerRecomendados | `libro.model.js#obtenerRecomendados` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | GET | `/api/libros/:id/relacionados` | — | controllers/libro.controller.js#obtenerRelacionados | `libro.model.js#obtenerRelacionados` | autores, categorias, inventario, libros |
 | GET | `/api/libros/:id` | — | controllers/libro.controller.js#obtenerLibro | `libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | POST | `/api/libros` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#crearLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro`<br>`libro.model.js#crear`<br>`libro.model.js#eliminar` | autores, categorias, historial_operaciones, inventario, libros |

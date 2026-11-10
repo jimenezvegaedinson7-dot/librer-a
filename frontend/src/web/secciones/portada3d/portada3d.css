@@ -215,7 +215,6 @@
 .sitio .portada3d__cargando {
     position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; background: var(--p3-papel);
 }
-.sitio .portada3d--3d:not(.portada3d--lista) .portada3d__escenario > :not(.portada3d__cargando), .sitio .portada3d--3d:not(.portada3d--lista) .portada3d__escenario > :not(.portada3d__cargando) * { visibility: hidden !important; }
 .sitio .portada3d__spinner { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #e9dfce; border-top-color: #916f35; animation: portada3d-girar 0.9s linear infinite; }
 .sitio .portada3d__cargando-texto { font-family: var(--f-texto, 'Work Sans', sans-serif); font-size: 0.9375rem; letter-spacing: 0.02em; color: var(--p3-nota-papel); }
 @keyframes portada3d-girar {

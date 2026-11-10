@@ -1,0 +1,24 @@
+.sitio .recomendaciones-compra {
+    margin-block: 1.5rem;
+    padding-block: 1.5rem;
+}
+
+.sitio .recomendaciones-compra > h2 {
+    font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.75rem);
+    line-height: 1.25;
+    margin: 0 0 0.65rem;
+    text-wrap: balance;
+}
+
+.sitio .recomendaciones-compra__explicacion {
+    margin: 0 0 1.5rem;
+    max-width: 65ch;
+    color: var(--texto-2);
+}
+
+.sitio .recomendaciones-compra .libro__motivo {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    margin-block: 0.65rem 0;
+    color: var(--texto-2);
+}

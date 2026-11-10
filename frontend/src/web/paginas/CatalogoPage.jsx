@@ -34,7 +34,7 @@ export function Stock({ libro }) {
     );
 }
 
-export function TarjetaLibro({ libro, indice, nivelTitulo = 'h2', portadaSegura = true }) {
+export function TarjetaLibro({ libro, indice, nivelTitulo = 'h2', portadaSegura = true, nota, onSeleccion }) {
     const Titulo = nivelTitulo;
     const navigate = useNavigate();
     const ahorro = libro.descuento > 0 ? libro.precio - libro.precioFinal : 0;
@@ -42,6 +42,7 @@ export function TarjetaLibro({ libro, indice, nivelTitulo = 'h2', portadaSegura 
 
     const abrirDetalle = (e) => {
         if (e.target.closest('button, a, input, select, label')) return;
+        onSeleccion?.();
         navigate(`/libro/${libro.id}`);
     };
     return (
@@ -75,8 +76,9 @@ export function TarjetaLibro({ libro, indice, nivelTitulo = 'h2', portadaSegura 
                 <PrecioOferta libro={libro} clase="tarjeta-libro__precio" />
                 {ahorro > 0 && <p className="ahorro">Ahorras {soles(ahorro)}</p>}
                 <Stock libro={libro} />
+                {nota && <p className="libro__motivo">{nota}</p>}
             </div>
-            <ComprarLibro libro={libro} />
+            <ComprarLibro libro={libro} enlaceDetalle onDetalle={onSeleccion} />
         </li>
     );
 }

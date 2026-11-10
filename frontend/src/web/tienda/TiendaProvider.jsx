@@ -4,6 +4,7 @@ import { centimos, listaLibros } from './libroComercial';
 import { descontarCompra } from './carritoCompra';
 import { claveCarrito, claveIntento as intentoDelUsuario, conExclusionCliente, enviarIntento, leerCarrito, leerIntento } from './persistenciaCompra';
 import { ContextoTienda } from './TiendaContext';
+import { analitica } from '../lib/analitica';
 
 const leerSesion = () => {
     const s = leer(CLAVE_CLIENTE);
@@ -24,7 +25,12 @@ export function TiendaProvider({ catalogo, children }) {
     const generacion = firmaSesion(sesion);
     const claveIntento = intentoDelUsuario(usuario?.id_usuario);
     const libros = frescos || catalogo.libros;
+    const librosActuales = useRef(libros);
     const items = carrito.items;
+
+    useEffect(() => {
+        librosActuales.current = libros;
+    }, [libros]);
 
     const adoptar = useCallback((nueva) => {
         actual.current = nueva;
@@ -148,7 +154,7 @@ export function TiendaProvider({ catalogo, children }) {
             return false;
         }
         if (!Number.isInteger(unidades) || unidades < 1 || unidades > 999) return false;
-        return modificarCarrito((estado) => {
+        const agregado = await modificarCarrito((estado) => {
             const i = estado.items.find((x) => x.id_libro === libro.id);
             if ((i?.cantidad || 0) + unidades > Math.min(libro.stock, 999)) {
                 setAviso('Revisa la cantidad: supera las unidades disponibles para este libro.');
@@ -161,6 +167,8 @@ export function TiendaProvider({ catalogo, children }) {
             window.dispatchEvent(new CustomEvent('carrito-agregado', { detail: { libro, unidades } }));
             return true;
         });
+        if (agregado) analitica.agregar(libro, unidades);
+        return agregado;
     }
     function cantidad(id, valor) {
         const n = Number(valor);
@@ -206,6 +214,7 @@ export function TiendaProvider({ catalogo, children }) {
                 setCarrito(estado);
                 localStorage.removeItem(claveIntento);
                 setVersionIntento((v) => v + 1);
+                analitica.compra(venta, librosActuales.current);
             });
         },
         [revisando, errorSesion, claveIntento]

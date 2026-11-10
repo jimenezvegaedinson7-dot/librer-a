@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { clienteApi } from './clienteApi';
 import { libroComercial } from './libroComercial';
 import { PrecioOferta } from '../componentes/PrecioOferta';
@@ -13,6 +13,7 @@ import { FavoritoLibro, CompartirLibro } from './AccionesLibro';
 import { LibrosRelacionados, SeccionLibros } from './DescubrimientosLibro';
 import useSeoLibro from './useSeoLibro';
 import { leerLibroPublico } from '../lib/cachePublica';
+import { analitica } from '../lib/analitica';
 import './ficha-libro.css';
 
 function InformacionLibro({ libro }) {
@@ -128,6 +129,7 @@ function CargandoFicha() {
 
 export default function LibroPage() {
     const { id } = useParams();
+    const { key } = useLocation();
     const [version, setVersion] = useState(0);
     const [versionRelacionados, setVersionRelacionados] = useState(0);
     const [recomendaciones, setRecomendaciones] = useState({ id: null, libro: null, version: -1, data: null, error: false });
@@ -173,6 +175,9 @@ export default function LibroPage() {
         };
     }, [id, l, versionRelacionados]);
     const idAutor = l?.idAutor;
+    useEffect(() => {
+        if (l) analitica.libro(l, key);
+    }, [l, key]);
     useEffect(() => {
         if (!idAutor) return undefined;
         let activo = true;

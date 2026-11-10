@@ -94,4 +94,33 @@ const obtenerRelacionados = async (id) => {
     return { relacionados, mas_autor: autor.filter((l) => !usados.has(l.id_libro)).slice(0, 4), interesarte: categoria.filter((l) => !usados.has(l.id_libro)).slice(0, 4) };
 };
 
-module.exports = { PRECIO_FINAL_SQL, CAMPOS_DESCUENTO, obtenerTodos, obtenerPorId, obtenerRelacionados, crear, actualizar, eliminar };
+const obtenerRecomendados = async (idUsuario) => {
+    const [rows] = await pool.query(
+        `WITH compras AS (
+            SELECT dv.id_libro, l.id_autor, l.id_categoria, LEAST(SUM(dv.cantidad), 10)::int AS peso
+            FROM detalle_venta dv INNER JOIN ventas v ON v.id_venta = dv.id_venta INNER JOIN libros l ON l.id_libro = dv.id_libro
+            WHERE v.id_usuario = ? AND v.estado IN ('pagada', 'entregada') AND dv.cantidad > 0
+            GROUP BY dv.id_libro, l.id_autor, l.id_categoria
+        ), afinidad_autor AS (
+            SELECT id_autor, SUM(peso) AS peso FROM compras GROUP BY id_autor
+        ), afinidad_categoria AS (
+            SELECT id_categoria, SUM(peso) AS peso FROM compras GROUP BY id_categoria
+        )
+        SELECT base.*, ${CAMPOS_DESCUENTO} FROM (
+            SELECT l.id_libro, l.titulo, l.isbn, l.precio, l.portada, l.id_autor, l.id_categoria, l.estado, l.creado_en,
+                COALESCE(i.stock, l.stock, 0) AS stock, CONCAT(a.nombre, ' ', a.apellido) AS autor, c.nombre AS categoria,
+                ${PRECIO_FINAL_SQL}, COALESCE(aa.peso, 0) * 3 + COALESCE(ac.peso, 0) * 2 AS afinidad,
+                CASE WHEN aa.peso > 0 AND ac.peso > 0 THEN 'autor_categoria' WHEN aa.peso > 0 THEN 'autor' ELSE 'categoria' END AS motivo_recomendacion
+            FROM libros l INNER JOIN autores a ON a.id_autor = l.id_autor INNER JOIN categorias c ON c.id_categoria = l.id_categoria
+            LEFT JOIN inventario i ON i.id_libro = l.id_libro
+            LEFT JOIN afinidad_autor aa ON aa.id_autor = l.id_autor LEFT JOIN afinidad_categoria ac ON ac.id_categoria = l.id_categoria
+            WHERE l.estado = 1 AND COALESCE(i.stock, l.stock, 0) > 0
+                AND (COALESCE(aa.peso, 0) > 0 OR COALESCE(ac.peso, 0) > 0)
+                AND NOT EXISTS (SELECT 1 FROM compras p WHERE p.id_libro = l.id_libro)
+        ) base ORDER BY base.afinidad DESC, base.creado_en DESC NULLS LAST, base.id_libro DESC LIMIT 8`,
+        [idUsuario]
+    );
+    return rows;
+};
+
+module.exports = { PRECIO_FINAL_SQL, CAMPOS_DESCUENTO, obtenerTodos, obtenerPorId, obtenerRelacionados, obtenerRecomendados, crear, actualizar, eliminar };

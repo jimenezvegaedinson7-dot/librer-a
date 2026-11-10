@@ -9,6 +9,6 @@ export default defineConfig({
         command: 'npm run dev -- --host 127.0.0.1 --port 5179 --strictPort',
         url: 'http://127.0.0.1:5179',
         reuseExistingServer: false,
-        env: { VITE_API_URL: 'http://127.0.0.1:59999/api' }
+        env: { VITE_API_URL: 'http://127.0.0.1:59999/api', VITE_GA4_ID: '' }
     }
 });

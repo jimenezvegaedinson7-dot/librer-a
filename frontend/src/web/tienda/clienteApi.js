@@ -101,6 +101,7 @@ export const clienteApi = {
         return peticionCliente('/usuarios/foto', { method: 'PUT', body: f, sesion });
     },
     catalogo: () => peticionCliente('/libros', { autenticada: false }),
+    recomendados: (sesion) => peticionCliente('/libros/recomendados', { sesion }),
     asistente: (datos) => peticionCliente('/asistente', { method: 'POST', body: datos, autenticada: false }),
     libro: (id) => peticionCliente(`/libros/${id}`, { autenticada: false }),
     relacionados: async (id, libro) => {

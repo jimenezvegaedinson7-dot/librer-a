@@ -18,7 +18,7 @@ const VERTEX = `varying vec2 vUv; void main(){vUv=uv;gl_Position=vec4(position.x
 const FRAGMENT = `
 precision highp float;
 varying vec2 vUv;
-uniform float uTime,uAspect,uEnergy,uEntry,uExit;
+uniform float uTime,uAspect,uEnergy,uEntry,uExit,uCenter;
 uniform vec3 uPapel;
 uniform highp sampler3D uRuido;
 float fbm(vec3 p){return texture(uRuido,p*.045).r*.65+texture(uRuido,p*.093+vec3(.2)).r*.35;}
@@ -48,8 +48,17 @@ void main(){
    absorption+=density*.12;
  }
  float heart=exp(-dot(uv,uv)*9.)*uEnergy*.12;
- vec3 color=mix(base,vec3(.53,.42,.32),clamp(absorption*.13,0.,.12));
- color+=sum*.045+vec3(.12,.08,.04)*heart;
+  vec3 color=mix(base,vec3(.53,.42,.32),clamp(absorption*.13,0.,.12));
+  color+=sum*.045+vec3(.12,.08,.04)*heart;
+  vec2 centro=uv-vec2(uCenter*uAspect*(1.-uEnergy),.035);
+  float angulo=atan(centro.y,centro.x);
+  float radio=length(centro*vec2(.82,1.));
+  float onda=.035*sin(angulo*2.+uTime*.22)+.018*sin(angulo*5.-uTime*.13);
+  float trazo=exp(-pow((radio-.32-uEnergy*.24-onda)*42.,2.));
+  float velo=exp(-pow((radio-.34-uEnergy*.22-onda)*7.,2.));
+  float luz=(.5+.5*sin(angulo+uTime*.16))*uEntry*(1.-uExit);
+  color=mix(color,vec3(.69,.56,.36),trazo*luz*(.09+uEnergy*.18));
+  color=mix(color,vec3(.69,.83,.81),velo*luz*(.055+uEnergy*.16));
  float vignette=smoothstep(.25,1.3,length(uv));
  color=mix(color,base,vignette*.64);
  color=mix(color,base,uExit);
@@ -82,7 +91,8 @@ export class PortalEditorial {
             uAspect: { value: 1 },
             uEnergy: { value: 0 },
             uEntry: { value: 0 },
-            uExit: { value: 0 }
+            uExit: { value: 0 },
+            uCenter: { value: 0.17 }
         };
         this.destino = new WebGLRenderTarget(8, 8, { type: UnsignedByteType, depthBuffer: false, stencilBuffer: false });
 
@@ -105,11 +115,12 @@ export class PortalEditorial {
         this.destino.setSize(Math.max(1, w), Math.max(1, Math.round((w * alto) / ancho)));
         this.uniforms.uAspect.value = ancho / alto;
     }
-    actualizar(t, entrada, energia, salida) {
+    actualizar(t, entrada, energia, salida, compacto = false) {
         this.uniforms.uTime.value = t;
         this.uniforms.uEntry.value = entrada;
         this.uniforms.uEnergy.value = energia;
         this.uniforms.uExit.value = salida;
+        this.uniforms.uCenter.value = compacto ? 0 : 0.17;
     }
     dibujar() {
         const t = this.uniforms.uTime.value;

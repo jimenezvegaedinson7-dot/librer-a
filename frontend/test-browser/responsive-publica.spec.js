@@ -60,6 +60,26 @@ async function revisarTarjetas(page) {
                 for (const texto of tarjeta.querySelectorAll('.libro__titulo, .precio, .oferta-tarjeta__ahorro')) {
                     if (texto.getBoundingClientRect().bottom > a.top + 1) errores.push(`${tarjeta.className}: acciones sobre el contenido`);
                 }
+                if (tarjeta.matches('.oferta-tarjeta')) {
+                    const boton = acciones.querySelector('.boton--compra'),
+                        detalle = acciones.querySelector('a.compra-libro__detalle');
+                    if (boton && !boton.disabled && detalle) {
+                        const b = boton.getBoundingClientRect(),
+                            d = detalle.getBoundingClientRect(),
+                            apilado = d.top >= b.bottom - 1,
+                            espacio = apilado ? d.top - b.bottom : d.left - b.right;
+                        if (espacio < -1 || espacio > 9) errores.push('oferta: carrito y detalle deben permanecer juntos');
+                        if (getComputedStyle(boton.querySelector('.compra-libro__etiqueta')).display === 'none') errores.push('oferta: falta el texto del botón de carrito');
+                        const referencia = document.querySelector('.libro .boton--compra, .tarjeta-libro .boton--compra');
+                        if (referencia) {
+                            const actual = getComputedStyle(boton),
+                                compartido = getComputedStyle(referencia);
+                            for (const propiedad of ['borderRadius', 'backgroundColor', 'color', 'minHeight']) {
+                                if (actual[propiedad] !== compartido[propiedad]) errores.push(`oferta: estilo de carrito distinto en ${propiedad}`);
+                            }
+                        }
+                    }
+                }
             }
         }
         return errores;
@@ -88,6 +108,21 @@ for (const [width, height] of [
         await page.goto('/');
         await expect(page.locator('.oferta-tarjeta')).toHaveCount(12);
         await revisarTarjetas(page);
+        if ([390, 1440].includes(width)) {
+            await page
+                .locator('.oferta-tarjeta')
+                .first()
+                .getByRole('link', { name: `Ver detalle de ${libros[0].titulo}`, exact: true })
+                .click();
+            await expect(page).toHaveURL(/\/libro\/1$/);
+            await page.goto('/');
+            await page
+                .locator('.oferta-tarjeta')
+                .first()
+                .getByRole('button', { name: `Agregar ${libros[0].titulo} al carrito`, exact: true })
+                .click();
+            await expect(page.locator('.compra-carrito')).toHaveAttribute('aria-label', 'Carrito (1)');
+        }
         if (width <= 640) {
             for (const selector of ['.categorias__rejilla', '.ofertas__carrusel']) {
                 const pista = page.locator(selector);
@@ -101,9 +136,9 @@ for (const [width, height] of [
             }
         }
         if (width <= 900) {
-            const reciente = await page.locator('.portada-ligera__recientes li a').first().boundingBox();
+            const reciente = await page.locator('.portada-unica__recientes .portada3d__apilar-link').first().boundingBox();
             expect(reciente.width).toBeLessThanOrEqual(width / 2);
-            const carrusel = page.locator('.portada-ligera__recientes ul');
+            const carrusel = page.locator('.portada-unica__rejilla');
             const antes = await carrusel.evaluate((e) => e.scrollLeft);
             await carrusel.evaluate((e) => e.scrollBy({ left: e.clientWidth, behavior: 'instant' }));
             expect(await carrusel.evaluate((e) => e.scrollLeft)).toBeGreaterThan(antes);
@@ -124,6 +159,7 @@ for (const [width, height] of [
             .first()
             .getByRole('button', { name: /Agregar/ })
             .click();
+        await expect(page.locator('.compra-carrito')).toHaveAttribute('aria-label', /Carrito \([1-9]\d*\)/);
         await page.goto('/carrito');
         await expect(page.locator('main')).toContainText('Cien años de soledad');
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

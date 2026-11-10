@@ -31,9 +31,9 @@ test('el libro de respaldo aparece aunque el catálogo llegue después del 404',
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await preparar(page, 1000);
     await expect(page.locator('.portada3d__libro-titulo')).toHaveText('Lectura 8');
-    await expect(page.locator('.portada3d__estatica-libro img')).toBeVisible();
-    await expect(page.locator('.portada3d__apilar-item')).toHaveCount(5);
-    const posiciones = await page.locator('.portada3d__apilar-item').evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().left)));
+    await expect(page.locator('.portada-unica__cubierta img')).toBeVisible();
+    await expect(page.locator('.portada-unica__reciente')).toHaveCount(5);
+    const posiciones = await page.locator('.portada-unica__reciente').evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().left)));
     expect(new Set(posiciones).size).toBe(5);
 });
 
@@ -62,15 +62,11 @@ test('móvil ofrece cinco libros desplazables sin desbordar la página', async (
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await preparar(page);
-    const carrusel = page.locator('.portada3d__apilar-carrusel');
-    await expect(carrusel.locator('li')).toHaveCount(5);
+    const carrusel = page.locator('.portada-unica__rejilla');
+    await expect(carrusel.getByRole('listitem')).toHaveCount(5);
     await carrusel.scrollIntoViewIfNeeded();
-    const medidas = await carrusel.evaluate((el) => ({
-        desplazable: el.scrollWidth > el.clientWidth,
-        pagina: document.documentElement.scrollWidth <= innerWidth,
-        display: getComputedStyle(el.querySelector('ul')).display
-    }));
-    expect(medidas).toEqual({ desplazable: true, pagina: true, display: 'flex' });
+    const medidas = await carrusel.evaluate((el) => ({ desplazable: el.scrollWidth > el.clientWidth, pagina: document.documentElement.scrollWidth <= innerWidth }));
+    expect(medidas).toEqual({ desplazable: true, pagina: true });
     await carrusel.evaluate((el) => {
         el.scrollLeft = el.scrollWidth;
     });
@@ -102,7 +98,7 @@ for (const width of [1024, 1440]) {
             descuento_porcentaje_efectivo: 10
         }));
         await preparar(page, 0, false, largos);
-        const escena = page.locator('.portada3d__apilar');
+        const escena = page.locator('.portada-unica__rejilla');
         await escena.scrollIntoViewIfNeeded();
         const medidas = await escena.evaluate((el) =>
             [...el.children].map((card) => {

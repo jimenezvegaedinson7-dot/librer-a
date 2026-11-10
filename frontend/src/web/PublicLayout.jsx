@@ -21,6 +21,7 @@ import './componentes/public-footer.css';
 import './estilos/responsive-movil.css';
 import './estilos/limpia.css';
 import AsistenteTienda from './asistente/AsistenteTienda';
+import { analitica } from './lib/analitica';
 
 function metadatos(ruta) {
     const pagina = PAGINAS[ruta] || (ruta.startsWith('/libro/') ? PAGINAS['/libro'] : PAGINAS['/']);
@@ -33,7 +34,7 @@ export default function PublicLayout() {
     const reducido = useMovimientoReducido();
     const pagina = useRef(null);
     const rutaPrevia = useRef(null);
-    const { pathname, hash } = useLocation();
+    const { pathname, hash, key } = useLocation();
 
     const catalogo = useCatalogo(null, !pathname.startsWith('/libro/'));
     const legal = useEmpresa();
@@ -41,6 +42,11 @@ export default function PublicLayout() {
     useEffect(() => {
         iniciarCacheRecursos();
     }, []);
+
+    useEffect(() => {
+        const pagina = PAGINAS[pathname] || (pathname.startsWith('/libro/') ? PAGINAS['/libro'] : PAGINAS['/']);
+        analitica.pagina(pagina.titulo, `${key}:${pathname}`);
+    }, [key, pathname]);
 
     useEffect(() => {
         metadatos(pathname);

@@ -117,7 +117,7 @@ function FavoritosCliente({ t }) {
                                         </p>
                                         {l.disponible && (
                                             <div className="favorito__acciones">
-                                                <ComprarLibro libro={l} />
+                                                <ComprarLibro libro={l} enlaceDetalle />
                                             </div>
                                         )}
                                     </div>

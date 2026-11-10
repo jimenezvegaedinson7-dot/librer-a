@@ -423,4 +423,17 @@ const obtenerRelacionados = async (req, res) => {
     }
 };
 
-module.exports = { obtenerLibros, obtenerLibro, obtenerRelacionados, crearLibro, actualizarLibro, eliminarLibro };
+const obtenerRecomendados = async (req, res) => {
+    res.set('Cache-Control', 'private, no-store');
+    const id = validarId(req.usuario?.id_usuario);
+    if (!id) return res.status(401).json({ success: false, mensaje: 'Inicia sesión para consultar tus recomendaciones.' });
+    try {
+        const libros = await libroModel.obtenerRecomendados(id);
+        return res.json({ success: true, data: libros.map(conPortadaCatalogo) });
+    } catch (error) {
+        console.error('Error al obtener recomendaciones de compras:', error.message);
+        return res.status(500).json({ success: false, mensaje: 'No se pudieron cargar las recomendaciones de tus compras.' });
+    }
+};
+
+module.exports = { obtenerLibros, obtenerLibro, obtenerRelacionados, obtenerRecomendados, crearLibro, actualizarLibro, eliminarLibro };
