@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { crearAnalitica, itemAnalitica } from '../src/web/lib/analitica.js';
+import { crearAnalitica, itemAnalitica, resolverMedicion } from '../src/web/lib/analitica.js';
 
 const libro = { id: 7, titulo: 'Lecturas de prueba', autor: 'Autora pública', categoria: 'Novela', precioFinal: 35.55, email: 'no-exportar@example.test', token: 'privado' };
 const venta = {
@@ -13,6 +13,21 @@ const venta = {
     cliente_documento: '12345678',
     detalle: [{ id_libro: 7, titulo: libro.titulo, precio_unitario: '25.00', cantidad: 3 }]
 };
+
+test('la propiedad oficial solo se activa automáticamente en el dominio de producción', () => {
+    for (const hostname of ['libreria.my', 'www.libreria.my']) {
+        assert.equal(resolverMedicion({ produccion: true, hostname }), 'G-5SG4L6QMEN');
+        assert.equal(resolverMedicion({ produccion: false, hostname }), '');
+    }
+    for (const hostname of ['localhost', '127.0.0.1', 'librer-a-zeta.vercel.app', 'preview.vercel.app', 'libreria.my.otro.test']) {
+        assert.equal(resolverMedicion({ produccion: true, hostname }), '');
+    }
+});
+
+test('la configuración de Vercel permite cambiar el flujo o desactivarlo con un valor vacío', () => {
+    assert.equal(resolverMedicion({ configurada: ' G-TEST123456 ', produccion: true, hostname: 'libreria.my' }), 'G-TEST123456');
+    assert.equal(resolverMedicion({ configurada: '', produccion: true, hostname: 'libreria.my' }), '');
+});
 function entorno({ medicion = 'G-TEST123456', privacidad = false, bloquear = false } = {}) {
     const almacen = new Map();
     const scripts = [];

@@ -2,15 +2,17 @@
 
 ## Activar Google Analytics
 
-1. Crea o abre tu propiedad en [Google Analytics](https://analytics.google.com/).
-2. En **Administrar → Flujos de datos → Web**, registra el dominio público de la librería.
-3. Copia el **ID de medición**, que comienza por `G-`.
-4. En el proyecto del frontend en **Vercel → Settings → Environment Variables**, crea `VITE_GA4_ID` con ese ID. Actívalo en los entornos que quieras medir.
-5. Vuelve a desplegar el frontend: Vite incorpora estas variables al construir la aplicación.
+El flujo confirmado por el propietario es **libreria**, con ID de flujo **16313005114** e ID de medición **G-5SG4L6QMEN**. El ID de medición es público y está incorporado como configuración de producción para `libreria.my` y `www.libreria.my`.
+
+Después de desplegar esta versión, GA4 utiliza ese flujo automáticamente en esos dominios si `VITE_GA4_ID` no está definida. No utiliza ese valor automático en desarrollo, localhost ni dominios de preview de Vercel.
+
+Para administrar el valor desde Vercel, crea `VITE_GA4_ID=G-5SG4L6QMEN` en **Settings → Environment Variables → Production** y vuelve a desplegar el frontend. Esa variable tiene prioridad sobre el valor incorporado. Un valor explícitamente vacío desactiva la medición; si ya existe vacío en Vercel, complétalo con el ID o elimina la variable para usar el valor de producción.
+
+En **Google Analytics → Administrar → Flujos de datos → libreria**, utiliza `https://libreria.my` como URL del flujo para que coincida con el dominio HTTPS de la tienda.
 
 Para desarrollo local, completa `VITE_GA4_ID` en tu configuración local de Vite y reinicia el servidor. `.env.example` contiene los nombres de las variables, sin una propiedad de Google inventada.
 
-Con un ID vacío o inválido no se descarga `gtag.js` ni se encolan eventos. Las recomendaciones de libros funcionan independientemente de esta configuración.
+Con un ID explícitamente vacío o inválido no se descarga `gtag.js` ni se encolan eventos. Las recomendaciones de libros funcionan independientemente de esta configuración.
 
 En el flujo Web de GA4, desactiva la **medición mejorada automática**: la integración de React controla las vistas y los eventos comerciales. Así se evitan vistas duplicadas por cambios de historial y la captura automática de interacciones de formularios. No instales otra etiqueta GA4 para la misma propiedad sobre esta integración.
 

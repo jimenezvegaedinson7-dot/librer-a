@@ -2,6 +2,11 @@ const texto = (valor) => (typeof valor === 'string' ? valor.trim().slice(0, 100)
 const dinero = (valor) => Math.round(Number(valor) * 100) / 100;
 const total = (items) => items.reduce((suma, item) => suma + Math.round(item.price * 100) * item.quantity, 0) / 100;
 
+export function resolverMedicion({ configurada, produccion, hostname }) {
+    if (typeof configurada === 'string') return configurada.trim();
+    return produccion && ['libreria.my', 'www.libreria.my'].includes(hostname) ? 'G-5SG4L6QMEN' : '';
+}
+
 export function itemAnalitica(libro, cantidad = 1) {
     const id = Number(libro?.id ?? libro?.id_libro);
     const precio = Number(libro?.precio_unitario ?? libro?.precioFinal ?? libro?.precio_final ?? libro?.precio);
@@ -137,7 +142,11 @@ export function crearAnalitica({ medicion, ventana, depurar = false }) {
 }
 
 export const analitica = crearAnalitica({
-    medicion: import.meta.env?.VITE_GA4_ID || '',
+    medicion: resolverMedicion({
+        configurada: import.meta.env?.VITE_GA4_ID,
+        produccion: import.meta.env?.PROD,
+        hostname: typeof window === 'undefined' ? '' : window.location.hostname
+    }),
     depurar: import.meta.env?.VITE_GA4_DEBUG === 'true',
     ventana: typeof window === 'undefined' ? null : window
 });
