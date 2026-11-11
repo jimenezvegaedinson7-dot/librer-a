@@ -224,8 +224,7 @@ class _InicioTabState extends State<_InicioTab> {
     return 'Buenas noches';
   }
 
-  /// Cabecera de bienvenida sobre el fondo: saludo editorial, nombre,
-  /// logo de la casa y, debajo, el buscador destacado.
+  /// Cabecera de bienvenida con saludo, nombre y buscador destacado.
   Widget _buildCabecera(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
@@ -265,13 +264,6 @@ class _InicioTabState extends State<_InicioTab> {
                     overflow: TextOverflow.ellipsis,
                     style: textTheme.headlineMedium?.copyWith(height: 1.2),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Image.asset(
-                  Constants.logoAsset,
-                  width: 64,
-                  height: 46,
-                  fit: BoxFit.contain,
                 ),
               ],
             ),

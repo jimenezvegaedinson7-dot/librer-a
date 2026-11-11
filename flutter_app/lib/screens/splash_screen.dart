@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/storage_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
+import '../utils/app_tokens.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/estanteria.dart';
 import 'home_screen.dart';
@@ -30,7 +31,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _init() async {
     if (_cargando) return;
-    setState(() { _cargando = true; _error = null; });
+    setState(() {
+      _cargando = true;
+      _error = null;
+    });
     // Pequeña pausa para que el splash se vea de forma natural sin saltos.
     await Future<void>.delayed(const Duration(milliseconds: 400));
 
@@ -49,7 +53,10 @@ class _SplashScreenState extends State<SplashScreen> {
         _goToLogin();
         return;
       }
-      await StorageService.instance.guardarUsuario(perfil, generacionEsperada: generacion);
+      await StorageService.instance.guardarUsuario(
+        perfil,
+        generacionEsperada: generacion,
+      );
       // Recupera el resultado de compras pendientes antes de permitir otra.
       await ApiService.instance.obtenerMisVentas();
       if (generacion != StorageService.instance.generacion || !mounted) return;
@@ -59,7 +66,10 @@ class _SplashScreenState extends State<SplashScreen> {
       setState(() => _error = e.message);
     } catch (_) {
       if (mounted && generacion == StorageService.instance.generacion) {
-        setState(() => _error = 'No pudimos comprobar tu sesión. Revisa tu conexión y reintenta.');
+        setState(
+          () => _error =
+              'No pudimos comprobar tu sesión. Revisa tu conexión y reintenta.',
+        );
       }
     } finally {
       if (mounted) setState(() => _cargando = false);
@@ -85,17 +95,28 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     if (_error != null) {
-      return Scaffold(body: SafeArea(child: Center(child: Padding(
-        padding: const EdgeInsets.all(24), child: Column(
-          mainAxisSize: MainAxisSize.min, children: [
-            const AppLogo(width: 104, height: 104),
-            const SizedBox(height: 24), Text(_error!, textAlign: TextAlign.center),
-            const SizedBox(height: 16), FilledButton(
-              onPressed: _cargando ? null : _init, child: const Text('Reintentar'),
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const AppLogo(width: 104, height: 104),
+                  const SizedBox(height: 24),
+                  Text(_error!, textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: _cargando ? null : _init,
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
-      ))));
+      );
     }
     return Scaffold(
       body: DecoratedBox(
@@ -191,23 +212,23 @@ class _SplashScreenState extends State<SplashScreen> {
                           letterSpacing: -0.4,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Container(
-                        width: 36,
-                        height: 2,
-                        decoration: BoxDecoration(
-                          color: AppColors.doradoClaro,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
                       const SizedBox(height: 40),
-                      const SizedBox(
-                        width: 26,
-                        height: 26,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          strokeCap: StrokeCap.round,
-                          color: AppColors.doradoClaro,
+                      SizedBox(
+                        width: 34,
+                        height: 34,
+                        child: Semantics(
+                          label: 'Cargando MATIDANA',
+                          child: ExcludeSemantics(
+                            child: CircularProgressIndicator(
+                              value: reducirMovimiento(context) ? 0.72 : null,
+                              strokeWidth: 3,
+                              strokeCap: StrokeCap.round,
+                              color: AppColors.doradoClaro,
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.16,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
