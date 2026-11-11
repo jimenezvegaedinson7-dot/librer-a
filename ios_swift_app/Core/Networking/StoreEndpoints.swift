@@ -33,12 +33,6 @@ extension APIEndpoint where Response == APIStatusPayload {
         .init(method: .delete, pathComponents: ["api", "favoritos", String(bookID)])
     }
 
-    // MARK: Reservas
-
-    static func cancelReservation(id: Int) -> Self {
-        .init(method: .delete, pathComponents: ["api", "reservas", String(id)])
-    }
-
     // MARK: Cuenta (sin sesión)
 
     static func verifyEmail(_ body: VerifyEmailRequest) -> Self {
@@ -100,30 +94,12 @@ extension APIEndpoint where Response == ResetTokenResponse {
     }
 }
 
-extension APIEndpoint where Response == CreatedReservation {
-    static func createReservation(_ body: CreateReservationRequest) -> Self {
-        .init(method: .post, pathComponents: ["api", "reservas"], body: AnyEncodable(body))
-    }
-}
-
 // MARK: - Envío y pago
 
 extension APIEndpoint where Response == APIResponse<[DeliveryZone]> {
     /// Zonas de delivery de Pallasca.
     static var deliveryZones: Self {
         .init(method: .get, pathComponents: ["api", "zonas-delivery"])
-    }
-}
-
-extension APIEndpoint where Response == APIResponse<[Province]> {
-    static var provinces: Self {
-        .init(method: .get, pathComponents: ["api", "ubicaciones", "provincias"])
-    }
-}
-
-extension APIEndpoint where Response == APIResponse<[District]> {
-    static func districts(provinceID: Int) -> Self {
-        .init(method: .get, pathComponents: ["api", "ubicaciones", "provincias", String(provinceID), "distritos"])
     }
 }
 

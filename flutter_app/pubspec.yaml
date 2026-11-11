@@ -1,5 +1,5 @@
 name: libreria_app
-description: "A new Flutter project."
+description: "Aplicación de clientes MATIDANA para catálogo y compras con PayU."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -31,9 +31,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.9
   dio: ^5.11.0
   shared_preferences: ^2.5.5
   image_picker: ^1.1.2
@@ -72,7 +69,6 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
-    - assets/logo_suerior/
     - assets/sonidos/
     - assets/fonts/OFL-Inter.txt
     - assets/fonts/OFL-SourceSerif4.txt

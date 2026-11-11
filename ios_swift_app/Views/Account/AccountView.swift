@@ -5,7 +5,6 @@ struct AccountView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: StoreRouter
     @EnvironmentObject private var themeStore: ThemeStore
-    @State private var showPurchases = false
     @State private var showSecurity = false
     @State private var confirmLogout = false
     @State private var showPhotoOptions = false
@@ -59,13 +58,6 @@ struct AccountView: View {
                 case .backgrounds: BackgroundsView()
                 case .complaints: ComplaintsBookView()
                 }
-            }
-            .sheet(isPresented: $showPurchases) {
-                PurchasesView(
-                    purchaseService: appState.purchaseService,
-                    purchaseDetailService: appState.purchaseService,
-                    paymentService: appState.paymentService
-                )
             }
             .sheet(isPresented: $showSecurity) { SecurityView() }
             .sheet(isPresented: $showCustomTheme) {
@@ -151,8 +143,7 @@ struct AccountView: View {
 
     private var quickAccess: some View {
         HStack(spacing: 12) {
-            quick("Mis compras", "doc.text") { showPurchases = true }
-            quick("Mis reservas", "bookmark") { router.selectedTab = .reservations }
+            quick("Mis compras", "doc.text") { router.selectedTab = .purchases }
             NavigationLink(value: AccountRoute.favorites) { quickLabel("Mis favoritos", "heart") }
                 .buttonStyle(.plain)
         }

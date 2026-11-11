@@ -59,45 +59,6 @@ struct DeliveryZone: Codable, Identifiable, Hashable {
     var usable: Bool { activa && idZona > 0 && tarifa.isFinite && tarifa > 0 }
 }
 
-// MARK: - Ubicaciones
-
-struct Province: Codable, Identifiable, Hashable {
-    let idProvincia: Int
-    let nombre: String
-    var id: Int { idProvincia }
-
-    enum CodingKeys: String, CodingKey {
-        case idProvincia = "id_provincia"
-        case nombre
-    }
-
-    init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        idProvincia = try c.decodeFlexibleInt(forKey: .idProvincia)
-        nombre = try c.decodeFlexibleStringIfPresent(forKey: .nombre) ?? ""
-    }
-}
-
-struct District: Codable, Identifiable, Hashable {
-    let idDistrito: Int
-    let nombre: String
-    let tarifaEnvio: Double
-    var id: Int { idDistrito }
-
-    enum CodingKeys: String, CodingKey {
-        case idDistrito = "id_distrito"
-        case nombre
-        case tarifaEnvio = "tarifa_envio"
-    }
-
-    init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        idDistrito = try c.decodeFlexibleInt(forKey: .idDistrito)
-        nombre = try c.decodeFlexibleStringIfPresent(forKey: .nombre) ?? ""
-        tarifaEnvio = (try? c.decodeFlexibleDoubleIfPresent(forKey: .tarifaEnvio)) ?? 0
-    }
-}
-
 // MARK: - Pago
 
 struct CheckoutItemRequest: Encodable {
@@ -201,7 +162,7 @@ struct OrderState: Decodable {
     }
 }
 
-// MARK: - Favoritos y reservas
+// MARK: - Favoritos
 
 struct FavoriteState: Decodable {
     let isFavorite: Bool
@@ -213,27 +174,6 @@ struct FavoriteState: Decodable {
         let root = try decoder.container(keyedBy: RootKeys.self)
         let data = try? root.nestedContainer(keyedBy: DataKeys.self, forKey: .data)
         isFavorite = (try? data?.decodeFlexibleBoolIfPresent(forKey: .esFavorito)) ?? false
-    }
-}
-
-struct CreateReservationRequest: Encodable {
-    let idLibro: Int
-    let cantidad: Int
-
-    enum CodingKeys: String, CodingKey {
-        case idLibro = "id_libro"
-        case cantidad
-    }
-}
-
-struct CreatedReservation: Decodable {
-    let idReserva: Int?
-
-    enum CodingKeys: String, CodingKey { case idReserva = "id_reserva" }
-
-    init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        idReserva = try? c.decodeFlexibleIntIfPresent(forKey: .idReserva)
     }
 }
 

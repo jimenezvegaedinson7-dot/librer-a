@@ -9,11 +9,11 @@ struct PurchaseListRow: View {
                 Text("Compra #\(purchase.idVenta)")
                     .font(.headline)
                 Spacer()
-                Text(HomeFormatters.pen(purchase.total))
+                Text(PurchaseFormatters.pen(purchase.total))
                     .fontWeight(.semibold)
             }
 
-            Text(HomeFormatters.dateTime(purchase.fechaVenta))
+            Text(PurchaseFormatters.dateTime(purchase.fechaVenta))
                 .font(.subheadline)
                 .foregroundStyle(Brand.textoSecundario)
 

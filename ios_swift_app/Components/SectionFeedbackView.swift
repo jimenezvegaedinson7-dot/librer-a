@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct HomeSectionFeedbackView: View {
+struct SectionFeedbackView: View {
     let message: String
     let systemImage: String
     let retryAction: (() -> Void)?

@@ -5,7 +5,7 @@ enum MainTab: Hashable {
     case home
     case catalog
     case cart
-    case reservations
+    case purchases
     case profile
 }
 
@@ -16,8 +16,6 @@ final class StoreRouter: ObservableObject {
     @Published var selectedTab: MainTab = .home
     @Published var catalogCategory: String?
     @Published var focusCatalogSearch = false
-    /// Aumenta para pedir a Reservas que recargue (tras reservar un libro).
-    @Published var reservationsVersion = 0
 
     func openCatalog(category: String? = nil, search: Bool = false) {
         catalogCategory = category
@@ -49,9 +47,13 @@ struct MainView: View {
                 .badge(cart.totalUnits)
                 .tag(MainTab.cart)
 
-            MyReservationsView()
-                .tabItem { Label("Reservas", systemImage: "bookmark") }
-                .tag(MainTab.reservations)
+            PurchasesView(
+                purchaseService: appState.purchaseService,
+                purchaseDetailService: appState.purchaseService,
+                paymentService: appState.paymentService
+            )
+                .tabItem { Label("Mis compras", systemImage: "bag") }
+                .tag(MainTab.purchases)
 
             AccountView()
                 .tabItem { Label("Perfil", systemImage: "person") }

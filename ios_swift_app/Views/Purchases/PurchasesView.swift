@@ -41,11 +41,11 @@ struct PurchasesView: View {
                     "No tienes compras todavía",
                     systemImage: "bag",
                     description: Text(
-                        "Las compras realizadas desde la aplicación principal aparecerán aquí."
+                        "Las compras de tu cuenta aparecerán aquí."
                     )
                 )
             case .error(let message):
-                HomeSectionFeedbackView(
+                SectionFeedbackView(
                     message: message,
                     systemImage: "exclamationmark.circle",
                     retryAction: { Task { await viewModel.refresh() } }
@@ -59,7 +59,7 @@ struct PurchasesView: View {
                         .padding(.vertical, 8)
                 }
                 if case .error(let message) = viewModel.state {
-                    HomeSectionFeedbackView(
+                    SectionFeedbackView(
                         message: message,
                         systemImage: "exclamationmark.circle",
                         retryAction: { Task { await viewModel.refresh() } }

@@ -55,7 +55,7 @@ struct PurchaseDetailView: View {
         case .idle, .loading:
             ProgressView("Cargando detalle…")
         case .error(let message):
-            HomeSectionFeedbackView(
+            SectionFeedbackView(
                 message: message,
                 systemImage: "exclamationmark.circle",
                 retryAction: { Task { await viewModel.reload() } }
@@ -73,7 +73,7 @@ struct PurchaseDetailView: View {
                     ProgressView("Actualizando compra…")
                 }
                 if case .error(let message) = viewModel.purchaseState {
-                    HomeSectionFeedbackView(
+                    SectionFeedbackView(
                         message: message,
                         systemImage: "exclamationmark.circle",
                         retryAction: { Task { await viewModel.reload() } }
@@ -108,7 +108,7 @@ struct PurchaseDetailView: View {
 
     private func summarySection(_ purchase: Purchase) -> some View {
         PurchaseDetailSection(title: "Resumen", systemImage: "doc.text") {
-            LabeledContent("Fecha", value: HomeFormatters.dateTime(purchase.fechaVenta))
+            LabeledContent("Fecha", value: PurchaseFormatters.dateTime(purchase.fechaVenta))
             HStack {
                 Text("Estado")
                 Spacer()
@@ -117,15 +117,15 @@ struct PurchaseDetailView: View {
             if !purchase.details.isEmpty {
                 LabeledContent(
                     "Subtotal",
-                    value: HomeFormatters.pen(
+                    value: PurchaseFormatters.pen(
                         purchase.details.reduce(0) { $0 + $1.subtotal }
                     )
                 )
             }
             if let shippingCost = purchase.costoEnvio {
-                LabeledContent("Costo de envío", value: HomeFormatters.pen(shippingCost))
+                LabeledContent("Costo de envío", value: PurchaseFormatters.pen(shippingCost))
             }
-            LabeledContent("Total", value: HomeFormatters.pen(purchase.total))
+            LabeledContent("Total", value: PurchaseFormatters.pen(purchase.total))
                 .fontWeight(.semibold)
         }
     }
@@ -208,11 +208,11 @@ struct PurchaseDetailView: View {
                         LabeledContent("Cantidad", value: String(detail.cantidad))
                         LabeledContent(
                             "Precio unitario",
-                            value: HomeFormatters.pen(detail.precioUnitario)
+                            value: PurchaseFormatters.pen(detail.precioUnitario)
                         )
                         LabeledContent(
                             "Subtotal",
-                            value: HomeFormatters.pen(detail.subtotal)
+                            value: PurchaseFormatters.pen(detail.subtotal)
                         )
                     }
                     .accessibilityElement(children: .combine)
@@ -278,7 +278,7 @@ struct PurchaseDetailView: View {
             LabeledContent("Método", value: method)
         }
         if let date = payment.paymentDate {
-            LabeledContent("Fecha", value: HomeFormatters.dateTime(date))
+            LabeledContent("Fecha", value: PurchaseFormatters.dateTime(date))
         }
         if let paymentID = payment.paymentID {
             LabeledContent("ID de pago", value: paymentID)
@@ -292,7 +292,7 @@ struct PurchaseDetailView: View {
     }
 
     private func paymentError(_ message: String) -> some View {
-        HomeSectionFeedbackView(
+        SectionFeedbackView(
             message: message,
             systemImage: "exclamationmark.circle",
             retryAction: { Task { await viewModel.retryPayment() } }
@@ -326,7 +326,7 @@ struct PurchaseDetailView: View {
                 LabeledContent("Agencia", value: agency)
             }
             if let shippingCost = purchase.costoEnvio {
-                LabeledContent("Costo de envío", value: HomeFormatters.pen(shippingCost))
+                LabeledContent("Costo de envío", value: PurchaseFormatters.pen(shippingCost))
             }
             if !hasDeliveryInformation(purchase) {
                 Text("No hay información adicional de entrega.")

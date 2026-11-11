@@ -23,10 +23,8 @@ final class AppState: ObservableObject, SessionExpirationHandling {
     @Published private(set) var biometricAvailability: BiometricAvailability
 
     let authService: AuthService
-    let activityService: ActivityService
     let purchaseService: PurchaseService
     let paymentService: PaymentService
-    let reservationService: ReservationService
     let catalogService: CatalogService
     let favoritesService: FavoritesService
     let checkoutService: CheckoutService
@@ -67,10 +65,8 @@ final class AppState: ObservableObject, SessionExpirationHandling {
         biometricAvailability = biometricService.availability()
         authService = AuthService(client: client)
         profileService = ProfileService(client: client)
-        activityService = ActivityService(client: client)
         purchaseService = PurchaseService(client: client)
         paymentService = PaymentService(client: client)
-        reservationService = ReservationService(client: client)
         catalogService = CatalogService(client: client)
         favoritesService = FavoritesService(client: client)
         checkoutService = CheckoutService(client: client)
