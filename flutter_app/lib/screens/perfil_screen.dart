@@ -270,12 +270,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
   /// Muestra el selector de foto: avatar predefinido, galería o cámara.
   Future<void> _cambiarFoto() async {
     if (_subiendoFoto) return;
+    final foto = _usuario?.fotoPerfil;
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       backgroundColor: _profileSurface,
       builder: (sheetContext) => SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -293,6 +295,21 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     ?.copyWith(color: _profileMuted),
               ),
               const SizedBox(height: 16),
+              if (foto != null && foto.trim().isNotEmpty)
+                _SheetOption(
+                  icon: Icons.visibility_outlined,
+                  label: 'Ver imagen',
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    Navigator.of(context).push<void>(
+                      MaterialPageRoute<void>(
+                        builder: (_) => _FotoPerfilScreen(
+                          url: Constants.buildPerfilUrl(foto),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               _SheetOption(
                 icon: Icons.face_rounded,
                 label: 'Elegir avatar',
@@ -566,20 +583,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'TU CUENTA',
-                              style: textTheme.labelMedium?.copyWith(
-                                color: AppColors.gold,
-                                letterSpacing: 1.5,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text('Mi perfil', style: textTheme.headlineMedium),
-                          ],
+                        child: Text(
+                          'Mi perfil',
+                          style: textTheme.headlineMedium,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -856,7 +862,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final tinta = _tema.textColor;
     final foto = Semantics(
       button: true,
-      label: 'Cambiar foto de perfil',
+      label: 'Opciones de foto de perfil',
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -905,7 +911,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          usuario?.nombreCompleto ?? 'Tu cuenta',
+          usuario?.nombreCompleto ?? 'Mi perfil',
           key: const ValueKey('nombre-perfil'),
           style: AppTheme.serif(fontSize: 22, color: tinta, height: 1.2),
         ),
@@ -920,7 +926,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
         ),
         const SizedBox(height: 10),
         Text(
-          'Toca la foto para actualizarla',
+          usuario?.fotoPerfil?.trim().isNotEmpty == true
+              ? 'Toca la foto para verla o cambiarla'
+              : 'Toca la foto para actualizarla',
           style: textTheme.labelSmall?.copyWith(
             color: tinta.withValues(alpha: 0.9),
           ),
@@ -1316,6 +1324,68 @@ class _Avatar extends StatelessWidget {
       child: circulo,
     );
   }
+}
+
+class _FotoPerfilScreen extends StatefulWidget {
+  final String url;
+  const _FotoPerfilScreen({required this.url});
+
+  @override
+  State<_FotoPerfilScreen> createState() => _FotoPerfilScreenState();
+}
+
+class _FotoPerfilScreenState extends State<_FotoPerfilScreen> {
+  int _intento = 0;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Foto de perfil')),
+    body: SafeArea(
+      child: Column(
+        children: [
+          Expanded(
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 5,
+              child: SizedBox.expand(
+                child: Image.network(
+                  widget.url,
+                  key: ValueKey(_intento),
+                  fit: BoxFit.contain,
+                  semanticLabel: 'Foto de perfil ampliada',
+                  loadingBuilder: (context, child, progreso) => progreso == null
+                      ? child
+                      : const Center(child: CircularProgressIndicator()),
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.broken_image_outlined, size: 48),
+                          const SizedBox(height: 12),
+                          const Text('No se pudo cargar la foto.'),
+                          TextButton.icon(
+                            onPressed: () => setState(() => _intento++),
+                            icon: const Icon(Icons.refresh_rounded),
+                            label: const Text('Reintentar'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text('Separa dos dedos para ampliar la imagen.'),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _Iniciales extends StatelessWidget {

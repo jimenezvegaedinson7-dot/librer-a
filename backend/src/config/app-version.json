@@ -1,8 +1,8 @@
 {
-    "version": "1.0.25",
-    "versionCode": 26,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.25/libreria-1.0.25.apk",
-    "sha256": "4e990670e4049c3dfaed8466a150d36b159489ba2311731b16b8a54a7b4a7ba5",
+    "version": "1.0.26",
+    "versionCode": 27,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.26/libreria-1.0.26.apk",
+    "sha256": "6e62d413e6d49d90aa9d9248a5f6233f45aae77f24c4ed374cf7595dc0b209b7",
     "obligatoria": false,
-    "notas": "Inicio con más espacio para el saludo, sin el logo adicional de la esquina. Pantalla de carga sin separador amarillo y con indicador circular más visible, etiqueta accesible y soporte de reducción de movimiento. Limpieza de recursos duplicados."
+    "notas": "Perfil con un único título y opción Ver imagen para ampliar la foto. Vista previa interactiva de fondos y tarjetas con detalles, favoritos de demostración y modo de pantalla completa. La combinación se guarda únicamente al pulsar Aplicar."
 }

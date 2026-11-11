@@ -18,6 +18,41 @@ class _FondosScreenState extends State<FondosScreen> {
   bool _guardando = false;
   bool get _cambio => _seleccion.id != TemaController.instance.fondo.id;
 
+  void _verPrevia() {
+    final fondo = _seleccion;
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => Scaffold(
+          backgroundColor: fondo.fondo,
+          appBar: AppBar(
+            title: const Text('Vista previa'),
+            backgroundColor: fondo.fondo,
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    fondo.nombre,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Prueba las tarjetas y los favoritos. Esta vista no modifica tu cuenta ni guarda la combinación.',
+                  ),
+                  const SizedBox(height: 16),
+                  _VistaPrevia(fondo: fondo),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _aplicar() async {
     if (!_cambio || _guardando) return;
     setState(() => _guardando = true);
@@ -110,31 +145,41 @@ class _FondosScreenState extends State<FondosScreen> {
                     color: AppColors.surface,
                     border: Border(top: BorderSide(color: AppColors.divider)),
                   ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: _cambio && !_guardando ? _aplicar : null,
-                      icon: _guardando
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.check_rounded, size: 20),
-                      label: Text(
-                        _cambio
-                            ? 'Aplicar «${_seleccion.nombre}»'
-                            : 'Este es tu fondo actual',
-                        textAlign: TextAlign.center,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextButton.icon(
+                        onPressed: _guardando ? null : _verPrevia,
+                        icon: const Icon(Icons.visibility_outlined),
+                        label: const Text('Ver vista previa'),
                       ),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(0, 52),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
+                      FilledButton.icon(
+                        onPressed: _cambio && !_guardando ? _aplicar : null,
+                        icon: _guardando
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.check_rounded, size: 20),
+                        label: Text(
+                          _cambio
+                              ? 'Aplicar «${_seleccion.nombre}»'
+                              : 'Este es tu fondo actual',
+                          textAlign: TextAlign.center,
+                        ),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 52),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -146,12 +191,21 @@ class _FondosScreenState extends State<FondosScreen> {
   }
 }
 
-class _VistaPrevia extends StatelessWidget {
+class _VistaPrevia extends StatefulWidget {
   final FondoApp fondo;
   const _VistaPrevia({required this.fondo});
   @override
-  Widget build(BuildContext context) => ExcludeSemantics(
-    child: AnimatedContainer(
+  State<_VistaPrevia> createState() => _VistaPreviaState();
+}
+
+class _VistaPreviaState extends State<_VistaPrevia> {
+  final Set<int> _favoritos = {};
+  final Set<int> _abiertas = {};
+
+  @override
+  Widget build(BuildContext context) {
+    final fondo = widget.fondo;
+    return AnimatedContainer(
       key: const ValueKey('vista-previa-fondo'),
       duration: reducirMovimiento(context)
           ? Duration.zero
@@ -163,69 +217,124 @@ class _VistaPrevia extends StatelessWidget {
         border: Border.all(color: AppColors.divider),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          Text(
+            'Ejemplo interactivo · ${fondo.nombre}',
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Toca una tarjeta para ver los detalles o prueba el corazón.',
+          ),
+          const SizedBox(height: 12),
           for (var i = 0; i < 2; i++)
             Padding(
               padding: EdgeInsets.only(bottom: i == 0 ? 10 : 0),
-              child: Container(
-                key: ValueKey('tarjeta-previa-$i'),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: fondo.tarjeta,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.divider),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 34,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: TemaController.instance.tema.gradiente,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
+              child: Material(
+                color: fondo.tarjeta,
+                borderRadius: BorderRadius.circular(14),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => setState(() {
+                    if (!_abiertas.add(i)) _abiertas.remove(i);
+                  }),
+                  child: Container(
+                    key: ValueKey('tarjeta-previa-$i'),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: fondo.tarjeta,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.divider),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          FractionallySizedBox(
-                            widthFactor: i == 0 ? 0.75 : 0.55,
-                            child: Container(
-                              height: 8,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 34,
+                              height: 48,
                               decoration: BoxDecoration(
-                                color: AppColors.textPrimary.withValues(
-                                  alpha: 0.75,
-                                ),
-                                borderRadius: BorderRadius.circular(4),
+                                gradient:
+                                    TemaController.instance.tema.gradiente,
+                                borderRadius: BorderRadius.circular(6),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 7),
-                          FractionallySizedBox(
-                            widthFactor: 0.4,
-                            child: Container(
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: AppColors.textSecondary.withValues(
-                                  alpha: 0.5,
-                                ),
-                                borderRadius: BorderRadius.circular(4),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    i == 0
+                                        ? 'Tu próxima lectura'
+                                        : 'Más para descubrir',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall,
+                                  ),
+                                  const SizedBox(height: 7),
+                                  Text(
+                                    'Tarjeta de ejemplo',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall,
+                                  ),
+                                ],
                               ),
                             ),
+                            IconButton(
+                              tooltip: _favoritos.contains(i)
+                                  ? 'Quitar favorito de ejemplo ${i + 1}'
+                                  : 'Probar favorito ${i + 1}',
+                              isSelected: _favoritos.contains(i),
+                              icon: const Icon(Icons.favorite_border_rounded),
+                              selectedIcon: const Icon(Icons.favorite_rounded),
+                              onPressed: () => setState(() {
+                                if (!_favoritos.add(i)) _favoritos.remove(i);
+                              }),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _abiertas.contains(i)
+                                    ? 'Ocultar detalles'
+                                    : 'Ver detalles',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              _abiertas.contains(i)
+                                  ? Icons.expand_less_rounded
+                                  : Icons.expand_more_rounded,
+                            ),
+                          ],
+                        ),
+                        if (_abiertas.contains(i)) ...[
+                          const SizedBox(height: 10),
+                          const Text(
+                            'Así se verá el contenido con el fondo y el color de tarjeta que elegiste. Es una demostración: no realiza compras ni cambia tus favoritos.',
                           ),
                         ],
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
         ],
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _OpcionFondo extends StatelessWidget {
