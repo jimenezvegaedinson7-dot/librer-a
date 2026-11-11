@@ -5,12 +5,16 @@ import '../utils/perfil_temas.dart';
 import '../utils/perfil_fondos.dart';
 import 'storage_service.dart';
 
-/// Controlador global del tema de colores de la aplicación.
+/// Controlador global de la apariencia de la aplicación.
 ///
-/// Es la única fuente de verdad del tema elegido por el usuario en su perfil.
-/// Cuando cambia, pinta los acentos de [AppColors] y notifica para que la app
-/// completa (botones, tarjetas, iconos, chips y badges) se reconstruya con los
-/// nuevos colores en tiempo real.
+/// Guarda tres preferencias independientes entre sí:
+/// - [tema]: colores de botones, iconos y acentos (también la cabecera).
+/// - [tarjeta]: color de las tarjetas.
+/// - [fondo]: color de fondo de las pantallas.
+///
+/// Cada una se persiste con su propia clave, de modo que cambiar una nunca
+/// altera las otras. Cuando cambia cualquiera, se repinta [AppColors] y se
+/// notifica para que toda la app se reconstruya en tiempo real.
 class TemaController extends ChangeNotifier {
   TemaController._();
 
@@ -18,9 +22,13 @@ class TemaController extends ChangeNotifier {
 
   PerfilTema _tema = perfilTemaPorId(perfilTemaDefaultId);
   FondoApp _fondo = fondoPorId(fondoDefaultId);
+  TarjetaApp _tarjeta = tarjetaPorId(tarjetaDefaultId);
 
-  /// Fondo de pantallas y tarjetas actual.
+  /// Fondo de pantallas actual.
   FondoApp get fondo => _fondo;
+
+  /// Color de tarjetas actual.
+  TarjetaApp get tarjeta => _tarjeta;
 
   /// Tema de colores actual de la app.
   PerfilTema get tema => _tema;
@@ -28,66 +36,77 @@ class TemaController extends ChangeNotifier {
   /// Id del tema actual.
   String get id => _tema.id;
 
-  Future<void> aplicarApariencia({
-    required String temaId,
-    required String fondoId,
-  }) async {
-    _tema = perfilTemaPorId(temaId);
-    _fondo = fondoPorId(fondoId);
-    AppColors.aplicarFondo(_fondo.fondo, _fondo.tarjeta);
+  /// Aplica en memoria los tres valores y reconstruye la app.
+  void _pintar() {
+    AppColors.aplicarFondo(_fondo.fondo, _tarjeta.color);
     AppColors.aplicarAcento(_tema);
     notifyListeners();
-    try {
-      await Future.wait([
-        StorageService.instance.guardarTemaPerfil(_tema.id),
-        StorageService.instance.guardarFondo(_fondo.id),
-      ]);
-    } catch (_) {
-      // Conserva la apariencia en memoria si el almacenamiento no está disponible.
-    }
   }
 
-  /// Restaura el tema guardado (se llama una vez al arrancar la app).
+  /// Restaura las preferencias guardadas (se llama una vez al arrancar).
   Future<void> cargar() async {
     try {
       final fondoId = await StorageService.instance.obtenerFondo();
       _fondo = fondoPorId(fondoId ?? fondoDefaultId);
-      AppColors.aplicarFondo(_fondo.fondo, _fondo.tarjeta);
     } catch (_) {
       // Sin fondo guardado: se mantiene el marfil.
     }
     try {
+      final tarjetaId = await StorageService.instance.obtenerTarjeta();
+      _tarjeta = tarjetaPorId(
+        tarjetaId ??
+            (_fondo.id == fondoDefaultId
+                ? tarjetaDefaultId
+                : 'legado_${_fondo.id}'),
+      );
+      if (tarjetaId == null) {
+        await StorageService.instance.guardarTarjeta(_tarjeta.id);
+      }
+    } catch (_) {
+      // Sin tarjeta guardada: se mantiene la blanca.
+    }
+    try {
       final id = await StorageService.instance.obtenerTemaPerfil();
       _tema = perfilTemaPorId(id ?? perfilTemaDefaultId);
-      AppColors.aplicarAcento(_tema);
     } catch (_) {
       // Sin tema guardado: se mantiene el por defecto.
     }
-    notifyListeners();
+    _pintar();
   }
 
-  /// Aplica un fondo de pantallas y tarjetas, lo pinta en toda la app y lo
-  /// persiste.
+  /// Aplica los colores de botones, iconos y acentos, y los persiste.
+  Future<void> aplicarBotones(String temaId) async {
+    final tema = perfilTemaPorId(temaId);
+    await StorageService.instance.guardarTemaPerfil(tema.id);
+    _tema = tema;
+    _pintar();
+  }
+
+  /// Aplica el color de las tarjetas y lo persiste.
+  Future<void> aplicarTarjeta(String tarjetaId) async {
+    final tarjeta = tarjetaPorId(tarjetaId);
+    await StorageService.instance.guardarTarjeta(tarjeta.id);
+    _tarjeta = tarjeta;
+    _pintar();
+  }
+
+  /// Aplica el fondo de las pantallas y lo persiste.
   Future<void> aplicarFondo(String id) async {
-    _fondo = fondoPorId(id);
-    AppColors.aplicarFondo(_fondo.fondo, _fondo.tarjeta);
-    notifyListeners();
-    try {
-      await StorageService.instance.guardarFondo(id);
-    } catch (_) {
-      // El fondo queda aplicado aunque el guardado local falle.
-    }
+    final fondo = fondoPorId(id);
+    await StorageService.instance.guardarFondo(fondo.id);
+    _fondo = fondo;
+    _pintar();
   }
 
-  /// Aplica un tema por su id, lo pinta en toda la app y lo persiste.
-  Future<void> aplicar(String id) async {
-    _tema = perfilTemaPorId(id);
-    AppColors.aplicarAcento(_tema);
-    notifyListeners();
-    try {
-      await StorageService.instance.guardarTemaPerfil(id);
-    } catch (_) {
-      // El tema queda aplicado aunque el guardado local falle.
-    }
-  }
+  /// Alias histórico de [aplicarBotones].
+  Future<void> aplicar(String id) => aplicarBotones(id);
+
+  /// Restaura los colores de botones e iconos de la librería.
+  Future<void> restaurarBotones() => aplicarBotones(perfilTemaDefaultId);
+
+  /// Restaura las tarjetas blancas originales.
+  Future<void> restaurarTarjeta() => aplicarTarjeta(tarjetaDefaultId);
+
+  /// Restaura el fondo marfil original.
+  Future<void> restaurarFondo() => aplicarFondo(fondoDefaultId);
 }

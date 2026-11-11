@@ -2,10 +2,10 @@ export const DESCARGAS = {
     android: {
         habilitado: true,
         tipo: 'apk',
-        version: '1.0.27',
+        version: '1.0.28',
 
-        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.27/libreria-1.0.27.apk',
-        tamano: '56.5 MB',
+        url: 'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.28/libreria-1.0.28.apk',
+        tamano: '56.8 MB',
         actualizado: '2026-11-11'
     },
     ios: { habilitado: true, tipo: 'preparacion', version: null, url: null, actualizado: null }

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 
-/// Combinación de fondo de pantallas y color de tarjetas.
+/// Fondo de pantallas de la aplicación.
 ///
-/// Todos son claros: los textos de la app son oscuros y deben leerse bien.
+/// [tarjeta] se conserva como tono sugerido para instalaciones anteriores; la
+/// preferencia vigente de las tarjetas vive en [TarjetaApp] y se aplica de
+/// forma independiente. Todos los tonos son claros: los textos de la app son
+/// oscuros y deben leerse bien.
 class FondoApp {
   final String id;
   final String nombre;
   final Color fondo;
   final Color tarjeta;
 
-  /// Grupo en la pantalla "Fondo y tarjetas": suaves o con color.
+  /// Grupo en la pantalla "Colores de fondo": suaves o con color.
   final bool conColor;
 
   const FondoApp({
@@ -215,3 +218,54 @@ const List<FondoApp> fondosApp = [
 /// Resuelve un fondo por su id; si no existe, el marfil.
 FondoApp fondoPorId(String id) =>
     fondosApp.firstWhere((f) => f.id == id, orElse: () => fondosApp.first);
+
+/// Color de las tarjetas, independiente del fondo de las pantallas.
+///
+/// Todos son claros para que los textos oscuros de la app se lean bien. El
+/// usuario elige uno y se guarda con su propia preferencia, de modo que
+/// cambiar el fondo no altera las tarjetas ni al contrario.
+class TarjetaApp {
+  final String id;
+  final String nombre;
+  final Color color;
+
+  const TarjetaApp({
+    required this.id,
+    required this.nombre,
+    required this.color,
+  });
+}
+
+/// Tarjetas blancas: la presentación original de la librería.
+const String tarjetaDefaultId = 'blanca';
+
+const List<TarjetaApp> tarjetasApp = [
+  TarjetaApp(id: 'blanca', nombre: 'Blanca', color: Color(0xFFFFFFFF)),
+  TarjetaApp(id: 'marfil', nombre: 'Marfil', color: Color(0xFFFBF7F0)),
+  TarjetaApp(id: 'perla', nombre: 'Gris perla', color: Color(0xFFFAFAFB)),
+  TarjetaApp(id: 'arena', nombre: 'Arena', color: Color(0xFFFBF7EF)),
+  TarjetaApp(id: 'niebla', nombre: 'Niebla azul', color: Color(0xFFF7FAFE)),
+  TarjetaApp(id: 'menta', nombre: 'Menta', color: Color(0xFFF6FCF9)),
+  TarjetaApp(id: 'salvia', nombre: 'Salvia', color: Color(0xFFFAFCF8)),
+  TarjetaApp(id: 'rosa', nombre: 'Rosa', color: Color(0xFFFFFAFA)),
+  TarjetaApp(id: 'durazno', nombre: 'Durazno', color: Color(0xFFFFFBF8)),
+  TarjetaApp(id: 'lavanda', nombre: 'Lavanda', color: Color(0xFFFCFBFE)),
+  TarjetaApp(id: 'aguamarina', nombre: 'Aguamarina', color: Color(0xFFF4FBFD)),
+  TarjetaApp(id: 'champan', nombre: 'Champán', color: Color(0xFFFFFCF7)),
+];
+
+/// Resuelve una tarjeta por su id; si no existe, la blanca.
+TarjetaApp tarjetaPorId(String id) {
+  if (id.startsWith('legado_')) {
+    final fondo = fondoPorId(id.substring('legado_'.length));
+    return TarjetaApp(
+      id: 'legado_${fondo.id}',
+      nombre: '${fondo.nombre} (anterior)',
+      color: fondo.tarjeta,
+    );
+  }
+  return tarjetasApp.firstWhere(
+    (t) => t.id == id,
+    orElse: () => tarjetasApp.first,
+  );
+}

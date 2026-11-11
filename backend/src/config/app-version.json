@@ -1,8 +1,8 @@
 {
-    "version": "1.0.27",
-    "versionCode": 28,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.27/libreria-1.0.27.apk",
-    "sha256": "97bba1bd8fc8dbb166384a837f7e39d02162421efc0fc4bf7dfacee680d6763e",
+    "version": "1.0.28",
+    "versionCode": 29,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.28/libreria-1.0.28.apk",
+    "sha256": "3d9c65b69308ae45c37242d7b5a956593ef3878a89d1ccc9d1076b3c5d3c91c3",
     "obligatoria": false,
-    "notas": "Nuevo menú de Novedades con acceso a Configuración y privacidad, Mi perfil y opciones legales. Colores de la aplicación, fondos y tarjetas reunidos en una sola pantalla con dos vistas previas interactivas. La apariencia completa se guarda al pulsar Aplicar apariencia."
+    "notas": "Personalización con colores de botones y tarjetas independientes del fondo, vistas previas interactivas y restauración de valores predeterminados. Conserva los colores anteriores y las preferencias al cerrar sesión. Menú lateral animado con novedades del catálogo, perfil, compras, favoritos, carrito y ayuda."
 }

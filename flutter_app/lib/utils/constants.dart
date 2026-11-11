@@ -190,7 +190,12 @@ class Constants {
 
   /// Clave del tema de colores personalizado del perfil.
   static const String prefTemaPerfilKey = 'perfil_tema';
+
+  /// Clave del fondo de pantallas.
   static const String prefFondoKey = 'perfil_fondo';
+
+  /// Clave del color de las tarjetas (independiente del fondo).
+  static const String prefTarjetaKey = 'perfil_tarjeta';
 
   // ---------------------------------------------------------------------------
   // Marca / logo

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
 import '../utils/app_tokens.dart';
-import '../utils/perfil_fondos.dart';
 import '../utils/perfil_temas.dart';
 
 Color textoSobre(Color fondo) {
@@ -12,11 +11,13 @@ Color textoSobre(Color fondo) {
 
 class VistaPreviaTemaApp extends StatefulWidget {
   final PerfilTema tema;
-  final FondoApp fondo;
+
+  /// Color de tarjeta actual, independiente del fondo de pantallas.
+  final Color tarjeta;
   const VistaPreviaTemaApp({
     super.key,
     required this.tema,
-    required this.fondo,
+    required this.tarjeta,
   });
 
   @override
@@ -25,6 +26,8 @@ class VistaPreviaTemaApp extends StatefulWidget {
 
 class _VistaPreviaTemaAppState extends State<VistaPreviaTemaApp> {
   bool _probado = false;
+  bool _favorito = false;
+  bool _detalles = false;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +45,7 @@ class _VistaPreviaTemaAppState extends State<VistaPreviaTemaApp> {
       duration: reducirMovimiento(context) ? Duration.zero : Duracion.rapida,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: widget.fondo.tarjeta,
+        color: widget.tarjeta,
         border: Border.all(color: AppColors.divider),
         borderRadius: BorderRadius.circular(16),
       ),
@@ -90,7 +93,7 @@ class _VistaPreviaTemaAppState extends State<VistaPreviaTemaApp> {
                 Text(
                   'Así se verá el color de tu aplicación.',
                   style: TextStyle(
-                    color: Color.lerp(tinta, widget.fondo.tarjeta, 0.18),
+                    color: Color.lerp(tinta, widget.tarjeta, 0.18),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -108,6 +111,37 @@ class _VistaPreviaTemaAppState extends State<VistaPreviaTemaApp> {
                     _probado ? 'Así responde tu botón' : 'Probar botón',
                   ),
                 ),
+                const SizedBox(height: 8),
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    IconButton(
+                      key: const ValueKey('favorito-previa'),
+                      tooltip: _favorito
+                          ? 'Quitar favorito de ejemplo'
+                          : 'Probar favorito',
+                      color: principal,
+                      icon: Icon(
+                        _favorito
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_border_rounded,
+                      ),
+                      onPressed: () => setState(() => _favorito = !_favorito),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(foregroundColor: tinta),
+                      onPressed: () => setState(() => _detalles = !_detalles),
+                      child: Text(
+                        _detalles ? 'Ocultar detalles' : 'Ver detalles',
+                      ),
+                    ),
+                  ],
+                ),
+                if (_detalles)
+                  Text(
+                    'Esta tarjeta es una demostración. No modifica tus favoritos ni realiza compras.',
+                    style: TextStyle(color: tinta),
+                  ),
               ],
             ),
           ),

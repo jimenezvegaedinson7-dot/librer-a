@@ -37,7 +37,7 @@ class AppColors {
   static const Color pergamino = Color(0xFFF1E8D8);
 
   // ---------------------------------------------------------------------------
-  // Fondos y superficies (los elige el usuario en "Fondo y tarjetas")
+  // Fondos y superficies (el usuario los personaliza por separado)
   // Valores iniciales = fondo "Marfil".
   // ---------------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ class AppColors {
     _background = fondo;
     _surface = tarjeta;
     _surfaceElevated = Color.lerp(fondo, const Color(0xFF8A7A66), 0.08)!;
-    _paper = Color.lerp(fondo, tarjeta, 0.55)!;
+    _paper = Color.lerp(fondo, Colors.white, 0.55)!;
     _pintarTexto();
   }
 

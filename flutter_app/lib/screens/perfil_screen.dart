@@ -17,7 +17,7 @@ import '../utils/constants.dart';
 import '../utils/perfil_fondos.dart';
 import '../utils/perfil_temas.dart';
 import '../widgets/aparecer.dart';
-import 'fondos_screen.dart';
+import 'personalizacion_screen.dart';
 import '../widgets/estado_chip.dart';
 import '../widgets/estanteria.dart';
 import '../widgets/presionable.dart';
@@ -644,7 +644,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   _sectionTitle(
                     textTheme,
                     'Apariencia',
-                    detalle: 'Colores de la aplicación, fondos y tarjetas en un solo lugar.',
+                    detalle: 'Botones, tarjetas y fondo: cada preferencia se guarda por separado.',
                   ),
                   const SizedBox(height: 10),
                   _profileCard(
@@ -652,17 +652,19 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       children: [
                         _actionTile(
                           context,
-                          icon: Icons.wallpaper_outlined,
-                          label: 'Fondo y tarjetas',
+                          icon: Icons.palette_outlined,
+                          label: 'Personalización',
                           detalle:
-                              '${_tema.nombre} · ${TemaController.instance.fondo.nombre}',
-                          trailing: _MuestraFondo(
+                              '${_tema.nombre} · ${TemaController.instance.fondo.nombre} · ${TemaController.instance.tarjeta.nombre}',
+                          trailing: _MuestraApariencia(
                             fondo: TemaController.instance.fondo,
+                            tarjeta: TemaController.instance.tarjeta,
+                            tema: _tema,
                           ),
                           onTap: () async {
                             await Navigator.of(context).push(
                               MaterialPageRoute<void>(
-                                builder: (_) => const FondosScreen(),
+                                builder: (_) => const PersonalizacionScreen(),
                               ),
                             );
                             if (mounted) setState(() {});
@@ -1342,26 +1344,47 @@ class _Iniciales extends StatelessWidget {
   }
 }
 
-/// Fondo y tarjeta en miniatura (al lado de "Fondo y tarjetas").
-class _MuestraFondo extends StatelessWidget {
+/// Apariencia en miniatura: fondo, tarjeta y acento de botones.
+class _MuestraApariencia extends StatelessWidget {
   final FondoApp fondo;
-  const _MuestraFondo({required this.fondo});
+  final TarjetaApp tarjeta;
+  final PerfilTema tema;
+  const _MuestraApariencia({
+    required this.fondo,
+    required this.tarjeta,
+    required this.tema,
+  });
 
   @override
   Widget build(BuildContext context) => Container(
-    width: 30,
-    height: 26,
+    width: 34,
+    height: 30,
     padding: const EdgeInsets.all(5),
     decoration: BoxDecoration(
       color: fondo.fondo,
       borderRadius: BorderRadius.circular(7),
       border: Border.all(color: AppColors.dividerStrong),
     ),
-    child: DecoratedBox(
-      decoration: BoxDecoration(
-        color: fondo.tarjeta,
-        borderRadius: BorderRadius.circular(3),
-      ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: tarjeta.color,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+        ),
+        const SizedBox(height: 3),
+        Container(
+          height: 5,
+          decoration: BoxDecoration(
+            color: tema.colorPrincipal,
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+      ],
     ),
   );
 }

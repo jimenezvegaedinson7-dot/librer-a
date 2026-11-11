@@ -285,13 +285,25 @@ class StorageService {
   /// Guarda el id del tema de colores del perfil (preferencia, NO sensible).
   Future<void> guardarTemaPerfil(String temaId) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(Constants.prefTemaPerfilKey, temaId);
+    if (!await prefs.setString(Constants.prefTemaPerfilKey, temaId)) {
+      throw StateError('No se pudo guardar el color de botones.');
+    }
   }
 
-  /// Guarda el id del fondo de pantallas y tarjetas (preferencia, NO sensible).
+  /// Guarda el id del fondo de pantallas (preferencia, NO sensible).
   Future<void> guardarFondo(String fondoId) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(Constants.prefFondoKey, fondoId);
+    if (!await prefs.setString(Constants.prefFondoKey, fondoId)) {
+      throw StateError('No se pudo guardar el fondo.');
+    }
+  }
+
+  /// Guarda el id del color de tarjetas (preferencia, NO sensible).
+  Future<void> guardarTarjeta(String tarjetaId) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!await prefs.setString(Constants.prefTarjetaKey, tarjetaId)) {
+      throw StateError('No se pudo guardar el color de tarjetas.');
+    }
   }
 
   static const String _verificacionPendienteKey =
@@ -319,6 +331,12 @@ class StorageService {
   Future<String?> obtenerFondo() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(Constants.prefFondoKey);
+  }
+
+  /// Obtiene el id del color de tarjetas o null si no se configuró.
+  Future<String?> obtenerTarjeta() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(Constants.prefTarjetaKey);
   }
 
   /// Obtiene el id del tema de colores del perfil o null si no se configuró.
