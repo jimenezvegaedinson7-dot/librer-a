@@ -4,6 +4,8 @@ import '../services/tema_controller.dart';
 import '../utils/app_colors.dart';
 import '../utils/perfil_fondos.dart';
 import '../utils/app_tokens.dart';
+import '../utils/perfil_temas.dart';
+import '../widgets/apariencia_colores.dart';
 
 /// Adaptación de BackgroundsView (Swift): selección local, vista previa y
 /// tarjetas adaptables. La preferencia global cambia únicamente al aplicar.
@@ -15,11 +17,26 @@ class FondosScreen extends StatefulWidget {
 
 class _FondosScreenState extends State<FondosScreen> {
   late FondoApp _seleccion = TemaController.instance.fondo;
+  late PerfilTema _tema = TemaController.instance.tema;
   bool _guardando = false;
-  bool get _cambio => _seleccion.id != TemaController.instance.fondo.id;
+  bool get _cambio =>
+      _seleccion.id != TemaController.instance.fondo.id ||
+      _tema.id != TemaController.instance.id;
+
+  Future<void> _combinar() async {
+    final id = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      builder: (_) => EditorTemaApp(inicial: _tema),
+    );
+    if (id != null && mounted) setState(() => _tema = perfilTemaPorId(id));
+  }
 
   void _verPrevia() {
     final fondo = _seleccion;
+    final tema = _tema;
     Navigator.of(context).push<void>(
       MaterialPageRoute<void>(
         builder: (_) => Scaffold(
@@ -43,7 +60,19 @@ class _FondosScreenState extends State<FondosScreen> {
                     'Prueba las tarjetas y los favoritos. Esta vista no modifica tu cuenta ni guarda la combinación.',
                   ),
                   const SizedBox(height: 16),
-                  _VistaPrevia(fondo: fondo),
+                  Text(
+                    'Colores de la aplicación',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  VistaPreviaTemaApp(tema: tema, fondo: fondo),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Fondos y tarjetas',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  _VistaPrevia(fondo: fondo, tema: tema),
                 ],
               ),
             ),
@@ -56,10 +85,13 @@ class _FondosScreenState extends State<FondosScreen> {
   Future<void> _aplicar() async {
     if (!_cambio || _guardando) return;
     setState(() => _guardando = true);
-    await TemaController.instance.aplicarFondo(_seleccion.id);
+    await TemaController.instance.aplicarApariencia(
+      temaId: _tema.id,
+      fondoId: _seleccion.id,
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Fondo «${_seleccion.nombre}» aplicado.')),
+      const SnackBar(content: Text('Colores, fondo y tarjetas actualizados.')),
     );
     Navigator.of(context).pop();
   }
@@ -84,9 +116,40 @@ class _FondosScreenState extends State<FondosScreen> {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                     children: [
-                      Text('Vista previa', style: texto.titleMedium),
+                      Text(
+                        'Tu aplicación, a tu estilo',
+                        style: texto.headlineSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Revisa las dos vistas previas. Los cambios se guardan juntos al pulsar Aplicar.',
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Colores de la aplicación',
+                        style: texto.titleMedium,
+                      ),
                       const SizedBox(height: 12),
-                      _VistaPrevia(fondo: _seleccion),
+                      VistaPreviaTemaApp(tema: _tema, fondo: _seleccion),
+                      const SizedBox(height: 24),
+                      Text('Fondos y tarjetas', style: texto.titleMedium),
+                      const SizedBox(height: 12),
+                      _VistaPrevia(fondo: _seleccion, tema: _tema),
+                      const SizedBox(height: 28),
+                      Text('Personaliza tus colores', style: texto.titleMedium),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Elige el tono de los botones, los iconos y la cabecera.',
+                      ),
+                      const SizedBox(height: 16),
+                      SelectorTemasApp(
+                        seleccionado: _tema,
+                        onSeleccionar: _guardando
+                            ? null
+                            : (id) =>
+                                  setState(() => _tema = perfilTemaPorId(id)),
+                        onCombinar: _guardando ? null : _combinar,
+                      ),
                       const SizedBox(height: 24),
                       Text('Elige una combinación', style: texto.titleMedium),
                       const SizedBox(height: 4),
@@ -167,8 +230,8 @@ class _FondosScreenState extends State<FondosScreen> {
                             : const Icon(Icons.check_rounded, size: 20),
                         label: Text(
                           _cambio
-                              ? 'Aplicar «${_seleccion.nombre}»'
-                              : 'Este es tu fondo actual',
+                              ? 'Aplicar apariencia'
+                              : 'Esta es tu apariencia actual',
                           textAlign: TextAlign.center,
                         ),
                         style: FilledButton.styleFrom(
@@ -193,7 +256,8 @@ class _FondosScreenState extends State<FondosScreen> {
 
 class _VistaPrevia extends StatefulWidget {
   final FondoApp fondo;
-  const _VistaPrevia({required this.fondo});
+  final PerfilTema tema;
+  const _VistaPrevia({required this.fondo, required this.tema});
   @override
   State<_VistaPrevia> createState() => _VistaPreviaState();
 }
@@ -257,8 +321,7 @@ class _VistaPreviaState extends State<_VistaPrevia> {
                               width: 34,
                               height: 48,
                               decoration: BoxDecoration(
-                                gradient:
-                                    TemaController.instance.tema.gradiente,
+                                gradient: widget.tema.gradiente,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
@@ -292,6 +355,7 @@ class _VistaPreviaState extends State<_VistaPrevia> {
                               isSelected: _favoritos.contains(i),
                               icon: const Icon(Icons.favorite_border_rounded),
                               selectedIcon: const Icon(Icons.favorite_rounded),
+                              color: widget.tema.colorPrincipal,
                               onPressed: () => setState(() {
                                 if (!_favoritos.add(i)) _favoritos.remove(i);
                               }),
@@ -307,7 +371,11 @@ class _VistaPreviaState extends State<_VistaPrevia> {
                                     ? 'Ocultar detalles'
                                     : 'Ver detalles',
                                 style: TextStyle(
-                                  color: AppColors.primary,
+                                  color: Color.lerp(
+                                    widget.tema.colorPrincipal,
+                                    Colors.black,
+                                    0.35,
+                                  ),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

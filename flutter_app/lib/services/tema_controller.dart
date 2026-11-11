@@ -28,6 +28,25 @@ class TemaController extends ChangeNotifier {
   /// Id del tema actual.
   String get id => _tema.id;
 
+  Future<void> aplicarApariencia({
+    required String temaId,
+    required String fondoId,
+  }) async {
+    _tema = perfilTemaPorId(temaId);
+    _fondo = fondoPorId(fondoId);
+    AppColors.aplicarFondo(_fondo.fondo, _fondo.tarjeta);
+    AppColors.aplicarAcento(_tema);
+    notifyListeners();
+    try {
+      await Future.wait([
+        StorageService.instance.guardarTemaPerfil(_tema.id),
+        StorageService.instance.guardarFondo(_fondo.id),
+      ]);
+    } catch (_) {
+      // Conserva la apariencia en memoria si el almacenamiento no está disponible.
+    }
+  }
+
   /// Restaura el tema guardado (se llama una vez al arrancar la app).
   Future<void> cargar() async {
     try {

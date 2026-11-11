@@ -86,13 +86,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
-  /// Pantalla "Colores": vista previa, temas y combinación propia.
-  Future<void> _abrirColores() async {
-    await Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (_) => const _ColoresScreen()));
-    if (mounted) setState(() => _temaId = TemaController.instance.id);
-  }
-
   Future<void> _cargarLocal() async {
     final generacion = StorageService.instance.generacion;
     final usuario = await StorageService.instance.obtenerUsuario();
@@ -566,6 +559,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Mi perfil'),
+        actions: [
+          if (_refreshing)
+            const Padding(
+              padding: EdgeInsets.all(18),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+        ],
+      ),
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
@@ -579,33 +586,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Mi perfil',
-                          style: textTheme.headlineMedium,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      AnimatedSwitcher(
-                        duration: Duracion.rapida,
-                        child: _refreshing
-                            ? const SizedBox(
-                                key: ValueKey('cargando'),
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.2,
-                                ),
-                              )
-                            : const SizedBox(key: ValueKey('listo'), width: 22),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
                   Aparecer(child: _buildPortada(context, usuario)),
 
                   const SizedBox(height: 16),
@@ -661,54 +641,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Personalización directa, como AccountView en Swift.
                   _sectionTitle(
                     textTheme,
-                    'Personaliza tus colores',
-                    detalle:
-                        'Tema activo: ${_tema.nombre}. Se aplica a toda la app.',
+                    'Apariencia',
+                    detalle: 'Colores de la aplicación, fondos y tarjetas en un solo lugar.',
                   ),
                   const SizedBox(height: 10),
-                  _profileCard(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
-                        children: [
-                          for (final tema in perfilTemas.where(
-                            (t) => !t.vidrio,
-                          ))
-                            Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: _TemaSwatch(
-                                tema: tema,
-                                seleccionado: _temaId == tema.id,
-                                onTap: () =>
-                                    TemaController.instance.aplicar(tema.id),
-                              ),
-                            ),
-                          _TemaSwatch(
-                            tema: _temaId.startsWith('custom_') ? _tema : null,
-                            seleccionado: _temaId.startsWith('custom_'),
-                            onTap: _combinarColores,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: _abrirColores,
-                      icon: const Icon(Icons.palette_outlined, size: 20),
-                      label: const Text('Ver todos los colores'),
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(48, 48),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
                   _profileCard(
                     child: Column(
                       children: [
@@ -716,7 +654,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           context,
                           icon: Icons.wallpaper_outlined,
                           label: 'Fondo y tarjetas',
-                          detalle: TemaController.instance.fondo.nombre,
+                          detalle:
+                              '${_tema.nombre} · ${TemaController.instance.fondo.nombre}',
                           trailing: _MuestraFondo(
                             fondo: TemaController.instance.fondo,
                           ),
@@ -838,22 +777,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _combinarColores() async {
-    final resultado = await showModalBottomSheet<(Color, Color)>(
-      context: context,
-      showDragHandle: true,
-      isScrollControlled: true,
-      backgroundColor: _profileSurface,
-      builder: (_) =>
-          _CustomThemeSheet(inicioInicial: _tema.inicio, finInicial: _tema.fin),
-    );
-    if (resultado != null && mounted) {
-      await TemaController.instance.aplicar(
-        perfilTemaIdPersonalizado(resultado.$1, fin: resultado.$2),
-      );
-    }
   }
 
   /// Cabecera de AccountView: foto, identidad y degradado editorial.
@@ -1419,26 +1342,6 @@ class _Iniciales extends StatelessWidget {
   }
 }
 
-/// Círculo con el degradado del tema actual (al lado del botón "Colores").
-class _MuestraTema extends StatelessWidget {
-  final PerfilTema tema;
-  const _MuestraTema({required this.tema});
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 26,
-    height: 26,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: tema.gradiente,
-      border: Border.all(color: Colors.white, width: 2),
-      boxShadow: [
-        BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 4),
-      ],
-    ),
-  );
-}
-
 /// Fondo y tarjeta en miniatura (al lado de "Fondo y tarjetas").
 class _MuestraFondo extends StatelessWidget {
   final FondoApp fondo;
@@ -1461,519 +1364,4 @@ class _MuestraFondo extends StatelessWidget {
       ),
     ),
   );
-}
-
-/// Pantalla "Colores": vista previa del tema, temas clásicos, de vidrio y
-/// una combinación propia de dos colores. Se aplica al tocar.
-class _ColoresScreen extends StatefulWidget {
-  const _ColoresScreen();
-
-  @override
-  State<_ColoresScreen> createState() => _ColoresScreenState();
-}
-
-class _ColoresScreenState extends State<_ColoresScreen> {
-  String _id = TemaController.instance.id;
-  PerfilTema get _tema => TemaController.instance.tema;
-
-  Future<void> _aplicar(String id) async {
-    await TemaController.instance.aplicar(id);
-    if (mounted) setState(() => _id = id);
-  }
-
-  Future<void> _combinar() async {
-    final resultado = await showModalBottomSheet<(Color, Color)>(
-      context: context,
-      showDragHandle: true,
-      backgroundColor: AppColors.surface,
-      isScrollControlled: true,
-      builder: (_) =>
-          _CustomThemeSheet(inicioInicial: _tema.inicio, finInicial: _tema.fin),
-    );
-    if (resultado == null || !mounted) return;
-    await _aplicar(perfilTemaIdPersonalizado(resultado.$1, fin: resultado.$2));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final texto = Theme.of(context).textTheme;
-    Widget grupo(String titulo, IconData icono, List<PerfilTema> temas) =>
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icono, size: 18, color: AppColors.gold),
-                const SizedBox(width: 6),
-                Text(titulo, style: texto.labelLarge),
-              ],
-            ),
-            const SizedBox(height: 10),
-            // Columnas adaptables al espacio disponible.
-            LayoutBuilder(
-              builder: (context, c) => Wrap(
-                spacing: 12,
-                runSpacing: 14,
-                children: [
-                  for (final t in temas)
-                    SizedBox(
-                      width:
-                          (c.maxWidth -
-                              12 *
-                                  ((c.maxWidth /
-                                              (MediaQuery.textScalerOf(context)
-                                                          .scale(12) >
-                                                      18
-                                                  ? 116
-                                                  : 88))
-                                          .floor()
-                                          .clamp(2, 6) -
-                                      1)) /
-                          (c.maxWidth /
-                                  (MediaQuery.textScalerOf(context).scale(12) >
-                                          18
-                                      ? 116
-                                      : 88))
-                              .floor()
-                              .clamp(2, 6),
-                      child: Column(
-                        children: [
-                          _TemaSwatch(
-                            tema: t,
-                            seleccionado: _id == t.id,
-                            onTap: () => _aplicar(t.id),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            t.nombre,
-                            textAlign: TextAlign.center,
-                            style: texto.labelSmall?.copyWith(
-                              color: AppColors.textSecondary,
-                              fontWeight: _id == t.id
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        );
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Colores')),
-      body: SafeArea(
-        top: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-          children: [
-            Text('Vista previa', style: texto.titleMedium),
-            const SizedBox(height: 10),
-            _VistaPreviaTema(tema: _tema),
-            const SizedBox(height: 22),
-            grupo(
-              'Clásicos',
-              Icons.circle_outlined,
-              perfilTemas.where((t) => !t.vidrio).toList(),
-            ),
-            grupo(
-              'Vidrio',
-              Icons.auto_awesome_outlined,
-              perfilTemas.where((t) => t.vidrio).toList(),
-            ),
-            Row(
-              children: [
-                Icon(Icons.tune_rounded, size: 18, color: AppColors.gold),
-                const SizedBox(width: 6),
-                Text('Tu combinación', style: texto.labelLarge),
-              ],
-            ),
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: _combinar,
-              icon: _id.startsWith('custom_')
-                  ? _MuestraTema(tema: _tema)
-                  : const Icon(Icons.add_rounded),
-              label: const Text('Combinar dos colores'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Maqueta: encabezado con el degradado, un botón y textos del tema.
-class _VistaPreviaTema extends StatelessWidget {
-  final PerfilTema tema;
-  const _VistaPreviaTema({required this.tema});
-
-  @override
-  Widget build(BuildContext context) => AnimatedContainer(
-    duration: reducirMovimiento(context)
-        ? Duration.zero
-        : const Duration(milliseconds: 250),
-    clipBehavior: Clip.antiAlias,
-    decoration: BoxDecoration(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: AppColors.dividerStrong),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Container(
-          constraints: const BoxConstraints(minHeight: 64),
-          padding: const EdgeInsets.all(16),
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(gradient: tema.gradiente),
-          child: Text(
-            tema.nombre,
-            style: TextStyle(
-              color: tema.textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(14),
-          child: LayoutBuilder(
-            builder: (context, c) {
-              final apilar =
-                  c.maxWidth < 330 &&
-                  MediaQuery.textScalerOf(context).scale(14) > 19;
-              final letras = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Así se ven tus letras',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Precios, títulos y botones',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12.5,
-                    ),
-                  ),
-                ],
-              );
-              final boton = Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  'Comprar',
-                  style: TextStyle(
-                    color: AppColors.onPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              );
-              if (apilar) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [letras, const SizedBox(height: 14), boton],
-                );
-              }
-              return Row(
-                children: [
-                  Expanded(child: letras),
-                  const SizedBox(width: 12),
-                  boton,
-                ],
-              );
-            },
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-/// Colores disponibles para combinar en el selector personalizado.
-List<Color> _coloresPersonalizables() {
-  final colores = <Color>{
-    const Color(0xFF17181C),
-    const Color(0xFF6B7280),
-    const Color(0xFFFFFFFF),
-  };
-  for (final tema in perfilTemas) {
-    colores.add(tema.inicio);
-    colores.add(tema.fin);
-  }
-  return colores.toList();
-}
-
-/// Muestra circular del tema de perfil (color sólido o degradado).
-class _TemaSwatch extends StatelessWidget {
-  final PerfilTema? tema;
-  final bool seleccionado;
-  final VoidCallback onTap;
-
-  /// Si [tema] es null se muestra la muestra de "personalizado".
-  const _TemaSwatch({
-    this.tema,
-    required this.seleccionado,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final esPersonalizado = tema == null;
-    final colorCheck = tema?.textColor ?? const Color(0xFF2C2621);
-
-    return Semantics(
-      button: true,
-      selected: seleccionado,
-      label: esPersonalizado ? 'Combinar tus colores' : 'Tema ${tema!.nombre}',
-      child: Tooltip(
-        message: esPersonalizado ? 'Combinar tus colores' : tema!.nombre,
-        child: InkWell(
-          onTap: onTap,
-          customBorder: const CircleBorder(),
-          child: Container(
-            width: 48,
-            height: 48,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: tema?.gradiente,
-              color: esPersonalizado ? const Color(0xFFF1E8D8) : null,
-              border: Border.all(
-                color: seleccionado
-                    ? const Color(0xFF2C2621)
-                    : const Color(0xFFD6CAB8),
-                width: seleccionado ? 3 : 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            foregroundDecoration: tema?.vidrio == true
-                ? const BoxDecoration(
-                    shape: BoxShape.circle,
-                    // Brillo de cristal arriba a la izquierda.
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0x66FFFFFF),
-                        Color(0x00FFFFFF),
-                        Color(0x14FFFFFF),
-                      ],
-                      stops: [0, 0.5, 1],
-                    ),
-                  )
-                : null,
-            child: seleccionado
-                ? Icon(Icons.check_rounded, size: 18, color: colorCheck)
-                : esPersonalizado
-                ? Icon(
-                    Icons.add_rounded,
-                    size: 18,
-                    color: AppColors.textSecondary,
-                  )
-                : null,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Hoja inferior para combinar dos colores y crear un degradado propio.
-class _CustomThemeSheet extends StatefulWidget {
-  final Color inicioInicial;
-  final Color finInicial;
-
-  const _CustomThemeSheet({
-    required this.inicioInicial,
-    required this.finInicial,
-  });
-
-  @override
-  State<_CustomThemeSheet> createState() => _CustomThemeSheetState();
-}
-
-class _CustomThemeSheetState extends State<_CustomThemeSheet> {
-  late Color _inicio;
-  late Color _fin;
-
-  @override
-  void initState() {
-    super.initState();
-    _inicio = widget.inicioInicial;
-    _fin = widget.finInicial;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Combina tus colores',
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: _profileInk,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Elige dos colores y crea tu degradado personalizado.',
-              style: textTheme.bodyMedium?.copyWith(color: _profileMuted),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              height: 56,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [_inicio, _fin],
-                ),
-                border: Border.all(color: _profileBorder),
-              ),
-              child: Text(
-                'Vista previa',
-                style: textTheme.titleMedium?.copyWith(
-                  color: _textoLegible(_inicio, _fin),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Color inicial',
-              style: textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: _profileInk,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _ColorPalette(
-              key: const ValueKey('paleta-inicio'),
-              seleccionado: _inicio,
-              onSeleccionar: (color) => setState(() => _inicio = color),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              'Color final',
-              style: textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: _profileInk,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _ColorPalette(
-              key: const ValueKey('paleta-fin'),
-              seleccionado: _fin,
-              onSeleccionar: (color) => setState(() => _fin = color),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: FilledButton(
-                onPressed: () => Navigator.of(context).pop((_inicio, _fin)),
-                child: const Text('Aplicar'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Paleta de colores para elegir en el combinador personalizado.
-class _ColorPalette extends StatelessWidget {
-  final Color seleccionado;
-  final ValueChanged<Color> onSeleccionar;
-
-  const _ColorPalette({
-    super.key,
-    required this.seleccionado,
-    required this.onSeleccionar,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        for (final color in _coloresPersonalizables())
-          Semantics(
-            button: true,
-            selected: color == seleccionado,
-            label:
-                'Color ${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: () => onSeleccionar(color),
-              child: Container(
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: color,
-                  border: Border.all(
-                    color: color == seleccionado
-                        ? const Color(0xFF2C2621)
-                        : const Color(0xFFD6CAB8),
-                    width: color == seleccionado ? 3 : 1,
-                  ),
-                ),
-                child: color == seleccionado
-                    ? Icon(
-                        Icons.check_rounded,
-                        size: 16,
-                        color: _textoLegible(color, color),
-                      )
-                    : null,
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-/// Texto legible (oscuro o blanco) sobre la mezcla de dos colores.
-Color _textoLegible(Color a, Color b) {
-  final luminancia = (a.computeLuminance() + b.computeLuminance()) / 2;
-  return luminancia > 0.5 ? const Color(0xFF17181C) : Colors.white;
 }

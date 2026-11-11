@@ -1,8 +1,8 @@
 {
-    "version": "1.0.26",
-    "versionCode": 27,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.26/libreria-1.0.26.apk",
-    "sha256": "6e62d413e6d49d90aa9d9248a5f6233f45aae77f24c4ed374cf7595dc0b209b7",
+    "version": "1.0.27",
+    "versionCode": 28,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.27/libreria-1.0.27.apk",
+    "sha256": "97bba1bd8fc8dbb166384a837f7e39d02162421efc0fc4bf7dfacee680d6763e",
     "obligatoria": false,
-    "notas": "Perfil con un único título y opción Ver imagen para ampliar la foto. Vista previa interactiva de fondos y tarjetas con detalles, favoritos de demostración y modo de pantalla completa. La combinación se guarda únicamente al pulsar Aplicar."
+    "notas": "Nuevo menú de Novedades con acceso a Configuración y privacidad, Mi perfil y opciones legales. Colores de la aplicación, fondos y tarjetas reunidos en una sola pantalla con dos vistas previas interactivas. La apariencia completa se guarda al pulsar Aplicar apariencia."
 }
