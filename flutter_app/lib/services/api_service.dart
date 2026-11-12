@@ -464,20 +464,21 @@ class ApiService {
   ///
   /// Devuelve el usuario actualizado por el backend.
   Future<Usuario> actualizarPerfil({
-    required String nombre,
-    required String apellido,
-    required String email,
+    String? nombre,
+    String? apellido,
+    String? email,
     String? telefono,
+    bool actualizarTelefono = false,
   }) async {
     final generacion = StorageService.instance.generacion;
     try {
       final response = await _dio.put<dynamic>(
         Constants.actualizarPerfilPath,
         data: {
-          'nombre': nombre,
-          'apellido': apellido,
-          'email': email,
-          'telefono': telefono,
+          'nombre': ?nombre,
+          'apellido': ?apellido,
+          'email': ?email,
+          if (telefono != null || actualizarTelefono) 'telefono': telefono,
         },
       );
       final data = response.data;

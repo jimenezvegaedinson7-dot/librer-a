@@ -2,18 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../models/usuario.dart';
 import '../../services/api_service.dart';
-import '../../widgets/aparecer.dart';
+import '../../utils/app_colors.dart';
+import '../../utils/app_theme.dart';
 import '../../widgets/error_banner.dart';
-import '../../widgets/formulario_cuenta.dart';
 
-/// Pantalla para editar los datos del perfil del cliente.
-///
-/// Envía `PUT /usuarios/perfil` y, al guardarse, hace `pop(true)` para que el
-/// Perfil se refresque y guarde los datos actualizados.
+enum CampoPerfil { nombre, correo, telefono }
+
 class EditarPerfilScreen extends StatefulWidget {
   final Usuario usuario;
+  final CampoPerfil campo;
 
-  const EditarPerfilScreen({super.key, required this.usuario});
+  const EditarPerfilScreen({
+    super.key,
+    required this.usuario,
+    required this.campo,
+  });
 
   @override
   State<EditarPerfilScreen> createState() => _EditarPerfilScreenState();
@@ -21,225 +24,227 @@ class EditarPerfilScreen extends StatefulWidget {
 
 class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nombreController;
-  late final TextEditingController _apellidoController;
-  late final TextEditingController _emailController;
-  late final TextEditingController _telefonoController;
+  late final TextEditingController _valor;
+  late final TextEditingController _apellido;
+  bool _guardando = false;
+  String? _error;
 
-  bool _loading = false;
-  String? _errorMessage;
+  String get _titulo => switch (widget.campo) {
+    CampoPerfil.nombre => 'Editar nombre',
+    CampoPerfil.correo => 'Editar correo',
+    CampoPerfil.telefono => 'Editar teléfono',
+  };
+
+  String get _inicial => switch (widget.campo) {
+    CampoPerfil.nombre => widget.usuario.nombre ?? '',
+    CampoPerfil.correo => widget.usuario.email ?? '',
+    CampoPerfil.telefono => widget.usuario.telefono ?? '',
+  };
+
+  bool get _cambio =>
+      _valor.text.trim() != _inicial.trim() ||
+      (widget.campo == CampoPerfil.nombre &&
+          _apellido.text.trim() != (widget.usuario.apellido ?? '').trim());
 
   @override
   void initState() {
     super.initState();
-    _nombreController = TextEditingController(
-      text: widget.usuario.nombre ?? '',
-    );
-    _apellidoController = TextEditingController(
-      text: widget.usuario.apellido ?? '',
-    );
-    _emailController = TextEditingController(text: widget.usuario.email ?? '');
-    _telefonoController = TextEditingController(
-      text: widget.usuario.telefono ?? '',
-    );
+    _valor = TextEditingController(text: _inicial);
+    _apellido = TextEditingController(text: widget.usuario.apellido ?? '');
   }
 
   @override
   void dispose() {
-    _nombreController.dispose();
-    _apellidoController.dispose();
-    _emailController.dispose();
-    _telefonoController.dispose();
+    _valor.dispose();
+    _apellido.dispose();
     super.dispose();
   }
 
   Future<void> _guardar() async {
+    if (_guardando || !_cambio) return;
+    if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
-    setState(() => _errorMessage = null);
-
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() => _loading = true);
+    setState(() {
+      _error = null;
+      _guardando = true;
+    });
     try {
-      await ApiService.instance.actualizarPerfil(
-        nombre: _nombreController.text.trim(),
-        apellido: _apellidoController.text.trim(),
-        email: _emailController.text.trim(),
-        telefono: _telefonoController.text.trim().isEmpty
-            ? null
-            : _telefonoController.text.trim(),
-      );
+      switch (widget.campo) {
+        case CampoPerfil.nombre:
+          await ApiService.instance.actualizarPerfil(
+            nombre: _valor.text.trim(),
+            apellido: _apellido.text.trim(),
+          );
+        case CampoPerfil.correo:
+          await ApiService.instance.actualizarPerfil(email: _valor.text.trim());
+        case CampoPerfil.telefono:
+          await ApiService.instance.actualizarPerfil(
+            telefono: _valor.text.trim().isEmpty ? null : _valor.text.trim(),
+            actualizarTelefono: true,
+          );
+      }
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Perfil actualizado correctamente.')),
-      );
       Navigator.of(context).pop(true);
     } on ApiException catch (e) {
-      if (mounted) setState(() => _errorMessage = e.message);
+      if (mounted) setState(() => _error = e.message);
     } catch (_) {
       if (mounted) {
-        setState(() => _errorMessage = 'Ocurrió un error. Inténtalo de nuevo.');
+        setState(
+          () => _error = 'No pudimos guardar el cambio. Intenta nuevamente.',
+        );
       }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) setState(() => _guardando = false);
     }
-  }
-
-  /// Iniciales para el medallón (se actualizan al escribir).
-  String get _iniciales {
-    final n = _nombreController.text.trim();
-    final a = _apellidoController.text.trim();
-    final letras = '${n.isEmpty ? '' : n[0]}${a.isEmpty ? '' : a[0]}';
-    return letras.isEmpty ? '?' : letras.toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
+    final texto = Theme.of(context).textTheme;
+    final esNombre = widget.campo == CampoPerfil.nombre;
+    final esCorreo = widget.campo == CampoPerfil.correo;
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(),
+      backgroundColor: AppColors.surface,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          _titulo,
+          style: TextStyle(
+            fontFamily: AppTheme.fontSans,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ),
       body: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Vista previa en vivo del nombre mientras se escribe.
-                ListenableBuilder(
-                  listenable: Listenable.merge([
-                    _nombreController,
-                    _apellidoController,
-                  ]),
-                  builder: (context, _) {
-                    final nombre =
-                        '${_nombreController.text.trim()} '
-                                '${_apellidoController.text.trim()}'
-                            .trim();
-                    return CabeceraFormulario(
-                      medallon: Iniciales(_iniciales),
-                      antetitulo: 'Tu cuenta',
-                      titulo: nombre.isEmpty ? 'Editar perfil' : nombre,
-                      descripcion:
-                          'Mantén tus datos al día para tus compras y avisos.',
-                    );
-                  },
-                ),
-                const SizedBox(height: 28),
-                SeccionFormulario(
-                  titulo: 'Datos personales',
-                  icono: Icons.badge_outlined,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Text(
+                      switch (widget.campo) {
+                        CampoPerfil.nombre =>
+                          'Actualiza tu nombre y apellidos.',
+                        CampoPerfil.correo => 'Actualiza el correo que utilizas para acceder a tu cuenta.',
+                        CampoPerfil.telefono => 'Actualiza tu número de contacto. Este dato es opcional.',
+                      },
+                      style: texto.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
                     TextFormField(
-                      controller: _nombreController,
-                      textCapitalization: TextCapitalization.words,
-                      textInputAction: TextInputAction.next,
-                      decoration: _inputDecoration(
-                        label: 'Nombre',
-                        icon: Icons.person_outline_rounded,
+                      key: ValueKey('campo-${widget.campo.name}'),
+                      controller: _valor,
+                      enabled: !_guardando,
+                      maxLength: esNombre
+                          ? 80
+                          : esCorreo
+                          ? 254
+                          : 20,
+                      keyboardType: esNombre
+                          ? TextInputType.name
+                          : esCorreo
+                          ? TextInputType.emailAddress
+                          : TextInputType.phone,
+                      textCapitalization: esNombre
+                          ? TextCapitalization.words
+                          : TextCapitalization.none,
+                      autocorrect: esNombre,
+                      textInputAction: esNombre
+                          ? TextInputAction.next
+                          : TextInputAction.done,
+                      autofillHints: [
+                        esNombre
+                            ? AutofillHints.givenName
+                            : esCorreo
+                            ? AutofillHints.email
+                            : AutofillHints.telephoneNumber,
+                      ],
+                      decoration: InputDecoration(
+                        labelText: esNombre
+                            ? 'Nombre'
+                            : esCorreo
+                            ? 'Correo electrónico'
+                            : 'Teléfono (opcional)',
+                        counterText: '',
                       ),
                       validator: (value) {
-                        if ((value ?? '').trim().isEmpty) {
+                        final valor = (value ?? '').trim();
+                        if (esNombre && valor.isEmpty) {
                           return 'Ingresa tu nombre';
                         }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-                    TextFormField(
-                      controller: _apellidoController,
-                      textCapitalization: TextCapitalization.words,
-                      textInputAction: TextInputAction.next,
-                      decoration: _inputDecoration(
-                        label: 'Apellidos completos',
-                        icon: Icons.person_outline_rounded,
-                      ),
-                      validator: (value) {
-                        if ((value ?? '').trim().isEmpty) {
-                          return 'Ingresa tus apellidos completos';
+                        if (esCorreo) {
+                          if (valor.isEmpty) return 'Ingresa tu correo';
+                          if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                              .hasMatch(valor)) {
+                            return 'Ingresa un correo válido';
+                          }
                         }
                         return null;
                       },
+                      onFieldSubmitted: esNombre ? null : (_) => _guardar(),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 22),
-                SeccionFormulario(
-                  titulo: 'Contacto',
-                  icono: Icons.contact_mail_outlined,
-                  indice: 2,
-                  children: [
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      autocorrect: false,
-                      decoration: _inputDecoration(
-                        label: 'Correo electrónico',
-                        icon: Icons.alternate_email_rounded,
+                    if (esNombre) ...[
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        key: const ValueKey('campo-apellido'),
+                        controller: _apellido,
+                        enabled: !_guardando,
+                        maxLength: 80,
+                        textCapitalization: TextCapitalization.words,
+                        keyboardType: TextInputType.name,
+                        autofillHints: const [AutofillHints.familyName],
+                        textInputAction: TextInputAction.done,
+                        decoration: const InputDecoration(
+                          labelText: 'Apellidos',
+                          counterText: '',
+                        ),
+                        validator: (value) => (value ?? '').trim().isEmpty
+                            ? 'Ingresa tus apellidos'
+                            : null,
+                        onFieldSubmitted: (_) => _guardar(),
                       ),
-                      validator: (value) {
-                        final v = value?.trim() ?? '';
-                        if (v.isEmpty) return 'Ingresa tu correo';
-                        final emailRegex = RegExp(
-                          r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                        );
-                        if (!emailRegex.hasMatch(v)) {
-                          return 'Ingresa un correo válido';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-                    TextFormField(
-                      controller: _telefonoController,
-                      keyboardType: TextInputType.phone,
-                      textInputAction: TextInputAction.done,
-                      onFieldSubmitted: (_) => _guardar(),
-                      decoration: _inputDecoration(
-                        label: 'Teléfono (opcional)',
-                        icon: Icons.phone_outlined,
-                      ),
-                    ),
-                  ],
-                ),
-
-                if (_errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  ErrorBanner(message: _errorMessage!),
-                ],
-
-                const SizedBox(height: 28),
-
-                Aparecer(
-                  indice: 3,
-                  child: SizedBox(
-                    height: 54,
-                    child: _loading
-                        ? const Center(child: CircularProgressIndicator())
-                        : FilledButton.icon(
-                            onPressed: _guardar,
-                            icon: const Icon(Icons.check_rounded, size: 20),
-                            label: const Text('Guardar cambios'),
+                    ],
+                    if (_error != null) ...[
+                      const SizedBox(height: 20),
+                      ErrorBanner(message: _error!),
+                    ],
+                    const SizedBox(height: 32),
+                    ListenableBuilder(
+                      listenable: Listenable.merge([_valor, _apellido]),
+                      builder: (_, _) => FilledButton(
+                        onPressed: _guardando || !_cambio ? null : _guardar,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 52),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
                           ),
-                  ),
+                        ),
+                        child: Text(
+                          _guardando ? 'Guardando…' : 'Guardar cambios',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
-  }
-
-  InputDecoration _inputDecoration({
-    required String label,
-    required IconData icon,
-  }) {
-    return InputDecoration(labelText: label, prefixIcon: Icon(icon));
   }
 }

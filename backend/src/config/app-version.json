@@ -1,8 +1,8 @@
 {
-    "version": "1.0.29",
-    "versionCode": 30,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.29/libreria-1.0.29.apk",
-    "sha256": "84dade19221ebd847bc5d8c600c94ec6b336933b4b785e27e1e3d0fd8ecfe291",
+    "version": "1.0.30",
+    "versionCode": 31,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.30/libreria-1.0.30.apk",
+    "sha256": "ba83ce920dce6d2d38f1d32bf602a6b4ed3d41b1361b2b420523cddbf8c7fa64",
     "obligatoria": false,
-    "notas": "Mi perfil abre directamente desde la barra inferior. Nuevo diseño sencillo con foto circular centrada, botón de cámara y datos editables en filas. Ajustes, seguridad, compras, favoritos y ayuda organizados debajo. Conserva las opciones de foto y la personalización independiente de botones, tarjetas y fondo."
+    "notas": "Edición independiente de nombre, correo y teléfono: cada opción muestra y actualiza únicamente el dato seleccionado. Perfil con estilo formal, filas sin iconos repetidos y secciones mejor organizadas. Conserva las opciones de foto, seguridad, compras, favoritos y personalización."
 }

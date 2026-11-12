@@ -14,7 +14,6 @@ import '../utils/app_theme.dart';
 import '../utils/avatar_generator.dart';
 import '../utils/constants.dart';
 import '../utils/perfil_fondos.dart';
-import '../utils/perfil_temas.dart';
 import 'personalizacion_screen.dart';
 import 'carrito_screen.dart';
 import 'login_screen.dart';
@@ -34,9 +33,7 @@ Color get _profileMuted => AppColors.textSecondary;
 const _profileBorder = Color(0xFFE9EDEF);
 Color get _profileSurface => AppColors.surface;
 const _profileSoft = Color(0xFFF0F2F5);
-Color get _profileAccent => TemaController.instance.id == perfilTemaDefaultId
-    ? const Color(0xFF008069)
-    : AppColors.primaryDark;
+Color get _profileAccent => AppColors.primaryDark;
 
 /// Pantalla de perfil del cliente.
 ///
@@ -191,14 +188,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
-  Future<void> _editarPerfil() async {
+  Future<void> _editarPerfil(CampoPerfil campo) async {
     final usuario = _usuario;
     if (usuario == null) return;
     // Una lectura iniciada antes de editar no debe restaurar los datos viejos.
     _revisionPerfil++;
     final guardado = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
-        builder: (_) => EditarPerfilScreen(usuario: usuario),
+        builder: (_) => EditarPerfilScreen(usuario: usuario, campo: campo),
       ),
     );
     if (guardado == true && mounted) {
@@ -560,7 +557,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final textTheme = Theme.of(context).textTheme;
     final usuario = _usuario;
     final fondo = TemaController.instance.fondo.id == fondoDefaultId
-        ? Colors.white
+        ? const Color(0xFFF7F8FA)
         : AppColors.background;
 
     return Scaffold(
@@ -605,7 +602,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               constraints: const BoxConstraints(maxWidth: 640),
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 28),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                 children: [
                   _buildPortada(context, usuario),
                   _profileCard(
@@ -613,27 +610,24 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       children: [
                         _row(
                           context,
-                          Icons.person_outline_rounded,
                           'Nombre',
                           usuario?.nombreCompleto ?? 'Mi perfil',
                           valueKey: const ValueKey('nombre-perfil'),
-                          editar: 'Editar perfil',
+                          campo: CampoPerfil.nombre,
                         ),
                         _divider(),
                         _row(
                           context,
-                          Icons.mail_outline_rounded,
                           'Correo',
                           usuario?.email ?? '—',
-                          editar: 'Editar correo',
+                          campo: CampoPerfil.correo,
                         ),
                         _divider(),
                         _row(
                           context,
-                          Icons.call_outlined,
                           'Teléfono',
                           usuario?.telefono ?? '—',
-                          editar: 'Editar teléfono',
+                          campo: CampoPerfil.telefono,
                         ),
                       ],
                     ),
@@ -645,7 +639,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       children: [
                         _actionTile(
                           context,
-                          icon: Icons.palette_outlined,
                           label: 'Personalización',
                           detalle: 'Botones, tarjetas y fondo',
                           onTap: () async {
@@ -657,25 +650,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
                             if (mounted) setState(() {});
                           },
                         ),
-                      ],
-                    ),
-                  ),
-
-                  _profileCard(
-                    child: Column(
-                      children: [
+                        _divider(),
                         _actionTile(
                           context,
-                          icon: Icons.key_outlined,
                           label: 'Cambiar contraseña',
                           detalle: 'Protege el acceso a tu cuenta',
                           onTap: _cambiarPassword,
                         ),
+                        _divider(),
                         _actionTile(
                           context,
-                          icon: _twoFactorEnabled
-                              ? Icons.verified_user_outlined
-                              : Icons.gpp_maybe_outlined,
                           label: _twoFactorEnabled
                               ? 'Desactivar doble factor'
                               : 'Activar doble factor',
@@ -696,21 +680,18 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       children: [
                         _actionTile(
                           context,
-                          icon: Icons.shopping_bag_outlined,
                           label: 'Mis compras',
                           detalle: 'Pedidos y seguimiento',
                           onTap: _misCompras,
                         ),
                         _actionTile(
                           context,
-                          icon: Icons.favorite_border_rounded,
                           label: 'Mis favoritos',
                           detalle: 'Libros guardados',
                           onTap: _misFavoritos,
                         ),
                         _actionTile(
                           context,
-                          icon: Icons.shopping_cart_outlined,
                           label: 'Mi carrito',
                           onTap: () => Navigator.of(context).push<void>(
                             MaterialPageRoute<void>(
@@ -727,19 +708,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       children: [
                         _actionTile(
                           context,
-                          icon: Icons.gavel_outlined,
                           label: 'Términos y Condiciones',
                           onTap: _terminos,
                         ),
                         _actionTile(
                           context,
-                          icon: Icons.policy_outlined,
                           label: 'Política de Privacidad',
                           onTap: _privacidad,
                         ),
                         _actionTile(
                           context,
-                          icon: Icons.auto_stories_outlined,
                           label: 'Libro de Reclamaciones',
                           onTap: _libroReclamaciones,
                         ),
@@ -747,19 +725,17 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     ),
                   ),
 
-                  const Divider(height: 32, color: _profileBorder),
+                  _sectionTitle(textTheme, 'Cuenta'),
                   _profileCard(
                     child: Column(
                       children: [
                         _actionTile(
                           context,
-                          icon: Icons.logout_rounded,
                           label: 'Cerrar sesión',
                           onTap: _confirmarCierre,
                         ),
                         _actionTile(
                           context,
-                          icon: Icons.delete_outline_rounded,
                           label: 'Eliminar mi cuenta',
                           onTap: _eliminarCuenta,
                           color: AppColors.error,
@@ -779,12 +755,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget _buildPortada(BuildContext context, Usuario? usuario) {
     return Padding(
       key: const ValueKey('identidad-perfil'),
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
       child: Column(
         children: [
           SizedBox(
-            width: 164,
-            height: 164,
+            width: 128,
+            height: 128,
             child: Stack(
               children: [
                 Center(
@@ -811,28 +787,17 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       ),
                     ),
                   ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: IconButton.filled(
-                    tooltip: 'Cambiar foto de perfil',
-                    onPressed: _subiendoFoto ? null : _cambiarFoto,
-                    style: IconButton.styleFrom(
-                      backgroundColor: _profileAccent,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(48, 48),
-                    ),
-                    icon: const Icon(Icons.photo_camera_rounded, size: 24),
-                  ),
-                ),
               ],
             ),
           ),
           const SizedBox(height: 8),
-          TextButton(
-            onPressed: _subiendoFoto ? null : _cambiarFoto,
-            style: TextButton.styleFrom(foregroundColor: _profileAccent),
-            child: const Text('Cambiar foto'),
+          Tooltip(
+            message: 'Cambiar foto de perfil',
+            child: TextButton(
+              onPressed: _subiendoFoto ? null : _cambiarFoto,
+              style: TextButton.styleFrom(foregroundColor: _profileAccent),
+              child: const Text('Cambiar foto'),
+            ),
           ),
         ],
       ),
@@ -843,13 +808,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Divider(height: 28, color: _profileBorder),
         Padding(
-          padding: const EdgeInsets.fromLTRB(72, 0, 24, 8),
+          padding: const EdgeInsets.fromLTRB(2, 28, 2, 12),
           child: Text(
             title,
             style: textTheme.bodyMedium?.copyWith(
-              color: _profileAccent,
+              color: _profileInk,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -860,21 +824,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   Widget _actionTile(
     BuildContext context, {
-    required IconData icon,
     required String label,
     required VoidCallback onTap,
     Color? color,
     String? detalle,
   }) {
-    final textoAmpliado = MediaQuery.textScalerOf(context).scale(16) > 24;
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: textoAmpliado ? 16 : 24,
-        vertical: 6,
-      ),
-      minLeadingWidth: 24,
-      horizontalTitleGap: textoAmpliado ? 12 : 24,
-      leading: Icon(icon, size: 24, color: color ?? _profileMuted),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
       title: Text(
         label,
         style: TextStyle(
@@ -895,57 +851,73 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Widget _profileCard({required Widget child}) {
-    return Material(color: _profileSurface, child: child);
+    return Material(
+      color: _profileSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: _profileBorder),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: child,
+    );
   }
 
   Widget _row(
     BuildContext context,
-    IconData icon,
     String label,
     String value, {
     Key? valueKey,
-    required String editar,
+    required CampoPerfil campo,
   }) {
-    return InkWell(
-      onTap: _editarPerfil,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 16, 12, 16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 3),
-              child: Icon(icon, size: 24, color: _profileMuted),
-            ),
-            const SizedBox(width: 24),
-            Expanded(
-              child: Column(
+    final editar = switch (campo) {
+      CampoPerfil.nombre => 'Editar nombre',
+      CampoPerfil.correo => 'Editar correo',
+      CampoPerfil.telefono => 'Editar teléfono',
+    };
+    return Tooltip(
+      message: editar,
+      child: InkWell(
+        key: ValueKey('editar-${campo.name}'),
+        onTap: _usuario == null ? null : () => _editarPerfil(campo),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    label,
-                    style: Theme.of(context).textTheme.bodySmall
-                        ?.copyWith(color: _profileMuted),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: Theme.of(context).textTheme.bodySmall
+                          ?.copyWith(color: _profileMuted),
+                    ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(width: 14),
                   Text(
-                    value.trim().isEmpty ? '—' : value,
-                    key: valueKey,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: _profileInk,
+                    'Editar',
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontSans,
+                      fontSize: 13,
+                      color: _profileAccent,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-            ),
-            IconButton(
-              tooltip: editar,
-              onPressed: _editarPerfil,
-              icon: Icon(Icons.edit_outlined, size: 20, color: _profileAccent),
-            ),
-          ],
+              const SizedBox(height: 6),
+              Text(
+                value.trim().isEmpty ? '—' : value,
+                key: valueKey,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: _profileInk,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -953,8 +925,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   Widget _divider() => const Divider(
     height: 1,
-    indent: 72,
-    endIndent: 24,
+    indent: 18,
+    endIndent: 18,
     color: _profileBorder,
   );
 }
@@ -1073,14 +1045,14 @@ class _Avatar extends StatelessWidget {
         ? _Iniciales(usuario: usuario)
         : ClipOval(
             child: SizedBox(
-              width: 156,
-              height: 156,
+              width: 128,
+              height: 128,
               child: Image.network(
                 url,
                 key: ValueKey<String>(url),
                 fit: BoxFit.cover,
-                width: 156,
-                height: 156,
+                width: 128,
+                height: 128,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return _Iniciales(usuario: usuario);
@@ -1172,7 +1144,7 @@ class _Iniciales extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-      radius: 78,
+      radius: 64,
       backgroundColor: _profileSoft,
       child: Padding(
         padding: const EdgeInsets.all(20),
