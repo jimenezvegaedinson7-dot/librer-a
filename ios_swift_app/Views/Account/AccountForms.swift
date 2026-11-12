@@ -71,17 +71,36 @@ enum Validation {
 
 // MARK: - Editar perfil
 
+enum ProfileField: String, Hashable {
+    case name, email, phone
+
+    var title: String {
+        switch self {
+        case .name: return "Editar nombre"
+        case .email: return "Editar correo"
+        case .phone: return "Editar teléfono"
+        }
+    }
+
+    var detail: String {
+        switch self {
+        case .name: return "Actualiza tu nombre y apellidos."
+        case .email: return "Actualiza el correo que utilizas para acceder a tu cuenta."
+        case .phone: return "Actualiza tu número de contacto. Este dato es opcional."
+        }
+    }
+}
+
 struct EditProfileView: View {
+    let field: ProfileField
     @EnvironmentObject private var appState: AppState
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var lastName = ""
     @State private var email = ""
     @State private var phone = ""
-    @State private var showPhotoOptions = false
-    @State private var toast: ToastMessage?
+    @State private var filled = false
     @State private var saving = false
-    @State private var uploading = false
     @State private var errorMessage: String?
 
     var body: some View {
@@ -89,28 +108,34 @@ struct EditProfileView: View {
             VStack(spacing: 24) {
                 FormHeader(
                     eyebrow: "Tu cuenta",
-                    title: "\(name) \(lastName)".trimmingCharacters(in: .whitespaces).isEmpty
-                        ? "Editar perfil" : "\(name) \(lastName)",
-                    subtitle: "Mantén tus datos al día para tus compras y avisos."
+                    title: field.title,
+                    subtitle: field.detail
                 ) {
-                    Text(initials).font(.serif(32)).foregroundStyle(.white)
+                    if field == .name {
+                        Text(initials).font(.serif(32)).foregroundStyle(.white)
+                    } else {
+                        Image(systemName: field == .email ? "at" : "phone")
+                            .font(.largeTitle).foregroundStyle(.white)
+                    }
                 }
 
-                Button { showPhotoOptions = true } label: {
-                    Label(uploading ? "Subiendo foto…" : "Cambiar foto de perfil", systemImage: "camera")
-                        .font(.subheadline.weight(.semibold))
-                }
-                .disabled(uploading)
-
-                FormSection(title: "Datos personales", systemImage: "person.text.rectangle") {
-                    BrandField(title: "Nombre", systemImage: "person", text: $name, contentType: .givenName)
-                    BrandField(title: "Apellidos completos", systemImage: "person", text: $lastName, contentType: .familyName)
-                }
-                FormSection(title: "Contacto", systemImage: "envelope", index: 2) {
-                    BrandField(title: "Correo electrónico", systemImage: "at", text: $email,
-                               keyboard: .emailAddress, contentType: .emailAddress)
-                    BrandField(title: "Teléfono (opcional)", systemImage: "phone", text: $phone,
-                               keyboard: .phonePad, contentType: .telephoneNumber)
+                if field == .name {
+                    FormSection(title: "Datos personales", systemImage: "person.text.rectangle") {
+                        BrandField(title: "Nombre", systemImage: "person", text: $name, contentType: .givenName)
+                        BrandField(title: "Apellidos completos", systemImage: "person", text: $lastName, contentType: .familyName)
+                    }
+                    .disabled(saving)
+                } else {
+                    FormSection(title: "Contacto", systemImage: "envelope") {
+                        if field == .email {
+                            BrandField(title: "Correo electrónico", systemImage: "at", text: $email,
+                                       keyboard: .emailAddress, contentType: .emailAddress)
+                        } else {
+                            BrandField(title: "Teléfono (opcional)", systemImage: "phone", text: $phone,
+                                       keyboard: .phonePad, contentType: .telephoneNumber)
+                        }
+                    }
+                    .disabled(saving)
                 }
 
                 if let errorMessage { ErrorBanner(message: errorMessage) }
@@ -124,15 +149,14 @@ struct EditProfileView: View {
                 .disabled(saving)
                 .appear(3)
             }
+            .frame(maxWidth: 680)
             .padding(20)
+            .frame(maxWidth: .infinity)
         }
         .background(Brand.fondo.ignoresSafeArea())
+        .navigationTitle(field.title)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear(perform: fill)
-        .profilePhotoActions(isPresented: $showPhotoOptions, uploading: $uploading) { message in
-            toast = ToastMessage(text: message)
-        }
-        .toast($toast)
     }
 
     private var initials: String {
@@ -141,7 +165,8 @@ struct EditProfileView: View {
     }
 
     private func fill() {
-        guard let user = appState.user, name.isEmpty, email.isEmpty else { return }
+        guard let user = appState.user, !filled else { return }
+        filled = true
         name = user.nombre
         lastName = user.apellido
         email = user.email
@@ -149,21 +174,31 @@ struct EditProfileView: View {
     }
 
     private func save() async {
+        guard !saving else { return }
         let n = name.trimmingCharacters(in: .whitespaces)
         let a = lastName.trimmingCharacters(in: .whitespaces)
         let e = email.trimmingCharacters(in: .whitespaces)
-        if n.isEmpty { errorMessage = "Ingresa tu nombre"; return }
-        if a.isEmpty { errorMessage = "Ingresa tus apellidos completos"; return }
-        if e.isEmpty { errorMessage = "Ingresa tu correo"; return }
-        if !Validation.isEmail(e) { errorMessage = "Ingresa un correo válido"; return }
+        let t = phone.trimmingCharacters(in: .whitespacesAndNewlines)
+        let changes: UpdateProfileRequest
+        switch field {
+        case .name:
+            if n.isEmpty { errorMessage = "Ingresa tu nombre"; return }
+            if a.isEmpty { errorMessage = "Ingresa tus apellidos completos"; return }
+            if n.count > 80 || a.count > 80 { errorMessage = "El nombre y los apellidos admiten hasta 80 caracteres cada uno."; return }
+            changes = .name(n, lastName: a)
+        case .email:
+            if e.isEmpty { errorMessage = "Ingresa tu correo"; return }
+            if !Validation.isEmail(e) { errorMessage = "Ingresa un correo válido"; return }
+            changes = .email(e)
+        case .phone:
+            if t.count > 20 { errorMessage = "El teléfono admite hasta 20 caracteres."; return }
+            changes = .phone(t.isEmpty ? nil : t)
+        }
         errorMessage = nil
         saving = true
         defer { saving = false }
         do {
-            let t = phone.trimmingCharacters(in: .whitespaces)
-            let updated = try await appState.accountService.updateProfile(
-                name: n, lastName: a, email: e, phone: t.isEmpty ? nil : t
-            )
+            let updated = try await appState.accountService.updateProfile(changes)
             appState.updateUser(updated)
             dismiss()
         } catch {

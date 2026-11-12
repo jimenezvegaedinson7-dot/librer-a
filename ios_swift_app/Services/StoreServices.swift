@@ -161,10 +161,10 @@ final class AccountService {
         )
     }
 
-    func updateProfile(name: String, lastName: String, email: String, phone: String?) async throws -> User {
+    func updateProfile(_ changes: UpdateProfileRequest) async throws -> User {
         try await client.send(
             APIEndpoint<APIResponse<User>>.updateProfile(
-                .init(nombre: name, apellido: lastName, email: email, telefono: phone)
+                changes
             )
         ).data
     }

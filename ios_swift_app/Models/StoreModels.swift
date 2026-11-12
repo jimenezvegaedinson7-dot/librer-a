@@ -289,11 +289,31 @@ struct ResetPasswordRequest: Encodable {
     }
 }
 
-struct UpdateProfileRequest: Encodable {
-    let nombre: String
-    let apellido: String
-    let email: String
-    let telefono: String?
+enum UpdateProfileRequest: Encodable {
+    case name(String, lastName: String)
+    case email(String)
+    case phone(String?)
+
+    private enum CodingKeys: String, CodingKey {
+        case nombre, apellido, email, telefono
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case let .name(name, lastName):
+            try container.encode(name, forKey: .nombre)
+            try container.encode(lastName, forKey: .apellido)
+        case let .email(email):
+            try container.encode(email, forKey: .email)
+        case let .phone(phone):
+            if let phone {
+                try container.encode(phone, forKey: .telefono)
+            } else {
+                try container.encodeNil(forKey: .telefono)
+            }
+        }
+    }
 }
 
 struct ChangePasswordRequest: Encodable {

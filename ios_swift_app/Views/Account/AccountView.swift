@@ -18,36 +18,28 @@ struct AccountView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("TU CUENTA").font(.caption.weight(.bold)).kerning(1.4).foregroundStyle(Brand.acento)
-                        Text("Mi perfil").font(.serif(30))
-                    }
-                    .padding(.top, 16)
-
                     cover.appear(0)
-                    quickAccess.appear(1)
-                    dataSection.appear(2)
-                    themeSection.appear(3)
-                    securitySection.appear(4)
-                    legalSection.appear(5)
-
-                    Button(role: .destructive) {
-                        confirmLogout = true
-                    } label: {
-                        Label("Cerrar sesión", systemImage: "rectangle.portrait.and.arrow.right")
-                            .frame(maxWidth: .infinity, minHeight: 50)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Brand.error.opacity(0.5)))
+                    dataSection.appear(1)
+                    securitySection.appear(2)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Tus libros").font(.serif(18))
+                        quickAccess
                     }
-                    .foregroundStyle(Brand.error)
+                    .appear(3)
+                    legalSection.appear(4)
+                    accountSection.appear(5)
                 }
+                .frame(maxWidth: 680)
                 .padding(20)
+                .frame(maxWidth: .infinity)
             }
             .background(Brand.fondo.ignoresSafeArea())
             .refreshable { await appState.refreshProfile() }
-            .toolbar(.hidden, for: .navigationBar)
+            .navigationTitle("Mi perfil")
+            .navigationBarTitleDisplayMode(.large)
             .navigationDestination(for: AccountRoute.self) { route in
                 switch route {
-                case .editProfile: EditProfileView()
+                case .editProfile(let field): EditProfileView(field: field)
                 case .changePassword: ChangePasswordView()
                 case .twoFactor:
                     if user?.twoFactorEnabled == true { TwoFactorDisableView() } else { TwoFactorSetupView() }
@@ -56,17 +48,11 @@ struct AccountView: View {
                 case .privacy: LegalDocumentView(document: .privacy)
                 case .deleteAccount: DeleteAccountView()
                 case .backgrounds: BackgroundsView()
+                case .appearance: appearanceView
                 case .complaints: ComplaintsBookView()
                 }
             }
             .sheet(isPresented: $showSecurity) { SecurityView() }
-            .sheet(isPresented: $showCustomTheme) {
-                CustomThemeSheet(initial: themeStore.theme) { theme in
-                    showCustomTheme = false
-                    withAnimation { themeStore.apply(theme) }
-                }
-                .presentationDetents([.large])
-            }
             .profilePhotoActions(isPresented: $showPhotoOptions, uploading: $uploadingPhoto) { message in
                 toast = ToastMessage(text: message)
             }
@@ -84,13 +70,13 @@ struct AccountView: View {
 
     private var cover: some View {
         let theme = themeStore.theme
-        return HStack(spacing: 18) {
+        return VStack(spacing: 14) {
             Button { showPhotoOptions = true } label: {
-                Avatar(user: user, size: 84)
+                Avatar(user: user, size: 112)
                     .overlay {
                         if uploadingPhoto {
                             ProgressView().tint(.white)
-                                .frame(width: 84, height: 84)
+                                .frame(width: 112, height: 112)
                                 .background(Circle().fill(.black.opacity(0.35)))
                         }
                     }
@@ -106,18 +92,19 @@ struct AccountView: View {
             .buttonStyle(.plain)
             .disabled(uploadingPhoto)
             .accessibilityLabel("Cambiar foto de perfil")
-            VStack(alignment: .leading, spacing: 6) {
-                Text(fullName).font(.serif(22)).foregroundStyle(theme.textColor).lineLimit(2)
-                Text(user?.email ?? "").font(.subheadline).foregroundStyle(theme.textColor.opacity(0.85)).lineLimit(1)
-                Text("Toca la foto para actualizarla")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(theme.textColor.opacity(0.85))
-                    .padding(.horizontal, 10).padding(.vertical, 4)
-                    .overlay(Capsule().stroke(theme.textColor.opacity(0.3)))
+            Button {
+                showPhotoOptions = true
+            } label: {
+                Text(uploadingPhoto ? "Actualizando foto…" : "Cambiar foto")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(theme.textColor)
+                    .frame(minHeight: 44)
             }
-            Spacer(minLength: 0)
+            .buttonStyle(.plain)
+            .disabled(uploadingPhoto)
         }
         .padding(20)
+        .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 18)
                 .fill(theme.gradient)
@@ -160,7 +147,9 @@ struct AccountView: View {
                 .foregroundStyle(themeStore.theme.primary)
                 .frame(width: 48, height: 48)
                 .background(Circle().fill(themeStore.theme.primary.opacity(0.12)))
-            Text(title).font(.caption.weight(.semibold)).foregroundStyle(Brand.texto).lineLimit(1)
+            Text(title).font(.caption.weight(.semibold)).foregroundStyle(Brand.texto)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
@@ -170,10 +159,55 @@ struct AccountView: View {
 
     private var dataSection: some View {
         card(title: "Tus datos") {
-            infoRow("at", "Correo", user?.email ?? "—")
+            infoRow("pencil", "Nombre", fullName, field: .name)
             Divider().padding(.leading, 44)
-            infoRow("phone", "Teléfono", (user?.telefono ?? "").isEmpty ? "—" : user!.telefono!)
+            infoRow("at", "Correo", user?.email ?? "—", field: .email)
+            Divider().padding(.leading, 44)
+            infoRow("phone", "Teléfono", (user?.telefono ?? "").isEmpty ? "—" : (user?.telefono ?? "—"), field: .phone)
         }
+    }
+
+    private var appearanceView: some View {
+        ScrollView {
+            themeSection
+                .frame(maxWidth: 680)
+                .padding(20)
+                .frame(maxWidth: .infinity)
+        }
+        .background(Brand.fondo.ignoresSafeArea())
+        .navigationTitle("Personalización")
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showCustomTheme) {
+            CustomThemeSheet(initial: themeStore.theme) { theme in
+                showCustomTheme = false
+                withAnimation { themeStore.apply(theme) }
+            }
+            .presentationDetents([.large])
+        }
+    }
+
+    private var appearanceLink: some View {
+        NavigationLink(value: AccountRoute.appearance) {
+            HStack(spacing: 14) {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(themeStore.background.fondo)
+                    .overlay(RoundedRectangle(cornerRadius: 4).fill(themeStore.background.tarjeta).padding(7))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Brand.divisor))
+                    .frame(width: 36, height: 36)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Personalización").foregroundStyle(Brand.texto)
+                    Text("\(themeStore.theme.name) · \(themeStore.background.name)")
+                        .font(.caption).foregroundStyle(Brand.textoSecundario)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Brand.textoTerciario)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var themeSection: some View {
@@ -250,8 +284,8 @@ struct AccountView: View {
     }
 
     private var securitySection: some View {
-        card(title: "Cuenta y seguridad") {
-            linkRow("pencil", "Editar perfil", .editProfile)
+        card(title: "Ajustes") {
+            appearanceLink
             Divider().padding(.leading, 60)
             linkRow("lock.rotation", "Cambiar contraseña", .changePassword)
             Divider().padding(.leading, 60)
@@ -268,15 +302,29 @@ struct AccountView: View {
     }
 
     private var legalSection: some View {
-        card(title: "Legal") {
+        card(title: "Ayuda") {
             linkRow("doc.text", "Términos y Condiciones", .terms)
             Divider().padding(.leading, 60)
             linkRow("hand.raised", "Política de Privacidad", .privacy)
             Divider().padding(.leading, 60)
             // Dentro de la app y con los datos de la cuenta ya completados.
             linkRow("book.closed", "Libro de Reclamaciones", .complaints)
-            Divider().padding(.leading, 60)
-            linkRow("person.crop.circle.badge.xmark", "Eliminar mi cuenta", .deleteAccount)
+        }
+    }
+
+    private var accountSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            card(title: "Cuenta") {
+                linkRow("person.crop.circle.badge.xmark", "Eliminar mi cuenta", .deleteAccount)
+            }
+            Button(role: .destructive) {
+                confirmLogout = true
+            } label: {
+                Label("Cerrar sesión", systemImage: "rectangle.portrait.and.arrow.right")
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Brand.error.opacity(0.5)))
+            }
+            .foregroundStyle(Brand.error)
         }
     }
 
@@ -291,16 +339,26 @@ struct AccountView: View {
         }
     }
 
-    private func infoRow(_ icon: String, _ label: String, _ value: String) -> some View {
-        HStack(spacing: 14) {
-            Image(systemName: icon).foregroundStyle(Brand.acento).frame(width: 22)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label).font(.caption).foregroundStyle(Brand.textoSecundario)
-                Text(value).foregroundStyle(Brand.texto)
+    private func infoRow(_ icon: String, _ label: String, _ value: String, field: ProfileField) -> some View {
+        NavigationLink(value: AccountRoute.editProfile(field)) {
+            HStack(spacing: 14) {
+                Image(systemName: icon).foregroundStyle(Brand.acento).frame(width: 22)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label).font(.caption).foregroundStyle(Brand.textoSecundario)
+                    Text(value).foregroundStyle(Brand.texto)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right").font(.caption).foregroundStyle(Brand.textoTerciario)
             }
-            Spacer()
+            .padding(16)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
         }
-        .padding(16)
+        .buttonStyle(.plain)
+        .accessibilityHint("Editar \(label.lowercased())")
+        .accessibilityIdentifier("profile.\(field.rawValue)")
+        .disabled(user == nil)
     }
 
     private func linkRow(_ icon: String, _ title: String, _ route: AccountRoute) -> some View {
@@ -331,7 +389,8 @@ struct AccountView: View {
 }
 
 enum AccountRoute: Hashable {
-    case editProfile, changePassword, twoFactor, favorites, terms, privacy, deleteAccount, backgrounds, complaints
+    case editProfile(ProfileField)
+    case changePassword, twoFactor, favorites, terms, privacy, deleteAccount, backgrounds, complaints, appearance
 }
 
 /// Foto de perfil o iniciales.
