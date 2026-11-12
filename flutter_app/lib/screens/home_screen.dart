@@ -23,7 +23,7 @@ import '../widgets/presionable.dart';
 import '../widgets/seccion_titulo.dart';
 import 'carrito_screen.dart';
 import 'libros_screen.dart';
-import 'menu_screen.dart';
+import 'perfil_screen.dart';
 import 'mis_compras_screen.dart';
 
 /// Pantalla principal con navegación inferior entre las secciones del cliente.
@@ -113,10 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
               embedded: true,
               activa: _currentTab == AppTab.compras,
             ),
-            MenuScreen(
-              activa: _currentTab == AppTab.perfil,
-              onVerCatalogo: () => _irAlCatalogo(),
-            ),
+            PerfilScreen(embedded: true, activa: _currentTab == AppTab.perfil),
           ],
         ),
       ),

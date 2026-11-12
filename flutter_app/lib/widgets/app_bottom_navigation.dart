@@ -54,9 +54,9 @@ class AppBottomNavigation extends StatelessWidget {
     ),
     (
       tab: AppTab.perfil,
-      icon: Icons.menu_rounded,
-      activo: Icons.menu_rounded,
-      label: 'Menú',
+      icon: Icons.person_outline_rounded,
+      activo: Icons.person_rounded,
+      label: 'Mi perfil',
     ),
   ];
 

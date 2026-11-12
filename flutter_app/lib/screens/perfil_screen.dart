@@ -11,16 +11,12 @@ import '../services/storage_service.dart';
 import '../services/tema_controller.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
-import '../utils/app_tokens.dart';
 import '../utils/avatar_generator.dart';
 import '../utils/constants.dart';
 import '../utils/perfil_fondos.dart';
 import '../utils/perfil_temas.dart';
-import '../widgets/aparecer.dart';
 import 'personalizacion_screen.dart';
-import '../widgets/estado_chip.dart';
-import '../widgets/estanteria.dart';
-import '../widgets/presionable.dart';
+import 'carrito_screen.dart';
 import 'login_screen.dart';
 import 'mis_compras_screen.dart';
 import 'favoritos_screen.dart';
@@ -35,9 +31,12 @@ import 'legal/terminos_condiciones_screen.dart';
 // Siguen al tema de colores elegido (ver AppColors).
 Color get _profileInk => AppColors.textPrimary;
 Color get _profileMuted => AppColors.textSecondary;
-const _profileBorder = Color(0xFFE7DFD3);
+const _profileBorder = Color(0xFFE9EDEF);
 Color get _profileSurface => AppColors.surface;
-const _profileSoft = Color(0xFFF1E8D8);
+const _profileSoft = Color(0xFFF0F2F5);
+Color get _profileAccent => TemaController.instance.id == perfilTemaDefaultId
+    ? const Color(0xFF008069)
+    : AppColors.primaryDark;
 
 /// Pantalla de perfil del cliente.
 ///
@@ -46,7 +45,9 @@ const _profileSoft = Color(0xFFF1E8D8);
 /// `GET /usuarios/perfil` (`two_factor_enabled`); si una respuesta anterior no
 /// lo incluye, se conserva el valor local guardado durante el login.
 class PerfilScreen extends StatefulWidget {
-  const PerfilScreen({super.key});
+  final bool embedded;
+  final bool activa;
+  const PerfilScreen({super.key, this.embedded = false, this.activa = true});
 
   @override
   State<PerfilScreen> createState() => _PerfilScreenState();
@@ -60,17 +61,19 @@ class _PerfilScreenState extends State<PerfilScreen> {
   bool _perfilServidorRecibido = false;
   int _revisionPerfil = 0;
   int _refrescoActivoRevision = 0;
-  String _temaId = perfilTemaDefaultId;
-
-  PerfilTema get _tema => perfilTemaPorId(_temaId);
 
   @override
   void initState() {
     super.initState();
-    _temaId = TemaController.instance.id;
     TemaController.instance.addListener(_syncTema);
     _cargarLocal();
-    _refrescarPerfil();
+    if (widget.activa) _refrescarPerfil();
+  }
+
+  @override
+  void didUpdateWidget(covariant PerfilScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.activa && !oldWidget.activa) _refrescarPerfil();
   }
 
   @override
@@ -82,7 +85,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   /// Mantiene el tema local sincronizado con el controlador global.
   void _syncTema() {
     if (mounted) {
-      setState(() => _temaId = TemaController.instance.id);
+      setState(() {});
     }
   }
 
@@ -556,11 +559,28 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final usuario = _usuario;
+    final fondo = TemaController.instance.fondo.id == fondoDefaultId
+        ? Colors.white
+        : AppColors.background;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: fondo,
       appBar: AppBar(
-        title: const Text('Mi perfil'),
+        automaticallyImplyLeading: !widget.embedded,
+        backgroundColor: fondo,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        title: Text(
+          'Mi perfil',
+          style: TextStyle(
+            fontFamily: AppTheme.fontSans,
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: _profileInk,
+          ),
+        ),
         actions: [
           if (_refreshing)
             const Padding(
@@ -574,59 +594,38 @@ class _PerfilScreenState extends State<PerfilScreen> {
         ],
       ),
       body: SafeArea(
-        bottom: false,
+        top: false,
+        bottom: !widget.embedded,
         child: RefreshIndicator(
-          color: AppColors.primary,
+          color: _profileAccent,
           backgroundColor: _profileSurface,
           onRefresh: _refrescarPerfil,
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
+              constraints: const BoxConstraints(maxWidth: 640),
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
+                padding: const EdgeInsets.only(bottom: 28),
                 children: [
-                  Aparecer(child: _buildPortada(context, usuario)),
-
-                  const SizedBox(height: 16),
-
-                  // Accesos rápidos
-                  Aparecer(
-                    indice: 1,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _AccesoRapido(
-                            icon: Icons.shopping_bag_outlined,
-                            label: 'Mis compras',
-                            onTap: _misCompras,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _AccesoRapido(
-                            icon: Icons.favorite_outline_rounded,
-                            label: 'Mis favoritos',
-                            onTap: _misFavoritos,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Datos
-                  _sectionTitle(textTheme, 'Tus datos'),
-                  const SizedBox(height: 10),
+                  _buildPortada(context, usuario),
                   _profileCard(
                     child: Column(
                       children: [
                         _row(
                           context,
+                          Icons.person_outline_rounded,
+                          'Nombre',
+                          usuario?.nombreCompleto ?? 'Mi perfil',
+                          valueKey: const ValueKey('nombre-perfil'),
+                          editar: 'Editar perfil',
+                        ),
+                        _divider(),
+                        _row(
+                          context,
                           Icons.mail_outline_rounded,
                           'Correo',
                           usuario?.email ?? '—',
+                          editar: 'Editar correo',
                         ),
                         _divider(),
                         _row(
@@ -634,19 +633,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           Icons.call_outlined,
                           'Teléfono',
                           usuario?.telefono ?? '—',
+                          editar: 'Editar teléfono',
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-
-                  _sectionTitle(
-                    textTheme,
-                    'Apariencia',
-                    detalle: 'Botones, tarjetas y fondo: cada preferencia se guarda por separado.',
-                  ),
-                  const SizedBox(height: 10),
+                  _sectionTitle(textTheme, 'Ajustes'),
                   _profileCard(
                     child: Column(
                       children: [
@@ -654,13 +647,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           context,
                           icon: Icons.palette_outlined,
                           label: 'Personalización',
-                          detalle:
-                              '${_tema.nombre} · ${TemaController.instance.fondo.nombre} · ${TemaController.instance.tarjeta.nombre}',
-                          trailing: _MuestraApariencia(
-                            fondo: TemaController.instance.fondo,
-                            tarjeta: TemaController.instance.tarjeta,
-                            tema: _tema,
-                          ),
+                          detalle: 'Botones, tarjetas y fondo',
                           onTap: () async {
                             await Navigator.of(context).push(
                               MaterialPageRoute<void>(
@@ -674,28 +661,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-
-                  // Seguridad y cuenta
-                  _sectionTitle(textTheme, 'Cuenta y seguridad'),
-                  const SizedBox(height: 10),
                   _profileCard(
                     child: Column(
                       children: [
                         _actionTile(
                           context,
-                          icon: Icons.manage_accounts_outlined,
-                          label: 'Editar perfil',
-                          onTap: _editarPerfil,
-                        ),
-                        _divider(),
-                        _actionTile(
-                          context,
                           icon: Icons.key_outlined,
                           label: 'Cambiar contraseña',
+                          detalle: 'Protege el acceso a tu cuenta',
                           onTap: _cambiarPassword,
                         ),
-                        _divider(),
                         _actionTile(
                           context,
                           icon: _twoFactorEnabled
@@ -704,12 +679,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           label: _twoFactorEnabled
                               ? 'Desactivar doble factor'
                               : 'Activar doble factor',
-                          trailing: EstadoChip(
-                            texto: _twoFactorEnabled ? 'Activo' : 'Inactivo',
-                            tono: _twoFactorEnabled
-                                ? TonoEstado.exito
-                                : TonoEstado.neutro,
-                          ),
+                          detalle: _twoFactorEnabled
+                              ? 'Verificación en dos pasos activada'
+                              : 'Añade una capa de seguridad',
                           onTap: _twoFactorEnabled
                               ? _desactivarTwoFactor
                               : _activarTwoFactor,
@@ -718,11 +690,38 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
-
-                  // Legal
-                  _sectionTitle(textTheme, 'Legal'),
-                  const SizedBox(height: 10),
+                  _sectionTitle(textTheme, 'Tus libros'),
+                  _profileCard(
+                    child: Column(
+                      children: [
+                        _actionTile(
+                          context,
+                          icon: Icons.shopping_bag_outlined,
+                          label: 'Mis compras',
+                          detalle: 'Pedidos y seguimiento',
+                          onTap: _misCompras,
+                        ),
+                        _actionTile(
+                          context,
+                          icon: Icons.favorite_border_rounded,
+                          label: 'Mis favoritos',
+                          detalle: 'Libros guardados',
+                          onTap: _misFavoritos,
+                        ),
+                        _actionTile(
+                          context,
+                          icon: Icons.shopping_cart_outlined,
+                          label: 'Mi carrito',
+                          onTap: () => Navigator.of(context).push<void>(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const CarritoScreen(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _sectionTitle(textTheme, 'Ayuda'),
                   _profileCard(
                     child: Column(
                       children: [
@@ -732,44 +731,40 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           label: 'Términos y Condiciones',
                           onTap: _terminos,
                         ),
-                        _divider(),
                         _actionTile(
                           context,
                           icon: Icons.policy_outlined,
                           label: 'Política de Privacidad',
                           onTap: _privacidad,
                         ),
-                        _divider(),
                         _actionTile(
                           context,
                           icon: Icons.auto_stories_outlined,
                           label: 'Libro de Reclamaciones',
                           onTap: _libroReclamaciones,
                         ),
-                        _divider(),
-                        _actionTile(
-                          context,
-                          icon: Icons.no_accounts_outlined,
-                          label: 'Eliminar mi cuenta',
-                          onTap: _eliminarCuenta,
-                        ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height: 28),
-
-                  // Cerrar sesión
-                  OutlinedButton.icon(
-                    onPressed: _confirmarCierre,
-                    icon: const Icon(Icons.logout_rounded, size: 20),
-                    label: const Text('Cerrar sesión'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.error,
-                      side: BorderSide(
-                        color: AppColors.error.withValues(alpha: 0.35),
-                      ),
-                      minimumSize: const Size(double.infinity, 52),
+                  const Divider(height: 32, color: _profileBorder),
+                  _profileCard(
+                    child: Column(
+                      children: [
+                        _actionTile(
+                          context,
+                          icon: Icons.logout_rounded,
+                          label: 'Cerrar sesión',
+                          onTap: _confirmarCierre,
+                        ),
+                        _actionTile(
+                          context,
+                          icon: Icons.delete_outline_rounded,
+                          label: 'Eliminar mi cuenta',
+                          onTap: _eliminarCuenta,
+                          color: AppColors.error,
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -781,168 +776,84 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
-  /// Cabecera de AccountView: foto, identidad y degradado editorial.
   Widget _buildPortada(BuildContext context, Usuario? usuario) {
-    final textTheme = Theme.of(context).textTheme;
-    final tinta = _tema.textColor;
-    final foto = Semantics(
-      button: true,
-      label: 'Opciones de foto de perfil',
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: _subiendoFoto ? null : _cambiarFoto,
-          child: SizedBox(
-            width: 92,
-            height: 92,
+    return Padding(
+      key: const ValueKey('identidad-perfil'),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 164,
+            height: 164,
             child: Stack(
               children: [
                 Center(
-                  child: _Avatar(usuario: usuario, anillo: Colors.white),
+                  child: Semantics(
+                    label: 'Opciones de foto de perfil',
+                    button: true,
+                    child: Material(
+                      color: Colors.transparent,
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: _subiendoFoto ? null : _cambiarFoto,
+                        child: _Avatar(usuario: usuario),
+                      ),
+                    ),
+                  ),
                 ),
                 if (_subiendoFoto)
-                  const Positioned.fill(
+                  Positioned.fill(
                     child: Center(
-                      child: CircularProgressIndicator(color: Colors.white),
+                      child: CircularProgressIndicator(
+                        color: _profileAccent,
+                        semanticsLabel: 'Actualizando foto',
+                      ),
                     ),
                   ),
                 Positioned(
                   right: 0,
-                  bottom: 2,
-                  child: Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: AppColors.dorado,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                  bottom: 0,
+                  child: IconButton.filled(
+                    tooltip: 'Cambiar foto de perfil',
+                    onPressed: _subiendoFoto ? null : _cambiarFoto,
+                    style: IconButton.styleFrom(
+                      backgroundColor: _profileAccent,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(48, 48),
                     ),
-                    child: const Icon(
-                      Icons.photo_camera_rounded,
-                      size: 15,
-                      color: AppColors.tinta,
-                    ),
+                    icon: const Icon(Icons.photo_camera_rounded, size: 24),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ),
-    );
-    Widget identidad = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          usuario?.nombreCompleto ?? 'Mi perfil',
-          key: const ValueKey('nombre-perfil'),
-          style: AppTheme.serif(fontSize: 22, color: tinta, height: 1.2),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          usuario?.email ?? '',
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: textTheme.bodyMedium?.copyWith(
-            color: tinta.withValues(alpha: 0.9),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          usuario?.fotoPerfil?.trim().isNotEmpty == true
-              ? 'Toca la foto para verla o cambiarla'
-              : 'Toca la foto para actualizarla',
-          style: textTheme.labelSmall?.copyWith(
-            color: tinta.withValues(alpha: 0.9),
-          ),
-        ),
-      ],
-    );
-    // Una combinación propia puede mezclar blanco y negro: un solo color de
-    // texto no alcanza contraste en ambos extremos. Proteger solo la identidad.
-    double contraste(Color fondo) {
-      final a = tinta.computeLuminance(), b = fondo.computeLuminance();
-      return ((a > b ? a : b) + 0.05) / ((a > b ? b : a) + 0.05);
-    }
-
-    if (contraste(_tema.inicio) < 4.5 || contraste(_tema.fin) < 4.5) {
-      identidad = Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: tinta == Colors.white
-              ? Colors.black.withValues(alpha: 0.72)
-              : Colors.white.withValues(alpha: 0.94),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: identidad,
-      );
-    }
-    return AnimatedContainer(
-      key: const ValueKey('identidad-perfil'),
-      duration: reducirMovimiento(context)
-          ? Duration.zero
-          : const Duration(milliseconds: 350),
-      decoration: BoxDecoration(
-        gradient: _tema.gradiente,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: IgnorePointer(
-              child: EstanteriaAnimada(
-                tinta: tinta,
-                acento: AppColors.doradoClaro,
-                opacidad: tinta == Colors.white ? 0.05 : 0.035,
-                altoBalda: 64,
-                semilla: 5,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: LayoutBuilder(
-              builder: (context, c) {
-                if (c.maxWidth < 230 ||
-                    (c.maxWidth < 300 &&
-                        MediaQuery.textScalerOf(context).scale(14) > 19)) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [foto, const SizedBox(height: 16), identidad],
-                  );
-                }
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    foto,
-                    const SizedBox(width: 18),
-                    Expanded(child: identidad),
-                  ],
-                );
-              },
-            ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: _subiendoFoto ? null : _cambiarFoto,
+            style: TextButton.styleFrom(foregroundColor: _profileAccent),
+            child: const Text('Cambiar foto'),
           ),
         ],
       ),
     );
   }
 
-  Widget _sectionTitle(TextTheme textTheme, String title, {String? detalle}) {
-    // El detalle va debajo del título para que nunca se corte.
+  Widget _sectionTitle(TextTheme textTheme, String title) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: textTheme.titleMedium?.copyWith(color: _profileInk)),
-        if (detalle != null) ...[
-          const SizedBox(height: 2),
-          Text(
-            detalle,
-            style: textTheme.bodySmall?.copyWith(color: _profileMuted),
+        const Divider(height: 28, color: _profileBorder),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(72, 0, 24, 8),
+          child: Text(
+            title,
+            style: textTheme.bodyMedium?.copyWith(
+              color: _profileAccent,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ],
+        ),
       ],
     );
   }
@@ -952,148 +863,100 @@ class _PerfilScreenState extends State<PerfilScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
-    Widget? trailing,
+    Color? color,
     String? detalle,
   }) {
+    final textoAmpliado = MediaQuery.textScalerOf(context).scale(16) > 24;
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-      leading: Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: _profileSoft,
-          borderRadius: BorderRadius.circular(11),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
-        ),
-        child: Icon(icon, size: 20, color: AppColors.primary),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: textoAmpliado ? 16 : 24,
+        vertical: 6,
       ),
+      minLeadingWidth: 24,
+      horizontalTitleGap: textoAmpliado ? 12 : 24,
+      leading: Icon(icon, size: 24, color: color ?? _profileMuted),
       title: Text(
         label,
-        style: TextStyle(color: _profileInk, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          fontFamily: AppTheme.fontSans,
+          fontSize: 16,
+          color: color ?? _profileInk,
+          fontWeight: FontWeight.w500,
+        ),
       ),
       subtitle: detalle == null
           ? null
           : Text(
               detalle,
-              style: TextStyle(color: _profileMuted, fontSize: 12.5),
+              style: TextStyle(color: _profileMuted, fontSize: 13, height: 1.4),
             ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ?trailing,
-          const SizedBox(width: 4),
-          Icon(Icons.chevron_right_rounded, color: _profileMuted),
-        ],
-      ),
       onTap: onTap,
     );
   }
 
   Widget _profileCard({required Widget child}) {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: _profileSurface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _profileBorder),
-      ),
-      child: Material(color: Colors.transparent, child: child),
-    );
+    return Material(color: _profileSurface, child: child);
   }
 
-  Widget _row(BuildContext context, IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 3),
-            child: Icon(icon, size: 22, color: AppColors.gold),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: _profileMuted),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value.trim().isEmpty ? '—' : value,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: _profileInk,
-                  ),
-                ),
-              ],
+  Widget _row(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value, {
+    Key? valueKey,
+    required String editar,
+  }) {
+    return InkWell(
+      onTap: _editarPerfil,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 16, 12, 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: Icon(icon, size: 24, color: _profileMuted),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _divider() =>
-      const Divider(height: 1, indent: 64, color: _profileBorder);
-}
-
-/// Acceso rápido del perfil (compras y favoritos).
-class _AccesoRapido extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _AccesoRapido({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Presionable(
-      child: Material(
-        color: _profileSurface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Radios.md),
-          side: const BorderSide(color: _profileBorder),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(Radios.md),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-            child: Column(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    shape: BoxShape.circle,
+            const SizedBox(width: 24),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: _profileMuted),
                   ),
-                  child: Icon(icon, size: 20, color: AppColors.primary),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelMedium
-                      ?.copyWith(color: _profileInk),
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    value.trim().isEmpty ? '—' : value,
+                    key: valueKey,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: _profileInk,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            IconButton(
+              tooltip: editar,
+              onPressed: _editarPerfil,
+              icon: Icon(Icons.edit_outlined, size: 20, color: _profileAccent),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  Widget _divider() => const Divider(
+    height: 1,
+    indent: 72,
+    endIndent: 24,
+    color: _profileBorder,
+  );
 }
 
 /// Opción del selector de foto con icono, etiqueta y altura táctil cómoda.
@@ -1118,37 +981,38 @@ class _SheetOption extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          child: SizedBox(
-            height: 54,
-            child: Row(
-              children: [
-                const SizedBox(width: 14),
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: _profileSoft,
-                    shape: BoxShape.circle,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 54),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                children: [
+                  const SizedBox(width: 14),
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: _profileSoft,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, size: 19, color: _profileInk),
                   ),
-                  child: Icon(icon, size: 19, color: _profileInk),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w600),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
                   ),
-                ),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 20,
-                  color: _profileMuted,
-                ),
-                const SizedBox(width: 14),
-              ],
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: _profileMuted,
+                  ),
+                  const SizedBox(width: 14),
+                ],
+              ),
             ),
           ),
         ),
@@ -1195,9 +1059,8 @@ class _AvatarPresetCircle extends StatelessWidget {
 /// Avatar circular con la foto del usuario si existe, o las iniciales.
 class _Avatar extends StatelessWidget {
   final Usuario? usuario;
-  final Color? anillo;
 
-  const _Avatar({this.usuario, this.anillo});
+  const _Avatar({this.usuario});
 
   @override
   Widget build(BuildContext context) {
@@ -1206,48 +1069,27 @@ class _Avatar extends StatelessWidget {
         ? ''
         : Constants.buildPerfilUrl(foto);
 
-    final Widget circulo = url.isEmpty
-        ? _Iniciales(usuario: usuario, accent: anillo)
+    return url.isEmpty
+        ? _Iniciales(usuario: usuario)
         : ClipOval(
             child: SizedBox(
-              width: 82,
-              height: 82,
+              width: 156,
+              height: 156,
               child: Image.network(
                 url,
                 key: ValueKey<String>(url),
                 fit: BoxFit.cover,
-                width: 82,
-                height: 82,
+                width: 156,
+                height: 156,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
-                  return _Iniciales(usuario: usuario, accent: anillo);
+                  return _Iniciales(usuario: usuario);
                 },
                 errorBuilder: (context, error, stackTrace) =>
-                    _Iniciales(usuario: usuario, accent: anillo),
+                    _Iniciales(usuario: usuario),
               ),
             ),
           );
-
-    final ring = anillo;
-    if (ring == null) return circulo;
-
-    return Container(
-      width: 88,
-      height: 88,
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: ring,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.14),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: circulo,
-    );
   }
 }
 
@@ -1315,9 +1157,8 @@ class _FotoPerfilScreenState extends State<_FotoPerfilScreen> {
 
 class _Iniciales extends StatelessWidget {
   final Usuario? usuario;
-  final Color? accent;
 
-  const _Iniciales({this.usuario, this.accent});
+  const _Iniciales({this.usuario});
 
   String _iniciales() {
     final nombre = usuario?.nombre ?? '';
@@ -1331,60 +1172,22 @@ class _Iniciales extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-      radius: 41,
-      backgroundColor: accent == null
-          ? _profileSoft
-          : Color.alphaBlend(accent!.withValues(alpha: 0.16), _profileSoft),
-      child: Text(
-        _iniciales(),
-        style: Theme.of(context).textTheme.headlineMedium
-            ?.copyWith(color: _profileInk, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-}
-
-/// Apariencia en miniatura: fondo, tarjeta y acento de botones.
-class _MuestraApariencia extends StatelessWidget {
-  final FondoApp fondo;
-  final TarjetaApp tarjeta;
-  final PerfilTema tema;
-  const _MuestraApariencia({
-    required this.fondo,
-    required this.tarjeta,
-    required this.tema,
-  });
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 34,
-    height: 30,
-    padding: const EdgeInsets.all(5),
-    decoration: BoxDecoration(
-      color: fondo.fondo,
-      borderRadius: BorderRadius.circular(7),
-      border: Border.all(color: AppColors.dividerStrong),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: tarjeta.color,
-              borderRadius: BorderRadius.circular(3),
+      radius: 78,
+      backgroundColor: _profileSoft,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: FittedBox(
+          child: Text(
+            _iniciales(),
+            style: TextStyle(
+              fontFamily: AppTheme.fontSans,
+              fontSize: 48,
+              color: _profileMuted,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
-        const SizedBox(height: 3),
-        Container(
-          height: 5,
-          decoration: BoxDecoration(
-            color: tema.colorPrincipal,
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
