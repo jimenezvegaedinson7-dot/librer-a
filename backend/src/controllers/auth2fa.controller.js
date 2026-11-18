@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const usuarioModel = require('../models/usuario.model');
 const { cifrar, descifrar } = require('../utils/crypto');
 const { validarId } = require('../utils/validaciones');
+const { datosPublicos } = require('../services/auth.service');
 
 const TOTP_WINDOW = 30;
 
@@ -27,21 +28,6 @@ const verificarTOTP = (codigo, secreto) => {
         console.error('Error al verificar TOTP:', error.message);
         return null;
     }
-};
-
-const datosPublicos = (usuario) => {
-    return {
-        id_usuario: usuario.id_usuario,
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        email: usuario.email,
-        telefono: usuario.telefono,
-        foto_perfil: usuario.foto_perfil,
-        rol: usuario.rol,
-        estado: usuario.estado,
-        fecha_registro: usuario.fecha_registro,
-        two_factor_enabled: usuario.two_factor_enabled
-    };
 };
 
 const setup = async (req, res) => {
@@ -284,4 +270,4 @@ const buscarUsuarioConSecreto = async (idUsuario) => {
     return { ...usuarioConPassword, secretoCifrado, secreto: descifrar(secretoCifrado) };
 };
 
-module.exports = { setup, confirmar, verificarLogin, desactivar, datosPublicos };
+module.exports = { setup, confirmar, verificarLogin, desactivar };

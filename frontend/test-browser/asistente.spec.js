@@ -34,12 +34,28 @@ const libros = [
     }
 ];
 
-async function preparar(page) {
-    const control = { libros: [...libros], catalogos: [], peticiones: [], fallo: false, espera: null };
+const fotoCliente = `${API}/foto-cliente.svg`;
+const cliente = { id_usuario: 41, rol: 'cliente', nombre: 'Ana', apellido: 'Lectura', foto_perfil: fotoCliente };
+
+async function preparar(page, { usuario = null, fotoFalla = false } = {}) {
+    const control = { libros: [...libros], catalogos: [], peticiones: [], fallo: false, espera: null, usuario };
+    if (usuario) {
+        await page.addInitScript((usuario) => {
+            localStorage.setItem('libreria-web-cliente-v1', JSON.stringify({ token: 'cliente-prueba', generacion: 'prueba-asistente', usuario: { ...usuario, foto_perfil: null } }));
+            sessionStorage.setItem('asistente-intro', '1');
+        }, usuario);
+    }
     await page.route(`${API}/**`, async (route) => {
         const req = route.request(),
             ruta = new URL(req.url()).pathname;
         control.peticiones.push(ruta);
+        if (ruta === '/api/usuarios/perfil') return route.fulfill({ json: { success: true, data: control.usuario } });
+        if (ruta === '/api/asistente/memoria') return route.fulfill({ json: { success: true, data: {} } });
+        if (ruta === '/api/foto-cliente.svg') {
+            return fotoFalla
+                ? route.fulfill({ status: 404, body: '' })
+                : route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#d8e6dc"/><circle cx="32" cy="25" r="12" fill="#b37552"/><path d="M10 64v-8a22 22 0 0 1 44 0v8" fill="#526b64"/></svg>' });
+        }
         if (ruta === '/api/asistente') return route.fulfill({ status: 404, json: { success: false, mensaje: 'Ruta no encontrada' } });
         if (ruta === '/api/libros') {
             control.catalogos.push({ metodo: req.method(), autorizacion: req.headers().authorization });
@@ -79,6 +95,7 @@ for (const ancho of [320, 390, 1440])
         await expect(ultima(chat)).toContainText('S/ 48.00');
         await expect(ultima(chat)).toContainText('5 ejemplares disponibles');
         expect(control.catalogos).toEqual([{ metodo: 'GET', autorizacion: undefined }]);
+        await expect(chat.locator('.asistente-perfil')).toHaveCount(0);
         const caja = await chat.boundingBox();
         expect(caja.x).toBeGreaterThanOrEqual(0);
         expect(caja.y).toBeGreaterThanOrEqual(0);
@@ -92,6 +109,77 @@ for (const ancho of [320, 390, 1440])
         await expect(chat).toHaveCount(0);
         await expect(page.getByRole('button', { name: 'Abrir asistente de la librería', exact: true })).toBeFocused();
     });
+
+for (const ancho of [390, 1440]) {
+    test(`${ancho}px: chat compacto con biblioteca pastel y foto del perfil junto al mensaje`, async ({ page }) => {
+        await page.setViewportSize({ width: ancho, height: 900 });
+        const control = await preparar(page, { usuario: cliente });
+        const lanzador = page.getByRole('button', { name: 'Abrir asistente de la librería', exact: true });
+        expect((await lanzador.boundingBox()).width).toBe(ancho === 1440 ? 62 : 58);
+        const chat = await abrir(page);
+        await preguntar(chat, 'Gracias');
+        const mensaje = chat.locator('.asistente-mensaje--usuario').last();
+        const perfil = mensaje.locator('.asistente-perfil');
+        const imagen = perfil.locator('img');
+        await expect(imagen).toHaveAttribute('src', fotoCliente);
+        await expect.poll(() => imagen.evaluate(el => el.naturalWidth)).toBeGreaterThan(0);
+        await expect(chat.getByRole('status')).toHaveCount(0);
+        await expect(chat.locator('.asistente-cursor')).toHaveCount(0);
+        expect(control.peticiones).toContain('/api/usuarios/perfil');
+        const caja = await chat.boundingBox();
+        expect(caja.height).toBeLessThanOrEqual(ancho === 1440 ? 540 : 460);
+        const conversacion = chat.getByRole('log');
+        await expect(conversacion).toHaveCSS('background-color', 'rgb(244, 238, 231)');
+        await expect(conversacion).toHaveCSS('background-image', /(?:biblioteca-pastel|data:image\/svg\+xml)/);
+        const burbuja = await mensaje.boundingBox(), foto = await perfil.boundingBox(), fondo = await conversacion.boundingBox();
+        expect(foto.x).toBeGreaterThanOrEqual(burbuja.x + burbuja.width + 6);
+        expect(foto.x + foto.width).toBeLessThanOrEqual(fondo.x + fondo.width);
+        expect(await conversacion.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+        await chat.screenshot({ path: test.info().outputPath(`chat-perfil-${ancho}.png`) });
+        await preguntar(chat, 'Quiero encontrar una novela para leer este fin de semana. '.repeat(8).slice(0, 400));
+        const largo = chat.locator('.asistente-mensaje--usuario').last();
+        await expect(largo.locator('.asistente-perfil img')).toHaveAttribute('src', fotoCliente);
+        expect(await conversacion.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+        const cajaLarga = await largo.boundingBox(), fotoLarga = await largo.locator('.asistente-perfil').boundingBox();
+        expect(fotoLarga.x).toBeGreaterThanOrEqual(cajaLarga.x + cajaLarga.width + 6);
+        expect(fotoLarga.x + fotoLarga.width).toBeLessThanOrEqual(fondo.x + fondo.width);
+        await expect(chat.getByRole('status')).toHaveCount(0);
+        await page.evaluate(() => {
+            localStorage.removeItem('libreria-web-cliente-v1');
+            window.dispatchEvent(new StorageEvent('storage', { key: 'libreria-web-cliente-v1' }));
+        });
+        await expect(chat.locator('.asistente-perfil')).toHaveCount(0);
+    });
+}
+
+for (const caso of ['sin foto', 'foto no disponible']) {
+    test(`perfil ${caso}: muestra iniciales y mantiene el envío`, async ({ page }) => {
+        await preparar(page, { usuario: { ...cliente, foto_perfil: caso === 'sin foto' ? null : fotoCliente }, fotoFalla: caso === 'foto no disponible' });
+        const chat = await abrir(page);
+        await preguntar(chat, 'Gracias');
+        const perfil = chat.locator('.asistente-mensaje--usuario').last().locator('.asistente-perfil');
+        await expect(perfil.locator('.asistente-perfil__iniciales')).toHaveText('AL');
+        await expect(perfil.locator('img')).toHaveCount(0);
+        await expect(chat.getByRole('status')).toHaveCount(0);
+        await preguntar(chat, 'Hola');
+        await expect(chat.locator('.asistente-mensaje--usuario')).toHaveCount(2);
+    });
+}
+
+test('chat en horizontal de poca altura conserva campo y conversación desplazable', async ({ page }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await preparar(page);
+    const chat = await abrir(page);
+    await preguntar(chat, 'Precio de Cien años de soledad');
+    await expect(ultima(chat)).toContainText('S/ 48.00');
+    const caja = await chat.boundingBox();
+    expect(caja.y).toBeGreaterThanOrEqual(0);
+    expect(caja.y + caja.height).toBeLessThanOrEqual(390 - 64);
+    await expect(chat.getByRole('textbox')).toBeInViewport();
+    const conversacion = chat.getByRole('log');
+    expect(await conversacion.evaluate(el => el.scrollHeight > el.clientHeight)).toBe(true);
+    await chat.screenshot({ path: test.info().outputPath('chat-horizontal.png') });
+});
 test('ropa, ciencia e instrucciones ajenas se rechazan sin consultar el catalogo', async ({ page }) => {
     const control = await preparar(page),
         chat = await abrir(page);

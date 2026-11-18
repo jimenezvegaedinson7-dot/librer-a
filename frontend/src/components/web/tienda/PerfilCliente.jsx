@@ -1,0 +1,406 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import {
+    FaArrowRightFromBracket,
+    FaBook,
+    FaBoxOpen,
+    FaCartShopping,
+    FaChevronRight,
+    FaHeart,
+    FaMobileScreen,
+    FaCircleCheck,
+    FaClock,
+    FaFileLines,
+    FaRegUser,
+    FaRegEnvelope,
+    FaPhone,
+    FaRegCalendar,
+    FaPen,
+    FaClipboardList,
+    FaIdCard,
+    FaCamera,
+    FaSpinner,
+    FaXmark,
+    FaMagnifyingGlassPlus
+} from 'react-icons/fa6';
+import { urlPortada } from '../../../services/web/formato';
+import { clienteApi } from '../../../services/web/tienda/clienteApi';
+import './perfil.css';
+
+const fecha = (valor) => {
+    if (!valor) return null;
+    const d = new Date(valor);
+    return Number.isNaN(d.getTime()) ? null : d.toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
+function Dato({ Icono, etiqueta, children }) {
+    return (
+        <div className="pf-dato">
+            <span className="pf-dato__icono" aria-hidden="true">
+                <Icono />
+            </span>
+            <dt>{etiqueta}</dt>
+            <dd>{children}</dd>
+        </div>
+    );
+}
+
+function EditarDatos({ tienda, alTerminar }) {
+    const u = tienda.usuario;
+    const [form, setForm] = useState({ nombre: u.nombre || '', apellido: u.apellido || '', telefono: u.telefono || '' });
+    const [estado, setEstado] = useState({ guardando: false, error: '' });
+    const cambiar = (campo) => (e) => setForm((f) => ({ ...f, [campo]: e.target.value }));
+
+    const guardar = async (e) => {
+        e.preventDefault();
+        const nombre = form.nombre.trim(),
+            apellido = form.apellido.trim(),
+            telefono = form.telefono.trim();
+        if (!nombre || !apellido) {
+            setEstado({ guardando: false, error: 'Escribe tu nombre y tus apellidos.' });
+            return;
+        }
+        if (telefono && !/^[0-9+\s-]{6,20}$/.test(telefono)) {
+            setEstado({ guardando: false, error: 'Revisa el teléfono: solo números, de 6 a 20 dígitos.' });
+            return;
+        }
+        setEstado({ guardando: true, error: '' });
+        try {
+            const json = await clienteApi.actualizarPerfil(tienda.sesion, { nombre, apellido, telefono: telefono || null });
+            tienda.actualizarUsuario(json.data || { id_usuario: u.id_usuario, nombre, apellido, telefono: telefono || null });
+            alTerminar('Tus datos se guardaron correctamente.');
+        } catch (error) {
+            setEstado({ guardando: false, error: error.message || 'No se pudieron guardar tus datos. Inténtalo otra vez.' });
+        }
+    };
+
+    return (
+        <form className="pf-editar" onSubmit={guardar} noValidate>
+            <label>
+                Nombre
+                <input value={form.nombre} onChange={cambiar('nombre')} maxLength={80} autoComplete="given-name" required />
+            </label>
+            <label>
+                Apellidos completos
+                <input value={form.apellido} onChange={cambiar('apellido')} maxLength={80} autoComplete="family-name" required />
+            </label>
+            <label>
+                Teléfono
+                <input value={form.telefono} onChange={cambiar('telefono')} maxLength={20} inputMode="tel" autoComplete="tel" placeholder="Opcional" />
+            </label>
+            {estado.error && (
+                <p className="pf-editar__error" role="alert">
+                    {estado.error}
+                </p>
+            )}
+            <div className="pf-editar__acciones">
+                <button type="button" className="pf-boton pf-boton--suave" onClick={() => alTerminar('')} disabled={estado.guardando}>
+                    Cancelar
+                </button>
+                <button type="submit" className="pf-boton pf-boton--oscuro" disabled={estado.guardando}>
+                    {estado.guardando ? 'Guardando…' : 'Guardar cambios'}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+export default function PerfilCliente({ tienda }) {
+    const { nombre = '', apellido = '', email, telefono, foto_perfil: foto, fecha_registro: registro, email_verified_at: verificado } = tienda.usuario;
+    const [editando, setEditando] = useState(false);
+    const [mensaje, setMensaje] = useState('');
+    const inicial = (nombre.trim()[0] || apellido.trim()[0] || '?').toUpperCase();
+    const unidades = tienda.items.reduce((s, i) => s + i.cantidad, 0);
+    const desde = fecha(registro);
+    const foto_url = foto ? urlPortada(foto, 180) : null;
+
+    const accesos = [
+        {
+            to: '/mis-compras',
+            Icono: FaBoxOpen,
+            titulo: 'Mis compras',
+            texto: 'Estado del pago y de la entrega',
+            insignia: 'Historial',
+            accion: 'Ver pedidos'
+        },
+        {
+            to: '/favoritos',
+            Icono: FaHeart,
+            titulo: 'Mis favoritos',
+            texto: 'Los libros que guardaste',
+            insignia: 'Guardados',
+            accion: 'Ver lista'
+        },
+        {
+            to: '/carrito',
+            Icono: FaCartShopping,
+            titulo: 'Mi carrito',
+            texto: unidades ? `${unidades} ${unidades === 1 ? 'libro' : 'libros'} por comprar` : 'Tu carrito está vacío',
+            insignia: unidades ? `${unidades} libro${unidades === 1 ? '' : 's'}` : '0 libros',
+            accion: 'Revisar carrito'
+        },
+        {
+            to: '/catalogo',
+            Icono: FaBook,
+            titulo: 'Catálogo',
+            texto: 'Precios y stock actuales',
+            insignia: 'Disponible',
+            accion: 'Explorar'
+        }
+    ];
+    const terminar = (texto) => {
+        setEditando(false);
+        setMensaje(texto);
+    };
+    const [foto_estado, setFotoEstado] = useState({ subiendo: false, error: '' });
+    const [verFoto, setVerFoto] = useState(false);
+
+    useEffect(() => {
+        if (!verFoto) return undefined;
+        const alEsc = (e) => {
+            if (e.key === 'Escape') setVerFoto(false);
+        };
+        window.addEventListener('keydown', alEsc);
+        const anterior = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            window.removeEventListener('keydown', alEsc);
+            document.body.style.overflow = anterior;
+        };
+    }, [verFoto]);
+    const cambiarFoto = async (e) => {
+        const archivo = e.target.files?.[0];
+        e.target.value = '';
+        if (!archivo) return;
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(archivo.type)) {
+            setFotoEstado({ subiendo: false, error: 'Elige una imagen JPG, PNG o WebP.' });
+            return;
+        }
+        if (archivo.size > 5 * 1024 * 1024) {
+            setFotoEstado({ subiendo: false, error: 'La imagen pesa más de 5 MB. Elige una más liviana.' });
+            return;
+        }
+        setFotoEstado({ subiendo: true, error: '' });
+        try {
+            const json = await clienteApi.subirFoto(tienda.sesion, archivo);
+            if (json.data) tienda.actualizarUsuario(json.data);
+            setFotoEstado({ subiendo: false, error: '' });
+            setMensaje('Tu foto de perfil se actualizó.');
+        } catch (error) {
+            setFotoEstado({ subiendo: false, error: error.message || 'No se pudo subir la foto. Inténtalo otra vez.' });
+        }
+    };
+
+    return (
+        <section className="compra-pagina contenedor perfil pf">
+            <header className="pf-cabecera">
+                <p className="pf-cabecera__etiqueta">Área del cliente</p>
+                <h1>Mi cuenta</h1>
+                <p className="pf-cabecera__intro">Tus datos y accesos en un solo lugar.</p>
+            </header>
+
+            <header className="pf-hero">
+                <div className="pf-hero__avatar" data-subiendo={foto_estado.subiendo || undefined}>
+                    <button
+                        type="button"
+                        className="pf-hero__avatar-btn"
+                        onClick={() => setVerFoto(true)}
+                        title="Ver foto de perfil completa"
+                        aria-label="Ver foto de perfil completa">
+                        <span className="pf-hero__avatar-marco">
+                            {foto_url ? (
+                                <img src={foto_url} alt="Foto de perfil" className="pf-hero__avatar-img" />
+                            ) : (
+                                <span className="pf-hero__inicial" aria-hidden="true">
+                                    {inicial}
+                                </span>
+                            )}
+                            {foto_estado.subiendo && (
+                                <span className="pf-hero__avatar-spinner" role="status" aria-label="Subiendo foto de perfil">
+                                    <FaSpinner className="pf-hero__spinner-icono" aria-hidden="true" />
+                                </span>
+                            )}
+                        </span>
+                        <span className="pf-hero__avatar-lupa" aria-hidden="true">
+                            <FaMagnifyingGlassPlus />
+                        </span>
+                    </button>
+                    <label className="pf-hero__camara" title="Actualizar imagen de perfil">
+                        <FaCamera aria-hidden="true" />
+                        <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={cambiarFoto}
+                            disabled={foto_estado.subiendo}
+                            className="pf-input-archivo"
+                            aria-label={foto_estado.subiendo ? 'Subiendo imagen de perfil' : 'Actualizar imagen de perfil'}
+                        />
+                    </label>
+                    {foto_estado.error && (
+                        <p className="pf-hero__error" role="alert">
+                            {foto_estado.error}
+                        </p>
+                    )}
+                </div>
+                <button type="button" className="pf-hero__salir" onClick={tienda.cerrarSesion} aria-label="Cerrar sesión de cliente">
+                    <FaArrowRightFromBracket aria-hidden="true" /> Cerrar sesión
+                </button>
+            </header>
+
+            <section className="pf-tarjeta pf-seccion" aria-labelledby="perfil-datos-titulo">
+                <div className="pf-seccion__cabeza">
+                    <span className="pf-seccion__icono" aria-hidden="true">
+                        <FaRegUser />
+                    </span>
+                    <div>
+                        <h2 id="perfil-datos-titulo">Mis datos</h2>
+                        <p>Aquí puedes ver la información de tu cuenta.</p>
+                    </div>
+                    {!editando && (
+                        <button
+                            type="button"
+                            className="pf-boton pf-boton--borde"
+                            onClick={() => {
+                                setEditando(true);
+                                setMensaje('');
+                            }}>
+                            <FaPen aria-hidden="true" /> Editar datos
+                        </button>
+                    )}
+                </div>
+                {mensaje && (
+                    <p className="pf-aviso" role="status">
+                        <FaCircleCheck aria-hidden="true" /> {mensaje}
+                    </p>
+                )}
+                {editando ? (
+                    <EditarDatos tienda={tienda} alTerminar={terminar} />
+                ) : (
+                    <dl className="pf-datos">
+                        <Dato Icono={FaRegUser} etiqueta="Nombre">
+                            {nombre || '—'}
+                        </Dato>
+                        <Dato Icono={FaIdCard} etiqueta="Apellido">
+                            {apellido || '—'}
+                        </Dato>
+                        <Dato Icono={FaRegEnvelope} etiqueta="Correo electrónico">
+                            <span className="pf-dato__correo">{email}</span>
+                            {verificado ? (
+                                <span className="pf-estado pf-estado--ok">
+                                    <FaCircleCheck aria-hidden="true" /> Verificado
+                                </span>
+                            ) : (
+                                <span className="pf-estado">
+                                    <FaClock aria-hidden="true" /> Sin verificar
+                                </span>
+                            )}
+                        </Dato>
+                        <Dato Icono={FaPhone} etiqueta="Teléfono">
+                            {telefono || <span className="pf-vacio">No registrado</span>}
+                        </Dato>
+                        {desde && (
+                            <Dato Icono={FaRegCalendar} etiqueta="Fecha de registro">
+                                {desde}
+                            </Dato>
+                        )}
+                    </dl>
+                )}
+            </section>
+
+            <nav className="pf-tarjeta pf-seccion" aria-label="Accesos de mi cuenta">
+                <div className="pf-seccion__cabeza">
+                    <span className="pf-seccion__icono" aria-hidden="true">
+                        <FaClipboardList />
+                    </span>
+                    <div>
+                        <h2>Accesos rápidos</h2>
+                        <p>Todo lo que necesitas, en un solo lugar.</p>
+                    </div>
+                </div>
+                <div className="pf-accesos">
+                    {accesos.map(({ to, Icono, titulo, texto, insignia, accion }) => (
+                        <Link key={to} to={to} className="pf-acceso">
+                            <div className="pf-acceso__arriba">
+                                <span className="pf-acceso__icono" aria-hidden="true">
+                                    <Icono />
+                                </span>
+                                <span className="pf-acceso__insignia">{insignia}</span>
+                            </div>
+                            <div className="pf-acceso__cuerpo">
+                                <strong>{titulo}</strong>
+                                <small>{texto}</small>
+                            </div>
+                            <div className="pf-acceso__pie">
+                                <span>{accion}</span>
+                                <FaChevronRight className="pf-acceso__flecha" aria-hidden="true" />
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+                <div className="pf-secundarios">
+                    <Link to="/descargar" className="pf-secundario-link">
+                        <FaMobileScreen aria-hidden="true" />
+                        <span>Descarga la app móvil</span>
+                    </Link>
+                    <Link to="/libro-de-reclamaciones" className="pf-secundario-link">
+                        <FaFileLines aria-hidden="true" />
+                        <span>Libro de Reclamaciones</span>
+                    </Link>
+                </div>
+            </nav>
+
+            {verFoto && (
+                <div
+                    className="pf-modal-visor"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Foto de perfil completa"
+                    onClick={() => setVerFoto(false)}>
+                    <div className="pf-modal-visor__caja" onClick={(e) => e.stopPropagation()}>
+                        <div className="pf-modal-visor__barra">
+                            <span className="pf-modal-visor__titulo">Foto de perfil</span>
+                            <button
+                                type="button"
+                                className="pf-modal-visor__cerrar"
+                                onClick={() => setVerFoto(false)}
+                                aria-label="Cerrar vista de foto">
+                                <FaXmark aria-hidden="true" />
+                            </button>
+                        </div>
+                        <div className="pf-modal-visor__contenido">
+                            {foto_url ? (
+                                <img
+                                    src={urlPortada(foto, 1024) || foto_url}
+                                    alt={`Foto de ${nombre}`}
+                                    className="pf-modal-visor__img"
+                                />
+                            ) : (
+                                <div className="pf-modal-visor__inicial-grande" aria-hidden="true">
+                                    {inicial}
+                                </div>
+                            )}
+                        </div>
+                        <div className="pf-modal-visor__pie">
+                            <div className="pf-modal-visor__datos">
+                                <strong>{`${nombre} ${apellido}`.trim()}</strong>
+                                <small>{email}</small>
+                            </div>
+                            <label className="pf-boton pf-boton--suave pf-modal-visor__subir">
+                                <FaCamera aria-hidden="true" /> Cambiar foto
+                                <input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    onChange={(e) => {
+                                        setVerFoto(false);
+                                        cambiarFoto(e);
+                                    }}
+                                    className="pf-input-archivo"
+                                />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </section>
+    );
+}

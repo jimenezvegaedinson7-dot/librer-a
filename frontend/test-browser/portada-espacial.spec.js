@@ -56,8 +56,8 @@ test('con movimiento reducido muestra la portada estática con el libro real y s
     await page.goto('/');
     const portada = page.locator('.portada3d--estatica');
     await expect(portada).toBeVisible({ timeout: 30000 });
-    await expect(portada.locator('.portada3d__ficha').getByRole('heading', { name: 'El principito' })).toBeVisible();
-    await expect(portada.locator('.portada3d__ficha').getByText('Antoine de Saint-Exupéry')).toBeVisible();
+    await expect(portada.locator('.portada-mapa__identidad').getByRole('heading', { name: 'El principito' })).toBeVisible();
+    await expect(portada.locator('.portada-mapa__autor').getByText('Antoine de Saint-Exupéry')).toBeVisible();
     await expect(portada.locator('.portada3d__ficha .oferta__final')).toHaveText('S/ 30.00');
     await expect(page.locator('.navegacion-publica')).toHaveCSS('display', 'contents');
     await expect(portada.getByRole('link', { name: /Ver este libro/ })).toHaveAttribute('href', '/libro/7');
@@ -69,6 +69,135 @@ test('con movimiento reducido muestra la portada estática con el libro real y s
     await expect(ultimos.getByText('Últimos libros agregados')).toBeVisible();
     await expect(ultimos.getByRole('link').first()).toHaveAttribute('href', '/libro/7');
     expect(errores).toEqual([]);
+});
+
+for (const [width, height] of [[390, 844], [1024, 768], [1440, 1000]]) {
+    test(`mapa del libro ${width}px: autor, título, categoría, precio y descripción conectados sin solaparse`, async ({ page }) => {
+        test.setTimeout(60000);
+        await page.setViewportSize({ width, height });
+        await api(page);
+        await page.goto('/');
+        await expect(page.locator('.portada3d svg[data-icon^="arrow"]')).toHaveCount(0);
+        const presentacion = page.locator('.portada-mapa');
+        await expect(presentacion.locator('.portada3d__libro-titulo')).toHaveText(LIBRO.titulo);
+        await expect(presentacion.locator('.portada-mapa__autor .portada3d__autor')).toHaveText(LIBRO.autor);
+        await expect(presentacion.locator('.portada-mapa__categoria strong')).toHaveText(LIBRO.categoria);
+        await expect(presentacion.locator('.portada-mapa__descripcion')).toBeVisible();
+        await expect(presentacion.locator('.portada-mapa__descripcion')).toHaveText(LIBRO.descripcion);
+        const tamano = selector => presentacion.locator(selector).first().evaluate(el => parseFloat(getComputedStyle(el).fontSize));
+        expect(await tamano('.portada-mapa__descripcion')).toBeGreaterThanOrEqual(width > 900 ? 15 : 14);
+        expect(await tamano('.portada-mapa__etiqueta')).toBeGreaterThanOrEqual(13);
+        expect(await tamano('.portada-mapa__valor')).toBeGreaterThanOrEqual(15);
+        expect(await tamano('.portada3d__boton')).toBeGreaterThanOrEqual(15);
+        await expect(presentacion.locator('.oferta__final')).toHaveText('S/ 30.00');
+        await expect(page.locator('.portada3d--lista, .portada3d--estatica')).toBeVisible({ timeout: 30000 });
+        await page.evaluate(() => document.fonts.ready);
+        const portada = await page.locator('.portada-unica__cubierta').boundingBox();
+        const escenario = await page.locator('.portada3d__escenario').boundingBox();
+        const autor = await presentacion.locator('.portada-mapa__autor').boundingBox();
+        const identidad = await presentacion.locator('.portada-mapa__identidad').boundingBox();
+        const lectura = await presentacion.locator('.portada-mapa__lectura').boundingBox();
+        expect(Math.abs(portada.x + portada.width / 2 - escenario.x - escenario.width / 2)).toBeLessThan(escenario.width * 0.03);
+        if (width > 900) {
+            expect(identidad.x + identidad.width).toBeLessThan(portada.x);
+            expect(autor.x + autor.width).toBeLessThan(portada.x);
+            expect(autor.y + autor.height).toBeLessThan(identidad.y);
+            expect(lectura.x).toBeGreaterThan(portada.x + portada.width);
+        } else {
+            expect(autor.y + autor.height).toBeLessThanOrEqual(identidad.y);
+            expect(identidad.y + identidad.height).toBeLessThan(portada.y);
+            expect(lectura.y).toBeGreaterThan(portada.y + portada.height);
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await presentacion.getByRole('link', { name: 'Ver este libro', exact: true }).click();
+        await expect(page).toHaveURL(/\/libro\/7$/);
+    });
+}
+
+for (const reducido of [false, true]) {
+    test(`conexiones del libro a 1920px ${reducido ? 'con movimiento reducido' : 'con 3D'} no tocan los datos`, async ({ page }) => {
+        test.setTimeout(60000);
+        await page.setViewportSize({ width: 1920, height: 1080 });
+        if (reducido) await page.emulateMedia({ reducedMotion: 'reduce' });
+        await api(page);
+        await page.goto('/');
+        await expect(page.locator('.portada3d--lista, .portada3d--estatica')).toBeVisible({ timeout: 30000 });
+        await expect(page.locator('[data-rama="autor"]')).toHaveCount(0);
+        const derecha = page.locator('.portada-mapa__trazos [data-rama="titulo"]');
+        await expect.poll(() => derecha.getAttribute('d')).not.toBe('M210 325H238');
+        await page.evaluate(() => document.fonts.ready);
+        await page.waitForTimeout(300);
+        const colisiones = await page.evaluate(() => {
+            const recta = (elemento) => {
+                const r = elemento.getBoundingClientRect();
+                return { x: r.x, y: r.y, right: r.right, bottom: r.bottom };
+            };
+            const bloques = {
+                autor: document.querySelector('.portada-mapa__autor'),
+                identidad: document.querySelector('.portada-mapa__identidad'),
+                lectura: document.querySelector('.portada-mapa__lectura')
+            };
+            const encontradas = [];
+            for (const rama of document.querySelectorAll('.portada-mapa__trazos path')) {
+                const longitud = rama.getTotalLength();
+                for (let i = 0; i <= 100; i++) {
+                    const punto = rama.getPointAtLength((longitud * i) / 100);
+                    const pantalla = new DOMPoint(punto.x, punto.y).matrixTransform(rama.getScreenCTM());
+                    for (const [nombre, elemento] of Object.entries(bloques)) {
+                        const b = recta(elemento);
+                        if (pantalla.x >= b.x - 6 && pantalla.x <= b.right + 6 && pantalla.y >= b.y - 6 && pantalla.y <= b.bottom + 6) {
+                            encontradas.push(`${rama.getAttribute('data-rama')}:${nombre}`);
+                        }
+                    }
+                }
+            }
+            return [...new Set(encontradas)];
+        });
+        expect(colisiones).toEqual([]);
+    });
+}
+
+test('la sinopsis de portada no repite el título ni la fuente verificada', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const libro = { ...LIBRO, descripcion: 'Edición en español de «El principito» publicada por Debolsillo en 2003 (372 páginas). Datos bibliográficos verificados en Open Library.' };
+    await api(page, { libro }, [libro]);
+    await page.goto('/');
+    await expect(page.locator('.portada-mapa__descripcion')).toHaveText('Debolsillo · 2003 · 372 páginas');
+    await expect(page.locator('.portada-mapa__valor')).toHaveText('Debolsillo · 2003 · 372 páginas');
+});
+
+test('mapa reducido en teléfono pequeño admite textos largos y no inventa datos ausentes', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 667 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const largo = { ...LIBRO, titulo: 'Las historias extraordinarias que se esconden entre las páginas de una biblioteca', autor: 'María del Carmen Fernández de los Ríos', descripcion: 'Una descripción extensa del libro que debe seguir siendo legible y conservar el acceso a su ficha. '.repeat(5) };
+    await api(page, { libro: largo });
+    await page.goto('/');
+    await expect(page.locator('.portada-mapa__identidad h2')).toHaveText(largo.titulo);
+    const tamanos = await page.evaluate(() => {
+        const medir = selector => parseFloat(getComputedStyle(document.querySelector(selector)).fontSize);
+        return {
+            descripcion: medir('.portada-mapa__descripcion'),
+            valor: medir('.portada-mapa__valor'),
+            boton: medir('.portada3d__boton'),
+            autor: medir('.portada3d__autor')
+        };
+    });
+    expect(tamanos.descripcion).toBeGreaterThanOrEqual(14);
+    expect(tamanos.valor).toBeGreaterThanOrEqual(15);
+    expect(tamanos.boton).toBeGreaterThanOrEqual(15);
+    expect(tamanos.autor).toBeGreaterThanOrEqual(17);
+    const libro = await page.locator('.portada-unica__cubierta').boundingBox();
+    const titulo = await page.locator('.portada-mapa__identidad').boundingBox();
+    const lectura = await page.locator('.portada-mapa__lectura').boundingBox();
+    expect(titulo.y + titulo.height).toBeLessThan(libro.y);
+    expect(lectura.y).toBeGreaterThan(libro.y + libro.height);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.route(`${API}/anuncios/protagonista`, r => r.fulfill({ json: { success: true, data: { libro: { ...LIBRO, autor: '', categoria: '', descripcion: '' } } } }));
+    await page.reload();
+    await expect(page.locator('.portada-mapa__identidad h2')).toHaveText(LIBRO.titulo);
+    await expect(page.locator('.portada-mapa__categoria, .portada-mapa__descripcion, .portada-mapa__autor p')).toHaveCount(0);
+    await expect(page.locator('.portada-mapa').getByRole('link', { name: 'Ver este libro', exact: true })).toHaveAttribute('href', '/libro/7');
 });
 
 test('cabecera comercial: controles legibles, fuente local y colores coherentes al navegar', async ({ page }) => {
@@ -103,16 +232,17 @@ test('cabecera comercial: controles legibles, fuente local y colores coherentes 
             marca = cab.querySelector('.marca span'),
             buscador = cab.querySelector('.buscador'),
             campo = buscador.querySelector('input');
+        const fondos = s.backgroundImage.match(/rgba?\([^)]+\)/g) || [s.backgroundColor];
         return {
             radio: s.borderRadius,
-            contraste: contraste(s.color, s.backgroundColor),
+            contraste: Math.min(...fondos.map(fondo => contraste(s.color, fondo))),
             nav: contraste(getComputedStyle(icono).color, getComputedStyle(nav).backgroundColor),
             marca: contraste(getComputedStyle(marca).color, getComputedStyle(cab).backgroundColor),
             placeholder: contraste(getComputedStyle(campo, '::placeholder').color, getComputedStyle(buscador).backgroundColor),
             fuente: document.fonts.check('400 32px "Serif Editorial"')
         };
     });
-    expect(lectura.radio).toBe('999px');
+    expect(lectura.radio).toBe('2px');
     expect(lectura.contraste).toBeGreaterThanOrEqual(4.5);
     expect(lectura.nav).toBeGreaterThanOrEqual(4.5);
     expect(lectura.marca).toBeGreaterThanOrEqual(4.5);
@@ -289,6 +419,34 @@ test('pérdida de WebGL o cambio a movimiento reducido retira el canvas y conser
     expect(errores).toEqual([]);
 });
 
+test('si el motor 3D no avanza, cae a los últimos libros agregados', async ({ page }) => {
+    test.setTimeout(45000);
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(e.message));
+    await page.addInitScript(() => {
+        const original = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.getContext = function (tipo, ...args) {
+            if (tipo === 'webgl2') return { getExtension: () => null };
+            return original.call(this, tipo, ...args);
+        };
+    });
+    let abortar;
+    await page.route('**/escenaLibro*', (r) => new Promise((resolve) => { abortar = () => { r.abort(); resolve(); }; }));
+    await api(page);
+    try {
+        await page.goto('/');
+        await expect(page.locator('.portada3d--respaldo')).toBeVisible({ timeout: 15000 });
+        await expect(page.locator('.portada3d canvas')).toHaveCount(0);
+        const ultimos = page.locator('.portada3d--estatica .portada3d__ultimos');
+        await expect(ultimos.getByText('Últimos libros agregados')).toBeVisible();
+        await expect(ultimos.getByRole('link').first()).toHaveAttribute('href', '/libro/7');
+        await expect(page.getByRole('button', { name: 'Reintentar 3D' })).toBeVisible();
+    } finally {
+        abortar?.();
+    }
+    expect(errores).toEqual([]);
+});
+
 test('sin WebGL ni altura suficiente no descarga el motor 3D ni oculta el contenido', async ({ page }) => {
     const recursos = [];
     page.on('request', (r) => recursos.push(r.url()));
@@ -398,15 +556,70 @@ test('escena 3D: avanza y retrocede con el scroll sin controles de sonido', asyn
         return { top: s.offsetTop, h: s.offsetHeight, vh: innerHeight };
     });
     const ficha = page.locator('.portada3d__ficha--flotante');
+    await expect(page.locator('.portada-mapa__lectura')).toBeVisible();
+    await expect(ficha).toBeHidden();
 
     await page.evaluate((y) => window.scrollTo(0, y), top + (h - vh) * 0.32);
-    await expect(ficha).toHaveCSS('visibility', 'visible');
+    await expect.poll(() => page.locator('.portada3d').evaluate(el => Number(getComputedStyle(el).getPropertyValue('--recorrido')))).toBeGreaterThan(0.2);
+    await expect(ficha).toBeHidden();
     await page.evaluate(() => window.scrollTo(0, 0));
-    await expect(ficha).toHaveCSS('visibility', 'hidden');
+    await expect.poll(() => page.locator('.portada3d').evaluate(el => Number(getComputedStyle(el).getPropertyValue('--recorrido')))).toBeLessThan(0.05);
     await expect(page.locator('.portada3d__sonido')).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect(errores).toEqual([]);
 });
+
+for (const width of [390, 1440]) {
+    test(`atelier nocturno ${width}px: fondo continuo, libro sólido y relevo alineado a novedades`, async ({ page }) => {
+        test.setTimeout(90000);
+        await page.setViewportSize({ width, height: 1000 });
+        const libros = Array.from({ length: 6 }, (_, i) => ({ ...LIBRO, id_libro: i + 1, creado_en: '2026-11-01' }));
+        await api(page, { libro: LIBRO }, libros);
+        await page.goto('/');
+        test.skip(!(await hayWebGL2(page)), 'Se comprueba el respaldo en las pruebas de movimiento reducido');
+        await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });
+        await page.evaluate(async () => {
+            const { default: Escena } = await import('/src/components/web/secciones/portada3d/escenaLibro.js');
+            const original = Escena.prototype.dibujar;
+            Escena.prototype.dibujar = function () {
+                const estado = original.call(this);
+                if (estado) {
+                    const { T } = this.medidas;
+                    const punto = this.libro.position.clone().set(0, 0, T / 2 + 0.0005).applyMatrix4(this.libro.matrixWorld).project(this.camara);
+                    window.__acabadoLibro = {
+                        alfa: this.renderer.getContext().getContextAttributes().alpha,
+                        fondoTransparente: this.escena.background === null,
+                        solido: this.matsLibro.every(m => !m.transparent && m.opacity === 1 && m.depthWrite),
+                        centro: { x: (punto.x * 0.5 + 0.5) * this.ancho, y: (-punto.y * 0.5 + 0.5) * this.alto }
+                    };
+                }
+                return estado;
+            };
+        });
+        const escenario = page.locator('.portada3d__escenario');
+        const fondo = await escenario.evaluate(el => getComputedStyle(el).backgroundImage);
+        expect(fondo).toMatch(/atelier-libros|data:image\/svg\+xml/);
+        for (const p of [0, 0.6, 0.8, 0.83, 0.96, 0.6, 0]) {
+            await page.evaluate(p => {
+                const s = document.querySelector('.portada3d');
+                scrollTo(0, s.getBoundingClientRect().top + scrollY + (s.offsetHeight - innerHeight) * p);
+            }, p);
+            await expect.poll(() => page.locator('.portada3d').evaluate(el => Number(getComputedStyle(el).getPropertyValue('--recorrido')))).toBeCloseTo(p, 3);
+            await expect(escenario).toHaveCSS('background-color', 'rgb(13, 24, 35)');
+            expect(await escenario.evaluate(el => getComputedStyle(el).backgroundImage)).toBe(fondo);
+            const acabado = await page.evaluate(() => window.__acabadoLibro);
+            expect(acabado.alfa && acabado.fondoTransparente && acabado.solido).toBe(true);
+            if (p === 0.83) {
+                const centro = await page.locator('.portada3d__apilar-item--central .portada3d__apilar-tapa').evaluate(el => {
+                    const caja = el.getBoundingClientRect(), marco = el.closest('.portada3d__escenario').getBoundingClientRect();
+                    return { x: caja.left - marco.left + caja.width / 2, y: caja.top - marco.top + caja.height / 2 };
+                });
+                expect(Math.abs(centro.x - acabado.centro.x)).toBeLessThan(2);
+                expect(Math.abs(centro.y - acabado.centro.y)).toBeLessThan(2);
+            }
+        }
+    });
+}
 
 for (const ancho of [390, 1440])
     test(`libro cerrado ${ancho}px: tapa y hojas inmóviles, con transición reversible`, async ({ page }) => {

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import storage from '../../panel/lib/storage/index';
+import storage from '../../services/panel/storage/index';
 import { AuthContext } from './AuthContext';
 
 export function AuthProvider({ children }) {

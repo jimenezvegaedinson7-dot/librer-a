@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../providers/AuthContext';
-import { esPersonalInterno, inicioPorRol } from '../../panel/lib/roles';
+import { esPersonalInterno, inicioPorRol } from '../../models/panel/roles';
 
 export default function RutaPorRol({ roles, children }) {
     const { usuario } = useAuth();

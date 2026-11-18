@@ -1,22 +1,33 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-11-10 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-18 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
 
-1. `dotenv` y comprobación obligatoria de `TWO_FACTOR_ENCRYPTION_KEY` (≥ 16 caracteres; si falta, el proceso no arranca).
-2. `helmet` (sin CSP, CORP cross-origin) → `config/cors.js` con lista `FRONTEND_ORIGINS` y patrón `FRONTEND_ORIGINS_REGEX` (regex inválida desactiva previews y conserva lista explícita) → `express.json({ limit: '1mb' })` → `baseLimiter`.
-3. Estáticos: `/uploads` → `backend/uploads` (portadas y fotos locales cuando Cloudinary no está configurado).
-4. Endpoints en línea: `GET /` y `GET /api` (salud pública), y `GET /api/test-db` (JWT + admin).
-5. Montaje de 22 routers bajo `/api/*` → 404 JSON → `error.middleware`.
-6. `iniciarJobs()` programa limpieza cada 5 min. `iniciar()` espera `aplicarMigraciones` y `aplicarMigracionesDatos` antes de aceptar tráfico; en test se usa el esquema preparado por el runner. Un fallo en producción aborta el arranque.
-7. `app.listen(PORT || 3000)` después de comprobar el esquema. Las migraciones base e incrementales están en `config/migraciones.js`; los backfills se registran en `migraciones_datos`.
+1. `server.js` carga `config/entorno.js`: dotenv y comprobación obligatoria de `TWO_FACTOR_ENCRYPTION_KEY` (≥ 16 caracteres).
+2. `app/iniciar.js` espera `aplicarMigraciones` y `aplicarMigracionesDatos` antes de aceptar tráfico; en test se usa el esquema preparado por el runner. Un fallo fatal en producción aborta el arranque.
+3. `app/app.js#crearApp` construye Express sin abrir puertos ni iniciar jobs: helmet → CORS → JSON (1 MiB) → baseLimiter → estáticos `/uploads` → routers → 404 JSON → error.middleware.
+4. `app/rutas.js` monta 23 routers. `routes/sistema.routes.js` conserva `GET /`, `GET /api` y `GET /api/test-db` (JWT + admin).
+5. `app/iniciar.js` abre `PORT || 3000` y después inicia la limpieza cada 5 min. Devuelve servidor y función para detener los jobs.
+6. Las migraciones base e incrementales están en `config/migraciones.js`; los backfills se registran en `migraciones_datos`.
+
+## Capas y módulos
+
+- `app/`: composición HTTP, montaje y ciclo de vida.
+- `routes/` y `middlewares/`: contratos HTTP, autenticación, permisos y uploads.
+- `controllers/`: entrada, validación y respuesta HTTP; no ejecutan SQL.
+- `services/`: operaciones compartidas y coordinación de negocio (pagos, catálogo, autenticación, versión y asistente).
+- `models/`: consultas SQL y persistencia. Los CRUD sencillos pueden ser llamados directamente por su controlador; los flujos de varias operaciones usan servicios.
+- `integrations/`: PayU, Gemini, Cloudinary, correo y Chromium/PDF.
+- `config/`, `utils/` y `jobs/`: entorno/conexiones, reglas auxiliares y tareas programadas.
+- Los archivos se agrupan por capa y se identifican por módulo, sin crear carpetas para cada archivo.
 
 ## Montaje de routers
 
 | Prefijo | Archivo de rutas |
 |---|---|
+| `/` | `routes/sistema.routes.js` |
 | `/api/agencias` | `routes/agencia.routes.js` |
 | `/api/anuncios` | `routes/anuncio.routes.js` |
 | `/api/app` | `routes/app.routes.js` |
@@ -62,8 +73,8 @@
 
 | Archivo | Responsabilidad |
 |---|---|
-| `utils/mailer.js` | Correo con **nodemailer** (SMTP_*): verificación, reseteo y avisos comerciales. Comprobantes adjuntos PDF, renderizados con **Playwright Chromium** por `utils/pdf.js`. |
-| `utils/cloudinary.js` | Subida/eliminación de imágenes en Cloudinary (CLOUDINARY_*), `publicIdDesdeUrl`. |
+| `integrations/mailer.js` | Correo con **nodemailer** (SMTP_*): verificación, reseteo y avisos comerciales. Comprobantes adjuntos PDF, renderizados con **Playwright Chromium** por `integrations/pdf.js`. |
+| `integrations/cloudinary.js` | Subida/eliminación de imágenes en Cloudinary (CLOUDINARY_*), `publicIdDesdeUrl`. |
 | `utils/crypto.js` | Cifrado/descifrado del secreto 2FA con `TWO_FACTOR_ENCRYPTION_KEY`. |
 | `utils/transiciones.js` | Máquinas de estado de `VENTA` y `ENTREGA`; los marcadores de origen retirado permanecen de solo lectura. |
 | `utils/payuStatus.js` | Traduce estados de PayU a estados de venta. |
@@ -71,9 +82,13 @@
 | `utils/roles.js` | Dominio actual: `ADMINISTRADOR` y `CLIENTE`. Exporta `ROLES`, `ROLES_PANEL`, `ROLES_ASIGNABLES`, `normalizar`, `esRolValido` y `esPersonalInterno`. `usuarios.rol` solo admite `cliente`/`administrador`; la migración `029_retirar_rol_obsoleto.sql` conserva las cuentas del rol retirado como clientes inactivos, sin cambiar IDs ni compras. |
 | `utils/fileType.js` | Detección del tipo real de archivo por firma (uploads). |
 | `utils/numeroALetras.js` | Importe en letras para comprobantes. |
-| `services/payu.service.js` | Integración **PayU WebCheckout**: crear orden, formulario de checkout, consulta de orden. |
+| `integrations/payu.js` | Integración **PayU WebCheckout**: crear orden, formulario de checkout, consulta de orden. |
+| `services/pago.service.js` | Aplica el resultado del pago y coordina sus notificaciones, también desde los jobs. |
+| `services/libro.service.js` | Coordina la eliminación transaccional de libro, inventario y movimientos; rechaza libros con ventas. |
+| `services/auth.service.js` | Política compartida de contraseña y proyección pública del usuario. |
+| `services/appVersion.service.js` | Lee y valida la versión publicada; compartido por API y script de publicación. |
 | `services/aiAssistant.service.js` | Asistente público: búsqueda PostgreSQL tolerante, recomendaciones verificadas y fallback local. No modifica libros ni inventario. |
-| `services/geminiAssistant.service.js` | Gemini REST, una llamada como máximo con 8 libros, timeout de 8 s, salida estructurada validada y pausa ante errores/cuota. |
+| `integrations/gemini.js` | Gemini REST, una llamada como máximo con 8 libros, timeout de 8 s, salida estructurada validada y pausa ante errores/cuota. |
 | `services/asistenteContexto.service.js` | Contexto firmado temporal, 6 entradas de historial y expiración a los 20 min; sin tabla de conversaciones. |
 | `jobs/limpieza.js` | Cada 5 min: reconciliación PayU y cancelación de ventas abandonadas (ventaModel). |
 
@@ -95,19 +110,6 @@
 
 Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#función → modelo#función → tablas PostgreSQL**.
 
-### Rutas en server.js
-
-| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
-|---|---|---|---|---|---|
-| GET | `/` | — | inline (server.js) | — | — |
-| GET | `/api` | — | inline (server.js) | — | — |
-
-### /api/test-db
-
-| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
-|---|---|---|---|---|---|
-| GET | `/api/test-db` | JWT + rol:administrador | inline (server.js) | — | — |
-
 ### /api/agencias
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
@@ -122,7 +124,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| GET | `/api/anuncios` | — | controllers/anuncio.controller.js#obtenerAnuncioActivo | — | — |
+| GET | `/api/anuncios` | — | controllers/anuncio.controller.js#obtenerAnuncioActivo | `anuncio.model.js#obtenerActivo` | anuncios |
 | GET | `/api/anuncios/carrusel` | — | controllers/carrusel.controller.js#listarPublico | `carrusel.model.js#listar` | carrusel_anuncios, libros |
 | GET | `/api/anuncios/protagonista` | — | controllers/portada.controller.js#obtenerPublico | `portada.model.js#resolverProtagonista` | — |
 | GET | `/api/anuncios/protagonista/panel` | JWT + rol:administrador | controllers/portada.controller.js#obtenerPanel | `portada.model.js#obtenerConfig`<br>`portada.model.js#resolverProtagonista` | portada_config |
@@ -132,16 +134,16 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | PUT | `/api/anuncios/carrusel/orden` | JWT + rol:administrador | controllers/carrusel.controller.js#reordenar | `carrusel.model.js#reordenar` | carrusel_anuncios |
 | PUT | `/api/anuncios/carrusel/:id` | JWT + rol:administrador + recibir | controllers/carrusel.controller.js#actualizar | `carrusel.model.js#actualizar` | carrusel_anuncios |
 | DELETE | `/api/anuncios/carrusel/:id` | JWT + rol:administrador | controllers/carrusel.controller.js#eliminar | `carrusel.model.js#eliminar`<br>`usuario.model.js#buscarPorIdConPassword` | carrusel_anuncios, usuarios |
-| GET | `/api/anuncios/todos` | JWT + rol:administrador | controllers/anuncio.controller.js#listarAnuncios | — | — |
-| POST | `/api/anuncios` | JWT + rol:administrador + uploadVideo(video) | controllers/anuncio.controller.js#crearAnuncio | — | — |
-| PUT | `/api/anuncios/:id` | JWT + rol:administrador + uploadVideo(video) | controllers/anuncio.controller.js#actualizarAnuncio | — | — |
-| DELETE | `/api/anuncios/:id` | JWT + rol:administrador | controllers/anuncio.controller.js#eliminarAnuncio | `usuario.model.js#buscarPorIdConPassword` | usuarios |
+| GET | `/api/anuncios/todos` | JWT + rol:administrador | controllers/anuncio.controller.js#listarAnuncios | `anuncio.model.js#obtenerTodos` | anuncios |
+| POST | `/api/anuncios` | JWT + rol:administrador + uploadVideo(video) | controllers/anuncio.controller.js#crearAnuncio | `anuncio.model.js#crear` | anuncios |
+| PUT | `/api/anuncios/:id` | JWT + rol:administrador + uploadVideo(video) | controllers/anuncio.controller.js#actualizarAnuncio | `anuncio.model.js#actualizar`<br>`anuncio.model.js#obtenerPorId` | anuncios |
+| DELETE | `/api/anuncios/:id` | JWT + rol:administrador | controllers/anuncio.controller.js#eliminarAnuncio | `anuncio.model.js#eliminar`<br>`anuncio.model.js#obtenerPorId`<br>`usuario.model.js#buscarPorIdConPassword` | anuncios, usuarios |
 
 ### /api/app
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| GET | `/api/app/version` | — | controllers/app.controller.js#obtenerVersion | — | — |
+| GET | `/api/app/version` | — | controllers/app.controller.js#obtenerVersion | `appVersion.service.js#obtenerConfiguracion` | — |
 
 ### /api/asistente
 
@@ -156,14 +158,14 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| POST | `/api/auth/registro` | registroLimiter | controllers/auth.controller.js#registrar | `usuario.model.js#buscarPorEmail`<br>`usuario.model.js#crear`<br>`usuario.model.js#guardarCodigoVerificacion` | usuarios |
-| POST | `/api/auth/login` | loginLimiter | controllers/auth.controller.js#login | `usuario.model.js#buscarPorEmail` | usuarios |
+| POST | `/api/auth/registro` | registroLimiter | controllers/auth.controller.js#registrar | `auth.service.js#validarPassword`<br>`usuario.model.js#buscarPorEmail`<br>`usuario.model.js#crear`<br>`usuario.model.js#guardarCodigoVerificacion` | usuarios |
+| POST | `/api/auth/login` | loginLimiter | controllers/auth.controller.js#login | `auth.service.js#datosPublicos`<br>`usuario.model.js#buscarPorEmail` | usuarios |
 | POST | `/api/auth/verificar-email` | verificacionLimiter | controllers/auth.controller.js#verificarEmail | `usuario.model.js#buscarPorEmail`<br>`usuario.model.js#marcarEmailVerificado` | usuarios |
 | POST | `/api/auth/reenviar-codigo` | verificacionLimiter | controllers/auth.controller.js#reenviarCodigo | `usuario.model.js#buscarPorEmail`<br>`usuario.model.js#guardarCodigoVerificacion` | usuarios |
 | POST | `/api/auth/solicitar-reseteo` | verificacionLimiter | controllers/auth.controller.js#solicitarReseteo | `usuario.model.js#buscarPorEmail`<br>`usuario.model.js#guardarCodigoVerificacion` | usuarios |
 | POST | `/api/auth/verificar-reseteo` | verificacionLimiter | controllers/auth.controller.js#verificarReseteo | `usuario.model.js#buscarPorEmail` | usuarios |
-| POST | `/api/auth/reestablecer-contrasena` | verificacionLimiter | controllers/auth.controller.js#reestablecerContrasena | `usuario.model.js#actualizarPasswordConCodigo`<br>`usuario.model.js#buscarPorEmail` | usuarios |
-| POST | `/api/auth/2fa/verify-login` | twoFaLimiter | controllers/auth2fa.controller.js#verificarLogin | `usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#consumirOtp2FA`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |
+| POST | `/api/auth/reestablecer-contrasena` | verificacionLimiter | controllers/auth.controller.js#reestablecerContrasena | `auth.service.js#validarPassword`<br>`usuario.model.js#actualizarPasswordConCodigo`<br>`usuario.model.js#buscarPorEmail` | usuarios |
+| POST | `/api/auth/2fa/verify-login` | twoFaLimiter | controllers/auth2fa.controller.js#verificarLogin | `auth.service.js#datosPublicos`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#consumirOtp2FA`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |
 | POST | `/api/auth/2fa/setup` | JWT + twoFaLimiter | controllers/auth2fa.controller.js#setup | `usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#guardarSecreto2FA` | usuarios |
 | POST | `/api/auth/2fa/confirm` | JWT + twoFaLimiter | controllers/auth2fa.controller.js#confirmar | `usuario.model.js#activar2FA`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |
 | POST | `/api/auth/2fa/disable` | JWT + twoFaLimiter | controllers/auth2fa.controller.js#desactivar | `usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#consumirOtp2FA`<br>`usuario.model.js#desactivar2FA`<br>`usuario.model.js#obtenerSecreto2FA` | usuarios |
@@ -200,7 +202,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 |---|---|---|---|---|---|
 | GET | `/api/comprobantes` | JWT + verificarPanel | controllers/comprobante.controller.js#listarComprobantes | `comprobante.model.js#listarComprobantes` | comprobantes, usuarios, ventas |
 | GET | `/api/comprobantes/resumen` | JWT + verificarPanel | inline (comprobante.routes.js) | `comprobante.model.js#listarResumen` | comprobantes |
-| POST | `/api/comprobantes/:id/enviar-email` | JWT + verificarPanel | controllers/comprobante.controller.js#enviarComprobanteEmail | `comprobante.model.js#obtenerComprobante`<br>`empresa.model.js#obtenerEmpresa` | comprobantes, empresa, usuarios, ventas |
+| POST | `/api/comprobantes/:id/enviar-email` | JWT + verificarPanel | controllers/comprobante.controller.js#enviarComprobanteEmail | `comprobante.model.js#marcarEnviadoPorEmail`<br>`comprobante.model.js#obtenerComprobante`<br>`empresa.model.js#obtenerEmpresa` | comprobantes, empresa, usuarios, ventas |
 | GET | `/api/comprobantes/:id` | JWT + verificarPanel | controllers/comprobante.controller.js#obtenerComprobante | `comprobante.model.js#obtenerComprobante` | comprobantes, usuarios, ventas |
 | POST | `/api/comprobantes/:id/anular` | JWT + rol:administrador | controllers/comprobante.controller.js#anularComprobante | `comprobante.model.js#anular`<br>`historial.model.js#crear` | comprobantes, historial_operaciones |
 
@@ -250,20 +252,20 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/libros/:id` | — | controllers/libro.controller.js#obtenerLibro | `libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | POST | `/api/libros` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#crearLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro`<br>`libro.model.js#crear`<br>`libro.model.js#eliminar` | autores, categorias, historial_operaciones, inventario, libros |
 | PUT | `/api/libros/:id` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#actualizarLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`libro.model.js#actualizar`<br>`libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, ventas |
-| DELETE | `/api/libros/:id` | JWT + rol:administrador | controllers/libro.controller.js#eliminarLibro | `historial.model.js#crear`<br>`inventario.model.js#eliminarMovimientosPorLibro`<br>`inventario.model.js#eliminarPorLibro`<br>`libro.model.js#obtenerPorId`<br>`usuario.model.js#buscarPorIdConPassword` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, movimientos_inventario, usuarios, ventas |
+| DELETE | `/api/libros/:id` | JWT + rol:administrador | controllers/libro.controller.js#eliminarLibro | `historial.model.js#crear`<br>`libro.model.js#obtenerPorId`<br>`libro.service.js#eliminarConInventario`<br>`usuario.model.js#buscarPorIdConPassword` | autores, categorias, detalle_venta, historial_operaciones, inventario, libros, movimientos_inventario, usuarios, ventas |
 
 ### /api/pagos
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| GET | `/api/pagos/checkout/:externalReference` | — | controllers/pago.controller.js#renderCheckoutPage | `payu.service.js#construirFormularioCheckout`<br>`venta.model.js#buscarPorReferenciaExterna` | ventas |
+| GET | `/api/pagos/checkout/:externalReference` | — | controllers/pago.controller.js#renderCheckoutPage | `venta.model.js#buscarPorReferenciaExterna` | ventas |
 | GET | `/api/pagos/respuesta/:externalReference` | — | controllers/pago.controller.js#renderRespuestaPage | `venta.model.js#buscarPorReferenciaExterna` | ventas |
 | GET | `/api/pagos/capacidades` | — | controllers/pago.controller.js#obtenerCapacidadesCompra | `zonaDelivery.model.js#listar` | zonas_delivery_pallasca |
-| POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `usuario.model.js#buscarPorId`<br>`venta.model.js#aplicarPago`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
+| POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `pago.service.js#aplicarEstadoPagoAVenta`<br>`venta.model.js#buscarPorReferenciaExterna` | agencias_courier, asistente_memoria, comprobantes, detalle_venta, distritos_lima, favoritos, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
 | GET | `/api/pagos` | JWT + verificarPanel | controllers/pago.controller.js#listarPagosAdmin | `venta.model.js#listarPagosAdmin` | usuarios, ventas |
 | GET | `/api/pagos/resumen` | JWT + verificarPanel | inline (pago.routes.js) | `pago.model.js#listarResumen` | ventas |
-| POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `payu.service.js#crearOrden`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#crear`<br>`zonaDelivery.model.js#resolverDeliveryCiudad` | detalle_venta, inventario, libros, usuarios, ventas, zonas_delivery_pallasca |
-| GET | `/api/pagos/:orderId` | JWT | controllers/pago.controller.js#obtenerOrden | `payu.service.js#obtenerOrdenDiagnostico`<br>`usuario.model.js#buscarPorId`<br>`venta.model.js#aplicarPago`<br>`venta.model.js#buscarPorPayuOrderId`<br>`venta.model.js#buscarPorReferenciaExterna` | detalle_venta, inventario, usuarios, ventas |
+| POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `inventario.model.js#obtenerStockPorLibro`<br>`libro.model.js#obtenerParaCompra`<br>`pago.service.js#notificarOrdenCreada`<br>`venta.model.js#buscarPorIdempotencia`<br>`venta.model.js#crear`<br>`zonaDelivery.model.js#resolverDeliveryCiudad` | agencias_courier, asistente_memoria, comprobantes, detalle_venta, distritos_lima, favoritos, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas, zonas_delivery_pallasca |
+| GET | `/api/pagos/:orderId` | JWT | controllers/pago.controller.js#obtenerOrden | `pago.service.js#aplicarEstadoPagoAVenta`<br>`venta.model.js#buscarPorPayuOrderId`<br>`venta.model.js#buscarPorReferenciaExterna` | agencias_courier, asistente_memoria, comprobantes, detalle_venta, distritos_lima, favoritos, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
 
 ### /api/pedidos
 
@@ -295,6 +297,19 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/reportes/ventas-por-dia` | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | controllers/reporte.controller.js#obtenerVentasPorDia | `reporte.model.js#obtenerVentasPorDia` | ventas |
 | GET | `/api/reportes/indicadores-ventas` | JWT + '/reservas-por-estado' + (_req, res) => res.status(410).json({ success: false, mensaje: 'El reporte de reservas fue eliminado.' }) + soloAdmin | controllers/reporte.controller.js#obtenerIndicadoresVentas | `reporte.model.js#obtenerIndicadoresVentas` | ventas |
 
+### Salud del servidor y de la API
+
+| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
+|---|---|---|---|---|---|
+| GET | `/` | — | controllers/sistema.controller.js#saludServidor | — | — |
+| GET | `/api` | — | controllers/sistema.controller.js#saludApi | — | — |
+
+### /api/test-db
+
+| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
+|---|---|---|---|---|---|
+| GET | `/api/test-db` | JWT + rol:administrador | controllers/sistema.controller.js#probarBaseDeDatos | `sistema.model.js#comprobarConexion` | — |
+
 ### /api/ubicaciones
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
@@ -308,10 +323,10 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/usuarios` | JWT + rol:administrador | controllers/usuario.controller.js#listarUsuarios | `usuario.model.js#listarConCompras`<br>`usuario.model.js#listarTodos` | usuarios, ventas |
-| GET | `/api/usuarios/perfil` | JWT | controllers/usuario.controller.js#obtenerPerfil | `usuario.model.js#buscarPorId` | usuarios |
-| PUT | `/api/usuarios/perfil` | JWT | controllers/usuario.controller.js#actualizarPerfil | `usuario.model.js#actualizarPerfil`<br>`usuario.model.js#buscarPorId`<br>`usuario.model.js#existeEmail` | usuarios |
-| PUT | `/api/usuarios/foto` | JWT + uploadPerfil(foto) | controllers/usuario.controller.js#subirFotoPerfil | `usuario.model.js#actualizarFotoPerfil`<br>`usuario.model.js#buscarPorId` | usuarios |
-| PUT | `/api/usuarios/password` | JWT | controllers/usuario.controller.js#cambiarPassword | `usuario.model.js#actualizarPassword`<br>`usuario.model.js#buscarPorIdConPassword` | usuarios |
+| GET | `/api/usuarios/perfil` | JWT | controllers/usuario.controller.js#obtenerPerfil | `usuario.model.js#buscarPorId`<br>`usuario.model.js#obtenerTwoFactorEnabled` | usuarios |
+| PUT | `/api/usuarios/perfil` | JWT | controllers/usuario.controller.js#actualizarPerfil | `usuario.model.js#actualizarPerfil`<br>`usuario.model.js#buscarPorId`<br>`usuario.model.js#existeEmail`<br>`usuario.model.js#obtenerTwoFactorEnabled` | usuarios |
+| PUT | `/api/usuarios/foto` | JWT + uploadPerfil(foto) | controllers/usuario.controller.js#subirFotoPerfil | `usuario.model.js#actualizarFotoPerfil`<br>`usuario.model.js#buscarPorId`<br>`usuario.model.js#obtenerTwoFactorEnabled` | usuarios |
+| PUT | `/api/usuarios/password` | JWT | controllers/usuario.controller.js#cambiarPassword | `auth.service.js#validarPassword`<br>`usuario.model.js#actualizarPassword`<br>`usuario.model.js#buscarPorIdConPassword` | usuarios |
 | DELETE | `/api/usuarios/cuenta` | JWT | controllers/usuario.controller.js#eliminarMiCuenta | `historial.model.js#crear`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#eliminarCuenta` | asistente_memoria, favoritos, historial_operaciones, usuarios, ventas |
 | PATCH | `/api/usuarios/:id` | JWT + rol:administrador | controllers/usuario.controller.js#adminUpdateUsuario | `historial.model.js#crear`<br>`usuario.model.js#actualizarEstadoRol`<br>`usuario.model.js#buscarPorId` | historial_operaciones, usuarios |
 
@@ -359,6 +374,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/portada.model.js` | libros, portada_config |
 | `models/reclamacion.model.js` | reclamaciones |
 | `models/reporte.model.js` | autores, categorias, comprobantes, detalle_venta, inventario, libros, usuarios, ventas |
+| `models/sistema.model.js` | — |
 | `models/ubicacion.model.js` | distritos_lima, provincias_lima |
 | `models/usuario.model.js` | asistente_memoria, favoritos, usuarios, ventas |
 | `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
@@ -373,10 +389,10 @@ Esquema canónico: **22 tablas** en `backend/database/schema.sql`. Declaraciones
 | Servicio | Paquete | Dónde | Variables de entorno (sin valores) |
 |---|---|---|---|
 | PostgreSQL | `pg` | config/database.js | DATABASE_URL o DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT |
-| Cloudinary | (API HTTP) | utils/cloudinary.js, upload*.middleware.js | CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET |
-| SMTP (correo) y PDF | `nodemailer`, `playwright` | utils/mailer.js, utils/pdf.js | SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM, SMTP_REJECT_UNAUTHORIZED, PDF_CHROME_PATH |
-| PayU (pagos) | (API HTTP) | services/payu.service.js, config/payu.js | PAYU_ACCOUNT_ID, PAYU_MERCHANT_ID, PAYU_API_LOGIN, PAYU_API_KEY, PAYU_PUBLIC_KEY, PAYU_TEST, PAYU_NOTIFICATION_URL |
-| Gemini (asistente) | REST con fetch de Node | services/geminiAssistant.service.js | GEMINI_API_KEY, GEMINI_MODEL (solo backend; configuración manual) |
+| Cloudinary | (API HTTP) | integrations/cloudinary.js, upload*.middleware.js | CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET |
+| SMTP (correo) y PDF | `nodemailer`, `playwright` | integrations/mailer.js, integrations/pdf.js | SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, MAIL_FROM, SMTP_REJECT_UNAUTHORIZED, PDF_CHROME_PATH |
+| PayU (pagos) | (API HTTP) | integrations/payu.js, config/payu.js | PAYU_ACCOUNT_ID, PAYU_MERCHANT_ID, PAYU_API_LOGIN, PAYU_API_KEY, PAYU_PUBLIC_KEY, PAYU_TEST, PAYU_NOTIFICATION_URL |
+| Gemini (asistente) | REST con fetch de Node | integrations/gemini.js | GEMINI_API_KEY, GEMINI_MODEL (solo backend; configuración manual) |
 | TOTP 2FA | `otplib`, `qrcode` | controllers/auth2fa.controller.js | TWO_FACTOR_ENCRYPTION_KEY |
 | JWT | `jsonwebtoken` | auth.middleware.js, auth*.controller.js | JWT_SECRET |
 

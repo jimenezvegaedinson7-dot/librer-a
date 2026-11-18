@@ -1,4 +1,4 @@
-%% Generado 2026-11-10 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-11-18 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     subgraph React
         R__api_anuncios["anuncios"]
@@ -7,7 +7,6 @@ flowchart LR
         R__api_auth["auth"]
         R__api_autores["autores"]
         R__api_categorias["categorias"]
-        R__api_clientes["clientes"]
         R__api_comprobantes["comprobantes"]
         R__api_empresa["empresa"]
         R__api_favoritos["favoritos"]
@@ -44,8 +43,6 @@ flowchart LR
     R__api_autores --> E__api_autores
     E__api_categorias(("/api/categorias")) --> C_categoria_controller["categoria.controller"]
     R__api_categorias --> E__api_categorias
-    E__api_clientes(("/api/clientes")) --> C_cliente_controller["cliente.controller"]
-    R__api_clientes --> E__api_clientes
     E__api_comprobantes(("/api/comprobantes")) --> C_comprobante_controller["comprobante.controller"]
     R__api_comprobantes --> E__api_comprobantes
     E__api_empresa(("/api/empresa")) --> C_empresa_controller["empresa.controller"]
@@ -99,6 +96,7 @@ flowchart LR
     C_pedido_controller --> DB
     C_reclamacion_controller --> DB
     C_reporte_controller --> DB
+    C_sistema_controller --> DB
     C_ubicacion_controller --> DB
     C_usuario_controller --> DB
     C_venta_controller --> DB

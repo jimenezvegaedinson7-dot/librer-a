@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:libreria_app/screens/perfil_screen.dart';
-import 'package:libreria_app/screens/fondos_screen.dart';
+import 'package:libreria_app/screens/personalizacion_screen.dart';
 import 'package:libreria_app/services/api_service.dart';
 import 'package:libreria_app/services/storage_service.dart';
 import 'package:libreria_app/services/tema_controller.dart';
@@ -60,7 +60,7 @@ void main() {
   );
 
   testWidgets(
-    'colores inmediatos y fondo con vista previa: cancelar no guarda y aplicar persiste',
+    'personalización independiente: botones, tarjetas y fondo se guardan por separado',
     (tester) async {
       await preparar();
       tester.view.physicalSize = const Size(390, 1200);
@@ -69,25 +69,83 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(pantalla());
       await tester.pumpAndSettle();
-      await tester.tap(find.bySemanticsLabel(RegExp('^Tema Noche')));
+      await tester.ensureVisible(find.text('Personalización'));
+      await tester.tap(find.text('Personalización'));
       await tester.pumpAndSettle();
-      expect(TemaController.instance.id, 'noche');
+      expect(find.byType(PersonalizacionScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      // Apartado A: botones e iconos + tarjetas.
+      await tester.tap(find.text('Colores de botones y tarjetas'));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('vista-previa-colores')),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('tema-noche')),
+        300,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('tema-noche')));
+      await tester.pumpAndSettle();
+      expect(
+        TemaController.instance.id,
+        'libreria',
+        reason: 'La selección es local hasta guardar',
+      );
       expect(
         (await SharedPreferences.getInstance()).getString('perfil_tema'),
-        'noche',
+        isNull,
       );
-      await tester.ensureVisible(find.text('Fondo y tarjetas'));
-      await tester.tap(find.text('Fondo y tarjetas'));
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('tarjeta-arena')),
+        300,
+      );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byKey(const ValueKey('fondo-cielo')));
+      await tester.tap(find.byKey(const ValueKey('tarjeta-arena')));
+      await tester.pumpAndSettle();
+      expect(
+        TemaController.instance.tarjeta.id,
+        'blanca',
+        reason: 'La tarjeta también es local hasta guardar',
+      );
+      await tester.tap(find.byKey(const ValueKey('guardar-botones-tarjetas')));
+      await tester.pumpAndSettle();
+      expect(TemaController.instance.id, 'noche');
+      expect(TemaController.instance.tarjeta.id, 'arena');
+      expect(
+        TemaController.instance.fondo.id,
+        'marfil',
+        reason: 'Cambiar botones y tarjetas no altera el fondo',
+      );
+      expect(AppColors.background, fondoPorId('marfil').fondo);
+      expect(AppColors.surface, tarjetaPorId('arena').color);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('perfil_tema'), 'noche');
+      expect(prefs.getString('perfil_tarjeta'), 'arena');
+      expect(prefs.getString('perfil_fondo'), isNull);
+
+      // Apartado B: solo fondo.
+      expect(find.byType(PersonalizacionScreen), findsOneWidget);
+      await tester.tap(find.text('Colores de fondo'));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('fondo-cielo')),
+        300,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('fondo-cielo')));
       await tester.pumpAndSettle();
       expect(
         TemaController.instance.fondo.id,
         'marfil',
-        reason: 'La selección es local hasta aplicar',
+        reason: 'La selección de fondo es local hasta guardar',
       );
-      await tester.drag(find.byType(ListView), const Offset(0, 1600));
+      await tester.scrollUntilVisible(
+        find.byKey(const ValueKey('vista-previa-fondo')),
+        -300,
+      );
       await tester.pumpAndSettle();
       final previa = tester.widget<AnimatedContainer>(
         find.byKey(const ValueKey('vista-previa-fondo')),
@@ -96,25 +154,25 @@ void main() {
         (previa.decoration as BoxDecoration).color,
         fondoPorId('cielo').fondo,
       );
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-      expect(TemaController.instance.fondo.id, 'marfil');
-      await tester.tap(find.text('Fondo y tarjetas'));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byKey(const ValueKey('fondo-cielo')));
-      await tester.tap(find.byKey(const ValueKey('fondo-cielo')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Aplicar «Cielo»'));
+      await tester.tap(find.byKey(const ValueKey('guardar-fondo')));
       await tester.pumpAndSettle();
       expect(TemaController.instance.fondo.id, 'cielo');
-      expect(AppColors.background, fondoPorId('cielo').fondo);
       expect(
-        (await SharedPreferences.getInstance()).getString('perfil_fondo'),
-        'cielo',
+        TemaController.instance.id,
+        'noche',
+        reason: 'Cambiar el fondo no altera los botones',
       );
+      expect(
+        TemaController.instance.tarjeta.id,
+        'arena',
+        reason: 'Cambiar el fondo no altera las tarjetas',
+      );
+      expect(AppColors.background, fondoPorId('cielo').fondo);
+      expect(prefs.getString('perfil_fondo'), 'cielo');
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
-      await TemaController.instance.aplicar('libreria');
+      await TemaController.instance.aplicarBotones('libreria');
+      await TemaController.instance.aplicarTarjeta('blanca');
       await TemaController.instance.aplicarFondo('marfil');
     },
   );
@@ -150,22 +208,33 @@ void main() {
         expect(tester.takeException(), isNull);
         await captura(tester, key, 'perfil-${ancho.toInt()}-texto-ampliado');
         await tester.scrollUntilVisible(
-          find.text('Ver todos los colores'),
+          find.text('Personalización'),
           250,
           scrollable: find.byType(Scrollable).first,
         );
-        await tester.tap(find.text('Ver todos los colores'));
+        await tester.pumpAndSettle();
+        await Scrollable.ensureVisible(
+          tester.element(find.text('Personalización')),
+          alignment: 0.25,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Personalización'));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        await captura(tester, key, 'colores-${ancho.toInt()}');
+        expect(find.byType(PersonalizacionScreen), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await captura(tester, key, 'personalizacion-${ancho.toInt()}');
+        await tester.tap(find.text('Colores de botones y tarjetas'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await captura(tester, key, 'botones-tarjetas-${ancho.toInt()}');
         await tester.pageBack();
         await tester.pumpAndSettle();
-        await tester.ensureVisible(find.text('Fondo y tarjetas'));
-        await tester.tap(find.text('Fondo y tarjetas'));
+        await tester.ensureVisible(find.text('Colores de fondo'));
+        await tester.tap(find.text('Colores de fondo'));
         await tester.pumpAndSettle();
-        expect(find.byType(FondosScreen), findsOneWidget);
         expect(tester.takeException(), isNull);
-        await captura(tester, key, 'fondos-${ancho.toInt()}');
+        await captura(tester, key, 'fondo-${ancho.toInt()}');
         await tester.pumpWidget(const SizedBox());
       },
     );
@@ -175,11 +244,80 @@ void main() {
     () async {
       await preparar();
       await TemaController.instance.aplicar('noche');
+      await TemaController.instance.aplicarTarjeta('arena');
       await TemaController.instance.aplicarFondo('cielo');
       SharedPreferences.setMockInitialValues({});
       await TemaController.instance.cargar();
       expect(TemaController.instance.id, 'libreria');
       expect(TemaController.instance.fondo.id, 'marfil');
+      expect(TemaController.instance.tarjeta.id, 'blanca');
+    },
+  );
+
+  test('migrar la apariencia anterior conserva tarjetas al cambiar de fondo y cerrar sesión', () async {
+    await preparar();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('perfil_fondo', 'cielo');
+    await prefs.remove('perfil_tarjeta');
+    await TemaController.instance.cargar();
+    expect(AppColors.surface, fondoPorId('cielo').tarjeta);
+    await TemaController.instance.aplicarFondo('rosa');
+    expect(AppColors.surface, fondoPorId('cielo').tarjeta);
+    await TemaController.instance.aplicarBotones('noche');
+    await StorageService.instance.limpiarSesion();
+    await TemaController.instance.cargar();
+    expect(TemaController.instance.id, 'noche');
+    expect(TemaController.instance.fondo.id, 'rosa');
+    expect(AppColors.surface, fondoPorId('cielo').tarjeta);
+    await TemaController.instance.aplicarTarjeta('arena');
+    await TemaController.instance.cargar();
+    expect(AppColors.surface, tarjetaPorId('arena').color);
+    expect(TemaController.instance.fondo.id, 'rosa');
+  });
+
+  testWidgets(
+    'restaurar cada apartado mantiene intacto el otro y exige guardar',
+    (tester) async {
+      await preparar();
+      await TemaController.instance.aplicarBotones('noche');
+      await TemaController.instance.aplicarTarjeta('arena');
+      await TemaController.instance.aplicarFondo('cielo');
+      await tester.pumpWidget(
+        AnimatedBuilder(
+          animation: TemaController.instance,
+          builder: (_, _) => MaterialApp(
+            theme: AppTheme.light(),
+            home: const PersonalizacionScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Colores de botones y tarjetas'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('restaurar-botones')));
+      await tester.pumpAndSettle();
+      expect(TemaController.instance.id, 'noche');
+      await tester.tap(find.byKey(const ValueKey('guardar-botones-tarjetas')));
+      await tester.pumpAndSettle();
+      expect(TemaController.instance.id, perfilTemaDefaultId);
+      expect(TemaController.instance.tarjeta.id, tarjetaDefaultId);
+      expect(TemaController.instance.fondo.id, 'cielo');
+      await tester.tap(find.text('Colores de fondo'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('probar-fondo')));
+      await tester.pumpAndSettle();
+      expect(find.text('Ocultar detalles'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('restaurar-fondo')));
+      await tester.pumpAndSettle();
+      expect(TemaController.instance.fondo.id, 'cielo');
+      await tester.tap(find.byKey(const ValueKey('guardar-fondo')));
+      await tester.pumpAndSettle();
+      await TemaController.instance.cargar();
+      expect(TemaController.instance.fondo.id, fondoDefaultId);
+      expect(TemaController.instance.id, perfilTemaDefaultId);
+      expect(TemaController.instance.tarjeta.id, tarjetaDefaultId);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
     },
   );
 
@@ -244,11 +382,11 @@ void main() {
       }
       expect(find.text('Ana Torres'), findsOneWidget);
       await tester.scrollUntilVisible(
-        find.text('Editar perfil'),
+        find.byTooltip('Editar nombre'),
         250,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(find.text('Editar perfil'));
+      await tester.tap(find.byTooltip('Editar nombre'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextFormField).at(0), 'Lucía');
       await tester.enterText(find.byType(TextFormField).at(1), 'Vega');
@@ -296,11 +434,14 @@ void main() {
       final key = GlobalKey();
       await tester.pumpWidget(RepaintBoundary(key: key, child: pantalla()));
       await tester.pumpAndSettle();
-      final combinar = find.bySemanticsLabel('Combinar tus colores');
-      final horizontal = find.byWidgetPredicate(
-        (w) => w is Scrollable && w.axisDirection == AxisDirection.right,
-      );
-      await tester.scrollUntilVisible(combinar, 300, scrollable: horizontal);
+      await tester.ensureVisible(find.text('Personalización'));
+      await tester.tap(find.text('Personalización'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Colores de botones y tarjetas'));
+      await tester.pumpAndSettle();
+      final combinar = find.text('Combinar dos colores');
+      await tester.scrollUntilVisible(combinar, 300);
+      await tester.pumpAndSettle();
       await tester.tap(combinar);
       await tester.pumpAndSettle();
       expect(find.text('Combina tus colores'), findsOneWidget);
@@ -323,18 +464,25 @@ void main() {
       await tester.ensureVisible(fin);
       await tester.tap(fin);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Aplicar'));
-      await tester.tap(find.widgetWithText(FilledButton, 'Aplicar'));
+      await tester.ensureVisible(
+        find.widgetWithText(FilledButton, 'Usar combinación'),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Usar combinación'));
       await tester.pumpAndSettle();
       final id = perfilTemaIdPersonalizado(
         const Color(0xFF17181C),
         fin: Colors.white,
       );
+      expect(TemaController.instance.id, 'libreria');
+      await tester.tap(find.byKey(const ValueKey('guardar-botones-tarjetas')));
+      await tester.pumpAndSettle();
       expect(TemaController.instance.id, id);
       await TemaController.instance.cargar();
       await tester.pumpAndSettle();
       expect(TemaController.instance.tema.inicio, const Color(0xFF17181C));
       expect(TemaController.instance.tema.fin, Colors.white);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
       await tester.drag(find.byType(ListView), const Offset(0, 1600));
       await tester.pumpAndSettle();
       await captura(tester, key, 'perfil-degradado-personalizado');
@@ -448,7 +596,7 @@ void main() {
       );
       await tester.pumpWidget(pantalla());
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.photo_camera_rounded));
+      await tester.tap(find.byTooltip('Cambiar foto de perfil'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Elegir avatar'));
       await tester.pumpAndSettle();

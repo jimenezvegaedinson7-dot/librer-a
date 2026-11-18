@@ -1,11 +1,12 @@
 const ventaModel = require('../models/venta.model');
+const { notificarResultadoPago } = require('../services/pago.service');
 
 const INTERVALO_MS = 5 * 60 * 1000;
 
 const ejecutarLimpieza = async () => {
     try {
         const resultado = await ventaModel.cancelarOrdenesAbandonadas(30, {
-            alSincronizarPago: (resultado) => require('../controllers/pago.controller').notificarResultadoPago(resultado)
+            alSincronizarPago: notificarResultadoPago
         });
 
         if (resultado.canceladas > 0) {
@@ -21,9 +22,10 @@ const ejecutarLimpieza = async () => {
 };
 
 const iniciarJobs = () => {
-    setInterval(ejecutarLimpieza, INTERVALO_MS);
+    const intervalo = setInterval(ejecutarLimpieza, INTERVALO_MS);
 
     console.log(`[jobs] Limpieza programada cada ${INTERVALO_MS / 60000} minutos`);
+    return () => clearInterval(intervalo);
 };
 
 module.exports = { iniciarJobs };

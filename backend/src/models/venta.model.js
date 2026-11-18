@@ -925,7 +925,16 @@ const cancelarOrdenesAbandonadas = async (minutos = 30, { alSincronizarPago } = 
     return { canceladas, conPagoPendienteEnPayU };
 };
 
+const buscarPorIdempotencia = async (clave, idUsuario) => {
+    const [rows] = await pool.query(
+        `SELECT id_venta, id_usuario, estado, total, costo_envio, external_reference, payu_order_id, payu_payment_id, payu_payment_status, payu_payer_email, correo_compra, cliente_documento, cliente_tipo_documento, pago_revision_motivo, pago_revision_fecha, fecha_pago, estado_reembolso FROM ventas WHERE idempotencia_clave = ? AND id_usuario = ? LIMIT 1`,
+        [clave, idUsuario]
+    );
+    return rows[0];
+};
+
 module.exports = {
+    buscarPorIdempotencia,
     obtenerTodos,
     obtenerPorId,
     obtenerPorUsuario,

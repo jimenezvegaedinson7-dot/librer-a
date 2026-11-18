@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
-const { generarPdfDesdeHtml } = require('../src/utils/pdf');
+const { generarPdfDesdeHtml } = require('../src/integrations/pdf');
 test('genera el comprobante PDF y bloquea JavaScript y recursos externos', async () => {
     let requests = 0;
     const server = http.createServer((_req, res) => {

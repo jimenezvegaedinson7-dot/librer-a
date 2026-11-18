@@ -85,7 +85,7 @@ for (const tipo of ['401', 'revocada', 'perfil', 'login', 'login-invitado']) {
                     localStorage.setItem('token', 'token-anterior');
                     localStorage.setItem('usuario', JSON.stringify(admin));
                 }
-                const { default: client } = await import('/src/panel/lib/api/client.js');
+                const { default: client } = await import('/src/services/panel/api/client.js');
                 window.resultadoPanel = null;
                 const solicitud = tipo.startsWith('login') ? client.post('/auth/login', {}) : client.get('/prueba-panel');
                 solicitud
@@ -127,7 +127,7 @@ test('panel: una edición de perfil de la misma identidad no invalida la respues
     const resultado = await page.evaluate(async (u) => {
         localStorage.setItem('token', 'token-vigente');
         localStorage.setItem('usuario', JSON.stringify(u));
-        const { default: client } = await import('/src/panel/lib/api/client.js');
+        const { default: client } = await import('/src/services/panel/api/client.js');
         const solicitud = client.get('/prueba-panel');
         localStorage.setItem('usuario', JSON.stringify({ ...u, nombre: 'Nombre corregido' }));
         return solicitud;
@@ -151,7 +151,7 @@ for (const tipo of ['401', 'revocada']) {
                 localStorage.setItem('token', 'token-vigente');
                 localStorage.setItem('usuario', JSON.stringify(admin));
                 localStorage.setItem('libreria-web-cliente-v1', JSON.stringify({ usuario: cliente, token: 'cliente-a', generacion: 'a' }));
-                const { default: client } = await import('/src/panel/lib/api/client.js');
+                const { default: client } = await import('/src/services/panel/api/client.js');
                 void client.get('/prueba-panel').catch(() => {});
             },
             { admin, cliente }
@@ -172,7 +172,7 @@ test('panel: 401 de contraseña incorrecta conserva la sesión vigente', async (
     const estado = await page.evaluate(async (u) => {
         localStorage.setItem('token', 'token-vigente');
         localStorage.setItem('usuario', JSON.stringify(u));
-        const { default: client } = await import('/src/panel/lib/api/client.js');
+        const { default: client } = await import('/src/services/panel/api/client.js');
         try {
             await client.put('/usuarios/password', {});
         } catch (e) {
@@ -188,13 +188,14 @@ for (const status of [201, 422]) {
         await sembrarCliente(page);
         await page.clock.install();
         await page.evaluate(async (status) => {
-            const { leerIntento, conExclusionCliente, enviarIntento } = await import('/src/web/tienda/persistenciaCompra.js');
-            const { CLAVE_CLIENTE, leer } = await import('/src/web/tienda/clienteApi.js');
+            const { leerIntento, conExclusionCliente, enviarIntento } = await import('/src/services/web/tienda/persistenciaCompra.js');
+            const { CLAVE_CLIENTE, leer } = await import('/src/services/web/tienda/clienteApi.js');
             const sesion = leer(CLAVE_CLIENTE);
             const intento = { id_usuario: 7, cuerpo: { idempotencia_clave: 'timeout-misma-clave', items: [{ id_libro: 1, cantidad: 1 }] } };
             const original = window.fetch;
-            window.fetch = async (_url, opciones) =>
-                new Response(
+            window.fetch = async (url, opciones) => {
+                if (!String(url).endsWith('/pagos/crear-orden')) return original(url, opciones);
+                return new Response(
                     new ReadableStream({
                         start(c) {
                             c.enqueue(new TextEncoder().encode('{"success":'));
@@ -203,6 +204,7 @@ for (const status of [201, 422]) {
                     }),
                     { status, headers: { 'Content-Type': 'application/json' } }
                 );
+            };
             window.resultadoTimeout = null;
             window.segundoBloqueo = false;
             void conExclusionCliente(7, () => enviarIntento(intento, sesion)).catch((e) => {
@@ -221,10 +223,13 @@ for (const status of [201, 422]) {
         expect(await page.evaluate(() => window.resultadoTimeout.intento.cuerpo.idempotencia_clave)).toBe('timeout-misma-clave');
         expect(await page.evaluate(() => window.resultadoTimeout.intento.orden)).toBeUndefined();
         const recuperado = await page.evaluate(async () => {
-            const { leerIntento, conExclusionCliente, enviarIntento } = await import('/src/web/tienda/persistenciaCompra.js');
-            const { CLAVE_CLIENTE, leer } = await import('/src/web/tienda/clienteApi.js');
+            const { leerIntento, conExclusionCliente, enviarIntento } = await import('/src/services/web/tienda/persistenciaCompra.js');
+            const { CLAVE_CLIENTE, leer } = await import('/src/services/web/tienda/clienteApi.js');
             const original = window.fetch;
-            window.fetch = async () => new Response(JSON.stringify({ success: true, data: { id_venta: 51, total: 25 } }));
+            window.fetch = async (url, opciones) =>
+                String(url).endsWith('/pagos/crear-orden')
+                    ? new Response(JSON.stringify({ success: true, data: { id_venta: 51, total: 25 } }))
+                    : original(url, opciones);
             try {
                 return await conExclusionCliente(7, () => enviarIntento(leerIntento(7), leer(CLAVE_CLIENTE)));
             } finally {

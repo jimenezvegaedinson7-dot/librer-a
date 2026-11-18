@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { eliminarRecurso } = require('./cloudinary');
+const { eliminarRecurso } = require('../integrations/cloudinary');
 const carpeta = path.join(__dirname, '../../uploads/carrusel');
 const prefijo = '/uploads/carrusel/';
 

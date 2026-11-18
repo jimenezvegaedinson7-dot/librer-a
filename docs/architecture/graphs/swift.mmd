@@ -1,0 +1,13 @@
+%% Generado 2026-11-18 desde el código real
+flowchart LR
+    APP["LibreriaSecureApp / AppState"] --> ROOT["RootView / MainView"]
+    ROOT --> VIEWS["Inicio / Catálogo / Carrito / Mis compras / Perfil"]
+    VIEWS --> SERVICES["Servicios y ViewModels activos"]
+    SERVICES --> HTTP["APIClient / URLSession / JSON / Bearer"]
+    HTTP --> API["Node.js + Express en Render"]
+    API --> DB[("PostgreSQL")]
+    APP --> KEYCHAIN["Keychain / JWT"]
+    APP --> BIOMETRY["LocalAuthentication / bloqueo local"]
+    SERVICES --> LOCAL["UserDefaults / carrito y preferencias"]
+    VIEWS --> PAYMENT["PaymentSheet / WKWebView"]
+    PAYMENT --> PAYU["PayU WebCheckout"]

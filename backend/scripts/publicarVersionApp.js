@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const { validarConfiguracion, PREFIJO_APK_AUTORIZADO } = require('../src/controllers/app.controller');
+const { validarConfiguracion, PREFIJO_APK_AUTORIZADO } = require('../src/services/appVersion.service');
 
 const RAIZ = path.resolve(__dirname, '../..');
 const PUBSPEC = path.join(RAIZ, 'flutter_app/pubspec.yaml');

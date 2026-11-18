@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { validarPassword } = require('../src/controllers/auth.controller');
+const { validarPassword } = require('../src/services/auth.service');
 
 test('acepta contraseñas válidas (al menos 8, con letra y número)', () => {
     assert.equal(validarPassword('clave1234'), true);

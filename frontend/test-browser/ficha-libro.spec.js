@@ -156,6 +156,19 @@ test('ficha: cantidad y agregar reutilizan el carrito, comprar ahora reutiliza c
     await expect(page).toHaveURL(/\/checkout$/);
     await expect(page.locator('.compra-carrito')).toHaveAttribute('aria-label', 'Carrito (3)');
 });
+test('comprar ahora conserva la ficha si el carrito ya alcanza el stock disponible', async ({ page }) => {
+    await preparar(page);
+    await page.goto('/libro/1');
+    await page.getByRole('spinbutton', { name: 'Cantidad de ejemplares', exact: true }).fill(String(principal.stock));
+    await page.getByRole('button', { name: `Agregar ${principal.titulo} al carrito`, exact: true }).click();
+    await expect(page.locator('.compra-carrito')).toHaveAttribute('aria-label', `Carrito (${principal.stock})`);
+    await page.getByRole('spinbutton', { name: 'Cantidad de ejemplares', exact: true }).fill('1');
+    await page.getByRole('button', { name: 'Comprar ahora', exact: true }).click();
+    await expect(page.getByText('Revisa la cantidad: supera las unidades disponibles para este libro.', { exact: true })).toBeVisible();
+    await expect(page).toHaveURL(/\/libro\/1$/);
+    await expect(page.locator('.compra-carrito')).toHaveAttribute('aria-label', `Carrito (${principal.stock})`);
+});
+
 test('tarjeta del catálogo: cuerpo y enlace de detalle abren la ficha del libro', async ({ page }) => {
     await preparar(page);
     await page.goto('/catalogo');

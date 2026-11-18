@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const Module = require('node:module');
 
 function cargarMailer({ pdf }) {
-    const ruta = require.resolve('../src/utils/mailer');
+    const ruta = require.resolve('../src/integrations/mailer');
     delete require.cache[ruta];
     const original = Module._load;
     Module._load = function (pedido, padre, ...resto) {
@@ -18,7 +18,7 @@ function cargarMailer({ pdf }) {
         return original.call(this, pedido, padre, ...resto);
     };
     try {
-        return require('../src/utils/mailer');
+        return require('../src/integrations/mailer');
     } finally {
         Module._load = original;
     }
@@ -63,7 +63,7 @@ test('con PDF, el correo trae solo un aviso breve (sin la vista del comprobante)
 
 test('la plantilla de aviso no repite el detalle del comprobante', () => {
     const fs = require('node:fs');
-    const fuente = fs.readFileSync(require.resolve('../src/utils/mailer'), 'utf8');
+    const fuente = fs.readFileSync(require.resolve('../src/integrations/mailer'), 'utf8');
     const aviso = fuente.slice(fuente.indexOf('function cuerpoAvisoComprobante'), fuente.indexOf('async function enviarComprobantePorEmail'));
     assert.match(aviso, /Adjuntamos tu/);
     assert.doesNotMatch(aviso, /items|precio_unitario|subtotal/);
@@ -73,7 +73,7 @@ test('la plantilla de aviso no repite el detalle del comprobante', () => {
 });
 
 test('correos con código: formales, sin cabecera de color y con el nombre escapado', () => {
-    const { plantillaCodigo } = require('../src/utils/mailer');
+    const { plantillaCodigo } = require('../src/integrations/mailer');
     const html = plantillaCodigo({
         titulo: 'Verifica tu cuenta',
         saludo: 'Hola &lt;Ana&gt;,',
@@ -89,11 +89,11 @@ test('correos con código: formales, sin cabecera de color y con el nombre escap
 
 test('los correos llevan el logo arriba y el texto suelto, sin recuadros', () => {
     const fs = require('node:fs');
-    const { plantillaCodigo } = require('../src/utils/mailer');
+    const { plantillaCodigo } = require('../src/integrations/mailer');
     const html = plantillaCodigo({ titulo: 'Restablece tu contraseña', saludo: 'Hola,', intro: 'Código:', codigo: '123456', cierre: '.' });
     assert.match(html, /<img src="https:\/\/libreria\.my\/logo-correo\.png"/);
     assert.doesNotMatch(html, /border:1px solid|border-radius|background:/);
-    const fuente = fs.readFileSync(require.resolve('../src/utils/mailer'), 'utf8');
+    const fuente = fs.readFileSync(require.resolve('../src/integrations/mailer'), 'utf8');
     const avisos = fuente.slice(fuente.indexOf('const plantillaBase'), fuente.indexOf('function construirHtmlComprobante'));
     assert.doesNotMatch(avisos, /border-radius|background:#/);
 });

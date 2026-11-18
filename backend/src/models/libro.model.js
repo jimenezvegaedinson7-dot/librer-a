@@ -69,8 +69,8 @@ const actualizar = async (id, libro) => {
     return resultado.affectedRows;
 };
 
-const eliminar = async (id) => {
-    const [resultado] = await pool.query(`DELETE FROM libros WHERE id_libro = ?`, [id]);
+const eliminar = async (id, conexion = pool) => {
+    const [resultado] = await conexion.query(`DELETE FROM libros WHERE id_libro = ?`, [id]);
 
     return resultado.affectedRows;
 };
@@ -123,4 +123,14 @@ const obtenerRecomendados = async (idUsuario) => {
     return rows;
 };
 
-module.exports = { PRECIO_FINAL_SQL, CAMPOS_DESCUENTO, obtenerTodos, obtenerPorId, obtenerRelacionados, obtenerRecomendados, crear, actualizar, eliminar };
+const tieneVentasRelacionadas = async (idLibro) => {
+    const [rows] = await pool.query('SELECT COUNT(*) AS total FROM detalle_venta WHERE id_libro = ?', [idLibro]);
+    return Number(rows[0]?.total || 0) > 0;
+};
+
+const obtenerParaCompra = async (idLibro) => {
+    const [rows] = await pool.query(`SELECT l.id_libro, l.titulo, l.precio, l.stock, l.estado, ${PRECIO_FINAL_SQL} FROM libros l WHERE l.id_libro = ? LIMIT 1`, [idLibro]);
+    return rows[0];
+};
+
+module.exports = { PRECIO_FINAL_SQL, CAMPOS_DESCUENTO, obtenerTodos, obtenerPorId, obtenerRelacionados, obtenerRecomendados, crear, actualizar, eliminar, tieneVentasRelacionadas, obtenerParaCompra };

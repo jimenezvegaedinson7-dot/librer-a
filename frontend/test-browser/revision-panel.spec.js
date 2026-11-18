@@ -144,10 +144,6 @@ async function preparar(page) {
         if (p.endsWith('/usuarios/perfil')) return route.fulfill({ json: { success: true, data: admin } });
         if (control.fallos.has(p)) return route.fulfill({ status: 503, json: { mensaje: 'Consulta temporalmente no disponible' } });
         if (p === '/api/empresa') return route.fulfill({ json: { success: true, empresa: control.empresa } });
-        if (p === '/api/clientes') {
-            const lista = url.searchParams.get('q') ? [] : [cliente];
-            return route.fulfill({ json: { success: true, clientes: lista, total: lista.length, paginas: 1, resumen: { total_general: 75, con_compras: 1 } } });
-        }
         if (p === '/api/comprobantes/resumen') return route.fulfill({ json: { success: true, boletas: 1, facturas: 0, ingresos: 50 } });
         if (p === '/api/comprobantes') {
             const lista = url.searchParams.has('tipo') || url.searchParams.get('envio') === 'pendiente' ? [] : [comprobante];
@@ -190,7 +186,6 @@ const vistas = [
     ['/ventas/comprobantes', 'comprobantes', 'Ver comprobante'],
     ['/tarifas-envio', 'delivery'],
     ['/usuarios', 'usuarios', 'Ver usuario'],
-    ['/usuarios?vista=clientes', 'clientes', 'Ver detalle del cliente'],
     ['/anuncios', 'protagonista'],
     ['/anuncios', 'videos'],
     ['/reclamaciones', 'reclamaciones', 'Ver y responder'],
@@ -326,12 +321,8 @@ test('fallos de listas: Reintentar recupera datos y los indicadores no inventan 
     await expect(page.getByRole('button', { name: 'Editar datos', exact: true })).toBeVisible();
 });
 
-test('Clientes y comprobantes: un filtro sin coincidencias no afirma que no existan registros', async ({ page }) => {
+test('Comprobantes: un filtro sin coincidencias no afirma que no existan registros', async ({ page }) => {
     await preparar(page);
-    await page.goto('/usuarios?vista=clientes');
-    await page.getByLabel('Nombre o correo del cliente', { exact: true }).fill('inexistente');
-    await page.getByRole('button', { name: 'Buscar', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'No se encontraron clientes', exact: true })).toBeVisible();
     await page.goto('/ventas/comprobantes');
     await page.getByLabel('Tipo de comprobante', { exact: true }).selectOption('factura');
     await expect(page.getByRole('heading', { name: 'No se encontraron comprobantes', exact: true })).toBeVisible();
@@ -347,52 +338,9 @@ test('Resumen: un error inicial tiene recuperación directa sin recargar el nave
     await expect(page.locator('.dashboard-mosaico')).toBeVisible();
 });
 
-test('Clientes: la ficha de una cuenta eliminada no muestra el correo técnico', async ({ page }) => {
-    await preparar(page);
-    await page.route(`${API}/clientes*`, (route) =>
-        route.fulfill({
-            json: { success: true, clientes: [{ ...cliente, nombre_completo: 'Usuario eliminado', email: 'eliminado-7@cuenta-eliminada.invalid' }], total: 1, paginas: 1 }
-        })
-    );
-    await page.goto('/usuarios?vista=clientes');
-    await page.getByRole('button', { name: 'Ver detalle del cliente', exact: true }).click();
-    const detalle = page.getByRole('dialog', { name: 'Detalle del cliente', exact: true });
-    await expect(detalle).toContainText('Cuenta eliminada por su titular');
-    await expect(detalle).not.toContainText('cuenta-eliminada.invalid');
-});
-
-test('Clientes: una búsqueda tardía no reemplaza el resultado de la consulta más reciente', async ({ page }) => {
-    await preparar(page);
-    let soltar;
-    const espera = new Promise((resolve) => {
-        soltar = resolve;
-    });
-    await page.route(`${API}/clientes?*`, async (route) => {
-        const q = new URL(route.request().url()).searchParams.get('q');
-        if (q === 'ana') await espera;
-        const encontrado = q === 'beatriz' ? { ...cliente, nombre_completo: 'Beatriz Nueva' } : cliente;
-        await route.fulfill({ json: { success: true, clientes: [encontrado], total: 1, paginas: 1 } });
-    });
-    await page.goto('/usuarios?vista=clientes');
-    await expect(page.getByRole('button', { name: 'Ver detalle del cliente', exact: true })).toBeVisible();
-    const campo = page.getByLabel('Nombre o correo del cliente', { exact: true });
-    const antigua = page.waitForRequest((r) => r.url().includes('/clientes?') && new URL(r.url()).searchParams.get('q') === 'ana');
-    await campo.fill('ana');
-    await campo.press('Enter');
-    await antigua;
-    await campo.fill('beatriz');
-    await campo.press('Enter');
-    await expect(page.locator('.data-table-shell tbody')).toContainText('Beatriz Nueva');
-    const respuesta = page.waitForResponse((r) => r.url().includes('/clientes?') && new URL(r.url()).searchParams.get('q') === 'ana');
-    soltar();
-    await respuesta;
-    await expect(page.locator('.data-table-shell tbody')).toContainText('Beatriz Nueva');
-});
-
-test('Clientes y comprobantes: los importes acumulados no se etiquetan como ventas de 14 días', async ({ page }) => {
+test('Comprobantes: los importes acumulados no se etiquetan como ventas de 14 días', async ({ page }) => {
     const control = await preparar(page);
     for (const [ruta, nombre, titulo, importe] of [
-        ['/usuarios?vista=clientes', 'Resumen de clientes', 'Total comprado', 'S/ 75.00'],
         ['/ventas/comprobantes', 'Resumen de comprobantes', 'Importe emitido', 'S/ 50.00']
     ]) {
         await page.goto(ruta);

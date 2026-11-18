@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const { detectarVideo } = require('../utils/fileType');
-const { subirVideo, eliminarRecurso, configurado: cloudinaryConfigurado } = require('../utils/cloudinary');
+const { subirVideo, eliminarRecurso, configurado: cloudinaryConfigurado } = require('../integrations/cloudinary');
 
 const carpetaVideos = path.join(__dirname, '../../uploads/videos');
 const LIMITE_MB = 50;

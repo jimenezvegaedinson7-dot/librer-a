@@ -62,14 +62,20 @@ async function revisarTarjetas(page) {
                 }
                 if (tarjeta.matches('.oferta-tarjeta')) {
                     const boton = acciones.querySelector('.boton--compra'),
-                        detalle = acciones.querySelector('a.compra-libro__detalle');
-                    if (boton && !boton.disabled && detalle) {
+                        detalle = acciones.querySelector('a.compra-libro__detalle, a.boton--linea');
+                    if (boton && detalle) {
                         const b = boton.getBoundingClientRect(),
                             d = detalle.getBoundingClientRect(),
                             apilado = d.top >= b.bottom - 1,
                             espacio = apilado ? d.top - b.bottom : d.left - b.right;
                         if (espacio < -1 || espacio > 9) errores.push('oferta: carrito y detalle deben permanecer juntos');
-                        if (getComputedStyle(boton.querySelector('.compra-libro__etiqueta')).display === 'none') errores.push('oferta: falta el texto del botón de carrito');
+                        const datos = tarjeta.querySelector('.oferta-tarjeta__datos').getBoundingClientRect();
+                        if (Math.abs(b.left - d.left) > 1 || Math.abs(b.width - d.width) > 1) errores.push('oferta: botones desalineados entre sí');
+                        if (Math.abs(b.left - datos.left) > 1 || Math.abs(b.width - datos.width * 0.8) > 1) errores.push('oferta: conservar el borde izquierdo y recortar solo la derecha');
+                        if (Math.abs(b.height - d.height) > 1 || b.height < 44 || d.height < 44) errores.push('oferta: conservar la altura de los botones');
+                        for (const accion of [boton, detalle]) {
+                            if (!accion.textContent.trim() || accion.scrollWidth > accion.clientWidth + 1) errores.push('oferta: texto de acción oculto o desbordado');
+                        }
                         const referencia = document.querySelector('.libro .boton--compra, .tarjeta-libro .boton--compra');
                         if (referencia) {
                             const actual = getComputedStyle(boton),
@@ -89,6 +95,41 @@ async function revisarTarjetas(page) {
 }
 
 test.use({ reducedMotion: 'reduce' });
+for (const width of [390, 1440]) {
+    test(`Ver detalle ${width}px: hover y pulsación grises con texto negro, sin cambiar Agregar`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 1000 });
+        await preparar(page);
+        await page.goto('/');
+        const revisar = async selector => {
+            const grupo = page.locator(selector).first().locator('.compra-libro');
+            const detalle = grupo.getByRole('link', { name: /^Ver detalle de / });
+            const agregar = grupo.getByRole('button', { name: /^Agregar / });
+            await page.mouse.move(0, 0);
+            await expect(detalle).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+            await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
+            await detalle.hover();
+            await expect(detalle).toHaveCSS('background-color', 'rgb(242, 242, 242)');
+            await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
+            await expect(detalle.locator('svg')).toHaveCSS('color', 'rgb(20, 18, 18)');
+            await detalle.focus();
+            await expect(detalle).toHaveCSS('background-color', 'rgb(242, 242, 242)');
+            await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
+            await page.mouse.down();
+            await expect(detalle).toHaveCSS('background-color', 'rgb(222, 222, 222)');
+            await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
+            await page.mouse.move(0, 0);
+            await page.mouse.up();
+            await expect(agregar).toHaveCSS('background-color', 'rgb(20, 18, 18)');
+            await agregar.hover();
+            await expect(agregar).toHaveCSS('background-color', 'rgb(226, 35, 26)');
+        };
+        await revisar('.catalogo .libro');
+        await revisar('.ofertas .oferta-tarjeta');
+        await page.goto('/catalogo');
+        await revisar('.catalogo-resultados .tarjeta-libro');
+    });
+}
+
 for (const [width, height] of [
     [320, 667],
     [360, 800],
@@ -107,6 +148,7 @@ for (const [width, height] of [
         page.on('pageerror', (e) => errores.push(e.message));
         await page.goto('/');
         await expect(page.locator('.oferta-tarjeta')).toHaveCount(12);
+        if ([390, 1440].includes(width)) await page.locator('.ofertas .contenedor').screenshot({ path: test.info().outputPath(`ofertas-${width}.png`) });
         await revisarTarjetas(page);
         if ([390, 1440].includes(width)) {
             await page
@@ -121,7 +163,10 @@ for (const [width, height] of [
                 .first()
                 .getByRole('button', { name: `Agregar ${libros[0].titulo} al carrito`, exact: true })
                 .click();
-            await expect(page.locator('.compra-carrito')).toHaveAttribute('aria-label', 'Carrito (1)');
+            const carrito = page.locator('.compra-carrito');
+            await expect(carrito).toHaveAttribute('aria-label', 'Carrito (1)');
+            await expect(carrito).not.toHaveAttribute('data-cantidad');
+            expect(await carrito.evaluate((el) => getComputedStyle(el, '::after').content)).toBe('none');
         }
         if (width <= 640) {
             for (const selector of ['.categorias__rejilla', '.ofertas__carrusel']) {
@@ -166,6 +211,7 @@ for (const [width, height] of [
         for (const ruta of ['/aplicacion', '/descargar', '/cuenta']) {
             await page.goto(ruta);
             await expect(page.locator('main h1')).toBeVisible();
+            expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
             await revisarTarjetas(page);
             if ([320, 768, 1440].includes(width)) await page.screenshot({ path: test.info().outputPath(`${ruta.slice(1)}.png`), fullPage: true });
         }
@@ -177,3 +223,28 @@ for (const [width, height] of [
         expect(errores).toEqual([]);
     });
 }
+
+test('390px: enlaces secundarios y footer alcanzan 44px sin desbordar', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await preparar(page);
+    const revisar = async (selectores) => {
+        for (const selector of selectores) {
+            const alturas = await page.locator(selector).evaluateAll((elementos) =>
+                elementos
+                    .filter((el) => el.getClientRects().length)
+                    .map((el) => ({ texto: (el.textContent || '').trim().slice(0, 40), alto: Math.round(el.getBoundingClientRect().height) }))
+            );
+            expect(alturas.length, selector).toBeGreaterThan(0);
+            expect(alturas.filter((x) => x.alto < 44), selector).toEqual([]);
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    };
+    await page.goto('/');
+    await page.locator('.navegacion-publica .cabecera .buscador input:visible').first().waitFor();
+    await page.locator('.enlace-mas:visible').first().waitFor();
+    await page.locator('.categorias__todas:visible').first().waitFor();
+    await revisar(['.navegacion-publica .cabecera .buscador input', '.enlace-mas', '.categorias__todas', 'footer.pie .pie__rejilla ul a', 'footer.pie .pie__reclamaciones', 'footer.pie .marca']);
+    await page.goto('/catalogo');
+    await page.locator('.migas a:visible').first().waitFor();
+    await revisar(['.migas a', 'footer.pie .pie__rejilla ul a']);
+});

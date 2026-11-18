@@ -70,18 +70,27 @@ backups/
 # No ignorar el schema de la base de datos
 !backend/database/schema.sql
 
-# Locales del asistente y datos de respaldo manuales (nunca git)
+# Herramientas de desarrollo y datos locales
 .claude/
-# Capturas de revision del asistente de diseno (artefactos, no sitio)
+.opencode/
+CLAUDE.md
+AGENTS.md
+**/.impeccable/
+**/.vercel/
 frontend/.impeccable/
 backend/_test_smtp.js
 ventas.json
+/_*.ps1
+/_flutterPath.txt
+/_*.log*
 
 # Credenciales locales
 token.txt
 
-# Cerebro Graphify: se regenera solo en cada equipo (docs/architecture/tools/vigilar-grafo.mjs).
-# Solo se versiona su LEEME; las cachés de Graphify dentro de frontend/src tampoco.
-graphify-out/*
-!graphify-out/LEEME.md
-frontend/src/**/graphify-out/
+# Índices y visores locales
+**/graphify-out/
+docs/architecture/tools/actualizar-grafo.mjs
+docs/architecture/tools/vigilar-grafo.mjs
+docs/architecture/tools/generar-grafo-graphify.py
+docs/architecture/tools/preparar-visores-graphify.py
+docs/architecture/tools/verificar-grafo-graphify.py

@@ -1,5 +1,10 @@
 const pool = require('../config/database');
 
+const obtenerStockPorLibro = async (idLibro) => {
+    const [rows] = await pool.query('SELECT stock FROM inventario WHERE id_libro = ?', [idLibro]);
+    return rows[0];
+};
+
 const registrarMovimiento = async (connection, { id_libro, id_usuario = null, tipo, motivo = 'ajuste', cantidad, stock_resultante }) => {
     if (!cantidad || cantidad === 0) {
         return 0;
@@ -215,6 +220,7 @@ const eliminarMovimientosPorLibro = async (idLibro, connection = pool) => {
 };
 
 module.exports = {
+    obtenerStockPorLibro,
     registrarMovimiento,
     obtenerTodos,
     obtenerPorLibro,

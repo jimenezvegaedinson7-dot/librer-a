@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../providers/AuthContext';
-import { esPersonalInterno } from '../../panel/lib/roles';
+import { esPersonalInterno } from '../../models/panel/roles';
 
 export default function RutaProtegida({ children }) {
     const { autenticado, usuario, cerrarSesion } = useAuth();

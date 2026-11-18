@@ -1,5 +1,5 @@
 const { cliente } = require('../config/payu');
-const { consultarReporte, elegirOrdenReports } = require('../services/payu.service');
+const { consultarReporte, elegirOrdenReports } = require('../integrations/payu');
 
 const ESTADOS_PAGADOS = ['APPROVED', 'CAPTURED'];
 const ESTADOS_CANCELADOS = ['DECLINED', 'ERROR', 'EXPIRED', 'VOIDED', 'REFUNDED'];

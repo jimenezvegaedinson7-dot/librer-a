@@ -1,0 +1,363 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FaEye, FaFileCsv, FaMagnifyingGlass, FaRotate, FaUserCheck, FaUserSlash, FaUsers, FaXmark, FaCircleCheck, FaBan, FaCartShopping } from 'react-icons/fa6';
+import { Indicador, Indicadores } from '../../../components/panel/ui/Indicadores';
+import { PageHeader } from '../../../components/panel/ui/PageHeader';
+import { Card, CardHeader, CardBody } from '../../../components/panel/ui/Card';
+import { Button } from '../../../components/panel/ui/Button';
+import { Input, Select } from '../../../components/panel/ui/Form';
+import { ErrorCarga } from '../../../components/panel/ui/ErrorCarga';
+import { Pagination } from '../../../components/panel/ui/Pagination';
+import { EmptyState } from '../../../components/panel/ui/EmptyState';
+import { TableSkeleton } from '../../../components/panel/ui/TableSkeleton';
+import { DataTable } from '../../../components/panel/ui/DataTable';
+import { Badge, EstadoActivo } from '../../../components/panel/ui/Badge';
+import { BtnAccion } from '../../../components/panel/ui/Acciones';
+import { ConfirmarAccion } from '../../../components/panel/ui/ConfirmarAccion';
+import { formatearMoneda, formatearFecha } from '../../../services/compartido/utils/format';
+import { exportarCsv } from '../../../services/panel/utils/exportarCsv';
+import { correoVisible, esCuentaEliminada } from '../../../services/panel/utils/cuentas';
+import { useToast } from '../../../app/providers/ToastContext';
+import { listarUsuarios, actualizarUsuario } from '../../../services/panel/usuarios/usuariosService';
+import UsuarioViewModal from '../../../components/panel/usuarios/UsuarioViewModal';
+
+const POR_PAGINA = 10;
+
+const soloClientes = (lista) => (Array.isArray(lista) ? lista : []).filter((usuario) => usuario.rol !== 'administrador');
+
+const columnasUsuarios = [
+    { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_usuario}</span> },
+    {
+        titulo: 'Usuario',
+        className: 'tabla-col-principal',
+        render: (fila) => (
+            <p className="text-sm">
+                <span className="font-semibold text-slate-700">{`${fila.nombre || ''} ${fila.apellido || ''}`.trim() || 'Sin nombre'}</span>
+                <span className="block text-xs text-slate-500">
+                    {esCuentaEliminada(fila) ? 'Datos anonimizados a pedido del titular' : correoVisible(fila.email) || 'Sin correo'}
+                </span>
+            </p>
+        )
+    },
+    { titulo: 'Estado', alineacion: 'centro', render: (fila) => (esCuentaEliminada(fila) ? <Badge color="neutral">Eliminada</Badge> : <EstadoActivo activo={fila.estado} />) },
+    {
+        titulo: 'Registro',
+        alineacion: 'centro',
+        render: (fila) => <span className="whitespace-nowrap text-xs font-medium text-slate-700">{formatearFecha(fila.fecha_registro, { soloDia: true }) || 'Sin fecha'}</span>
+    },
+    { titulo: 'Compras', alineacion: 'centro', render: (fila) => <span className="font-semibold text-slate-700">{Number(fila.total_compras || 0)}</span> },
+    {
+        titulo: 'Total gastado',
+        alineacion: 'derecha',
+        className: 'tabla-col-importe',
+        render: (fila) => <span className="font-bold text-slate-700">{formatearMoneda(Number(fila.total_gastado || 0))}</span>
+    }
+];
+
+function accionesUsuario(fila, { onVer, onCambiarEstado }) {
+    const activo = Number(fila.estado) === 1;
+
+    if (esCuentaEliminada(fila)) {
+        return (
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver usuario">
+                <FaEye />
+            </BtnAccion>
+        );
+    }
+    return (
+        <>
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver usuario">
+                <FaEye />
+            </BtnAccion>
+
+            <BtnAccion
+                tipo={activo ? 'eliminar' : 'editar'}
+                onClick={() => onCambiarEstado(fila, activo ? 0 : 1)}
+                titulo={activo ? 'Desactivar usuario' : 'Activar usuario'}>
+                {activo ? <FaUserSlash /> : <FaUserCheck />}
+            </BtnAccion>
+        </>
+    );
+}
+
+function Contador({ cargando, error, total, conCompras, activos, inactivos }) {
+    return (
+        <Indicadores cargando={cargando} error={error} etiqueta="Resumen de usuarios">
+            <Indicador titulo="Cuentas" valor={total} icono={<FaUsers />} tono="primary" detalle="Clientes registrados" />
+            <Indicador titulo="Con compras" valor={conCompras} icono={<FaCartShopping />} tono="violet" detalle="Compraron al menos una vez" de={total} />
+            <Indicador titulo="Activas" valor={activos} icono={<FaCircleCheck />} tono="success" detalle="Pueden iniciar sesión" de={total} />
+            <Indicador titulo="Inactivas" valor={inactivos} icono={<FaBan />} tono="rose" detalle="Acceso bloqueado" de={total} />
+        </Indicadores>
+    );
+}
+
+export default function UsuariosPage({ incrustado = false }) {
+    const { exito, error: mostrarError } = useToast();
+
+    const [usuarios, setUsuarios] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState('');
+
+    const [busqueda, setBusqueda] = useState('');
+    const [filtroEstado, setFiltroEstado] = useState('todos');
+
+    const [paginaActual, setPaginaActual] = useState(1);
+
+    const [usuarioVer, setUsuarioVer] = useState(null);
+    const [accionPendiente, setAccionPendiente] = useState(null);
+    const [ejecutando, setEjecutando] = useState(false);
+    const accionEnCurso = useRef(false);
+
+    const cargarUsuarios = async () => {
+        try {
+            setCargando(true);
+            setError('');
+            setUsuarios(soloClientes(await listarUsuarios(true)));
+        } catch (err) {
+            setError(err.response?.data?.mensaje || 'Error al cargar los usuarios');
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    useEffect(() => {
+        let vigente = true;
+
+        (async () => {
+            try {
+                const datos = await listarUsuarios();
+                if (vigente) setUsuarios(soloClientes(datos));
+            } catch (err) {
+                if (vigente) {
+                    setError(err.response?.data?.mensaje || 'Error al cargar los usuarios');
+                }
+            } finally {
+                if (vigente) setCargando(false);
+            }
+        })();
+
+        return () => {
+            vigente = false;
+        };
+    }, []);
+
+    const alBuscar = (valor) => {
+        setBusqueda(valor);
+        setPaginaActual(1);
+    };
+
+    const alFiltrarEstado = (valor) => {
+        setFiltroEstado(valor);
+        setPaginaActual(1);
+    };
+
+    const usuariosFiltrados = useMemo(() => {
+        const texto = busqueda.toLowerCase().trim();
+        return usuarios.filter((usuario) => {
+            const nombre = `${usuario.nombre || ''} ${usuario.apellido || ''}`.toLowerCase();
+            const email = String(usuario.email || '').toLowerCase();
+            const coincideBusqueda = !texto || nombre.includes(texto) || email.includes(texto);
+            const coincideEstado = filtroEstado === 'todos' || String(usuario.estado) === filtroEstado;
+            return coincideBusqueda && coincideEstado;
+        });
+    }, [usuarios, busqueda, filtroEstado]);
+
+    const totalConCompras = usuarios.filter((u) => Number(u.total_compras) > 0).length;
+    const totalActivos = usuarios.filter((u) => Number(u.estado) === 1).length;
+    const totalInactivos = usuarios.filter((u) => Number(u.estado) !== 1).length;
+
+    const totalPaginas = Math.ceil(usuariosFiltrados.length / POR_PAGINA);
+
+    const paginaActualEfectiva = totalPaginas > 0 ? Math.min(paginaActual, totalPaginas) : 1;
+
+    const usuariosPaginados = usuariosFiltrados.slice((paginaActualEfectiva - 1) * POR_PAGINA, paginaActualEfectiva * POR_PAGINA);
+
+    const limpiarFiltros = () => {
+        setBusqueda('');
+        setFiltroEstado('todos');
+        setPaginaActual(1);
+    };
+
+    const hayFiltros = busqueda || filtroEstado !== 'todos';
+
+    const verUsuario = (usuario) => setUsuarioVer(usuario);
+
+    const pedirCambioEstado = (usuario, estado) => {
+        setAccionPendiente({
+            tipo: 'estado',
+            usuario,
+            valor: estado,
+            titulo: estado === 1 ? 'Activar usuario' : 'Desactivar usuario',
+            mensaje: `¿Deseas ${estado === 1 ? 'activar' : 'desactivar'} a "${usuario.nombre || 'este usuario'}"?`,
+            advertencia: estado === 0 ? 'El usuario no podrá iniciar sesión mientras esté desactivado.' : 'El usuario volverá a disponer de acceso a la aplicación.',
+            textoConfirmar: estado === 1 ? 'Activar' : 'Desactivar',
+            variante: estado === 1 ? 'primary' : 'danger'
+        });
+    };
+
+    const confirmarAccionUsuario = async () => {
+        if (!accionPendiente || accionEnCurso.current) return;
+        accionEnCurso.current = true;
+        const { usuario, valor } = accionPendiente;
+        try {
+            setEjecutando(true);
+            await actualizarUsuario(usuario.id_usuario, { estado: valor });
+            setAccionPendiente(null);
+            exito(`Usuario ${valor === 1 ? 'activado' : 'desactivado'} correctamente`);
+            await cargarUsuarios();
+        } catch (err) {
+            mostrarError(err.response?.data?.mensaje || 'Error al actualizar el usuario');
+        } finally {
+            accionEnCurso.current = false;
+            setEjecutando(false);
+        }
+    };
+
+    const exportar = () => {
+        exportarCsv({
+            nombreArchivo: `usuarios_${new Date().toISOString().slice(0, 10)}`,
+            columnas: [
+                { titulo: 'N.º', exportar: (f) => f.id_usuario },
+                { titulo: 'Nombre', exportar: (f) => `${f.nombre || ''} ${f.apellido || ''}`.trim() },
+                { titulo: 'Email', exportar: (f) => correoVisible(f.email) },
+                { titulo: 'Estado', exportar: (f) => (Number(f.estado) === 1 ? 'Activo' : 'Inactivo') },
+                { titulo: 'Compras', exportar: (f) => f.total_compras || 0 },
+                { titulo: 'Total gastado', exportar: (f) => f.total_gastado || 0 }
+            ],
+            filas: usuariosFiltrados
+        });
+    };
+
+    return (
+        <div className="space-y-4">
+            {!incrustado && (
+                <PageHeader titulo="Usuarios registrados" descripcion="Cuentas de clientes creadas desde la web y la app" icono={<FaUsers />} />
+            )}
+            <Contador
+                cargando={cargando}
+                error={error}
+                total={usuarios.length}
+                conCompras={totalConCompras}
+                activos={totalActivos}
+                inactivos={totalInactivos}
+            />
+
+            <Card>
+                <CardHeader
+                    titulo="Cuentas registradas"
+                    subtitulo="Busca cuentas de clientes por nombre o correo"
+                    acciones={
+                        <div className="tabla-filtros-acciones">
+                            {hayFiltros && (
+                                <Button variante="secondary" onClick={limpiarFiltros}>
+                                    Limpiar
+                                </Button>
+                            )}
+                            <Button variante="secondary" onClick={cargarUsuarios} disabled={cargando}>
+                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
+                            </Button>
+                        </div>
+                    }
+                    filtros={
+                        <div className="filtros-grid">
+                            <div className="filtro-busqueda">
+                                <Input
+                                    label="Nombre o correo"
+                                    type="text"
+                                    value={busqueda}
+                                    onChange={(e) => alBuscar(e.target.value)}
+                                    placeholder="Buscar usuario..."
+                                    icono={<FaMagnifyingGlass />}
+                                    className="pr-8 sm:w-72"
+                                />
+                                {busqueda && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setBusqueda('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
+                                        title="Limpiar búsqueda">
+                                        <FaXmark />
+                                    </button>
+                                )}
+                            </div>
+
+                            <Select label="Estado de la cuenta" value={filtroEstado} onChange={(e) => alFiltrarEstado(e.target.value)}>
+                                <option value="todos">Todos los estados</option>
+                                <option value="1">Activos</option>
+                                <option value="0">Inactivos</option>
+                            </Select>
+                        </div>
+                    }
+                />
+            </Card>
+
+            {cargando && <TableSkeleton columnas={6} filas={8} titulo />}
+
+            {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarUsuarios} />}
+
+            {!cargando && !error && usuarios.length === 0 && (
+                <EmptyState titulo="No hay cuentas registradas" descripcion="Cuando los clientes se registren en la web o la app aparecerán aquí." icono={<FaUsers />} />
+            )}
+
+            {!cargando && !error && usuarios.length > 0 && usuariosFiltrados.length === 0 && (
+                <EmptyState
+                    titulo="No se encontraron cuentas"
+                    descripcion="Cambia la búsqueda o el filtro seleccionado."
+                    icono={<FaMagnifyingGlass />}
+                    acciones={
+                        <Button variante="secondary" onClick={limpiarFiltros}>
+                            Limpiar filtros
+                        </Button>
+                    }
+                />
+            )}
+
+            {!cargando && !error && usuariosPaginados.length > 0 && (
+                <Card>
+                    <CardHeader
+                        titulo="Lista de cuentas"
+                        subtitulo="Clientes registrados y su actividad de compras"
+                        acciones={
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="rounded-full border border-primary-200 bg-white px-3 py-1 text-xs font-bold text-slate-700">
+                                    {usuariosFiltrados.length} {usuariosFiltrados.length === 1 ? 'cuenta' : 'cuentas'}
+                                </span>
+                                <Button variante="secondary" tamano="sm" onClick={exportar}>
+                                    <FaFileCsv /> Descargar para Excel
+                                </Button>
+                            </div>
+                        }
+                    />
+                    <CardBody className="p-0">
+                        <DataTable
+                            etiqueta="Cuentas registradas"
+                            columnas={columnasUsuarios}
+                            filas={usuariosPaginados}
+                            keyExtractor={(fila) => fila.id_usuario}
+                            acciones={(fila) =>
+                                accionesUsuario(fila, {
+                                    onVer: verUsuario,
+                                    onCambiarEstado: pedirCambioEstado
+                                })
+                            }
+                        />
+                    </CardBody>
+                    <Pagination pagina={paginaActualEfectiva} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
+                </Card>
+            )}
+
+            <UsuarioViewModal usuario={usuarioVer} abierto={Boolean(usuarioVer)} onCerrar={() => setUsuarioVer(null)} />
+
+            <ConfirmarAccion
+                abierto={Boolean(accionPendiente)}
+                titulo={accionPendiente?.titulo}
+                mensaje={accionPendiente?.mensaje}
+                advertencia={accionPendiente?.advertencia}
+                textoConfirmar={accionPendiente?.textoConfirmar}
+                variante={accionPendiente?.variante}
+                onCerrar={() => setAccionPendiente(null)}
+                onConfirmar={confirmarAccionUsuario}
+                cargando={ejecutando}
+            />
+        </div>
+    );
+}

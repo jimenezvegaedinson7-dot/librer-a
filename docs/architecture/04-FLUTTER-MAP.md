@@ -1,6 +1,6 @@
 # Mapa de la app Flutter (Android / clientes)
 
-> Generado desde el código real el 2026-11-10 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-18 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque y navegación
@@ -28,6 +28,11 @@
 | `services/navigation.dart` | `navigatorKey` + `irALogin()`. |
 
 Fuentes Inter y Source Serif 4 empaquetadas en `assets/fonts/` y declaradas en `pubspec.yaml`; la app no descarga tipografía en ejecución. La memoria de checkout se limpia al cambiar sesión; los intentos persistidos siguen separados por propietario.
+
+## Inicio y carga inicial
+
+- `screens/home_screen.dart` mantiene saludo, nombre y buscador en la cabecera de Inicio, sin el logo adicional de la esquina superior derecha.
+- `screens/splash_screen.dart` conserva el logo principal y la validación de sesión. Se retira el separador amarillo bajo MATIDANA; el indicador circular usa una pista suave, extremos redondos y mayor tamaño. Con reducción de movimiento muestra un arco estático y una etiqueta de carga sin porcentaje de avance.
 
 ## Perfil y personalización
 
@@ -104,7 +109,7 @@ Fuentes Inter y Source Serif 4 empaquetadas en `assets/fonts/` y declaradas en `
 | `screens/splash_screen.dart` | `obtenerMisVentas`, `obtenerPerfil` | `GET /api/ventas/mis-ventas`<br>`POST /api/pagos/crear-orden`<br>`GET /api/usuarios/perfil` |
 | `screens/verificacion_email_screen.dart` | `reenviarCodigo`, `verificarEmail` | `POST /api/auth/reenviar-codigo`<br>`POST /api/auth/verificar-email` |
 
-Pantallas sin llamadas directas a la API: `screens/fondos_screen.dart`, `screens/legal/politica_privacidad_screen.dart`, `screens/legal/terminos_condiciones_screen.dart`, `screens/pago_en_app_screen.dart` (carrito local, documentos legales, etc.).
+Pantallas sin llamadas directas a la API: `screens/legal/politica_privacidad_screen.dart`, `screens/legal/terminos_condiciones_screen.dart`, `screens/pago_en_app_screen.dart`, `screens/personalizacion_screen.dart` (carrito local, documentos legales, etc.).
 
 ## Funcionalidades clave
 
@@ -124,9 +129,9 @@ Nota: la app es **solo para clientes**; `login` rechaza el rol administrador.
 
 **models/** — `carrito_item.dart`, `libro.dart`, `orden_pago.dart`, `usuario.dart`, `venta.dart`, `version_app.dart`, `zona_delivery.dart`
 
-**screens/** — `carrito_screen.dart`, `detalle_libro_screen.dart`, `entrega_y_pago_screen.dart`, `favoritos_screen.dart`, `fondos_screen.dart`, `home_screen.dart`, `legal/politica_privacidad_screen.dart`, `legal/terminos_condiciones_screen.dart`, `libro_reclamaciones_screen.dart`, `libros_screen.dart`, `login_screen.dart`, `mis_compras_screen.dart`, `pago_en_app_screen.dart`, `perfil_screen.dart`, `recuperar_contrasena_screen.dart`, `reestablecer_contrasena_screen.dart`, `registro_screen.dart`, `security/cambiar_password_screen.dart`, `security/editar_perfil_screen.dart`, `security/eliminar_cuenta_screen.dart`, `security/two_factor_disable_screen.dart`, `security/two_factor_setup_screen.dart`, `security/two_factor_verify_screen.dart`, `splash_screen.dart`, `verificacion_email_screen.dart`
+**screens/** — `carrito_screen.dart`, `detalle_libro_screen.dart`, `entrega_y_pago_screen.dart`, `favoritos_screen.dart`, `home_screen.dart`, `legal/politica_privacidad_screen.dart`, `legal/terminos_condiciones_screen.dart`, `libro_reclamaciones_screen.dart`, `libros_screen.dart`, `login_screen.dart`, `mis_compras_screen.dart`, `pago_en_app_screen.dart`, `perfil_screen.dart`, `personalizacion_screen.dart`, `recuperar_contrasena_screen.dart`, `reestablecer_contrasena_screen.dart`, `registro_screen.dart`, `security/cambiar_password_screen.dart`, `security/editar_perfil_screen.dart`, `security/eliminar_cuenta_screen.dart`, `security/two_factor_disable_screen.dart`, `security/two_factor_setup_screen.dart`, `security/two_factor_verify_screen.dart`, `splash_screen.dart`, `verificacion_email_screen.dart`
 
-**widgets/** — `aparecer.dart`, `app_bottom_navigation.dart`, `app_logo.dart`, `app_page_header.dart`, `aviso_portada_referencia.dart`, `book_cover.dart`, `campo_otp.dart`, `carrito_badge.dart`, `comprobador_actualizacion.dart`, `confirmacion_otp.dart`, `dialogo_actualizacion.dart`, `empty_view.dart`, `error_banner.dart`, `error_view.dart`, `estado_chip.dart`, `estanteria.dart`, `formulario_cuenta.dart`, `legal_documento.dart`, `libros_grid.dart`, `loading_view.dart`, `portadas_libro.dart`, `precio_texto.dart`, `presionable.dart`, `seccion_titulo.dart`
+**widgets/** — `aparecer.dart`, `apariencia_colores.dart`, `app_bottom_navigation.dart`, `app_logo.dart`, `app_page_header.dart`, `aviso_portada_referencia.dart`, `book_cover.dart`, `campo_otp.dart`, `carrito_badge.dart`, `comprobador_actualizacion.dart`, `confirmacion_otp.dart`, `dialogo_actualizacion.dart`, `empty_view.dart`, `error_banner.dart`, `error_view.dart`, `estado_chip.dart`, `estanteria.dart`, `formulario_cuenta.dart`, `legal_documento.dart`, `libros_grid.dart`, `loading_view.dart`, `portadas_libro.dart`, `precio_texto.dart`, `presionable.dart`, `seccion_titulo.dart`
 
 **services/** — `actualizacion_service.dart`, `api_service.dart`, `carrito_service.dart`, `checkout_store.dart`, `navigation.dart`, `sonido_service.dart`, `storage_service.dart`, `tema_controller.dart`
 
@@ -139,9 +144,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.9
   dio: ^5.11.0
   shared_preferences: ^2.5.5
   image_picker: ^1.1.2

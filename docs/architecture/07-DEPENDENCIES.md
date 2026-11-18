@@ -1,6 +1,6 @@
 # Dependencias
 
-> Generado desde el código real el 2026-11-10 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-18 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Paquetes npm
@@ -44,11 +44,11 @@ Todas las dependencias se importan en algún archivo.
 | `tailwindcss` | ^4.3.3 |
 | `three` | ^0.181.2 |
 
-Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxlint, vite.
+Dev: @playwright/test, @vitejs/plugin-react, oxlint, vite.
 
 ## Paquetes Flutter (declarados en `pubspec.yaml`)
 
-- **Directos**: `audioplayers`, `crypto`, `cupertino_icons`, `dio`, `flutter`, `flutter_secure_storage`, `image_picker`, `package_info_plus`, `path_provider`, `shared_preferences`, `url_launcher`, `webview_flutter`, `webview_flutter_android`.
+- **Directos**: `audioplayers`, `crypto`, `dio`, `flutter`, `flutter_secure_storage`, `image_picker`, `package_info_plus`, `path_provider`, `shared_preferences`, `url_launcher`, `webview_flutter`, `webview_flutter_android`.
 - **Dev**: `flutter_launcher_icons`, `flutter_lints`, `flutter_test`.
 - Las dependencias transitivas completas se consultan con `flutter pub deps --style=compact`; no se deducen de los imports.
 - Paquetes importados en `lib/`: `audioplayers`, `crypto`, `dio`, `flutter`, `flutter_secure_storage`, `image_picker`, `package_info_plus`, `path_provider`, `shared_preferences`, `url_launcher`, `webview_flutter`, `webview_flutter_android`.
@@ -57,9 +57,9 @@ Dev: @playwright/test, @types/react, @types/react-dom, @vitejs/plugin-react, oxl
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 184 | 402 | 0 (analizador estático de imports) |
-| Frontend (`import`) | 230 | 865 | 0 (analizador estático de imports) |
-| Flutter (`import` relativos) | 76 | 330 | 4 caminos cíclicos |
+| Backend (`require`) | 197 | 422 | 0 (analizador estático de imports) |
+| Frontend (`import`) | 225 | 845 | 0 (analizador estático de imports) |
+| Flutter (`import` relativos) | 77 | 331 | 4 caminos cíclicos |
 
 ### Ciclos en Flutter
 
@@ -77,6 +77,7 @@ Ejemplos de caminos:
 ## Posiblemente no utilizado
 
 - Flutter: ninguno.
+- Swift: ningún candidato sin alcance desde @main en el análisis aproximado por símbolos y extensiones.
 - React: funciones de servicio no importadas: `agenciasService#obtenerAgencia`, `ubicacionesService#listarProvincias`/`listarDistritos` (se usan solo internamente por `listarDistritosParaEnvio`).
 - Backend: endpoints `GET /api/historial/mi-historial`, `POST /api/historial`, `PUT /api/inventario/libro/:id/stock` sin consumidor React/Flutter.
 - Estilos: las reglas de la antigua página Reportes sin consumidores se retiraron. `tabla-reporte`, `reporte-barra`, `reporte-puesto` y `reporte-contador` se conservan porque los usan Dashboard y Ventas.

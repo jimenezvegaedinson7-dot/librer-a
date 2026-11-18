@@ -2,19 +2,12 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 
-const pool = require('../config/database');
 const usuarioModel = require('../models/usuario.model');
 const historialModel = require('../models/historial.model');
 const { esEmailValido, esTextoValido, esEstadoValido, validarId } = require('../utils/validaciones');
-const { ROLES_ASIGNABLES, esCliente, esRolValido, normalizar } = require('../utils/roles');
-const { validarPassword } = require('./auth.controller');
-const { eliminarImagen, publicIdDesdeUrl } = require('../utils/cloudinary');
-
-const obtenerTwoFactorEnabled = async (idUsuario) => {
-    const [filas] = await pool.query(`SELECT two_factor_enabled FROM usuarios WHERE id_usuario = ? LIMIT 1`, [idUsuario]);
-
-    return filas.length > 0 ? Number(filas[0].two_factor_enabled) === 1 : false;
-};
+const { ROLES, ROLES_ASIGNABLES, esCliente, esRolValido, normalizar } = require('../utils/roles');
+const { validarPassword } = require('../services/auth.service');
+const { eliminarImagen, publicIdDesdeUrl } = require('../integrations/cloudinary');
 
 const listarUsuarios = async (req, res) => {
     try {
@@ -60,6 +53,10 @@ const adminUpdateUsuario = async (req, res) => {
 
         if (rol !== undefined && !esRolValido(rol)) {
             return res.status(400).json({ success: false, mensaje: `El rol debe ser ${ROLES_ASIGNABLES.map((r) => `"${r}"`).join(', ')}` });
+        }
+
+        if (rol !== undefined && normalizar(rol) === ROLES.ADMINISTRADOR) {
+            return res.status(403).json({ success: false, mensaje: 'Solo existe una cuenta administradora: sus datos se gestionan desde el perfil.' });
         }
 
         if (estado !== undefined && !esEstadoValido(estado)) {
@@ -116,7 +113,7 @@ const obtenerPerfil = async (req, res) => {
             return res.status(404).json({ success: false, mensaje: 'Usuario no encontrado' });
         }
 
-        const twoFactorEnabled = await obtenerTwoFactorEnabled(idUsuario);
+        const twoFactorEnabled = await usuarioModel.obtenerTwoFactorEnabled(idUsuario);
 
         return res.json({ success: true, data: { ...usuario, two_factor_enabled: twoFactorEnabled } });
     } catch (error) {
@@ -163,7 +160,7 @@ const actualizarPerfil = async (req, res) => {
 
         const usuarioActualizado = await usuarioModel.buscarPorId(idUsuario);
 
-        const twoFactorEnabled = await obtenerTwoFactorEnabled(idUsuario);
+        const twoFactorEnabled = await usuarioModel.obtenerTwoFactorEnabled(idUsuario);
 
         return res.json({ success: true, mensaje: 'Perfil actualizado correctamente', data: { ...usuarioActualizado, two_factor_enabled: twoFactorEnabled } });
     } catch (error) {
@@ -222,7 +219,7 @@ const subirFotoPerfil = async (req, res) => {
 
         const usuarioActualizado = await usuarioModel.buscarPorId(idUsuario);
 
-        const twoFactorEnabled = await obtenerTwoFactorEnabled(idUsuario);
+        const twoFactorEnabled = await usuarioModel.obtenerTwoFactorEnabled(idUsuario);
 
         return res.json({ success: true, mensaje: 'Foto de perfil actualizada correctamente', data: { ...usuarioActualizado, two_factor_enabled: twoFactorEnabled } });
     } catch (error) {

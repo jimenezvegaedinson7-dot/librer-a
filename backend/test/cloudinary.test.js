@@ -5,7 +5,7 @@ const { createHash } = require('node:crypto');
 const variables = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
 const anteriores = Object.fromEntries(variables.map((nombre) => [nombre, process.env[nombre]]));
 const fetchOriginal = global.fetch;
-const modulo = require.resolve('../src/utils/cloudinary');
+const modulo = require.resolve('../src/integrations/cloudinary');
 
 test.after(() => {
     global.fetch = fetchOriginal;

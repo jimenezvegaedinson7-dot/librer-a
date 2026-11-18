@@ -4,29 +4,11 @@ const crypto = require('crypto');
 
 const usuarioModel = require('../models/usuario.model');
 const { esEmailValido } = require('../utils/validaciones');
-const { datosPublicos } = require('./auth2fa.controller');
-const { enviarCodigoVerificacion, enviarCodigoReseteo } = require('../utils/mailer');
+const { datosPublicos, validarPassword } = require('../services/auth.service');
+const { enviarCodigoVerificacion, enviarCodigoReseteo } = require('../integrations/mailer');
 
 function generarCodigoVerificacion() {
     return crypto.randomInt(100000, 1000000).toString();
-}
-
-function validarPassword(password) {
-    const texto = String(password || '');
-
-    if (texto.length < 8) {
-        return 'La contraseña debe tener al menos 8 caracteres';
-    }
-
-    if (!/[a-zA-Z]/.test(texto)) {
-        return 'La contraseña debe contener al menos una letra';
-    }
-
-    if (!/\d/.test(texto)) {
-        return 'La contraseña debe contener al menos un número';
-    }
-
-    return true;
 }
 
 const registrar = async (req, res) => {
@@ -364,4 +346,4 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { registrar, login, verificarEmail, reenviarCodigo, solicitarReseteo, verificarReseteo, reestablecerContrasena, validarPassword };
+module.exports = { registrar, login, verificarEmail, reenviarCodigo, solicitarReseteo, verificarReseteo, reestablecerContrasena };

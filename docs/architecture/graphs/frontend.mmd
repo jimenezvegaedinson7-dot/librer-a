@@ -1,4 +1,4 @@
-%% Generado 2026-11-10 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-11-18 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     paginas["/<br/>paginas"]
     CatalogoPage["/catalogo<br/>CatalogoPage"]
@@ -31,7 +31,8 @@ flowchart LR
     PedidosPage --> pedidosService(["pedidosService"])
     ComprobantesPage["/ventas/comprobantes<br/>ComprobantesPage"]
     ComprobantesPage --> comprobantesService(["comprobantesService"])
-    UsuariosClientesPage["/usuarios<br/>UsuariosClientesPage"]
+    UsuariosPage["/usuarios<br/>UsuariosPage"]
+    UsuariosPage --> usuariosService(["usuariosService"])
     ReclamacionesPage["/reclamaciones<br/>ReclamacionesPage"]
     ReclamacionesPage --> reclamacionesService(["reclamacionesService"])
     AnunciosPage["/anuncios<br/>AnunciosPage"]
@@ -40,13 +41,16 @@ flowchart LR
     TarifasEnvioPage --> tarifasService(["tarifasService"])
     EmpresaPage["/configuracion/empresa<br/>EmpresaPage"]
     EmpresaPage --> empresaService(["empresaService"])
+    useApiPublica --> _api_libros{{"/api/libros"}}
+    useApiPublica --> _api_anuncios{{"/api/anuncios"}}
+    useApiPublica --> _api_empresa{{"/api/empresa"}}
+    useApiPublica --> _api_app{{"/api/app"}}
     anunciosService --> _api_anuncios{{"/api/anuncios"}}
     protagonistaService --> _api_anuncios{{"/api/anuncios"}}
     authService --> _api_auth{{"/api/auth"}}
     perfilService --> _api_usuarios{{"/api/usuarios"}}
     autoresService --> _api_autores{{"/api/autores"}}
     categoriasService --> _api_categorias{{"/api/categorias"}}
-    clientesService --> _api_clientes{{"/api/clientes"}}
     comprobantesService --> _api_comprobantes{{"/api/comprobantes"}}
     comprobantesService --> _api_ventas{{"/api/ventas"}}
     empresaService --> _api_empresa{{"/api/empresa"}}
@@ -67,10 +71,6 @@ flowchart LR
     tarifasService --> _api_zonas_delivery{{"/api/zonas-delivery"}}
     usuariosService --> _api_usuarios{{"/api/usuarios"}}
     ventasService --> _api_ventas{{"/api/ventas"}}
-    useApiPublica --> _api_libros{{"/api/libros"}}
-    useApiPublica --> _api_anuncios{{"/api/anuncios"}}
-    useApiPublica --> _api_empresa{{"/api/empresa"}}
-    useApiPublica --> _api_app{{"/api/app"}}
     clienteApi --> _api_auth{{"/api/auth"}}
     clienteApi --> _api_usuarios{{"/api/usuarios"}}
     clienteApi --> _api_libros{{"/api/libros"}}

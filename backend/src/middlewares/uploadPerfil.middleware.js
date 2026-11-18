@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 const { detectarImagen } = require('../utils/fileType');
-const { subirImagen, configurado: cloudinaryConfigurado } = require('../utils/cloudinary');
+const { subirImagen, configurado: cloudinaryConfigurado } = require('../integrations/cloudinary');
 
 const carpetaPerfiles = path.join(__dirname, '../../uploads/perfiles');
 

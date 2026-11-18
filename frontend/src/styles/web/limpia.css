@@ -1,0 +1,95 @@
+.sitio *, .sitio *::before, .sitio *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.sitio [data-reveal], .sitio [data-revelar], .sitio [data-revelar] > *, .sitio [data-revelar] .linea > span {
+    opacity: 1 !important; visibility: visible !important; transform: none !important; filter: none !important; clip-path: none !important; transition-delay: 0s !important;
+}
+.sitio :is(.seccion__titulo, .categorias__titulo, .comprar__titulo, .categorias__item, .comprar__paso, .categoria__libro, .comprar__icono, .acceso-catalogo__boton) {
+    animation: none !important; translate: none !important; scale: none !important; opacity: 1 !important;
+}
+.sitio .cabecera, .sitio .navegacion-publica .cabecera, .sitio footer.pie { background-image: none !important; animation: none !important; }
+.sitio .cabecera .marca span { text-shadow: none; }
+.sitio footer.pie::before { background: var(--pie-filete); }
+.sitio .barra-movil, .sitio .pf-tarjeta { background: #ffffff !important; box-shadow: none; }
+.sitio .banda-catalogo__contenido { background: #24304b; border: 0; box-shadow: none; }
+.sitio .banda-catalogo :is(h2, p) { text-shadow: none; }
+.sitio .vitrina::before { display: none; }
+.sitio :is(.vitrina__principal, .vitrina__tarjeta--crema, .vitrina__tarjeta--marino) { background: #ffffff; box-shadow: none; }
+.sitio :is(.app-funcion, .instalar__paso), .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover, .sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]), .sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]):hover {
+    background: #ffffff !important; border: 1px solid #e4e8ee !important; box-shadow: none !important; text-shadow: none; transform: none !important; transform-style: flat;
+    animation: none !important; transition: border-color 150ms ease !important;
+}
+.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga)::before, .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga)::after {
+    display: none !important; content: none !important;
+}
+.sitio :is(.app-funcion__icono, .instalar__numero) { background: #f3f3f3 !important; box-shadow: none !important; }
+
+/* Descarga: tarjetas formales, serenas y alineadas a la izquierda */
+.sitio .descargar-plataformas .descarga__rejilla {
+    max-width: 780px !important; margin-inline: 0 !important; margin-top: 1.75rem !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px !important; align-items: start !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga,
+.sitio .descargar-plataformas .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]),
+.sitio .descargar-plataformas .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]):hover {
+    display: flex !important; flex-direction: column; gap: 1.1rem !important; padding: 1.55rem 1.6rem 1.5rem !important;
+    border-radius: 6px !important; border: 1px solid #e2d9cb !important; background: #fffdf8 !important;
+    box-shadow: 0 22px 44px -40px rgb(35 28 22 / .4) !important; color: var(--ed-tinta) !important; transform: none !important;
+    transition: border-color 200ms ease, box-shadow 200ms ease !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga[data-disponible="true"],
+.sitio .descargar-plataformas .tarjeta-descarga[data-disponible="true"]:hover {
+    border-color: #d3c7b5 !important; background: #fffefb !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga[data-disponible="false"] {
+    border-color: #e6ded1 !important; background: #faf6ee !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga:hover {
+    border-color: #c2b4a0 !important; box-shadow: 0 26px 50px -38px rgb(35 28 22 / .45) !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga__cabeza {
+    align-items: center !important; gap: 0.95rem !important; padding-bottom: 1rem !important; border-bottom: 1px solid #efe8dc;
+}
+.sitio .descargar-plataformas .tarjeta-descarga[data-disponible="false"] .tarjeta-descarga__cabeza { border-bottom-color: #efe9de; }
+.sitio .descargar-plataformas .tarjeta-descarga h2 {
+    font-size: 1.4rem !important; font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; color: #2b241d !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga .tarjeta-descarga__estado {
+    display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.35rem;
+    font-size: 0.6875rem !important; font-weight: 500 !important; text-transform: uppercase; letter-spacing: 0.17em; color: #4f6754 !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga .tarjeta-descarga__estado::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.7;
+}
+.sitio .descargar-plataformas .tarjeta-descarga[data-disponible="false"] .tarjeta-descarga__estado { color: #8c8070 !important; }
+.sitio .descargar-plataformas .tarjeta-descarga .icono-app--medio {
+    width: 42px !important; height: 42px !important; border-radius: 7px !important; filter: none;
+    box-shadow: 0 1px 3px rgb(35 28 22 / .1) !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga[data-disponible="false"] .icono-app { filter: grayscale(1); opacity: 0.65; }
+.sitio .descargar-plataformas .tarjeta-descarga .ficha-tecnica {
+    margin-block: 0 !important; row-gap: 0.1rem !important; column-gap: 1rem !important; border: 0;
+}
+.sitio .descargar-plataformas .tarjeta-descarga .ficha-tecnica :is(dt, dd) {
+    margin: 0 !important; padding-block: 0.32rem !important; border: 0 !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga .ficha-tecnica dt {
+    font-size: 0.6875rem !important; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: #8a7c6b !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga .ficha-tecnica dd {
+    font-size: 0.875rem !important; font-weight: 400 !important; color: #3a3027 !important; text-align: right; font-variant-numeric: tabular-nums;
+}
+.sitio .descargar-plataformas .tarjeta-descarga__nota { font-size: 0.875rem !important; line-height: 1.7; color: #6c6153 !important; }
+.sitio .descargar-plataformas .tarjeta-descarga .boton,
+.sitio .descargar-plataformas .tarjeta-descarga .boton:hover {
+    align-self: stretch !important; margin-top: auto; min-height: 44px; padding: 10px 8px !important; border-radius: 0 !important;
+    border: 2px solid #141212 !important; background: #141212 !important; color: var(--blanco) !important;
+    font-size: 0.88rem !important; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; box-shadow: none !important;
+}
+.sitio .descargar-plataformas .tarjeta-descarga .boton:hover { background: #e2231a !important; border-color: #e2231a !important; color: var(--blanco) !important; }
+.sitio .descargar-plataformas .tarjeta-descarga .tu-equipo {
+    position: static !important; order: -1; align-self: flex-start; padding: 0.18rem 0.55rem !important; border-radius: 2px !important;
+    background: #f0e8db !important; border: 0 !important; color: #6a5b4a !important;
+    font-size: 0.5625rem !important; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em;
+}
+@media (max-width: 767px) {
+    .sitio .descargar-plataformas .descarga__rejilla { grid-template-columns: 1fr; max-width: none !important; }
+}

@@ -7,6 +7,31 @@ import XCTest
 final class ParityFlutterTests: XCTestCase {
     private let decoder = JSONDecoder()
 
+    func testEditingNameDoesNotSendContactFields() throws {
+        let data = try JSONEncoder().encode(UpdateProfileRequest.name("Ana", lastName: "Torres"))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: String])
+        XCTAssertEqual(json, ["nombre": "Ana", "apellido": "Torres"])
+    }
+
+    func testEditingEmailDoesNotSendNameOrPhone() throws {
+        let data = try JSONEncoder().encode(UpdateProfileRequest.email("ana@example.test"))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: String])
+        XCTAssertEqual(json, ["email": "ana@example.test"])
+    }
+
+    func testEditingPhoneDoesNotSendOtherFields() throws {
+        let data = try JSONEncoder().encode(UpdateProfileRequest.phone("999111222"))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: String])
+        XCTAssertEqual(json, ["telefono": "999111222"])
+    }
+
+    func testRemovingPhoneSendsExplicitNull() throws {
+        let data = try JSONEncoder().encode(UpdateProfileRequest.phone(nil))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual(Set(json.keys), Set(["telefono"]))
+        XCTAssertTrue(json["telefono"] is NSNull)
+    }
+
     // MARK: Seguimiento
 
     func testPickupAndDeliveryHaveTheirOwnSteps() {

@@ -1,73 +1,55 @@
-# Product
+# MATIDANA — Producto
 
-<!-- impeccable:product-schema 1 -->
+## Alcance
 
-## Platform
+Tienda web y panel administrativo de MATIDANA Libros y Cultura, librería física de Pallasca, Áncash. La web comparte la API y las reglas comerciales con las aplicaciones de clientes.
 
-web
+## Usuarios
 
-## Users
+- **Cliente:** consulta catálogo, disponibilidad y precios; gestiona favoritos y carrito; compra con PayU y consulta sus pedidos.
+- **Administrador:** gestiona catálogo, inventario, pedidos, ventas, comprobantes, usuarios, anuncios, tarifas y reclamaciones.
 
-- **Lectores y clientes**: exploran libros físicos y pueden comprar desde la tienda web o la app Android. La entrega actual es delivery dentro de Pallasca o recojo gratuito en la tienda.
-- **Administrador de la librería**: gestiona catálogo, inventario, pedidos, pagos, comprobantes, usuarios, anuncios y reclamos desde un panel exclusivo.
+La sesión administrativa y la sesión del cliente se almacenan por separado. Los carritos e intentos de compra pertenecen a su cliente o al visitante que los creó.
 
-## Product Purpose
+## Recorrido comercial
 
-MATIDANA Libros y Cultura vende libros físicos mediante una tienda web y una app Android que comparten la misma API. Éxito: el cliente encuentra un libro, revisa precio y disponibilidad, compra con PayU y consulta su entrega; el administrador gestiona esa operación desde el panel.
+1. Explorar el catálogo en `/catalogo` y abrir la ficha `/libro/:id`.
+2. Añadir ejemplares al carrito o continuar al checkout mediante Comprar ahora.
+3. Iniciar sesión con una cuenta de cliente, elegir entrega y crear el pedido.
+4. Pagar con PayU y consultar el estado confirmado por la API en `/mis-compras`.
 
-## Positioning
+Las rutas de cuenta, carrito y pago son `/cuenta`, `/carrito` y `/checkout`. El panel tiene acceso por `/admin/login` o `/admin`.
 
-Una librería física en Pallasca, Áncash, con catálogo comercial web y móvil: compra con PayU, delivery con tarifa única vigente dentro de la ciudad de Pallasca o recojo gratuito en Plaza de Armas, Jr. Marañón 161, Pallasca 02835. La tarifa es editable por el administrador, se aplica por pedido y solo a compras nuevas. No incluye anexos ni otros distritos. El servicio de reservas está eliminado, incluido su historial.
+## Entrega y pagos
 
-## Operating Context
+- Delivery dentro de la ciudad de Pallasca con tarifa vigente del servidor, editable por el administrador.
+- Recojo gratuito en Plaza de Armas, Jr. Marañón 161, Pallasca 02835.
+- La tarifa se aplica por pedido y se revalida antes de crear la compra. Las compras anteriores conservan sus importes históricos.
+- Los pedidos usan claves de idempotencia para recuperar intentos sin duplicarlos.
+- El backend valida precio, stock y pago. Volver desde PayU no constituye una confirmación de cobro.
+- Reservas y ventas manuales son funciones retiradas. Los datos antiguos se conservan según los contratos de compatibilidad del servidor.
 
-- Compra web en `/cuenta`, `/carrito`, `/checkout` y `/mis-compras`; ficha pública en `/libro/:id`. La app usa el mismo backend de ventas y pagos.
-- El panel solo admite `administrador`; tienda web y app usan `cliente`. Las sesiones web y los carritos de clientes se mantienen separados del acceso administrativo.
-- Catálogo público real: `GET /api/libros` (título, autor, categoría, precio, portada en Cloudinary, stock, estado).
-- Datos legales: `GET /api/empresa`; los enlaces de contacto se configuran en `src/web/config/site.js` y los valores `null` no se muestran. Los datos de producción no se fijan en este contexto.
-- Libro de Reclamaciones público en `/libro-de-reclamaciones`.
+## Cuenta y atención
 
-## Capabilities and Constraints
+Registro con verificación por correo, login y 2FA, recuperación de contraseña en dos pasos, edición del perfil y fotografía. El Libro de Reclamaciones público está en `/libro-de-reclamaciones`.
 
-Funciones verificadas en el código: catálogo, ficha de libro, favoritos, carrito, compra PayU, delivery con tarifa única administrable en la ciudad de Pallasca sin selector de barrio, recojo gratuito, historial de compras y seguimiento. La tarifa vigente proviene del servidor, no de una constante S/5; se revalida antes de comprar. Los pedidos anteriores conservan su cobertura e importe. Registro con verificación por email, login/2FA, recuperación de contraseña en dos pasos, perfil y foto editable. La app añade eliminación de cuenta y pantallas legales.
+La información de empresa procede de `GET /api/empresa`. Los enlaces de contacto se configuran en `src/models/config/web/site.js`; los enlaces no configurados se omiten.
 
-PayU se muestra en `PagoEnAppScreen` mediante WebView; el retorno obliga a consultar el estado del servidor. Web y app persisten el intento y su clave de idempotencia antes del POST. Precio, stock, pago y reglas de entrega se validan en el backend.
+El asistente de tienda utiliza información del catálogo y datos públicos para orientar al cliente hacia libros, carrito y compras.
 
-Reservas está eliminado: no hay pantalla, menú, notificaciones, reportes ni consulta/cancelación histórica. La URL antigua `/reservas` redirige al Dashboard. Las compras siguen usando reserva transaccional de stock e idempotencia durante el checkout; esa operación de inventario no es el servicio eliminado.
+## Identidad y presentación
 
-Las ventas manuales están retiradas. En Ventas y Pagos, `origen='reserva'` e `id_reserva` solo son marcadores de protección de ventas antiguas de solo lectura, etiquetadas como «Venta histórica» sin enlaces ni números de reservas. Lima y courier permanecen para compatibilidad de ventas antiguas, no para checkout nuevo.
+- Nombre comercial: MATIDANA Libros y Cultura.
+- Idioma: español de Perú; importes en soles con dos decimales.
+- Marca compartida en `src/assets/compartido/`.
+- Diseño y comportamiento responsive documentados en `DESIGN.md`.
 
-La comunicación pública y el asistente orientan al carrito, PayU y Mis compras. Se retira la captura de ficha con «Reservar»; las capturas existentes de catálogo/inicio se encuadran sin la barra de navegación antigua. No se generan capturas nuevas.
+## Distribución
 
-No se declaran capacidades comerciales sin evidencia. En este contexto no se afirma publicación en Play Store, notificaciones push o distribución pública iOS. La web sí permite comprar.
+Android se distribuye mediante APK en GitHub Releases. La versión y el enlace se consultan en la API; su configuración está en `backend/src/config/app-version.json`. El proyecto iOS tiene su propio proceso de compilación y distribución.
 
-Distribución:
-- Android: APK distribuido por GitHub Releases. Versión, enlace y política de actualización se consultan en `backend/src/config/app-version.json`; la versión de código está en `flutter_app/pubspec.yaml`.
-- iOS: código experimental y workflow propio; no forma parte de la app Android descrita aquí.
+## Documentación técnica
 
-Rutas: la web pública ocupa `/`; el login del panel pasa a `/admin/login`; las pantallas del panel conservan sus rutas.
-
-## Brand Commitments
-
-- Nombre visible: **MATIDANA Libros y Cultura** (confirmado 01/11/2026). MATIDANA se mantiene como nombre comercial en los datos legales; razón social y RUC son datos legales.
-- Logo oficial: monograma "f" caligráfico (`src/compartido/assets/logo-principal.png`), usado en verde o blanco en la web pública.
-- Idioma: español de Perú; precios en soles (S/).
-- Navbar y footer públicos: referencia principal **Ibero Librerías**, elegida expresamente el 20/10/2026; cabecera clara, marino/turquesa y footer blanco en columnas. Sin la franja superior de avisos de delivery, recojo y PayU. Se mantiene la identidad propia de MATIDANA Libros y Cultura.
-
-## Evidence on Hand
-
-- Catálogo real procedente de la API pública; el tamaño del catálogo no se fija en este documento.
-- Logo y fondo del login (`src/compartido/assets/`).
-- Fuentes verificables: `src/app/router/AppRouter.jsx`, `src/web/tienda/`, `flutter_app/lib/` y `docs/architecture/05-API-MAP.md`.
-- Testimonios, cifras comerciales, premios, trayectoria y contactos requieren datos verificables antes de mostrarse.
-
-## Product Principles
-
-1. Solo afirmaciones verificables: cada función o dato mostrado existe en la app o en la API.
-2. Web y app ofrecen canales de compra compatibles sobre la misma API y las mismas reglas comerciales.
-3. El panel administrativo queda fuera de la vista del visitante: un acceso discreto y nada más.
-4. Rápida y accesible antes que espectacular.
-
-## Accessibility & Inclusion
-
-Objetivo: WCAG 2.2 AA, movimiento reducido y uso en teléfonos de gama baja. Es una meta de diseño; este contexto no sustituye una auditoría ni certifica todas las pantallas.
+- `README.md`: desarrollo, estructura y comprobaciones.
+- `ANALITICA.md`: medición y recomendaciones.
+- `../docs/architecture/05-API-MAP.md`: endpoints y permisos.

@@ -1,5 +1,5 @@
 const modelo = require('../models/asistente.model');
-const gemini = require('./geminiAssistant.service');
+const gemini = require('../integrations/gemini');
 const contextoService = require('./asistenteContexto.service');
 const { normalizar, coincidencias, interpretar, fueraDeAlcance } = require('../utils/asistenteBusqueda');
 const ALCANCE = 'Solo puedo ayudarte con libros reales del catálogo y con la información pública de esta librería. No respondo sobre temas ajenos ni revelo información interna.';

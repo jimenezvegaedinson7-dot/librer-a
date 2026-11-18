@@ -1,0 +1,87 @@
+/* ============================================================
+   Botones estilo MATIDANA (forma cuadrada, colores del proyecto)
+   ============================================================ */
+
+.btn {
+    min-height: 44px;
+    font-family: var(--f-texto, inherit);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 0;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 10px 20px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: inline-flex;
+}
+
+.btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Primario: verde marca → verde oscuro al hover */
+.btn-primary {
+    background: var(--marca);
+    color: var(--blanco);
+    border-color: var(--marca);
+}
+.btn-primary:hover:not(:disabled) {
+    background: var(--verde-900);
+    border-color: var(--verde-900);
+    color: var(--blanco);
+}
+
+/* Secundario: dorado → dorado-hover al hover */
+.btn-secundario {
+    background: var(--dorado);
+    color: var(--negro);
+    border-color: var(--dorado);
+}
+.btn-secundario:hover:not(:disabled) {
+    background: var(--dorado-hover);
+    border-color: var(--dorado-hover);
+    color: var(--negro);
+}
+
+/* Outline: borde verde, fondo transparente */
+.btn-outline {
+    border-color: var(--marca);
+    color: var(--marca);
+    background: transparent;
+}
+.btn-outline:hover:not(:disabled) {
+    background: var(--marca);
+    color: var(--blanco);
+}
+
+/* Blanco: fondo blanco, texto verde */
+.btn-blanco {
+    background: var(--blanco);
+    color: var(--verde-700);
+    border-color: var(--blanco);
+}
+.btn-blanco:hover:not(:disabled) {
+    background: var(--salvia-100);
+    border-color: var(--salvia-100);
+    color: var(--verde-700);
+}
+
+/* Texto: solo texto verde */
+.btn-texto {
+    color: var(--marca);
+    background: transparent;
+    border: 0;
+    gap: 0.35rem;
+    min-height: auto;
+    padding-inline: 0;
+    font-weight: 700;
+}
+.btn-texto:hover {
+    color: var(--verde-900);
+}

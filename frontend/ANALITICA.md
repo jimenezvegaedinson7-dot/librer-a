@@ -4,11 +4,20 @@
 
 El flujo confirmado por el propietario es **libreria**, con ID de flujo **16313005114** e ID de medición **G-5SG4L6QMEN**. El ID de medición es público y está incorporado como configuración de producción para `libreria.my` y `www.libreria.my`.
 
+| Dato confirmado | Valor |
+|---|---|
+| Nombre del flujo | libreria |
+| URL del flujo | https://libreria.my |
+| ID del flujo | 16313005114 |
+| ID de medición | G-5SG4L6QMEN |
+
+El ID de medición identifica la etiqueta que carga la tienda. El ID numérico del flujo identifica el recurso de configuración de Analytics y no sustituye al ID que comienza por `G-`.
+
 Después de desplegar esta versión, GA4 utiliza ese flujo automáticamente en esos dominios si `VITE_GA4_ID` no está definida. No utiliza ese valor automático en desarrollo, localhost ni dominios de preview de Vercel.
 
 Para administrar el valor desde Vercel, crea `VITE_GA4_ID=G-5SG4L6QMEN` en **Settings → Environment Variables → Production** y vuelve a desplegar el frontend. Esa variable tiene prioridad sobre el valor incorporado. Un valor explícitamente vacío desactiva la medición; si ya existe vacío en Vercel, complétalo con el ID o elimina la variable para usar el valor de producción.
 
-En **Google Analytics → Administrar → Flujos de datos → libreria**, utiliza `https://libreria.my` como URL del flujo para que coincida con el dominio HTTPS de la tienda.
+El propietario confirmó en **Google Analytics → Administrar → Flujos de datos → libreria** la URL `https://libreria.my`, coincidente con el dominio HTTPS de la tienda.
 
 Para desarrollo local, completa `VITE_GA4_ID` en tu configuración local de Vite y reinicia el servidor. `.env.example` contiene los nombres de las variables, sin una propiedad de Google inventada.
 
@@ -45,9 +54,17 @@ Para ver autores en GA4, crea una dimensión personalizada de ámbito **Elemento
 
 ## Comprobar la conexión
 
+En **Google Analytics → Informes → Tiempo real**, abre la tienda en otra pestaña, consulta una ficha y agrega un libro al carrito. Deben recibirse `page_view`, `view_item` y `add_to_cart`. La recepción y los informes se comprueban desde la propiedad de Analytics; publicar una etiqueta no acredita por sí solo la recepción de todos los eventos.
+
 Activa temporalmente `VITE_GA4_DEBUG=true`, reconstruye o reinicia Vite y consulta **DebugView** en Analytics. Abre una ficha y agrega un libro al carrito: deben aparecer `view_item` y `add_to_cart`. Para comprobar `purchase`, utiliza el flujo de prueba comercial y una compra realmente confirmada por el servidor; un parámetro de retorno no confirma un cobro.
 
 Después, desactiva el modo de depuración en producción. Los informes se consultan en la propiedad de GA4; las recomendaciones se muestran dentro de la tienda.
+
+## Estado publicado y evidencia
+
+La integración y las recomendaciones se publicaron en el commit `c4cdc3e`; el flujo oficial se configuró en `2b9b563`. GitHub informó que los despliegues de Vercel finalizaron correctamente. Se comprobó la web publicada en `https://libreria.my/catalogo`: el navegador preparó la configuración `G-5SG4L6QMEN`, solicitó su etiqueta y encoló el evento `page_view`.
+
+En esa comprobación se interceptó el SDK de Google para no registrar visitas artificiales. La verificación acredita la instrumentación publicada, no una lectura de los informes privados de Analytics. El estado del interruptor de medición mejorada y la recepción en Tiempo real se verifican en la cuenta del propietario.
 
 ## Cómo se recomiendan otros libros
 
@@ -61,6 +78,5 @@ Si no hay compras confirmadas, no se presenta una lista personalizada. Si no que
 
 ## Verificación automatizada
 
-- `node --test test-unit/analitica.test.js`: configuración, datos públicos, precios históricos, deduplicación y bloqueos de la etiqueta.
 - `npx playwright test --config playwright.analytics.config.js`: eventos interceptados sin enviar datos reales a Google, compra confirmada, recomendaciones, navegación y recuperación en móvil y escritorio.
 - Desde `backend/`: `npm run test:integration -- test-integration/recomendaciones-compras.smoke.test.js`, con PostgreSQL desechable, para comprobar permisos, aislamiento, afinidades, stock, precios y límites.

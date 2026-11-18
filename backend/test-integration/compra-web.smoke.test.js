@@ -143,7 +143,7 @@ test('compra web: cuenta, canal, monto, idempotencia, propiedad y gestión de en
             const [filas] = await pool.query("SELECT id_venta,external_reference FROM ventas WHERE id_usuario=? AND estado='pendiente' LIMIT 1", [usuarios[1]]);
             const v = filas[0];
             await pool.query("UPDATE ventas SET payu_order_id='123' WHERE id_venta=?", [v.id_venta]);
-            const servicio = require('../src/services/payu.service');
+            const servicio = require('../src/integrations/payu');
             const controller = require('../src/controllers/pago.controller');
             const anterior = servicio.obtenerOrdenDiagnostico;
             try {

@@ -104,19 +104,17 @@ surfaceContainerHighest=#EAE4D8 onSurfaceVariant=#68716C outline=outlineVariant=
 ## 5. Anatomía por pantalla
 
 ### 0. Splash
-- Logo de marca centrado (`AppLogo`). Ruta inicial.
+- Logo de marca centrado (`AppLogo`), conservando su imagen, tamaño y marco circular. Ruta inicial con validación de sesión.
+- Nombre MATIDANA sin el separador amarillo inferior.
+- Spinner circular de 34×34 dp, trazo de 3 dp, extremos redondos y pista blanca suave sobre el fondo. Mantiene el acento dorado y la etiqueta accesible «Cargando MATIDANA».
+- Con reducción de movimiento se presenta un arco estático, sin anunciar un porcentaje ficticio de avance.
 
 ### Login / Registro *(NO MODIFICAR — ya aprobados)*
 - Se dejan intactos: campos con subrayado dorado, enlaces entre login↔registro, OTP 6 dígitos, verificaciones de email/2FA.
 
 ### 1. Inicio (tab "Inicio") — pestaña principal
-- **Hero card** (fondo `tertiary #77433E`, radio **18**, sombra `#000` 10% blur 18 y+6, sin borde):
-  - Fila superior: tile del logo **54×54** (fondo `paper`, radio 12, `AppLogo` 44×44) + bloque de texto:
-    - "BIBLIOTECA PERSONAL" — `labelSmall`, `gold`, `w800`, `letterSpacing 1.4`, MAYÚS.
-    - "Hola, {nombre}" — `headlineSmall`, blanco, 2 líneas máx (ellipsis).
-    - "Encuentra tu próxima lectura." — `bodySmall`, blanco al 72%.
-  - Botón de carrito a la derecha: `IconButton` blanco sobre círculo `#FFF` 10%.
-  - **Buscador dentro del hero**: `TextField` readOnly (toca → abre Catálogo), fondo `surface`, hint "Buscar por título o autor", ícono `search_rounded`. Sin borde.
+- Cabecera con saludo según la hora y primer nombre del cliente en una sola línea adaptable. Se retiró el logo de la esquina superior derecha para dar espacio al texto.
+- Buscador destacado debajo del saludo; abre el Catálogo con el campo de búsqueda activo. Conserva icono, etiqueta y botón Buscar.
 - **Dos carruseles automáticos de libros** (recuerda: son el corazón del inicio):
   - Comportamiento: `Timer` cada **3s**, animación 500ms `easeInOut`, avanza de a un libro, **regresa al inicio** al llegar al final. No avanza si hay ≤1 libro o no hay viewport.
   - Ancho de tarjeta adaptativo: pantalla <520 → **190**; ≥520 → **205**; ≥750 → **225**; ≥1000 → **245**. Paso entre ítems = ancho + **16**.

@@ -2,7 +2,7 @@ const comprobanteModel = require('../models/comprobante.model');
 const historialModel = require('../models/historial.model');
 const empresaModel = require('../models/empresa.model');
 const { validarId } = require('../utils/validaciones');
-const { enviarComprobantePorEmail } = require('../utils/mailer');
+const { enviarComprobantePorEmail } = require('../integrations/mailer');
 
 const generarComprobante = async (req, res) => {
     try {
@@ -152,8 +152,7 @@ const enviarComprobanteEmail = async (req, res) => {
         });
 
         if (resultado.enviado) {
-            const pool = require('../config/database');
-            await pool.query('UPDATE comprobantes SET enviado_por_email = TRUE, fecha_envio_email = NOW() WHERE id_comprobante = ?', [idComprobante]);
+            await comprobanteModel.marcarEnviadoPorEmail(idComprobante);
         }
 
         if (!resultado.enviado) {

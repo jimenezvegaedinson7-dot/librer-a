@@ -1,5 +1,7 @@
-%% Generado 2026-11-10 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-11-18 desde el código real (actualizar-mapa.mjs)
 flowchart LR
+    sistema_routes["/<br/>sistema.routes"]
+    sistema_routes --> sistema_controller["sistema.controller"]
     libro_routes["/api/libros<br/>libro.routes"]
     libro_routes --> libro_controller["libro.controller"]
     autor_routes["/api/autores<br/>autor.routes"]
@@ -49,11 +51,15 @@ flowchart LR
     favorito_routes["/api/favoritos<br/>favorito.routes"]
     favorito_routes --> favorito_controller["favorito.controller"]
     agencia_controller --> agencia_model[("agencia.model")]
+    anuncio_controller --> anuncio_model[("anuncio.model")]
     anuncio_controller --> usuario_model[("usuario.model")]
+    app_controller --> appVersion_service[("appVersion.service")]
     asistente_controller --> aiAssistant_service[("aiAssistant.service")]
     asistente_controller --> asistenteMemoria_model[("asistenteMemoria.model")]
+    auth_controller --> auth_service[("auth.service")]
     auth_controller --> usuario_model[("usuario.model")]
     auth2fa_controller --> usuario_model[("usuario.model")]
+    auth2fa_controller --> auth_service[("auth.service")]
     autor_controller --> historial_model[("historial.model")]
     autor_controller --> autor_model[("autor.model")]
     autor_controller --> usuario_model[("usuario.model")]
@@ -78,10 +84,12 @@ flowchart LR
     libro_controller --> autor_model[("autor.model")]
     libro_controller --> categoria_model[("categoria.model")]
     libro_controller --> inventario_model[("inventario.model")]
+    libro_controller --> libro_service[("libro.service")]
     libro_controller --> usuario_model[("usuario.model")]
-    pago_controller --> usuario_model[("usuario.model")]
-    pago_controller --> payu_service[("payu.service")]
     pago_controller --> venta_model[("venta.model")]
+    pago_controller --> inventario_model[("inventario.model")]
+    pago_controller --> libro_model[("libro.model")]
+    pago_controller --> pago_service[("pago.service")]
     pago_controller --> zonaDelivery_model[("zonaDelivery.model")]
     pedido_controller --> venta_model[("venta.model")]
     portada_controller --> portada_model[("portada.model")]
@@ -90,10 +98,12 @@ flowchart LR
     reclamacion_controller --> reclamacion_model[("reclamacion.model")]
     reclamacion_controller --> historial_model[("historial.model")]
     reporte_controller --> reporte_model[("reporte.model")]
+    sistema_controller --> sistema_model[("sistema.model")]
     ubicacion_controller --> historial_model[("historial.model")]
     ubicacion_controller --> ubicacion_model[("ubicacion.model")]
     usuario_controller --> usuario_model[("usuario.model")]
     usuario_controller --> historial_model[("historial.model")]
+    usuario_controller --> auth_service[("auth.service")]
     venta_controller --> venta_model[("venta.model")]
     zonaDelivery_controller --> zonaDelivery_model[("zonaDelivery.model")]
     agencia_model -.-> T_agencias_courier[/"agencias_courier"/]
@@ -163,7 +173,10 @@ flowchart LR
     zonaDelivery_model -.-> T_historial_operaciones[/"historial_operaciones"/]
     zonaDelivery_model -.-> T_zonas_delivery_pallasca[/"zonas_delivery_pallasca"/]
     aiAssistant_service --> asistente_model
-    aiAssistant_service --> geminiAssistant_service
     aiAssistant_service --> asistenteContexto_service
-    geminiAssistant_service --> GEMINI["Gemini API (solo backend)"]
+    libro_service --> libro_model
+    libro_service --> inventario_model
+    pago_service --> venta_model
+    pago_service --> usuario_model
+    gemini --> GEMINI["Gemini API (solo backend)"]
 

@@ -1,16 +1,73 @@
-# React + Vite
+# MATIDANA — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Tienda pública y panel administrativo con React 19, Vite y Tailwind CSS 4. Ambos consumen la API de `../backend/`. Las sesiones del cliente y del administrador se guardan por separado.
 
-Currently, two official plugins are available:
+## Desarrollo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Desde `frontend/`:
 
-## React Compiler
+```bash
+npm ci
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+`VITE_API_URL` configura la dirección de la API. Las variables disponibles se documentan en `.env.example`; los ajustes locales pueden guardarse en `.env.local`.
 
-## Expanding the Oxlint configuration
+La tienda abre en `/` y el acceso administrativo en `/admin/login` (también mediante `/admin`).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Organización
+
+| Carpeta | Responsabilidad |
+|---|---|
+| `src/app/` | Arranque, rutas, guardas y proveedores globales. |
+| `src/views/` | Pantallas públicas, de compra y del panel. |
+| `src/components/` | Componentes, layouts y proveedores de cada superficie. |
+| `src/services/` | Clientes HTTP, servicios y utilidades. |
+| `src/models/` | Configuración, constantes y datos compartidos. |
+| `src/hooks/` | Hooks de la web y del panel. |
+| `src/assets/` | Recursos importados por el código. |
+| `src/styles/` | Estilos globales y temas; los estilos locales acompañan a su componente o vista. |
+| `public/` | Recursos servidos directamente, fuentes, portadas y service worker. |
+| `test-browser/` | Pruebas de navegador de compras, sesiones, pagos, navegación y gestión administrativa. |
+
+## Verificación
+
+```bash
+npm run lint
+npm run build
+npx playwright install chromium
+npm run test:browser
+```
+
+Playwright inicia un servidor local en el puerto `5179`; las pruebas simulan las respuestas de la API. Se puede ejecutar una suite concreta con:
+
+```bash
+npm run test:browser -- test-browser/tienda-regresiones.spec.js
+```
+
+Las regresiones de tienda usan la configuración principal; no necesitan una configuración ni una ruta de resultados específica de un equipo.
+
+La analítica usa una configuración separada para activar una etiqueta de prueba interceptada y un servidor en el puerto `5180`:
+
+```bash
+npx playwright test --config playwright.analytics.config.js
+```
+
+Las pruebas no forman parte del build de producción. `test-results/` y `playwright-report/` son resultados generados e ignorados por Git.
+
+## Publicación
+
+`npm run build` genera `dist/`; `npm run preview` permite revisarlo localmente.
+
+El despliegue utiliza `vercel.json`: configura el build, las rutas React, las redirecciones, el proxy hacia la API y las cabeceras de caché. La carpeta local `.vercel/` solo es necesaria si se vincula el proyecto mediante la CLI de Vercel.
+
+`node_modules/` y `dist/` se generan localmente y no se versionan.
+
+## Documentación
+
+- `PRODUCT.md`: alcance y reglas del producto.
+- `DESIGN.md`: decisiones de diseño.
+- `ANALITICA.md`: medición y recomendaciones de compra.
+- `../docs/architecture/03-FRONTEND-MAP.md`: rutas y relaciones del frontend.
+
+Los mapas se regeneran desde la raíz del repositorio con `node docs/architecture/tools/actualizar-mapa.mjs`.

@@ -40,7 +40,7 @@ require.cache[database] = {
         }
     }
 };
-const mailer = require.resolve('../src/utils/mailer');
+const mailer = require.resolve('../src/integrations/mailer');
 require.cache[mailer] = { id: mailer, filename: mailer, loaded: true, exports: {} };
 const encryption = require('../src/utils/crypto');
 const controller = require('../src/controllers/auth2fa.controller');

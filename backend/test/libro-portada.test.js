@@ -14,7 +14,7 @@ const dobles = {
     '../src/models/autor.model.js': { obtenerPorId: async () => ({ id_autor: 1 }) },
     '../src/models/categoria.model.js': { obtenerPorId: async () => ({ id_categoria: 1 }) },
     '../src/models/historial.model.js': { crear: async () => 1 },
-    '../src/utils/cloudinary.js': { publicIdDesdeUrl: (url) => url, eliminarImagen: async (id) => borradas.push(id) }
+    '../src/integrations/cloudinary.js': { publicIdDesdeUrl: (url) => url, eliminarImagen: async (id) => borradas.push(id) }
 };
 for (const [archivo, exports] of Object.entries(dobles)) {
     const id = path.resolve(__dirname, archivo);

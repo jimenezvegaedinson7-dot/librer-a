@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
-import { DESCARGAS } from '../src/web/config/downloads.js';
+import { DESCARGAS } from '../src/models/config/web/downloads.js';
 
 const API = 'http://127.0.0.1:59999/api';
 const CATEGORIAS = ['Novela', 'Poesía', 'Fantasía'];
@@ -152,7 +152,7 @@ test('cada sección es una página: título, URL canónica y foco en su h1', asy
         ['Aplicación', '/aplicacion', 'Toda la librería cabe en la app'],
         ['Características', '/caracteristicas', 'Comprar un libro, sin vueltas'],
         ['Nosotros', '/nosotros', 'Una librería de barrio, abierta a todo el Perú'],
-        ['Descargar', '/descargar', 'Descarga la app'],
+        ['Descargar', '/descargar', 'Descargue la app'],
         ['Catálogo', '/catalogo', 'Catálogo']
     ];
     for (const [enlace, ruta, h1] of paginas) {
@@ -168,6 +168,11 @@ test('cada sección es una página: título, URL canónica y foco en su h1', asy
 test('catálogo: solo activos, filtros por categoría y búsqueda sin tildes', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/catalogo');
+    await expect(page.locator('.catalogo-cabeza .seccion__entrada')).toHaveText('Libros físicos para descubrir historias y encontrar tu próxima lectura.');
+    await expect(page.locator('.catalogo-cabeza')).toHaveCSS('border-bottom-width', '0px');
+    await expect(page.locator('.catalogo-cabeza').getByLabel('Ordenar por')).toBeVisible();
+    await expect(page.locator('.catalogo-pagina').getByRole('searchbox')).toHaveCount(0);
+    await expect(page.locator('.catalogo-cabeza').getByRole('list')).toHaveCount(0);
     const tarjetas = page.locator('.rejilla-libros .tarjeta-libro');
     await expect(tarjetas).toHaveCount(13);
     await expect(page.getByText('13 libros')).toBeVisible();
@@ -180,8 +185,8 @@ test('catálogo: solo activos, filtros por categoría y búsqueda sin tildes', a
     await expect(tarjetas).toHaveCount(4);
 
     await page.getByRole('button', { name: 'Limpiar filtros' }).click();
-    await page.locator('#buscar-catalogo').fill('garcia');
-    await page.locator('#buscar-catalogo').press('Enter');
+    await page.locator('#buscar-escritorio').fill('garcia');
+    await page.locator('#buscar-escritorio').press('Enter');
     await expect(tarjetas).toHaveCount(1);
     await expect(tarjetas.first()).toContainText('Cien años de soledad');
 });
@@ -212,6 +217,8 @@ test('descargar: Android real desde la configuración, iOS en preparación sin e
     await expect(android).toHaveAttribute('href', DESCARGAS.android.url);
     await expect(page.locator('main')).toContainText(DESCARGAS.android.tamano);
     await expect(page.locator('main')).toContainText(DESCARGAS.android.version);
+    await expect(page.locator('.descargar-portada__seguridad')).toHaveCount(0);
+    await expect(page.locator('body')).not.toHaveText(/Página oficial de la app/);
     const ios = page.getByRole('article', { name: 'iPhone' });
     await expect(ios).toContainText('En preparación');
     await expect(ios.locator('a')).toHaveCount(0);
@@ -231,25 +238,28 @@ test('en un iPhone se destaca su tarjeta sin ocultar Android', async ({ browser 
     await ctx.close();
 });
 
-test('cajón móvil: abre, cierra con Escape devolviendo el foco y navega', async ({ browser }) => {
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
-    const page = await ctx.newPage();
-    await apiPublica(page);
-    await page.goto('/');
-    await expect(page.getByRole('navigation', { name: 'Principal' })).toBeHidden();
-    await page.getByRole('button', { name: 'Abrir menú' }).click();
-    const cajon = page.getByRole('dialog', { name: 'Menú' });
-    await expect(cajon).toBeVisible();
-    await expect(cajon.getByRole('link', { name: 'Inicio', exact: true })).toBeFocused();
-    await page.keyboard.press('Escape');
-    await expect(cajon).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Abrir menú' })).toBeFocused();
-    await page.getByRole('button', { name: 'Abrir menú' }).click();
-    await page.getByRole('dialog', { name: 'Menú' }).getByRole('link', { name: 'Características' }).click();
-    await expect(page).toHaveURL(/\/caracteristicas$/);
-    await expect(page.getByRole('dialog', { name: 'Menú' })).toHaveCount(0);
-    await ctx.close();
-});
+for (const ancho of [390, 1023]) {
+    test(`cajón móvil ${ancho}px: abre, cierra con Escape devolviendo el foco y navega`, async ({ browser }) => {
+        const ctx = await browser.newContext({ viewport: { width: ancho, height: 844 }, reducedMotion: 'reduce' });
+        const page = await ctx.newPage();
+        await apiPublica(page);
+        await page.goto('/');
+        await expect(page.getByRole('navigation', { name: 'Principal' })).toBeHidden();
+        await page.locator('.cabecera').screenshot({ path: test.info().outputPath(`menu-movil-${ancho}.png`) });
+        await page.getByRole('button', { name: 'Abrir menú' }).click();
+        const cajon = page.getByRole('dialog', { name: 'Menú' });
+        await expect(cajon).toBeVisible();
+        await expect(cajon.getByRole('link', { name: 'Inicio', exact: true })).toBeFocused();
+        await page.keyboard.press('Escape');
+        await expect(cajon).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Abrir menú' })).toBeFocused();
+        await page.getByRole('button', { name: 'Abrir menú' }).click();
+        await page.getByRole('dialog', { name: 'Menú' }).getByRole('link', { name: 'Características' }).click();
+        await expect(page).toHaveURL(/\/caracteristicas$/);
+        await expect(page.getByRole('dialog', { name: 'Menú' })).toHaveCount(0);
+        await ctx.close();
+    });
+}
 
 test('selector de entrega: teclado y resultado anunciado', async ({ page }) => {
     await apiPublica(page);
@@ -261,11 +271,12 @@ test('selector de entrega: teclado y resultado anunciado', async ({ page }) => {
     await expect(page.locator('.selector-entrega__resultado')).toContainText('Pallasca');
 });
 
-test('acceso administrativo: solo en el pie, discreto, y lleva al login del panel', async ({ page }) => {
+test('acceso administrativo: sin enlace público y disponible escribiendo /admin', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
-    await expect(page.locator('header a[href="/admin/login"], .avisos a[href="/admin/login"]')).toHaveCount(0);
-    await page.locator('.pie__admin').click();
+    await expect(page.locator('a[href="/admin/login"], .pie__admin')).toHaveCount(0);
+    await expect(page.locator('body')).not.toHaveText(/Acceso administrativo/);
+    await page.goto('/admin');
     await expect(page).toHaveURL(/\/admin\/login$/);
     await expect(page).toHaveTitle(/Acceso administrativo/);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow');
@@ -528,7 +539,7 @@ test('catálogo: el precio es texto sobrio sin pastilla de color', async ({ page
     expect(estilos.color).toBe('rgb(17, 24, 32)');
 });
 
-test('el botón principal es azul marino con texto blanco', async ({ page }) => {
+test('el botón principal es negro carbón con texto blanco', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/descargar');
     const boton = page.locator('.descargar-portada .boton').first();
@@ -537,7 +548,7 @@ test('el botón principal es azul marino con texto blanco', async ({ page }) => 
         const s = getComputedStyle(e);
         return { fondo: s.backgroundColor, color: s.color };
     });
-    expect(estilos.fondo).toBe('rgb(36, 48, 75)');
+    expect(estilos.fondo).toBe('rgb(20, 18, 18)');
     expect(estilos.color).toBe('rgb(255, 255, 255)');
 });
 
@@ -597,7 +608,7 @@ test('cada variante de botón conserva un texto legible', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
 
-    await expect(page.locator('.acceso-catalogo__boton')).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('.portada3d__acceso .portada3d__boton')).toBeVisible({ timeout: 30000 });
     await expect(page.locator('footer.pie')).toBeVisible({ timeout: 30000 });
     const colores = await page.evaluate(() => {
         const leer = (sel) => {
@@ -606,10 +617,10 @@ test('cada variante de botón conserva un texto legible', async ({ page }) => {
             const s = getComputedStyle(e);
             return { fondo: s.backgroundColor, texto: s.color };
         };
-        return { marca: leer('.acceso-catalogo__boton') };
+        return { marca: leer('.portada3d__acceso .portada3d__boton') };
     });
-    expect(colores.marca.fondo).toBe('rgb(36, 48, 75)');
-    expect(colores.marca.texto).toBe('rgb(255, 250, 242)');
+    expect(colores.marca.fondo).toBe('rgb(198, 161, 91)');
+    expect(colores.marca.texto).toBe('rgb(13, 24, 35)');
 
     await page.goto('/nosotros');
     await expect(page.locator('.nosotros-valores .app-tiendas')).toHaveCount(0);
@@ -662,15 +673,16 @@ test('catálogo: ordenar por precio y filtrar ofertas y stock', async ({ page })
     await expect(tarjetas).toHaveCount(13);
 });
 
-test('catálogo: botón de compra azul marino y stock real en la tarjeta', async ({ page }) => {
+test('catálogo: botón de compra negro carbón y stock real en la tarjeta', async ({ page }) => {
     const libros = LIBROS.map((l, i) => ({ ...l, stock: i === 1 ? 2 : l.stock }));
     await apiPublica(page, { libros });
     await page.goto('/catalogo');
     const boton = page.locator('.tarjeta-libro .boton--compra').first();
-    await expect(boton).toHaveCSS('background-color', 'rgb(36, 48, 75)');
+    await expect(boton).toHaveCSS('background-color', 'rgb(20, 18, 18)');
     await expect(page.locator('.stock--poco')).toHaveCount(1);
     await expect(page.locator('.stock--poco')).toHaveText('Quedan solo 2 en stock');
-    await expect(page.locator('.tarjeta-libro--sin-stock .boton--compra')).toContainText('Agotado');
+    await expect(page.locator('.tarjeta-libro--sin-stock .boton--compra')).toBeDisabled();
+    await expect(page.locator('.tarjeta-libro--sin-stock')).toContainText('Sin stock por ahora');
 });
 
 test('inicio: explora por categoría y cómo comprar', async ({ page }) => {
@@ -697,10 +709,25 @@ test('cabecera comercial sin franja superior y con menú claro como la referenci
     await expect(page.locator('.menu a').first()).toHaveCSS('text-transform', 'uppercase');
 });
 
-test('inicio: sin secciones repetidas; el catálogo se ofrece con una sola acción', async ({ page }) => {
+test('inicio: sin secciones repetidas; la portada ofrece la ficha del libro real', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
     await expect(page.locator('.vitrina, .comprar__app, .banda-catalogo')).toHaveCount(0);
-    await expect(page.locator('.acceso-catalogo').getByRole('link', { name: 'Explorar catálogo' })).toHaveAttribute('href', '/catalogo');
+    await expect(page.locator('.portada3d__acceso').getByRole('link', { name: 'Ver este libro' })).toHaveAttribute('href', '/libro/13');
 });
+
+for (const width of [390, 1440]) {
+    test(`Aplicación ${width}px: presentación sin logo, teléfonos y enlaces disponibles`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await apiPublica(page);
+        await page.goto('/aplicacion');
+        const app = page.locator('.app-portada');
+        await expect(app.getByRole('heading', { level: 1 })).toHaveText('Toda la librería cabe en la app');
+        await expect(app.locator('.icono-app')).toHaveCount(0);
+        await expect(app.locator('.telefono img')).toHaveCount(3);
+        await expect(app.getByRole('link', { name: 'Descargar la app', exact: true })).toHaveAttribute('href', '/descargar');
+        await expect(app.getByRole('link', { name: 'Ver el catálogo', exact: true })).toHaveAttribute('href', '/catalogo');
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    });
+}

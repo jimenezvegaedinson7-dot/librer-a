@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { argumentos, bloque, cuerposMetodosDart, dependenciasPubspec, endpointsFetchApi, endpointsPeticionCliente, metodosUsadosDart, miembrosObjeto, propagarEndpoints, resolverMiddlewares, rutasReact, tablasDeclaradas } from './extraer-relaciones.mjs';
+import { analizarSwift } from './extraer-swift.mjs';
 
 const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const leer = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
@@ -61,24 +62,12 @@ function tablas(texto) {
 
 // ─────────────────────────── BACKEND ───────────────────────────
 const BACK = `${RAIZ}/backend`;
-const server = leer(`${BACK}/server.js`);
+const archivoMontajes = 'backend/src/app/rutas.js';
+const montajesTexto = leer(`${RAIZ}/${archivoMontajes}`);
 const requiresServer = {};
-for (const m of server.matchAll(/const\s+(\w+)\s*=\s*require\('\.\/src\/routes\/([\w.]+)'\)/g)) requiresServer[m[1]] = `backend/src/routes/${m[2]}.js`;
+for (const m of montajesTexto.matchAll(/const\s+(\w+)\s*=\s*require\('\.\.\/routes\/([\w.]+)'\)/g)) requiresServer[m[1]] = `backend/src/routes/${m[2]}.js`;
 const montajes = {};
-for (const m of server.matchAll(/app\.use\(\s*'([^']+)',\s*(\w+)\s*\)/g)) if (requiresServer[m[2]]) montajes[requiresServer[m[2]]] = m[1];
-
-const endpointsServer = [];
-for (const m of server.matchAll(/app\.(get|post|put|delete|patch)\(\s*'([^']+)'([\s\S]*?)(?:async|\(req)/g)) {
-    endpointsServer.push({
-        method: m[1].toUpperCase(),
-        path: m[2],
-        middleware: /verificarToken/.test(m[3]) ? ['JWT', ...(/verificarRol\('(\w+)'\)/.exec(m[3]) ? [`rol:${/verificarRol\('(\w+)'\)/.exec(m[3])[1]}`] : [])] : [],
-        routeFile: 'backend/server.js',
-        line: server.slice(0, m.index).split('\n').length,
-        controller: 'inline (server.js)',
-        handler: 'inline',
-    });
-}
+for (const m of montajesTexto.matchAll(/app\.use\(\s*'([^']+)',\s*(\w+)\s*\)/g)) if (requiresServer[m[2]]) montajes[requiresServer[m[2]]] = m[1];
 
 const controladores = {};
 const modelos = {};
@@ -115,8 +104,15 @@ function tablasDeServicio(nombre, vistos = new Set()) {
 for (const f of fs.readdirSync(ctrlDir)) {
     const txt = leer(`${ctrlDir}/${f}`);
     const alias = {};
+    const funcionesImportadas = Object.create(null);
     for (const m of txt.matchAll(/const\s+(\w+)\s*=\s*require\('\.\.\/(models|services)\/([\w.]+)'\)/g)) alias[m[1]] = `${m[3]}.js`;
-    const utilidades = [...txt.matchAll(/require\('\.\.\/(utils|config|services)\/([\w.]+)'\)/g)].map((m) => `backend/src/${m[1]}/${m[2]}.js`);
+    for (const m of txt.matchAll(/const\s*\{([^}]+)\}\s*=\s*require\('\.\.\/(models|services)\/([\w.]+)'\)/g)) {
+        for (const campo of m[1].split(',')) {
+            const [nombre, local = nombre] = campo.trim().split(/\s*:\s*/);
+            funcionesImportadas[local] = `${m[3]}.js#${nombre}`;
+        }
+    }
+    const utilidades = [...txt.matchAll(/require\('\.\.\/(utils|config|services|integrations)\/([\w.]+)'\)/g)].map((m) => `backend/src/${m[1]}/${m[2]}.js`);
     const fns = funciones(txt);
     const detalle = {};
     for (const [n, cuerpo] of Object.entries(fns)) {
@@ -130,15 +126,17 @@ for (const f of fs.readdirSync(ctrlDir)) {
             for (const m of cu.matchAll(/\b(\w+)\s*\.\s*(\w+)\s*\(/g)) if (alias[m[1]]) usos.add(`${alias[m[1]]}#${m[2]}`);
             if (/\b(pool|conexion|connection|client)\s*\.\s*query\s*\(/.test(cu)) sqlDirecto = [...new Set([...sqlDirecto, ...tablas(cu)])];
             for (const m of cu.matchAll(/\b(\w+)\s*\(/g)) {
+                if (funcionesImportadas[m[1]]) usos.add(funcionesImportadas[m[1]]);
                 if (Object.hasOwn(fns, m[1]) && typeof fns[m[1]] === 'string' && !visitados.has(m[1])) { visitados.add(m[1]); pendientes.push(fns[m[1]]); }
             }
         }
         detalle[n] = { calls: [...usos].sort(), directSqlTables: sqlDirecto };
     }
-    controladores[f] = { file: `backend/src/controllers/${f}`, imports: [...new Set([...Object.values(alias).map((a) => (a.includes('service') ? `backend/src/services/${a}` : `backend/src/models/${a}`)), ...utilidades])], functions: detalle };
+    const importacionesNombradas = Object.values(funcionesImportadas).map((v) => v.split('#')[0]).map((a) => `backend/src/${a.includes('service') ? 'services' : 'models'}/${a}`);
+    controladores[f] = { file: `backend/src/controllers/${f}`, imports: [...new Set([...Object.values(alias).map((a) => (a.includes('service') ? `backend/src/services/${a}` : `backend/src/models/${a}`)), ...importacionesNombradas, ...utilidades])], functions: detalle };
 }
 
-const endpoints = [...endpointsServer];
+const endpoints = [];
 for (const f of fs.readdirSync(`${BACK}/src/routes`)) {
     const archivo = `backend/src/routes/${f}`;
     const txt = leer(`${RAIZ}/${archivo}`);
@@ -180,7 +178,7 @@ for (const f of fs.readdirSync(`${BACK}/src/routes`)) {
         }
         endpoints.push({
             method: m[1].toUpperCase(),
-            path: (base + (ruta === '/' ? '' : ruta)) || base,
+            path: ((base === '/' ? '' : base) + (ruta === '/' ? '' : ruta)) || '/',
             middleware: [...new Set([...globales, ...expandirMiddlewares(resto.slice(0, -1))])],
             routeFile: archivo,
             line: txt.slice(0, m.index).split('\n').length,
@@ -400,6 +398,7 @@ function noUsados(grafo, entradas) {
 
 const salida = {
     generado: new Date().toISOString(),
+    swift: analizarSwift(RAIZ),
     backend: { montajes, endpoints, controladores, modelos, grafo: grafoBack, ciclos: ciclos(grafoBack), archivos: Object.keys(grafoBack).length,
         tablasEsquema, tablasDeclaradas: [...TABLAS_REALES].sort(), fuentesPorTabla, migraciones: archivosMigraciones.map(rel) },
     frontend: { rutas: rutasFront, servicios, usoServicios, endpointsPorArchivo: endpointsPorArchivoFront, integraciones: integracionesFront, grafo: grafoFront, ciclos: ciclos(grafoFront), archivos: archivosFront.length },

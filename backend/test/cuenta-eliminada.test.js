@@ -119,15 +119,25 @@ test('una cuenta eliminada no se reactiva aunque mande estado y rol juntos', asy
     assert.deepEqual(doble.escrituras, []);
 });
 
-test('el bloqueo es por cuenta eliminada, no por el rol pedido', async () => {
+test('una cuenta activa conserva la actualización al rol cliente', async () => {
     cuentaActiva();
 
-    const res = await ejecutar({ rol: 'administrador' });
+    const res = await ejecutar({ rol: 'cliente' });
 
     assert.equal(res.statusCode, null);
     assert.equal(res.cuerpo.success, true);
     assert.equal(doble.escrituras.length, 1);
-    assert.equal(doble.escrituras[0].cambios.rol, 'administrador');
+    assert.equal(doble.escrituras[0].cambios.rol, 'cliente');
+});
+
+test('una cuenta activa tampoco puede convertirse en un administrador adicional', async () => {
+    cuentaActiva();
+
+    const res = await ejecutar({ rol: 'administrador' });
+
+    assert.equal(res.statusCode, 403);
+    assert.match(res.cuerpo.mensaje, /Solo existe una cuenta administradora/);
+    assert.deepEqual(doble.escrituras, []);
 });
 
 test('una cuenta viva sí puede desactivarse', async () => {

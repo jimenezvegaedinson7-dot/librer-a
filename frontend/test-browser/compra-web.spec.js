@@ -123,6 +123,59 @@ async function hastaCheckout(page) {
     await expect(page.getByLabel('Número de documento', { exact: true })).toBeVisible();
 }
 
+for (const ancho of [1024, 1440]) {
+    test(`cabecera ${ancho}px: carrito legible en hover y sin hamburguesa de escritorio`, async ({ page }) => {
+        await page.setViewportSize({ width: ancho, height: 900 });
+        await api(page);
+        await page.goto('/cuenta');
+        await login(page);
+        const carrito = page.locator('.cabecera .compra-carrito');
+        const texto = carrito.locator('span');
+        const contraste = () => carrito.evaluate(el => {
+            const luminancia = color => {
+                const c = color.match(/[\d.]+/g).slice(0, 3).map(v => {
+                    const x = Number(v) / 255;
+                    return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+                });
+                return c[0] * 0.2126 + c[1] * 0.7152 + c[2] * 0.0722;
+            };
+            let fondo = el;
+            while (fondo.parentElement && getComputedStyle(fondo).backgroundColor === 'rgba(0, 0, 0, 0)') fondo = fondo.parentElement;
+            const a = luminancia(getComputedStyle(el.querySelector('span')).color);
+            const b = luminancia(getComputedStyle(fondo).backgroundColor);
+            return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        });
+        for (const cantidad of [0, 1]) {
+            if (cantidad) {
+                await page.goto('/catalogo');
+                await page.getByRole('button', { name: `Agregar ${libro.titulo} al carrito`, exact: true }).click();
+            }
+            await expect(texto).toHaveText(cantidad ? 'Carrito (1)' : 'Carrito');
+            await expect(carrito).not.toHaveAttribute('data-cantidad');
+            expect(await carrito.evaluate((el) => getComputedStyle(el, '::after').content)).toBe('none');
+            await carrito.hover();
+            await expect(texto).toBeVisible();
+            await page.locator('.cabecera').screenshot({ path: test.info().outputPath(`carrito-hover-${ancho}-${cantidad}.png`) });
+            expect(await contraste()).toBeGreaterThanOrEqual(4.5);
+            const iconoCarrito = await carrito.locator('svg').boundingBox();
+            const iconoCuenta = await page.locator('.cabecera .compra-cuenta svg').boundingBox();
+            const etiquetaCarrito = await texto.boundingBox();
+            const etiquetaCuenta = await page.locator('.cabecera .compra-cuenta__texto').boundingBox();
+            expect(Math.abs(iconoCarrito.y + iconoCarrito.height / 2 - iconoCuenta.y - iconoCuenta.height / 2)).toBeLessThan(1);
+            expect(Math.abs(etiquetaCarrito.y + etiquetaCarrito.height / 2 - etiquetaCuenta.y - etiquetaCuenta.height / 2)).toBeLessThan(1);
+            await page.mouse.move(0, 0);
+            await carrito.focus();
+            expect(await contraste()).toBeGreaterThanOrEqual(4.5);
+            await expect(page.getByRole('button', { name: 'Abrir menú', exact: true })).toBeHidden();
+            await expect(page.getByRole('navigation', { name: 'Principal', exact: true })).toBeVisible();
+            expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        }
+        await carrito.click();
+        await expect(page).toHaveURL(/\/carrito$/);
+        await expect(page.getByText('S/ 75.00 por unidad', { exact: true })).toBeVisible();
+    });
+}
+
 for (const ancho of [390, 1440]) {
     test(`compra web ${ancho}px: carrito, sesión separada, recojo, PayU y confirmación`, async ({ page }) => {
         await page.setViewportSize({ width: ancho, height: 1000 });
@@ -278,9 +331,43 @@ test('mi cuenta muestra los datos del cliente y sus accesos', async ({ page }) =
     await page.goto('/cuenta');
     await login(page);
     await expect(page).toHaveURL(/\/cuenta$/);
+    await expect(page.getByRole('heading', { name: 'Mi cuenta', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Ver foto de perfil completa' })).toBeVisible();
+    await expect(page.getByLabel('Actualizar imagen de perfil')).toBeAttached();
+    const estilo = await page.evaluate(() => ({
+        fondo: getComputedStyle(document.querySelector('main')).backgroundColor,
+        heroTipo: getComputedStyle(document.querySelector('.pf-hero__salir')).fontFamily,
+        heroFondo: getComputedStyle(document.querySelector('.pf-hero')).backgroundColor,
+        heroBorde: getComputedStyle(document.querySelector('.pf-hero')).borderTopWidth,
+        heroBackdrop: getComputedStyle(document.querySelector('.pf-hero')).backdropFilter,
+        accesoBorde: getComputedStyle(document.querySelector('.pf-acceso')).borderTopWidth
+    }));
+    expect(estilo.fondo).toBe('rgb(247, 247, 247)');
+    expect(estilo.heroFondo).toBe('rgba(0, 0, 0, 0)');
+    expect(estilo.heroBorde).toBe('0px');
+    expect(estilo.heroBackdrop).toBe('none');
+    expect(estilo.accesoBorde).toBe('1px');
+    expect(estilo.heroTipo).toContain('Work Sans');
+    expect(estilo.heroTipo).not.toContain('Source Serif');
     const misDatos = page.getByRole('region', { name: 'Mis datos' });
     for (const valor of ['Lucía', 'Ramos', 'lucia@example.test', '987654321', 'Verificado']) await expect(misDatos).toContainText(valor);
     await expect(page.getByRole('navigation', { name: 'Accesos de mi cuenta' }).getByRole('link', { name: /Mis compras/ })).toHaveAttribute('href', '/mis-compras');
     await page.getByRole('button', { name: 'Cerrar sesión de cliente', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Iniciar sesión', exact: true })).toBeVisible();
+});
+test('mi cuenta conserva objetivos táctiles de 44px en 390px', async ({ page }) => {
+    await api(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/cuenta');
+    await login(page);
+    await expect(page.getByRole('heading', { name: 'Mi cuenta', exact: true })).toBeVisible();
+    await page.waitForSelector('.pf-hero__salir', { state: 'visible' });
+    const alturas = await page.evaluate(() =>
+        [...document.querySelectorAll('.pf-hero__salir, .pf-boton--borde, .pf-secundario-link')]
+            .filter((el) => el.getClientRects().length)
+            .map((el) => ({ selector: el.className, alto: Math.round(el.getBoundingClientRect().height) }))
+    );
+    expect(alturas.length).toBeGreaterThan(0);
+    expect(alturas.filter((x) => x.alto < 44)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

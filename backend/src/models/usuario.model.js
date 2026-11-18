@@ -188,7 +188,13 @@ const eliminarCuenta = async (idUsuario, passwordAleatoriaHash) => {
     }
 };
 
+const obtenerTwoFactorEnabled = async (idUsuario) => {
+    const [filas] = await pool.query(`SELECT two_factor_enabled FROM usuarios WHERE id_usuario = ? LIMIT 1`, [idUsuario]);
+    return filas.length > 0 ? Number(filas[0].two_factor_enabled) === 1 : false;
+};
+
 module.exports = {
+    obtenerTwoFactorEnabled,
     buscarPorEmail,
     buscarPorId,
     listarTodos,

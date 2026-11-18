@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none">
+  <defs>
+    <radialGradient id="luz" cx=".48" cy=".44" r=".62">
+      <stop stop-color="#fffaf3" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#fffaf3" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="suave" x="-5%" y="-5%" width="110%" height="110%">
+      <feGaussianBlur stdDeviation=".3"/>
+    </filter>
+  </defs>
+  <path fill="#f4eee7" d="M0 0h96v96H0z"/>
+  <g opacity=".44" filter="url(#suave)">
+    <g fill="#bfcfc5">
+      <rect x="8" y="9" width="6" height="19" rx="1"/>
+      <rect x="37" y="7" width="7" height="21" rx="1"/>
+      <rect x="74" y="10" width="5" height="18" rx="1"/>
+      <rect x="18" y="38" width="7" height="17" rx="1"/>
+      <rect x="84" y="34" width="6" height="21" rx="1"/>
+      <rect x="7" y="65" width="7" height="17" rx="1"/>
+      <rect x="69" y="63" width="7" height="19" rx="1"/>
+    </g>
+    <g fill="#c8c0d6">
+      <rect x="16" y="6" width="7" height="22" rx="1"/>
+      <rect x="55" y="11" width="6" height="17" rx="1"/>
+      <rect x="81" y="5" width="8" height="23" rx="1"/>
+      <rect x="8" y="35" width="8" height="20" rx="1"/>
+      <rect x="67" y="39" width="7" height="16" rx="1"/>
+      <rect x="24" y="61" width="6" height="21" rx="1"/>
+      <rect x="85" y="64" width="7" height="18" rx="1"/>
+    </g>
+    <g fill="#dec2bc">
+      <rect x="25" y="12" width="8" height="16" rx="1"/>
+      <rect x="63" y="7" width="8" height="21" rx="1"/>
+      <rect x="27" y="33" width="6" height="22" rx="1"/>
+      <rect x="76" y="36" width="6" height="19" rx="1"/>
+      <rect x="16" y="67" width="6" height="15" rx="1"/>
+      <rect x="78" y="60" width="5" height="22" rx="1"/>
+    </g>
+    <g fill="#c0d0dc">
+      <rect x="46" y="10" width="7" height="18" rx="1"/>
+      <rect x="35" y="37" width="7" height="18" rx="1"/>
+      <rect x="57" y="34" width="8" height="21" rx="1"/>
+      <rect x="32" y="65" width="8" height="17" rx="1"/>
+      <rect x="59" y="67" width="8" height="15" rx="1"/>
+    </g>
+    <path d="M10 13h2m6-3h3m6 7h4m34-6h4m14-2h4M10 40h4m6 3h3m6-5h2m47 3h2m6-2h2M9 70h3m6 2h2m6-6h2m43 2h3m6-3h1m6 4h3" stroke="#fffaf3" stroke-width="1.1" stroke-linecap="round"/>
+    <path d="M3 29h90M3 56h90M3 83h90" stroke="#b9a58e" stroke-width="1.1"/>
+  </g>
+  <path fill="url(#luz)" d="M0 0h96v96H0z"/>
+</svg>

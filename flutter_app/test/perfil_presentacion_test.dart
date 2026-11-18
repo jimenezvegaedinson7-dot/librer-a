@@ -46,7 +46,7 @@ void main() {
   setUpAll(cargarFuentesLocales);
   for (final ancho in [390.0, 768.0]) {
     testWidgets(
-      'perfil Swift adaptado: cabecera con foto e identidad, datos y selector conservados a $ancho',
+      'perfil sencillo: foto centrada, datos en filas y selector conservados a $ancho',
       (tester) async {
         tester.view.physicalSize = Size(ancho, 900);
         tester.view.devicePixelRatio = 1;
@@ -99,26 +99,23 @@ void main() {
         );
         final nombre = find.byKey(const ValueKey('nombre-perfil'));
         expect(
-          tester.getRect(nombre).left,
-          greaterThan(tester.getRect(foto).right),
+          tester.getRect(nombre).top,
+          greaterThan(tester.getRect(foto).bottom),
         );
+        expect(tester.getCenter(foto).dx, closeTo(ancho / 2, 1));
         expect(find.text('Ana Torres'), findsOneWidget);
-        expect(
-          find.descendant(
-            of: identidad,
-            matching: find.text('ana@example.test'),
-          ),
-          findsOneWidget,
-        );
-        expect(find.text('Toca la foto para actualizarla'), findsOneWidget);
-        expect(find.text('Tus datos'), findsOneWidget);
-        expect(find.text('ana@example.test'), findsNWidgets(2));
-        expect(find.text('Mis compras'), findsOneWidget);
+        expect(find.text('Cambiar foto'), findsOneWidget);
+        expect(find.text('Nombre'), findsOneWidget);
+        expect(find.text('ana@example.test'), findsOneWidget);
         expect(find.text('Reservas'), findsNothing);
-        expect(find.text('Mis favoritos'), findsOneWidget);
         expect(tester.takeException(), isNull);
-        await captura(tester, key, 'perfil-${ancho.toInt()}');
-        await tester.tap(find.byIcon(Icons.photo_camera_rounded));
+        expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.mail_outline_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.call_outlined), findsOneWidget);
+        expect(find.byIcon(Icons.edit_outlined), findsNWidgets(3));
+        expect(find.byIcon(Icons.photo_camera_rounded), findsOneWidget);
+        await captura(tester, key, 'perfil-formal-${ancho.toInt()}');
+        await tester.tap(find.byTooltip('Cambiar foto de perfil'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
         expect(find.text('Elegir avatar'), findsOneWidget);

@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { avisoPedido } = require('../src/utils/mailer');
+const { avisoPedido } = require('../src/integrations/mailer');
 
 test('recojo avisa "listo para recoger" y "entregado"; nunca "en camino"', () => {
     assert.equal(avisoPedido('tienda', 'listo_recojo').titulo, 'Tu pedido está listo para recoger');

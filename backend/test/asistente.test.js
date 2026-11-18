@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { coincidencias, interpretar } = require('../src/utils/asistenteBusqueda');
 const contextos = require('../src/services/asistenteContexto.service');
-const { crearProveedor } = require('../src/services/geminiAssistant.service');
+const { crearProveedor } = require('../src/integrations/gemini');
 const { crearAsistente } = require('../src/services/aiAssistant.service');
 const autores = [
     { id: 1, nombre: 'Gabriel García Márquez' },
@@ -301,7 +301,7 @@ test('charla: sin clave responde vacío; con IA devuelve texto limpio y nunca to
     assert.equal(consultas, 0);
 });
 test('charla: el texto del modelo se limpia de enlaces y markdown', () => {
-    const { limpiarTextoCharla } = require('../src/services/geminiAssistant.service');
+    const { limpiarTextoCharla } = require('../src/integrations/gemini');
     assert.equal(limpiarTextoCharla('**Hola** visita https://x.com ya'), 'Hola visita  ya');
 });
 test('memoria: solo guarda campos conocidos y acotados, sin texto libre', () => {

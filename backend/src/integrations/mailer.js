@@ -1,0 +1,681 @@
+// Adaptadores de correo y renderizado de sus adjuntos.
+const nodemailer = require('nodemailer');
+const { resolve4 } = require('dns').promises;
+const { generarPdfDesdeHtml } = require('./pdf');
+
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || 'jimenezvegaedinson7@gmail.com';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.EMAIL_RESEND_API_KEY;
+const SMTP_HOST = process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com';
+const SMTP_PORT = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 587);
+const SMTP_SECURE = String(process.env.SMTP_SECURE || process.env.EMAIL_SECURE || 'false') === 'true';
+const SMTP_USER = process.env.SMTP_USER || process.env.EMAIL_USER;
+const SMTP_PASS = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+const MAIL_FROM = process.env.MAIL_FROM || process.env.EMAIL_FROM || SMTP_USER;
+const MAIL_FROM_NAME = 'MATIDANA';
+const resendConfigurado = Boolean(RESEND_API_KEY);
+const brevoConfigurado = Boolean(BREVO_API_KEY);
+const smtpConfigurado = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS);
+let transporter = null;
+const resendHeaders = RESEND_API_KEY ? { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' } : null;
+const brevoHeaders = BREVO_API_KEY ? { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' } : null;
+
+async function enviarPorBrevo({ destinatario, asunto, html, texto, attachments }) {
+    const body = {
+        sender: { name: MAIL_FROM_NAME, email: BREVO_SENDER_EMAIL },
+        to: [{ email: destinatario }],
+        subject: asunto,
+        textContent: texto || undefined,
+        htmlContent: html
+    };
+    if (attachments && attachments.length > 0) {
+        body.attachment = attachments.map((a) => ({ name: a.filename, content: a.content.toString('base64') }));
+    }
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', { method: 'POST', headers: brevoHeaders, body: JSON.stringify(body), signal: AbortSignal.timeout(20000) });
+    const cuerpo = await res.json().catch(() => null);
+    if (![200, 201].includes(res.status)) {
+        throw new Error(`Brevo HTTP ${res.status}: ${(cuerpo && cuerpo.message) || JSON.stringify(cuerpo)}`);
+    }
+    return cuerpo;
+}
+
+const RESEND_FROM = process.env.RESEND_FROM || 'onboarding@resend.dev';
+
+async function enviarPorResend({ destinatario, asunto, html, texto }) {
+    const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: resendHeaders,
+        body: JSON.stringify({ from: `${MAIL_FROM_NAME} <${RESEND_FROM}>`, to: [destinatario], subject: asunto, text: texto || undefined, html }),
+        signal: AbortSignal.timeout(20000)
+    });
+    const cuerpo = await res.json().catch(() => null);
+    if (!res.ok) {
+        throw new Error(`Resend HTTP ${res.status}: ${(cuerpo && (cuerpo.message || cuerpo.error)) || JSON.stringify(cuerpo)}`);
+    }
+    return cuerpo;
+}
+
+let smtpResolver = null;
+
+async function hostIpv4() {
+    if (smtpResolver !== null) return smtpResolver;
+    if (!SMTP_HOST || require('net').isIP(SMTP_HOST)) {
+        smtpResolver = SMTP_HOST;
+        return smtpResolver;
+    }
+    try {
+        const direcciones = await resolve4(SMTP_HOST);
+        smtpResolver = direcciones[0];
+        if (!smtpResolver) throw new Error('sin registros A');
+    } catch (error) {
+        console.error(`[MAIL] No se pudo resolver IPv4 de ${SMTP_HOST}: ${error.message} (se usara el hostname)`);
+        smtpResolver = SMTP_HOST;
+    }
+    return smtpResolver;
+}
+
+async function obtenerTransporter() {
+    if (!smtpConfigurado) return null;
+    if (!transporter) {
+        const rechazarNoAutorizado =
+            String(process.env.SMTP_REJECT_UNAUTHORIZED || 'true')
+                .trim()
+                .toLowerCase() === 'true';
+
+        transporter = nodemailer.createTransport({
+            host: await hostIpv4(),
+            port: SMTP_PORT,
+            secure: SMTP_SECURE,
+            requireTLS: !SMTP_SECURE && process.env.SMTP_REQUIRE_TLS !== 'false',
+            servername: SMTP_HOST,
+            family: 4,
+            auth: { user: SMTP_USER, pass: SMTP_PASS },
+            tls: { rejectUnauthorized: rechazarNoAutorizado, servername: SMTP_HOST },
+            connectionTimeout: 15000,
+            greetingTimeout: 15000,
+            socketTimeout: 30000
+        });
+    }
+    return transporter;
+}
+
+async function enviarCorreo({ destinatario, asunto, html, texto = null, attachments = null }) {
+    if (!brevoConfigurado && !resendConfigurado && !smtpConfigurado) {
+        console.log(`[MAIL·CONSOLA] to=${destinatario} subject=${asunto} ok=false (sin canal configurado)`);
+        return { enviado: false, consola: true };
+    }
+
+    let ultimoError = null;
+
+    if (brevoConfigurado) {
+        try {
+            const res = await enviarPorBrevo({ destinatario, asunto, html, texto, attachments });
+            if (res && (res.messageId || res.id)) {
+                return { enviado: true, consola: false, canal: 'brevo' };
+            }
+            throw new Error('Brevo no devolvio messageId');
+        } catch (error) {
+            ultimoError = error.message;
+            console.error(`[MAIL] Brevo falló: ${error.message}`);
+        }
+    }
+
+    if (resendConfigurado && !(attachments && attachments.length)) {
+        try {
+            const res = await enviarPorResend({ destinatario, asunto, html, texto });
+            if (res && res.id) {
+                return { enviado: true, consola: false, canal: 'resend' };
+            }
+            throw new Error('Resend no devolvio id');
+        } catch (error) {
+            ultimoError = error.message;
+            console.error(`[MAIL] Resend falló: ${error.message}`);
+        }
+    }
+
+    if (smtpConfigurado) {
+        const MAX_INTENTOS = 3;
+        for (let intento = 1; intento <= MAX_INTENTOS; intento++) {
+            transporter = null;
+
+            const intentoRemitente = await obtenerTransporter();
+            if (!intentoRemitente) break;
+
+            try {
+                await intentoRemitente.sendMail({
+                    from: `"${MAIL_FROM_NAME}" <${MAIL_FROM}>`,
+                    to: destinatario,
+                    subject: asunto,
+                    text: texto,
+                    html,
+                    attachments: attachments || undefined
+                });
+                return { enviado: true, consola: false, canal: 'smtp' };
+            } catch (error) {
+                ultimoError = error.message;
+                console.error(`[MAIL] SMTP Intento ${intento}/${MAX_INTENTOS} falló: ${error.message}`);
+                if (intento < MAX_INTENTOS) {
+                    await new Promise((r) => setTimeout(r, 1500 * intento));
+                }
+            }
+        }
+    }
+
+    console.log(`[MAIL·FALLBACK] to=${destinatario} subject=${asunto} ok=false error=${ultimoError || '(desconocido)'}`);
+    return { enviado: false, consola: true, error: ultimoError };
+}
+
+const LOGO_CORREO = 'https://libreria.my/logo-correo.png';
+const FUENTE_CORREO = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+function encabezadoCorreo() {
+    return (
+        `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px">` +
+        `<tr><td style="vertical-align:middle;padding-right:12px">` +
+        `<img src="${LOGO_CORREO}" width="34" height="40" alt="MATIDANA" style="display:block;border:0;width:34px;height:40px">` +
+        `</td><td style="vertical-align:middle">` +
+        `<span style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:bold;color:#1f1f1f">MATIDANA</span>` +
+        `</td></tr></table>`
+    );
+}
+
+function pieCorreo(texto) {
+    return `<p style="margin:32px 0 0;font-size:12px;line-height:1.5;color:#8a8a8a">` + (texto ? `${texto}<br>` : '') + `MATIDANA · Pallasca, Áncash, Perú</p>`;
+}
+
+function envolturaCorreo(contenido) {
+    return `<div style="max-width:560px;margin:0 auto;padding:24px 16px;font-family:${FUENTE_CORREO};font-size:15px;line-height:1.6;color:#1f1f1f">` + contenido + `</div>`;
+}
+
+function plantillaCodigo({ titulo, saludo, intro, codigo, cierre }) {
+    return envolturaCorreo(
+        encabezadoCorreo() +
+            `<h1 style="margin:0 0 16px;font-size:20px;line-height:1.3;font-weight:600;color:#1f1f1f">${htmlEscape(titulo)}</h1>` +
+            `<p style="margin:0 0 12px">${saludo}</p>` +
+            `<p style="margin:0 0 18px">${intro}</p>` +
+            `<p style="margin:0 0 18px;font-family:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;font-size:32px;font-weight:700;letter-spacing:8px;color:#111111">${htmlEscape(codigo)}</p>` +
+            `<p style="margin:0 0 12px;font-size:14px;color:#3c3c3c">Este código vence en <strong>10 minutos</strong> y solo se puede usar una vez.</p>` +
+            `<p style="margin:0;font-size:14px;color:#3c3c3c">${cierre}</p>` +
+            pieCorreo('Por tu seguridad, no compartas este código con nadie. MATIDANA nunca te lo pedirá por teléfono, mensaje ni correo.')
+    );
+}
+
+async function enviarCodigoVerificacion({ destinatario, codigo, nombre }) {
+    const asunto = `${codigo} es tu código de verificación · MATIDANA`;
+    const texto =
+        `Hola ${nombre},\n\n` +
+        `Para activar tu cuenta en MATIDANA, ingresa este código:\n\n` +
+        `${codigo}\n\n` +
+        `Este código vence en 10 minutos y solo se puede usar una vez.\n` +
+        `Si no creaste esta cuenta, puedes ignorar este correo.\n\n` +
+        `Por tu seguridad, no compartas este código con nadie.\n`;
+
+    const html = plantillaCodigo({
+        titulo: 'Verifica tu cuenta',
+        saludo: `Hola ${htmlEscape(nombre)},`,
+        intro: 'Para activar tu cuenta en MATIDANA, ingresa este código de verificación:',
+        codigo,
+        cierre: 'Si no creaste esta cuenta, puedes ignorar este correo.'
+    });
+
+    return enviarCorreo({ destinatario, asunto, html, texto });
+}
+
+async function enviarCodigoReseteo({ destinatario, codigo, nombre }) {
+    const asunto = `${codigo} es tu código para restablecer la contraseña · MATIDANA`;
+    const texto =
+        `Hola ${nombre},\n\n` +
+        `Recibimos una solicitud para restablecer la contraseña de tu cuenta.\n` +
+        `Ingresa este código para continuar:\n\n` +
+        `${codigo}\n\n` +
+        `Este código vence en 10 minutos y solo se puede usar una vez.\n` +
+        `Si no solicitaste este cambio, ignora este correo: tu contraseña seguirá igual.\n\n` +
+        `Por tu seguridad, no compartas este código con nadie.\n`;
+
+    const html = plantillaCodigo({
+        titulo: 'Restablece tu contraseña',
+        saludo: `Hola ${htmlEscape(nombre)},`,
+        intro: 'Recibimos una solicitud para restablecer la contraseña de tu cuenta. Ingresa este código para continuar:',
+        codigo,
+        cierre: 'Si no solicitaste este cambio, ignora este correo: tu contraseña seguirá igual.'
+    });
+
+    return enviarCorreo({ destinatario, asunto, html, texto });
+}
+
+const htmlEscape = (valor) =>
+    String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+const plantillaBase = ({ tituloCabecera, asunto, cuerpoHtml }) => {
+    const html = envolturaCorreo(
+        encabezadoCorreo() +
+            `<h1 style="margin:0 0 18px;font-size:20px;line-height:1.3;font-weight:600;color:#1f1f1f">${htmlEscape(tituloCabecera)}</h1>` +
+            cuerpoHtml +
+            pieCorreo()
+    );
+
+    return { asunto, html };
+};
+
+const etiquetaTipoEntrega = (tipoEntrega) => {
+    if (tipoEntrega === 'domicilio') return 'Envío a domicilio';
+    if (tipoEntrega === 'tienda') return 'Recojo en tienda';
+
+    return 'Tipo de entrega por confirmar';
+};
+
+const money = (valor) => `S/ ${Number(valor || 0).toFixed(2)}`;
+
+async function enviarCorreoOrdenCreada({ destinatario, nombre, idVenta, items, total, costoEnvio, tipoEntrega }) {
+    const filas = (items || [])
+        .map((item) => {
+            const subtotal = Number(Number(item.unit_price) * Number(item.quantity)).toFixed(2);
+
+            return (
+                `<tr>` +
+                `<td style="padding:8px 0;border-bottom:1px solid #eef2f7;color:#1e293b">` +
+                `${htmlEscape(item.title)} <span style="color:#64748b">× ${htmlEscape(item.quantity)}</span>` +
+                `</td>` +
+                `<td style="padding:8px 0;border-bottom:1px solid #eef2f7;text-align:right;color:#1e293b">` +
+                `${money(subtotal)}` +
+                `</td>` +
+                `</tr>`
+            );
+        })
+        .join('');
+
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
+        `<p>Recibimos tu pedido <strong>#${htmlEscape(idVenta)}</strong> en MATIDANA. ` +
+        `Tu pedido está <strong>pendiente de pago</strong>; completa el pago en la pasarela para confirmarlo.</p>` +
+        `<table style="width:100%;border-collapse:collapse;margin:18px 0">` +
+        filas +
+        `<tr>` +
+        `<td style="padding:8px 0;color:#64748b">Costo de envío</td>` +
+        `<td style="padding:8px 0;text-align:right;color:#1e293b">${money(costoEnvio)}</td>` +
+        `</tr>` +
+        `<tr>` +
+        `<td style="padding:8px 0;font-weight:bold;color:#17181c">Total</td>` +
+        `<td style="padding:8px 0;text-align:right;font-weight:bold;color:#17181c">${money(total)}</td>` +
+        `</tr>` +
+        `</table>` +
+        `<p style="color:#64748b;font-size:13px">Entrega: <strong>${htmlEscape(etiquetaTipoEntrega(tipoEntrega))}</strong>.</p>` +
+        `<p style="color:#64748b;font-size:13px">Si no realizaste este pedido, ignora este correo.</p>`;
+
+    const { asunto, html } = plantillaBase({ tituloCabecera: 'Confirmación de pedido', cuerpoHtml });
+
+    return enviarCorreo({ destinatario, asunto, html });
+}
+
+async function enviarCorreoPagoConfirmado({ destinatario, nombre, idVenta, total, externalReference }) {
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
+        `<p>El pago de tu pedido <strong>#${htmlEscape(idVenta)}</strong> fue <strong>aprobado</strong>. Tu pedido está por preparar; te avisaremos cuando esté listo para recoger o salga con el repartidor.</p>` +
+        `<p>Total pagado: <strong style="font-size:18px">${money(total)}</strong></p>` +
+        `<p style="color:#64748b;font-size:13px">Referencia del pago: <strong>${htmlEscape(externalReference || '—')}</strong>.</p>` +
+        `<p style="color:#64748b;font-size:13px">Puedes revisar el estado de tu pedido en la aplicación en «Mis compras».</p>`;
+
+    const { asunto, html } = plantillaBase({ tituloCabecera: 'Pago confirmado', cuerpoHtml });
+
+    return enviarCorreo({ destinatario, asunto, html });
+}
+
+async function enviarCorreoPagoRechazado({ destinatario, nombre, idVenta, total, estado }) {
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
+        `<p>El pago de tu pedido <strong>#${htmlEscape(idVenta)}</strong> no pudo completarse (${htmlEscape(estado || 'rechazado')}).</p>` +
+        `<p>No se realizó ningún cargo. El pedido queda <strong>cancelado</strong> y puedes volver a intentarlo cuando quieras.</p>` +
+        `<p style="color:#64748b;font-size:13px">Monto del pedido: <strong>${money(total)}</strong>.</p>` +
+        `<p style="color:#64748b;font-size:13px">Si tienes dudas, escríbenos respondiendo este correo.</p>`;
+
+    const { asunto, html } = plantillaBase({ tituloCabecera: 'Pago no procesado', cuerpoHtml });
+
+    return enviarCorreo({ destinatario, asunto, html });
+}
+
+const AVISOS_PEDIDO = {
+    tienda: {
+        listo_recojo: {
+            titulo: 'Tu pedido está listo para recoger',
+            sello: 'Listo para recoger',
+            texto: (id) => `Tu pedido <strong>#${id}</strong> ya está separado en tienda. Acércate cuando gustes y muestra tu número de pedido y tu DNI al recogerlo.`
+        },
+        entregado: {
+            titulo: 'Pedido entregado',
+            sello: '✓ Pedido entregado',
+            texto: (id) => `Registramos que recogiste tu pedido <strong>#${id}</strong> en tienda. ¡Gracias por tu compra!`
+        }
+    },
+    domicilio: {
+        en_camino: {
+            titulo: 'Tu pedido va en camino',
+            sello: 'En camino',
+            texto: (id, direccion) =>
+                `Tu pedido <strong>#${id}</strong> salió de la tienda` +
+                (direccion ? ` hacia <strong>${htmlEscape(direccion)}</strong>` : '') +
+                '. Mantén tu teléfono a mano para coordinar la entrega.'
+        },
+        entregado: {
+            titulo: 'Pedido entregado',
+            sello: '✓ Pedido entregado',
+            texto: (id) => `Tu pedido <strong>#${id}</strong> fue <strong>entregado</strong> en tu dirección. ¡Gracias por tu compra!`
+        }
+    }
+};
+
+const avisoPedido = (tipoEntrega, estado) => AVISOS_PEDIDO[tipoEntrega]?.[estado] || null;
+
+async function enviarCorreoAvancePedido({ destinatario, nombre, idVenta, tipoEntrega, estado, direccion }) {
+    const aviso = avisoPedido(tipoEntrega, estado);
+    if (!aviso) return null;
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(nombre)}</strong>,</p>` +
+        `<p>${aviso.texto(htmlEscape(idVenta), direccion)}</p>` +
+        `<p>Estado: <strong>${aviso.sello}</strong></p>` +
+        `<p style="color:#64748b;font-size:13px">Entrega: <strong>${htmlEscape(etiquetaTipoEntrega(tipoEntrega))}</strong>.</p>` +
+        `<p style="color:#64748b;font-size:13px">Si tienes dudas, responde este correo y te ayudamos.</p>`;
+
+    const { asunto, html } = plantillaBase({ tituloCabecera: aviso.titulo, cuerpoHtml });
+
+    return enviarCorreo({ destinatario, asunto, html });
+}
+
+function formatearFechaEmision(fecha) {
+    const d = fecha ? new Date(fecha) : new Date();
+    if (Number.isNaN(d.getTime())) return String(fecha || '');
+    return d
+        .toLocaleString('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
+        .replace(',', '');
+}
+
+function construirHtmlComprobante({
+    nombre,
+    tipo,
+    serie,
+    numero,
+    clienteDniRuc,
+    clienteTipoDocumento,
+    costoEnvio,
+    total,
+    items,
+    empresaRazon,
+    empresaRuc,
+    empresaNombreComercial,
+    empresaDireccion,
+    clienteEmail,
+    fechaEmision
+}) {
+    const { montoEnLetras } = require('../utils/numeroALetras');
+    const esFactura = tipo === 'factura';
+
+    const tipoLabel = 'COMPROBANTE DE VENTA';
+    const serieNumero = `${serie}-${String(numero).padStart(8, '0')}`;
+    const clienteTipoDoc = clienteTipoDocumento || (esFactura ? 'RUC' : 'DNI');
+
+    const tot = Number(total || 0);
+    const envio = Number(costoEnvio || 0);
+
+    const fecha = formatearFechaEmision(fechaEmision);
+
+    const docLine = clienteDniRuc ? `${htmlEscape(clienteTipoDoc)} - ${htmlEscape(clienteDniRuc)}` : '\u2014';
+
+    const emailLine = clienteEmail
+        ? `<tr><td style="padding:2px 0;font-weight:500;width:190px">Correo</td><td style="padding:2px 0;width:20px">:</td><td style="padding:2px 0">${htmlEscape(clienteEmail)}</td></tr>`
+        : '';
+
+    function formatMailMoney(v) {
+        return `S/ ${Number(v || 0).toFixed(2)}`;
+    }
+
+    let filasHtml = '';
+    (items || []).forEach((item) => {
+        const cantidad = Number(item.cantidad || 0);
+        const precio = Number(item.precio_unitario || 0);
+        const descuento = Number(item.descuento || 0);
+        const importe = Number(item.subtotal || cantidad * precio - descuento);
+        filasHtml +=
+            '<tr>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:center">' +
+            cantidad.toFixed(2) +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:center">UNIDAD</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:left">' +
+            htmlEscape(item.titulo || '\u2014') +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(precio) +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(descuento) +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(importe) +
+            '</td>' +
+            '</tr>';
+    });
+
+    if (envio > 0) {
+        filasHtml +=
+            '<tr>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:center">1.00</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:center">SERVICIO</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:left">Servicio de env\u00edo a domicilio</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(envio) +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(0) +
+            '</td>' +
+            '<td style="border:1px solid #000;padding:6px 8px;text-align:right">' +
+            formatMailMoney(envio) +
+            '</td>' +
+            '</tr>';
+    }
+
+    const totalFila = (label, value, strong) => {
+        const weight = strong ? 'font-weight:bold' : '';
+        return (
+            '<tr>' +
+            '<td style="padding:4px 8px;text-align:right;' +
+            weight +
+            '">' +
+            label +
+            ' :</td>' +
+            '<td style="border:1px solid #000;padding:4px 8px;text-align:right;' +
+            weight +
+            '">' +
+            formatMailMoney(value) +
+            '</td>' +
+            '</tr>'
+        );
+    };
+
+    const cuerpoHtml =
+        '<div style="max-width:760px;margin:0 auto;background:#ffffff;border:2px solid #000;padding:14px;font-family:Arial,Helvetica,sans-serif;color:#000000">' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #000;padding-bottom:16px;margin-bottom:16px">' +
+        '<tr>' +
+        '<td style="vertical-align:top;padding-right:30px">' +
+        '<p style="margin:0;font-size:18px;font-weight:bold;text-transform:uppercase;line-height:1.2">' +
+        htmlEscape(empresaRazon || '\u2014') +
+        '</p>' +
+        (empresaNombreComercial ? '<p style="margin:4px 0 0;font-size:13px">' + htmlEscape(empresaNombreComercial) + '</p>' : '') +
+        (empresaDireccion ? '<p style="margin:4px 0 0;font-size:12px">' + htmlEscape(empresaDireccion) + '</p>' : '') +
+        '</td>' +
+        '<td style="vertical-align:top;width:320px">' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #000;text-align:center">' +
+        '<tr><td style="padding:10px;font-size:16px;font-weight:bold;text-transform:uppercase">' +
+        tipoLabel +
+        '</td></tr>' +
+        '<tr><td style="border-top:1px solid #000;padding:6px;font-size:13px;font-weight:bold">RUC: ' +
+        htmlEscape(empresaRuc || '\u2014') +
+        '</td></tr>' +
+        '<tr><td style="border-top:1px solid #000;padding:10px;font-size:18px;font-weight:bold;letter-spacing:1px">' +
+        htmlEscape(serieNumero) +
+        '</td></tr>' +
+        '</table>' +
+        '</td>' +
+        '</tr>' +
+        '</table>' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px">' +
+        '<tr><td style="padding:2px 0;font-weight:500;width:190px">Fecha de Emisi\u00f3n</td><td style="padding:2px 0;width:20px">:</td><td style="padding:2px 0">' +
+        htmlEscape(fecha) +
+        '</td></tr>' +
+        '<tr><td style="padding:2px 0;font-weight:500">Se\u00f1or(es)</td><td style="padding:2px 0">:</td><td style="padding:2px 0">' +
+        htmlEscape(nombre || '\u2014') +
+        '</td></tr>' +
+        '<tr><td style="padding:2px 0;font-weight:500">Documento</td><td style="padding:2px 0">:</td><td style="padding:2px 0">' +
+        docLine +
+        '</td></tr>' +
+        '<tr><td style="padding:2px 0;font-weight:500">Tipo de Moneda</td><td style="padding:2px 0">:</td><td style="padding:2px 0">SOLES</td></tr>' +
+        emailLine +
+        '</table>' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #000;margin-bottom:16px">' +
+        '<thead><tr>' +
+        '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:58px">Cant.</th>' +
+        '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:62px">U. Medida</th>' +
+        '<th style="border:1px solid #000;padding:6px 8px;font-size:11px;font-weight:bold;text-align:left">Descripci\u00f3n</th>' +
+        '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:84px">Valor Unitario</th>' +
+        '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:72px">Descuento</th>' +
+        '<th style="border:1px solid #000;padding:6px 6px;font-size:11px;font-weight:bold;width:92px">Importe de Venta</th>' +
+        '</tr></thead>' +
+        '<tbody>' +
+        filasHtml +
+        '</tbody>' +
+        '</table>' +
+        '<table width="100%" cellpadding="0" cellspacing="0">' +
+        '<tr>' +
+        '<td style="vertical-align:top;padding-top:6px;padding-right:20px;width:55%">' +
+        '<p style="margin:0;font-size:14px;font-weight:bold;text-transform:uppercase;line-height:1.3">SON: ' +
+        htmlEscape(montoEnLetras(tot)) +
+        '</p>' +
+        '</td>' +
+        '<td style="vertical-align:top;width:45%">' +
+        '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #000;border-collapse:collapse">' +
+        totalFila('Importe Total', tot, true) +
+        '</table>' +
+        '</td>' +
+        '</tr>' +
+        '</table>' +
+        '</div>';
+
+    return { cuerpoHtml, tipoLabel, serieNumero };
+}
+
+function cuerpoAvisoComprobante({ nombre, tipoLabel, serieNumero, archivoPdf }) {
+    return (
+        `<p>Hola${nombre ? ` <strong>${htmlEscape(nombre)}</strong>` : ''},</p>` +
+        `<p>Gracias por tu compra. Adjuntamos tu <strong>${htmlEscape(tipoLabel)} ${htmlEscape(serieNumero)}</strong> en PDF.</p>` +
+        `<p>Archivo adjunto: <strong>${htmlEscape(archivoPdf)}</strong></p>` +
+        `<p style="color:#64748b;font-size:13px">Guárdalo para tus registros. Si tienes dudas, responde este correo y te ayudamos.</p>`
+    );
+}
+
+async function enviarComprobantePorEmail(datos) {
+    const { destinatario } = datos;
+    const { cuerpoHtml, tipoLabel, serieNumero } = construirHtmlComprobante(datos);
+    const archivoPdf = `${serieNumero}.pdf`;
+    const titulo = { tituloCabecera: `${tipoLabel} ${serieNumero}`, asunto: `${tipoLabel} ${serieNumero} \u2014 Librer\u00eda` };
+
+    let pdfBuffer = null;
+    try {
+        pdfBuffer = await generarPdfDesdeHtml(cuerpoHtml, archivoPdf);
+    } catch (pdfErr) {
+        console.error(`[MAIL] Error generando PDF: ${pdfErr.message}`);
+    }
+
+    if (!pdfBuffer) {
+        const { asunto, html } = plantillaBase({ ...titulo, cuerpoHtml });
+        return enviarCorreo({ destinatario, asunto, html, attachments: null });
+    }
+
+    const { asunto, html } = plantillaBase({ ...titulo, cuerpoHtml: cuerpoAvisoComprobante({ nombre: datos.nombre, tipoLabel, serieNumero, archivoPdf }) });
+    return enviarCorreo({ destinatario, asunto, html, attachments: [{ filename: archivoPdf, content: pdfBuffer }] });
+}
+
+function htmlHojaReclamacion(r, empresa) {
+    const fila = (etiqueta, valor) =>
+        `<tr><td style="padding:4px 12px 4px 0;width:38%;vertical-align:top;color:#6b6b6b">${htmlEscape(etiqueta)}</td>` +
+        `<td style="padding:4px 0;vertical-align:top;color:#1f1f1f">${htmlEscape(valor ?? '—')}</td></tr>`;
+    const fecha = new Date(r.fecha_registro || Date.now()).toLocaleString('es-PE', { timeZone: 'America/Lima' });
+    return (
+        `<table style="width:100%;border-collapse:collapse;font-size:13px;margin:12px 0">` +
+        fila('Hoja N.°', r.numero) +
+        fila('Fecha', fecha) +
+        fila('Proveedor', `${empresa?.razon_social || ''} — RUC ${empresa?.ruc || ''}`) +
+        fila('Dirección del proveedor', empresa?.direccion || '—') +
+        fila('Consumidor', r.consumidor_nombre) +
+        fila('Documento', `${r.consumidor_tipo_documento} ${r.consumidor_documento}`) +
+        fila('Domicilio', r.consumidor_domicilio) +
+        fila('Teléfono', r.consumidor_telefono || '—') +
+        fila('Correo', r.consumidor_email) +
+        (r.es_menor ? fila('Padre, madre o apoderado', r.apoderado_nombre) : '') +
+        fila('Bien contratado', `${r.bien_tipo === 'servicio' ? 'Servicio' : 'Producto'}: ${r.bien_descripcion}`) +
+        fila('Monto reclamado', r.monto_reclamado !== null && r.monto_reclamado !== undefined ? `S/ ${Number(r.monto_reclamado).toFixed(2)}` : '—') +
+        fila('Tipo', r.tipo === 'queja' ? 'Queja' : 'Reclamo') +
+        fila('Detalle', r.detalle) +
+        fila('Pedido del consumidor', r.pedido) +
+        `</table>`
+    );
+}
+
+async function enviarConstanciaReclamacion({ reclamacion, empresa }) {
+    const r = reclamacion;
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(r.consumidor_nombre)}</strong>,</p>` +
+        `<p>Registramos tu ${r.tipo === 'queja' ? 'queja' : 'reclamo'} en nuestro Libro de Reclamaciones con la hoja ` +
+        `<strong>N.° ${htmlEscape(r.numero)}</strong>. Esta es tu copia:</p>` +
+        htmlHojaReclamacion(r, empresa) +
+        `<p>Te responderemos en un plazo no mayor a <strong>15 días hábiles</strong> ` +
+        `(a más tardar el ${htmlEscape(r.fecha_limite)}).</p>` +
+        `<p style="color:#64748b;font-size:12px">La formulación del reclamo no impide acudir a otras vías de solución de ` +
+        `controversias ni es requisito previo para interponer una denuncia ante el INDECOPI.</p>`;
+    const { asunto, html } = plantillaBase({
+        tituloCabecera: `Libro de Reclamaciones — Hoja N.° ${r.numero}`,
+        asunto: `Constancia de tu ${r.tipo === 'queja' ? 'queja' : 'reclamo'} N.° ${r.numero}`,
+        cuerpoHtml
+    });
+    return enviarCorreo({ destinatario: r.consumidor_email, asunto, html });
+}
+
+async function enviarRespuestaReclamacion({ reclamacion, empresa }) {
+    const r = reclamacion;
+    const cuerpoHtml =
+        `<p>Hola <strong>${htmlEscape(r.consumidor_nombre)}</strong>,</p>` +
+        `<p>Esta es nuestra respuesta a tu ${r.tipo === 'queja' ? 'queja' : 'reclamo'} ` +
+        `<strong>N.° ${htmlEscape(r.numero)}</strong>:</p>` +
+        `<p style="white-space:pre-line">${htmlEscape(r.respuesta)}</p>` +
+        `<p style="color:#64748b;font-size:13px">Tu hoja registrada:</p>` +
+        htmlHojaReclamacion(r, empresa) +
+        `<p style="color:#64748b;font-size:12px">Si no estás conforme, puedes acudir al INDECOPI.</p>`;
+    const { asunto, html } = plantillaBase({
+        tituloCabecera: `Respuesta a tu hoja N.° ${r.numero}`,
+        asunto: `Respuesta a tu ${r.tipo === 'queja' ? 'queja' : 'reclamo'} N.° ${r.numero}`,
+        cuerpoHtml
+    });
+    return enviarCorreo({ destinatario: r.consumidor_email, asunto, html });
+}
+
+module.exports = {
+    enviarConstanciaReclamacion,
+    enviarRespuestaReclamacion,
+    enviarCorreo,
+    generarPdfDesdeHtml,
+    enviarCodigoVerificacion,
+    enviarCodigoReseteo,
+    plantillaCodigo,
+    enviarCorreoOrdenCreada,
+    enviarCorreoPagoConfirmado,
+    enviarCorreoPagoRechazado,
+    enviarCorreoAvancePedido,
+    avisoPedido,
+    enviarComprobantePorEmail,
+    construirHtmlComprobante,
+    smtpConfigurado,
+    resendConfigurado,
+    brevoConfigurado
+};

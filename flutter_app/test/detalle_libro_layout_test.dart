@@ -283,7 +283,8 @@ void main() {
     expect(find.text('Catálogo'), findsOneWidget);
     expect(find.text('Carrito'), findsOneWidget);
     expect(find.text('Compras'), findsOneWidget);
-    expect(find.text('Perfil'), findsOneWidget);
+    expect(find.text('Mi perfil'), findsOneWidget);
+    expect(find.text('Menú'), findsNothing);
     expect(find.text('Historial'), findsNothing);
     expect(tester.takeException(), isNull);
   });

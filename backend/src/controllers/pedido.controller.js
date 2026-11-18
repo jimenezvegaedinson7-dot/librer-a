@@ -2,7 +2,7 @@ const ventaModel = require('../models/venta.model');
 const { validarId } = require('../utils/validaciones');
 const { ENTREGA, ESTADOS_ENTREGA_ACTUALES, esTipoEntregaValido, normalizarEstadoEntrega } = require('../utils/transiciones');
 const { resumirPedidos } = require('../utils/pedidos');
-const { enviarCorreoAvancePedido, avisoPedido } = require('../utils/mailer');
+const { enviarCorreoAvancePedido, avisoPedido } = require('../integrations/mailer');
 
 const fallo = (res, error, mensaje) => {
     if (error.status >= 400 && error.status < 500) return res.status(error.status).json({ success: false, mensaje: error.message });

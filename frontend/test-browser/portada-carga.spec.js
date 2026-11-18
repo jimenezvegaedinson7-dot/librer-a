@@ -59,6 +59,8 @@ for (const width of [1440, 390]) {
         await page.goto('/', { waitUntil: 'domcontentloaded' });
         await expect(page.locator('#precarga')).toHaveCount(0);
         await expect(page.locator('.portada3d__presentacion [role="status"]')).toBeVisible();
+        await expect(page.locator('.portada3d__cargando-logo')).toBeVisible();
+        await expect(page.locator('.portada3d__spinner')).toBeVisible();
         await expect(page.locator('.portada3d__presentacion').getByRole('link', { name: 'Ver catálogo', exact: true })).toBeVisible();
         await expect(page.locator('main > div')).toHaveCSS('animation-name', 'none');
         await expect(page.locator('.portada3d--estatica')).toHaveCount(0);

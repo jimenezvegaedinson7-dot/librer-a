@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 
-const pool = require('../config/database');
+const libroService = require('../services/libro.service');
 const libroModel = require('../models/libro.model');
 const inventarioModel = require('../models/inventario.model');
 const autorModel = require('../models/autor.model');
@@ -10,7 +10,7 @@ const usuarioModel = require('../models/usuario.model');
 const { validarId, esNumeroNoNegativo, esEstadoValido } = require('../utils/validaciones');
 const { validarDescuentos } = require('../utils/descuentos');
 const { conPortadaCatalogo } = require('../utils/portadasCatalogo');
-const { eliminarImagen, publicIdDesdeUrl } = require('../utils/cloudinary');
+const { eliminarImagen, publicIdDesdeUrl } = require('../integrations/cloudinary');
 
 const registrarHistorial = async ({ id_usuario, tipo_operacion, modulo, descripcion }) => {
     try {
@@ -350,33 +350,7 @@ const eliminarLibro = async (req, res) => {
             return res.status(404).json({ success: false, mensaje: 'Libro no encontrado' });
         }
 
-        const [refVentas] = await pool.query('SELECT COUNT(*) AS total FROM detalle_venta WHERE id_libro = ?', [idLibro]);
-        if (Number(refVentas[0]?.total || 0) > 0) {
-            return res.status(409).json({ success: false, mensaje: 'No se puede eliminar este libro porque tiene ventas relacionadas. Puedes cambiarlo a estado Inactivo.' });
-        }
-
-        const conexion = await pool.getConnection();
-
-        let filasAfectadas = 0;
-
-        try {
-            await conexion.beginTransaction();
-
-            await inventarioModel.eliminarMovimientosPorLibro(idLibro, conexion);
-
-            await inventarioModel.eliminarPorLibro(idLibro, conexion);
-
-            const [resultado] = await conexion.query('DELETE FROM libros WHERE id_libro = ?', [idLibro]);
-
-            filasAfectadas = resultado.affectedRows;
-
-            await conexion.commit();
-        } catch (errorEliminar) {
-            await conexion.rollback();
-            throw errorEliminar;
-        } finally {
-            conexion.release();
-        }
+        const filasAfectadas = await libroService.eliminarConInventario(idLibro);
 
         if (filasAfectadas === 0) {
             return res.status(404).json({ success: false, mensaje: 'No se pudo eliminar el libro' });
@@ -399,6 +373,10 @@ const eliminarLibro = async (req, res) => {
         return res.json({ success: true, mensaje: 'Libro eliminado correctamente' });
     } catch (error) {
         console.error('Error al eliminar libro:', error);
+
+        if (error.status === 409) {
+            return res.status(409).json({ success: false, mensaje: error.message });
+        }
 
         if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.code === 'ER_ROW_IS_REFERENCED' || error.code === '23503') {
             return res

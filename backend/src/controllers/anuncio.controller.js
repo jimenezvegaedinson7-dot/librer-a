@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 
 const usuarioModel = require('../models/usuario.model');
-const { publicIdDesdeUrl, tipoDesdeUrl, eliminarRecurso } = require('../utils/cloudinary');
+const { publicIdDesdeUrl, tipoDesdeUrl, eliminarRecurso } = require('../integrations/cloudinary');
 const { validarId, esEstadoValido } = require('../utils/validaciones');
 const { carpetaVideos } = require('../middlewares/uploadVideo.middleware');
 

@@ -1,0 +1,350 @@
+import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import {
+    FaBoxesStacked,
+    FaClockRotateLeft,
+    FaMagnifyingGlass,
+    FaRotate,
+    FaXmark,
+    FaWarehouse,
+    FaCircleCheck,
+    FaTriangleExclamation,
+    FaBoxOpen,
+    FaEye,
+    FaPenToSquare
+} from 'react-icons/fa6';
+import { Indicador, Indicadores } from '../../../components/panel/ui/Indicadores';
+import { PageHeader } from '../../../components/panel/ui/PageHeader';
+import { Card, CardHeader, CardBody } from '../../../components/panel/ui/Card';
+import { Button } from '../../../components/panel/ui/Button';
+import { Input, Select } from '../../../components/panel/ui/Form';
+import { ErrorCarga } from '../../../components/panel/ui/ErrorCarga';
+import { AltaFlotante } from '../../../components/panel/ui/AltaFlotante';
+import { Pagination } from '../../../components/panel/ui/Pagination';
+import { EmptyState } from '../../../components/panel/ui/EmptyState';
+import { TableSkeleton } from '../../../components/panel/ui/TableSkeleton';
+import { DataTable } from '../../../components/panel/ui/DataTable';
+import { FechaTabla } from '../../../components/panel/ui/FechaTabla';
+import { Badge } from '../../../components/panel/ui/Badge';
+import { BtnAccion } from '../../../components/panel/ui/Acciones';
+import { useToast } from '../../../app/providers/ToastContext';
+import { useRol } from '../../../hooks/panel/auth/useRol';
+import { listarInventario, obtenerInventarioLibro } from '../../../services/panel/inventario/inventarioService';
+import InventarioForm from '../../../components/panel/inventario/InventarioForm';
+import InventarioViewModal from '../../../components/panel/inventario/InventarioViewModal';
+import InventarioEditModal from '../../../components/panel/inventario/InventarioEditModal';
+import MovimientosModal from '../../../components/panel/inventario/MovimientosModal';
+import { useCarga } from '../../../hooks/panel/useCarga';
+
+const POR_PAGINA = 10;
+
+function EstadoStock({ stock, stockMinimo }) {
+    const cantidad = Number(stock);
+    const minimo = Number(stockMinimo);
+    if (cantidad <= 0) return <Badge color="danger">Sin stock</Badge>;
+    if (cantidad <= minimo) return <Badge color="warning">Bajo: {cantidad}</Badge>;
+    return <Badge color="success">{cantidad} disponibles</Badge>;
+}
+
+const columnasInventario = [
+    { titulo: 'N.º', alineacion: 'centro', render: (fila) => <span className="text-slate-700">{fila.id_inventario}</span> },
+    { titulo: 'Libro', className: 'tabla-col-principal', render: (fila) => <span className="font-semibold text-slate-700">{fila.titulo}</span> },
+    { titulo: 'Stock', alineacion: 'centro', render: (fila) => <EstadoStock stock={fila.stock} stockMinimo={fila.stock_minimo} /> },
+    { titulo: 'Stock mínimo', alineacion: 'centro', render: (fila) => <span className="font-medium text-slate-700">{Number(fila.stock_minimo)}</span> },
+    { titulo: 'Ubicación', render: (fila) => <span className="text-slate-700">{fila.ubicacion || 'No registrada'}</span> },
+    { titulo: 'Última actualización', render: (fila) => <FechaTabla valor={fila.ultima_actualizacion} vacio="Sin registro" /> }
+];
+
+function accionesInventario(fila, { onVer, onEditar, puedeEditar }) {
+    return (
+        <>
+            <BtnAccion tipo="ver" onClick={() => onVer(fila)} titulo="Ver inventario">
+                <FaEye />
+            </BtnAccion>
+            {puedeEditar && (
+                <BtnAccion tipo="editar" onClick={() => onEditar(fila)} titulo="Editar inventario">
+                    <FaPenToSquare />
+                </BtnAccion>
+            )}
+        </>
+    );
+}
+
+function Contador({ cargando, error, total, disponibles, stockBajo, sinStock }) {
+    return (
+        <Indicadores cargando={cargando} error={error} etiqueta="Resumen de inventario">
+            <Indicador titulo="Inventario" valor={total} icono={<FaWarehouse />} tono="primary" detalle="Libros con stock registrado" />
+            <Indicador titulo="Disponibles" valor={disponibles} icono={<FaCircleCheck />} tono="success" detalle="Con stock suficiente" de={total} />
+            <Indicador titulo="Stock bajo" valor={stockBajo} icono={<FaTriangleExclamation />} tono="warning" detalle="Conviene reponer" de={total} />
+            <Indicador titulo="Sin stock" valor={sinStock} icono={<FaBoxOpen />} tono="danger" detalle="Agotados" de={total} />
+        </Indicadores>
+    );
+}
+
+export default function InventarioPage() {
+    const { exito, error: mostrarError } = useToast();
+    const { puedeEditarStock } = useRol();
+
+    const [inventario, setInventario] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState('');
+
+    const [busqueda, setBusqueda] = useState('');
+    const [filtroStock, setFiltroStock] = useState('todos');
+
+    const [paginaActual, setPaginaActual] = useState(1);
+
+    const [inventarioVer, setInventarioVer] = useState(null);
+    const [inventarioEditar, setInventarioEditar] = useState(null);
+    const [movimientosAbierto, setMovimientosAbierto] = useState(false);
+
+    const cargarInventario = async () => {
+        try {
+            setCargando(true);
+            setError('');
+            setInventario(await listarInventario());
+        } catch (err) {
+            setError(err.response?.data?.mensaje || 'Error al cargar el inventario');
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    useCarga(cargarInventario);
+
+    const totalStockBajo = inventario.filter((registro) => {
+        const stock = Number(registro.stock);
+        const minimo = Number(registro.stock_minimo);
+        return stock > 0 && stock <= minimo;
+    }).length;
+
+    const totalSinStock = inventario.filter((registro) => Number(registro.stock) <= 0).length;
+
+    const totalDisponibles = inventario.filter((registro) => {
+        const stock = Number(registro.stock);
+        const minimo = Number(registro.stock_minimo);
+        return stock > minimo;
+    }).length;
+
+    const inventarioFiltrado = useMemo(() => {
+        const texto = busqueda.toLowerCase().trim();
+        return inventario.filter((registro) => {
+            const titulo = String(registro.titulo || '').toLowerCase();
+            const ubicacion = String(registro.ubicacion || '').toLowerCase();
+            const stock = Number(registro.stock);
+            const stockMinimo = Number(registro.stock_minimo);
+
+            const coincideBusqueda = !texto || titulo.includes(texto) || ubicacion.includes(texto);
+
+            const coincideStock =
+                filtroStock === 'todos' ||
+                (filtroStock === 'disponible' && stock > stockMinimo) ||
+                (filtroStock === 'bajo' && stock > 0 && stock <= stockMinimo) ||
+                (filtroStock === 'sin-stock' && stock <= 0);
+
+            return coincideBusqueda && coincideStock;
+        });
+    }, [inventario, busqueda, filtroStock]);
+
+    const totalPaginas = Math.ceil(inventarioFiltrado.length / POR_PAGINA);
+    const paginaActualEfectiva = totalPaginas > 0 ? Math.min(paginaActual, totalPaginas) : 1;
+    const inventarioPaginado = inventarioFiltrado.slice((paginaActualEfectiva - 1) * POR_PAGINA, paginaActualEfectiva * POR_PAGINA);
+
+    const verInventario = async (registro) => {
+        try {
+            setInventarioVer(await obtenerInventarioLibro(registro.id_libro));
+        } catch (err) {
+            mostrarError(err.response?.data?.mensaje || 'Error al obtener el inventario');
+        }
+    };
+
+    const [parametros, setParametros] = useSearchParams();
+    useCarga(() => {
+        const ver = parametros.get('ver');
+        if (!ver) return;
+        setParametros(
+            (actuales) => {
+                const siguientes = new URLSearchParams(actuales);
+                siguientes.delete('ver');
+                return siguientes;
+            },
+            { replace: true }
+        );
+        verInventario({ id_libro: ver });
+    }, parametros.toString());
+
+    const editarInventario = async (registro) => {
+        try {
+            setInventarioEditar(await obtenerInventarioLibro(registro.id_libro));
+        } catch (err) {
+            mostrarError(err.response?.data?.mensaje || 'Error al obtener el inventario');
+        }
+    };
+
+    const inventarioCreado = async () => {
+        await cargarInventario();
+        exito('Inventario registrado correctamente');
+    };
+
+    const inventarioActualizado = async () => {
+        await cargarInventario();
+        exito('Inventario actualizado correctamente');
+    };
+
+    const limpiarFiltros = () => {
+        setBusqueda('');
+        setFiltroStock('todos');
+        setPaginaActual(1);
+    };
+
+    const hayFiltros = busqueda || filtroStock !== 'todos';
+
+    return (
+        <div className="space-y-4">
+            <PageHeader
+                titulo="Inventario"
+                descripcion={puedeEditarStock ? 'Administra el stock y ubicación de los libros' : 'Consulta el stock y la ubicación de los libros (solo lectura)'}
+                acciones={
+                    <Button variante="secondary" onClick={() => setMovimientosAbierto(true)}>
+                        <FaClockRotateLeft /> Movimientos
+                    </Button>
+                }
+            />
+            <Contador cargando={cargando} error={error} total={inventario.length} disponibles={totalDisponibles} stockBajo={totalStockBajo} sinStock={totalSinStock} />
+
+            <Card>
+                <CardHeader
+                    titulo="Control de inventario"
+                    subtitulo="Busca libros y filtra según el nivel de stock"
+                    acciones={
+                        <div className="tabla-filtros-acciones">
+                            {hayFiltros && (
+                                <Button variante="secondary" onClick={limpiarFiltros}>
+                                    Limpiar
+                                </Button>
+                            )}
+                            <Button variante="secondary" onClick={cargarInventario} disabled={cargando}>
+                                <FaRotate /> {cargando ? 'Actualizando...' : 'Actualizar'}
+                            </Button>
+                            {puedeEditarStock && (
+                                <AltaFlotante
+                                    etiqueta="Registrar stock"
+                                    titulo="Registrar stock"
+                                    subtitulo="Selecciona un libro e indica sus existencias y ubicación."
+                                    grande
+                                    formulario={InventarioForm}
+                                    eventoRegistro="onInventarioCreado"
+                                    onRegistrado={inventarioCreado}
+                                />
+                            )}
+                        </div>
+                    }
+                    filtros={
+                        <div className="filtros-grid filtros-grid--dos">
+                            <div className="filtro-busqueda">
+                                <Input
+                                    label="Libro o ubicación"
+                                    type="text"
+                                    value={busqueda}
+                                    onChange={(e) => {
+                                        setBusqueda(e.target.value);
+                                        setPaginaActual(1);
+                                    }}
+                                    placeholder="Buscar libro o ubicación..."
+                                    icono={<FaMagnifyingGlass />}
+                                    className="pr-8 sm:w-72"
+                                />
+                                {busqueda && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setBusqueda('');
+                                            setPaginaActual(1);
+                                        }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500 transition hover:text-slate-700"
+                                        title="Limpiar búsqueda">
+                                        <FaXmark />
+                                    </button>
+                                )}
+                            </div>
+
+                            <Select
+                                label="Nivel de stock"
+                                value={filtroStock}
+                                onChange={(e) => {
+                                    setFiltroStock(e.target.value);
+                                    setPaginaActual(1);
+                                }}>
+                                <option value="todos">Todo el stock</option>
+                                <option value="disponible">Disponible</option>
+                                <option value="bajo">Stock bajo</option>
+                                <option value="sin-stock">Sin stock</option>
+                            </Select>
+                        </div>
+                    }
+                />
+            </Card>
+
+            {cargando && <TableSkeleton columnas={6} filas={8} titulo />}
+
+            {!cargando && error && <ErrorCarga mensaje={error} onReintentar={cargarInventario} />}
+
+            {!cargando && !error && inventario.length === 0 && (
+                <EmptyState
+                    titulo="No hay inventario registrado"
+                    descripcion="Pulsa Registrar stock para indicar las existencias y la ubicación de un libro."
+                    icono={<FaBoxesStacked />}
+                />
+            )}
+
+            {!cargando && !error && inventario.length > 0 && inventarioFiltrado.length === 0 && (
+                <EmptyState
+                    titulo="No se encontraron registros"
+                    descripcion="Cambia la búsqueda o el filtro seleccionado."
+                    icono={<FaMagnifyingGlass />}
+                    acciones={
+                        <Button variante="secondary" onClick={limpiarFiltros}>
+                            Limpiar filtros
+                        </Button>
+                    }
+                />
+            )}
+
+            {!cargando && !error && inventarioPaginado.length > 0 && (
+                <Card>
+                    <CardHeader
+                        titulo="Inventario registrado"
+                        subtitulo="Estado actual del stock de los libros"
+                        acciones={
+                            <span className="rounded-full bg-success-bg px-3 py-1 text-xs font-bold text-success">
+                                {inventarioFiltrado.length} {inventarioFiltrado.length === 1 ? 'registro' : 'registros'}
+                            </span>
+                        }
+                    />
+                    <CardBody className="p-0">
+                        <DataTable
+                            etiqueta="Inventario registrado"
+                            columnas={columnasInventario}
+                            filas={inventarioPaginado}
+                            keyExtractor={(fila) => fila.id_inventario}
+                            acciones={(fila) => accionesInventario(fila, { onVer: verInventario, onEditar: editarInventario, puedeEditar: puedeEditarStock })}
+                        />
+                    </CardBody>
+                    <Pagination pagina={paginaActualEfectiva} totalPaginas={totalPaginas} onCambiarPagina={setPaginaActual} />
+                </Card>
+            )}
+
+            <InventarioViewModal inventario={inventarioVer} abierto={Boolean(inventarioVer)} onCerrar={() => setInventarioVer(null)} />
+            {puedeEditarStock && (
+                <InventarioEditModal
+                    key={inventarioEditar?.id_inventario}
+                    inventario={inventarioEditar}
+                    abierto={Boolean(inventarioEditar)}
+                    onCerrar={() => setInventarioEditar(null)}
+                    onActualizado={inventarioActualizado}
+                />
+            )}
+            <MovimientosModal abierto={movimientosAbierto} onCerrar={() => setMovimientosAbierto(false)} />
+        </div>
+    );
+}

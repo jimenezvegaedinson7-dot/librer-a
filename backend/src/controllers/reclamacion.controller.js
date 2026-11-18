@@ -4,7 +4,7 @@ const reclamacionModel = require('../models/reclamacion.model');
 const empresaModel = require('../models/empresa.model');
 const historialModel = require('../models/historial.model');
 const { validarId } = require('../utils/validaciones');
-const { enviarConstanciaReclamacion, enviarRespuestaReclamacion } = require('../utils/mailer');
+const { enviarConstanciaReclamacion, enviarRespuestaReclamacion } = require('../integrations/mailer');
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

@@ -4,8 +4,8 @@ import { AuthProvider } from '../providers/AuthProvider';
 import { ToastProvider } from '../providers/ToastProvider';
 import RutaProtegida from './RutaProtegida';
 import RutaPorRol from './RutaPorRol';
-import { ROLES } from '../../panel/lib/roles';
-import { CargandoPantalla } from '../../panel/ui/Spinner';
+import { ROLES } from '../../models/panel/roles';
+import { CargandoPantalla } from '../../components/panel/ui/Spinner';
 
 const lazyConReintento = (importador) =>
     lazy(() => {
@@ -22,39 +22,39 @@ const lazyConReintento = (importador) =>
         return intentar();
     });
 
-const PublicLayout = lazyConReintento(() => import('../../web/PublicLayout'));
-const AdminLayout = lazyConReintento(() => import('../../panel/layout/AdminLayout'));
-const InicioPage = lazyConReintento(() => import('../../web/paginas/paginas').then((m) => ({ default: m.InicioPage })));
-const CatalogoPublicoPage = lazyConReintento(() => import('../../web/paginas/CatalogoPage'));
-const AplicacionPage = lazyConReintento(() => import('../../web/paginas/AplicacionPage'));
-const CaracteristicasPage = lazyConReintento(() => import('../../web/paginas/CaracteristicasPage'));
-const NosotrosPage = lazyConReintento(() => import('../../web/paginas/NosotrosPage'));
-const DescargarPage = lazyConReintento(() => import('../../web/paginas/DescargarPage'));
-const CuentaClientePage = lazyConReintento(() => import('../../web/tienda/CuentaPage'));
-const CarritoWebPage = lazyConReintento(() => import('../../web/tienda/CarritoPage'));
-const CheckoutWebPage = lazyConReintento(() => import('../../web/tienda/CheckoutPage'));
-const MisComprasWebPage = lazyConReintento(() => import('../../web/tienda/MisComprasPage'));
-const FavoritosWebPage = lazyConReintento(() => import('../../web/tienda/FavoritosPage'));
-const LibroPublicoPage = lazyConReintento(() => import('../../web/tienda/LibroPage'));
+const PublicLayout = lazyConReintento(() => import('../../components/web/PublicLayout'));
+const AdminLayout = lazyConReintento(() => import('../../components/panel/layout/AdminLayout'));
+const InicioPage = lazyConReintento(() => import('../../views/web/publicas/paginas').then((m) => ({ default: m.InicioPage })));
+const CatalogoPublicoPage = lazyConReintento(() => import('../../views/web/publicas/CatalogoPage'));
+const AplicacionPage = lazyConReintento(() => import('../../views/web/publicas/AplicacionPage'));
+const CaracteristicasPage = lazyConReintento(() => import('../../views/web/publicas/CaracteristicasPage'));
+const NosotrosPage = lazyConReintento(() => import('../../views/web/publicas/NosotrosPage'));
+const DescargarPage = lazyConReintento(() => import('../../views/web/publicas/DescargarPage'));
+const CuentaClientePage = lazyConReintento(() => import('../../views/web/tienda/CuentaPage'));
+const CarritoWebPage = lazyConReintento(() => import('../../views/web/tienda/CarritoPage'));
+const CheckoutWebPage = lazyConReintento(() => import('../../views/web/tienda/CheckoutPage'));
+const MisComprasWebPage = lazyConReintento(() => import('../../views/web/tienda/MisComprasPage'));
+const FavoritosWebPage = lazyConReintento(() => import('../../views/web/tienda/FavoritosPage'));
+const LibroPublicoPage = lazyConReintento(() => import('../../views/web/tienda/LibroPage'));
 
 const publica = (elemento) => <Suspense fallback={null}>{elemento}</Suspense>;
 
-const LoginPage = lazyConReintento(() => import('../../panel/auth/LoginPage'));
-const VerificarEmailPage = lazyConReintento(() => import('../../panel/auth/VerificarEmailPage'));
-const DashboardPage = lazyConReintento(() => import('../../panel/dashboard/DashboardPage'));
-const LibrosAutoresPage = lazyConReintento(() => import('../../panel/libros/LibrosAutoresPage'));
-const CategoriasPage = lazyConReintento(() => import('../../panel/categorias/CategoriasPage'));
-const InventarioPage = lazyConReintento(() => import('../../panel/inventario/InventarioPage'));
-const PedidosPage = lazyConReintento(() => import('../../panel/pedidos/PedidosPage'));
-const VentasPage = lazyConReintento(() => import('../../panel/ventas/VentasPage'));
-const GestionVentasPage = lazyConReintento(() => import('../../panel/ventas/GestionVentasPage'));
-const ComprobantesPage = lazyConReintento(() => import('../../panel/comprobantes/ComprobantesPage'));
-const UsuariosPage = lazyConReintento(() => import('../../panel/usuarios/UsuariosClientesPage'));
-const TarifasEnvioPage = lazyConReintento(() => import('../../panel/tarifas/TarifasEnvioPage'));
-const EmpresaPage = lazyConReintento(() => import('../../panel/configuracion/EmpresaPage'));
-const LibroReclamacionesPage = lazyConReintento(() => import('../../web/paginas/ReclamacionesPublicasPage'));
-const ReclamacionesPage = lazyConReintento(() => import('../../panel/reclamaciones/ReclamacionesPage'));
-const AnunciosPage = lazyConReintento(() => import('../../panel/anuncios/AnunciosPage'));
+const LoginPage = lazyConReintento(() => import('../../views/panel/auth/LoginPage'));
+const VerificarEmailPage = lazyConReintento(() => import('../../views/panel/auth/VerificarEmailPage'));
+const DashboardPage = lazyConReintento(() => import('../../views/panel/dashboard/DashboardPage'));
+const LibrosAutoresPage = lazyConReintento(() => import('../../views/panel/libros/LibrosAutoresPage'));
+const CategoriasPage = lazyConReintento(() => import('../../views/panel/categorias/CategoriasPage'));
+const InventarioPage = lazyConReintento(() => import('../../views/panel/inventario/InventarioPage'));
+const PedidosPage = lazyConReintento(() => import('../../views/panel/pedidos/PedidosPage'));
+const VentasPage = lazyConReintento(() => import('../../views/panel/ventas/VentasPage'));
+const GestionVentasPage = lazyConReintento(() => import('../../views/panel/ventas/GestionVentasPage'));
+const ComprobantesPage = lazyConReintento(() => import('../../views/panel/comprobantes/ComprobantesPage'));
+const UsuariosPage = lazyConReintento(() => import('../../views/panel/usuarios/UsuariosPage'));
+const TarifasEnvioPage = lazyConReintento(() => import('../../views/panel/tarifas/TarifasEnvioPage'));
+const EmpresaPage = lazyConReintento(() => import('../../views/panel/configuracion/EmpresaPage'));
+const LibroReclamacionesPage = lazyConReintento(() => import('../../views/web/publicas/ReclamacionesPublicasPage'));
+const ReclamacionesPage = lazyConReintento(() => import('../../views/panel/reclamaciones/ReclamacionesPage'));
+const AnunciosPage = lazyConReintento(() => import('../../views/panel/anuncios/AnunciosPage'));
 
 const cargar = (elemento) => <Suspense fallback={<CargandoPantalla />}>{elemento}</Suspense>;
 
@@ -116,7 +116,7 @@ const router = createBrowserRouter([
             { path: '/pagos', element: para(SOLO_ADMIN, <RedirigirOperacion ruta="/ventas" />) },
 
             { path: '/usuarios', element: para(SOLO_ADMIN, <UsuariosPage />) },
-            { path: '/clientes', element: para(SOLO_ADMIN, <Navigate to="/usuarios?vista=clientes" replace />) },
+            { path: '/clientes', element: para(SOLO_ADMIN, <Navigate to="/usuarios" replace />) },
             { path: '/reclamaciones', element: para(SOLO_ADMIN, <ReclamacionesPage />) },
             { path: '/anuncios', element: para(SOLO_ADMIN, <AnunciosPage />) },
             { path: '/tarifas-envio', element: para(SOLO_ADMIN, <TarifasEnvioPage />) },

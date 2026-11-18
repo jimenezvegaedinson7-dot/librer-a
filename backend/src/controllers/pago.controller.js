@@ -1,52 +1,17 @@
-const payuService = require('../services/payu.service');
+const payuService = require('../integrations/payu');
 const ventaModel = require('../models/venta.model');
-const { PRECIO_FINAL_SQL } = require('../models/libro.model');
-const usuarioModel = require('../models/usuario.model');
+const libroModel = require('../models/libro.model');
+const inventarioModel = require('../models/inventario.model');
 const zonaDeliveryModel = require('../models/zonaDelivery.model');
 const { ENTREGA_PALLASCA } = require('../utils/entregaPallasca');
-const pool = require('../config/database');
 const crypto = require('crypto');
 const { esEmailValido } = require('../utils/validaciones');
 const { extraerEstadoOrdenPayu, montoPagoCoincide } = require('../utils/payuStatus');
-const { enviarCorreoOrdenCreada, enviarCorreoPagoConfirmado, enviarCorreoPagoRechazado } = require('../utils/mailer');
+const { notificarOrdenCreada, aplicarEstadoPagoAVenta } = require('../services/pago.service');
 const { PUBLIC_BASE_URL } = require('../config/payu');
 const { esPersonalInterno } = require('../utils/roles');
 const { TIPOS_ENTREGA } = require('../utils/transiciones');
 const { requiereRevisionPago } = require('../utils/devoluciones');
-
-const notificarOrdenCreada = async ({ idUsuario, correoCompra, idVenta, items, total, costoEnvio, tipoEntrega }) => {
-    if (!correoCompra) return;
-
-    const usuario = await usuarioModel.buscarPorId(idUsuario);
-
-    await enviarCorreoOrdenCreada({ destinatario: correoCompra, nombre: usuario?.nombre || '', idVenta, items, total, costoEnvio, tipoEntrega });
-};
-
-const notificarPagoConfirmado = async (venta) => {
-    const destinatario = venta.correo_compra;
-
-    if (!destinatario) return;
-
-    const usuario = await usuarioModel.buscarPorId(venta.id_usuario);
-
-    await enviarCorreoPagoConfirmado({ destinatario, nombre: usuario?.nombre || '', idVenta: venta.id_venta, total: venta.total, externalReference: venta.external_reference });
-};
-
-const notificarPagoRechazado = async (venta, estadoPayu) => {
-    const destinatario = venta.correo_compra;
-
-    if (!destinatario) return;
-
-    const usuario = await usuarioModel.buscarPorId(venta.id_usuario);
-
-    await enviarCorreoPagoRechazado({
-        destinatario,
-        nombre: usuario?.nombre || '',
-        idVenta: venta.id_venta,
-        total: venta.total,
-        estado: estadoPayu || venta.payu_payment_status || 'rechazado'
-    });
-};
 
 const construirCheckoutUrl = (externalReference) => (externalReference ? `${PUBLIC_BASE_URL}/api/pagos/checkout/${encodeURIComponent(externalReference)}` : null);
 
@@ -225,13 +190,10 @@ const crearOrden = async (req, res) => {
             return res.status(400).json({ success: false, mensaje: 'idempotencia_clave es obligatoria' });
         }
 
-        const [ventasPrevias] = await pool.query(
-            `SELECT id_venta, id_usuario, estado, total, costo_envio, external_reference, payu_order_id, payu_payment_id, payu_payment_status, payu_payer_email, correo_compra, cliente_documento, cliente_tipo_documento, pago_revision_motivo, pago_revision_fecha, fecha_pago, estado_reembolso FROM ventas WHERE idempotencia_clave = ? AND id_usuario = ? LIMIT 1`,
-            [idempotenciaClave, req.usuario.id_usuario]
-        );
+        const ventaPrevia = await ventaModel.buscarPorIdempotencia(idempotenciaClave, req.usuario.id_usuario);
 
-        if (ventasPrevias.length > 0) {
-            return res.status(200).json(await construirRespuestaOrdenExistente(ventasPrevias[0]));
+        if (ventaPrevia) {
+            return res.status(200).json(await construirRespuestaOrdenExistente(ventaPrevia));
         }
 
         const correoDefinitivo = typeof correo_compra === 'string' && correo_compra.trim() ? correo_compra.trim() : req.usuario.email;
@@ -320,15 +282,11 @@ const crearOrden = async (req, res) => {
         let total = 0;
 
         for (const [id_libro, cantidad] of agrupados) {
-            const [libros] = await pool.query(`SELECT l.id_libro, l.titulo, l.precio, l.stock, l.estado, ${PRECIO_FINAL_SQL} FROM libros l WHERE l.id_libro = ? LIMIT 1`, [
-                id_libro
-            ]);
+            const libro = await libroModel.obtenerParaCompra(id_libro);
 
-            if (libros.length === 0) {
+            if (!libro) {
                 return res.status(400).json({ success: false, mensaje: `El libro ${id_libro} no existe` });
             }
-
-            const libro = libros[0];
 
             if (Number(libro.estado) !== 1) {
                 return res.status(400).json({ success: false, mensaje: `El libro "${libro.titulo}" se encuentra inactivo` });
@@ -340,16 +298,16 @@ const crearOrden = async (req, res) => {
                 return res.status(400).json({ success: false, mensaje: `El precio del libro "${libro.titulo}" no es válido` });
             }
 
-            const [inventario] = await pool.query(`SELECT stock FROM inventario WHERE id_libro = ?`, [id_libro]);
+            const inventario = await inventarioModel.obtenerStockPorLibro(id_libro);
 
-            if (inventario.length === 0) {
+            if (!inventario) {
                 const stockLibro = Number(libro.stock || 0);
 
                 if (stockLibro < cantidad) {
                     return res.status(400).json({ success: false, mensaje: `Stock insuficiente para "${libro.titulo}". Disponible: ${stockLibro}` });
                 }
             } else {
-                const stockActual = Number(inventario[0].stock);
+                const stockActual = Number(inventario.stock);
 
                 if (stockActual < cantidad) {
                     return res.status(400).json({ success: false, mensaje: `Stock insuficiente para "${libro.titulo}". Disponible: ${stockActual}` });
@@ -396,13 +354,10 @@ const crearOrden = async (req, res) => {
                 estado: 'pendiente'
             });
         } catch (errorVenta) {
-            const [ventasDuplicadas] = await pool.query(
-                `SELECT id_venta, id_usuario, estado, total, costo_envio, external_reference, payu_order_id, payu_payment_id, payu_payment_status, payu_payer_email, correo_compra, cliente_documento, cliente_tipo_documento, pago_revision_motivo, pago_revision_fecha, fecha_pago, estado_reembolso FROM ventas WHERE idempotencia_clave = ? AND id_usuario = ? LIMIT 1`,
-                [idempotenciaClave, req.usuario.id_usuario]
-            );
+            const ventaDuplicada = await ventaModel.buscarPorIdempotencia(idempotenciaClave, req.usuario.id_usuario);
 
-            if (ventasDuplicadas.length > 0) {
-                return res.status(200).json(await construirRespuestaOrdenExistente(ventasDuplicadas[0]));
+            if (ventaDuplicada) {
+                return res.status(200).json(await construirRespuestaOrdenExistente(ventaDuplicada));
             }
 
             throw errorVenta;
@@ -566,28 +521,6 @@ const obtenerOrden = async (req, res) => {
 
         return res.status(500).json({ success: false, mensaje: 'Error al obtener la orden', error: 'Error interno del servidor' });
     }
-};
-
-const aplicarEstadoPagoAVenta = async ({
-    externalReference,
-    payuOrderId,
-    payuPaymentId,
-    payuPaymentStatus,
-    payuPayerEmail,
-    monto,
-    moneda,
-    reportedReference = externalReference
-}) => {
-    const resultado = await ventaModel.aplicarPago({ externalReference, payuOrderId, payuPaymentId, payuPaymentStatus, payuPayerEmail, monto, moneda, reportedReference });
-    notificarResultadoPago(resultado);
-    return resultado;
-};
-
-const notificarResultadoPago = (resultado) => {
-    if (!resultado?.cambio_estado) return;
-    const { venta } = resultado;
-    const envio = venta.estado === 'pagada' ? notificarPagoConfirmado(venta) : venta.estado === 'cancelada' ? notificarPagoRechazado(venta, venta.payu_payment_status) : null;
-    envio?.catch((error) => console.error('No se pudo enviar la notificación de pago:', error.message));
 };
 
 const estadoVentaDesdePayu = (statusMp) => {
@@ -783,4 +716,4 @@ const obtenerCapacidadesCompra = async (_req, res, next) => {
     }
 };
 
-module.exports = { obtenerCapacidadesCompra, crearOrden, obtenerOrden, webhookPago, renderCheckoutPage, renderRespuestaPage, listarPagosAdmin, notificarResultadoPago };
+module.exports = { obtenerCapacidadesCompra, crearOrden, obtenerOrden, webhookPago, renderCheckoutPage, renderRespuestaPage, listarPagosAdmin };

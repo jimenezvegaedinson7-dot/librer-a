@@ -561,7 +561,7 @@ test('rutas guardadas de reportes y cierre de caja resuelven al Dashboard', asyn
     }
 });
 
-test('usuarios: solo administrador y cliente en filtros, selector, contador y detalle', async ({ page }) => {
+test('usuarios: solo cuentas de clientes, sin roles ni cuenta de administrador', async ({ page }) => {
     await sesion(page);
     await apiVacia(page);
     const usuarios = [
@@ -573,14 +573,15 @@ test('usuarios: solo administrador y cliente en filtros, selector, contador y de
         route.request().url().includes('/perfil') ? route.fulfill({ json: { success: true, data: admin } }) : route.fulfill({ json: { success: true, data: usuarios } })
     );
     await page.goto('/usuarios');
-    await expect(page.getByTitle('Ver usuario', { exact: true })).toHaveCount(3);
+    await expect(page.getByTitle('Ver usuario', { exact: true })).toHaveCount(2);
+    expect(await page.locator('main').innerText()).not.toMatch(/Audit Admin/);
     expect(await page.locator('main').innerText()).not.toMatch(/cajer/i);
-    await expect(page.getByRole('combobox', { name: 'Filtrar por rol' }).locator('option')).toHaveText(['Todos los roles', 'Administradores', 'Clientes']);
-    const fila = page.locator('tr').filter({ hasText: 'Audit Cliente' });
-    await expect(fila.getByTitle('Cambiar rol', { exact: true }).locator('option')).toHaveText(['Cliente', 'Administrador']);
+    await expect(page.getByRole('combobox', { name: 'Filtrar por rol' })).toHaveCount(0);
+    await expect(page.getByTitle('Cambiar rol', { exact: true })).toHaveCount(0);
     await page.locator('tr').filter({ hasText: 'Cuenta Histórica' }).getByTitle('Ver usuario', { exact: true }).click();
-    expect(await page.getByRole('dialog').innerText()).not.toMatch(/cajer/i);
-    await expect(page.getByRole('dialog').getByText('Rol no válido', { exact: true })).toBeVisible();
+    const dialogo = page.getByRole('dialog');
+    expect(await dialogo.innerText()).not.toMatch(/cajer/i);
+    await expect(dialogo.getByText('Rol', { exact: true })).toHaveCount(0);
 });
 
 test('login de una cuenta sin permiso no ofrece un rol retirado', async ({ page }) => {

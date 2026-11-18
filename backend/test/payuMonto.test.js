@@ -8,7 +8,7 @@ process.env.PAYU_API_LOGIN = 'login-de-prueba';
 process.env.PAYU_API_KEY = 'clave-de-prueba';
 process.env.PAYU_TEST = 'true';
 
-const { construirFormularioCheckout } = require('../src/services/payu.service');
+const { construirFormularioCheckout } = require('../src/integrations/payu');
 
 const formulario = (total) => construirFormularioCheckout({ externalReference: 'orden_1_abc', total, buyerEmail: 'cliente@ejemplo.com' }).campos;
 

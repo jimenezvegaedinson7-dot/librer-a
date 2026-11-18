@@ -383,7 +383,12 @@ const obtenerComprobante = async (id) => {
     };
 };
 
+const marcarEnviadoPorEmail = async (idComprobante) => {
+    await pool.query('UPDATE comprobantes SET enviado_por_email = TRUE, fecha_envio_email = NOW() WHERE id_comprobante = ?', [idComprobante]);
+};
+
 module.exports = {
+    marcarEnviadoPorEmail,
     generarComprobante,
     listarComprobantes,
     listarResumen,

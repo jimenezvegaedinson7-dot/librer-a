@@ -6,7 +6,7 @@ process.env.RESEND_API_KEY = '';
 process.env.EMAIL_RESEND_API_KEY = '';
 process.env.SMTP_USER = '';
 process.env.EMAIL_USER = '';
-const { enviarCorreo } = require('../src/utils/mailer');
+const { enviarCorreo } = require('../src/integrations/mailer');
 test('timeout HTTP de correo es capturado y no derriba el proceso', async () => {
     const upstream = http.createServer(() => {}).listen(0, '127.0.0.1');
     await new Promise((r) => upstream.once('listening', r));
