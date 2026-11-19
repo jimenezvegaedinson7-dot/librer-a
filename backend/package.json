@@ -19,6 +19,8 @@
     "catalogo:generar": "node scripts/generarCatalogoAmpliado.js",
     "catalogo:semilla:dry": "node scripts/semillaCatalogoAmpliado.js --dry-run",
     "catalogo:semilla": "node scripts/semillaCatalogoAmpliado.js --confirmar",
+    "portadas:subir:dry": "node scripts/subirPortadasLibros.js --dry-run",
+    "portadas:subir": "node scripts/subirPortadasLibros.js --confirmar",
     "publicar-app": "node scripts/publicarVersionApp.js"
   },
   "keywords": [],

@@ -16,7 +16,7 @@ Otras carpetas: `web/` (build web de Flutter publicado), `backups/`, scripts `*.
 
 ## Cifras (análisis 2026-11-19)
 
-- Backend: **195** archivos JS (incluye tests y scripts) · **119** endpoints · 23 routers · 25 controladores · 22 modelos · **21 tablas en esquema canónico** (22 declaradas al incluir migraciones y arranque).
+- Backend: **196** archivos JS (incluye tests y scripts) · **119** endpoints · 23 routers · 25 controladores · 22 modelos · **21 tablas en esquema canónico** (22 declaradas al incluir migraciones y arranque).
 - Frontend: **216** archivos JS/JSX · 40 rutas · 21 archivos de servicio.
 - Flutter: **77** archivos Dart · 35 métodos en ApiService · 21 pantallas/widgets con llamadas a la API.
 - Swift: **73** archivos de aplicación · 7 archivos de pruebas · navegación cliente documentada en `09-SWIFT-MAP.md`.

@@ -16,18 +16,22 @@ const firmar = (params) => {
         .digest('hex');
 };
 
-const subirImagen = async (buffer, { carpeta = 'libreria' } = {}) => {
+const subirImagen = async (buffer, { carpeta = 'libreria', publicId = null, nombre = 'imagen', mimeType = null } = {}) => {
     if (!configurado) {
         throw new Error('Cloudinary no está configurado');
     }
 
     const timestamp = Math.floor(Date.now() / 1000);
-
-    const params = { folder: carpeta, timestamp };
+    const params = publicId ? { overwrite: 'true', public_id: publicId, timestamp } : { folder: carpeta, timestamp };
 
     const body = new FormData();
-    body.append('file', new Blob([buffer]), 'imagen');
-    body.append('folder', carpeta);
+    body.append('file', new Blob([buffer], mimeType ? { type: mimeType } : undefined), nombre);
+    if (publicId) {
+        body.append('overwrite', 'true');
+        body.append('public_id', publicId);
+    } else {
+        body.append('folder', carpeta);
+    }
     body.append('timestamp', String(timestamp));
     body.append('api_key', API_KEY);
     body.append('signature', firmar(params));
