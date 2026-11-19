@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef } from 'react';
 import fondoBiblioteca from './biblioteca-pastel.svg';
 
-export default function IconoAsistente({ pensando = false }) {
+export default function IconoAsistente({ pensando = false, interactivo = true }) {
     const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
     const mirada = useRef(null);
     const retrasos = useMemo(() => {
@@ -13,7 +13,7 @@ export default function IconoAsistente({ pensando = false }) {
     }, [uid]);
 
     useEffect(() => {
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+        if (!interactivo || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
         let cuadro = 0;
         const seguir = (evento) => {
             cancelAnimationFrame(cuadro);
@@ -33,7 +33,7 @@ export default function IconoAsistente({ pensando = false }) {
             cancelAnimationFrame(cuadro);
             window.removeEventListener('pointermove', seguir);
         };
-    }, []);
+    }, [interactivo]);
 
     return (
         <span

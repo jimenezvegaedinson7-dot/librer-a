@@ -32,10 +32,31 @@ export const NAVEGACION = [
     { ruta: '/', texto: 'Inicio' },
     { ruta: '/catalogo', texto: 'Catálogo' },
     { ruta: '/nosotros', texto: 'Nosotros' },
-    { ruta: '/caracteristicas', texto: 'Características' },
     { ruta: '/aplicacion', texto: 'Aplicación' },
+    { ruta: '/catalogo?ofertas=1', texto: 'Ofertas' },
     { ruta: '/descargar', texto: 'Descargar', destacado: true }
 ];
+
+export const CATEGORIAS_DESTACADAS = [
+    'Cómic y Manga',
+    'Ficción',
+    'No Ficción',
+    'Juvenil',
+    'Infantil',
+    'Animación',
+    'Historietas',
+    'Cómic',
+    'Novela',
+    'Fantasía',
+    'Poesía',
+    'Cuento',
+    'Ensayo'
+];
+
+export const prioridadCategoria = (nombre) => {
+    const indice = CATEGORIAS_DESTACADAS.indexOf(nombre);
+    return indice === -1 ? CATEGORIAS_DESTACADAS.length : indice;
+};
 
 export const PAGINAS = {
     '/': {
@@ -45,11 +66,7 @@ export const PAGINAS = {
     '/catalogo': { titulo: 'Catálogo · MATIDANA Libros y Cultura', descripcion: 'Libros disponibles en MATIDANA Libros y Cultura, con autor, categoría y precio en soles.' },
     '/aplicacion': {
         titulo: 'La aplicación · MATIDANA Libros y Cultura',
-        descripcion: 'Busca libros, revisa su ficha, guarda favoritos y paga con PayU desde la app de MATIDANA Libros y Cultura.'
-    },
-    '/caracteristicas': {
-        titulo: 'Características · MATIDANA Libros y Cultura',
-        descripcion: 'Delivery con tarifa única dentro de la ciudad de Pallasca, recojo gratuito en Jr. Marañón 161 y pago con PayU.'
+        descripcion: 'Busca libros, revisa su ficha, guarda favoritos, elige delivery en Pallasca o recojo gratuito y paga con PayU desde la app de MATIDANA Libros y Cultura.'
     },
     '/nosotros': {
         titulo: 'Nosotros · MATIDANA Libros y Cultura',

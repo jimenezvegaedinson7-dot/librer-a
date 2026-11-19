@@ -94,6 +94,8 @@ for (const ancho of [320, 390, 1440])
         await expect(ultima(chat)).toContainText(base.titulo);
         await expect(ultima(chat)).toContainText('S/ 48.00');
         await expect(ultima(chat)).toContainText('5 ejemplares disponibles');
+        await expect(ultima(chat).locator('.asistente-avatar--mensaje .icono-asistente')).toBeVisible();
+        expect(await chat.getByRole('log').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
         expect(control.catalogos).toEqual([{ metodo: 'GET', autorizacion: undefined }]);
         await expect(chat.locator('.asistente-perfil')).toHaveCount(0);
         const caja = await chat.boundingBox();
@@ -111,7 +113,7 @@ for (const ancho of [320, 390, 1440])
     });
 
 for (const ancho of [390, 1440]) {
-    test(`${ancho}px: chat compacto con biblioteca pastel y foto del perfil junto al mensaje`, async ({ page }) => {
+    test(`${ancho}px: chat cálido con avatares del cliente y del asistente junto a sus mensajes`, async ({ page }) => {
         await page.setViewportSize({ width: ancho, height: 900 });
         const control = await preparar(page, { usuario: cliente });
         const lanzador = page.getByRole('button', { name: 'Abrir asistente de la librería', exact: true });
@@ -135,6 +137,28 @@ for (const ancho of [390, 1440]) {
         expect(foto.x).toBeGreaterThanOrEqual(burbuja.x + burbuja.width + 6);
         expect(foto.x + foto.width).toBeLessThanOrEqual(fondo.x + fondo.width);
         expect(await conversacion.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+        const respuesta = ultima(chat);
+        const avatarAsistente = respuesta.locator('.asistente-avatar--mensaje');
+        await expect(avatarAsistente.locator('.icono-asistente')).toBeVisible();
+        const cajaRespuesta = await respuesta.boundingBox(), cajaAvatar = await avatarAsistente.boundingBox();
+        expect(cajaAvatar.width).toBe(36);
+        expect(cajaAvatar.x).toBeGreaterThanOrEqual(fondo.x);
+        expect(cajaAvatar.x + cajaAvatar.width).toBeLessThanOrEqual(cajaRespuesta.x - 6);
+        const contrastes = await chat.evaluate(el => {
+            const luminancia = (color) => {
+                const [r, g, b] = color.match(/[\d.]+/g).slice(0, 3).map(Number).map(c => {
+                    const n = c / 255;
+                    return n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+                });
+                return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            };
+            return ['.asistente-cabecera', '.asistente-mensaje--usuario'].map(selector => {
+                const estilo = getComputedStyle(el.querySelector(selector));
+                const a = luminancia(estilo.color), b = luminancia(estilo.backgroundColor);
+                return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+            });
+        });
+        expect(contrastes.every(valor => valor >= 4.5)).toBe(true);
         await chat.screenshot({ path: test.info().outputPath(`chat-perfil-${ancho}.png`) });
         await preguntar(chat, 'Quiero encontrar una novela para leer este fin de semana. '.repeat(8).slice(0, 400));
         const largo = chat.locator('.asistente-mensaje--usuario').last();
@@ -166,6 +190,50 @@ for (const caso of ['sin foto', 'foto no disponible']) {
     });
 }
 
+test('respuestas largas mantienen el avatar visible y compactan las acciones de los libros', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await preparar(page, { usuario: cliente });
+    await page.route(`${API}/asistente`, (route) =>
+        route.fulfill({
+            json: {
+                success: true,
+                data: {
+                    mensaje: `Estas lecturas merecen una revisión detallada. ${'La bibliografía revisada incluye ediciones, autores y disponibilidad reales. '.repeat(12)}`,
+                    libros: [1, 2, 3, 4].map((id) => ({
+                        ...base,
+                        id_libro: id,
+                        titulo: `${base.titulo} ${id}`,
+                        motivo: 'Selección revisada con criterios editoriales y disponibilidad actual.'
+                    })),
+                    contexto: 'libros-recomendados',
+                    origen: 'catalogo',
+                    opciones: []
+                }
+            }
+        })
+    );
+    const chat = await abrir(page);
+    await preguntar(chat, 'Algo de Orwell');
+    const respuesta = ultima(chat);
+    await expect(respuesta.locator('.asistente-libros li')).toHaveCount(4);
+    const detalle = respuesta.getByRole('link', { name: `Ver detalle de ${base.titulo} 1`, exact: true });
+    const tamano = await detalle.boundingBox();
+    expect(tamano.height).toBeLessThanOrEqual(34);
+    expect(tamano.width).toBeLessThanOrEqual(130);
+
+    const conversacion = chat.getByRole('log');
+    await conversacion.evaluate((el) => {
+        el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) / 2);
+    });
+    const area = await conversacion.boundingBox(),
+        avatar = await respuesta.locator('.asistente-avatar--mensaje').boundingBox(),
+        burbuja = await respuesta.boundingBox();
+    expect(avatar.y + avatar.height).toBeGreaterThan(area.y);
+    expect(avatar.y).toBeLessThan(area.y + area.height);
+    expect(avatar.x).toBeGreaterThanOrEqual(area.x - 1);
+    expect(avatar.x + avatar.width).toBeLessThanOrEqual(burbuja.x + 1);
+    await chat.screenshot({ path: test.info().outputPath('chat-respuesta-larga.png') });
+});
 test('chat en horizontal de poca altura conserva campo y conversación desplazable', async ({ page }) => {
     await page.setViewportSize({ width: 844, height: 390 });
     await preparar(page);
@@ -235,9 +303,11 @@ test('error de catalogo ofrece reintento y bloquea envios duplicados durante la 
     await ultima(chat).getByRole('button', { name: 'Reintentar consulta', exact: true }).click();
     await expect(chat.getByRole('button', { name: 'Enviar pregunta', exact: true })).toBeDisabled();
     await expect(chat.getByRole('status')).toContainText('Consultando');
+    await expect(chat.getByRole('status').locator('.asistente-avatar--pensando .icono-asistente')).toBeVisible();
     resolver();
     await expect(ultima(chat)).toContainText('1984');
     await expect(ultima(chat)).toContainText('Agotado');
+    await expect(ultima(chat).locator('.asistente-avatar--mensaje .icono-asistente')).toBeVisible();
     expect(control.catalogos).toHaveLength(2);
 });
 test('enlace a la ficha cierra el chat y reiniciar no conserva el contexto anterior', async ({ page }) => {

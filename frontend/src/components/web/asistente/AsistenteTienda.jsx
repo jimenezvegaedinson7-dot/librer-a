@@ -91,7 +91,7 @@ function Pensando() {
     return (
         <div className="asistente-pensando" role="status">
             <span className="asistente-avatar asistente-avatar--pensando">
-                <IconoAsistente pensando />
+                <IconoAsistente pensando interactivo={false} />
             </span>
             <span className="asistente-pensando__burbuja">
                 <span key={frase} className="asistente-pensando__frase" aria-hidden="true">
@@ -467,6 +467,11 @@ export default function AsistenteTienda({ legal }) {
                         {mensajes.map((m) => (
                             <div key={m.id} className={`asistente-mensaje asistente-mensaje--${m.autor}${esMensajePropio(m) ? ' asistente-mensaje--con-perfil' : ''}`}>
                                 {esMensajePropio(m) && <AvatarCliente key={`${usuario.id_usuario}:${fotoPerfil || ''}`} foto={fotoPerfil} nombre={nombrePerfil} />}
+                                {m.autor === 'asistente' && (
+                                    <span className="asistente-avatar asistente-avatar--mensaje" aria-hidden="true">
+                                        <IconoAsistente pensando={Boolean(m.nuevo) && !escritos.has(m.id)} interactivo={false} />
+                                    </span>
+                                )}
                                 <span className="asistente-quien">{m.autor === 'usuario' ? 'Tú' : 'Asistente'}</span>
                                 {m.autor === 'asistente' ? (
                                     <TextoEscrito

@@ -12,8 +12,8 @@
                   Backend Express · /api/*
                   JWT · PayU · SMTP · Cloudinary
                               |
-                PostgreSQL · 22 tablas en esquema canónico
-                + auxiliares de migración (23 declaradas en código)
+                PostgreSQL · 21 tablas en esquema canónico
+                + auxiliares de migración (22 declaradas en código)
 ```
 
 ## 1. Login (React y Flutter)

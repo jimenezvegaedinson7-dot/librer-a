@@ -26,6 +26,7 @@ import './public-footer.css';
 import '../../styles/web/responsive-movil.css';
 import '../../styles/web/limpia.css';
 import '../../styles/web/botones-vortex.css';
+import '../../styles/web/secciones-casa.css';
 import AsistenteTienda from './asistente/AsistenteTienda';
 import { analitica } from '../../services/web/analitica';
 

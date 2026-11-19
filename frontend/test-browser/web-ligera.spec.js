@@ -3,10 +3,8 @@ import { test, expect } from '@playwright/test';
 const API = 'http://127.0.0.1:59999/api';
 const imagen =
     'data:image/svg+xml,' +
-    encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="360"><rect width="240" height="360" fill="#24304b"/><text x="24" y="160" fill="white" font-size="22">Lecturas</text></svg>'
-    );
-const libros = Array.from({ length: 8 }, (_, i) => ({
+    encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="240" height="360"><rect width="240" height="360" fill="#24304b"/><text x="24" y="160" fill="white" font-size="22">Lecturas</text></svg>');
+const libros = Array.from({ length: 16 }, (_, i) => ({
     id_libro: i + 1,
     titulo: `Libro de prueba ${i + 1}`,
     autor: 'Autora de prueba',
@@ -17,46 +15,14 @@ const libros = Array.from({ length: 8 }, (_, i) => ({
     descuento_porcentaje_efectivo: 25,
     stock: 4,
     portada: imagen,
-    creado_en: `2026-10-${20 + i}`
+    creado_en: `2026-09-${String(16 - i).padStart(2, '0')}`
 }));
 
-async function preparar(page, protagonista = libros[0]) {
+async function preparar(page) {
     await page.route(`${API}/**`, (r) => {
         const ruta = new URL(r.request().url()).pathname;
         if (ruta === '/api/libros') return r.fulfill({ json: libros });
-        if (ruta === '/api/anuncios/protagonista') return r.fulfill({ json: { success: true, data: { libro: protagonista } } });
         return r.fulfill({ json: { success: true, data: [] } });
-    });
-}
-
-const titulo = (page) => page.locator('.portada3d__acceso-titulo');
-
-test('la transición al 3D comparte el protagonista sin repetir la consulta', async ({ page }) => {
-    let consultas = 0;
-    await preparar(page);
-    await page.route(`${API}/anuncios/protagonista`, async (route) => {
-        consultas++;
-        await route.fulfill({ json: { success: true, data: { libro: libros[0] } } });
-    });
-    let liberar;
-    const espera = new Promise((resolve) => {
-        liberar = resolve;
-    });
-    await page.route(/escenaLibro/, async (route) => {
-        await espera;
-        await route.continue();
-    });
-    await page.goto('/');
-    await expect(titulo(page)).toHaveText(libros[0].titulo);
-    const iniciales = consultas;
-    liberar();
-    await expect(page.locator('.portada3d--lista, .portada3d--estatica')).toBeVisible({ timeout: 30000 });
-    expect(consultas).toBe(iniciales);
-});
-
-async function sinAnimacion3D(page) {
-    await page.addInitScript(() => {
-        Object.defineProperty(navigator, 'connection', { configurable: true, value: { saveData: true, effectiveType: '4g' } });
     });
 }
 
@@ -72,46 +38,28 @@ async function sinVidrio(page) {
     expect(filtros).toEqual([]);
 }
 
-for (const width of [390, 1440])
-    test(`inicio ${width}px: primera pintura ligera y animación 3D diferida`, async ({ page }, testInfo) => {
+for (const width of [390, 1440]) {
+    test(`inicio ${width}px: portada ligera, sin escena 3D ni librerías innecesarias`, async ({ page }, testInfo) => {
         await page.setViewportSize({ width, height: 1000 });
         const peticiones = [],
             errores = [];
         page.on('request', (r) => peticiones.push(r.url()));
         page.on('pageerror', (e) => errores.push(e.message));
         await preparar(page);
-        let liberar;
-        const espera = new Promise((r) => {
-            liberar = r;
-        });
-        await page.route(/escenaLibro/, async (r) => {
-            await espera;
-            await r.continue();
-        });
         await page.goto('/');
-
-        await expect(titulo(page)).toHaveText('Libro de prueba 1');
-        await expect(page.locator('.portada3d__acceso .oferta__final')).toHaveText('S/ 75.00');
-        await expect(page.locator('.portada3d__escena-libros [role="listitem"]')).toHaveCount(5);
-        await expect(page.locator('.oferta-tarjeta').first()).toHaveCSS('opacity', '1');
-        await expect(page.locator('.ofertas .seccion__titulo')).toHaveCSS('animation-name', 'none');
-        await expect(page.locator('.portada-unica__poster')).toHaveCSS('opacity', '1');
-        await expect(page.locator('.portada3d--lista')).toHaveCount(0);
+        await expect(page.locator('.portada3d__orbite')).toBeVisible({ timeout: 30000 });
+        await expect(page.getByRole('heading', { name: /Las ideas no se quedan quietas/ })).toBeVisible();
+        await expect(page.getByText('Últimos libros agregados', { exact: true })).toBeVisible();
+        await expect(page.getByRole('region', { name: 'Últimos libros agregados' }).getByRole('link')).toHaveCount(16);
+        await expect(page.locator('.portada3d canvas')).toHaveCount(0);
         await expect(page.locator('html')).not.toHaveAttribute('data-precarga');
         await expect(page.locator('.cabecera')).toHaveCSS('background-image', 'none');
-        await expect(page.locator('footer.pie')).toHaveCSS('animation-name', 'none');
-        expect(peticiones.some((u) => /portalEditorial|three|AdminLayout|fonts\.googleapis/.test(u))).toBe(false);
+        await expect(page.locator('.oferta-tarjeta').first()).toHaveCSS('opacity', '1');
+        await expect(page.locator('.ofertas .seccion__titulo')).toHaveCSS('animation-name', 'none');
+        expect(peticiones.some((u) => /escenaLibro|portalEditorial|three|AdminLayout|fonts\.googleapis/.test(u))).toBe(false);
         await sinVidrio(page);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         await page.screenshot({ path: testInfo.outputPath('inicio-ligero.png'), fullPage: true });
-
-        liberar();
-        await page.waitForSelector('.portada3d--lista, .portada3d--estatica', { timeout: 30000 });
-        await expect(titulo(page)).toContainText('Libro de prueba 1');
-        const es3D = await page.locator('.portada3d--lista').count();
-        await expect(page.locator('.portada3d canvas')).toHaveCount(es3D ? 1 : 0);
-        await sinVidrio(page);
-        await page.screenshot({ path: testInfo.outputPath('inicio-3d.png'), fullPage: true });
 
         await page.goto('/aplicacion');
         const tarjeta = page.locator('.app-funcion').first();
@@ -119,49 +67,32 @@ for (const width of [390, 1440])
         await tarjeta.hover();
         await expect(tarjeta).toHaveCSS('background-color', 'rgb(255, 255, 255)');
         await expect(tarjeta).toHaveCSS('transform', 'none');
-        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-        await page.screenshot({ path: testInfo.outputPath('aplicacion-limpia.png'), fullPage: true });
         expect(errores).toEqual([]);
     });
+}
 
 test('portada: navegación disponible incluso si la API tarda', async ({ page }) => {
-    await preparar(page);
-    await sinAnimacion3D(page);
     let liberar;
-    const espera = new Promise((r) => {
-        liberar = r;
+    const espera = new Promise((resolver) => {
+        liberar = resolver;
     });
-    await page.route(`${API}/anuncios/protagonista`, async (r) => {
-        await espera;
-        await r.fulfill({ json: { success: true, data: { libro: libros[0] } } });
+    await page.route(`${API}/**`, async (r) => {
+        if (new URL(r.request().url()).pathname === '/api/libros') await espera;
+        return r.fulfill({ json: { success: true, data: [] } });
     });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.portada3d__presentacion').getByRole('link', { name: 'Ver catálogo', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Las ideas no se quedan quietas/ })).toBeVisible();
     await expect(page.locator('.cabecera')).toBeVisible();
     liberar();
-    await expect(titulo(page)).toHaveText('Libro de prueba 1');
+    await expect(page.getByRole('region', { name: 'Últimos libros agregados' }).getByRole('link')).toHaveCount(0);
 });
 
-test('portada: respeta libro nulo y el respaldo 404 cuando el catálogo llega después', async ({ page }) => {
-    await preparar(page, null);
-    await sinAnimacion3D(page);
+test('portada: catálogo vacío deja el carrusel sin libros inventados', async ({ page }) => {
+    await page.route(`${API}/**`, (r) => r.fulfill({ json: { success: true, data: [] } }));
     await page.goto('/');
-    await expect(page.locator('.portada-unica__recientes [role="listitem"]')).toHaveCount(5);
-    await expect(page.locator('.portada-unica__poster')).toHaveCount(0);
-    await page.route(`${API}/anuncios/protagonista`, (r) => r.fulfill({ status: 404, json: {} }));
-    let liberar;
-    const espera = new Promise((r) => {
-        liberar = r;
-    });
-    await page.route(`${API}/libros`, async (r) => {
-        await espera;
-        await r.fulfill({ json: libros });
-    });
-    await page.evaluate(() => localStorage.clear());
-    await page.reload({ waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.portada3d__presentacion').getByRole('link', { name: 'Ver catálogo', exact: true })).toBeVisible();
-    liberar();
-    await expect(titulo(page)).toHaveText('Libro de prueba 8');
+    await expect(page.locator('.portada3d__orbite')).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Últimos libros agregados' }).getByRole('link')).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
 test('acceso administrativo: libro limpio sin vidrio y credenciales listas', async ({ page }, testInfo) => {

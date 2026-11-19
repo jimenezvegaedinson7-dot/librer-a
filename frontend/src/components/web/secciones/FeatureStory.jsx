@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { FaTruckFast, FaStore, FaLock, FaShieldHalved, FaCartShopping, FaReceipt, FaHeart, FaClockRotateLeft, FaUserShield, FaCircleCheck } from 'react-icons/fa6';
+import { FaTruckFast, FaStore, FaLock, FaShieldHalved, FaCartShopping, FaReceipt, FaHeart, FaClockRotateLeft, FaUserShield, FaCircleCheck, FaDownload } from 'react-icons/fa6';
 import imgEntrega from '../../../assets/web/app/entrega.webp';
 import { EASE } from '../../../models/config/web/motion';
 import { DIRECCION_RECOJO } from '../../../models/config/web/site';
@@ -81,8 +82,9 @@ function Recorte({ src, alt, posicion, proporcion }) {
     );
 }
 
-export default function FeatureStory({ reducido }) {
+export default function FeatureStory({ reducido, incrustado = false }) {
     const seccion = useRef(null);
+    const Titulo = incrustado ? 'h2' : 'h1';
 
     useGSAP(
         () => {
@@ -102,14 +104,22 @@ export default function FeatureStory({ reducido }) {
     );
 
     return (
-        <section id="ventajas" ref={seccion} className="seccion crema" aria-labelledby="ventajas-titulo">
+        <section id="ventajas" ref={seccion} className="seccion crema casa-seccion" aria-labelledby="ventajas-titulo">
             <div className="contenedor">
-                <h1 id="ventajas-titulo" className="seccion__titulo">
-                    Comprar un libro, sin vueltas
-                </h1>
-                <p className="seccion__entrada">Lo que resuelve la aplicación por usted, de la búsqueda a la entrega.</p>
+                <div className="casa-cabecera">
+                    <span className="casa-etiqueta">La app en detalle</span>
+                    <Titulo id="ventajas-titulo" className="seccion__titulo">
+                        Comprar un libro, sin vueltas
+                    </Titulo>
+                    <p className="seccion__entrada">Lo que resuelve la aplicación por usted, de la búsqueda a la entrega.</p>
+                    <div className="casa-acciones">
+                        <Link to="/descargar" className="boton boton--secundario">
+                            <FaDownload aria-hidden="true" /> Descargar la app
+                        </Link>
+                    </div>
+                </div>
 
-                <div className="ventajas__lista">
+                <div className="ventajas__lista casa-tarjetas">
                     <article className="ventaja" data-ventaja="1">
                         <div className="ventaja__texto">
                             <h2>Delivery o recojo en Pallasca</h2>
@@ -126,7 +136,7 @@ export default function FeatureStory({ reducido }) {
                         </div>
                     </article>
 
-                    <article className="ventaja ventaja--inversa" data-ventaja="2">
+                    <article className="ventaja" data-ventaja="2">
                         <div className="ventaja__texto">
                             <h2>Pago en línea con PayU</h2>
                             <p>
@@ -205,7 +215,7 @@ export default function FeatureStory({ reducido }) {
                         </div>
                     </article>
 
-                    <article className="ventaja ventaja--inversa" data-ventaja="4">
+                    <article className="ventaja" data-ventaja="4">
                         <div className="ventaja__texto">
                             <h2>Su cuenta, a su manera</h2>
                             <p>Guarde sus favoritos, revise sus compras y proteja su cuenta con la verificación en dos pasos.</p>

@@ -1,28 +1,9 @@
 import env from '../../../../models/config/compartido/env';
 
-const CLAVE = `lds:portada-animacion:v1:${env.apiUrl}`;
+export const LIBROS_RECIENTES = 16;
+
+const CLAVE = `lds:carrusel-orbite:v3:${env.apiUrl}`;
 const VIGENCIA_MS = 15 * 60 * 1000;
-const CAMPOS = [
-    'id_libro',
-    'id_autor',
-    'id_categoria',
-    'titulo',
-    'autor',
-    'categoria',
-    'isbn',
-    'estado',
-    'mas_vendido',
-    'es_nuevo',
-    'precio',
-    'precio_final',
-    'descuento_vigente',
-    'descuento_porcentaje_efectivo',
-    'stock',
-    'portada',
-    'sinopsis',
-    'descripcion',
-    'creado_en'
-];
 
 function leerCache() {
     try {
@@ -48,25 +29,16 @@ function guardarParte(nombre, valor) {
     } catch {}
 }
 
-export function leerProtagonista() {
-    return leerParte('protagonista');
-}
-
-export function guardarProtagonista(libro) {
-    const publico = libro ? Object.fromEntries(CAMPOS.filter((c) => Object.hasOwn(libro, c)).map((c) => [c, libro[c]])) : null;
-    guardarParte('protagonista', publico);
-}
-
 export function leerRecientes() {
     const libros = leerParte('recientes');
-    return Array.isArray(libros) ? libros.slice(0, 5).filter((l) => l && typeof l === 'object' && Number.isFinite(l.stock)) : [];
+    return Array.isArray(libros) ? libros.slice(0, LIBROS_RECIENTES).filter((l) => l && typeof l === 'object' && Number.isFinite(l.stock)) : [];
 }
 
 export function guardarRecientes(libros) {
     guardarParte(
         'recientes',
         libros
-            .slice(0, 5)
+            .slice(0, LIBROS_RECIENTES)
             .map((l) => ({
                 id: l.id,
                 titulo: l.titulo,

@@ -17,30 +17,30 @@ La configuración del panel está centralizada en `src/styles/panel/theme.css` y
 
 ## Portada
 
-La portada editorial utiliza un libro real del catálogo y hasta cinco novedades. Su implementación está en `src/components/web/secciones/portada3d/`.
+La portada editorial presenta los libros reales del catálogo en un carrusel ORBIT circular compacto, elevado respecto al texto y separado de él para evitar cruces visuales. El bloque de texto usa una jerarquía tipográfica descendente serif/sans: titular amplio, énfasis en cursiva dorada aún mayor, «Últimos libros agregados» como etiqueta versal contenida, interlineado generoso, medida de lectura corta, comilla serif tenue y halo cálido envolviendo el bloque, sin líneas decorativas. Su implementación está en `src/components/web/secciones/portada3d/`.
 
-La capa vigente `atelier-nocturno.css` define:
+No hay libro protagonista destacado, gestión administrativa para elegirlo ni escena WebGL. El carrusel usa hasta 16 portadas reales de la API, ordenadas por fecha, con rotación continua de 42s, halo suave en perspectiva, sombra dorada tenue bajo la órbita y arrastre que desplaza el tiempo de las animaciones CSS con Web Animations API sin girar el plano, para que las portadas se mantengan derechas y el ciclo retroceda al arrastrar en sentido inverso. No hay botones, CTA, lema ni texto de ayuda en el bloque editorial: al mantener presionada una portada la rotación se pausa y se reanuda al soltar; pasar el cursor o enfocar un enlace no interrumpe la rotación. Emplea transformaciones y animaciones CSS sin librerías adicionales, mantiene las portadas, títulos y precios de la API y reduce su movimiento a una composición estática cuando el sistema solicita movimiento reducido.
 
-| Token | Valor | Uso |
-|---|---|---|
-| `--atelier-tinta` | `#0d1823` | Fondo |
-| `--atelier-papel` | `#f1e8da` | Texto principal |
-| `--atelier-laton` | `#c6a15b` | Acentos y controles |
-| `--atelier-secundario` | `#afc0cc` | Información secundaria |
-
-El libro permanece cerrado durante el recorrido de cámara. El movimiento depende del scroll, puede recorrerse en ambas direcciones y no incorpora audio. La identidad, los datos del libro y los accesos comerciales se mantienen disponibles durante la preparación del motor.
-
-La falta o pérdida de WebGL, el movimiento reducido y los errores de carga activan una presentación estática. Si el motor no avanza, se ofrece un respaldo con los últimos libros agregados y una acción de reintento. Los datos y precios proceden de la API.
+Los estilos de la portada viven en `portada3d.css`; la identidad visual usa los tokens editoriales compartidos de `src/styles/web/`.
 
 ## Navegación y adaptación
 
 - Desde 1024 px se muestra la navegación horizontal.
+- La cabecera reproduce la estructura de Casa del Libro: dos franjas superiores a ancho completo (`#dfe6dd` y `#004d43`) visibles desde 992 px, bloque principal blanco con logotipo verde, buscador con marco `#cfcfcf` que ocupa toda su columna y botón de lupa integrado, acciones en verde `#004d43` y fila de navegación blanca con separadores `|` y subrayado inferior verde en hover/activo. Hasta 1023 px el buscador de escritorio se oculta: menú, marca y acciones comparten la primera fila y el buscador móvil ocupa la segunda a ancho completo; por debajo de 576 px la cabecera pasa a fondo verde con controles blancos. El pie usa tres franjas: crema `#fff5e6` con enlace real al catálogo y cuatro servicios, bloque verde `#004d43` con cuatro columnas de enlaces y franja legal gris `#f3f3f3`; no se añade formulario de suscripción falso.
+- La fila de navegación de escritorio abre con `Inicio`, continúa con hasta cinco categorías del catálogo real priorizadas como en la referencia (`Cómic y Manga`, `Ficción`, `No Ficción`, `Juvenil`, `Infantil`, después por cantidad) y separa por `|` el resto de páginas. No incluye un enlace genérico `Catálogo`: ese acceso permanece en el pie y en la barra inferior móvil, y la fila ofrece `Ofertas` como `/catalogo?ofertas=1`. Cada categoría muestra al pasar el cursor o recibir foco un panel desplegable con tres bloques: enlace filtrado a esa categoría con su cantidad real, enlaces de MATIDANA (páginas y libro de reclamaciones) y hasta ocho libros reales de esa misma categoría con portada, título y autor. El panel se cierra al salir, pulsar Escape o cambiar de ruta, y no aparece por debajo de 1024 px; en móvil las categorías se muestran como píldoras dentro del cajón.
 - Hasta 1023 px se utiliza el cajón móvil, con cierre por Escape y devolución del foco al control que lo abrió.
+- El catálogo muestra, como en la referencia, un bloque de «Categorías destacadas» con hasta ocho enlaces de texto derivados de `libro.categoria`, ordenados por la misma prioridad de la cabecera y luego por cantidad real, que filtran por `/catalogo?categoria=...`. «Ver más temáticas» lleva al filtro completo del lateral; sin datos reales no aparece ninguna categoría inventada.
 - El buscador de cabecera conduce al catálogo con la consulta.
 - La cuenta y el carrito permanecen accesibles en las páginas públicas.
 - Las rutas interiores usan desplazamiento nativo y foco en el contenido principal al navegar.
 - En móviles estrechos, las tarjetas envuelven títulos y autores; los carruseles se desplazan dentro de su contenedor.
 - Los controles táctiles de cuenta y navegación mantienen un área de interacción de al menos 44 px.
+
+## Aplicación, características y descargas
+
+La ruta `/aplicacion` concentra en una sola página la presentación de la app, sus funciones y el recorrido de compra: búsqueda, ficha, favoritos, entrega en Pallasca, pago con PayU, carrito y seguimiento. No existe la ruta `/caracteristicas` ni la entrada `Características` en el menú; `FeatureStory.jsx` se renderiza dentro de `AplicacionPage.jsx` como bloque integrado, con un `h2` en lugar de un segundo `h1`.
+
+Las tres páginas usan el mismo lenguaje visual de referencia: cabeceras con etiqueta píldora magenta `#d9017a`, títulos Work Sans en verde `#004d43`, fondo blanco en la portada, tarjetas blancas con borde `#dcdfe6` y radio `16px`, superficies secundarias crema `#fff5e6` o gris `#f7f8f9`, botones píldora verdes y sin degradados ni resplandores. Las reglas finales viven en `src/styles/web/secciones-casa.css`, importadas después de `limpia.css` y `botones-vortex.css` para conservar la paleta sin reactivar animaciones ni sombras.
 
 ## Componentes comerciales
 
@@ -49,6 +49,14 @@ Los controles de compra se comparten mediante `ComprarLibro.jsx`. Agregar actual
 Las tarjetas muestran disponibilidad real, precio final y promociones vigentes. Una promoción vencida vuelve al precio normal. La ficha agrupa portada, información comercial, ficha técnica, descripción y libros relacionados.
 
 `PerfilCliente.jsx` concentra los datos de cuenta y sus accesos. La fotografía utiliza un control compacto con distintivo de cámara.
+
+## Asistente de tienda
+
+El chat utiliza una paleta propia: nogal `#30251f` en cabecera y envío, cacao `#584235` en mensajes del cliente, marfil `#fffdf8` en respuestas y acento dorado `#a78655`. La textura de biblioteca se mezcla con el fondo cálido para evitar dominantes celestes.
+
+El avatar del asistente acompaña cada respuesta a la izquierda, incluido el texto en escritura y el estado de consulta. Mide 36 px, reserva su espacio junto a la burbuja y permanece visible mientras se recorre una respuesta larga. La foto del cliente conserva su posición a la derecha con el mismo comportamiento; si no está disponible se muestran sus iniciales. Los retratos dentro de la conversación no registran seguimiento global del puntero.
+
+Las acciones de los libros recomendados son compactas: «Agregar» y «Ver detalle» usan botones de 30 px de altura, tipografía reducida y el borde cálido del chat para no dominar la respuesta.
 
 ## Panel administrativo
 
@@ -63,6 +71,7 @@ Los diálogos mantienen el foco y el bloqueo de desplazamiento. Los estados de c
 - `src/styles/web/formal-base.css`: reglas comunes.
 - `formal-compra.css`, `formal-asistente.css`, `formal-cuenta.css`, `formal-favoritos.css` y `formal-catalogo.css`: reglas por función.
 - `src/styles/web/responsive-movil.css`: ajustes de tamaño y objetivos táctiles.
+- `src/styles/web/secciones-casa.css`: capa final de aplicación/características integradas y descargas.
 - `src/components/web/secciones/portada3d/`: estilos de la portada y sus respaldos.
 
 El orden de importación forma parte de la cascada. Los cambios compartidos deben comprobarse tanto en la tienda como en el panel.

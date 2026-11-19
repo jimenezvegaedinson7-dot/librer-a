@@ -27,7 +27,6 @@ async function preparar(page) {
     });
     await page.route('http://127.0.0.1:59999/api/**', (route) => {
         const p = new URL(route.request().url()).pathname;
-        if (p === '/api/anuncios/protagonista') return route.fulfill({ status: 404, json: {} });
         return route.fulfill({
             json:
                 p === '/api/libros'
@@ -181,12 +180,11 @@ for (const [width, height] of [
             }
         }
         if (width <= 900) {
-            const reciente = await page.locator('.portada-unica__recientes .portada3d__apilar-link').first().boundingBox();
+            const carrusel = page.locator('.portada3d__carrusel-pista');
+            const reciente = await carrusel.locator('.portada3d__carrusel-link').first().boundingBox();
             expect(reciente.width).toBeLessThanOrEqual(width / 2);
-            const carrusel = page.locator('.portada-unica__rejilla');
-            const antes = await carrusel.evaluate((e) => e.scrollLeft);
-            await carrusel.evaluate((e) => e.scrollBy({ left: e.clientWidth, behavior: 'instant' }));
-            expect(await carrusel.evaluate((e) => e.scrollLeft)).toBeGreaterThan(antes);
+            await expect(carrusel.locator('.portada3d__carrusel-item').first()).toHaveCSS('animation-name', 'none');
+            await expect(carrusel.locator('.portada3d__carrusel-item')).toHaveCount(16);
         }
         await page.goto('/catalogo');
         await expect(page.locator('.rejilla-libros--todos .tarjeta-libro')).toHaveCount(24);

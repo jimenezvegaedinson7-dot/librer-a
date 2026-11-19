@@ -126,9 +126,6 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 |---|---|---|---|---|---|
 | GET | `/api/anuncios` | — | controllers/anuncio.controller.js#obtenerAnuncioActivo | `anuncio.model.js#obtenerActivo` | anuncios |
 | GET | `/api/anuncios/carrusel` | — | controllers/carrusel.controller.js#listarPublico | `carrusel.model.js#listar` | carrusel_anuncios, libros |
-| GET | `/api/anuncios/protagonista` | — | controllers/portada.controller.js#obtenerPublico | `portada.model.js#resolverProtagonista` | — |
-| GET | `/api/anuncios/protagonista/panel` | JWT + rol:administrador | controllers/portada.controller.js#obtenerPanel | `portada.model.js#obtenerConfig`<br>`portada.model.js#resolverProtagonista` | portada_config |
-| PUT | `/api/anuncios/protagonista` | JWT + rol:administrador | controllers/portada.controller.js#guardar | `libro.model.js#obtenerPorId`<br>`portada.model.js#esElegible`<br>`portada.model.js#guardarProtagonista`<br>`portada.model.js#obtenerConfig`<br>`portada.model.js#resolverProtagonista`<br>`portada.model.js#tienePortada` | autores, categorias, detalle_venta, inventario, libros, portada_config, ventas |
 | GET | `/api/anuncios/carrusel/todos` | JWT + rol:administrador | controllers/carrusel.controller.js#listarPanel | `carrusel.model.js#listar` | carrusel_anuncios, libros |
 | POST | `/api/anuncios/carrusel` | JWT + rol:administrador + recibir | controllers/carrusel.controller.js#crear | `carrusel.model.js#crear` | carrusel_anuncios |
 | PUT | `/api/anuncios/carrusel/orden` | JWT + rol:administrador | controllers/carrusel.controller.js#reordenar | `carrusel.model.js#reordenar` | carrusel_anuncios |
@@ -371,7 +368,6 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/inventario.model.js` | inventario, libros, movimientos_inventario, usuarios |
 | `models/libro.model.js` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | `models/pago.model.js` | ventas |
-| `models/portada.model.js` | libros, portada_config |
 | `models/reclamacion.model.js` | reclamaciones |
 | `models/reporte.model.js` | autores, categorias, comprobantes, detalle_venta, inventario, libros, usuarios, ventas |
 | `models/sistema.model.js` | — |
@@ -380,9 +376,9 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
 | `models/zonaDelivery.model.js` | historial_operaciones, zonas_delivery_pallasca |
 
-Tablas consultadas por los modelos (21): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `portada_config`, `provincias_lima`, `reclamaciones`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. Este subconjunto no es el total del esquema.
+Tablas consultadas por los modelos (20): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. Este subconjunto no es el total del esquema.
 
-Esquema canónico: **22 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **23 tablas**, incluidas las auxiliares de migración. Hay 44 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
+Esquema canónico: **21 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **22 tablas**, incluidas las auxiliares de migración. Hay 44 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
 
 ## Integraciones externas
 
@@ -401,5 +397,5 @@ Esquema canónico: **22 tablas** en `backend/database/schema.sql`. Declaraciones
 - La pasarela de pagos (`/api/pagos`) es **PayU**.
 - `GET /api/test-db` verifica PostgreSQL con `SELECT 1`, protegido por JWT + administrador.
 - Endpoints sin cliente: ver la sección correspondiente en `05-API-MAP.md`.
-- Herramientas de mantenimiento (no forman parte del servidor): `scripts/resetearPrecios.js`, `scripts/semillaLibros.js`, `scripts/publicarVersionApp.js` y `scripts/respaldarPostgres.js`.
+- Herramientas de mantenimiento (no forman parte del servidor): `scripts/resetearPrecios.js`, `scripts/semillaLibros.js`, `scripts/generarCatalogoAmpliado.js`, `scripts/semillaCatalogoAmpliado.js` (crea autores y categorías, siembra al menos 50 libros por categoría y su inventario), `scripts/publicarVersionApp.js` y `scripts/respaldarPostgres.js`.
 - Pruebas: `test/*.test.js` (node --test) y `test-integration/http.smoke.test.js`.

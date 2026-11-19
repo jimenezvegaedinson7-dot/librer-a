@@ -16,7 +16,6 @@ import { Modal } from '../../../components/panel/ui/Modal';
 import { ConfirmarEliminacion } from '../../../components/panel/ui/ConfirmarEliminacion';
 import { useToast } from '../../../app/providers/ToastContext';
 import { formatearFecha } from '../../../services/compartido/utils/format';
-import ProtagonistaPanel from '../../../components/panel/anuncios/ProtagonistaPanel';
 import { listarAnuncios, crearAnuncio, actualizarAnuncio, eliminarAnuncio } from '../../../services/panel/anuncios/anunciosService';
 import { useCarga } from '../../../hooks/panel/useCarga';
 
@@ -391,56 +390,10 @@ function AnunciosVideo() {
 }
 
 export default function AnunciosPage() {
-    const [tipo, setTipo] = useState('protagonista');
-    const TIPOS = ['protagonista', 'videos'];
-    function navegarTabs(e) {
-        if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
-            e.preventDefault();
-            const i = TIPOS.indexOf(tipo);
-            const nuevo = TIPOS[(i + (e.key === 'ArrowRight' ? 1 : TIPOS.length - 1)) % TIPOS.length];
-            setTipo(nuevo);
-            document.getElementById(`tab-anuncios-${nuevo}`)?.focus();
-        }
-    }
     return (
         <div className="space-y-4">
-            <PageHeader titulo="Anuncios de la web" descripcion="Libro protagonista de la portada y anuncios en video" icono={<FaCloudArrowUp />} />
-            <div className="flex flex-wrap gap-2" role="tablist" aria-label="Tipo de anuncios">
-                <button
-                    type="button"
-                    role="tab"
-                    tabIndex={tipo === 'protagonista' ? 0 : -1}
-                    onKeyDown={navegarTabs}
-                    aria-selected={tipo === 'protagonista'}
-                    aria-controls="anuncios-protagonista"
-                    id="tab-anuncios-protagonista"
-                    className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50"
-                    onClick={() => setTipo('protagonista')}>
-                    Libro protagonista
-                </button>
-
-                <button
-                    type="button"
-                    role="tab"
-                    tabIndex={tipo === 'videos' ? 0 : -1}
-                    onKeyDown={navegarTabs}
-                    aria-selected={tipo === 'videos'}
-                    aria-controls="anuncios-videos"
-                    id="tab-anuncios-videos"
-                    className="rounded-lg border border-slate-300 px-4 py-3 text-sm font-semibold aria-selected:border-emerald-700 aria-selected:bg-emerald-50"
-                    onClick={() => setTipo('videos')}>
-                    Anuncios en video
-                </button>
-            </div>
-            {tipo === 'protagonista' ? (
-                <section role="tabpanel" id="anuncios-protagonista" aria-labelledby="tab-anuncios-protagonista">
-                    <ProtagonistaPanel />
-                </section>
-            ) : (
-                <section role="tabpanel" id="anuncios-videos" aria-labelledby="tab-anuncios-videos">
-                    <AnunciosVideo />
-                </section>
-            )}
+            <PageHeader titulo="Anuncios de la web" descripcion="Anuncios en video de la portada" icono={<FaCloudArrowUp />} />
+            <AnunciosVideo />
         </div>
     );
 }

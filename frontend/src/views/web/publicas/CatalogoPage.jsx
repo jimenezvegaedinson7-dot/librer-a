@@ -8,6 +8,7 @@ import { portada, soles } from '../../../services/web/formato';
 import ComprarLibro from '../../../components/web/tienda/ComprarLibro';
 import PortadaLibro from '../../../components/web/tienda/PortadaLibro';
 import { referenciaPortadaLibro, AVISO_PORTADA_REFERENCIA } from '../../../services/compartido/utils/portadasLibro';
+import { prioridadCategoria } from '../../../models/config/web/site';
 
 const normalizar = (t) =>
     String(t || '')
@@ -160,8 +161,9 @@ export default function CatalogoPage() {
     const categorias = useMemo(() => {
         const cuenta = new Map();
         libros.forEach((l) => l.categoria && cuenta.set(l.categoria, (cuenta.get(l.categoria) || 0) + 1));
-        return [...cuenta.entries()].sort((a, b) => a[0].localeCompare(b[0], 'es'));
+        return [...cuenta.entries()].sort((a, b) => prioridadCategoria(a[0]) - prioridadCategoria(b[0]) || b[1] - a[1] || a[0].localeCompare(b[0], 'es'));
     }, [libros]);
+    const categoriasDestacadas = useMemo(() => categorias.slice(0, 8).map(([nombre]) => nombre), [categorias]);
     const enOferta = useMemo(() => libros.filter((l) => l.descuento > 0).length, [libros]);
     const conStock = useMemo(() => libros.filter((l) => l.disponible).length, [libros]);
 
@@ -224,8 +226,28 @@ export default function CatalogoPage() {
                         </label>
                     </header>
 
+                    {categoriasDestacadas.length > 0 && (
+                        <section className="catalogo-categorias" aria-labelledby="catalogo-categorias-titulo">
+                            <div className="catalogo-categorias__cabeza">
+                                <h2 id="catalogo-categorias-titulo">Categorías destacadas</h2>
+                                <a href="#categorias">Ver más temáticas</a>
+                            </div>
+                            <ul className="catalogo-categorias__rejilla">
+                                {categoriasDestacadas.map((nombre) => (
+                                    <li key={nombre}>
+                                        <Link
+                                            to={`/catalogo?categoria=${encodeURIComponent(nombre)}`}
+                                            aria-current={categoria === nombre ? 'page' : undefined}>
+                                            {nombre}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+
                     <div className="catalogo-cuerpo">
-                        <aside className="catalogo-lateral" aria-label="Filtros del catálogo">
+                        <aside id="categorias" className="catalogo-lateral" aria-label="Filtros del catálogo">
                             {categorias.length > 0 && (
                                 <div className="filtro-bloque">
                                     <h2>Categorías</h2>

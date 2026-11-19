@@ -30,7 +30,7 @@ export function crearAnalitica({ medicion, ventana, depurar = false }) {
     const rutaSegura = () => {
         const ruta = ventana.location.pathname;
         if (/^\/libro\/\d+\/?$/.test(ruta)) return ruta;
-        return ['/', '/catalogo', '/aplicacion', '/caracteristicas', '/nosotros', '/descargar', '/cuenta', '/carrito', '/checkout', '/mis-compras', '/favoritos'].includes(ruta)
+        return ['/', '/catalogo', '/aplicacion', '/nosotros', '/descargar', '/cuenta', '/carrito', '/checkout', '/mis-compras', '/favoritos'].includes(ruta)
             ? ruta
             : '/';
     };

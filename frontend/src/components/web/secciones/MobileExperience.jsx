@@ -49,20 +49,23 @@ export default function MobileExperience({ reducido }) {
 
     return (
         <div ref={seccion} className="app-pagina">
-            <section id="app" className="seccion app app-portada" aria-labelledby="app-titulo">
+            <section id="app" className="seccion app app-portada casa-seccion" aria-labelledby="app-titulo">
                 <div className="contenedor app__rejilla">
                     <div className="app-portada__texto">
-                        <h1 id="app-titulo" className="app-portada__titulo">
-                            Toda la librería cabe en la app
-                        </h1>
-                        <p className="app-portada__entrada">Compre y siga sus pedidos desde su teléfono.</p>
-                        <div className="app-portada__acciones">
-                            <Link to="/descargar" className="boton">
-                                <FaDownload aria-hidden="true" /> Descargar la app
-                            </Link>
-                            <Link to="/catalogo" className="enlace-mas">
-                                Ver el catálogo <FaChevronRight aria-hidden="true" />
-                            </Link>
+                        <div className="casa-cabecera">
+                            <span className="casa-etiqueta">Aplicación</span>
+                            <h1 id="app-titulo" className="app-portada__titulo">
+                                Toda la librería cabe en la app
+                            </h1>
+                            <p className="app-portada__entrada">Compre y siga sus pedidos desde su teléfono.</p>
+                            <div className="app-portada__acciones casa-acciones">
+                                <Link to="/descargar" className="boton">
+                                    <FaDownload aria-hidden="true" /> Descargar la app
+                                </Link>
+                                <Link to="/catalogo" className="enlace-mas">
+                                    Ver el catálogo <FaChevronRight aria-hidden="true" />
+                                </Link>
+                            </div>
                         </div>
                     </div>
 
@@ -76,11 +79,14 @@ export default function MobileExperience({ reducido }) {
 
             <section className="seccion app-funciones-seccion" aria-labelledby="funciones-titulo">
                 <div className="contenedor">
-                    <h2 id="funciones-titulo" className="seccion__titulo">
-                        Todo lo que puedes hacer
-                    </h2>
-                    <p className="seccion__entrada">Cada función existe hoy en la app: nada de promesas para más adelante.</p>
-                    <ul className="app-funciones app__lista">
+                    <div className="casa-cabecera casa-cabecera--compacta">
+                        <span className="casa-etiqueta">Lo que incluye</span>
+                        <h2 id="funciones-titulo" className="seccion__titulo">
+                            Todo lo que puedes hacer
+                        </h2>
+                        <p className="seccion__entrada">Cada función existe hoy en la app: nada de promesas para más adelante.</p>
+                    </div>
+                    <ul className="app-funciones app__lista casa-tarjetas">
                         {FUNCIONES.map(({ Icono, titulo, texto }) => (
                             <li key={titulo} className="app-funcion">
                                 <span className="app-funcion__icono" aria-hidden="true">

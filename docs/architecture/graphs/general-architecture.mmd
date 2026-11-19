@@ -1,12 +1,12 @@
 %% Generado 2026-11-18 desde el código real (actualizar-mapa.mjs)
 flowchart TB
-    DB[("PostgreSQL · 22 tablas del esquema<br/>23 declaradas con auxiliares")]
+    DB[("PostgreSQL · 21 tablas del esquema<br/>22 declaradas con auxiliares")]
     subgraph API["Backend Node/Express (Render)"]
         direction TB
         MW["helmet · cors · rate limit · JWT · roles"]
         R["23 routers /api/*"]
-        C["26 controladores"]
-        M["23 modelos SQL"]
+        C["25 controladores"]
+        M["22 modelos SQL"]
         MW --> R --> C --> M
     end
     M --> DB

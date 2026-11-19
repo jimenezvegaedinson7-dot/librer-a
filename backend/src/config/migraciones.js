@@ -40,7 +40,7 @@ const MIGRACIONES = [
     '038_version_sesion.sql',
     '039_otp_anti_replay.sql',
     '040_devoluciones_payu.sql',
-    '044_portada_protagonista.sql'
+    '045_retirar_configuracion_portada.sql'
 ];
 
 const MIGRACIONES_DATOS = ['041_backfill_entrega_ventas_canceladas.sql', '042_purga_reservas.sql', '043_delivery_fijo_pallasca.sql'];

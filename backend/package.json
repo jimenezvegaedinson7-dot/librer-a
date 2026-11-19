@@ -16,6 +16,9 @@
     "test:portadas": "node --test test/portadas-catalogo.test.js",
     "resetear-precios": "node scripts/resetearPrecios.js",
     "resetear-precios:dry": "node scripts/resetearPrecios.js --dry-run",
+    "catalogo:generar": "node scripts/generarCatalogoAmpliado.js",
+    "catalogo:semilla:dry": "node scripts/semillaCatalogoAmpliado.js --dry-run",
+    "catalogo:semilla": "node scripts/semillaCatalogoAmpliado.js --confirmar",
     "publicar-app": "node scripts/publicarVersionApp.js"
   },
   "keywords": [],

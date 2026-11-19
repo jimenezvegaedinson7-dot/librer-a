@@ -3,7 +3,7 @@
 > Generado desde el código real el 2026-11-18 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
-Total de endpoints registrados en el backend: **122**. Los routers se montan desde `src/app/rutas.js`.
+Total de endpoints registrados en el backend: **119**. Los routers se montan desde `src/app/rutas.js`.
 
 - **Auth**: `Pública` = sin JWT · `JWT` = requiere `Authorization: Bearer` · `JWT + admin` / `JWT + cliente` = además el rol indicado. Los arrays de middleware compartidos se expanden desde el router real.
 - **React / Flutter**: archivos que llaman al endpoint (directamente o a través de su servicio). `—` = ningún cliente lo usa.
@@ -18,9 +18,6 @@ Total de endpoints registrados en el backend: **122**. Los routers se montan des
 | PUT | `/api/agencias/:id` | controllers/agencia.controller.js#actualizarAgencia | JWT + rol:administrador | — | — | JWT + admin |
 | GET | `/api/anuncios` | controllers/anuncio.controller.js#obtenerAnuncioActivo | — | components/web/secciones/VideoSection.jsx | — | Pública |
 | GET | `/api/anuncios/carrusel` | controllers/carrusel.controller.js#listarPublico | — | — | — | Pública |
-| GET | `/api/anuncios/protagonista` | controllers/portada.controller.js#obtenerPublico | — | hooks/web/useLibroProtagonista.js | — | Pública |
-| GET | `/api/anuncios/protagonista/panel` | controllers/portada.controller.js#obtenerPanel | JWT + rol:administrador | components/panel/anuncios/ProtagonistaPanel.jsx | — | JWT + admin |
-| PUT | `/api/anuncios/protagonista` | controllers/portada.controller.js#guardar | JWT + rol:administrador | components/panel/anuncios/ProtagonistaPanel.jsx | — | JWT + admin |
 | GET | `/api/anuncios/carrusel/todos` | controllers/carrusel.controller.js#listarPanel | JWT + rol:administrador | — | — | JWT + admin |
 | POST | `/api/anuncios/carrusel` | controllers/carrusel.controller.js#crear | JWT + rol:administrador + recibir | — | — | JWT + admin |
 | PUT | `/api/anuncios/carrusel/orden` | controllers/carrusel.controller.js#reordenar | JWT + rol:administrador | — | — | JWT + admin |
@@ -78,7 +75,7 @@ Total de endpoints registrados en el backend: **122**. Los routers se montan des
 | POST | `/api/inventario` | controllers/inventario.controller.js#crearInventario | JWT + rol:administrador | components/panel/inventario/InventarioForm.jsx | — | JWT + admin |
 | PUT | `/api/inventario/libro/:id/stock` | controllers/inventario.controller.js#actualizarStock | JWT + rol:administrador | — | — | JWT + admin |
 | PUT | `/api/inventario/libro/:id` | controllers/inventario.controller.js#actualizarInventario | JWT + rol:administrador | components/panel/inventario/InventarioEditModal.jsx | — | JWT + admin |
-| GET | `/api/libros` | controllers/libro.controller.js#obtenerLibros | — | components/panel/anuncios/ProtagonistaPanel.jsx<br>components/panel/inventario/MovimientosModal.jsx<br>components/web/asistente/AsistenteTienda.jsx<br>components/web/PublicLayout.jsx<br>components/web/tienda/TiendaProvider.jsx<br>hooks/panel/inventario/useLibros.js<br>services/panel/dashboard/dashboardService.js<br>views/panel/dashboard/DashboardPage.jsx<br>views/panel/libros/LibrosPage.jsx | screens/carrito_screen.dart<br>screens/entrega_y_pago_screen.dart<br>screens/home_screen.dart<br>screens/libros_screen.dart | Pública |
+| GET | `/api/libros` | controllers/libro.controller.js#obtenerLibros | — | components/panel/inventario/MovimientosModal.jsx<br>components/web/asistente/AsistenteTienda.jsx<br>components/web/PublicLayout.jsx<br>components/web/tienda/TiendaProvider.jsx<br>hooks/panel/inventario/useLibros.js<br>services/panel/dashboard/dashboardService.js<br>views/panel/dashboard/DashboardPage.jsx<br>views/panel/libros/LibrosPage.jsx | screens/carrito_screen.dart<br>screens/entrega_y_pago_screen.dart<br>screens/home_screen.dart<br>screens/libros_screen.dart | Pública |
 | GET | `/api/libros/recomendados` | controllers/libro.controller.js#obtenerRecomendados | JWT + rol:cliente | components/web/tienda/RecomendacionesCompra.jsx | — | JWT + cliente |
 | GET | `/api/libros/:id/relacionados` | controllers/libro.controller.js#obtenerRelacionados | — | views/web/tienda/LibroPage.jsx | — | Pública |
 | GET | `/api/libros/:id` | controllers/libro.controller.js#obtenerLibro | — | components/panel/libros/LibroEditModal.jsx<br>components/panel/libros/LibroForm.jsx<br>views/panel/libros/LibrosPage.jsx<br>views/web/tienda/LibroPage.jsx | screens/detalle_libro_screen.dart | Pública |
@@ -164,7 +161,7 @@ Total de endpoints registrados en el backend: **122**. Los routers se montan des
 - `GET /api/ventas/:id/pago`
 - `GET /api/zonas-delivery`
 
-## Endpoints sin cliente en el código (32)
+## Endpoints sin cliente en el código (31)
 
 Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL o desde un tercero:
 
@@ -174,7 +171,6 @@ Ni React ni Flutter los declaran. Algunos son legítimos porque se usan por URL 
 - `POST /api/agencias` — Posiblemente no utilizado por ningún cliente.
 - `PUT /api/agencias/:id` — Posiblemente no utilizado por ningún cliente.
 - `GET /api/anuncios/carrusel` — Posiblemente no utilizado por ningún cliente.
-- `GET /api/anuncios/protagonista` — Posiblemente no utilizado por ningún cliente.
 - `GET /api/anuncios/carrusel/todos` — Posiblemente no utilizado por ningún cliente.
 - `POST /api/anuncios/carrusel` — Posiblemente no utilizado por ningún cliente.
 - `PUT /api/anuncios/carrusel/orden` — Posiblemente no utilizado por ningún cliente.

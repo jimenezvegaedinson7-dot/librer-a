@@ -1,21 +1,21 @@
 import { test, expect } from '@playwright/test';
 
-test.use({ channel: 'chrome' });
-
 const API = 'http://127.0.0.1:59999/api';
-const CLAVE = `lds:portada-animacion:v1:${API}`;
+const CLAVE = `lds:carrusel-orbite:v3:${API}`;
 const IMAGEN = Buffer.from('R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==', 'base64');
-const LIBRO = {
-    id_libro: 7,
-    titulo: 'El principito',
-    autor: 'Antoine de Saint-Exupéry',
-    categoria: 'Infantil',
-    precio: '40.00',
-    stock: 4,
+const LIBROS = Array.from({ length: 16 }, (_, i) => ({
+    id_libro: i + 1,
+    titulo: `Libro de prueba ${i + 1}`,
+    autor: 'Autora de prueba',
     estado: 1,
-    portada: `${API}/portada-carga.gif`,
-    creado_en: '2026-10-20T00:00:00Z'
-};
+    precio: 100,
+    precio_final: 75,
+    descuento_vigente: 1,
+    descuento_porcentaje_efectivo: 25,
+    stock: 4,
+    portada: `${API}/portada-carga-${i + 1}.gif`,
+    creado_en: `2026-10-${String(20 - i).padStart(2, '0')}T00:00:00Z`
+}));
 
 const pausa = () => {
     let liberar;
@@ -25,149 +25,81 @@ const pausa = () => {
     return { espera, liberar };
 };
 
-async function preparar(page) {
+async function preparar(page, libros = LIBROS) {
     await page.route(`${API}/**`, (r) => r.fulfill({ json: { success: true, data: [] } }));
-    await page.route(`${API}/libros`, (r) => r.fulfill({ json: [LIBRO] }));
+    await page.route(`${API}/libros`, (r) => r.fulfill({ json: libros }));
     await page.route(`${API}/empresa`, (r) => r.fulfill({ json: { success: true, empresa: {} } }));
     await page.route(`${API}/anuncios`, (r) => r.fulfill({ json: { success: true, anuncio: null } }));
-    await page.route(`${API}/anuncios/protagonista`, (r) => r.fulfill({ json: { success: true, data: { libro: LIBRO } } }));
-    await page.route(LIBRO.portada, (r) => r.fulfill({ contentType: 'image/gif', body: IMAGEN }));
+    await page.route(`${API}/portada-carga-*.gif`, (r) => r.fulfill({ contentType: 'image/gif', body: IMAGEN }));
 }
 
 for (const width of [1440, 390]) {
-    test(`carga ${width}px: datos visibles mientras se preparan la textura y la fuente del 3D`, async ({ page }, testInfo) => {
+    test(`carga ${width}px: portada y navegación visibles mientras llegan los libros`, async ({ page }, testInfo) => {
         test.setTimeout(90000);
         await page.setViewportSize({ width, height: 900 });
         await preparar(page);
-        const datos = pausa(),
-            textura = pausa(),
-            fuente = pausa();
+        const datos = pausa();
         const errores = [];
         page.on('pageerror', (e) => errores.push(e.message));
-        await page.route(`${API}/anuncios/protagonista`, async (r) => {
+        await page.route(`${API}/libros`, async (r) => {
             await datos.espera;
-            await r.fulfill({ json: { success: true, data: { libro: LIBRO } } });
-        });
-        await page.route(LIBRO.portada, async (r) => {
-            await textura.espera;
-            await r.fulfill({ contentType: 'image/gif', body: IMAGEN });
-        });
-        await page.route('**/fonts/source-serif-4-editorial-latin.woff2', async (r) => {
-            await fuente.espera;
-            await r.continue();
+            await r.fulfill({ json: LIBROS });
         });
         await page.goto('/', { waitUntil: 'domcontentloaded' });
+        await expect(page.locator('.portada3d__orbite')).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Las ideas no se quedan quietas/ })).toBeVisible();
         await expect(page.locator('#precarga')).toHaveCount(0);
-        await expect(page.locator('.portada3d__presentacion [role="status"]')).toBeVisible();
-        await expect(page.locator('.portada3d__cargando-logo')).toBeVisible();
-        await expect(page.locator('.portada3d__spinner')).toBeVisible();
-        await expect(page.locator('.portada3d__presentacion').getByRole('link', { name: 'Ver catálogo', exact: true })).toBeVisible();
-        await expect(page.locator('main > div')).toHaveCSS('animation-name', 'none');
-        await expect(page.locator('.portada3d--estatica')).toHaveCount(0);
         datos.liberar();
-        await expect(page.locator('.portada3d__acceso-titulo')).toHaveText(LIBRO.titulo);
-        await expect(page.locator('.portada3d__acceso')).toBeVisible();
-        await expect(page.locator('.portada-unica__poster')).toHaveCSS('opacity', '1');
-        await expect(page.locator('.portada3d__lienzo')).toHaveCSS('opacity', '0');
-        await expect(page.locator('.portada3d__titulo')).toBeVisible();
-        const acceso = page.locator('.portada3d__presentacion .portada3d__boton');
-        await acceso.focus();
-        const posicion = await acceso.boundingBox();
-        await page.evaluate(() => {
-            window.__accesoInicial = document.querySelector('.portada3d__presentacion .portada3d__boton');
-        });
-        await expect(page.locator('.portada3d__respaldo')).toHaveCount(0);
-        textura.liberar();
-
-        await expect(page.locator('.portada3d--lista')).toHaveCount(0);
-        await expect(page.locator('.portada3d__acceso')).toBeVisible();
-        fuente.liberar();
-        await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });
-        await expect(acceso).toBeFocused();
-        expect(await page.evaluate(() => window.__accesoInicial === document.querySelector('.portada3d__presentacion .portada3d__boton'))).toBe(true);
-        const final = await acceso.boundingBox();
-        for (const medida of ['x', 'y', 'width', 'height']) expect(Math.abs(posicion[medida] - final[medida])).toBeLessThan(1);
-        await expect(page.locator('.portada3d__lienzo')).toHaveCSS('opacity', '1');
-        await expect(page.locator('.portada3d__lienzo')).toHaveCSS('transition-duration', '0.18s');
-        await expect(page.locator('.portada3d__spinner')).toHaveCount(0);
-        await expect(page.locator('.portada3d__titulo')).toBeVisible();
-        await expect(page.locator('.portada3d--lista')).toHaveAttribute('aria-busy', 'false');
-        await expect(page.locator('#precarga')).toHaveCount(0);
+        const carrusel = page.getByRole('region', { name: 'Últimos libros agregados' });
+        await expect(carrusel.getByRole('link')).toHaveCount(16);
+        await expect(carrusel.getByRole('link').first()).toHaveAttribute('href', '/libro/1');
+        const guardado = await page.evaluate((clave) => JSON.parse(localStorage.getItem(clave)), CLAVE);
+        expect(guardado.recientes.valor).toHaveLength(16);
+        expect(guardado.recientes.valor[0].titulo).toBe(LIBROS[0].titulo);
+        expect(Object.keys(guardado)).toEqual(['recientes']);
         await page.screenshot({ path: testInfo.outputPath(`carga-${width}.png`) });
         expect(errores).toEqual([]);
     });
 }
 
-test('recarga: usa el protagonista guardado mientras Render responde y respeta su retirada', async ({ page }) => {
+test('recarga: usa los recientes guardados mientras la API responde', async ({ page }) => {
     test.setTimeout(90000);
     await preparar(page);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });
-    const cache = await page.evaluate((clave) => JSON.parse(localStorage.getItem(clave)), CLAVE);
-    expect(cache.protagonista.valor.titulo).toBe(LIBRO.titulo);
-    expect(cache.recientes.valor.length).toBeLessThanOrEqual(5);
-
-    const respuesta = pausa();
-    await page.route(`${API}/anuncios/protagonista`, async (r) => {
-        await respuesta.espera;
-        await r.fulfill({ json: { success: true, data: { libro: null } } });
-    });
-    await page.reload({ waitUntil: 'domcontentloaded' });
-
-    await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('.portada3d__acceso-titulo')).toHaveText(LIBRO.titulo);
-    respuesta.liberar();
-    await expect(page.locator('.portada3d--estatica')).toBeVisible();
-    await expect(page.locator('.portada3d__acceso-titulo')).toHaveText('');
-    await expect(page.locator('.portada3d__presentacion .portada3d__boton')).toHaveAttribute('href', '/catalogo');
-    await expect(page.locator('.portada-unica__poster')).toHaveCount(0);
-    await expect.poll(() => page.evaluate((clave) => JSON.parse(localStorage.getItem(clave)).protagonista.valor, CLAVE)).toBeNull();
-});
-
-test('API antigua 404: guarda el respaldo con su oferta y arranca antes de la consulta siguiente', async ({ page }) => {
-    test.setTimeout(90000);
-    await preparar(page);
-    const oferta = { ...LIBRO, precio_final: '30.00', descuento_vigente: 1, descuento_porcentaje_efectivo: 25 };
-    await page.route(`${API}/libros`, (r) => r.fulfill({ json: [oferta] }));
-    await page.route(`${API}/anuncios/protagonista`, (r) => r.fulfill({ status: 404, json: {} }));
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('.portada3d__acceso .oferta__final')).toHaveText('S/ 30.00');
+    const carrusel = page.getByRole('region', { name: 'Últimos libros agregados' });
+    await expect(carrusel.getByRole('link')).toHaveCount(16);
     const guardado = await page.evaluate((clave) => JSON.parse(localStorage.getItem(clave)), CLAVE);
-    expect(guardado.protagonista.valor.precio_final).toBe(30);
+    expect(guardado.recientes.valor).toHaveLength(16);
+
     const respuesta = pausa();
-    await page.route(`${API}/anuncios/protagonista`, async (r) => {
-        await respuesta.espera;
-        await r.fulfill({ status: 404, json: {} });
-    });
     await page.route(`${API}/libros`, async (r) => {
         await respuesta.espera;
-        await r.fulfill({ json: [oferta] });
+        await r.fulfill({ json: [] });
     });
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('.portada3d__acceso .oferta__final')).toHaveText('S/ 30.00');
+    await expect(carrusel.getByRole('link')).toHaveCount(16);
     respuesta.liberar();
+    await expect.poll(async () => (await page.evaluate((clave) => JSON.parse(localStorage.getItem(clave)), CLAVE)).recientes.valor.length).toBe(0);
+    await expect(page.locator('.portada3d__orbite')).toBeVisible();
 });
 
 for (const caso of ['vencida', 'corrupta']) {
     test(`caché ${caso}: espera datos nuevos sin bloquear la navegación`, async ({ page }) => {
         await preparar(page);
         await page.addInitScript(
-            ({ clave, libro, caso }) => {
-                localStorage.setItem(clave, caso === 'corrupta' ? '{incompleto' : JSON.stringify({ protagonista: { fecha: Date.now() - 16 * 60 * 1000, valor: libro } }));
+            ({ clave, caso }) => {
+                localStorage.setItem(clave, caso === 'corrupta' ? '{incompleto' : JSON.stringify({ recientes: { fecha: Date.now() - 16 * 60 * 1000, valor: [] } }));
             },
-            { clave: CLAVE, libro: LIBRO, caso }
+            { clave: CLAVE, caso }
         );
         const respuesta = pausa();
-        await page.route(`${API}/anuncios/protagonista`, async (r) => {
+        await page.route(`${API}/libros`, async (r) => {
             await respuesta.espera;
-            await r.fulfill({ json: { success: true, data: { libro: LIBRO } } });
+            await r.fulfill({ json: LIBROS });
         });
         await page.goto('/', { waitUntil: 'domcontentloaded' });
-        await expect(page.locator('.portada3d__presentacion [role="status"]')).toBeVisible();
-        await expect(page.locator('.portada3d--estatica')).toHaveCount(0);
+        await expect(page.getByRole('heading', { name: /Las ideas no se quedan quietas/ })).toBeVisible();
         respuesta.liberar();
-        await expect(page.locator('.portada3d--lista')).toBeVisible({ timeout: 30000 });
+        await expect(page.getByRole('region', { name: 'Últimos libros agregados' }).getByRole('link')).toHaveCount(16);
     });
 }

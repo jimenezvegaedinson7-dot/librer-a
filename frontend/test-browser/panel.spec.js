@@ -234,7 +234,6 @@ test('anuncios: alta con video, cambio de visibilidad y eliminación desde el pa
         return route.fulfill({ status: method === 'POST' ? 201 : 200, json: { success: true, mensaje: 'Guardado', anuncio: lista[0] } });
     });
     await page.goto('/anuncios');
-    await page.getByRole('tab', { name: 'Anuncios en video', exact: true }).click();
     await page.getByRole('button', { name: 'Nuevo anuncio', exact: true }).click();
     await page.getByRole('textbox', { name: 'Título', exact: true }).fill('Promo de prueba');
     await page.locator('#campo-video').setInputFiles('test-browser/fixtures/anuncio.webm');
@@ -265,7 +264,6 @@ test('anuncios: respuesta real en array muestra portada, espera y ocultos sin er
         })
     );
     await page.goto('/anuncios');
-    await page.getByRole('tab', { name: 'Anuncios en video', exact: true }).click();
     await expect(page.getByText('Promo actual', { exact: true }).last()).toBeVisible();
     await expect(page.getByText('En portada', { exact: true })).toBeVisible();
     await expect(page.getByText('Activo · en espera', { exact: true })).toBeVisible();

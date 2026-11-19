@@ -124,28 +124,31 @@ export default function DownloadSection({ reducido = false }) {
 
     return (
         <div id="descargar" ref={seccion} className="descargar-pagina">
-            <section className="seccion descargar-portada" aria-labelledby="descarga-titulo">
+            <section className="seccion descargar-portada casa-seccion" aria-labelledby="descarga-titulo">
                 <div className="contenedor descargar-portada__rejilla">
                     <div className="descargar-portada__texto">
-                        <span className="descargar-portada__sello">Aplicación para Android</span>
-                        <h1 id="descarga-titulo" className="descargar-portada__titulo">
-                            Descargue la app
-                        </h1>
-                        <p className="descargar-portada__entrada">Gratis para Android. Compre y siga sus pedidos desde su teléfono.</p>
-                        <div className="descargar-portada__acciones">
-                            {androidListo && (
-                                <a
-                                    className="boton"
-                                    href="#plataformas-titulo"
-                                    rel="noopener"
-                                    data-descarga-pagina="android"
-                                >
-                                    <FaMobileScreenButton aria-hidden="true" /> {CANALES[android.tipo].accion}
-                                </a>
-                            )}
-                            <Link to="/catalogo" className="enlace-mas">
-                                Ver el catálogo <FaChevronRight aria-hidden="true" />
-                            </Link>
+                        <div className="casa-cabecera">
+                            <span className="casa-etiqueta">Descargar</span>
+                            <span className="descargar-portada__sello">Aplicación para Android</span>
+                            <h1 id="descarga-titulo" className="descargar-portada__titulo">
+                                Descargue la app
+                            </h1>
+                            <p className="descargar-portada__entrada">Gratis para Android. Compre y siga sus pedidos desde su teléfono.</p>
+                            <div className="descargar-portada__acciones casa-acciones">
+                                {androidListo && (
+                                    <a
+                                        className="boton"
+                                        href="#plataformas-titulo"
+                                        rel="noopener"
+                                        data-descarga-pagina="android"
+                                    >
+                                        <FaMobileScreenButton aria-hidden="true" /> {CANALES[android.tipo].accion}
+                                    </a>
+                                )}
+                                <Link to="/catalogo" className="enlace-mas">
+                                    Ver el catálogo <FaChevronRight aria-hidden="true" />
+                                </Link>
+                            </div>
                         </div>
                     </div>
 
@@ -173,7 +176,7 @@ export default function DownloadSection({ reducido = false }) {
                         Elija su teléfono
                     </h2>
 
-                    <div className="descarga__rejilla">
+                    <div className="descarga__rejilla casa-tarjetas">
                         {visibles.map((p) => (
                             <DownloadCard key={p.clave} {...p} destacada={plataforma === p.clave} />
                         ))}

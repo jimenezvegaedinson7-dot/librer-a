@@ -27,7 +27,6 @@ const AdminLayout = lazyConReintento(() => import('../../components/panel/layout
 const InicioPage = lazyConReintento(() => import('../../views/web/publicas/paginas').then((m) => ({ default: m.InicioPage })));
 const CatalogoPublicoPage = lazyConReintento(() => import('../../views/web/publicas/CatalogoPage'));
 const AplicacionPage = lazyConReintento(() => import('../../views/web/publicas/AplicacionPage'));
-const CaracteristicasPage = lazyConReintento(() => import('../../views/web/publicas/CaracteristicasPage'));
 const NosotrosPage = lazyConReintento(() => import('../../views/web/publicas/NosotrosPage'));
 const DescargarPage = lazyConReintento(() => import('../../views/web/publicas/DescargarPage'));
 const CuentaClientePage = lazyConReintento(() => import('../../views/web/tienda/CuentaPage'));
@@ -75,7 +74,6 @@ const router = createBrowserRouter([
             { path: '/', element: publica(<InicioPage />) },
             { path: '/catalogo', element: publica(<CatalogoPublicoPage />) },
             { path: '/aplicacion', element: publica(<AplicacionPage />) },
-            { path: '/caracteristicas', element: publica(<CaracteristicasPage />) },
             { path: '/nosotros', element: publica(<NosotrosPage />) },
             { path: '/descargar', element: publica(<DescargarPage />) },
             { path: '/cuenta', element: publica(<CuentaClientePage />) },

@@ -110,7 +110,7 @@
 }
 @keyframes asistente-leer {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.35; }
+    50% { opacity: 0.85; }
 }
 .sitio .asistente-tienda .asistente-abrir {
     width: 62px; height: 62px; min-height: 0; padding: 0; justify-content: center; border-radius: 50%; border: 0; background: transparent; box-shadow: none;
@@ -175,11 +175,11 @@
 .sitio .asistente-cabecera .icono-asistente { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18); }
 .sitio .asistente-cabecera { justify-content: flex-start; }
 .sitio .asistente-cabecera__texto { flex: 1; min-width: 0; }
-.sitio .asistente-avatar--pensando { width: 48px; height: 48px; }
-.sitio .asistente-pensando { display: flex; align-items: flex-end; gap: 8px; padding: 6px 0; }
+.sitio .asistente-tienda .asistente-pensando .asistente-avatar--pensando { width: 36px; height: 36px; }
+.sitio .asistente-pensando { display: flex; align-items: flex-end; gap: 8px; max-width: 100%; padding: 6px 0; }
 .sitio .asistente-pensando__burbuja {
-    display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--linea); border-radius: 16px 16px 16px 4px; background: var(--blanco);
-    font-size: 0.875rem; color: var(--texto-2);
+    display: inline-flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 14px; border: 1px solid var(--chat-linea); border-radius: 16px 16px 16px 4px; background: var(--chat-papel);
+    font-size: 0.875rem; color: var(--chat-secundario);
 }
 .sitio .asistente-pensando__frase { animation: ia-frase 0.35s ease-out; }
 @keyframes ia-frase {
@@ -187,7 +187,7 @@
     to { opacity: 1; transform: none; }
 }
 .sitio .asistente-pensando__puntos { display: inline-flex; gap: 3px; }
-.sitio .asistente-pensando__puntos i { width: 5px; height: 5px; border-radius: 50%; background: var(--marino-700); animation: ia-punto 1.2s ease-in-out infinite; }
+.sitio .asistente-pensando__puntos i { width: 5px; height: 5px; border-radius: 50%; background: var(--chat-acento); animation: ia-punto 1.2s ease-in-out infinite; }
 .sitio .asistente-pensando__puntos i:nth-child(2) { animation-delay: 0.15s; }
 .sitio .asistente-pensando__puntos i:nth-child(3) { animation-delay: 0.3s; }
 @keyframes ia-punto {

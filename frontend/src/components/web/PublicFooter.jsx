@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin } from 'lucide-react';
+import { CreditCard, MapPin, ShieldCheck, Store, Truck } from 'lucide-react';
 import { FaFacebook, FaInstagram, FaTiktok } from 'react-icons/fa6';
 import logo from '../../assets/compartido/logo-f-verde-96.webp';
 import imgReclamaciones from '../../assets/compartido/libro-reclamaciones.webp';
@@ -16,6 +16,13 @@ const CUENTA = [
     { ruta: '/carrito', texto: 'Mi carrito' }
 ];
 
+const SERVICIOS = [
+    { Icono: CreditCard, texto: 'Pago PayU', ruta: '/cuenta' },
+    { Icono: Truck, texto: 'Delivery en Pallasca', ruta: '/nosotros#tienda' },
+    { Icono: Store, texto: 'Recojo en tienda', ruta: '/nosotros#tienda' },
+    { Icono: ShieldCheck, texto: 'Libro de reclamaciones', ruta: '/libro-de-reclamaciones' }
+];
+
 export default function PublicFooter() {
     const { terminos, privacidad, correo, telefono, redes } = SITIO.enlaces;
 
@@ -23,6 +30,25 @@ export default function PublicFooter() {
 
     return (
         <footer className="pie">
+            <div className="pie__crema">
+                <div className="contenedor pie__crema-inner">
+                    <div>
+                        <p className="pie__crema-titulo">Descubre lo nuevo cada semana</p>
+                        <p className="pie__crema-texto">Novedades y ofertas reales de nuestra librería en Pallasca.</p>
+                    </div>
+                    <Link to="/catalogo" className="pie__crema-cta">
+                        Ver novedades
+                    </Link>
+                </div>
+                <div className="contenedor pie__servicios">
+                    {SERVICIOS.map(({ Icono, texto, ruta }) => (
+                        <Link key={texto} to={ruta} className="pie__servicio">
+                            <Icono aria-hidden="true" />
+                            <span>{texto}</span>
+                        </Link>
+                    ))}
+                </div>
+            </div>
             <div className="contenedor">
                 <div className="pie__rejilla">
                     <div className="pie__identidad">

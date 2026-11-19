@@ -30,7 +30,6 @@ async function apiPublica(page, { falla = false, vacia = false, libros = LIBROS,
 
     await page.route(`${API}/anuncios`, (r) => r.fulfill({ json: { success: true, anuncio } }));
     await page.route(`${API}/anuncios/carrusel`, (r) => r.fulfill({ json: { success: true, data: [] } }));
-    await page.route(`${API}/anuncios/protagonista`, (r) => r.fulfill({ status: 404, json: {} }));
 
     if (anuncio?.video_url && !anuncio.roto) {
         await page.route(anuncio.video_url, (r) => r.fulfill({ body: VIDEO_PRUEBA, contentType: 'video/webm' }));
@@ -46,7 +45,7 @@ test('cobertura Pallasca: textos y SEO estático no ofrecen entrega en Lima ni n
     expect(html).toContain('"streetAddress": "Plaza de Armas, Jr. Marañón 161"');
     expect(html).toContain('"postalCode": "02835"');
     await apiPublica(page);
-    for (const ruta of ['/', '/catalogo', '/caracteristicas', '/nosotros']) {
+    for (const ruta of ['/', '/catalogo', '/aplicacion', '/nosotros']) {
         await page.goto(ruta);
         await expect(page.locator('main')).toBeVisible();
         expect(await page.locator('body').innerText()).not.toMatch(/\bLima\b|envíos nacionales/);
@@ -137,10 +136,13 @@ test('inicio: web pública con metadatos, menú de páginas y sin errores', asyn
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Libros y anuncios de MATIDANA Libros y Cultura');
     await expect(page).toHaveTitle(/MATIDANA Libros y Cultura/);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /PayU/);
-    for (const texto of ['Inicio', 'Catálogo', 'Aplicación', 'Características', 'Nosotros', 'Descargar']) {
+    for (const texto of ['Inicio', 'Nosotros', 'Aplicación', 'Ofertas', 'Descargar']) {
         await expect(menu(page).getByRole('link', { name: texto, exact: true })).toBeVisible();
     }
+    await expect(menu(page).getByRole('link', { name: 'Catálogo', exact: true })).toHaveCount(0);
+    await expect(menu(page).getByRole('link', { name: 'Ofertas', exact: true })).toHaveAttribute('href', '/catalogo?ofertas=1');
     await expect(menu(page).getByRole('link', { name: 'Inicio', exact: true })).toHaveAttribute('aria-current', 'page');
+    await expect(menu(page).locator('ul.contenedor > li').first().getByRole('link')).toHaveText('Inicio');
     expect(await page.locator('main').innerText()).not.toMatch(/\bNaN\b|\bundefined\b|\[object Object\]/);
     expect(errores).toEqual([]);
 });
@@ -148,20 +150,20 @@ test('inicio: web pública con metadatos, menú de páginas y sin errores', asyn
 test('cada sección es una página: título, URL canónica y foco en su h1', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
+    const pie = page.locator('footer');
     const paginas = [
-        ['Aplicación', '/aplicacion', 'Toda la librería cabe en la app'],
-        ['Características', '/caracteristicas', 'Comprar un libro, sin vueltas'],
-        ['Nosotros', '/nosotros', 'Una librería de barrio, abierta a todo el Perú'],
-        ['Descargar', '/descargar', 'Descargue la app'],
-        ['Catálogo', '/catalogo', 'Catálogo']
+        ['Aplicación', '/aplicacion', 'Toda la librería cabe en la app', menu(page)],
+        ['Nosotros', '/nosotros', 'Una librería de barrio, abierta a todo el Perú', menu(page)],
+        ['Descargar', '/descargar', 'Descargue la app', menu(page)],
+        ['Catálogo', '/catalogo', 'Catálogo', pie]
     ];
-    for (const [enlace, ruta, h1] of paginas) {
-        await menu(page).getByRole('link', { name: enlace, exact: true }).click();
+    for (const [enlace, ruta, h1, enlaces] of paginas) {
+        await enlaces.getByRole('link', { name: enlace, exact: true }).click();
         await expect(page).toHaveURL(new RegExp(`${ruta}$`));
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(h1);
         await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
         await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `https://libreria.my${ruta}`);
-        await expect(menu(page).getByRole('link', { name: enlace, exact: true })).toHaveAttribute('aria-current', 'page');
+        if (enlaces !== pie) await expect(menu(page).getByRole('link', { name: enlace, exact: true })).toHaveAttribute('aria-current', 'page');
     }
 });
 
@@ -189,6 +191,27 @@ test('catálogo: solo activos, filtros por categoría y búsqueda sin tildes', a
     await page.locator('#buscar-escritorio').press('Enter');
     await expect(tarjetas).toHaveCount(1);
     await expect(tarjetas.first()).toContainText('Cien años de soledad');
+});
+
+test('catálogo: categorías destacadas como la referencia abren el filtro correspondiente', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await apiPublica(page);
+    await page.goto('/catalogo');
+
+    const seccion = page.locator('.catalogo-categorias');
+    await expect(seccion.getByRole('heading', { name: 'Categorías destacadas' })).toBeVisible();
+    await expect(seccion.getByRole('link', { name: 'Ver más temáticas' })).toHaveAttribute('href', '#categorias');
+    await expect(seccion.getByRole('link')).toHaveCount(4);
+    await expect(seccion.getByRole('link', { name: 'Novela', exact: true })).toHaveAttribute('href', '/catalogo?categoria=Novela');
+    await expect(seccion.getByRole('link', { name: 'Poesía', exact: true })).toHaveAttribute('href', '/catalogo?categoria=Poes%C3%ADa');
+    await expect(seccion.getByRole('link', { name: 'Fantasía', exact: true })).toHaveAttribute('href', '/catalogo?categoria=Fantas%C3%ADa');
+    await expect(seccion.locator('.catalogo-categorias__portadas')).toHaveCount(0);
+
+    await seccion.getByRole('link', { name: 'Poesía', exact: true }).click();
+    await expect(page).toHaveURL(/categoria=Poes%C3%ADa$/);
+    await expect(page.locator('.rejilla-libros .tarjeta-libro')).toHaveCount(4);
+    await expect(seccion.getByRole('link', { name: 'Poesía', exact: true })).toHaveAttribute('aria-current', 'page');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
 test('buscador de la cabecera lleva al catálogo con la búsqueda', async ({ page }) => {
@@ -254,16 +277,17 @@ for (const ancho of [390, 1023]) {
         await expect(cajon).toHaveCount(0);
         await expect(page.getByRole('button', { name: 'Abrir menú' })).toBeFocused();
         await page.getByRole('button', { name: 'Abrir menú' }).click();
-        await page.getByRole('dialog', { name: 'Menú' }).getByRole('link', { name: 'Características' }).click();
-        await expect(page).toHaveURL(/\/caracteristicas$/);
+        await page.getByRole('dialog', { name: 'Menú' }).getByRole('link', { name: 'Aplicación' }).click();
+        await expect(page).toHaveURL(/\/aplicacion$/);
         await expect(page.getByRole('dialog', { name: 'Menú' })).toHaveCount(0);
         await ctx.close();
     });
 }
 
-test('selector de entrega: teclado y resultado anunciado', async ({ page }) => {
+test('selector de entrega: teclado y resultado anunciado dentro de Aplicación', async ({ page }) => {
     await apiPublica(page);
-    await page.goto('/caracteristicas');
+    await page.goto('/aplicacion');
+    await expect(page.getByRole('heading', { name: 'Comprar un libro, sin vueltas' })).toBeVisible();
     const grupo = page.getByRole('radiogroup', { name: /Tipo de entrega/ });
     await grupo.getByRole('radio', { name: /Delivery dentro de Pallasca/ }).focus();
     await page.keyboard.press('ArrowDown');
@@ -539,17 +563,56 @@ test('catálogo: el precio es texto sobrio sin pastilla de color', async ({ page
     expect(estilos.color).toBe('rgb(17, 24, 32)');
 });
 
-test('el botón principal es negro carbón con texto blanco', async ({ page }) => {
+test('el botón principal de descargas es verde píldora con texto blanco', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/descargar');
     const boton = page.locator('.descargar-portada .boton').first();
     await expect(boton).toBeVisible();
     const estilos = await boton.evaluate((e) => {
         const s = getComputedStyle(e);
-        return { fondo: s.backgroundColor, color: s.color };
+        return { fondo: s.backgroundColor, color: s.color, radio: s.borderRadius };
     });
-    expect(estilos.fondo).toBe('rgb(20, 18, 18)');
+    expect(estilos.fondo).toBe('rgb(0, 77, 67)');
     expect(estilos.color).toBe('rgb(255, 255, 255)');
+    expect(parseFloat(estilos.radio)).toBeGreaterThanOrEqual(22);
+});
+
+test('aplicación con características integradas y descargas usan la paleta de la referencia', async ({ page }) => {
+    await apiPublica(page);
+    const secciones = [
+        ['/aplicacion', '.app-portada'],
+        ['/aplicacion', '#ventajas'],
+        ['/descargar', '.descargar-portada']
+    ];
+
+    for (const [ruta, selector] of secciones) {
+        await page.goto(ruta);
+        const titulo = page.locator('main h1');
+        await expect(titulo).toBeVisible();
+
+        const medido = await page.evaluate((sel) => {
+            const seccion = document.querySelector(sel);
+            const estiloSeccion = getComputedStyle(seccion);
+            const estiloTitulo = getComputedStyle(document.querySelector('main h1'));
+            const tarjetas = document.querySelector('.casa-tarjetas');
+            return {
+                fondo: estiloSeccion.backgroundColor,
+                imagen: estiloSeccion.backgroundImage,
+                colorTitulo: estiloTitulo.color,
+                fuenteTitulo: estiloTitulo.fontFamily,
+                etiqueta: Boolean(document.querySelector('.casa-etiqueta')),
+                columnasTarjetas: tarjetas ? getComputedStyle(tarjetas).gridTemplateColumns.split(' ').length : 0
+            };
+        }, selector);
+
+        expect(medido.fondo, ruta).toBe('rgb(255, 255, 255)');
+        expect(medido.imagen, ruta).toBe('none');
+        expect(medido.colorTitulo, ruta).toBe('rgb(0, 77, 67)');
+        expect(medido.fuenteTitulo, ruta).toContain('Work Sans');
+        expect(medido.etiqueta, ruta).toBe(true);
+        expect(medido.columnasTarjetas, ruta).toBeGreaterThan(0);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), ruta).toBe(true);
+    }
 });
 
 test('el pie mantiene contraste alto', async ({ page }) => {
@@ -582,46 +645,38 @@ test('el pie mantiene contraste alto', async ({ page }) => {
             return Math.round(((x + 0.05) / (y + 0.05)) * 100) / 100;
         };
         const pie = leer('.pie');
+        const crema = leer('.pie__crema');
+        const legal = leer('.pie__legal');
         return {
             pieFondo: pie.fondo,
+            cremaFondo: crema.fondo,
+            legalFondo: legal.fondo,
             h2: ratio(pie.fondo, leer('.pie h2').texto),
 
             enlace: ratio(pie.fondo, leer('.pie ul a').texto),
             lema: ratio(pie.fondo, leer('.pie__lema').texto),
-            legal: ratio(pie.fondo, leer('.pie__legal').texto),
+            legal: ratio(legal.fondo, legal.texto),
             marca: ratio(pie.fondo, leer('.pie .marca span').texto),
+            cremaTitulo: ratio(crema.fondo, leer('.pie__crema-titulo').texto),
+            cremaTexto: ratio(crema.fondo, leer('.pie__crema-texto').texto),
+            servicio: ratio(crema.fondo, leer('.pie__servicio').texto),
 
-            familias: [...new Set([...document.querySelectorAll('.pie h2, .pie__lema, .pie nav a')].map((e) => getComputedStyle(e).fontFamily.split(',')[0].replace(/"/g, '')))]
+            familias: [...new Set([...document.querySelectorAll('.pie h2, .pie__lema, .pie nav a, .pie__crema-titulo, .pie__servicio')].map((e) => getComputedStyle(e).fontFamily.split(',')[0].replace(/"/g, '')))]
         };
     });
 
-    expect(medido.pieFondo).toBe('rgb(5, 5, 6)');
+    expect(medido.pieFondo).toBe('rgb(0, 77, 67)');
+    expect(medido.cremaFondo).toBe('rgb(255, 245, 230)');
+    expect(medido.legalFondo).toBe('rgb(243, 243, 243)');
     expect(medido.familias).toEqual(['Work Sans']);
     for (const [donde, valor] of Object.entries(medido)) {
-        if (donde === 'pieFondo' || donde === 'familias') continue;
+        if (['pieFondo', 'cremaFondo', 'legalFondo', 'familias'].includes(donde)) continue;
         expect(valor, `${donde} = ${valor}:1`).toBeGreaterThanOrEqual(4.5);
     }
 });
 
-test('cada variante de botón conserva un texto legible', async ({ page }) => {
+test('el enlace de la app conserva un texto legible', async ({ page }) => {
     await apiPublica(page);
-    await page.goto('/');
-    await page.waitForSelector('#precarga', { state: 'detached' });
-
-    await expect(page.locator('.portada3d__acceso .portada3d__boton')).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('footer.pie')).toBeVisible({ timeout: 30000 });
-    const colores = await page.evaluate(() => {
-        const leer = (sel) => {
-            const e = document.querySelector(sel);
-            if (!e) return null;
-            const s = getComputedStyle(e);
-            return { fondo: s.backgroundColor, texto: s.color };
-        };
-        return { marca: leer('.portada3d__acceso .portada3d__boton') };
-    });
-    expect(colores.marca.fondo).toBe('rgb(198, 161, 91)');
-    expect(colores.marca.texto).toBe('rgb(13, 24, 35)');
-
     await page.goto('/nosotros');
     await expect(page.locator('.nosotros-valores .app-tiendas')).toHaveCount(0);
     await expect(page.locator('footer.pie .app-tiendas a')).toBeVisible({ timeout: 30000 });
@@ -699,22 +754,157 @@ test('inicio: explora por categoría y cómo comprar', async ({ page }) => {
     await expect(page).toHaveURL(/\/catalogo\?categoria=/);
 });
 
-test('cabecera comercial sin franja superior y con menú claro como la referencia Ibero', async ({ page }) => {
+test('cabecera y pie siguen la paleta de la referencia Casa del Libro', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
     await expect(page.locator('.avisos')).toHaveCount(0);
 
-    await expect(page.locator('.cabecera')).toHaveCSS('background-color', 'rgb(19, 25, 33)');
+    await expect(page.locator('.cabecera')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+    await expect(page.locator('.cabecera')).toHaveCSS('border-bottom-width', '1px');
+    await expect(page.locator('.cabecera')).toHaveCSS('border-bottom-color', 'rgb(220, 223, 230)');
+    await expect(page.locator('.cabecera')).toHaveCSS('box-shadow', 'none');
+    await expect(page.locator('.hightlight-up')).toHaveCSS('background-color', 'rgb(223, 230, 221)');
+    await expect(page.locator('.hightlight-down')).toHaveCSS('background-color', 'rgb(0, 77, 67)');
+    const franja = await page.locator('.hightlight-up').boundingBox();
+    expect(franja.width).toBeCloseTo(1440, 0);
+    const enlacesFranja = await page.locator('.hightlight-up a, .hightlight-down a').evaluateAll((elementos) =>
+        elementos.map((elemento) => {
+            const rectangulo = elemento.getBoundingClientRect();
+            return { ancho: rectangulo.width, dentro: rectangulo.left >= 0 && rectangulo.right <= window.innerWidth };
+        })
+    );
+    expect(enlacesFranja).toHaveLength(6);
+    expect(enlacesFranja.every((enlace) => enlace.ancho > 0 && enlace.dentro)).toBe(true);
+
     await expect(page.locator('.menu')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-    await expect(page.locator('.menu a').first()).toHaveCSS('text-transform', 'uppercase');
+    await expect(page.locator('.menu')).toHaveCSS('border-top-width', '1px');
+    await expect(page.locator('.menu')).toHaveCSS('border-top-color', 'rgb(220, 223, 230)');
+    await expect(page.locator('.menu')).toHaveCSS('box-shadow', 'none');
+    expect(await page.locator('.menu a').first().evaluate((elemento) => getComputedStyle(elemento, '::after').content)).toBe('none');
+    const colorNormal = await page.locator('.menu a:not([aria-current="page"])').first().evaluate((elemento) => getComputedStyle(elemento).color);
+    expect(colorNormal).toBe('rgb(0, 0, 0)');
+    await expect(page.locator('.menu a[aria-current="page"]').first()).toHaveCSS('color', 'rgb(0, 77, 67)');
+    await expect(page.locator('.menu a[aria-current="page"]').first()).toHaveCSS('border-bottom-color', 'rgb(0, 77, 67)');
+    await expect(page.locator('.menu a:not([aria-current="page"])').first()).toHaveCSS('border-bottom-color', 'rgba(0, 0, 0, 0)');
+    await expect(page.locator('.menu a:not([aria-current="page"])').first()).toHaveCSS('font-weight', '600');
+    await expect(page.locator('.menu a[aria-current="page"]').first()).toHaveCSS('font-weight', '700');
+    await expect(page.locator('.menu a').first()).toHaveCSS('text-transform', 'none');
+    await expect(page.locator('.portada3d__orbite-texto h2 em')).toHaveCSS('color', 'rgb(0, 77, 67)');
+    await expect(page.locator('.portada3d__orbite-subtitulo')).toHaveCSS('color', 'rgb(1, 58, 51)');
+    await expect(page.locator('.cabecera .marca__texto strong')).toHaveText('MATIDANA');
+    await expect(page.locator('.cabecera .marca__texto small')).toHaveText('Libros y Cultura');
+    await expect(page.locator('.menu__numero')).toHaveCount(0);
+    expect(await page.locator('.menu > ul > li').nth(1).evaluate((elemento) => getComputedStyle(elemento, '::before').content)).toBe('"|"');
+    await expect(page.locator('.cabecera .buscador:visible').first()).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(page.locator('.cabecera .buscador__wrapper:visible').first()).toHaveCSS('border-radius', '4px');
+    await expect(page.locator('.cabecera .buscador input:visible').first()).toHaveCSS('border-radius', '0px');
+    await expect(page.locator('.cabecera .buscador input:visible').first()).toHaveCSS('color', 'rgb(0, 77, 67)');
+    await expect(page.locator('.cabecera .buscador button[type="submit"]:visible').first()).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    const buscador = await page.locator('.cabecera .buscador:visible').first().boundingBox();
+    const campo = await page.locator('.cabecera .buscador input:visible').first().boundingBox();
+    const boton = await page.locator('.cabecera .buscador button[type="submit"]:visible').first().boundingBox();
+    const envoltorio = await page.locator('.cabecera .buscador__wrapper:visible').first().boundingBox();
+    expect(envoltorio.width).toBeGreaterThan(buscador.width * 0.95);
+    expect(boton.x).toBeGreaterThanOrEqual(campo.x + campo.width - 1);
+    expect(boton.x + boton.width).toBeLessThanOrEqual(envoltorio.x + envoltorio.width + 1);
 });
 
-test('inicio: sin secciones repetidas; la portada ofrece la ficha del libro real', async ({ page }) => {
+test('barra de categorías: datos reales y desplegable con enlaces', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const errores = [];
+    page.on('pageerror', (e) => errores.push(e.message));
+    await apiPublica(page);
+    await page.goto('/');
+
+    const categoria = menu(page).getByRole('link', { name: 'Novela', exact: true });
+    const panel = page.locator('#menu-categoria-0');
+    await expect(categoria).toBeVisible();
+    await expect(menu(page).getByRole('link', { name: 'Fantasía', exact: true })).toBeVisible();
+    await expect(menu(page).getByRole('link', { name: 'Poesía', exact: true })).toBeVisible();
+    await expect(panel).toBeHidden();
+
+    await categoria.hover();
+    await expect(panel).toBeVisible();
+    await expect(categoria).toHaveAttribute('aria-expanded', 'true');
+    await expect(panel.getByText('Enlaces de MATIDANA')).toBeVisible();
+    await expect(panel.getByRole('link', { name: 'Ver los 5 títulos de Novela' })).toHaveAttribute('href', '/catalogo?categoria=Novela');
+    await expect(panel.getByRole('link', { name: 'Aplicación', exact: true })).toHaveAttribute('href', '/aplicacion');
+    await expect(panel.getByRole('heading', { name: 'Libros de Novela' })).toBeVisible();
+    await expect(panel.getByRole('link', { name: 'Cien años de soledad' })).toBeVisible();
+
+    await page.mouse.move(0, 0);
+    await categoria.focus();
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(categoria).toHaveAttribute('aria-expanded', 'false');
+
+    await categoria.click();
+    await expect(page).toHaveURL(/\/catalogo\?categoria=Novela$/);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    expect(errores).toEqual([]);
+});
+
+test('desplegable de categorías: cada una muestra solo sus propios libros', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await apiPublica(page);
+    await page.goto('/');
+
+    const novela = menu(page).getByRole('link', { name: 'Novela', exact: true });
+    const fantasia = menu(page).getByRole('link', { name: 'Fantasía', exact: true });
+    const panelNovela = page.locator('#menu-categoria-0');
+    const panelFantasia = page.locator('#menu-categoria-1');
+
+    await novela.hover();
+    await expect(panelNovela.getByRole('heading', { name: 'Libros de Novela' })).toBeVisible();
+    await expect(panelNovela.locator('.menu__libros a')).toHaveCount(5);
+    await expect(panelNovela.getByRole('link', { name: /Cien años de soledad/ })).toBeVisible();
+    await expect(panelNovela.getByRole('link', { name: /Libro de prueba 2/ })).toHaveCount(0);
+
+    await fantasia.hover();
+    await expect(panelFantasia.getByRole('heading', { name: 'Libros de Fantasía' })).toBeVisible();
+    await expect(panelFantasia.getByRole('link', { name: /Libro de prueba 3/ })).toBeVisible();
+    await expect(panelFantasia.getByRole('link', { name: /Cien años de soledad/ })).toHaveCount(0);
+});
+
+test('cabecera móvil: menú, marca y acciones en una fila y buscador debajo', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await apiPublica(page);
+    await page.goto('/');
+    await expect(page.locator('.cabecera__principal > .buscador')).toBeHidden();
+    await expect(page.locator('.cabecera__movil .buscador')).toBeVisible();
+    const cajas = await page.evaluate(() => {
+        const medir = (selector) => {
+            const rectangulo = document.querySelector(selector).getBoundingClientRect();
+            return { x: rectangulo.x, y: rectangulo.y, ancho: rectangulo.width, alto: rectangulo.height };
+        };
+        return {
+            menu: medir('.cabecera__boton-menu'),
+            marca: medir('.cabecera .marca'),
+            acciones: medir('.cabecera__acciones'),
+            buscador: medir('.cabecera__movil .buscador__wrapper')
+        };
+    });
+    expect(Math.abs(cajas.menu.y - cajas.acciones.y)).toBeLessThan(8);
+    expect(Math.abs(cajas.menu.y - cajas.marca.y)).toBeLessThan(8);
+    expect(cajas.buscador.y).toBeGreaterThan(cajas.menu.y + cajas.menu.alto);
+    expect(cajas.buscador.x).toBeLessThanOrEqual(cajas.menu.x + 1);
+    expect(cajas.buscador.x + cajas.buscador.ancho).toBeGreaterThanOrEqual(cajas.acciones.x + cajas.acciones.ancho - 1);
+
+    await expect(menu(page).getByRole('link', { name: 'Novela', exact: true })).toBeHidden();
+    await page.getByRole('button', { name: 'Abrir menú' }).click();
+    const cajon = page.getByRole('dialog', { name: 'Menú' });
+    await expect(cajon.getByText('Categorías', { exact: true })).toBeVisible();
+    await expect(cajon.getByRole('link', { name: /Novela/ })).toHaveAttribute('href', '/catalogo?categoria=Novela');
+    await page.keyboard.press('Escape');
+    await expect(cajon).toBeHidden();
+});
+
+test('inicio: sin secciones repetidas; el carrusel ofrece fichas de libros reales', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/');
     await page.waitForSelector('#precarga', { state: 'detached' });
     await expect(page.locator('.vitrina, .comprar__app, .banda-catalogo')).toHaveCount(0);
-    await expect(page.locator('.portada3d__acceso').getByRole('link', { name: 'Ver este libro' })).toHaveAttribute('href', '/libro/13');
+    await expect(page.locator('.portada3d__carrusel-link').first()).toHaveAttribute('href', '/libro/13');
 });
 
 for (const width of [390, 1440]) {

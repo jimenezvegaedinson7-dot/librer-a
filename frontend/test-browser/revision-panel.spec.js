@@ -151,7 +151,6 @@ async function preparar(page) {
         }
         if (p === '/api/comprobantes/11') return route.fulfill({ json: { success: true, comprobante } });
         if (p === '/api/pagos') return route.fulfill({ json: { success: true, pagos: [], total: 0, paginas: 1 } });
-        if (p === '/api/anuncios/protagonista/panel') return route.fulfill({ json: { success: true, data: { modo: 'automatico', libro, libro_automatico: libro } } });
         if (p === '/api/anuncios/todos') return route.fulfill({ json: [{ id_anuncio: 1, titulo: 'Video de prueba', estado: 1, video_url: '', fecha_creacion: '2026-11-01' }] });
         let data = [];
         if (p === '/api/libros') data = [libro, { ...libro, id_libro: 99, titulo: 'Nuevo libro sin stock' }];
@@ -186,7 +185,6 @@ const vistas = [
     ['/ventas/comprobantes', 'comprobantes', 'Ver comprobante'],
     ['/tarifas-envio', 'delivery'],
     ['/usuarios', 'usuarios', 'Ver usuario'],
-    ['/anuncios', 'protagonista'],
     ['/anuncios', 'videos'],
     ['/reclamaciones', 'reclamaciones', 'Ver y responder'],
     ['/configuracion/empresa', 'empresa']
@@ -200,7 +198,6 @@ for (const width of [390, 1440])
         for (const [ruta, nombre, detalle] of vistas) {
             await test.step(nombre, async () => {
                 await page.goto(ruta);
-                if (nombre === 'videos') await page.getByRole('tab', { name: 'Anuncios en video', exact: true }).click();
                 await expect(page.locator('main h1')).toHaveCount(1);
                 await expect(page.locator('main .skeleton')).toHaveCount(0);
                 if (detalle) await expect(page.getByRole('button', { name: detalle, exact: true }).first()).toBeVisible();
