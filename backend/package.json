@@ -21,6 +21,9 @@
     "catalogo:semilla": "node scripts/semillaCatalogoAmpliado.js --confirmar",
     "portadas:subir:dry": "node scripts/subirPortadasLibros.js --dry-run",
     "portadas:subir": "node scripts/subirPortadasLibros.js --confirmar",
+    "catalogo:reales:generar": "node scripts/reemplazarCatalogoLibrosReales.js generar",
+    "catalogo:reales:dry": "node scripts/reemplazarCatalogoLibrosReales.js aplicar --dry-run",
+    "catalogo:reales:aplicar": "node scripts/reemplazarCatalogoLibrosReales.js aplicar --confirmar",
     "publicar-app": "node scripts/publicarVersionApp.js"
   },
   "keywords": [],
