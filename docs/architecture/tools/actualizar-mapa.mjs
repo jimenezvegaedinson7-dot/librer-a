@@ -254,7 +254,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 ${depsBackendSinUso.length ? `- Dependencias en \`package.json\` que **ningún archivo importa**: ${listaDeps(depsBackendSinUso)}.\n` : ''}- La pasarela de pagos (\`/api/pagos\`) es **PayU**.
 - \`GET /api/test-db\` verifica PostgreSQL con \`SELECT 1\`, protegido por JWT + administrador.
 - Endpoints sin cliente: ver la sección correspondiente en \`05-API-MAP.md\`.
-- Herramientas de mantenimiento (no forman parte del servidor): \`scripts/resetearPrecios.js\`, \`scripts/semillaLibros.js\`, \`scripts/generarCatalogoAmpliado.js\`, \`scripts/semillaCatalogoAmpliado.js\` (crea autores y categorías, siembra al menos 50 libros por categoría y su inventario), \`scripts/publicarVersionApp.js\` y \`scripts/respaldarPostgres.js\`.
+- Herramientas de mantenimiento (no forman parte del servidor): \`scripts/resetearPrecios.js\`, \`scripts/semillaLibros.js\`, \`scripts/generarCatalogoAmpliado.js\`, \`scripts/semillaCatalogoAmpliado.js\` (crea autores y categorías, siembra al menos 100 libros por categoría y su inventario), \`scripts/publicarVersionApp.js\` y \`scripts/respaldarPostgres.js\`.
 - Pruebas: \`test/*.test.js\` (node --test) y \`test-integration/http.smoke.test.js\`.
 `;
     escribir('02-BACKEND-MAP.md', md);
