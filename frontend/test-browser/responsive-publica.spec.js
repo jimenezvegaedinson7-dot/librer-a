@@ -41,7 +41,7 @@ async function preparar(page) {
 }
 
 async function revisarTarjetas(page) {
-    const fallos = await page.locator('.tarjeta-libro, .libro, .oferta-tarjeta, .categoria-tarjeta, .app-funcion').evaluateAll((tarjetas) => {
+    const fallos = await page.locator('.tarjeta-libro, .libro, .oferta-tarjeta, .categoria-tarjeta').evaluateAll((tarjetas) => {
         const errores = [];
         for (const tarjeta of tarjetas) {
             const caja = tarjeta.getBoundingClientRect();
@@ -95,7 +95,7 @@ async function revisarTarjetas(page) {
 
 test.use({ reducedMotion: 'reduce' });
 for (const width of [390, 1440]) {
-    test(`Ver detalle ${width}px: hover y pulsación grises con texto negro, sin cambiar Agregar`, async ({ page }) => {
+    test(`Ver detalle ${width}px: hover amarillo y pulsación dorada con texto negro, sin cambiar Agregar`, async ({ page }) => {
         await page.setViewportSize({ width, height: 1000 });
         await preparar(page);
         await page.goto('/');
@@ -107,14 +107,14 @@ for (const width of [390, 1440]) {
             await expect(detalle).toHaveCSS('background-color', 'rgb(255, 255, 255)');
             await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
             await detalle.hover();
-            await expect(detalle).toHaveCSS('background-color', 'rgb(242, 242, 242)');
+            await expect(detalle).toHaveCSS('background-color', 'rgb(235, 170, 32)');
             await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
             await expect(detalle.locator('svg')).toHaveCSS('color', 'rgb(20, 18, 18)');
             await detalle.focus();
-            await expect(detalle).toHaveCSS('background-color', 'rgb(242, 242, 242)');
+            await expect(detalle).toHaveCSS('background-color', 'rgb(235, 170, 32)');
             await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
             await page.mouse.down();
-            await expect(detalle).toHaveCSS('background-color', 'rgb(222, 222, 222)');
+            await expect(detalle).toHaveCSS('background-color', 'rgb(217, 154, 18)');
             await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
             await page.mouse.move(0, 0);
             await page.mouse.up();
@@ -206,7 +206,7 @@ for (const [width, height] of [
         await page.goto('/carrito');
         await expect(page.locator('main')).toContainText('Cien años de soledad');
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-        for (const ruta of ['/aplicacion', '/descargar', '/cuenta']) {
+        for (const ruta of ['/descargar', '/cuenta']) {
             await page.goto(ruta);
             await expect(page.locator('main h1')).toBeVisible();
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

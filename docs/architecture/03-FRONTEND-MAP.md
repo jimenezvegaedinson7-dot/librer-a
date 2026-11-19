@@ -64,7 +64,6 @@ El menú reúne **Gestión de ventas** en `/ventas` con tres vistas cargadas baj
 |---|---|---|
 | `/` | InicioPage | `views/web/publicas/paginas.jsx` |
 | `/catalogo` | CatalogoPublicoPage | `views/web/publicas/CatalogoPage.jsx` |
-| `/aplicacion` | AplicacionPage | `views/web/publicas/AplicacionPage.jsx` |
 | `/nosotros` | NosotrosPage | `views/web/publicas/NosotrosPage.jsx` |
 | `/descargar` | DescargarPage | `views/web/publicas/DescargarPage.jsx` |
 | `/cuenta` | CuentaClientePage | `views/web/tienda/CuentaPage.jsx` |
@@ -73,6 +72,7 @@ El menú reúne **Gestión de ventas** en `/ventas` con tres vistas cargadas baj
 | `/mis-compras` | MisComprasWebPage | `views/web/tienda/MisComprasPage.jsx` |
 | `/favoritos` | FavoritosWebPage | `views/web/tienda/FavoritosPage.jsx` |
 | `/libro/:id` | LibroPublicoPage | `views/web/tienda/LibroPage.jsx` |
+| `/buscar` | BuscarPage | `views/web/publicas/BuscarPage.jsx` |
 | `/admin/login` | LoginPage | `views/panel/auth/LoginPage.jsx` |
 | `/admin` | Navigate | redirección: `<Navigate to="/admin/login" replace />` |
 | `/verificar-email` | VerificarEmailPage | `views/panel/auth/VerificarEmailPage.jsx` |
@@ -155,6 +155,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `views/panel/tarifas/TarifasEnvioPage.jsx` | `GET /api/zonas-delivery/todos`<br>`PUT /api/zonas-delivery/:param` |
 | `views/panel/usuarios/UsuariosPage.jsx` | `GET /api/usuarios`<br>`PATCH /api/usuarios/:param` |
 | `views/panel/ventas/VentasPage.jsx` | `GET /api/ventas`<br>`GET /api/ventas/:param` |
+| `views/web/publicas/BuscarPage.jsx` | `GET /api/libros` |
 | `views/web/publicas/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `views/web/tienda/CheckoutPage.jsx` | `GET /api/pagos/capacidades`<br>`GET /api/ventas/:param`<br>`GET /api/zonas-delivery` |
 | `views/web/tienda/CuentaPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reenviar-codigo`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/registro`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-email`<br>`POST /api/auth/verificar-reseteo` |
@@ -288,7 +289,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 
 ## Hooks y utilidades
 
-## Framer Motion (`motion/react`) — 25 archivos
+## Framer Motion (`motion/react`) — 24 archivos
 
 - `app/providers/ToastProvider.jsx`
 - `components/panel/dashboard/Decoraciones.jsx`
@@ -309,7 +310,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 - `components/panel/ui/Modal.jsx`
 - `components/web/PublicHeader.jsx`
 - `components/web/PublicLayout.jsx`
-- `components/web/secciones/FeatureStory.jsx`
 - `components/web/tienda/PilaCarrito.jsx`
 - `hooks/panel/dashboard/useContador.js`
 - `views/panel/auth/LoginPage.jsx`

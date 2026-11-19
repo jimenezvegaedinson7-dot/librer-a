@@ -21,9 +21,9 @@ export default function ActualizarApp() {
 
     let mensajeVersion;
     if (cargando) {
-        mensajeVersion = 'Consultando la versión más reciente…';
+        mensajeVersion = 'Consultando la versión disponible…';
     } else if (error || !version) {
-        mensajeVersion = 'No pudimos consultar la última versión. Puedes descargar la versión publicada en esta página.';
+        mensajeVersion = 'No fue posible consultar la versión más reciente. Puede descargar la versión publicada en esta página.';
     } else {
         mensajeVersion = `Versión disponible: ${version.version}`;
     }
@@ -31,10 +31,10 @@ export default function ActualizarApp() {
     return (
         <section className="actualizacion-app" aria-labelledby="actualizacion-titulo">
             <div className="actualizacion-app__contenido">
-                <h2 id="actualizacion-titulo">¿Ya tienes la app en Android?</h2>
-                <p>Escanee este código QR o pulse el botón desde su celular para obtener la última versión.</p>
+                <h2 id="actualizacion-titulo">¿Ya tiene la aplicación en Android?</h2>
+                <p>Escanee el código QR o utilice el botón desde su dispositivo para obtener la versión más reciente.</p>
                 <p>
-                    Abra el APK y seleccione <strong>Actualizar</strong>. No es necesario desinstalar la aplicación: sus datos se conservan.
+                    Abra el archivo APK y seleccione <strong>Actualizar</strong>. No es necesario desinstalar la aplicación; sus datos se conservan.
                 </p>
 
                 <p className="actualizacion-app__version" role="status" aria-live="polite">
@@ -43,12 +43,12 @@ export default function ActualizarApp() {
 
                 {desdeQR && version?.apkUrl && (
                     <p role="status" aria-live="polite">
-                        La descarga se está abriendo. Si no comienza, pulsa «Actualizar app».
+                        La descarga se está abriendo. Si no inicia, utilice «Actualizar aplicación».
                     </p>
                 )}
 
                 <a className="boton boton--linea" href={url} rel="noopener" data-actualizar-app="">
-                    <FaDownload aria-hidden="true" /> Actualizar app
+                    <FaDownload aria-hidden="true" /> Actualizar aplicación
                 </a>
             </div>
 

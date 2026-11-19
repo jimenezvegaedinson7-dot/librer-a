@@ -1,397 +1,393 @@
-.sitio :is(.app-portada__titulo, .descargar-portada__titulo) {
-    font-family: var(--ed-serif) !important; font-weight: 400 !important; color: var(--ed-tinta) !important; letter-spacing: -.03em !important; text-wrap: balance;
+.sitio .app-pagina .app__rejilla,
+.sitio .descargar-pagina .descargar-portada__rejilla {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr) !important;
+    gap: clamp(2rem, 4vw, 4.5rem) !important;
 }
-.sitio :is(.app-portada, .descargar-portada) .icono-app--grande { border-radius: 22px; box-shadow: 0 0 0 1px rgb(35 28 22 / .08), 0 18px 36px -14px rgb(69 49 26 / .45); }
-@keyframes app-flotar {
-    0%, 100% { translate: 0 0; }
-    50% { translate: 0 -12px; }
-}
-.sitio :is(.app__telefonos, .descargar-portada__telefono) { position: relative; }
-.sitio :is(.app__telefonos, .descargar-portada__telefono)::before {
-    content: ''; position: absolute; inset: 8% 4%; z-index: -1; border-radius: 50%;
-    background: radial-gradient(closest-side, rgb(255 250 240 / .85), rgb(255 244 222 / .35) 55%, transparent); filter: blur(10px);
-}
-.sitio :is(.app-portada, .descargar-portada) .telefono img { box-shadow: 0 40px 70px -32px rgb(69 49 26 / .55); }
-@media (prefers-reduced-motion: no-preference) {
-    .sitio .app-portada .telefono { animation: none; }
-    .sitio .app-portada .app__telefonos { animation: app-flotar-grupo 9s ease-in-out infinite; }
-    .sitio .descargar-portada .telefono { animation: app-flotar 6.5s ease-in-out infinite; }
-}
-@keyframes app-flotar-grupo {
-    0%, 100% { translate: 0 0; }
-    50% { translate: 0 -4px; }
-}
-.sitio .app-funciones-seccion { background: var(--ed-papel-claro) !important; padding-block: clamp(3.5rem, 2.5rem + 4vw, 6.5rem) !important; }
-.sitio .app-funciones { gap: clamp(12px, 1.4vw, 20px) !important; }
-.sitio .app-funcion {
-    position: relative; overflow: hidden; display: grid !important; align-content: start; gap: 1.1rem !important; padding: clamp(1.4rem, 1rem + 1vw, 2rem) !important;
-    background: #ffffff !important; border: 1px solid var(--ed-filete) !important; border-radius: 22px !important; box-shadow: 0 1px 2px rgb(35 28 22 / .04) !important;
-    transition: transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease, border-color .3s ease;
-}
-.sitio .app-funcion::after {
-    content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(115deg, transparent 40%, rgb(255 255 255 / .6) 50%, transparent 60%) 160% 0 / 250% 100% no-repeat; transition: background-position .9s ease;
-}
-.sitio .app-funcion:hover { transform: translateY(-6px); border-color: #d8cdbd !important; box-shadow: 0 26px 44px -26px rgb(35 28 22 / .35) !important; }
-.sitio .app-funcion:hover::after { background-position: -60% 0; }
-.sitio .app-funcion__icono {
-    display: grid !important; place-items: center; width: 52px !important; height: 52px !important; border-radius: 16px !important; border: 1px solid #eadfcd !important;
-    background: linear-gradient(145deg, #fffaf2, #f1e6d3) !important; color: var(--ed-tinta) !important; box-shadow: inset 0 1px 0 #ffffff, 0 10px 20px -12px rgb(69 49 26 / .45);
-    transition: transform .5s cubic-bezier(.16,1,.3,1);
-}
-.sitio .app-funcion:hover .app-funcion__icono { transform: rotate(-6deg) scale(1.06); }
-.sitio .app-funcion__icono svg { width: 20px; height: 20px; color: var(--ed-tinta) !important; }
-.sitio :is(.app-funcion, .instalar__paso)::before {
-    content: ''; position: absolute; inset: 0 0 auto; height: 3px; z-index: 1; background: linear-gradient(90deg, #231c16, #8a7458); transform: scaleX(0); transform-origin: left;
-    transition: transform .6s cubic-bezier(.16,1,.3,1);
-}
-.sitio :is(.app-funcion, .instalar__paso):hover::before { transform: scaleX(1); }
-.sitio .instalar__paso { overflow: hidden; }
-.sitio .app-funcion p { display: grid; gap: .45rem; margin: 0; }
-.sitio .app-funcion b { font-family: var(--ed-serif); font-weight: 400; font-size: 1.0625rem; line-height: 1.15; color: var(--ed-tinta); }
-.sitio .app-funcion span { color: #5c5047; font-size: .875rem; line-height: 1.55; }
-.sitio .app-pagina .cierre-descarga { margin-top: clamp(4rem, 3rem + 4vw, 7rem) !important; }
-.sitio .descargar-plataformas { background: var(--ed-papel-claro) !important; padding-block: clamp(2.5rem, 2rem + 2.4vw, 4rem) !important; }
-.sitio .descarga__rejilla { gap: clamp(10px, 1.4vw, 16px) !important; align-items: stretch; }
-.sitio .tarjeta-descarga {
-    position: relative; overflow: hidden; isolation: isolate; border-radius: 20px !important; padding: clamp(1.1rem, 0.9rem + 0.9vw, 1.6rem) !important;
-    background: #ffffff !important; border: 1px solid var(--ed-filete) !important; box-shadow: none !important;
-    transition: transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease;
-}
-.sitio .tarjeta-descarga[data-disponible="true"] {
-    border: 1.5px solid var(--ed-tinta) !important; background: linear-gradient(180deg, #ffffff 0%, #fffaf2 100%) !important;
-    box-shadow: 0 34px 60px -38px rgb(69 49 26 / .5) !important;
-}
-.sitio .tarjeta-descarga[data-disponible="true"]::before {
-    content: ''; position: absolute; inset: 0 0 auto; height: 4px; background: linear-gradient(90deg, #231c16, #6b5a48, #231c16);
-}
-.sitio .tarjeta-descarga[data-disponible="true"]:hover { transform: translateY(-4px); }
-.sitio .tarjeta-descarga h2 { font-family: var(--ed-serif); font-weight: 400; font-size: 1.25rem; color: var(--ed-tinta); }
-.sitio .tarjeta-descarga[data-disponible="true"] .tarjeta-descarga__estado { color: #2f7a4d !important; font-weight: 600; }
-.sitio .tarjeta-descarga .ficha-tecnica dt { color: #7a6c5e !important; }
-.sitio .tarjeta-descarga .ficha-tecnica dd { color: var(--ed-tinta) !important; font-weight: 600; }
-.sitio .tarjeta-descarga[data-disponible="false"] { background: transparent !important; border-style: dashed !important; border-color: #cfc3b2 !important; }
-.sitio .tarjeta-descarga .icono-app--medio { width: 44px; height: 44px; border-radius: 13px; box-shadow: 0 10px 24px -12px rgb(0 0 0 / .5); }
-.sitio .tarjeta-descarga .ficha-tecnica { row-gap: 0 !important; margin-block: 0.8rem; }
-.sitio .tarjeta-descarga .ficha-tecnica :is(dt, dd) { padding-block: .45rem; border-bottom: 1px solid var(--ed-filete); margin: 0; }
-.sitio .tarjeta-descarga .tu-equipo { border-radius: 999px; background: var(--ed-tinta); color: #fffaf2; font-weight: 600; }
-.sitio .instalar { margin-top: clamp(3rem, 2rem + 3vw, 5rem) !important; }
-.sitio .instalar > h2 {
-    font-family: var(--ed-serif) !important; font-weight: 400 !important; font-size: clamp(1.35rem, 1.15rem + 0.9vw, 1.9rem) !important; color: var(--ed-tinta); display: flex;
-    align-items: center; gap: .6rem;
-}
-.sitio .instalar__pasos { counter-reset: none; gap: clamp(14px, 2vw, 28px) !important; }
-.sitio .instalar__paso {
-    position: relative; background: #ffffff !important; border: 1px solid var(--ed-filete) !important; border-radius: 22px !important;
-    padding: clamp(1.4rem, 1rem + 1vw, 2rem) !important; box-shadow: none !important; transition: transform .5s cubic-bezier(.16,1,.3,1), box-shadow .5s ease;
-}
-.sitio .instalar__paso:hover { transform: translateY(-5px); box-shadow: 0 26px 44px -26px rgb(35 28 22 / .35) !important; }
-.sitio .instalar__numero {
-    display: grid !important; place-items: center; width: 52px !important; height: 52px !important; border-radius: 50% !important; border: 1px solid #eadfcd !important;
-    background: linear-gradient(145deg, #fffaf2, #f1e6d3) !important; color: var(--ed-tinta) !important; font-family: var(--ed-serif); font-size: 1.25rem !important;
-    font-weight: 400 !important; box-shadow: inset 0 1px 0 #ffffff, 0 10px 20px -12px rgb(69 49 26 / .45);
-}
-.sitio .instalar__paso h3 { font-family: var(--ed-serif); font-weight: 400; font-size: 1.0625rem; margin-top: 1rem; color: var(--ed-tinta); }
-.sitio .instalar__paso p { color: #5c5047; }
-.sitio .actualizacion-app {
-    margin-top: clamp(3rem, 2rem + 3vw, 5rem) !important; padding: clamp(1.5rem, 1rem + 2vw, 2.75rem) !important; background: #ffffff !important;
-    border: 1px solid var(--ed-filete) !important; border-radius: 26px !important;
-}
-.sitio .actualizacion-app h2 { font-family: var(--ed-serif); font-weight: 400; font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.65rem); color: var(--ed-tinta); }
-.sitio .actualizacion-app .boton--linea { border-radius: 999px !important; min-height: 48px; }
-.sitio .actualizacion-app__qr { padding: 14px; background: #ffffff; border-radius: 20px; box-shadow: 0 0 0 1px var(--ed-filete), 0 24px 44px -24px rgb(35 28 22 / .45); }
-@media (max-width: 767px) {
-    .sitio .app-pagina .cierre-descarga { margin-top: 3rem !important; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga) { transition: none !important; }
-}
-@property --giro-marco { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
-@keyframes marco-gira {
-    to { --giro-marco: 360deg; }
-}
-@keyframes resplandor-flota {
-    0%, 100% { translate: 0 0; scale: 1; }
-    50% { translate: -10px 8px; scale: 1.12; }
-}
-.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #0d8f8a; --c2: #62d6c9; }
-.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #5b3fd9; --c2: #b19cff; }
-.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #d9542f; --c2: #f7a660; }
-.sitio .app-funcion:nth-child(4) { --c1: #c92a64; --c2: #ff8fb4; }
-.sitio .app-funcion:nth-child(5) { --c1: #b7800c; --c2: #f2c94c; }
-.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #2f8f4e; --c2: #8fdcaa; }
-.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #4a6fd1; --c2: #a9c1ff; }
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga) {
-    border: 2px solid transparent !important;
-    background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--c2) 22%, transparent), transparent 60%) padding-box, linear-gradient(180deg, #ffffff, color-mix(in srgb, var(--c2) 8%, #ffffff)) padding-box, conic-gradient(from var(--giro-marco), var(--c1), var(--c2), color-mix(in srgb, var(--c2) 30%, #ffffff), var(--c1)) border-box !important;
-    animation: marco-gira 8s linear infinite;
-}
-.sitio .tarjeta-descarga[data-disponible="false"] { border-style: solid !important; }
-.sitio .tarjeta-descarga[data-disponible="true"]::before { display: none; }
-.sitio :is(.app-funcion, .instalar__paso)::before { background: linear-gradient(90deg, var(--c1), var(--c2)) !important; }
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga) > :first-child { position: relative; z-index: 1; }
-.sitio :is(.app-funcion, .instalar__paso) { isolation: isolate; }
-.sitio :is(.app-funcion, .instalar__paso)::after {
-    content: '' !important; position: absolute; z-index: -1; pointer-events: none; width: 160px; height: 160px; right: -50px; bottom: -60px; inset-block-start: auto;
-    inset-inline-start: auto; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--c2) 45%, transparent), transparent) !important;
-    filter: blur(6px); animation: resplandor-flota 7s ease-in-out infinite; transition: none !important;
-}
-.sitio .app-funcion:nth-child(2n)::after, .sitio .instalar__paso:nth-child(2)::after { animation-delay: -3s; }
-.sitio :is(.app-funcion__icono, .instalar__numero) {
-    background: linear-gradient(145deg, var(--c2), var(--c1)) !important; color: #ffffff !important; border: 0 !important;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / .45), 0 12px 22px -10px color-mix(in srgb, var(--c1) 70%, transparent) !important;
-}
-.sitio .app-funcion__icono svg { color: #ffffff !important; }
-.sitio :is(.app-funcion b, .instalar__paso h3) { color: color-mix(in srgb, var(--c1) 55%, #231c16) !important; }
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover { box-shadow: 0 28px 50px -26px color-mix(in srgb, var(--c1) 60%, transparent) !important; }
-@media (prefers-reduced-motion: reduce) {
-    .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga), .sitio :is(.app-funcion, .instalar__paso)::after { animation: none !important; }
-}
-.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) {
-    border: 2px solid transparent !important;
-    background: radial-gradient(90% 80% at 100% 0%, color-mix(in srgb, var(--c2) 24%, transparent), transparent 60%) padding-box, linear-gradient(180deg, #ffffff, color-mix(in srgb, var(--c2) 9%, #ffffff)) padding-box, conic-gradient(from var(--giro-marco), var(--c1), var(--c2), color-mix(in srgb, var(--c2) 30%, #ffffff), var(--c1)) border-box !important;
-}
-.sitio .tarjeta-descarga .icono-app--medio { box-shadow: 0 0 0 2px color-mix(in srgb, var(--c2) 60%, #ffffff), 0 12px 24px -12px color-mix(in srgb, var(--c1) 70%, transparent); }
-.sitio .tarjeta-descarga[data-disponible="false"] .tarjeta-descarga__estado { color: var(--c1) !important; font-weight: 600; }
-.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #0b3f3c; --c2: #0f766e; --c3: #5eead4; }
-.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #2e1065; --c2: #6d28d9; --c3: #c4b5fd; }
-.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #6b1d0a; --c2: #c2410c; --c3: #fdba74; }
-.sitio .app-funcion:nth-child(4) { --c1: #6b0f35; --c2: #be185d; --c3: #f9a8d4; }
-.sitio .app-funcion:nth-child(5) { --c1: #5a3008; --c2: #a16207; --c3: #fde047; }
-.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #0f3d22; --c2: #15803d; --c3: #86efac; }
-.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #172554; --c2: #1d4ed8; --c3: #93c5fd; }
-.sitio :is(.app-funcion, .instalar__paso), .sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) {
-    color: #ffffff;
-    background: radial-gradient(90% 80% at 100% 0%, color-mix(in srgb, var(--c3) 38%, transparent), transparent 60%) padding-box, linear-gradient(150deg, var(--c1) 0%, var(--c2) 100%) padding-box, conic-gradient(from var(--giro-marco), var(--c3), #ffffff, var(--c3), var(--c2), var(--c3)) border-box !important;
-}
-.sitio :is(.app-funcion b, .instalar__paso h3, .tarjeta-descarga h2) { color: #ffffff !important; }
-.sitio :is(.app-funcion span, .instalar__paso p, .tarjeta-descarga__nota) { color: rgb(255 255 255 / .9) !important; }
-.sitio :is(.app-funcion, .instalar__paso)::after { background: radial-gradient(closest-side, color-mix(in srgb, var(--c3) 55%, transparent), transparent) !important; }
-.sitio :is(.app-funcion, .instalar__paso)::before { background: linear-gradient(90deg, var(--c3), #ffffff) !important; }
-.sitio :is(.app-funcion__icono, .instalar__numero) {
-    background: linear-gradient(145deg, #ffffff, color-mix(in srgb, var(--c3) 35%, #ffffff)) !important; color: var(--c2) !important;
-    box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--c3) 60%, transparent), 0 12px 24px -10px rgb(0 0 0 / .45) !important;
-}
-.sitio .app-funcion__icono svg { color: var(--c2) !important; }
-.sitio .tarjeta-descarga .tarjeta-descarga__estado { color: var(--c3) !important; font-weight: 600; }
-.sitio .tarjeta-descarga .ficha-tecnica dt { color: rgb(255 255 255 / .75) !important; }
-.sitio .tarjeta-descarga .ficha-tecnica dd { color: #ffffff !important; }
-.sitio .tarjeta-descarga .ficha-tecnica :is(dt, dd) { border-color: rgb(255 255 255 / .18) !important; }
-.sitio .tarjeta-descarga .boton { background: #ffffff !important; color: var(--c1) !important; border-color: #ffffff !important; }
-.sitio .tarjeta-descarga .boton:hover { background: color-mix(in srgb, var(--c3) 30%, #ffffff) !important; }
-.sitio .tarjeta-descarga .tu-equipo { background: #ffffff; color: var(--c1); }
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover { box-shadow: 0 30px 55px -24px color-mix(in srgb, var(--c2) 80%, transparent) !important; }
-.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) .tarjeta-descarga__estado { color: var(--c3) !important; }
-.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #064e47; --c2: #0d9488; --c3: #5eead4; }
-.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #3b0a8f; --c2: #7c3aed; --c3: #d8b4fe; }
-.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #8a2304; --c2: #ea580c; --c3: #fdba74; }
-.sitio .app-funcion:nth-child(4) { --c1: #83104a; --c2: #db2777; --c3: #f9a8d4; }
-.sitio .app-funcion:nth-child(5) { --c1: #6b3a03; --c2: #ca8a04; --c3: #fde047; }
-.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #0b4a26; --c2: #16a34a; --c3: #86efac; }
-.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #142a7a; --c2: #2563eb; --c3: #93c5fd; }
-.sitio :is(.app-funcion, .instalar__paso), .sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) {
-    animation: none !important; border: 1px solid rgb(255 255 255 / .38) !important;
-    background: linear-gradient(180deg, rgb(255 255 255 / .34) 0%, rgb(255 255 255 / .1) 46%, rgb(255 255 255 / 0) 47%) padding-box, radial-gradient(120% 70% at 50% 120%, color-mix(in srgb, var(--c3) 40%, transparent), transparent 60%) padding-box, linear-gradient(155deg, var(--c1) 0%, var(--c2) 70%, color-mix(in srgb, var(--c2) 80%, var(--c3)) 100%) padding-box !important;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / .6), inset 0 -10px 24px -8px rgb(0 0 0 / .35), inset 0 0 0 1px rgb(255 255 255 / .08), 0 6px 0 -1px var(--c1), 0 22px 34px -14px color-mix(in srgb, var(--c2) 75%, transparent), 0 48px 70px -36px rgb(0 0 0 / .55) !important;
-    text-shadow: 0 1px 2px rgb(0 0 0 / .3); transform-style: preserve-3d; transition: transform .55s cubic-bezier(.16,1,.3,1), box-shadow .55s ease !important;
-}
-.sitio :is(.app-funcion, .instalar__paso)::before, .sitio .tarjeta-descarga[data-disponible="true"]::before { content: none !important; display: none !important; }
-.sitio :is(.app-funcion, .instalar__paso)::after {
-    content: '' !important; inset: 0 !important; width: auto !important; height: auto !important; border-radius: inherit !important; filter: none !important;
-    animation: none !important; z-index: 2 !important;
-    background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / .55) 48%, rgb(255 255 255 / .15) 52%, transparent 62%) 170% 0 / 260% 100% no-repeat !important;
-    transition: background-position .9s cubic-bezier(.16,1,.3,1) !important;
-}
-.sitio :is(.app-funcion, .instalar__paso):hover::after { background-position: -70% 0 !important; }
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover {
-    transform: perspective(900px) rotateX(7deg) translateY(-8px) !important;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / .7), inset 0 -10px 24px -8px rgb(0 0 0 / .35), inset 0 0 0 1px rgb(255 255 255 / .1), 0 8px 0 -1px var(--c1), 0 34px 50px -18px color-mix(in srgb, var(--c2) 85%, transparent), 0 60px 80px -40px rgb(0 0 0 / .6) !important;
-}
-.sitio :is(.app-funcion__icono, .instalar__numero) {
-    box-shadow: inset 0 2px 0 #ffffff, inset 0 -3px 0 color-mix(in srgb, var(--c3) 70%, transparent), 0 4px 0 color-mix(in srgb, var(--c1) 60%, transparent), 0 14px 22px -10px rgb(0 0 0 / .5) !important;
-    text-shadow: none;
-}
-@media (prefers-reduced-motion: reduce) {
-    .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover { transform: none !important; }
-}
-.sitio .tarjeta-descarga .boton { text-shadow: none; }
-.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #022c28; --c2: #0f6b63; --c3: #5eead4; }
-.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #1e0558; --c2: #5521b5; --c3: #d8b4fe; }
-.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #4a1102; --c2: #b1400a; --c3: #fdba74; }
-.sitio .app-funcion:nth-child(4) { --c1: #4d0829; --c2: #a3195a; --c3: #f9a8d4; }
-.sitio .app-funcion:nth-child(5) { --c1: #3b1f02; --c2: #8f6205; --c3: #fde047; }
-.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #052914; --c2: #12723a; --c3: #86efac; }
-.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #0b1a4d; --c2: #1d44b0; --c3: #93c5fd; }
-.sitio :is(.app-funcion, .instalar__paso), .sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) { background: linear-gradient(180deg, rgb(255 255 255 / .22) 0%, rgb(255 255 255 / .06) 46%, rgb(255 255 255 / 0) 47%) padding-box, radial-gradient(120% 70% at 50% 120%, color-mix(in srgb, var(--c3) 22%, transparent), transparent 60%) padding-box, linear-gradient(155deg, var(--c1) 0%, var(--c2) 100%) padding-box !important; }
-.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #075a52; --c2: #0d7f74; --c3: #5eead4; }
-.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #3a179a; --c2: #5f2bd6; --c3: #d8b4fe; }
-.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #a3300b; --c2: #d4470f; --c3: #fdba74; }
-.sitio .app-funcion:nth-child(4) { --c1: #8c0f4b; --c2: #bf1865; --c3: #f9a8d4; }
-.sitio .app-funcion:nth-child(5) { --c1: #8a5c00; --c2: #b98500; --c3: #fde047; }
-.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #0c5a2b; --c2: #13803e; --c3: #86efac; }
-.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #1a3596; --c2: #2650d0; --c3: #93c5fd; }
-.sitio .app-portada .icono-app--grande { width: 88px; height: 88px; border-radius: 22px; box-shadow: 0 0 0 1px rgb(35 28 22 / .08), 0 18px 36px -14px rgb(69 49 26 / .45); }
-.sitio .app-portada { padding-block: clamp(20px, 2.5vw, 36px) clamp(24px, 3vw, 40px) !important; }
-.sitio .app-portada .app__rejilla { align-items: center !important; }
-.sitio .app-portada .app__telefonos {
-    display: flex !important; align-items: flex-start; justify-content: center;
-    height: auto !important; padding: 0.4rem 0 3rem !important; gap: 0;
-}
-.sitio .app-portada .app__telefonos::after {
-    content: ''; position: absolute; z-index: 0; left: 50%; bottom: 0.75rem; translate: -50% 0; width: min(72%, 440px); height: 116px; pointer-events: none;
-    background:
-        radial-gradient(ellipse 50% 22% at 50% 78%, rgb(40 28 20 / .26), transparent 72%),
-        radial-gradient(ellipse 60% 46% at 50% 58%, rgb(255 247 226 / .7), rgb(255 236 197 / .3) 46%, transparent 76%);
-}
-.sitio .app-portada .telefono {
-    position: relative !important; inset: auto !important; flex: 0 0 auto;
-    width: clamp(100px, 11.5vw, 166px) !important; aspect-ratio: 390 / 844; transform-origin: 50% 92%; translate: none !important;
-}
-.sitio .app-portada .telefono::before { display: none; }
-.sitio .app-portada .telefono--1 { left: auto; top: auto; z-index: 9; rotate: -1.5deg; }
-.sitio .app-portada .telefono--2 { left: auto; top: auto; z-index: 8; rotate: -14deg; scale: 0.97; filter: none; margin: 0.35rem -7.4rem 0 0; }
-.sitio .app-portada .telefono--3 { left: auto; top: auto; z-index: 8; rotate: 14deg; scale: 0.97; filter: none; margin: 0.35rem 0 0 -7.4rem; }
-@media (max-width: 1023px) {
-    .sitio .app-portada .telefono--2 { margin-right: -4rem; }
-    .sitio .app-portada .telefono--3 { margin-left: -4rem; }
-}
-@media (max-width: 767px) {
-    .sitio .app-portada .telefono--2 { margin-right: -3rem; }
-    .sitio .app-portada .telefono--3 { margin-left: -3rem; }
-}
-@media (max-width: 380px) {
-    .sitio .app-portada .telefono { width: 90px !important; }
-    .sitio .app-portada .telefono--2 { margin: 0.35rem -2.4rem 0 0; }
-    .sitio .app-portada .telefono--3 { margin: 0.35rem 0 0 -2.4rem; }
-}
-.sitio .app-funcion:nth-child(1), .sitio .instalar__paso:nth-child(1) { --c1: #021f1c; --c2: #064a43; --c3: #5eead4; }
-.sitio .app-funcion:nth-child(2), .sitio .instalar__paso:nth-child(2) { --c1: #12053a; --c2: #2f1478; --c3: #d8b4fe; }
-.sitio .app-funcion:nth-child(3), .sitio .instalar__paso:nth-child(3) { --c1: #3a0e02; --c2: #7a2608; --c3: #fdba74; }
-.sitio .app-funcion:nth-child(4) { --c1: #33041b; --c2: #6e0c3b; --c3: #f9a8d4; }
-.sitio .app-funcion:nth-child(5) { --c1: #2c1d00; --c2: #5e4000; --c3: #fde047; }
-.sitio .tarjeta-descarga[data-disponible="true"] { --c1: #031d0d; --c2: #0a4a23; --c3: #86efac; }
-.sitio .tarjeta-descarga[data-disponible="false"] { --c1: #070f33; --c2: #14287a; --c3: #93c5fd; }
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga), .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover, .sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga) * {
-    animation: none !important; transition: none !important;
-}
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover { transform: none !important; }
-.sitio :is(.app-funcion, .instalar__paso)::after { display: none !important; }
-.sitio .app-funcion:hover .app-funcion__icono, .sitio .tarjeta-descarga .boton:hover { transform: none !important; }
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / .6), inset 0 -10px 24px -8px rgb(0 0 0 / .35), inset 0 0 0 1px rgb(255 255 255 / .08), 0 6px 0 -1px var(--c1), 0 22px 34px -14px color-mix(in srgb, var(--c2) 75%, transparent), 0 48px 70px -36px rgb(0 0 0 / .55) !important; }
-.sitio :is(.app-funcion, .instalar__paso), .sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) {
-    --piel: #f4e4d4; --piel-claro: #fffaf4; --piel-hondo: #e6cdb6; color: var(--ed-tinta) !important; text-shadow: none !important; border: 1px solid transparent !important;
-    background: linear-gradient(135deg, rgb(255 255 255 / .75) 0%, rgb(255 255 255 / .15) 34%, transparent 35%) padding-box, linear-gradient(315deg, rgb(255 255 255 / .5) 0%, transparent 22%) padding-box, linear-gradient(115deg, transparent 52%, rgb(255 255 255 / .35) 53%, transparent 66%) padding-box, linear-gradient(160deg, rgb(255 250 244 / .82), rgb(244 228 212 / .72)) padding-box, linear-gradient(135deg, #ffffff, #f0d9c4 30%, #e9dff3 50%, #d9eef0 70%, #ffffff) border-box !important;
-    -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / .95), inset 0 -1px 0 rgb(230 205 182 / .7), 0 14px 30px -18px rgb(120 84 52 / .35), 0 2px 6px -2px rgb(120 84 52 / .12) !important;
-}
-.sitio :is(.app-funcion, .instalar__paso, .tarjeta-descarga):hover { box-shadow: inset 0 1px 0 rgb(255 255 255 / .95), inset 0 -1px 0 rgb(230 205 182 / .7), 0 14px 30px -18px rgb(120 84 52 / .35), 0 2px 6px -2px rgb(120 84 52 / .12) !important; }
-.sitio :is(.app-funcion b, .instalar__paso h3, .tarjeta-descarga h2) { color: var(--ed-tinta) !important; }
-.sitio :is(.app-funcion span, .instalar__paso p, .tarjeta-descarga__nota) { color: #5c5047 !important; }
-.sitio :is(.app-funcion__icono, .instalar__numero) {
-    background: linear-gradient(145deg, #ffffff 0%, #f6e7d8 55%, #ead3bd 100%) !important; color: var(--ed-tinta) !important; border: 1px solid rgb(255 255 255 / .9) !important;
-    box-shadow: inset 0 1px 0 #ffffff, inset 0 -2px 0 rgb(214 186 160 / .55), 0 8px 16px -10px rgb(120 84 52 / .45) !important;
-}
-.sitio .app-funcion__icono svg { color: var(--ed-tinta) !important; }
-.sitio .tarjeta-descarga:is([data-disponible="true"], [data-disponible="false"]) .tarjeta-descarga__estado { color: #2f6b45 !important; }
-.sitio .tarjeta-descarga[data-disponible="false"] .tarjeta-descarga__estado { color: #7a6c5e !important; }
-.sitio .tarjeta-descarga .ficha-tecnica dt { color: #7a6c5e !important; }
-.sitio .tarjeta-descarga .ficha-tecnica dd { color: var(--ed-tinta) !important; }
-.sitio .tarjeta-descarga .ficha-tecnica :is(dt, dd) { border-color: rgb(214 186 160 / .45) !important; }
-.sitio .tarjeta-descarga .boton, .sitio .tarjeta-descarga .boton:hover { background: #24304b !important; color: #ffffff !important; border-color: #24304b !important; }
-.sitio .tarjeta-descarga .icono-app--medio { box-shadow: 0 0 0 1px rgb(255 255 255 / .9), 0 8px 18px -10px rgb(120 84 52 / .45) !important; }
-.sitio .tarjeta-descarga .tu-equipo { background: var(--ed-tinta); color: #fffaf2; }
 
-/* Portada de descarga: composición editorial */
-.sitio .descargar-portada__rejilla {
-    grid-template-columns: minmax(0, 6.5fr) minmax(0, 5.5fr) !important; align-items: center !important; gap: clamp(2rem, 4vw, 5rem) !important;
+.sitio .app-pagina .app__rejilla {
+    align-items: start !important;
 }
-.sitio .descargar-portada__texto { gap: 1.1rem !important; padding-top: 0 !important; max-width: 560px; }
-.sitio .descargar-portada__sello {
-    display: block; font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.19em; color: #6d5e4d;
+
+.sitio .app-pagina .app-portada.seccion {
+    padding-top: clamp(1.5rem, 2.5vw, 3rem) !important;
 }
-.sitio .descargar-portada__sello + .descargar-portada__titulo { margin-top: -0.35rem; }
-.sitio .descargar-portada__titulo {
-    font-size: clamp(1.75rem, 1.3rem + 2vw, 3.05rem) !important; line-height: 1.02 !important; letter-spacing: -0.03em !important; max-width: 12ch;
+
+.sitio .app-pagina .app__telefonos {
+    align-self: center;
 }
-.sitio .descargar-portada__entrada { font-size: 1rem !important; line-height: 1.65; color: #5a4c3e !important; max-width: 34ch; }
-.sitio .descargar-portada__datos {
-    display: flex !important; flex-wrap: wrap; gap: 0 1.7rem !important; margin: 0 !important; padding: 0 !important;
+
+.sitio .descargar-pagina .descargar-portada__rejilla {
+    align-items: center !important;
+}
+
+.sitio .app-pagina .app-portada__texto,
+.sitio .descargar-pagina .descargar-portada__texto {
+    max-width: 38rem;
+}
+
+.sitio .app-pagina .app-portada__titulo,
+.sitio .descargar-pagina .descargar-portada__titulo {
+    max-width: 18ch;
+}
+
+.sitio .app-pagina .app-portada__entrada,
+.sitio .descargar-pagina .descargar-portada__entrada {
+    max-width: 44ch;
+}
+
+.sitio .app-pagina .app__telefonos,
+.sitio .descargar-pagina .descargar-portada__telefonos {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 0 !important;
+}
+
+.sitio .app-pagina .telefono,
+.sitio .descargar-pagina .descargar-portada__telefonos .telefono {
+    position: relative !important;
+    inset: auto !important;
+    flex: 0 0 auto !important;
+    width: clamp(132px, 11vw, 176px) !important;
+    aspect-ratio: auto !important;
+    margin: 0 !important;
+    padding: 6px !important;
+    background-color: #0d0f0f !important;
+    background-image: none !important;
     border: 0 !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+    rotate: 0deg !important;
+    transform: none !important;
+    translate: none !important;
+    scale: 1 !important;
+    filter: none !important;
+    box-shadow: 0 18px 34px -20px rgba(0, 58, 51, 0.45) !important;
+    z-index: 1;
 }
-.sitio .descargar-portada__datos li {
-    display: grid !important; gap: 0.14rem; padding: 0 !important; border: 0 !important; border-radius: 0 !important;
-    background: none !important; box-shadow: none !important; color: inherit !important; font-size: inherit !important; font-weight: 400 !important;
+
+.sitio .app-pagina .telefono img,
+.sitio .descargar-pagina .descargar-portada__telefonos .telefono img {
+    display: block;
+    width: 100%;
+    height: auto !important;
+    object-fit: contain !important;
+    border-radius: 0 !important;
 }
-.sitio .descargar-portada__datos span { font-size: 0.625rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.16em; color: #7c6d5b; }
-.sitio .descargar-portada__datos b { font-size: 0.875rem; font-weight: 600; color: #33291f; font-variant-numeric: tabular-nums; }
-.sitio .descargar-portada .boton--grande {
-    min-height: 50px !important; padding: 0 1.7rem !important; border-radius: 4px !important; font-size: 0.9375rem !important; font-weight: 600; letter-spacing: 0.01em;
-    box-shadow: 0 16px 28px -20px rgb(36 48 75 / .75) !important;
+
+.sitio .app-pagina .telefono--1,
+.sitio .descargar-pagina .telefono--1 {
+    z-index: 3;
 }
-.sitio .descargar-portada__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem 1.4rem; }
-.sitio .descargar-portada__telefono { display: grid; justify-items: center; align-content: center; gap: 1rem; padding-top: 0; }
-.sitio .descargar-portada__estela {
-    position: absolute; z-index: 0; left: 50%; bottom: -2.6rem; translate: -50% 0; width: min(108%, 372px); height: 138px;
-    pointer-events: none; opacity: 0.9;
-    background:
-        radial-gradient(ellipse 40% 13% at 50% 82%, rgb(40 28 20 / .34), transparent 72%),
-        radial-gradient(ellipse 54% 42% at 50% 60%, rgb(255 247 225 / .98), rgb(255 236 197 / .55) 44%, transparent 74%),
-        radial-gradient(circle at 8% 52%, rgb(255 252 244 / .95) 0 1.6px, transparent 3.4px),
-        radial-gradient(circle at 92% 44%, rgb(255 255 255 / .9) 0 1.4px, transparent 3.2px),
-        radial-gradient(circle at 20% 82%, rgb(255 250 235 / .85) 0 1.2px, transparent 2.8px),
-        radial-gradient(circle at 80% 78%, rgb(255 255 255 / .85) 0 1.1px, transparent 2.6px);
-    animation: app-estela 7s ease-in-out infinite;
+
+.sitio .app-pagina .telefono--2,
+.sitio .descargar-pagina .telefono--2 {
+    margin-right: -2.75rem !important;
 }
-@keyframes app-estela {
-    0%, 100% { opacity: 0.82; }
-    50% { opacity: 1; }
+
+.sitio .app-pagina .telefono--3,
+.sitio .descargar-pagina .telefono--3 {
+    margin-left: -2.75rem !important;
 }
-.sitio .descargar-portada__telefono::before {
-    background: radial-gradient(closest-side, rgb(255 248 233 / .8), rgb(255 244 222 / .28) 58%, transparent 80%) !important;
-    filter: blur(6px);
+
+.sitio .app-pagina .casa-etiqueta,
+.sitio .descargar-pagina .casa-etiqueta,
+.sitio #ventajas.casa-seccion .casa-etiqueta {
+    position: relative;
+    padding-left: 1.7rem !important;
+    background-color: #111821 !important;
+    color: #ffffff !important;
 }
-.sitio .descargar-portada__telefonos {
-    position: relative; z-index: 1; display: flex; align-items: flex-start; justify-content: center;
-    padding: 0.35rem 0 1.9rem;
+
+.sitio .app-pagina .casa-etiqueta::before,
+.sitio .descargar-pagina .casa-etiqueta::before,
+.sitio #ventajas.casa-seccion .casa-etiqueta::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    width: 0.45rem;
+    height: 0.45rem;
+    background-color: #004d43;
+    transform: translateY(-50%);
 }
-.sitio .descargar-portada__telefonos .telefono {
-    position: relative !important; inset: auto !important; flex: 0 0 auto;
-    width: clamp(150px, 12vw, 185px) !important; aspect-ratio: 390 / 844; transform-origin: 50% 92%; translate: none !important;
-    box-shadow: 0 46px 74px -42px rgb(40 28 20 / .68), 0 16px 30px -22px rgb(40 28 20 / .42), inset 0 0 0 1.5px rgb(255 255 255 / .18) !important;
+
+.sitio .app-pagina .app-funciones-seccion .seccion__titulo::after,
+.sitio #ventajas.casa-seccion .seccion__titulo::after,
+.sitio .descargar-pagina .descargar-plataformas .seccion__titulo::after {
+    background-color: #004d43 !important;
 }
-.sitio .descargar-portada__telefonos .telefono::before { display: none; }
-.sitio .descargar-portada__telefonos .telefono--1 { z-index: 9; rotate: -1.5deg; }
-.sitio .descargar-portada__telefonos .telefono--2 { z-index: 8; rotate: -14deg; scale: 0.97; filter: none; margin: 0.35rem -6.5rem 0 0; }
-.sitio .descargar-portada__telefonos .telefono--3 { z-index: 8; rotate: 14deg; scale: 0.97; filter: none; margin: 0.35rem 0 0 -6.5rem; }
-.sitio .descargar-portada__muestra {
-    display: block; margin: 0; font-size: 0.5625rem; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.24em; color: #83735f;
+
+.sitio .app-pagina .app-funciones-seccion .seccion__titulo,
+.sitio #ventajas.casa-seccion .seccion__titulo,
+.sitio .descargar-pagina .descargar-plataformas .seccion__titulo {
+    color: #111821 !important;
 }
-@media (max-width: 1023px) {
-    .sitio .descargar-portada__telefonos .telefono--2 { margin-right: -4.6rem; }
-    .sitio .descargar-portada__telefonos .telefono--3 { margin-left: -4.6rem; }
+
+.sitio #ventajas.casa-seccion .ventaja h2,
+.sitio .app-pagina .app-funciones .app-funcion b,
+.sitio .descargar-pagina .descarga__rejilla .tarjeta-descarga h2,
+.sitio .descargar-pagina .descargar-plataformas .instalar h2,
+.sitio .descargar-pagina .descargar-plataformas .instalar__paso h3 {
+    color: #111821 !important;
 }
-@media (max-width: 860px) {
-    .sitio .descargar-portada__rejilla { grid-template-columns: 1fr !important; gap: 1.6rem !important; }
-    .sitio .descargar-portada__texto { max-width: none; }
-    .sitio .descargar-portada__telefono { padding-bottom: 0; }
-    .sitio .descargar-portada__telefonos .telefono { width: clamp(160px, 24vw, 200px) !important; }
-    .sitio .descargar-portada__telefonos .telefono--2 { margin-right: -5.5rem; }
-    .sitio .descargar-portada__telefonos .telefono--3 { margin-left: -5.5rem; }
+
+.sitio .app-pagina .app-funciones .app-funcion b,
+.sitio .descargar-pagina .descarga__rejilla .tarjeta-descarga h2 {
+    font-size: 1.05rem !important;
+    letter-spacing: -0.01em !important;
 }
+
+.sitio .app-pagina .app-funciones {
+    counter-reset: funcion;
+}
+
+.sitio .app-pagina .app-funciones .app-funcion {
+    position: relative;
+    counter-increment: funcion;
+    padding-top: 2.9rem !important;
+    overflow: hidden;
+}
+
+.sitio .app-pagina .app-funciones .app-funcion::before,
+.sitio .descargar-pagina .tarjeta-descarga::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 6px;
+    background: linear-gradient(90deg, #111821 0 68%, #004d43 68%);
+}
+
+.sitio .app-pagina .app-funciones .app-funcion::after {
+    content: counter(funcion, decimal-leading-zero);
+    position: absolute;
+    top: 1rem;
+    right: 1.25rem;
+    color: #004d43;
+    font-family: 'Work Sans Variable', 'Work Sans', Arial, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1;
+}
+
+.sitio .app-pagina .app-funciones-seccion,
+.sitio .descargar-pagina .descargar-plataformas {
+    padding-block: clamp(3rem, 4.5vw, 5.5rem) !important;
+}
+
+.sitio .app-pagina .app-funciones,
+.sitio .app-pagina .app__lista {
+    margin-bottom: 0 !important;
+}
+
+.sitio .app-pagina .app-funcion {
+    gap: 0.9rem !important;
+}
+
+.sitio .app-pagina .app-funcion__icono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sitio .descargar-pagina .tarjeta-descarga {
+    position: relative;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-content: start !important;
+    gap: 1rem !important;
+    padding: 2.35rem 1.5rem 1.5rem !important;
+    overflow: hidden;
+}
+
+.sitio .descargar-pagina .tarjeta-descarga__cabeza {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.sitio .descargar-pagina .tarjeta-descarga__cabeza h2,
+.sitio .descargar-pagina .tarjeta-descarga__estado {
+    margin: 0;
+}
+
+.sitio .descargar-pagina .tarjeta-descarga__estado {
+    margin-top: 0.15rem !important;
+}
+
+.sitio .descargar-pagina .ficha-tecnica {
+    display: grid !important;
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) !important;
+    gap: 0.4rem 1rem !important;
+    margin: 0 !important;
+    padding: 1rem !important;
+}
+
+.sitio .descargar-pagina .ficha-tecnica dt,
+.sitio .descargar-pagina .ficha-tecnica dd {
+    margin: 0 !important;
+    padding: 0.3rem 0 !important;
+    border-bottom: 1px solid rgba(0, 77, 67, 0.12);
+}
+
+.sitio .descargar-pagina .tarjeta-descarga .boton {
+    width: 100%;
+    margin-top: auto;
+}
+
+.sitio .descargar-pagina .tarjeta-descarga[data-disponible='true'] .tarjeta-descarga__estado {
+    color: #004d43 !important;
+    font-weight: 600 !important;
+}
+
+.sitio .descargar-pagina .instalar {
+    margin-top: 3rem !important;
+}
+
+.sitio .descargar-pagina .instalar h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+}
+
+.sitio .descargar-pagina .instalar__pasos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sitio .descargar-pagina .instalar .instalar__paso {
+    position: relative;
+    display: grid;
+    gap: 0.65rem;
+    padding-top: 2.5rem !important;
+    overflow: hidden;
+}
+
+.sitio .descargar-pagina .instalar .instalar__paso::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 5px;
+    background-color: #004d43;
+}
+
+.sitio .descargar-pagina .instalar .instalar__numero {
+    background-color: #111821 !important;
+    color: #ffffff !important;
+    border-radius: 6px !important;
+}
+
+.sitio .descargar-pagina .instalar__paso h3,
+.sitio .descargar-pagina .instalar__paso p {
+    margin: 0;
+}
+
+.sitio .descargar-pagina .actualizacion-app {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 2rem !important;
+    margin-top: 3rem !important;
+    padding: 1.75rem !important;
+    background-color: #ffffff !important;
+    border: 1px solid #dcdfe6 !important;
+    border-left: 6px solid #111821 !important;
+    border-radius: 16px !important;
+}
+
+.sitio .descargar-pagina .actualizacion-app__contenido {
+    display: grid;
+    gap: 0.75rem;
+    justify-items: start;
+}
+
+.sitio .descargar-pagina .actualizacion-app h2,
+.sitio .descargar-pagina .actualizacion-app p {
+    margin: 0;
+}
+
+.sitio .descargar-pagina .actualizacion-app h2 {
+    color: #111821 !important;
+}
+
+.sitio .descargar-pagina .actualizacion-app__version {
+    color: #004d43;
+    font-weight: 600;
+}
+
+.sitio .descargar-pagina .actualizacion-app__qr {
+    display: block;
+    width: 132px;
+    height: 132px;
+    padding: 0.5rem;
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+    border-radius: 12px;
+}
+
+@media (max-width: 991px) {
+    .sitio .app-pagina .app__rejilla,
+    .sitio .descargar-pagina .descargar-portada__rejilla {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .sitio .app-pagina .telefono,
+    .sitio .descargar-pagina .descargar-portada__telefonos .telefono {
+        width: clamp(120px, 16vw, 160px) !important;
+    }
+
+    .sitio .descargar-pagina .instalar__pasos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .sitio .descargar-pagina .instalar__pasos {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sitio .descargar-pagina .actualizacion-app {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .sitio .descargar-pagina .actualizacion-app__qr {
+        justify-self: center;
+    }
+}
+
 @media (max-width: 640px) {
-    .sitio .descargar-portada__sello { font-size: 0.625rem; letter-spacing: 0.16em; }
-    .sitio .descargar-portada__datos { gap: 0 1.2rem !important; }
-    .sitio .descargar-portada__telefonos .telefono { width: clamp(126px, 33vw, 160px) !important; }
-    .sitio .descargar-portada__telefonos .telefono--2 { margin-right: -4.4rem; }
-    .sitio .descargar-portada__telefonos .telefono--3 { margin-left: -4.4rem; }
-    .sitio .descargar-portada__estela { width: min(104%, 320px); height: 116px; bottom: -1.2rem; }
-}
-@media (max-width: 380px) {
-    .sitio .descargar-portada__telefonos .telefono { width: 108px !important; }
-    .sitio .descargar-portada__telefonos .telefono--2 { margin: 0.35rem -4rem 0 0; }
-    .sitio .descargar-portada__telefonos .telefono--3 { margin: 0.35rem 0 0 -4rem; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .sitio .descargar-portada__estela { animation: none; }
+    .sitio .app-pagina .telefono,
+    .sitio .descargar-pagina .descargar-portada__telefonos .telefono {
+        width: clamp(88px, 24vw, 120px) !important;
+    }
+
+    .sitio .app-pagina .telefono--2,
+    .sitio .descargar-pagina .telefono--2 {
+        margin-right: -1.5rem !important;
+    }
+
+    .sitio .app-pagina .telefono--3,
+    .sitio .descargar-pagina .telefono--3 {
+        margin-left: -1.5rem !important;
+    }
+
+    .sitio .descargar-pagina .ficha-tecnica {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .sitio .descargar-pagina .ficha-tecnica dt {
+        padding-bottom: 0 !important;
+        border-bottom: 0 !important;
+    }
+
+    .sitio .descargar-pagina .ficha-tecnica dd {
+        padding-top: 0 !important;
+    }
 }

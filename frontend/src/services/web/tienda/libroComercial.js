@@ -46,4 +46,43 @@ export function libroComercial(l) {
 
 export const listaLibros = (json) => (Array.isArray(json) ? json : json.data || json.libros || []).filter((l) => Number(l.estado) === 1).map(libroComercial);
 
+export function autoresConMasLibros(libros) {
+    const grupos = new Map();
+    for (const libro of libros) {
+        const nombre = String(libro.autor || '').trim();
+        if (!nombre) continue;
+        if (!grupos.has(nombre)) grupos.set(nombre, 0);
+        grupos.set(nombre, grupos.get(nombre) + 1);
+    }
+    return [...grupos]
+        .map(([nombre, cantidad]) => ({ nombre, cantidad }))
+        .sort((a, b) => b.cantidad - a.cantidad || a.nombre.localeCompare(b.nombre, 'es'))
+        .slice(0, 6);
+}
+
+export function datosSerieDe(titulo) {
+    const original = String(titulo || '').trim();
+    const sinParentesis = original.replace(/\s*[[(（][^\])）]*[\])）]\s*$/u, ' ').trim();
+    const sinVolumen = sinParentesis.replace(/[,\s]*(?:Vol\.?|Volumen|Volume|Tomo|Parte|N[°º]|#)\s*\d+.*$/iu, '').trim();
+    const nombre = sinVolumen.replace(/[,\s]*\d+(?:[.,]\d+)*\s*$/u, '').replace(/\s+/gu, ' ').trim();
+    return { nombre, tieneMarca: nombre !== original };
+}
+
+export function seriesDe(libros) {
+    const grupos = new Map();
+    for (const libro of libros) {
+        const { nombre, tieneMarca } = datosSerieDe(libro.titulo);
+        if (!tieneMarca || !nombre || nombre.length < 3 || nombre.length > 48) continue;
+        const clave = nombre.toLocaleLowerCase('es');
+        if (!grupos.has(clave)) grupos.set(clave, { nombre, cantidad: 0, libros: [] });
+        const grupo = grupos.get(clave);
+        grupo.cantidad += 1;
+        grupo.libros.push(libro);
+    }
+    return [...grupos.values()]
+        .filter((serie) => serie.cantidad > 1)
+        .sort((a, b) => b.cantidad - a.cantidad || a.nombre.localeCompare(b.nombre, 'es'))
+        .slice(0, 10);
+}
+
 export const centimos = (valor) => Math.round(Number(valor || 0) * 100);

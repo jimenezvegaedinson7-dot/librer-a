@@ -1,5 +1,5 @@
 /* ============================================================
-   Botones estilo MATIDANA (forma cuadrada, colores del proyecto)
+   Botones estilo MATIDANA (forma redondeada, colores del proyecto)
    ============================================================ */
 
 .btn {
@@ -10,7 +10,7 @@
     transition: all 0.2s ease;
     cursor: pointer;
     border: 2px solid transparent;
-    border-radius: 0;
+    border-radius: 999px;
     justify-content: center;
     align-items: center;
     gap: 0.5rem;

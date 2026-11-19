@@ -48,7 +48,7 @@
     <script>
       (function () {
           var ruta = location.pathname.replace(/\/+$/, '') || '/';
-          var publicas = ['/', '/catalogo', '/aplicacion', '/caracteristicas', '/nosotros', '/descargar'];
+          var publicas = ['/', '/catalogo', '/buscar', '/caracteristicas', '/nosotros', '/descargar'];
           if (publicas.indexOf(ruta) === -1) return;
 
           if ('scrollRestoration' in history) history.scrollRestoration = 'manual';

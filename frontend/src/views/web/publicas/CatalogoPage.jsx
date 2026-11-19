@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
-import { FaCircleCheck } from 'react-icons/fa6';
+import { FaCircleCheck, FaMapPin, FaShieldHalved, FaTruck } from 'react-icons/fa6';
 import Migas from '../../../components/web/Migas';
 import { PrecioOferta } from '../../../components/web/PrecioOferta';
 import { EtiquetaNuevo, EtiquetasSuperiores } from '../../../components/web/EtiquetasLibro';
@@ -8,7 +8,15 @@ import { portada, soles } from '../../../services/web/formato';
 import ComprarLibro from '../../../components/web/tienda/ComprarLibro';
 import PortadaLibro from '../../../components/web/tienda/PortadaLibro';
 import { referenciaPortadaLibro, AVISO_PORTADA_REFERENCIA } from '../../../services/compartido/utils/portadasLibro';
-import { prioridadCategoria } from '../../../models/config/web/site';
+import {
+    BLOQUES_POR_SECCION,
+    CATEGORIAS_RELACIONADAS,
+    DELIVERY_CIUDAD,
+    DIRECCION_RECOJO,
+    etiquetaCortaCategoria,
+    prioridadCategoria
+} from '../../../models/config/web/site';
+import { autoresConMasLibros, seriesDe } from '../../../services/web/tienda/libroComercial';
 
 const normalizar = (t) =>
     String(t || '')
@@ -23,6 +31,36 @@ const ORDENES = {
     'precio-desc': { texto: 'Precio: de mayor a menor', fn: (a, b) => b.precioFinal - a.precioFinal },
     descuento: { texto: 'Mayor descuento', fn: (a, b) => b.descuento - a.descuento },
     titulo: { texto: 'Título (A-Z)', fn: (a, b) => a.titulo.localeCompare(b.titulo, 'es') }
+};
+
+const TITULOS_CATEGORIA = {
+    'Cómic y Manga': 'Cómics y manga',
+    Ficción: 'Libros de ficción',
+    Ciencias: 'Libros de ciencias',
+    Infantil: 'Libros infantiles',
+    Juvenil: 'Libros juveniles'
+};
+
+function tituloCategoria(nombre) {
+    return TITULOS_CATEGORIA[nombre] || `Libros de ${etiquetaCortaCategoria(nombre)}`;
+}
+
+function introCategoria(nombre) {
+    return `Explora ${etiquetaCortaCategoria(nombre).toLocaleLowerCase('es')} disponibles en MATIDANA y elige tu próxima lectura.`;
+}
+
+const RECOJO_CORTO = DIRECCION_RECOJO.split(',')[0];
+
+const TITULO_BLOQUE = {
+    nuevos: (etiqueta) => `Novedades de ${etiqueta}`,
+    ofertas: (etiqueta) => `Ofertas en ${etiqueta}`,
+    vendidos: (etiqueta) => `Los más leídos de ${etiqueta}`,
+    stock: (etiqueta) => `Listos para llevar en ${etiqueta}`
+};
+
+const ENLACE_BLOQUE = {
+    ofertas: (codificado) => `/catalogo?categoria=${codificado}&ofertas=1`,
+    stock: (codificado) => `/catalogo?categoria=${codificado}&stock=1`
 };
 
 export function Stock({ libro }) {
@@ -156,16 +194,39 @@ export default function CatalogoPage() {
     const orden = ORDENES[params.get('orden')] ? params.get('orden') : 'destacados';
     const soloOfertas = params.get('ofertas') === '1';
     const soloStock = params.get('stock') === '1';
+    const hayFiltro = Boolean(q || autorFiltro || soloOfertas || soloStock);
     const esCelular = useEsCelular();
 
-    const categorias = useMemo(() => {
-        const cuenta = new Map();
-        libros.forEach((l) => l.categoria && cuenta.set(l.categoria, (cuenta.get(l.categoria) || 0) + 1));
-        return [...cuenta.entries()].sort((a, b) => prioridadCategoria(a[0]) - prioridadCategoria(b[0]) || b[1] - a[1] || a[0].localeCompare(b[0], 'es'));
+    const datosCategoria = useMemo(() => {
+        const mapa = new Map();
+        for (const libro of libros) {
+            if (!libro.categoria) continue;
+            if (!mapa.has(libro.categoria)) mapa.set(libro.categoria, { cantidad: 0, portada: null });
+            const datos = mapa.get(libro.categoria);
+            datos.cantidad += 1;
+            if (!datos.portada && libro.portada) datos.portada = libro;
+        }
+        return mapa;
     }, [libros]);
-    const categoriasDestacadas = useMemo(() => categorias.slice(0, 8).map(([nombre]) => nombre), [categorias]);
-    const enOferta = useMemo(() => libros.filter((l) => l.descuento > 0).length, [libros]);
-    const conStock = useMemo(() => libros.filter((l) => l.disponible).length, [libros]);
+
+    const categoriasConLibros = useMemo(() => [...datosCategoria.keys()], [datosCategoria]);
+    const relacionadas = useMemo(() => {
+        if (!categoria) return [];
+        const sugeridas = (CATEGORIAS_RELACIONADAS[categoria] || []).filter(
+            (nombre) => nombre !== categoria && categoriasConLibros.includes(nombre)
+        );
+        const resto = categoriasConLibros
+            .filter((nombre) => nombre !== categoria && !sugeridas.includes(nombre))
+            .sort((a, b) => prioridadCategoria(a) - prioridadCategoria(b) || a.localeCompare(b, 'es'));
+        return [...sugeridas, ...resto].slice(0, 6);
+    }, [categoria, categoriasConLibros]);
+
+    const librosCategoria = useMemo(
+        () => (categoria ? libros.filter((l) => l.categoria === categoria) : []),
+        [categoria, libros]
+    );
+    const series = useMemo(() => (categoria ? seriesDe(librosCategoria).slice(0, 6) : []), [categoria, librosCategoria]);
+    const autores = useMemo(() => (categoria ? autoresConMasLibros(librosCategoria).slice(0, 5) : []), [categoria, librosCategoria]);
 
     const visibles = useMemo(() => {
         const nq = normalizar(q);
@@ -190,6 +251,44 @@ export default function CatalogoPage() {
         setLimite(POR_TANDA);
     }
     const mostrados = visibles.slice(0, limite);
+    const destacados = useMemo(() => {
+        if (!categoria || librosCategoria.length < 6) return [];
+        const etiqueta = etiquetaCortaCategoria(categoria);
+        const codificado = encodeURIComponent(categoria);
+        const bloques = BLOQUES_POR_SECCION[categoria] || ['nuevos', 'ofertas'];
+        const porClave = {
+            nuevos: {
+                id: 'nuevos',
+                titulo: TITULO_BLOQUE.nuevos(etiqueta),
+                lista: librosCategoria
+                    .filter((l) => l.esNuevo)
+                    .sort((a, b) => String(b.creadoEn || '').localeCompare(String(a.creadoEn || '')) || b.id - a.id)
+            },
+            ofertas: {
+                id: 'ofertas',
+                titulo: TITULO_BLOQUE.ofertas(etiqueta),
+                lista: librosCategoria.filter((l) => l.descuento > 0).sort((a, b) => b.descuento - a.descuento || b.id - a.id),
+                enlace: ENLACE_BLOQUE.ofertas(codificado)
+            },
+            vendidos: {
+                id: 'vendidos',
+                titulo: TITULO_BLOQUE.vendidos(etiqueta),
+                lista: librosCategoria.filter((l) => l.masVendido)
+            },
+            stock: {
+                id: 'stock',
+                titulo: TITULO_BLOQUE.stock(etiqueta),
+                lista: librosCategoria.filter((l) => l.disponible),
+                enlace: ENLACE_BLOQUE.stock(codificado)
+            }
+        };
+        return bloques
+            .map((clave) => porClave[clave])
+            .filter((bloque) => bloque?.lista.length >= 2)
+            .map((bloque) => ({ ...bloque, lista: bloque.lista.slice(0, 8) }));
+    }, [categoria, librosCategoria]);
+
+    const portadasHero = hayFiltro ? visibles.slice(0, 5) : (destacados[0]?.lista.length ? destacados[0].lista : librosCategoria).slice(0, 5);
 
     const actualizar = (cambios) => {
         const siguiente = new URLSearchParams(window.location.search);
@@ -197,22 +296,42 @@ export default function CatalogoPage() {
         setParams(siguiente, { replace: true });
     };
 
-    const hayFiltros = Boolean(q || categoria || autorFiltro || soloOfertas || soloStock);
-    const limpiar = () => {
-        actualizar({ q: '', categoria: '', autor: '', ofertas: '', stock: '' });
-    };
-
     return (
         <>
-            <Migas actual="Catálogo" />
+            <Migas actual={categoria ? etiquetaCortaCategoria(categoria) : 'Catálogo'} padres={categoria ? [{ ruta: '/catalogo', texto: 'Libros' }] : []} />
             <section className="seccion catalogo-pagina" aria-labelledby="catalogo-pagina-titulo">
                 <div className="contenedor">
                     <header className="catalogo-cabeza">
-                        <div className="catalogo-cabeza__texto">
-                            <h1 id="catalogo-pagina-titulo" className="seccion__titulo">
-                                Catálogo
-                            </h1>
-                            <p className="seccion__entrada">Libros físicos para descubrir historias y encontrar tu próxima lectura.</p>
+                        <div className="catalogo-cabeza__principal">
+                            <div className="catalogo-cabeza__texto">
+                                <h1 id="catalogo-pagina-titulo" className="seccion__titulo">
+                                    {categoria ? tituloCategoria(categoria) : 'Catálogo'}
+                                </h1>
+                                <p className="seccion__entrada">
+                                    {categoria ? introCategoria(categoria) : 'Libros físicos para descubrir historias y encontrar tu próxima lectura.'}
+                                </p>
+                                {categoria && (
+                                    <p className="catalogo-cabeza__cantidad">
+                                        {hayFiltro ? `${visibles.length} ${visibles.length === 1 ? 'título con este filtro' : 'títulos con este filtro'}` : `${librosCategoria.length} títulos en el catálogo`}
+                                    </p>
+                                )}
+                            </div>
+                            {portadasHero.length > 0 && (
+                                <div className="catalogo-cabeza__collage" aria-hidden="true">
+                                    {portadasHero.map((libro, i) => (
+                                        <img
+                                            key={libro.id}
+                                            src={portada(libro.portada, 240)}
+                                            alt=""
+                                            width="120"
+                                            height="180"
+                                            loading="lazy"
+                                            decoding="async"
+                                            style={{ '--i': i }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <label className="ordenar">
                             <span>Ordenar por</span>
@@ -226,19 +345,54 @@ export default function CatalogoPage() {
                         </label>
                     </header>
 
-                    {categoriasDestacadas.length > 0 && (
-                        <section className="catalogo-categorias" aria-labelledby="catalogo-categorias-titulo">
-                            <div className="catalogo-categorias__cabeza">
-                                <h2 id="catalogo-categorias-titulo">Categorías destacadas</h2>
-                                <a href="#categorias">Ver más temáticas</a>
+                    {categoria && (
+                        <ul className="catalogo-beneficios" aria-label="Ventajas de comprar en MATIDANA">
+                            <li>
+                                <FaMapPin aria-hidden="true" />
+                                <span>
+                                    <strong>Recojo gratuito</strong>
+                                    <small>{RECOJO_CORTO}, Pallasca</small>
+                                </span>
+                            </li>
+                            <li>
+                                <FaTruck aria-hidden="true" />
+                                <span>
+                                    <strong>Delivery local</strong>
+                                    <small>{DELIVERY_CIUDAD.nombre}</small>
+                                </span>
+                            </li>
+                            <li>
+                                <FaShieldHalved aria-hidden="true" />
+                                <span>
+                                    <strong>Pago seguro</strong>
+                                    <small>PayU</small>
+                                </span>
+                            </li>
+                        </ul>
+                    )}
+
+                    {categoria && !hayFiltro && series.length > 0 && (
+                        <section className="catalogo-bloque catalogo-series" aria-labelledby="catalogo-series-titulo">
+                            <div className="catalogo-bloque__cabeza">
+                                <div>
+                                    <p className="catalogo-bloque__eyebrow">Sigue la historia</p>
+                                    <h2 id="catalogo-series-titulo">Series y sagas en {etiquetaCortaCategoria(categoria)}</h2>
+                                </div>
+                                <p className="catalogo-bloque__nota">Agrupado por títulos con volumen registrado</p>
                             </div>
-                            <ul className="catalogo-categorias__rejilla">
-                                {categoriasDestacadas.map((nombre) => (
-                                    <li key={nombre}>
-                                        <Link
-                                            to={`/catalogo?categoria=${encodeURIComponent(nombre)}`}
-                                            aria-current={categoria === nombre ? 'page' : undefined}>
-                                            {nombre}
+                            <ul className="catalogo-series__rejilla">
+                                {series.map((serie) => (
+                                    <li key={serie.nombre}>
+                                        <Link to={`/catalogo?categoria=${encodeURIComponent(categoria)}&q=${encodeURIComponent(serie.nombre)}`}>
+                                            <span className="catalogo-series__portadas" aria-hidden="true">
+                                                {serie.libros.slice(0, 3).map((libro) => (
+                                                    <img key={libro.id} src={portada(libro.portada, 160)} alt="" width="96" height="144" loading="lazy" decoding="async" />
+                                                ))}
+                                            </span>
+                                            <span className="catalogo-series__nombre">{serie.nombre}</span>
+                                            <span className="catalogo-series__cantidad" aria-hidden="true">
+                                                {serie.cantidad} {serie.cantidad === 1 ? 'libro' : 'libros'}
+                                            </span>
                                         </Link>
                                     </li>
                                 ))}
@@ -246,48 +400,73 @@ export default function CatalogoPage() {
                         </section>
                     )}
 
-                    <div className="catalogo-cuerpo">
-                        <aside id="categorias" className="catalogo-lateral" aria-label="Filtros del catálogo">
-                            {categorias.length > 0 && (
-                                <div className="filtro-bloque">
-                                    <h2>Categorías</h2>
-                                    <div className="chips" role="group" aria-label="Filtrar por categoría">
-                                        <button type="button" className="chip" aria-pressed={!categoria} onClick={() => actualizar({ categoria: '' })}>
-                                            Todas <span className="chip__cuenta">{libros.length}</span>
-                                        </button>
-                                        {categorias.map(([c, n]) => (
-                                            <button
-                                                key={c}
-                                                type="button"
-                                                className="chip"
-                                                aria-pressed={categoria === c}
-                                                onClick={() => actualizar({ categoria: categoria === c ? '' : c })}>
-                                                {c} <span className="chip__cuenta">{n}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                            {libros.length > 0 && (
-                                <div className="filtro-bloque">
-                                    <h2>Mostrar</h2>
-                                    <label className="casilla">
-                                        <input type="checkbox" checked={soloOfertas} onChange={(e) => actualizar({ ofertas: e.target.checked ? '1' : '' })} />
-                                        Solo ofertas <span className="chip__cuenta">{enOferta}</span>
-                                    </label>
-                                    <label className="casilla">
-                                        <input type="checkbox" checked={soloStock} onChange={(e) => actualizar({ stock: e.target.checked ? '1' : '' })} />
-                                        Solo con stock <span className="chip__cuenta">{conStock}</span>
-                                    </label>
-                                </div>
-                            )}
-                            {hayFiltros && (
-                                <button type="button" className="boton boton--linea boton--chico" onClick={limpiar}>
-                                    Limpiar filtros
-                                </button>
-                            )}
-                        </aside>
+                    {!hayFiltro && destacados.length > 0 && (
+                        <div className="catalogo-destacados">
+                            {destacados.map((e) => (
+                                <Estante key={e.id} estante={e} />
+                            ))}
+                        </div>
+                    )}
 
+                    {categoria && !hayFiltro && autores.length > 0 && (
+                        <section className="catalogo-bloque catalogo-autores" aria-labelledby="catalogo-autores-titulo">
+                            <div className="catalogo-bloque__cabeza">
+                                <div>
+                                    <p className="catalogo-bloque__eyebrow">Explora por creador</p>
+                                    <h2 id="catalogo-autores-titulo">Autores con más títulos</h2>
+                                </div>
+                            </div>
+                            <ul className="catalogo-autores__rejilla">
+                                {autores.map((autor) => (
+                                    <li key={autor.nombre}>
+                                        <Link to={`/catalogo?categoria=${encodeURIComponent(categoria)}&q=${encodeURIComponent(autor.nombre)}`}>
+                                            <span className="catalogo-autores__inicial" aria-hidden="true">
+                                                {autor.nombre.trim().charAt(0).toLocaleUpperCase('es')}
+                                            </span>
+                                            <span className="catalogo-autores__nombre">{autor.nombre}</span>
+                                            <span className="catalogo-autores__cantidad" aria-hidden="true">
+                                                {autor.cantidad} {autor.cantidad === 1 ? 'título' : 'títulos'}
+                                            </span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+
+                    {categoria && !hayFiltro && relacionadas.length > 0 && (
+                        <section className="catalogo-bloque catalogo-temas" aria-labelledby="catalogo-temas-titulo">
+                            <div className="catalogo-temas__cabeza">
+                                <div>
+                                    <p className="catalogo-bloque__eyebrow">Continúa explorando</p>
+                                    <h2 id="catalogo-temas-titulo">Temáticas relacionadas</h2>
+                                </div>
+                                <Link to="/catalogo" className="catalogo-temas__todo">
+                                    Ver catálogo completo
+                                </Link>
+                            </div>
+                            <ul className="catalogo-temas__rejilla">
+                                {relacionadas.map((nombre) => {
+                                    const datos = datosCategoria.get(nombre);
+                                    return (
+                                        <li key={nombre}>
+                                            <Link to={`/catalogo?categoria=${encodeURIComponent(nombre)}`}>
+                                                {datos?.portada && (
+                                                    <img src={portada(datos.portada.portada, 120)} alt="" width="80" height="120" loading="lazy" decoding="async" aria-hidden="true" />
+                                                )}
+                                                <span className="catalogo-temas__nombre">{etiquetaCortaCategoria(nombre)}</span>
+                                                <span className="catalogo-temas__cantidad" aria-hidden="true">
+                                                    {datos?.cantidad ?? 0} {datos?.cantidad === 1 ? 'libro' : 'libros'}
+                                                </span>
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        </section>
+                    )}
+
+                    <div className="catalogo-cuerpo">
                         <div className="catalogo-resultados">
                             {error ? (
                                 <p className="aviso" role="status">
@@ -298,7 +477,7 @@ export default function CatalogoPage() {
                                 </p>
                             ) : (
                                 <>
-                                    {esCelular && !cargando && !hayFiltros && <Estantes libros={libros} />}
+                                    {esCelular && !cargando && !categoria && <Estantes libros={libros} />}
                                     <p className="resultado" role="status" aria-live="polite">
                                         {cargando ? (
                                             'Cargando libros…'
@@ -306,7 +485,7 @@ export default function CatalogoPage() {
                                             <>
                                                 <strong>{`${visibles.length} ${visibles.length === 1 ? 'libro' : 'libros'}`}</strong>
                                                 {q && <> para «{q}»</>}
-                                                {categoria && <> en {categoria}</>}
+                                                {categoria && <> en {etiquetaCortaCategoria(categoria)}</>}
                                                 {autorNombre && <> de {autorNombre}</>}
                                             </>
                                         )}
@@ -331,9 +510,6 @@ export default function CatalogoPage() {
                                     )}
                                     {!cargando && visibles.length > mostrados.length && (
                                         <div className="catalogo-mas">
-                                            <p>
-                                                Mostrando {mostrados.length} de {visibles.length} libros
-                                            </p>
                                             <button type="button" className="boton boton--linea" onClick={() => setLimite((n) => n + POR_TANDA)}>
                                                 Ver más libros
                                             </button>

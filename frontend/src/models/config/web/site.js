@@ -31,16 +31,16 @@ export const UBICACION_TIENDA = {
 export const NAVEGACION = [
     { ruta: '/', texto: 'Inicio' },
     { ruta: '/catalogo', texto: 'Catálogo' },
-    { ruta: '/nosotros', texto: 'Nosotros' },
-    { ruta: '/aplicacion', texto: 'Aplicación' },
     { ruta: '/catalogo?ofertas=1', texto: 'Ofertas' },
+    { ruta: '/nosotros', texto: 'Nosotros' },
     { ruta: '/descargar', texto: 'Descargar', destacado: true }
 ];
 
 export const CATEGORIAS_DESTACADAS = [
     'Cómic y Manga',
     'Ficción',
-    'No Ficción',
+    'Conocimiento y Cultura',
+    'Ciencias',
     'Juvenil',
     'Infantil',
     'Animación',
@@ -50,12 +50,52 @@ export const CATEGORIAS_DESTACADAS = [
     'Fantasía',
     'Poesía',
     'Cuento',
-    'Ensayo'
+    'Ensayo',
+    'Ciencia ficción',
+    'Misterio / Suspenso',
+    'Terror',
+    'Romance',
+    'Historia',
+    'Biografía',
+    'Arte'
 ];
 
 export const prioridadCategoria = (nombre) => {
     const indice = CATEGORIAS_DESTACADAS.indexOf(nombre);
     return indice === -1 ? CATEGORIAS_DESTACADAS.length : indice;
+};
+
+const ETIQUETAS_CORTAS_CATEGORIA = {
+    'Conocimiento y Cultura': 'Conocimiento'
+};
+
+export const etiquetaCortaCategoria = (nombre) => ETIQUETAS_CORTAS_CATEGORIA[nombre] || nombre;
+
+export const CATEGORIAS_RELACIONADAS = {
+    'Cómic y Manga': ['Cómic', 'Historietas', 'Animación', 'Ciencia ficción'],
+    Ficción: ['Novela', 'Fantasía', 'Misterio / Suspenso', 'Terror', 'Romance', 'Poesía', 'Cuento'],
+    'Conocimiento y Cultura': ['Ciencias', 'Historia', 'Biografía', 'Ensayo', 'Arte'],
+    Ciencias: ['Conocimiento y Cultura', 'Ciencia ficción', 'Ficción', 'Historia', 'Biografía'],
+    Juvenil: ['Infantil', 'Fantasía', 'Ciencia ficción', 'Cómic y Manga'],
+    Infantil: ['Juvenil', 'Animación', 'Cómic y Manga', 'Historietas']
+};
+
+export const CATEGORIA_DESTACADA_POR_SECCION = {
+    'Cómic y Manga': 'Cómic',
+    Ficción: 'Novela',
+    'Conocimiento y Cultura': 'Ciencias',
+    Ciencias: 'Ciencia ficción',
+    Juvenil: 'Infantil',
+    Infantil: 'Juvenil'
+};
+
+export const BLOQUES_POR_SECCION = {
+    'Cómic y Manga': ['nuevos', 'ofertas'],
+    Ficción: ['vendidos', 'nuevos'],
+    'Conocimiento y Cultura': ['vendidos', 'ofertas'],
+    Ciencias: ['nuevos', 'vendidos'],
+    Juvenil: ['nuevos', 'stock'],
+    Infantil: ['stock', 'nuevos']
 };
 
 export const PAGINAS = {
@@ -64,10 +104,7 @@ export const PAGINAS = {
         descripcion: 'Compra libros en la web o la app de MATIDANA Libros y Cultura, paga en línea con PayU y elige delivery dentro de Pallasca o recojo gratuito.'
     },
     '/catalogo': { titulo: 'Catálogo · MATIDANA Libros y Cultura', descripcion: 'Libros disponibles en MATIDANA Libros y Cultura, con autor, categoría y precio en soles.' },
-    '/aplicacion': {
-        titulo: 'La aplicación · MATIDANA Libros y Cultura',
-        descripcion: 'Busca libros, revisa su ficha, guarda favoritos, elige delivery en Pallasca o recojo gratuito y paga con PayU desde la app de MATIDANA Libros y Cultura.'
-    },
+    '/buscar': { titulo: 'Buscar libros · MATIDANA Libros y Cultura', descripcion: 'Busca libros por título, autor o categoría en MATIDANA Libros y Cultura.' },
     '/nosotros': {
         titulo: 'Nosotros · MATIDANA Libros y Cultura',
         descripcion: 'Librería con tienda frente a la Plaza de Armas de Pallasca, Áncash, catálogo en la app, delivery local y recojo gratuito.'

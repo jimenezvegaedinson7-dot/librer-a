@@ -61,12 +61,14 @@ for (const width of [390, 1440]) {
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         await page.screenshot({ path: testInfo.outputPath('inicio-ligero.png'), fullPage: true });
 
-        await page.goto('/aplicacion');
-        const tarjeta = page.locator('.app-funcion').first();
+        await page.goto('/descargar');
+        await expect(page.locator('.descargar-portada')).toBeVisible();
+        await expect(page.locator('.descargar-portada .telefono img')).toHaveCount(3);
+        const tarjeta = page.locator('.tarjeta-descarga').first();
         await expect(tarjeta).toBeVisible();
         await tarjeta.hover();
-        await expect(tarjeta).toHaveCSS('background-color', 'rgb(255, 255, 255)');
         await expect(tarjeta).toHaveCSS('transform', 'none');
+        await expect(tarjeta).toHaveCSS('animation-name', 'none');
         expect(errores).toEqual([]);
     });
 }

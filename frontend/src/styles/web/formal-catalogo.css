@@ -72,57 +72,6 @@
     .sitio .asistente-tienda .asistente-abrir[aria-expanded="true"] { opacity: 0; pointer-events: none; }
 }
 @media (max-width: 1023px) {
-    .sitio .catalogo-lateral { display: grid; gap: 14px; padding: 14px 0 14px 14px; border: 1px solid var(--linea); border-radius: 14px; background: #fff; }
-    .sitio .catalogo-lateral .filtro-bloque { min-width: 0; }
-    .sitio .catalogo-lateral .filtro-bloque h2 { margin: 0 0 8px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--texto-2); }
-    .sitio .catalogo-lateral .chips {
-        gap: 8px; padding: 2px 14px 4px 0; scroll-snap-type: x proximity; scroll-padding-left: 0; -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
-        mask-image: linear-gradient(90deg, #000 85%, transparent);
-    }
-    .sitio .catalogo-lateral .chips::-webkit-scrollbar { display: none; }
-    .sitio .catalogo-lateral .chip {
-        display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 8px 0 14px; scroll-snap-align: start; border: 1px solid var(--linea);
-        border-radius: 10px; background: #fff; color: var(--tinta); font-size: 0.875rem; font-weight: 600; white-space: nowrap;
-        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-    }
-    .sitio .catalogo-lateral .chip:hover { background: var(--fondo-alt); border-color: #cfd5db; color: var(--tinta); }
-    .sitio .catalogo-lateral .chip .chip__cuenta {
-        min-width: 24px; height: 24px; display: inline-grid; place-items: center; padding: 0 6px; border-radius: 7px; background: var(--fondo-alt); color: var(--texto-2);
-        font-size: 0.75rem; font-weight: 700; font-variant-numeric: tabular-nums;
-    }
-    .sitio .catalogo-lateral .chip[aria-pressed='true'] { background: var(--marino-900); border-color: var(--marino-900); color: #fff; }
-    .sitio .catalogo-lateral .chip[aria-pressed='true'] .chip__cuenta { background: rgba(255, 255, 255, 0.16); color: #fff; }
-    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) { display: flex; flex-wrap: wrap; gap: 8px; padding-right: 14px; }
-    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) h2 { width: 100%; margin-bottom: 0; }
-    .sitio .catalogo-lateral .casilla {
-        position: relative; display: inline-flex; flex: none; width: auto; align-items: center; gap: 8px; min-height: 40px; margin: 0; padding: 0 8px 0 12px;
-        border: 1px solid var(--linea); border-radius: 10px; background: #fff; color: var(--tinta); font-size: 0.875rem; font-weight: 600; cursor: pointer;
-        transition: background 0.2s ease, border-color 0.2s ease;
-    }
-    .sitio .catalogo-lateral .casilla input { width: 16px; height: 16px; margin: 0; accent-color: var(--marino-900); }
-    .sitio .catalogo-lateral .casilla .chip__cuenta {
-        margin: 0; min-width: 24px; height: 24px; display: inline-grid; place-items: center; padding: 0 6px; border-radius: 7px; background: var(--fondo-alt);
-        color: var(--texto-2); font-size: 0.75rem; font-weight: 700;
-    }
-    .sitio .catalogo-lateral .casilla:has(input:checked) { border-color: var(--marino-900); background: #eef2f6; }
-    .sitio .catalogo-lateral .casilla:has(input:focus-visible) { outline: 2px solid var(--marino-900); outline-offset: 2px; }
-    .sitio .catalogo-lateral > .boton { justify-self: start; margin-right: 14px; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .sitio .catalogo-lateral .chip, .sitio .catalogo-lateral .casilla { transition: none; }
-}
-@media (max-width: 1023px) {
-    .sitio .catalogo-lateral .casilla { gap: 6px; padding: 0 6px 0 10px; font-size: 0.8125rem; }
-}
-@media (max-width: 1023px) {
-    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) {
-        display: grid; grid-auto-flow: column; grid-auto-columns: max-content; grid-template-rows: auto auto; overflow-x: auto; scrollbar-width: none; gap: 8px;
-    }
-    .sitio .catalogo-lateral .filtro-bloque:nth-child(2)::-webkit-scrollbar { display: none; }
-    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) h2 { grid-row: 1; grid-column: 1 / span 2; width: auto; }
-    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) .casilla { grid-row: 2; }
-}
-@media (max-width: 1023px) {
     .sitio .categorias__rejilla {
         display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 30%; overflow-x: auto; overscroll-behavior-x: contain;
         scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(-1 * var(--gutter)); padding: 4px var(--gutter) 12px; scroll-padding-inline: var(--gutter);
@@ -250,14 +199,14 @@
     display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 8px; width: 100%; min-width: 0; margin-top: auto; padding: 12px 0 0;
 }
 .sitio :is(.tarjeta-libro, .libro, .oferta-tarjeta) .compra-libro > .boton.boton--compra {
-    width: 100%; min-width: 0; min-height: 44px; margin: 0; padding: 10px 8px; gap: 5px; border-radius: 0; border-width: 2px; font-size: 0.88rem; font-weight: 600; line-height: 1.25;
+    width: 100%; min-width: 0; min-height: 44px; margin: 0; padding: 10px 8px; gap: 5px; border-radius: 999px; border-width: 2px; font-size: 0.88rem; font-weight: 600; line-height: 1.25;
     letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; overflow-wrap: anywhere;
 }
 .sitio :is(.tarjeta-libro, .libro, .oferta-tarjeta) .compra-libro:has(> .compra-libro__detalle) .boton svg { display: inline-block; flex: none; width: 1.1em; height: 1.1em; }
 .sitio :is(.tarjeta-libro, .libro) .compra-libro > .compra-libro__detalle,
 .sitio :is(.tarjeta-libro, .libro) .compra-libro > .boton.boton--linea {
     width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 10px 8px; color: #141212;
-    font-size: 0.88rem; font-weight: 600; line-height: 1.25; text-align: center; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em; border: 2px solid #141212; border-radius: 0; background: transparent;
+    font-size: 0.88rem; font-weight: 600; line-height: 1.25; text-align: center; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em; border: 2px solid #141212; border-radius: 999px; background: transparent;
 }
 .sitio :is(.tarjeta-libro, .libro) .compra-libro > .compra-libro__detalle:hover,
 .sitio :is(.tarjeta-libro, .libro) .compra-libro > .boton.boton--linea:hover { background: #e2231a; color: var(--blanco); border-color: #e2231a; }
@@ -269,7 +218,7 @@
 .sitio .oferta-tarjeta .compra-libro > .compra-libro__detalle,
 .sitio .oferta-tarjeta .compra-libro > .boton.boton--linea {
     width: 100%; justify-content: flex-start; justify-self: start; text-align: left; margin-left: 0; display: inline-flex; align-items: center; gap: 5px; min-height: 44px; padding: 10px 8px; color: #141212;
-    font-size: 0.88rem; font-weight: 600; line-height: 1.25; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em; border: 2px solid #141212; border-radius: 0; background: transparent;
+    font-size: 0.88rem; font-weight: 600; line-height: 1.25; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.06em; border: 2px solid #141212; border-radius: 999px; background: transparent;
 }
 .sitio .oferta-tarjeta .compra-libro > .compra-libro__detalle:hover,
 .sitio .oferta-tarjeta .compra-libro > .boton.boton--linea:hover { background: #e2231a; color: var(--blanco); border-color: #e2231a; }
@@ -324,6 +273,6 @@
 .sitio .compra-libro > .boton.boton--linea.boton--detalle:is(:hover, :focus-visible, :active) {
     background: var(--blanco); color: #141212; border-color: #141212;
 }
-.sitio .compra-libro > .boton.boton--linea.boton--detalle:is(:hover, :focus-visible) { background: #f2f2f2; }
-.sitio .compra-libro > .boton.boton--linea.boton--detalle:active { background: #dedede; }
+.sitio .compra-libro > .boton.boton--linea.boton--detalle:is(:hover, :focus-visible) { background: #ebaa20; border-color: #ebaa20; color: #141212; }
+.sitio .compra-libro > .boton.boton--linea.boton--detalle:active { background: #d99a12; border-color: #d99a12; color: #141212; }
 .sitio .compra-libro > .boton.boton--linea.boton--detalle svg { color: inherit; }

@@ -29,7 +29,7 @@ const CATEGORIAS = [
         bases: ['El instituto', 'La amistad', 'Los secretos', 'El primer amor', 'La mudanza', 'Un verano', 'La banda', 'El concurso', 'Las notas', 'El viaje']
     },
     {
-        nombre: 'No Ficción',
+        nombre: 'Conocimiento y Cultura',
         autores: ['Rocío Ibáñez', 'Tomás Aguirre'],
         bases: ['El método', 'La memoria', 'Los datos', 'El cuerpo', 'La economía', 'Una historia', 'La mente', 'El trabajo', 'Las ideas', 'El futuro']
     },

@@ -289,7 +289,7 @@ test('mis compras muestra la portada del catálogo y favoritos se abre desde Mi 
     const control = await api(page);
     await page.goto('/cuenta');
     await login(page);
-    await expect(page.getByRole('heading', { name: 'Mi cuenta', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mi cuenta', exact: true })).toHaveCount(1);
     await page.goto('/mis-compras');
     const compra = page.locator('.compra-registro').first();
     await expect(compra.getByAltText(`Portada de ${libro.titulo}`)).toBeVisible();
@@ -297,9 +297,10 @@ test('mis compras muestra la portada del catálogo y favoritos se abre desde Mi 
 
     await expect(page.locator('header').getByRole('link', { name: /favoritos/i })).toHaveCount(0);
     await page.goto('/cuenta');
+    await page.getByText('Mis actividades', { exact: true }).click();
     await page
-        .locator('main')
-        .getByRole('link', { name: /Mis favoritos/ })
+        .getByRole('navigation', { name: 'Accesos de mi cuenta' })
+        .getByRole('link', { name: 'Mis favoritos' })
         .click();
     await expect(page.getByRole('heading', { name: 'Mis favoritos', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: libro.titulo, level: 2 })).toBeVisible();
@@ -314,7 +315,7 @@ test('favoritos sin sesión pide ingresar', async ({ page }) => {
     await expect(page.getByText('Inicia sesión para ver tus libros favoritos.')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Ingresar', exact: true })).toHaveAttribute('href', '/cuenta?continuar=/favoritos');
 });
-test('mi cuenta muestra los datos del cliente y sus accesos', async ({ page }) => {
+test('mi cuenta muestra mis datos una sola vez y accesos reales', async ({ page }) => {
     await api(page);
     const datos = {
         ...cliente,
@@ -331,43 +332,126 @@ test('mi cuenta muestra los datos del cliente y sus accesos', async ({ page }) =
     await page.goto('/cuenta');
     await login(page);
     await expect(page).toHaveURL(/\/cuenta$/);
-    await expect(page.getByRole('heading', { name: 'Mi cuenta', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mi cuenta', exact: true })).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Actualizar foto de perfil', exact: true })).toBeVisible();
+    await expect(page.getByText('Foto de perfil', { exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Ver foto de perfil completa' })).toBeVisible();
-    await expect(page.getByLabel('Actualizar imagen de perfil')).toBeAttached();
+    await expect(page.getByLabel('Actualizar foto de perfil')).toBeHidden();
+    await expect(page.locator('.pf-sidebar__pie').getByRole('button', { name: 'Cerrar sesión de cliente' })).toBeVisible();
+    await expect(page.locator('.pf-sidebar')).not.toContainText('Verificado');
+    for (const titulo of ['Mis actividades', 'Información de cuenta', 'Otras opciones']) {
+        await expect(page.getByText(titulo, { exact: true })).toBeVisible();
+        await expect(page.locator('.pf-grupo').filter({ hasText: titulo })).not.toHaveAttribute('open');
+    }
+    await expect(page.getByRole('button', { name: 'Personalización', exact: true })).toHaveCount(0);
+    await expect(page.locator('.pf-tarjeta-acceso')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Editar datos', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: '¡Bienvenido, Lucía!', exact: true })).toHaveCount(0);
     const estilo = await page.evaluate(() => ({
         fondo: getComputedStyle(document.querySelector('main')).backgroundColor,
         heroTipo: getComputedStyle(document.querySelector('.pf-hero__salir')).fontFamily,
         heroFondo: getComputedStyle(document.querySelector('.pf-hero')).backgroundColor,
         heroBorde: getComputedStyle(document.querySelector('.pf-hero')).borderTopWidth,
         heroBackdrop: getComputedStyle(document.querySelector('.pf-hero')).backdropFilter,
-        accesoBorde: getComputedStyle(document.querySelector('.pf-acceso')).borderTopWidth
+        columnas: getComputedStyle(document.querySelector('.pf-shell')).gridTemplateColumns.split(' ').length
     }));
     expect(estilo.fondo).toBe('rgb(247, 247, 247)');
     expect(estilo.heroFondo).toBe('rgba(0, 0, 0, 0)');
     expect(estilo.heroBorde).toBe('0px');
     expect(estilo.heroBackdrop).toBe('none');
-    expect(estilo.accesoBorde).toBe('1px');
     expect(estilo.heroTipo).toContain('Work Sans');
     expect(estilo.heroTipo).not.toContain('Source Serif');
+    expect(estilo.columnas).toBe(2);
     const misDatos = page.getByRole('region', { name: 'Mis datos' });
     for (const valor of ['Lucía', 'Ramos', 'lucia@example.test', '987654321', 'Verificado']) await expect(misDatos).toContainText(valor);
+    await expect(page.locator('.pf-sidebar')).not.toContainText('987654321');
+    await page.getByText('Mis actividades', { exact: true }).click();
     await expect(page.getByRole('navigation', { name: 'Accesos de mi cuenta' }).getByRole('link', { name: /Mis compras/ })).toHaveAttribute('href', '/mis-compras');
     await page.getByRole('button', { name: 'Cerrar sesión de cliente', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Iniciar sesión', exact: true })).toBeVisible();
 });
-test('mi cuenta conserva objetivos táctiles de 44px en 390px', async ({ page }) => {
+test('mi cuenta edita sus datos sin Volver a un panel', async ({ page }) => {
     await api(page);
-    await page.setViewportSize({ width: 390, height: 844 });
+    const actualizado = { ...cliente, nombre: 'Lucía', apellido: 'Ramos', telefono: '987654321' };
+    await page.route('**/api/usuarios/perfil', (r) =>
+        r.fulfill({ json: { success: true, data: r.request().method() === 'PUT' ? actualizado : cliente } })
+    );
     await page.goto('/cuenta');
     await login(page);
-    await expect(page.getByRole('heading', { name: 'Mi cuenta', exact: true })).toBeVisible();
-    await page.waitForSelector('.pf-hero__salir', { state: 'visible' });
-    const alturas = await page.evaluate(() =>
-        [...document.querySelectorAll('.pf-hero__salir, .pf-boton--borde, .pf-secundario-link')]
-            .filter((el) => el.getClientRects().length)
-            .map((el) => ({ selector: el.className, alto: Math.round(el.getBoundingClientRect().height) }))
-    );
-    expect(alturas.length).toBeGreaterThan(0);
-    expect(alturas.filter((x) => x.alto < 44)).toEqual([]);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByText('Información de cuenta', { exact: true }).click();
+    await page.getByRole('button', { name: 'Editar datos personales', exact: true }).click();
+    await page.getByLabel('Nombre', { exact: true }).fill('Lucía');
+    await page.getByLabel('Apellidos completos', { exact: true }).fill('Ramos');
+    await page.getByLabel('Teléfono', { exact: true }).fill('987654321');
+    await page.getByRole('button', { name: 'Guardar cambios', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Tus datos se guardaron correctamente.');
+    const misDatos = page.getByRole('region', { name: 'Mis datos' });
+    await expect(misDatos).toContainText('Lucía');
+    await expect(misDatos).toContainText('Ramos');
+    await expect(misDatos).toContainText('987654321');
+});
+test('mi cuenta se adapta a móvil, tablet y escritorio sin desbordes', async ({ page }) => {
+    test.setTimeout(120000);
+    await api(page);
+    await page.goto('/cuenta');
+    await login(page);
+    await expect(page.getByRole('heading', { name: 'Mi cuenta', exact: true })).toHaveCount(1);
+
+    for (const ancho of [320, 360, 390, 430, 760, 768, 1024, 1440]) {
+        await page.setViewportSize({ width: ancho, height: 844 });
+        const movil = ancho <= 760;
+        const menu = page.getByRole('navigation', { name: 'Accesos de mi cuenta' });
+        const hamburguesa = page.getByRole('button', { name: 'Menú', exact: true });
+        if (movil) {
+            await expect(hamburguesa).toBeVisible();
+            await expect(menu).toBeHidden();
+        } else {
+            await expect(hamburguesa).toBeHidden();
+            await expect(menu).toBeVisible();
+        }
+        await expect(page.getByRole('button', { name: 'Actualizar foto de perfil', exact: true })).toBeVisible();
+        await expect(page.locator('.pf-sidebar__pie').getByRole('button', { name: 'Cerrar sesión de cliente' })).toBeVisible();
+
+        const columnas = await page.evaluate(() => getComputedStyle(document.querySelector('.pf-shell')).gridTemplateColumns.split(' ').length);
+        expect(columnas, `columnas a ${ancho}px`).toBe(movil ? 1 : 2);
+
+        const revisarDesbordes = async () => {
+            const resultado = await page.evaluate(() => ({
+                horizontal: document.documentElement.scrollWidth <= innerWidth,
+                fuera: [...document.querySelectorAll('.pf-hero__cambiar, .pf-menu-toggle, .pf-hero__salir, .pf-grupo summary, .pf-nav-item')]
+                    .filter((el) => el.getClientRects().length)
+                    .filter((el) => {
+                        const caja = el.getBoundingClientRect();
+                        return caja.left < -1 || caja.right > innerWidth + 1;
+                    })
+                    .map((el) => el.className)
+            }));
+            expect(resultado.horizontal, `sin scroll horizontal a ${ancho}px`).toBe(true);
+            expect(resultado.fuera, `controles dentro del viewport a ${ancho}px`).toEqual([]);
+        };
+        await revisarDesbordes();
+
+        if (movil) {
+            await hamburguesa.click();
+            await expect(menu).toBeVisible();
+            await page.getByText('Mis actividades', { exact: true }).click();
+            await expect(menu.getByRole('link', { name: 'Mis compras' })).toBeVisible();
+            await revisarDesbordes();
+            await menu.getByRole('link', { name: 'Mis compras' }).click();
+            await expect(page).toHaveURL(/\/mis-compras$/);
+            await page.goto('/cuenta');
+            await expect(page).toHaveURL(/\/cuenta$/);
+            await page.waitForSelector('.pf-shell');
+        }
+
+        const selectores = movil
+            ? '.pf-hero__salir, .pf-hero__cambiar, .pf-hero__camara, .pf-grupo summary, .pf-menu-toggle'
+            : '.pf-hero__salir, .pf-hero__cambiar, .pf-boton, .pf-nav-item, .pf-menu-toggle';
+        const alturas = await page.evaluate((selectores) =>
+            [...document.querySelectorAll(selectores)]
+                .filter((el) => el.getClientRects().length)
+                .map((el) => ({ selector: el.className, alto: Math.round(el.getBoundingClientRect().height) })), selectores);
+        expect(alturas.length, `controles medibles a ${ancho}px`).toBeGreaterThan(0);
+        expect(alturas.filter((x) => x.alto < 44), `objetivos táctiles a ${ancho}px`).toEqual([]);
+    }
 });

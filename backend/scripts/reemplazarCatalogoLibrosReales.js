@@ -33,7 +33,7 @@ const TEMAS = [
     { categoria: 'Infantil', subjects: ["Children's literature", 'Juvenile fiction'] },
     { categoria: 'Juvenil', subjects: ['Young adult fiction', 'Teenagers, fiction'] },
     { categoria: 'Misterio / Suspenso', subjects: ['Mystery and detective stories', 'Suspense fiction', 'Thrillers'] },
-    { categoria: 'No Ficción', subjects: ['Nonfiction'] },
+    { categoria: 'Conocimiento y Cultura', subjects: ['Nonfiction'] },
     { categoria: 'Novela', subjects: ['Novels', 'Fiction'] },
     { categoria: 'Poesía', subjects: ['Poetry'] },
     { categoria: 'Romance', subjects: ['Romance fiction', 'Love stories'] },

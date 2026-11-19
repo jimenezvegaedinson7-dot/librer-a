@@ -29,15 +29,15 @@
 .sitio .libro__escenario { background: var(--fondo-alt); }
 .sitio .libro, .sitio .tarjeta-libro { border-color: var(--linea); box-shadow: 0 1px 2px rgba(17, 24, 32, 0.04); }
 .sitio .libro:hover, .sitio .tarjeta-libro:hover { box-shadow: 0 10px 24px -14px rgba(17, 24, 32, 0.28); }
-.sitio .boton { background: #141212; border-color: #141212; color: var(--blanco); box-shadow: none; border-radius: 0; border-width: 2px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.sitio .boton { background: #141212; border-color: #141212; color: var(--blanco); box-shadow: none; border-radius: 999px; border-width: 2px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
 .sitio .boton:hover { background: #e2231a; border-color: #e2231a; color: var(--blanco); box-shadow: none; transform: translateY(1px); }
-.sitio .boton--blanco { background: var(--blanco); border-color: var(--blanco); color: #141212; border-radius: 0; border-width: 2px; }
+.sitio .boton--blanco { background: var(--blanco); border-color: var(--blanco); color: #141212; border-radius: 999px; border-width: 2px; }
 .sitio .boton--blanco:hover { background: #e2231a; border-color: #e2231a; color: var(--blanco); }
-.sitio .boton--linea { background: transparent; color: #141212; border-color: #141212; border-radius: 0; border-width: 2px; }
+.sitio .boton--linea { background: transparent; color: #141212; border-color: #141212; border-radius: 999px; border-width: 2px; }
 .sitio .boton--linea:hover { background: #e2231a; border-color: #e2231a; color: var(--blanco); box-shadow: none; }
 .sitio .oscuro .boton--linea { color: #141212; border-color: #141212; }
 .sitio .oscuro .boton--linea:hover { background: #e2231a; border-color: #e2231a; color: var(--blanco); }
-.sitio .boton--compra { background: #141212; border-color: #141212; color: var(--blanco); border-radius: 0; border-width: 2px; }
+.sitio .boton--compra { background: #141212; border-color: #141212; color: var(--blanco); border-radius: 999px; border-width: 2px; }
 .sitio .boton--compra:hover { background: #e2231a; border-color: #e2231a; color: var(--blanco); }
 .sitio .boton--compra.presionado { background: #b91c15; border-color: #b91c15; color: var(--blanco); }
 .sitio .buscador button { background: #141212; color: var(--blanco); }

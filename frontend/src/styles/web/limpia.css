@@ -80,7 +80,7 @@
 .sitio .descargar-plataformas .tarjeta-descarga__nota { font-size: 0.875rem !important; line-height: 1.7; color: #6c6153 !important; }
 .sitio .descargar-plataformas .tarjeta-descarga .boton,
 .sitio .descargar-plataformas .tarjeta-descarga .boton:hover {
-    align-self: stretch !important; margin-top: auto; min-height: 44px; padding: 10px 8px !important; border-radius: 0 !important;
+    align-self: stretch !important; margin-top: auto; min-height: 44px; padding: 10px 8px !important; border-radius: 999px !important;
     border: 2px solid #141212 !important; background: #141212 !important; color: var(--blanco) !important;
     font-size: 0.88rem !important; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; box-shadow: none !important;
 }

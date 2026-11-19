@@ -46,7 +46,7 @@
       ]
     },
     {
-      "nombre": "No Ficción",
+      "nombre": "Conocimiento y Cultura",
       "previos": 100,
       "agregados": 0,
       "total": 100,
@@ -2619,603 +2619,603 @@
     },
     {
       "isbn": "6000000002404",
-      "titulo": "El método de sal (No Ficción)",
+      "titulo": "El método de sal (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": 10,
       "stock": 12,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002411",
-      "titulo": "La memoria de sal (No Ficción)",
+      "titulo": "La memoria de sal (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 13,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002428",
-      "titulo": "Los datos de sal (No Ficción)",
+      "titulo": "Los datos de sal (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": null,
       "stock": 14,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002435",
-      "titulo": "El cuerpo de sal (No Ficción)",
+      "titulo": "El cuerpo de sal (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 15,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002442",
-      "titulo": "La economía de sal (No Ficción)",
+      "titulo": "La economía de sal (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": 15,
       "stock": 16,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002459",
-      "titulo": "Una historia de sal (No Ficción)",
+      "titulo": "Una historia de sal (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 17,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002466",
-      "titulo": "La mente de sal (No Ficción)",
+      "titulo": "La mente de sal (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": null,
       "stock": 18,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002473",
-      "titulo": "El trabajo de sal (No Ficción)",
+      "titulo": "El trabajo de sal (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 19,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002480",
-      "titulo": "Las ideas de sal (No Ficción)",
+      "titulo": "Las ideas de sal (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": 20,
       "stock": 20,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002497",
-      "titulo": "El futuro de sal (No Ficción)",
+      "titulo": "El futuro de sal (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 21,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002503",
-      "titulo": "El método de viento (No Ficción)",
+      "titulo": "El método de viento (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": null,
       "stock": 22,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002510",
-      "titulo": "La memoria de viento (No Ficción)",
+      "titulo": "La memoria de viento (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 23,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002527",
-      "titulo": "Los datos de viento (No Ficción)",
+      "titulo": "Los datos de viento (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": 10,
       "stock": 24,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002534",
-      "titulo": "El cuerpo de viento (No Ficción)",
+      "titulo": "El cuerpo de viento (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 25,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002541",
-      "titulo": "La economía de viento (No Ficción)",
+      "titulo": "La economía de viento (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": null,
       "stock": 26,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002558",
-      "titulo": "Una historia de viento (No Ficción)",
+      "titulo": "Una historia de viento (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 27,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002565",
-      "titulo": "La mente de viento (No Ficción)",
+      "titulo": "La mente de viento (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": 15,
       "stock": 28,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002572",
-      "titulo": "El trabajo de viento (No Ficción)",
+      "titulo": "El trabajo de viento (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 29,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002589",
-      "titulo": "Las ideas de viento (No Ficción)",
+      "titulo": "Las ideas de viento (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": null,
       "stock": 30,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002596",
-      "titulo": "El futuro de viento (No Ficción)",
+      "titulo": "El futuro de viento (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 31,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002602",
-      "titulo": "El método de luz (No Ficción)",
+      "titulo": "El método de luz (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": 20,
       "stock": 32,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002619",
-      "titulo": "La memoria de luz (No Ficción)",
+      "titulo": "La memoria de luz (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 33,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002626",
-      "titulo": "Los datos de luz (No Ficción)",
+      "titulo": "Los datos de luz (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": null,
       "stock": 34,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002633",
-      "titulo": "El cuerpo de luz (No Ficción)",
+      "titulo": "El cuerpo de luz (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 35,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002640",
-      "titulo": "La economía de luz (No Ficción)",
+      "titulo": "La economía de luz (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": 10,
       "stock": 36,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002657",
-      "titulo": "Una historia de luz (No Ficción)",
+      "titulo": "Una historia de luz (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 12,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002664",
-      "titulo": "La mente de luz (No Ficción)",
+      "titulo": "La mente de luz (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": null,
       "stock": 13,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002671",
-      "titulo": "El trabajo de luz (No Ficción)",
+      "titulo": "El trabajo de luz (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 14,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002688",
-      "titulo": "Las ideas de luz (No Ficción)",
+      "titulo": "Las ideas de luz (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": 15,
       "stock": 15,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002695",
-      "titulo": "El futuro de luz (No Ficción)",
+      "titulo": "El futuro de luz (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 16,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002701",
-      "titulo": "El método de niebla (No Ficción)",
+      "titulo": "El método de niebla (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": null,
       "stock": 17,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002718",
-      "titulo": "La memoria de niebla (No Ficción)",
+      "titulo": "La memoria de niebla (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 18,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002725",
-      "titulo": "Los datos de niebla (No Ficción)",
+      "titulo": "Los datos de niebla (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": 20,
       "stock": 19,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002732",
-      "titulo": "El cuerpo de niebla (No Ficción)",
+      "titulo": "El cuerpo de niebla (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 20,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002749",
-      "titulo": "La economía de niebla (No Ficción)",
+      "titulo": "La economía de niebla (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": null,
       "stock": 21,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002756",
-      "titulo": "Una historia de niebla (No Ficción)",
+      "titulo": "Una historia de niebla (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 22,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002763",
-      "titulo": "La mente de niebla (No Ficción)",
+      "titulo": "La mente de niebla (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": 10,
       "stock": 23,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002770",
-      "titulo": "El trabajo de niebla (No Ficción)",
+      "titulo": "El trabajo de niebla (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 24,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002787",
-      "titulo": "Las ideas de niebla (No Ficción)",
+      "titulo": "Las ideas de niebla (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": null,
       "stock": 25,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002794",
-      "titulo": "El futuro de niebla (No Ficción)",
+      "titulo": "El futuro de niebla (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 26,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002800",
-      "titulo": "El método de tinta (No Ficción)",
+      "titulo": "El método de tinta (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": 15,
       "stock": 27,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002817",
-      "titulo": "La memoria de tinta (No Ficción)",
+      "titulo": "La memoria de tinta (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 28,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002824",
-      "titulo": "Los datos de tinta (No Ficción)",
+      "titulo": "Los datos de tinta (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": null,
       "stock": 29,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002831",
-      "titulo": "El cuerpo de tinta (No Ficción)",
+      "titulo": "El cuerpo de tinta (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 30,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002848",
-      "titulo": "La economía de tinta (No Ficción)",
+      "titulo": "La economía de tinta (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": 20,
       "stock": 31,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002855",
-      "titulo": "Una historia de tinta (No Ficción)",
+      "titulo": "Una historia de tinta (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 32,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002862",
-      "titulo": "La mente de tinta (No Ficción)",
+      "titulo": "La mente de tinta (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": null,
       "stock": 33,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002879",
-      "titulo": "El trabajo de tinta (No Ficción)",
+      "titulo": "El trabajo de tinta (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 34,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002886",
-      "titulo": "Las ideas de tinta (No Ficción)",
+      "titulo": "Las ideas de tinta (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": 10,
       "stock": 35,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002893",
-      "titulo": "El futuro de tinta (No Ficción)",
+      "titulo": "El futuro de tinta (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 36,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002909",
-      "titulo": "El método de mar (No Ficción)",
+      "titulo": "El método de mar (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": null,
       "stock": 12,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002916",
-      "titulo": "La memoria de mar (No Ficción)",
+      "titulo": "La memoria de mar (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 13,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002923",
-      "titulo": "Los datos de mar (No Ficción)",
+      "titulo": "Los datos de mar (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": 15,
       "stock": 14,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002930",
-      "titulo": "El cuerpo de mar (No Ficción)",
+      "titulo": "El cuerpo de mar (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 15,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002947",
-      "titulo": "La economía de mar (No Ficción)",
+      "titulo": "La economía de mar (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": null,
       "stock": 16,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002954",
-      "titulo": "Una historia de mar (No Ficción)",
+      "titulo": "Una historia de mar (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 17,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002961",
-      "titulo": "La mente de mar (No Ficción)",
+      "titulo": "La mente de mar (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": 20,
       "stock": 18,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002978",
-      "titulo": "El trabajo de mar (No Ficción)",
+      "titulo": "El trabajo de mar (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 19,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002985",
-      "titulo": "Las ideas de mar (No Ficción)",
+      "titulo": "Las ideas de mar (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": null,
       "stock": 20,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000002992",
-      "titulo": "El futuro de mar (No Ficción)",
+      "titulo": "El futuro de mar (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 21,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000003005",
@@ -12799,403 +12799,403 @@
     },
     {
       "isbn": "6000000012588",
-      "titulo": "El método de arena (No Ficción)",
+      "titulo": "El método de arena (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": 10,
       "stock": 22,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012595",
-      "titulo": "La memoria de arena (No Ficción)",
+      "titulo": "La memoria de arena (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 23,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012601",
-      "titulo": "Los datos de arena (No Ficción)",
+      "titulo": "Los datos de arena (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": null,
       "stock": 24,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012618",
-      "titulo": "El cuerpo de arena (No Ficción)",
+      "titulo": "El cuerpo de arena (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 25,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012625",
-      "titulo": "La economía de arena (No Ficción)",
+      "titulo": "La economía de arena (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": 15,
       "stock": 26,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012632",
-      "titulo": "Una historia de arena (No Ficción)",
+      "titulo": "Una historia de arena (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 27,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012649",
-      "titulo": "La mente de arena (No Ficción)",
+      "titulo": "La mente de arena (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": null,
       "stock": 28,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012656",
-      "titulo": "El trabajo de arena (No Ficción)",
+      "titulo": "El trabajo de arena (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 29,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012663",
-      "titulo": "Las ideas de arena (No Ficción)",
+      "titulo": "Las ideas de arena (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": 20,
       "stock": 30,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012670",
-      "titulo": "El futuro de arena (No Ficción)",
+      "titulo": "El futuro de arena (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 31,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012687",
-      "titulo": "El método de bruma (No Ficción)",
+      "titulo": "El método de bruma (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": null,
       "stock": 32,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012694",
-      "titulo": "La memoria de bruma (No Ficción)",
+      "titulo": "La memoria de bruma (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 33,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012700",
-      "titulo": "Los datos de bruma (No Ficción)",
+      "titulo": "Los datos de bruma (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": 10,
       "stock": 34,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012717",
-      "titulo": "El cuerpo de bruma (No Ficción)",
+      "titulo": "El cuerpo de bruma (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 35,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012724",
-      "titulo": "La economía de bruma (No Ficción)",
+      "titulo": "La economía de bruma (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": null,
       "stock": 36,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012731",
-      "titulo": "Una historia de bruma (No Ficción)",
+      "titulo": "Una historia de bruma (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 12,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012748",
-      "titulo": "La mente de bruma (No Ficción)",
+      "titulo": "La mente de bruma (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": 15,
       "stock": 13,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012755",
-      "titulo": "El trabajo de bruma (No Ficción)",
+      "titulo": "El trabajo de bruma (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 14,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012762",
-      "titulo": "Las ideas de bruma (No Ficción)",
+      "titulo": "Las ideas de bruma (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": null,
       "stock": 15,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012779",
-      "titulo": "El futuro de bruma (No Ficción)",
+      "titulo": "El futuro de bruma (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 16,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012786",
-      "titulo": "El método de nieve (No Ficción)",
+      "titulo": "El método de nieve (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": 20,
       "stock": 17,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012793",
-      "titulo": "La memoria de nieve (No Ficción)",
+      "titulo": "La memoria de nieve (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 18,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012809",
-      "titulo": "Los datos de nieve (No Ficción)",
+      "titulo": "Los datos de nieve (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": null,
       "stock": 19,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012816",
-      "titulo": "El cuerpo de nieve (No Ficción)",
+      "titulo": "El cuerpo de nieve (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 20,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012823",
-      "titulo": "La economía de nieve (No Ficción)",
+      "titulo": "La economía de nieve (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": 10,
       "stock": 21,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012830",
-      "titulo": "Una historia de nieve (No Ficción)",
+      "titulo": "Una historia de nieve (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 22,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012847",
-      "titulo": "La mente de nieve (No Ficción)",
+      "titulo": "La mente de nieve (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": null,
       "stock": 23,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012854",
-      "titulo": "El trabajo de nieve (No Ficción)",
+      "titulo": "El trabajo de nieve (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 24,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012861",
-      "titulo": "Las ideas de nieve (No Ficción)",
+      "titulo": "Las ideas de nieve (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": 15,
       "stock": 25,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012878",
-      "titulo": "El futuro de nieve (No Ficción)",
+      "titulo": "El futuro de nieve (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 26,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012885",
-      "titulo": "El método de espejo (No Ficción)",
+      "titulo": "El método de espejo (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": null,
       "stock": 27,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012892",
-      "titulo": "La memoria de espejo (No Ficción)",
+      "titulo": "La memoria de espejo (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 28,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012908",
-      "titulo": "Los datos de espejo (No Ficción)",
+      "titulo": "Los datos de espejo (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": 20,
       "stock": 29,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012915",
-      "titulo": "El cuerpo de espejo (No Ficción)",
+      "titulo": "El cuerpo de espejo (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 30,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012922",
-      "titulo": "La economía de espejo (No Ficción)",
+      "titulo": "La economía de espejo (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 46.9,
       "descuento_porcentaje": null,
       "stock": 31,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012939",
-      "titulo": "Una historia de espejo (No Ficción)",
+      "titulo": "Una historia de espejo (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 53.9,
       "descuento_porcentaje": null,
       "stock": 32,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012946",
-      "titulo": "La mente de espejo (No Ficción)",
+      "titulo": "La mente de espejo (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 18.9,
       "descuento_porcentaje": 10,
       "stock": 33,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012953",
-      "titulo": "El trabajo de espejo (No Ficción)",
+      "titulo": "El trabajo de espejo (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 25.9,
       "descuento_porcentaje": null,
       "stock": 34,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012960",
-      "titulo": "Las ideas de espejo (No Ficción)",
+      "titulo": "Las ideas de espejo (Conocimiento y Cultura)",
       "autor": "Rocío Ibáñez",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 32.9,
       "descuento_porcentaje": null,
       "stock": 35,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012977",
-      "titulo": "El futuro de espejo (No Ficción)",
+      "titulo": "El futuro de espejo (Conocimiento y Cultura)",
       "autor": "Tomás Aguirre",
-      "categoria": "No Ficción",
+      "categoria": "Conocimiento y Cultura",
       "precio": 39.9,
       "descuento_porcentaje": null,
       "stock": 36,
-      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en No Ficción."
+      "descripcion": "Obra de muestra del catálogo ampliado de MATIDANA en Conocimiento y Cultura."
     },
     {
       "isbn": "6000000012984",

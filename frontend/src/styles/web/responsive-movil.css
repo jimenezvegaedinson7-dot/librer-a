@@ -54,10 +54,6 @@
     .sitio .navegacion-publica .cabecera .buscador input,
     .sitio .navegacion-publica .cabecera .buscador button[type='submit'] { height: 44px !important; }
     .sitio .cabecera .buscador input { font-size: 1rem !important; }
-    .sitio .catalogo-lateral { max-width: 100%; }
-    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) { display: flex; flex-wrap: wrap; overflow: visible; padding-right: 14px; }
-    .sitio .catalogo-lateral .filtro-bloque:nth-child(2) h2 { flex-basis: 100%; }
-    .sitio .catalogo-lateral :is(.casilla, .chip) { min-height: 44px; }
     .sitio .categorias__rejilla { grid-auto-columns: 30%; }
     .sitio .categoria__pie { padding: 12px; gap: 8px; }
     .sitio .categoria__nombre { font-size: clamp(0.9375rem, 0.75rem + 0.7vw, 1.0625rem); }

@@ -17,15 +17,26 @@
 .sitio .navegacion-publica .buscador {
     width: 100%; max-width: none; height: 46px; padding: 4px; border: 1px solid transparent; border-radius: 10px; background: var(--nav-papel); overflow: hidden;
     box-shadow: 0 5px 18px -12px rgb(36 48 75 / .22);
+    transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
 }
+.sitio .navegacion-publica .buscador:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -14px rgb(36 48 75 / .42); }
 .sitio .navegacion-publica .buscador input { color: var(--nav-tinta); background: transparent; padding-inline: 12px; font-size: .8125rem; caret-color: var(--nav-teal-legible); }
 .sitio .navegacion-publica .buscador input::placeholder { color: var(--nav-secundario); opacity: 1; }
 .sitio .navegacion-publica .buscador button {
     flex: none; width: 44px; height: 36px; padding: 0; border-radius: 6px; background: var(--nav-accion); color: var(--nav-sobre-accion); border: 0;
+    transition: background 240ms ease, transform 240ms ease;
 }
-.sitio .navegacion-publica .buscador button svg { width: 21px; height: 21px; stroke-width: 1.6; }
+.sitio .navegacion-publica .buscador button svg { width: 21px; height: 21px; stroke-width: 1.6; transition: transform 240ms ease; }
 .sitio .navegacion-publica .buscador button:hover { background: var(--nav-hover); }
-.sitio .navegacion-publica .buscador:focus-within { border-color: var(--nav-teal-legible); box-shadow: 0 3px 12px -7px rgb(36 48 75 / .3); }
+.sitio .navegacion-publica .buscador:hover button svg { transform: scale(1.12) rotate(-6deg); }
+.sitio .navegacion-publica .buscador:focus-within { border-color: var(--nav-teal-legible); box-shadow: 0 0 0 3px rgb(0 95 107 / 14%), 0 10px 24px -14px rgb(36 48 75 / .42); }
+@media (prefers-reduced-motion: reduce) {
+    .sitio .navegacion-publica .buscador,
+    .sitio .navegacion-publica .buscador button,
+    .sitio .navegacion-publica .buscador button svg { transition: none; }
+    .sitio .navegacion-publica .buscador:hover { transform: none; }
+    .sitio .navegacion-publica .buscador:hover button svg { transform: none; }
+}
 .sitio .navegacion-publica .cabecera__acciones { gap: 26px; margin-left: 0; }
 .sitio .navegacion-publica .cabecera :is(.cabecera__enlace,.compra-cuenta,.compra-carrito) {
     gap: 9px; color: var(--nav-tinta); font-size: .8125rem; font-weight: 400; white-space: nowrap;

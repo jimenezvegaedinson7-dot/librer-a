@@ -124,7 +124,8 @@ async function cambiarCuenta(context) {
 
 async function irCompras(page) {
     await page.locator('.compra-cuenta').click();
-    await page.getByRole('link', { name: /Mis compras Estado del pago/ }).click();
+    await page.locator('.pf-grupo').filter({ hasText: 'Mis actividades' }).locator('summary').click();
+    await page.locator('.pf-menu').getByRole('link', { name: 'Mis compras', exact: true }).click();
 }
 
 test('WEB01: otra pestaña cambia cuenta, carrito y checkout juntos', async ({ page, context }) => {

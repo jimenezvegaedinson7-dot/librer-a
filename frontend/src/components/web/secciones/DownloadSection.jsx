@@ -1,16 +1,14 @@
-import { Fragment, useRef } from 'react';
+import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { FaChevronRight, FaDownload, FaMobileScreenButton } from 'react-icons/fa6';
 import iconoApp from '../../../assets/web/app-icono.webp';
-import imgFavoritos from '../../../assets/web/app/favoritos.webp';
-import imgPerfilCielo from '../../../assets/web/app/perfil-cielo.webp';
-import imgComprasMenta from '../../../assets/web/app/compras-menta.webp';
+import imgCatalogo from '../../../assets/web/app/catalogo.webp';
+import imgEntrega from '../../../assets/web/app/entrega.webp';
+import imgInicio from '../../../assets/web/app/inicio.webp';
 import { CANALES, DESCARGAS, plataformaDisponible } from '../../../models/config/web/downloads';
 import { usePlataforma } from '../../../hooks/web/useEntorno';
 import { fechaLarga } from '../../../services/web/formato';
-import { gsap, useGSAP } from '../animacion/scroll';
 import ActualizarApp from '../ActualizarApp';
-import './aplicacion.css';
 import './descargar.css';
 
 const PLATAFORMAS = [
@@ -19,17 +17,15 @@ const PLATAFORMAS = [
 ];
 
 const PASOS_INSTALAR = [
-    { titulo: 'Abra la página de la app', texto: 'Presione «Descargar para Android» desde su celular. Se abrirá la página oficial de la app, donde podrá bajar el archivo.' },
-    { titulo: 'Permita la instalación', texto: 'Al abrirlo, Android solicitará permiso para instalar aplicaciones desde esta fuente. Acepte el permiso solo para este archivo.' },
-    { titulo: 'Cree su cuenta', texto: 'Ingrese con su correo, explore el catálogo y realice su primer pedido.' }
+    { titulo: 'Acceder a la descarga', texto: 'Desde un dispositivo Android, seleccione «Descargar para Android» para obtener el archivo APK.' },
+    { titulo: 'Autorizar la instalación', texto: 'Android solicitará permiso para instalar aplicaciones desde esta fuente. Confirme el permiso únicamente para este archivo.' },
+    { titulo: 'Ingresar a la cuenta', texto: 'Ingrese con su correo, consulte el catálogo y realice su pedido.' }
 ];
 
 function DownloadCard({ clave, nombre, destacada }) {
     const datos = DESCARGAS[clave];
     const canal = datos && CANALES[datos.tipo];
 
-    // Si falta la configuración de esta plataforma, no se dibuja la tarjeta
-    // (antes, un dato faltante rompía toda la página).
     if (!datos || !canal) return null;
 
     const disponible = plataformaDisponible(clave);
@@ -37,7 +33,7 @@ function DownloadCard({ clave, nombre, destacada }) {
         datos.version && ['Versión', datos.version],
         disponible && ['Formato', canal.formato],
         datos.tamano && ['Tamaño', datos.tamano],
-        datos.actualizado && ['Actualizada', fechaLarga(datos.actualizado)]
+        datos.actualizado && ['Fecha de actualización', fechaLarga(datos.actualizado)]
     ].filter(Boolean);
 
     return (
@@ -48,7 +44,7 @@ function DownloadCard({ clave, nombre, destacada }) {
                 <img className="icono-app icono-app--medio" src={iconoApp} alt="" width="56" height="56" />
                 <div>
                     <h2 id={`descarga-${clave}`}>{nombre}</h2>
-                    <p className="tarjeta-descarga__estado">{disponible ? 'Disponible ahora' : canal.formato}</p>
+                    <p className="tarjeta-descarga__estado">{disponible ? 'Disponible' : canal.formato}</p>
                 </div>
             </div>
 
@@ -74,66 +70,22 @@ function DownloadCard({ clave, nombre, destacada }) {
     );
 }
 
-export default function DownloadSection({ reducido = false }) {
-    const seccion = useRef(null);
+export default function DownloadSection() {
     const plataforma = usePlataforma();
     const visibles = PLATAFORMAS.filter(({ clave }) => DESCARGAS[clave]?.habilitado);
     const android = DESCARGAS.android;
     const androidListo = plataformaDisponible('android');
 
-    useGSAP(
-        () => {
-            if (reducido) return;
-            // clearProps: al terminar, GSAP limpia los estilos en línea y no interfiere con tu CSS
-            gsap.from('.descargar-portada__texto > *', {
-                opacity: 0,
-                y: 24,
-                duration: 0.45,
-                ease: 'expo.out',
-                stagger: 0.05,
-                clearProps: 'opacity,transform'
-            });
-            gsap.from('.descargar-portada__telefonos .telefono--1', {
-                opacity: 0,
-                y: 30,
-                duration: 0.7,
-                ease: 'expo.out',
-                clearProps: 'opacity,transform'
-            });
-            gsap.from('.descargar-portada__telefonos .telefono--2', {
-                opacity: 0,
-                xPercent: 42,
-                y: 44,
-                duration: 0.85,
-                delay: 0.05,
-                ease: 'expo.out',
-                clearProps: 'opacity,transform'
-            });
-            gsap.from('.descargar-portada__telefonos .telefono--3', {
-                opacity: 0,
-                xPercent: -42,
-                y: 44,
-                duration: 0.85,
-                delay: 0.1,
-                ease: 'expo.out',
-                clearProps: 'opacity,transform'
-            });
-        },
-        { scope: seccion, dependencies: [reducido] }
-    );
-
     return (
-        <div id="descargar" ref={seccion} className="descargar-pagina">
+        <div id="descargar" className="descargar-pagina">
             <section className="seccion descargar-portada casa-seccion" aria-labelledby="descarga-titulo">
                 <div className="contenedor descargar-portada__rejilla">
                     <div className="descargar-portada__texto">
                         <div className="casa-cabecera">
-                            <span className="casa-etiqueta">Descargar</span>
-                            <span className="descargar-portada__sello">Aplicación para Android</span>
                             <h1 id="descarga-titulo" className="descargar-portada__titulo">
                                 Descargue la app
                             </h1>
-                            <p className="descargar-portada__entrada">Gratis para Android. Compre y siga sus pedidos desde su teléfono.</p>
+                            <p className="descargar-portada__entrada">Consulte el catálogo, compre y siga sus pedidos desde su teléfono Android.</p>
                             <div className="descargar-portada__acciones casa-acciones">
                                 {androidListo && (
                                     <a
@@ -156,16 +108,16 @@ export default function DownloadSection({ reducido = false }) {
                         <span className="descargar-portada__estela" aria-hidden="true" />
                         <div className="descargar-portada__telefonos">
                             <figure className="telefono telefono--catalogo telefono--2" aria-hidden="true">
-                                <img src={imgPerfilCielo} alt="" width="390" height="844" decoding="async" />
+                                <img src={imgInicio} alt="" width="390" height="844" decoding="async" />
                             </figure>
                             <figure className="telefono telefono--catalogo telefono--1" aria-hidden="true">
-                                <img src={imgFavoritos} alt="" width="390" height="844" decoding="async" />
+                                <img src={imgCatalogo} alt="" width="390" height="844" decoding="async" />
                             </figure>
                             <figure className="telefono telefono--catalogo telefono--3" aria-hidden="true">
-                                <img src={imgComprasMenta} alt="" width="390" height="844" decoding="async" />
+                                <img src={imgEntrega} alt="" width="390" height="844" decoding="async" />
                             </figure>
                         </div>
-                        <p className="descargar-portada__muestra" aria-hidden="true">Personalice los colores de la app</p>
+                        <p className="descargar-portada__muestra" aria-hidden="true">Vistas de la aplicación</p>
                     </div>
                 </div>
             </section>
@@ -173,7 +125,7 @@ export default function DownloadSection({ reducido = false }) {
             <section className="seccion crema descargar-plataformas" aria-labelledby="plataformas-titulo">
                 <div className="contenedor">
                     <h2 id="plataformas-titulo" className="seccion__titulo">
-                        Elija su teléfono
+                        Disponibilidad por plataforma
                     </h2>
 
                     <div className="descarga__rejilla casa-tarjetas">
@@ -185,7 +137,7 @@ export default function DownloadSection({ reducido = false }) {
                     {androidListo && (
                         <div className="instalar" aria-labelledby="instalar-titulo">
                             <h2 id="instalar-titulo">
-                                <FaMobileScreenButton aria-hidden="true" /> Cómo instalarla en Android
+                                <FaMobileScreenButton aria-hidden="true" /> Instalación en Android
                             </h2>
                             <ol className="instalar__pasos">
                                 {PASOS_INSTALAR.map(({ titulo, texto }, i) => (

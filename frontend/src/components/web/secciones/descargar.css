@@ -1,3 +1,5 @@
+.icono-app { display: block; border-radius: 22%; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 12px 26px -12px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.06); }
+.icono-app--medio { width: 56px; height: 56px; }
 .descargar-portada { position: relative; overflow: clip; background: linear-gradient(160deg, #10304b, #0a1f31 75%); }
 .descargar-portada__rejilla { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--e-4); align-items: center; }
 .descargar-portada__texto { display: grid; justify-items: start; gap: 1.1rem; }

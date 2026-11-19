@@ -1,36 +1,22 @@
 ﻿.sitio footer.pie {
-    --pie-fondo: #004d43; --pie-texto: #ffffff; --pie-suave: #dfe6dd; --pie-filete: rgb(255 255 255 / 0.24); --pie-oro: #ffffff;
-    --pie-crema: #fff5e6; --pie-legal: #f3f3f3; position: relative;
-    background-color: var(--pie-fondo); background-image: none; animation: none; color: var(--pie-texto); font-family: var(--f-texto); font-size: .9375rem;
-    line-height: 1.6; border-top: 0;
+    --pie-fondo: #17171a; --pie-texto: #f5f1ea; --pie-suave: #cbc4bb; --pie-filete: rgb(245 241 234 / 0.14); --pie-oro: #e6d3b3;
+    --diamante-filo: linear-gradient(90deg, transparent, rgb(230 211 179 / 0.18) 15%, rgb(240 226 203 / 0.70) 50%, rgb(230 211 179 / 0.18) 85%, transparent);
+    position: relative;
+    background-color: var(--pie-fondo); color: var(--pie-texto); font-family: var(--f-texto); font-size: .9375rem;
+    line-height: 1.6; padding-block: clamp(3.5rem, 2.5rem + 3vw, 4.75rem) 1.75rem; border-top: 0;
 }
-.sitio footer.pie::before { content: none; }
-.sitio footer.pie ::selection { background: var(--cdl-acento); color: #ffffff; }
+.sitio footer.pie.pie { background-image: linear-gradient(180deg, #1d1d21 0%, #141416 62%, #101012 100%) !important; }
+.sitio footer.pie::before { content: ''; position: absolute; inset: 0 0 auto; height: 1px; background: var(--diamante-filo); }
+.sitio footer.pie.pie::before { background: var(--diamante-filo) !important; }
+.sitio footer.pie ::selection { background: var(--pie-oro); color: #17171a; }
 .sitio footer.pie a { color: var(--pie-texto); text-decoration: none; transition: color .2s ease; }
-.sitio footer.pie a:hover { color: var(--pie-suave); }
-.sitio footer.pie a:focus-visible { outline: 2px solid var(--cdl-acento); outline-offset: 4px; border-radius: 4px; }
-.sitio footer.pie .pie__crema { background: var(--pie-crema); color: #000000; padding-block: 2.5rem; }
-.sitio footer.pie .pie__crema-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
-.sitio footer.pie .pie__crema-titulo { margin: 0; color: var(--cdl-brand); font-size: 1.25rem; font-weight: 700; line-height: 1.25; }
-.sitio footer.pie .pie__crema-texto { margin: .35rem 0 0; color: var(--cdl-brand-oscuro); font-size: .875rem; }
-.sitio footer.pie .pie__crema-cta {
-    display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 22px; border-radius: 100px;
-    background: var(--cdl-brand); color: #ffffff; font-size: .875rem; font-weight: 600; text-decoration: none;
-}
-.sitio footer.pie .pie__crema-cta:hover { background: var(--cdl-brand-oscuro); color: #ffffff; }
-.sitio footer.pie .pie__servicios { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 2rem; }
-.sitio footer.pie .pie__servicio {
-    display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; color: var(--cdl-brand-oscuro);
-    font-size: .75rem; font-weight: 600; line-height: 1.3;
-}
-.sitio footer.pie .pie__servicio svg { width: 24px; height: 24px; color: var(--cdl-brand); }
-.sitio footer.pie .pie__servicio:hover { color: var(--cdl-brand); text-decoration: underline; }
+.sitio footer.pie a:hover { color: #fffaf2; }
+.sitio footer.pie a:focus-visible { outline: 2px solid var(--pie-oro); outline-offset: 4px; border-radius: 4px; }
 .sitio .pie__rejilla {
-    display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, .8fr)); gap: clamp(2rem, 1rem + 2vw, 3.5rem);
-    padding-block: clamp(2.5rem, 2rem + 2vw, 3.5rem) clamp(2.5rem, 2rem + 2vw, 3.5rem);
+    display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, .8fr)); gap: clamp(2rem, 1rem + 3vw, 4.5rem); padding-bottom: clamp(2.5rem, 2rem + 2vw, 3.5rem);
 }
 .sitio footer.pie h2 {
-    font-family: var(--f-texto); font-size: .75rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--pie-suave); margin: .4rem 0 1.25rem;
+    font-family: var(--f-texto); font-size: .75rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--pie-suave); margin: .4rem 0 1.25rem;
 }
 .sitio footer.pie ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
 .sitio footer.pie .pie__rejilla ul a {
@@ -42,7 +28,7 @@
 .sitio .pie .marca { display: inline-flex; align-items: center; gap: 12px; }
 .sitio .pie .marca img { width: 34px; height: auto; filter: brightness(0) invert(1); opacity: .95; }
 .sitio .pie .marca span {
-    font-family: var(--f-texto); font-size: 1.375rem; font-weight: 700; line-height: 1; letter-spacing: -.015em; color: #ffffff;
+    font-family: var(--ed-serif, Georgia, serif); font-style: normal; font-weight: 400; font-size: 1.375rem; line-height: 1; letter-spacing: -.015em; color: #ffffff;
 }
 .sitio .pie .pie__lema { max-width: 38ch; margin: 0; font-size: .875rem; line-height: 1.65; color: var(--pie-suave); }
 .sitio .pie .pie__direccion { display: flex; align-items: flex-start; gap: 10px; line-height: 1.55; }
@@ -54,18 +40,18 @@
     display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--pie-filete); border-radius: 999px;
     transition: background .25s ease, border-color .25s ease, color .25s ease;
 }
-.sitio .pie .pie__redes a:hover { background: #ffffff; border-color: #ffffff; color: var(--cdl-brand); }
+.sitio .pie .pie__redes a:hover { background: var(--pie-oro); border-color: var(--pie-oro); color: #17171a; }
 .sitio .pie .pie__redes svg { width: 17px; height: 17px; }
 .sitio footer.pie .pie__reclamaciones {
     display: inline-flex; align-items: center; gap: 10px; margin-top: 1.5rem; padding: 7px 14px 7px 10px; border: 1px solid var(--pie-filete); border-radius: 8px;
     font-size: .8125rem; line-height: 1.25; transition: border-color .25s ease, background .25s ease;
 }
-.sitio footer.pie .pie__reclamaciones:hover { border-color: #ffffff; background: rgb(255 255 255 / 0.08); }
+.sitio footer.pie .pie__reclamaciones:hover { border-color: rgb(230 211 179 / 0.35); background: rgb(230 211 179 / 0.06); }
 .sitio .pie__reclamaciones img { width: 38px; height: auto; filter: brightness(0) invert(1); opacity: .85; }
 .sitio .pie__reclamaciones span { max-width: 12ch; }
 .sitio .pie__legal {
-    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px;
-    padding: 1.25rem 24px; background: var(--pie-legal); color: #000000; font-size: .8125rem;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; padding-top: 1.5rem; padding-right: 96px;
+    border-top: 1px solid var(--pie-filete); color: var(--pie-suave); font-size: .8125rem;
 }
 .sitio .pie__legal > p { margin: 0; }
 .sitio footer.pie .pie__pagos-medios { display: flex; align-items: center; gap: 12px 18px; flex-wrap: wrap; }
@@ -74,19 +60,18 @@
 .sitio footer.pie .pie__pagos-lista img {
     display: block; width: auto; height: 22px; max-width: 100%; object-fit: contain; background: none; border-radius: 0; padding: 0; opacity: .9;
 }
-.sitio footer.pie .pie__pagos-nota { margin: 0; font-size: .8125rem; color: #000000; }
+.sitio footer.pie .pie__pagos-nota { margin: 0; font-size: .8125rem; color: var(--pie-suave); }
 @media (max-width: 1023px) {
     .sitio .pie__rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .sitio .pie__identidad { grid-column: 1 / -1; max-width: none; }
 }
 @media (max-width: 767px) {
     .sitio footer.pie { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
-    .sitio footer.pie .pie__crema { padding-block: 2rem; }
-    .sitio footer.pie .pie__servicios { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 1.5rem; }
     .sitio .pie__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.25rem 1.5rem; }
     .sitio .pie__atencion { grid-column: 1 / -1; }
-    .sitio .pie__legal { flex-direction: column; align-items: flex-start; padding-inline: 16px; }
+    .sitio .pie__legal { flex-direction: column; align-items: flex-start; padding-right: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .sitio footer.pie :is(a, .pie__rejilla ul a) { transition: none; }
+    .sitio footer.pie { animation: none; }
+    .sitio footer.pie :is(a, .pie__rejilla ul a, .pie__redes a, .pie__reclamaciones) { transition: none; }
 }
