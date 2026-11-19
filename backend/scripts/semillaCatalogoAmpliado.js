@@ -283,18 +283,16 @@ Ejemplos:
             }
 
             let insertados = 0;
-            for (const libro of aInsertar) {
-                libro.id_autor = mapaAutores.get(libro.autorNuevo || normalizar(libro.autor)).id_autor;
-                libro.id_categoria = mapaCategorias.get(libro.categoriaNueva || normalizar(libro.categoria)).id_categoria;
+            const loteLibros = [];
+            const TAMANO_LOTE = 100;
 
-                const precioOferta = libro.descuento_porcentaje
-                    ? (Number(libro.precio) * (1 - Number(libro.descuento_porcentaje) / 100)).toFixed(2)
-                    : null;
+            const vaciarLote = async () => {
+                if (!loteLibros.length) return;
 
-                const [filas] = await conexion.query(
-                    `INSERT INTO libros (titulo, isbn, descripcion, precio, stock, portada, id_autor, id_categoria, descuento_porcentaje, precio_oferta)
-                     VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?) RETURNING id_libro`,
-                    [
+                const valores = [];
+                const filas = loteLibros.map((libro, indice) => {
+                    const base = indice * 9;
+                    valores.push(
                         libro.titulo,
                         libro.isbn,
                         libro.descripcion || null,
@@ -303,16 +301,42 @@ Ejemplos:
                         libro.id_autor,
                         libro.id_categoria,
                         libro.descuento_porcentaje || null,
-                        precioOferta
-                    ]
+                        libro.precioOferta
+                    );
+                    return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, NULL, $${base + 6}, $${base + 7}, $${base + 8}, $${base + 9})`;
+                });
+
+                await conexion.query(
+                    `INSERT INTO libros (titulo, isbn, descripcion, precio, stock, portada, id_autor, id_categoria, descuento_porcentaje, precio_oferta)
+                     VALUES ${filas.join(', ')}`,
+                    valores
                 );
 
                 await conexion.query(
-                    `INSERT INTO inventario (id_libro, stock, stock_minimo) VALUES (?, ?, ?) ON CONFLICT (id_libro) DO NOTHING`,
-                    [filas.insertId, libro.stock ?? 10, STOCK_MINIMO]
+                    `INSERT INTO inventario (id_libro, stock, stock_minimo)
+                     SELECT l.id_libro, u.stock, $3
+                     FROM unnest($1::text[], $2::int[]) AS u(isbn, stock)
+                     JOIN libros l ON l.isbn = u.isbn
+                     ON CONFLICT (id_libro) DO NOTHING`,
+                    [loteLibros.map((libro) => libro.isbn), loteLibros.map((libro) => libro.stock ?? 10), STOCK_MINIMO]
                 );
-                insertados++;
+
+                insertados += loteLibros.length;
+                loteLibros.length = 0;
+            };
+
+            for (const libro of aInsertar) {
+                libro.id_autor = mapaAutores.get(libro.autorNuevo || normalizar(libro.autor)).id_autor;
+                libro.id_categoria = mapaCategorias.get(libro.categoriaNueva || normalizar(libro.categoria)).id_categoria;
+
+                const precioOferta = libro.descuento_porcentaje
+                    ? (Number(libro.precio) * (1 - Number(libro.descuento_porcentaje) / 100)).toFixed(2)
+                    : null;
+
+                loteLibros.push({ ...libro, precioOferta });
+                if (loteLibros.length >= TAMANO_LOTE) await vaciarLote();
             }
+            await vaciarLote();
 
             await conexion.commit();
             console.log(`\n✅ Insertados ${insertados} libro(s) con inventario, ${autoresNuevos.size} autor(es) y ${categoriasNuevas.size} categoría(s).`);
