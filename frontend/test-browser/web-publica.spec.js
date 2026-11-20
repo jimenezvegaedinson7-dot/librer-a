@@ -254,7 +254,7 @@ test('catálogo: página de categoría ofrece temáticas relacionadas sin filtro
     await expect(temas.getByRole('link', { name: 'Ver catálogo completo' })).toHaveAttribute('href', '/catalogo');
     await expect(temas.getByRole('link', { name: 'Novela', exact: true })).toHaveAttribute('href', '/catalogo?categoria=Novela');
     await expect(temas.getByRole('link', { name: 'Fantasía', exact: true })).toHaveAttribute('href', '/catalogo?categoria=Fantas%C3%ADa');
-    await expect(page.locator('.catalogo-cabeza__collage img')).toHaveCount(4);
+    await expect(page.locator('.catalogo-cabeza__collage')).toHaveCount(0);
     await expect(page.locator('.catalogo-beneficios li')).toHaveCount(3);
     await expect(page.locator('.catalogo-autores')).toBeVisible();
     await expect(page.locator('.rejilla-libros .tarjeta-libro')).toHaveCount(4);
@@ -267,7 +267,7 @@ test('catálogo: Cómic y Manga muestra series, ofertas y beneficios sin inventa
     await page.goto('/catalogo?categoria=C%C3%B3mic%20y%20Manga');
 
     await expect(page.locator('#catalogo-pagina-titulo')).toHaveText('Cómics y manga');
-    await expect(page.locator('.catalogo-cabeza__collage img')).toHaveCount(5);
+    await expect(page.locator('.catalogo-cabeza__collage')).toHaveCount(0);
     await expect(page.locator('.catalogo-cabeza__cantidad')).toHaveText('9 títulos en el catálogo');
     await expect(page.locator('.catalogo-beneficios li')).toHaveCount(3);
     await expect(page.locator('.catalogo-lateral')).toHaveCount(0);
@@ -950,14 +950,25 @@ test('catálogo: botón de compra negro carbón y stock real en la tarjeta', asy
     await expect(page.locator('.tarjeta-libro--sin-stock')).toContainText('Sin stock por ahora');
 });
 
-test('catálogo: Agregar y Ver detalle son botones redondeados', async ({ page }) => {
+test('catálogo: Agregar y Ver detalle son botones compactos', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/catalogo');
     for (const selector of ['.tarjeta-libro .boton--compra', '.tarjeta-libro .boton--detalle']) {
         const boton = page.locator(selector).first();
         await expect(boton).toBeVisible();
-        const radio = await boton.evaluate((el) => parseFloat(getComputedStyle(el).borderRadius));
-        expect(radio).toBeGreaterThanOrEqual(22);
+        const estilo = await boton.evaluate((el) => {
+            const calculado = getComputedStyle(el);
+            return {
+                radio: parseFloat(calculado.borderRadius),
+                altura: parseFloat(calculado.minHeight),
+                tamano: parseFloat(calculado.fontSize),
+                transformacion: calculado.textTransform
+            };
+        });
+        expect(estilo.radio).toBeLessThanOrEqual(10);
+        expect(estilo.altura).toBeGreaterThanOrEqual(44);
+        expect(estilo.tamano).toBeLessThanOrEqual(14);
+        expect(estilo.transformacion).toBe('none');
     }
 });
 

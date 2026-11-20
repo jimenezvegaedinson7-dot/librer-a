@@ -254,10 +254,11 @@ export default function PerfilCliente({ tienda }) {
                     <button
                         type="button"
                         className="pf-menu-toggle"
+                        aria-label="Menú"
                         aria-expanded={menuAbierto}
                         aria-controls="pf-menu"
                         onClick={() => setMenuAbierto((abierto) => !abierto)}>
-                        <FiMenu aria-hidden="true" /> Menú
+                        <FiMenu aria-hidden="true" />
                     </button>
 
                     <nav id="pf-menu" className={`pf-menu${menuAbierto ? ' pf-menu--abierto' : ''}`} aria-label="Accesos de mi cuenta">

@@ -1,6 +1,6 @@
 # Mapa de la app Flutter (Android / clientes)
 
-> Generado desde el código real el 2026-11-19 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-20 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque y navegación

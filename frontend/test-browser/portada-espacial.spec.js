@@ -35,13 +35,7 @@ async function abrir(page) {
     return carrusel;
 }
 
-function animacionesCarrusel(pista, propiedad) {
-    return pista.evaluate((elemento, nombre) => elemento.getAnimations({ subtree: true })
-        .filter((animacion) => animacion.animationName === 'p3-carrusel-orbita' || animacion.animationName === 'p3-carrusel-endereza')
-        .map((animacion) => animacion[nombre]), propiedad);
-}
-
-test('la portada muestra el carrusel ORBIT sin libro protagonista ni escena 3D', async ({ page }) => {
+test('la portada muestra un estante editorial estático sin escena 3D', async ({ page }) => {
     const errores = [];
     page.on('pageerror', (error) => errores.push(error.message));
     const prohibidas = [];
@@ -53,8 +47,8 @@ test('la portada muestra el carrusel ORBIT sin libro protagonista ni escena 3D',
     await expect(page.getByText('Últimos libros agregados', { exact: true })).toBeVisible();
     const titulo = page.getByRole('heading', { name: /Las ideas no se quedan quietas/ });
     const tamano = await titulo.evaluate((elemento) => parseFloat(getComputedStyle(elemento).fontSize));
-    expect(tamano).toBeGreaterThanOrEqual(40);
-    expect(tamano).toBeLessThanOrEqual(60);
+    expect(tamano).toBeGreaterThanOrEqual(24);
+    expect(tamano).toBeLessThanOrEqual(44);
     await expect(titulo.locator('em')).toHaveText('Tampoco nuestros libros.');
     const escalera = await page.evaluate(() => [
         '.portada3d__orbite-texto h2',
@@ -63,39 +57,25 @@ test('la portada muestra el carrusel ORBIT sin libro protagonista ni escena 3D',
     ].map((selector) => parseFloat(getComputedStyle(document.querySelector(selector)).fontSize)));
     expect(escalera[1]).toBeGreaterThan(escalera[0]);
     expect(escalera[0]).toBeGreaterThan(escalera[2]);
-    const adorno = await page.locator('.portada3d__orbite-texto').evaluate((elemento) => {
-        const estilo = getComputedStyle(elemento, '::before');
-        return { contenido: estilo.content, tamano: parseFloat(estilo.fontSize) };
-    });
-    expect(adorno.contenido).toContain('“');
-    expect(adorno.tamano).toBeGreaterThan(80);
-    await expect(page.locator('.portada3d__orbite-lema')).toHaveCount(0);
-    await expect(page.locator('.portada3d__boton')).toHaveCount(0);
-    await expect(page.locator('.portada3d__plataforma')).toBeVisible();
-    const plataforma = await page.locator('.portada3d__plataforma').evaluate((elemento) => {
-        const estilo = getComputedStyle(elemento);
-        const caja = elemento.getBoundingClientRect();
-        return { fondo: estilo.backgroundImage, eventos: estilo.pointerEvents, ancho: caja.width, alto: caja.height, opacidad: parseFloat(estilo.opacity), desenfoque: estilo.filter };
-    });
-    expect(plataforma.fondo).toContain('radial-gradient');
-    expect(plataforma.eventos).toBe('none');
-    expect(plataforma.ancho).toBeGreaterThan(120);
-    expect(plataforma.alto).toBeGreaterThan(14);
-    expect(plataforma.opacidad).toBeLessThan(1);
-    expect(plataforma.desenfoque).toContain('blur');
+    const adorno = await page.locator('.portada3d__orbite-texto').evaluate((elemento) => getComputedStyle(elemento, '::before').content);
+    expect(adorno).toBe('none');
+    await expect(page.locator('.portada3d__eyebrow')).toHaveText('Catálogo MATIDANA');
+    await expect(page.locator('.portada3d__orbite-descripcion')).toContainText('Portadas reales del catálogo');
+    await expect(page.locator('.portada3d__enlace')).toHaveAttribute('href', '/catalogo');
+    await expect(page.locator('.portada3d__plataforma')).toHaveCount(0);
     await expect(page.locator('.portada3d canvas')).toHaveCount(0);
     await expect(page.getByText(/libro destacado/i)).toHaveCount(0);
     await expect(carrusel.getByRole('button')).toHaveCount(0);
-    await expect(page.getByText('Arrastra o usa las flechas · siempre en movimiento')).toHaveCount(0);
-    await expect(page.getByText('Una perspectiva distinta')).toHaveCount(0);
-    await expect(page.locator('.portada3d__eyebrow')).toHaveCount(0);
+    await expect(page.getByText(/Arrastra|siempre en movimiento|Una perspectiva distinta/i)).toHaveCount(0);
+    const animaciones = await carrusel.evaluate((elemento) => elemento.getAnimations({ subtree: true }).length);
+    expect(animaciones).toBe(0);
     expect(prohibidas).toEqual([]);
     expect(errores).toEqual([]);
     const enlaces = await carrusel.getByRole('link').evaluateAll((items) => items.map((item) => item.getAttribute('href')));
     expect(new Set(enlaces)).toEqual(new Set(libros.map((libro) => `/libro/${libro.id_libro}`)));
 });
 
-test('el bloque de texto no choca con el carrusel circular', async ({ page }) => {
+test('el bloque de texto no choca con el estante', async ({ page }) => {
     await abrir(page);
     const resultado = await page.evaluate(() => {
         const texto = document.querySelector('.portada3d__orbite-texto').getBoundingClientRect();
@@ -119,70 +99,23 @@ test('el bloque de texto no choca con el carrusel circular', async ({ page }) =>
     expect(relleno.inferior).toBeLessThanOrEqual(56);
 });
 
-test('carrusel ORBIT: arrastre y rotación continua al pasar el cursor', async ({ page }) => {
+test('el estante se desplaza de forma horizontal sin rotaciones', async ({ page }) => {
     const carrusel = await abrir(page);
-    const giro = () => carrusel.evaluate((elemento) => getComputedStyle(elemento).getPropertyValue('--giro-manual').trim());
-    const item = carrusel.locator('.portada3d__carrusel-item').first();
-    const enlace = item.locator('.portada3d__carrusel-link');
     const pista = carrusel.locator('.portada3d__carrusel-pista');
-    const transformPista = () => pista.evaluate((elemento) => getComputedStyle(elemento).transform);
-    await expect(item).toHaveCSS('animation-name', 'p3-carrusel-orbita');
-    await expect(item).toHaveCSS('animation-duration', '42s');
-    await expect(enlace).toHaveCSS('animation-name', 'p3-carrusel-endereza');
-    expect(await giro()).toBe('0deg');
-
-    const transformInicial = await transformPista();
-    const caja = await pista.boundingBox();
-    const centro = { x: caja.x + caja.width / 2, y: caja.y + caja.height / 2 };
-    await page.mouse.move(centro.x, centro.y);
-    await page.mouse.down();
-    await expect.poll(async () => (await animacionesCarrusel(pista, 'playState')).every((estado) => estado === 'paused')).toBe(true);
-    const tiemposPausados = await animacionesCarrusel(pista, 'currentTime');
-    const antes = await item.evaluate((elemento) => getComputedStyle(elemento).transform);
-    await page.mouse.move(centro.x + 80, centro.y, { steps: 6 });
-    expect(await item.evaluate((elemento) => getComputedStyle(elemento).transform)).not.toBe(antes);
-    const desplazamientoEsperado = (80 * 0.35 / 360) * 42000;
-    await expect.poll(async () => {
-        const tiemposDurante = await animacionesCarrusel(pista, 'currentTime');
-        return tiemposDurante.every((tiempo, i) => Math.abs(tiempo - tiemposPausados[i] - desplazamientoEsperado) < 200);
-    }).toBe(true);
-    await page.mouse.up();
-    const giroDerecha = parseFloat(await giro());
-    expect(giroDerecha).toBeGreaterThan(0);
-    await expect.poll(async () => (await animacionesCarrusel(pista, 'playState')).every((estado) => estado === 'running')).toBe(true);
-    expect(await transformPista()).toBe(transformInicial);
-
-    await page.mouse.down();
-    const antesRetroceso = await item.evaluate((elemento) => getComputedStyle(elemento).transform);
-    await page.mouse.move(centro.x, centro.y, { steps: 6 });
-    expect(await item.evaluate((elemento) => getComputedStyle(elemento).transform)).not.toBe(antesRetroceso);
-    await page.mouse.up();
-    expect(parseFloat(await giro())).toBeLessThan(giroDerecha);
-
-    await item.hover({ force: true });
-    const despues = await item.evaluate((elemento) => getComputedStyle(elemento).transform);
-    await page.waitForTimeout(500);
-    expect(await item.evaluate((elemento) => getComputedStyle(elemento).transform)).not.toBe(despues);
+    await expect(pista).toHaveCSS('animation-name', 'none');
+    await expect(carrusel.locator('.portada3d__carrusel-item').first()).toHaveCSS('animation-name', 'none');
+    expect(await pista.evaluate((elemento) => getComputedStyle(elemento).gridAutoFlow)).toBe('column');
+    const desplazamiento = await pista.evaluate((elemento) => {
+        const maximo = elemento.scrollWidth - elemento.clientWidth;
+        elemento.scrollLeft = 160;
+        return { maximo, actual: elemento.scrollLeft };
+    });
+    expect(desplazamiento.maximo).toBeGreaterThan(160);
+    expect(desplazamiento.actual).toBeGreaterThan(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test('mantener presionada una portada pausa y al soltar continúa', async ({ page }) => {
-    const carrusel = await abrir(page);
-    const pista = carrusel.locator('.portada3d__carrusel-pista');
-    await expect.poll(async () => (await animacionesCarrusel(pista, 'playState')).every((estado) => estado === 'running')).toBe(true);
-
-    await page.evaluate(() => {
-        document.querySelector('.portada3d__carrusel-link').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'mouse', button: 0, clientX: 0, clientY: 0 }));
-    });
-    await expect.poll(async () => (await animacionesCarrusel(pista, 'playState')).every((estado) => estado === 'paused')).toBe(true);
-
-    await page.evaluate(() => {
-        window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'mouse', clientX: 0, clientY: 0 }));
-    });
-    await expect.poll(async () => (await animacionesCarrusel(pista, 'playState')).every((estado) => estado === 'running')).toBe(true);
-});
-
-test('las portadas no se cortan dentro de la pista circular', async ({ page }) => {
+test('las portadas no se cortan dentro del estante', async ({ page }) => {
     const carrusel = await abrir(page);
     const recortes = await carrusel.locator('.portada3d__carrusel-item').evaluateAll((items) => {
         const pista = items[0].parentElement.getBoundingClientRect();
@@ -200,20 +133,23 @@ test('las portadas no se cortan dentro de la pista circular', async ({ page }) =
             imagen: getComputedStyle(elemento.querySelector('.portada3d__apilar-tapa img')).objectFit
         };
     });
-    expect(estilos).toEqual({ pista: 'visible', carrusel: 'visible', imagen: 'contain' });
+    expect(estilos.pista).toContain('auto');
+    expect(estilos.carrusel).toBe('visible');
+    expect(estilos.imagen).toBe('contain');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
 for (const [width, height] of [[320, 667], [390, 844], [1440, 1000]]) {
-    test(`carrusel ORBIT responsive a ${width}px sin desbordes`, async ({ page }) => {
+    test(`estante editorial responsive a ${width}px sin desbordes`, async ({ page }) => {
         await page.setViewportSize({ width, height });
         const carrusel = await abrir(page);
         await expect(carrusel.locator('.portada3d__carrusel-pista')).toBeVisible();
+        expect(await carrusel.locator('.portada3d__carrusel-item').first().evaluate((elemento) => getComputedStyle(elemento).animationName)).toBe('none');
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     });
 }
 
-test('con movimiento reducido el carrusel queda quieto y accesible', async ({ page }) => {
+test('con movimiento reducido el estante queda quieto y accesible', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     const carrusel = await abrir(page);
     await expect(carrusel.locator('.portada3d__carrusel-item').first()).toHaveCSS('animation-name', 'none');

@@ -226,7 +226,7 @@
     min-height: 44px;
     padding: 4px 10px;
     border: 1px solid var(--pf-filete);
-    border-radius: 999px;
+    border-radius: 6px;
     background: var(--pf-papel);
     color: var(--pf-tinta);
     font-family: 'Work Sans', sans-serif;
@@ -310,21 +310,19 @@
     display: none;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    width: 44px;
+    height: 44px;
     min-height: 44px;
-    padding: 0 14px;
+    padding: 0;
     border: 1px solid var(--pf-filete);
-    border-radius: 999px;
+    border-radius: 6px;
     background: var(--pf-papel);
     color: var(--pf-tinta);
-    font-family: 'Work Sans', sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 600;
     cursor: pointer;
 }
 .sitio .pf-menu-toggle svg {
-    width: 15px;
-    height: 15px;
+    width: 20px;
+    height: 20px;
 }
 .sitio .pf-menu {
     display: grid;

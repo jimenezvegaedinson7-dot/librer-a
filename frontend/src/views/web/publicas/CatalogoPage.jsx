@@ -288,8 +288,6 @@ export default function CatalogoPage() {
             .map((bloque) => ({ ...bloque, lista: bloque.lista.slice(0, 8) }));
     }, [categoria, librosCategoria]);
 
-    const portadasHero = hayFiltro ? visibles.slice(0, 5) : (destacados[0]?.lista.length ? destacados[0].lista : librosCategoria).slice(0, 5);
-
     const actualizar = (cambios) => {
         const siguiente = new URLSearchParams(window.location.search);
         Object.entries(cambios).forEach(([k, v]) => (v ? siguiente.set(k, v) : siguiente.delete(k)));
@@ -316,22 +314,6 @@ export default function CatalogoPage() {
                                     </p>
                                 )}
                             </div>
-                            {portadasHero.length > 0 && (
-                                <div className="catalogo-cabeza__collage" aria-hidden="true">
-                                    {portadasHero.map((libro, i) => (
-                                        <img
-                                            key={libro.id}
-                                            src={portada(libro.portada, 240)}
-                                            alt=""
-                                            width="120"
-                                            height="180"
-                                            loading="lazy"
-                                            decoding="async"
-                                            style={{ '--i': i }}
-                                        />
-                                    ))}
-                                </div>
-                            )}
                         </div>
                         <label className="ordenar">
                             <span>Ordenar por</span>
