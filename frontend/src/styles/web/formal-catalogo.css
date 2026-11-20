@@ -273,6 +273,6 @@
 .sitio .compra-libro > .boton.boton--linea.boton--detalle:is(:hover, :focus-visible, :active) {
     background: var(--blanco); color: #141212; border-color: #141212;
 }
-.sitio .compra-libro > .boton.boton--linea.boton--detalle:is(:hover, :focus-visible) { background: #ebaa20; border-color: #ebaa20; color: #141212; }
-.sitio .compra-libro > .boton.boton--linea.boton--detalle:active { background: #d99a12; border-color: #d99a12; color: #141212; }
+.sitio .compra-libro > .boton.boton--linea.boton--detalle:is(:hover, :focus-visible) { background: #004d43; border-color: #004d43; color: #ffffff; }
+.sitio .compra-libro > .boton.boton--linea.boton--detalle:active { background: #013a33; border-color: #013a33; color: #ffffff; }
 .sitio .compra-libro > .boton.boton--linea.boton--detalle svg { color: inherit; }

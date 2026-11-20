@@ -95,7 +95,7 @@ async function revisarTarjetas(page) {
 
 test.use({ reducedMotion: 'reduce' });
 for (const width of [390, 1440]) {
-    test(`Ver detalle ${width}px: hover amarillo y pulsación dorada con texto negro, sin cambiar Agregar`, async ({ page }) => {
+    test(`Ver detalle ${width}px: hover verde y pulsación verde oscuro con texto blanco, Agregar negro con hover naranja`, async ({ page }) => {
         await page.setViewportSize({ width, height: 1000 });
         await preparar(page);
         await page.goto('/');
@@ -107,20 +107,20 @@ for (const width of [390, 1440]) {
             await expect(detalle).toHaveCSS('background-color', 'rgb(255, 255, 255)');
             await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
             await detalle.hover();
-            await expect(detalle).toHaveCSS('background-color', 'rgb(235, 170, 32)');
-            await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
-            await expect(detalle.locator('svg')).toHaveCSS('color', 'rgb(20, 18, 18)');
+            await expect(detalle).toHaveCSS('background-color', 'rgb(0, 77, 67)');
+            await expect(detalle).toHaveCSS('color', 'rgb(255, 255, 255)');
+            await expect(detalle.locator('svg')).toHaveCSS('color', 'rgb(255, 255, 255)');
             await detalle.focus();
-            await expect(detalle).toHaveCSS('background-color', 'rgb(235, 170, 32)');
-            await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
+            await expect(detalle).toHaveCSS('background-color', 'rgb(0, 77, 67)');
+            await expect(detalle).toHaveCSS('color', 'rgb(255, 255, 255)');
             await page.mouse.down();
-            await expect(detalle).toHaveCSS('background-color', 'rgb(217, 154, 18)');
-            await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
+            await expect(detalle).toHaveCSS('background-color', 'rgb(1, 58, 51)');
+            await expect(detalle).toHaveCSS('color', 'rgb(255, 255, 255)');
             await page.mouse.move(0, 0);
             await page.mouse.up();
             await expect(agregar).toHaveCSS('background-color', 'rgb(20, 18, 18)');
             await agregar.hover();
-            await expect(agregar).toHaveCSS('background-color', 'rgb(226, 35, 26)');
+            await expect(agregar).toHaveCSS('background-color', 'rgb(217, 95, 31)');
         };
         await revisar('.catalogo .libro');
         await revisar('.ofertas .oferta-tarjeta');

@@ -404,3 +404,14 @@
     height: 20px !important;
     stroke-width: 1.8 !important;
 }
+.sitio .boton--compra:hover,
+.sitio .boton--compra:focus-visible {
+    background: #d95f1f !important;
+    border-color: #d95f1f !important;
+    color: #ffffff !important;
+}
+.sitio .boton--compra:active {
+    background: #b84d16 !important;
+    border-color: #b84d16 !important;
+    color: #ffffff !important;
+}

@@ -402,14 +402,14 @@ test('buscar: las tarjetas abren la ficha del libro', async ({ page }) => {
     await expect(page).toHaveURL(/\/libro\/\d+$/);
 });
 
-test('buscar: Ver detalle se vuelve amarillo al pasar el mouse', async ({ page }) => {
+test('buscar: Ver detalle se vuelve verde al pasar el mouse', async ({ page }) => {
     await apiPublica(page);
     await page.goto('/buscar');
     const detalle = page.locator('.buscar-tarjeta__detalle').first();
     await expect(detalle).toHaveCSS('background-color', 'rgb(247, 251, 249)');
     await detalle.hover();
-    await expect(detalle).toHaveCSS('background-color', 'rgb(235, 170, 32)');
-    await expect(detalle).toHaveCSS('color', 'rgb(20, 18, 18)');
+    await expect(detalle).toHaveCSS('background-color', 'rgb(0, 77, 67)');
+    await expect(detalle).toHaveCSS('color', 'rgb(255, 255, 255)');
 });
 
 test('catálogo: aviso si la API falla o no hay libros', async ({ page, context }) => {

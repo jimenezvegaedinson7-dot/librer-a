@@ -428,17 +428,18 @@
     line-height: 1;
 }
 
-.buscar-tarjeta__detalle:hover {
-    border-color: #ebaa20;
-    background: #ebaa20;
-    color: #141212;
+.buscar-tarjeta__detalle:hover,
+.buscar-tarjeta__detalle:focus-visible {
+    border-color: #004d43;
+    background: #004d43;
+    color: #ffffff;
     text-decoration: none;
 }
 
 .buscar-tarjeta__detalle:active {
-    border-color: #d99a12;
-    background: #d99a12;
-    color: #141212;
+    border-color: #013a33;
+    background: #013a33;
+    color: #ffffff;
 }
 
 .buscar-cargando,

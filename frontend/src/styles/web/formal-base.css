@@ -38,8 +38,8 @@
 .sitio .oscuro .boton--linea { color: #141212; border-color: #141212; }
 .sitio .oscuro .boton--linea:hover { background: #e2231a; border-color: #e2231a; color: var(--blanco); }
 .sitio .boton--compra { background: #141212; border-color: #141212; color: var(--blanco); border-radius: 999px; border-width: 2px; }
-.sitio .boton--compra:hover { background: #e2231a; border-color: #e2231a; color: var(--blanco); }
-.sitio .boton--compra.presionado { background: #b91c15; border-color: #b91c15; color: var(--blanco); }
+.sitio .boton--compra:hover { background: #d95f1f; border-color: #d95f1f; color: var(--blanco); }
+.sitio .boton--compra.presionado { background: #b84d16; border-color: #b84d16; color: var(--blanco); }
 .sitio .buscador button { background: #141212; color: var(--blanco); }
 .sitio .buscador button:hover { background: #e2231a; }
 .sitio .enlace-mas { color: #141212; }

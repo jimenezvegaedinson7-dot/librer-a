@@ -153,10 +153,10 @@
     --cdl-brand: #004d43; --cdl-brand-oscuro: #013a33; --cdl-acento: #d9017a; --cdl-dorado: #ebaa20; --cdl-verde-claro: #dfe6dd; --cdl-gris: #cfcfcf;
 }
 .sitio .compra-libro > .boton.boton--linea.boton--detalle:is(:hover, :focus-visible) {
-    background: #ebaa20 !important; border-color: #ebaa20 !important; color: #141212 !important;
+    background: #004d43 !important; border-color: #004d43 !important; color: #ffffff !important;
 }
 .sitio .compra-libro > .boton.boton--linea.boton--detalle:active {
-    background: #d99a12 !important; border-color: #d99a12 !important; color: #141212 !important;
+    background: #013a33 !important; border-color: #013a33 !important; color: #ffffff !important;
 }
 .sitio .navegacion-publica .cabecera, .sitio .cabecera {
     position: relative; background: #ffffff !important; background-image: none !important; animation: none !important; color: var(--nav-tinta);

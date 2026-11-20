@@ -51,8 +51,8 @@
 .boton--marca { background: var(--marino-900); border-color: var(--marino-900); color: var(--blanco); }
 .boton--marca:hover { background: var(--marino-700); border-color: var(--marino-700); }
 .sitio .boton--compra { background: #141212; border-color: #141212; color: var(--blanco); }
-.sitio .boton--compra:hover { background: #e2231a; border-color: #e2231a; color: var(--blanco); }
-.sitio .boton--compra:active { background: #b91c15; border-color: #b91c15; color: var(--blanco); }
+.sitio .boton--compra:hover { background: #d95f1f; border-color: #d95f1f; color: var(--blanco); }
+.sitio .boton--compra:active { background: #b84d16; border-color: #b84d16; color: var(--blanco); }
 .hero { background-color: var(--marino-950); }
 .hero-fondo::after { background: linear-gradient(90deg, rgba(10, 31, 49, 0.88) 0%, rgba(13, 41, 64, 0.72) 22%, rgba(13, 41, 64, 0.42) 42%, rgba(13, 41, 64, 0.12) 62%, transparent 78%), radial-gradient(125% 105% at 42% 45%, transparent 44%, rgba(8, 20, 32, 0.4) 100%); }
 .verde-claro { background-color: var(--crema); }
