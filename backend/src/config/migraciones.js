@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { backfillMetadatosBibliograficos } = require('./backfills');
+const { backfillMetadatosBibliograficos, backfillMetadatosDragonBallZ } = require('./backfills');
 
 const MIGRACIONES_DIR = path.join(__dirname, '..', '..', 'database', 'migrations');
 
@@ -47,7 +47,7 @@ const MIGRACIONES = [
 ];
 
 const MIGRACIONES_DATOS = ['041_backfill_entrega_ventas_canceladas.sql', '042_purga_reservas.sql', '043_delivery_fijo_pallasca.sql'];
-const MIGRACIONES_DATOS_EXTRA = [backfillMetadatosBibliograficos];
+const MIGRACIONES_DATOS_EXTRA = [backfillMetadatosBibliograficos, backfillMetadatosDragonBallZ];
 const TABLA_MIGRACIONES_DATOS = `CREATE TABLE IF NOT EXISTS migraciones_datos (nombre VARCHAR(120) PRIMARY KEY, aplicada_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, filas INT NOT NULL DEFAULT 0)`;
 
 function esFalloFatal() {

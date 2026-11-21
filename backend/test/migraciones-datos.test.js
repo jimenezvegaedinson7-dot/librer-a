@@ -43,9 +43,10 @@ test('el backfill y la purga autorizada están registrados como migraciones de d
     assert.deepEqual(MIGRACIONES_DATOS, ['041_backfill_entrega_ventas_canceladas.sql', '042_purga_reservas.sql', '043_delivery_fijo_pallasca.sql']);
 });
 
-test('el backfill de metadatos bibliográficos es una migración de datos adicional', () => {
-    assert.equal(MIGRACIONES_DATOS_EXTRA.length, 1);
+test('los backfills de metadatos bibliográficos son migraciones de datos adicionales', () => {
+    assert.equal(MIGRACIONES_DATOS_EXTRA.length, 2);
     assert.equal(MIGRACIONES_DATOS_EXTRA[0].nombre, '044_backfill_metadatos_bibliograficos.js');
+    assert.equal(MIGRACIONES_DATOS_EXTRA[1].nombre, '047_backfill_dragon_ball_z.js');
 });
 
 test('migración de datos admite backfills programáticos con el mismo registro transaccional', async () => {

@@ -17,6 +17,7 @@ require.cache[rutaDatabase] = {
 
 const libroModel = require('../src/models/libro.model');
 const { normalizarMetadatosBibliograficos } = require('../src/controllers/libro.controller');
+const { construirActualizacionesDragonBallZ, backfillMetadatosDragonBallZ } = require('../src/config/backfills');
 
 const CAMPOS = ['editorial', 'idioma', 'numero_paginas', 'anio_publicacion', 'formato', 'numero_volumen', 'dimensiones'];
 
@@ -90,4 +91,59 @@ test('crear y actualizar libros guardan y pueden borrar metadatos bibliográfico
         assert.match(consultas[1].sql, new RegExp(`${campo} = \\?`));
     }
     assert.deepEqual(consultas[1].params.slice(7, 14), [null, null, null, null, null, null, null]);
+});
+
+test('el backfill de Dragon Ball Z aplica solo los datos verificados con COALESCE', async () => {
+    const esperado = [
+        {
+            isbn: '9788416308057',
+            editorial: 'Planeta',
+            idioma: 'Español',
+            numero_paginas: 176,
+            anio_publicacion: 2015,
+            formato: 'Tapa blanda',
+            numero_volumen: '1',
+            dimensiones: '11.1 x 17.7 cm'
+        },
+        {
+            isbn: '9788416308071',
+            editorial: 'Planeta',
+            idioma: 'Español',
+            numero_paginas: 176,
+            anio_publicacion: 2015,
+            formato: 'Tapa blanda',
+            numero_volumen: '2',
+            dimensiones: '11.1 x 17.7 cm'
+        },
+        {
+            isbn: '9788416308972',
+            editorial: 'Planeta',
+            idioma: 'Español',
+            numero_paginas: 176,
+            anio_publicacion: 2015,
+            formato: 'Tapa blanda',
+            numero_volumen: '3',
+            dimensiones: '11.1 x 17.7 cm'
+        }
+    ];
+    assert.deepEqual(construirActualizacionesDragonBallZ(), esperado);
+
+    const sentencias = [];
+    const conexion = {
+        pgQuery: async (sql, params) => {
+            sentencias.push({ sql, params });
+            return { rowCount: 1 };
+        }
+    };
+
+    const resultado = await backfillMetadatosDragonBallZ.ejecutar(conexion);
+    assert.equal(backfillMetadatosDragonBallZ.nombre, '047_backfill_dragon_ball_z.js');
+    assert.deepEqual(resultado, { rowCount: 3 });
+    assert.equal(sentencias.length, 3);
+    for (const sentencia of sentencias) {
+        assert.match(sentencia.sql, /^UPDATE libros SET .+ WHERE isbn = \$1$/);
+        assert.match(sentencia.sql, /COALESCE\(/);
+        assert.equal(sentencia.params.length, 8);
+    }
+    assert.deepEqual(sentencias.map((sentencia) => sentencia.params[0]), esperado.map((libro) => libro.isbn));
 });

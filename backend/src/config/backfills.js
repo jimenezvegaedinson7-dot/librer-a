@@ -4,6 +4,8 @@ const path = require('path');
 const RAIZ = path.join(__dirname, '..', '..');
 const NOMBRE_BACKFILL = '044_backfill_metadatos_bibliograficos.js';
 const CAMPOS_ACTUALIZABLES = ['editorial', 'anio_publicacion', 'numero_paginas'];
+const NOMBRE_BACKFILL_DRAGON_BALL_Z = '047_backfill_dragon_ball_z.js';
+const CAMPOS_DRAGON_BALL_Z = ['editorial', 'idioma', 'numero_paginas', 'anio_publicacion', 'formato', 'numero_volumen', 'dimensiones'];
 
 function leerSemilla(nombre) {
     const ruta = path.join(RAIZ, 'database', 'seeds', nombre);
@@ -58,6 +60,42 @@ function construirActualizaciones() {
     return [...porIsbn.entries()].map(([isbn, valores]) => ({ isbn, ...valores }));
 }
 
+function construirActualizacionesDragonBallZ() {
+    return leerSemilla('libros-metadatos-dragon-ball-z.json')
+        .map((libro) => ({
+            isbn: textoValido(libro.isbn, 20),
+            editorial: textoValido(libro.editorial, 200),
+            idioma: textoValido(libro.idioma, 60),
+            numero_paginas: enteroValido(libro.numero_paginas, 1, 20000),
+            anio_publicacion: enteroValido(libro.anio_publicacion, 1000, 2100),
+            formato: textoValido(libro.formato, 60),
+            numero_volumen: textoValido(libro.numero_volumen, 40),
+            dimensiones: textoValido(libro.dimensiones, 100)
+        }))
+        .filter((registro) => registro.isbn);
+}
+
+async function ejecutarDragonBallZ(conexion) {
+    let filas = 0;
+
+    for (const registro of construirActualizacionesDragonBallZ()) {
+        const parametros = [registro.isbn];
+        const asignaciones = [];
+
+        for (const campo of CAMPOS_DRAGON_BALL_Z) {
+            if (registro[campo] == null) continue;
+            parametros.push(registro[campo]);
+            asignaciones.push(`${campo} = COALESCE(${campo}, $${parametros.length})`);
+        }
+
+        if (!asignaciones.length) continue;
+        const resultado = await conexion.pgQuery(`UPDATE libros SET ${asignaciones.join(', ')} WHERE isbn = $1`, parametros);
+        filas += resultado?.rowCount || 0;
+    }
+
+    return { rowCount: filas };
+}
+
 async function ejecutar(conexion) {
     let filas = 0;
 
@@ -80,5 +118,13 @@ async function ejecutar(conexion) {
 }
 
 const backfillMetadatosBibliograficos = { nombre: NOMBRE_BACKFILL, ejecutar };
+const backfillMetadatosDragonBallZ = { nombre: NOMBRE_BACKFILL_DRAGON_BALL_Z, ejecutar: ejecutarDragonBallZ };
 
-module.exports = { backfillMetadatosBibliograficos, construirActualizaciones, NOMBRE_BACKFILL };
+module.exports = {
+    backfillMetadatosBibliograficos,
+    backfillMetadatosDragonBallZ,
+    construirActualizaciones,
+    construirActualizacionesDragonBallZ,
+    NOMBRE_BACKFILL,
+    NOMBRE_BACKFILL_DRAGON_BALL_Z
+};

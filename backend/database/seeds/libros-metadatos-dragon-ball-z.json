@@ -1,0 +1,38 @@
+[
+    {
+        "isbn": "9788416308057",
+        "titulo": "Dragon Ball Z. Temporada 1: Saga de los Saiyanos 1",
+        "editorial": "Planeta",
+        "idioma": "Español",
+        "numero_paginas": 176,
+        "anio_publicacion": 2015,
+        "formato": "Tapa blanda",
+        "numero_volumen": "1",
+        "dimensiones": "11.1 x 17.7 cm",
+        "fuente": "https://www.planetadelibros.com/libro-dragon-ball-z-anime-series-saiyanos-n-0105/68460"
+    },
+    {
+        "isbn": "9788416308071",
+        "titulo": "Dragon Ball Z. Temporada 1: Saga de los Saiyanos 2",
+        "editorial": "Planeta",
+        "idioma": "Español",
+        "numero_paginas": 176,
+        "anio_publicacion": 2015,
+        "formato": "Tapa blanda",
+        "numero_volumen": "2",
+        "dimensiones": "11.1 x 17.7 cm",
+        "fuente": "https://www.planetadelibros.com/libro-dragon-ball-z-anime-series-saiyanos-n-0205/90613"
+    },
+    {
+        "isbn": "9788416308972",
+        "titulo": "Dragon Ball Z. Temporada 1: Saga de los Saiyanos 3",
+        "editorial": "Planeta",
+        "idioma": "Español",
+        "numero_paginas": 176,
+        "anio_publicacion": 2015,
+        "formato": "Tapa blanda",
+        "numero_volumen": "3",
+        "dimensiones": "11.1 x 17.7 cm",
+        "fuente": "https://www.planetadelibros.com/libro-dragon-ball-z-anime-series-saiyanos-n-0305/199747"
+    }
+]

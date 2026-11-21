@@ -57,7 +57,7 @@ Dev: @playwright/test, @vitejs/plugin-react, oxlint, vite.
 
 | Proyecto | Archivos | Imports internos | Ciclos |
 |---|---|---|---|
-| Backend (`require`) | 199 | 421 | 0 (analizador estático de imports) |
+| Backend (`require`) | 199 | 422 | 0 (analizador estático de imports) |
 | Frontend (`import`) | 214 | 814 | 0 (analizador estático de imports) |
 | Flutter (`import` relativos) | 77 | 331 | 4 caminos cíclicos |
 
