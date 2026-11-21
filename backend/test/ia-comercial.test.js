@@ -102,8 +102,8 @@ test('facetas usa las claves reales de autores y categorias', async () => {
     const consultas = [];
     const query = mock.method(pool, 'query', async (sql) => {
         consultas.push(sql);
-        if (sql.includes('a.id_autor AS id')) return { rows: [{ id: 4, nombre: 'Miguel de Cervantes', total: 3 }] };
-        if (sql.includes('c.id_categoria AS id')) return { rows: [{ id: 9, nombre: 'Novela', total: 5 }] };
+        if (sql.includes('a.id_autor AS id')) return [[{ id: 4, nombre: 'Miguel de Cervantes', total: 3 }], []];
+        if (sql.includes('c.id_categoria AS id')) return [[{ id: 9, nombre: 'Novela', total: 5 }], []];
         throw new Error('SQL inesperada');
     });
     try {

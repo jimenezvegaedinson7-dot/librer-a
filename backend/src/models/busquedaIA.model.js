@@ -7,11 +7,11 @@ const CAMPOS_DESCUENTO = `CASE WHEN base.precio IS NULL OR base.precio <= 0 THEN
 const CATALOGO_BASE = `SELECT l.id_libro, l.titulo, l.isbn, l.descripcion, ${CAMPOS_BIBLIOGRAFICOS}, l.precio, l.portada, l.id_autor, l.id_categoria, l.estado, l.creado_en, l.descuento_porcentaje, l.precio_oferta, TO_CHAR(l.descuento_hasta, 'YYYY-MM-DD') AS descuento_hasta, CASE WHEN top.id_libro IS NULL THEN 0 ELSE 1 END AS mas_vendido, COALESCE(i.stock, l.stock, 0) AS stock, CONCAT(a.nombre, ' ', a.apellido) AS autor, c.nombre AS categoria, ${PRECIO_FINAL_SQL} FROM libros l INNER JOIN autores a ON a.id_autor = l.id_autor INNER JOIN categorias c ON c.id_categoria = l.id_categoria LEFT JOIN inventario i ON i.id_libro = l.id_libro LEFT JOIN (SELECT dv.id_libro FROM detalle_venta dv INNER JOIN ventas v ON v.id_venta = dv.id_venta WHERE v.estado IN ('pagada', 'entregada') GROUP BY dv.id_libro HAVING SUM(dv.cantidad) > 0 ORDER BY SUM(dv.cantidad) DESC, dv.id_libro LIMIT 3) top ON top.id_libro = l.id_libro`;
 
 const facetas = async () => {
-    const [autores, categorias] = await Promise.all([
+    const [[autores], [categorias]] = await Promise.all([
         pool.query(`SELECT a.id_autor AS id, CONCAT(a.nombre, ' ', a.apellido) AS nombre, COUNT(*) AS total FROM libros l INNER JOIN autores a ON a.id_autor = l.id_autor WHERE l.estado = 1 GROUP BY a.id_autor, a.nombre, a.apellido ORDER BY total DESC, nombre ASC`),
         pool.query(`SELECT c.id_categoria AS id, c.nombre, COUNT(*) AS total FROM libros l INNER JOIN categorias c ON c.id_categoria = l.id_categoria WHERE l.estado = 1 GROUP BY c.id_categoria, c.nombre ORDER BY total DESC, nombre ASC`)
     ]);
-    return { autores: autores.rows, categorias: categorias.rows };
+    return { autores, categorias };
 };
 
 const titulos = async (tokens) => {
