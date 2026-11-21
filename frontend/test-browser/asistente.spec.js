@@ -232,6 +232,8 @@ test('respuestas largas mantienen el avatar visible y compactan las acciones de 
     expect(avatar.y).toBeLessThan(area.y + area.height);
     expect(avatar.x).toBeGreaterThanOrEqual(area.x - 1);
     expect(avatar.x + avatar.width).toBeLessThanOrEqual(burbuja.x + 1);
+    await expect(chat.locator('.asistente-cursor')).toHaveCount(0);
+    expect((await respuesta.locator('p > span[aria-hidden="true"]').first().textContent()).length).toBeLessThanOrEqual(240);
     await chat.screenshot({ path: test.info().outputPath('chat-respuesta-larga.png') });
 });
 test('chat en horizontal de poca altura conserva campo y conversación desplazable', async ({ page }) => {
@@ -268,6 +270,36 @@ test('cada consulta de precio y stock vuelve a leer el catalogo, sin reutilizar 
     await expect(ultima(chat)).toContainText('S/ 70.00');
     expect(control.catalogos).toHaveLength(2);
 });
+test('contexto inválido del backend se reintenta sin contexto y no muestra error', async ({ page }) => {
+    await preparar(page);
+    const llamadas = [];
+    await page.route(`${API}/asistente`, (route) => {
+        const body = route.request().postDataJSON();
+        llamadas.push(body);
+        if (llamadas.length === 2)
+            return route.fulfill({ status: 400, json: { success: false, codigo: 'contexto_invalido', mensaje: 'Contexto inválido' } });
+        return route.fulfill({
+            json: {
+                success: true,
+                data: {
+                    mensaje: llamadas.length === 1 ? 'Primera respuesta con contexto.' : 'Reanudado: encontré «1984».',
+                    libros: [{ ...libros[1], motivo: 'Libro real del catálogo.' }],
+                    contexto: 'contexto-nuevo',
+                    origen: 'catalogo',
+                    opciones: []
+                }
+            }
+        });
+    });
+    const chat = await abrir(page);
+    await preguntar(chat, 'Stock de 1984');
+    await expect(ultima(chat)).toContainText('Primera respuesta con contexto');
+    await preguntar(chat, 'y otro');
+    await expect(ultima(chat)).toContainText('Reanudado');
+    expect(llamadas).toHaveLength(3);
+    expect(llamadas[1].contexto).toBe('contexto-nuevo');
+    expect(llamadas[2].contexto).toBeUndefined();
+});
 test('libro agotado y consulta de presupuesto muestran los datos reales', async ({ page }) => {
     await preparar(page);
     const chat = await abrir(page);
@@ -275,6 +307,15 @@ test('libro agotado y consulta de presupuesto muestran los datos reales', async 
     await expect(ultima(chat)).toContainText('S/ 40.00');
     await expect(ultima(chat)).toContainText('Agotado en el catálogo consultado');
     await preguntar(chat, 'Libros por menos de 45 soles');
+    await expect(ultima(chat)).toContainText('1984');
+    await expect(ultima(chat)).not.toContainText(base.titulo);
+});
+test('recomendación abierta y presupuesto con «tengo» devuelven libros reales', async ({ page }) => {
+    await preparar(page);
+    const chat = await abrir(page);
+    await preguntar(chat, 'No sé qué leer');
+    await expect(ultima(chat)).toContainText(base.titulo);
+    await preguntar(chat, 'Tengo 45 soles');
     await expect(ultima(chat)).toContainText('1984');
     await expect(ultima(chat)).not.toContainText(base.titulo);
 });
@@ -480,4 +521,44 @@ test('la primera apertura muestra el portal con sonido; las siguientes abren dir
     await expect(chat).toHaveCount(1);
     await expect(chat.locator('.asistente-intro')).toHaveCount(0);
     expect(await page.evaluate(() => window.__osc)).toBe(sonidos);
+});
+
+test('sugerencias contextuales son chips compactos junto al formulario', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 720 });
+    await page.addInitScript(() => {
+        sessionStorage.setItem(
+            'asistente-memoria',
+            JSON.stringify({ apodo: 'Ana', visitas: 2, autores: { 'Stephen King': 5 }, categorias: { Terror: 4 }, vistos: [] })
+        );
+    });
+    await preparar(page);
+    const chat = await abrir(page);
+    const sugeridas = chat.locator('.asistente-sugerencias[aria-label="Preguntas sugeridas"]');
+    for (const nombre of ['Más de Stephen King', 'Libros de Terror', 'Recomiéndame algo'])
+        await expect(sugeridas.getByRole('button', { name: nombre, exact: true })).toBeVisible();
+    await expect(sugeridas.getByRole('button', { name: 'Buscar un libro', exact: true })).toHaveCount(0);
+    expect(await ultima(chat).locator('.asistente-sugerencias').count()).toBe(0);
+    const chip = await sugeridas.getByRole('button', { name: 'Más de Stephen King', exact: true }).boundingBox(),
+        fila = await sugeridas.boundingBox();
+    expect(chip.height).toBeLessThanOrEqual(32);
+    expect(fila.height).toBeLessThanOrEqual(40);
+    expect(await chat.getByRole('log').evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    await expect(chat.getByRole('textbox')).toBeInViewport();
+    await chat.screenshot({ path: test.info().outputPath('chat-chips-compactos.png') });
+});
+
+test('el fallback local enumera categorías y autores del catálogo actual', async ({ page }) => {
+    const control = await preparar(page);
+    control.libros.push({ ...base, id_libro: 3, titulo: 'It', autor: 'Stephen King', categoria: 'Terror', id_autor: 3, id_categoria: 2 });
+    const chat = await abrir(page);
+    const sugeridas = chat.locator('.asistente-sugerencias[aria-label="Preguntas sugeridas"]');
+    await preguntar(chat, '¿Qué categorías hay?');
+    await expect(ultima(chat)).toContainText('Categorías publicadas');
+    await expect(ultima(chat)).toContainText('Novela');
+    await expect(ultima(chat)).toContainText('Terror');
+    await expect(sugeridas.getByRole('button', { name: 'Terror', exact: true })).toBeVisible();
+    await preguntar(chat, '¿Qué autores hay?');
+    await expect(ultima(chat)).toContainText('Autores publicados');
+    await expect(ultima(chat)).toContainText('Gabriel García Márquez');
+    await expect(sugeridas.getByRole('button', { name: 'George Orwell', exact: true })).toBeVisible();
 });

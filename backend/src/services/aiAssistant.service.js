@@ -1,8 +1,9 @@
 const modelo = require('../models/asistente.model');
 const gemini = require('../integrations/gemini');
+const { recortar } = gemini;
 const contextoService = require('./asistenteContexto.service');
 const { normalizar, coincidencias, interpretar, fueraDeAlcance } = require('../utils/asistenteBusqueda');
-const ALCANCE = 'Solo puedo ayudarte con libros reales del catálogo y con la información pública de esta librería. No respondo sobre temas ajenos ni revelo información interna.';
+const ALCANCE = 'Solo puedo ayudarte con libros del catálogo y con información pública de la librería. No respondo sobre temas ajenos ni datos internos.';
 
 function crearAsistente({ repositorio = modelo, proveedor = gemini.seleccionar, conversador = gemini.conversar, contextos = contextoService } = {}) {
     return async function responder({ mensaje, contexto, id_libro, modo }) {
@@ -12,13 +13,25 @@ function crearAsistente({ repositorio = modelo, proveedor = gemini.seleccionar, 
             if (fueraDeAlcance(normalizar(mensaje))) return { mensaje: ALCANCE, libros: [], opciones: [], contexto: contextos.firmar(previo), origen: 'catalogo' };
             const { texto } = await conversador({ mensaje, historial: previo.historial || [] });
             if (!texto) return { mensaje: '', libros: [], opciones: [], contexto: contextos.firmar(previo), origen: 'sin_ia' };
-            const historial = [...(previo.historial || []), { rol: 'usuario', texto: mensaje.slice(0, 220) }, { rol: 'asistente', texto: texto.slice(0, 300) }].slice(-6);
-            return { mensaje: texto, libros: [], opciones: [], contexto: contextos.firmar({ ...previo, historial }), origen: 'gemini' };
+            const corto = recortar(texto, 240);
+            const historial = [...(previo.historial || []), { rol: 'usuario', texto: mensaje.slice(0, 160) }, { rol: 'asistente', texto: recortar(corto, 180) }].slice(-6);
+            return { mensaje: corto, libros: [], opciones: [], contexto: contextos.firmar({ ...previo, historial }), origen: 'gemini' };
         }
         const plan = interpretar(mensaje, previo);
-        const simple = (texto, opciones = []) => ({ mensaje: texto, libros: [], opciones, contexto: contextos.firmar({ ...previo, opciones }), origen: 'catalogo' });
+        const simple = (texto, opciones = []) => ({ mensaje: recortar(texto, 200), libros: [], opciones, contexto: contextos.firmar({ ...previo, opciones }), origen: 'catalogo' });
         if (plan.fuera) return simple(ALCANCE);
         const facetas = await repositorio.facetas();
+        const sinTitulos = !/\b(libro|libros|titulo|titulos|obra|obras)\b/.test(plan.q);
+        if (sinTitulos && /\b(categoria|categorias|genero|generos|tema|temas|clasificacion)\b/.test(plan.q))
+            return simple(
+                `Categorías publicadas (${facetas.categorias.length}): ${facetas.categorias.slice(0, 6).map((c) => c.nombre).join(', ')}${facetas.categorias.length > 6 ? '…' : ''}. También están en el menú de categorías.`,
+                facetas.categorias.slice(0, 6).map((c) => ({ texto: c.nombre, consulta: `Libros de ${c.nombre}` }))
+            );
+        if (sinTitulos && /\b(autor|autores|autora|autoras|escritor|escritores)\b/.test(plan.q))
+            return simple(
+                `Autores publicados: ${facetas.autores.slice(0, 6).map((a) => a.nombre).join(', ')}${facetas.autores.length > 6 ? '…' : ''}.`,
+                facetas.autores.slice(0, 6).map((a) => ({ texto: a.nombre, consulta: `Libros de ${a.nombre}` }))
+            );
         let filtros = { ...plan.filtros };
         let referencia = null;
         const ordinal = /\b(primer[oa]?|segundo|segunda|tercero|tercera|cuarto|cuarta)\b/.exec(plan.q)?.[1];
@@ -32,7 +45,7 @@ function crearAsistente({ repositorio = modelo, proveedor = gemini.seleccionar, 
         if (tokens.length && !autores.length && !categorias.length) titulos = coincidencias(await repositorio.titulos(tokens), tokens);
         if (autores.length > 1)
             return simple(
-                'Encontré varios autores que pueden coincidir. ¿A cuál te refieres?',
+                'Varios autores coinciden. ¿Cuál?',
                 autores.map((a) => ({ texto: a.nombre, consulta: `Libros de ${a.nombre}` }))
             );
         if (categorias.length > 1)
@@ -47,7 +60,7 @@ function crearAsistente({ repositorio = modelo, proveedor = gemini.seleccionar, 
         else if (categorias.length === 1) filtros = { categoria: categorias[0].id };
         else if (titulos.length && !plan.similar) filtros = { ids: titulos.map((t) => t.id) };
         else if (tokens.length && !plan.genero.length && !plan.similar)
-            return simple('No encuentro ese título o autor actualmente en el catálogo. Prueba con otro nombre, una categoría o un rango de precio.');
+            return simple('No encuentro ese título o autor en el catálogo. Prueba con otro nombre, categoría o precio.');
         if (plan.similar || ((plan.otro || plan.comparativo) && filtros.ids?.length === 1)) {
             const id = titulos[0]?.id || previo.ultimos?.[0] || id_libro;
             referencia = id ? await repositorio.referencia(id) : null;
@@ -81,10 +94,10 @@ function crearAsistente({ repositorio = modelo, proveedor = gemini.seleccionar, 
         if (!candidatos.length)
             return simple(
                 plan.comparativo
-                    ? 'No encuentro una opción que cumpla ese precio dentro de la búsqueda anterior. Podemos cambiar el presupuesto o el autor.'
+                    ? 'No hay opción con ese precio en la búsqueda anterior. ¿Cambiamos el presupuesto?'
                     : plan.otro
-                      ? 'No encontré más opciones dentro de esa búsqueda. Podemos probar otra categoría o autor.'
-                      : 'No encontré libros que cumplan esos criterios actualmente. Podemos probar otro autor, categoría o presupuesto.'
+                      ? 'No hay más opciones en esa búsqueda. Probemos otra categoría o autor.'
+                      : 'No encontré libros con esos criterios. Probemos otro autor, categoría o presupuesto.'
             );
 
         const generacion =
@@ -103,9 +116,9 @@ function crearAsistente({ repositorio = modelo, proveedor = gemini.seleccionar, 
         const porId = new Map(actuales.map((l) => [l.id_libro, l]));
         const ordenados = ids.map((id) => porId.get(id)).filter(Boolean);
         const elegidos = (ordenados.length ? ordenados : actuales).slice(0, plan.limite);
-        if (!elegidos.length) return simple('El catálogo cambió durante la consulta. No tengo opciones confirmadas con esos criterios; podemos buscar de nuevo.');
+        if (!elegidos.length) return simple('El catálogo cambió durante la consulta. No hay opciones confirmadas; busquemos de nuevo.');
         const libros = elegidos.map((l) => {
-            let motivo = 'Puedes consultar su ficha para ver la descripción publicada.';
+            let motivo = 'Puedes ver su ficha para más detalles.';
             if (filtros.autor) motivo = `Es de ${l.autor}, el autor de tu búsqueda.`;
             else if (referencia && l.id_autor === referencia.id_autor) motivo = `Comparte autor con «${referencia.titulo}».`;
             else if (referencia && l.id_categoria === referencia.id_categoria) motivo = `Comparte la categoría registrada con «${referencia.titulo}».`;

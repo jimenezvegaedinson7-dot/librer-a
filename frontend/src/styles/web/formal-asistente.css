@@ -64,8 +64,8 @@
     from { clip-path: inset(0 100% 0 0); }
     to { clip-path: inset(0 -10% 0 0); }
 }
-.sitio .asistente-tienda .asistente-sugerencias { gap: 6px; padding: 10px 14px 0; }
-.sitio .asistente-tienda .asistente-sugerencias button { min-height: 32px; padding: 4px 12px; font-size: 0.8125rem; border-color: var(--chat-linea); }
+.sitio .asistente-tienda .asistente-sugerencias { gap: 6px; padding: 8px 14px 0; }
+.sitio .asistente-tienda .asistente-sugerencias button { min-height: 30px; padding: 4px 10px; font-size: 0.75rem; border-color: var(--chat-linea); }
 .sitio .asistente-tienda .asistente-formulario { padding: 10px 14px 0; }
 .sitio .asistente-tienda .asistente-formulario label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .sitio .asistente-tienda .asistente-formulario > div {

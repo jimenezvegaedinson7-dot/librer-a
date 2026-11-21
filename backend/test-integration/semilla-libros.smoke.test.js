@@ -50,8 +50,8 @@ test('semillaLibros inserta el catálogo verificado y crea su inventario', async
 
     const primera = ejecutarSeed();
     assert.equal(primera.codigo, 0, `el seed falló:\n${primera.salida}`);
-    assert.match(primera.salida, /A insertar\s+:\s+81/);
-    assert.match(primera.salida, /Insertados 81 libro/);
+    assert.match(primera.salida, new RegExp(`A insertar\\s+:\\s+${catalogo.libros.length}`));
+    assert.match(primera.salida, new RegExp(`Insertados ${catalogo.libros.length} libro`));
 
     const c = await clientes();
 

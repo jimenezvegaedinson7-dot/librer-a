@@ -20,14 +20,12 @@ export function limpiarBusqueda(texto) {
 }
 
 const ESTADO = [
-    '¡Muy bien, gracias por preguntar! Rodeado de libros, que es mi lugar favorito.',
-    '¡Excelente! Acabo de ordenar mentalmente todo el catálogo, así que estoy listo para ayudarte.',
-    'Todo bien por aquí, entre portadas y páginas. ¿Y tú, qué tal?',
-    '¡De maravilla! Un buen día para empezar un libro nuevo.'
+    '¡Muy bien, gracias! Rodeado de libros, mi lugar favorito.',
+    '¡Excelente! Listo para ayudarte con el catálogo.',
+    'Todo bien, entre portadas y páginas. ¿Y tú?',
+    '¡De maravilla! Buen día para empezar un libro.'
 ];
-const IDENTIDAD = [
-    'Soy el asistente virtual de MATIDANA Libros y Cultura. Busco libros del catálogo, te digo precios y stock reales, te recomiendo lecturas y respondo dudas sobre entrega, pagos y la tienda. Y si quieres, también te cuento un chiste o una historia de libros.'
-];
+const IDENTIDAD = ['Soy el asistente de MATIDANA. Busco libros, precios, stock y ofertas; oriento sobre entrega y compras. También cuento chistes de libros.'];
 const CHISTES = [
     '¿Por qué el libro de matemáticas estaba triste? Porque tenía demasiados problemas. 📚',
     '—¿Cuál es el colmo de un libro? —Que lo dejen en blanco el día de su presentación.',
@@ -43,21 +41,21 @@ const CHISTES = [
     'Un libro de misterio le dice a otro: «No te puedo contar el final… pero tú ya sabes cómo termina esto».'
 ];
 const HISTORIAS = [
-    'Había una vez un libro olvidado en el último estante de una librería de Pallasca. Cada tarde veía pasar lectores que nunca lo elegían. Un día, una niña lo tomó solo porque su portada tenía una estrella. Lo leyó en una noche, lo recomendó a su abuelo, y su abuelo a todo el pueblo. Desde entonces, ese libro nunca volvió al estante: siempre está en las manos de alguien.',
-    'Un lector prometió leer solo una página antes de dormir. A la tercera página encontró un personaje que se parecía a él; a la décima, una pregunta que no se había hecho nunca. Amaneció con el libro en el pecho y una idea nueva en la cabeza. Dicen que los buenos libros no se leen: te leen a ti.',
-    'En una librería pequeña, los libros conversan cuando cierran las puertas. La enciclopedia presume de saberlo todo, la novela de vivirlo todo y el poemario de sentirlo todo. Pero el que siempre gana la discusión es el libro infantil, que dice: «Yo fui el primero que cada uno de ustedes leyó».',
-    'Un viajero llegó a una ciudad sin conocer a nadie. Entró a una librería, compró un libro de cuentos y se sentó en la plaza. Una señora se acercó: «Ese libro lo leí de joven». Hablaron horas. Volvió al día siguiente con otro libro y otra conversación. Un año después, ya no era un viajero: era un vecino más.',
-    'Una vez, un libro perdió su última página. Los lectores inventaron miles de finales distintos. Cuando por fin apareció la página original, nadie quiso leerla: cada uno ya tenía su final favorito. Desde entonces, el libro viaja de mano en mano con una hoja en blanco al final, por si acaso.'
+    'Un libro olvidado en un estante de Pallasca esperó años a que alguien lo eligiera. Una niña lo tomó por su portada con estrella, lo leyó en una noche y lo prestó a todo el pueblo. Desde entonces, siempre está en manos de alguien.',
+    'Un lector prometió leer una página antes de dormir. A la décima encontró una pregunta que no se había hecho nunca. Amaneció con el libro en el pecho y una idea nueva. Los buenos libros no se leen: te leen a ti.',
+    'De noche, los libros de una librería conversan. La enciclopedia sabe mucho, la novela lo vivió todo y el poemario lo siente todo. Pero gana siempre el libro infantil: «Yo fui el primero que leyó cada uno de ustedes».',
+    'Un viajero compró un libro de cuentos y se sentó en la plaza. Una señora se acercó: «Ese libro lo leí de joven». Hablaron horas. Al año siguiente ya no era viajero: era un vecino más.',
+    'Un libro perdió su última página y cada lector inventó un final. Cuando apareció la original, nadie quiso leerla: todos ya tenían su favorita. Aún viaja con una hoja en blanco al final.'
 ];
 const DATOS = [
-    'Dato curioso: Mario Vargas Llosa, escritor peruano nacido en Arequipa, ganó el Premio Nobel de Literatura en 2010.',
-    'Dato curioso: «El Principito», de Antoine de Saint‑Exupéry, se publicó en 1943 y es uno de los libros más traducidos del mundo.',
-    'Dato curioso: el 23 de abril se celebra el Día Internacional del Libro, en recuerdo de Cervantes, Shakespeare y el Inca Garcilaso de la Vega.',
-    'Dato curioso: la primera parte de «Don Quijote de la Mancha» se publicó en 1605.',
-    'Dato curioso: Gabriel García Márquez publicó «Cien años de soledad» en 1967 y recibió el Premio Nobel en 1982.',
-    'Dato curioso: César Vallejo, poeta nacido en Santiago de Chuco (La Libertad), escribió «Los heraldos negros» y «Trilce».',
-    'Dato curioso: la imprenta de tipos móviles de Gutenberg, hacia 1450, permitió que los libros llegaran a muchísimas más personas.',
-    'Dato curioso: el Inca Garcilaso de la Vega, autor de los «Comentarios Reales», nació en Cusco en 1539.'
+    'Dato curioso: Vargas Llosa, peruano de Arequipa, ganó el Nobel de Literatura en 2010.',
+    'Dato curioso: «El Principito» se publicó en 1943 y es uno de los libros más traducidos.',
+    'Dato curioso: el 23 de abril se celebra el Día del Libro en honor a Cervantes y el Inca Garcilaso.',
+    'Dato curioso: la primera parte del «Quijote» se publicó en 1605.',
+    'Dato curioso: García Márquez publicó «Cien años de soledad» en 1967 y ganó el Nobel en 1982.',
+    'Dato curioso: César Vallejo nació en Santiago de Chuco y escribió «Trilce».',
+    'Dato curioso: Gutenberg creó la imprenta de tipos móviles hacia 1450.',
+    'Dato curioso: el Inca Garcilaso nació en Cusco en 1539 y escribió los «Comentarios Reales».'
 ];
 
 const HORA_DE_LEER = [
@@ -69,22 +67,22 @@ const HORA_DE_LEER = [
 const ANIMO = [
     {
         patron: /\b(aburrid[oa]|aburro|aburre)\b/,
-        texto: 'Un buen libro es la mejor cura contra el aburrimiento. Te muestro algunos de los más vendidos para que elijas uno:',
+        texto: 'Contra el aburrimiento, un buen libro siempre ayuda. Mira estos:',
         consulta: 'mas vendidos'
     },
     {
         patron: /\b(triste|desanimad[oa]|mal dia|deprimid[oa]|baj[oa] de animo)\b/,
-        texto: 'Siento que estés así. A veces una buena historia acompaña mucho. Mira estas novedades, quizá alguna te levante el ánimo:',
+        texto: 'Una buena historia acompaña mucho. Mira estas novedades:',
         consulta: 'novedades'
     },
     {
         patron: /\b(no se que leer|que (?:me )?recomiendas|que leo|sugerencia|algo para leer|algo bueno|recomiendame algo|recomienda algo)\b/,
-        texto: '¡Con gusto! Estos son algunos de los libros que más se llevan en la librería:',
+        texto: '¡Con gusto! Estos son los más llevados:',
         consulta: 'mas vendidos'
     },
     {
         patron: /\b(regalo|regalar|cumpleanos|obsequio)\b/,
-        texto: 'Un libro siempre es un gran regalo. Te muestro algunas opciones; si me dices para quién es (niño, joven, adulto) o qué le gusta, afino la búsqueda:',
+        texto: 'Un libro es gran regalo. Dime para quién es y afino la búsqueda:',
         consulta: 'mas vendidos'
     }
 ];
@@ -106,9 +104,9 @@ const DORMIR = [
     '¡Buenas noches{n}! Si no tienes qué leer antes de dormir, mañana te recomiendo algo. 😴'
 ];
 const FAVORITOS = [
-    'Si tuviera que elegir uno… «El Principito». Cada vez que lo leo descubro algo nuevo. ¿Y el tuyo cuál es?',
-    'Me encantan las novelas que te atrapan desde la primera página. Últimamente ando enganchado con García Márquez. ¿Qué te gusta leer a ti?',
-    '¡Pregunta difícil! Es como elegir entre tus hijos… pero «Cien años de soledad» siempre está en mi lista. ¿Tienes alguno favorito?'
+    'Si tuviera que elegir uno: «El Principito». ¿Y el tuyo?',
+    'Me atrapan las novelas que empiezan fuerte. Ahora ando con García Márquez. ¿Y tú?',
+    'Difícil elección, pero «Cien años de soledad» siempre está en mi lista. ¿Tienes un favorito?'
 ];
 
 const nombreBonito = (t) =>
@@ -138,11 +136,11 @@ function personalidad(q, memoria = {}) {
     if (/^(?:chau|chao|adios|hasta luego|nos vemos|bye|me voy)\b/.test(q)) return { texto: conNombre(azar(ADIOS), nombre) };
     if (/\b(tu libro favorito|que te gusta leer|que lees|que estas leyendo|cual es tu favorito|te gusta leer)\b/.test(q)) return { texto: azar(FAVORITOS) };
     if (/\b(de donde eres|donde vives|donde estas)\b/.test(q))
-        return { texto: 'Vivo dentro de la web de MATIDANA Libros y Cultura, entre estantes de Pallasca, Áncash. 🏔️ Es un lugar tranquilo… y lleno de buenas historias.' };
+        return { texto: 'Vivo entre los estantes de MATIDANA, en Pallasca, Áncash. 🏔️ Lleno de buenas historias.' };
     if (/\b(cuantos anos tienes|tu edad|que edad tienes)\b/.test(q))
-        return { texto: 'Soy joven en años, pero viejo en lecturas. 📚 Digamos que tengo tantos años como páginas he leído… ¡y ya perdí la cuenta!' };
+        return { texto: 'Joven en años, viejo en lecturas. 📚 Tantos años como páginas he leído… y ya perdí la cuenta.' };
     if (/\b(estas vivo|eres real|tienes sentimientos|sientes|tienes corazon|eres humano)\b/.test(q))
-        return { texto: 'Soy un asistente virtual, pero te confieso algo: cada vez que alguien encuentra su libro ideal, siento algo parecido a la alegría. 😊' };
+        return { texto: 'Soy virtual, pero cuando alguien halla su libro ideal siento algo parecido a la alegría. 😊' };
     if (/^(?:estas ahi|sigues ahi|hay alguien|me escuchas|me lees|holaa+|alo)\b/.test(q))
         return { texto: `¡Aquí estoy${nombre ? `, ${nombre}` : ''}! 👋 Siempre atento. ¿Qué buscamos?` };
     if (/\b(que haces|que estas haciendo|en que andas)\b/.test(q)) return { texto: 'Ordenando estantes imaginarios y esperando que alguien me pida un buen libro… ¿serás tú? 😄' };
@@ -151,7 +149,7 @@ function personalidad(q, memoria = {}) {
         return { texto: '¡Ay, me sonrojé! ☺️ Pero los verdaderamente bonitos son los libros del catálogo. ¿Te muestro alguno?' };
     if (/^(?:si|claro|dale|ya|bueno|obvio|por supuesto)$/.test(q))
         return {
-            texto: '¡Genial! Dime un título, un autor o un tema y lo busco. También puedo recomendarte algo según tu ánimo.',
+            texto: '¡Genial! Dime título, autor o tema y lo busco. También recomiendo según tu ánimo.',
             sugerencias: ['Recomiéndame algo', 'Ver ofertas']
         };
     if (/^(?:no|nada|no gracias|ninguno)$/.test(q)) return { texto: '¡Está bien! Aquí estaré cuando quieras buscar tu próxima lectura. 📖' };
@@ -163,24 +161,24 @@ function charlaLocal(q, memoria) {
     const propio = personalidad(q, memoria);
     if (propio) return propio;
     if (/^(?:como (?:estas|esta|te va|andas|vas|te encuentras|amaneciste)|que tal|todo bien|que (?:hay|cuentas|haces)|como va todo)\b/.test(q))
-        return { texto: `${azar(ESTADO)} ¿En qué libro te ayudo hoy?` };
+        return { texto: azar(ESTADO) };
     if (/\b(quien eres|que eres|como te llamas|tu nombre|eres (?:un )?(?:robot|bot|humano|persona|ia|inteligencia artificial)|con quien hablo)\b/.test(q))
         return { texto: azar(IDENTIDAD) };
     if (/\b(chiste|chistes|hazme reir|algo gracioso|algo divertido|cuentame algo chistoso|me haces reir)\b/.test(q))
-        return { texto: `${azar(CHISTES)}\n\n¿Otro chiste, o te busco algún libro?`, sugerencias: ['Otro chiste', 'Cuéntame una historia'] };
+        return { texto: azar(CHISTES), sugerencias: ['Otro chiste', 'Cuéntame una historia'] };
     if (
         /\b(historia|historias|cuento|cuentos|relato|relatos|cuentame algo)\b/.test(q) &&
         /\b(cuenta|cuentame|narra|narrame|dime|quiero|una|un)\b/.test(q) &&
         !/\b(libro|libros)\s+de\s+historia\b/.test(q) &&
         !/\bcategoria\b/.test(q)
     )
-        return { texto: `${azar(HISTORIAS)}\n\n¿Te gustaría que te recomiende un libro de cuentos del catálogo?`, sugerencias: ['Libros de cuentos', 'Otra historia'] };
+        return { texto: azar(HISTORIAS), sugerencias: ['Libros de cuentos', 'Otra historia'] };
     if (/\b(dato curioso|datos curiosos|curiosidad|curiosidades|sabias que|algo interesante)\b/.test(q))
         return { texto: azar(DATOS), sugerencias: ['Otro dato curioso', 'Cuéntame un chiste'] };
     if (/^(?:te quiero|eres (?:genial|lo maximo|buenisimo|increible|el mejor|muy util|inteligente)|me caes bien|buen trabajo|excelente)\b/.test(q))
         return { texto: '¡Gracias! Me alegra mucho ayudarte. 😊 ¿Buscamos tu próxima lectura?' };
     if (/\b(tonto|idiota|inutil|estupido|no sirves|malo)\b/.test(q) && q.split(' ').length <= 6)
-        return { texto: 'Lamento no haberte ayudado como esperabas. Cuéntame qué libro o información buscas y lo intento de nuevo con gusto.' };
+        return { texto: 'Lamento no ayudarte como esperabas. Dime qué libro o dato buscas y lo intento de nuevo.' };
 
     if (/\b(que horas? (?:es|son)|dime la hora|me (?:das|dices) la hora|la hora porfa|tienes hora)\b/.test(q) && !/\b(abren|cierran|atienden|horario|a que hora)\b/.test(q)) {
         const hora = new Date().toLocaleTimeString('es-PE', { hour: 'numeric', minute: '2-digit' });
@@ -224,8 +222,8 @@ export function responderCharla(pregunta, memoria = {}) {
 }
 
 const NO_ENTENDI = [
-    'Mmm, no estoy seguro de haberte entendido. Puedo buscar un libro por título o autor, mostrarte ofertas, contarte un chiste o un dato curioso de libros. ¿Qué te gustaría?',
-    'Creo que se me escapó lo que quisiste decir. Prueba con algo como «libros de Vargas Llosa», «ofertas» o «cuéntame un chiste».'
+    'Mmm, no te entendí. Puedo buscar libros, ofertas o contarte un chiste. ¿Qué te gustaría?',
+    'Se me escapó lo que quisiste decir. Prueba con «libros de Vargas Llosa» o «cuéntame un chiste».'
 ];
 
 export const respuestaNoEntendi = () => azar(NO_ENTENDI);
@@ -241,7 +239,7 @@ export function saludoDelMomento(fecha = new Date()) {
 const EMPUJONES = [
     '¿Sigues por ahí? 👀 Si no sabes qué leer, dime cómo te sientes y te recomiendo algo.',
     'Psst… 📚 ¿Te cuento un dato curioso de libros mientras decides?',
-    'Aquí sigo, sin prisa. Puedes escribirme como a un amigo: «búscame algo de misterio», «qué me recomiendas»…'
+    'Aquí sigo. Escríbeme como a un amigo: «búscame misterio» o «qué me recomiendas»…'
 ];
 
 export const empujon = () => azar(EMPUJONES);

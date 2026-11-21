@@ -2,7 +2,7 @@
   "generado_por": "scripts/semillaLibros.js",
   "fuente": "Open Library (ediciones en español con ISBN-13 validado por checksum)",
   "nota": "Solo metadatos bibliograficos verificados. No se inventan titulos, ISBN, fechas ni paginas.",
-  "total": 81,
+  "total": 85,
   "libros": [
     {
       "isbn": "9788467045437",
@@ -1056,6 +1056,58 @@
       "editorial": "Debolsillo",
       "anio_publicacion": 2003,
       "paginas": 372
+    },
+    {
+      "isbn": "9789875629288",
+      "titulo": "Dragon Ball 1",
+      "autor": "Akira Toriyama",
+      "categoria": "Cómic y Manga",
+      "precio": 44.9,
+      "descuento_porcentaje": null,
+      "stock": 12,
+      "descripcion": "Edición en español de «Dragon Ball vol. 01» publicada por Ivrea (2008). Goku y Bulma inician la búsqueda de las siete bolas de dragón. ISBN-13 verificado en Open Library.",
+      "editorial": "Ivrea",
+      "anio_publicacion": 2008,
+      "paginas": null
+    },
+    {
+      "isbn": "9788416308057",
+      "titulo": "Dragon Ball Z. Temporada 1: Saga de los Saiyanos 1",
+      "autor": "Akira Toriyama",
+      "categoria": "Cómic y Manga",
+      "precio": 47.9,
+      "descuento_porcentaje": null,
+      "stock": 10,
+      "descripcion": "Edición en español publicada por Planeta (2015), primera entrega de la Saga de los Saiyanos. ISBN-13 verificado en Open Library.",
+      "editorial": "Planeta",
+      "anio_publicacion": 2015,
+      "paginas": null
+    },
+    {
+      "isbn": "9788416308071",
+      "titulo": "Dragon Ball Z. Temporada 1: Saga de los Saiyanos 2",
+      "autor": "Akira Toriyama",
+      "categoria": "Cómic y Manga",
+      "precio": 47.9,
+      "descuento_porcentaje": null,
+      "stock": 10,
+      "descripcion": "Edición en español publicada por Planeta (2015), segunda entrega de la Saga de los Saiyanos. ISBN-13 verificado en Open Library.",
+      "editorial": "Planeta",
+      "anio_publicacion": 2015,
+      "paginas": null
+    },
+    {
+      "isbn": "9788416308972",
+      "titulo": "Dragon Ball Z. Temporada 1: Saga de los Saiyanos 3",
+      "autor": "Akira Toriyama",
+      "categoria": "Cómic y Manga",
+      "precio": 47.9,
+      "descuento_porcentaje": null,
+      "stock": 9,
+      "descripcion": "Edición en español publicada por Planeta (2015), tercera entrega de la Saga de los Saiyanos. ISBN-13 verificado en Open Library.",
+      "editorial": "Planeta",
+      "anio_publicacion": 2015,
+      "paginas": null
     }
   ]
 }

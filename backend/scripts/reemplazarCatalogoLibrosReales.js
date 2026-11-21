@@ -40,6 +40,124 @@ const TEMAS = [
     { categoria: 'Terror', subjects: ['Horror', 'Gothic fiction'] }
 ];
 
+const TRADUCCIONES_TITULO = {
+    'Naruto 01': 'Naruto 01',
+    'ONE PIECE 1': 'One Piece 1',
+    '美少女戦士セーラームーン 1 [Acts 1-5]': 'Sailor Moon 1 [Actos 1-5]',
+    'BLEACH―ブリーチ― 1': 'Bleach 1',
+    'HUNTER×HUNTER 1': 'Hunter × Hunter 1',
+    'ONE PIECE 2': 'One Piece 2',
+    'ONE PIECE 4': 'One Piece 4',
+    'らんま½ 33': 'Ranma ½ 33',
+    'ONE PIECE 3': 'One Piece 3',
+    '美少女戦士セーラームーン 2 [Acts 7-11]': 'Sailor Moon 2 [Actos 7-11]',
+    'DEATH NOTE アナザーノ': 'Death Note: Another Note',
+    'らんま½ 31': 'Ranma ½ 31',
+    '黒執事 IV': 'Black Butler IV',
+    'ONE PIECE 5': 'One Piece 5',
+    'ONE PIECE 14': 'One Piece 14',
+    'Berserk Deluxe Volume 1': 'Berserk: Edición Deluxe 1',
+    '美少女戦士セーラームーン 4 [Acts 17-21]': 'Sailor Moon 4 [Actos 17-21]',
+    '美少女戦士セーラームーン 18': 'Sailor Moon 18',
+    '美少女戦士セーラームーン 7 [Acts 31-35]': 'Sailor Moon 7 [Actos 31-35]',
+    '君の膵臓をたべたい (light novel)': 'Quiero comerte el páncreas (novela ligera)',
+    '美少女戦士セーラームーン 1 [Acts 1-6]': 'Sailor Moon 1 [Actos 1-6]',
+    'JOJONIUM 17': 'JoJonium 17',
+    'とんがり帽子のアトリエ 1 (Tongari Bōshi no Atelier 1)': 'El taller del sombrero puntiagudo 1',
+    '美少女戦士セーラームーン 14 [Acts 39-40]': 'Sailor Moon 14 [Actos 39-40]',
+    'ONE PIECE 13': 'One Piece 13',
+    'ONE PIECE 18': 'One Piece 18',
+    'HUNTER×HUNTER 2': 'Hunter × Hunter 2',
+    'ONE PIECE 24': 'One Piece 24',
+    'Bleach―ブリーチ― 15': 'Bleach 15',
+    'ONE PIECE 16': 'One Piece 16',
+    '美少女戦士セーラームーン 3 [Acts 10-12]': 'Sailor Moon 3 [Actos 10-12]',
+    '美少女戦士セーラームーン 10 [Acts 45-49]': 'Sailor Moon 10 [Actos 45-49]',
+    'ベルセルク 13': 'Berserk 13',
+    'ONE PIECE 100': 'One Piece 100',
+    'ONE PIECE 37': 'One Piece 37',
+    'ONE PIECE 23': 'One Piece 23',
+    '美少女戦士セーラームーン 8 [Acts 25-28]': 'Sailor Moon 8 [Actos 25-28]',
+    "チーズスイートホーム [Chīzu suīto hōmu/Chi's Sweet Home] (1)": 'La dulce casa de Chi 1',
+    'ONE PIECE 38': 'One Piece 38',
+    'ポケットモンスターSPECIAL #1': 'Pokémon Special 1',
+    'ベルセルク 11': 'Berserk 11',
+    'ベルセルク 10': 'Berserk 10',
+    'The Art of War': 'El arte de la guerra',
+    'Tao te Ching': 'Tao Te Ching',
+    "Death's End (The Three-Body Problem Series Book 3)": 'El final de la muerte (El problema de los tres cuerpos 3)',
+    'The Dark Forest (The Three-Body Problem Series Book 2)': 'El bosque oscuro (El problema de los tres cuerpos 2)',
+    'Nana 1': 'Nana 1',
+    'NARUTO秘伝・者の書キャラクタ−オフィシャルデ−タBOOK': 'Naruto: Libro de datos oficial de personajes',
+    'BLEACHイラスト集―All Colour But The Black': 'Bleach: Ilustraciones — All Colour But The Black',
+    '荒川弘イラスト集 FULLMETAL ALCHEMIST 2': 'Ilustraciones de Hiromu Arakawa: Fullmetal Alchemist 2',
+    'ありす19th 1': 'Alice 19th 1',
+    'ポケットモンスターSPECIAL 42': 'Pokémon Special 42',
+    '東京喰種 10': 'Tokyo Ghoul 10',
+    'Πολιτικά (Politiká)': 'Política (Politiká)',
+    'Roadside Picnic': 'Picnic junto al camino'
+};
+
+const TRADUCCIONES_AUTOR = {
+    '岸本斉史': 'Masashi Kishimoto',
+    '尾田栄一郎': 'Eiichiro Oda',
+    '武内 直子': 'Naoko Takeuchi',
+    '冨樫義博': 'Yoshihiro Togashi',
+    '高橋留美子': 'Rumiko Takahashi',
+    '西尾維新': 'Nisio Isin',
+    '三浦建太郎': 'Kentaro Miura',
+    '住野よる': 'Yoru Sumino',
+    '荒木飛呂彦': 'Hirohiko Araki',
+    '白浜鴎 [しらはまかもめ ; Kamome Shirahama]': 'Kamome Shirahama',
+    '日下秀憲': 'Hidenori Kusaka',
+    '孙武 (Sun Tzu)': 'Sun Tzu',
+    '老子': 'Lao-Tsé',
+    '刘慈欣': 'Liu Cixin',
+    '矢沢あい': 'Ai Yazawa',
+    '荒川弘': 'Hiromu Arakawa',
+    'Аркадий Стругацкий': 'Arkadi Strugatski',
+    'Aristotle': 'Aristóteles'
+};
+
+function reemplazarTexto(valor, original, nuevo) {
+    return String(valor || '').split(original).join(nuevo);
+}
+
+function tieneCjk(valor) {
+    return [...String(valor || '')].some((caracter) => {
+        const punto = caracter.codePointAt(0);
+        return (punto >= 0x3000 && punto <= 0x30ff) || (punto >= 0x3400 && punto <= 0x9fff) || (punto >= 0xf900 && punto <= 0xfaff);
+    });
+}
+
+function traducirRegistro(registro) {
+    const tituloOriginal = registro.titulo;
+    const autorOriginal = registro.autor;
+    const titulo = TRADUCCIONES_TITULO[tituloOriginal] || tituloOriginal;
+    const autor = TRADUCCIONES_AUTOR[autorOriginal] || autorOriginal;
+    if (titulo !== tituloOriginal) {
+        registro.descripcion = reemplazarTexto(registro.descripcion, tituloOriginal, titulo);
+        registro.titulo = titulo;
+    }
+    if (autor !== autorOriginal) {
+        registro.descripcion = reemplazarTexto(registro.descripcion, autorOriginal, autor);
+        registro.autor = autor;
+        const { nombre, apellido } = dividirAutor(autor);
+        registro.nombre = nombre;
+        registro.apellido = apellido;
+    }
+    return registro;
+}
+
+function validarSinCjk(registros) {
+    const pendientes = registros.filter((registro) =>
+        ['titulo', 'autor', 'nombre', 'apellido', 'descripcion'].some((campo) => tieneCjk(registro[campo]))
+    );
+    if (pendientes.length) {
+        throw new Error(`Quedan ${pendientes.length} registro(s) con caracteres CJK sin traducir`);
+    }
+}
+
 function leerJson(ruta) {
     const datos = JSON.parse(fs.readFileSync(ruta, 'utf8'));
     return Array.isArray(datos) ? datos : datos.libros || datos.registros || [];
@@ -58,6 +176,16 @@ function normalizar(valor) {
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+}
+
+function claveAutor(valor) {
+    return limpiar(valor)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[\p{P}\p{S}]+/gu, ' ')
+        .replace(/\s+/g, ' ')
         .trim();
 }
 
@@ -117,10 +245,12 @@ function parsearArgumentos(argv) {
 }
 
 function guardar(registros) {
+    const traducidos = registros.map(traducirRegistro);
+    validarSinCjk(traducidos);
     const contenido = {
         generado: new Date().toISOString(),
-        total: registros.length,
-        registros
+        total: traducidos.length,
+        registros: traducidos
     };
     fs.writeFileSync(SALIDA, `${JSON.stringify(contenido, null, 2)}\n`);
 }
@@ -238,10 +368,11 @@ async function generar(opciones) {
     const registros = [];
     if (fs.existsSync(SALIDA) && !opciones.forzar) {
         const anterior = JSON.parse(fs.readFileSync(SALIDA, 'utf8'));
-        for (const registro of anterior.registros || []) {
+        for (const anteriorRegistro of anterior.registros || []) {
+            const registro = traducirRegistro(anteriorRegistro);
             registros.push(registro);
             isbnUsados.add(registro.isbn);
-            obraUsadas.add(`${normalizar(registro.titulo)}|${normalizar(registro.autor)}`);
+            obraUsadas.add(`${normalizar(registro.titulo)}|${claveAutor(registro.autor)}`);
         }
     }
 
@@ -288,7 +419,9 @@ async function generar(opciones) {
 
 async function aplicar(opciones) {
     if (!fs.existsSync(SALIDA)) throw new Error(`No existe ${SALIDA}; ejecuta primero el modo generar`);
-    const registros = JSON.parse(fs.readFileSync(SALIDA, 'utf8')).registros || [];
+    const contenido = JSON.parse(fs.readFileSync(SALIDA, 'utf8'));
+    const registros = (contenido.registros || []).map(traducirRegistro);
+    validarSinCjk(registros);
     if (registros.length !== 2019) throw new Error(`Se esperaban 2019 registros reales; hay ${registros.length}`);
 
     const { Pool } = require('pg');
@@ -304,13 +437,13 @@ async function aplicar(opciones) {
         const reales = registros.map((registro) => registro.isbn);
         const actuales = (await pool.query('SELECT isbn FROM libros WHERE isbn = ANY($1::varchar[]) OR isbn = ANY($2::varchar[])', [originales, reales])).rows;
         const presentes = new Set(actuales.map((fila) => fila.isbn));
-        const pendientes = registros.filter((registro) => presentes.has(registro.isbn_original));
+        const pendientes = registros.filter((registro) => presentes.has(registro.isbn_original) || presentes.has(registro.isbn));
         const yaAplicados = registros.length - pendientes.length;
 
         const categorias = (await pool.query('SELECT id_categoria, nombre FROM categorias')).rows;
         const mapaCategorias = new Map(categorias.map((fila) => [normalizar(fila.nombre), fila.id_categoria]));
         const autoresExistentes = (await pool.query('SELECT id_autor, nombre, apellido FROM autores')).rows;
-        const mapaAutores = new Map(autoresExistentes.map((fila) => [normalizar(`${fila.nombre} ${fila.apellido}`), fila.id_autor]));
+        const mapaAutores = new Map(autoresExistentes.map((fila) => [claveAutor(`${fila.nombre} ${fila.apellido}`), fila.id_autor]));
 
         console.log(`Registros ya aplicados: ${yaAplicados}`);
         console.log(`Registros a aplicar: ${pendientes.length}`);
@@ -321,7 +454,7 @@ async function aplicar(opciones) {
 
         const nombresNuevos = new Map();
         for (const registro of pendientes) {
-            const clave = normalizar(registro.autor);
+            const clave = claveAutor(registro.autor);
             if (!mapaAutores.has(clave) && !nombresNuevos.has(clave)) {
                 const { nombre, apellido } = dividirAutor(registro.autor);
                 nombresNuevos.set(clave, { nombre, apellido });
@@ -338,7 +471,7 @@ async function aplicar(opciones) {
                 [lote.map((autor) => autor.nombre), lote.map((autor) => autor.apellido)]
             );
             for (const fila of respuesta.rows) {
-                mapaAutores.set(normalizar(`${fila.nombre} ${fila.apellido}`), fila.id_autor);
+                mapaAutores.set(claveAutor(`${fila.nombre} ${fila.apellido}`), fila.id_autor);
             }
         }
         console.log(`Autores creados: ${nombresNuevos.size}`);
@@ -349,7 +482,7 @@ async function aplicar(opciones) {
             titulo: registro.titulo,
             descripcion: registro.descripcion,
             portada: registro.portada,
-            id_autor: mapaAutores.get(normalizar(registro.autor)),
+            id_autor: mapaAutores.get(claveAutor(registro.autor)),
             id_categoria: mapaCategorias.get(normalizar(registro.categoria))
         }));
         const invalidas = filas.filter((fila) => !fila.id_autor || !fila.id_categoria);
@@ -369,7 +502,7 @@ async function aplicar(opciones) {
                  FROM unnest(
                      $1::varchar[], $2::varchar[], $3::varchar[], $4::text[], $5::varchar[], $6::int[], $7::int[]
                  ) AS u(isbn_original, isbn, titulo, descripcion, portada, id_autor, id_categoria)
-                 WHERE l.isbn = u.isbn_original`,
+                 WHERE l.isbn = u.isbn_original OR l.isbn = u.isbn`,
                 [
                     lote.map((fila) => fila.isbn_original),
                     lote.map((fila) => fila.isbn),
@@ -404,7 +537,11 @@ async function main() {
     else await aplicar(opciones);
 }
 
-main().catch((error) => {
-    console.error('Error:', error.message);
-    process.exitCode = 1;
-});
+if (require.main === module) {
+    main().catch((error) => {
+        console.error('Error:', error.message);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = { traducirRegistro, validarSinCjk, tieneCjk };

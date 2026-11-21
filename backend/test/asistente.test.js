@@ -98,6 +98,29 @@ for (const [consulta, validar] of [
         assert.ok(r.libros.every(validar));
         assert.equal(r.origen, 'catalogo');
     });
+test('listar categorías y autores usa las facetas actuales y ofrece opciones', async () => {
+    const responder = crearAsistente({
+        repositorio: repo(),
+        proveedor: async () => {
+            throw new Error('no llamar');
+        }
+    });
+    const porCategoria = await responder({ mensaje: '¿Qué categorías hay?' });
+    assert.match(porCategoria.mensaje, /Categorías publicadas/);
+    assert.match(porCategoria.mensaje, /menú de categorías/);
+    assert.deepEqual(
+        porCategoria.opciones.map((o) => o.texto),
+        categorias.map((c) => c.nombre)
+    );
+    assert.equal(porCategoria.libros.length, 0);
+    const porAutor = await responder({ mensaje: '¿Qué autores hay?' });
+    assert.match(porAutor.mensaje, /Autores publicados/);
+    assert.deepEqual(
+        porAutor.opciones.map((o) => o.texto),
+        autores.map((a) => a.nombre)
+    );
+    assert.equal(porAutor.libros.length, 0);
+});
 test('otro, mas barato, mas caro y superlativo conservan la busqueda anterior', async () => {
     const responder = crear();
     const a = await responder({ mensaje: 'Libros de Garcia Marquez' });
@@ -176,7 +199,7 @@ test('Gemini recibe <=8 libros, no recibe la clave en URL/body, ni escribe campo
     assert.ok(!peticion.opts.body.includes('clave-ficticia'));
     const body = JSON.parse(peticion.opts.body);
     assert.equal(JSON.parse(body.contents[0].parts[0].text).catalogo.length, 8);
-    assert.equal(body.generationConfig.maxOutputTokens, 768);
+    assert.equal(body.generationConfig.maxOutputTokens, 256);
 });
 for (const salida of [
     { libros: [{ id_libro: 999999, motivo: 'consulta' }] },
@@ -319,4 +342,33 @@ test('memoria: solo guarda campos conocidos y acotados, sin texto libre', () => 
     assert.deepEqual(m, { apodo: 'Lucía', categorias: { Novela: 3 }, autores: { 'Gabriel García Márquez': 5 }, vistos: [1, 2, 3], visitas: 4, ultimaBusqueda: 'novelas de amor' });
     assert.deepEqual(sanearMemoria(null), { categorias: {}, autores: {}, vistos: [], visitas: 0 });
     assert.equal(sanearMemoria({ apodo: 'x'.repeat(80) }).apodo, undefined);
+});
+test('presupuesto y recomendación abierta se interpretan sin tomar números como título', () => {
+    assert.equal(interpretar('tengo 30 soles').maximo, 30);
+    assert.equal(interpretar('libros por debajo de 40').maximo, 40);
+    assert.equal(interpretar('libros cuesta menos de S/ 40').maximo, 40);
+    assert.equal(interpretar('libros de 20 a 40 soles').minimo, 20);
+    assert.equal(interpretar('libros de 20 a 40 soles').maximo, 40);
+    assert.deepEqual(interpretar('no sé qué leer').tokens, []);
+});
+test('recomendación abierta devuelve libros reales del catálogo', async () => {
+    const r = await crear()({ mensaje: 'no sé qué leer' });
+    assert.ok(r.libros.length);
+    assert.ok(r.mensaje.length <= 200);
+});
+test('charla con IA larga se entrega en una respuesta breve', async () => {
+    const responder = crearAsistente({
+        repositorio: repo(),
+        conversador: async () => ({ texto: 'Palabra '.repeat(80), motivo: null })
+    });
+    const r = await responder({ mensaje: 'Hola', modo: 'charla' });
+    assert.ok(r.mensaje.length <= 240);
+    assert.match(r.mensaje, /…$/);
+});
+test('limpiarTextoCharla recorta sin partir la última palabra', () => {
+    const { limpiarTextoCharla } = require('../src/integrations/gemini');
+    const salida = limpiarTextoCharla('Una frase '.repeat(40));
+    assert.ok(salida.length <= 240);
+    assert.match(salida, /…$/);
+    assert.ok(!/\s…$/.test(salida));
 });

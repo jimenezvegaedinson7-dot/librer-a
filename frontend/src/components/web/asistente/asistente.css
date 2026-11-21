@@ -53,12 +53,18 @@
 .sitio .asistente-enlaces a, .sitio .asistente-reintentar { color: var(--chat-tinta); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
 .sitio .asistente-reintentar { min-height: 44px; border: 0; background: transparent; cursor: pointer; padding: 6px 0; }
 .sitio .asistente-cargando { font-size: 14px; padding: 8px 0; color: var(--texto-2); }
-.sitio .asistente-sugerencias { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px 0; flex: none; }
+.sitio .asistente-sugerencias { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px 0; flex: none; }
 .sitio .asistente-sugerencias button {
-    min-height: 36px; padding: 6px 10px; border: 1px solid var(--chat-linea); border-radius: 999px; background: var(--chat-papel); color: var(--chat-tinta); font: 500 13px var(--f-texto);
-    cursor: pointer;
+    min-height: 30px; max-width: 100%; padding: 4px 10px; border: 1px solid var(--chat-linea); border-radius: 999px; background: var(--chat-claro); color: var(--chat-secundario);
+    font: 500 12px/20px var(--f-texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+    transition: border-color var(--d-rapida), background var(--d-rapida), color var(--d-rapida), transform var(--d-rapida);
 }
-.sitio .asistente-sugerencias button:hover { border-color: var(--chat-acento); background: var(--chat-fondo); }
+.sitio .asistente-sugerencias button::before {
+    content: ''; display: inline-block; width: 5px; height: 5px; margin-right: 6px; border-radius: 50%; background: var(--chat-acento); opacity: .55; vertical-align: 1px;
+}
+.sitio .asistente-sugerencias button:hover { border-color: var(--chat-acento); background: var(--chat-papel); color: var(--chat-tinta); transform: translateY(-1px); }
+.sitio .asistente-sugerencias button:active { transform: none; }
+.sitio .asistente-sugerencias button:disabled::before { opacity: .25; }
 .sitio .asistente-formulario { flex: none; padding: 12px 16px 0; }
 .sitio .asistente-formulario label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
 .sitio .asistente-formulario > div { display: flex; gap: 8px; }

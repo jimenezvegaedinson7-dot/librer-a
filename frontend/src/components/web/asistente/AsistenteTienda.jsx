@@ -6,7 +6,7 @@ import { sonarPortal } from '../../../services/web/asistente/sonidoPortal';
 import { clienteApi } from '../../../services/web/tienda/clienteApi';
 import { listaLibros, libroComercial } from '../../../services/web/tienda/libroComercial';
 import ComprarLibro from '../tienda/ComprarLibro';
-import { analizarConsulta, normalizarConsulta, responderConsulta, separarSaludo } from '../../../services/web/asistente/respuestasAsistente';
+import { acortarTexto, analizarConsulta, normalizarConsulta, responderConsulta, separarSaludo } from '../../../services/web/asistente/respuestasAsistente';
 import { empujon, limpiarBusqueda, responderCharla, respuestaNoEntendi, saludoDelMomento } from '../../../services/web/asistente/charla';
 import { useMemoriaAsistente } from '../../../hooks/web/asistente/useMemoriaAsistente';
 import { useTienda } from '../tienda/TiendaContext';
@@ -16,7 +16,7 @@ import './asistente.css';
 const bienvenida = {
     id: 0,
     autor: 'asistente',
-    texto: '¡Hola! Soy el asistente de MATIDANA Libros y Cultura. Te ayudo a encontrar libros, ver precios, stock y ofertas, y te recomiendo qué leer. También puedo orientarte sobre entrega y cómo comprar… o contarte un chiste de libros. ¿Qué buscas?'
+    texto: '¡Hola! Soy el asistente de MATIDANA. Busco libros, precios, stock y ofertas, o te cuento un chiste. ¿Qué buscas?'
 };
 const sugerencias = [
     { texto: 'Buscar un libro', pregunta: '¿Cómo busco un libro?' },
@@ -198,12 +198,12 @@ export default function AsistenteTienda({ legal }) {
         let texto;
         const opciones = [];
         if (datos.visitas > 0 && (autor || datos.ultimaBusqueda)) {
-            texto = `${momento} Qué gusto verte de nuevo. 😊 ${datos.ultimaBusqueda ? `La última vez buscaste «${datos.ultimaBusqueda}». ` : ''}¿Seguimos por ahí o te recomiendo algo según tus gustos?`;
+            texto = `${momento} Qué gusto verte de nuevo. ${datos.ultimaBusqueda ? `Última búsqueda: «${datos.ultimaBusqueda}». ` : ''}¿Seguimos o te recomiendo algo?`;
             if (autor) opciones.push({ texto: `Más de ${autor}`, consulta: `Libros de ${autor}` });
             if (categoria) opciones.push({ texto: `Libros de ${categoria}`, consulta: `Libros de ${categoria}` });
             opciones.push({ texto: 'Recomiéndame algo', consulta: 'Recomiéndame algo' });
         } else {
-            texto = `${momento} ${memoria.logeado ? 'Desde ahora iré aprendiendo tus gustos para recomendarte mejor cada vez que vuelvas. 📚' : '¿Qué te gustaría leer hoy?'}`;
+            texto = `${momento} ${memoria.logeado ? 'Aprenderé tus gustos para recomendarte mejor.' : '¿Qué te gustaría leer hoy?'}`;
         }
         memoria.contarVisita();
         agregar({ autor: 'asistente', texto, opciones, nuevo: !movimientoReducido() });
@@ -232,6 +232,17 @@ export default function AsistenteTienda({ legal }) {
     function agregar(mensaje) {
         setMensajes((prev) => [...prev.slice(-29), { ...mensaje, id: siguiente.current++ }]);
     }
+    async function pedirAsistente(cuerpo) {
+        try {
+            return await clienteApi.asistente(cuerpo);
+        } catch (error) {
+            if (error.status === 400 && contextoServidor.current) {
+                contextoServidor.current = '';
+                return clienteApi.asistente({ ...cuerpo, contexto: undefined });
+            }
+            throw error;
+        }
+    }
     async function enviar(texto = pregunta) {
         const consulta = texto.trim();
         if (!consulta || consulta.length > 400 || bloqueo.current) return;
@@ -241,11 +252,11 @@ export default function AsistenteTienda({ legal }) {
         agregar({ autor: 'usuario', texto: consulta, idUsuario: usuario?.id_usuario ?? null });
 
         const inicio = ahora();
-        const objetivo = movimientoReducido() ? 0 : 700 + Math.min(800, consulta.length * 12);
+        const objetivo = movimientoReducido() ? 0 : 260 + Math.min(340, consulta.length * 6);
         const responder = async (mensaje) => {
             const falta = objetivo - (ahora() - inicio);
             if (falta > 0) await new Promise((r) => setTimeout(r, falta));
-            if (montado.current) agregar({ ...mensaje, nuevo: !movimientoReducido() });
+            if (montado.current) agregar({ ...mensaje, texto: acortarTexto(mensaje.texto || ''), nuevo: !movimientoReducido() });
         };
 
         const { saludo, resto, estado } = separarSaludo(consulta);
@@ -261,7 +272,7 @@ export default function AsistenteTienda({ legal }) {
             if (saludo && !pedido) {
                 await responder({
                     autor: 'asistente',
-                    texto: `${saludo} ${animo}Soy el asistente de la librería. Puedo buscar libros por título, autor o categoría, decirte precios y stock, recomendarte lecturas, contarte un chiste o un dato curioso de libros y orientarte sobre la tienda, la entrega y cómo comprar. ¿Qué buscas hoy?`,
+                    texto: `${saludo} ${animo}Soy el asistente de la librería. Busco libros, precios, stock y ofertas; oriento sobre entrega y compras. ¿Qué buscas?`,
                     opciones: opcionesDe(['Recomiéndame algo', 'Cuéntame un chiste'])
                 });
                 return;
@@ -286,7 +297,7 @@ export default function AsistenteTienda({ legal }) {
             }
             if (plan.tipo === 'general') {
                 try {
-                    const json = await clienteApi.asistente({
+                    const json = await pedirAsistente({
                         mensaje: (saludo ? resto : consulta).slice(0, 400) || consulta,
                         modo: 'charla',
                         ...(contextoServidor.current ? { contexto: contextoServidor.current } : {})
@@ -294,7 +305,7 @@ export default function AsistenteTienda({ legal }) {
                     if (typeof json.data?.mensaje === 'string' && json.data.mensaje.trim()) {
                         if (!montado.current) return;
                         contextoServidor.current = json.data.contexto || contextoServidor.current;
-                        await responder(conSaludo({ autor: 'asistente', texto: json.data.mensaje }));
+                        await responder(conSaludo({ autor: 'asistente', texto: acortarTexto(json.data.mensaje) }));
                         return;
                     }
                 } catch (error) {
@@ -345,7 +356,7 @@ export default function AsistenteTienda({ legal }) {
             }
             if (plan.tipo === 'catalogo') {
                 try {
-                    const json = await clienteApi.asistente({
+                    const json = await pedirAsistente({
                         mensaje: pedido,
                         ...(contextoServidor.current ? { contexto: contextoServidor.current } : {}),
                         ...(idActual ? { id_libro: idActual } : {})
@@ -355,7 +366,7 @@ export default function AsistenteTienda({ legal }) {
                     contextoServidor.current = json.data.contexto || '';
                     const respuesta = {
                         autor: 'asistente',
-                        texto: introduccion && json.data.libros.length ? introduccion : json.data.mensaje,
+                        texto: introduccion && json.data.libros.length ? introduccion : acortarTexto(json.data.mensaje),
                         libros: json.data.libros.map(libroComercial),
                         motivos: Object.fromEntries(json.data.libros.map((l) => [l.id_libro, l.motivo])),
                         opciones: json.data.opciones || [],
@@ -389,10 +400,10 @@ export default function AsistenteTienda({ legal }) {
                     autor: 'asistente',
                     texto:
                         error.status === 429
-                            ? 'Has realizado muchas consultas. Espera un momento y vuelve a intentar.'
+                            ? 'Muchas consultas. Espera un momento y vuelve a intentar.'
                             : error.status === 400
-                              ? 'Necesitamos retomar la búsqueda. Dime de nuevo el título, autor o categoría; no puedo confirmar datos con un contexto inválido.'
-                              : 'No pude consultar el catálogo en este momento. No puedo confirmar precios ni stock sin esa consulta. Puedes reintentar.',
+                              ? 'Retomemos la búsqueda. Dime de nuevo el título, autor o categoría.'
+                              : 'No pude consultar el catálogo. No puedo confirmar precios ni stock sin esa consulta. Puedes reintentar.',
                     reintentar: consulta
                 });
         } finally {
@@ -414,6 +425,8 @@ export default function AsistenteTienda({ legal }) {
         setPregunta('');
         campo.current?.focus();
     }
+    const ultimoMensaje = mensajes[mensajes.length - 1];
+    const opcionesRapidas = ultimoMensaje?.autor === 'asistente' && ultimoMensaje.opciones?.length ? ultimoMensaje.opciones : null;
     return (
         <div ref={raiz} className="asistente-tienda">
             <button
@@ -539,15 +552,6 @@ export default function AsistenteTienda({ legal }) {
                                                 ))}
                                             </ul>
                                         )}
-                                        {m.opciones?.length > 0 && (
-                                            <div className="asistente-sugerencias" aria-label="Aclarar búsqueda">
-                                                {m.opciones.map((o) => (
-                                                    <button key={o.consulta} type="button" disabled={ocupado} onClick={() => enviar(o.consulta)}>
-                                                        {o.texto}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
                                         {m.enlaces?.length > 0 && (
                                             <ul className="asistente-enlaces">
                                                 {m.enlaces.map((e) => (
@@ -584,8 +588,11 @@ export default function AsistenteTienda({ legal }) {
                                 Este libro
                             </button>
                         )}
-                        {sugerencias.map((s) => (
-                            <button key={s.texto} type="button" disabled={ocupado} onClick={() => enviar(s.pregunta)}>
+                        {(opcionesRapidas
+                            ? opcionesRapidas.map((o) => ({ texto: o.texto, pregunta: o.consulta }))
+                            : sugerencias
+                        ).map((s) => (
+                            <button key={`${s.texto}:${s.pregunta}`} type="button" disabled={ocupado} onClick={() => enviar(s.pregunta)}>
                                 {s.texto}
                             </button>
                         ))}

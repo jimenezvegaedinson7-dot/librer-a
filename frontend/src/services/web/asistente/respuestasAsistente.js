@@ -1,7 +1,7 @@
 import { LEGAL_RESPALDO, SITIO } from '../../../models/config/web/site.js';
 
 export const ALCANCE_ASISTENTE =
-    'Solo puedo ayudarte con los libros y la información publicada en esta librería: precios, stock, autores, ofertas, entrega y cómo comprar. No respondo sobre ropa, ciencia general ni otros temas ajenos a la tienda.';
+    'Solo informo sobre libros, lectura y la librería. No respondo sobre ropa, ciencia general ni temas ajenos a la tienda.';
 
 export const normalizarConsulta = (texto) =>
     String(texto || '')
@@ -12,6 +12,14 @@ export const normalizarConsulta = (texto) =>
         .replace(/\b(?:estok|stok|stoc)\b/g, 'stock')
         .replace(/\s+/g, ' ')
         .trim();
+
+export const acortarTexto = (texto, limite = 240) => {
+    const limpio = String(texto || '').trim();
+    if (limpio.length <= limite) return limpio;
+    const corte = limpio.slice(0, limite);
+    const espacio = Math.max(corte.lastIndexOf(' '), corte.lastIndexOf('\n'));
+    return `${espacio > limite * 0.6 ? corte.slice(0, espacio) : corte}…`;
+};
 
 const TEMAS = [
     ['horario', /\b(horario|horarios|abren|cierran|abierto|cerrado)\b/],
@@ -84,75 +92,75 @@ const enlace = (texto, to) => ({ texto, to });
 
 function informacionTienda(tema, legal = LEGAL_RESPALDO) {
     const respuestas = {
-        horario: { texto: 'La web no publica un horario de atención. No puedo confirmar horas de apertura o cierre.', enlaces: [enlace('Ver la tienda', '/nosotros#tienda')] },
+        horario: { texto: 'La web no publica un horario de atención; no puedo confirmar horas.', enlaces: [enlace('Ver la tienda', '/nosotros#tienda')] },
         entrega: {
-            texto: 'El delivery tiene una tarifa única por pedido para toda la ciudad de Pallasca; el importe vigente se muestra en Entrega y pago antes de confirmar. No incluye anexos ni otros distritos. También puedes recoger gratis en Plaza de Armas, Jr. Marañón 161, Pallasca 02835.',
+            texto: 'Delivery: tarifa única por pedido en Pallasca; el importe se muestra en Entrega y pago. Puedes recoger gratis en Plaza de Armas, Jr. Marañón 161.',
             enlaces: [enlace('Entrega y pago', '/checkout'), enlace('Ubicación de la tienda', '/nosotros#tienda')]
         },
         ubicacion: {
-            texto: `La dirección publicada de la tienda es: ${legal.direccion || LEGAL_RESPALDO.direccion}. Puedes ver el mapa y cómo llegar en Nuestra tienda.`,
+            texto: `La dirección publicada es: ${legal.direccion || LEGAL_RESPALDO.direccion}. Ver mapa en Nuestra tienda.`,
             enlaces: [enlace('Ver mapa y dirección', '/nosotros#tienda')]
         },
         contacto: {
             texto:
                 SITIO.enlaces.telefono || SITIO.enlaces.correo
                     ? `Contacto publicado: ${[SITIO.enlaces.telefono, SITIO.enlaces.correo].filter(Boolean).join(' · ')}.`
-                    : 'La web no publica un teléfono, WhatsApp ni correo de atención. Puedes consultar la ubicación de la tienda o usar el Libro de Reclamaciones.',
+                    : 'La web no publica teléfono, WhatsApp ni correo. Puedes ver la ubicación o usar el Libro de Reclamaciones.',
             enlaces: [enlace('Nuestra tienda', '/nosotros#tienda'), enlace('Libro de Reclamaciones', SITIO.rutaReclamaciones)]
         },
         reclamos: {
-            texto: 'La web tiene un Libro de Reclamaciones para registrar tu caso. No se publica aquí una política de devoluciones que permita confirmar condiciones concretas.',
+            texto: 'Puedes registrar un caso en el Libro de Reclamaciones. No hay condiciones de devolución publicadas que pueda confirmar.',
             enlaces: [enlace('Abrir Libro de Reclamaciones', SITIO.rutaReclamaciones)]
         },
         pedidos: {
-            texto: 'Consulta el estado de tus pedidos en Mis compras, iniciando sesión con tu cuenta de cliente. Este asistente no consulta compras privadas ni confirma cobros: el estado del pago lo verifica el servidor con PayU.',
+            texto: 'Consulta tus pedidos en Mis compras con tu cuenta de cliente. Este asistente no consulta compras privadas ni confirma cobros.',
             enlaces: [enlace('Mis compras', '/mis-compras')]
         },
         cuenta: {
-            texto: 'En Mi cuenta puedes iniciar sesión, crear una cuenta o usar Olvidé mi contraseña. Utiliza tu cuenta de cliente; la sesión administrativa es independiente.',
+            texto: 'En Mi cuenta puedes iniciar sesión, registrarte o recuperar tu contraseña. Usa tu cuenta de cliente.',
             enlaces: [enlace('Abrir Mi cuenta', '/cuenta')]
         },
         pago: {
-            texto: 'El pago en línea publicado en la tienda utiliza PayU. En Entrega y pago se muestra el importe definitivo antes de pagar. Volver a la web después del pago no confirma el cobro: consulta su estado en Mis compras.',
+            texto: 'El pago en línea usa PayU. El importe definitivo se muestra en Entrega y pago; para confirmar un cobro, revisa Mis compras.',
             enlaces: [enlace('Entrega y pago', '/checkout'), enlace('Mis compras', '/mis-compras')]
         },
         reservas: {
-            texto: 'El servicio de reservas no está disponible. Para comprar, añade libros al carrito y paga con PayU. Puedes consultar tus compras en Mis compras.',
+            texto: 'Las reservas no están disponibles. Añade libros al carrito y paga con PayU; consulta tus compras en Mis compras.',
             enlaces: [enlace('Explorar catálogo', '/catalogo'), enlace('Ver carrito', '/carrito'), enlace('Mis compras', '/mis-compras')]
         },
         favoritos: {
-            texto: 'En la ficha del libro puedes pulsar Agregar a favoritos. Necesitas iniciar sesión con tu cuenta de cliente para guardarlo.',
+            texto: 'Pulsa Agregar a favoritos en la ficha del libro. Necesitas iniciar sesión como cliente para guardarlo.',
             enlaces: [enlace('Explorar libros', '/catalogo'), enlace('Mi cuenta', '/cuenta')]
         },
         carrito: {
-            texto: 'En Mi carrito puedes revisar los libros, cambiar cantidades y quitar ejemplares. El stock y los precios se vuelven a comprobar antes de crear la compra.',
+            texto: 'En Mi carrito puedes cambiar cantidades o quitar libros. Stock y precios se comprueban antes de crear la compra.',
             enlaces: [enlace('Ver Mi carrito', '/carrito')]
         },
         app: {
-            texto: 'La web ofrece la descarga de la app para Android. La versión para iPhone está en preparación. Consulta la página de descarga para obtener la versión publicada.',
+            texto: 'La descarga disponible es para Android. La versión para iPhone está en preparación.',
             enlaces: [enlace('Descargar la app', '/descargar')]
         },
         empresa: {
-            texto: 'Los datos de la empresa (razón social y RUC) figuran en el Libro de Reclamaciones, junto con la hoja para registrar un reclamo.',
+            texto: 'La razón social y el RUC figuran en el Libro de Reclamaciones.',
             enlaces: [enlace('Abrir Libro de Reclamaciones', SITIO.rutaReclamaciones), enlace('Conocer la tienda', '/nosotros')]
         },
         privacidad: {
-            texto: 'Consulta únicamente los enlaces legales publicados en la web. No puedo inventar términos o políticas que no aparecen aquí.',
+            texto: 'Consulta solo los enlaces legales publicados en la web.',
             enlaces: [
                 ...(SITIO.enlaces.terminos ? [enlace('Términos', SITIO.enlaces.terminos)] : []),
                 ...(SITIO.enlaces.privacidad ? [enlace('Privacidad', SITIO.enlaces.privacidad)] : [])
             ]
         },
         busqueda: {
-            texto: 'Escribe el título, el autor o el ISBN. También puedes pedir libros de una categoría, ofertas o títulos por debajo de un presupuesto; por ejemplo: «libros por menos de 50 soles».',
+            texto: 'Escribe título, autor o ISBN. También puedes pedir categorías, ofertas o «libros por menos de 50 soles».',
             enlaces: [enlace('Abrir catálogo', '/catalogo')]
         },
         compra: {
-            texto: 'Abre la ficha de un libro, revisa su stock y añádelo al carrito. Luego inicia sesión, elige recojo o delivery y continúa al pago. La compra solo se habilita cuando el servidor la tiene disponible.',
+            texto: 'Abre un libro, revisa su stock y añádelo al carrito. Luego inicia sesión, elige recojo o delivery y paga.',
             enlaces: [enlace('Elegir un libro', '/catalogo'), enlace('Ver Mi carrito', '/carrito')]
         },
         moneda: {
-            texto: 'Los precios publicados en la web están en soles peruanos (S/). Las ofertas muestran el precio vigente y el precio anterior cuando corresponde.',
+            texto: 'Los precios publicados están en soles peruanos (S/). Las ofertas muestran el precio vigente y el anterior.',
             enlaces: [enlace('Ver precios', '/catalogo')]
         }
     };
@@ -160,16 +168,45 @@ function informacionTienda(tema, legal = LEGAL_RESPALDO) {
 }
 
 const VACIAS = new Set(
-    'buscame buscarme busca encuentrame encuentra dame damelo muestrame mostrame ensename pasame consigueme quieres podrias podria puedo ayudame llamado llamada titulado titulada conoces sabes acerca a al algo algun alguna algunos algunas ante autor autora autores buscar busco cada categoria categorias como con consultar cual cuales cuanto cuantos cuesta cuestan de del descripcion detalle detalles dime disponible disponibles el ella ellos en es ese esta estan este estos exacto hay hola informa informacion interesa la las lectura lecturas libro libros lo los mas me menor menos mi mis muestra muestrame necesito nombre nos oferta ofertas o para por precio precios puede puedes que quiero recomienda recomiendame saber se sin sinopsis sobre soles sol stock su sus tengo tienes tienen tiene titulo titulos todo todos tu un una unidades vale valen ver vigente y ya bajo hasta presupuesto maximo entre novedades vendidos paginas editorial idioma edicion portada quedan ejemplares comprar solo favor encontrar barato baratos barata baratas economico economicos caro caros cara caras relacionado relacionados relacionada relacionadas obra obras escrito escritos escrita escritas escribio escribe escritor escritora escritores leer quisiera gustaria otros otras otro otra mismo misma tendras tendran tenes tendrias venden vendes ofrecen ofreces'.split(
+    'buscame buscarme busca encuentrame encuentra dame damelo muestrame mostrame ensename pasame consigueme quieres podrias podria puedo ayudame llamado llamada titulado titulada conoces sabes acerca a al algo algun alguna algunos algunas ante autor autora autores buscar busco cada categoria categorias como con consultar cual cuales cuanto cuantos cuesta cuestan de del descripcion detalle detalles dime disponible disponibles el ella ellos en es ese esta estan este estos exacto hay hola informa informacion interesa la las lectura lecturas libro libros lo los mas me menor menos mi mis muestra muestrame necesito nombre nos oferta ofertas o para por precio precios puede puedes que quiero recomienda recomiendame saber se sin sinopsis sobre soles sol stock su sus tengo tienes tienen tiene titulo titulos todo todos tu un una unidades vale valen ver vigente y ya bajo hasta presupuesto maximo entre novedades vendidos paginas editorial idioma edicion portada quedan ejemplares comprar solo favor encontrar barato baratos barata baratas economico economicos caro caros cara caras relacionado relacionados relacionada relacionadas obra obras escrito escritos escrita escritas escribio escribe escritor escritora escritores leer quisiera gustaria otros otras otro otra mismo misma tendras tendran tenes tendrias venden vendes ofrecen ofreces se no saber recomiendas recomendar sugieres sugerencia sugerencias regalo regalar obsequio animo animos semana siento sientes porfa'.split(
         ' '
     )
 );
 
 function presupuesto(q) {
-    const rango = /entre\s+(?:s\/\s*)?(\d+(?:[.,]\d{1,2})?)\s+y\s+(?:s\/\s*)?(\d+(?:[.,]\d{1,2})?)/.exec(q);
+    const rango = /(?:entre\s+|de\s+)(?:s\s*\/?\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:y|a)\s*(?:s\s*\/?\s*)?(\d+(?:[.,]\d{1,2})?)/.exec(q);
     if (rango) return { min: Number(rango[1].replace(',', '.')), max: Number(rango[2].replace(',', '.')), valores: [rango[1], rango[2]] };
-    const max = /(?:menos de|menor (?:a|que)|hasta|maximo|por debajo de|presupuesto (?:de )?)\s*(?:s\/\s*)?(\d+(?:[.,]\d{1,2})?)/.exec(q);
+    const max = /(?:menos de|menor (?:a|que)|debajo de|por debajo de|bajo de|cuesta menos de|no mas de|hasta|maximo|presupuesto (?:de )?|tengo|cuento con)(?:\s*s\s*\/?\s*)?\s*(\d+(?:[.,]\d{1,2})?)/.exec(q);
     return max ? { min: 0, max: Number(max[1].replace(',', '.')), valores: [max[1]] } : null;
+}
+
+function responderFacetas(pregunta, libros) {
+    const q = normalizarConsulta(pregunta);
+    const activos = libros.filter((l) => l.estado === 1 && Number.isInteger(l.id) && l.id > 0);
+    const sinTitulos = !/\b(libro|libros|titulo|titulos|obra|obras)\b/.test(q);
+    if (sinTitulos && /\b(categoria|categorias|genero|generos|tema|temas|clasificacion)\b/.test(q)) {
+        const nombres = [...new Set(activos.map((l) => String(l.categoria || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+        if (!nombres.length) return { texto: 'No puedo confirmar las categorías sin consultar el catálogo.', libros: [], contexto: [] };
+        return {
+            texto: `Categorías publicadas (${nombres.length}): ${nombres.slice(0, 6).join(', ')}${nombres.length > 6 ? '…' : ''}. También están en el menú de categorías.`,
+            libros: [],
+            opciones: nombres.slice(0, 6).map((nombre) => ({ texto: nombre, consulta: `Libros de ${nombre}` })),
+            enlaces: [enlace('Ver catálogo', '/catalogo')],
+            contexto: []
+        };
+    }
+    if (sinTitulos && /\b(autor|autores|autora|autoras|escritor|escritores)\b/.test(q)) {
+        const nombres = [...new Set(activos.map((l) => String(l.autor || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+        if (!nombres.length) return { texto: 'No puedo confirmar los autores sin consultar el catálogo.', libros: [], contexto: [] };
+        return {
+            texto: `Autores publicados: ${nombres.slice(0, 6).join(', ')}${nombres.length > 6 ? '…' : ''}.`,
+            libros: [],
+            opciones: nombres.slice(0, 6).map((nombre) => ({ texto: nombre, consulta: `Libros de ${nombre}` })),
+            enlaces: [enlace('Ver catálogo', '/catalogo')],
+            contexto: []
+        };
+    }
+    return null;
 }
 
 function responderCatalogo(pregunta, libros, { contexto = [], idActual } = {}) {
@@ -177,7 +214,7 @@ function responderCatalogo(pregunta, libros, { contexto = [], idActual } = {}) {
     const activos = libros.filter((l) => l.estado === 1 && Number.isInteger(l.id) && l.id > 0);
     if (/cuantos libros|total de libros|stock total|total de ejemplares/.test(q)) {
         return {
-            texto: `El catálogo consultado tiene ${activos.length} títulos activos, ${activos.filter((l) => l.stock > 0).length} con stock y ${activos.reduce((s, l) => s + l.stock, 0)} ejemplares disponibles en total.`,
+            texto: `${activos.length} títulos activos, ${activos.filter((l) => l.stock > 0).length} con stock y ${activos.reduce((s, l) => s + l.stock, 0)} ejemplares.`,
             libros: [],
             contexto: []
         };
@@ -215,7 +252,7 @@ function responderCatalogo(pregunta, libros, { contexto = [], idActual } = {}) {
     );
     if (!candidatos.length)
         return {
-            texto: 'No encontré un libro activo que coincida con esa consulta en el catálogo. Prueba con el título, autor o ISBN, o revisa las categorías. No puedo confirmar datos de libros que no aparecen en la web.',
+            texto: 'No encontré ese libro en el catálogo. Prueba con título, autor o ISBN; no puedo confirmar datos que no aparecen aquí.',
             libros: [],
             enlaces: [enlace('Ver catálogo', '/catalogo')],
             contexto: []
@@ -223,32 +260,34 @@ function responderCatalogo(pregunta, libros, { contexto = [], idActual } = {}) {
     const muestra = candidatos.slice(0, 4);
     let texto =
         candidatos.length > 4
-            ? `Encontré ${candidatos.length} títulos; te muestro los primeros 4 con su precio y stock actual.`
+            ? `Encontré ${candidatos.length} títulos; te muestro 4.`
             : muestra.length === 1
-              ? `¡Claro! Encontré «${muestra[0].titulo}» en el catálogo:`
-              : 'Encontré estos libros en el catálogo:';
+              ? `Encontré «${muestra[0].titulo}»:`
+              : 'Encontré estos libros:';
     if (/\b(sinopsis|descripcion|trata)\b/.test(q) && muestra.length === 1) {
         const sinopsis = muestra[0].sinopsis;
         texto = sinopsis
-            ? `Descripción publicada: ${sinopsis.length > 650 ? sinopsis.slice(0, 650) + '…' : sinopsis}`
-            : 'Este libro no tiene una descripción publicada. Puedes revisar el resto de su ficha.';
+            ? `Descripción: ${acortarTexto(sinopsis, 220)}`
+            : 'Este libro no tiene descripción publicada. Puedes revisar su ficha.';
     } else if (/\b(paginas|editorial|idioma|edicion)\b/.test(q)) {
-        texto = 'No hay un campo técnico publicado para ese dato. Puedes consultar la descripción registrada y la ficha; no completaré información que falta.';
+        texto = 'No hay un campo técnico publicado para ese dato. No completaré información que falta.';
     } else if (especifico && /oferta|descuento|promocion/.test(q) && muestra.length === 1 && muestra[0].descuento <= 0) {
-        texto = 'Este libro no tiene una oferta vigente en el catálogo consultado.';
+        texto = 'Este libro no tiene oferta vigente en el catálogo consultado.';
     }
     return { texto, libros: muestra, enlaces: [enlace('Ver catálogo completo', '/catalogo')], contexto: muestra.map((l) => l.id) };
 }
 
 export function responderConsulta(pregunta, { libros = [], legal, contexto, idActual } = {}) {
     const plan = analizarConsulta(pregunta);
-    if (plan.tipo === 'fuera') return { texto: ALCANCE_ASISTENTE, contexto: [] };
-    if (plan.tipo === 'cortesia') return { texto: 'Con gusto. Si necesitas algo más de la librería, aquí estoy.', contexto: [] };
-    if (plan.tipo === 'ayuda')
-        return {
-            texto: 'Hola. Puedo buscar libros de este catálogo, consultar precios y stock, mostrar ofertas y orientarte sobre entrega, pagos y compras. Escribe un título, un autor o lo que necesitas saber de la tienda.',
+    let respuesta;
+    if (plan.tipo === 'fuera') respuesta = { texto: ALCANCE_ASISTENTE, contexto: [] };
+    else if (plan.tipo === 'cortesia') respuesta = { texto: 'Con gusto. Si necesitas algo más de la librería, aquí estoy.', contexto: [] };
+    else if (plan.tipo === 'ayuda')
+        respuesta = {
+            texto: 'Puedo buscar libros, precios, stock y ofertas, y orientarte sobre entrega y compras. Escribe un título o autor.',
             contexto: []
         };
-    if (plan.tipo === 'informacion') return { ...informacionTienda(plan.tema, legal), contexto: [] };
-    return responderCatalogo(pregunta, libros, { contexto, idActual });
+    else if (plan.tipo === 'informacion') respuesta = { ...informacionTienda(plan.tema, legal), contexto: [] };
+    else respuesta = responderFacetas(pregunta, libros) || responderCatalogo(pregunta, libros, { contexto, idActual });
+    return { ...respuesta, texto: acortarTexto(respuesta.texto) };
 }

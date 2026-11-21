@@ -12,9 +12,9 @@
     .sitio .asistente-tienda .asistente-avatar { width: 44px; height: 44px; }
     .sitio .asistente-tienda .asistente-conversacion { padding: 12px 12px; }
     .sitio .asistente-tienda .asistente-mensaje { max-width: 94%; font-size: 0.8125rem; }
-    .sitio .asistente-tienda .asistente-sugerencias { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding: 8px 12px 0; }
+    .sitio .asistente-tienda .asistente-sugerencias { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: x proximity; scrollbar-width: none; padding: 8px 12px 0; }
     .sitio .asistente-tienda .asistente-sugerencias::-webkit-scrollbar { display: none; }
-    .sitio .asistente-tienda .asistente-sugerencias button { flex: none; white-space: nowrap; }
+    .sitio .asistente-tienda .asistente-sugerencias button { flex: none; max-width: none; scroll-snap-align: start; white-space: nowrap; }
     .sitio .asistente-tienda .asistente-formulario { padding: 8px 12px 0; }
 }
 @media (max-width: 360px) {
@@ -47,8 +47,8 @@
     .sitio .asistente-tienda .asistente-cabecera p, .sitio .asistente-tienda .asistente-formulario > p { display: none; }
     .sitio .asistente-tienda .asistente-avatar { width: 38px; height: 38px; }
     .sitio .asistente-tienda .asistente-conversacion { min-height: 64px; padding: 10px 12px; }
-    .sitio .asistente-tienda .asistente-sugerencias { flex-wrap: nowrap; overflow-x: auto; }
-    .sitio .asistente-tienda .asistente-sugerencias button { flex: none; white-space: nowrap; }
+    .sitio .asistente-tienda .asistente-sugerencias { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: x proximity; }
+    .sitio .asistente-tienda .asistente-sugerencias button { flex: none; max-width: none; scroll-snap-align: start; white-space: nowrap; }
 }
 .sitio .cuenta-cliente {
     display: block; max-width: 440px; padding: clamp(24px, 5vw, 36px); border-radius: 16px; border: 1px solid var(--linea); background: #fff;

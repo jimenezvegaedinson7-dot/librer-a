@@ -8,14 +8,18 @@ const normalizar = (v) =>
         .trim();
 
 const VACIAS = new Set(
-    'buscame buscarme busca buscas encuentrame encuentra encontrar dame damelo muestrame mostrame ensename pasame consigueme quieres podrias podria puedo ayudame llamado llamada titulado titulada conoces sabes acerca oye oiga we wey bro pe pues causa pata porfa porfavor favor please pls a al algo algun alguna algunos algunas autor autores autora barato baratos barata baratas busca buscar busco caros caro categoria categorias como con cual cuales cuanto cuantos de del el en es esta estan este estos hay la las libro libros lo los mas me menos mi muestra muestrame necesito otro otros otra otras para parecido parecidos por precio precios puede puedes que quiero recomienda recomiendame s sin solo sol soles stock su tengo tiene tienes tienen titulo titulos todos un una uno vale ver y de cuanto cuesta cuestan disponibles disponible economico economicos terror romantico romantica romanticos romance miedo infantil infantiles ninos nina ninas jovenes juvenil debajo hasta entre maximo presupuesto sus baratos grabieles ofrece ofreces quedan ejemplares oferta ofertas descuento descuentos sinopsis descripcion trata relacionado relacionados relacionada relacionadas obra obras escrito escritos escrita escritas escribio escritor escritora escritores leer quisiera gustaria mismo misma tendras tendran tenes venden vendes ofrecen hola buenas buenos tardes dias noches'.split(
+    'buscame buscarme busca buscas encuentrame encuentra encontrar dame damelo muestrame mostrame ensename pasame consigueme quieres podrias podria puedo ayudame llamado llamada titulado titulada conoces sabes acerca oye oiga we wey bro pe pues causa pata porfa porfavor favor please pls a al algo algun alguna algunos algunas autor autores autora barato baratos barata baratas busca buscar busco caros caro categoria categorias como con cual cuales cuanto cuantos de del el en es esta estan este estos hay la las libro libros lo los mas me menos mi muestra muestrame necesito otro otros otra otras para parecido parecidos por precio precios puede puedes que quiero recomienda recomiendame s sin solo sol soles stock su tengo tiene tienes tienen titulo titulos todos un una uno vale ver y de cuanto cuesta cuestan disponibles disponible economico economicos terror romantico romantica romanticos romance miedo infantil infantiles ninos nina ninas jovenes juvenil debajo hasta entre maximo presupuesto sus baratos grabieles ofrece ofreces quedan ejemplares oferta ofertas descuento descuentos sinopsis descripcion trata relacionado relacionados relacionada relacionadas obra obras escrito escritos escrita escritas escribio escritor escritora escritores leer quisiera gustaria mismo misma tendras tendran tenes venden vendes ofrecen hola buenas buenos tardes dias noches saber sepas se no recomiendas recomendar sugieres sugerencia sugerencias regalo regalar obsequio animo animos semana siento sientes'.split(
         ' '
     )
 );
 const GENEROS = [
     { patron: /\b(terror|miedo|asust|horror)\w*\b/, palabras: ['terror', 'horror', 'miedo'] },
     { patron: /\b(romantic|romance|amor)\w*\b/, palabras: ['romance', 'romantica', 'romantico', 'amor'] },
-    { patron: /\b(ninos|ninas|infantil|juvenil)\b/, palabras: ['infantil', 'juvenil', 'ninos', 'ninas'] }
+    { patron: /\b(ninos|ninas|infantil|juvenil)\b/, palabras: ['infantil', 'juvenil', 'ninos', 'ninas'] },
+    { patron: /\b(misterio|suspenso|policiac[oa])\w*\b/, palabras: ['misterio', 'suspenso', 'policiaco', 'policiaca'] },
+    { patron: /\b(aventuras?)\b/, palabras: ['aventura'] },
+    { patron: /\b(poesia|poemas?)\b/, palabras: ['poesia', 'poema'] },
+    { patron: /\b(cuentos?|relatos?)\b/, palabras: ['cuento', 'relato'] }
 ];
 
 function fueraDeAlcance(q) {
@@ -69,8 +73,8 @@ function coincidencias(filas, tokens) {
 function interpretar(mensaje, previo = {}) {
     const q = normalizar(mensaje);
     const genero = GENEROS.find((g) => g.patron.test(q));
-    const rango = /entre\s+(?:s\/\s*)?(\d+(?:[.,]\d{1,2})?)\s+y\s+(?:s\/\s*)?(\d+(?:[.,]\d{1,2})?)/.exec(q);
-    const max = /(?:menos de|hasta|menor (?:a|que)|debajo de|maximo|presupuesto de)\s*(?:s\/\s*)?(\d+(?:[.,]\d{1,2})?)/.exec(q);
+    const rango = /(?:entre\s+|de\s+)(?:s\s*\/?\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:y|a)\s*(?:s\s*\/?\s*)?(\d+(?:[.,]\d{1,2})?)/.exec(q);
+    const max = /(?:menos de|menor (?:a|que)|debajo de|por debajo de|bajo de|cuesta menos de|no mas de|hasta|maximo|presupuesto (?:de )?|tengo|cuento con)(?:\s*s\s*\/?\s*)?\s*(\d+(?:[.,]\d{1,2})?)/.exec(q);
     const minimo = rango ? Number(rango[1].replace(',', '.')) : undefined;
     const maximo = rango ? Number(rango[2].replace(',', '.')) : max ? Number(max[1].replace(',', '.')) : undefined;
     const otro = /\b(otro|otra|otros|otras)\b|uno mas\b/.test(q) && !/mas barato|mas caro/.test(q);
@@ -78,9 +82,10 @@ function interpretar(mensaje, previo = {}) {
     const barato = /\b(barato|baratos|barata|baratas|economico|economicos)\b|cuesta menos/.test(q);
     const caro = /\b(caro|caros|cara|caras)\b/.test(q);
     const superlativo = /el mas barato|el mas caro|cual .*mas (barato|caro)|cual cuesta menos/.test(q);
+    const conMoneda = /(?:\b(?:sol|soles|s)\b|\bs\/)/.test(q);
     const tokens = q
         .split(/[\s/.,]+/)
-        .filter((t) => t.length > 1 && !VACIAS.has(t) && !(/^\d+$/.test(t) && (rango || max)))
+        .filter((t) => t.length > 1 && !VACIAS.has(t) && !(conMoneda && /^\d{1,3}(?:[.,]\d{1,2})?$/.test(t)))
         .slice(0, 8);
     const seguimiento = Boolean(previo.filtros) && (otro || similar || barato || caro || tokens.length === 0 || /\b(esos|estos|ellos|ese)\b/.test(q));
     return {
