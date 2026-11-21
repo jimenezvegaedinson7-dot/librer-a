@@ -44,9 +44,10 @@ test('el backfill y la purga autorizada están registrados como migraciones de d
 });
 
 test('los backfills de metadatos bibliográficos son migraciones de datos adicionales', () => {
-    assert.equal(MIGRACIONES_DATOS_EXTRA.length, 2);
+    assert.equal(MIGRACIONES_DATOS_EXTRA.length, 3);
     assert.equal(MIGRACIONES_DATOS_EXTRA[0].nombre, '044_backfill_metadatos_bibliograficos.js');
     assert.equal(MIGRACIONES_DATOS_EXTRA[1].nombre, '047_backfill_dragon_ball_z.js');
+    assert.equal(MIGRACIONES_DATOS_EXTRA[2].nombre, '048_backfill_metadatos_reales_todos.js');
 });
 
 test('migración de datos admite backfills programáticos con el mismo registro transaccional', async () => {

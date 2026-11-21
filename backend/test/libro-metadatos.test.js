@@ -17,7 +17,12 @@ require.cache[rutaDatabase] = {
 
 const libroModel = require('../src/models/libro.model');
 const { normalizarMetadatosBibliograficos } = require('../src/controllers/libro.controller');
-const { construirActualizacionesDragonBallZ, backfillMetadatosDragonBallZ } = require('../src/config/backfills');
+const {
+    construirActualizacionesDragonBallZ,
+    backfillMetadatosDragonBallZ,
+    construirActualizacionesReales,
+    backfillMetadatosRealesTodos
+} = require('../src/config/backfills');
 
 const CAMPOS = ['editorial', 'idioma', 'numero_paginas', 'anio_publicacion', 'formato', 'numero_volumen', 'dimensiones'];
 
@@ -146,4 +151,44 @@ test('el backfill de Dragon Ball Z aplica solo los datos verificados con COALESC
         assert.equal(sentencia.params.length, 8);
     }
     assert.deepEqual(sentencias.map((sentencia) => sentencia.params[0]), esperado.map((libro) => libro.isbn));
+});
+
+test('el backfill global aplica solo metadatos verificados y nunca sobrescribe', async () => {
+    const actualizaciones = construirActualizacionesReales();
+    assert.ok(actualizaciones.length > 2000);
+
+    const porIsbn = new Map(actualizaciones.map((libro) => [libro.isbn, libro]));
+    assert.deepEqual(porIsbn.get('9781400077915'), {
+        isbn: '9781400077915',
+        editorial: 'Vintage',
+        idioma: 'Inglés',
+        numero_paginas: 352,
+        anio_publicacion: 2005,
+        formato: 'Tapa blanda',
+        numero_volumen: null,
+        dimensiones: '5-3/16 x 8 in'
+    });
+    assert.equal(porIsbn.get('9798711770145').editorial, 'Independently Published');
+    assert.equal(porIsbn.get('9788413341385').idioma, 'Español');
+    assert.ok(!porIsbn.has('9786124000010'));
+    assert.ok(!porIsbn.has('9786124000249'));
+
+    const sentencias = [];
+    const conexion = {
+        pgQuery: async (sql, params) => {
+            sentencias.push({ sql, params });
+            return { rowCount: 1 };
+        }
+    };
+
+    const resultado = await backfillMetadatosRealesTodos.ejecutar(conexion);
+    assert.equal(backfillMetadatosRealesTodos.nombre, '048_backfill_metadatos_reales_todos.js');
+    assert.deepEqual(resultado, { rowCount: actualizaciones.length });
+    assert.equal(sentencias.length, actualizaciones.length);
+    for (const sentencia of sentencias) {
+        assert.match(sentencia.sql, /^UPDATE libros SET .+ WHERE isbn = \$1$/);
+        assert.match(sentencia.sql, /COALESCE\(/);
+        assert.ok(sentencia.params.length >= 2 && sentencia.params.length <= 8);
+    }
+    assert.deepEqual(sentencias.map((sentencia) => sentencia.params[0]), actualizaciones.map((libro) => libro.isbn));
 });

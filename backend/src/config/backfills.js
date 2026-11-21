@@ -6,6 +6,8 @@ const NOMBRE_BACKFILL = '044_backfill_metadatos_bibliograficos.js';
 const CAMPOS_ACTUALIZABLES = ['editorial', 'anio_publicacion', 'numero_paginas'];
 const NOMBRE_BACKFILL_DRAGON_BALL_Z = '047_backfill_dragon_ball_z.js';
 const CAMPOS_DRAGON_BALL_Z = ['editorial', 'idioma', 'numero_paginas', 'anio_publicacion', 'formato', 'numero_volumen', 'dimensiones'];
+const NOMBRE_BACKFILL_REALES_TODOS = '048_backfill_metadatos_reales_todos.js';
+const CAMPOS_REALES_TODOS = CAMPOS_DRAGON_BALL_Z;
 
 function leerSemilla(nombre) {
     const ruta = path.join(RAIZ, 'database', 'seeds', nombre);
@@ -75,14 +77,29 @@ function construirActualizacionesDragonBallZ() {
         .filter((registro) => registro.isbn);
 }
 
-async function ejecutarDragonBallZ(conexion) {
+function construirActualizacionesReales() {
+    return leerSemilla('libros-metadatos-reales.json')
+        .map((libro) => ({
+            isbn: textoValido(libro.isbn, 20),
+            editorial: textoValido(libro.editorial, 200),
+            idioma: textoValido(libro.idioma, 60),
+            numero_paginas: enteroValido(libro.numero_paginas, 1, 20000),
+            anio_publicacion: enteroValido(libro.anio_publicacion, 1000, 2100),
+            formato: textoValido(libro.formato, 60),
+            numero_volumen: textoValido(libro.numero_volumen, 40),
+            dimensiones: textoValido(libro.dimensiones, 100)
+        }))
+        .filter((registro) => registro.isbn && CAMPOS_REALES_TODOS.some((campo) => registro[campo] != null));
+}
+
+async function ejecutarConActualizaciones(conexion, actualizaciones, campos) {
     let filas = 0;
 
-    for (const registro of construirActualizacionesDragonBallZ()) {
+    for (const registro of actualizaciones) {
         const parametros = [registro.isbn];
         const asignaciones = [];
 
-        for (const campo of CAMPOS_DRAGON_BALL_Z) {
+        for (const campo of campos) {
             if (registro[campo] == null) continue;
             parametros.push(registro[campo]);
             asignaciones.push(`${campo} = COALESCE(${campo}, $${parametros.length})`);
@@ -94,6 +111,14 @@ async function ejecutarDragonBallZ(conexion) {
     }
 
     return { rowCount: filas };
+}
+
+async function ejecutarDragonBallZ(conexion) {
+    return ejecutarConActualizaciones(conexion, construirActualizacionesDragonBallZ(), CAMPOS_DRAGON_BALL_Z);
+}
+
+async function ejecutarRealesTodos(conexion) {
+    return ejecutarConActualizaciones(conexion, construirActualizacionesReales(), CAMPOS_REALES_TODOS);
 }
 
 async function ejecutar(conexion) {
@@ -119,12 +144,16 @@ async function ejecutar(conexion) {
 
 const backfillMetadatosBibliograficos = { nombre: NOMBRE_BACKFILL, ejecutar };
 const backfillMetadatosDragonBallZ = { nombre: NOMBRE_BACKFILL_DRAGON_BALL_Z, ejecutar: ejecutarDragonBallZ };
+const backfillMetadatosRealesTodos = { nombre: NOMBRE_BACKFILL_REALES_TODOS, ejecutar: ejecutarRealesTodos };
 
 module.exports = {
     backfillMetadatosBibliograficos,
     backfillMetadatosDragonBallZ,
+    backfillMetadatosRealesTodos,
     construirActualizaciones,
     construirActualizacionesDragonBallZ,
+    construirActualizacionesReales,
     NOMBRE_BACKFILL,
-    NOMBRE_BACKFILL_DRAGON_BALL_Z
+    NOMBRE_BACKFILL_DRAGON_BALL_Z,
+    NOMBRE_BACKFILL_REALES_TODOS
 };
