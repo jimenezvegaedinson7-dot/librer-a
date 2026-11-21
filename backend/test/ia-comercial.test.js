@@ -1,5 +1,7 @@
-const test = require('node:test');
+const { test, mock } = require('node:test');
 const assert = require('node:assert/strict');
+const pool = require('../src/config/database');
+const busquedaModel = require('../src/models/busquedaIA.model');
 const { crearBuscadorIA } = require('../src/services/busquedaIA.service');
 const { crearRecomendadorIA } = require('../src/services/recomendacionesIA.service');
 const { validarPlan, interpretarLocal, fueraDeAlcance } = require('../src/utils/busquedaIA');
@@ -94,4 +96,22 @@ test('las recomendaciones caen al ranking SQL si Gemini no selecciona libros', a
     const resultado = await crearRecomendadorIA({ catalogo, repositorio: {}, proveedor: async () => ({ selecciones: null, motivo: 'sin_clave' }) })(7);
     assert.equal(resultado.origen, 'catalogo');
     assert.deepEqual(resultado.libros, [{ id_libro: 99, titulo: 'Fallback' }]);
+});
+
+test('facetas usa las claves reales de autores y categorias', async () => {
+    const consultas = [];
+    const query = mock.method(pool, 'query', async (sql) => {
+        consultas.push(sql);
+        if (sql.includes('a.id_autor AS id')) return { rows: [{ id: 4, nombre: 'Miguel de Cervantes', total: 3 }] };
+        if (sql.includes('c.id_categoria AS id')) return { rows: [{ id: 9, nombre: 'Novela', total: 5 }] };
+        throw new Error('SQL inesperada');
+    });
+    try {
+        const resultado = await busquedaModel.facetas();
+        assert.equal(consultas.length, 2);
+        assert.deepEqual(resultado.autores, [{ id: 4, nombre: 'Miguel de Cervantes', total: 3 }]);
+        assert.deepEqual(resultado.categorias, [{ id: 9, nombre: 'Novela', total: 5 }]);
+    } finally {
+        query.mock.restore();
+    }
 });

@@ -8,8 +8,8 @@ const CATALOGO_BASE = `SELECT l.id_libro, l.titulo, l.isbn, l.descripcion, ${CAM
 
 const facetas = async () => {
     const [autores, categorias] = await Promise.all([
-        pool.query(`SELECT a.id, CONCAT(a.nombre, ' ', a.apellido) AS nombre, COUNT(*) AS total FROM libros l INNER JOIN autores a ON a.id_autor = l.id_autor WHERE l.estado = 1 GROUP BY a.id, a.nombre, a.apellido ORDER BY total DESC, nombre ASC`),
-        pool.query(`SELECT c.id, c.nombre, COUNT(*) AS total FROM libros l INNER JOIN categorias c ON c.id_categoria = l.id_categoria WHERE l.estado = 1 GROUP BY c.id, c.nombre ORDER BY total DESC, nombre ASC`)
+        pool.query(`SELECT a.id_autor AS id, CONCAT(a.nombre, ' ', a.apellido) AS nombre, COUNT(*) AS total FROM libros l INNER JOIN autores a ON a.id_autor = l.id_autor WHERE l.estado = 1 GROUP BY a.id_autor, a.nombre, a.apellido ORDER BY total DESC, nombre ASC`),
+        pool.query(`SELECT c.id_categoria AS id, c.nombre, COUNT(*) AS total FROM libros l INNER JOIN categorias c ON c.id_categoria = l.id_categoria WHERE l.estado = 1 GROUP BY c.id_categoria, c.nombre ORDER BY total DESC, nombre ASC`)
     ]);
     return { autores: autores.rows, categorias: categorias.rows };
 };
