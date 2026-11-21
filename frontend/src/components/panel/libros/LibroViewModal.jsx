@@ -35,6 +35,15 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
             : vencida
               ? 'Descuento vencido'
               : 'Sin rebaja vigente';
+    const metadatos = [
+        ['Editorial', libro.editorial],
+        ['Idioma', libro.idioma],
+        ['Número de páginas', libro.numero_paginas],
+        ['Año de publicación', libro.anio_publicacion],
+        ['Formato', libro.formato],
+        ['Número de volumen', libro.numero_volumen],
+        ['Dimensiones', libro.dimensiones]
+    ].filter(([, valor]) => valor !== null && valor !== undefined && String(valor).trim() !== '');
 
     return (
         <Modal abierto={abierto} titulo="Detalle del libro" subtitulo="Información registrada en el sistema" onCerrar={onCerrar} grande>
@@ -84,6 +93,19 @@ export default function LibroViewModal({ libro, abierto, onCerrar }) {
                             </div>
                         </Ficha>
                     </div>
+
+                    {metadatos.length > 0 && (
+                        <div className="mt-4">
+                            <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">Datos bibliográficos</h4>
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                {metadatos.map(([etiqueta, valor]) => (
+                                    <Ficha key={etiqueta} etiqueta={etiqueta}>
+                                        {valor}
+                                    </Ficha>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="mt-4">
                         <Ficha icono={<FaTag size={16} />} etiqueta="Promoción">

@@ -29,6 +29,7 @@ async function preparar(page) {
         falloAutor: false,
         altasAutores: [],
         escriturasLibros: [],
+        metadatosEscritos: [],
         portadasSubidas: []
     };
     await page.addInitScript((usuario) => {
@@ -60,6 +61,15 @@ async function preparar(page) {
         if (ruta.startsWith('/api/libros') && ['POST', 'PUT'].includes(metodo)) {
             control.portadasSubidas.push(req.postData().includes('filename="portada.png"'));
             const campo = (nombre) => req.postData().match(new RegExp(`name="${nombre}"\\r?\\n\\r?\\n([^\\r\\n]*)`))?.[1] || '';
+            const metadatos = {
+                editorial: campo('editorial') || null,
+                idioma: campo('idioma') || null,
+                numero_paginas: campo('numero_paginas') || null,
+                anio_publicacion: campo('anio_publicacion') || null,
+                formato: campo('formato') || null,
+                numero_volumen: campo('numero_volumen') || null,
+                dimensiones: campo('dimensiones') || null
+            };
             const id = metodo === 'POST' ? control.libros.length + 1 : Number(ruta.split('/').pop());
             const anterior = control.libros.find((l) => l.id_libro === id) || {};
             const autor = control.autores.find((a) => a.id_autor === Number(campo('id_autor')));
@@ -78,10 +88,12 @@ async function preparar(page) {
                 precio_oferta: campo('precio_oferta') || null,
                 descuento_hasta: campo('descuento_hasta') || null,
                 descuento_vigente: 0,
-                precio_final: Number(campo('precio'))
+                precio_final: Number(campo('precio')),
+                ...metadatos
             };
             control.libros = [...control.libros.filter((l) => l.id_libro !== id), libro];
             control.escriturasLibros.push({ metodo, id_autor: libro.id_autor, titulo: libro.titulo });
+            control.metadatosEscritos.push({ metodo, ...metadatos });
             return route.fulfill({ json: { success: true, id_libro: id } });
         }
         if (ruta === '/api/libros') return responder(control.libros);
@@ -347,3 +359,47 @@ for (const width of [390, 1440])
         expect(control.escriturasLibros).toHaveLength(1);
         expect(control.portadasSubidas).toEqual([true]);
     });
+
+test('metadatos bibliograficos: alta, edicion y detalle del libro', async ({ page }) => {
+    const control = await preparar(page);
+    const valores = {
+        editorial: 'Editorial Planeta',
+        idioma: 'Español',
+        numero_paginas: '312',
+        anio_publicacion: '2011',
+        formato: 'Tapa blanda',
+        numero_volumen: 'Tomo 2',
+        dimensiones: '15 x 23 cm'
+    };
+    await page.goto('/libros');
+    await page.getByRole('button', { name: 'Nuevo libro', exact: true }).click();
+    const libro = page.getByRole('dialog', { name: 'Registrar libro', exact: true });
+    await libro.locator('[name="titulo"]').fill('Libro con metadatos');
+    await libro.locator('[name="precio"]').fill('40');
+    await libro.locator('[name="id_autor"]').selectOption('1');
+    await libro.locator('[name="id_categoria"]').selectOption('1');
+    for (const [name, value] of Object.entries(valores)) {
+        await libro.locator(`[name="${name}"]`).fill(value);
+    }
+    await libro.getByRole('button', { name: 'Guardar libro', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Falta la imagen de portada', exact: true }).getByRole('button', { name: 'Continuar sin imagen', exact: true }).click();
+    await page.getByRole('dialog', { name: '¿Deseas agregar un descuento?', exact: true }).getByRole('button', { name: 'Registrar sin descuento', exact: true }).click();
+    await expect(libro).toHaveCount(0);
+    expect(control.metadatosEscritos[0]).toEqual({ metodo: 'POST', ...valores });
+
+    await page.getByRole('row').filter({ hasText: 'Libro con metadatos' }).getByRole('button', { name: 'Ver libro', exact: true }).click();
+    const detalle = page.getByRole('dialog', { name: 'Detalle del libro', exact: true });
+    for (const valor of Object.values(valores)) {
+        await expect(detalle).toContainText(valor);
+    }
+    await detalle.getByRole('button', { name: 'Cerrar', exact: true }).last().click();
+
+    await page.getByRole('row').filter({ hasText: 'Libro con metadatos' }).getByRole('button', { name: 'Editar libro', exact: true }).click();
+    const edicion = page.getByRole('dialog');
+    await expect(edicion.locator('[name="editorial"]')).toHaveValue('Editorial Planeta');
+    await edicion.locator('[name="editorial"]').fill('Editorial actualizada');
+    await edicion.locator('[name="numero_paginas"]').fill('300');
+    await edicion.getByRole('button', { name: 'Guardar cambios', exact: true }).click();
+    await expect(edicion).toHaveCount(0);
+    expect(control.metadatosEscritos[1]).toEqual({ metodo: 'PUT', ...valores, editorial: 'Editorial actualizada', numero_paginas: '300' });
+});

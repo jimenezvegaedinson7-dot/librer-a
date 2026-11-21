@@ -227,6 +227,46 @@ export default function CamposLibro({ formulario, autores, categorias, manejarCa
             )}
 
             <Textarea label="Descripción" name="descripcion" value={formulario.descripcion} onChange={manejarCambio} placeholder="Descripción breve del libro" rows="2" />
+
+            <div className="form-field-group min-w-0 border-t border-primary-200/70 pt-4 md:col-span-12">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600">Datos bibliográficos</h4>
+                    <span className="text-[11px] font-medium text-slate-500">Opcional</span>
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+                    <Input label="Editorial" name="editorial" value={formulario.editorial || ''} onChange={manejarCambio} error={errores.editorial} disabled={guardando} maxLength={200} ancho={4} />
+                    <Input label="Idioma" name="idioma" value={formulario.idioma || ''} onChange={manejarCambio} error={errores.idioma} disabled={guardando} maxLength={60} ancho={4} />
+                    <Input
+                        label="Año de publicación"
+                        name="anio_publicacion"
+                        type="number"
+                        inputMode="numeric"
+                        min={1000}
+                        max={2100}
+                        value={formulario.anio_publicacion || ''}
+                        onChange={manejarCambio}
+                        error={errores.anio_publicacion}
+                        disabled={guardando}
+                        ancho={4}
+                    />
+                    <Input
+                        label="Número de páginas"
+                        name="numero_paginas"
+                        type="number"
+                        inputMode="numeric"
+                        min={1}
+                        max={20000}
+                        value={formulario.numero_paginas || ''}
+                        onChange={manejarCambio}
+                        error={errores.numero_paginas}
+                        disabled={guardando}
+                        ancho={4}
+                    />
+                    <Input label="Formato" name="formato" value={formulario.formato || ''} onChange={manejarCambio} error={errores.formato} disabled={guardando} maxLength={60} ancho={4} />
+                    <Input label="Número de volumen" name="numero_volumen" value={formulario.numero_volumen || ''} onChange={manejarCambio} error={errores.numero_volumen} disabled={guardando} maxLength={40} ancho={4} />
+                    <Input label="Dimensiones" name="dimensiones" value={formulario.dimensiones || ''} onChange={manejarCambio} error={errores.dimensiones} disabled={guardando} maxLength={100} ancho={12} />
+                </div>
+            </div>
         </div>
     );
 }

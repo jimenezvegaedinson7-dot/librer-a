@@ -12,7 +12,24 @@ import DescuentoLibroModal, { BotonDescuentoLibro } from './DescuentoLibroModal'
 import AutorForm from '../autores/AutorForm';
 import { requerido, numeroNoNegativo, seleccionRequerida } from '../../../services/panel/utils/validaciones';
 
-const FORMULARIO_VACIO = { titulo: '', isbn: '', descripcion: '', precio: '', id_autor: '', id_categoria: '', descuento_porcentaje: '', precio_oferta: '', descuento_hasta: '' };
+const FORMULARIO_VACIO = {
+    titulo: '',
+    isbn: '',
+    descripcion: '',
+    editorial: '',
+    idioma: '',
+    numero_paginas: '',
+    anio_publicacion: '',
+    formato: '',
+    numero_volumen: '',
+    dimensiones: '',
+    precio: '',
+    id_autor: '',
+    id_categoria: '',
+    descuento_porcentaje: '',
+    precio_oferta: '',
+    descuento_hasta: ''
+};
 
 const REGLAS = {
     titulo: [(v) => requerido(v, 'El título')],

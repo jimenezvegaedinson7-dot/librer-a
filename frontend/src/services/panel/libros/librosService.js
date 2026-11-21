@@ -20,6 +20,14 @@ function agregarDescuentos(datos, formulario) {
     datos.append('descuento_hasta', formulario.descuento_hasta || '');
 }
 
+const CAMPOS_BIBLIOGRAFICOS = ['editorial', 'idioma', 'numero_paginas', 'anio_publicacion', 'formato', 'numero_volumen', 'dimensiones'];
+
+function agregarMetadatosBibliograficos(datos, formulario) {
+    for (const campo of CAMPOS_BIBLIOGRAFICOS) {
+        datos.append(campo, formulario[campo] ?? '');
+    }
+}
+
 export async function crearLibro(formulario, imagen) {
     const api = await client.get('');
     if (api?.capacidades?.descuentos_libros !== true) {
@@ -32,6 +40,7 @@ export async function crearLibro(formulario, imagen) {
     datos.append('precio', formulario.precio);
     datos.append('id_autor', formulario.id_autor);
     datos.append('id_categoria', formulario.id_categoria);
+    agregarMetadatosBibliograficos(datos, formulario);
     agregarDescuentos(datos, formulario);
     if (imagen) datos.append('portada', imagen);
     const respuesta = await client.post('/libros', datos);
@@ -55,6 +64,7 @@ export async function actualizarLibro(id, formulario, imagen) {
     datos.append('id_autor', formulario.id_autor);
     datos.append('id_categoria', formulario.id_categoria);
     datos.append('estado', formulario.estado);
+    agregarMetadatosBibliograficos(datos, formulario);
     agregarDescuentos(datos, formulario);
     if (imagen) datos.append('portada', imagen);
     const respuesta = await client.put(`/libros/${id}`, datos);
