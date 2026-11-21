@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { FaArrowLeft, FaArrowRight, FaMagnifyingGlass, FaXmark } from 'react-icons/fa6';
-import logo from '../../../assets/compartido/logo-f-verde-96.webp';
 import { clienteApi } from '../../../services/web/tienda/clienteApi';
 import { libroComercial } from '../../../services/web/tienda/libroComercial';
 import { useCatalogo } from '../../../hooks/web/useApiPublica';
@@ -39,6 +38,8 @@ const TIPOS_BUSQUEDA = [
 ];
 
 const MAX_POR_SECCION = 12;
+
+const SUGERENCIAS_IA = ['Novela para regalar', 'Un clásico corto', 'Ciencia ficción', 'Misterio con humor'];
 
 const esCategoria = (valor) => String(valor || '').startsWith(PREFIJO_CATEGORIA);
 const nombreCategoria = (valor) => (esCategoria(valor) ? valor.slice(PREFIJO_CATEGORIA.length) : '');
@@ -225,14 +226,19 @@ export default function BuscarPage() {
         : q
           ? `/catalogo?q=${encodeURIComponent(q)}`
           : '/catalogo';
+    const mensajeIA = !mostrandoResultados
+        ? 'Estoy aquí: dime un autor, un género o cómo te sientes y te recomiendo algo.'
+        : !inteligente.listo
+          ? 'Dame un momento… estoy mirando entre estantes.'
+          : resultados.length
+            ? `Encontré ${textoResultados(resultados.length)}. ¿Quieres algo parecido, más corto o para regalar? Dime y lo ajusto.`
+            : 'No di con el libro todavía. Prueba con otra pista: un autor, un género o una frase que recuerdes.';
+    const usarSugerencia = (texto) => setParams({ q: texto });
 
     return (
         <div className="sitio buscar-pagina">
             <header className="buscar-cabecera">
                 <div className="buscar-cabecera__barra">
-                    <Link to="/" className="buscar-logo" aria-label="Ir al inicio de MATIDANA">
-                        <img src={logo} alt="MATIDANA Libros y Cultura" width="96" height="96" />
-                    </Link>
                     <button type="button" className="buscar-salir" onClick={salir}>
                         Salir
                         <FaXmark aria-hidden="true" />
@@ -240,6 +246,7 @@ export default function BuscarPage() {
                 </div>
                 <div className="buscar-cabecera__centro">
                     <h1 className="buscar-titulo">¿Qué estás buscando?</h1>
+                    <p className="buscar-intro">Dime qué te apetece leer, aunque no sepas el título. Yo te ayudo a encontrarlo.</p>
                     <form className="buscar-formulario" role="search" onSubmit={enviar}>
                         <div className="buscar-barra">
                             <select id="buscar-tipo" className="buscar-tipo" name="tipo" value={tipo} onChange={cambiarTipo} aria-label="Ámbito de búsqueda">
@@ -267,8 +274,8 @@ export default function BuscarPage() {
                                 type="search"
                                 name="q"
                                 defaultValue={q}
-                                placeholder="Busca por autor, título, género o ISBN"
-                                aria-label="Buscar por autor, título, género o ISBN"
+                                placeholder="Ej.: «novela para regalar», «algo de Cortázar»…"
+                                aria-label="Escribe qué libro buscas: autor, título, género, ISBN o una idea"
                                 autoComplete="off"
                                 autoFocus
                             />
@@ -282,6 +289,21 @@ export default function BuscarPage() {
                             </button>
                         </div>
                     </form>
+                    <div className="buscar-ayuda" role="status">
+                        <span className="buscar-ayuda__etiqueta">Sugerencia IA</span>
+                        <span className={`buscar-ayuda__pulso${mostrandoResultados && !inteligente.listo ? ' buscar-ayuda__pulso--activo' : ''}`} aria-hidden="true" />
+                        <p>{mensajeIA}</p>
+                    </div>
+                    {!mostrandoResultados && (
+                        <div className="buscar-sugerencias" aria-label="Ideas para empezar">
+                            <span>Prueba con:</span>
+                            {SUGERENCIAS_IA.map((sugerencia) => (
+                                <button key={sugerencia} type="button" className="buscar-sugerencia" onClick={() => usarSugerencia(sugerencia)}>
+                                    {sugerencia}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </header>
 

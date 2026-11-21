@@ -12,18 +12,8 @@
 .buscar-cabecera__barra {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 16px;
-}
-
-.buscar-logo {
-    display: inline-flex;
-    align-items: center;
-}
-
-.buscar-logo img {
-    width: 58px;
-    height: auto;
 }
 
 .buscar-salir {
@@ -65,8 +55,84 @@
     color: var(--texto);
 }
 
+.buscar-intro {
+    margin: 10px auto 0;
+    color: var(--texto-2);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+}
+
 .buscar-formulario {
     margin: 26px auto 0;
+}
+
+.buscar-ayuda {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 8px 14px;
+    border: 1px solid #d7e6de;
+    border-radius: 999px;
+    background: #f7fbf9;
+    color: var(--texto-2);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.buscar-ayuda p {
+    margin: 0;
+}
+
+.buscar-ayuda__etiqueta {
+    color: var(--accion);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.buscar-ayuda__pulso {
+    flex: 0 0 7px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #9ab9ac;
+}
+
+.buscar-ayuda__pulso--activo {
+    background: var(--accion);
+    animation: buscar-pulso 1s ease-in-out infinite alternate;
+}
+
+.buscar-sugerencias {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    color: var(--texto-3);
+    font-size: 0.8125rem;
+}
+
+.buscar-sugerencia {
+    padding: 6px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--texto-2);
+    font: inherit;
+    cursor: pointer;
+}
+
+.buscar-sugerencia:hover,
+.buscar-sugerencia:focus-visible {
+    border-color: var(--marca);
+    background: var(--salvia-50);
+    color: var(--accion);
 }
 
 .buscar-barra {
@@ -506,10 +572,6 @@
         padding-top: 16px;
     }
 
-    .buscar-logo img {
-        width: 48px;
-    }
-
     .buscar-cabecera__centro {
         margin-top: 36px;
         margin-bottom: 30px;
@@ -588,7 +650,8 @@
 
 @media (prefers-reduced-motion: reduce) {
     .buscar-tarjeta,
-    .buscar-punto {
+    .buscar-punto,
+    .buscar-ayuda__pulso--activo {
         transition: none;
         animation: none;
     }
