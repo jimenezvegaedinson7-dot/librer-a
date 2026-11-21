@@ -36,8 +36,6 @@ flowchart LR
     app_routes --> app_controller["app.controller"]
     zonaDelivery_routes["/api/zonas-delivery<br/>zonaDelivery.routes"]
     zonaDelivery_routes --> zonaDelivery_controller["zonaDelivery.controller"]
-    asistente_routes["/api/asistente<br/>asistente.routes"]
-    asistente_routes --> asistente_controller["asistente.controller"]
     comprobante_routes["/api/comprobantes<br/>comprobante.routes"]
     comprobante_routes --> comprobante_controller["comprobante.controller"]
     cliente_routes["/api/clientes<br/>cliente.routes"]
@@ -53,8 +51,6 @@ flowchart LR
     anuncio_controller --> anuncio_model[("anuncio.model")]
     anuncio_controller --> usuario_model[("usuario.model")]
     app_controller --> appVersion_service[("appVersion.service")]
-    asistente_controller --> aiAssistant_service[("aiAssistant.service")]
-    asistente_controller --> asistenteMemoria_model[("asistenteMemoria.model")]
     auth_controller --> auth_service[("auth.service")]
     auth_controller --> usuario_model[("usuario.model")]
     auth2fa_controller --> usuario_model[("usuario.model")]
@@ -85,6 +81,8 @@ flowchart LR
     libro_controller --> inventario_model[("inventario.model")]
     libro_controller --> libro_service[("libro.service")]
     libro_controller --> usuario_model[("usuario.model")]
+    libro_controller --> busquedaIA_service[("busquedaIA.service")]
+    libro_controller --> recomendacionesIA_service[("recomendacionesIA.service")]
     pago_controller --> venta_model[("venta.model")]
     pago_controller --> inventario_model[("inventario.model")]
     pago_controller --> libro_model[("libro.model")]
@@ -105,12 +103,13 @@ flowchart LR
     zonaDelivery_controller --> zonaDelivery_model[("zonaDelivery.model")]
     agencia_model -.-> T_agencias_courier[/"agencias_courier"/]
     anuncio_model -.-> T_anuncios[/"anuncios"/]
-    asistente_model -.-> T_autores[/"autores"/]
-    asistente_model -.-> T_categorias[/"categorias"/]
-    asistente_model -.-> T_inventario[/"inventario"/]
-    asistente_model -.-> T_libros[/"libros"/]
-    asistenteMemoria_model -.-> T_asistente_memoria[/"asistente_memoria"/]
     autor_model -.-> T_autores[/"autores"/]
+    busquedaIA_model -.-> T_autores[/"autores"/]
+    busquedaIA_model -.-> T_categorias[/"categorias"/]
+    busquedaIA_model -.-> T_detalle_venta[/"detalle_venta"/]
+    busquedaIA_model -.-> T_inventario[/"inventario"/]
+    busquedaIA_model -.-> T_libros[/"libros"/]
+    busquedaIA_model -.-> T_ventas[/"ventas"/]
     carrusel_model -.-> T_carrusel_anuncios[/"carrusel_anuncios"/]
     carrusel_model -.-> T_libros[/"libros"/]
     categoria_model -.-> T_categorias[/"categorias"/]
@@ -151,7 +150,6 @@ flowchart LR
     reporte_model -.-> T_ventas[/"ventas"/]
     ubicacion_model -.-> T_distritos_lima[/"distritos_lima"/]
     ubicacion_model -.-> T_provincias_lima[/"provincias_lima"/]
-    usuario_model -.-> T_asistente_memoria[/"asistente_memoria"/]
     usuario_model -.-> T_favoritos[/"favoritos"/]
     usuario_model -.-> T_usuarios[/"usuarios"/]
     usuario_model -.-> T_ventas[/"ventas"/]
@@ -167,11 +165,12 @@ flowchart LR
     venta_model -.-> T_ventas[/"ventas"/]
     zonaDelivery_model -.-> T_historial_operaciones[/"historial_operaciones"/]
     zonaDelivery_model -.-> T_zonas_delivery_pallasca[/"zonas_delivery_pallasca"/]
-    aiAssistant_service --> asistente_model
-    aiAssistant_service --> asistenteContexto_service
+    busquedaIA_service --> busquedaIA_model
     libro_service --> libro_model
     libro_service --> inventario_model
     pago_service --> venta_model
     pago_service --> usuario_model
+    recomendacionesIA_service --> libro_model
+    recomendacionesIA_service --> busquedaIA_model
     gemini --> GEMINI["Gemini API (solo backend)"]
 

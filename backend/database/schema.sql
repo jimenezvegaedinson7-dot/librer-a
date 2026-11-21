@@ -346,15 +346,6 @@ CREATE TABLE IF NOT EXISTS favoritos (
 CREATE INDEX IF NOT EXISTS idx_favoritos_usuario ON favoritos (id_usuario);
 CREATE INDEX IF NOT EXISTS idx_favoritos_libro ON favoritos (id_libro);
 
-CREATE TABLE IF NOT EXISTS asistente_memoria (
-    id_usuario  INT PRIMARY KEY,
-    datos       JSONB NOT NULL DEFAULT '{}'::jsonb,
-    actualizado TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_asistente_memoria_usuario
-        FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS historial_operaciones (
     id_historial SERIAL PRIMARY KEY,
     id_usuario INT NULL,

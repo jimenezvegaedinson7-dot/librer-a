@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
+import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import { clienteApi, checkoutSeguro, exigirSesion, guardar } from '../../../services/web/tienda/clienteApi';
 import { conExclusionCliente, enviarIntento, leerCarrito, leerIntento } from '../../../services/web/tienda/persistenciaCompra';
 import { centimos } from '../../../services/web/tienda/libroComercial';
@@ -8,7 +8,6 @@ import { soles } from '../../../services/web/formato';
 import EstadoSesion from '../../../components/web/tienda/EstadoSesion';
 import { useDatosCliente } from '../../../hooks/web/tienda/useDatosCliente';
 import { DIRECCION_RECOJO, DELIVERY_CIUDAD } from '../../../models/config/web/site';
-import { analitica } from '../../../services/web/analitica';
 
 export default function CheckoutPage() {
     const t = useTienda();
@@ -16,11 +15,6 @@ export default function CheckoutPage() {
 }
 
 function CheckoutCliente({ t }) {
-    const { key } = useLocation();
-    const contextoAnalitica = `${key}:${t.sesion?.generacion || t.usuario?.id_usuario || 'invitado'}`;
-    useEffect(() => {
-        if (t.usuario && !t.revisando && !t.errorSesion) analitica.checkout(t.lineas, contextoAnalitica);
-    }, [t.usuario, t.revisando, t.errorSesion, t.lineas, contextoAnalitica]);
     const datos = useDatosCliente(t);
     const editados = useRef(new Set());
     const { irArriba } = useOutletContext();

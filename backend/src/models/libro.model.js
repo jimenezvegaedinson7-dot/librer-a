@@ -102,7 +102,24 @@ const obtenerRelacionados = async (id) => {
     return { relacionados, mas_autor: autor.filter((l) => !usados.has(l.id_libro)).slice(0, 4), interesarte: categoria.filter((l) => !usados.has(l.id_libro)).slice(0, 4) };
 };
 
-const obtenerRecomendados = async (idUsuario) => {
+const obtenerPerfilCompras = async (idUsuario) => {
+    const [rows] = await pool.query(
+        `SELECT l.id_libro, l.titulo, CONCAT(a.nombre, ' ', a.apellido) AS autor, c.nombre AS categoria, LEAST(SUM(dv.cantidad), 10)::int AS peso
+        FROM detalle_venta dv
+        INNER JOIN ventas v ON v.id_venta = dv.id_venta
+        INNER JOIN libros l ON l.id_libro = dv.id_libro
+        INNER JOIN autores a ON a.id_autor = l.id_autor
+        INNER JOIN categorias c ON c.id_categoria = l.id_categoria
+        WHERE v.id_usuario = ? AND v.estado IN ('pagada', 'entregada') AND dv.cantidad > 0
+        GROUP BY l.id_libro, l.titulo, a.nombre, a.apellido, c.nombre
+        ORDER BY peso DESC, l.id_libro DESC
+        LIMIT 40`,
+        [idUsuario]
+    );
+    return rows;
+};
+
+const candidatosRecomendacion = async (idUsuario, limite) => {
     const [rows] = await pool.query(
         `WITH compras AS (
             SELECT dv.id_libro, l.id_autor, l.id_categoria, LEAST(SUM(dv.cantidad), 10)::int AS peso
@@ -113,23 +130,34 @@ const obtenerRecomendados = async (idUsuario) => {
             SELECT id_autor, SUM(peso) AS peso FROM compras GROUP BY id_autor
         ), afinidad_categoria AS (
             SELECT id_categoria, SUM(peso) AS peso FROM compras GROUP BY id_categoria
+        ), top AS (
+            SELECT dv.id_libro FROM detalle_venta dv INNER JOIN ventas v ON v.id_venta = dv.id_venta
+            WHERE v.estado IN ('pagada', 'entregada') GROUP BY dv.id_libro HAVING SUM(dv.cantidad) > 0
+            ORDER BY SUM(dv.cantidad) DESC, dv.id_libro LIMIT 3
         )
         SELECT base.*, ${CAMPOS_DESCUENTO} FROM (
-            SELECT l.id_libro, l.titulo, l.isbn, ${CAMPOS_BIBLIOGRAFICOS}, l.precio, l.portada, l.id_autor, l.id_categoria, l.estado, l.creado_en,
+            SELECT l.id_libro, l.titulo, l.isbn, l.descripcion, ${CAMPOS_BIBLIOGRAFICOS}, l.precio, l.portada, l.id_autor, l.id_categoria, l.estado, l.creado_en,
+                l.descuento_porcentaje, l.precio_oferta, TO_CHAR(l.descuento_hasta, 'YYYY-MM-DD') AS descuento_hasta,
                 COALESCE(i.stock, l.stock, 0) AS stock, CONCAT(a.nombre, ' ', a.apellido) AS autor, c.nombre AS categoria,
+                CASE WHEN top.id_libro IS NULL THEN 0 ELSE 1 END AS mas_vendido,
                 ${PRECIO_FINAL_SQL}, COALESCE(aa.peso, 0) * 3 + COALESCE(ac.peso, 0) * 2 AS afinidad,
                 CASE WHEN aa.peso > 0 AND ac.peso > 0 THEN 'autor_categoria' WHEN aa.peso > 0 THEN 'autor' ELSE 'categoria' END AS motivo_recomendacion
             FROM libros l INNER JOIN autores a ON a.id_autor = l.id_autor INNER JOIN categorias c ON c.id_categoria = l.id_categoria
             LEFT JOIN inventario i ON i.id_libro = l.id_libro
+            LEFT JOIN top ON top.id_libro = l.id_libro
             LEFT JOIN afinidad_autor aa ON aa.id_autor = l.id_autor LEFT JOIN afinidad_categoria ac ON ac.id_categoria = l.id_categoria
             WHERE l.estado = 1 AND COALESCE(i.stock, l.stock, 0) > 0
                 AND (COALESCE(aa.peso, 0) > 0 OR COALESCE(ac.peso, 0) > 0)
                 AND NOT EXISTS (SELECT 1 FROM compras p WHERE p.id_libro = l.id_libro)
-        ) base ORDER BY base.afinidad DESC, base.creado_en DESC NULLS LAST, base.id_libro DESC LIMIT 8`,
-        [idUsuario]
+        ) base ORDER BY base.afinidad DESC, base.mas_vendido DESC, base.creado_en DESC NULLS LAST, base.id_libro DESC LIMIT ?`,
+        [idUsuario, limite]
     );
     return rows;
 };
+
+const obtenerCandidatosIA = async (idUsuario, limite = 12) => candidatosRecomendacion(idUsuario, Math.min(Math.max(Number(limite) || 12, 1), 24));
+
+const obtenerRecomendados = async (idUsuario) => candidatosRecomendacion(idUsuario, 8);
 
 const tieneVentasRelacionadas = async (idLibro) => {
     const [rows] = await pool.query('SELECT COUNT(*) AS total FROM detalle_venta WHERE id_libro = ?', [idLibro]);
@@ -141,4 +169,4 @@ const obtenerParaCompra = async (idLibro) => {
     return rows[0];
 };
 
-module.exports = { PRECIO_FINAL_SQL, CAMPOS_DESCUENTO, obtenerTodos, obtenerPorId, obtenerRelacionados, obtenerRecomendados, crear, actualizar, eliminar, tieneVentasRelacionadas, obtenerParaCompra };
+module.exports = { PRECIO_FINAL_SQL, CAMPOS_DESCUENTO, CAMPOS_BIBLIOGRAFICOS, obtenerTodos, obtenerPorId, obtenerRelacionados, obtenerPerfilCompras, obtenerCandidatosIA, obtenerRecomendados, crear, actualizar, eliminar, tieneVentasRelacionadas, obtenerParaCompra };

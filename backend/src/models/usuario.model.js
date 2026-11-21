@@ -169,7 +169,6 @@ const eliminarCuenta = async (idUsuario, passwordAleatoriaHash) => {
         await connection.beginTransaction();
 
         await connection.query('DELETE FROM favoritos WHERE id_usuario = ?', [idUsuario]);
-        await connection.query('DELETE FROM asistente_memoria WHERE id_usuario = ?', [idUsuario]);
 
         await connection.query(`UPDATE ventas SET correo_compra = NULL, payu_payer_email = NULL WHERE id_usuario = ?`, [idUsuario]);
 

@@ -47,12 +47,6 @@ npm run test:browser -- test-browser/tienda-regresiones.spec.js
 
 Las regresiones de tienda usan la configuración principal; no necesitan una configuración ni una ruta de resultados específica de un equipo.
 
-La analítica usa una configuración separada para activar una etiqueta de prueba interceptada y un servidor en el puerto `5180`:
-
-```bash
-npx playwright test --config playwright.analytics.config.js
-```
-
 Las pruebas no forman parte del build de producción. `test-results/` y `playwright-report/` son resultados generados e ignorados por Git.
 
 ## Publicación
@@ -67,7 +61,6 @@ El despliegue utiliza `vercel.json`: configura el build, las rutas React, las re
 
 - `PRODUCT.md`: alcance y reglas del producto.
 - `DESIGN.md`: decisiones de diseño.
-- `ANALITICA.md`: medición y recomendaciones de compra.
 - `../docs/architecture/03-FRONTEND-MAP.md`: rutas y relaciones del frontend.
 
 Los mapas se regeneran desde la raíz del repositorio con `node docs/architecture/tools/actualizar-mapa.mjs`.

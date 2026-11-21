@@ -3,7 +3,7 @@
 > Generado desde el código real el 2026-11-21 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
-Total de endpoints registrados en el backend: **119**. Los routers se montan desde `src/app/rutas.js`.
+Total de endpoints registrados en el backend: **116**. Los routers se montan desde `src/app/rutas.js`.
 
 - **Auth**: `Pública` = sin JWT · `JWT` = requiere `Authorization: Bearer` · `JWT + admin` / `JWT + cliente` = además el rol indicado. Los arrays de middleware compartidos se expanden desde el router real.
 - **React / Flutter**: archivos que llaman al endpoint (directamente o a través de su servicio). `—` = ningún cliente lo usa.
@@ -28,10 +28,6 @@ Total de endpoints registrados en el backend: **119**. Los routers se montan des
 | PUT | `/api/anuncios/:id` | controllers/anuncio.controller.js#actualizarAnuncio | JWT + rol:administrador + uploadVideo(video) | views/panel/anuncios/AnunciosPage.jsx | — | JWT + admin |
 | DELETE | `/api/anuncios/:id` | controllers/anuncio.controller.js#eliminarAnuncio | JWT + rol:administrador | views/panel/anuncios/AnunciosPage.jsx | — | JWT + admin |
 | GET | `/api/app/version` | controllers/app.controller.js#obtenerVersion | — | components/web/ActualizarApp.jsx | — | Pública |
-| POST | `/api/asistente` | controllers/asistente.controller.js#conversar | limite | components/web/asistente/AsistenteTienda.jsx | — | Pública |
-| GET | `/api/asistente/memoria` | controllers/asistente.controller.js#obtenerMemoria | limiteMemoria + JWT + rol:cliente | hooks/web/asistente/useMemoriaAsistente.js | — | JWT + cliente |
-| PUT | `/api/asistente/memoria` | controllers/asistente.controller.js#guardarMemoria | limiteMemoria + JWT + rol:cliente | hooks/web/asistente/useMemoriaAsistente.js | — | JWT + cliente |
-| DELETE | `/api/asistente/memoria` | controllers/asistente.controller.js#borrarMemoria | limiteMemoria + JWT + rol:cliente | hooks/web/asistente/useMemoriaAsistente.js | — | JWT + cliente |
 | POST | `/api/auth/registro` | controllers/auth.controller.js#registrar | registroLimiter | views/web/tienda/CuentaPage.jsx | screens/registro_screen.dart | Pública |
 | POST | `/api/auth/login` | controllers/auth.controller.js#login | loginLimiter | views/panel/auth/LoginPage.jsx<br>views/web/tienda/CuentaPage.jsx | screens/login_screen.dart | Pública |
 | POST | `/api/auth/verificar-email` | controllers/auth.controller.js#verificarEmail | verificacionLimiter | views/panel/auth/VerificarEmailPage.jsx<br>views/web/tienda/CuentaPage.jsx | screens/verificacion_email_screen.dart | Pública |
@@ -75,8 +71,9 @@ Total de endpoints registrados en el backend: **119**. Los routers se montan des
 | POST | `/api/inventario` | controllers/inventario.controller.js#crearInventario | JWT + rol:administrador | components/panel/inventario/InventarioForm.jsx | — | JWT + admin |
 | PUT | `/api/inventario/libro/:id/stock` | controllers/inventario.controller.js#actualizarStock | JWT + rol:administrador | — | — | JWT + admin |
 | PUT | `/api/inventario/libro/:id` | controllers/inventario.controller.js#actualizarInventario | JWT + rol:administrador | components/panel/inventario/InventarioEditModal.jsx | — | JWT + admin |
-| GET | `/api/libros` | controllers/libro.controller.js#obtenerLibros | — | components/panel/inventario/MovimientosModal.jsx<br>components/web/asistente/AsistenteTienda.jsx<br>components/web/PublicLayout.jsx<br>components/web/tienda/TiendaProvider.jsx<br>hooks/panel/inventario/useLibros.js<br>services/panel/dashboard/dashboardService.js<br>views/panel/dashboard/DashboardPage.jsx<br>views/panel/libros/LibrosPage.jsx<br>views/web/publicas/BuscarPage.jsx | screens/carrito_screen.dart<br>screens/entrega_y_pago_screen.dart<br>screens/home_screen.dart<br>screens/libros_screen.dart | Pública |
+| GET | `/api/libros` | controllers/libro.controller.js#obtenerLibros | — | components/panel/inventario/MovimientosModal.jsx<br>components/web/PublicLayout.jsx<br>components/web/tienda/TiendaProvider.jsx<br>hooks/panel/inventario/useLibros.js<br>services/panel/dashboard/dashboardService.js<br>views/panel/dashboard/DashboardPage.jsx<br>views/panel/libros/LibrosPage.jsx<br>views/web/publicas/BuscarPage.jsx | screens/carrito_screen.dart<br>screens/entrega_y_pago_screen.dart<br>screens/home_screen.dart<br>screens/libros_screen.dart | Pública |
 | GET | `/api/libros/recomendados` | controllers/libro.controller.js#obtenerRecomendados | JWT + rol:cliente | components/web/tienda/RecomendacionesCompra.jsx | — | JWT + cliente |
+| POST | `/api/libros/busqueda-inteligente` | controllers/libro.controller.js#buscarInteligente | busquedaIALimiter | views/web/publicas/BuscarPage.jsx | — | Pública |
 | GET | `/api/libros/:id/relacionados` | controllers/libro.controller.js#obtenerRelacionados | — | views/web/tienda/LibroPage.jsx | — | Pública |
 | GET | `/api/libros/:id` | controllers/libro.controller.js#obtenerLibro | — | components/panel/libros/LibroEditModal.jsx<br>components/panel/libros/LibroForm.jsx<br>views/panel/libros/LibrosPage.jsx<br>views/web/tienda/LibroPage.jsx | screens/detalle_libro_screen.dart | Pública |
 | POST | `/api/libros` | controllers/libro.controller.js#crearLibro | JWT + rol:administrador + upload(portada) | components/panel/libros/LibroForm.jsx | — | JWT + admin |

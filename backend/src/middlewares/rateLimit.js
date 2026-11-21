@@ -15,5 +15,6 @@ const verificacionLimiter = rateLimit({ ...config, limit: 10 });
 const twoFaLimiter = rateLimit({ ...config, limit: 10 });
 const webhookLimit = rateLimit({ ...config, windowMs: 5 * 60 * 1000, limit: 60 });
 const reclamacionLimiter = rateLimit({ ...config, limit: 5 });
+const busquedaIALimiter = rateLimit({ ...config, limit: 40 });
 
-module.exports = { reclamacionLimiter, baseLimiter, loginLimiter, registroLimiter, verificacionLimiter, twoFaLimiter, webhookLimit };
+module.exports = { reclamacionLimiter, baseLimiter, loginLimiter, registroLimiter, verificacionLimiter, twoFaLimiter, webhookLimit, busquedaIALimiter };

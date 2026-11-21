@@ -102,7 +102,7 @@ export const clienteApi = {
     },
     catalogo: () => peticionCliente('/libros', { autenticada: false }),
     recomendados: (sesion) => peticionCliente('/libros/recomendados', { sesion }),
-    asistente: (datos) => peticionCliente('/asistente', { method: 'POST', body: datos, autenticada: false }),
+    buscarInteligente: (datos) => peticionCliente('/libros/busqueda-inteligente', { method: 'POST', body: datos, autenticada: false }),
     libro: (id) => peticionCliente(`/libros/${id}`, { autenticada: false }),
     relacionados: async (id, libro) => {
         try {
@@ -117,9 +117,6 @@ export const clienteApi = {
     autor: (id) => peticionCliente(`/autores/${id}`, { autenticada: false }),
     favoritos: (sesion) => peticionCliente('/favoritos', { sesion }),
 
-    memoriaAsistente: (sesion) => peticionCliente('/asistente/memoria', { sesion }),
-    guardarMemoriaAsistente: (datos, sesion) => peticionCliente('/asistente/memoria', { method: 'PUT', body: { datos }, sesion }),
-    borrarMemoriaAsistente: (sesion) => peticionCliente('/asistente/memoria', { method: 'DELETE', sesion }),
     favorito: (id, sesion) => peticionCliente(`/favoritos/${id}`, { sesion }),
     agregarFavorito: (id, sesion) => peticionCliente(`/favoritos/${id}`, { method: 'POST', sesion }),
     quitarFavorito: (id, sesion) => peticionCliente(`/favoritos/${id}`, { method: 'DELETE', sesion }),

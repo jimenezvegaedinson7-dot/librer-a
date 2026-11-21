@@ -8,7 +8,7 @@
 1. `server.js` carga `config/entorno.js`: dotenv y comprobación obligatoria de `TWO_FACTOR_ENCRYPTION_KEY` (≥ 16 caracteres).
 2. `app/iniciar.js` espera `aplicarMigraciones` y `aplicarMigracionesDatos` antes de aceptar tráfico; en test se usa el esquema preparado por el runner. Un fallo fatal en producción aborta el arranque.
 3. `app/app.js#crearApp` construye Express sin abrir puertos ni iniciar jobs: helmet → CORS → JSON (1 MiB) → baseLimiter → estáticos `/uploads` → routers → 404 JSON → error.middleware.
-4. `app/rutas.js` monta 23 routers. `routes/sistema.routes.js` conserva `GET /`, `GET /api` y `GET /api/test-db` (JWT + admin).
+4. `app/rutas.js` monta 22 routers. `routes/sistema.routes.js` conserva `GET /`, `GET /api` y `GET /api/test-db` (JWT + admin).
 5. `app/iniciar.js` abre `PORT || 3000` y después inicia la limpieza cada 5 min. Devuelve servidor y función para detener los jobs.
 6. Las migraciones base e incrementales están en `config/migraciones.js`; los backfills se registran en `migraciones_datos`.
 
@@ -31,7 +31,6 @@
 | `/api/agencias` | `routes/agencia.routes.js` |
 | `/api/anuncios` | `routes/anuncio.routes.js` |
 | `/api/app` | `routes/app.routes.js` |
-| `/api/asistente` | `routes/asistente.routes.js` |
 | `/api/auth` | `routes/auth.routes.js` |
 | `/api/autores` | `routes/autor.routes.js` |
 | `/api/categorias` | `routes/categoria.routes.js` |
@@ -142,15 +141,6 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 |---|---|---|---|---|---|
 | GET | `/api/app/version` | — | controllers/app.controller.js#obtenerVersion | `appVersion.service.js#obtenerConfiguracion` | — |
 
-### /api/asistente
-
-| Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
-|---|---|---|---|---|---|
-| POST | `/api/asistente` | limite | controllers/asistente.controller.js#conversar | `aiAssistant.service.js#responder` | autores, categorias, inventario, libros |
-| GET | `/api/asistente/memoria` | limiteMemoria + JWT + rol:cliente | controllers/asistente.controller.js#obtenerMemoria | `asistenteMemoria.model.js#obtener` | asistente_memoria |
-| PUT | `/api/asistente/memoria` | limiteMemoria + JWT + rol:cliente | controllers/asistente.controller.js#guardarMemoria | `asistenteMemoria.model.js#guardar` | asistente_memoria |
-| DELETE | `/api/asistente/memoria` | limiteMemoria + JWT + rol:cliente | controllers/asistente.controller.js#borrarMemoria | `asistenteMemoria.model.js#borrar` | asistente_memoria |
-
 ### /api/auth
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
@@ -244,7 +234,8 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
 | GET | `/api/libros` | — | controllers/libro.controller.js#obtenerLibros | `libro.model.js#obtenerTodos` | autores, categorias, detalle_venta, inventario, libros, ventas |
-| GET | `/api/libros/recomendados` | JWT + rol:cliente | controllers/libro.controller.js#obtenerRecomendados | `libro.model.js#obtenerRecomendados` | autores, categorias, detalle_venta, inventario, libros, ventas |
+| GET | `/api/libros/recomendados` | JWT + rol:cliente | controllers/libro.controller.js#obtenerRecomendados | `recomendacionesIA.service.js#recomendar` | autores, categorias, detalle_venta, inventario, libros, ventas |
+| POST | `/api/libros/busqueda-inteligente` | busquedaIALimiter | controllers/libro.controller.js#buscarInteligente | `busquedaIA.service.js#buscar` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | GET | `/api/libros/:id/relacionados` | — | controllers/libro.controller.js#obtenerRelacionados | `libro.model.js#obtenerRelacionados` | autores, categorias, inventario, libros |
 | GET | `/api/libros/:id` | — | controllers/libro.controller.js#obtenerLibro | `libro.model.js#obtenerPorId` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | POST | `/api/libros` | JWT + rol:administrador + upload(portada) | controllers/libro.controller.js#crearLibro | `autor.model.js#obtenerPorId`<br>`categoria.model.js#obtenerPorId`<br>`historial.model.js#crear`<br>`inventario.model.js#crear`<br>`inventario.model.js#obtenerPorLibro`<br>`libro.model.js#crear`<br>`libro.model.js#eliminar` | autores, categorias, historial_operaciones, inventario, libros |
@@ -258,11 +249,11 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | GET | `/api/pagos/checkout/:externalReference` | — | controllers/pago.controller.js#renderCheckoutPage | `venta.model.js#buscarPorReferenciaExterna` | ventas |
 | GET | `/api/pagos/respuesta/:externalReference` | — | controllers/pago.controller.js#renderRespuestaPage | `venta.model.js#buscarPorReferenciaExterna` | ventas |
 | GET | `/api/pagos/capacidades` | — | controllers/pago.controller.js#obtenerCapacidadesCompra | `zonaDelivery.model.js#listar` | zonas_delivery_pallasca |
-| POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `pago.service.js#aplicarEstadoPagoAVenta`<br>`venta.model.js#buscarPorReferenciaExterna` | agencias_courier, asistente_memoria, comprobantes, detalle_venta, distritos_lima, favoritos, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
+| POST | `/api/pagos/webhook` | webhookLimit + express.urlencoded + express.json | controllers/pago.controller.js#webhookPago | `pago.service.js#aplicarEstadoPagoAVenta`<br>`venta.model.js#buscarPorReferenciaExterna` | agencias_courier, comprobantes, detalle_venta, distritos_lima, favoritos, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
 | GET | `/api/pagos` | JWT + verificarPanel | controllers/pago.controller.js#listarPagosAdmin | `venta.model.js#listarPagosAdmin` | usuarios, ventas |
 | GET | `/api/pagos/resumen` | JWT + verificarPanel | inline (pago.routes.js) | `pago.model.js#listarResumen` | ventas |
-| POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `inventario.model.js#obtenerStockPorLibro`<br>`libro.model.js#obtenerParaCompra`<br>`pago.service.js#notificarOrdenCreada`<br>`venta.model.js#buscarPorIdempotencia`<br>`venta.model.js#crear`<br>`zonaDelivery.model.js#resolverDeliveryCiudad` | agencias_courier, asistente_memoria, comprobantes, detalle_venta, distritos_lima, favoritos, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas, zonas_delivery_pallasca |
-| GET | `/api/pagos/:orderId` | JWT | controllers/pago.controller.js#obtenerOrden | `pago.service.js#aplicarEstadoPagoAVenta`<br>`venta.model.js#buscarPorPayuOrderId`<br>`venta.model.js#buscarPorReferenciaExterna` | agencias_courier, asistente_memoria, comprobantes, detalle_venta, distritos_lima, favoritos, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
+| POST | `/api/pagos/crear-orden` | JWT | controllers/pago.controller.js#crearOrden | `inventario.model.js#obtenerStockPorLibro`<br>`libro.model.js#obtenerParaCompra`<br>`pago.service.js#notificarOrdenCreada`<br>`venta.model.js#buscarPorIdempotencia`<br>`venta.model.js#crear`<br>`zonaDelivery.model.js#resolverDeliveryCiudad` | agencias_courier, comprobantes, detalle_venta, distritos_lima, favoritos, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas, zonas_delivery_pallasca |
+| GET | `/api/pagos/:orderId` | JWT | controllers/pago.controller.js#obtenerOrden | `pago.service.js#aplicarEstadoPagoAVenta`<br>`venta.model.js#buscarPorPayuOrderId`<br>`venta.model.js#buscarPorReferenciaExterna` | agencias_courier, comprobantes, detalle_venta, distritos_lima, favoritos, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
 
 ### /api/pedidos
 
@@ -324,7 +315,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | PUT | `/api/usuarios/perfil` | JWT | controllers/usuario.controller.js#actualizarPerfil | `usuario.model.js#actualizarPerfil`<br>`usuario.model.js#buscarPorId`<br>`usuario.model.js#existeEmail`<br>`usuario.model.js#obtenerTwoFactorEnabled` | usuarios |
 | PUT | `/api/usuarios/foto` | JWT + uploadPerfil(foto) | controllers/usuario.controller.js#subirFotoPerfil | `usuario.model.js#actualizarFotoPerfil`<br>`usuario.model.js#buscarPorId`<br>`usuario.model.js#obtenerTwoFactorEnabled` | usuarios |
 | PUT | `/api/usuarios/password` | JWT | controllers/usuario.controller.js#cambiarPassword | `auth.service.js#validarPassword`<br>`usuario.model.js#actualizarPassword`<br>`usuario.model.js#buscarPorIdConPassword` | usuarios |
-| DELETE | `/api/usuarios/cuenta` | JWT | controllers/usuario.controller.js#eliminarMiCuenta | `historial.model.js#crear`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#eliminarCuenta` | asistente_memoria, favoritos, historial_operaciones, usuarios, ventas |
+| DELETE | `/api/usuarios/cuenta` | JWT | controllers/usuario.controller.js#eliminarMiCuenta | `historial.model.js#crear`<br>`usuario.model.js#buscarPorIdConPassword`<br>`usuario.model.js#eliminarCuenta` | favoritos, historial_operaciones, usuarios, ventas |
 | PATCH | `/api/usuarios/:id` | JWT + rol:administrador | controllers/usuario.controller.js#adminUpdateUsuario | `historial.model.js#crear`<br>`usuario.model.js#actualizarEstadoRol`<br>`usuario.model.js#buscarPorId` | historial_operaciones, usuarios |
 
 ### /api/ventas
@@ -355,9 +346,8 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 |---|---|
 | `models/agencia.model.js` | agencias_courier |
 | `models/anuncio.model.js` | anuncios |
-| `models/asistente.model.js` | autores, categorias, inventario, libros |
-| `models/asistenteMemoria.model.js` | asistente_memoria |
 | `models/autor.model.js` | autores |
+| `models/busquedaIA.model.js` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | `models/carrusel.model.js` | carrusel_anuncios, libros |
 | `models/categoria.model.js` | categorias |
 | `models/cliente.model.js` | usuarios, ventas |
@@ -372,13 +362,13 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/reporte.model.js` | autores, categorias, comprobantes, detalle_venta, inventario, libros, usuarios, ventas |
 | `models/sistema.model.js` | — |
 | `models/ubicacion.model.js` | distritos_lima, provincias_lima |
-| `models/usuario.model.js` | asistente_memoria, favoritos, usuarios, ventas |
+| `models/usuario.model.js` | favoritos, usuarios, ventas |
 | `models/venta.model.js` | agencias_courier, comprobantes, detalle_venta, distritos_lima, historial_operaciones, inventario, libros, provincias_lima, usuarios, ventas |
 | `models/zonaDelivery.model.js` | historial_operaciones, zonas_delivery_pallasca |
 
-Tablas consultadas por los modelos (20): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. Este subconjunto no es el total del esquema.
+Tablas consultadas por los modelos (19): `agencias_courier`, `anuncios`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. Este subconjunto no es el total del esquema.
 
-Esquema canónico: **21 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **22 tablas**, incluidas las auxiliares de migración. Hay 45 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
+Esquema canónico: **20 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **21 tablas**, incluidas las auxiliares de migración. Hay 45 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
 
 ## Integraciones externas
 

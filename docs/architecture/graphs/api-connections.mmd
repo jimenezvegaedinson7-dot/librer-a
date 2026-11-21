@@ -3,7 +3,6 @@ flowchart LR
     subgraph React
         R__api_anuncios["anuncios"]
         R__api_app["app"]
-        R__api_asistente["asistente"]
         R__api_auth["auth"]
         R__api_autores["autores"]
         R__api_categorias["categorias"]
@@ -34,8 +33,6 @@ flowchart LR
     R__api_anuncios --> E__api_anuncios
     E__api_app(("/api/app")) --> C_app_controller["app.controller"]
     R__api_app --> E__api_app
-    E__api_asistente(("/api/asistente")) --> C_asistente_controller["asistente.controller"]
-    R__api_asistente --> E__api_asistente
     E__api_auth(("/api/auth")) --> C_auth_controller["auth.controller"] & C_auth2fa_controller["auth2fa.controller"]
     R__api_auth --> E__api_auth
     F__api_auth --> E__api_auth
@@ -79,7 +76,6 @@ flowchart LR
     C_anuncio_controller --> DB
     C_carrusel_controller --> DB
     C_app_controller --> DB
-    C_asistente_controller --> DB
     C_auth_controller --> DB
     C_auth2fa_controller --> DB
     C_autor_controller --> DB

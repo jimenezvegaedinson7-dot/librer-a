@@ -80,7 +80,6 @@
 .sitio .menu a[data-destacado] { color: var(--marino-900); font-weight: 600; }
 .sitio .tarjeta-libro:hover .libro__titulo { color: var(--marino-700); }
 .sitio .oscuro .enlace-mas:hover { color: var(--blanco); text-decoration: underline; text-underline-offset: 3px; }
-.sitio .asistente-tienda .asistente-abrir svg { color: var(--blanco); }
 .sitio .barra-movil__enlace.active { background: #eef1f5; }
 .sitio .barra-movil__enlace.active svg { color: var(--marino-900); }
 .sitio .oscuro .boton:not(.boton--blanco):not(.boton--linea) { background: var(--blanco); border-color: var(--blanco); color: var(--marino-900); }
@@ -107,110 +106,6 @@
 .sitio .descargar-portada__telefono { min-height: 0; }
 @media (max-width: 1023px) {
     .sitio .app-portada__texto { order: -1; }
-}
-@keyframes asistente-leer {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.85; }
-}
-.sitio .asistente-tienda .asistente-abrir {
-    width: 62px; height: 62px; min-height: 0; padding: 0; justify-content: center; border-radius: 50%; border: 0; background: transparent; box-shadow: none;
-}
-.sitio .asistente-tienda .asistente-abrir:hover { background: transparent; transform: translateY(-2px) scale(1.04); }
-.sitio .asistente-tienda .asistente-abrir__icono { position: relative; display: block; width: 62px; height: 62px; margin: 0; flex: none; }
-.sitio .icono-asistente {
-    position: relative; display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #f4eee7;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.92), 0 10px 24px -10px rgba(88, 70, 52, 0.28);
-    transition: transform 0.3s ease;
-}
-.sitio .icono-asistente:hover { transform: rotate(-2deg); }
-.sitio .asistente-tienda .icono-asistente__glifo { display: block; width: 100%; height: 100%; pointer-events: none; }
-.sitio .icono-asistente__cabeza {
-    transform-box: fill-box; transform-origin: 50% 100%; animation: asistente-respirar 5.6s ease-in-out infinite;
-}
-.sitio .icono-asistente__parpado {
-    transform-box: fill-box; transform-origin: center; animation: asistente-parpadear 6.8s ease-in-out infinite;
-}
-.sitio .icono-asistente__saludo,
-.sitio .icono-asistente__antebrazo,
-.sitio .icono-asistente__mano { transform-box: view-box; transform-origin: 0 0; }
-.sitio :is(.asistente-abrir, .asistente-intro__vivo, .asistente-cabecera .asistente-avatar) .icono-asistente__saludo {
-    animation: asistente-saludar-auto 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-.sitio :is(.asistente-abrir, .asistente-intro__vivo, .asistente-cabecera .asistente-avatar) .icono-asistente__antebrazo {
-    animation: asistente-doblar-codo 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-.sitio :is(.asistente-abrir, .asistente-intro__vivo, .asistente-cabecera .asistente-avatar) .icono-asistente__mano {
-    animation: asistente-saludar-muneca 12s ease-in-out infinite;
-}
-@keyframes asistente-saludar-auto {
-    0%, 70%, 97%, 100% { transform: rotate(0deg); }
-    78%, 89% { transform: rotate(-45deg); }
-}
-@keyframes asistente-doblar-codo {
-    0%, 71%, 96%, 100% { transform: rotate(0deg); }
-    79%, 88% { transform: rotate(-135deg); }
-}
-@keyframes asistente-saludar-muneca {
-    0%, 79%, 90%, 100% { transform: rotate(0deg); }
-    81% { transform: rotate(-9deg); }
-    83.5% { transform: rotate(8deg); }
-    86% { transform: rotate(-7deg); }
-    88% { transform: rotate(2deg); }
-}
-.sitio .icono-asistente__boca--seria { opacity: 1; transition: opacity 0.18s ease; }
-.sitio .icono-asistente__boca--sonrisa { opacity: 0; transition: opacity 0.18s ease; }
-.sitio .icono-asistente:hover .icono-asistente__boca--seria { opacity: 0; }
-.sitio .icono-asistente:hover .icono-asistente__boca--sonrisa { opacity: 1; }
-@keyframes asistente-respirar {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(0.45px) scale(1.004); }
-}
-@keyframes asistente-parpadear {
-    0%, 92%, 100% { transform: scaleY(1); }
-    94.5% { transform: scaleY(0.08); }
-    97% { transform: scaleY(1); }
-}
-.sitio .icono-asistente--pensando .icono-asistente__glifo { animation: asistente-leer 1.2s ease-in-out infinite; }
-.sitio .asistente-avatar { display: block; width: 48px; height: 48px; flex: none; border-radius: 8px; background: transparent; }
-.sitio .asistente-cabecera .icono-asistente { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18); }
-.sitio .asistente-cabecera { justify-content: flex-start; }
-.sitio .asistente-cabecera__texto { flex: 1; min-width: 0; }
-.sitio .asistente-tienda .asistente-pensando .asistente-avatar--pensando { width: 36px; height: 36px; }
-.sitio .asistente-pensando { display: flex; align-items: flex-end; gap: 8px; max-width: 100%; padding: 6px 0; }
-.sitio .asistente-pensando__burbuja {
-    display: inline-flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 14px; border: 1px solid var(--chat-linea); border-radius: 16px 16px 16px 4px; background: var(--chat-papel);
-    font-size: 0.875rem; color: var(--chat-secundario);
-}
-.sitio .asistente-pensando__frase { animation: ia-frase 0.35s ease-out; }
-@keyframes ia-frase {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: none; }
-}
-.sitio .asistente-pensando__puntos { display: inline-flex; gap: 3px; }
-.sitio .asistente-pensando__puntos i { width: 5px; height: 5px; border-radius: 50%; background: var(--chat-acento); animation: ia-punto 1.2s ease-in-out infinite; }
-.sitio .asistente-pensando__puntos i:nth-child(2) { animation-delay: 0.15s; }
-.sitio .asistente-pensando__puntos i:nth-child(3) { animation-delay: 0.3s; }
-@keyframes ia-punto {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
-    30% { transform: translateY(-4px); opacity: 1; }
-}
-.sitio .asistente-cursor {
-    display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -0.15em; background: currentColor; animation: ia-cursor 0.8s steps(2) infinite;
-}
-@keyframes ia-cursor {
-    to { opacity: 0; }
-}
-.sitio .asistente-extras { animation: ia-frase 0.35s ease-out; }
-@media (prefers-reduced-motion: reduce) {
-    .sitio .asistente-tienda .asistente-abrir__icono::after, .sitio .asistente-pensando__frase, .sitio .asistente-pensando__puntos i,     .sitio .asistente-cursor, .sitio .asistente-extras, .sitio .icono-asistente--pensando .icono-asistente__glifo,
-    .sitio .icono-asistente__cabeza, .sitio .icono-asistente__parpado,
-    .sitio :is(.asistente-abrir, .asistente-intro__vivo, .asistente-cabecera .asistente-avatar)
-        :is(.icono-asistente__saludo, .icono-asistente__antebrazo, .icono-asistente__mano) { animation: none; }
-    .sitio .icono-asistente, .sitio .icono-asistente__boca { transition: none; }
-}
-@media (max-width: 480px) {
-    .sitio .asistente-tienda .asistente-abrir { width: 58px; height: 58px; }
-    .sitio .asistente-tienda .asistente-abrir__icono { width: 58px; height: 58px; }
 }
 .sitio .compra-registro .compra-registro__libros li { align-items: center; }
 .sitio .compra-registro__portada { flex: none; width: 46px; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 6px rgba(13, 41, 64, 0.18); }

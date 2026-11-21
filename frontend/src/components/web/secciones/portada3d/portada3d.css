@@ -10,7 +10,7 @@
     --p3-acento: #00788a;
     --p3-acento-fuerte: #005a66;
     position: relative;
-    background: linear-gradient(rgb(244 238 231 / .62), rgb(244 238 231 / .62)), url('../../asistente/biblioteca-pastel.svg') center / clamp(280px, 32vw, 440px) repeat, var(--p3-papel);
+    background: linear-gradient(rgb(244 238 231 / .62), rgb(244 238 231 / .62)), url('../../../../assets/compartido/biblioteca-pastel.svg') center / clamp(280px, 32vw, 440px) repeat, var(--p3-papel);
     color: var(--p3-tinta-papel);
 }
 .sitio .portada3d__orbite {

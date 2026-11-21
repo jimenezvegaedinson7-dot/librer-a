@@ -15,7 +15,6 @@ import PilaCarrito from './tienda/PilaCarrito';
 import '../../styles/web/tienda.css';
 import '../../styles/web/formal-base.css';
 import '../../styles/web/formal-compra.css';
-import '../../styles/web/formal-asistente.css';
 import '../../styles/web/formal-cuenta.css';
 import '../../styles/web/formal-favoritos.css';
 import '../../styles/web/formal-catalogo.css';
@@ -27,8 +26,6 @@ import '../../styles/web/responsive-movil.css';
 import '../../styles/web/limpia.css';
 import '../../styles/web/botones-vortex.css';
 import '../../styles/web/secciones-casa.css';
-import AsistenteTienda from './asistente/AsistenteTienda';
-import { analitica } from '../../services/web/analitica';
 
 function metadatos(ruta) {
     const pagina = PAGINAS[ruta] || (ruta.startsWith('/libro/') ? PAGINAS['/libro'] : PAGINAS['/']);
@@ -41,7 +38,7 @@ export default function PublicLayout() {
     const reducido = useMovimientoReducido();
     const pagina = useRef(null);
     const rutaPrevia = useRef(null);
-    const { pathname, hash, key } = useLocation();
+    const { pathname, hash } = useLocation();
 
     const catalogo = useCatalogo(null, !pathname.startsWith('/libro/'));
     const legal = useEmpresa();
@@ -60,11 +57,6 @@ export default function PublicLayout() {
             window.removeEventListener('load', volverAlInicio);
         };
     }, []);
-
-    useEffect(() => {
-        const pagina = PAGINAS[pathname] || (pathname.startsWith('/libro/') ? PAGINAS['/libro'] : PAGINAS['/']);
-        analitica.pagina(pagina.titulo, `${key}:${pathname}`);
-    }, [key, pathname]);
 
     useEffect(() => {
         metadatos(pathname);
@@ -145,7 +137,6 @@ export default function PublicLayout() {
                     <PublicFooter legal={legal} />
                     <BarraMovil />
                     <PilaCarrito />
-                    <AsistenteTienda legal={legal} />
                 </div>
             </TiendaProvider>
         </MotionConfig>

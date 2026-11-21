@@ -20,7 +20,6 @@ const clienteRoutes = require('../routes/cliente.routes');
 const appRoutes = require('../routes/app.routes');
 const reclamacionRoutes = require('../routes/reclamacion.routes');
 const anuncioRoutes = require('../routes/anuncio.routes');
-const asistenteRoutes = require('../routes/asistente.routes');
 const verificarToken = require('../middlewares/auth.middleware');
 
 function montarRutas(app) {
@@ -44,7 +43,6 @@ function montarRutas(app) {
     app.use('/api/empresa', empresaRoutes);
     app.use('/api/app', appRoutes);
     app.use('/api/zonas-delivery', zonaDeliveryRoutes);
-    app.use('/api/asistente', asistenteRoutes);
     app.use('/api/comprobantes', comprobanteRoutes);
     app.use('/api/clientes', clienteRoutes);
     app.use('/api/reclamaciones', reclamacionRoutes);

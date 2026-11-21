@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { clienteApi } from '../../../services/web/tienda/clienteApi';
 import { libroComercial } from '../../../services/web/tienda/libroComercial';
 import { PrecioOferta } from '../../../components/web/PrecioOferta';
@@ -13,7 +13,6 @@ import { FavoritoLibro, CompartirLibro } from '../../../components/web/tienda/Ac
 import { LibrosRelacionados, SeccionLibros } from '../../../components/web/tienda/DescubrimientosLibro';
 import useSeoLibro from '../../../hooks/web/tienda/useSeoLibro';
 import { leerLibroPublico } from '../../../services/web/cachePublica';
-import { analitica } from '../../../services/web/analitica';
 import '../../../components/web/tienda/ficha-libro.css';
 
 function debeMostrarDescripcion(valor) {
@@ -140,7 +139,6 @@ function CargandoFicha() {
 
 export default function LibroPage() {
     const { id } = useParams();
-    const { key } = useLocation();
     const [version, setVersion] = useState(0);
     const [versionRelacionados, setVersionRelacionados] = useState(0);
     const [recomendaciones, setRecomendaciones] = useState({ id: null, libro: null, version: -1, data: null, error: false });
@@ -186,9 +184,6 @@ export default function LibroPage() {
         };
     }, [id, l, versionRelacionados]);
     const idAutor = l?.idAutor;
-    useEffect(() => {
-        if (l) analitica.libro(l, key);
-    }, [l, key]);
     useEffect(() => {
         if (!idAutor) return undefined;
         let activo = true;

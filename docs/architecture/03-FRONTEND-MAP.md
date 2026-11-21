@@ -47,7 +47,6 @@
 
 | Integración detectada | Transporte | Archivo | Variables de configuración |
 |---|---|---|---|
-| Google Analytics 4 | gtag.js | `services/web/analitica.js` | `VITE_GA4_DEBUG`, `VITE_GA4_ID` |
 
 ## Caché y prioridad de carga pública
 
@@ -127,7 +126,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/panel/ventas/ReembolsoModal.jsx` | `POST /api/ventas/:param/reembolso` |
 | `components/web/ActualizarApp.jsx` | `GET /api/app/version` |
 | `components/web/PublicLayout.jsx` | `GET /api/empresa`<br>`GET /api/libros` |
-| `components/web/asistente/AsistenteTienda.jsx` | `GET /api/libros`<br>`POST /api/asistente` |
 | `components/web/secciones/VideoSection.jsx` | `GET /api/anuncios` |
 | `components/web/tienda/AccionesLibro.jsx` | `DELETE /api/favoritos/:param`<br>`GET /api/favoritos/:param`<br>`POST /api/favoritos/:param` |
 | `components/web/tienda/PerfilCliente.jsx` | `PUT /api/usuarios/foto`<br>`PUT /api/usuarios/perfil` |
@@ -135,7 +133,6 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `components/web/tienda/TiendaProvider.jsx` | `GET /api/libros`<br>`GET /api/usuarios/perfil`<br>`GET /api/ventas/:param` |
 | `hooks/panel/inventario/useLibros.js` | `GET /api/libros` |
 | `hooks/panel/libros/useCatalogo.js` | `GET /api/autores`<br>`GET /api/categorias` |
-| `hooks/web/asistente/useMemoriaAsistente.js` | `DELETE /api/asistente/memoria`<br>`GET /api/asistente/memoria`<br>`PUT /api/asistente/memoria` |
 | `hooks/web/tienda/useDatosCliente.js` | `GET /api/ventas/mis-ventas` |
 | `services/panel/dashboard/dashboardService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/libros`<br>`GET /api/reportes/indicadores-ventas`<br>`GET /api/reportes/libros-mas-vendidos`<br>`GET /api/reportes/resumen`<br>`GET /api/reportes/ventas-por-dia`<br>`GET /api/reportes/ventas-por-estado`<br>`GET /api/reportes/ventas-por-mes` |
 | `services/panel/notificaciones/notificacionesService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/pagos` |
@@ -155,7 +152,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `views/panel/tarifas/TarifasEnvioPage.jsx` | `GET /api/zonas-delivery/todos`<br>`PUT /api/zonas-delivery/:param` |
 | `views/panel/usuarios/UsuariosPage.jsx` | `GET /api/usuarios`<br>`PATCH /api/usuarios/:param` |
 | `views/panel/ventas/VentasPage.jsx` | `GET /api/ventas`<br>`GET /api/ventas/:param` |
-| `views/web/publicas/BuscarPage.jsx` | `GET /api/libros` |
+| `views/web/publicas/BuscarPage.jsx` | `GET /api/libros`<br>`POST /api/libros/busqueda-inteligente` |
 | `views/web/publicas/LibroReclamacionesPage.jsx` | `GET /api/empresa`<br>`POST /api/reclamaciones` |
 | `views/web/tienda/CheckoutPage.jsx` | `GET /api/pagos/capacidades`<br>`GET /api/ventas/:param`<br>`GET /api/zonas-delivery` |
 | `views/web/tienda/CuentaPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reenviar-codigo`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/registro`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-email`<br>`POST /api/auth/verificar-reseteo` |
@@ -263,14 +260,11 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `services/web/tienda/clienteApi.js` | `subirFoto` | `PUT /api/usuarios/foto` |
 | `services/web/tienda/clienteApi.js` | `catalogo` | `GET /api/libros` |
 | `services/web/tienda/clienteApi.js` | `recomendados` | `GET /api/libros/recomendados` |
-| `services/web/tienda/clienteApi.js` | `asistente` | `POST /api/asistente` |
+| `services/web/tienda/clienteApi.js` | `buscarInteligente` | `POST /api/libros/busqueda-inteligente` |
 | `services/web/tienda/clienteApi.js` | `libro` | `GET /api/libros/:param` |
 | `services/web/tienda/clienteApi.js` | `relacionados` | `GET /api/libros/:param/relacionados` |
 | `services/web/tienda/clienteApi.js` | `autor` | `GET /api/autores/:param` |
 | `services/web/tienda/clienteApi.js` | `favoritos` | `GET /api/favoritos` |
-| `services/web/tienda/clienteApi.js` | `memoriaAsistente` | `GET /api/asistente/memoria` |
-| `services/web/tienda/clienteApi.js` | `guardarMemoriaAsistente` | `PUT /api/asistente/memoria` |
-| `services/web/tienda/clienteApi.js` | `borrarMemoriaAsistente` | `DELETE /api/asistente/memoria` |
 | `services/web/tienda/clienteApi.js` | `favorito` | `GET /api/favoritos/:param` |
 | `services/web/tienda/clienteApi.js` | `agregarFavorito` | `POST /api/favoritos/:param` |
 | `services/web/tienda/clienteApi.js` | `quitarFavorito` | `DELETE /api/favoritos/:param` |

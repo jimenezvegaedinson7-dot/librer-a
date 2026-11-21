@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { FaArrowLeft, FaArrowRight, FaMagnifyingGlass, FaXmark } from 'react-icons/fa6';
 import logo from '../../../assets/compartido/logo-f-verde-96.webp';
-import { analitica } from '../../../services/web/analitica';
+import { clienteApi } from '../../../services/web/tienda/clienteApi';
+import { libroComercial } from '../../../services/web/tienda/libroComercial';
 import { useCatalogo } from '../../../hooks/web/useApiPublica';
 import { soles } from '../../../services/web/formato';
 import PortadaLibro from '../../../components/web/tienda/PortadaLibro';
@@ -124,6 +125,30 @@ export default function BuscarPage() {
     const tipo = CAMPOS_POR_TIPO[tipoParam] || esCategoria(tipoParam) ? tipoParam : 'todos';
     const categoriaElegida = nombreCategoria(tipo);
     const { cargando, error, libros } = useCatalogo();
+    const claveIA = `${q}|${tipo}`;
+    const [inteligente, setInteligente] = useState({ clave: '', libros: [], origen: 'catalogo', listo: false });
+
+    useEffect(() => {
+        if (!q && !categoriaElegida) return undefined;
+        let activo = true;
+        clienteApi
+            .buscarInteligente({ consulta: q || categoriaElegida, tipo: esCategoria(tipo) ? 'categoria' : tipo, categoria: categoriaElegida })
+            .then((json) => {
+                if (!activo) return;
+                setInteligente({
+                    clave: claveIA,
+                    libros: (Array.isArray(json.data) ? json.data : []).map(libroComercial),
+                    origen: json.origen || 'catalogo',
+                    listo: true
+                });
+            })
+            .catch(() => {
+                if (activo) setInteligente({ clave: claveIA, libros: [], origen: 'catalogo', listo: true });
+            });
+        return () => {
+            activo = false;
+        };
+    }, [q, tipo, categoriaElegida, claveIA]);
 
     useEffect(() => {
         const titulo = q ? `Resultados para «${q}» · MATIDANA` : 'Buscar libros · MATIDANA';
@@ -133,7 +158,6 @@ export default function BuscarPage() {
             'Busca y descubre libros por título, autor, género o ISBN en MATIDANA Libros y Cultura.'
         );
         document.querySelector('link[rel="canonical"]')?.setAttribute('href', `${SITIO.url}/buscar`);
-        analitica.pagina('Buscar', 'buscar');
     }, [q]);
 
     const categorias = useMemo(() => {
@@ -153,7 +177,7 @@ export default function BuscarPage() {
             .sort((a, b) => b.total - a.total || a.categoria.localeCompare(b.categoria, 'es'));
     }, [libros]);
 
-    const resultados = useMemo(() => {
+    const resultadosLocales = useMemo(() => {
         const busqueda = normalizar(q);
         const campo = esCategoria(tipo) ? 'categoria' : tipo;
         const campos = CAMPOS_POR_TIPO[campo] || CAMPOS_POR_TIPO.todos;
@@ -169,6 +193,9 @@ export default function BuscarPage() {
             })
         );
     }, [libros, q, tipo, categoriaElegida]);
+
+    const resultadosIA = inteligente.clave === claveIA && inteligente.listo ? inteligente.libros : [];
+    const resultados = resultadosIA.length ? resultadosIA : resultadosLocales;
 
     const enviar = (e) => {
         e.preventDefault();

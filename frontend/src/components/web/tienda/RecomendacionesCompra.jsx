@@ -1,16 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { clienteApi, firmaSesion } from '../../../services/web/tienda/clienteApi';
 import { libroComercial } from '../../../services/web/tienda/libroComercial';
 import { TarjetaLibro } from '../../../views/web/publicas/CatalogoPage';
-import { analitica } from '../../../services/web/analitica';
 import './recomendaciones-compra.css';
 
 const motivos = { autor_categoria: 'Coincide en autor y categoría con tus compras', autor: 'De un autor de tus compras', categoria: 'De una categoría de tus compras' };
 
 export default function RecomendacionesCompra({ compras, sesion }) {
-    const { key } = useLocation();
-    const seccion = useRef(null);
     const [revision, setRevision] = useState(0);
     const [estado, setEstado] = useState({ clave: '', libros: [], error: '' });
     const pagadas = compras.filter((v) => ['pagada', 'entregada'].includes(v.estado));
@@ -41,28 +38,9 @@ export default function RecomendacionesCompra({ compras, sesion }) {
             activo = false;
         };
     }, [clave, historial, sesion]);
-    useEffect(() => {
-        if (!vigentes || !libros.length || !seccion.current) return undefined;
-        const registrar = () => analitica.lista(libros, `${key}:${libros.map((l) => l.id).join(',')}`);
-        if (!('IntersectionObserver' in window)) {
-            registrar();
-            return undefined;
-        }
-        const observador = new IntersectionObserver(
-            (entradas) => {
-                if (entradas.some((e) => e.isIntersecting)) {
-                    registrar();
-                    observador.disconnect();
-                }
-            },
-            { threshold: 0.1 }
-        );
-        observador.observe(seccion.current);
-        return () => observador.disconnect();
-    }, [vigentes, libros, key]);
     if (historial === '[]') return null;
     return (
-        <section className="recomendaciones-compra" ref={seccion} aria-labelledby="recomendaciones-compra-titulo" aria-busy={!vigentes}>
+        <section className="recomendaciones-compra" aria-labelledby="recomendaciones-compra-titulo" aria-busy={!vigentes}>
             <h2 id="recomendaciones-compra-titulo">Otros libros que podrían gustarte</h2>
             <p className="recomendaciones-compra__explicacion">Elegidos por los autores y categorías de tus compras pagadas.</p>
             {!vigentes ? (
@@ -83,7 +61,6 @@ export default function RecomendacionesCompra({ compras, sesion }) {
                             indice={indice}
                             nivelTitulo="h3"
                             nota={libro.motivoRecomendacion}
-                            onSeleccion={() => analitica.seleccionar(libro)}
                         />
                     ))}
                 </ul>

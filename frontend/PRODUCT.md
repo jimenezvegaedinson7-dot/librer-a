@@ -35,7 +35,7 @@ Registro con verificación por correo, login y 2FA, recuperación de contraseña
 
 La información de empresa procede de `GET /api/empresa`. Los enlaces de contacto se configuran en `src/models/config/web/site.js`; los enlaces no configurados se omiten.
 
-El asistente de tienda utiliza información del catálogo y datos públicos para orientar al cliente hacia libros, carrito y compras.
+La búsqueda y las recomendaciones usan IA de Gemini en el backend para interpretar preferencias e intención de compra, siempre sobre libros reales del catálogo; la clave de Gemini nunca llega al navegador.
 
 ## Identidad y presentación
 
@@ -51,5 +51,4 @@ Android se distribuye mediante APK en GitHub Releases. La versión y el enlace s
 ## Documentación técnica
 
 - `README.md`: desarrollo, estructura y comprobaciones.
-- `ANALITICA.md`: medición y recomendaciones.
 - `../docs/architecture/05-API-MAP.md`: endpoints y permisos.

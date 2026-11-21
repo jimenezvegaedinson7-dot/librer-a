@@ -11,6 +11,8 @@ const { validarId, esNumeroNoNegativo, esEstadoValido, esTextoValido } = require
 const { validarDescuentos } = require('../utils/descuentos');
 const { conPortadaCatalogo } = require('../utils/portadasCatalogo');
 const { eliminarImagen, publicIdDesdeUrl } = require('../integrations/cloudinary');
+const busquedaIA = require('../services/busquedaIA.service');
+const recomendacionesIA = require('../services/recomendacionesIA.service');
 
 const registrarHistorial = async ({ id_usuario, tipo_operacion, modulo, descripcion }) => {
     try {
@@ -451,17 +453,33 @@ const obtenerRelacionados = async (req, res) => {
     }
 };
 
+const buscarInteligente = async (req, res) => {
+    res.set('Cache-Control', 'private, no-store');
+    const consulta = String(req.body?.consulta ?? '').trim();
+    if (!consulta || consulta.length > 200) return res.status(400).json({ success: false, mensaje: 'Escribe una búsqueda de hasta 200 caracteres.' });
+    const tipos = ['todos', 'titulo', 'autor', 'categoria', 'isbn'];
+    const tipo = tipos.includes(req.body?.tipo) ? req.body.tipo : 'todos';
+    const categoria = String(req.body?.categoria ?? '').trim().slice(0, 80);
+    try {
+        const { libros, origen } = await busquedaIA.buscar({ consulta, tipo, categoria, limite: 12 });
+        return res.json({ success: true, data: libros.map(conPortadaCatalogo), origen });
+    } catch (error) {
+        console.error('Error en búsqueda inteligente:', error.message);
+        return res.status(500).json({ success: false, mensaje: 'No se pudo realizar la búsqueda inteligente.' });
+    }
+};
+
 const obtenerRecomendados = async (req, res) => {
     res.set('Cache-Control', 'private, no-store');
     const id = validarId(req.usuario?.id_usuario);
     if (!id) return res.status(401).json({ success: false, mensaje: 'Inicia sesión para consultar tus recomendaciones.' });
     try {
-        const libros = await libroModel.obtenerRecomendados(id);
-        return res.json({ success: true, data: libros.map(conPortadaCatalogo) });
+        const { libros, origen } = await recomendacionesIA.recomendar(id);
+        return res.json({ success: true, data: libros.map(conPortadaCatalogo), origen });
     } catch (error) {
         console.error('Error al obtener recomendaciones de compras:', error.message);
         return res.status(500).json({ success: false, mensaje: 'No se pudieron cargar las recomendaciones de tus compras.' });
     }
 };
 
-module.exports = { obtenerLibros, obtenerLibro, obtenerRelacionados, obtenerRecomendados, crearLibro, actualizarLibro, eliminarLibro, normalizarMetadatosBibliograficos };
+module.exports = { obtenerLibros, obtenerLibro, obtenerRelacionados, buscarInteligente, obtenerRecomendados, crearLibro, actualizarLibro, eliminarLibro, normalizarMetadatosBibliograficos };

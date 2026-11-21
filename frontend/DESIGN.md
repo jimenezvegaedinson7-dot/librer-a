@@ -52,14 +52,6 @@ Las tarjetas muestran disponibilidad real, precio final y promociones vigentes. 
 
 `PerfilCliente.jsx` presenta `Mi cuenta` como una página simple, sin dashboard ni personalización: barra lateral izquierda de 260-280 px sobre fondo `#f7f7f7` y área de contenido blanca. La barra muestra solo el avatar con cámara y el botón `Actualizar foto de perfil`; no repite el título ni el estado verificado. Los grupos `Mis actividades`, `Información de cuenta` y `Otras opciones` aparecen plegados al entrar y se abren con `+`/`−`; sus ítems son enlaces de texto sin estado activo, sin transiciones ni cambios de fondo, y `Salir` queda al pie separado por una línea. El contenido muestra exclusivamente `Mis datos` con la información real de la sesión y se edita desde el enlace lateral `Editar datos personales`, sin botones duplicados arriba. La paleta se limita a blanco, gris claro y texto carbón, con verde `#004d43` solo en verification y focos; no hay acentos dorados, magenta ni tarjetas de acceso. El input de archivo permanece oculto y la foto se puede ampliar en un modal. En móvil el menú se pliega tras un botón de menú de icono solo con nombre accesible `Menú`, mantiene objetivos táctiles de 44 px y no genera desplazamiento horizontal.
 
-## Asistente de tienda
-
-El chat utiliza una paleta propia: nogal `#30251f` en cabecera y envío, cacao `#584235` en mensajes del cliente, marfil `#fffdf8` en respuestas y acento dorado `#a78655`. La textura de biblioteca se mezcla con el fondo cálido para evitar dominantes celestes.
-
-El avatar del asistente acompaña cada respuesta a la izquierda, incluido el texto en escritura y el estado de consulta. Mide 36 px, reserva su espacio junto a la burbuja y permanece visible mientras se recorre una respuesta larga. La foto del cliente conserva su posición a la derecha con el mismo comportamiento; si no está disponible se muestran sus iniciales. Los retratos dentro de la conversación no registran seguimiento global del puntero.
-
-Las acciones de los libros recomendados son compactas: «Agregar» y «Ver detalle» usan botones de 30 px de altura, tipografía reducida y el borde cálido del chat para no dominar la respuesta.
-
 ## Panel administrativo
 
 El panel usa el layout y los componentes de `src/components/panel/`. Las tablas comparten encabezados, columnas y desplazamiento accesible. Las altas se abren a demanda en un modal; cancelar desmonta el borrador y un fallo de guardado conserva los datos editados.
@@ -71,7 +63,7 @@ Los diálogos mantienen el foco y el bloqueo de desplazamiento. Los estados de c
 - `src/styles/index.css`: entrada global del panel.
 - `src/components/web/PublicLayout.jsx`: carga las capas públicas en su orden de aplicación.
 - `src/styles/web/formal-base.css`: reglas comunes.
-- `formal-compra.css`, `formal-asistente.css`, `formal-cuenta.css`, `formal-favoritos.css` y `formal-catalogo.css`: reglas por función.
+- `formal-compra.css`, `formal-cuenta.css`, `formal-favoritos.css` y `formal-catalogo.css`: reglas por función.
 - `src/styles/web/responsive-movil.css`: ajustes de tamaño y objetivos táctiles.
 - `src/styles/web/secciones-casa.css`: capa final de aplicación/características integradas y descargas.
 - `src/components/web/secciones/portada3d/`: estilos de la portada y sus respaldos.

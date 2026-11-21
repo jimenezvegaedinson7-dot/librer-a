@@ -19,7 +19,7 @@ self.addEventListener('activate', (evento) =>
 function permitida(peticion) {
     const url = new URL(peticion.url);
     if (peticion.method !== 'GET' || !/^https?:$/.test(url.protocol) || peticion.headers.has('Authorization')) return false;
-    if (/\/api\/(auth|usuarios|pagos|ventas|favoritos|asistente)(\/|$)/.test(url.pathname)) return false;
+    if (/\/api\/(auth|usuarios|pagos|ventas|favoritos)(\/|$)/.test(url.pathname)) return false;
     if (peticion.destination === 'image') return true;
     if (url.origin !== self.location.origin) return false;
     return peticion.destination === 'font' || /^\/assets\/[^/]+-[\w-]{8,}\.(js|css)$/.test(url.pathname);
