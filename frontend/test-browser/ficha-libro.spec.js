@@ -38,7 +38,9 @@ const autores = Array.from({ length: 8 }, (_, i) => ({
 const categoria = Array.from({ length: 4 }, (_, i) => ({ ...principal, id_libro: i + 10, titulo: `Otra lectura ${i + 10}`, autor: 'Otro autor', id_autor: 11 }));
 const cliente = { id_usuario: 2, nombre: 'Cliente', apellido: 'Ficha', rol: 'cliente', estado: 1, email: 'ficha@example.test' };
 
-async function preparar(page, { sesion = false, libro = principal, errorLibro = 0, errorRelacionados = false, vacios = false, espera, catalogo, errorCatalogo = false } = {}) {
+const autorPrueba = { id_autor: 10, nombre: 'Autora', apellido: 'de prueba', nacionalidad: 'Peruana', biografia: 'Biografía real de prueba.\nSegunda línea.' };
+
+async function preparar(page, { sesion = false, libro = principal, errorLibro = 0, errorRelacionados = false, vacios = false, espera, catalogo, errorCatalogo = false, autor = autorPrueba } = {}) {
     const favoritos = new Set(),
         operaciones = [],
         catalogos = [];
@@ -76,13 +78,7 @@ async function preparar(page, { sesion = false, libro = principal, errorLibro = 
             const actual = [libro, ...autores, ...categoria].find((l) => l.id_libro === id);
             return route.fulfill(actual ? { json: { success: true, data: actual } } : { status: 404, json: { success: false, mensaje: 'Libro no encontrado' } });
         }
-        if (ruta.startsWith('/api/autores/'))
-            return route.fulfill({
-                json: {
-                    success: true,
-                    data: { id_autor: 10, nombre: 'Autora', apellido: 'de prueba', nacionalidad: 'Peruana', biografia: 'Biografía real de prueba.\nSegunda línea.' }
-                }
-            });
+        if (ruta.startsWith('/api/autores/')) return route.fulfill({ json: { success: true, data: autor } });
         if (ruta.startsWith('/api/favoritos/')) {
             const id = Number(ruta.split('/').pop());
             if (req.method() !== 'GET') {
@@ -122,6 +118,8 @@ for (const ancho of [320, 390, 820, 1440]) {
         expect(await tecnica.innerText()).not.toMatch(/Editorial|Idioma|Páginas|Edición|Dimensiones|Desconocido/);
         await expect(page.locator('.ficha-descripcion-texto')).toHaveText(descripcion);
         await expect(page.locator('.ficha-descripcion-texto')).toHaveCSS('white-space', 'pre-line');
+        await expect(page.locator('.ficha-sobre-autor')).toContainText('Biografía real de prueba.');
+        await expect(page.locator('.ficha-sobre-autor')).toContainText('Nacionalidad: Peruana');
         await page.getByRole('button', { name: 'Ver más', exact: true }).click();
         await expect(page.getByRole('button', { name: 'Ver menos', exact: true })).toHaveAttribute('aria-expanded', 'true');
         await expect(page.locator('.ficha-relacionados li')).toHaveCount(4);
@@ -143,6 +141,43 @@ for (const ancho of [320, 390, 820, 1440]) {
         expect(errores).toEqual([]);
     });
 }
+test('ficha: muestra metadatos bibliográficos disponibles y oculta los vacíos', async ({ page }) => {
+    const libroConMetadatos = {
+        ...principal,
+        id_libro: 800,
+        titulo: 'Fairy Tail 1',
+        autor: 'Hiro Mashima',
+        id_autor: 800,
+        isbn: '9783551796110',
+        descripcion: 'Descripción de prueba.',
+        editorial: 'Carlsen',
+        idioma: 'Español',
+        numero_paginas: 180,
+        anio_publicacion: 2010,
+        formato: 'Tapa blanda',
+        numero_volumen: '1',
+        dimensiones: '21 x 14 cm'
+    };
+    await preparar(page, {
+        libro: libroConMetadatos,
+        autor: { id_autor: 800, nombre: 'Hiro', apellido: 'Mashima', nacionalidad: '', biografia: '' }
+    });
+    await page.goto('/libro/800');
+    const tecnica = page.locator('.ficha-tecnica');
+    for (const [etiqueta, valor] of [
+        ['Editorial', 'Carlsen'],
+        ['Idioma', 'Español'],
+        ['Número de páginas', '180'],
+        ['Año de publicación', '2010'],
+        ['Formato', 'Tapa blanda'],
+        ['Número de volumen', '1'],
+        ['Dimensiones', '21 x 14 cm']
+    ]) {
+        await expect(tecnica).toContainText(etiqueta);
+        await expect(tecnica).toContainText(valor);
+    }
+    await expect(tecnica).not.toContainText('Desconocido');
+});
 test('ficha: cantidad y agregar reutilizan el carrito, comprar ahora reutiliza checkout', async ({ page }) => {
     await preparar(page);
     await page.goto('/libro/1');
@@ -464,4 +499,29 @@ test('todas las portadas descargadas se decodifican y conservan sus dimensiones'
         await page.waitForFunction(() => [...document.images].every((img) => img.complete && img.naturalWidth > 0));
         await page.screenshot({ path: test.info().outputPath(`revision-portadas-${i / 24 + 1}.png`), fullPage: true });
     }
+});
+
+test('ficha: descripción genérica y autor sin biografía no se muestran, pero sí sus libros', async ({ page }) => {
+    const libroGenerico = {
+        ...principal,
+        id_libro: 700,
+        titulo: 'Dog Days',
+        autor: 'Jeff Kinney',
+        id_autor: 700,
+        isbn: '9780606356466',
+        descripcion: 'Dog Days de Jeff Kinney. Obra registrada en el catálogo de MATIDANA.',
+        precio_final: principal.precio,
+        descuento_vigente: 0,
+        descuento_porcentaje_efectivo: 0
+    };
+    await preparar(page, {
+        libro: libroGenerico,
+        autor: { id_autor: 700, nombre: 'Jeff', apellido: 'Kinney', nacionalidad: '', biografia: '' }
+    });
+    await page.goto('/libro/700');
+    await expect(page.getByRole('heading', { name: 'Dog Days', exact: true })).toBeVisible();
+    await expect(page.locator('.ficha-descripcion')).toHaveCount(0);
+    await expect(page.getByText('Obra registrada en el catálogo de MATIDANA.', { exact: false })).toHaveCount(0);
+    await expect(page.locator('.ficha-sobre-autor')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Más libros de Jeff Kinney' })).toBeVisible();
 });

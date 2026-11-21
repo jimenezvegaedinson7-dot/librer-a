@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { backfillMetadatosBibliograficos } = require('./backfills');
+
 const MIGRACIONES_DIR = path.join(__dirname, '..', '..', 'database', 'migrations');
 
 const SENTENCIAS_BASE = [
@@ -40,10 +42,12 @@ const MIGRACIONES = [
     '038_version_sesion.sql',
     '039_otp_anti_replay.sql',
     '040_devoluciones_payu.sql',
-    '045_retirar_configuracion_portada.sql'
+    '045_retirar_configuracion_portada.sql',
+    '046_metadatos_bibliograficos.sql'
 ];
 
 const MIGRACIONES_DATOS = ['041_backfill_entrega_ventas_canceladas.sql', '042_purga_reservas.sql', '043_delivery_fijo_pallasca.sql'];
+const MIGRACIONES_DATOS_EXTRA = [backfillMetadatosBibliograficos];
 const TABLA_MIGRACIONES_DATOS = `CREATE TABLE IF NOT EXISTS migraciones_datos (nombre VARCHAR(120) PRIMARY KEY, aplicada_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, filas INT NOT NULL DEFAULT 0)`;
 
 function esFalloFatal() {
@@ -114,34 +118,35 @@ async function aplicarMigracionesDatos(
     await pool.query(TABLA_MIGRACIONES_DATOS);
     const resultados = [];
 
-    for (const archivo of lista) {
+    for (const entrada of lista) {
+        const nombre = typeof entrada === 'string' ? entrada : entrada.nombre;
         const conexion = await pool.getConnection();
         try {
             await conexion.beginTransaction();
 
-            await conexion.pgQuery('SELECT pg_advisory_xact_lock(hashtext($1))', [archivo]);
-            const aplicada = await conexion.pgQuery('SELECT filas FROM migraciones_datos WHERE nombre = $1', [archivo]);
+            await conexion.pgQuery('SELECT pg_advisory_xact_lock(hashtext($1))', [nombre]);
+            const aplicada = await conexion.pgQuery('SELECT filas FROM migraciones_datos WHERE nombre = $1', [nombre]);
             if (aplicada.rowCount > 0) {
                 await conexion.rollback();
-                resultados.push({ nombre: archivo, aplicada: false, filas: 0 });
+                resultados.push({ nombre, aplicada: false, filas: 0 });
                 continue;
             }
-            const resultado = await conexion.pgQuery(leer(archivo));
+            const resultado = typeof entrada === 'string' ? await conexion.pgQuery(leer(entrada)) : await entrada.ejecutar(conexion);
 
             const ultimoResultado = Array.isArray(resultado) ? resultado.at(-1) : resultado;
             const filas = ultimoResultado.rowCount ?? 0;
-            await conexion.pgQuery('INSERT INTO migraciones_datos (nombre, filas) VALUES ($1, $2)', [archivo, filas]);
+            await conexion.pgQuery('INSERT INTO migraciones_datos (nombre, filas) VALUES ($1, $2)', [nombre, filas]);
             await conexion.commit();
-            registro.log(`[bootstrap] Migración de datos ${archivo}: ${filas} filas corregidas`);
-            resultados.push({ nombre: archivo, aplicada: true, filas });
+            registro.log(`[bootstrap] Migración de datos ${nombre}: ${filas} filas corregidas`);
+            resultados.push({ nombre, aplicada: true, filas });
         } catch (error) {
             await conexion.rollback().catch(() => {});
             const motivo = describirError(error);
-            registro.error(`[bootstrap] ERROR migración de datos ${archivo}: ${motivo}`);
+            registro.error(`[bootstrap] ERROR migración de datos ${nombre}: ${motivo}`);
             if (esFalloFatal()) {
-                throw new Error(`Migración de datos "${archivo}" falló en producción. Detalle: ${motivo}`);
+                throw new Error(`Migración de datos "${nombre}" falló en producción. Detalle: ${motivo}`);
             }
-            resultados.push({ nombre: archivo, aplicada: false, filas: 0, error: motivo });
+            resultados.push({ nombre, aplicada: false, filas: 0, error: motivo });
         } finally {
             conexion.release();
         }
@@ -149,4 +154,4 @@ async function aplicarMigracionesDatos(
     return resultados;
 }
 
-module.exports = { aplicarMigraciones, aplicarMigracionesDatos, MIGRACIONES_DATOS, describirError, MIGRACIONES, SENTENCIAS_BASE };
+module.exports = { aplicarMigraciones, aplicarMigracionesDatos, MIGRACIONES_DATOS, MIGRACIONES_DATOS_EXTRA, describirError, MIGRACIONES, SENTENCIAS_BASE };

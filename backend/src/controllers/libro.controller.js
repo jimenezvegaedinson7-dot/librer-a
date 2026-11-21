@@ -7,7 +7,7 @@ const autorModel = require('../models/autor.model');
 const categoriaModel = require('../models/categoria.model');
 const historialModel = require('../models/historial.model');
 const usuarioModel = require('../models/usuario.model');
-const { validarId, esNumeroNoNegativo, esEstadoValido } = require('../utils/validaciones');
+const { validarId, esNumeroNoNegativo, esEstadoValido, esTextoValido } = require('../utils/validaciones');
 const { validarDescuentos } = require('../utils/descuentos');
 const { conPortadaCatalogo } = require('../utils/portadasCatalogo');
 const { eliminarImagen, publicIdDesdeUrl } = require('../integrations/cloudinary');
@@ -27,6 +27,40 @@ const precioFinalDelBody = (precio, precioGuardado) => {
 
     return Number(precio);
 };
+
+const CAMPOS_TEXTO_BIBLIOGRAFICOS = { editorial: 200, idioma: 60, formato: 60, numero_volumen: 40, dimensiones: 100 };
+const CAMPOS_NUMERICOS_BIBLIOGRAFICOS = { numero_paginas: [1, 20000], anio_publicacion: [1000, 2100] };
+
+function normalizarMetadatosBibliograficos(body) {
+    const valores = {};
+
+    for (const [campo, maximo] of Object.entries(CAMPOS_TEXTO_BIBLIOGRAFICOS)) {
+        if (body[campo] === undefined) continue;
+        if (body[campo] === null || body[campo] === '') {
+            valores[campo] = null;
+            continue;
+        }
+        if (!esTextoValido(body[campo], maximo)) {
+            return { mensaje: 'Metadatos bibliográficos inválidos' };
+        }
+        valores[campo] = body[campo].trim();
+    }
+
+    for (const [campo, [minimo, maximo]] of Object.entries(CAMPOS_NUMERICOS_BIBLIOGRAFICOS)) {
+        if (body[campo] === undefined) continue;
+        if (body[campo] === null || body[campo] === '') {
+            valores[campo] = null;
+            continue;
+        }
+        const texto = typeof body[campo] === 'string' ? body[campo].trim() : body[campo];
+        if ((typeof texto === 'string' && !/^\d+$/.test(texto)) || !Number.isInteger(Number(texto)) || Number(texto) < minimo || Number(texto) > maximo) {
+            return { mensaje: 'Metadatos bibliográficos inválidos' };
+        }
+        valores[campo] = Number(texto);
+    }
+
+    return { valores };
+}
 
 const obtenerLibros = async (req, res) => {
     try {
@@ -91,6 +125,12 @@ const crearLibro = async (req, res) => {
             return res.status(400).json({ success: false, mensaje: descuentos.mensaje });
         }
 
+        const metadatos = normalizarMetadatosBibliograficos(req.body);
+
+        if (metadatos.mensaje) {
+            return res.status(400).json({ success: false, mensaje: metadatos.mensaje });
+        }
+
         const idAutor = validarId(id_autor);
         const idCategoria = validarId(id_categoria);
 
@@ -133,6 +173,8 @@ const crearLibro = async (req, res) => {
             id_categoria: idCategoria,
 
             estado: 1,
+
+            ...metadatos.valores,
 
             ...descuentos.valor
         });
@@ -216,6 +258,12 @@ const actualizarLibro = async (req, res) => {
             return res.status(400).json({ success: false, mensaje: descuentos.mensaje });
         }
 
+        const metadatos = normalizarMetadatosBibliograficos(req.body);
+
+        if (metadatos.mensaje) {
+            return res.status(400).json({ success: false, mensaje: metadatos.mensaje });
+        }
+
         if (descuentos.valor.precio_oferta === undefined) {
             const ofertaGuardada = Number(libroExistente.precio_oferta);
 
@@ -263,6 +311,8 @@ const actualizarLibro = async (req, res) => {
             id_categoria: idCategoria,
 
             estado: estado !== undefined && estado !== '' ? Number(estado) : Number(libroExistente.estado),
+
+            ...metadatos.valores,
 
             ...descuentos.valor
         });
@@ -414,4 +464,4 @@ const obtenerRecomendados = async (req, res) => {
     }
 };
 
-module.exports = { obtenerLibros, obtenerLibro, obtenerRelacionados, obtenerRecomendados, crearLibro, actualizarLibro, eliminarLibro };
+module.exports = { obtenerLibros, obtenerLibro, obtenerRelacionados, obtenerRecomendados, crearLibro, actualizarLibro, eliminarLibro, normalizarMetadatosBibliograficos };

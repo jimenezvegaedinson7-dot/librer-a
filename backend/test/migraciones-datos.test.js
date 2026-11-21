@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { aplicarMigracionesDatos, MIGRACIONES_DATOS } = require('../src/config/migraciones');
+const { aplicarMigracionesDatos, MIGRACIONES_DATOS, MIGRACIONES_DATOS_EXTRA } = require('../src/config/migraciones');
 
 function poolFalso({ yaAplicadas = [], filas = 3, falla = false } = {}) {
     const aplicadas = new Set(yaAplicadas);
@@ -41,6 +41,30 @@ const silencio = { log() {}, error() {} };
 
 test('el backfill y la purga autorizada están registrados como migraciones de datos en orden', () => {
     assert.deepEqual(MIGRACIONES_DATOS, ['041_backfill_entrega_ventas_canceladas.sql', '042_purga_reservas.sql', '043_delivery_fijo_pallasca.sql']);
+});
+
+test('el backfill de metadatos bibliográficos es una migración de datos adicional', () => {
+    assert.equal(MIGRACIONES_DATOS_EXTRA.length, 1);
+    assert.equal(MIGRACIONES_DATOS_EXTRA[0].nombre, '044_backfill_metadatos_bibliograficos.js');
+});
+
+test('migración de datos admite backfills programáticos con el mismo registro transaccional', async () => {
+    const pool = poolFalso();
+    const resultado = await aplicarMigracionesDatos(
+        pool,
+        {
+            lista: [
+                {
+                    nombre: '044_x.js',
+                    ejecutar: async () => ({ rowCount: 7 })
+                }
+            ]
+        },
+        { registro: silencio }
+    );
+    assert.deepEqual(resultado, [{ nombre: '044_x.js', aplicada: true, filas: 7 }]);
+    const pasos = pool.log.filter((l) => !l.startsWith('pool:'));
+    assert.deepEqual(pasos, ['BEGIN', 'LOCK', 'REGISTRO 044_x.js=7', 'COMMIT', 'RELEASE']);
 });
 
 test('migración de datos: se aplica en transacción con bloqueo y registra las filas', async () => {

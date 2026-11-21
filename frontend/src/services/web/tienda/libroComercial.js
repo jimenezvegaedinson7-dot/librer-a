@@ -1,5 +1,16 @@
 import { resolverPortadaLibro } from '../../compartido/utils/portadasLibro';
 
+const textoMetadato = (valor) => {
+    const texto = valor == null ? '' : String(valor).trim();
+    return texto || null;
+};
+
+const numeroMetadato = (valor) => {
+    if (valor == null || valor === '') return null;
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? numero : null;
+};
+
 function fichaEdicion(valor, titulo) {
     const texto = valor == null ? '' : String(valor);
     if (!texto.trim()) return { resumen: '', edicion: '' };
@@ -29,6 +40,13 @@ export function libroComercial(l) {
         idAutor: Number(l.id_autor) || null,
         idCategoria: Number(l.id_categoria) || null,
         isbn: l.isbn || '',
+        editorial: textoMetadato(l.editorial),
+        idioma: textoMetadato(l.idioma),
+        numeroPaginas: numeroMetadato(l.numero_paginas),
+        anioPublicacion: numeroMetadato(l.anio_publicacion),
+        formato: textoMetadato(l.formato),
+        numeroVolumen: textoMetadato(l.numero_volumen),
+        dimensiones: textoMetadato(l.dimensiones),
         estado: Number(l.estado),
         precio: Number(l.precio),
         precioFinal: oferta ? Number(l.precio_final) : Number(l.precio),

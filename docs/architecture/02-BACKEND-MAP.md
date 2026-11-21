@@ -378,7 +378,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 Tablas consultadas por los modelos (20): `agencias_courier`, `anuncios`, `asistente_memoria`, `autores`, `carrusel_anuncios`, `categorias`, `comprobantes`, `detalle_venta`, `distritos_lima`, `empresa`, `favoritos`, `historial_operaciones`, `inventario`, `libros`, `movimientos_inventario`, `provincias_lima`, `reclamaciones`, `usuarios`, `ventas`, `zonas_delivery_pallasca`. Este subconjunto no es el total del esquema.
 
-Esquema canónico: **21 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **22 tablas**, incluidas las auxiliares de migración. Hay 44 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
+Esquema canónico: **21 tablas** en `backend/database/schema.sql`. Declaraciones en esquema, migraciones SQL y arranque: **22 tablas**, incluidas las auxiliares de migración. Hay 45 archivos SQL de migración; solo la lista explícita de `config/migraciones.js` se ejecuta automáticamente. Estos recuentos proceden del código, no de una conexión a producción.
 
 ## Integraciones externas
 

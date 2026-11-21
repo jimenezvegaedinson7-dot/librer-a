@@ -1,12 +1,13 @@
 const { crearApp } = require('./app');
 const pool = require('../config/database');
-const { aplicarMigraciones, aplicarMigracionesDatos } = require('../config/migraciones');
+const { aplicarMigraciones, aplicarMigracionesDatos, MIGRACIONES_DATOS_EXTRA } = require('../config/migraciones');
 const { iniciarJobs } = require('../jobs/limpieza');
 
 async function iniciar({ puerto = process.env.PORT || 3000 } = {}) {
     if (process.env.NODE_ENV !== 'test') {
         await aplicarMigraciones(pool);
         await aplicarMigracionesDatos(pool);
+        await aplicarMigracionesDatos(pool, { lista: MIGRACIONES_DATOS_EXTRA });
     }
 
     const app = crearApp();

@@ -16,6 +16,11 @@ import { leerLibroPublico } from '../../../services/web/cachePublica';
 import { analitica } from '../../../services/web/analitica';
 import '../../../components/web/tienda/ficha-libro.css';
 
+function debeMostrarDescripcion(valor) {
+    const texto = typeof valor === 'string' ? valor.trim() : '';
+    return !/Obra registrada en el catálogo de MATIDANA\./i.test(texto);
+}
+
 function InformacionLibro({ libro }) {
     const { items, generacion } = useTienda();
     const [cantidad, setCantidad] = useState(1);
@@ -57,30 +62,36 @@ function InformacionLibro({ libro }) {
                 <FavoritoLibro key={`${libro.id}-${generacion}`} libro={libro} />
                 <CompartirLibro libro={libro} />
             </div>
+        </div>
+    );
+}
+
+function EntregaFinalLibro() {
+    return (
+        <div className="ficha-final">
             <section className="ficha-entrega" aria-label="Entrega disponible">
                 <h2>Entrega disponible</h2>
                 <ul>
                     <li>
                         <FaStore aria-hidden="true" />
                         <span>
-                            Recojo en Pallasca — <strong>Gratis</strong>
+                            <strong>Recojo</strong> en Pallasca · <strong>Gratis</strong>
                         </span>
                     </li>
                     <li>
                         <FaTruckFast aria-hidden="true" />
-                        <span>Delivery en la ciudad de Pallasca — tarifa vigente en Entrega y pago</span>
+                        <span>
+                            <strong>Delivery</strong> en Pallasca · tarifa vigente
+                        </span>
                     </li>
                     <li>
                         <FaShieldHalved aria-hidden="true" />
-                        <span>Pago seguro con PayU</span>
+                        <span>
+                            <strong>Pago seguro</strong> con <strong>PayU</strong>
+                        </span>
                     </li>
                 </ul>
             </section>
-            {libro.sinopsis && (
-                <a className="ficha-leer-descripcion" href="#descripcion-libro">
-                    Leer la descripción completa
-                </a>
-            )}
         </div>
     );
 }
@@ -199,6 +210,10 @@ export default function LibroPage() {
         masAutor = lista('mas_autor'),
         interesarte = lista('interesarte');
     const enlaceAutor = l?.idAutor ? `/catalogo?autor=${l.idAutor}` : `/catalogo?q=${encodeURIComponent(l?.autor || '')}`;
+    const datosAutor = autor?.data || null;
+    const biografiaAutor = idAutor != null && autor?.id === idAutor ? String(datosAutor?.biografia || '').trim() : '';
+    const nacionalidadAutor = idAutor != null && autor?.id === idAutor ? String(datosAutor?.nacionalidad || '').trim() : '';
+    const mostrarSobreAutor = Boolean(biografiaAutor || nacionalidadAutor);
     return (
         <section className="compra-pagina contenedor ficha-libro">
             <nav className="ficha-migas" aria-label="Ruta del libro">
@@ -243,33 +258,31 @@ export default function LibroPage() {
                     </div>
                     <div className="ficha-contenido">
                         <FichaTecnicaLibro libro={l} />
-                        <DescripcionLibro key={l.id} libro={l} />
+                        {debeMostrarDescripcion(l.sinopsis) && <DescripcionLibro key={l.id} libro={l} />}
                     </div>
-                    {l.autor && (
-                        <>
-                            <section className="ficha-sobre-autor ficha-seccion">
-                                <h2>Sobre {l.autor}</h2>
-                                {autor?.id === l.idAutor && autor.data?.biografia && <p className="ficha-biografia">{autor.data.biografia}</p>}
-                                {autor?.id === l.idAutor && autor.data?.nacionalidad && <p>Nacionalidad: {autor.data.nacionalidad}</p>}
-                                <Link className="enlace-texto" to={enlaceAutor}>
-                                    Explorar los libros de {l.autor}
-                                </Link>
-                            </section>
-                            {(!datos || masAutor.length > 0) && (
-                                <SeccionLibros
-                                    titulo={`Más libros de ${l.autor}`}
-                                    libros={masAutor}
-                                    enlace={enlaceAutor}
-                                    mensajeVacio={
-                                        !datos
-                                            ? 'Puedes explorar otros títulos del autor en el catálogo.'
-                                            : relacionados.some((x) => x.idAutor === l.idAutor)
-                                              ? 'Los otros títulos del autor aparecen en Libros relacionados.'
-                                              : 'No hay otros libros de este autor en el catálogo para mostrar.'
-                                    }
-                                />
-                            )}
-                        </>
+                    {l.autor && mostrarSobreAutor && (
+                        <section className="ficha-sobre-autor ficha-seccion">
+                            <h2>Sobre {l.autor}</h2>
+                            {biografiaAutor && <p className="ficha-biografia">{biografiaAutor}</p>}
+                            {nacionalidadAutor && <p>Nacionalidad: {nacionalidadAutor}</p>}
+                            <Link className="enlace-texto" to={enlaceAutor}>
+                                Explorar los libros de {l.autor}
+                            </Link>
+                        </section>
+                    )}
+                    {l.autor && (!datos || masAutor.length > 0) && (
+                        <SeccionLibros
+                            titulo={`Más libros de ${l.autor}`}
+                            libros={masAutor}
+                            enlace={enlaceAutor}
+                            mensajeVacio={
+                                !datos
+                                    ? 'Puedes explorar otros títulos del autor en el catálogo.'
+                                    : relacionados.some((x) => x.idAutor === l.idAutor)
+                                      ? 'Los otros títulos del autor aparecen en Libros relacionados.'
+                                      : 'No hay otros libros de este autor en el catálogo para mostrar.'
+                            }
+                        />
                     )}
 
                     {(!datos || interesarte.length > 0) && (
@@ -280,6 +293,7 @@ export default function LibroPage() {
                             mensajeVacio={!datos ? 'Puedes explorar esta categoría en el catálogo.' : 'No hay más títulos de esta categoría para mostrar en este momento.'}
                         />
                     )}
+                    <EntregaFinalLibro />
                 </>
             )}
         </section>
