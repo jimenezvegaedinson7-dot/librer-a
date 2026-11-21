@@ -115,3 +115,22 @@ test('facetas usa las claves reales de autores y categorias', async () => {
         query.mock.restore();
     }
 });
+
+test('buscar filtra con el alias exterior final', async () => {
+    let sql;
+    const query = mock.method(pool, 'query', async (consulta) => {
+        sql = consulta;
+        return [[{ id_libro: 1 }], []];
+    });
+    try {
+        const filas = await busquedaModel.buscar({ ids: [1], palabras: ['novela'], minimo: 10 }, 'relevancia', 5);
+        assert.deepEqual(filas, [{ id_libro: 1 }]);
+        assert.match(sql, /final\.estado = 1/);
+        assert.match(sql, /final\.stock > 0/);
+        assert.match(sql, /final\.id_libro = ANY\(\?\)/);
+        assert.match(sql, /final\.precio_final >= \?/);
+        assert.doesNotMatch(sql, /base\.estado = 1/);
+    } finally {
+        query.mock.restore();
+    }
+});

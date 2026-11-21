@@ -23,40 +23,40 @@ const titulos = async (tokens) => {
 };
 
 const buscar = async (filtros = {}, orden = 'relevancia', limite = 12) => {
-    const condiciones = ['base.estado = 1', 'base.stock > 0'];
+    const condiciones = ['final.estado = 1', 'final.stock > 0'];
     const params = [];
     const ids = Array.isArray(filtros.ids) ? filtros.ids.map(Number).filter(Number.isInteger).slice(0, 40) : [];
     if (ids.length) {
-        condiciones.push(`base.id_libro = ANY(?)`);
+        condiciones.push(`final.id_libro = ANY(?)`);
         params.push(ids);
     }
     if (filtros.autor) {
-        condiciones.push('base.id_autor = ?');
+        condiciones.push('final.id_autor = ?');
         params.push(filtros.autor);
     }
     if (filtros.categoria) {
-        condiciones.push('base.id_categoria = ?');
+        condiciones.push('final.id_categoria = ?');
         params.push(filtros.categoria);
     }
     if (filtros.isbn) {
-        condiciones.push(`UPPER(REPLACE(REPLACE(base.isbn, '-', ''), ' ', '')) = ?`);
+        condiciones.push(`UPPER(REPLACE(REPLACE(final.isbn, '-', ''), ' ', '')) = ?`);
         params.push(String(filtros.isbn).toUpperCase());
     }
     for (const palabra of (filtros.palabras || []).slice(0, 6)) {
         const termino = `%${String(palabra).toLowerCase().replace(/[^a-z0-9 ]/g, '')}%`;
-        condiciones.push(`(translate(lower(base.titulo), 'áéíóúñ', 'aeioun') LIKE ? OR translate(lower(COALESCE(base.descripcion, '')), 'áéíóúñ', 'aeioun') LIKE ? OR translate(lower(COALESCE(base.autor, '')), 'áéíóúñ', 'aeioun') LIKE ? OR translate(lower(COALESCE(base.categoria, '')), 'áéíóúñ', 'aeioun') LIKE ?)`);
+        condiciones.push(`(translate(lower(final.titulo), 'áéíóúñ', 'aeioun') LIKE ? OR translate(lower(COALESCE(final.descripcion, '')), 'áéíóúñ', 'aeioun') LIKE ? OR translate(lower(COALESCE(final.autor, '')), 'áéíóúñ', 'aeioun') LIKE ? OR translate(lower(COALESCE(final.categoria, '')), 'áéíóúñ', 'aeioun') LIKE ?)`);
         params.push(termino, termino, termino, termino);
     }
     if (filtros.minimo) {
-        condiciones.push('base.precio_final >= ?');
+        condiciones.push('final.precio_final >= ?');
         params.push(filtros.minimo);
     }
     if (filtros.maximo) {
-        condiciones.push('base.precio_final <= ?');
+        condiciones.push('final.precio_final <= ?');
         params.push(filtros.maximo);
     }
-    if (filtros.stock === 'disponible') condiciones.push('base.stock > 0');
-    if (filtros.oferta) condiciones.push('base.descuento_vigente = 1');
+    if (filtros.stock === 'disponible') condiciones.push('final.stock > 0');
+    if (filtros.oferta) condiciones.push('final.descuento_vigente = 1');
     const ordenes = {
         precio_asc: 'precio_final ASC, id_libro DESC',
         precio_desc: 'precio_final DESC, id_libro DESC',
