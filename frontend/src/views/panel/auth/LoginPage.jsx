@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { FaArrowLeft, FaEnvelope, FaEye, FaEyeSlash, FaKey, FaLock, FaQrcode, FaRightToBracket } from 'react-icons/fa6';
-import { login, verificarLoginOtp, solicitarReseteo, restablecerContrasena } from '../../../services/panel/auth/authService';
+import { login, verificarLoginOtp, solicitarReseteo, verificarReseteo, restablecerContrasena } from '../../../services/panel/auth/authService';
 import { useAuth } from '../../../app/providers/AuthContext';
 import { usePaginaPanel } from '../../../hooks/panel/usePaginaPanel';
 import { Alert } from '../../../components/panel/ui/Alert';
@@ -36,6 +36,7 @@ export default function LoginPage() {
     const [resetStep, setResetStep] = useState(1);
     const [resetEmail, setResetEmail] = useState('');
     const [resetCodigo, setResetCodigo] = useState('');
+    const [resetToken, setResetToken] = useState('');
     const [resetPassword, setResetPassword] = useState('');
     const [resetPassword2, setResetPassword2] = useState('');
     const [resetError, setResetError] = useState('');
@@ -134,6 +135,7 @@ export default function LoginPage() {
         setResetStep(1);
         setResetEmail(email);
         setResetCodigo('');
+        setResetToken('');
         setResetPassword('');
         setResetPassword2('');
         setResetError('');
@@ -145,6 +147,7 @@ export default function LoginPage() {
         setMostrandoRecuperacion(false);
         setResetStep(1);
         setResetError('');
+        setResetToken('');
         setEnvioCorreo(null);
         requestAnimationFrame(() => recuperarRef.current?.focus());
     };
@@ -204,10 +207,29 @@ export default function LoginPage() {
         }
     };
 
-    const restablecer = async (e) => {
+    const validarCodigoReset = async (e) => {
         e.preventDefault();
         if (!/^\d{6}$/.test(resetCodigo)) {
             setResetError('El código debe tener 6 dígitos');
+            return;
+        }
+        try {
+            setResetCargando(true);
+            setResetError('');
+            const respuesta = await verificarReseteo({ email: resetEmail.trim(), codigo: resetCodigo });
+            setResetToken(respuesta.reset_token || '');
+            setResetStep(3);
+        } catch (err) {
+            setResetError(err.response?.data?.mensaje || 'Código incorrecto o expirado');
+        } finally {
+            setResetCargando(false);
+        }
+    };
+
+    const restablecer = async (e) => {
+        e.preventDefault();
+        if (!resetToken) {
+            setResetError('Verifica primero el código recibido.');
             return;
         }
         if (resetPassword.length < 8) {
@@ -231,14 +253,14 @@ export default function LoginPage() {
         try {
             setResetCargando(true);
             setResetError('');
-            await restablecerContrasena({ email: resetEmail.trim(), codigo: resetCodigo, password: resetPassword });
+            await restablecerContrasena({ email: resetEmail.trim(), codigo: resetCodigo, password: resetPassword, reset_token: resetToken });
             setAutoInicio('iniciando');
-            setResetStep(3);
+            setResetStep(4);
 
             setTimeout(sonarPagoAprobado, 600);
             iniciarConNuevaContrasena(resetEmail.trim(), resetPassword);
         } catch (err) {
-            setResetError(err.response?.data?.mensaje || 'Código incorrecto o expirado');
+            setResetError(err.response?.data?.mensaje || 'No se pudo restablecer la contraseña');
         } finally {
             setResetCargando(false);
         }
@@ -247,12 +269,26 @@ export default function LoginPage() {
     const resetPaso2Volver = () => {
         setResetStep(1);
         setResetCodigo('');
+        setResetToken('');
         setResetPassword('');
         setResetPassword2('');
         setResetError('');
     };
 
-    const pasoReset = { 1: 'Confirma tu correo para recibir un código', 2: 'Ingresa el código y tu nueva contraseña', 3: 'Proceso completado' }[resetStep];
+    const resetPaso3Volver = () => {
+        setResetStep(2);
+        setResetToken('');
+        setResetPassword('');
+        setResetPassword2('');
+        setResetError('');
+    };
+
+    const pasoReset = {
+        1: 'Confirma tu correo para recibir un código',
+        2: 'Ingresa el código de verificación',
+        3: 'Crea tu nueva contraseña',
+        4: 'Proceso completado'
+    }[resetStep];
 
     return (
         <main className="login-page" style={{ '--login-fondo': `url(${fondoLogin})` }}>
@@ -401,7 +437,7 @@ export default function LoginPage() {
                                 </div>
                                 <div className="login-reset">
                                     <ol className="mb-5 flex items-center gap-2" aria-label="Progreso">
-                                        {[1, 2, 3].map((paso) => (
+                                        {[1, 2, 3, 4].map((paso) => (
                                             <li
                                                 key={paso}
                                                 aria-current={resetStep === paso ? 'step' : undefined}
@@ -440,7 +476,7 @@ export default function LoginPage() {
                                     )}
 
                                     {resetStep === 2 && (
-                                        <form onSubmit={restablecer} className="space-y-4">
+                                        <form onSubmit={validarCodigoReset} className="space-y-4">
                                             <p className="text-sm text-[#766d62]">
                                                 Se envió un código a <strong className="font-semibold text-[#1c1814]">{resetEmail}</strong>.
                                             </p>
@@ -455,10 +491,26 @@ export default function LoginPage() {
                                                     onChange={(e) => setResetCodigo(e.target.value.replace(/\D/g, ''))}
                                                     placeholder="000000"
                                                     autoComplete="one-time-code"
+                                                    autoFocus
                                                     required
                                                     className="login-input login-input--codigo"
                                                 />
                                             </Campo>
+
+                                            <div className="flex gap-3 pt-1">
+                                                <button type="button" onClick={resetPaso2Volver} className="login-boton-secundario">
+                                                    <FaArrowLeft className="text-xs" /> Volver
+                                                </button>
+                                                <BotonPrimario cargando={resetCargando} textoCarga="Verificando..." className="flex-1">
+                                                    Verificar código
+                                                </BotonPrimario>
+                                            </div>
+                                        </form>
+                                    )}
+
+                                    {resetStep === 3 && (
+                                        <form onSubmit={restablecer} className="space-y-4">
+                                            <p className="text-sm text-[#766d62]">Código verificado. Crea tu nueva contraseña.</p>
 
                                             <Campo
                                                 id="reset-password"
@@ -482,6 +534,7 @@ export default function LoginPage() {
                                                     onChange={(e) => setResetPassword(e.target.value)}
                                                     placeholder="Nueva contraseña"
                                                     autoComplete="new-password"
+                                                    autoFocus
                                                     required
                                                     className="login-input"
                                                 />
@@ -501,7 +554,7 @@ export default function LoginPage() {
                                             </Campo>
 
                                             <div className="flex gap-3 pt-1">
-                                                <button type="button" onClick={resetPaso2Volver} className="login-boton-secundario">
+                                                <button type="button" onClick={resetPaso3Volver} className="login-boton-secundario">
                                                     <FaArrowLeft className="text-xs" /> Volver
                                                 </button>
                                                 <BotonPrimario cargando={resetCargando} textoCarga="Guardando..." className="flex-1">
@@ -511,7 +564,7 @@ export default function LoginPage() {
                                         </form>
                                     )}
 
-                                    {resetStep === 3 && (
+                                    {resetStep === 4 && (
                                         <ExitoAnimado
                                             titulo="Contraseña actualizada"
                                             detalle={

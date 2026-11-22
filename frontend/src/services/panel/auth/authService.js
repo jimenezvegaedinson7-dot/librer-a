@@ -32,6 +32,10 @@ export async function solicitarReseteo({ email }) {
     return client.post('/auth/solicitar-reseteo', { email });
 }
 
-export async function restablecerContrasena({ email, codigo, password }) {
-    return client.post('/auth/reestablecer-contrasena', { email, codigo, password });
+export async function verificarReseteo({ email, codigo }) {
+    return client.post('/auth/verificar-reseteo', { email, codigo });
+}
+
+export async function restablecerContrasena({ email, codigo, password, reset_token }) {
+    return client.post('/auth/reestablecer-contrasena', { email, codigo, password, reset_token });
 }
