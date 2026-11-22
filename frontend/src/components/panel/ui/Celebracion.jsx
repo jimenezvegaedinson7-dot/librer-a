@@ -38,7 +38,7 @@ export function CargaCorreo({ enviado = false, onCompleto }) {
         if (progreso < 1 || avisado.current) return undefined;
         avisado.current = true;
         const t1 = setTimeout(() => setCompleto(true), 120);
-        const t2 = setTimeout(() => alCompletar.current?.(), 1500);
+        const t2 = setTimeout(() => alCompletar.current?.(), 2200);
         return () => {
             clearTimeout(t1);
             clearTimeout(t2);
@@ -89,7 +89,7 @@ export function CargaCorreo({ enviado = false, onCompleto }) {
                 className={`carga-correo-texto ${completo ? 'carga-correo-texto--listo' : ''}`}>
                 {completo ? 'Correo enviado' : 'Enviando correo…'}
             </motion.p>
-            <p className="carga-correo-porcentaje">{completo ? 'Revisa tu bandeja de entrada' : `${Math.round(progreso * 100)} %`}</p>
+            <p className="carga-correo-porcentaje">{completo ? 'Revisa tu correo' : `${Math.round(progreso * 100)} %`}</p>
         </div>
     );
 }
