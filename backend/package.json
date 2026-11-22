@@ -23,6 +23,8 @@
     "catalogo:reales:generar": "node scripts/reemplazarCatalogoLibrosReales.js generar",
     "catalogo:reales:dry": "node scripts/reemplazarCatalogoLibrosReales.js aplicar --dry-run",
     "catalogo:reales:aplicar": "node scripts/reemplazarCatalogoLibrosReales.js aplicar --confirmar",
+    "metadatos:enriquecer": "node scripts/enriquecerMetadatosLibros.js",
+    "metadatos:idiomas": "node scripts/enriquecerMetadatosLibros.js --solo-idioma",
     "publicar-app": "node scripts/publicarVersionApp.js"
   },
   "keywords": [],

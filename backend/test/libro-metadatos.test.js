@@ -21,7 +21,9 @@ const {
     construirActualizacionesDragonBallZ,
     backfillMetadatosDragonBallZ,
     construirActualizacionesReales,
-    backfillMetadatosRealesTodos
+    backfillMetadatosRealesTodos,
+    construirActualizacionesEnriquecidos,
+    backfillMetadatosEnriquecidos
 } = require('../src/config/backfills');
 
 const CAMPOS = ['editorial', 'idioma', 'numero_paginas', 'anio_publicacion', 'formato', 'numero_volumen', 'dimensiones'];
@@ -189,6 +191,33 @@ test('el backfill global aplica solo metadatos verificados y nunca sobrescribe',
         assert.match(sentencia.sql, /^UPDATE libros SET .+ WHERE isbn = \$1$/);
         assert.match(sentencia.sql, /COALESCE\(/);
         assert.ok(sentencia.params.length >= 2 && sentencia.params.length <= 8);
+    }
+    assert.deepEqual(sentencias.map((sentencia) => sentencia.params[0]), actualizaciones.map((libro) => libro.isbn));
+});
+
+test('el backfill enriquecido incorpora metadatos verificados y nunca sobrescribe', async () => {
+    const actualizaciones = construirActualizacionesEnriquecidos();
+    assert.ok(actualizaciones.length > 2000);
+    assert.ok(actualizaciones.filter((libro) => libro.editorial).length > 2000);
+    assert.ok(actualizaciones.some((libro) => libro.numero_paginas));
+    assert.ok(actualizaciones.some((libro) => libro.idioma));
+
+    const sentencias = [];
+    const conexion = {
+        pgQuery: async (sql, params) => {
+            sentencias.push({ sql, params });
+            return { rowCount: 1 };
+        }
+    };
+
+    const resultado = await backfillMetadatosEnriquecidos.ejecutar(conexion);
+    assert.equal(backfillMetadatosEnriquecidos.nombre, '049_backfill_metadatos_enriquecidos.js');
+    assert.deepEqual(resultado, { rowCount: actualizaciones.length });
+    assert.equal(sentencias.length, actualizaciones.length);
+    for (const sentencia of sentencias) {
+        assert.match(sentencia.sql, /^UPDATE libros SET .+ WHERE isbn = \$1$/);
+        assert.match(sentencia.sql, /COALESCE\(/);
+        assert.ok(!/SET editorial = '/.test(sentencia.sql));
     }
     assert.deepEqual(sentencias.map((sentencia) => sentencia.params[0]), actualizaciones.map((libro) => libro.isbn));
 });
