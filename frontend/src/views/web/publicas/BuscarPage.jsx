@@ -16,9 +16,12 @@ import '../../../styles/web/buscar.css';
 const normalizar = (t) =>
     String(t || '')
         .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
+        .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
         .trim();
+
 
 const PREFIJO_CATEGORIA = 'categoria:';
 const CAMPOS_POR_TIPO = {
@@ -39,11 +42,27 @@ const TIPOS_BUSQUEDA = [
 
 const MAX_POR_SECCION = 12;
 
-const SUGERENCIAS_IA = ['Novela para regalar', 'Un clásico corto', 'Ciencia ficción', 'Misterio con humor'];
+const SUGERENCIAS_BUSQUEDA = ['Novela para regalar', 'Un clásico corto', 'Ciencia ficción', 'Misterio con humor'];
 
 const esCategoria = (valor) => String(valor || '').startsWith(PREFIJO_CATEGORIA);
 const nombreCategoria = (valor) => (esCategoria(valor) ? valor.slice(PREFIJO_CATEGORIA.length) : '');
 const textoResultados = (total) => `${total} ${total === 1 ? 'resultado' : 'resultados'}`;
+
+const PALABRAS_INTENCION = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 'unos', 'unas', 'y', 'o', 'con', 'sin', 'por', 'para', 'en', 'al', 'a', 'lo', 'que', 'cual', 'como', 'libro', 'libros', 'busco', 'quiero', 'necesito', 'algo', 'sobre', 'regalar', 'regalo', 'recomendar', 'recomienda', 'sugerir', 'sugiere', 'clasico', 'corto', 'corta', 'cortos', 'cortas', 'humor', 'leer', 'lectura', 'interesante', 'bueno', 'buena']);
+const INTENCION_CATEGORIA = [
+    { patron: /regalar|regalo/, categoria: 'novela' },
+    { patron: /clasico|corto|corta|cortos|cortas/, categoria: 'cuento' },
+    { patron: /ciencia ficcion/, categoria: 'ciencia ficcion' },
+    { patron: /misterio|suspenso/, categoria: 'misterio suspenso' }
+];
+
+function coincideConsulta(libro, consulta) {
+    const texto = normalizar(consulta);
+    const campos = ['titulo', 'autor', 'categoria', 'descripcion', 'isbn'].map((campo) => normalizar(libro[campo]));
+    const terminos = texto.split(' ').filter((palabra) => palabra.length > 2 && !PALABRAS_INTENCION.has(palabra));
+    if (terminos.some((termino) => campos.some((campo) => campo.includes(termino)))) return true;
+    return INTENCION_CATEGORIA.some(({ patron, categoria }) => patron.test(texto) && normalizar(libro.categoria).includes(categoria));
+}
 
 function TarjetaBusqueda({ libro, indice }) {
     const navigate = useNavigate();
@@ -70,7 +89,7 @@ function TarjetaBusqueda({ libro, indice }) {
                 </h3>
                 {libro.autor && <p className="buscar-tarjeta__autor">{libro.autor}</p>}
                 <PrecioOferta libro={libro} clase="buscar-tarjeta__precio" />
-                {ahorro > 0 && <p className="buscar-tarjeta__ahorro">Ahorras {soles(ahorro)}</p>}
+                {ahorro > 0 && <p className="buscar-tarjeta__ahorro">Ahorro: {soles(ahorro)}</p>}
                 <Link className="buscar-tarjeta__detalle" to={destino}>
                     Ver detalle
                 </Link>
@@ -128,6 +147,39 @@ export default function BuscarPage() {
     const { cargando, error, libros } = useCatalogo();
     const claveIA = `${q}|${tipo}`;
     const [inteligente, setInteligente] = useState({ clave: '', libros: [], origen: 'catalogo', listo: false });
+    const [buscando, setBuscando] = useState(false);
+    const [verOtrasOpciones, setVerOtrasOpciones] = useState(false);
+    const temporizadorEscritura = useRef(null);
+    const limpioAlCargar = useRef(false);
+
+    const sincronizarEntrada = (valor) => {
+        if (entrada.current && entrada.current.value !== valor) entrada.current.value = valor;
+    };
+
+    useEffect(() => {
+        if (!limpioAlCargar.current) {
+            limpioAlCargar.current = true;
+            const navegacion = window.performance?.getEntriesByType?.('navigation')?.[0];
+            if (navegacion?.type === 'reload') {
+                sincronizarEntrada('');
+                queueMicrotask(() => {
+                    setBuscando(false);
+                    setVerOtrasOpciones(false);
+                });
+                setParams({}, { replace: true });
+                return;
+            }
+        }
+        sincronizarEntrada(q);
+    }, [q, setParams]);
+
+    useEffect(() => () => clearTimeout(temporizadorEscritura.current), []);
+
+    useEffect(() => {
+        if (!buscando) return undefined;
+        const temporizador = setTimeout(() => setBuscando(false), 2500);
+        return () => clearTimeout(temporizador);
+    }, [buscando, claveIA]);
 
     useEffect(() => {
         if (!q && !categoriaElegida) return undefined;
@@ -136,6 +188,7 @@ export default function BuscarPage() {
             .buscarInteligente({ consulta: q || categoriaElegida, tipo: esCategoria(tipo) ? 'categoria' : tipo, categoria: categoriaElegida })
             .then((json) => {
                 if (!activo) return;
+                setBuscando(false);
                 setInteligente({
                     clave: claveIA,
                     libros: (Array.isArray(json.data) ? json.data : []).map(libroComercial),
@@ -144,7 +197,9 @@ export default function BuscarPage() {
                 });
             })
             .catch(() => {
-                if (activo) setInteligente({ clave: claveIA, libros: [], origen: 'catalogo', listo: true });
+                if (!activo) return;
+                setBuscando(false);
+                setInteligente({ clave: claveIA, libros: [], origen: 'catalogo', listo: true });
             });
         return () => {
             activo = false;
@@ -195,45 +250,89 @@ export default function BuscarPage() {
         );
     }, [libros, q, tipo, categoriaElegida]);
 
-    const resultadosIA = inteligente.clave === claveIA && inteligente.listo ? inteligente.libros : [];
-    const resultados = resultadosIA.length ? resultadosIA : resultadosLocales;
+    const resultadosIA = inteligente.clave === claveIA && inteligente.listo
+        ? inteligente.libros.filter((libro) => coincideConsulta(libro, q || categoriaElegida))
+        : [];
+    const resultados = resultadosLocales.length ? resultadosLocales : resultadosIA;
+    const librosRecientes = useMemo(() => {
+        const fecha = (valor) => {
+            const tiempo = Date.parse(valor || '');
+            return Number.isFinite(tiempo) ? tiempo : 0;
+        };
+        return [...libros]
+            .filter((libro) => libro.disponible)
+            .sort((a, b) => fecha(b.creadoEn) - fecha(a.creadoEn) || Number(b.esNuevo) - Number(a.esNuevo) || b.id - a.id)
+            .slice(0, MAX_POR_SECCION);
+    }, [libros]);
+
+    const alEscribir = (e) => {
+        const valor = e.target.value;
+        clearTimeout(temporizadorEscritura.current);
+        setBuscando(Boolean(valor.trim() || categoriaElegida));
+        setVerOtrasOpciones(false);
+        temporizadorEscritura.current = setTimeout(() => {
+            const siguientes = {};
+            if (valor.trim()) siguientes.q = valor.trim();
+            if (tipo !== 'todos') siguientes.tipo = tipo;
+            setParams(siguientes);
+        }, 220);
+    };
 
     const enviar = (e) => {
         e.preventDefault();
+        clearTimeout(temporizadorEscritura.current);
         const datos = new FormData(e.currentTarget);
         const limpio = String(datos.get('q') || '').trim();
         const tipoElegido = String(datos.get('tipo') || tipo);
         const siguientes = {};
         if (limpio) siguientes.q = limpio;
         if (tipoElegido !== 'todos') siguientes.tipo = tipoElegido;
+        setBuscando(Boolean(limpio || (tipoElegido.startsWith(PREFIJO_CATEGORIA) && nombreCategoria(tipoElegido))));
+        setVerOtrasOpciones(false);
         setParams(siguientes);
     };
 
     const cambiarTipo = (e) => {
+        clearTimeout(temporizadorEscritura.current);
         const tipoElegido = e.target.value;
         const escrito = entrada.current?.value?.trim() || '';
         const siguientes = {};
         if (escrito) siguientes.q = escrito;
         if (tipoElegido !== 'todos') siguientes.tipo = tipoElegido;
+        setBuscando(Boolean(escrito || (tipoElegido.startsWith(PREFIJO_CATEGORIA) && nombreCategoria(tipoElegido))));
+        setVerOtrasOpciones(false);
         setParams(siguientes);
     };
 
     const salir = () => navigate('/');
-    const limpiar = () => setParams({});
+    const limpiar = () => {
+        clearTimeout(temporizadorEscritura.current);
+        sincronizarEntrada('');
+        setBuscando(false);
+        setVerOtrasOpciones(false);
+        setParams({});
+    };
     const mostrandoResultados = Boolean(q || categoriaElegida);
+    const buscandoLibros = buscando || (mostrandoResultados && !inteligente.listo);
     const verTodosResultados = categoriaElegida
         ? `/catalogo?categoria=${encodeURIComponent(categoriaElegida)}`
         : q
           ? `/catalogo?q=${encodeURIComponent(q)}`
           : '/catalogo';
-    const mensajeIA = !mostrandoResultados
-        ? 'Estoy aquí: dime un autor, un género o cómo te sientes y te recomiendo algo.'
-        : !inteligente.listo
-          ? 'Dame un momento… estoy mirando entre estantes.'
+    const mensajeBusqueda = !mostrandoResultados
+        ? ''
+        : buscandoLibros
+          ? 'Buscando libros…'
           : resultados.length
-            ? `Encontré ${textoResultados(resultados.length)}. ¿Quieres algo parecido, más corto o para regalar? Dime y lo ajusto.`
-            : 'No di con el libro todavía. Prueba con otra pista: un autor, un género o una frase que recuerdes.';
-    const usarSugerencia = (texto) => setParams({ q: texto });
+            ? ''
+            : 'Libro no encontrado. Toque para ver otras opciones que puedan gustarle.';
+    const usarSugerencia = (texto) => {
+        clearTimeout(temporizadorEscritura.current);
+        sincronizarEntrada(texto);
+        setBuscando(true);
+        setVerOtrasOpciones(false);
+        setParams({ q: texto });
+    };
 
     return (
         <div className="sitio buscar-pagina">
@@ -245,8 +344,8 @@ export default function BuscarPage() {
                     </button>
                 </div>
                 <div className="buscar-cabecera__centro">
-                    <h1 className="buscar-titulo">¿Qué estás buscando?</h1>
-                    <p className="buscar-intro">Dime qué te apetece leer, aunque no sepas el título. Yo te ayudo a encontrarlo.</p>
+                    <h1 className="buscar-titulo">¿Qué está buscando?</h1>
+                    <p className="buscar-intro">Indique un título, autor, género o una idea aproximada. Le presentaremos las opciones disponibles.</p>
                     <form className="buscar-formulario" role="search" onSubmit={enviar}>
                         <div className="buscar-barra">
                             <select id="buscar-tipo" className="buscar-tipo" name="tipo" value={tipo} onChange={cambiarTipo} aria-label="Ámbito de búsqueda">
@@ -268,14 +367,14 @@ export default function BuscarPage() {
                                 )}
                             </select>
                             <input
-                                key={q}
                                 ref={entrada}
                                 id="buscar-resultados"
                                 type="search"
                                 name="q"
                                 defaultValue={q}
-                                placeholder="Ej.: «novela para regalar», «algo de Cortázar»…"
-                                aria-label="Escribe qué libro buscas: autor, título, género, ISBN o una idea"
+                                onChange={alEscribir}
+                                placeholder="Ej.: «novela para regalar», «títulos de Cortázar»…"
+                                aria-label="Escriba el libro que busca: autor, título, género, ISBN o una idea"
                                 autoComplete="off"
                                 autoFocus
                             />
@@ -284,20 +383,24 @@ export default function BuscarPage() {
                                     <FaXmark aria-hidden="true" />
                                 </button>
                             )}
-                            <button type="submit" className="buscar-enviar" aria-label="Buscar">
-                                <FaMagnifyingGlass aria-hidden="true" />
+                            <button type="submit" className="buscar-enviar" aria-label={buscandoLibros ? 'Buscando libros' : 'Buscar'} aria-busy={buscandoLibros}>
+                                {buscandoLibros ? <span className="buscar-spinner" aria-hidden="true" /> : <FaMagnifyingGlass aria-hidden="true" />}
                             </button>
                         </div>
                     </form>
                     <div className="buscar-ayuda" role="status">
-                        <span className="buscar-ayuda__etiqueta">Sugerencia IA</span>
-                        <span className={`buscar-ayuda__pulso${mostrandoResultados && !inteligente.listo ? ' buscar-ayuda__pulso--activo' : ''}`} aria-hidden="true" />
-                        <p>{mensajeIA}</p>
+                        <span className="buscar-ayuda__etiqueta">Búsqueda</span>
+                        {mensajeBusqueda && (
+                            <>
+                                <span className={`buscar-ayuda__pulso${buscandoLibros ? ' buscar-ayuda__pulso--activo' : ''}`} aria-hidden="true" />
+                                <p>{mensajeBusqueda}</p>
+                            </>
+                        )}
                     </div>
                     {!mostrandoResultados && (
-                        <div className="buscar-sugerencias" aria-label="Ideas para empezar">
-                            <span>Prueba con:</span>
-                            {SUGERENCIAS_IA.map((sugerencia) => (
+                        <div className="buscar-sugerencias" aria-label="Sugerencias de búsqueda">
+                            <span>Puede buscar:</span>
+                            {SUGERENCIAS_BUSQUEDA.map((sugerencia) => (
                                 <button key={sugerencia} type="button" className="buscar-sugerencia" onClick={() => usarSugerencia(sugerencia)}>
                                     {sugerencia}
                                 </button>
@@ -313,20 +416,40 @@ export default function BuscarPage() {
                 {cargando && (
                     <div className="buscar-cargando" role="status">
                         <span className="buscar-punto" aria-hidden="true" />
-                        Cargando catálogo…
+                        Buscando libros…
                     </div>
                 )}
 
                 {!cargando && error && (
                     <div className="buscar-aviso" role="status">
-                        No se pudo cargar el catálogo. Inténtalo de nuevo.
+                        No se pudo cargar el catálogo. Intente nuevamente.
                     </div>
                 )}
 
-                {!cargando && !error && mostrandoResultados && resultados.length === 0 && (
+                {!cargando && !error && !buscandoLibros && mostrandoResultados && resultados.length === 0 && librosRecientes.length === 0 && (
                     <div className="buscar-vacio" role="status">
-                        <p>{q ? `No encontramos libros con «${q}».` : `No hay libros disponibles en ${categoriaElegida}.`}</p>
+                        <p>Libro no encontrado. No hay títulos recientes disponibles en este momento.</p>
                     </div>
+                )}
+
+                {!cargando && !error && !buscandoLibros && mostrandoResultados && resultados.length === 0 && librosRecientes.length > 0 && (
+                    <>
+                        <div className="buscar-aviso buscar-aviso--recomendados" role="status">
+                            <p className="buscar-aviso__titulo">Libro no encontrado.</p>
+                            <button type="button" className="buscar-opciones" onClick={() => setVerOtrasOpciones(true)}>
+                                Ver otras opciones que puedan gustarle
+                            </button>
+                        </div>
+                        {verOtrasOpciones && (
+                            <CarruselSeccion
+                                id="recomendados"
+                                titulo="Títulos recientes"
+                                total={librosRecientes.length}
+                                libros={librosRecientes}
+                                verTodosHref="/catalogo"
+                            />
+                        )}
+                    </>
                 )}
 
                 {!cargando && !error && mostrandoResultados && resultados.length > 0 && (

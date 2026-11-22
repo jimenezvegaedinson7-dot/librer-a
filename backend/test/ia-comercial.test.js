@@ -11,6 +11,16 @@ const facetas = {
     categorias: [{ id: 9, nombre: 'Novela' }]
 };
 
+const facetasAmplias = {
+    autores: [],
+    categorias: [
+        { id: 1, nombre: 'Novela' },
+        { id: 2, nombre: 'Cuento' },
+        { id: 3, nombre: 'Ciencia ficción' },
+        { id: 4, nombre: 'Misterio / Suspenso' }
+    ]
+};
+
 test('el buscador usa Gemini pero solo acepta IDs del catálogo real', async () => {
     const llamadas = [];
     const repositorio = {
@@ -132,5 +142,72 @@ test('buscar filtra con el alias exterior final', async () => {
         assert.doesNotMatch(sql, /base\.estado = 1/);
     } finally {
         query.mock.restore();
+    }
+});
+
+test('validarPlan conserva las palabras en filtros por texto', () => {
+    const plan = { autores: [4], categorias: [9], palabras: ['cervantes'], isbn: '9788466352086', minimo: 0, maximo: 0, orden: 'relevancia', stock: 'disponible', oferta: false };
+    const porAutor = validarPlan(plan, facetas, { tipo: 'autor' });
+    assert.deepEqual(porAutor.palabras, ['cervantes']);
+    assert.deepEqual(porAutor.categorias, []);
+    const porCategoria = validarPlan(plan, facetas, { tipo: 'categoria' });
+    assert.deepEqual(porCategoria.palabras, ['cervantes']);
+    assert.deepEqual(porCategoria.autores, []);
+});
+
+test('buscar restringe las palabras al ambito titulo', async () => {
+    let sql;
+    const query = mock.method(pool, 'query', async (consulta) => {
+        sql = consulta;
+        return [[]];
+    });
+    try {
+        await busquedaModel.buscar({ palabras: ['quijote'], campo: 'titulo' });
+        assert.match(sql, /translate\(lower\(final\.titulo\)/);
+        assert.doesNotMatch(sql, /final\.descripcion/);
+        assert.doesNotMatch(sql, /final\.autor/);
+        assert.doesNotMatch(sql, /final\.categoria/);
+    } finally {
+        query.mock.restore();
+    }
+});
+
+test('un plan vacio no devuelve el catalogo general como resultado', async () => {
+    const llamadas = [];
+    const repositorio = {
+        facetas: async () => facetas,
+        titulos: async () => [],
+        buscar: async (filtros) => {
+            llamadas.push(filtros);
+            return (filtros.palabras || []).length ? [] : [{ id_libro: 99 }];
+        }
+    };
+    const interprete = async () => ({
+        plan: { autores: [], categorias: [], palabras: [], isbn: '', minimo: 0, maximo: 0, orden: 'relevancia', stock: '', oferta: false }
+    });
+    const resultado = await crearBuscadorIA({ repositorio, interprete })({ consulta: 'homero' });
+    assert.deepEqual(resultado.libros, []);
+    assert.equal(resultado.origen, 'catalogo');
+    assert.ok(llamadas.every((filtros) => (filtros.palabras || []).length > 0));
+});
+
+test('las consultas descriptivas se resuelven con categorias del catalogo', async () => {
+    const casos = [
+        ['Novela para regalar', 1],
+        ['Un clásico corto', 2],
+        ['Ciencia ficción', 3],
+        ['Misterio con humor', 4]
+    ];
+    for (const [consulta, idCategoria] of casos) {
+        const plan = interpretarLocal({ consulta, facetas: facetasAmplias });
+        assert.deepEqual(plan.categorias, [idCategoria], consulta);
+        const repositorio = {
+            facetas: async () => facetasAmplias,
+            titulos: async () => [],
+            buscar: async (filtros) => (filtros.categoria ? [{ id_libro: idCategoria }] : [{ id_libro: 99 }])
+        };
+        const resultado = await crearBuscadorIA({ repositorio, interprete: async () => ({ plan: null, motivo: 'sin_clave' }) })({ consulta });
+        assert.equal(resultado.origen, 'catalogo', consulta);
+        assert.deepEqual(resultado.libros, [{ id_libro: idCategoria }], consulta);
     }
 });

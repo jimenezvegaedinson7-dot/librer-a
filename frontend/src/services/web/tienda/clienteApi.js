@@ -3,6 +3,7 @@ import { recomendacionesDesdeCatalogo } from './recomendacionesLibro';
 import { guardarPublico, quitarPublico } from '../cachePublica';
 
 export const CLAVE_CLIENTE = 'libreria-web-cliente-v1';
+const TIEMPO_BUSQUEDA = 2500;
 
 export const leer = (clave, respaldo = null) => {
     try {
@@ -25,7 +26,7 @@ export function exigirSesion(sesion) {
     return sesion;
 }
 
-export async function peticionCliente(ruta, { method = 'GET', body, autenticada = true, sesion = leer(CLAVE_CLIENTE) } = {}) {
+export async function peticionCliente(ruta, { method = 'GET', body, autenticada = true, sesion = leer(CLAVE_CLIENTE), timeout = 120000 } = {}) {
     const credencial = ruta.startsWith('/auth/');
     if (autenticada) exigirSesion(sesion);
     const comprobar = () => {
@@ -37,7 +38,7 @@ export async function peticionCliente(ruta, { method = 'GET', body, autenticada 
         }
     };
     const control = new AbortController();
-    const limite = setTimeout(() => control.abort(), 120000);
+    const limite = setTimeout(() => control.abort(), timeout);
     let res, json;
     try {
         res = await fetch(`${env.apiUrl}${ruta}`, {
@@ -102,7 +103,7 @@ export const clienteApi = {
     },
     catalogo: () => peticionCliente('/libros', { autenticada: false }),
     recomendados: (sesion) => peticionCliente('/libros/recomendados', { sesion }),
-    buscarInteligente: (datos) => peticionCliente('/libros/busqueda-inteligente', { method: 'POST', body: datos, autenticada: false }),
+    buscarInteligente: (datos) => peticionCliente('/libros/busqueda-inteligente', { method: 'POST', body: datos, autenticada: false, timeout: TIEMPO_BUSQUEDA }),
     libro: (id) => peticionCliente(`/libros/${id}`, { autenticada: false }),
     relacionados: async (id, libro) => {
         try {

@@ -1,4 +1,4 @@
-const STOPWORDS = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 'unos', 'unas', 'y', 'o', 'con', 'sin', 'por', 'para', 'en', 'al', 'a', 'lo', 'que', 'cual', 'como', 'libro', 'libros', 'busco', 'quiero', 'necesito', 'algo', 'sobre', 'según', 'segun']);
+const STOPWORDS = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'un', 'una', 'unos', 'unas', 'y', 'o', 'con', 'sin', 'por', 'para', 'en', 'al', 'a', 'lo', 'que', 'cual', 'como', 'libro', 'libros', 'busco', 'quiero', 'necesito', 'algo', 'sobre', 'según', 'segun', 'regalar', 'regalo', 'recomendar', 'recomienda', 'sugerir', 'sugiere', 'clasico', 'corto', 'corta', 'cortos', 'cortas', 'humor', 'leer', 'lectura', 'interesante', 'bueno', 'buena']);
 
 function normalizar(valor) {
     return String(valor ?? '')
@@ -29,6 +29,21 @@ function coincideFaceta(valor, texto) {
     return partes.some((parte) => parte.length >= 5 && exacta(parte)) || (ultima.length >= 4 && exacta(ultima));
 }
 
+function categoriasPorIntencion(texto, facetas) {
+    const categorias = facetas.categorias || [];
+    const encontradas = [];
+    const agregar = (fragmento) => {
+        const buscado = normalizar(fragmento);
+        const categoria = categorias.find((c) => normalizar(c.nombre) === buscado || normalizar(c.nombre).includes(buscado));
+        if (categoria && !encontradas.some((c) => c.id === categoria.id)) encontradas.push(categoria);
+    };
+    if (/regalar|regalo/.test(texto)) agregar('Novela');
+    if (/ciencia ficcion/.test(texto)) agregar('Ciencia ficción');
+    if (/misterio|suspenso/.test(texto)) agregar('Misterio / Suspenso');
+    if (/clasico|corto|corta|cortos|cortas/.test(texto)) agregar('Cuento');
+    return encontradas;
+}
+
 function extraerIsbn(consulta) {
     const encontrado = String(consulta || '').match(/(?:97[89][\s-]?)?\d(?:[\s-]?\d){9,12}[\dXx]/);
     if (!encontrado) return '';
@@ -46,9 +61,15 @@ function precio(texto, patrones) {
 
 function interpretarLocal({ consulta, tipo = 'todos', categoria = '', facetas = {} }) {
     const texto = normalizar(consulta);
-    const autores = (facetas.autores || []).filter((a) => coincideFaceta(a.nombre, texto)).map((a) => a.id);
-    const categorias = (facetas.categorias || []).filter((c) => coincideFaceta(c.nombre, texto)).map((c) => c.id);
-    const palabras = texto.split(' ').filter((p) => p.length > 2 && !STOPWORDS.has(p) && !/^\d+$/.test(p)).slice(0, 6);
+    const autoresEncontrados = (facetas.autores || []).filter((a) => coincideFaceta(a.nombre, texto));
+    const categoriasEncontradas = [...new Map([
+        ...(facetas.categorias || []).filter((c) => coincideFaceta(c.nombre, texto)),
+        ...categoriasPorIntencion(texto, facetas)
+    ].map((c) => [c.id, c])).values()];
+    const autores = autoresEncontrados.map((a) => a.id);
+    const categorias = categoriasEncontradas.map((c) => c.id);
+    const usadas = new Set([...autoresEncontrados, ...categoriasEncontradas].flatMap((f) => palabrasFaceta(f.nombre)));
+    const palabras = texto.split(' ').filter((p) => p.length > 2 && !STOPWORDS.has(p) && !/^\d+$/.test(p) && !usadas.has(p)).slice(0, 6);
     const entre = texto.match(/entre\s*(\d+(?:[.,]\d+)?)\s*y\s*(\d+(?:[.,]\d+)?)/);
     let minimo = entre ? Number(entre[1].replace(',', '.')) : 0;
     let maximo = entre ? Number(entre[2].replace(',', '.')) : 0;
@@ -107,7 +128,6 @@ function validarPlan(plan, facetas = {}, { tipo = 'todos', categoria = '' } = {}
     if (tipo === 'autor') {
         validado.categorias = [];
         validado.isbn = '';
-        validado.palabras = [];
     } else if (tipo === 'isbn') {
         validado.autores = [];
         validado.categorias = [];
@@ -119,7 +139,6 @@ function validarPlan(plan, facetas = {}, { tipo = 'todos', categoria = '' } = {}
     } else if (tipo === 'categoria') {
         validado.autores = [];
         validado.isbn = '';
-        validado.palabras = [];
     }
     return validado;
 }

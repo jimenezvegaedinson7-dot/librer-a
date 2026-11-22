@@ -215,9 +215,22 @@
 }
 
 .buscar-limpiar svg,
-.buscar-enviar svg {
+.buscar-enviar svg,
+.buscar-spinner {
     width: 20px;
     height: 20px;
+}
+
+.buscar-spinner {
+    display: block;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: buscar-girar 700ms linear infinite;
+}
+
+@keyframes buscar-girar {
+    to { transform: rotate(360deg); }
 }
 
 .buscar-enviar:hover,
@@ -523,6 +536,37 @@
     font-size: 0.9375rem;
 }
 
+.buscar-aviso--recomendados {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.buscar-aviso__titulo {
+    color: var(--texto);
+    font-weight: 700;
+}
+
+.buscar-opciones {
+    align-self: flex-start;
+    padding: 8px 14px;
+    border: 1px solid #cbdcd4;
+    border-radius: 999px;
+    background: #f7fbf9;
+    color: var(--accion);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.buscar-opciones:hover,
+.buscar-opciones:focus-visible {
+    border-color: #004d43;
+    background: #004d43;
+    color: #fff;
+}
+
 .buscar-punto {
     width: 9px;
     height: 9px;
@@ -608,7 +652,8 @@
     }
 
     .buscar-limpiar svg,
-    .buscar-enviar svg {
+    .buscar-enviar svg,
+    .buscar-spinner {
         width: 18px;
         height: 18px;
     }
@@ -651,6 +696,7 @@
 @media (prefers-reduced-motion: reduce) {
     .buscar-tarjeta,
     .buscar-punto,
+    .buscar-spinner,
     .buscar-ayuda__pulso--activo {
         transition: none;
         animation: none;
