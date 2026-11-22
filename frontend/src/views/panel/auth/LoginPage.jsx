@@ -469,7 +469,7 @@ export default function LoginPage() {
                                                 />
                                             </Campo>
 
-                                            <BotonPrimario cargando={resetCargando} textoCarga="Enviando..." icono={<FaEnvelope />}>
+                                            <BotonPrimario cargando={resetCargando} textoCarga="Verificando correo..." icono={<FaEnvelope />}>
                                                 Enviar código
                                             </BotonPrimario>
                                         </form>
@@ -501,7 +501,7 @@ export default function LoginPage() {
                                                 <button type="button" onClick={resetPaso2Volver} className="login-boton-secundario">
                                                     <FaArrowLeft className="text-xs" /> Volver
                                                 </button>
-                                                <BotonPrimario cargando={resetCargando} textoCarga="Verificando..." className="flex-1">
+                                                <BotonPrimario cargando={resetCargando} textoCarga="Verificando código..." className="flex-1">
                                                     Verificar código
                                                 </BotonPrimario>
                                             </div>
