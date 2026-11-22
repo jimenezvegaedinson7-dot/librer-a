@@ -194,7 +194,6 @@ export default function LoginPage() {
         try {
             setResetCargando(true);
             setResetError('');
-            setEnvioCorreo('enviando');
             await solicitarReseteo({ email: resetEmail.trim() });
             setEnvioCorreo('enviado');
         } catch (err) {
