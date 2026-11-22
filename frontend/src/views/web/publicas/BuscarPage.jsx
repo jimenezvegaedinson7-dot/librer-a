@@ -348,24 +348,29 @@ export default function BuscarPage() {
                     <p className="buscar-intro">Indique un título, autor, género o una idea aproximada. Le presentaremos las opciones disponibles.</p>
                     <form className="buscar-formulario" role="search" onSubmit={enviar}>
                         <div className="buscar-barra">
-                            <select id="buscar-tipo" className="buscar-tipo" name="tipo" value={tipo} onChange={cambiarTipo} aria-label="Ámbito de búsqueda">
-                                <optgroup label="Buscar por">
-                                    {TIPOS_BUSQUEDA.map(([valor, etiqueta]) => (
-                                        <option key={valor} value={valor}>
-                                            {etiqueta}
-                                        </option>
-                                    ))}
-                                </optgroup>
-                                {categorias.length > 0 && (
-                                    <optgroup label="Categorías">
-                                        {categorias.map(({ categoria }) => (
-                                            <option key={categoria} value={`${PREFIJO_CATEGORIA}${categoria}`}>
-                                                {categoria}
+                            <div className="buscar-tipo-campo">
+                                <select id="buscar-tipo" className="buscar-tipo" name="tipo" value={tipo} onChange={cambiarTipo} aria-label="Ámbito de búsqueda">
+                                    <optgroup label="Buscar por">
+                                        {TIPOS_BUSQUEDA.map(([valor, etiqueta]) => (
+                                            <option key={valor} value={valor}>
+                                                {etiqueta}
                                             </option>
                                         ))}
                                     </optgroup>
-                                )}
-                            </select>
+                                    {categorias.length > 0 && (
+                                        <optgroup label="Categorías">
+                                            {categorias.map(({ categoria }) => (
+                                                <option key={categoria} value={`${PREFIJO_CATEGORIA}${categoria}`}>
+                                                    {categoria}
+                                                </option>
+                                            ))}
+                                        </optgroup>
+                                    )}
+                                </select>
+                                <svg className="buscar-tipo-icono" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                                    <path d="M3.25 5.75 8 10.25l4.75-4.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                                </svg>
+                            </div>
                             <input
                                 ref={entrada}
                                 id="buscar-resultados"

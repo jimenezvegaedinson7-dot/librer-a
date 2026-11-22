@@ -419,10 +419,6 @@ export default function LoginPage() {
                                         <form onSubmit={enviarCodigoReset} className="space-y-4">
                                             <p className="text-sm text-[#766d62]">Se enviará un código de verificación al correo registrado.</p>
 
-                                            <div className="rounded-lg border border-[#e6e0d7] bg-[#faf8f5] px-4 py-3">
-                                                <p className="text-xs text-[#766d62]">Correo de recuperación</p>
-                                                <p className="mt-0.5 text-sm font-semibold text-[#1c1814]">{resetEmail || 'Introduce el correo de tu cuenta'}</p>
-                                            </div>
 
                                             <Campo id="reset-email" etiqueta="Correo electrónico de tu cuenta" icono={<FaEnvelope />}>
                                                 <input

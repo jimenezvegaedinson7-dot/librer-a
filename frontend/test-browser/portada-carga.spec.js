@@ -49,9 +49,16 @@ for (const width of [1440, 390]) {
         await expect(page.locator('.portada3d__orbite')).toBeVisible();
         await expect(page.getByRole('heading', { name: /Las ideas no se quedan quietas/ })).toBeVisible();
         await expect(page.locator('#precarga')).toHaveCount(0);
-        datos.liberar();
+        if (width === 1440) {
+            expect(await page.getByRole('navigation', { name: 'Principal' }).getByRole('link').count()).toBeGreaterThan(4);
+        } else {
+            await page.getByRole('button', { name: 'Abrir menú' }).click();
+            expect(await page.locator('.cajon__categorias button').count()).toBeGreaterThan(0);
+            await page.getByRole('button', { name: 'Cerrar menú' }).last().click();
+        }
         const carrusel = page.getByRole('region', { name: 'Últimos libros agregados' });
         await expect(carrusel.getByRole('link')).toHaveCount(16);
+        datos.liberar();
         await expect(carrusel.getByRole('link').first()).toHaveAttribute('href', '/libro/1');
         const guardado = await page.evaluate((clave) => JSON.parse(localStorage.getItem(clave)), CLAVE);
         expect(guardado.recientes.valor).toHaveLength(16);

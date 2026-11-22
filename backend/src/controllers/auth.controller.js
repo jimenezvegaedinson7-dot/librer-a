@@ -163,10 +163,9 @@ const solicitarReseteo = async (req, res) => {
 
         const usuario = await usuarioModel.buscarPorEmail(emailNormalizado);
 
-        const respuestaGenerica = { success: true, mensaje: 'Si el correo está registrado, recibirás un código para restablecer tu contraseña.' };
-
-        if (!usuario || !usuario.email_verified_at) {
-            return res.json(respuestaGenerica);
+        const esAdministrador = usuario && ['administrador', 'admin'].includes(String(usuario.rol || '').trim().toLowerCase());
+        if (!usuario || !usuario.email_verified_at || !usuario.estado || !esAdministrador) {
+            return res.status(400).json({ success: false, mensaje: 'Correo inválido. Introduce nuevamente el correo.' });
         }
 
         const codigo = generarCodigoVerificacion();
@@ -179,7 +178,7 @@ const solicitarReseteo = async (req, res) => {
             console.error('No se pudo enviar el código de reseteo:', errorCorreo.message);
         });
 
-        return res.json(respuestaGenerica);
+        return res.json({ success: true, mensaje: 'Se envió un código de verificación al correo registrado.' });
     } catch (error) {
         console.error('Error al solicitar reseteo:', error);
 
@@ -199,7 +198,8 @@ const verificarReseteo = async (req, res) => {
         if (!email || !/^\d{6}$/.test(codigo)) return rechazo();
         const usuario = await usuarioModel.buscarPorEmail(email);
         const restante = Math.floor((new Date(usuario?.email_verification_expires).getTime() - Date.now()) / 1000);
-        if (!usuario?.email_verified_at || !usuario.email_verification_code || !Number.isFinite(restante) || restante <= 0) return rechazo();
+        const esAdministrador = usuario && ['administrador', 'admin'].includes(String(usuario.rol || '').trim().toLowerCase());
+        if (!usuario?.email_verified_at || !usuario.email_verification_code || !Number.isFinite(restante) || restante <= 0 || !usuario.estado || !esAdministrador) return rechazo();
         if (!(await bcrypt.compare(codigo, usuario.email_verification_code))) return rechazo();
         const reset_token = jwt.sign(
             {
@@ -242,11 +242,8 @@ const reestablecerContrasena = async (req, res) => {
 
         const usuario = await usuarioModel.buscarPorEmail(emailNormalizado);
 
-        if (!usuario) {
-            return rechazoCodigo();
-        }
-
-        if (!usuario.email_verified_at) {
+        const esAdministrador = usuario && ['administrador', 'admin'].includes(String(usuario.rol || '').trim().toLowerCase());
+        if (!usuario || !usuario.email_verified_at || !usuario.estado || !esAdministrador) {
             return rechazoCodigo();
         }
 

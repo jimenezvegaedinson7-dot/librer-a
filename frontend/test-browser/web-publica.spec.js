@@ -318,10 +318,10 @@ test('buscador de la cabecera abre una página dedicada al presionarlo, sin escr
     await expect(page).toHaveURL(/\/nosotros$/);
     await expect(resultados).toHaveURL(/\/buscar$/);
     await expect(resultados.getByRole('searchbox')).toHaveCount(1);
-    await expect(resultados.getByRole('heading', { level: 1 })).toHaveText('¿Qué estás buscando?');
+    await expect(resultados.getByRole('heading', { level: 1 })).toHaveText('¿Qué está buscando?');
     await expect(resultados.getByRole('button', { name: 'Salir' })).toBeVisible();
     await expect(resultados.locator('#buscar-tipo')).toHaveValue('todos');
-    await expect(resultados.locator('#buscar-resultados')).toHaveAttribute('placeholder', 'Busca por autor, título, género o ISBN');
+    await expect(resultados.locator('#buscar-resultados')).toHaveAttribute('placeholder', 'Ej.: «novela para regalar», «títulos de Cortázar»…');
     await expect(resultados.locator('.buscar-seccion')).not.toHaveCount(0);
     await expect(resultados.locator('.buscar-seccion__titulo').first()).toContainText('4 resultados');
     await expect(resultados.locator('.buscar-tarjeta').first()).toBeVisible();

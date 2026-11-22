@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import env from '../../models/config/compartido/env';
 import { LEGAL_RESPALDO } from '../../models/config/web/site';
 import { libroComercial } from '../../services/web/tienda/libroComercial';
 import { leerPublico, guardarPublico } from '../../services/web/cachePublica';
+import catalogoRespaldo from '../../models/config/web/catalogoRespaldo.json';
+
+const LIBROS_RESPALDO = catalogoRespaldo.libros || [];
 
 async function obtener(ruta, signal) {
     const res = await fetch(`${env.apiUrl}${ruta}`, { signal, headers: { Accept: 'application/json' } });
@@ -15,14 +18,18 @@ async function obtener(ruta, signal) {
 const lista = (json) => (Array.isArray(json) ? json : json?.data || json?.libros || []);
 
 export function useCatalogo(limite = null, habilitado = true) {
-    const normalizar = (json) =>
-        lista(json)
-            .filter((l) => Number(l.estado) === 1)
-            .slice(0, limite ?? undefined)
-            .map(libroComercial);
+    const normalizar = useCallback(
+        (json) =>
+            lista(json)
+                .filter((l) => Number(l.estado) === 1)
+                .slice(0, limite ?? undefined)
+                .map(libroComercial),
+        [limite]
+    );
     const [estado, setEstado] = useState(() => {
         const cache = habilitado ? leerPublico('/libros') : undefined;
-        return { cargando: habilitado && !cache, habilitado, error: false, libros: cache ? normalizar(cache) : [] };
+        const libros = cache ? normalizar(cache) : normalizar(LIBROS_RESPALDO);
+        return { cargando: habilitado && !cache, habilitado, error: false, libros, origen: cache ? 'cache' : 'respaldo' };
     });
 
     useEffect(() => {
@@ -30,17 +37,20 @@ export function useCatalogo(limite = null, habilitado = true) {
         const control = new AbortController();
         obtener('/libros', control.signal)
             .then((json) => {
-                const libros = lista(json)
-                    .filter((l) => Number(l.estado) === 1)
-                    .slice(0, limite ?? undefined)
-                    .map(libroComercial);
-                setEstado({ cargando: false, habilitado: true, error: false, libros });
+                setEstado({ cargando: false, habilitado: true, error: false, libros: normalizar(json), origen: 'servidor' });
             })
             .catch((e) => {
-                if (e.name !== 'AbortError') setEstado((previo) => ({ ...previo, cargando: false, habilitado: true, error: !previo.libros.length }));
+                if (e.name !== 'AbortError')
+                    setEstado((previo) => ({
+                        ...previo,
+                        cargando: false,
+                        habilitado: true,
+                        error: true,
+                        origen: previo.libros.length ? previo.origen : 'servidor'
+                    }));
             });
         return () => control.abort();
-    }, [limite, habilitado]);
+    }, [normalizar, habilitado]);
 
     return habilitado && !estado.habilitado ? { ...estado, cargando: true } : estado;
 }
