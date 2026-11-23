@@ -264,7 +264,8 @@ struct ComplaintsBookView: View {
                 montoReclamado: trimmed(amount).isEmpty ? nil : trimmed(amount),
                 idVenta: purchaseID,
                 detalle: trimmed(detail),
-                pedido: trimmed(request)
+                pedido: trimmed(request),
+                acepta: accepts
             ))
             withAnimation { registered = response }
         } catch {

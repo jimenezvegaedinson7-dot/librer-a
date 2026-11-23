@@ -178,6 +178,7 @@ class _LibroReclamacionesScreenState extends State<LibroReclamacionesScreen> {
         'id_venta': ?_idVenta,
         'detalle': _detalle.text.trim(),
         'pedido': _pedido.text.trim(),
+        'acepta': true,
       });
       if (mounted) setState(() => _registrada = resultado);
     } on ApiException catch (e) {

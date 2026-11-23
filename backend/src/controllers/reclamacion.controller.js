@@ -69,6 +69,9 @@ const validarHoja = (body) => {
     if (datos.pedido.length < 5) {
         return { error: 'Indica qué solicitas' };
     }
+    if (body.acepta !== true && body.acepta !== 'true') {
+        return { error: 'Confirma que los datos son verdaderos para registrar la hoja' };
+    }
 
     if (body.monto_reclamado !== undefined && body.monto_reclamado !== null && body.monto_reclamado !== '') {
         const monto = Number(body.monto_reclamado);
@@ -111,20 +114,46 @@ const registrar = async (req, res) => {
             return res.status(400).json({ success: false, mensaje: error });
         }
 
-        const reclamacion = await reclamacionModel.crear({ ...datos, id_usuario: usuarioOpcional(req) });
+        const idUsuario = usuarioOpcional(req);
+        if (datos.id_venta) {
+            const venta = await reclamacionModel.obtenerVentaReclamable(datos.id_venta);
+            if (!venta) {
+                return res.status(400).json({ success: false, mensaje: 'El pedido indicado no existe' });
+            }
+            if (idUsuario && Number(venta.id_usuario) !== Number(idUsuario)) {
+                return res.status(400).json({ success: false, mensaje: 'El pedido indicado no corresponde a tu cuenta' });
+            }
+        }
+
+        const reclamacion = await reclamacionModel.crear({ ...datos, id_usuario: idUsuario });
 
         const empresa = await empresaModel.obtenerEmpresa().catch(() => ({}));
 
-        enviarConstanciaReclamacion({ reclamacion, empresa }).catch((errorCorreo) => {
+        let constanciaEnviada = false;
+        try {
+            const resultado = await enviarConstanciaReclamacion({ reclamacion, empresa });
+            constanciaEnviada = Boolean(resultado?.enviado);
+        } catch (errorCorreo) {
             console.error('No se pudo enviar la constancia del reclamo:', errorCorreo.message);
-        });
+        }
+
+        const mensaje = constanciaEnviada
+            ? `Registramos tu hoja N.° ${reclamacion.numero}. Te enviamos una copia a ${reclamacion.consumidor_email}.`
+            : `Registramos tu hoja N.° ${reclamacion.numero}. No se pudo enviar la copia por correo; guarda este número para tu seguimiento.`;
 
         return res
             .status(201)
             .json({
                 success: true,
-                mensaje: `Registramos tu hoja N.° ${reclamacion.numero}. Te enviamos una copia a ${reclamacion.consumidor_email}.`,
-                data: { id_reclamacion: reclamacion.id_reclamacion, numero: reclamacion.numero, fecha_registro: reclamacion.fecha_registro, fecha_limite: reclamacion.fecha_limite }
+                mensaje,
+                enviado: constanciaEnviada,
+                data: {
+                    id_reclamacion: reclamacion.id_reclamacion,
+                    numero: reclamacion.numero,
+                    fecha_registro: reclamacion.fecha_registro,
+                    fecha_limite: reclamacion.fecha_limite,
+                    constancia_enviada: constanciaEnviada
+                }
             });
     } catch (error) {
         console.error('Error al registrar reclamación:', error);

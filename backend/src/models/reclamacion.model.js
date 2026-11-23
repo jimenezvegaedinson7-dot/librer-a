@@ -26,6 +26,11 @@ const normalizar = (fila) =>
           }
         : null;
 
+const obtenerVentaReclamable = async (idVenta) => {
+    const [filas] = await pool.query('SELECT id_venta, id_usuario, estado FROM ventas WHERE id_venta = ? LIMIT 1', [idVenta]);
+    return filas[0] || null;
+};
+
 const crear = async (datos) => {
     const connection = await pool.getConnection();
     try {
@@ -140,4 +145,4 @@ const responder = async (id, { respuesta, idUsuario }) => {
     return normalizar(filas[0]);
 };
 
-module.exports = { crear, listar, resumen, obtener, responder, numeroHoja };
+module.exports = { crear, listar, resumen, obtener, responder, obtenerVentaReclamable, numeroHoja };

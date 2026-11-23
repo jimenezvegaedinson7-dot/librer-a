@@ -1,6 +1,6 @@
 # Mapa de API
 
-> Generado desde el código real el 2026-11-22 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-23 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 Total de endpoints registrados en el backend: **116**. Los routers se montan desde `src/app/rutas.js`.
@@ -33,7 +33,7 @@ Total de endpoints registrados en el backend: **116**. Los routers se montan des
 | POST | `/api/auth/verificar-email` | controllers/auth.controller.js#verificarEmail | verificacionLimiter | views/panel/auth/VerificarEmailPage.jsx<br>views/web/tienda/CuentaPage.jsx | screens/verificacion_email_screen.dart | Pública |
 | POST | `/api/auth/reenviar-codigo` | controllers/auth.controller.js#reenviarCodigo | verificacionLimiter | views/panel/auth/VerificarEmailPage.jsx<br>views/web/tienda/CuentaPage.jsx | screens/verificacion_email_screen.dart | Pública |
 | POST | `/api/auth/solicitar-reseteo` | controllers/auth.controller.js#solicitarReseteo | verificacionLimiter | views/panel/auth/LoginPage.jsx<br>views/web/tienda/CuentaPage.jsx | screens/recuperar_contrasena_screen.dart<br>screens/reestablecer_contrasena_screen.dart | Pública |
-| POST | `/api/auth/verificar-reseteo` | controllers/auth.controller.js#verificarReseteo | verificacionLimiter | views/web/tienda/CuentaPage.jsx | screens/reestablecer_contrasena_screen.dart | Pública |
+| POST | `/api/auth/verificar-reseteo` | controllers/auth.controller.js#verificarReseteo | verificacionLimiter | views/panel/auth/LoginPage.jsx<br>views/web/tienda/CuentaPage.jsx | screens/reestablecer_contrasena_screen.dart | Pública |
 | POST | `/api/auth/reestablecer-contrasena` | controllers/auth.controller.js#reestablecerContrasena | verificacionLimiter | views/panel/auth/LoginPage.jsx<br>views/web/tienda/CuentaPage.jsx | screens/reestablecer_contrasena_screen.dart | Pública |
 | POST | `/api/auth/2fa/verify-login` | controllers/auth2fa.controller.js#verificarLogin | twoFaLimiter | views/panel/auth/LoginPage.jsx<br>views/web/tienda/CuentaPage.jsx | screens/security/two_factor_verify_screen.dart | Pública |
 | POST | `/api/auth/2fa/setup` | controllers/auth2fa.controller.js#setup | JWT + twoFaLimiter | components/panel/layout/PerfilAdministrador.jsx | screens/security/two_factor_setup_screen.dart | JWT |
@@ -55,7 +55,7 @@ Total de endpoints registrados en el backend: **116**. Los routers se montan des
 | POST | `/api/comprobantes/:id/enviar-email` | controllers/comprobante.controller.js#enviarComprobanteEmail | JWT + verificarPanel | components/panel/ventas/EmitirComprobanteModal.jsx<br>views/panel/comprobantes/ComprobantesPage.jsx | — | JWT + admin |
 | GET | `/api/comprobantes/:id` | controllers/comprobante.controller.js#obtenerComprobante | JWT + verificarPanel | components/panel/comprobantes/ComprobanteViewModal.jsx | — | JWT + admin |
 | POST | `/api/comprobantes/:id/anular` | controllers/comprobante.controller.js#anularComprobante | JWT + rol:administrador | components/panel/comprobantes/AnularComprobanteModal.jsx | — | JWT + admin |
-| GET | `/api/empresa` | controllers/empresa.controller.js#obtenerEmpresa | — | components/panel/comprobantes/ComprobanteViewModal.jsx<br>components/panel/ventas/EmitirComprobanteModal.jsx<br>components/web/PublicLayout.jsx<br>views/panel/configuracion/EmpresaPage.jsx<br>views/web/publicas/LibroReclamacionesPage.jsx | — | Pública |
+| GET | `/api/empresa` | controllers/empresa.controller.js#obtenerEmpresa | — | components/panel/comprobantes/ComprobanteViewModal.jsx<br>components/panel/ventas/EmitirComprobanteModal.jsx<br>components/web/PublicLayout.jsx<br>views/panel/configuracion/EmpresaPage.jsx<br>views/panel/reclamaciones/ReclamacionesPage.jsx<br>views/web/publicas/LibroReclamacionesPage.jsx | — | Pública |
 | PUT | `/api/empresa` | controllers/empresa.controller.js#actualizarEmpresa | JWT + rol:administrador | views/panel/configuracion/EmpresaPage.jsx | — | JWT + admin |
 | GET | `/api/favoritos` | controllers/favorito.controller.js#listarMisFavoritos | JWT | views/web/tienda/FavoritosPage.jsx | screens/favoritos_screen.dart | JWT |
 | GET | `/api/favoritos/:idLibro` | controllers/favorito.controller.js#estadoFavorito | JWT | components/web/tienda/AccionesLibro.jsx | screens/detalle_libro_screen.dart | JWT |

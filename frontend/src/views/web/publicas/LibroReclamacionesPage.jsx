@@ -121,6 +121,7 @@ function FormularioReclamaciones({ tienda }) {
             setError('');
             const respuesta = await registrarReclamacion({
                 ...hoja,
+                acepta: true,
                 monto_reclamado: hoja.monto_reclamado === '' ? undefined : hoja.monto_reclamado,
                 id_venta: hoja.id_venta === '' ? undefined : hoja.id_venta
             });
@@ -166,6 +167,11 @@ function FormularioReclamaciones({ tienda }) {
                             <p className="text-sm text-slate-600">
                                 Te responderemos en un plazo no mayor a 15 días hábiles (a más tardar el{' '}
                                 {new Date(`${registrada.fecha_limite}T12:00:00`).toLocaleDateString('es-PE')}).
+                            </p>
+                        )}
+                        {registrada.constancia_enviada === false && (
+                            <p className="text-sm text-amber-700" role="status">
+                                Guarda el número de hoja. La copia por correo no se pudo enviar en este momento.
                             </p>
                         )}
                         <Button

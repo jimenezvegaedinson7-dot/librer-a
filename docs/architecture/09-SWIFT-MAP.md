@@ -1,6 +1,6 @@
 # Mapa de la aplicación iOS SwiftUI
 
-> Generado desde el código real el 2026-11-22 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-23 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque y navegación
@@ -58,6 +58,6 @@ La autorización indicada corresponde a la declaración del cliente; la API veri
 
 Referencias estáticas aproximadas por símbolos y extensiones Swift; no equivale a imports por archivo ni a una compilación de Xcode.
 
-Archivos de aplicación: 73. Archivos de pruebas: 7. Candidatos sin alcance desde @main: 0.
+Archivos de aplicación: 74. Archivos de pruebas: 7. Candidatos sin alcance desde @main: 0.
 
 La compilación y los XCTest de iOS requieren un Mac con Xcode. El seguimiento y la durabilidad del intento de checkout conservan su implementación actual; esta limpieza no certifica paridad funcional completa con Flutter.

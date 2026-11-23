@@ -1,6 +1,6 @@
 # Mapa del frontend (React 19 + Vite + Tailwind 4) — Panel y tienda web
 
-> Generado desde el código real el 2026-11-22 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-23 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque
@@ -138,7 +138,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `services/panel/notificaciones/notificacionesService.js` | `GET /api/inventario/stock-bajo`<br>`GET /api/pagos` |
 | `services/web/tienda/persistenciaCompra.js` | `POST /api/pagos/crear-orden` |
 | `views/panel/anuncios/AnunciosPage.jsx` | `DELETE /api/anuncios/:param`<br>`GET /api/anuncios/todos`<br>`POST /api/anuncios`<br>`PUT /api/anuncios/:param` |
-| `views/panel/auth/LoginPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/solicitar-reseteo` |
+| `views/panel/auth/LoginPage.jsx` | `POST /api/auth/2fa/verify-login`<br>`POST /api/auth/login`<br>`POST /api/auth/reestablecer-contrasena`<br>`POST /api/auth/solicitar-reseteo`<br>`POST /api/auth/verificar-reseteo` |
 | `views/panel/auth/VerificarEmailPage.jsx` | `POST /api/auth/reenviar-codigo`<br>`POST /api/auth/verificar-email` |
 | `views/panel/autores/AutoresPage.jsx` | `DELETE /api/autores/:param`<br>`GET /api/autores`<br>`GET /api/autores/:param` |
 | `views/panel/categorias/CategoriasPage.jsx` | `DELETE /api/categorias/:param`<br>`GET /api/categorias`<br>`GET /api/categorias/:param` |
@@ -148,7 +148,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `views/panel/inventario/InventarioPage.jsx` | `GET /api/inventario`<br>`GET /api/inventario/libro/:param` |
 | `views/panel/libros/LibrosPage.jsx` | `DELETE /api/libros/:param`<br>`GET /api/inventario`<br>`GET /api/libros`<br>`GET /api/libros/:param` |
 | `views/panel/pedidos/PedidosPage.jsx` | `GET /api/pedidos`<br>`GET /api/pedidos/:param`<br>`PUT /api/pedidos/:param/estado` |
-| `views/panel/reclamaciones/ReclamacionesPage.jsx` | `GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
+| `views/panel/reclamaciones/ReclamacionesPage.jsx` | `GET /api/empresa`<br>`GET /api/reclamaciones`<br>`GET /api/reclamaciones/resumen`<br>`PUT /api/reclamaciones/:param/respuesta` |
 | `views/panel/tarifas/TarifasEnvioPage.jsx` | `GET /api/zonas-delivery/todos`<br>`PUT /api/zonas-delivery/:param` |
 | `views/panel/usuarios/UsuariosPage.jsx` | `GET /api/usuarios`<br>`PATCH /api/usuarios/:param` |
 | `views/panel/ventas/VentasPage.jsx` | `GET /api/ventas`<br>`GET /api/ventas/:param` |
@@ -180,6 +180,7 @@ Archivos que importan funciones de servicio y los endpoints que alcanzan (el com
 | `services/panel/auth/authService.js` | `confirmar2fa` | `POST /api/auth/2fa/confirm` |
 | `services/panel/auth/authService.js` | `desactivar2fa` | `POST /api/auth/2fa/disable` |
 | `services/panel/auth/authService.js` | `solicitarReseteo` | `POST /api/auth/solicitar-reseteo` |
+| `services/panel/auth/authService.js` | `verificarReseteo` | `POST /api/auth/verificar-reseteo` |
 | `services/panel/auth/authService.js` | `restablecerContrasena` | `POST /api/auth/reestablecer-contrasena` |
 | `services/panel/auth/perfilService.js` | `obtenerPerfil` | `GET /api/usuarios/perfil` |
 | `services/panel/auth/perfilService.js` | `actualizarPerfil` | `PUT /api/usuarios/perfil` |

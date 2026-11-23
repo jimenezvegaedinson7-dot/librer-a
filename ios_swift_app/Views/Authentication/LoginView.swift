@@ -42,7 +42,12 @@ struct LoginView: View {
 
                     OrnamentDivider()
 
-                    if viewModel.requiresTwoFactor {
+                    if viewModel.requiresSecurityGame {
+                        LoginChallengeGameView {
+                            viewModel.completeSecurityGame()
+                        }
+                        .appear(1)
+                    } else if viewModel.requiresTwoFactor {
                         twoFactorForm.appear(1)
                     } else {
                         credentialsForm.appear(1)
@@ -52,6 +57,12 @@ struct LoginView: View {
                         Text(sessionMessage)
                             .font(.subheadline)
                             .foregroundStyle(Brand.aviso)
+                            .multilineTextAlignment(.center)
+                    }
+                    if viewModel.requiresSecurityGame {
+                        Text("Por seguridad, debes completar el juego antes de volver a intentar.")
+                            .font(.footnote)
+                            .foregroundStyle(Brand.textoSecundario)
                             .multilineTextAlignment(.center)
                     }
                     if let message = viewModel.errorMessage {

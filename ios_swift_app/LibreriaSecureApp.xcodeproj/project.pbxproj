@@ -20,6 +20,7 @@
 		81918909E83595C8F4212CCC /* LibreriaSecureApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LibreriaSecureApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		858E33F033846B57054E0712 /* LibreriaSecureAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LibreriaSecureAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7E7CA9F4DF8A3E05631F826 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		351015475714464EB2E93C00 /* LoginChallengeGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginChallengeGameView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */

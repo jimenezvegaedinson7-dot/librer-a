@@ -196,9 +196,10 @@ struct ComplaintRequest: Encodable {
     let idVenta: Int?
     let detalle: String
     let pedido: String
+    let acepta: Bool
 
     enum CodingKeys: String, CodingKey {
-        case tipo, detalle, pedido
+        case tipo, detalle, pedido, acepta
         case consumidorNombre = "consumidor_nombre"
         case consumidorTipoDocumento = "consumidor_tipo_documento"
         case consumidorDocumento = "consumidor_documento"

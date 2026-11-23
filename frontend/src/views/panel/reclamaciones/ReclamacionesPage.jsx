@@ -17,7 +17,7 @@ import { Pagination } from '../../../components/panel/ui/Pagination';
 import { useToast } from '../../../app/providers/ToastContext';
 import { useImpresion } from '../../../hooks/panel/useImpresion';
 import { formatearFecha, formatearMoneda } from '../../../services/compartido/utils/format';
-import { listarReclamaciones, obtenerResumenReclamaciones, responderReclamacion } from '../../../services/panel/reclamaciones/reclamacionesService';
+import { listarReclamaciones, obtenerResumenReclamaciones, obtenerEmpresaPublica, responderReclamacion } from '../../../services/panel/reclamaciones/reclamacionesService';
 import { useCarga } from '../../../hooks/panel/useCarga';
 
 const hoyLima = () => new Date(Date.now() - 5 * 3600 * 1000).toISOString().slice(0, 10);
@@ -70,7 +70,7 @@ const columnas = [
     { titulo: 'Plazo', alineacion: 'centro', render: (f) => <Plazo fila={f} /> }
 ];
 
-function Hoja({ r, documentoRef }) {
+function Hoja({ r, empresa, documentoRef }) {
     const limite = r.fecha_limite ? new Date(`${r.fecha_limite}T12:00:00`) : null;
     const fila = (etiqueta, valor) => (
         <div className="grid grid-cols-1 gap-1 border-b border-slate-200 py-2 text-sm sm:grid-cols-[170px_1fr] sm:gap-2 print:grid-cols-[170px_1fr]">
@@ -78,11 +78,14 @@ function Hoja({ r, documentoRef }) {
             <span className="min-w-0 whitespace-pre-line break-words text-slate-900">{valor || '—'}</span>
         </div>
     );
+    const proveedor = [empresa?.razon_social || empresa?.nombre_comercial, empresa?.ruc ? `RUC ${empresa.ruc}` : null].filter(Boolean).join(' — ');
     return (
         <div ref={documentoRef} id="hoja-reclamacion" className="print-area">
             <h3 className="mb-2 font-title text-lg font-semibold">Hoja de reclamación N.° {r.numero}</h3>
             {fila('Fecha de registro', formatearFecha(r.fecha_registro))}
             {fila('Plazo de respuesta', limite && !Number.isNaN(limite.getTime()) ? limite.toLocaleDateString('es-PE') : '')}
+            {fila('Proveedor', proveedor)}
+            {fila('Dirección del proveedor', empresa?.direccion)}
             {fila('Consumidor', r.consumidor_nombre)}
             {fila('Documento', [r.consumidor_tipo_documento, r.consumidor_documento].filter(Boolean).join(' '))}
             {fila('Domicilio', r.consumidor_domicilio)}
@@ -105,7 +108,7 @@ function Hoja({ r, documentoRef }) {
     );
 }
 
-function HojaModal({ reclamacion, onCerrar, onRespondida }) {
+function HojaModal({ reclamacion, empresa, onCerrar, onRespondida }) {
     const [respuesta, setRespuesta] = useState('');
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
@@ -149,7 +152,7 @@ function HojaModal({ reclamacion, onCerrar, onRespondida }) {
                 </div>
             }>
             {errorImpresion && <Alert tipo="error">{errorImpresion}</Alert>}
-            <Hoja r={reclamacion} documentoRef={documentoRef} />
+            <Hoja r={reclamacion} empresa={empresa} documentoRef={documentoRef} />
             {reclamacion.estado === 'pendiente' && (
                 <form onSubmit={enviar} className="no-print mt-5 space-y-3 border-t border-slate-200 pt-5">
                     <Textarea
@@ -177,6 +180,7 @@ export default function ReclamacionesPage() {
     const { exito, error: mostrarError } = useToast();
     const [lista, setLista] = useState([]);
     const [resumen, setResumen] = useState({ total: 0, pendientes: 0, vencidos: 0, por_vencer: 0 });
+    const [empresa, setEmpresa] = useState(null);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState('');
     const [estado, setEstado] = useState('todos');
@@ -195,12 +199,13 @@ export default function ReclamacionesPage() {
             setError('');
 
             let resumenFallo = false;
-            const [datos, res] = await Promise.all([
+            const [datos, res, empresaActual] = await Promise.all([
                 listarReclamaciones({ estado: estado === 'todos' ? undefined : estado, q: busqueda.trim() || undefined, pagina, por_pagina: 20 }),
                 obtenerResumenReclamaciones().catch(() => {
                     resumenFallo = true;
                     return null;
-                })
+                }),
+                empresa ? Promise.resolve(empresa) : obtenerEmpresaPublica().catch(() => null)
             ]);
             if (!estaVigente() || turno !== solicitud.current) return;
             setLista(datos.reclamaciones);
@@ -208,6 +213,7 @@ export default function ReclamacionesPage() {
             setPaginas(datos.paginas);
             if (pagina > datos.paginas) setPagina(datos.paginas);
             if (res) setResumen(res);
+            if (empresaActual) setEmpresa(empresaActual);
             setAvisoResumen(resumenFallo ? 'No se pudo actualizar el resumen de arriba. La lista de hojas sí está al día.' : '');
         } catch (err) {
             if (estaVigente() && turno === solicitud.current) setError(err.response?.data?.mensaje || 'Error al cargar el libro de reclamaciones');
@@ -307,6 +313,7 @@ export default function ReclamacionesPage() {
             {abierta && (
                 <HojaModal
                     reclamacion={abierta}
+                    empresa={empresa}
                     onCerrar={() => setAbierta(null)}
                     onRespondida={async (res) => {
                         (res?.enviado === false ? mostrarError : exito)(res?.mensaje || 'Respuesta registrada');

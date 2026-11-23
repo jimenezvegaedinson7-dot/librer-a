@@ -1,4 +1,4 @@
-%% Generado 2026-11-22 desde el código real (actualizar-mapa.mjs)
+%% Generado 2026-11-23 desde el código real (actualizar-mapa.mjs)
 flowchart LR
     sistema_routes["/<br/>sistema.routes"]
     sistema_routes --> sistema_controller["sistema.controller"]
@@ -140,6 +140,7 @@ flowchart LR
     libro_model -.-> T_ventas[/"ventas"/]
     pago_model -.-> T_ventas[/"ventas"/]
     reclamacion_model -.-> T_reclamaciones[/"reclamaciones"/]
+    reclamacion_model -.-> T_ventas[/"ventas"/]
     reporte_model -.-> T_autores[/"autores"/]
     reporte_model -.-> T_categorias[/"categorias"/]
     reporte_model -.-> T_comprobantes[/"comprobantes"/]

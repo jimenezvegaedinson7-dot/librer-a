@@ -1,6 +1,6 @@
 # Mapa del backend (Node.js + Express + PostgreSQL)
 
-> Generado desde el código real el 2026-11-22 con `docs/architecture/tools/actualizar-mapa.mjs`.
+> Generado desde el código real el 2026-11-23 con `docs/architecture/tools/actualizar-mapa.mjs`.
 > No contiene secretos: solo nombres de variables de entorno.
 
 ## Arranque (`backend/server.js`)
@@ -268,7 +268,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 
 | Método | Ruta | Middleware | Controlador | Modelos / servicios | Tablas |
 |---|---|---|---|---|---|
-| POST | `/api/reclamaciones` | reclamacionLimiter | controllers/reclamacion.controller.js#registrar | `empresa.model.js#obtenerEmpresa`<br>`reclamacion.model.js#crear` | empresa, reclamaciones |
+| POST | `/api/reclamaciones` | reclamacionLimiter | controllers/reclamacion.controller.js#registrar | `empresa.model.js#obtenerEmpresa`<br>`reclamacion.model.js#crear`<br>`reclamacion.model.js#obtenerVentaReclamable` | empresa, reclamaciones, ventas |
 | GET | `/api/reclamaciones` | JWT + rol:administrador | controllers/reclamacion.controller.js#listar | `reclamacion.model.js#listar` | reclamaciones |
 | GET | `/api/reclamaciones/resumen` | JWT + rol:administrador | controllers/reclamacion.controller.js#resumen | `reclamacion.model.js#resumen` | reclamaciones |
 | GET | `/api/reclamaciones/:id` | JWT + rol:administrador | controllers/reclamacion.controller.js#obtener | `reclamacion.model.js#obtener` | reclamaciones |
@@ -358,7 +358,7 @@ Cadena: **MÉTODO RUTA → archivo de rutas → middleware → controlador#funci
 | `models/inventario.model.js` | inventario, libros, movimientos_inventario, usuarios |
 | `models/libro.model.js` | autores, categorias, detalle_venta, inventario, libros, ventas |
 | `models/pago.model.js` | ventas |
-| `models/reclamacion.model.js` | reclamaciones |
+| `models/reclamacion.model.js` | reclamaciones, ventas |
 | `models/reporte.model.js` | autores, categorias, comprobantes, detalle_venta, inventario, libros, usuarios, ventas |
 | `models/sistema.model.js` | — |
 | `models/ubicacion.model.js` | distritos_lima, provincias_lima |
