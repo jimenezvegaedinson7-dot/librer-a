@@ -75,8 +75,6 @@ struct StoreHomeView: View {
                     .lineLimit(1)
             }
             Spacer()
-            AppLogo(width: 64, height: 46)
-                .accessibilityHidden(true)
         }
         .padding(.top, 16)
     }
