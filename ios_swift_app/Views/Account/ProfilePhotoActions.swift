@@ -95,13 +95,18 @@ private struct ProfilePhotoActionsModifier: ViewModifier {
     @State private var showAvatars = false
     @State private var showLibrary = false
     @State private var showCamera = false
+    @State private var showPhotoPreview = false
     @State private var libraryItem: PhotosPickerItem?
 
     private var cameraAvailable: Bool { UIImagePickerController.isSourceTypeAvailable(.camera) }
+    private var photoURL: URL? { FileURL.profilePhoto(appState.user?.fotoPerfil) }
 
     func body(content: Content) -> some View {
         content
             .confirmationDialog("Foto de perfil", isPresented: $isPresented, titleVisibility: .visible) {
+                if photoURL != nil {
+                    Button("Ver foto") { showPhotoPreview = true }
+                }
                 Button("Elegir avatar") { showAvatars = true }
                 Button("Subir imagen") { showLibrary = true }
                 if cameraAvailable {
@@ -110,6 +115,11 @@ private struct ProfilePhotoActionsModifier: ViewModifier {
                 Button("Cancelar", role: .cancel) { }
             } message: {
                 Text("Elige un avatar o usa una foto propia.")
+            }
+            .fullScreenCover(isPresented: $showPhotoPreview) {
+                if let photoURL {
+                    ProfilePhotoViewer(url: photoURL)
+                }
             }
             .photosPicker(isPresented: $showLibrary, selection: $libraryItem, matching: .images)
             .onChange(of: libraryItem) { _, item in
@@ -162,6 +172,117 @@ private struct ProfilePhotoActionsModifier: ViewModifier {
             let detail = error.localizedDescription
             onMessage(detail.isEmpty ? "No se pudo actualizar la foto." : detail)
         }
+    }
+}
+
+private struct ProfilePhotoViewer: View {
+    let url: URL
+    @Environment(\.dismiss) private var dismiss
+    @State private var retry = 0
+    @State private var scale: CGFloat = 1
+    @State private var offset: CGSize = .zero
+    @GestureState private var magnification: CGFloat = 1
+    @GestureState private var translation: CGSize = .zero
+
+    private var effectiveScale: CGFloat { min(max(scale * magnification, 1), 5) }
+
+    var body: some View {
+        NavigationStack {
+            GeometryReader { geometry in
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView("Cargando foto…")
+                            .tint(.white)
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    case .success(let image):
+                        image.resizable().scaledToFit()
+                            .frame(width: geometry.size.width, height: geometry.size.height)
+                            .scaleEffect(effectiveScale)
+                            .offset(boundedOffset(
+                                CGSize(width: offset.width + translation.width,
+                                       height: offset.height + translation.height),
+                                scale: effectiveScale, size: geometry.size
+                            ))
+                            .contentShape(Rectangle())
+                            .gesture(
+                                MagnifyGesture()
+                                    .updating($magnification) { value, state, _ in
+                                        state = value.magnification
+                                    }
+                                    .onEnded { value in
+                                        scale = min(max(scale * value.magnification, 1), 5)
+                                        offset = boundedOffset(offset, scale: scale, size: geometry.size)
+                                    }
+                            )
+                            .simultaneousGesture(
+                                DragGesture()
+                                    .updating($translation) { value, state, _ in
+                                        if effectiveScale > 1 { state = value.translation }
+                                    }
+                                    .onEnded { value in
+                                        guard scale > 1 else { return }
+                                        offset = boundedOffset(
+                                            CGSize(width: offset.width + value.translation.width,
+                                                   height: offset.height + value.translation.height),
+                                            scale: scale, size: geometry.size
+                                        )
+                                    }
+                            )
+                            .onTapGesture(count: 2) {
+                                withAnimation(.easeOut(duration: 0.2)) {
+                                    scale = scale > 1 ? 1 : 2
+                                    offset = .zero
+                                }
+                            }
+                            .accessibilityLabel("Foto de perfil ampliada")
+                    case .failure:
+                        VStack(spacing: 16) {
+                            Image(systemName: "photo.badge.exclamationmark").font(.largeTitle)
+                            Text("No se pudo cargar la foto.")
+                            Button("Reintentar", systemImage: "arrow.clockwise") { retry += 1 }
+                                .buttonStyle(.bordered)
+                                .tint(.white)
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+                .id(retry)
+                .clipped()
+            }
+            .background(.black)
+            .safeAreaInset(edge: .bottom) {
+                Text("Separa dos dedos para ampliar y arrastra para mover la foto.")
+                    .font(.footnote)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.white.opacity(0.8))
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(.black)
+            }
+            .navigationTitle("Foto de perfil")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cerrar", systemImage: "xmark") { dismiss() }
+                        .tint(.white)
+                }
+            }
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(.black, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+        }
+    }
+
+    private func boundedOffset(_ value: CGSize, scale: CGFloat, size: CGSize) -> CGSize {
+        let maxX = size.width * (scale - 1) / 2
+        let maxY = size.height * (scale - 1) / 2
+        return CGSize(width: min(max(value.width, -maxX), maxX),
+                      height: min(max(value.height, -maxY), maxY))
     }
 }
 

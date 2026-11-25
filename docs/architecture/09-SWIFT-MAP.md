@@ -58,6 +58,6 @@ La autorización indicada corresponde a la declaración del cliente; la API veri
 
 Referencias estáticas aproximadas por símbolos y extensiones Swift; no equivale a imports por archivo ni a una compilación de Xcode.
 
-Archivos de aplicación: 74. Archivos de pruebas: 7. Candidatos sin alcance desde @main: 0.
+Archivos de aplicación: 74. Archivos de pruebas: 7. Candidatos sin alcance desde @main: 1.
 
 La compilación y los XCTest de iOS requieren un Mac con Xcode. El seguimiento y la durabilidad del intento de checkout conservan su implementación actual; esta limpieza no certifica paridad funcional completa con Flutter.

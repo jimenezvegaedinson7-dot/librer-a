@@ -77,7 +77,7 @@ Ejemplos de caminos:
 ## Posiblemente no utilizado
 
 - Flutter: ninguno.
-- Swift: ningún candidato sin alcance desde @main en el análisis aproximado por símbolos y extensiones.
+- Swift: `ios_swift_app/Views/Security/SecurityView.swift`.
 - React: funciones de servicio no importadas: `agenciasService#obtenerAgencia`, `ubicacionesService#listarProvincias`/`listarDistritos` (se usan solo internamente por `listarDistritosParaEnvio`).
 - Backend: endpoints `GET /api/historial/mi-historial`, `POST /api/historial`, `PUT /api/inventario/libro/:id/stock` sin consumidor React/Flutter.
 - Estilos: las reglas de la antigua página Reportes sin consumidores se retiraron. `tabla-reporte`, `reporte-barra`, `reporte-puesto` y `reporte-contador` se conservan porque los usan Dashboard y Ventas.

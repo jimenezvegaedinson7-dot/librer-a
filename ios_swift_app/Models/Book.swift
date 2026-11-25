@@ -8,6 +8,13 @@ struct Book: Codable, Equatable, Hashable, Identifiable {
     let titulo: String
     let isbn: String?
     let descripcion: String?
+    let editorial: String?
+    let idioma: String?
+    let numeroPaginas: Int?
+    let anioPublicacion: Int?
+    let formato: String?
+    let numeroVolumen: String?
+    let dimensiones: String?
     let precio: Double
     let stock: Int
     let portada: String?
@@ -73,6 +80,13 @@ struct Book: Codable, Equatable, Hashable, Identifiable {
         case titulo
         case isbn
         case descripcion
+        case editorial
+        case idioma
+        case numeroPaginas = "numero_paginas"
+        case anioPublicacion = "anio_publicacion"
+        case formato
+        case numeroVolumen = "numero_volumen"
+        case dimensiones
         case precio
         case stock
         case portada
@@ -94,6 +108,13 @@ struct Book: Codable, Equatable, Hashable, Identifiable {
         titulo: String,
         isbn: String? = nil,
         descripcion: String? = nil,
+        editorial: String? = nil,
+        idioma: String? = nil,
+        numeroPaginas: Int? = nil,
+        anioPublicacion: Int? = nil,
+        formato: String? = nil,
+        numeroVolumen: String? = nil,
+        dimensiones: String? = nil,
         precio: Double,
         stock: Int,
         portada: String? = nil,
@@ -113,6 +134,13 @@ struct Book: Codable, Equatable, Hashable, Identifiable {
         self.titulo = titulo
         self.isbn = isbn
         self.descripcion = descripcion
+        self.editorial = editorial
+        self.idioma = idioma
+        self.numeroPaginas = numeroPaginas
+        self.anioPublicacion = anioPublicacion
+        self.formato = formato
+        self.numeroVolumen = numeroVolumen
+        self.dimensiones = dimensiones
         self.precio = precio
         self.stock = stock
         self.portada = portada
@@ -136,6 +164,13 @@ struct Book: Codable, Equatable, Hashable, Identifiable {
             .trimmingCharacters(in: .whitespacesAndNewlines)
         isbn = try container.decodeFlexibleStringIfPresent(forKey: .isbn)
         descripcion = try container.decodeFlexibleStringIfPresent(forKey: .descripcion)
+        editorial = try? container.decodeFlexibleStringIfPresent(forKey: .editorial)
+        idioma = try? container.decodeFlexibleStringIfPresent(forKey: .idioma)
+        numeroPaginas = try? container.decodeFlexibleIntIfPresent(forKey: .numeroPaginas)
+        anioPublicacion = try? container.decodeFlexibleIntIfPresent(forKey: .anioPublicacion)
+        formato = try? container.decodeFlexibleStringIfPresent(forKey: .formato)
+        numeroVolumen = try? container.decodeFlexibleStringIfPresent(forKey: .numeroVolumen)
+        dimensiones = try? container.decodeFlexibleStringIfPresent(forKey: .dimensiones)
         precio = (try? container.decodeFlexibleDoubleIfPresent(forKey: .precio)) ?? 0
         stock = (try? container.decodeFlexibleIntIfPresent(forKey: .stock)) ?? 0
         portada = try container.decodeFlexibleStringIfPresent(forKey: .portada)

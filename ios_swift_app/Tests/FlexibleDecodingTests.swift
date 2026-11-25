@@ -31,6 +31,61 @@ final class FlexibleDecodingTests: XCTestCase {
         XCTAssertEqual(book.idAutor, 3)
     }
 
+    func testBookBibliographicMetadataSurvivesCachedRoundTrip() throws {
+        let json = """
+        {
+            "id_libro":12,
+            "titulo":"Libro con ficha completa",
+            "isbn":"9788416308057",
+            "editorial":"Planeta",
+            "idioma":"Español",
+            "numero_paginas":"224",
+            "anio_publicacion":2024,
+            "formato":"Tapa blanda",
+            "numero_volumen":3,
+            "dimensiones":"15 × 21 cm",
+            "precio":"49.90",
+            "stock":7,
+            "estado":1
+        }
+        """.data(using: .utf8)!
+
+        let book = try decoder.decode(Book.self, from: json)
+        XCTAssertEqual(book.editorial, "Planeta")
+        XCTAssertEqual(book.idioma, "Español")
+        XCTAssertEqual(book.numeroPaginas, 224)
+        XCTAssertEqual(book.anioPublicacion, 2024)
+        XCTAssertEqual(book.formato, "Tapa blanda")
+        XCTAssertEqual(book.numeroVolumen, "3")
+        XCTAssertEqual(book.dimensiones, "15 × 21 cm")
+
+        let cached = try JSONEncoder().encode(book)
+        let fields = try XCTUnwrap(JSONSerialization.jsonObject(with: cached) as? [String: Any])
+        XCTAssertEqual(fields["numero_paginas"] as? Int, 224)
+        XCTAssertEqual(fields["anio_publicacion"] as? Int, 2024)
+        XCTAssertEqual(fields["numero_volumen"] as? String, "3")
+        XCTAssertEqual(try decoder.decode(Book.self, from: cached), book)
+    }
+
+    func testBookAcceptsMissingNullOrInvalidBibliographicMetadata() throws {
+        let variants = [
+            #"{"id_libro":1,"titulo":"Sin metadatos"}"#,
+            #"{"id_libro":1,"editorial":null,"idioma":null,"numero_paginas":null,"anio_publicacion":null,"formato":null,"numero_volumen":null,"dimensiones":null}"#,
+            #"{"id_libro":1,"editorial":{},"idioma":[],"numero_paginas":"sin dato","anio_publicacion":"","formato":{},"numero_volumen":[],"dimensiones":{}}"#
+        ]
+
+        for source in variants {
+            let book = try decoder.decode(Book.self, from: Data(source.utf8))
+            XCTAssertNil(book.editorial)
+            XCTAssertNil(book.idioma)
+            XCTAssertNil(book.numeroPaginas)
+            XCTAssertNil(book.anioPublicacion)
+            XCTAssertNil(book.formato)
+            XCTAssertNil(book.numeroVolumen)
+            XCTAssertNil(book.dimensiones)
+        }
+    }
+
     func testDecodesFlexibleBooleans() throws {
         let template = """
         {

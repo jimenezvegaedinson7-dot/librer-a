@@ -5,7 +5,6 @@ struct AccountView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: StoreRouter
     @EnvironmentObject private var themeStore: ThemeStore
-    @State private var showSecurity = false
     @State private var confirmLogout = false
     @State private var showPhotoOptions = false
     @State private var uploadingPhoto = false
@@ -52,7 +51,6 @@ struct AccountView: View {
                 case .complaints: ComplaintsBookView()
                 }
             }
-            .sheet(isPresented: $showSecurity) { SecurityView() }
             .profilePhotoActions(isPresented: $showPhotoOptions, uploading: $uploadingPhoto) { message in
                 toast = ToastMessage(text: message)
             }
@@ -69,8 +67,7 @@ struct AccountView: View {
     // MARK: Secciones
 
     private var cover: some View {
-        let theme = themeStore.theme
-        return VStack(spacing: 14) {
+        VStack(spacing: 14) {
             Button { showPhotoOptions = true } label: {
                 Avatar(user: user, size: 112)
                     .overlay {
@@ -91,13 +88,13 @@ struct AccountView: View {
             }
             .buttonStyle(.plain)
             .disabled(uploadingPhoto)
-            .accessibilityLabel("Cambiar foto de perfil")
+            .accessibilityLabel("Opciones de foto de perfil")
             Button {
                 showPhotoOptions = true
             } label: {
                 Text(uploadingPhoto ? "Actualizando foto…" : "Cambiar foto")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(theme.textColor)
+                    .foregroundStyle(themeStore.theme.primary)
                     .frame(minHeight: 44)
             }
             .buttonStyle(.plain)
@@ -105,22 +102,6 @@ struct AccountView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(theme.gradient)
-                .overlay(
-                    AnimatedBookshelf(
-                        ink: theme.textColor == .white ? 0xFFFFFF : 0x2C2621,
-                        accent: 0xE6CB8F,
-                        opacity: theme.textColor == .white ? 0.12 : 0.07,
-                        shelfHeight: 64,
-                        seed: 5
-                    )
-                    .id("estante-\(theme.id)")
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                )
-        )
-        .animation(.easeInOut(duration: 0.35), value: theme)
     }
 
     private var fullName: String {
@@ -295,9 +276,6 @@ struct AccountView: View {
                          badge: user?.twoFactorEnabled == true ? "Activo" : "Inactivo")
             }
             .buttonStyle(.plain)
-            Divider().padding(.leading, 60)
-            Button { showSecurity = true } label: { rowLabel("faceid", "Bloqueo con Face ID / Touch ID") }
-                .buttonStyle(.plain)
         }
     }
 
