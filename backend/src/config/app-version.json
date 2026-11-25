@@ -1,8 +1,8 @@
 {
-    "version": "1.0.32",
-    "versionCode": 33,
-    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.32/libreria-1.0.32.apk",
-    "sha256": "2266f0f287510b1af41fcb4fcc93be78b762696b7b1578fb5bc5ffd76d2a0149",
+    "version": "1.0.33",
+    "versionCode": 34,
+    "apkUrl": "https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/v1.0.33/libreria-1.0.33.apk",
+    "sha256": "b6c56bc8bcf138ecad4def97da197e02ba787fac5f1d2ff8bc43e94a77633296",
     "obligatoria": false,
-    "notas": "Compilación Android actualizada de MATIDANA. Limpieza de archivos auxiliares y capturas de desarrollo; se conservan catálogo, compras, carrito, favoritos, perfil, seguridad y personalización."
+    "notas": "Ficha tecnica de libros alineada con la web (editorial, idioma, paginas, anio, formato, volumen y dimensiones) y proyecto Flutter depurado."
 }
