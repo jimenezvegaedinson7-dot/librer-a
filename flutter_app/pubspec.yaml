@@ -3,7 +3,7 @@ description: "Aplicación de clientes MATIDANA para catálogo y compras con PayU
 
 publish_to: 'none'
 
-version: 1.0.32+33
+version: 1.0.33+34
 
 environment:
   sdk: ^3.13.2
