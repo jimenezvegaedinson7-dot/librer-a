@@ -8,11 +8,6 @@ import '../../widgets/confirmacion_otp.dart';
 import '../home_screen.dart';
 import '../login_screen.dart';
 
-/// Pantalla de verificación en dos pasos (Google Authenticator).
-///
-/// Se muestra después del login cuando el backend responde con
-/// `requires_2fa`. Recibe el [twoFactorToken] temporal (solo en memoria)
-/// necesario para `POST /auth/2fa/verify-login`.
 class TwoFactorVerifyScreen extends StatefulWidget {
   final String twoFactorToken;
   final IntentoAutenticacion? intento;
@@ -156,14 +151,12 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
                         ),
                         const SizedBox(height: 32),
 
-                        // Campo OTP (6 dígitos, numérico)
                         CampoOtp(
                           controller: _otpController,
                           enabled: !_loading,
                           onSubmitted: _verificar,
                         ),
 
-                        // Mensaje de error
                         if (_errorMessage != null) ...[
                           const SizedBox(height: 16),
                           Container(
@@ -195,7 +188,6 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
 
                         const SizedBox(height: 28),
 
-                        // Botón verificar
                         SizedBox(
                           height: 54,
                           child: _loading
@@ -213,7 +205,6 @@ class _TwoFactorVerifyScreenState extends State<TwoFactorVerifyScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Volver al login
                         TextButton(
                           onPressed: _loading ? null : _volverAlLogin,
                           child: const Text('Volver al inicio de sesión'),

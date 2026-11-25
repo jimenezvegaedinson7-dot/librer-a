@@ -7,14 +7,6 @@ import '../utils/perfil_fondos.dart';
 import '../utils/perfil_temas.dart';
 import '../widgets/apariencia_colores.dart';
 
-/// Centro de personalización: dos apartados independientes.
-///
-/// - Colores de botones y tarjetas (acentos, iconos y superficie de tarjetas).
-/// - Colores de fondo (solo el fondo de las pantallas).
-///
-/// Cada apartado guarda su propia preferencia, por lo que cambiar uno nunca
-/// modifica el otro. Las preferencias sobreviven al cierre de sesión y a las
-/// actualizaciones de la app.
 class PersonalizacionScreen extends StatelessWidget {
   const PersonalizacionScreen({super.key});
 
@@ -290,7 +282,6 @@ class _NotaIndependencia extends StatelessWidget {
   }
 }
 
-/// Apartado A: colores de botones, iconos y tarjetas.
 class ColoresBotonesTarjetasScreen extends StatefulWidget {
   const ColoresBotonesTarjetasScreen({super.key});
 
@@ -439,7 +430,6 @@ class _ColoresBotonesTarjetasScreenState
   }
 }
 
-/// Apartado B: solo el fondo de las páginas.
 class ColoresFondoScreen extends StatefulWidget {
   const ColoresFondoScreen({super.key});
 

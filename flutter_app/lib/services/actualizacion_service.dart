@@ -10,11 +10,9 @@ import 'package:path_provider/path_provider.dart';
 import '../models/version_app.dart';
 import '../utils/constants.dart';
 
-/// Error del actualizador con un mensaje apto para mostrar al usuario.
 class ActualizacionException implements Exception {
   final String mensaje;
 
-  /// `true` si falta el permiso "Instalar apps desconocidas" para esta app.
   final bool faltaPermiso;
 
   const ActualizacionException(this.mensaje, {this.faltaPermiso = false});
@@ -23,14 +21,6 @@ class ActualizacionException implements Exception {
   String toString() => mensaje;
 }
 
-/// Actualizaciones de la app Android mediante APK, sin Google Play.
-///
-/// 1. Consulta `GET /api/app/version` y compara su `versionCode` con el
-///    instalado.
-/// 2. Solo acepta APK de los Releases del repositorio oficial por HTTPS.
-/// 3. Descarga con progreso y comprueba el SHA-256 publicado.
-/// 4. El código nativo verifica paquete, firma y versión, y abre el
-///    instalador oficial de Android (el usuario siempre confirma).
 class ActualizacionService {
   ActualizacionService._();
 
@@ -40,19 +30,15 @@ class ActualizacionService {
     'com.jimenezvega.libreria/actualizador',
   );
 
-  /// Único origen autorizado para descargar el APK.
   static const String origenAutorizado =
       'https://github.com/jimenezvegaedinson7-dot/librer-a/releases/download/';
 
-  /// Hosts a los que GitHub redirige la descarga del Release.
   static const Set<String> _hostsDescarga = {
     'github.com',
     'objects.githubusercontent.com',
     'release-assets.githubusercontent.com',
   };
 
-  /// SOLO PARA PRUEBAS: origen adicional aceptado si se compila con
-  /// `--dart-define=ACTUALIZADOR_ORIGEN_PRUEBA=...`. Vacío en producción.
   static const String _origenPrueba = String.fromEnvironment(
     'ACTUALIZADOR_ORIGEN_PRUEBA',
   );
@@ -64,16 +50,13 @@ class ActualizacionService {
     ),
   );
 
-  /// El actualizador solo funciona en la app Android.
   bool get disponible => !kIsWeb && Platform.isAndroid;
 
-  /// `true` si [url] pertenece al origen autorizado (o al de pruebas).
   static bool urlAutorizada(String url) {
     final uri = Uri.tryParse(url);
     if (uri == null) return false;
     if (_origenPrueba.isNotEmpty && url.startsWith(_origenPrueba)) return true;
-    // Uri.parse normaliza los ".." de la ruta: se revisa la ruta ya
-    // normalizada y, además, se rechaza cualquier ".." en el texto original.
+
     return uri.scheme == 'https' &&
         uri.host == 'github.com' &&
         !uri.hasPort &&
@@ -84,8 +67,6 @@ class ActualizacionService {
         );
   }
 
-  /// Devuelve la versión publicada si es más reciente que la instalada.
-  /// Si no hay novedad, falla la red o la respuesta no es válida, `null`.
   Future<VersionApp?> buscarActualizacion() async {
     if (!disponible) return null;
     try {
@@ -101,16 +82,11 @@ class ActualizacionService {
       final codigoInstalado = int.tryParse(instalada.buildNumber) ?? 0;
       return publicada.versionCode > codigoInstalado ? publicada : null;
     } catch (_) {
-      // Sin conexión o backend no disponible: se reintentará en el
-      // próximo inicio de la app.
+
       return null;
     }
   }
 
-  /// Descarga el APK, verifica origen y SHA-256, y abre el instalador.
-  ///
-  /// [onProgreso] recibe valores de 0 a 1 (o `null` si el tamaño es
-  /// desconocido).
   Future<void> descargarEInstalar(
     VersionApp version, {
     required void Function(double? progreso) onProgreso,
@@ -185,7 +161,6 @@ class ActualizacionService {
   Future<bool> _puedeInstalar() async =>
       await _canal.invokeMethod<bool>('puedeInstalar') ?? false;
 
-  /// Abre los ajustes para permitir "Instalar apps desconocidas".
   Future<void> abrirPermisoInstalacion() =>
       _canal.invokeMethod<void>('abrirPermisoInstalacion');
 }

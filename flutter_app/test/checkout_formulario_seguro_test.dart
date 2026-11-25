@@ -101,8 +101,7 @@ void main() {
           .ancestor(of: find.text('Delivery'), matching: find.byType(InkWell))
           .first;
       expect(tester.widget<InkWell>(entrega).onTap, isNull);
-      // Una actualización tardía de un controlador (p. ej. autofill ya emitido)
-      // tampoco debe eludir la revalidación al terminar la petición.
+
       controller.clear();
       catalogo.complete(respuestaLocal(catalogoLocal()));
       await tester.pumpAndSettle();

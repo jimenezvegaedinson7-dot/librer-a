@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/libro.dart';
 import '../utils/app_colors.dart';
 
-/// La imagen no cambia el ISBN ni la edición del producto ofrecido.
 class AvisoPortadaReferencia extends StatelessWidget {
   final Libro libro;
   final bool detallado;

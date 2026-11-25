@@ -75,7 +75,6 @@ void main() {
       expect(find.byType(PersonalizacionScreen), findsOneWidget);
       expect(tester.takeException(), isNull);
 
-      // Apartado A: botones e iconos + tarjetas.
       await tester.tap(find.text('Colores de botones y tarjetas'));
       await tester.pumpAndSettle();
       expect(
@@ -126,7 +125,6 @@ void main() {
       expect(prefs.getString('perfil_tarjeta'), 'arena');
       expect(prefs.getString('perfil_fondo'), isNull);
 
-      // Apartado B: solo fondo.
       expect(find.byType(PersonalizacionScreen), findsOneWidget);
       await tester.tap(find.text('Colores de fondo'));
       await tester.pumpAndSettle();

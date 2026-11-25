@@ -16,21 +16,9 @@ import '../widgets/precio_texto.dart';
 import '../widgets/presionable.dart';
 import 'entrega_y_pago_screen.dart';
 
-/// Pantalla "Mi carrito".
-///
-/// Muestra cada libro como una tarjeta con portada, título, autor, estado,
-/// precio, cantidad ([−]/[+]) y acciones (guardar para más tarde / eliminar
-/// con confirmación). La parte inferior fija muestra el total y el botón
-/// "Continuar con la compra", que abre [EntregaYPagoScreen].
-///
-/// Se puede usar como pantalla completa (con [AppBar]) o embebida como pestaña
-/// de la navegación inferior ([embedded] = true). En ambos casos consume el
-/// MISMO [CarritoService], por lo que los datos son siempre los mismos.
 class CarritoScreen extends StatefulWidget {
   const CarritoScreen({super.key, this.embedded = false});
 
-  /// `true` cuando se muestra como pestaña dentro de HomeScreen y no debe
-  /// dibujar su propio Scaffold/AppBar.
   final bool embedded;
 
   @override
@@ -103,7 +91,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
             children: [
               Expanded(
                 child: ListView(
-                  // Mismo margen (20) que el resto de pantallas.
+
                   padding: EdgeInsets.fromLTRB(
                     20,
                     widget.embedded ? 18 : 14,
@@ -181,7 +169,6 @@ class _CarritoScreenState extends State<CarritoScreen> {
     );
   }
 
-  /// Barra inferior fija con el total y el botón para continuar.
   Widget _buildBarraPagar(BuildContext context) {
     final subtotal = CarritoService.instance.total;
     final unidades = CarritoService.instance.totalUnidades;
@@ -220,7 +207,7 @@ class _CarritoScreenState extends State<CarritoScreen> {
                 ),
                 AnimatedSwitcher(
                   duration: Duracion.rapida,
-                  // Solo el precio nuevo: el anterior no se superpone.
+
                   layoutBuilder: _soloActual,
                   child: PrecioTexto(
                     key: ValueKey(subtotal),
@@ -265,7 +252,6 @@ class _CarritoScreenState extends State<CarritoScreen> {
   }
 }
 
-/// Tarjeta de cada libro en el carrito.
 class _CarritoItemCard extends StatelessWidget {
   final CarritoItem item;
 
@@ -359,7 +345,7 @@ class _CarritoItemCard extends StatelessWidget {
                           const Spacer(),
                           AnimatedSwitcher(
                             duration: Duracion.rapida,
-                            // Solo el precio nuevo: el anterior no se superpone.
+
                             layoutBuilder: _soloActual,
                             child: PrecioTexto(
                               key: ValueKey(item.subtotal),
@@ -438,7 +424,6 @@ class _CarritoItemCard extends StatelessWidget {
   }
 }
 
-/// Tarjeta de un ítem guardado para más tarde.
 class _GuardadoCard extends StatelessWidget {
   final CarritoItem item;
 
@@ -543,7 +528,6 @@ class _GuardadoCard extends StatelessWidget {
   }
 }
 
-/// Aviso mostrado cuando el carrito está vacío pero hay guardados.
 class _CartVacioConGuardados extends StatelessWidget {
   const _CartVacioConGuardados();
 
@@ -574,7 +558,6 @@ class _CartVacioConGuardados extends StatelessWidget {
   }
 }
 
-/// Control de cantidad con botones [−] y [+].
 class _CantidadControl extends StatelessWidget {
   final CarritoItem item;
   final int? idLibro;
@@ -648,7 +631,6 @@ class _CantidadControl extends StatelessWidget {
   }
 }
 
-/// Botón compacto de paso para el control de cantidad.
 class _StepButton extends StatelessWidget {
   final IconData icon;
   final String tooltip;
@@ -675,7 +657,6 @@ class _StepButton extends StatelessWidget {
   }
 }
 
-/// Botón de acción compacto con icono y etiqueta.
 class _CardActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -705,7 +686,6 @@ class _CardActionButton extends StatelessWidget {
   }
 }
 
-/// Indicador de pasos del flujo de compra (Carrito · Entrega · Pago).
 class _StepperBanner extends StatelessWidget {
   final int pasoActual;
 
@@ -800,12 +780,9 @@ class _StepDot extends StatelessWidget {
   }
 }
 
-/// Tarjeta de resumen del pedido (subtotal y total) sobre pergamino.
 class _ResumenCard extends StatelessWidget {
   const _ResumenCard();
 
-  // Escucha el carrito: al ser `const`, el padre no lo reconstruye y el
-  // resumen quedaría con cantidades y montos antiguos.
   @override
   Widget build(BuildContext context) => ListenableBuilder(
     listenable: CarritoService.instance,
@@ -828,7 +805,7 @@ class _ResumenCard extends StatelessWidget {
         children: [
           Text('Resumen del pedido', style: textTheme.titleMedium),
           const SizedBox(height: 12),
-          // Cada libro: cantidad × precio unitario = subtotal.
+
           for (final item in CarritoService.instance.items) ...[
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -915,7 +892,6 @@ class _ResumenCard extends StatelessWidget {
   }
 }
 
-/// Título de sección con contador.
 class _SectionTitle extends StatelessWidget {
   final String title;
   final int count;
@@ -944,7 +920,5 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-/// Muestra solo el hijo actual del AnimatedSwitcher (sin superponer el
-/// anterior), alineado a la derecha.
 Widget _soloActual(Widget? actual, List<Widget> anteriores) =>
     Align(alignment: Alignment.centerRight, child: actual);

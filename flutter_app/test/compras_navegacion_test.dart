@@ -18,8 +18,7 @@ void main() {
         var consultas = 0;
         var fallar = false;
         Future<void> esperarConsulta(int cantidad) async {
-          // Reanudar no espera la cadena asíncrona de sesión/checkout/Dio.
-          // pumpAndSettle solo espera frames, no solicitudes pendientes.
+
           for (var i = 0; i < 50 && consultas < cantidad; i++) {
             await tester.pump(const Duration(milliseconds: 20));
           }
@@ -97,7 +96,7 @@ void main() {
           ),
           findsOneWidget,
         );
-        // Un error conserva el último dato real; no marca Entregado.
+
         fallar = true;
         final recarga = key.currentState!.recargar();
         await tester.pumpAndSettle();

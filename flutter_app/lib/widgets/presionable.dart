@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_tokens.dart';
 
-/// Envuelve un elemento táctil y lo reduce levemente al presionarlo.
-///
-/// Microinteracción de respuesta (escala 0.97, ~140 ms). No captura el toque:
-/// el hijo sigue gestionando su propio `onTap`/`InkWell`.
 class Presionable extends StatefulWidget {
   final Widget child;
   final double escala;

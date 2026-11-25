@@ -13,14 +13,6 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.security.MessageDigest
 
-/**
- * Actualizaciones por APK (sin Google Play).
- *
- * Flutter descarga el APK y verifica su SHA-256; aquí se comprueba además que
- * sea la MISMA app (mismo package name), firmada con la MISMA clave y con un
- * versionCode mayor. Solo entonces se abre el instalador oficial de Android,
- * que siempre pide la confirmación del usuario (no hay instalación silenciosa).
- */
 class MainActivity : FlutterActivity() {
 
     private val canal = "com.jimenezvega.libreria/actualizador"
@@ -47,7 +39,6 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    /** Android 8+ exige que el usuario autorice a esta app a instalar APKs. */
     private fun puedeInstalar(): Boolean =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.O || packageManager.canRequestPackageInstalls()
 
@@ -61,7 +52,7 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun instalarApk(apk: File, result: MethodChannel.Result) {
-        // Solo se instalan archivos descargados por el actualizador.
+
         val carpeta = File(cacheDir, "actualizaciones").canonicalFile
         val archivo = apk.canonicalFile
         if (archivo.parentFile != carpeta || !archivo.exists()) {
@@ -108,7 +99,7 @@ class MainActivity : FlutterActivity() {
                 packageManager.getPackageInfo(packageName, flags)
             } else {
                 packageManager.getPackageArchiveInfo(rutaApk, flags)?.also {
-                    // Necesario para que Android lea las firmas del archivo.
+
                     it.applicationInfo?.sourceDir = rutaApk
                     it.applicationInfo?.publicSourceDir = rutaApk
                 }

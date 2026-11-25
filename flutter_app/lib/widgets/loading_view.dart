@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_tokens.dart';
 
-/// Carga a pantalla completa: una pequeña balda cuyos libros se alzan en
-/// ola, con el mensaje debajo. Con "reducir animaciones" usa un indicador fijo.
 class LoadingView extends StatelessWidget {
   final String? message;
 

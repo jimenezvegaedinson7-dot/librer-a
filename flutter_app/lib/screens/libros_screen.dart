@@ -21,7 +21,6 @@ import 'detalle_libro_screen.dart';
 
 enum _Orden { tituloAZ, tituloZA, precioMenor, precioMayor, mayorDescuento }
 
-/// Filtros rápidos del catálogo; se pueden combinar.
 enum _Rapido { descuento, novedades, conStock, hasta30, de30a60, masDe60 }
 
 const Map<_Rapido, String> _nombreRapido = {
@@ -50,8 +49,6 @@ const Map<_Orden, String> _nombreOrden = {
   _Orden.mayorDescuento: 'Mayor descuento',
 };
 
-/// Petición desde otra pestaña para abrir el catálogo con una categoría
-/// aplicada o con el buscador activo (solo afecta a la vista).
 class SolicitudCatalogo extends ChangeNotifier {
   String? categoria;
   bool enfocarBusqueda = false;
@@ -68,8 +65,6 @@ class SolicitudCatalogo extends ChangeNotifier {
   }
 }
 
-/// Pantalla "Catálogo": buscador destacado, categorías, orden y estado, y una
-/// grilla comercial de libros con acceso rápido al carrito.
 class LibrosScreen extends StatefulWidget {
   final SolicitudCatalogo? solicitud;
 
@@ -143,8 +138,7 @@ class _LibrosScreenState extends State<LibrosScreen> {
       if (!mounted) return;
 
       setState(() {
-        // Solo se muestran libros activos (esActivo == true). El stock se
-        // filtra aparte con el control de disponibilidad.
+
         _libros = libros.where((libro) => libro.esActivo).toList();
 
         if (_categoria != null) {
@@ -454,7 +448,6 @@ class _LibrosScreenState extends State<LibrosScreen> {
     );
   }
 
-  /// Hasta 3 libros de muestra de una categoría (o de todo el catálogo).
   List<Libro> _muestras(String? categoria) {
     final buscada = categoria?.trim().toLowerCase();
     return _libros
@@ -467,9 +460,8 @@ class _LibrosScreenState extends State<LibrosScreen> {
         .toList();
   }
 
-  /// Categorías como en Inicio: abanico de portadas y nombre, sin tarjeta.
   Widget _buildChips() {
-    // Alto justo: abanico (78) + nombre en 2 líneas + cantidad + marca.
+
     final escala = MediaQuery.textScalerOf(context);
     return SizedBox(
       height:
@@ -507,7 +499,6 @@ class _LibrosScreenState extends State<LibrosScreen> {
     );
   }
 
-  /// Cuántos libros del catálogo cumplen un filtro rápido (para el contador).
   int _cuentaRapido(_Rapido filtro) {
     return _libros.where((libro) {
       final precio = libro.precioCompra;
@@ -528,7 +519,6 @@ class _LibrosScreenState extends State<LibrosScreen> {
     }).length;
   }
 
-  /// Filtros rápidos en una fila deslizable: se activan y combinan con un toque.
   Widget _buildRapidos() {
     return SizedBox(
       height: 52,
@@ -643,8 +633,6 @@ class _LibrosScreenState extends State<LibrosScreen> {
         ? 3
         : 2;
 
-    // Cada tarjeta es solo la portada, en proporción de libro (2:3): la
-    // imagen llena su espacio y todas las tarjetas quedan niveladas.
     const espacioColumnas = 12.0;
     final anchoTarjeta =
         (width - 40 - espacioColumnas * (columns - 1)) / columns;
@@ -671,7 +659,6 @@ class _LibrosScreenState extends State<LibrosScreen> {
   }
 }
 
-/// Buscador destacado: borde que se ilumina en burdeos al enfocarlo.
 class _CampoBusqueda extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -757,7 +744,6 @@ class _CampoBusquedaState extends State<_CampoBusqueda> {
   }
 }
 
-/// Chip de categoría con su número de títulos; el activo se rellena en burdeos.
 class _ChipCategoria extends StatelessWidget {
   final String label;
   final int cantidad;
@@ -803,8 +789,7 @@ class _ChipCategoria extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // El nombre ocupa siempre el alto de 2 líneas (centrado):
-                  // las cantidades quedan alineadas aunque un nombre sea largo.
+
                   SizedBox(
                     height:
                         MediaQuery.textScalerOf(context).scale(14) * 1.3 * 2,
@@ -855,7 +840,6 @@ class _ChipCategoria extends StatelessWidget {
   }
 }
 
-/// Botón compacto de orden/estado; se marca en dorado cuando está activo.
 class _BotonFiltro extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -912,7 +896,6 @@ class _Opcion<T> {
   const _Opcion(this.texto, this.valor, this.actual);
 }
 
-/// Hoja inferior de opciones con título serif y selección marcada.
 class _HojaOpciones<T> extends StatelessWidget {
   final String titulo;
   final String subtitulo;
@@ -1003,12 +986,6 @@ class _HojaOpciones<T> extends StatelessWidget {
   }
 }
 
-/// Tarjeta de la grilla del catálogo: portada sobre papel con estado de stock,
-/// título serif, autor, precio destacado y botón para añadir al carrito.
-/// Tarjeta de la grilla del catálogo: solo la portada a tarjeta completa,
-/// con el estado de stock arriba y, sobre un velo inferior, el precio y el
-/// botón para añadir al carrito. Título y autor se leen en la ficha del libro
-/// (y los anuncia el lector de pantalla).
 class _LibroGridCard extends StatelessWidget {
   final Libro libro;
 
@@ -1063,8 +1040,7 @@ class _LibroGridCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Velo inferior para que el precio se lea sobre cualquier
-                  // portada.
+
                   Positioned(
                     left: 0,
                     right: 0,
@@ -1183,7 +1159,6 @@ class _StockBadge extends StatelessWidget {
   }
 }
 
-/// Botón para añadir al carrito: confirma con un check animado.
 class _AddButton extends StatefulWidget {
   final Libro libro;
   final bool disponible;
@@ -1234,8 +1209,7 @@ class _AddButtonState extends State<_AddButton> {
         ),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
-        // Con acción, Flutter lo deja fijo por defecto; aquí debe cerrarse
-        // solo para no tapar el pago ni la barra inferior.
+
         persist: false,
         action: SnackBarAction(
           label: 'Ver carrito',

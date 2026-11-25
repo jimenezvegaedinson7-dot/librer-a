@@ -12,7 +12,6 @@ Color textoSobre(Color fondo) {
 class VistaPreviaTemaApp extends StatefulWidget {
   final PerfilTema tema;
 
-  /// Color de tarjeta actual, independiente del fondo de pantallas.
   final Color tarjeta;
   const VistaPreviaTemaApp({
     super.key,

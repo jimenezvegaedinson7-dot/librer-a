@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 import 'app_page_header.dart';
 
-/// Sección de un documento legal: título y cuerpo en lenguaje claro.
 class LegalSeccion {
   final String titulo;
   final String texto;
@@ -11,8 +10,6 @@ class LegalSeccion {
   const LegalSeccion({required this.titulo, required this.texto});
 }
 
-/// Pantalla base para documentos legales (Términos y Condiciones y Política
-/// de Privacidad) con el mismo estilo editorial de la aplicación.
 class LegalDocumento extends StatelessWidget {
   final String titulo;
   final String fechaActualizacion;

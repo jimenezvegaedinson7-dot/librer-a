@@ -16,13 +16,6 @@ import 'storage_service.dart';
 import 'carrito_service.dart';
 import 'checkout_store.dart';
 
-/// Resultado del login con soporte para doble factor de autenticación.
-///
-/// - Si [requiere2fa] es `false`, el login terminó y la sesión quedó guardada.
-/// - Si [requiere2fa] es `true`, hay que pedir el código OTP al usuario y
-///   llamar a [ApiService.verificarLogin2FA] con [twoFactorToken]. El token
-///   temporal NUNCA se guarda en almacenamiento persistente: solo vive en
-///   memoria durante el flujo.
 class LoginResult {
   final bool requiere2fa;
   final String? twoFactorToken;
@@ -37,13 +30,6 @@ class LoginResult {
   bool get loginCompletado => !requiere2fa;
 }
 
-/// Resultado del registro con verificación de email.
-///
-/// - [requiereVerificacion] indica si la cuenta quedó pendiente de verificar
-///   el correo (código enviado por email). Si es `false`, la cuenta ya quedó
-///   lista (solo ocurre si el backend no usara verificación).
-/// - [email] es el correo registrado (para precargar el login y para usar en
-///   la verificación).
 class RegistroResult {
   final String email;
   final bool requiereVerificacion;
@@ -54,7 +40,6 @@ class RegistroResult {
   });
 }
 
-/// Excepción de dominio con un mensaje amigable para el usuario.
 class ApiException implements Exception {
   final String message;
   final int? statusCode;
@@ -69,11 +54,6 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-/// Cliente HTTP centralizado basado en Dio.
-///
-/// Configura la [baseUrl] desde [Constants] y agrega automáticamente el
-/// header `Authorization: Bearer <token>` cuando existe una sesión activa.
-/// Además normaliza los errores de Dio en mensajes claros.
 class ApiService {
   ApiService._({Dio? dio}) {
     _dio =
@@ -143,10 +123,7 @@ class ApiService {
           handler.next(response);
         },
         onError: (error, handler) async {
-          // Si el token es inválido o expiró, limpia la sesión local una sola
-          // vez y dirige al usuario al Login. No hay reintento automático
-          // aquí (evita ciclos: tras limpiar el token, los siguientes 401 ya no
-          // encuentran sesión y no vuelven a navegar).
+
           if (error.response?.statusCode == 401) {
             final options = error.requestOptions;
             final data = error.response?.data;
@@ -180,7 +157,6 @@ class ApiService {
 
   static final ApiService instance = ApiService._();
 
-  /// Transporte inyectado: las pruebas no acceden a la API real.
   ApiService.paraPruebas(Dio dio) : this._(dio: dio);
   @visibleForTesting
   void usarAdaptadorPruebas(HttpClientAdapter adapter) =>
@@ -188,20 +164,12 @@ class ApiService {
 
   late final Dio _dio;
 
-  /// Operación de checkout de la sesión actual. El diario persistente conserva
-  /// la idempotencia por propietario incluso después de cerrar sesión.
   Future<OrdenPago>? _creando;
 
-  /// Últimos `checkout_url` conocidos por venta (id_venta -> URL).
-  ///
-  /// Permite reabrir el checkout desde "Mis compras" cuando el usuario cierra
-  /// el navegador sin pagar, incluso si la respuesta no incluye la URL.
   final Map<int, String> _checkoutUrls = {};
 
-  /// Devuelve el último checkout URL registrado para una venta, o null.
   String? obtenerCheckoutUrl(int idVenta) => _checkoutUrls[idVenta];
 
-  /// Recupera desde el backend la URL de pago de una venta pendiente.
   Future<String?> recuperarCheckoutVenta(int idVenta) async {
     try {
       final response = await _dio.get<dynamic>(
@@ -221,14 +189,11 @@ class ApiService {
     }
   }
 
-  /// Limpia solo la memoria de sesión. La respuesta anterior queda vinculada
-  /// a su generación y no bloquea compras de otra cuenta; su diario se conserva.
   void limpiarEstadoCheckout() {
     _creando = null;
     _checkoutUrls.clear();
   }
 
-  /// Convierte un [DioException] en una [ApiException] con mensaje claro.
   ApiException _toApiException(DioException e) {
     final status = e.response?.statusCode;
     if (e.type == DioExceptionType.cancel) {
@@ -248,7 +213,7 @@ class ApiService {
         'No se pudo conectar con el servidor. Revisa tu conexión.',
       );
     }
-    // Servidor caído o conexión rechazada (sin respuesta HTTP).
+
     if (e.type == DioExceptionType.unknown && e.response == null) {
       return const ApiException(
         'El servidor no está disponible. Inténtalo más tarde.',
@@ -257,7 +222,7 @@ class ApiService {
     if (status != null) {
       final data = e.response?.data;
       if (data is Map) {
-        // El backend usa "mensaje"; se acepta también "message" por robustez.
+
         final msg = data['mensaje'] ?? data['message'];
         if (msg != null && msg.toString().trim().isNotEmpty) {
           final texto = msg.toString();
@@ -294,16 +259,6 @@ class ApiService {
     );
   }
 
-  /// Realiza el login contra `POST /auth/login`.
-  ///
-  /// Devuelve un [LoginResult]:
-  /// - Si el cliente NO tiene 2FA, guarda el token y el usuario y devuelve
-  ///   `requiere2fa = false`.
-  /// - Si el cliente SÍ tiene 2FA, devuelve `requiere2fa = true` junto con el
-  ///   `twoFactorToken` temporal (solo en memoria) para verificar el OTP.
-  ///
-  /// Si el rol fuera administrador, lanza [ApiException] indicando que esta
-  /// app es exclusiva para clientes.
   Future<LoginResult> login({
     required String email,
     required String password,
@@ -319,7 +274,6 @@ class ApiService {
 
       final data = response.data ?? {};
 
-      // CASO B: el backend pide código de doble factor.
       if (data['requires_2fa'] == true) {
         final tokenTemporal = (data['two_factor_token'] ?? '').toString();
         if (tokenTemporal.isEmpty) {
@@ -334,7 +288,6 @@ class ApiService {
         );
       }
 
-      // CASO A: login normal.
       final token = (data['token'] ?? data['accessToken'] ?? '').toString();
       if (token.isEmpty) {
         throw const ApiException('El servidor no devolvió un token válido.');
@@ -347,10 +300,6 @@ class ApiService {
     }
   }
 
-  /// Verifica el código OTP del doble factor contra `POST /auth/2fa/verify-login`.
-  ///
-  /// Al validarse, guarda la sesión y devuelve `true`. El [twoFactorToken]
-  /// temporal se usa solo en memoria para esta llamada y se descarta al terminar.
   Future<bool> verificarLogin2FA({
     required String twoFactorToken,
     required String codigo,
@@ -404,10 +353,6 @@ class ApiService {
     }
   }
 
-  /// Inicia la configuración del doble factor contra `POST /auth/2fa/setup`.
-  ///
-  /// Devuelve el secreto, la URL OTPAuth y el QR (data URL base64). Requiere
-  /// sesión activa.
   Future<Map<String, dynamic>> setupTwoFactor({
     required String password,
   }) async {
@@ -426,9 +371,6 @@ class ApiService {
     }
   }
 
-  /// Confirma (activa) el doble factor contra `POST /auth/2fa/confirm`.
-  ///
-  /// Requiere el [codigo] OTP de 6 dígitos generado con el secreto del setup.
   Future<void> confirmarTwoFactor({
     required String codigo,
     required String setupToken,
@@ -443,9 +385,6 @@ class ApiService {
     }
   }
 
-  /// Desactiva el doble factor contra `POST /auth/2fa/disable`.
-  ///
-  /// Requiere la contraseña actual y el código OTP generado por la app.
   Future<void> desactivarTwoFactor({
     required String password,
     required String codigo,
@@ -460,9 +399,6 @@ class ApiService {
     }
   }
 
-  /// Actualiza los datos del perfil contra `PUT /usuarios/perfil`.
-  ///
-  /// Devuelve el usuario actualizado por el backend.
   Future<Usuario> actualizarPerfil({
     String? nombre,
     String? apellido,
@@ -505,11 +441,6 @@ class ApiService {
     }
   }
 
-  /// Sube la foto de perfil contra `PUT /usuarios/foto` (multipart, campo `foto`).
-  ///
-  /// Devuelve el usuario actualizado. [fileName] puede terminar en
-  /// `.jpg`/`.jpeg`/`.png`/`.webp`; el backend filtra el tipo según la
-  /// extensión.
   Future<Usuario> subirFotoPerfil({
     required Uint8List bytes,
     required String fileName,
@@ -551,7 +482,6 @@ class ApiService {
     }
   }
 
-  /// Cambia la contraseña contra `PUT /usuarios/password`.
   Future<void> cambiarPassword({
     required String passwordActual,
     required String passwordNueva,
@@ -574,10 +504,6 @@ class ApiService {
     }
   }
 
-  /// Elimina la cuenta del cliente (`DELETE /usuarios/cuenta`).
-  ///
-  /// Una contraseña incorrecta llega como 400 (no 401): no cierra la sesión
-  /// por sí sola y se muestra el mensaje del backend.
   Future<void> eliminarCuenta({required String password}) async {
     try {
       await _dio.delete<dynamic>(
@@ -589,7 +515,6 @@ class ApiService {
     }
   }
 
-  /// Obtiene las compras (ventas) del cliente contra `GET /ventas/mis-ventas`.
   Future<List<Venta>> obtenerMisVentas() async {
     final generacion = StorageService.instance.generacion;
     try {
@@ -620,7 +545,6 @@ class ApiService {
     }
   }
 
-  /// Obtiene la lista de deseos del cliente contra `GET /favoritos`.
   Future<List<Libro>> obtenerFavoritos() async {
     try {
       final response = await _dio.get<dynamic>(Constants.favoritosPath);
@@ -634,7 +558,6 @@ class ApiService {
     }
   }
 
-  /// Consulta si un libro está en favoritos contra `GET /favoritos/:id`.
   Future<bool> esFavorito(int idLibro) async {
     try {
       final response = await _dio.get<dynamic>(
@@ -651,7 +574,6 @@ class ApiService {
     }
   }
 
-  /// Agrega un libro a favoritos contra `POST /favoritos/:id`.
   Future<void> agregarFavorito(int idLibro) async {
     try {
       await _dio.post<dynamic>('${Constants.favoritosPath}/$idLibro');
@@ -660,9 +582,6 @@ class ApiService {
     }
   }
 
-  /// Quita un libro de favoritos contra `DELETE /favoritos/:id`.
-  ///
-  /// Es idempotente: quitar un libro que no era favorito no es un error.
   Future<void> quitarFavorito(int idLibro) async {
     try {
       await _dio.delete<dynamic>('${Constants.favoritosPath}/$idLibro');
@@ -671,20 +590,6 @@ class ApiService {
     }
   }
 
-  /// Crea una orden de pago contra `POST /pagos/crear-orden`.
-  ///
-  /// [detalles] es una lista de `{id_libro, cantidad}`. El backend calcula el
-  /// total con los precios reales de la base de datos y crea la orden en
-  /// PayU (WebCheckout). Devuelve un [OrdenPago] con el
-  /// [OrdenPago.checkoutUrl] para redirigir al checkout.
-  ///
-  /// [tipoEntrega] puede ser `domicilio` (zona activa de Pallasca y dirección)
-  /// o `tienda` (recojo gratuito en Pallasca). El servidor determina la tarifa.
-  ///
-  /// La `idempotencia_clave` se genera UNA vez por intento de checkout y se
-  /// reutiliza en los reintentos (tras un timeout, el backend responde
-  /// `ya_existia` en lugar de duplicar la orden). Solo se libera cuando el
-  /// pago termina o cuando cambia el contenido/entrega del checkout.
   Future<OrdenPago> crearOrdenPago({
     required List<Map<String, dynamic>> detalles,
     String? tipoEntrega,
@@ -740,8 +645,6 @@ class ApiService {
     }
   }
 
-  /// Esta recuperación no consulta stock, promociones ni zonas: repite el
-  /// cuerpo original con la clave persistida y deja que la API lo resuelva.
   Future<OrdenPago?> recuperarIntentoPendiente() async {
     if (_creando != null) return _creando!;
     final intento = await intentoPendiente();
@@ -845,8 +748,7 @@ class ApiService {
           intento.checkoutUrl != null) {
         orden = orden.copyWith(checkoutUrl: intento.checkoutUrl);
       }
-      // Conciliar primero. Si se interrumpe, el intento sigue abierto y la
-      // repetición conserva las identidades y la marca de venta del carrito.
+
       if (estado.pagada) {
         await CarritoService.instance.conciliarVenta(
           orden.idVenta!,
@@ -881,7 +783,7 @@ class ApiService {
       }
       return orden;
     } on DioException catch (e) {
-      // Errores definitivos de validación, nunca 401/403, transporte o 5xx.
+
       if (const [400, 404, 409, 422].contains(e.response?.statusCode)) {
         await CheckoutStore.instance.guardar(
           intento.actualizar(estado: 'REJECTED_REQUEST'),
@@ -923,9 +825,6 @@ class ApiService {
     }
   }
 
-  /// Consulta el estado de una orden contra `GET /pagos/:orderId`.
-  ///
-  /// Consulta el estado real de la orden directamente en PayU.
   Future<EstadoOrden> obtenerOrdenPago(String orderId) async {
     try {
       final response = await _dio.get<dynamic>(
@@ -973,7 +872,6 @@ class ApiService {
     }
   }
 
-  /// Solo zonas activas: no se ofrecen ubicaciones Lima ni tarifas legacy.
   Future<List<ZonaDelivery>> obtenerZonasDelivery() async {
     try {
       final response = await _dio.get<dynamic>(Constants.zonasDeliveryPath);
@@ -994,7 +892,6 @@ class ApiService {
     }
   }
 
-  /// Determina el Content-Type a partir de la extensión del archivo.
   String _contentTypeFor(String fileName) {
     final lower = fileName.toLowerCase();
     if (lower.endsWith('.png')) return 'image/png';
@@ -1003,13 +900,6 @@ class ApiService {
     return 'application/octet-stream';
   }
 
-  /// Registra un nuevo cliente contra `POST /auth/registro`.
-  ///
-  /// El backend crea el usuario con rol cliente y envía un código de
-  /// verificación por email. Devuelve un [RegistroResult]; cuando
-  /// [RegistroResult.requiereVerificacion] es `true`, la pantalla debe pedir el
-  /// código a través de [verificarEmail] antes de poder iniciar sesión. No se
-  /// guarda contraseña en ningún almacenamiento.
   Future<RegistroResult> registrar({
     required String nombre,
     required String apellido,
@@ -1035,10 +925,6 @@ class ApiService {
     }
   }
 
-  /// Verifica la cuenta contra `POST /auth/verificar-email`.
-  ///
-  /// Valida el [codigo] de 6 dígitos recibido por email para [email]. Al ser
-  /// correcto, la cuenta queda activa y el usuario puede iniciar sesión.
   Future<void> verificarEmail({
     required String email,
     required String codigo,
@@ -1053,9 +939,6 @@ class ApiService {
     }
   }
 
-  /// Reenvía el código de verificación contra `POST /auth/reenviar-codigo`.
-  ///
-  /// El código llega únicamente por email; la API nunca lo devuelve.
   Future<void> reenviarCodigo({required String email}) async {
     try {
       await _dio.post<dynamic>(
@@ -1067,12 +950,6 @@ class ApiService {
     }
   }
 
-  /// Solicita un código para restablecer la contraseña contra
-  /// `POST /auth/solicitar-reseteo`.
-  ///
-  /// El backend siempre responde con el mismo mensaje genérico (no revela si
-  /// el correo existe). El código llega por email y hay que validarlo después
-  /// con [reestablecerContrasena]. No requiere sesión activa.
   Future<void> solicitarReseteo({required String email}) async {
     try {
       await _dio.post<dynamic>(
@@ -1084,11 +961,6 @@ class ApiService {
     }
   }
 
-  /// Restablece la contraseña contra `POST /auth/reestablecer-contrasena`.
-  ///
-  /// Valida el [codigo] de 6 dígitos recibido por email y establece la nueva
-  /// [password]. Al terminar se puede iniciar sesión con la nueva clave.
-  /// No requiere sesión activa.
   Future<void> reestablecerContrasena({
     required String email,
     String? codigo,
@@ -1133,9 +1005,6 @@ class ApiService {
     }
   }
 
-  /// Registra una hoja del Libro de Reclamaciones (`POST /reclamaciones`,
-  /// el mismo endpoint público que usa la web). Devuelve el número de hoja,
-  /// el mensaje y la fecha límite de respuesta.
   Future<({String numero, String mensaje, String? fechaLimite})>
   registrarReclamacion(Map<String, dynamic> hoja) async {
     try {
@@ -1156,7 +1025,6 @@ class ApiService {
     }
   }
 
-  /// Obtiene el catálogo de libros desde `GET /libros`.
   Future<List<Libro>> obtenerLibros() async {
     try {
       final response = await _dio.get<dynamic>(Constants.librosPath);
@@ -1170,10 +1038,6 @@ class ApiService {
     }
   }
 
-  /// Obtiene el detalle de un libro a través de `GET /libros/:id`.
-  ///
-  /// Permite que las pantallas recarguen información fresca desde el backend en
-  /// lugar de depender únicamente del objeto pasado por la navegación.
   Future<Libro> obtenerDetalleLibro(int id) async {
     try {
       final response = await _dio.get<dynamic>('${Constants.librosPath}/$id');
@@ -1190,7 +1054,6 @@ class ApiService {
     }
   }
 
-  /// Obtiene el perfil del usuario a través de `GET /usuarios/perfil`.
   Future<Usuario> obtenerPerfil() async {
     try {
       final response = await _dio.get<dynamic>(Constants.perfilPath);
@@ -1215,8 +1078,6 @@ class ApiService {
     }
   }
 
-  /// Extrae una lista de libros sin importar si vienen como lista directa o
-  /// envueltos en un objeto (p. ej. `{"data": [...]}` o `{"libros": [...]}`).
   List<dynamic> _extractList(dynamic raw) {
     if (raw is List) return raw;
     if (raw is Map) {

@@ -258,6 +258,70 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('la ficha técnica muestra los metadatos de la aplicación web', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light(),
+        home: DetalleLibroScreen(
+          libro: Libro(
+            titulo: 'Cien años de soledad',
+            isbn: '978-0307474728',
+            autor: 'Gabriel García Márquez',
+            categoria: 'Novela',
+            editorial: 'Sudamericana',
+            idioma: 'Español',
+            numeroPaginas: 312,
+            anioPublicacion: 1967,
+            formato: 'Tapa blanda',
+            numeroVolumen: 'Vol. 1',
+            dimensiones: '15.5 x 23 cm',
+            precio: 89.9,
+            estado: true,
+            stock: 5,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.text('Novela'),
+      findsNWidgets(2),
+      reason: 'La categoría aparece en la cabecera y en la ficha',
+    );
+    for (final valor in [
+      'Autor',
+      'Gabriel García Márquez',
+      'ISBN',
+      '978-0307474728',
+      'Editorial',
+      'Sudamericana',
+      'Idioma',
+      'Español',
+      'Número de páginas',
+      '312',
+      'Año de publicación',
+      '1967',
+      'Formato',
+      'Tapa blanda',
+      'Número de volumen',
+      'Vol. 1',
+      'Dimensiones',
+      '15.5 x 23 cm',
+      'Estado',
+      'Activo',
+      'Disponibilidad',
+      'En stock',
+      'Stock',
+      '5 unidades',
+    ]) {
+      expect(find.text(valor), findsOneWidget, reason: 'Falta: $valor');
+    }
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('la navegación inferior cabe en 360 px sin overflow', (
     tester,
   ) async {

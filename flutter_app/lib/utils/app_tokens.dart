@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Tokens de diseño: una sola fuente para espaciado, radios, movimiento y
-/// sombras. Las pantallas los usan en lugar de números sueltos.
-
-/// Escala de espaciado (múltiplos de 4).
 class Espacio {
   Espacio._();
 
@@ -18,11 +14,9 @@ class Espacio {
   static const double xxl = 32;
   static const double xxxl = 40;
 
-  /// Margen lateral de las pantallas.
   static const double pantalla = 20;
 }
 
-/// Radios de esquina.
 class Radios {
   Radios._();
 
@@ -39,7 +33,6 @@ class Radios {
       const BorderRadius.vertical(top: Radius.circular(xl));
 }
 
-/// Duraciones de las animaciones (180–400 ms: discretas y elegantes).
 class Duracion {
   Duracion._();
 
@@ -48,18 +41,14 @@ class Duracion {
   static const Duration lenta = Duration(milliseconds: 380);
 }
 
-/// Curvas de movimiento.
 class Curva {
   Curva._();
 
-  /// Salida suave (equivalente a ease-out-quart).
   static const Curve salida = Cubic(0.25, 1, 0.5, 1);
 
-  /// Entrada y salida suave.
   static const Curve suave = Curves.easeInOutCubic;
 }
 
-/// Sombras cálidas (tinta marrón, nunca negro puro).
 class Sombra {
   Sombra._();
 
@@ -89,7 +78,6 @@ class Sombra {
     ),
   ];
 
-  /// Sombra de la barra inferior y barras de acción fijas.
   static List<BoxShadow> get barra => [
     BoxShadow(
       color: AppColors.tinta.withValues(alpha: 0.08),
@@ -99,6 +87,5 @@ class Sombra {
   ];
 }
 
-/// Indica si el sistema pide reducir animaciones.
 bool reducirMovimiento(BuildContext context) =>
     MediaQuery.maybeDisableAnimationsOf(context) ?? false;

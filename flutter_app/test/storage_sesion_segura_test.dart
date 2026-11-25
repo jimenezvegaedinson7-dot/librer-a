@@ -25,7 +25,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString(Constants.prefTokenKey), isNull);
     expect(prefs.getBool('auth_session_invalid'), isTrue);
-    // Una escritura posterior válida recupera la sesión sin volver al token A.
+
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (call) async {
       if (call.method == 'read') return 'fixture-new-session';
       return null;

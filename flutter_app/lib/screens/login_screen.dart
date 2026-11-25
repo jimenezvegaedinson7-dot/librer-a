@@ -14,7 +14,6 @@ import 'registro_screen.dart';
 import 'security/two_factor_verify_screen.dart';
 import 'verificacion_email_screen.dart';
 
-/// Pantalla de acceso con identidad editorial de la librería.
 class LoginScreen extends StatefulWidget {
   final ApiService? api;
   const LoginScreen({super.key, this.api});
@@ -24,7 +23,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Siguen al tema y al fondo elegidos (ver AppColors).
+
   static Color get _background => AppColors.background;
   static Color get _surface => AppColors.surface;
   static Color get _ink => AppColors.textPrimary;
@@ -41,14 +40,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Aviso de nueva versión del APK (una vez por arranque de la app).
+
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => ComprobadorActualizacion.comprobar(context),
     );
     _cargarVerificacionPendiente();
   }
 
-  /// Correo registrado que aún no verificó su código (si lo hay).
   String? _verificacionPendiente;
 
   Future<void> _cargarVerificacionPendiente() async {
@@ -99,7 +97,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (!mounted) return;
 
-      // Si el cliente tiene 2FA activo, pedimos el código OTP.
       if (resultado.requiere2fa) {
         await Navigator.of(context).push(
           MaterialPageRoute<void>(
@@ -114,7 +111,6 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // ApiService ya restauró exclusivamente el carrito del titular.
       await StorageService.instance.limpiarVerificacionPendiente();
       if (!mounted) return;
 
@@ -143,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final emailRegistrado = await Navigator.of(context).push<String>(
       MaterialPageRoute<String>(builder: (_) => const RegistroScreen()),
     );
-    // Precarga el correo recién registrado si se devuelve desde el registro.
+
     if (emailRegistrado != null && emailRegistrado.isNotEmpty) {
       _emailController.text = emailRegistrado;
     }
@@ -346,7 +342,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 const SizedBox(height: 16),
                                 ErrorBanner(message: _errorMessage!),
                               ],
-                              // Solo si la cuenta se registró y falta su código.
+
                               if (_verificacionPendiente != null)
                                 TextButton(
                                   onPressed: _loading ? null : _openVerificar,
@@ -384,8 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                               ),
                               const SizedBox(height: 18),
-                              // En pantallas angostas o con letra grande el
-                              // botón pasa a la línea siguiente (sin desborde).
+
                               Wrap(
                                 alignment: WrapAlignment.center,
                                 crossAxisAlignment: WrapCrossAlignment.center,

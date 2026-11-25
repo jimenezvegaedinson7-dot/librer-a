@@ -16,7 +16,6 @@ def icon(size, content_size, background):
 icon(1024, 730, '#F6F1E9').save(APP / 'assets/icons/app_icon_legacy.png')
 icon(1024, 460, (0, 0, 0, 0)).save(APP / 'assets/icons/app_icon_foreground.png')
 
-# Logo nativo mientras arranca el motor Flutter (Android anterior a 12).
 for density, scale in [('mdpi', 1), ('hdpi', 1.5), ('xhdpi', 2), ('xxhdpi', 3), ('xxxhdpi', 4)]:
     target = APP / f'android/app/src/main/res/drawable-{density}/logo_web_launch.png'
     icon(round(160 * scale), round(110 * scale), (0, 0, 0, 0)).save(target)

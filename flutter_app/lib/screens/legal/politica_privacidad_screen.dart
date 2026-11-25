@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../widgets/legal_documento.dart';
 
-/// Política de Privacidad de la aplicación de MATIDANA.
 class PoliticaPrivacidadScreen extends StatelessWidget {
   const PoliticaPrivacidadScreen({super.key});
 

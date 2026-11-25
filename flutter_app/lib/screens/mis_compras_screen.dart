@@ -20,8 +20,6 @@ import '../widgets/presionable.dart';
 import '../widgets/confirmacion_otp.dart';
 import 'pago_en_app_screen.dart';
 
-/// Pantalla "Mis compras": lista las ventas del cliente desde
-/// `GET /ventas/mis-ventas`.
 class MisComprasScreen extends StatefulWidget {
   final bool embedded;
   final bool activa;
@@ -84,10 +82,6 @@ class MisComprasScreenState extends State<MisComprasScreen>
     super.dispose();
   }
 
-  /// Recarga las compras desde el backend.
-  ///
-  /// Home la conserva en un IndexedStack: activar la pestaña actualiza los
-  /// pedidos; volver a tocar Compras solicita otra recarga sin perder el estado.
   Future<void> recargar() async {
     await _cargarVentas();
   }
@@ -119,7 +113,7 @@ class MisComprasScreenState extends State<MisComprasScreen>
 
   @override
   Widget build(BuildContext context) {
-    // El acceso independiente desde Perfil conserva la flecha para volver.
+
     final apilada = !widget.embedded && Navigator.of(context).canPop();
     return Scaffold(
       appBar: apilada ? AppBar(toolbarHeight: 52) : null,
@@ -199,7 +193,6 @@ class MisComprasScreenState extends State<MisComprasScreen>
   }
 }
 
-/// Tarjeta resumen de una venta. Al tocarla abre el detalle de la compra.
 class _VentaTile extends StatelessWidget {
   final Venta venta;
   final Future<void> Function() onActualizada;
@@ -234,13 +227,10 @@ class _VentaTile extends StatelessWidget {
     }
   }
 
-  /// Reabre el checkout de PayU de una venta pendiente en el
-  /// navegador. Si no hay una URL registrada en memoria (p. ej. la app se
-  /// reinició antes de pagar), se muestra un aviso.
   Future<void> _continuarPago(BuildContext context) async {
     final idVenta = venta.idVenta;
     String? url;
-    // Siempre revalidar: una URL local no demuestra que siga pendiente.
+
     if (idVenta != null) {
       try {
         url = await ApiService.instance.recuperarCheckoutVenta(idVenta);
@@ -271,7 +261,6 @@ class _VentaTile extends StatelessWidget {
       return;
     }
 
-    // El pago se hace dentro de la app; al cerrarse se consulta el estado.
     final resultado = await PagoEnAppScreen.abrir(context, url);
     if (!context.mounted) return;
     await _verificarPago(
@@ -296,7 +285,7 @@ class _VentaTile extends StatelessWidget {
 
     try {
       var estado = await ApiService.instance.obtenerOrdenPago(orderId);
-      // Tras volver de PayU, la confirmación puede tardar unos segundos.
+
       for (
         var intento = 0;
         trasPago && intento < 4 && !estado.pagada && !estado.cancelada;
@@ -340,13 +329,8 @@ class _VentaTile extends StatelessWidget {
     }
   }
 
-  /// Etiqueta de la entrega tal como se realizó. `agencia` no se puede elegir
-  /// al comprar (el checkout solo ofrece domicilio y tienda); solo aparece
-  /// aquí para poder identificar pedidos antiguos de la base.
   String? get _entregaLabel => venta.entregaLabel;
 
-  /// Información de apoyo de la entrega: distrito/provincia (domicilio) o
-  /// el nombre de la agencia (agencia).
   String get _infoEntrega {
     final tipo = venta.tipoEntrega?.toLowerCase().trim();
     if (tipo == 'domicilio') {
@@ -520,7 +504,7 @@ class _VentaTile extends StatelessWidget {
                                 horizontal: 12,
                               ),
                             ),
-                            // Una sola línea, centrada, en cualquier ancho.
+
                             child: const FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text('Verificar pago', maxLines: 1),
@@ -561,7 +545,6 @@ class _VentaTile extends StatelessWidget {
   }
 }
 
-/// Detalle de una compra en un bottom sheet: ítems, costo de envío y total.
 class _DetalleVentaSheet extends StatelessWidget {
   final Venta venta;
 
@@ -658,7 +641,6 @@ class _DetalleVentaSheet extends StatelessWidget {
   }
 }
 
-/// Fila de un ítem del detalle: título con subtotal y cantidad × precio.
 class _ItemDetalleRow extends StatelessWidget {
   final VentaItem item;
 
@@ -705,7 +687,6 @@ class _ItemDetalleRow extends StatelessWidget {
   }
 }
 
-/// Fila del detalle: etiqueta + valor (opcionalmente destacado).
 class _FilaDetalle extends StatelessWidget {
   final String label;
   final String value;
@@ -747,9 +728,6 @@ class _FilaDetalle extends StatelessWidget {
   }
 }
 
-/// Línea de seguimiento del pedido: muestra las etapas
-/// Tres etapas del método de entrega, separadas del estado del pago.
-/// Solo para pruebas: el seguimiento de una compra, tal como en el detalle.
 @visibleForTesting
 Widget seguimientoPedidoParaPruebas(Venta venta) =>
     _SeguimientoPedido(venta: venta);
@@ -832,10 +810,6 @@ IconData _iconoTono(TonoSeguimiento tono, Venta venta) {
   return Icons.inventory_2_outlined;
 }
 
-/// Pasos del pedido sobre una sola línea. Todos los círculos ocupan el
-/// mismo espacio (el actual se distingue por un halo, no por su tamaño),
-/// así círculos, línea y textos quedan siempre alineados. Al abrir, la
-/// línea se llena de verde y cada check aparece al alcanzarlo.
 class _LineaPasos extends StatefulWidget {
   final List<PasoSeguimiento> pasos;
   const _LineaPasos({required this.pasos});
@@ -879,7 +853,7 @@ class _LineaPasosState extends State<_LineaPasos>
     final pasos = widget.pasos;
     final n = pasos.length;
     final indice = pasos.lastIndexWhere((p) => p.hecho || p.actual);
-    // Fracción de la línea que queda en verde (hasta el paso actual).
+
     final meta = n > 1 && indice > 0 ? indice / (n - 1) : 0.0;
     return AnimatedBuilder(
       animation: _anim,
@@ -896,7 +870,7 @@ class _LineaPasosState extends State<_LineaPasos>
                   final largo = c.maxWidth - 2 * margen;
                   return Stack(
                     children: [
-                      // Línea base y su parte completada.
+
                       Positioned(
                         left: margen,
                         width: largo,
@@ -928,7 +902,7 @@ class _LineaPasosState extends State<_LineaPasos>
                               child: Center(
                                 child: _MarcaPaso(
                                   paso: pasos[i],
-                                  // El check aparece cuando la línea lo alcanza.
+
                                   aparicion: !pasos[i].hecho
                                       ? 0
                                       : _tramo(
@@ -986,14 +960,11 @@ class _LineaPasosState extends State<_LineaPasos>
   }
 }
 
-/// Círculo de un paso dentro de un espacio fijo de 30 px.
 class _MarcaPaso extends StatelessWidget {
   final PasoSeguimiento paso;
 
-  /// 0 → 1: entrada con rebote del círculo verde y su check.
   final double aparicion;
 
-  /// 0 → 1: halo del paso actual.
   final double halo;
 
   const _MarcaPaso({
@@ -1018,7 +989,7 @@ class _MarcaPaso extends StatelessWidget {
                 color: AppColors.success.withValues(alpha: 0.18 * halo),
               ),
             ),
-          // Base: círculo vacío (pasos pendientes y antes de la animación).
+
           Container(
             width: 22,
             height: 22,
@@ -1058,7 +1029,6 @@ class _MarcaPaso extends StatelessWidget {
   }
 }
 
-/// Una línea con el estado del pedido ("Listo para recoger", "En camino"…).
 class _EstadoEnPalabras extends StatelessWidget {
   final Venta venta;
   const _EstadoEnPalabras({required this.venta});
@@ -1088,7 +1058,6 @@ class _EstadoEnPalabras extends StatelessWidget {
   }
 }
 
-/// Chip del estado de la venta.
 class _EstadoChip extends StatelessWidget {
   final Venta venta;
 

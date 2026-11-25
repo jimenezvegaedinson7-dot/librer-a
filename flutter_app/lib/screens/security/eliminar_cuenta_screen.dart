@@ -6,11 +6,6 @@ import '../../widgets/aparecer.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/formulario_cuenta.dart';
 
-/// Eliminar mi cuenta (derecho de cancelación, Ley 29733).
-///
-/// El backend anonimiza los datos personales, cancela las reservas activas
-/// y conserva las compras solo por obligación tributaria. Devuelve `true`
-/// al cerrar si la cuenta se eliminó.
 class EliminarCuentaScreen extends StatefulWidget {
   const EliminarCuentaScreen({super.key});
 

@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
 
-/// Portada de libro con sombra cálida y marcador de posición editorial.
 class BookCover extends StatelessWidget {
   final String url;
   final double borderRadius;
   final BoxFit fit;
 
-  /// Sin sombra cuando la portada llena su contenedor (tarjetas a sangre).
   final bool sombra;
 
   const BookCover({

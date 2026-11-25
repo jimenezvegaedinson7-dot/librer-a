@@ -27,7 +27,6 @@ import 'security/two_factor_setup_screen.dart';
 import 'legal/politica_privacidad_screen.dart';
 import 'legal/terminos_condiciones_screen.dart';
 
-// Siguen al tema de colores elegido (ver AppColors).
 Color get _profileInk => AppColors.textPrimary;
 Color get _profileMuted => AppColors.textSecondary;
 const _profileBorder = Color(0xFFE9EDEF);
@@ -35,12 +34,6 @@ Color get _profileSurface => AppColors.surface;
 const _profileSoft = Color(0xFFF0F2F5);
 Color get _profileAccent => AppColors.primaryDark;
 
-/// Pantalla de perfil del cliente.
-///
-/// Muestra los datos, permite editar perfil/foto/contraseña y gestionar el
-/// doble factor (Google Authenticator). El estado 2FA se obtiene de
-/// `GET /usuarios/perfil` (`two_factor_enabled`); si una respuesta anterior no
-/// lo incluye, se conserva el valor local guardado durante el login.
 class PerfilScreen extends StatefulWidget {
   final bool embedded;
   final bool activa;
@@ -79,7 +72,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     super.dispose();
   }
 
-  /// Mantiene el tema local sincronizado con el controlador global.
   void _syncTema() {
     if (mounted) {
       setState(() {});
@@ -93,8 +85,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         mounted &&
         generacion == StorageService.instance.generacion &&
         !_perfilServidorRecibido) {
-      // El estado 2FA se precarga desde el usuario guardado y luego la
-      // pantalla lo refresca con GET /usuarios/perfil.
+
       final twoFa = usuario.twoFactorEnabled ?? false;
       if (mounted) {
         setState(() {
@@ -105,10 +96,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
-  /// Consulta el perfil al backend y actualiza los datos locales.
-  ///
-  /// `GET /usuarios/perfil` ahora incluye `two_factor_enabled`; si el servidor
-  /// no lo envía (respuesta anterior), se conserva el valor local.
   Future<void> _refrescarPerfil({bool forzar = false}) async {
     if ((_refreshing && !forzar) || _subiendoFoto) return;
     final revision = ++_revisionPerfil;
@@ -142,9 +129,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
         });
       }
     } on ApiException catch (_) {
-      // Se conservan los datos locales si falla.
+
     } catch (_) {
-      // Sin acción: se muestran los datos locales.
+
     } finally {
       if (mounted && _refrescoActivoRevision == revision) {
         setState(() => _refreshing = false);
@@ -153,8 +140,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Future<void> _cerrarSesion() async {
-    // El carrito pertenece a la sesión: al salir no debe quedar nada de esta
-    // cuenta para la siguiente que inicie sesión.
+
     CarritoService.instance.vaciarSesion();
     ApiService.instance.limpiarEstadoCheckout();
     await StorageService.instance.limpiarSesion();
@@ -191,7 +177,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Future<void> _editarPerfil(CampoPerfil campo) async {
     final usuario = _usuario;
     if (usuario == null) return;
-    // Una lectura iniciada antes de editar no debe restaurar los datos viejos.
+
     _revisionPerfil++;
     final guardado = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
@@ -227,7 +213,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     await _cerrarSesion();
   }
 
-  /// Dentro de la app y con los datos de la cuenta ya completados.
   Future<void> _libroReclamaciones() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const LibroReclamacionesScreen()),
@@ -260,7 +245,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
-  /// Muestra el selector de foto: avatar predefinido, galería o cámara.
   Future<void> _cambiarFoto() async {
     if (_subiendoFoto) return;
     final foto = _usuario?.fotoPerfil;
@@ -334,7 +318,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
-  /// Abre la galería de avatares predefinidos y sube el seleccionado.
   Future<void> _elegirAvatar() async {
     final generacion = StorageService.instance.generacion;
     final seleccionado = await showModalBottomSheet<AvatarPreset>(
@@ -388,7 +371,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     await _subirAvatar(seleccionado);
   }
 
-  /// Genera el PNG del avatar en runtime y lo sube como foto de perfil.
   Future<void> _subirAvatar(AvatarPreset preset) async {
     final generacion = StorageService.instance.generacion;
     try {
@@ -401,7 +383,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
-  /// Selecciona una imagen desde la galería o cámara y la sube.
   Future<void> _seleccionarImagen(ImageSource source) async {
     final generacion = StorageService.instance.generacion;
     final picker = ImagePicker();
@@ -425,10 +406,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
       }
       if (!mounted || generacion != StorageService.instance.generacion) return;
 
-      // Se detecta el formato real por magic bytes. No se confía en la
-      // extensión original (puede estar vacía o ser incorrecta) ni se asume
-      // un `.jpg` arbitrario: el backend filtra por content-type y valida el
-      // contenido real de la imagen.
       final formato = _detectarFormatoImagen(bytes);
       if (formato == null) {
         _toast('Solo se permiten imágenes JPG, PNG o WEBP.');
@@ -441,19 +418,15 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
-  /// Detecta la extensión de imagen por sus magic bytes (JPEG/PNG/WebP).
-  ///
-  /// Devuelve `'.jpg'`, `'.png'` o `'.webp'` según el contenido real del
-  /// archivo, o `null` si no es una imagen soportada.
   String? _detectarFormatoImagen(Uint8List bytes) {
-    // JPEG: FF D8 FF
+
     if (bytes.length >= 3 &&
         bytes[0] == 0xFF &&
         bytes[1] == 0xD8 &&
         bytes[2] == 0xFF) {
       return '.jpg';
     }
-    // PNG: 89 50 4E 47 0D 0A 1A 0A
+
     if (bytes.length >= 8 &&
         bytes[0] == 0x89 &&
         bytes[1] == 0x50 &&
@@ -465,7 +438,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         bytes[7] == 0x0A) {
       return '.png';
     }
-    // WebP: 'RIFF' + tamaño + 'WEBP'
+
     if (bytes.length >= 12 &&
         bytes[0] == 0x52 &&
         bytes[1] == 0x49 &&
@@ -480,7 +453,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return null;
   }
 
-  /// Sube los bytes como foto de perfil (compartido por avatar y foto).
   Future<void> _subirBytes(Uint8List bytes, String fileName) async {
     if (_subiendoFoto || !mounted) return;
     final generacion = StorageService.instance.generacion;
@@ -968,7 +940,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
   );
 }
 
-/// Opción del selector de foto con icono, etiqueta y altura táctil cómoda.
 class _SheetOption extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -1030,7 +1001,6 @@ class _SheetOption extends StatelessWidget {
   }
 }
 
-/// Avatar preset seleccionable en la galería de avatares.
 class _AvatarPresetCircle extends StatelessWidget {
   final AvatarPreset preset;
   final VoidCallback onTap;
@@ -1065,7 +1035,6 @@ class _AvatarPresetCircle extends StatelessWidget {
   }
 }
 
-/// Avatar circular con la foto del usuario si existe, o las iniciales.
 class _Avatar extends StatelessWidget {
   final Usuario? usuario;
 

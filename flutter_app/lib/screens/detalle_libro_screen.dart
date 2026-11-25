@@ -16,13 +16,9 @@ import '../widgets/precio_texto.dart';
 import '../widgets/presionable.dart';
 import 'carrito_screen.dart';
 
-/// Ficha del libro: portada sobre pergamino, datos comerciales (precio,
-/// disponibilidad y cantidad), sinopsis expandible, ficha técnica y barra
-/// inferior fija con total y acción para añadir al carrito.
 class DetalleLibroScreen extends StatefulWidget {
   final Libro libro;
 
-  /// Etiqueta de la transición de portada desde la tarjeta de origen.
   final Object? heroTag;
 
   const DetalleLibroScreen({super.key, required this.libro, this.heroTag});
@@ -38,18 +34,15 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
   bool? _esFavorito;
   bool _favoritoCambiando = false;
 
-  /// Confirmación visual breve tras añadir al carrito.
   bool _agregado = false;
 
   @override
   void initState() {
     super.initState();
     _libro = widget.libro;
-    // Actualiza precio/stock con datos frescos del backend. Si falla, se
-    // conserva el objeto recibido por la navegación.
+
     _refrescarLibro();
-    // Consulta el estado del libro en la lista de deseos (silencioso: si
-    // falla se muestra vacío y el usuario puede volver a tocarlo).
+
     _cargarFavorito();
   }
 
@@ -60,9 +53,7 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
       final esFavorito = await ApiService.instance.esFavorito(id);
       if (!mounted) return;
       setState(() => _esFavorito = esFavorito);
-    } catch (_) {
-      // Silencioso.
-    }
+    } catch (_) {}
   }
 
   Future<void> _toggleFavorito() async {
@@ -119,9 +110,7 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
       final fresco = await ApiService.instance.obtenerDetalleLibro(id);
       if (!mounted) return;
       setState(() => _libro = fresco);
-    } catch (_) {
-      // Silencioso: se sigue mostrando el libro recibido por la navegación.
-    }
+    } catch (_) {}
   }
 
   void _incrementar() {
@@ -323,7 +312,6 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
         ],
         const SizedBox(height: 18),
 
-        // Bloque comercial: precio + cantidad.
         Container(
           padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
           decoration: BoxDecoration(
@@ -398,25 +386,44 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
 
         const SizedBox(height: 16),
 
-        // Ficha técnica con campos reales del modelo.
         _Card(
           title: 'Ficha técnica',
           child: Column(
             children: [
-              _infoRow(context, 'Autor', _libro.autor ?? '—'),
-              _infoRow(context, 'Categoría', _libro.categoria ?? '—'),
-              _infoRow(context, 'ISBN', _libro.isbn ?? '—'),
-              _infoRow(
-                context,
-                'Stock',
-                _libro.hayStock ? '${_libro.stock} disponibles' : 'Agotado',
-                ultimo: true,
-              ),
+              for (var i = 0; i < _fichaTecnica.length; i++)
+                _infoRow(
+                  context,
+                  _fichaTecnica[i].key,
+                  _fichaTecnica[i].value,
+                  ultimo: i == _fichaTecnica.length - 1,
+                ),
             ],
           ),
         ),
       ],
     );
+  }
+
+  List<MapEntry<String, String>> get _fichaTecnica {
+    final filas = <MapEntry<String, String>>[
+      MapEntry('Autor', _libro.autor ?? ''),
+      MapEntry('Categoría', _libro.categoria ?? ''),
+      MapEntry('ISBN', _libro.isbn ?? ''),
+      MapEntry('Editorial', _libro.editorial ?? ''),
+      MapEntry('Idioma', _libro.idioma ?? ''),
+      MapEntry('Número de páginas', _libro.numeroPaginas?.toString() ?? ''),
+      MapEntry('Año de publicación', _libro.anioPublicacion?.toString() ?? ''),
+      MapEntry('Formato', _libro.formato ?? ''),
+      MapEntry('Número de volumen', _libro.numeroVolumen ?? ''),
+      MapEntry('Dimensiones', _libro.dimensiones ?? ''),
+      if (_libro.esActivo) const MapEntry('Estado', 'Activo'),
+      MapEntry(
+        'Disponibilidad',
+        _libro.esActivo && _libro.hayStock ? 'En stock' : 'Agotado',
+      ),
+      MapEntry('Stock', '${_libro.stock ?? 0} unidades'),
+    ];
+    return filas.where((fila) => fila.value.trim().isNotEmpty).toList();
   }
 
   Widget _infoRow(
@@ -461,7 +468,6 @@ class _DetalleLibroScreenState extends State<DetalleLibroScreen> {
   }
 }
 
-/// Corazón de favorito: late al activarse.
 class _CorazonFavorito extends StatelessWidget {
   final bool activo;
 
@@ -487,10 +493,6 @@ class _CorazonFavorito extends StatelessWidget {
   }
 }
 
-/// Portada grande sobre una banda de pergamino.
-///
-/// Se evita el halo con [RadialGradient]: en el GPU Mali de algunos equipos
-/// el degradado radial rompe el rasterizado y deja la pantalla en blanco.
 class _EscenarioPortada extends StatelessWidget {
   final Libro libro;
   final bool redondeado;
@@ -502,7 +504,6 @@ class _EscenarioPortada extends StatelessWidget {
     this.heroTag,
   });
 
-  /// Con etiqueta, la portada llega volando desde la tarjeta de origen.
   Widget _conHero(Widget portada) =>
       heroTag == null ? portada : Hero(tag: heroTag!, child: portada);
 
@@ -551,7 +552,6 @@ class _EscenarioPortada extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Estantería tenue detrás de la portada, como en una vitrina.
             Positioned.fill(
               child: IgnorePointer(
                 child: ShaderMask(
@@ -585,7 +585,6 @@ class _EscenarioPortada extends StatelessWidget {
   }
 }
 
-/// Selector numérico de cantidad en píldora.
 class _CantidadSelector extends StatelessWidget {
   final int cantidad;
   final int max;
@@ -656,7 +655,6 @@ class _CantidadSelector extends StatelessWidget {
   }
 }
 
-/// Tarjeta de sinopsis con texto plegable ("Leer más" / "Leer menos").
 class _SinopsisCard extends StatelessWidget {
   final String descripcion;
   final bool completa;
@@ -681,7 +679,6 @@ class _SinopsisCard extends StatelessWidget {
       title: 'Sinopsis',
       child: LayoutBuilder(
         builder: (context, c) {
-          // "Leer más" solo si el texto realmente pasa de 4 líneas.
           final medida = TextPainter(
             text: TextSpan(text: descripcion, style: estilo),
             maxLines: 4,
@@ -733,7 +730,6 @@ class _SinopsisCard extends StatelessWidget {
   }
 }
 
-/// Contenedor con encabezado serif para Sinopsis y Ficha técnica.
 class _Card extends StatelessWidget {
   final String title;
   final Widget child;
@@ -780,7 +776,6 @@ class _Card extends StatelessWidget {
   }
 }
 
-/// Barra inferior fija con total y compra PayU desde el carrito.
 class _StickyBar extends StatelessWidget {
   final Libro libro;
   final int cantidad;
@@ -809,8 +804,7 @@ class _StickyBar extends StatelessWidget {
           'Total',
           style: textTheme.labelSmall?.copyWith(color: AppColors.textTertiary),
         ),
-        // Darle ancho natural al texto evita que PrecioTexto dibuje puntos
-        // suspensivos. Solo se reduce si ni siquiera cabe en toda la barra.
+
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,

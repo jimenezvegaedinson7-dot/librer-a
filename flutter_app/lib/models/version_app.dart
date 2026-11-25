@@ -1,6 +1,5 @@
 import '../utils/json_utils.dart';
 
-/// Versión publicada de la app (respuesta de `GET /api/app/version`).
 class VersionApp {
   final String version;
   final int versionCode;
@@ -18,7 +17,6 @@ class VersionApp {
     required this.notas,
   });
 
-  /// Devuelve `null` si faltan datos imprescindibles.
   static VersionApp? fromJson(Map<String, dynamic> json) {
     final version = JsonUtils.asString(json['version']);
     final versionCode = JsonUtils.asInt(json['versionCode']);

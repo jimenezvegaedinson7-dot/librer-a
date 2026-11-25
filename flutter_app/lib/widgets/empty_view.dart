@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 import 'aparecer.dart';
 
-/// Estado vacío: medallón de pergamino con filete dorado, título serif,
-/// mensaje y una acción opcional.
 class EmptyView extends StatelessWidget {
   final IconData icon;
   final String title;

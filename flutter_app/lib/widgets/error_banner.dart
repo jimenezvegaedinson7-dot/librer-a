@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
 
-/// Aviso de error dentro de un formulario o sección.
 class ErrorBanner extends StatelessWidget {
   final String message;
 

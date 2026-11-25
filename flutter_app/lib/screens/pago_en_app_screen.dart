@@ -5,21 +5,13 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 import '../utils/app_colors.dart';
 
-/// Cómo terminó la ventana de pago.
 enum ResultadoPagoEnApp {
-  /// PayU devolvió al cliente a la página de retorno: hay que verificar.
+
   regreso,
 
-  /// El cliente cerró la ventana antes de terminar.
   cerrado,
 }
 
-/// El checkout de PayU dentro de la app, sin salir al navegador.
-///
-/// La página de retorno de PayU (`/api/pagos/respuesta/...`) no se muestra:
-/// al llegar a ella la ventana se cierra sola y la pantalla anterior
-/// consulta el estado real del pago a la API. Volver de la ventana NUNCA
-/// confirma un pago por sí mismo; lo confirma el servidor.
 class PagoEnAppScreen extends StatefulWidget {
   final String url;
   const PagoEnAppScreen({super.key, required this.url});
@@ -37,10 +29,8 @@ class PagoEnAppScreen extends StatefulWidget {
     return resultado ?? ResultadoPagoEnApp.cerrado;
   }
 
-  /// ¿Es la página a la que PayU devuelve al terminar?
   static bool esRetorno(Uri uri) => uri.path.contains('/api/pagos/respuesta/');
 
-  /// ¿Es una página de la pasarela de PayU (donde se eligen los métodos)?
   static bool esPasarela(Uri uri) =>
       uri.host == 'payulatam.com' || uri.host.endsWith('.payulatam.com');
 
@@ -53,18 +43,12 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
   double _progreso = 0;
   bool _error = false, _terminado = false;
 
-  /// La primera carga de PayU no siempre trae los métodos de pago: se
-  /// recarga una vez sola y, mientras tanto, se muestra "Preparando pago".
   bool _recargada = false, _preparando = true;
 
-  /// Deslizar hacia abajo para recargar (como Ctrl + R): distancia que el
-  /// dedo lleva arrastrada desde arriba de la página y si ya está recargando.
   double _tiron = 0;
   bool _recargando = false;
   static const _umbralTiron = 90.0;
 
-  /// Detecta el gesto dentro de la página: solo cuenta si la página (y el
-  /// panel tocado) ya están arriba del todo, para no robar el scroll normal.
   static const _scriptTiron = r'''
 (function () {
   if (window.__libreriaTiron) return;
@@ -128,14 +112,12 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
       )
       ..loadRequest(Uri.parse(widget.url));
     _permitirCookiesPasarela();
-    // Si PayU nunca llega a cargar, no se deja la pantalla tapada.
+
     Future<void>.delayed(const Duration(seconds: 15), () {
       if (mounted && _preparando) setState(() => _preparando = false);
     });
   }
 
-  /// PayU guarda la sesión del pago en cookies de sus propios dominios; el
-  /// WebView de Android las bloquea por defecto y los métodos no aparecen.
   void _permitirCookiesPasarela() {
     final plataforma = _web.platform;
     if (plataforma is! AndroidWebViewController) return;
@@ -157,7 +139,6 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
     }
   }
 
-  /// Recarga la página de pago, como Ctrl + R.
   void _recargar() {
     if (_recargando || !mounted) return;
     setState(() {
@@ -166,20 +147,20 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
       _error = false;
     });
     _web.reload();
-    // Si la página no avisa que terminó, el indicador no queda girando.
+
     Future<void>.delayed(const Duration(seconds: 12), () {
       if (mounted && _recargando) setState(() => _recargando = false);
     });
   }
 
   void _paginaLista(String url) {
-    // El gesto se vuelve a instalar en cada página que se abre.
+
     _web.runJavaScript(_scriptTiron).catchError((_) {});
     if (mounted && _recargando) setState(() => _recargando = false);
     final uri = Uri.tryParse(url);
     if (uri == null || !mounted || !PagoEnAppScreen.esPasarela(uri)) return;
     if (!_recargada) {
-      // Igual que refrescar a mano: la segunda carga ya muestra los métodos.
+
       _recargada = true;
       Future<void>.delayed(const Duration(milliseconds: 500), () {
         if (mounted) _web.reload();
@@ -199,8 +180,7 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
     if (const ['https', 'http', 'about', 'data', 'blob'].contains(uri.scheme)) {
       return NavigationDecision.navigate;
     }
-    // Apps de bancos o billeteras (intent://, yape://…): se abren en su app
-    // y el cliente vuelve aquí para terminar.
+
     launchUrl(
       uri,
       mode: LaunchMode.externalApplication,
@@ -325,8 +305,6 @@ class _PagoEnAppScreenState extends State<PagoEnAppScreen> {
   }
 }
 
-/// Círculo que baja con el dedo: la flecha gira según cuánto falta para
-/// recargar y, al soltar, se vuelve una ruedita de carga.
 class _IndicadorTiron extends StatelessWidget {
   final double avance;
   final bool recargando;
@@ -369,7 +347,6 @@ class _IndicadorTiron extends StatelessWidget {
   }
 }
 
-/// Cubre la página mientras PayU termina de cargar los métodos de pago.
 class _Preparando extends StatelessWidget {
   const _Preparando();
 
@@ -408,7 +385,7 @@ class _ErrorCarga extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => RefreshIndicator(
-    // También aquí se puede deslizar hacia abajo para reintentar.
+
     onRefresh: () async => onReintentar(),
     child: LayoutBuilder(
       builder: (context, c) => SingleChildScrollView(

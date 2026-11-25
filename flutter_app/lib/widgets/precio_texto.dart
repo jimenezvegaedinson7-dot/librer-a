@@ -6,8 +6,6 @@ import '../models/libro.dart';
 import '../utils/app_tokens.dart';
 import '../utils/app_theme.dart';
 
-/// Mantiene la tipografía del precio existente; agrega la referencia anterior
-/// únicamente cuando hay una rebaja real.
 class PrecioLibro extends StatelessWidget {
   final Libro libro;
   final double tamano;
@@ -83,8 +81,6 @@ class PrecioLibro extends StatelessWidget {
   }
 }
 
-/// Precio con el símbolo "S/" del mismo tamaño y peso que el importe, para
-/// que se lea como una sola cifra (también en las ofertas).
 class PrecioTexto extends StatelessWidget {
   final num? monto;
   final double tamano;

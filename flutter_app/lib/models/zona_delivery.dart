@@ -1,6 +1,5 @@
 import '../utils/json_utils.dart';
 
-/// Zona de delivery local de Pallasca configurada por el administrador.
 class ZonaDelivery {
   final int idZona;
   final String nombre;

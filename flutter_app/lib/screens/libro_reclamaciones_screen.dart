@@ -7,17 +7,9 @@ import '../utils/app_colors.dart';
 import '../utils/formats.dart';
 import '../widgets/error_banner.dart';
 
-/// Libro de Reclamaciones dentro de la app (Ley 29571, D.S. 011-2011-PCM).
-///
-/// Mismo formulario y mismo endpoint público que la web
-/// (`/libro-de-reclamaciones`), pero con los datos de la cuenta ya puestos:
-/// nombre, correo, teléfono y, de las compras, documento y domicilio. El
-/// cliente puede corregir todo antes de enviar. Al elegir una compra se
-/// completan el bien y el monto.
 class LibroReclamacionesScreen extends StatefulWidget {
   final ApiService? api;
 
-  /// Origen de las compras propias (por defecto `obtenerMisVentas`).
   final Future<List<Venta>> Function()? cargarCompras;
   const LibroReclamacionesScreen({super.key, this.api, this.cargarCompras});
 
@@ -73,8 +65,6 @@ class _LibroReclamacionesScreenState extends State<LibroReclamacionesScreen> {
     super.dispose();
   }
 
-  /// Rellena lo que la cuenta ya tiene. Nada se envía sin que el cliente
-  /// lo revise; un campo ya escrito no se pisa.
   Future<void> _autocompletar() async {
     try {
       final u = await StorageService.instance.obtenerUsuario();
@@ -120,7 +110,7 @@ class _LibroReclamacionesScreenState extends State<LibroReclamacionesScreen> {
       }
       setState(() => _compras = propias);
     } catch (_) {
-      // Sin compras disponibles: el formulario sigue funcionando.
+
     } finally {
       if (mounted) setState(() => _cargando = false);
     }

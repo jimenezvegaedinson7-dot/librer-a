@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
 
-/// Encabezado de página: antetítulo dorado opcional y título serif en una
-/// sola línea ("Paso 2 de 3 · Entrega y pago"), con subtítulo debajo.
 class AppPageHeader extends StatelessWidget {
   final String title;
   final Color? titleColor;
@@ -11,7 +9,6 @@ class AppPageHeader extends StatelessWidget {
   final String? subtitle;
   final String? eyebrow;
 
-  /// Centra el título (por ejemplo en Mi perfil).
   final bool centrado;
 
   const AppPageHeader({
@@ -28,14 +25,12 @@ class AppPageHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    // Un poco más abajo, separado del borde superior de la pantalla.
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Con el título centrado se reserva a la izquierda el mismo
-          // espacio que ocupa el trailing, para que quede al centro real.
+
           if (centrado && trailing != null) const SizedBox(width: 34),
           Expanded(
             child: Column(

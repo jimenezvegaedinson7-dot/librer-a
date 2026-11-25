@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 import 'aparecer.dart';
 
-/// Error a pantalla completa con opción de reintentar.
 class ErrorView extends StatelessWidget {
   final String message;
   final String buttonLabel;

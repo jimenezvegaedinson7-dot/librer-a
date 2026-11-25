@@ -6,16 +6,8 @@ import '../services/carrito_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_tokens.dart';
 
-/// Badge Material 3 que muestra la cantidad total de ejemplares en el carrito.
-///
-/// Envuelve el icono del carrito (header o barra inferior) y consulta a
-/// [CarritoService.totalUnidades] en tiempo real mediante [ListenableBuilder].
-///
-/// - Si el total es 0, el badge se oculta.
-/// - Si el total supera 99, se muestra "99+" sin perder su forma.
-/// - Cada vez que cambia el total, el icono da un pequeño salto.
 class CarritoBadge extends StatelessWidget {
-  /// Icono base sobre el que se coloca el badge.
+
   final Widget child;
 
   const CarritoBadge({super.key, required this.child});

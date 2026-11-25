@@ -12,11 +12,6 @@ import '../widgets/libros_grid.dart';
 import '../widgets/loading_view.dart';
 import '../widgets/presionable.dart';
 
-/// Pantalla "Mis favoritos" (lista de deseos).
-///
-/// Carga los libros marcados como favoritos desde `GET /favoritos` y los
-/// muestra en una grilla de libros sueltos ([LibroSuelto]). Cada
-/// tarjeta incluye un corazón para quitarla sin abrir el libro.
 class FavoritosScreen extends StatefulWidget {
   const FavoritosScreen({super.key});
 
@@ -59,7 +54,6 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
     }
   }
 
-  /// Quita un libro de la lista local (sin re-cargar todo).
   Future<void> _quitar(Libro libro) async {
     final id = libro.idLibro;
     if (id == null) return;
@@ -98,7 +92,7 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Abierta desde Perfil: flecha para volver.
+
     final apilada = Navigator.of(context).canPop();
     return Scaffold(
       appBar: apilada ? AppBar(toolbarHeight: 52) : null,
@@ -157,8 +151,6 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
       );
     }
 
-    // Libros sueltos (portada con aspecto de libro y datos debajo, sin
-    // tarjeta), como en Inicio.
     final width = MediaQuery.sizeOf(context).width;
     const espacio = 20.0;
     final columnas = LibrosGrid.columnCount(width);
@@ -195,7 +187,6 @@ class _FavoritosScreenState extends State<FavoritosScreen> {
   }
 }
 
-/// Botón corazón sobre la portada para quitar el favorito directamente.
 class _QuitarCorazon extends StatelessWidget {
   final VoidCallback onTap;
 

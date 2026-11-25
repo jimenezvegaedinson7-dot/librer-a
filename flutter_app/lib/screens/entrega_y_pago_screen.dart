@@ -19,14 +19,6 @@ import 'pago_en_app_screen.dart';
 
 enum _TipoEntrega { domicilio, tienda }
 
-/// Pantalla "Entrega y pago".
-///
-/// Se abre desde "Mi carrito" al presionar "Realizar pedido". Permite elegir
-/// el tipo de entrega (delivery en Pallasca o recojo gratuito en Pallasca), ingresar los
-/// datos de envío cuando corresponde y revisar el resumen (subtotal, envío,
-/// total). Al confirmar con [COMPRAR Y PAGAR] se crea la orden en PayU
-/// (WebCheckout) y se abre el checkout DENTRO de la app
-/// ([PagoEnAppScreen]); al volver, el estado se confirma con la API.
 class EntregaYPagoScreen extends StatefulWidget {
   final ApiService? api;
   const EntregaYPagoScreen({super.key, this.api});
@@ -57,12 +49,8 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   List<ZonaDelivery> _zonas = [];
   int? _idZona;
 
-  /// El cliente confirma que su dirección está dentro de Pallasca (solo se
-  /// reparte ahí). Una dirección escrita no se puede verificar en el
-  /// teléfono; sin esta confirmación el pedido a domicilio no continúa.
   bool _dentroDePallasca = false;
 
-  /// Con una sola tarifa configurada no hay nada que elegir: se aplica sola.
   bool get _tarifaUnica => _zonas.length == 1;
 
   @override
@@ -170,11 +158,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     }
   }
 
-  /// Crea la orden en PayU (WebCheckout) y abre el checkout en el navegador.
-  ///
-  /// Reutiliza la lógica existente: el carrito SOLO se limpia cuando el pago
-  /// se confirma (ver [_verificarPago]). Si el usuario vuelve sin pagar, el
-  /// carrito y la orden pendiente se conservan para poder continuar.
   Future<void> _realizarCompra() async {
     if (_procesando || _restaurando) return;
     final carrito = CarritoService.instance;
@@ -183,8 +166,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
         (carrito.total * 100 + _costoEnvio() * 100).round();
     setState(() => _procesando = true);
     try {
-      // Resolver un resultado incierto ANTES de validar el carrito actual.
-      // La orden anterior puede haber descontado ya todas sus unidades.
+
       final intento = await _api.intentoPendiente();
       if (!mounted) return;
       if (intento != null) {
@@ -201,8 +183,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
       final error = _validarEntrega();
       if (error != null) throw ApiException(error);
       final datos = _datosCheckout();
-      // Se renuevan las promociones antes de confirmar; el servidor sigue
-      // determinando y guardando el importe definitivo del pedido.
+
       final catalogo = await _api.obtenerLibros();
       if (!mounted) return;
       carrito.actualizarCatalogo(catalogo);
@@ -220,8 +201,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
               .toList();
         });
       }
-      // Todas las modalidades se revalidan tras las esperas. El POST usa la
-      // misma instantánea que se validó, nunca valores cambiados a mitad de compra.
+
       final errorActual = _validarEntrega();
       if (errorActual != null) throw ApiException(errorActual);
       if (datos != _datosCheckout()) {
@@ -259,8 +239,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           {'id_libro': item.libro.idLibro, 'cantidad': item.cantidad},
       ];
 
-      // Crea la orden de pago en PayU (backend calcula el total con
-      // los precios reales de la BD).
       final orden = await _api.crearOrdenPago(
         detalles: detalles,
         tipoEntrega: datos.tipoEntrega,
@@ -312,7 +290,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   }
 
   String? _validarEntrega() {
-    // Validar documento
+
     final doc = _documentoController.text.trim();
     if (doc.isEmpty) {
       return 'Ingresa tu número de documento.';
@@ -344,9 +322,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     }
   }
 
-  /// Consulta el estado real del pago. Al volver de la ventana de PayU
-  /// ([trasPago]) reintenta unos segundos: la confirmación de PayU llega
-  /// al servidor con un pequeño retraso.
   Future<void> _verificarPago({bool trasPago = false}) async {
     final orderId = _orderId;
     if (orderId == null || orderId.isEmpty) return;
@@ -448,7 +423,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     }
     setState(() => _procesando = true);
     try {
-      // Revalidar incluso una URL guardada: pudo pagarse en otro dispositivo.
+
       if (_orderId != null) {
         final estado = await _api.obtenerOrdenPago(_orderId!);
         if (!mounted) return;
@@ -471,8 +446,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     }
   }
 
-  /// Abre el checkout dentro de la app y, al cerrarse, verifica el pago con
-  /// el servidor (cerrar la ventana nunca confirma un cobro por sí solo).
   Future<bool> _abrirCheckout(String url) async {
     final resultado = await PagoEnAppScreen.abrir(context, url);
     if (!mounted) return true;
@@ -480,7 +453,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     return true;
   }
 
-  /// Costo de envío según el tipo de entrega seleccionado.
   double _costoEnvio() {
     switch (_tipoEntrega) {
       case _TipoEntrega.domicilio:
@@ -575,7 +547,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
           icon: Icons.local_shipping_outlined,
           titulo: 'Delivery',
           detalle: 'Mismo precio en toda la ciudad de Pallasca.',
-          // Una sola cobertura y tarifa para toda la ciudad.
+
           etiqueta: _tarifaUnica
               ? 'S/ ${Formats.precio(_zonas.first.tarifa)}'
               : 'Consultar tarifa',
@@ -623,8 +595,7 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
     if (_cargandoZonas) {
       return const LoadingView(message: 'Cargando opciones de envío...');
     }
-    // La dirección se pide SIEMPRE que se elige delivery; si la tarifa aún
-    // no está disponible se explica, pero el formulario no desaparece.
+
     final sinTarifa = _errorZonas != null || _zonas.isEmpty;
 
     return Column(
@@ -1075,7 +1046,6 @@ class _EntregaYPagoScreenState extends State<EntregaYPagoScreen> {
   }
 }
 
-/// Medallón circular con filete dorado para estados finales.
 class _Medallon extends StatelessWidget {
   final IconData icon;
   final Color color;
@@ -1112,7 +1082,6 @@ class _Medallon extends StatelessWidget {
   }
 }
 
-/// Pasos del flujo de compra (Carrito ✓ · Entrega · Pago).
 class _Pasos extends StatelessWidget {
   const _Pasos();
 
@@ -1196,7 +1165,6 @@ class _Pasos extends StatelessWidget {
   }
 }
 
-/// Sección numerada del formulario.
 class _Seccion extends StatelessWidget {
   final String numero;
   final String titulo;
@@ -1251,7 +1219,6 @@ class _Seccion extends StatelessWidget {
   }
 }
 
-/// Fila del resumen del pedido.
 class _FilaResumen extends StatelessWidget {
   final String label;
   final String value;
@@ -1280,7 +1247,6 @@ class _FilaResumen extends StatelessWidget {
   }
 }
 
-/// Nota informativa del tipo "Recoger en tienda".
 class _NotaTienda extends StatelessWidget {
   const _NotaTienda();
 
@@ -1313,7 +1279,6 @@ class _NotaTienda extends StatelessWidget {
   }
 }
 
-/// Tarjeta seleccionable de tipo de entrega.
 class _OpcionEntrega extends StatelessWidget {
   final bool seleccionado;
   final IconData icon;
@@ -1381,8 +1346,7 @@ class _OpcionEntrega extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Tarifa junto al título: la descripción usa todo
-                          // el ancho y no se aprieta en pantallas angostas.
+
                           Wrap(
                             spacing: 8,
                             runSpacing: 2,
@@ -1439,7 +1403,6 @@ class _OpcionEntrega extends StatelessWidget {
   }
 }
 
-/// Aviso cuando la tarifa de delivery no está disponible.
 class _AvisoSinTarifa extends StatelessWidget {
   final String mensaje;
   final VoidCallback? onReintentar;
@@ -1479,7 +1442,6 @@ class _AvisoSinTarifa extends StatelessWidget {
   );
 }
 
-/// Cobertura fija: delivery exclusivo dentro de Pallasca.
 class _ZonaReparto extends StatelessWidget {
   const _ZonaReparto();
 

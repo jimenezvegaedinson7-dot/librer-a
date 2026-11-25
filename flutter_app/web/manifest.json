@@ -1,35 +1,12 @@
 {
-    "name": "MATIDANA",
-    "short_name": "MATIDANA",
-    "start_url": ".",
-    "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
-    "prefer_related_applications": false,
-    "icons": [
-        {
-            "src": "icons/Icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-maskable-192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "maskable"
-        },
-        {
-            "src": "icons/Icon-maskable-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "maskable"
-        }
-    ]
+  "name": "MATIDANA",
+  "short_name": "MATIDANA",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F6F1E9",
+  "theme_color": "#064E3B",
+  "description": "MATIDANA Libros y Cultura: catálogo, compras con PayU, delivery y recojo en Pallasca.",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": []
 }

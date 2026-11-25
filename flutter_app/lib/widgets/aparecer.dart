@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_tokens.dart';
 
-/// Entrada con fundido y desplazamiento corto.
-///
-/// [indice] escalona la aparición en listas (70 ms por elemento, con tope)
-/// para que el contenido llegue en cascada, de forma ordenada.
 class Aparecer extends StatelessWidget {
   final Widget child;
   final int indice;

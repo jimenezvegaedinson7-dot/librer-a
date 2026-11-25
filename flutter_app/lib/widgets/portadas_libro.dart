@@ -10,14 +10,9 @@ import 'precio_texto.dart';
 import 'presionable.dart';
 import 'estado_chip.dart';
 
-// Portadas "sueltas" (sin tarjeta) con aspecto de libro, compartidas por
-// Inicio, Catálogo y Favoritos.
-
-/// Hasta tres portadas de la categoría abiertas en abanico (como el banner).
 class AbanicoCategoria extends StatelessWidget {
   final List<Libro> libros;
 
-  /// Ancho de cada portada del abanico.
   final double ancho;
 
   const AbanicoCategoria({super.key, required this.libros, this.ancho = 66});
@@ -25,7 +20,7 @@ class AbanicoCategoria extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final visibles = libros.take(3).toList();
-    // Posición de cada portada según cuántas hay (la del centro, delante).
+
     final configuracion = switch (visibles.length) {
       1 => const [(0.0, 0.0)],
       2 => const [(-14.0, -0.10), (14.0, 0.10)],
@@ -63,8 +58,6 @@ class AbanicoCategoria extends StatelessWidget {
   }
 }
 
-/// Portada con aspecto de libro: lomo sombreado, esquinas de libro y sombra
-/// cálida. Sin tarjeta alrededor.
 class PortadaLibro extends StatelessWidget {
   final Libro libro;
   final double ancho;
@@ -100,7 +93,7 @@ class PortadaLibro extends StatelessWidget {
           ),
           if (libro.portadaEsReferencia)
             Positioned(right: 4, bottom: 4, child: AvisoPortadaReferencia(libro: libro)),
-          // Lomo: sombra y brillo a la izquierda, como un libro real.
+
           const DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -117,7 +110,7 @@ class PortadaLibro extends StatelessWidget {
               ),
             ),
           ),
-          // Brillo suave de la cubierta.
+
           const DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -160,17 +153,12 @@ class PortadaLibro extends StatelessWidget {
   }
 }
 
-/// Libro del carrusel: portada suelta y, debajo y sin tarjeta, categoría,
-/// título, autor, precio y disponibilidad.
 class LibroSuelto extends StatelessWidget {
   final Libro libro;
   final double ancho;
 
-  /// Distingue la transición Hero cuando el mismo libro aparece en varias
-  /// listas de una misma pantalla.
   final String heroPrefijo;
 
-  /// Control opcional sobre la esquina superior derecha de la portada.
   final Widget? accesorio;
 
   const LibroSuelto({

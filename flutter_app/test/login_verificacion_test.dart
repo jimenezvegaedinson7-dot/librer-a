@@ -25,7 +25,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     await _abrirLogin(tester);
     expect(find.text('Verificar mi correo o reenviar código'), findsNothing);
-    // Tampoco está el adorno del librito bajo el subtítulo.
+
     expect(find.byIcon(Icons.auto_stories_outlined), findsNothing);
     await tester.pumpWidget(const SizedBox());
   });

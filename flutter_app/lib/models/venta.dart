@@ -1,7 +1,5 @@
 import '../utils/json_utils.dart';
 
-/// Ítem del detalle de una venta devuelto por el backend en
-/// `GET /api/ventas/mis-ventas` dentro del arreglo `detalle`.
 class VentaItem {
   final int? idLibro;
   final String? titulo;
@@ -28,14 +26,6 @@ class VentaItem {
   }
 }
 
-/// Modelo de Venta que refleja la estructura devuelta por el backend en
-/// `GET /api/ventas/mis-ventas`.
-///
-/// Los campos son tolerantes igual que el resto de modelos: los números pueden
-/// llegar como int/double/String y los campos desconocidos se ignoran. El
-/// detalle (`detalle`) y los campos de envío (`costo_envio`, `distrito`,
-/// `provincia`, `agencia`, `correo_compra`) son opcionales: si el servidor no
-/// los envía se mantienen como valor por defecto y `fromJson` no se rompe.
 class Venta {
   final int? idVenta;
   final int? idUsuario;
@@ -127,7 +117,6 @@ class Venta {
     );
   }
 
-  /// Solo las compras marcadas explícitamente pertenecen a Pallasca.
   bool get esPallasca => coberturaEntrega == 'pallasca';
 
   String? get entregaLabel {
@@ -143,7 +132,6 @@ class Venta {
     }
   }
 
-  /// Las ubicaciones históricas se leen como fueron guardadas.
   String get ubicacionEntrega => esPallasca
       ? zonaDeliveryNombre ?? ''
       : [
@@ -151,7 +139,6 @@ class Venta {
           provincia,
         ].whereType<String>().where((s) => s.isNotEmpty).join(', ');
 
-  /// `true` si la venta ya fue pagada.
   bool get pagada =>
       ['pagada', 'entregada'].contains((estado ?? '').toLowerCase().trim()) &&
       ((payuPaymentStatus ?? '').trim().isEmpty ||
@@ -171,10 +158,8 @@ class Venta {
             'CHARGED_BACK',
           ].contains(payuPaymentStatus?.toUpperCase().trim()));
 
-  /// `true` si la venta sigue pendiente de pago.
   bool get pendiente => (estado ?? '').toLowerCase().trim() == 'pendiente';
 
-  /// `true` si la venta ya fue entregada.
   bool get entregada => estadoEntrega?.toLowerCase().trim() == 'entregado';
 
   String get entregaEstadoLabel =>
@@ -188,7 +173,6 @@ class Venta {
         _ => '',
       };
 
-  /// Etiqueta legible del estado en español.
   String get estadoLabel {
     if (requiereRevision) return 'Pago en revisión';
     switch (estado?.toLowerCase().trim()) {

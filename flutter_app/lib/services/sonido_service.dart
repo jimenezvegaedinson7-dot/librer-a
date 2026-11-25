@@ -4,18 +4,11 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-/// Sonidos cortos de la app. Hoy solo el "¡listo!" de una confirmación
-/// (código verificado, pago aprobado): dos campanas ascendentes como las
-/// de una compra exitosa, con una vibración leve.
-///
-/// Se mezcla con la música del usuario en vez de pausarla y nunca bloquea
-/// el flujo: si el audio falla, la confirmación visual sigue igual.
 class SonidoService {
   SonidoService._();
 
   static final SonidoService instance = SonidoService._();
 
-  // En `flutter test` no hay motor de audio: se omite el sonido.
   static final bool _enPruebas =
       !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 

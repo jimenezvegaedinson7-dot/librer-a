@@ -7,26 +7,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/usuario.dart';
 import '../utils/constants.dart';
 
-/// Identidad del flujo login → OTP. Abandonarlo no cambia una sesión vigente,
-/// pero impide que una respuesta de ese flujo instale credenciales después.
 class IntentoAutenticacion {
   IntentoAutenticacion._();
   bool _vigente = true;
   bool get vigente => _vigente;
 }
 
-/// Servicio de almacenamiento local.
-///
-/// Centraliza el guardado/lectura del token JWT y de la información básica del
-/// usuario. Nunca se almacenan contraseñas.
-///
-/// - El token JWT (sensible) se guarda en [FlutterSecureStorage].
-/// - El usuario y el resto de datos NO sensibles (carrito, foto, preferencias)
-///   siguen en [SharedPreferences].
-///
-/// Incluye migración automática: si se detecta un token heredado en
-/// shared_preferences (clave LEGACY [Constants.prefTokenKey]) se mueve al
-/// secure storage y se borra de prefs, evitando desloguear al usuario actual.
 class StorageService {
   StorageService._();
 
@@ -45,8 +31,6 @@ class StorageService {
     return operacion;
   }
 
-  /// Cada prueba de widgets crea la cola dentro de su propio tiempo simulado:
-  /// un futuro creado en otra zona nunca avanzaría y bloquearía las lecturas.
   @visibleForTesting
   void reiniciarColaParaPruebas() => _colaCredencial = Future.value();
   int _generacion = 0;
@@ -68,9 +52,6 @@ class StorageService {
     if (identical(_autenticacion, intento)) _autenticacion = null;
   }
 
-  /// Token y titular se instalan en una sola operación de la cola. Se comprueba
-  /// el intento también tras cada escritura: abandonar durante secure.write
-  /// no puede dejar una credencial residual ni limpiar el login posterior.
   Future<bool> guardarSesionAutenticada(
     String token,
     Usuario? usuario,
@@ -114,7 +95,6 @@ class StorageService {
     }
   });
 
-  /// Guarda el token JWT en secure storage (y limpia la clave LEGACY).
   Future<void> guardarToken(String token) =>
       _serializarCredencial(() => _guardarToken(token));
 
@@ -138,12 +118,11 @@ class StorageService {
         _sesionInvalida = false;
       }
     } catch (_) {
-      // Fallar cerrado: nunca mezclar un usuario nuevo con un JWT anterior,
-      // ni guardar una credencial nueva en preferencias sin cifrar.
+
       try {
         await _secure.delete(key: Constants.secureTokenKey);
       } catch (_) {
-        /* El marcador persistente bloquea una credencial residual. */
+
       }
       throw StateError(
         'No se pudo guardar la sesión de forma segura. Intenta nuevamente.',
@@ -151,11 +130,6 @@ class StorageService {
     }
   }
 
-  /// Obtiene el token JWT o null si no existe.
-  ///
-  /// Lee primero del secure storage. Si no está, busca un token LEGACY en
-  /// shared_preferences y lo migra (copia al secure + borra de prefs) para no
-  /// desloguear a usuarios con sesiones anteriores.
   Future<String?> obtenerToken() => _serializarCredencial(_obtenerToken);
 
   Future<String?> _obtenerToken() async {
@@ -167,8 +141,7 @@ class StorageService {
     try {
       final token = await _secure.read(key: Constants.secureTokenKey);
       if (token != null && token.isNotEmpty) {
-        // Las versiones anteriores pudieron conservar dos cuentas distintas.
-        // No se adivina cuál es la válida: exigir un login nuevo.
+
         if (legado != null && legado.isNotEmpty && legado != token) {
           _generacion++;
           _idUsuarioActual = null;
@@ -179,7 +152,7 @@ class StorageService {
         return token;
       }
     } catch (_) {
-      // Se continúa con el flujo LEGACY si el secure storage falla.
+
     }
 
     if (_sesionInvalida || prefs.getBool(_sesionInvalidaKey) == true) {
@@ -196,7 +169,6 @@ class StorageService {
     return legado;
   }
 
-  /// Indica si existe una sesión guardada (hay token y usuario).
   Future<bool> tieneSesion() async {
     final token = await obtenerToken();
     if (token == null || token.isEmpty) return false;
@@ -204,12 +176,8 @@ class StorageService {
     return prefs.getString(Constants.prefUserKey) != null;
   }
 
-  /// Comprueba si existe una sesión guardada.
-  ///
-  /// Alias descriptivo de [tieneSesion] para el flujo de arranque.
   Future<bool> comprobarSesion() => tieneSesion();
 
-  /// Elimina el token JWT (secure storage + clave LEGACY de prefs).
   Future<void> eliminarToken() => _serializarCredencial(_eliminarToken);
 
   Future<void> _eliminarToken() async {
@@ -219,12 +187,11 @@ class StorageService {
     try {
       await _secure.delete(key: Constants.secureTokenKey);
     } catch (_) {
-      // Se sigue con la limpieza de prefs aunque el secure storage falle.
+
     }
     await prefs.remove(Constants.prefTokenKey);
   }
 
-  /// Guarda la información básica del usuario (NO sensible).
   Future<void> guardarUsuario(
     Usuario usuario, {
     int? generacionEsperada,
@@ -249,7 +216,6 @@ class StorageService {
     }
   }
 
-  /// Obtiene el usuario guardado o null.
   Future<Usuario?> obtenerUsuario() async {
     final generacion = _generacion;
     final prefs = await SharedPreferences.getInstance();
@@ -265,7 +231,6 @@ class StorageService {
     }
   }
 
-  /// Limpia toda la sesión (token y usuario).
   Future<void> limpiarSesion() async {
     if (_autenticacion case final intento?) invalidarAutenticacion(intento);
     _cambiandoSesion = true;
@@ -282,7 +247,6 @@ class StorageService {
     });
   }
 
-  /// Guarda el id del tema de colores del perfil (preferencia, NO sensible).
   Future<void> guardarTemaPerfil(String temaId) async {
     final prefs = await SharedPreferences.getInstance();
     if (!await prefs.setString(Constants.prefTemaPerfilKey, temaId)) {
@@ -290,7 +254,6 @@ class StorageService {
     }
   }
 
-  /// Guarda el id del fondo de pantallas (preferencia, NO sensible).
   Future<void> guardarFondo(String fondoId) async {
     final prefs = await SharedPreferences.getInstance();
     if (!await prefs.setString(Constants.prefFondoKey, fondoId)) {
@@ -298,7 +261,6 @@ class StorageService {
     }
   }
 
-  /// Guarda el id del color de tarjetas (preferencia, NO sensible).
   Future<void> guardarTarjeta(String tarjetaId) async {
     final prefs = await SharedPreferences.getInstance();
     if (!await prefs.setString(Constants.prefTarjetaKey, tarjetaId)) {
@@ -309,8 +271,6 @@ class StorageService {
   static const String _verificacionPendienteKey =
       'verificacion_pendiente_email';
 
-  /// Correo registrado que aún no verificó su código (no es sensible: solo
-  /// decide si el login ofrece "Verificar mi correo").
   Future<void> guardarVerificacionPendiente(String email) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_verificacionPendienteKey, email.trim());
@@ -327,19 +287,16 @@ class StorageService {
     await prefs.remove(_verificacionPendienteKey);
   }
 
-  /// Obtiene el id del fondo elegido o null si no se configuró.
   Future<String?> obtenerFondo() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(Constants.prefFondoKey);
   }
 
-  /// Obtiene el id del color de tarjetas o null si no se configuró.
   Future<String?> obtenerTarjeta() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(Constants.prefTarjetaKey);
   }
 
-  /// Obtiene el id del tema de colores del perfil o null si no se configuró.
   Future<String?> obtenerTemaPerfil() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(Constants.prefTemaPerfilKey);

@@ -6,9 +6,6 @@ import 'package:flutter/material.dart';
 import '../services/sonido_service.dart';
 import '../utils/app_colors.dart';
 
-/// Confirmación de "¡listo!" tras un código correcto: el círculo verde entra
-/// con rebote, el check se dibuja, una onda y unos destellos salen del centro
-/// y suena el "ka-ching" de compra. Se cierra sola al terminar.
 Future<void> mostrarConfirmacionOtp(
   BuildContext context, {
   required String titulo,
@@ -19,7 +16,6 @@ Future<void> mostrarConfirmacionOtp(
   builder: (_) => _Confirmacion(titulo: titulo, mensaje: mensaje),
 );
 
-/// Tiempo que la confirmación queda visible.
 const _duracion = Duration(milliseconds: 1300);
 
 class _Confirmacion extends StatefulWidget {
@@ -45,11 +41,11 @@ class _ConfirmacionState extends State<_Confirmacion>
     _iniciada = true;
     unawaited(SonidoService.instance.confirmacion());
     if (MediaQuery.disableAnimationsOf(context)) {
-      // Sin animaciones: se muestra completa y se cierra a su tiempo.
+
       _anim.value = 1;
       _timer = Timer(_duracion, _cerrar);
     } else {
-      // La animación dura lo mismo que el aviso: al terminar, se cierra.
+
       _anim.forward().whenComplete(_cerrar);
     }
   }
@@ -116,7 +112,6 @@ class _ConfirmacionState extends State<_Confirmacion>
   }
 }
 
-/// Dibuja toda la celebración a partir de un único avance `t` (0 → 1).
 class _Celebracion extends CustomPainter {
   final double t;
   _Celebracion(this.t);
@@ -139,7 +134,6 @@ class _Celebracion extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final centro = size.center(Offset.zero);
 
-    // Onda que se expande y se desvanece.
     final onda = _tramo(0.12, 0.6, Curves.easeOutCubic);
     if (onda > 0 && onda < 1) {
       canvas.drawCircle(
@@ -152,7 +146,6 @@ class _Celebracion extends CustomPainter {
       );
     }
 
-    // Destellos que salen del centro.
     final salida = _tramo(0.16, 0.72, Curves.easeOutCubic);
     if (salida > 0 && salida < 1) {
       for (var i = 0; i < _destellos.length; i++) {
@@ -167,11 +160,9 @@ class _Celebracion extends CustomPainter {
       }
     }
 
-    // Círculo con rebote.
     final escala = _tramo(0, 0.38, Curves.elasticOut);
     canvas.drawCircle(centro, 38 * escala, Paint()..color = AppColors.success);
 
-    // Check que se dibuja.
     final trazo = _tramo(0.22, 0.5, Curves.easeOutCubic);
     if (trazo > 0) {
       final check = Path()

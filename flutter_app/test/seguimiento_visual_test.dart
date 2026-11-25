@@ -35,7 +35,7 @@ void main() {
         'estado_entrega': 'listo_recojo',
       }, ancho);
       expect(tester.takeException(), isNull);
-      // Todos los círculos (hechos y pendientes) tienen el mismo centro vertical.
+
       final circulos = find.byWidgetPredicate(
         (w) => w is SizedBox && w.width == 30 && w.height == 30,
       );
@@ -45,14 +45,14 @@ void main() {
           .map((e) => tester.getCenter(find.byWidget(e.widget)).dy)
           .toSet();
       expect(centros.length, 1);
-      // Las etiquetas empiezan a la misma altura.
+
       final tops = [
         'Por preparar',
         'Listo para recoger',
         'Entregado',
       ].map((t) => tester.getTopLeft(find.text(t).first).dy).toSet();
       expect(tops.length, 1);
-      // El tramo anterior terminó; el paso actual no se marca como completado.
+
       expect(find.byIcon(Icons.check_rounded), findsOneWidget);
       expect(find.text('Recibido'), findsNothing);
       expect(find.text('Preparando'), findsNothing);

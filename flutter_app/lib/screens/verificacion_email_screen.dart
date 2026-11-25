@@ -10,12 +10,6 @@ import '../widgets/campo_otp.dart';
 import '../widgets/confirmacion_otp.dart';
 import 'login_screen.dart';
 
-/// Pantalla de verificación de cuenta por email.
-///
-/// Se muestra justo después de registrarse. El backend envió un código de
-/// 6 dígitos al [email] del usuario; aquí se ingresa para activar la cuenta.
-/// Al verificarse correctamente, devuelve `true` (Navigator.pop) y el flujo de
-/// registro cierra, llevando al usuario a iniciar sesión.
 class VerificacionEmailScreen extends StatefulWidget {
   final String email;
   final ApiService? api;
@@ -197,7 +191,6 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
                       ),
                       const SizedBox(height: 28),
 
-                      // Campo OTP (6 dígitos, numérico)
                       CampoOtp(
                         controller: _otpController,
                         enabled: !_loading && !_reenviando,
@@ -206,13 +199,11 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
                         fallos: _fallos,
                       ),
 
-                      // Mensaje de error
                       if (_errorMessage != null) ...[
                         const SizedBox(height: 16),
                         ErrorBanner(message: _errorMessage!),
                       ],
 
-                      // Mensaje informativo (código reenviado)
                       if (_infoMessage != null) ...[
                         const SizedBox(height: 16),
                         Container(
@@ -244,7 +235,6 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
 
                       const SizedBox(height: 28),
 
-                      // Botón verificar
                       SizedBox(
                         height: 54,
                         child: _loading
@@ -263,7 +253,6 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
 
                       const SizedBox(height: 12),
 
-                      // Reenviar código
                       TextButton(
                         onPressed: _loading
                             ? null
@@ -285,7 +274,6 @@ class _VerificacionEmailScreenState extends State<VerificacionEmailScreen> {
 
                       const SizedBox(height: 8),
 
-                      // Volver al login
                       TextButton(
                         onPressed: _loading ? null : _volverAlLogin,
                         child: const Text('Volver al inicio de sesión'),

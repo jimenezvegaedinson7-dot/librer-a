@@ -9,11 +9,6 @@ import '../widgets/confirmacion_otp.dart';
 import '../widgets/error_banner.dart';
 import 'login_screen.dart';
 
-/// Recuperar contraseña en DOS pantallas separadas:
-///   1. [ReestablecerContrasenaScreen]: solo el código de 6 dígitos, que el
-///      servidor valida y canjea por un permiso de un solo uso.
-///   2. [NuevaContrasenaScreen]: recién entonces, la nueva contraseña.
-/// El permiso solo vive en estas pantallas, nunca en el almacén de sesiones.
 class ReestablecerContrasenaScreen extends StatefulWidget {
   final String email;
   final ApiService? api;
@@ -65,7 +60,7 @@ class _ReestablecerContrasenaScreenState
         mensaje: 'Ahora crea tu nueva contraseña.',
       );
       if (!mounted) return;
-      // Segunda pantalla, aparte: la nueva contraseña.
+
       unawaited(
         Navigator.of(context).pushReplacement(
           MaterialPageRoute<void>(
@@ -180,7 +175,6 @@ class _ReestablecerContrasenaScreenState
   }
 }
 
-/// Segunda pantalla: la nueva contraseña, con el permiso ya validado.
 class NuevaContrasenaScreen extends StatefulWidget {
   final String email;
   final String permiso;
@@ -246,7 +240,7 @@ class _NuevaContrasenaScreenState extends State<NuevaContrasenaScreen> {
         MaterialPageRoute<void>(builder: (_) => const LoginScreen()),
         (_) => false,
       );
-      // El aviso también queda visible en el inicio de sesión.
+
       mensajero?.showSnackBar(
         const SnackBar(
           content: Text('Contraseña restablecida con éxito. Inicia sesión.'),
@@ -270,12 +264,11 @@ class _NuevaContrasenaScreenState extends State<NuevaContrasenaScreen> {
     }
   }
 
-  /// El permiso venció: se pide un código nuevo en la primera pantalla.
   Future<void> _pedirOtroCodigo() async {
     try {
       await _api.solicitarReseteo(email: widget.email);
     } catch (_) {
-      // La primera pantalla permite reenviar si este envío falla.
+
     }
     if (!mounted) return;
     unawaited(
@@ -361,8 +354,6 @@ class _NuevaContrasenaScreenState extends State<NuevaContrasenaScreen> {
   }
 }
 
-/// Estructura común de las dos pantallas (cada una con lo suyo): logo,
-/// título y formulario.
 class _MarcoRecuperacion extends StatelessWidget {
   final String tituloBarra, titulo, subtitulo;
   final GlobalKey<FormState> formKey;

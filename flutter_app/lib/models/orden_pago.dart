@@ -1,9 +1,5 @@
 import '../utils/json_utils.dart';
 
-/// Resultado de crear una orden de pago (`POST /api/pagos/crear-orden`).
-///
-/// Contiene la orden creada en PayU con la URL del checkout
-/// para que el usuario complete el pago.
 class OrdenPago {
   final int? idVenta;
   final String? orderId;
@@ -27,8 +23,6 @@ class OrdenPago {
     final data = json['data'];
     final dataMap = data is Map ? Map<String, dynamic>.from(data) : json;
 
-    // En respuestas de idempotencia (`ya_existia`), la preferencia puede
-    // venir aparte (a nivel raíz de `json`) con la URL del checkout.
     final preferenciaRaw = dataMap['preferencia'] ?? json['preferencia'];
     final preferenciaMap = preferenciaRaw is Map
         ? Map<String, dynamic>.from(preferenciaRaw)
@@ -55,7 +49,6 @@ class OrdenPago {
     );
   }
 
-  /// Devuelve una copia del modelo con los campos indicados reemplazados.
   OrdenPago copyWith({String? checkoutUrl, String? orderId}) {
     return OrdenPago(
       idVenta: idVenta,
@@ -69,7 +62,6 @@ class OrdenPago {
   }
 }
 
-/// Estado de una orden de pago consultada en `GET /api/pagos/:orderId`.
 class EstadoOrden {
   final String? orderId;
   final String? status;
@@ -108,18 +100,15 @@ class EstadoOrden {
     );
   }
 
-  /// `true` cuando la orden fue aprobada (pago confirmado).
   bool get pagada => !requiereRevision &&
       (estadoVenta == null || const ['pagada', 'entregada'].contains(estadoVenta)) &&
       const ['APPROVED', 'CAPTURED'].contains((status ?? '').toUpperCase().trim());
 
-  /// `true` cuando la orden sigue pendiente.
   bool get pendiente =>
       (status ?? '').toUpperCase().trim() == 'PENDING' ||
       (status ?? '').toUpperCase().trim() == 'PENDING_TRANSACTION_REVIEW' ||
       (status ?? '').toUpperCase().trim() == 'PENDING_TRANSACTION_CONFIRMATION';
 
-  /// `true` cuando la orden fue cancelada o rechazada.
   bool get cancelada =>
       requiereRevision || const ['cancelada', 'reembolsada'].contains(estadoVenta) ||
       (status ?? '').toUpperCase().trim() == 'DECLINED' ||

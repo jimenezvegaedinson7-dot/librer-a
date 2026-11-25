@@ -26,7 +26,6 @@ import 'libros_screen.dart';
 import 'perfil_screen.dart';
 import 'mis_compras_screen.dart';
 
-/// Pantalla principal con navegación inferior entre las secciones del cliente.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -39,7 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
   final _comprasKey = GlobalKey<MisComprasScreenState>();
   String _nombreCliente = '';
 
-  /// Enlace de Inicio con el Catálogo (categoría o buscador).
   final SolicitudCatalogo _solicitudCatalogo = SolicitudCatalogo();
 
   void _onTabSelected(AppTab tab) {
@@ -50,9 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _currentTab = tab;
     });
     if (tab == AppTab.inicio) {
-      // Refresca el saludo ("Hola, {nombre}") cada vez que se vuelve a la
-      // pestaña Inicio: tras editar el perfil o iniciar sesión con otra
-      // cuenta, los datos almacenados pueden haber cambiado.
+
       _cargarNombre();
     }
   }
@@ -61,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _cargarNombre();
-    // Aviso de nueva versión del APK (una vez por arranque de la app).
+
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => ComprobadorActualizacion.comprobar(context),
     );
@@ -125,8 +121,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// Pestaña de Inicio: saludo, buscador destacado, portada editorial,
-/// categorías y dos carruseles de libros.
 class _InicioTab extends StatefulWidget {
   final String nombreCliente;
   final VoidCallback onVerLibros;
@@ -164,7 +158,7 @@ class _InicioTabState extends State<_InicioTab> {
       final libros = await ApiService.instance.obtenerLibros();
       CarritoService.instance.actualizarCatalogo(libros);
       if (mounted) {
-        // Solo se muestran libros activos en las novedades.
+
         setState(
           () => _libros = libros.where((libro) => libro.esActivo).toList(),
         );
@@ -180,7 +174,6 @@ class _InicioTabState extends State<_InicioTab> {
     }
   }
 
-  /// Categorías reales del catálogo con su número de títulos y una portada.
   List<({String nombre, int cantidad, List<Libro> muestras})> get _categorias {
     final porCategoria = <String, List<Libro>>{};
     for (final libro in _libros) {
@@ -224,7 +217,6 @@ class _InicioTabState extends State<_InicioTab> {
     return 'Buenas noches';
   }
 
-  /// Cabecera de bienvenida con saludo, nombre y buscador destacado.
   Widget _buildCabecera(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
@@ -239,7 +231,7 @@ class _InicioTabState extends State<_InicioTab> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  // Saludo y nombre en una sola línea: "Buenas noches, Lucía".
+
                   child: Text.rich(
                     TextSpan(
                       children: [
@@ -282,7 +274,6 @@ class _InicioTabState extends State<_InicioTab> {
     );
   }
 
-  /// Buscador destacado: al tocarlo abre el Catálogo con el campo activo.
   Widget _buildBuscador(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
@@ -371,7 +362,6 @@ class _InicioTabState extends State<_InicioTab> {
       );
     }
 
-    // Reparte los libros en dos filas de carrusel.
     final mitad = (_libros.length / 2).ceil();
     final filaUno = _libros.take(mitad).toList();
     final filaDos = _libros.skip(mitad).toList();
@@ -429,8 +419,6 @@ class _InicioTabState extends State<_InicioTab> {
   }
 }
 
-/// Portada editorial en burdeos con filete dorado, la cita de la casa y un
-/// abanico con las portadas reales del catálogo.
 class _EditorialBanner extends StatelessWidget {
   final VoidCallback onVerLibros;
   final List<Libro> portadas;
@@ -466,7 +454,7 @@ class _EditorialBanner extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Estantería de fondo, desvanecida hacia el texto.
+
           Positioned.fill(
             child: IgnorePointer(
               child: ClipRRect(
@@ -490,7 +478,7 @@ class _EditorialBanner extends StatelessWidget {
               ),
             ),
           ),
-          // Filete dorado interior, como los ornamentos del logo.
+
           Positioned.fill(
             child: Container(
               margin: const EdgeInsets.all(6),
@@ -547,8 +535,7 @@ class _EditorialBanner extends StatelessWidget {
                             minimumSize: const Size(0, 42),
                             padding: const EdgeInsets.symmetric(horizontal: 18),
                           ),
-                          // Se encoge en pantallas angostas para que la
-                          // flecha nunca se salga del botón.
+
                           child: const FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Row(
@@ -576,10 +563,6 @@ class _EditorialBanner extends StatelessWidget {
   }
 }
 
-/// Tres portadas superpuestas en abanico (decorativo, sin datos inventados).
-///
-/// Al aparecer, las portadas se abren desde el centro; después flotan con un
-/// vaivén lento. Con "reducir animaciones" quedan quietas y abiertas.
 class _AbanicoPortadas extends StatefulWidget {
   final List<Libro> libros;
 
@@ -678,13 +661,10 @@ class _AbanicoPortadasState extends State<_AbanicoPortadas>
     );
   }
 
-  /// Onda suave de -1 a 1 para el vaivén.
   static double _onda(double t) =>
       Curves.easeInOut.transform(t < 0.5 ? t * 2 : (1 - t) * 2) * 2 - 1;
 }
 
-/// Recorrido por categorías reales: un pequeño abanico con portadas de la
-/// categoría y, debajo y sin tarjeta, su nombre y cantidad de títulos.
 class _Categorias extends StatelessWidget {
   final List<({String nombre, int cantidad, List<Libro> muestras})> categorias;
   final ValueChanged<String?> onTap;
@@ -698,7 +678,7 @@ class _Categorias extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          // Mismo margen que los carruseles: los enlaces quedan alineados.
+
           padding: const EdgeInsets.fromLTRB(20, 0, 12, 0),
           child: SeccionTitulo(
             antetitulo: 'Categorías',
@@ -709,7 +689,7 @@ class _Categorias extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         SizedBox(
-          // Abanico (128) + nombre en hasta 2 líneas + cantidad, sin sobrante.
+
           height: 196,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
@@ -769,11 +749,6 @@ class _Categorias extends StatelessWidget {
   }
 }
 
-/// Carrusel horizontal de libros que avanza de a un libro hacia la derecha y
-/// vuelve al inicio al llegar al final.
-///
-/// Muestra una fila de libros sueltos (portada y datos, sin tarjeta) con el
-/// nombre de la sección y una acción.
 class _LibroCarrusel extends StatefulWidget {
   final List<Libro> libros;
   final String nombre;
@@ -812,7 +787,6 @@ class _LibroCarruselState extends State<_LibroCarrusel> {
     super.dispose();
   }
 
-  /// Ancho de cada libro (portada) según el tamaño de pantalla.
   double _cardWidthPara(BuildContext context) {
     final ancho = MediaQuery.of(context).size.width;
     if (ancho >= 1000) return 190;
@@ -862,7 +836,7 @@ class _LibroCarruselState extends State<_LibroCarrusel> {
           ),
         ),
         SizedBox(
-          // Portada 2:3 + texto (título en 2 líneas, autor y precio).
+
           height:
               cardW * 1.5 +
               14 +

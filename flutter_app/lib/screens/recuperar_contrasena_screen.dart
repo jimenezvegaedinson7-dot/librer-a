@@ -10,12 +10,6 @@ import '../widgets/error_banner.dart';
 import '../widgets/estanteria.dart';
 import 'reestablecer_contrasena_screen.dart';
 
-/// Primer paso para recuperar la contraseña.
-///
-/// Pide el correo de la cuenta. El backend envía un código de 6 dígitos por
-/// email (con una respuesta genérica para no revelar si el correo existe).
-/// Al confirmar, navega a [ReestablecerContrasenaScreen] para ingresar el
-/// código y definir la nueva contraseña.
 class RecuperarContrasenaScreen extends StatefulWidget {
   const RecuperarContrasenaScreen({super.key});
 
@@ -25,7 +19,7 @@ class RecuperarContrasenaScreen extends StatefulWidget {
 }
 
 class _RecuperarContrasenaScreenState extends State<RecuperarContrasenaScreen> {
-  // Siguen al tema y al fondo elegidos (ver AppColors).
+
   static Color get _background => AppColors.background;
   static Color get _surface => AppColors.surface;
   static Color get _ink => AppColors.textPrimary;

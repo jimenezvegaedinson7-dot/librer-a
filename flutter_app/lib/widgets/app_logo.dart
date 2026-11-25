@@ -3,19 +3,12 @@ import 'package:flutter/material.dart';
 import '../utils/app_colors.dart';
 import '../utils/constants.dart';
 
-/// Logo reutilizable de la librería.
-///
-/// Usa el mismo logo oficial de la web desde [Constants.logoAsset]. Si falta en el
-/// proyecto, muestra automáticamente un placeholder elegante (libro sobre un
-/// contenedor circular) para que la app nunca se rompa.
 class AppLogo extends StatelessWidget {
   final double? width;
   final double? height;
   final BoxFit fit;
   final Color? color;
 
-  /// Si es `true`, muestra el placeholder aunque exista la imagen (útil para
-  /// previsualizar el diseño o en pantallas oscuras).
   final bool forcePlaceholder;
 
   const AppLogo({
@@ -45,7 +38,6 @@ class AppLogo extends StatelessWidget {
   }
 }
 
-/// Placeholder elegante que se muestra mientras no exista la imagen del logo.
 class _Placeholder extends StatelessWidget {
   final double? width;
   final double? height;

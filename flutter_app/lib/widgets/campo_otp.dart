@@ -5,18 +5,13 @@ import 'package:flutter/services.dart';
 
 import '../utils/app_colors.dart';
 
-/// Una única entrada permite pegar y autocompletar los seis dígitos. Las
-/// casillas visibles reparten el ancho disponible y centran cada número.
 class CampoOtp extends StatefulWidget {
   final TextEditingController controller;
   final bool enabled;
   final VoidCallback? onSubmitted;
 
-  /// El código fue aceptado: las casillas pasan a verde.
   final bool exito;
 
-  /// Cuenta de intentos rechazados: cada vez que aumenta, las casillas
-  /// tiemblan para indicar que el código no era correcto.
   final int fallos;
   const CampoOtp({
     super.key,
@@ -81,7 +76,7 @@ class _CampoOtpState extends State<CampoOtp> {
               children: [
                 ExcludeSemantics(
                   child: TweenAnimationBuilder<double>(
-                    // Cambiar la clave reinicia el temblor en cada fallo.
+
                     key: ValueKey('otp-temblor-${widget.fallos}'),
                     tween: Tween(begin: widget.fallos == 0 ? 1 : 0, end: 1),
                     duration: sinAnimacion
@@ -140,7 +135,7 @@ class _CampoOtpState extends State<CampoOtp> {
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
-                                  // Cada dígito entra con un pequeño "pop".
+
                                   AnimatedSwitcher(
                                     duration: sinAnimacion
                                         ? Duration.zero
@@ -173,7 +168,7 @@ class _CampoOtpState extends State<CampoOtp> {
                                           ),
                                     ),
                                   ),
-                                  // La casilla activa muestra una barra, como un cursor.
+
                                   if (activa && !lleno)
                                     Positioned(
                                       bottom: 12,

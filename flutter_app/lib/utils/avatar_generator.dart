@@ -3,7 +3,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-/// Avatar predefinido del perfil: un emoji sobre un color de la paleta.
 class AvatarPreset {
   final String emoji;
   final Color color;
@@ -11,7 +10,6 @@ class AvatarPreset {
   const AvatarPreset({required this.emoji, required this.color});
 }
 
-/// Galería de avatares presets disponibles en "Elegir avatar".
 const List<AvatarPreset> avatarPresets = [
   AvatarPreset(emoji: '🦁', color: Color(0xFFFFB74D)),
   AvatarPreset(emoji: '🐼', color: Color(0xFF90A4AE)),
@@ -25,10 +23,6 @@ const List<AvatarPreset> avatarPresets = [
   AvatarPreset(emoji: '🐨', color: Color(0xFF9575CD)),
 ];
 
-/// Genera el PNG del avatar en runtime (sin dependencias nuevas) dibujando el
-/// [AvatarPreset.emoji] centrado sobre un círculo de [AvatarPreset.color].
-///
-/// Devuelve los bytes codificados en PNG listos para subir al backend.
 Future<Uint8List> generarAvatarPng(
   AvatarPreset preset, {
   int size = 256,
@@ -37,14 +31,12 @@ Future<Uint8List> generarAvatarPng(
   final canvas = Canvas(recorder);
   final radius = size / 2;
 
-  // Fondo circular del color del preset.
   canvas.drawCircle(
     Offset(radius, radius),
     radius,
     Paint()..color = preset.color,
   );
 
-  // Emoji centrado.
   final textPainter = TextPainter(
     text: TextSpan(
       text: preset.emoji,

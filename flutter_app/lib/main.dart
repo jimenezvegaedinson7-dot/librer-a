@@ -19,12 +19,11 @@ Future<void> main() async {
       ], await rootBundle.loadString('assets/fonts/OFL-$familia.txt'));
     }
   });
-  // Restaura el tema de colores elegido por el usuario.
+
   await TemaController.instance.cargar();
-  // Restaura el carrito guardado antes de mostrar la app, para que nada lo
-  // pise mientras carga.
+
   await CarritoService.instance.cargar();
-  // Pantalla a la que vuelve la app cuando la sesión expira (401).
+
   constructorLogin = (_) => const LoginScreen();
   runApp(const LibreriaApp());
 }
@@ -34,7 +33,7 @@ class LibreriaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Reconstruye la app completa con el tema del usuario en tiempo real.
+
     return AnimatedBuilder(
       animation: TemaController.instance,
       builder: (context, _) => MaterialApp(
@@ -49,8 +48,6 @@ class LibreriaApp extends StatelessWidget {
   }
 }
 
-/// Permite arrastrar los carruseles y listas con el ratón (además del dedo,
-/// el lápiz y la rueda del ratón).
 class _AppScrollBehavior extends MaterialScrollBehavior {
   const _AppScrollBehavior();
 

@@ -11,6 +11,28 @@ void main() {
     expect(libro.enOferta, false);
     expect(libro.mostrarNuevo, false);
   });
+  test(
+    'metadatos bibliográficos de la ficha técnica se conservan en caché',
+    () {
+      final libro = Libro.fromJson({
+        'editorial': 'Editorial Ejemplo',
+        'idioma': 'Español',
+        'numero_paginas': '312',
+        'anio_publicacion': 2024,
+        'formato': 'Tapa blanda',
+        'numero_volumen': 'Vol. 1',
+        'dimensiones': '15.5 x 23 cm',
+      });
+      final cache = Libro.fromJson(libro.toJson());
+      expect(cache.editorial, 'Editorial Ejemplo');
+      expect(cache.idioma, 'Español');
+      expect(cache.numeroPaginas, 312);
+      expect(cache.anioPublicacion, 2024);
+      expect(cache.formato, 'Tapa blanda');
+      expect(cache.numeroVolumen, 'Vol. 1');
+      expect(cache.dimensiones, '15.5 x 23 cm');
+    },
+  );
   test('precio final del servidor usado por carrito y conservado en caché', () {
     final libro = Libro.fromJson({
       'precio': '100.00',

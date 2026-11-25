@@ -8,9 +8,6 @@ import '../../widgets/aparecer.dart';
 import '../../widgets/error_banner.dart';
 import '../../widgets/formulario_cuenta.dart';
 
-/// Pantalla para cambiar la contraseña del cliente.
-///
-/// Envía `PUT /usuarios/password`. No se guarda ninguna contraseña.
 class CambiarPasswordScreen extends StatefulWidget {
   const CambiarPasswordScreen({super.key});
 
@@ -160,7 +157,7 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    // Requisitos y seguridad, en vivo mientras se escribe.
+
                     ListenableBuilder(
                       listenable: Listenable.merge([
                         _nuevaController,
@@ -235,8 +232,6 @@ class _CambiarPasswordScreenState extends State<CambiarPasswordScreen> {
   }
 }
 
-/// Requisitos de la nueva contraseña (los mismos que valida el formulario)
-/// y una barra de seguridad orientativa.
 class _Requisitos extends StatelessWidget {
   final String nueva;
   final String confirmar;
@@ -251,7 +246,6 @@ class _Requisitos extends StatelessWidget {
         RegExp(r'[A-Za-z]').hasMatch(nueva) && RegExp(r'\d').hasMatch(nueva);
     final coinciden = nueva.isNotEmpty && nueva == confirmar;
 
-    // Seguridad orientativa: de 0 a 4 puntos.
     var puntos = 0;
     if (largo) puntos++;
     if (letraYNumero) puntos++;

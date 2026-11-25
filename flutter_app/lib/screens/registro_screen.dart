@@ -9,10 +9,6 @@ import '../widgets/estanteria.dart';
 import 'legal/terminos_condiciones_screen.dart';
 import 'verificacion_email_screen.dart';
 
-/// Pantalla de registro de clientes con diseño inspirado en iOS.
-///
-/// Al registrarse correctamente, devuelve el correo electrónico al navegar
-/// hacia atrás (pop) para que la pantalla de Login pueda precargarlo.
 class RegistroScreen extends StatefulWidget {
   const RegistroScreen({super.key});
 
@@ -71,10 +67,8 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
       if (!mounted) return;
 
-      // Si la cuenta requiere verificación de email, mostramos la pantalla
-      // de código OTP recibido por correo.
       if (resultado.requiereVerificacion) {
-        // Si cierra sin verificar, el login le ofrecerá retomarlo.
+
         await StorageService.instance.guardarVerificacionPendiente(
           resultado.email,
         );
@@ -91,7 +85,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
         return;
       }
 
-      // Cuenta creada y verificada directamente: volver al Login con el correo.
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -163,7 +156,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         ),
                         const SizedBox(height: 28),
 
-                        // Nombre
                         TextFormField(
                           controller: _nombreController,
                           textCapitalization: TextCapitalization.words,
@@ -181,7 +173,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Apellidos completos (paterno y materno)
                         TextFormField(
                           controller: _apellidoController,
                           textCapitalization: TextCapitalization.words,
@@ -201,7 +192,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Correo
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
@@ -228,7 +218,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Contraseña
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
@@ -270,7 +259,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Confirmar contraseña
                         TextFormField(
                           controller: _confirmController,
                           obscureText: _obscureConfirm,
@@ -305,7 +293,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
                           },
                         ),
 
-                        // Términos y condiciones
                         const SizedBox(height: 20),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,7 +339,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
                           ],
                         ),
 
-                        // Mensaje de error
                         if (_errorMessage != null) ...[
                           const SizedBox(height: 16),
                           ErrorBanner(message: _errorMessage!),
@@ -360,7 +346,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
                         const SizedBox(height: 28),
 
-                        // Botón crear cuenta
                         SizedBox(
                           height: 54,
                           child: _loading
@@ -385,7 +370,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Volver al login
                         TextButton(
                           onPressed: _loading
                               ? null

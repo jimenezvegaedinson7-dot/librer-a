@@ -135,7 +135,7 @@ void main() {
       await tester.tap(
         find.widgetWithText(FilledButton, 'Guardar nueva contraseña'),
       );
-      // La petición sale tras leer la sesión guardada; el aviso dura 1,1 s.
+
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
       await tester.pump(const Duration(milliseconds: 300));
@@ -150,8 +150,7 @@ void main() {
       expect(lastData['reset_token'], 'permiso-local');
       expect(lastData['password'], 'NuevaClave123');
       expect(lastData.containsKey('codigo'), true);
-      // Se termina con el aviso visible: si la prueba siguiera al login,
-      // dejaría operaciones de sesión pendientes para las pruebas siguientes.
+
       await tester.pumpWidget(const SizedBox());
     },
   );
@@ -209,7 +208,7 @@ void main() {
       await tester.tap(
         find.widgetWithText(FilledButton, 'Verificar y continuar'),
       );
-      // La petición sale tras leer la sesión guardada.
+
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
       expect(llamadas, 1);

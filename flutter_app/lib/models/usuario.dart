@@ -1,9 +1,5 @@
 import '../utils/json_utils.dart';
 
-/// Modelo de Usuario que refleja la estructura devuelta por el backend.
-///
-/// Tolerante: los números pueden llegar como int/double/String y los campos
-/// desconocidos se ignoran sin romper la app.
 class Usuario {
   final int? idUsuario;
   final String? nombre;
@@ -15,9 +11,6 @@ class Usuario {
   final String? estado;
   final String? fechaRegistro;
 
-  /// Indica si el usuario tiene el doble factor (Google Authenticator)
-  /// activado. Lo traen `datosPublicos` (login CASO A y `verificarLogin`),
-  /// el setup y `GET /usuarios/perfil` (`two_factor_enabled`).
   final bool? twoFactorEnabled;
 
   const Usuario({
@@ -33,7 +26,6 @@ class Usuario {
     this.twoFactorEnabled,
   });
 
-  /// Nombre completo para mostrar, combinando nombre y apellido.
   String get nombreCompleto {
     final parts = [
       nombre?.trim(),
@@ -42,10 +34,8 @@ class Usuario {
     return parts.isEmpty ? 'Cliente' : parts.join(' ');
   }
 
-  /// Deterministico: si el usuario es administrador.
   bool get esAdministrador => rol?.toLowerCase().trim() == 'administrador';
 
-  /// Deterministico: si el usuario es cliente.
   bool get esCliente => rol?.toLowerCase().trim() == 'cliente';
 
   factory Usuario.fromJson(Map<String, dynamic> json) {

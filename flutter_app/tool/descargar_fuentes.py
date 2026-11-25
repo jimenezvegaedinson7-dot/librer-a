@@ -20,7 +20,6 @@ FUENTES = [
     ('SourceSerif4-MediumItalic.ttf', '5dd489c34d83c6a7114064d60854fe22a1abdf61014361552b1f1a4af76d49e6', 183692),
 ]
 
-
 def descargar(fuente):
     nombre, digest, tamano = fuente
     destino = DESTINO / nombre
@@ -34,7 +33,6 @@ def descargar(fuente):
         raise ValueError(f'Fuente no verificada: {nombre}')
     destino.write_bytes(contenido)
     return nombre
-
 
 if __name__ == '__main__':
     DESTINO.mkdir(exist_ok=True)

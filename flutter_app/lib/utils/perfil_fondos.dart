@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Fondo de pantallas de la aplicación.
-///
-/// [tarjeta] se conserva como tono sugerido para instalaciones anteriores; la
-/// preferencia vigente de las tarjetas vive en [TarjetaApp] y se aplica de
-/// forma independiente. Todos los tonos son claros: los textos de la app son
-/// oscuros y deben leerse bien.
 class FondoApp {
   final String id;
   final String nombre;
   final Color fondo;
   final Color tarjeta;
 
-  /// Grupo en la pantalla "Colores de fondo": suaves o con color.
   final bool conColor;
 
   const FondoApp({
@@ -24,7 +17,6 @@ class FondoApp {
   });
 }
 
-/// Fondo por defecto: el marfil de la librería con tarjetas blancas.
 const String fondoDefaultId = 'marfil';
 
 const List<FondoApp> fondosApp = [
@@ -100,7 +92,7 @@ const List<FondoApp> fondosApp = [
     fondo: Color(0xFFEEEAF6),
     tarjeta: Color(0xFFFCFBFE),
   ),
-  // Con color: tonos más vivos, siempre claros para que el texto se lea.
+
   FondoApp(
     id: 'mostaza',
     nombre: 'Mostaza',
@@ -215,15 +207,9 @@ const List<FondoApp> fondosApp = [
   ),
 ];
 
-/// Resuelve un fondo por su id; si no existe, el marfil.
 FondoApp fondoPorId(String id) =>
     fondosApp.firstWhere((f) => f.id == id, orElse: () => fondosApp.first);
 
-/// Color de las tarjetas, independiente del fondo de las pantallas.
-///
-/// Todos son claros para que los textos oscuros de la app se lean bien. El
-/// usuario elige uno y se guarda con su propia preferencia, de modo que
-/// cambiar el fondo no altera las tarjetas ni al contrario.
 class TarjetaApp {
   final String id;
   final String nombre;
@@ -236,7 +222,6 @@ class TarjetaApp {
   });
 }
 
-/// Tarjetas blancas: la presentación original de la librería.
 const String tarjetaDefaultId = 'blanca';
 
 const List<TarjetaApp> tarjetasApp = [
@@ -254,7 +239,6 @@ const List<TarjetaApp> tarjetasApp = [
   TarjetaApp(id: 'champan', nombre: 'Champán', color: Color(0xFFFFFCF7)),
 ];
 
-/// Resuelve una tarjeta por su id; si no existe, la blanca.
 TarjetaApp tarjetaPorId(String id) {
   if (id.startsWith('legado_')) {
     final fondo = fondoPorId(id.substring('legado_'.length));

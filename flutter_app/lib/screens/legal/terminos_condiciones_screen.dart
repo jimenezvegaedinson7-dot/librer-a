@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../widgets/legal_documento.dart';
 
-/// Términos y Condiciones de uso de la aplicación de MATIDANA.
 class TerminosCondicionesScreen extends StatelessWidget {
   const TerminosCondicionesScreen({super.key});
 

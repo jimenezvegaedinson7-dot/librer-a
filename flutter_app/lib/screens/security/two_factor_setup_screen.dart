@@ -9,13 +9,6 @@ import '../../widgets/error_banner.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/loading_view.dart';
 
-/// Pantalla para activar el doble factor (Google Authenticator).
-///
-/// Al abrirse llama a `POST /auth/2fa/setup` para obtener el secreto y el QR
-/// (data URL base64). El usuario escanea el QR en Google Authenticator e
-/// introduce el código de 6 dígitos para confirmar (`/auth/2fa/confirm`).
-///
-/// Nunca se guarda el secreto ni el código en almacenamiento permanente.
 class TwoFactorSetupScreen extends StatefulWidget {
   const TwoFactorSetupScreen({super.key});
 
@@ -200,11 +193,9 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
           ),
           const SizedBox(height: 28),
 
-          // QR
           Center(child: _QrImage(dataUrl: qrDataUrl)),
           const SizedBox(height: 20),
 
-          // Secreto manual
           if (secret.isNotEmpty) ...[
             Card(
               color: AppColors.surface,
@@ -254,7 +245,6 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
             const SizedBox(height: 20),
           ],
 
-          // Campo confirmación
           TextFormField(
             controller: _otpController,
             keyboardType: TextInputType.number,
@@ -281,7 +271,6 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
 
           const SizedBox(height: 24),
 
-          // Botón activar
           SizedBox(
             height: 54,
             child: _confirming
@@ -297,7 +286,6 @@ class _TwoFactorSetupScreenState extends State<TwoFactorSetupScreen> {
   }
 }
 
-/// Muestra el QR a partir de un data URL base64 (`data:image/png;base64,...`).
 class _QrImage extends StatelessWidget {
   final String dataUrl;
   const _QrImage({required this.dataUrl});

@@ -13,8 +13,6 @@ class PasoSeguimiento {
   });
 }
 
-/// Solo estado_entrega determina avances. 'preparando' es un alias histórico
-/// del tramo Por preparar; el estado comercial no inventa una entrega.
 class SeguimientoPedido {
   final String titulo, mensaje;
   final List<PasoSeguimiento> pasos;

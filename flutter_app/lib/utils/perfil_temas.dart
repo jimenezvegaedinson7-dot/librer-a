@@ -1,21 +1,13 @@
 import 'package:flutter/material.dart';
 
-/// Tema de personalización visual del perfil.
-///
-/// Puede ser un color sólido ([inicio] == [fin]) o un degradado aplicado al
-/// encabezado, con un color de texto calculado automáticamente según el brillo
-/// de la combinación elegida.
 class PerfilTema {
   final String id;
   final String nombre;
   final Color inicio;
   final Color fin;
 
-  /// Acento fijo opcional. Si se define, sustituye al acento calculado (lo usa
-  /// el tema de marca para conservar el dorado junto al burdeos).
   final Color? acento;
 
-  /// Tema de vidrio: su muestra lleva brillo y reflejo, como un cristal.
   final bool vidrio;
 
   const PerfilTema({
@@ -29,23 +21,17 @@ class PerfilTema {
 
   bool get esGradiente => inicio != fin;
 
-  /// Degradado diagonal del tema.
   LinearGradient get gradiente => LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: esGradiente ? [inicio, fin] : [inicio, inicio],
   );
 
-  /// Color de texto legible sobre [gradiente] (oscuro si el tema es claro).
   Color get textColor {
     final luminancia = (inicio.computeLuminance() + fin.computeLuminance()) / 2;
     return luminancia > 0.5 ? const Color(0xFF17181C) : Colors.white;
   }
 
-  /// Color principal de la app (botones, selección, iconos activos).
-  ///
-  /// Usa el extremo más oscuro del tema; si ambos son claros devuelve el
-  /// grafito neutro para mantener botones legibles.
   Color get colorPrincipal {
     if (acento != null) return inicio;
     final base = inicio.computeLuminance() <= fin.computeLuminance()
@@ -54,45 +40,32 @@ class PerfilTema {
     return base.computeLuminance() > 0.55 ? const Color(0xFF202227) : base;
   }
 
-  /// Versión oscurecida del [colorPrincipal] (sombras y acentos profundos).
   Color get colorOscuro => _oscurecer(colorPrincipal, 0.22);
 
-  /// Acento decorativo de la app (dorado, badges, precios, carriles).
-  ///
-  /// Para temas claros se conserva el dorado de marca.
   Color get colorAcento {
     if (acento != null) return acento!;
     final luminancia = (inicio.computeLuminance() + fin.computeLuminance()) / 2;
     return luminancia > 0.85 ? const Color(0xFFB98D3E) : inicio;
   }
 
-  /// Acento oscurecido para textos sobre superficies claras (precios).
   Color get colorAcentoOscuro => _oscurecer(colorAcento, 0.28);
 
-  /// Color de los precios: el principal en el tema de marca, el acento
-  /// oscurecido en el resto (mantiene contraste sobre fondos claros).
   Color get colorPrecio => acento != null ? colorPrincipal : colorAcentoOscuro;
 
-  /// Contenedor claro del color principal (perfiles de iconos, chips).
   Color get contenedorPrincipal =>
       Color.alphaBlend(colorPrincipal.withValues(alpha: 0.12), Colors.white);
 
-  /// Contenedor claro del acento (insignias y pestañas suaves).
   Color get contenedorAcento =>
       Color.alphaBlend(colorAcento.withValues(alpha: 0.18), Colors.white);
 }
 
-/// Oscurece un color mezclándolo con negro.
 Color _oscurecer(Color color, double proporcion) =>
     Color.alphaBlend(Colors.black.withValues(alpha: proporcion), color);
 
-/// Prefijo del id de los temas personalizados: `custom_AABBCC_DDEEFF`.
 const _customPrefixo = 'custom_';
 
-/// Id del tema por defecto: la identidad de la librería (burdeos + dorado).
 const String perfilTemaDefaultId = 'libreria';
 
-/// Paleta de temas predefinidos: colores sólidos y degradados.
 const List<PerfilTema> perfilTemas = [
   PerfilTema(
     id: 'libreria',
@@ -305,7 +278,7 @@ const List<PerfilTema> perfilTemas = [
     inicio: Color(0xFF7C3AED),
     fin: Color(0xFFC4B5FD),
   ),
-  // Vidrio: tonos profundos y elegantes con brillo de cristal.
+
   PerfilTema(
     id: 'vidrio_zafiro',
     nombre: 'Vidrio zafiro',
@@ -364,11 +337,6 @@ const List<PerfilTema> perfilTemas = [
   ),
 ];
 
-/// Resuelve un tema por su id.
-///
-/// Soporta los predefinidos de [perfilTemas] y los personalizados con el
-/// formato `custom_AABBCC_DDEEFF` (degradado) o `custom_AABBCC` (color puro).
-/// Si el id es inválido devuelve el tema por defecto.
 PerfilTema perfilTemaPorId(String id) {
   if (id.startsWith(_customPrefixo)) {
     final cuerpo = id.substring(_customPrefixo.length);
@@ -392,12 +360,10 @@ PerfilTema perfilTemaPorId(String id) {
   );
 }
 
-/// Codifica un tema como cadena persistente (id de [PerfilTema]).
 String perfilTemaToId(PerfilTema tema) {
   return tema.id;
 }
 
-/// Id persistente para un color/degradado personalizado.
 String perfilTemaIdPersonalizado(Color inicio, {Color? fin}) {
   return '$_customPrefixo${_colorHex(inicio)}'
       '${fin != null && fin != inicio ? '_${_colorHex(fin)}' : ''}';

@@ -118,7 +118,7 @@ void main() {
       );
       final guardado = await CheckoutStore.instance.activo(2);
       expect(guardado, isNotNull);
-      // Otro ApiService representa memoria vacía después de matar el proceso.
+
       final apiB = ApiService.paraPruebas(cliente(responder));
       final orden = await apiB.recuperarIntentoPendiente();
       expect(orden?.idVenta, 77);

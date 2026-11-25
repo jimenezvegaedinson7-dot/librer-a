@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
 
-/// Encabezado de sección: antetítulo dorado opcional, título serif y una
-/// acción a la derecha ("Ver todos").
 class SeccionTitulo extends StatelessWidget {
   final String titulo;
   final String? antetitulo;

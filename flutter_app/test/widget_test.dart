@@ -12,7 +12,6 @@ void main() {
     await tester.pumpWidget(const LibreriaApp());
     expect(find.text('MATIDANA'), findsOneWidget);
 
-    // Dejar que el timer del splash se complete para evitar timers pendientes.
     await tester.pump(const Duration(milliseconds: 600));
     await tester.pump();
   });

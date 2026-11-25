@@ -2,13 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
 
-/// Tonos semánticos de los chips de estado.
 enum TonoEstado { exito, aviso, peligro, info, neutro, marca }
 
-/// Etiqueta compacta de estado (disponibilidad y compras).
-///
-/// Fondo suave del tono + punto de color + texto, para que el estado se lea
-/// por color y por palabra (nunca solo por color).
 class EstadoChip extends StatelessWidget {
   final String texto;
   final TonoEstado tono;

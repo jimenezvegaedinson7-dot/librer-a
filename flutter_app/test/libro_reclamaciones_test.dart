@@ -88,7 +88,6 @@ void main() {
     expect(campo('Número'), '12345678');
     expect(campo('Domicilio'), 'Jr. Lima 123');
 
-    // Elegir la compra completa el bien y el monto.
     await tester.tap(find.text('Ninguna / otra'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('N.° 41 · S/ 45.50').last);

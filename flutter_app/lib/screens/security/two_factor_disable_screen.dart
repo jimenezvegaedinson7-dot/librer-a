@@ -4,10 +4,6 @@ import 'package:flutter/services.dart';
 import '../../services/api_service.dart';
 import '../../widgets/error_banner.dart';
 
-/// Pantalla para desactivar el doble factor (Google Authenticator).
-///
-/// Requiere la contraseña actual y el código OTP generado por la app
-/// (`POST /auth/2fa/disable`). El código y la contraseña no se guardan.
 class TwoFactorDisableScreen extends StatefulWidget {
   const TwoFactorDisableScreen({super.key});
 
@@ -91,7 +87,6 @@ class _TwoFactorDisableScreenState extends State<TwoFactorDisableScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Contraseña
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -123,7 +118,6 @@ class _TwoFactorDisableScreenState extends State<TwoFactorDisableScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Código OTP
                 TextFormField(
                   controller: _otpController,
                   keyboardType: TextInputType.number,

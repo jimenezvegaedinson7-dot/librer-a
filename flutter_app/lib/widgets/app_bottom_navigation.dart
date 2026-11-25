@@ -4,16 +4,8 @@ import '../utils/app_colors.dart';
 import '../utils/app_tokens.dart';
 import 'carrito_badge.dart';
 
-/// Índices de las pestañas de la navegación principal.
-///
-/// Inicio · Catálogo · Carrito · Compras · Perfil.
 enum AppTab { inicio, libros, carrito, compras, perfil }
 
-/// Navegación principal con identidad editorial de la librería.
-///
-/// Barra blanca cálida con sombra superior. La pestaña activa muestra una
-/// píldora burdeos suave detrás del icono (animada) y el icono relleno; el
-/// carrito conserva su insignia de unidades.
 class AppBottomNavigation extends StatelessWidget {
   final AppTab currentTab;
   final ValueChanged<AppTab> onTabSelected;

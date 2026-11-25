@@ -4,17 +4,12 @@ import 'package:flutter/services.dart';
 import 'app_colors.dart';
 import 'app_tokens.dart';
 
-/// Tema global con la identidad editorial de la librería:
-/// Source Serif 4 para titulares (la misma familia del panel administrativo)
-/// e Inter para la interfaz y el texto largo. Superficies marfil y pergamino,
-/// acentos burdeos y dorado (dinámicos según el tema del perfil).
 class AppTheme {
   AppTheme._();
 
   static const String fontSerif = 'Source Serif 4';
   static const String fontSans = 'Inter';
 
-  /// Estilo serif de marca para titulares puntuales fuera del tema.
   static TextStyle serif({
     double fontSize = 20,
     FontWeight fontWeight = FontWeight.w600,
@@ -34,7 +29,6 @@ class AppTheme {
     );
   }
 
-  /// Tema claro de la aplicación.
   static ThemeData light() {
     final colorScheme = appColorSchemeLight();
 
@@ -114,9 +108,6 @@ class AppTheme {
         selectionHandleColor: AppColors.primary,
       ),
 
-      // ---------------------------------------------------------------------
-      // AppBar
-      // ---------------------------------------------------------------------
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
@@ -137,9 +128,6 @@ class AppTheme {
         ).copyWith(color: AppColors.textPrimary),
       ),
 
-      // ---------------------------------------------------------------------
-      // Botones
-      // ---------------------------------------------------------------------
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: colorScheme.primary,
@@ -196,9 +184,6 @@ class AppTheme {
         ),
       ),
 
-      // ---------------------------------------------------------------------
-      // Campos de texto
-      // ---------------------------------------------------------------------
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
@@ -247,9 +232,6 @@ class AppTheme {
         ),
       ),
 
-      // ---------------------------------------------------------------------
-      // Tarjetas, chips y listas
-      // ---------------------------------------------------------------------
       cardTheme: CardThemeData(
         elevation: 0,
         color: AppColors.surface,
@@ -302,9 +284,6 @@ class AppTheme {
         space: 1,
       ),
 
-      // ---------------------------------------------------------------------
-      // Navegación, pestañas y controles
-      // ---------------------------------------------------------------------
       navigationBarTheme: NavigationBarThemeData(
         height: 68,
         backgroundColor: AppColors.surface,
@@ -377,9 +356,6 @@ class AppTheme {
         ),
       ),
 
-      // ---------------------------------------------------------------------
-      // Hojas, diálogos y avisos
-      // ---------------------------------------------------------------------
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,

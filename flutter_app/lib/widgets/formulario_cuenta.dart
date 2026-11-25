@@ -5,9 +5,6 @@ import '../utils/app_theme.dart';
 import '../utils/app_tokens.dart';
 import 'aparecer.dart';
 
-/// Cabecera de los formularios de la cuenta (Editar perfil, Cambiar
-/// contraseña): medallón burdeos con anillo dorado, antetítulo, título serif
-/// y una descripción breve.
 class CabeceraFormulario extends StatelessWidget {
   final Widget medallon;
   final String antetitulo;
@@ -90,7 +87,6 @@ class CabeceraFormulario extends StatelessWidget {
   }
 }
 
-/// Iniciales en serif para el medallón del perfil.
 class Iniciales extends StatelessWidget {
   final String texto;
 
@@ -109,8 +105,6 @@ class Iniciales extends StatelessWidget {
   }
 }
 
-/// Bloque de un formulario: título de sección pequeño y los campos dentro
-/// de una superficie blanca suave.
 class SeccionFormulario extends StatelessWidget {
   final String titulo;
   final IconData icono;

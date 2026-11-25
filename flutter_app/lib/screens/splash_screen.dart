@@ -10,9 +10,6 @@ import '../widgets/estanteria.dart';
 import 'home_screen.dart';
 import 'login_screen.dart';
 
-/// Pantalla de inicio: verifica la sesión guardada y decide si ir a Home o
-/// Login. Evita pantallas en blanco mostrando el logo e indicador desde el
-/// primer frame.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -35,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
       _cargando = true;
       _error = null;
     });
-    // Pequeña pausa para que el splash se vea de forma natural sin saltos.
+
     await Future<void>.delayed(const Duration(milliseconds: 400));
 
     final token = await StorageService.instance.obtenerToken();
@@ -57,7 +54,7 @@ class _SplashScreenState extends State<SplashScreen> {
         perfil,
         generacionEsperada: generacion,
       );
-      // Recupera el resultado de compras pendientes antes de permitir otra.
+
       await ApiService.instance.obtenerMisVentas();
       if (generacion != StorageService.instance.generacion || !mounted) return;
       _goToHome();
@@ -145,7 +142,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 duracion: Duration(milliseconds: 1100),
               ),
             ),
-            // Velo radial: el centro queda limpio para el logo.
+
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(

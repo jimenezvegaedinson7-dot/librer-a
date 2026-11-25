@@ -7,7 +7,6 @@ import '../utils/app_tokens.dart';
 
 enum _Etapa { aviso, descargando, verificando, instalador, error }
 
-/// Muestra el aviso de nueva versión. Si es obligatoria no se puede cerrar.
 Future<void> mostrarDialogoActualizacion(
   BuildContext context,
   VersionApp version,

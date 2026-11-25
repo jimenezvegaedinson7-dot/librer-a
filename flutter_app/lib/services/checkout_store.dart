@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Diario local por cliente. No contiene JWT ni credenciales; el cuerpo se
-/// guarda antes de enviar para poder repetir exactamente el mismo POST.
 class IntentoCheckout {
   final int propietario;
   final String fingerprint;
@@ -104,7 +102,7 @@ class CheckoutStore {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key(propietario));
     if (raw == null) return [];
-    // Un diario ilegible no se sustituye por un intento nuevo silenciosamente.
+
     return (jsonDecode(raw) as List)
         .map(
           (e) => IntentoCheckout.fromJson(Map<String, dynamic>.from(e as Map)),
