@@ -51,9 +51,6 @@ struct AccountView: View {
                 case .complaints: ComplaintsBookView()
                 }
             }
-            .profilePhotoActions(isPresented: $showPhotoOptions, uploading: $uploadingPhoto) { message in
-                toast = ToastMessage(text: message)
-            }
             .toast($toast)
             .confirmationDialog("Cerrar sesión", isPresented: $confirmLogout, titleVisibility: .visible) {
                 Button("Cerrar sesión", role: .destructive) { Task { await appState.signOut() } }
@@ -67,13 +64,13 @@ struct AccountView: View {
     // MARK: Secciones
 
     private var cover: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 8) {
             Button { showPhotoOptions = true } label: {
-                Avatar(user: user, size: 112)
+                Avatar(user: user, size: 96)
                     .overlay {
                         if uploadingPhoto {
                             ProgressView().tint(.white)
-                                .frame(width: 112, height: 112)
+                                .frame(width: 96, height: 96)
                                 .background(Circle().fill(.black.opacity(0.35)))
                         }
                     }
@@ -81,7 +78,7 @@ struct AccountView: View {
                         Image(systemName: "camera.fill")
                             .font(.caption)
                             .foregroundStyle(Brand.tinta)
-                            .frame(width: 28, height: 28)
+                            .frame(width: 24, height: 24)
                             .background(Circle().fill(Brand.dorado))
                             .overlay(Circle().stroke(.white, lineWidth: 2))
                     }
@@ -89,18 +86,21 @@ struct AccountView: View {
             .buttonStyle(.plain)
             .disabled(uploadingPhoto)
             .accessibilityLabel("Opciones de foto de perfil")
+            .profilePhotoActions(isPresented: $showPhotoOptions, uploading: $uploadingPhoto) { message in
+                toast = ToastMessage(text: message)
+            }
             Button {
                 showPhotoOptions = true
             } label: {
                 Text(uploadingPhoto ? "Actualizando foto…" : "Cambiar foto")
-                    .font(.subheadline.weight(.semibold))
+                    .font(.footnote.weight(.semibold))
                     .foregroundStyle(themeStore.theme.primary)
                     .frame(minHeight: 44)
             }
             .buttonStyle(.plain)
             .disabled(uploadingPhoto)
         }
-        .padding(20)
+        .padding(12)
         .frame(maxWidth: .infinity)
     }
 

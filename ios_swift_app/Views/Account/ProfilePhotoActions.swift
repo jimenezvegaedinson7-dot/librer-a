@@ -87,6 +87,10 @@ extension View {
 }
 
 private struct ProfilePhotoActionsModifier: ViewModifier {
+    private enum PhotoAction {
+        case preview, avatars, library, camera
+    }
+
     @Binding var isPresented: Bool
     @Binding var uploading: Bool
     let onMessage: (String) -> Void
@@ -97,24 +101,18 @@ private struct ProfilePhotoActionsModifier: ViewModifier {
     @State private var showCamera = false
     @State private var showPhotoPreview = false
     @State private var libraryItem: PhotosPickerItem?
+    @State private var pendingAction: PhotoAction?
 
     private var cameraAvailable: Bool { UIImagePickerController.isSourceTypeAvailable(.camera) }
     private var photoURL: URL? { FileURL.profilePhoto(appState.user?.fotoPerfil) }
 
     func body(content: Content) -> some View {
         content
-            .confirmationDialog("Foto de perfil", isPresented: $isPresented, titleVisibility: .visible) {
-                if photoURL != nil {
-                    Button("Ver foto") { showPhotoPreview = true }
-                }
-                Button("Elegir avatar") { showAvatars = true }
-                Button("Subir imagen") { showLibrary = true }
-                if cameraAvailable {
-                    Button("Tomar foto") { showCamera = true }
-                }
-                Button("Cancelar", role: .cancel) { }
-            } message: {
-                Text("Elige un avatar o usa una foto propia.")
+            .popover(isPresented: $isPresented, attachmentAnchor: .rect(.bounds), arrowEdge: .top) {
+                photoOptions
+                    .presentationCompactAdaptation(.popover)
+                    .presentationBackground(Brand.superficie)
+                    .onDisappear { presentPendingAction() }
             }
             .fullScreenCover(isPresented: $showPhotoPreview) {
                 if let photoURL {
@@ -156,6 +154,73 @@ private struct ProfilePhotoActionsModifier: ViewModifier {
                 }
                 .ignoresSafeArea()
             }
+    }
+
+    private var photoOptions: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Foto de perfil")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Brand.texto)
+                Spacer(minLength: 8)
+                Button { isPresented = false } label: {
+                    Image(systemName: "xmark")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Brand.textoSecundario)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Cerrar opciones de foto")
+            }
+            .padding(.leading, 12)
+
+            Divider()
+            if photoURL != nil {
+                option("Ver foto", icon: "photo", action: .preview)
+            }
+            option("Elegir avatar", icon: "person.crop.circle", action: .avatars)
+            option("Subir imagen", icon: "photo.on.rectangle", action: .library)
+            if cameraAvailable {
+                option("Tomar foto", icon: "camera", action: .camera)
+            }
+        }
+        .padding(6)
+        .frame(width: 240)
+    }
+
+    private func option(_ title: String, icon: String, action: PhotoAction) -> some View {
+        Button {
+            pendingAction = action
+            isPresented = false
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 15))
+                    .foregroundStyle(Brand.acento)
+                    .frame(width: 20)
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundStyle(Brand.texto)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 4)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func presentPendingAction() {
+        guard let action = pendingAction else { return }
+        pendingAction = nil
+        switch action {
+        case .preview: showPhotoPreview = true
+        case .avatars: showAvatars = true
+        case .library: showLibrary = true
+        case .camera: showCamera = true
+        }
     }
 
     private func upload(_ makeFile: () async throws -> (Data, String)) async {

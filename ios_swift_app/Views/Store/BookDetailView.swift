@@ -174,6 +174,7 @@ struct BookDetailView: View {
     private var technicalSheet: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Ficha técnica").font(.serif(18))
+            row("Título", book.displayTitle)
             row("Autor", book.autor ?? "")
             row("Categoría", book.categoria ?? "")
             row("ISBN", book.isbn ?? "")
@@ -184,7 +185,8 @@ struct BookDetailView: View {
             row("Formato", book.formato ?? "")
             row("Número de volumen", book.numeroVolumen ?? "")
             row("Dimensiones", book.dimensiones ?? "")
-            if book.estado { row("Estado", "Activo") }
+            row("Precio actual", "S/ \(Money.format(book.precioCompra))")
+            row("Estado", book.estado ? "Activo" : "Inactivo")
             row("Disponibilidad", book.isAvailable ? "En stock" : "Agotado")
             row("Stock", "\(book.stock) unidades")
         }
@@ -194,23 +196,20 @@ struct BookDetailView: View {
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(Brand.divisor))
     }
 
-    @ViewBuilder
     private func row(_ label: String, _ value: String) -> some View {
         let text = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !text.isEmpty {
-            HStack(alignment: .top, spacing: 16) {
-                Text(label)
-                    .foregroundStyle(Brand.textoSecundario)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 0)
-                Text(text)
-                    .foregroundStyle(Brand.texto)
-                    .multilineTextAlignment(.trailing)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .font(.subheadline)
-            .accessibilityElement(children: .combine)
+        return HStack(alignment: .top, spacing: 16) {
+            Text(label)
+                .foregroundStyle(Brand.textoSecundario)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+            Text(text.isEmpty ? "No registrado" : text)
+                .foregroundStyle(Brand.texto)
+                .multilineTextAlignment(.trailing)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .font(.subheadline)
+        .accessibilityElement(children: .combine)
     }
 
     private var bottomBar: some View {
