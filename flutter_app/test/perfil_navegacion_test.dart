@@ -9,7 +9,7 @@ import 'package:libreria_app/utils/app_theme.dart';
 import 'package:libreria_app/widgets/app_bottom_navigation.dart';
 
 import 'soporte_api_local.dart';
-import 'perfil_presentacion_test.dart' show captura, cargarFuentesLocales;
+import 'perfil_presentacion_test.dart' show cargarFuentesLocales;
 
 void main() {
   setUpAll(cargarFuentesLocales);
@@ -44,15 +44,11 @@ void main() {
           return respuestaLocal({'data': []});
         }),
       );
-      final capturaKey = GlobalKey();
       await tester.pumpWidget(
-        RepaintBoundary(
-          key: capturaKey,
-          child: MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.light(),
-            home: const HomeScreen(),
-          ),
+        MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light(),
+          home: const HomeScreen(),
         ),
       );
       await tester.pumpAndSettle();
@@ -71,7 +67,6 @@ void main() {
       expect(find.byKey(const ValueKey('abrir-configuracion')), findsNothing);
       expect(perfiles, 1);
       expect(catalogos, catalogosIniciales);
-      await captura(tester, capturaKey, 'perfil-whatsapp-navegacion-390');
       await tester.scrollUntilVisible(
         find.text('Personalización'),
         250,

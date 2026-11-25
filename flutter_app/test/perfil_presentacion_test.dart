@@ -1,9 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:libreria_app/models/usuario.dart';
@@ -16,19 +13,6 @@ import 'package:libreria_app/services/api_service.dart';
 import 'package:libreria_app/services/tema_controller.dart';
 
 import 'soporte_api_local.dart';
-
-Future<void> captura(WidgetTester tester, GlobalKey key, String nombre) async {
-  const carpeta = String.fromEnvironment('CAPTURAS_UI');
-  if (carpeta.isEmpty) return;
-  await tester.runAsync(() async {
-    final boundary =
-        key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-    final imagen = await boundary.toImage(pixelRatio: 2);
-    final png = await imagen.toByteData(format: ui.ImageByteFormat.png);
-    await File('$carpeta/$nombre.png').writeAsBytes(png!.buffer.asUint8List());
-    imagen.dispose();
-  });
-}
 
 Future<void> cargarFuentesLocales() async {
   final manifest =
@@ -80,15 +64,11 @@ void main() {
             }),
           ),
         );
-        final key = GlobalKey();
         await tester.pumpWidget(
-          RepaintBoundary(
-            key: key,
-            child: MaterialApp(
-              debugShowCheckedModeBanner: false,
-              theme: AppTheme.light(),
-              home: const PerfilScreen(),
-            ),
+          MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light(),
+            home: const PerfilScreen(),
           ),
         );
         await tester.pumpAndSettle();
@@ -114,7 +94,6 @@ void main() {
         expect(find.byIcon(Icons.call_outlined), findsOneWidget);
         expect(find.byIcon(Icons.edit_outlined), findsNWidgets(3));
         expect(find.byIcon(Icons.photo_camera_rounded), findsOneWidget);
-        await captura(tester, key, 'perfil-formal-${ancho.toInt()}');
         await tester.tap(find.byTooltip('Cambiar foto de perfil'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
@@ -133,28 +112,24 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final key = GlobalKey();
       await tester.pumpWidget(
-        RepaintBoundary(
-          key: key,
-          child: MaterialApp(
-            theme: AppTheme.light(),
-            home: const Scaffold(
-              body: Center(
-                child: SizedBox(
-                  height: 430,
-                  child: LibroSuelto(
-                    libro: Libro(
-                      titulo: 'Libro en promoción',
-                      autor: 'Autor de prueba',
-                      precio: 100,
-                      precioFinal: 75,
-                      descuentoVigente: true,
-                      stock: 4,
-                      estado: true,
-                    ),
-                    ancho: 140,
+        MaterialApp(
+          theme: AppTheme.light(),
+          home: const Scaffold(
+            body: Center(
+              child: SizedBox(
+                height: 430,
+                child: LibroSuelto(
+                  libro: Libro(
+                    titulo: 'Libro en promoción',
+                    autor: 'Autor de prueba',
+                    precio: 100,
+                    precioFinal: 75,
+                    descuentoVigente: true,
+                    stock: 4,
+                    estado: true,
                   ),
+                  ancho: 140,
                 ),
               ),
             ),
@@ -166,7 +141,6 @@ void main() {
       expect(find.text('S/ 100.00'), findsOneWidget);
       expect(find.textContaining('75.00'), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await captura(tester, key, 'oferta-390');
     },
   );
 }

@@ -391,7 +391,7 @@ Fuentes Inter y Source Serif 4 empaquetadas en \`assets/fonts/\` y declaradas en
 - Los temas de \`utils/perfil_temas.dart\` se aplican al tocar; la combinación de dos colores tiene borrador local hasta Aplicar. Los colores y fondos se guardan en SharedPreferences mediante \`StorageService\`, sin endpoint adicional.
 - \`screens/fondos_screen.dart\` adapta \`BackgroundsView\` de Swift: vista previa de fondo y tarjetas, grupos Suaves/Con color y selección adaptable. Atrás descarta el borrador; Aplicar actualiza \`TemaController\` y toda la app.
 - Texto ampliado, nombres y etiquetas adaptables, controles de color de 48 dp y animaciones que respetan Reduce Motion. \`AppColors.onPrimary\` mantiene al menos 4.5:1 sobre botones, incluidos temas dorados/naranjas; la identidad de la cabecera se protege si el degradado mezcla extremos de bajo contraste.
-- Pruebas: \`test/perfil_personalizacion_test.dart\` (persistencia, cancelación, combinación, contraste, edición tardía, 2FA y avatar) y \`test/perfil_presentacion_test.dart\` (cabecera, foto y capturas con fuentes locales reales).
+- Pruebas: \`test/perfil_personalizacion_test.dart\` (persistencia, cancelación, combinación, contraste, edición tardía, 2FA y avatar) y \`test/perfil_presentacion_test.dart\` (cabecera, foto y presentación con fuentes locales reales, sin generar capturas).
 
 ## Métodos de ApiService → endpoints
 

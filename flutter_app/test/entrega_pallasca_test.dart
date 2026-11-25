@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:libreria_app/models/libro.dart';
 import 'package:libreria_app/models/venta.dart';
@@ -14,21 +11,9 @@ import 'soporte_api_local.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  setUpAll(() async {
-    if (!const bool.fromEnvironment('CAPTURA_DELIVERY')) return;
-    final manifest =
-        jsonDecode(await rootBundle.loadString('FontManifest.json')) as List;
-    for (final familia in manifest) {
-      final loader = FontLoader(familia['family'] as String);
-      for (final fuente in familia['fonts'] as List) {
-        loader.addFont(rootBundle.load(fuente['asset'] as String));
-      }
-      await loader.load();
-    }
-  });
   for (final ancho in [320.0, 390.0]) {
     testWidgets(
-      'delivery fijo S/5 sin selector de zona y recojo con dirección a $ancho px',
+      'delivery con tarifa vigente sin selector de zona y recojo con dirección a $ancho px',
       (tester) async {
         await prepararAlmacenamientoLocal();
         await iniciarSesionLocal(7);
@@ -82,12 +67,6 @@ void main() {
           findsOneWidget,
         );
         expect(tester.takeException(), isNull);
-        if (const bool.fromEnvironment('CAPTURA_DELIVERY')) {
-          await expectLater(
-            find.byType(Scaffold),
-            matchesGoldenFile('../build/capturas/delivery-fijo-$ancho.png'),
-          );
-        }
         await tester.pumpWidget(const SizedBox());
       },
     );

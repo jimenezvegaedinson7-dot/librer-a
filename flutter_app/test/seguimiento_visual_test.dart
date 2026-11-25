@@ -81,17 +81,4 @@ void main() {
     expect(find.text('Esperando pago'), findsOneWidget);
     expect(find.byIcon(Icons.check_rounded), findsNothing);
   });
-
-  testWidgets('captura visual del seguimiento', (tester) async {
-    await _pintar(tester, {
-      'id_venta': 41,
-      'tipo_entrega': 'tienda',
-      'estado': 'pagada',
-      'estado_entrega': 'listo_recojo',
-    }, 360);
-    await expectLater(
-      find.byType(Scaffold),
-      matchesGoldenFile('../build/capturas/seguimiento.png'),
-    );
-  }, skip: const bool.fromEnvironment('SIN_CAPTURA', defaultValue: true));
 }

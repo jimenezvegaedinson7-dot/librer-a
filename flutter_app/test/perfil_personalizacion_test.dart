@@ -16,7 +16,7 @@ import 'package:libreria_app/utils/perfil_temas.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'soporte_api_local.dart';
-import 'perfil_presentacion_test.dart' show captura, cargarFuentesLocales;
+import 'perfil_presentacion_test.dart' show cargarFuentesLocales;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -185,28 +185,23 @@ void main() {
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
-        final key = GlobalKey();
         await tester.pumpWidget(
-          RepaintBoundary(
-            key: key,
-            child: AnimatedBuilder(
-              animation: TemaController.instance,
-              builder: (_, _) => MaterialApp(
-                debugShowCheckedModeBanner: false,
-                theme: AppTheme.light(),
-                builder: (context, child) => MediaQuery(
-                  data: MediaQuery.of(context)
-                      .copyWith(textScaler: TextScaler.linear(escala)),
-                  child: child!,
-                ),
-                home: const PerfilScreen(),
+          AnimatedBuilder(
+            animation: TemaController.instance,
+            builder: (_, _) => MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.light(),
+              builder: (context, child) => MediaQuery(
+                data: MediaQuery.of(context)
+                    .copyWith(textScaler: TextScaler.linear(escala)),
+                child: child!,
               ),
+              home: const PerfilScreen(),
             ),
           ),
         );
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        await captura(tester, key, 'perfil-${ancho.toInt()}-texto-ampliado');
         await tester.scrollUntilVisible(
           find.text('Personalización'),
           250,
@@ -223,18 +218,15 @@ void main() {
         expect(tester.takeException(), isNull);
         expect(find.byType(PersonalizacionScreen), findsOneWidget);
         expect(tester.takeException(), isNull);
-        await captura(tester, key, 'personalizacion-${ancho.toInt()}');
         await tester.tap(find.text('Colores de botones y tarjetas'));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        await captura(tester, key, 'botones-tarjetas-${ancho.toInt()}');
         await tester.pageBack();
         await tester.pumpAndSettle();
         await tester.ensureVisible(find.text('Colores de fondo'));
         await tester.tap(find.text('Colores de fondo'));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
-        await captura(tester, key, 'fondo-${ancho.toInt()}');
         await tester.pumpWidget(const SizedBox());
       },
     );
@@ -431,8 +423,7 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final key = GlobalKey();
-      await tester.pumpWidget(RepaintBoundary(key: key, child: pantalla()));
+      await tester.pumpWidget(pantalla());
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Personalización'));
       await tester.tap(find.text('Personalización'));
@@ -485,7 +476,6 @@ void main() {
       await tester.pumpAndSettle();
       await tester.drag(find.byType(ListView), const Offset(0, 1600));
       await tester.pumpAndSettle();
-      await captura(tester, key, 'perfil-degradado-personalizado');
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },

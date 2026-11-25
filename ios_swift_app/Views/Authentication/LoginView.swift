@@ -65,6 +65,12 @@ struct LoginView: View {
                             .foregroundStyle(Brand.textoSecundario)
                             .multilineTextAlignment(.center)
                     }
+                    if let message = viewModel.informationMessage, !viewModel.requiresTwoFactor {
+                        Text(message)
+                            .font(.subheadline)
+                            .foregroundStyle(Brand.exito)
+                            .multilineTextAlignment(.center)
+                    }
                     if let message = viewModel.errorMessage {
                         ErrorBanner(message: message)
                     }

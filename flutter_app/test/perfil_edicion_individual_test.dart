@@ -7,7 +7,7 @@ import 'package:libreria_app/services/storage_service.dart';
 import 'package:libreria_app/services/tema_controller.dart';
 import 'package:libreria_app/utils/app_theme.dart';
 
-import 'perfil_presentacion_test.dart' show captura, cargarFuentesLocales;
+import 'perfil_presentacion_test.dart' show cargarFuentesLocales;
 import 'soporte_api_local.dart';
 
 void main() {
@@ -44,15 +44,11 @@ void main() {
             return respuestaLocal({'data': datos});
           }),
         );
-        final key = GlobalKey();
         await tester.pumpWidget(
-          RepaintBoundary(
-            key: key,
-            child: MaterialApp(
-              debugShowCheckedModeBanner: false,
-              theme: AppTheme.light(),
-              home: const PerfilScreen(),
-            ),
+          MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light(),
+            home: const PerfilScreen(),
           ),
         );
         await tester.pumpAndSettle();
@@ -78,7 +74,6 @@ void main() {
           find.text('999111222'),
           campo == CampoPerfil.telefono ? findsOneWidget : findsNothing,
         );
-        await captura(tester, key, 'editar-${campo.name}-390');
         final valor = find.byKey(ValueKey('campo-${campo.name}'));
         await tester.enterText(valor, switch (campo) {
           CampoPerfil.nombre => 'Lucía',

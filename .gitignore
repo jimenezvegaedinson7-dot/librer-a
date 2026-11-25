@@ -71,6 +71,7 @@ backups/
 !backend/database/schema.sql
 
 # Herramientas de desarrollo y datos locales
+.playwright-mcp/
 .claude/
 .opencode/
 CLAUDE.md
